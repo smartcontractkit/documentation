@@ -1,7 +1,7 @@
 ---
-title: "Automated Data Relay with Data Streams Transmitter"
-description: "Set up and manage a self-hosted, automated relay to push offchain Data Streams to your smart contracts."
-githubSourceCodeUrl: "https://github.com/hackbg/chainlink-datastreams-transmitter"
+title: "Automated Data Relay with Data Streams Push Engine"
+description: "Set up and manage a self-hosted, automated relay to push offchain Data Streams to your smart contracts using Push Engine."
+githubSourceCodeUrl: "https://github.com/hackbg/push-engine"
 image: "QuickStarts-DataStreams-Transmitter.webp"
 products: ["streams"]
 time: "25 minutes"
@@ -18,14 +18,14 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
 [DOCKER_INSTALL]: https://docs.docker.com/get-started/get-docker/
 [NODE_INSTALL]: https://nodejs.org/en/download/
 [REDIS_INSTALL]: https://redis.io/docs/latest/operate/oss_and_stack/install/archive/install-redis/
-[GITHUB_REPO]: https://github.com/hackbg/chainlink-datastreams-transmitter
+[GITHUB_REPO]: https://github.com/hackbg/push-engine
 [DATA_STREAMS_CONTACT]: https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs
 [FOUNDRY_INSTALL]: https://book.getfoundry.sh/getting-started/installation
 
 ## Overview
 
 <Aside type="caution" title="Disclaimer">
-  The Data Streams Transmitter and the reference consumer contract are community-built tools. The Transmitter is
+  The Data Streams Push Engine and the reference consumer contract are community-built tools. The Push Engine is
   developed and maintained by [HackBG](https://github.com/hackbg) and the contract is a community endeavour. These are
   not official Chainlink products and are not supported by Chainlink Labs. No warranties or guarantees are provided.
   Please do your own research and audit the code before using this tool in a production environment.
@@ -33,27 +33,27 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
 
 While [Chainlink Data Streams](/data-streams/index) provide access to low-latency market data offchain, the process of bringing this data onchain requires significant engineering. Developers must build, deploy, and maintain a custom infrastructure service that can reliably connect to the Data Streams API, implement robust WebSocket reconnection logic, and manage the onchain transaction logic for when and how to push updates.
 
-The [Data Streams Transmitter][GITHUB_REPO], a community-led solution, provides a foundational framework for the DevOps teams and Infrastructure Managers tasked with building these systems. Transmitter is a configurable service that handles the core logic of monitoring offchain Data Streams and pushing values to your smart contracts based on predefined conditions, such as time intervals or price deviations. It also includes a web interface to manage your feeds and monitor their status.
+The [Data Streams Push Engine][GITHUB_REPO], a community-led solution, provides a foundational framework for the DevOps teams and Infrastructure Managers tasked with building these systems. Push Engine is a configurable service that handles the core logic of monitoring offchain Data Streams and pushing values to your smart contracts based on predefined conditions, such as time intervals or price deviations. It also includes a web interface to manage your feeds and monitor their status.
 
-This guide walks you through deploying a `DataStreamsFeed` consumer contract, setting up the Data Streams Transmitter, and configuring it to monitor a specific Data Stream and relay it to your onchain contract.
+This guide walks you through deploying a `DataStreamsFeed` consumer contract, setting up the Data Streams Push Engine, and configuring it to monitor a specific Data Stream and relay it to your onchain contract.
 
 ---
 
 ## High-level Architecture
 
 <Aside type="tip" title="Learn More">
-  This is a high-level overview of the Data Stream Transmitter architecture. For a more detailed overview of the core
+  This is a high-level overview of the Data Stream Push Engine architecture. For a more detailed overview of the core
   Data Streams architecture, including its components and pull-based model, refer to the [Data Streams
   Architecture](/data-streams/architecture) documentation.
 </Aside>
 
-Transmitter relays data from the offchain Chainlink network to your onchain contracts in the following sequence:
+Push Engine relays data from the offchain Chainlink network to your onchain contracts in the following sequence:
 
 1.  **Offchain | Data Generation:** A Chainlink Decentralized Oracle Network (DON) generates and signs low-latency data reports, making them available in the offchain Data Streams Aggregation Network.
 
-1.  **Offchain | Monitoring:** Transmitter, which you operate, continuously monitors this offchain network for new reports via a WebSocket connection.
+1.  **Offchain | Monitoring:** Push Engine, which you operate, continuously monitors this offchain network for new reports via a WebSocket connection.
 
-1.  **Onchain | Transmission:** Based on your predefined conditions (such as a time interval or price deviation), Transmitter bundles the latest report into a transaction and submits it to your designated Oracle Contract.
+1.  **Onchain | Transmission:** Based on your predefined conditions (such as a time interval or price deviation), Push Engine bundles the latest report into a transaction and submits it to your designated Oracle Contract.
 
 1.  **Onchain | Verification:** Within that single transaction, your Oracle Contract immediately calls the Chainlink Verifier Contract, which uses its `LINK` allowance to submit the verification request. The Verifier authenticates the report by checking the DON's cryptographic signature. If verification fails, the entire transaction reverts, ensuring no state change occurs.
 
@@ -72,7 +72,8 @@ Transmitter relays data from the offchain Chainlink network to your onchain cont
 
 Before you start this tutorial, ensure you have the following prerequisites:
 
-- **Deployment Host**: A stable server environment (cloud or on-premise) is required for a production deployment of the Transmitter service. This guide uses your local machine for initial setup and testing.
+-- **Deployment Host**: A stable server environment (cloud or on-premise) is required for a production deployment of the Push Engine service. This guide uses your local machine for initial setup and testing.
+
 - **Software Dependencies**: [Foundry][FOUNDRY_INSTALL], [Docker][DOCKER_INSTALL], [Node.js][NODE_INSTALL], and [Redis][REDIS_INSTALL] installed on your deployment host. This guide uses `pnpm` for package management.
 - **Development Wallet**: This guide requires a funded development wallet and its **private key** to send transactions.
   - **Network Configuration**: This guide uses **Avalanche Fuji**. You can find RPC URLs on [Chainlist](https://chainlist.org).
@@ -85,15 +86,15 @@ Before you start this tutorial, ensure you have the following prerequisites:
 ## Steps to Implement
 
 <Accordion title="Deploy Consumer Contract" number={1}>
-First, deploy a [`DataStreamsFeed.sol` contract](https://github.com/woogieboogie-jl/chainlink-transmitter-contract/blob/main/src/feed/DataStreamsFeed.sol), which receives, verifies, and stores the data relayed by the Transmitter.
+First, deploy a [`DataStreamsFeed.sol` contract](https://github.com/woogieboogie-jl/push-engine-contract/blob/main/src/feed/DataStreamsFeed.sol), which receives, verifies, and stores the data relayed by the Push Engine.
 
 1.  Install [Foundry][FOUNDRY_INSTALL], or update it to the latest version by running `foundryup` in your terminal.
 
-1.  Clone the `chainlink-transmitter-contract` repository and navigate into the directory:
+1.  Clone the `push-engine-contract` repository and navigate into the directory:
 
     ```bash
-    git clone https://github.com/woogieboogie-jl/chainlink-transmitter-contract.git
-    cd chainlink-transmitter-contract
+    git clone https://github.com/woogieboogie-jl/push-engine-contract.git
+    cd push-engine-contract
     ```
 
 1.  Install the dependencies using `pnpm` and install/initialize Foundry:
@@ -124,7 +125,7 @@ First, deploy a [`DataStreamsFeed.sol` contract](https://github.com/woogieboogie
 
 1.  Configure `script/DeployDataStreamsFeed.s.sol`.
 
-    This script deploys the `DataStreamsFeed` contract, which will receive data from the Transmitter.
+    This script deploys the `DataStreamsFeed` contract, which will receive data from the Push Engine.
 
     You must set the constructor arguments for the contract:
 
@@ -144,11 +145,13 @@ First, deploy a [`DataStreamsFeed.sol` contract](https://github.com/woogieboogie
             --private-key $PRIVATE_KEY \
             --broadcast
          ```
-         After deployment, copy the **Deployed Contract Address** and **ABI** from the output. You will need them to configure the Transmitter.
-            - **Contract Address:** Find the contract address in your terminal output under `deployedAddress`.
-            - **Contract ABI:** Foundry saves the ABI in `out/DataStreamsFeed.sol/DataStreamsFeed.json`.
 
-    Before we can use the Transmitter, we need to fund this contract with `LINK`.
+    After deployment, copy the **Deployed Contract Address** and **ABI** from the output. You will need them to configure the Push Engine.
+
+    - **Contract Address:** Find the contract address in your terminal output under `deployedAddress`.
+    - **Contract ABI:** Foundry saves the ABI in `out/DataStreamsFeed.sol/DataStreamsFeed.json`.
+
+    Before we can use the Push Engine, we need to fund this contract with `LINK`.
 
 1.  Fund the contract with `LINK`.
 
@@ -164,14 +167,14 @@ First, deploy a [`DataStreamsFeed.sol` contract](https://github.com/woogieboogie
 
 </Accordion>
 
-<Accordion title="Set Up Transmitter" number={2}>
-With a consumer contract onchain, you can now set up the Transmitter service to relay data to it.
+<Accordion title="Set Up Push Engine" number={2}>
+With a consumer contract onchain, you can now set up the Push Engine service to relay data to it.
 
-1.  In a new terminal window, navigate to your development space and clone the [Data Stream Transmitter repository][GITHUB_REPO]:
+1.  In a new terminal window, navigate to your development space and clone the [Push Engine repository][GITHUB_REPO]:
 
     ```bash
-    git clone https://github.com/hackbg/chainlink-datastreams-transmitter.git
-    cd chainlink-datastreams-transmitter
+    git clone https://github.com/hackbg/push-engine.git
+    cd push-engine
     ```
 
 1.  Install the project dependencies using `npm`:
@@ -268,9 +271,9 @@ With a consumer contract onchain, you can now set up the Transmitter service to 
             address: "0xYourDataStreamsFeedContractOnFuji" # <-- TODO: Update with your deployed contract address
             # The name of the function to call on your smart contract
             functionName: "verifyAndUpdateReport"
-            # The arguments the Transmitter should prepare and send to the function
+            # The arguments the Push Engine should prepare and send to the function
             #   • rawReport          = the unverified payload from the Data Streams websocket
-            #   • parameterPayload   = abi.encode(address feeToken) – produced automatically by the transmitter
+            #   • parameterPayload   = abi.encode(address feeToken) – produced automatically by the Push Engine
             functionArgs: ["rawReport", "parameterPayload"]
             # The ABI for the target function, required to encode the transaction
             abi:
@@ -287,23 +290,23 @@ With a consumer contract onchain, you can now set up the Transmitter service to 
 
     - Replace `0xYOUR_AVALANCHE_FUJI_CONTRACT_ADDRESS` with the address of the contract you deployed in the previous step.
     - The `feedId` should match the one you set in the contract deployment.
-    - Each target block must keep `skipVerify: false`, `functionName: verifyAndUpdateReport`, and `functionArgs: ["rawReport", "parameterPayload"]` to ensure the Transmitter correctly prepares the transaction for onchain verification.
+    - Each target block must keep `skipVerify: false`, `functionName: verifyAndUpdateReport`, and `functionArgs: ["rawReport", "parameterPayload"]` to ensure the Push Engine correctly prepares the transaction for onchain verification.
 
 1.  Start the Docker daemon.
 
-    The Docker daemon is required to run the Redis instance that Transmitter uses. Starting the daemon depends on your operating system. Please refer to the [Docker documentation](https://docs.docker.com/engine/daemon/start/) for instructions.
+    The Docker daemon is required to run the Redis instance that Push Engine uses. Starting the daemon depends on your operating system. Please refer to the [Docker documentation](https://docs.docker.com/engine/daemon/start/) for instructions.
 
-1.  Run the following command to start the Transmitter and its services in the background:
+1.  Run the following command to start the Push Engine and its services in the background:
 
     ```bash
     docker compose up -d
     ```
 
-1.  Open your web browser and navigate to `http://localhost:3000` to access the Transmitter UI. Because you pre-configured the contract in `config.yml`, the `ETH/USD` stream on the dashboard should show a `Running` status.
+1.  Open your web browser and navigate to `http://localhost:3000` to access the Push Engine UI. Because you pre-configured the contract in `config.yml`, the `ETH/USD` stream on the dashboard should show a `Running` status.
 
 <Aside type="tip" title="Troubleshooting">
-    If you experience any crashes or issues, see the [Troubleshooting](#troubleshooting) section at the end of this guide
-    for common problems and solutions.
+  If you experience any crashes or issues, see the [Troubleshooting](#troubleshooting) section at the end of this guide
+  for common problems and solutions.
 </Aside>
 </Accordion>
 
@@ -311,11 +314,11 @@ With a consumer contract onchain, you can now set up the Transmitter service to 
 
 ## UI Overview
 
-The Transmitter UI lets you manage your feeds, monitor their status, and define how and where data is pushed onchain. Although we configured the basics in `config.yml`, you can manage the service from this dashboard.
+The Push Engine UI lets you manage your feeds, monitor their status, and define how and where data is pushed onchain. Although we configured the basics in `config.yml`, you can manage the service from this dashboard.
 
-<ClickToZoom src="/images/quickstarts/transmitter/transmitter_home.png" alt="The Transmitter home page" />
+<ClickToZoom src="/images/quickstarts/transmitter/transmitter_home.png" alt="The Push Engine home page" />
 
-The optional sections below provide a detailed overview of the Transmitter UI, explaining each section and its purpose.
+The optional sections below provide a detailed overview of the Push Engine UI, explaining each section and its purpose.
 
 <Accordion title="Chain" >
 
@@ -335,7 +338,7 @@ Your balance should reflect the amount of testnet LINK and AVAX you have in your
 
 <Accordion title="Logs">
 
-On the top-right corner of the page, you will find the **Logs** section, which contains details for all Transmitter actions. When operating correctly, the log should reflect a clear, step-by-step process for each onchain update.
+On the top-right corner of the page, you will find the **Logs** section, which contains details for all Push Engine actions. When operating correctly, the log should reflect a clear, step-by-step process for each onchain update.
 
 Example log output:
 
@@ -374,7 +377,7 @@ The **Data Streams** section lists all Data Streams, their status, and any relat
 
 <Accordion title="Schedule" >
 
-The **Schedule** section allows you to define how often the Transmitter should push data onchain, using a cron expression. We have already defined this in the `config.yml` file, but you can change it here.
+The **Schedule** section allows you to define how often the Push Engine should push data onchain, using a cron expression. We have already defined this in the `config.yml` file, but you can change it here.
 
 </Accordion>
 
@@ -404,15 +407,15 @@ If you run into issues during setup or operation, refer to these common problems
 
 ---
 
-### Transmitter Service Issues
+### Push Engine Service Issues
 
 - **Service fails to start or crashes immediately**
 
-  - Double-check that your `chainlink-datastreams-transmitter/.env` file is present and correctly populated with your `PRIVATE_KEY` and Data Streams credentials.
-  - Run `docker compose logs -f` in the `chainlink-datastreams-transmitter` directory to view real-time logs and identify specific error messages.
+  - Double-check that your `push-engine/.env` file is present and correctly populated with your `PRIVATE_KEY` and Data Streams credentials.
+  - Run `docker compose logs -f` in the `push-engine` directory to view real-time logs and identify specific error messages.
 
 - **Data is not updating on your contract**
-  - Review the logs in Transmitter for specific error messages related to the feed or contract interaction.
+  - Review the logs in Push Engine for specific error messages related to the feed or contract interaction.
   - **Authentication:** Verify that your `DATASTREAMS_CLIENT_ID` and `DATASTREAMS_CLIENT_SECRET` are correct and do not have extra spaces or characters.
   - **LINK Balance:** Ensure the contract holds sufficient `LINK` balance to pay for onchain verification fees. Top up the contract if needed -- testnet `LINK` can be found at the [Chainlink Faucet](https://faucets.chain.link/).
   - **RPC Endpoint:** Confirm the RPC URL in your `config.yml` is correct and the node is reachable.
@@ -424,7 +427,7 @@ If you run into issues during setup or operation, refer to these common problems
 - **`Gas estimation too high` error**
 
   - When deploying with Foundry, you can adjust the `gas_limit` in your `foundry.toml` file.
-  - For the transmitter, you can increase the `gasCap` value in your `config.yml` file. You can also update it in the Transmitter UI under the **Gas Cap** section.
+  - For the push engine, you can increase the `gasCap` value in your `config.yml` file. You can also update it in the Push Engine UI under the **Gas Cap** section.
 
 - **Missing private key**
   - `forge script` will silently fall back to Foundry's default dev key and assign contract roles to `0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38`.
@@ -434,9 +437,9 @@ If you run into issues during setup or operation, refer to these common problems
 
 ## Conclusion
 
-Congratulations! 🎉 You have successfully deployed a `DataStreamsFeed` contract, set up the Data Streams Transmitter, and linked them together.
+Congratulations! 🎉 You have successfully deployed a `DataStreamsFeed` contract, set up the Data Streams Push Engine, and linked them together.
 
-You can now monitor offchain Data Streams and push updates to your smart contracts without writing any code or managing your own backend infrastructure. The Transmitter handles all the complexity of connecting to Data Streams, monitoring data changes, and pushing updates onchain.
+You can now monitor offchain Data Streams and push updates to your smart contracts without writing any code or managing your own backend infrastructure. The Push Engine handles all the complexity of connecting to Data Streams, monitoring data changes, and pushing updates onchain.
 
 For more advanced usage, troubleshooting, or to contribute, visit the [GitHub repository][GITHUB_REPO] or check out the [official Data Streams documentation](/data-streams/index).
 
