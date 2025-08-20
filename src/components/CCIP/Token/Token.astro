@@ -1,5 +1,5 @@
 ---
-import CcipLayout from "~/layouts/CcipLayout.astro"
+import CcipDirectoryLayout from "~/layouts/CcipDirectoryLayout.astro"
 import { getEntry, render } from "astro:content"
 import {
   getAllNetworks,
@@ -22,6 +22,9 @@ import {
   getTokenIconUrl,
 } from "~/features/utils"
 import Drawer from "~/components/CCIP/Drawer/Drawer"
+import { generateTokenStructuredData } from "~/utils/ccipStructuredData"
+import StructuredData from "~/components/StructuredData.astro"
+import { DOCS_BASE_URL } from "~/utils/structuredData"
 
 interface Props {
   token: string
@@ -72,15 +75,42 @@ const tokenLanes = getAllTokenLanes({
 })
 
 const searchLanes = getSearchLanes({ environment })
+
+// Generate dynamic metadata for this specific token
+const environmentText = environment === Environment.Mainnet ? "Mainnet" : "Testnet"
+const tokenMetadata = {
+  title: `${token} Cross-Chain Token - CCIP ${environmentText} Networks`,
+  description: `${token} token availability across CCIP ${environmentText} networks. View ${chainsOfToken.length} supported chains, pool types, rate limits, and cross-chain transfer mechanisms.`,
+  image: logo,
+  excerpt: `${token} cross-chain token CCIP ${environmentText.toLowerCase()} supported networks pool types rate limits transfer mechanisms blockchain interoperability`,
+}
+
+// Generate structured data for this token page (use production base for JSON-LD URLs)
+const currentPath = new URL(Astro.request.url).pathname
+const canonicalForJsonLd = `${DOCS_BASE_URL}${currentPath}`
+const tokenStructuredData = generateTokenStructuredData(token, environment, chainsOfToken.length, canonicalForJsonLd)
 ---
 
-<CcipLayout
+<CcipDirectoryLayout
   frontmatter={{
-    title: `CCIP Supported Tokens - ${token}`,
+    title: tokenMetadata.title,
     section: "ccip",
+    metadata: {
+      description: tokenMetadata.description,
+      image: tokenMetadata.image,
+      excerpt: tokenMetadata.excerpt,
+    },
   }}
   {headings}
   environment={environment}
+  structuredData={tokenStructuredData}
+  pageTitleOverride={tokenMetadata.title}
+  metadataOverride={{
+    description: tokenMetadata.description,
+    image: tokenMetadata.image,
+    excerpt: tokenMetadata.excerpt,
+  }}
+  suppressDefaultStructuredData={true}
 >
   <ChainHero
     chains={networks}
@@ -137,7 +167,7 @@ const searchLanes = getSearchLanes({ environment })
       />
     </div>
   </section>
-</CcipLayout>
+</CcipDirectoryLayout>
 
 <style scoped="false">
   .layout {

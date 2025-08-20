@@ -5,7 +5,15 @@ import { Aside } from "@components"
 export type Props = {
   initialNetwork?: string
   ecosystem: string
-  dataFeedType?: DataFeedType
+  dataFeedType?:
+    | DataFeedType
+    | "streamsBacked"
+    | "streamsCrypto"
+    | "streamsRwa"
+    | "streamsNav"
+    | "smartdata"
+    | "default"
+    | "rates"
 }
 import { getServerSideChainMetadata } from "~/features/data/api/backend"
 import { CHAINS, ALL_CHAINS } from "~/features/data/chains"
@@ -65,11 +73,14 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
     </>
   ) : (
     <>
-      {dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa" ? (
+      {dataFeedType === "streamsCrypto" ||
+      dataFeedType === "streamsRwa" ||
+      dataFeedType === "streamsNav" ||
+      dataFeedType === "streamsBacked" ? (
         <>
           <p>
             To learn how to use Data Streams, see the{" "}
-            <a href="/data-streams/getting-started">Data Streams Getting Started</a> page.
+            <a href="/data-streams/tutorials/api-go">Fetch and decode reports</a> tutorial.
           </p>
           <p>
             For LINK token and Faucet details, see the{" "}
@@ -98,7 +109,6 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
             </p>
           </Aside>
           <FeedsCommonCallout callout="porWalletAddressManager" />
-          <FeedsCommonCallout callout="quality" />
         </>
       ) : dataFeedType === "rates" ? (
         <>
@@ -148,7 +158,10 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
         </p>
       </Aside>
     </>
-  ) : dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa" ? (
+  ) : dataFeedType === "streamsCrypto" ||
+    dataFeedType === "streamsRwa" ||
+    dataFeedType === "streamsNav" ||
+    dataFeedType === "streamsBacked" ? (
     <> </>
   ) : (
     <>

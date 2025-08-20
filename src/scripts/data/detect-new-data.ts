@@ -43,6 +43,10 @@ const NETWORK_ENDPOINTS: Record<string, string> = {
   xlayer: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-xlayer-1.json",
   ronin: "https://reference-data-directory.vercel.app/feeds-ronin-mainnet.json",
   tron: "https://docs.chain.link/files/json/feeds-tron-mainnet.json",
+  botanix: "https://reference-data-directory.vercel.app/feeds-bitcoin-mainnet-botanix.json",
+  monad: "https://reference-data-directory.vercel.app/feeds-monad-testnet.json",
+  polygonkatana: "https://reference-data-directory.vercel.app/feeds-polygon-mainnet-katana.json",
+  bob: "https://reference-data-directory.vercel.app/feeds-bitcoin-mainnet-bob-1.json",
 }
 
 // Path to the baseline JSON file that contains known feed IDs
@@ -100,6 +104,7 @@ function buildFeedUrl(item: DataItem): string {
     "bnb-chain": "bsc",
     "gnosis-chain": "xdai",
     polygonzkevm: "polygon-zkevm",
+    polygonkatana: "katana",
     // Add more mappings as needed
   }
 
@@ -110,6 +115,7 @@ function buildFeedUrl(item: DataItem): string {
     hedera: "hedera",
     mantle: "mantle",
     polygonzkevm: "polygon-zkevm",
+    polygonkatana: "polygon-mainnet-katana",
     ronin: "ronin",
     soneium: "soneium",
     xlayer: "xlayer",

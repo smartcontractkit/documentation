@@ -5,10 +5,11 @@ title: "SmartData"
 isIndex: true
 whatsnext:
   {
-    "Learn how to read answers from Data Feeds": "/data-feeds/price-feeds",
-    "Learn how to get Historical Price Data": "/data-feeds/historical-data",
-    "Find contract addresses for SmartData feeds": "/data-feeds/smartdata/addresses",
+    "Learn how to read answers from single-value SmartData feeds": "/data-feeds/using-data-feeds",
+    "Learn how to use Multiple-Variable Response (MVR) feeds": "/data-feeds/mvr-feeds",
+    "Find contract addresses for all SmartData feeds": "/data-feeds/smartdata/addresses",
     "Data Feeds API Reference": "/data-feeds/api-reference",
+    "MVR Feeds API Reference": "/data-feeds/mvr-feeds/api-reference",
   }
 ---
 
@@ -16,13 +17,19 @@ import { Aside, ClickToZoom, CodeSample } from "@components"
 
 Chainlink SmartData is a suite of onchain data offerings designed to unlock the utility, accessibility, and reliability of tokenized real-world assets (RWAs). By providing secure minting assurances alongside essential real-world data such as reserves, Net Asset Value (NAV), and Assets Under Management (AUM) data, the SmartData suite embeds security and enriches data into tokenized RWA offerings.
 
-You can read these feeds the same way that you read other Data Feeds. Specify the [SmartData feed address](/data-feeds/smartdata/addresses) that you want to read instead of specifying a price feed address. See the [Using Data Feeds](/data-feeds/using-data-feeds) page to learn more.
+## SmartData Feed Types
 
-## SmartData Product Types
+SmartData offers two distinct types of data feeds:
 
-- [Proof of Reserve Feeds](/data-feeds/smartdata#proof-of-reserve-feeds)
-- [NAVLink Feeds](/data-feeds/smartdata#navlink-feeds)
-- [SmartAUM Feeds](/data-feeds/smartdata#smartaum-feeds)
+1. **Single-value SmartData Feeds**: Similar to traditional price feeds, these provide a single numeric value per feed (like total reserves or NAV). These use the [`AggregatorV3Interface`](/data-feeds/api-reference#aggregatorv3interface) and are read the same way as other Data Feeds.
+
+1. **[Multiple-Variable Response (MVR) Feeds](/data-feeds/mvr-feeds)**: These bundle multiple data points of various types (both numeric and non-numeric) into a single onchain update. MVR feeds use the [`BundleAggregatorProxy` interface](/data-feeds/mvr-feeds/api-reference#ibundleaggregatorproxy) and require a different approach to read and decode the data.
+
+## SmartData Product Categories
+
+- [Proof of Reserve Feeds](#proof-of-reserve-feeds)
+- [NAVLink Feeds](#navlink-feeds)
+- [SmartAUM Feeds](#smartaum-feeds)
 
 ### Proof of Reserve Feeds
 
@@ -57,6 +64,18 @@ Cross-chain reserves provide their data using the following methods:
 - Wallet address manager: The project uses the [IPoRAddressList](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/interfaces/PoRAddressList.sol) wallet address manager contract and self-reports which addresses they own. Reserve data reported by an asset issuer's self-reported addresses carries additional risks. Chainlink Labs is not responsible for the accuracy of self-reported reserves data. Users must do their own risk assessment for asset issuer risk.
 - Wallet address: The project reports which addresses they own through a self-hosted API. Reserve data reported by an asset issuer's self-reported addresses carries additional risks. Chainlink Labs is not responsible for the accuracy of self-reported reserves data. Users must do their own risk assessment for asset issuer risk.
 
+<Aside title="Disclaimer" type="caution">
+  <p>
+    Proof of Reserve feeds can vary in their configurations. Please be careful with the configuration of the feeds used
+    by your smart contracts. You are solely responsible for reviewing the quality of the data (e.g., a Proof of Reserve
+    feed) that you integrate into your smart contracts and assume full responsibility for any damage, injury, or any
+    other loss caused by your use of the feeds used by your smart contracts.
+    <a href="/data-feeds/selecting-data-feeds#risk-mitigation">
+      Learn more about making responsible data quality decisions.
+    </a>
+  </p>
+</Aside>
+
 ### NAVLink Feeds
 
 Chainlink NAVLink Feeds provide real-time, tamper-proof data on the Net Asset Value (NAV) of tokenized assets, funds, or portfolios. NAV is an essential metric in the financial industry for assessing the value of mutual funds, ETFs, and other investment vehicles. It is calculated by subtracting total liabilities from the total assets held within the vehicle.
@@ -73,9 +92,11 @@ By bringing AUM data onchain, decentralized applications can access information 
 
 To find a list of available Assets Under Management Feeds, see the [SmartData Feed Addresses](/data-feeds/smartdata/addresses) page.
 
-## Using SmartData
+## Using SmartData Feeds
 
-Read answers from SmartData feeds the same way that you read other Data Feeds. Specify the [SmartData feed address](/data-feeds/smartdata/addresses) that you want to read instead of specifying a Price feed address. See the [Using Data Feeds](/data-feeds/using-data-feeds) page to learn more.
+### Using Single-value SmartData Feeds
+
+Read answers from single-value SmartData feeds the same way that you read other Data Feeds. Specify the [SmartData feed address](/data-feeds/smartdata/addresses) that you want to read instead of specifying a Price feed address. See the [Using Data Feeds](/data-feeds/using-data-feeds) page to learn more.
 
 Using Solidity, your smart contract should reference [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol), which defines the external functions implemented by Data Feeds.
 
@@ -83,14 +104,18 @@ Example for reading a Proof of Reserve feed:
 
 <CodeSample src="samples/DataFeeds/ReserveConsumerV3.sol" />
 
-<Aside title="Disclaimer" type="caution">
-  <p>
-    Proof of Reserve feeds can vary in their configurations. Please be careful with the configuration of the feeds used
-    by your smart contracts. You are solely responsible for reviewing the quality of the data (e.g., a Proof of Reserve
-    feed) that you integrate into your smart contracts and assume full responsibility for any damage, injury, or any
-    other loss caused by your use of the feeds used by your smart contracts.
-    <a href="/data-feeds/selecting-data-feeds#risk-mitigation">
-      Learn more about making responsible data quality decisions.
-    </a>
-  </p>
-</Aside>
+### Using MVR Feeds
+
+[MVR feeds](/data-feeds/mvr-feeds) require a different approach compared to single-value SmartData feeds. Instead of returning a single numeric value, they return a bytes array that must be decoded into a specific data structure.
+
+Your code needs to:
+
+1. Call the `latestBundle()` function to get the raw data
+1. Decode the bytes array into a struct that matches the feed's structure
+1. Apply the appropriate decimal scaling to numeric fields
+
+For detailed implementation guides, see:
+
+- [Using MVR Feeds on EVM Chains (Solidity)](/data-feeds/mvr-feeds/guides/evm-solidity)
+- [Using MVR Feeds with ethers.js (JS)](/data-feeds/mvr-feeds/guides/ethersjs)
+- [Using MVR Feeds with Viem (TS)](/data-feeds/mvr-feeds/guides/viem)

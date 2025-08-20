@@ -4,8 +4,13 @@ date: Last Modified
 title: "Building CCIP Messages from SVM to EVM"
 isIndex: false
 metadata:
-  description: "Comprehensive guide for implementing Cross-Chain Interoperability Protocol (CCIP) messages from SVM  to EVM chains. Learn how to structure messages, manage account requirements, and implement token transfers, arbitrary data messaging, and programmatic token transfers."
-  excerpt: "ccip messages solana to evm cross-chain messaging token transfers solana integration blockchain interoperability programmatic token transfers"
+  description: "Build CCIP messages from Solana to EVM. Learn field semantics, address conversions, extraArgs, and token/data patterns with SPL Token Program and Token‑2022 extensions."
+  image: "/images/ccip/concepts/architecture/ccip-svm-source-chain.jpg"
+  excerpt: "Solana→EVM, message build, address conversion, extraArgs, CCIP, SPL Token Program, Token‑2022"
+  datePublished: "2025-05-19"
+  lastModified: "2025-07-25"
+  estimatedTime: "30 minutes"
+  difficulty: "advanced"
 ---
 
 import { Aside, ClickToZoom } from "@components"
@@ -14,7 +19,7 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 ## Introduction
 
-This guide explains how to construct CCIP Messages from SVM chains (e.g. Solana) to EVM chains (e.g. Ethereum, Arbitrum, Avalanche, etc.). We'll cover the message structure, required parameters, account management, and implementation details for different message types including token transfers, arbitrary data messaging, and programmatic token transfers (data and tokens).
+This guide explains how to construct CCIP Messages from SVM chains (e.g. Solana) to EVM chains (e.g. Ethereum, Arbitrum, Avalanche, etc.). We'll cover the message structure, required parameters, account management, and implementation details for different message types including token transfers, arbitrary data messaging, and programmable token transfers (data and tokens).
 
 ## CCIP Message Structure
 
@@ -68,7 +73,7 @@ pub struct SVM2AnyMessage {
 
 - **Definition**: Contains the payload that will be passed to the receiving contract on the destination chain
 - **For token-only transfers**: Must be empty
-- **For arbitrary messaging** or **programmatic token transfers**: Contains the data the receiver contract will process
+- **For arbitrary messaging** or **programmable token transfers**: Contains the data the receiver contract will process
 - **Encoding consideration**: The receiver on the destination chain must be able to correctly decode this data.
 
 <Aside title="Data Encoding for Cross-Chain Messages">
@@ -150,7 +155,7 @@ struct GenericExtraArgsV2 {
 
 - **Gas limit**:
   - For token transfers only: Gas limit must be set to 0
-  - For arbitrary messaging or programmatic token transfers: gas limit must be set based on the receiving contract's complexity.
+  - For arbitrary messaging or programmable token transfers: gas limit must be set based on the receiving contract's complexity.
 - **Allow out of order execution**:
   - Must always be set to true.
 
@@ -257,7 +262,7 @@ Use this configuration when sending only data to EVM chains:
 
 </Aside>
 
-### Programmatic Token Transfer (Data and Tokens)
+### Programmable Token Transfer (Data and Tokens)
 
 Use this configuration when sending both tokens and data in a single message:
 

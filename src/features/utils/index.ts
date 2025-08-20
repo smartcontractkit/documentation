@@ -132,9 +132,11 @@ const transformTokenName = (token: string): string => {
     .replace(/\+/g, "%2B") // Step 3: Replace plus signs with %2B
 }
 
-export const getTokenIconUrl = (token: string) => {
+export const getTokenIconUrl = (token: string, size = 40) => {
   if (!token) return ""
-  return `https://d2f70xi62kby8n.cloudfront.net/tokens/${transformTokenName(token)}.webp?auto=compress%2Cformat`
+  // Request appropriately sized images from CloudFront
+  // For 40x40 display, request 80x80 for retina displays (2x)
+  return `https://d2f70xi62kby8n.cloudfront.net/tokens/${transformTokenName(token)}.webp?auto=compress%2Cformat&q=60&w=${size}&h=${size}&fit=cover`
 }
 
 export const fallbackTokenIconUrl = "/assets/icons/generic-token.svg"
@@ -339,9 +341,9 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
     case "berachain-testnet-bartio":
       return "BERACHAIN_BARTIO"
     case "hyperliquid-mainnet":
-      return "HYPERLIQUID_MAINNET"
+      return "HYPEREVM_MAINNET"
     case "hyperliquid-testnet":
-      return "HYPERLIQUID_TESTNET"
+      return "HYPEREVM_TESTNET"
     case "bitcoin-testnet-merlin":
       return "MERLIN_TESTNET"
     case "bitcoin-merlin-mainnet":
@@ -615,9 +617,9 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "berachain-mainnet"
     case "BERACHAIN_BARTIO":
       return "berachain-testnet-bartio"
-    case "HYPERLIQUID_MAINNET":
+    case "HYPEREVM_MAINNET":
       return "hyperliquid-mainnet"
-    case "HYPERLIQUID_TESTNET":
+    case "HYPEREVM_TESTNET":
       return "hyperliquid-testnet"
     case "MERLIN_TESTNET":
       return "bitcoin-testnet-merlin"

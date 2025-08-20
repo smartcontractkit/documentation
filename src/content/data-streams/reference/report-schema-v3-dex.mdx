@@ -1,0 +1,58 @@
+---
+section: dataStreams
+date: Last Modified
+title: "Report Schemas"
+---
+
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+import { PageTabs } from "@components"
+
+<DataStreams section="dsNotes" />
+
+<PageTabs
+  pages={[
+    {
+      name: "Cryptocurrency Report Schema (v3)",
+      url: "/data-streams/reference/report-schema",
+    },
+    {
+      name: "DEX State Price Report Schema (v3)",
+      url: "/data-streams/reference/report-schema-v3-dex",
+    },
+    {
+      name: "RWA Report Schema (v8)",
+      url: "/data-streams/reference/report-schema-v8",
+    },
+    {
+      name: "NAV Report Schema (v9)",
+      url: "/data-streams/reference/report-schema-v9",
+    },
+    {
+      name: "Backed xStock Report Schema (v10)",
+      url: "/data-streams/reference/report-schema-v10",
+    },
+  ]}
+  headerTitle="Available Report Schemas"
+  headerDescription="Choose the schema version you want to explore."
+/>
+
+DEX State Price streams adhere to the report schema outlined below.
+
+## Schema Fields
+
+| Field                   | Type      | Description                                                                                                |
+| ----------------------- | --------- | ---------------------------------------------------------------------------------------------------------- |
+| `feedID`                | `bytes32` | Unique identifier for the data stream                                                                      |
+| `validFromTimestamp`    | `uint32`  | Start timestamp of price validity period                                                                   |
+| `observationsTimestamp` | `uint32`  | End timestamp of price validity period                                                                     |
+| `nativeFee`             | `uint192` | Verification cost in native blockchain tokens                                                              |
+| `linkFee`               | `uint192` | Verification cost in LINK tokens                                                                           |
+| `expiresAt`             | `uint32`  | Timestamp when this report expires                                                                         |
+| `price`                 | `int192`  | DON consensus median [DEX state price](/data-streams/concepts/dex-state-price-streams) (18 decimal places) |
+| `bid`                   | `int192`  | N/A, equals `price`.                                                                                       |
+| `ask`                   | `int192`  | N/A, equals `price`.                                                                                       |
+
+**Notes**:
+
+- Future DEX State Price streams may use different report schemas.
+- The `bid` and `ask` fields exist but contain the same value as the `price` field.

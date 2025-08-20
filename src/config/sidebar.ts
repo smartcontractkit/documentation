@@ -88,9 +88,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "SmartData",
           url: "data-feeds/smartdata",
+          children: [
+            {
+              title: "Multiple-Variable Response (MVR) Feeds",
+              url: "data-feeds/mvr-feeds",
+            },
+          ],
         },
         {
-          title: "SVR Feeds",
+          title: "Smart Value Recapture (SVR) Feeds",
           url: "data-feeds/svr-feeds",
         },
         {
@@ -138,6 +144,24 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Using Data Feeds",
           url: "data-feeds/using-data-feeds",
+        },
+        {
+          title: "Using MVR Feeds",
+          url: "data-feeds/mvr-feeds/guides",
+          children: [
+            {
+              title: "Using MVR Feeds on EVM Chains (Solidity)",
+              url: "data-feeds/mvr-feeds/guides/evm-solidity",
+            },
+            {
+              title: "Using MVR Feeds with ethers.js (JS)",
+              url: "data-feeds/mvr-feeds/guides/ethersjs",
+            },
+            {
+              title: "Using MVR Feeds with Viem (TS)",
+              url: "data-feeds/mvr-feeds/guides/viem",
+            },
+          ],
         },
         {
           title: "Getting Historical Data",
@@ -217,6 +241,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Data Feeds API Reference",
           url: "data-feeds/api-reference",
+        },
+        {
+          title: "MVR Feeds API Reference",
+          url: "data-feeds/mvr-feeds/api-reference",
         },
       ],
     },
@@ -320,8 +348,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/crypto-streams",
           children: [
             {
-              title: "Report Schema v3",
-              url: "data-streams/reference/report-schema",
+              title: "Report Schema v3 (Crypto)",
+              url: "data-streams/reference/report-schema-v3",
+            },
+            {
+              title: "Report Schema v3 (DEX State Price)",
+              url: "data-streams/reference/report-schema-v3-dex",
             },
           ],
         },
@@ -330,8 +362,28 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/rwa-streams",
           children: [
             {
-              title: "Report Schema v4",
-              url: "data-streams/reference/report-schema-v4",
+              title: "Report Schema v8",
+              url: "data-streams/reference/report-schema-v8",
+            },
+          ],
+        },
+        {
+          title: "Net Asset Value (NAV) Streams",
+          url: "data-streams/nav-streams",
+          children: [
+            {
+              title: "Report Schema v9",
+              url: "data-streams/reference/report-schema-v9",
+            },
+          ],
+        },
+        {
+          title: "Backed xStock Streams",
+          url: "data-streams/backed-streams",
+          children: [
+            {
+              title: "Report Schema v10",
+              url: "data-streams/reference/report-schema-v10",
             },
           ],
         },
@@ -355,6 +407,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             "data-streams/tutorials/api-rust",
             "data-streams/tutorials/api-rwa-go",
             "data-streams/tutorials/api-rwa-rust",
+            "data-streams/tutorials/api-nav-rust",
+            "data-streams/tutorials/api-nav-go",
           ],
         },
         {
@@ -364,6 +418,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             "data-streams/tutorials/ws-rust",
             "data-streams/tutorials/ws-rwa-go",
             "data-streams/tutorials/ws-rwa-rust",
+            "data-streams/tutorials/ws-nav-go",
+            "data-streams/tutorials/ws-nav-rust",
           ],
         },
         {
@@ -388,6 +444,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Liquidity-Weighted Bid and Ask prices",
           url: "data-streams/concepts/liquidity-weighted-prices",
         },
+        {
+          title: "DEX State Price Streams",
+          url: "data-streams/concepts/dex-state-price-streams",
+        },
       ],
     },
     {
@@ -398,43 +458,53 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/reference/overview",
         },
         {
-          title: "REST API",
-          url: "data-streams/reference/interface-api",
-        },
-        {
-          title: "WebSocket",
-          url: "data-streams/reference/interface-ws",
-        },
-        {
-          title: "Authentication",
-          url: "data-streams/reference/authentication",
+          title: "Data Streams Reference",
+          url: "data-streams/reference/data-streams-api",
           children: [
             {
-              title: "JavaScript examples",
-              url: "data-streams/reference/authentication/javascript-examples",
+              title: "Authentication",
+              url: "data-streams/reference/data-streams-api/authentication",
+              children: [
+                {
+                  title: "JavaScript examples",
+                  url: "data-streams/reference/data-streams-api/authentication/javascript-examples",
+                },
+                {
+                  title: "TypeScript examples",
+                  url: "data-streams/reference/data-streams-api/authentication/typescript-examples",
+                },
+                {
+                  title: "Go examples",
+                  url: "data-streams/reference/data-streams-api/authentication/go-examples",
+                },
+                {
+                  title: "Rust examples",
+                  url: "data-streams/reference/data-streams-api/authentication/rust-examples",
+                },
+              ],
             },
             {
-              title: "TypeScript examples",
-              url: "data-streams/reference/authentication/typescript-examples",
+              title: "API Reference",
+              url: "data-streams/reference/data-streams-api/interface-api",
             },
             {
-              title: "Go examples",
-              url: "data-streams/reference/authentication/go-examples",
+              title: "WebSocket Reference",
+              url: "data-streams/reference/data-streams-api/interface-ws",
             },
             {
-              title: "Rust examples",
-              url: "data-streams/reference/authentication/rust-examples",
+              title: "SDK References",
+              url: "data-streams/reference/data-streams-api/go-sdk",
+              highlightAsCurrent: ["data-streams/reference/data-streams-api/rust-sdk"],
+            },
+            {
+              title: "Onchain report verification (EVM chains)",
+              url: "data-streams/reference/data-streams-api/onchain-verification",
             },
           ],
         },
         {
-          title: "SDK References",
-          url: "data-streams/reference/go-sdk",
-          highlightAsCurrent: ["data-streams/reference/rust-sdk"],
-        },
-        {
-          title: "Onchain report verification (EVM chains)",
-          url: "data-streams/reference/onchain-verification",
+          title: "Candlestick API",
+          url: "data-streams/reference/candlestick-api",
         },
       ],
     },
@@ -1468,6 +1538,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Token Manager",
           url: "ccip/tools-resources/token-manager",
+        },
+        {
+          title: "Network Specific",
+          url: "ccip/tools-resources/network-specific",
+          children: [
+            {
+              title: "Hyperliquid Integration Guide",
+              url: "ccip/tools-resources/network-specific/hyperliquid-integration-guide",
+            },
+          ],
         },
         {
           title: "API Reference",
