@@ -22,3 +22,4 @@ export class FaucetAdapterFactory {
 // Re-export types and adapters
 export type { FamilyAdapter } from "@api/ccip/types/faucet.ts"
 export { SvmAdapter } from "./svm.ts"
+export { SvmDripAdapter } from "./svm-drip.ts"

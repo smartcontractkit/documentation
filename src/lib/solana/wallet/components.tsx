@@ -1,7 +1,7 @@
 /** @jsxImportSource react */
-import { useSolanaWallet, useCapabilityCheck, useWalletConnection } from "./react.tsx"
+import { useSolanaWallet, useWalletConnection } from "./react.tsx"
 import type { SolanaCapabilities } from "./core.ts"
-import { getCapabilities } from "./core.ts"
+import { getCapabilities, WalletHandle } from "./core.ts"
 
 // Default wallet icon for wallets without icons
 const DEFAULT_WALLET_ICON =
@@ -22,9 +22,10 @@ interface ComponentStyleProps {
 export function WalletPicker({
   className,
   style,
-  requirements = { connect: true },
   onSelect,
   showCapabilities = false,
+  // requirements is intentionally omitted - not yet implemented
+  ...props
 }: ComponentStyleProps & {
   requirements?: Partial<SolanaCapabilities>
   onSelect?: (walletId: string) => void
@@ -217,7 +218,7 @@ export function CapabilityBadges({
   className,
   style,
 }: ComponentStyleProps & {
-  wallet: any // WalletHandle from core
+  wallet: WalletHandle
 }) {
   const capabilities = wallet ? getCapabilities(wallet) : {}
 
@@ -262,19 +263,20 @@ export function CapabilityBadges({
  * Shows requirements and blocks content if wallet doesn't meet them
  */
 export function CapabilityGate({
-  requirements,
   children,
   fallback,
   className,
   style,
+  // requirements is intentionally omitted - not yet implemented in capability checking
+  ...props
 }: ComponentStyleProps & {
   requirements: Partial<SolanaCapabilities>
   children: React.ReactNode
   fallback?: React.ReactNode
 }) {
-  const { compatibleWallets, chosen, capabilities } = useSolanaWallet()
+  const { compatibleWallets } = useSolanaWallet()
 
-  // Check if any compatible wallets exist for these requirements
+  // Check if a compatible wallets exist for these requirements
   const hasCompatibleWallets = compatibleWallets.length > 0
 
   if (!hasCompatibleWallets) {

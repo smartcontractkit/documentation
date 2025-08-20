@@ -5,6 +5,7 @@ import button from "@chainlink/design-system/button.module.css"
 import { Contract, BrowserProvider, toQuantity } from "ethers"
 import { burnMintAbi } from "@features/abi/index.ts"
 import { useMetaMaskProvider } from "@hooks/useEIP6963Providers.tsx"
+import { useNetworkChangeStorage } from "@hooks/useLocalStorage.ts"
 import { SupportedChain } from "@config/index.ts"
 import {
   getAllChains,
@@ -25,6 +26,7 @@ import {
   getChainId,
   getChainTypeAndFamily,
 } from "@features/utils/index.ts"
+import { ErrorBoundary } from "../../../components/ErrorBoundary.tsx"
 
 enum LoadingState {
   "START",
@@ -35,12 +37,6 @@ enum LoadingState {
 
 interface Props {
   userAddress: string
-}
-
-interface SwitchNetworkError {
-  code: number
-  message: string
-  stack: string
 }
 
 export const NetworkDropdown = ({ userAddress }: Props) => {
@@ -55,6 +51,7 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
 
   // ✅ Use EIP-6963 to get MetaMask specifically (prevents Phantom conflicts)
   const metaMaskProvider = useMetaMaskProvider()
+  const { setNetworkChangePending } = useNetworkChangeStorage()
   const closeDropdown = useCallback(() => {
     if (!detailsElementRef.current) return
 
@@ -108,10 +105,10 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
     const getCurrentChain = async () => {
       if (!metaMaskProvider) return undefined
 
-      const chainHexId = (await metaMaskProvider.request({
+      const chainHexId = await metaMaskProvider.request<string>({
         method: "eth_chainId",
         params: [],
-      })) as string
+      })
       metaMaskProvider.on("chainChanged", handleChainChanged)
       const currentChain = supportedChainFromHexChainId(chainHexId)
       return currentChain
@@ -192,7 +189,7 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
     } finally {
       // ✅  Always clear pending flag
       setIsNetworkChangePending(false)
-      localStorage.setItem("isNetworkChangePending", "false")
+      setNetworkChangePending(false)
     }
 
     setActiveChain(chain)
@@ -200,14 +197,13 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
     closeDropdown()
   }
 
-  // ✅  Improved validation with clearer messages
-  const validateEthereumApi = (ethereum: any) => {
-    if (!ethereum?.request) {
+  // ✅  Wallet-agnostic EIP-1193 provider validation
+  const validateEIP1193Provider = (provider: unknown) => {
+    if (!provider || typeof provider !== "object" || !("request" in provider)) {
       throw new Error("No EIP-1193 provider available.")
     }
-    if (!ethereum?.isMetaMask) {
-      throw new Error("MetaMask provider not detected.")
-    }
+    // EIP-6963 providers are pre-validated by the hook
+    // No need for wallet-specific checks
   }
 
   const addBnMAssetToWallet = async () => {
@@ -220,8 +216,8 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
       return
     }
 
-    validateEthereumApi(metaMaskProvider)
-    const success = await metaMaskProvider.request({
+    validateEIP1193Provider(metaMaskProvider)
+    const success = await metaMaskProvider.request<boolean>({
       method: "wallet_watchAsset",
       params,
     })
@@ -242,8 +238,8 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
       return
     }
 
-    validateEthereumApi(metaMaskProvider)
-    const success = await metaMaskProvider.request({
+    validateEIP1193Provider(metaMaskProvider)
+    const success = await metaMaskProvider.request<boolean>({
       method: "wallet_watchAsset",
       params,
     })
@@ -367,199 +363,201 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
     setShowToast(false)
   }
   return (
-    <div>
-      <details
-        data-testid="network-selector"
-        ref={detailsElementRef}
-        // This is so the component can't be focusable/opened from keyboard when it's disabled.
-        tabIndex={dropdownDisabled ? -1 : undefined}
-        className={[styles["network-selector-container"], ...(dropdownDisabled ? [styles.disabled] : [])].join(" ")}
-      >
-        <summary className={styles["network-selector-summary"]}>
-          <div className={styles["network-selector"]}>
-            {isNetworkChangePending ? (
-              <>
-                <img
-                  src={
-                    activeChain === undefined
-                      ? "https://smartcontract.imgix.net/icons/alert.svg"
-                      : getChainIcon(activeChain)
-                  }
-                  style={{ marginRight: "var(--space-2x)" }}
-                />
-                <span
-                  style={{
-                    color: dropdownDisabled ? "var(--color-text-disabled)" : "initial",
-                  }}
-                >
-                  Switching networks...
-                </span>
-              </>
+    <ErrorBoundary>
+      <div>
+        <details
+          data-testid="network-selector"
+          ref={detailsElementRef}
+          // This is so the component can't be focusable/opened from keyboard when it's disabled.
+          tabIndex={dropdownDisabled ? -1 : undefined}
+          className={[styles["network-selector-container"], ...(dropdownDisabled ? [styles.disabled] : [])].join(" ")}
+        >
+          <summary className={styles["network-selector-summary"]}>
+            <div className={styles["network-selector"]}>
+              {isNetworkChangePending ? (
+                <>
+                  <img
+                    src={
+                      activeChain === undefined
+                        ? "https://smartcontract.imgix.net/icons/alert.svg"
+                        : getChainIcon(activeChain)
+                    }
+                    style={{ marginRight: "var(--space-2x)" }}
+                  />
+                  <span
+                    style={{
+                      color: dropdownDisabled ? "var(--color-text-disabled)" : "initial",
+                    }}
+                  >
+                    Switching networks...
+                  </span>
+                </>
+              ) : (
+                <>
+                  <img
+                    src={
+                      activeChain === undefined
+                        ? "https://smartcontract.imgix.net/icons/alert.svg"
+                        : getChainIcon(activeChain)
+                    }
+                    style={{ marginRight: "var(--space-2x)", minHeight: "1.2em", minWidth: "1.2em" }}
+                  />
+                  <span
+                    style={{
+                      color: dropdownDisabled ? "var(--color-text-disabled)" : "initial",
+                    }}
+                  >
+                    {activeChain ? getTitle(activeChain) : "Unknown network"}
+                  </span>
+                </>
+              )}
+              <img src="https://smartcontract.imgix.net/icons/Caret2.svg" />
+            </div>
+          </summary>
+          <div className={styles["dropdown-container"]}>
+            {activeChain ? (
+              <ul style={{ listStyle: "none" }}>
+                {evmChains.map(({ supportedChain }) => {
+                  const supportedChainTitle = getTitle(supportedChain)
+                  const activeChainTitle = getTitle(activeChain)
+                  return (
+                    <li
+                      className={supportedChainTitle === activeChainTitle ? styles["selected-option"] : styles.option}
+                      key={supportedChainTitle}
+                    >
+                      <button onClick={() => handleNetworkChange(supportedChain)} className="text-200">
+                        <span>
+                          <img src={getChainIcon(supportedChain)} style={{ minHeight: "1em", minWidth: "1em" }} />
+                          {supportedChainTitle}
+                        </span>
+                        {supportedChainTitle === activeChainTitle && (
+                          <img src="https://smartcontract.imgix.net/icons/check_circle_bold.svg" />
+                        )}
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
             ) : (
-              <>
-                <img
-                  src={
-                    activeChain === undefined
-                      ? "https://smartcontract.imgix.net/icons/alert.svg"
-                      : getChainIcon(activeChain)
-                  }
-                  style={{ marginRight: "var(--space-2x)", minHeight: "1.2em", minWidth: "1.2em" }}
-                />
-                <span
+              <div
+                style={{
+                  backgroundColor: "var(--red-100)",
+                  padding: "var(--space-4x)",
+                }}
+              >
+                <p
+                  className="paragraph-100"
                   style={{
-                    color: dropdownDisabled ? "var(--color-text-disabled)" : "initial",
+                    margin: 0,
+                    padding: 0,
+                    color: "var(--color-text-info)",
+                    display: "flex",
+                    alignItems: "flex-start",
+                    userSelect: "none",
                   }}
                 >
-                  {activeChain ? getTitle(activeChain) : "Unknown network"}
-                </span>
-              </>
+                  <img
+                    style={{
+                      width: "var(--space-4x)",
+                      height: "var(--space-4x)",
+                      marginRight: "var(--space-2x)",
+                    }}
+                    src="https://smartcontract.imgix.net/icons/alert.svg"
+                  />
+                  Your wallet is connected to an unsupported network.
+                </p>
+              </div>
             )}
-            <img src="https://smartcontract.imgix.net/icons/Caret2.svg" />
           </div>
-        </summary>
-        <div className={styles["dropdown-container"]}>
-          {activeChain ? (
-            <ul style={{ listStyle: "none" }}>
-              {evmChains.map(({ chainRdd, supportedChain }) => {
+        </details>
+        {activeChain !== undefined ? (
+          isBnMOrLnM({ chain: activeChain, version: Version.V1_2_0 }) ? (
+            <>
+              <div className="add-asset-button-container">
+                {activeChain && isBnM({ chain: activeChain, version: Version.V1_2_0 }) && (
+                  <div className="add-to-wallet-button">
+                    <button
+                      className={button.secondary}
+                      style={{ margin: "1em" }}
+                      onClick={async () => {
+                        await addBnMAssetToWallet()
+                      }}
+                    >
+                      Add CCIP-BnM to wallet
+                    </button>
+                    <button className={button.primary} onClick={mintBnMTokens} disabled={mintBnMTokenButtonDisabled}>
+                      {mintBnMTokenButtonDisabled ? "Minting Process Pending..." : "Mint 1 CCIP-BnM Token"}
+                    </button>
+                  </div>
+                )}
+                {activeChain && isLnM({ chain: activeChain, version: Version.V1_2_0 }).supported && (
+                  <div className="add-to-wallet-button">
+                    <hr />
+                    <button
+                      className={button.secondary}
+                      style={{ margin: "1em" }}
+                      onClick={async () => {
+                        await addLnMAssetToWallet()
+                      }}
+                    >
+                      Add CCIP-LnM to wallet
+                    </button>
+                    {isLnM({ chain: activeChain, version: Version.V1_2_0 }).supportedChainForLock === activeChain ? (
+                      <button className={button.primary} onClick={mintLnMTokens} disabled={mintLnMTokenButtonDisabled}>
+                        {mintLnMTokenButtonDisabled ? "Minting Process Pending..." : "Mint 1 CCIP-LnM Token"}
+                      </button>
+                    ) : null}
+                  </div>
+                )}
+              </div>
+              {isLoading === LoadingState.ERROR && showToast && <Toast message={toastMessage} onClose={closeToast} />}
+              {isLoading === LoadingState.END && showToast && <Toast message={toastMessage} onClose={closeToast} />}
+            </>
+          ) : (
+            <p>
+              While CCIP does support this network, there are no test tokens available for it. Select a different
+              network network from the dropdown menu.
+            </p>
+          )
+        ) : (
+          <>
+            <p>Chainlink CCIP does not support this network. Switch your wallet to a supported network. </p>
+            <ul style={{ marginTop: "1.5rem" }}>
+              {evmChains.map(({ supportedChain }) => {
                 const supportedChainTitle = getTitle(supportedChain)
-                const activeChainTitle = getTitle(activeChain)
+                const chainIcon = getChainIcon(supportedChain)
                 return (
                   <li
-                    className={supportedChainTitle === activeChainTitle ? styles["selected-option"] : styles.option}
-                    key={supportedChainTitle}
+                    key={supportedChain}
+                    style={{ display: "flex", justifyContent: "space-evenly", alignItems: "center" }}
                   >
-                    <button onClick={() => handleNetworkChange(supportedChain)} className="text-200">
-                      <span>
-                        <img src={getChainIcon(supportedChain)} style={{ minHeight: "1em", minWidth: "1em" }} />
-                        {supportedChainTitle}
-                      </span>
-                      {supportedChainTitle === activeChainTitle && (
-                        <img src="https://smartcontract.imgix.net/icons/check_circle_bold.svg" />
-                      )}
+                    <div style={{ display: "flex", alignItems: "center", width: "9.673rem" }}>
+                      <img
+                        style={{
+                          width: "var(--space-4x)",
+                          height: "var(--space-4x)",
+                          marginRight: "var(--space-3x)",
+                        }}
+                        src={chainIcon}
+                        alt="chain icon"
+                      />
+                      {supportedChainTitle}
+                    </div>
+                    <button
+                      className={button.secondary}
+                      onClick={async () => {
+                        await handleNetworkChange(supportedChain)
+                      }}
+                    >
+                      Switch to Network
                     </button>
                   </li>
                 )
               })}
             </ul>
-          ) : (
-            <div
-              style={{
-                backgroundColor: "var(--red-100)",
-                padding: "var(--space-4x)",
-              }}
-            >
-              <p
-                className="paragraph-100"
-                style={{
-                  margin: 0,
-                  padding: 0,
-                  color: "var(--color-text-info)",
-                  display: "flex",
-                  alignItems: "flex-start",
-                  userSelect: "none",
-                }}
-              >
-                <img
-                  style={{
-                    width: "var(--space-4x)",
-                    height: "var(--space-4x)",
-                    marginRight: "var(--space-2x)",
-                  }}
-                  src="https://smartcontract.imgix.net/icons/alert.svg"
-                />
-                Your wallet is connected to an unsupported network.
-              </p>
-            </div>
-          )}
-        </div>
-      </details>
-      {activeChain !== undefined ? (
-        isBnMOrLnM({ chain: activeChain, version: Version.V1_2_0 }) ? (
-          <>
-            <div className="add-asset-button-container">
-              {activeChain && isBnM({ chain: activeChain, version: Version.V1_2_0 }) && (
-                <div className="add-to-wallet-button">
-                  <button
-                    className={button.secondary}
-                    style={{ margin: "1em" }}
-                    onClick={async () => {
-                      await addBnMAssetToWallet()
-                    }}
-                  >
-                    Add CCIP-BnM to wallet
-                  </button>
-                  <button className={button.primary} onClick={mintBnMTokens} disabled={mintBnMTokenButtonDisabled}>
-                    {mintBnMTokenButtonDisabled ? "Minting Process Pending..." : "Mint 1 CCIP-BnM Token"}
-                  </button>
-                </div>
-              )}
-              {activeChain && isLnM({ chain: activeChain, version: Version.V1_2_0 }).supported && (
-                <div className="add-to-wallet-button">
-                  <hr />
-                  <button
-                    className={button.secondary}
-                    style={{ margin: "1em" }}
-                    onClick={async () => {
-                      await addLnMAssetToWallet()
-                    }}
-                  >
-                    Add CCIP-LnM to wallet
-                  </button>
-                  {isLnM({ chain: activeChain, version: Version.V1_2_0 }).supportedChainForLock === activeChain ? (
-                    <button className={button.primary} onClick={mintLnMTokens} disabled={mintLnMTokenButtonDisabled}>
-                      {mintLnMTokenButtonDisabled ? "Minting Process Pending..." : "Mint 1 CCIP-LnM Token"}
-                    </button>
-                  ) : null}
-                </div>
-              )}
-            </div>
-            {isLoading === LoadingState.ERROR && showToast && <Toast message={toastMessage} onClose={closeToast} />}
-            {isLoading === LoadingState.END && showToast && <Toast message={toastMessage} onClose={closeToast} />}
           </>
-        ) : (
-          <p>
-            While CCIP does support this network, there are no test tokens available for it. Select a different network
-            network from the dropdown menu.
-          </p>
-        )
-      ) : (
-        <>
-          <p>Chainlink CCIP does not support this network. Switch your wallet to a supported network. </p>
-          <ul style={{ marginTop: "1.5rem" }}>
-            {evmChains.map(({ chainRdd, supportedChain }) => {
-              const supportedChainTitle = getTitle(supportedChain)
-              const chainIcon = getChainIcon(supportedChain)
-              return (
-                <li
-                  key={supportedChain}
-                  style={{ display: "flex", justifyContent: "space-evenly", alignItems: "center" }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", width: "9.673rem" }}>
-                    <img
-                      style={{
-                        width: "var(--space-4x)",
-                        height: "var(--space-4x)",
-                        marginRight: "var(--space-3x)",
-                      }}
-                      src={chainIcon}
-                      alt="chain icon"
-                    />
-                    {supportedChainTitle}
-                  </div>
-                  <button
-                    className={button.secondary}
-                    onClick={async () => {
-                      await handleNetworkChange(supportedChain)
-                    }}
-                  >
-                    Switch to Network
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
-        </>
-      )}
-    </div>
+        )}
+      </div>
+    </ErrorBoundary>
   )
 }

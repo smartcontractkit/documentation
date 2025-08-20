@@ -1,10 +1,13 @@
 /** @jsxImportSource react */
 import button from "@chainlink/design-system/button.module.css"
-import { MetaMaskInpageProvider } from "@metamask/providers"
+
 import { useEffect, useState } from "react"
 import { NetworkDropdown } from "./NetworkDropdown.tsx"
-import { checkConnection } from "../../utils/getInjectedProvider.ts"
 import { useMetaMaskProvider } from "@hooks/useEIP6963Providers.tsx"
+import { useWalletConnectionStorage } from "@hooks/useLocalStorage.ts"
+import { EIP1193Provider } from "../../utils/EIP1193Interface.ts"
+import { Toast } from "./Toast.tsx"
+import { WalletErrorBoundary } from "../../../components/ErrorBoundary.tsx"
 import "./container.css"
 
 interface Caveat {
@@ -20,6 +23,15 @@ interface RequestPermissions {
   parentCapability: string
 }
 
+interface ConnectInfo {
+  chainId: string
+}
+
+interface DisconnectError {
+  code?: number
+  message?: string
+}
+
 export const MintTokenButton = () => {
   // ✅ SSR Guard: Return loading state during server-side rendering
   if (typeof window === "undefined") {
@@ -32,9 +44,12 @@ export const MintTokenButton = () => {
 
   const [userAddress, setUserAddress] = useState<string>("")
   const [isWalletConnected, setIsWalletConnected] = useState<boolean>(false)
+  const [toastMessage, setToastMessage] = useState<string>("")
+  const [showToast, setShowToast] = useState<boolean>(false)
 
   // ✅ Use EIP-6963 to get MetaMask specifically
   const metaMaskProvider = useMetaMaskProvider()
+  const { saveConnectionState } = useWalletConnectionStorage()
 
   useEffect(() => {
     if (!metaMaskProvider) return
@@ -59,11 +74,11 @@ export const MintTokenButton = () => {
     }
 
     // ✅ Also listen for connection/disconnection events
-    const handleConnect = (connectInfo: any) => {
+    const handleConnect = (connectInfo: ConnectInfo) => {
       console.log("🔗 MetaMask connected:", connectInfo)
     }
 
-    const handleDisconnect = (error: any) => {
+    const handleDisconnect = (error: DisconnectError) => {
       console.log("🔌 MetaMask disconnected:", error)
       setIsWalletConnected(false)
       setUserAddress("")
@@ -74,15 +89,27 @@ export const MintTokenButton = () => {
     metaMaskProvider.on("disconnect", handleDisconnect)
 
     const getAccount = async () => {
+      if (!metaMaskProvider) {
+        setIsWalletConnected(false)
+        setUserAddress("")
+        return
+      }
+
       try {
-        const account = await checkConnection()
-        if (account) {
-          setUserAddress(account.address)
+        const accounts = await metaMaskProvider.request<string[]>({
+          method: "eth_accounts",
+        })
+
+        if (accounts && accounts.length > 0) {
+          setUserAddress(accounts[0])
           setIsWalletConnected(true)
-          console.log("MetaMask account connected:", account.address)
+          console.log("MetaMask account connected:", accounts[0])
+        } else {
+          setIsWalletConnected(false)
+          setUserAddress("")
         }
       } catch (error) {
-        console.log("MetaMask not connected or available")
+        console.log("Failed to get MetaMask accounts:", error)
         setIsWalletConnected(false)
         setUserAddress("")
       }
@@ -97,16 +124,25 @@ export const MintTokenButton = () => {
     }
   }, [metaMaskProvider])
 
-  const validateEthApi = (ethereum: MetaMaskInpageProvider) => {
-    if (!ethereum || !ethereum.isMetaMask) {
-      throw new Error(`Something went wrong. Connect wallet is called while an ethereum object is not detected.`)
+  const showToastMessage = (message: string) => {
+    setToastMessage(message)
+    setShowToast(true)
+  }
+
+  const closeToast = () => {
+    setShowToast(false)
+  }
+
+  const validateEthApi = (provider: EIP1193Provider) => {
+    if (!provider || !provider.request) {
+      throw new Error(`Something went wrong. Connect wallet is called while a provider object is not detected.`)
     }
   }
 
   const connectToWallet = async () => {
     // ✅ Use EIP-6963 discovered MetaMask provider
     if (!metaMaskProvider) {
-      alert("MetaMask not found. Please install MetaMask extension for EVM token minting.")
+      showToastMessage("MetaMask not found. Please install MetaMask extension for EVM token minting.")
       return
     }
 
@@ -116,36 +152,29 @@ export const MintTokenButton = () => {
       throw Error("Something went wrong when connecting MetaMask wallet. Please follow the steps in the popup page.")
     }
     const addressList = await metaMaskProvider
-      .request({
+      .request<string[]>({
         method: "eth_requestAccounts",
       })
       .catch((error: Error) => {
-        alert(`Something went wrong: ${error.message}`)
+        showToastMessage(`Something went wrong: ${error.message}`)
       })
-    const currentChainId = await metaMaskProvider.request({ method: "eth_chainId" }).catch((error: Error) => {
-      alert(`Something went wrong: ${error.message}`)
+    const currentChainId = await metaMaskProvider.request<string>({ method: "eth_chainId" }).catch((error: Error) => {
+      showToastMessage(`Something went wrong: ${error.message}`)
     })
     if (addressList) {
       setUserAddress(addressList[0])
-      localStorage.setItem(
-        "isWalletConnected",
-        JSON.stringify({
-          isWalletConnected: true,
-          userAddress: addressList[0],
-          currentChainId,
-        })
-      )
+      saveConnectionState(addressList[0], currentChainId as string)
     }
   }
 
-  const requestPermissions = async (ethereum: MetaMaskInpageProvider) => {
+  const requestPermissions = async (provider: EIP1193Provider) => {
     let accountsPermission: RequestPermissions | undefined
-    await ethereum
-      .request({
+    await provider
+      .request<RequestPermissions[]>({
         method: "wallet_requestPermissions",
         params: [{ eth_accounts: {} }],
       })
-      .then((permissions: RequestPermissions[]) => {
+      .then((permissions) => {
         accountsPermission = permissions.find(
           (permission: RequestPermissions) => permission.parentCapability === "eth_accounts"
         )
@@ -162,28 +191,31 @@ export const MintTokenButton = () => {
   }
 
   return (
-    <div className="mint-component">
-      {!isWalletConnected && (
-        <>
-          <p>Connect your browser wallet to get started:</p>
-          <button
-            className={button.secondary}
-            style={{ display: "flex", gap: "var(--space-2x)", alignItems: "center", alignSelf: "center" }}
-            onClick={connectToWallet}
-          >
-            <img
-              src="https://smartcontract.imgix.net/icons/wallet_filled.svg?auto=compress%2Cformat"
-              alt="wallet icon"
-            />
-            Connect Wallet
-          </button>
-        </>
-      )}
-      {userAddress && (
-        <>
-          <NetworkDropdown userAddress={userAddress} />
-        </>
-      )}
-    </div>
+    <WalletErrorBoundary>
+      <div className="mint-component">
+        {!isWalletConnected && (
+          <>
+            <p>Connect your browser wallet to get started:</p>
+            <button
+              className={button.secondary}
+              style={{ display: "flex", gap: "var(--space-2x)", alignItems: "center", alignSelf: "center" }}
+              onClick={connectToWallet}
+            >
+              <img
+                src="https://smartcontract.imgix.net/icons/wallet_filled.svg?auto=compress%2Cformat"
+                alt="wallet icon"
+              />
+              Connect Wallet
+            </button>
+          </>
+        )}
+        {userAddress && (
+          <>
+            <NetworkDropdown userAddress={userAddress} />
+          </>
+        )}
+        {showToast && <Toast message={toastMessage} onClose={closeToast} />}
+      </div>
+    </WalletErrorBoundary>
   )
 }

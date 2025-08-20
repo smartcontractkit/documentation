@@ -1,5 +1,6 @@
 /** @jsxImportSource react */
 import { useState, useEffect, useMemo } from "react"
+import { EIP1193Provider } from "../features/utils/EIP1193Interface.ts"
 
 /**
  * EIP-6963 Provider Discovery Hook
@@ -7,6 +8,10 @@ import { useState, useEffect, useMemo } from "react"
  * Solves multi-wallet injection conflicts (Phantom vs MetaMask)
  */
 
+/**
+ * EIP-6963 Provider Info
+ * Metadata about the wallet provider
+ */
 export interface EIP6963ProviderInfo {
   uuid: string
   name: string
@@ -14,9 +19,30 @@ export interface EIP6963ProviderInfo {
   rdns?: string
 }
 
+/**
+ * EIP-6963 Provider Detail
+ * Complete provider information including the actual provider instance
+ */
 export interface EIP6963ProviderDetail {
   info: EIP6963ProviderInfo
-  provider: any // EIP-1193 provider
+  provider: EIP1193Provider
+}
+
+/**
+ * EIP-6963 Announce Event
+ * Custom event structure for provider announcements
+ */
+interface EIP6963AnnounceEvent extends CustomEvent {
+  type: "eip6963:announceProvider"
+  detail: EIP6963ProviderDetail
+}
+
+/**
+ * Extended Window interface with Ethereum provider
+ * Safely types the global window.ethereum property
+ */
+interface WindowWithEthereum extends Window {
+  ethereum?: EIP1193Provider
 }
 
 /**
@@ -29,8 +55,8 @@ export function useInjectedProviders(): EIP6963ProviderDetail[] {
     // ✅ SSR Guard: Only run in browser
     if (typeof window === "undefined") return
 
-    const onAnnounce = (event: any) => {
-      const detail: EIP6963ProviderDetail = event.detail
+    const onAnnounce = (event: EIP6963AnnounceEvent) => {
+      const detail = event.detail
       setProviders((prev) => {
         // Avoid duplicates based on UUID
         const exists = prev.some((p) => p.info.uuid === detail.info.uuid)
@@ -39,13 +65,13 @@ export function useInjectedProviders(): EIP6963ProviderDetail[] {
     }
 
     // Listen for provider announcements
-    window.addEventListener("eip6963:announceProvider" as any, onAnnounce)
+    window.addEventListener("eip6963:announceProvider", onAnnounce as EventListener)
 
     // Request all providers to announce themselves
     window.dispatchEvent(new Event("eip6963:requestProvider"))
 
     return () => {
-      window.removeEventListener("eip6963:announceProvider" as any, onAnnounce)
+      window.removeEventListener("eip6963:announceProvider", onAnnounce as EventListener)
     }
   }, [])
 
@@ -71,12 +97,12 @@ export function useMetaMaskProvider() {
     }
 
     // ✅ FALLBACK: Legacy detection for older MetaMask versions
-    const ethereum = (window as any).ethereum
+    const ethereum = (window as WindowWithEthereum).ethereum
     if (!ethereum) return null
 
     // Check for multiple providers array
     if (Array.isArray(ethereum.providers)) {
-      const metaMask = ethereum.providers.find((p: any) => p?.isMetaMask)
+      const metaMask = ethereum.providers.find((p) => p?.isMetaMask)
       if (metaMask) {
         return metaMask
       }

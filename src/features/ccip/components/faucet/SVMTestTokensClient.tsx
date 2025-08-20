@@ -12,7 +12,6 @@ import {
   CAPABILITY_PROFILES,
   type UiWalletAccount,
   type WalletHandle,
-  type SolanaCapabilities,
 } from "@lib/solana/wallet/index.ts"
 
 import button from "@chainlink/design-system/button.module.css"
@@ -37,7 +36,6 @@ interface ErrorState {
 // Type aliases for wallet layer integration
 type ConnectedAccount = UiWalletAccount
 type SelectedWallet = WalletHandle
-type WalletCapabilities = SolanaCapabilities
 
 // Constants
 const SUPPORTED_CHAIN = "SOLANA_DEVNET" as const
@@ -56,7 +54,7 @@ function SVMTestTokensContent(): React.JSX.Element {
   const [step, setStep] = useState<MintingStep>("idle")
   const [status, setStatus] = useState<Status>("idle")
   const [error, setError] = useState<ErrorState | null>(null)
-  const [txHash, setTxHash] = useState<string | null>(null)
+
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState("")
 
@@ -134,7 +132,7 @@ function SVMTestTokensContent(): React.JSX.Element {
       if (verifyResponse.ok) {
         setStep("processing")
         setStatus("success")
-        setTxHash("signature-verified-ready-for-faucet-integration")
+
         setToastMessage(`${tokenInfo?.options.symbol || "CCIP-BnM"} tokens requested successfully!`)
         setShowToast(true)
       } else {
@@ -159,7 +157,7 @@ function SVMTestTokensContent(): React.JSX.Element {
   const resetAndRetry = (): void => {
     setStatus("idle")
     setError(null)
-    setTxHash(null)
+
     mintTokens()
   }
 
@@ -259,7 +257,6 @@ function SVMTestTokensContent(): React.JSX.Element {
                     className={button.secondary}
                     onClick={() => {
                       setStatus("idle")
-                      setTxHash(null)
                     }}
                   >
                     Mint More Tokens
