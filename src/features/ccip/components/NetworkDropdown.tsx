@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from "react"
 import styles from "./networkDropdown.module.css"
 import button from "@chainlink/design-system/button.module.css"
-import { MetaMaskInpageProvider } from "@metamask/providers"
 import { Contract, BrowserProvider, toQuantity } from "ethers"
 import { burnMintAbi } from "@features/abi/index.ts"
 import { useMetaMaskProvider } from "@hooks/useEIP6963Providers.tsx"
