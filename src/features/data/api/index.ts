@@ -22,6 +22,7 @@ export interface Docs {
   isMVR?: boolean
   decoding?: DecodingVariable[]
   issuer?: string
+  deliveryChannelCode?: string
 }
 
 export interface ChainMetadata {
