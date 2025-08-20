@@ -1,6 +1,6 @@
 ---
-title: "Automated Data Relay with Data Streams Push Engine"
-description: "Set up and manage a self-hosted, automated relay to push offchain Data Streams to your smart contracts using Push Engine."
+title: "Automated Data Relay with Push Engine"
+description: "A guide for third-party integrators to set up and manage a self-hosted, automated relay to push off-chain Data Streams to smart contracts."
 githubSourceCodeUrl: "https://github.com/hackbg/push-engine"
 image: "QuickStarts-DataStreams-Transmitter.webp"
 products: ["streams"]
@@ -25,17 +25,22 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
 ## Overview
 
 <Aside type="caution" title="Disclaimer">
-  The Data Streams Push Engine and the reference consumer contract are community-built tools. The Push Engine is
-  developed and maintained by [HackBG](https://github.com/hackbg) and the contract is a community endeavour. These are
-  not official Chainlink products and are not supported by Chainlink Labs. No warranties or guarantees are provided.
-  Please do your own research and audit the code before using this tool in a production environment.
+  This reference implementation is provided to help you understand how to interact with Chainlink's systems and services
+  so that you can integrate them into your own. This reference implementation is provided on an “AS IS” and “AS
+  AVAILABLE” basis without any representations, warranties, covenants, or conditions of any kind. Use at your own risk.
+  Users remain fully responsible for reviewing, auditing, and deploying any code or contracts. Do not use the code in
+  this reference implementation in a production environment without completing your own audits and application of best
+  practices. Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for
+  unintended outputs that are generated due to errors in code. Please review the Chainlink Terms of Service which
+  provides important information and disclosures. By using this reference implementation, you expressly acknowledge and
+  agree to accept these terms.
 </Aside>
 
 While [Chainlink Data Streams](/data-streams/index) provide access to low-latency market data offchain, the process of bringing this data onchain requires significant engineering. Developers must build, deploy, and maintain a custom infrastructure service that can reliably connect to the Data Streams API, implement robust WebSocket reconnection logic, and manage the onchain transaction logic for when and how to push updates.
 
-The [Data Streams Push Engine][GITHUB_REPO], a community-led solution, provides a foundational framework for the DevOps teams and Infrastructure Managers tasked with building these systems. Push Engine is a configurable service that handles the core logic of monitoring offchain Data Streams and pushing values to your smart contracts based on predefined conditions, such as time intervals or price deviations. It also includes a web interface to manage your feeds and monitor their status.
+[Push Engine](https://github.com/hackbg/push-engine), a reference implementation made available for third-party integrators, provides a foundational framework for the DevOps teams and Infrastructure Managers tasked with building these systems. Push Engine is a configurable service that handles the core logic of monitoring off-chain Data Streams and pushing values to your smart contracts based on predefined conditions, such as time intervals or price deviations. It also includes a web interface to manage your feeds and monitor their status.
 
-This guide walks you through deploying a `DataStreamsFeed` consumer contract, setting up the Data Streams Push Engine, and configuring it to monitor a specific Data Stream and relay it to your onchain contract.
+This guide walks you through deploying a `DataStreamsFeed` consumer contract, setting up Push Engine, and configuring it to monitor a specific Data Stream and relay it to your onchain contract.
 
 ---
 
@@ -86,7 +91,7 @@ Before you start this tutorial, ensure you have the following prerequisites:
 ## Steps to Implement
 
 <Accordion title="Deploy Consumer Contract" number={1}>
-First, deploy a [`DataStreamsFeed.sol` contract](https://github.com/woogieboogie-jl/push-engine-contract/blob/main/src/feed/DataStreamsFeed.sol), which receives, verifies, and stores the data relayed by the Push Engine.
+First, deploy a [`DataStreamsFeed.sol` contract](https://github.com/woogieboogie-jl/push-engine-contract/blob/main/src/feed/DataStreamsFeed.sol), which receives, verifies, and stores the data relayed by Push Engine.
 
 1.  Install [Foundry][FOUNDRY_INSTALL], or update it to the latest version by running `foundryup` in your terminal.
 
@@ -125,7 +130,7 @@ First, deploy a [`DataStreamsFeed.sol` contract](https://github.com/woogieboogie
 
 1.  Configure `script/DeployDataStreamsFeed.s.sol`.
 
-    This script deploys the `DataStreamsFeed` contract, which will receive data from the Push Engine.
+    This script deploys the `DataStreamsFeed` contract, which will receive data from Push Engine.
 
     You must set the constructor arguments for the contract:
 
@@ -146,12 +151,12 @@ First, deploy a [`DataStreamsFeed.sol` contract](https://github.com/woogieboogie
             --broadcast
          ```
 
-    After deployment, copy the **Deployed Contract Address** and **ABI** from the output. You will need them to configure the Push Engine.
+    After deployment, copy the **Deployed Contract Address** and **ABI** from the output. You will need them to configure Push Engine.
 
     - **Contract Address:** Find the contract address in your terminal output under `deployedAddress`.
     - **Contract ABI:** Foundry saves the ABI in `out/DataStreamsFeed.sol/DataStreamsFeed.json`.
 
-    Before we can use the Push Engine, we need to fund this contract with `LINK`.
+    Before we can use Push Engine, we need to fund this contract with `LINK`.
 
 1.  Fund the contract with `LINK`.
 
@@ -168,7 +173,7 @@ First, deploy a [`DataStreamsFeed.sol` contract](https://github.com/woogieboogie
 </Accordion>
 
 <Accordion title="Set Up Push Engine" number={2}>
-With a consumer contract onchain, you can now set up the Push Engine service to relay data to it.
+With a consumer contract onchain, you can now set up Push Engine service to relay data to it.
 
 1.  In a new terminal window, navigate to your development space and clone the [Push Engine repository][GITHUB_REPO]:
 
@@ -271,9 +276,9 @@ With a consumer contract onchain, you can now set up the Push Engine service to 
             address: "0xYourDataStreamsFeedContractOnFuji" # <-- TODO: Update with your deployed contract address
             # The name of the function to call on your smart contract
             functionName: "verifyAndUpdateReport"
-            # The arguments the Push Engine should prepare and send to the function
+            # The arguments Push Engine should prepare and send to the function
             #   • rawReport          = the unverified payload from the Data Streams websocket
-            #   • parameterPayload   = abi.encode(address feeToken) – produced automatically by the Push Engine
+            #   • parameterPayload   = abi.encode(address feeToken) – produced automatically by Push Engine
             functionArgs: ["rawReport", "parameterPayload"]
             # The ABI for the target function, required to encode the transaction
             abi:
@@ -290,13 +295,13 @@ With a consumer contract onchain, you can now set up the Push Engine service to 
 
     - Replace `0xYOUR_AVALANCHE_FUJI_CONTRACT_ADDRESS` with the address of the contract you deployed in the previous step.
     - The `feedId` should match the one you set in the contract deployment.
-    - Each target block must keep `skipVerify: false`, `functionName: verifyAndUpdateReport`, and `functionArgs: ["rawReport", "parameterPayload"]` to ensure the Push Engine correctly prepares the transaction for onchain verification.
+    - Each target block must keep `skipVerify: false`, `functionName: verifyAndUpdateReport`, and `functionArgs: ["rawReport", "parameterPayload"]` to ensure Push Engine correctly prepares the transaction for onchain verification.
 
 1.  Start the Docker daemon.
 
     The Docker daemon is required to run the Redis instance that Push Engine uses. Starting the daemon depends on your operating system. Please refer to the [Docker documentation](https://docs.docker.com/engine/daemon/start/) for instructions.
 
-1.  Run the following command to start the Push Engine and its services in the background:
+1.  Run the following command to start Push Engine and its services in the background:
 
     ```bash
     docker compose up -d
@@ -427,7 +432,7 @@ If you run into issues during setup or operation, refer to these common problems
 - **`Gas estimation too high` error**
 
   - When deploying with Foundry, you can adjust the `gas_limit` in your `foundry.toml` file.
-  - For the push engine, you can increase the `gasCap` value in your `config.yml` file. You can also update it in the Push Engine UI under the **Gas Cap** section.
+  - You can increase the `gasCap` value in your `config.yml` file. You can also update it in the Push Engine UI under the **Gas Cap** section.
 
 - **Missing private key**
   - `forge script` will silently fall back to Foundry's default dev key and assign contract roles to `0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38`.
@@ -437,7 +442,7 @@ If you run into issues during setup or operation, refer to these common problems
 
 ## Conclusion
 
-Congratulations! 🎉 You have successfully deployed a `DataStreamsFeed` contract, set up the Data Streams Push Engine, and linked them together.
+Congratulations! 🎉 You have successfully deployed a `DataStreamsFeed` contract, set up the Push Engine, and linked them together.
 
 You can now monitor offchain Data Streams and push updates to your smart contracts without writing any code or managing your own backend infrastructure. The Push Engine handles all the complexity of connecting to Data Streams, monitoring data changes, and pushing updates onchain.
 
