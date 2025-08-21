@@ -325,7 +325,7 @@ The example above demonstrates streaming data from a single Backed xStock stream
    "wss://ws.testnet-dataengine.chain.link,wss://ws.testnet-dataengine.chain.link"
    ```
 
-2. Enabling HA mode in the configuration:
+1. Enabling HA mode in the configuration:
    ```rust
    use chainlink_data_streams_sdk::config::WebSocketHighAvailability;
    // ...
@@ -365,7 +365,7 @@ The decoded report details include:
 #### Payload for onchain verification
 
 In this tutorial, you log and decode the `full_report` payload to extract the report data. In a
-production environment, you should verify the data onchain to ensure its integrity and authenticity. Refer to the
+production environment, you should verify the data to ensure its integrity and authenticity. Refer to the
 [Verify report data onchain](/data-streams/tutorials/evm-onchain-report-verification) tutorial.
 
 ## Explanation
@@ -391,8 +391,8 @@ As data reports arrive via the WebSocket connection, they are processed in real-
    - Handles backpressure automatically
    - Returns a `WebSocketReport` containing the report data
 
-2. Decoding reports: Each report is decoded in two stages:
-   - [`decode_full_report`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report.rs#L77) parses the raw hexadecimal data, separating the report context (containing metadata) from the report blob
+1. Decoding reports: Each report is decoded in two stages:
+   - [`decode_full_report`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report.rs#L83) parses the raw hexadecimal data, separating the report context (containing metadata) from the report blob
    - [`ReportDataV10::decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report/v10.rs#L74) transforms the report blob into a structured format containing:
      - `price`: Last traded price from the real-world equity market
      - `market_status`: Status of the real-world equity market (0=Unknown, 1=Closed, 2=Open, 3=Halted)
