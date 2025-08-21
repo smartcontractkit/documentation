@@ -3,6 +3,8 @@ section: ccip
 date: Last Modified
 title: "Cross-Chain Token Setup: BurnMint with SPL Token Multisig Tutorial"
 isIndex: false
+whatsnext:
+  "Learn about Production Multisig (e.g. Squads) as governance authority": "/ccip/tutorials/svm/cross-chain-tokens/production-multisig-tutorial"
 metadata:
   description: "Learn SPL token multisig architecture for cross-chain tokens. Learn governance concepts and multisig patterns before building production systems with CCIP."
   excerpt: "ccip cross-chain token tutorial solana ethereum burnmint pools path-a multisig educational spl token token-2022 multisig architecture learning self-service registration svm evm bidirectional token pools address lookup tables transaction monitoring solana devnet ethereum sepolia pool signer pda token admin registry multisig concepts tutorial governance foundation"
@@ -44,7 +46,11 @@ This tutorial focuses on demonstrating multisig architecture concepts, helping y
 
 ## Tutorial Approach
 
-This tutorial provides step-by-step instructions and explains what each command does. For detailed implementation code explanations, refer to the comprehensive READMEs in both repositories:
+This tutorial provides step-by-step instructions with detailed explanations of what each command does and why. You'll work primarily in Terminal 1 (Solana) with occasional switches to Terminal 2 (EVM).
+
+**Environment Variable Management**: This tutorial uses phase-based variable files (e.g., `~/.phase1_vars`, `~/.ccip_complete_vars`) to eliminate manual variable re-entry when switching between terminals. Each phase saves its variables to files that subsequent phases can load automatically.
+
+For detailed implementation code explanations, refer to the comprehensive READMEs in both repositories:
 
 - **[Solana Starter Kit README](https://github.com/smartcontractkit/solana-starter-kit/blob/main/README.md)**: Detailed explanations of all SVM commands and implementation
 - **[Smart Contract Examples README](https://github.com/smartcontractkit/smart-contract-examples/blob/main/ccip/cct/hardhat/README.md)**: Comprehensive EVM implementation guide
@@ -151,15 +157,12 @@ The Pool Signer PDA remains the same in both cases.
 
 In this step, you will use Hardhat tasks to deploy an ERC20 token contract and a corresponding burn and mint token pool on Ethereum Sepolia. The tasks interact with the `BurnMintERC20` contract for token deployment and the `BurnMintTokenPool` contract for pool creation.
 
-<Aside type="note" title="Terminal Check">
-  **Ensure you are in Terminal 2** (Smart Contract Examples - Hardhat directory): 
-  
-  ```bash 
-  pwd # Should show:
-  .../smart-contract-examples/ccip/cct/hardhat 
-  ```
+**Current Terminal: Terminal 2** (Smart Contract Examples - Hardhat) Verify your location:
 
-</Aside>
+```bash
+pwd
+# Should show: .../smart-contract-examples/ccip/cct/hardhat
+```
 
 ### Deploy ERC20 Token
 
@@ -325,19 +328,28 @@ npx hardhat acceptAdminRole \
 </Fragment>
 </Tabs>
 
+Save the Phase 1 variables for cross-terminal access:
+
+```bash
+# Save Phase 1 variables to file for later use
+cat > ~/.phase1_vars << 'EOF'
+export ETH_TOKEN_ADDRESS=0xd3d2f66dd4Eead2cF2cD4C6219Eb1e1E80e6109d
+export ETH_POOL_ADDRESS=0x1a65BA94731a6541efDbeb1E72A7b1E9771B64b7
+EOF
+
+echo "Phase 1 variables saved to ~/.phase1_vars"
+```
+
 ## Phase 2: Solana Devnet Token Setup
 
 In this phase, you will create an SPL token, initialize the CCIP token pool, and complete CCIP registration BEFORE setting up the production multisig. This sequence is critical because the self-service registration requires you to hold the mint authority.
 
-<Aside type="note" title="Terminal Switch">
-  **Switch to Terminal 1** (Solana Starter Kit directory): 
-  
-  ```bash 
-  pwd 
-  # Should show: .../solana-starter-kit 
-  ```
+**Switch to Terminal 1** (Solana Starter Kit) Verify your location:
 
-</Aside>
+```bash
+pwd
+# Should show: .../solana-starter-kit
+```
 
 ### Create SPL Token
 
@@ -423,18 +435,18 @@ Set up environment variables for easier reference throughout the tutorial:
 
 ```bash
 # Set your token mint address from the previous output
-export TOKEN_MINT=9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
+export SOL_TOKEN_MINT=9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
 
 # Set your admin wallet (tutorial simplification - use governance multisig in production)
 export ADMIN_WALLET=$(solana address)
 
 # Set pool program (Chainlink self-service BurnMint pool program)
-export POOL_PROGRAM=3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
+export CCIP_POOL_PROGRAM=3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
 
 # Display for verification
-echo "Token Mint: $TOKEN_MINT"
+echo "Token Mint: $SOL_TOKEN_MINT"
 echo "Admin Wallet: $ADMIN_WALLET"
-echo "Pool Program: $POOL_PROGRAM"
+echo "Pool Program: $CCIP_POOL_PROGRAM"
 ```
 
 ### Initialize CCIP Token Pool
@@ -449,8 +461,8 @@ In this step, you will use the `svm:pool:initialize` script to initialize a CCIP
 ```bash
 # Initialize pool for your token
 yarn svm:pool:initialize \
-  --token-mint $TOKEN_MINT \
-  --burn-mint-pool-program $POOL_PROGRAM
+  --token-mint $SOL_TOKEN_MINT \
+  --burn-mint-pool-program $CCIP_POOL_PROGRAM
 ```
 
 </Fragment>
@@ -505,8 +517,8 @@ In this step, you will use the `svm:pool:get-info` script to verify that your to
 ```bash
 # Verify pool creation
 yarn svm:pool:get-info \
-  --token-mint $TOKEN_MINT \
-  --burn-mint-pool-program $POOL_PROGRAM
+  --token-mint $SOL_TOKEN_MINT \
+  --burn-mint-pool-program $CCIP_POOL_PROGRAM
 ```
 
 </Fragment>
@@ -589,8 +601,8 @@ In this step, you will use the `svm:pool:create-token-account` script to create 
 ```bash
 # Create ATA for Pool Signer PDA
 yarn svm:pool:create-token-account \
-  --token-mint $TOKEN_MINT \
-  --burn-mint-pool-program $POOL_PROGRAM
+  --token-mint $SOL_TOKEN_MINT \
+  --burn-mint-pool-program $CCIP_POOL_PROGRAM
 ```
 
 </Fragment>
@@ -645,7 +657,7 @@ Set the Pool Signer PDA for use in multisig creation:
 
 ```bash
 # Set Pool Signer PDA from the output above
-export POOL_SIGNER_PDA=7WTnVd9Q6de3GgPCpDfHX5S2T5XzGDeMDZRev3FVbZo5
+export SOL_POOL_SIGNER_PDA=7WTnVd9Q6de3GgPCpDfHX5S2T5XzGDeMDZRev3FVbZo5
 ```
 
 ### Administrator Registration
@@ -662,7 +674,7 @@ In this step, you will use the `svm:admin:propose-administrator` and `svm:admin:
 # Propose yourself as CCIP administrator (requires mint authority)
 
 yarn svm:admin:propose-administrator \
- --token-mint $TOKEN_MINT
+ --token-mint $SOL_TOKEN_MINT
 
 ```
 
@@ -716,7 +728,7 @@ $ ts-node ./ccip-scripts/svm/admin/propose-administrator.ts --token-mint 9qfyXQh
 ```bash
 # Accept the proposed administrator role
 yarn svm:admin:accept-admin-role \
-  --token-mint $TOKEN_MINT
+  --token-mint $SOL_TOKEN_MINT
 ```
 
 </Fragment>
@@ -771,7 +783,7 @@ NOW that CCIP registration is complete, create the SPL token multisig that will 
 
 ```bash
 # Create 1-of-2 multisig with Pool Signer PDA and admin wallet (tutorial setup)
-spl-token create-multisig 1 $POOL_SIGNER_PDA $ADMIN_WALLET
+spl-token create-multisig 1 $SOL_POOL_SIGNER_PDA $ADMIN_WALLET
 ```
 
 </Fragment>
@@ -792,7 +804,7 @@ Signature: 2LKsazwGdaNnNRvjEyrgF8St7o6XPN6qkePvQc9PHNBfNCQnFmCK4RYoRkV4oerB5stXU
 
 ```bash
 # Set multisig address from the output above
-export MULTISIG_ADDRESS=EFpxujcKwYiLhNZyt9NWUsDqFDMUGbsRBdqqvxrfuvGj
+export SOL_MULTISIG_ADDRESS=EFpxujcKwYiLhNZyt9NWUsDqFDMUGbsRBdqqvxrfuvGj
 ```
 
 ### Transfer Mint Authority to Multisig
@@ -806,7 +818,7 @@ Now transfer the mint authority from your wallet to the multisig:
 <Fragment slot="panel.1">
 ```bash
 # Transfer mint authority to multisig
-spl-token authorize $TOKEN_MINT mint $MULTISIG_ADDRESS
+spl-token authorize $SOL_TOKEN_MINT mint $SOL_MULTISIG_ADDRESS
 ```
 
 </Fragment>
@@ -837,10 +849,10 @@ Verify that the multisig has been properly configured and the mint authority has
 
 ```bash
 # Check token mint authority
-spl-token display $TOKEN_MINT
+spl-token display $SOL_TOKEN_MINT
 
 # Check multisig details
-spl-token display $MULTISIG_ADDRESS
+spl-token display $SOL_MULTISIG_ADDRESS
 ```
 
 </Fragment>
@@ -870,22 +882,36 @@ Signers:
 </Fragment>
 </Tabs>
 
+Save the Phase 2 variables for cross-terminal access:
+
+```bash
+# Save all variables from Phases 1 and 2 to complete vars file
+cat > ~/.ccip_complete_vars << 'EOF'
+export ETH_TOKEN_ADDRESS=0xd3d2f66dd4Eead2cF2cD4C6219Eb1e1E80e6109d
+export ETH_POOL_ADDRESS=0x1a65BA94731a6541efDbeb1E72A7b1E9771B64b7
+export SOL_TOKEN_MINT=9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
+export ADMIN_WALLET=$(solana address)
+export CCIP_POOL_PROGRAM=3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
+export SOL_POOL_SIGNER_PDA=7WTnVd9Q6de3GgPCpDfHX5S2T5XzGDeMDZRev3FVbZo5
+export SOL_MULTISIG_ADDRESS=EFpxujcKwYiLhNZyt9NWUsDqFDMUGbsRBdqqvxrfuvGj
+EOF
+
+echo "All variables saved to ~/.ccip_complete_vars for cross-terminal access"
+```
+
 ## Phase 3: Cross-Chain Configuration
 
 In this step, you will configure bidirectional connectivity between the token pools on both chains. Each chain uses different tools: **Solana** uses Starter Kit scripts to configure its pool to recognize Ethereum tokens and pools, while **Ethereum** uses Hardhat tasks to configure its pool to recognize Solana tokens and pools.
 
 ### Configure Solana → Ethereum
 
-<Aside type="note" title="Terminal Check">
-  **Ensure you are in Terminal 1** (Solana Starter Kit directory) for Solana pool configuration.
-</Aside>
+**Stay in Terminal 1 (Solana Starter Kit)**
 
-First, set the environment variables needed for this terminal session:
+Load the Ethereum addresses from Phase 1:
 
 ```bash
-# Set Ethereum token and pool addresses from Phase 1
-export ETH_TOKEN_ADDRESS=0xd3d2f66dd4Eead2cF2cD4C6219Eb1e1E80e6109d
-export ETH_POOL_ADDRESS=0x1a65BA94731a6541efDbeb1E72A7b1E9771B64b7
+source ~/.phase1_vars
+echo "Loaded Phase 1 variables: ETH_TOKEN_ADDRESS=$ETH_TOKEN_ADDRESS, ETH_POOL_ADDRESS=$ETH_POOL_ADDRESS"
 ```
 
 #### Initialize Chain Remote Configuration
@@ -905,8 +931,8 @@ In this step, you will use the `svm:pool:init-chain-remote-config` script to ini
 ```bash
 # Initialize remote chain configuration for Ethereum Sepolia
 yarn svm:pool:init-chain-remote-config \
-  --token-mint $TOKEN_MINT \
-  --burn-mint-pool-program $POOL_PROGRAM \
+  --token-mint $SOL_TOKEN_MINT \
+  --burn-mint-pool-program $CCIP_POOL_PROGRAM \
   --remote-chain ethereum-sepolia \
   --token-address $ETH_TOKEN_ADDRESS \
   --decimals 9
@@ -976,8 +1002,8 @@ In this step, you will use the `svm:pool:edit-chain-remote-config` script to upd
 ```bash
 # Add Ethereum pool address to the configuration
 yarn svm:pool:edit-chain-remote-config \
-  --token-mint $TOKEN_MINT \
-  --burn-mint-pool-program $POOL_PROGRAM \
+  --token-mint $SOL_TOKEN_MINT \
+  --burn-mint-pool-program $CCIP_POOL_PROGRAM \
   --remote-chain ethereum-sepolia \
   --pool-addresses $ETH_POOL_ADDRESS \
   --token-address $ETH_TOKEN_ADDRESS \
@@ -1044,8 +1070,8 @@ In this step, you will use the `svm:pool:get-chain-config` script to verify that
 ```bash
 # Verify the chain configuration is complete
 yarn svm:pool:get-chain-config \
-  --token-mint $TOKEN_MINT \
-  --burn-mint-pool-program $POOL_PROGRAM \
+  --token-mint $SOL_TOKEN_MINT \
+  --burn-mint-pool-program $CCIP_POOL_PROGRAM \
   --remote-chain ethereum-sepolia
 ```
 
@@ -1106,24 +1132,18 @@ $ ts-node ./ccip-scripts/svm/pool/get-chain-config.ts --token-mint 9qfyXQhZt1ZUv
 
 ### Configure Ethereum → Solana
 
-<Aside type="note" title="Terminal Switch">
-  **Switch to Terminal 2** (Smart Contract Examples - Hardhat directory):
+**Switch to Terminal 2 (Smart Contract Examples)**
 
 ```bash
 pwd
 # Should show: .../smart-contract-examples/ccip/cct/hardhat
 ```
 
-</Aside>
-
-First, set the environment variables needed for this terminal session:
+Load all variables from previous phases:
 
 ```bash
-# Set variables from previous phases (these were created in different terminals)
-export ETH_TOKEN_ADDRESS=0xd3d2f66dd4Eead2cF2cD4C6219Eb1e1E80e6109d
-export ETH_POOL_ADDRESS=0x1a65BA94731a6541efDbeb1E72A7b1E9771B64b7
-export TOKEN_MINT=9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-export POOL_PROGRAM=3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
+source ~/.ccip_complete_vars
+echo "Loaded variables: ETH_TOKEN_ADDRESS=$ETH_TOKEN_ADDRESS, SOL_TOKEN_MINT=$SOL_TOKEN_MINT"
 ```
 
 #### Calculate Solana Pool Config PDA
@@ -1138,8 +1158,8 @@ In this step, you will use the `calculateCCIPTokenPoolPDA.ts` script to calculat
 ```bash
 # Calculate the Pool Config PDA for Ethereum cross-chain configuration
 npx tsx scripts/calculateCCIPTokenPoolPDA.ts \
-  $TOKEN_MINT \
-  $POOL_PROGRAM
+  $SOL_TOKEN_MINT \
+  $CCIP_POOL_PROGRAM
 ```
 
 </Fragment>
@@ -1186,7 +1206,7 @@ Export the calculated Pool Config PDA to use in the next command:
 
 ```bash
 # Export the Pool Config PDA (use the address from the previous step output)
-export SOLANA_POOL_CONFIG_PDA=B6yVeSSESLtmyaqwnzWDAxg8ZrSz58Z9WezYaK1SK9jc
+export SOL_POOL_CONFIG_PDA=B6yVeSSESLtmyaqwnzWDAxg8ZrSz58Z9WezYaK1SK9jc
 ```
 
 #### Apply Chain Updates
@@ -1203,8 +1223,8 @@ In this step, you will use the `applyChainUpdates` Hardhat task to configure the
 npx hardhat applyChainUpdates \
   --pooladdress $ETH_POOL_ADDRESS \
   --remotechain solanaDevnet \
-  --remotepooladdresses $SOLANA_POOL_CONFIG_PDA \
-  --remotetokenaddress $TOKEN_MINT \
+  --remotepooladdresses $SOL_POOL_CONFIG_PDA \
+  --remotetokenaddress $SOL_TOKEN_MINT \
   --network sepolia
 ```
 
@@ -1248,15 +1268,12 @@ Pool registration works differently on each platform:
 
 ### Ethereum Sepolia Pool Registration
 
-<Aside type="note" title="Terminal Check">
-  **Ensure you are in Terminal 2** (Smart Contract Examples - Hardhat directory): 
-  
-  ```bash 
-  pwd # Should show:
-  .../smart-contract-examples/ccip/cct/hardhat 
-  ```
+**Stay in Terminal 2 (Smart Contract Examples)**
 
-</Aside>
+```bash
+pwd
+# Should show: .../smart-contract-examples/ccip/cct/hardhat
+```
 
 In this step, you will use the `setPool` Hardhat task to register the BurnMint token pool with the token in Ethereum's TokenAdminRegistry contract. This function sets the pool contract address for the token, enabling it for CCIP cross-chain transfers. Only the token administrator can call this function.
 
@@ -1291,15 +1308,12 @@ npx hardhat setPool \
 
 ### Solana Devnet Pool Registration
 
-<Aside type="note" title="Terminal Switch">
-  **Switch to Terminal 1** (Solana Starter Kit directory): 
-  
-  ```bash
-  pwd 
-  # Should show: .../solana-starter-kit 
-  ```
+**Switch to Terminal 1 (Solana Starter Kit)**
 
-</Aside>
+```bash
+pwd
+# Should show: .../solana-starter-kit
+```
 
 #### Create Address Lookup Table
 
@@ -1313,9 +1327,9 @@ Create an Address Lookup Table (ALT) containing all required accounts for CCIP o
 ```bash
 # Create Address Lookup Table with all required accounts + your multisig address
 yarn svm:admin:create-alt \
-  --token-mint $TOKEN_MINT \
-  --pool-program $POOL_PROGRAM \
-  --additional-addresses $MULTISIG_ADDRESS
+  --token-mint $SOL_TOKEN_MINT \
+  --pool-program $CCIP_POOL_PROGRAM \
+  --additional-addresses $SOL_MULTISIG_ADDRESS
 ```
 
 </Fragment>
@@ -1403,7 +1417,7 @@ $ ts-node ./ccip-scripts/svm/admin/create-alt.ts --token-mint 9qfyXQhZt1ZUvEX1kK
 **Set ALT environment variable:**
 
 ```bash
-export ALT_ADDRESS=9TG3CoF2XyLAH8usfCm7ADJQNxopEAu4CyiWmYCEVuUw
+export SOL_ALT_ADDRESS=9TG3CoF2XyLAH8usfCm7ADJQNxopEAu4CyiWmYCEVuUw
 ```
 
 #### Register Pool with Router
@@ -1418,8 +1432,8 @@ Register your token pool with the CCIP Router using the Address Lookup Table:
 ```bash
 # Register pool with CCIP Router using the ALT
 yarn svm:admin:set-pool \
-  --token-mint $TOKEN_MINT \
-  --lookup-table $ALT_ADDRESS \
+  --token-mint $SOL_TOKEN_MINT \
+  --lookup-table $SOL_ALT_ADDRESS \
   --writable-indices 3,4,7
 ```
 
@@ -1504,10 +1518,21 @@ Test the complete cross-chain token transfer functionality in both directions us
 
 ### Transfer Direction 1: Solana → Ethereum
 
-<Aside type="note" title="Terminal Environment">
-  **Stay in Terminal 1** (Solana Starter Kit directory) for all transfer directions. The Solana Starter Kit supports
-  both Solana → Ethereum and Ethereum → Solana transfers, so you can execute all commands from the same terminal.
-</Aside>
+**Stay in Terminal 1 (Solana Starter Kit)**
+
+Confirm you are in the correct directory:
+
+```bash
+pwd
+# Should show: .../solana-starter-kit
+```
+
+Load all variables for testing:
+
+```bash
+source ~/.ccip_complete_vars
+echo "Environment loaded: SOL_TOKEN_MINT=$SOL_TOKEN_MINT, SOL_ALT_ADDRESS=$SOL_ALT_ADDRESS"
+```
 
 #### Prepare for Testing
 
@@ -1521,15 +1546,15 @@ Your Associated Token Account (ATA) was already created during token creation in
 
 ```bash
 # Check your current token balance (should show 1000 from Phase 1)
-spl-token balance $TOKEN_MINT
+spl-token balance $SOL_TOKEN_MINT
 
 # Delegate tokens for CCIP transfers
 
-yarn svm:token:delegate --token-mint $TOKEN_MINT
+yarn svm:token:delegate --token-mint $SOL_TOKEN_MINT
 
 # Verify the delegation was successful
 
-yarn svm:token:check --token-mint $TOKEN_MINT
+yarn svm:token:check --token-mint $SOL_TOKEN_MINT
 
 ```
 
@@ -1625,7 +1650,7 @@ $ ts-node ./ccip-scripts/svm/token/check-token-approval.ts --token-mint 9qfyXQhZ
 <Fragment slot="panel.1">
 ```bash
 # Execute cross-chain transfer from Solana to Ethereum
-yarn svm:token-transfer --token-mint $TOKEN_MINT
+yarn svm:token-transfer --token-mint $SOL_TOKEN_MINT
 ```
 
 **Customization Options:**
@@ -1634,7 +1659,7 @@ You can override the default transfer amount and destination receiver:
 
 ```bash
 # Override amount and receiver address
-yarn svm:token-transfer --token-mint $TOKEN_MINT --token-amount 1000000 --receiver 0x9d087fC03ae39b088326b67fA3C788236645b717
+yarn svm:token-transfer --token-mint $SOL_TOKEN_MINT --token-amount 1000000 --receiver 0x9d087fC03ae39b088326b67fA3C788236645b717
 ```
 
 **Parameters:**
@@ -1737,10 +1762,7 @@ https://explorer.solana.com/tx/5iq6ZVF7TePnaM4SZmo5xFkGpawmqsp6racfECqsbEzeXQJfm
 
 ### Transfer Direction 2: Ethereum → Solana
 
-<Aside type="note" title="Terminal Environment">
-  **Continue in Terminal 1** (Solana Starter Kit directory). No need to switch terminals - the Solana Starter Kit
-  handles Ethereum → Solana transfers as well.
-</Aside>
+**In Terminal 1 (Solana Starter Kit)**
 
 #### Execute Transfer
 
@@ -1905,8 +1927,8 @@ This optional section demonstrates that transferring mint authority to the multi
 ```bash
 # Demonstrate manual minting through the multisig
 # This proves you haven't "lost" mint authority - it's just managed through the multisig
-spl-token mint $TOKEN_MINT 1 \
-  --owner $MULTISIG_ADDRESS \
+spl-token mint $SOL_TOKEN_MINT 1 \
+  --owner $SOL_MULTISIG_ADDRESS \
   --multisig-signer $HOME/.config/solana/id.json
 ```
 
