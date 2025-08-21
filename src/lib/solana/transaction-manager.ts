@@ -73,7 +73,7 @@ export class SvmTransactionManager {
       })
 
       // 4. Build transaction message using Kit's pipeline
-      const message = await pipe(
+      const message = pipe(
         createTransactionMessage({ version: 0 }),
         (tx) => setTransactionMessageFeePayerSigner(feePayer, tx),
         (tx) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, tx),
@@ -126,7 +126,7 @@ export class SvmTransactionManager {
               .getLatestBlockhash({ commitment: this.ctx.commitment })
               .send()
 
-            const retryMessage = await pipe(
+            const retryMessage = pipe(
               createTransactionMessage({ version: 0 }),
               (tx) => setTransactionMessageFeePayerSigner(feePayer, tx),
               (tx) => setTransactionMessageLifetimeUsingBlockhash(freshBlockhash, tx),
@@ -147,7 +147,11 @@ export class SvmTransactionManager {
       } else {
         // Without subscriptions: manual send + poll
         const wireTx = getBase64EncodedWireTransaction(signedTransaction)
-        await this.ctx.rpc.sendTransaction(wireTx).send()
+        await this.ctx.rpc
+          .sendTransaction(wireTx, {
+            // preflightCommitment: this.ctx.commitment, // optional
+          })
+          .send()
 
         // Poll signature status until desired commitment
         const target = this.ctx.commitment
@@ -176,7 +180,7 @@ export class SvmTransactionManager {
             }
             // Continue polling for network errors
           }
-          await new Promise((resolve) => setTimeout(resolve, 1000))
+          await new Promise((resolve) => setTimeout(resolve, Math.min(1000 * (i + 1), 5000)))
         }
         if (!confirmed) {
           throw new Error(`Transaction not confirmed within timeout: ${signature}`)
@@ -247,7 +251,7 @@ export class SvmTransactionManager {
       const computeBudgetInstructions = buildComputeBudgetInstructions(budgetConfig, requestId)
       const allInstructions = [...computeBudgetInstructions, ...instructions]
 
-      const message = await pipe(
+      const message = pipe(
         createTransactionMessage({ version: 0 }),
         (tx) => setTransactionMessageFeePayerSigner(feePayer, tx),
         (tx) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, tx),
