@@ -24,6 +24,7 @@ This educational tutorial demonstrates how to create and configure cross-chain t
 
 - **Direct Transfer**: Transfer mint authority directly to Pool Signer PDA - suitable for development and testing ([see tutorial](/ccip/tutorials/svm/cross-chain-tokens/direct-mint-authority))
 - **Multisig Setup** (this tutorial): Learn SPL token multisig concepts with Pool Signer PDA as a member - foundation for production systems
+- **Production Multisig**: Enterprise-grade dual-layer governance with Squads + SPL multisig ([see tutorial](/ccip/tutorials/svm/cross-chain-tokens/production-multisig-tutorial))
 
 This tutorial focuses on demonstrating multisig architecture concepts, helping you understand governance controls while maintaining autonomous cross-chain token transfers through BurnMint token pools.
 
@@ -44,6 +45,35 @@ This tutorial focuses on demonstrating multisig architecture concepts, helping y
   administration, while potentially being one of the signers in the SPL token multisig shown here.
 </Aside>
 
+## What You Will Build
+
+This tutorial implements the **SPL token multisig** variant of **Path A** from the [CCIP Cross-Chain Token Integration Guide](/ccip/concepts/cross-chain-token/svm/integration-guide). This approach is designed for **learning multisig concepts** and provides a foundation for production systems.
+
+### Cross-Chain Token Architecture
+
+This tutorial implements the **[Burn and Mint](/ccip/concepts/cross-chain-token/overview#burn-and-mint)** token handling mechanism between Solana Devnet and Ethereum Sepolia with **SPL token multisig governance**. You'll deploy **two BurnMint pools** (one on each chain) that work together to maintain consistent token supply across chains while learning multisig architecture concepts.
+
+**How Burn and Mint Works:**
+
+1. **Source Chain**: Burns tokens from sender's account
+1. **CCIP Protocol**: Transmits message cross-chain
+1. **Destination Chain**: Mints equivalent tokens to the receiver
+
+### Component Overview
+
+| Component            | Implementation                      | Authority Model                                    |
+| -------------------- | ----------------------------------- | -------------------------------------------------- |
+| **Ethereum Sepolia** | ERC20 token with CCIP BurnMint pool | Multiple minters: EOA + Pool                       |
+| **Solana Devnet**    | SPL token with CCIP BurnMint pool   | SPL Token Multisig: Pool Signer PDA + Admin wallet |
+
+### SPL Token Multisig Architecture
+
+**Key Approach**: You will create an SPL token multisig that includes the Pool Signer PDA as a required member, enabling both autonomous CCIP operations and governance-controlled minting.
+
+**Educational Focus**: This tutorial demonstrates multisig architecture concepts using a simplified 1-of-2 configuration for learning purposes.
+
+<CcipCommon callout="svmCrossChainTokenPrerequisites" />
+
 ## Tutorial Approach
 
 This tutorial provides step-by-step instructions with detailed explanations of what each command does and why. You'll work primarily in Terminal 1 (Solana) with occasional switches to Terminal 2 (EVM).
@@ -57,102 +87,6 @@ For detailed implementation code explanations, refer to the comprehensive README
 
 The READMEs contain detailed technical explanations, troubleshooting guides, and advanced configuration options.
 
-<CcipCommon callout="svmCrossChainTokenPrerequisites" />
-
-## Introduction
-
-This tutorial covers the complete implementation of cross-chain tokens using the **production multisig** approach within **Path A** from the [CCIP Cross-Chain Token Integration Guide](/ccip/concepts/cross-chain-token/svm/integration-guide). When you complete this tutorial, you will have:
-
-- **Ethereum Sepolia**: ERC20 token with CCIP BurnMint pool
-- **Solana Devnet**: SPL token with CCIP BurnMint pool and multisig governance
-- **Bidirectional Transfers**: Working token transfers in both directions
-- **Production Security**: Multisig governance with autonomous CCIP operations
-
-## What You Will Build
-
-This tutorial provides a complete implementation of the **production multisig** variant of **Path A** from the [CCIP Cross-Chain Token Integration Guide](/ccip/concepts/cross-chain-token/svm/integration-guide). This approach is designed for production environments where you implement proper governance controls while maintaining autonomous CCIP operations.
-
-**Key Approach**: You will create an SPL token multisig that includes the Pool Signer PDA as a required member, enabling both autonomous CCIP operations and governance-controlled minting.
-
-In this tutorial, you will:
-
-- Deploy and configure ERC20 tokens on Ethereum Sepolia
-- Create SPL tokens with SPL token multisig on Solana Devnet
-- Implement self-service CCIP administrator registration
-- Configure BurnMint token pools with multisig mint authority
-- Set up Address Lookup Tables for efficient cross-chain operations
-- Test bidirectional token transfers and monitor transactions
-
-## Understanding Multisig Configuration
-
-Before proceeding with the implementation, it is crucial to understand the multisig configuration used in this tutorial and its production implications.
-
-### SPL Token Multisig Overview
-
-This tutorial implements a **1-of-2 SPL token multisig** configuration where:
-
-- **Threshold (M)**: 1 signature required
-- **Total Signers (N)**: 2 signers total
-- **Pool Signer PDA**: Appears 1 time (= M) as a required signer
-- **Admin Signer**: Your wallet appears 1 time for manual control (tutorial simplification)
-
-<Aside type="note" title="Multisig Threshold Selection">
-  **Tutorial Configuration**: This tutorial uses M=1 for simplicity and testing. **For production deployments**,
-  consider higher thresholds (M=2, M=3, etc.) based on your requirements. See [Mint Authority
-  Management](/ccip/concepts/cross-chain-token/svm/token-pools#mint-authority-management) for detailed threshold
-  considerations.
-</Aside>
-
-### Why This Configuration Works
-
-**Pool Autonomy**: The Pool Signer PDA appears M=1 times, enabling autonomous CCIP operations without manual governance intervention.
-
-**Admin Control**: Your wallet can independently mint tokens for other use cases (airdrops, rewards, etc.) without pool involvement. **Note**: This tutorial uses a single wallet for simplicity, but production deployments should use a governance multisig such as Squads.
-
-**Flexibility**: Both the pool and admin wallet can mint tokens independently, providing operational flexibility while maintaining security.
-
-**Production Scalability**: This pattern scales to higher thresholds (2-of-4, 3-of-6, etc.) for enhanced production security.
-
-For comprehensive multisig configuration options and security considerations, see [Mint Authority Management](/ccip/concepts/cross-chain-token/svm/token-pools#mint-authority-management).
-
-## Technical Architecture
-
-### Cross-Chain Token Mechanism
-
-The BurnMint mechanism ensures total supply consistency across chains by burning tokens on the source chain and minting equivalent tokens on the destination chain.
-
-### Key Infrastructure
-
-The critical component for this tutorial is the **Chainlink-deployed Pool Program** that you will use to initialize your token pool:
-
-- **Pool Program**: `3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo`
-  - This is the standard BurnMint pool program deployed by Chainlink for self-serve mode
-  - You will use this program address to initialize your own token pool
-  - All other components (token addresses, PDAs, etc.) will be unique to your deployment
-
-### Understanding the Tutorial Multisig Setup
-
-This tutorial creates a **1-of-2 SPL token multisig** with the following signers:
-
-- **Pool Signer PDA**: Enables autonomous CCIP operations (burns/mints for cross-chain transfers)
-- **Admin Wallet**: Your single-signature wallet for manual operations (tutorial simplification)
-
-**Tutorial vs Production:**
-
-- **Tutorial**: Uses single wallet as admin signer for simplicity and learning
-- **Production**: Replace admin wallet with proper governance multisig (e.g., Squads)
-
-**Important Distinction**: This SPL token multisig only controls mint authority. For comprehensive governance (CCIP admin roles, pool ownership), you need a separate governance system.
-
-<Aside type="caution" title="Tutorial vs Production Setup">
-**Tutorial Simplification**: This tutorial uses your single wallet as the "admin signer" for educational purposes.
-
-**Production Implementation**: Replace the admin wallet with a governance multisig (Such as Squads)
-
-The Pool Signer PDA remains the same in both cases.
-
-</Aside>
-
 ## Phase 1: Ethereum Sepolia Token Setup
 
 In this step, you will use Hardhat tasks to deploy an ERC20 token contract and a corresponding burn and mint token pool on Ethereum Sepolia. The tasks interact with the `BurnMintERC20` contract for token deployment and the `BurnMintTokenPool` contract for pool creation.
@@ -164,7 +98,7 @@ pwd
 # Should show: .../smart-contract-examples/ccip/cct/hardhat
 ```
 
-### Deploy ERC20 Token
+### Step 1: Deploy ERC20 Token
 
 Using the `deployToken` task, deploy a burnable and mintable ERC20 token on Ethereum Sepolia:
 
@@ -187,20 +121,52 @@ npx hardhat deployToken \
 
 <Fragment slot="panel.2">
 ```bash
-2025-08-05T08:26:57.851Z info: Deploying BurnMintERC20 contract to sepolia
-2025-08-05T08:26:57.851Z info: Waiting 3 blocks for transaction 0x8f3a6b332ae1127bf893bdd4d298571bcd06c331da27aa1a7831551c7893e538 to be confirmed...
-2025-08-05T08:27:50.556Z info: Token deployed to: 0xd3d2f66dd4Eead2cF2cD4C6219Eb1e1E80e6109d
-2025-08-05T08:27:50.598Z info: Granting mint and burn roles to 0x9d087fC03ae39b088326b67fA3C788236645b717
-2025-08-05T08:28:25.325Z info: Verifying contract...
-The contract 0xd3d2f66dd4Eead2cF2cD4C6219Eb1e1E80e6109d has already been verified on the block explorer. If you're trying to verify a partially verified contract, please use the --force flag.
-https://sepolia.etherscan.io/address/0xd3d2f66dd4Eead2cF2cD4C6219Eb1e1E80e6109d#code
-2025-08-05T08:28:25.936Z info: Token contract deployed and verified
+2025-08-22T09:13:58.531Z info: Deploying BurnMintERC20 contract to sepolia
+2025-08-22T09:13:58.532Z info: Waiting 3 blocks for transaction 0x8fc04d92a0195c785fd5776f1b03bb4a6c416fadbc9ee11b18860b7e4644f068 to be confirmed...
+2025-08-22T09:14:36.690Z info: Token deployed to: 0x84426E21208D73E8D3760d9cbc4FaEFa279d3720
+2025-08-22T09:14:36.759Z info: Granting mint and burn roles to 0x9d087fC03ae39b088326b67fA3C788236645b717
+2025-08-22T09:15:13.003Z info: Verifying contract...
+The contract 0x84426E21208D73E8D3760d9cbc4FaEFa279d3720 has already been verified on the block explorer. If you're trying to verify a partially verified contract, please use the --force flag.
+https://sepolia.etherscan.io/address/0x84426E21208D73E8D3760d9cbc4FaEFa279d3720#code
+
+2025-08-22T09:15:13.627Z info: Token contract deployed and verified
+
+````
+
+</Fragment>
+</Tabs>
+
+Export your token address for later use:
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Export Token Address</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Set token address from deployment
+export ETH_TOKEN_ADDRESS="<YOUR_TOKEN_ADDRESS>"
+````
+
+Verify your token address:
+
+```bash
+echo "Token Address: $ETH_TOKEN_ADDRESS"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+Token Address: 0x84426E21208D73E8D3760d9cbc4FaEFa279d3720
 ```
 
 </Fragment>
 </Tabs>
 
-### Deploy Token Pool
+### Step 2: Deploy Token Pool
 
 In this step, you will use the `deployTokenPool` task to deploy a CCIP BurnMint token pool for the token on Ethereum Sepolia. This task interacts with the `BurnMintTokenPool` contract and grants the necessary mint and burn privileges to the pool.
 
@@ -211,18 +177,13 @@ In this step, you will use the `deployTokenPool` task to deploy a CCIP BurnMint 
 <Fragment slot="panel.1">
 
 ```bash
-# Set token address from deployment
-export ETH_TOKEN_ADDRESS=0xd3d2f66dd4Eead2cF2cD4C6219Eb1e1E80e6109d
-
 # Deploy BurnMint pool
-
 npx hardhat deployTokenPool \
  --tokenaddress $ETH_TOKEN_ADDRESS \
  --localtokendecimals 18 \
  --pooltype burnMint \
  --verifycontract true \
  --network sepolia
-
 ```
 
 </Fragment>
@@ -230,21 +191,50 @@ npx hardhat deployTokenPool \
 <Fragment slot="panel.2">
 
 ```bash
-2025-08-05T08:33:51.719Z info: Waiting 3 blocks for transaction 0x8929b93180a7e9a190441233b887ee2bf52ef2021c8c3f42e7a971e6d8ec270a to be confirmed...
-2025-08-05T08:34:25.503Z info: Token pool deployed to: 0x1a65BA94731a6541efDbeb1E72A7b1E9771B64b7
-2025-08-05T08:34:25.503Z info: Granting mint and burn roles to 0x1a65BA94731a6541efDbeb1E72A7b1E9771B64b7 on token 0xd3d2f66dd4Eead2cF2cD4C6219Eb1e1E80e6109d
-2025-08-05T08:35:01.293Z info: Verifying contract...
-The contract 0x1a65BA94731a6541efDbeb1E72A7b1E9771B64b7 has already been verified on the block explorer. If you're trying to verify a partially verified contract, please use the --force flag.
-https://sepolia.etherscan.io/address/0x1a65BA94731a6541efDbeb1E72A7b1E9771B64b7#code
-2025-08-05T08:35:01.825Z info: Token pool contract deployed and verified
+2025-08-22T09:20:00.202Z info: Waiting 3 blocks for transaction 0xfe63c43556e33c77b06c352cbd36350e851965d1466248a8d6486d898ce67674 to be confirmed...
+2025-08-22T09:29:37.031Z info: Token pool deployed to: 0x22d99DF2246eD52063B0d2d0f24E03d7319b9299
+2025-08-22T09:29:37.036Z info: Granting mint and burn roles to 0x22d99DF2246eD52063B0d2d0f24E03d7319b9299 on token 0x84426E21208D73E8D3760d9cbc4FaEFa279d3720
+2025-08-22T09:30:12.768Z info: Verifying contract...
+The contract 0x22d99DF2246eD52063B0d2d0f24E03d7319b9299 has already been verified on the block explorer. If you're trying to verify a partially verified contract, please use the --force flag.
+https://sepolia.etherscan.io/address/0x22d99DF2246eD52063B0d2d0f24E03d7319b9299#code
+
+2025-08-22T09:30:13.374Z info: Token pool contract deployed and verified
 ```
 
 </Fragment>
 </Tabs>
 
-### Configure CCIP Administration
+Export your pool address for later use:
 
-### Mint Tokens
+<Tabs client:visible>
+<Fragment slot="tab.1">Export Pool Address</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Set pool address from deployment
+export ETH_POOL_ADDRESS="<YOUR_POOL_ADDRESS>"
+```
+
+Verify your pool address:
+
+```bash
+echo "Pool Address: $ETH_POOL_ADDRESS"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+Pool Address: 0x22d99DF2246eD52063B0d2d0f24E03d7319b9299
+```
+
+</Fragment>
+</Tabs>
+
+### Step 3: Mint Tokens
 
 In this step, you will use the `mintTokens` task to mint tokens on Ethereum Sepolia for your Externally Owned Account (EOA). Since you assigned mint and burn privileges to your EOA when deploying the tokens, you can now mint tokens for testing purposes. This ensures that you have enough tokens in your EOA to perform cross-chain transfers later.
 
@@ -265,15 +255,15 @@ npx hardhat mintTokens \
 
 <Fragment slot="panel.2">
 ```bash
-2025-08-05T08:36:12.345Z info: Minting 1000000000000000000000 of BnMAEM tokens to 0x9d087fC03ae39b088326b67fA3C788236645b717
-2025-08-05T08:36:45.123Z info: Minted 1000000000000000000000 of BnMAEM tokens to 0x9d087fC03ae39b088326b67fA3C788236645b717 - transaction hash: 0xa1b2c3d4e5f67890abcdef1234567890fedcba0987654321456789abcdef1234
-2025-08-05T08:36:45.456Z info: Current balance of 0x9d087fC03ae39b088326b67fA3C788236645b717 is 1000000000000000000000 BnMAEM
+2025-08-22T09:38:02.533Z info: Minting 1000000000000000000000 of BnMAEM tokens to 0x9d087fC03ae39b088326b67fA3C788236645b717
+2025-08-22T09:38:37.383Z info: Minted 1000000000000000000000 of BnMAEM tokens to 0x9d087fC03ae39b088326b67fA3C788236645b717 - transaction hash: 0x4648cf405b8847a57bfa84aa0b4b2f38be3a25eaddf21432356d513aa151fbb0
+2025-08-22T09:38:37.492Z info: Current balance of 0x9d087fC03ae39b088326b67fA3C788236645b717 is 1000000000000000000000 BnMAEM
 ```
 
 </Fragment>
 </Tabs>
 
-### Claim Admin
+### Step 4: Claim Admin
 
 In this step, you will use the `claimAdmin` task to register your EOA as the administrator for the deployed token on Ethereum Sepolia. This process involves calling the `RegistryModuleOwnerCustom` contract, which will fetch the CCIP admin of the token and set it up as the admin in the registry.
 
@@ -293,16 +283,16 @@ npx hardhat claimAdmin \
 
 <Fragment slot="panel.2">
 ```bash
-2025-08-05T08:38:15.234Z info: 🎯 Attempting to claim admin for token 0xd3d2f66dd4Eead2cF2cD4C6219Eb1e1E80e6109d using getCCIPAdmin mode
-2025-08-05T08:38:16.567Z info: Current token CCIP admin: 0x9d087fC03ae39b088326b67fA3C788236645b717
-2025-08-05T08:38:16.567Z info: Claiming admin of 0xd3d2f66dd4Eead2cF2cD4C6219Eb1e1E80e6109d via getCCIPAdmin() for CCIP admin 0x9d087fC03ae39b088326b67fA3C788236645b717
-2025-08-05T08:38:45.123Z info: ✅ Successfully claimed admin of 0xd3d2f66dd4Eead2cF2cD4C6219Eb1e1E80e6109d using getCCIPAdmin mode. Transaction: 0xb1c2d3e4f567890abcdef1234567890fedcba0987654321456789abcdef1234
+2025-08-22T09:39:05.315Z info: 🎯 Attempting to claim admin for token 0x84426E21208D73E8D3760d9cbc4FaEFa279d3720 using getCCIPAdmin mode
+2025-08-22T09:39:06.052Z info: Current token CCIP admin: 0x9d087fC03ae39b088326b67fA3C788236645b717
+2025-08-22T09:39:06.052Z info: Claiming admin of 0x84426E21208D73E8D3760d9cbc4FaEFa279d3720 via getCCIPAdmin() for CCIP admin 0x9d087fC03ae39b088326b67fA3C788236645b717
+2025-08-22T09:42:36.924Z info: ✅ Successfully claimed admin of 0x84426E21208D73E8D3760d9cbc4FaEFa279d3720 using getCCIPAdmin mode. Transaction: 0x5938a38e68f76c02e3da4542654466f0ce2b23dd5191b9b257676f005e7ffc4b
 ```
 
 </Fragment>
 </Tabs>
 
-### Accept Admin Role
+### Step 5: Accept Admin Role
 
 In this step, you will use the `acceptAdminRole` task to accept the admin role for the deployed token on Ethereum Sepolia. Once you have claimed the role, accepting the role finalizes your control over the token administration.
 
@@ -322,7 +312,7 @@ npx hardhat acceptAdminRole \
 
 <Fragment slot="panel.2">
 ```bash
-2025-08-05T08:40:12.456Z info: Accepted admin role for token 0xd3d2f66dd4Eead2cF2cD4C6219Eb1e1E80e6109d tx: 0xc2d3e4f567890abcdef1234567890fedcba0987654321456789abcdef123456
+2025-08-22T09:44:00.851Z info: Accepted admin role for token 0x84426E21208D73E8D3760d9cbc4FaEFa279d3720 tx: 0xce1554bb5d281a70a8f3be97fbfb3bd4b9a484ff76b1a37b7bc631aff94bae86
 ```
 
 </Fragment>
@@ -330,19 +320,41 @@ npx hardhat acceptAdminRole \
 
 Save the Phase 1 variables for cross-terminal access:
 
+<Tabs client:visible>
+<Fragment slot="tab.1">Save Phase 1 Variables</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
 ```bash
-# Save Phase 1 variables to file for later use
-cat > ~/.phase1_vars << 'EOF'
-export ETH_TOKEN_ADDRESS=0xd3d2f66dd4Eead2cF2cD4C6219Eb1e1E80e6109d
-export ETH_POOL_ADDRESS=0x1a65BA94731a6541efDbeb1E72A7b1E9771B64b7
+# Save Phase 1 variables for cross-terminal use
+cat > ~/.phase1_vars << EOF
+export ETH_TOKEN_ADDRESS="$ETH_TOKEN_ADDRESS"
+export ETH_POOL_ADDRESS="$ETH_POOL_ADDRESS"
 EOF
 
-echo "Phase 1 variables saved to ~/.phase1_vars"
+echo "=== Phase 1 Complete - EVM Setup ==="
+echo "✅ ETH Token: $ETH_TOKEN_ADDRESS"
+echo "✅ ETH Pool: $ETH_POOL_ADDRESS"
+echo "✅ Variables saved to ~/.phase1_vars"
 ```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+✅ ETH Token: 0x84426E21208D73E8D3760d9cbc4FaEFa279d3720
+✅ ETH Pool: 0x22d99DF2246eD52063B0d2d0f24E03d7319b9299
+✅ Variables saved to ~/.phase1_vars
+```
+
+</Fragment>
+</Tabs>
 
 ## Phase 2: Solana Devnet Token Setup
 
-In this phase, you will create an SPL token, initialize the CCIP token pool, and complete CCIP registration BEFORE setting up the production multisig. This sequence is critical because the self-service registration requires you to hold the mint authority.
+In this phase, you will create an SPL token, initialize the CCIP token pool, and complete CCIP registration **before\*\*** setting up the SPL token multisig. This sequence is critical because the self-service registration requires you to hold the mint authority.
 
 **Switch to Terminal 1** (Solana Starter Kit) Verify your location:
 
@@ -351,15 +363,16 @@ pwd
 # Should show: .../solana-starter-kit
 ```
 
-### Create SPL Token
+Load the Ethereum addresses from Phase 1:
+
+```bash
+source ~/.phase1_vars
+echo "Loaded Phase 1 variables: ETH_TOKEN_ADDRESS=$ETH_TOKEN_ADDRESS, ETH_POOL_ADDRESS=$ETH_POOL_ADDRESS"
+```
+
+### Step 1: Create SPL Token
 
 In this step, you will use the `svm:token:create` script to create an SPL token with Metaplex metadata support on Solana Devnet. This script leverages the TokenManager library to create a comprehensive token with metadata, initial supply, and proper configuration for CCIP integration.
-
-<Aside type="note" title="Metadata Customization">
-  You can reuse this metadata or create your own to IPFS or another decentralized storage solution and update the
-  `create-token-metaplex.ts` script to ensure your metadata file and token configuration are compatible. The default
-  metadata URI provided is for demonstration purposes only.
-</Aside>
 
 <Tabs client:visible>
 <Fragment slot="tab.1">Create Token</Fragment>
@@ -382,6 +395,10 @@ yarn svm:token:create
     --uri "https://your-ipfs-url/metadata.json"
   ```
 
+You can reuse this metadata or create your own to IPFS or another decentralized storage solution and update the
+`create-token-metaplex.ts` script to ensure your metadata file and token configuration are compatible. The default
+metadata URI provided is for demonstration purposes only.
+
 </Aside>
 
 </Fragment>
@@ -389,41 +406,47 @@ yarn svm:token:create
 <Fragment slot="panel.2">
 
 ```bash
-yarn run v1.22.22
-$ ts-node ./ccip-scripts/svm/token/create-token-metaplex.ts
-[2025-08-05T08:43:55.912Z] SPL Token Creator with Metaplex Metadata
-[2025-08-05T08:43:55.914Z] ===============================================
-[2025-08-05T08:43:55.963Z] Network: solana-devnet
-[2025-08-05T08:43:55.964Z] Wallet: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-
-[2025-08-05T08:43:55.964Z] 💰 WALLET BALANCE
-[2025-08-05T08:43:55.964Z] ===============================================
-[2025-08-05T08:43:56.421Z] SOL Balance: 36432172946 lamports (36.432172946 SOL)
-
-[2025-08-05T08:43:56.422Z] ⚙️ SPL TOKEN CONFIGURATION
-[2025-08-05T08:43:56.422Z] ===============================================
-[2025-08-05T08:43:56.422Z] Name: AEM (default)
-[2025-08-05T08:43:56.422Z] Symbol: CCIP-AEM (default)
-[2025-08-05T08:43:56.422Z] Decimals: 9 (default)
-[2025-08-05T08:43:56.422Z] URI: https://cyan-pleasant-anteater-613.mypinata.cloud/ipfs/bafkreieirlwjqbtzniqsgcjebzexlcspcmvd4woh3ajvf2p4fuivkenw6i (default)
-[2025-08-05T08:43:56.422Z] Initial Supply: 1000000000000 (default)
-
-[2025-08-05T08:43:56.424Z] 🏭 CREATING SPL TOKEN
-[2025-08-05T08:43:56.424Z] ===============================================
-[2025-08-05T08:44:10.102Z] spl-token token created successfully {
-mint: '9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG',
-signature: '2xWeWt1WsYHUtgmErkbAdHJbK4K5KJpbDn2xX4Q7w77yzYuhyjyL2Me818TnnVcVey5hcqNi7AuLKyYD3TqhdziW'
+[2025-08-22T09:52:33.774Z] 🏭 CREATING SPL TOKEN
+[2025-08-22T09:52:33.774Z] ===============================================
+[2025-08-22T09:52:33.774Z] Starting spl-token creation with metadata {
+  name: 'AEM',
+  symbol: 'CCIP-AEM',
+  decimals: 9,
+  uri: 'https://cyan-pleasant-anteater-613.mypinata.cloud/ipfs/bafkreieirlwjqbtzniqsgcjebzexlcspcmvd4woh3ajvf2p4fuivkenw6i',
+  initialSupply: '1000000000000',
+  sellerFeeBasisPoints: 0,
+  tokenProgram: 'spl-token'
 }
-
-[2025-08-05T08:44:36.623Z] ✅ SPL TOKEN CREATED SUCCESSFULLY
-[2025-08-05T08:44:36.623Z] ===============================================
-[2025-08-05T08:44:36.624Z] Mint Address: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T08:44:36.624Z] Transaction Signature: 2xWeWt1WsYHUtgmErkbAdHJbK4K5KJpbDn2xX4Q7w77yzYuhyjyL2Me818TnnVcVey5hcqNi7AuLKyYD3TqhdziW
-[2025-08-05T08:44:36.624Z] Token Account: DwTHftH6DNbPoFnwKEawmFi8JyhthDJKkxv9z5KKQu3j
-
-[2025-08-05T08:44:36.626Z] 🎉 SPL Token creation completed successfully!
-✨ Done in 46.11s.
-
+[2025-08-22T09:52:47.422Z] spl-token token created successfully {
+  mint: '8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS',
+  signature: 'i3svbchAskKnVFQJzHXeEg6KVGTa1m43USW1mdZQeYLRvjvKgVNBmauiYMMdaPnSAA79mz9XPL3mkvFWbPgx9U2'
+}
+[2025-08-22T09:52:47.425Z] Starting token mint operation {
+  mint: '8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS',
+  amount: '1000000000000',
+  recipient: 'EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB'
+}
+[2025-08-22T09:53:01.694Z] ATA created successfully {
+  tokenAccount: '4k3FoESSV3MHg1iKScE1Ccqeb3PfHiz71nX5PgkaL1kz',
+  signature: '3eLGA18SbGmfPJNcEfrJqiDUsuyDrRMN8Y61oupGxkZnVjXvuEucEnH2UZGNzjAzUafKQrR7KaWAiuPrYesFD2K9'
+}
+[2025-08-22T09:53:15.908Z] Tokens minted successfully {
+  signature: '3N6YhEfedAtucAXoadgeg11BcDbdGJhiD1hva4Zk15QAsDjiq1LJPwD485f8BN7zrVtbQ81yw3ecruC2p5opTGp3',
+  amount: '1000000000000',
+  tokenAccount: '4k3FoESSV3MHg1iKScE1Ccqeb3PfHiz71nX5PgkaL1kz',
+  newBalance: '1000000000000'
+}
+[2025-08-22T09:53:15.908Z] Initial supply minted {
+  tokenAccount: '4k3FoESSV3MHg1iKScE1Ccqeb3PfHiz71nX5PgkaL1kz',
+  amount: '1000000000000'
+}
+[2025-08-22T09:53:15.909Z]
+[2025-08-22T09:53:15.909Z] ✅ SPL TOKEN CREATED SUCCESSFULLY
+[2025-08-22T09:53:15.909Z] ===============================================
+[2025-08-22T09:53:15.909Z] Mint Address: 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
+[2025-08-22T09:53:15.911Z] Transaction Signature: i3svbchAskKnVFQJzHXeEg6KVGTa1m43USW1mdZQeYLRvjvKgVNBmauiYMMdaPnSAA79mz9XPL3mkvFWbPgx9U2
+[2025-08-22T09:53:15.911Z] Token Account: 4k3FoESSV3MHg1iKScE1Ccqeb3PfHiz71nX5PgkaL1kz
+[2025-08-22T09:53:15.911Z]
 ```
 
 </Fragment>
@@ -433,23 +456,55 @@ signature: '2xWeWt1WsYHUtgmErkbAdHJbK4K5KJpbDn2xX4Q7w77yzYuhyjyL2Me818TnnVcVey5h
 
 Set up environment variables for easier reference throughout the tutorial:
 
+<Tabs client:visible>
+<Fragment slot="tab.1">Set Environment Variables</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+<Aside type="note" title="CCIP BurnMint Pool Program">
+  The CCIP BurnMint pool program is a self-service pool program that allows you to create a pool for your token.
+  You can find the program ID in the CCIP Directory for:
+
+     - [Solana Devnet](/ccip/directory/testnet/chain/solana-devnet)
+     - [Solana Mainnet](/ccip/directory/mainnet/chain/solana-mainnet)
+
+</Aside>
+
 ```bash
 # Set your token mint address from the previous output
-export SOL_TOKEN_MINT=9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
+export SOL_TOKEN_MINT="<REPLACE_WITH_YOUR_TOKEN_MINT_ADDRESS>"
 
 # Set your admin wallet (tutorial simplification - use governance multisig in production)
-export ADMIN_WALLET=$(solana address)
+export SOL_ADMIN_WALLET=$(solana address)
 
 # Set pool program (Chainlink self-service BurnMint pool program)
-export CCIP_POOL_PROGRAM=3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
+export CCIP_POOL_PROGRAM=41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB
+```
 
+Verify your environment variables:
+
+```bash
 # Display for verification
 echo "Token Mint: $SOL_TOKEN_MINT"
-echo "Admin Wallet: $ADMIN_WALLET"
+echo "Admin Wallet: $SOL_ADMIN_WALLET"
 echo "Pool Program: $CCIP_POOL_PROGRAM"
 ```
 
-### Initialize CCIP Token Pool
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+Token Mint: 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
+Admin Wallet: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+Pool Program: 41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB
+```
+
+</Fragment>
+</Tabs>
+
+### Step 2: Initialize CCIP Token Pool
 
 In this step, you will use the `svm:pool:initialize` script to initialize a CCIP token pool for your SPL token. This process creates the necessary on-chain state for cross-chain operations and establishes the Pool Signer PDA that will manage token operations.
 
@@ -470,41 +525,42 @@ yarn svm:pool:initialize \
 <Fragment slot="panel.2">
 
 ```bash
-yarn run v1.22.22
-$ ts-node ./ccip-scripts/svm/pool/initialize-pool.ts --token-mint 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG --burn-mint-pool-program 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
-[2025-08-05T08:57:21.020Z] CCIP Token Pool Initialization
-[2025-08-05T08:57:21.022Z] ===========================================
-[2025-08-05T08:57:21.063Z] Network: solana-devnet
-[2025-08-05T08:57:21.063Z] Wallet: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-
-[2025-08-05T08:57:21.063Z] 💰 WALLET BALANCE
-[2025-08-05T08:57:21.063Z] ===========================================
-[2025-08-05T08:57:22.038Z] SOL Balance: 36413536466 lamports (36.413536466 SOL)
-
-[2025-08-05T08:57:22.039Z] ⚙️ POOL CONFIGURATION
-[2025-08-05T08:57:22.040Z] ===========================================
-[2025-08-05T08:57:22.040Z] Token Mint: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T08:57:22.040Z] Burn-Mint Pool Program: 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
-
-[2025-08-05T08:57:35.740Z] Burn-mint pool initialized: q7tWNr4YVTLXegut2B2AQ65tH5R8kTvxdvMQNSxUca8v179GUmxCSxLRiCU39J2mafo78qPwKu8oYCczUcghjs3
-
 🎯 Pool Initialization Summary:
-[2025-08-05T08:57:35.741Z] Token Mint: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T08:57:35.741Z] Pool State PDA: B6yVeSSESLtmyaqwnzWDAxg8ZrSz58Z9WezYaK1SK9jc
-[2025-08-05T08:57:35.741Z] Pool Signer PDA: 7WTnVd9Q6de3GgPCpDfHX5S2T5XzGDeMDZRev3FVbZo5
-[2025-08-05T08:57:35.741Z] Program ID: 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
-[2025-08-05T08:57:35.741Z] Transaction: q7tWNr4YVTLXegut2B2AQ65tH5R8kTvxdvMQNSxUca8v179GUmxCSxLRiCU39J2mafo78qPwKu8oYCczUcghjs3
-
-[2025-08-05T08:57:35.741Z] ✅ POOL INITIALIZED SUCCESSFULLY
-[2025-08-05T08:57:36.546Z] ✅ Pool initialization verified successfully!
-✨ Done in 18.39s.
-
+[2025-08-22T10:00:57.305Z]    Token Mint:       8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
+[2025-08-22T10:00:57.305Z]    Pool State PDA:   DNNetX8iV1H7tuDioQ5AFxUhAX1gEqUdWDtCpgYvPmEE
+[2025-08-22T10:00:57.305Z]    Pool Signer PDA:  GLgULP9HDnQy5kQkeEdJJeLXTW1qK7NAbQRJ8xNniNFo
+[2025-08-22T10:00:57.305Z]    Program ID:       41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB
+[2025-08-22T10:00:57.305Z]    Transaction:      4EBzqsc9JHnBF9yDGwoJWZzd6zXyxBB8zcSpw264mAzwi6enEj32vDeesFh16z6BuR5dnmd98iniR9jfNckKQezK
+[2025-08-22T10:00:57.305Z]
+[2025-08-22T10:00:57.306Z] ✅ POOL INITIALIZED SUCCESSFULLY
+[2025-08-22T10:00:57.306Z] ===========================================
+[2025-08-22T10:00:57.306Z] Transaction Signature: 4EBzqsc9JHnBF9yDGwoJWZzd6zXyxBB8zcSpw264mAzwi6enEj32vDeesFh16z6BuR5dnmd98iniR9jfNckKQezK
+[2025-08-22T10:00:57.306Z] 📍 Pool State PDA: DNNetX8iV1H7tuDioQ5AFxUhAX1gEqUdWDtCpgYvPmEE
+[2025-08-22T10:00:57.306Z]
+[2025-08-22T10:00:57.306Z] 🔍 EXPLORER URLS
+[2025-08-22T10:00:57.306Z] ===========================================
+[2025-08-22T10:00:57.307Z] Transaction: https://explorer.solana.com/tx/4EBzqsc9JHnBF9yDGwoJWZzd6zXyxBB8zcSpw264mAzwi6enEj32vDeesFh16z6BuR5dnmd98iniR9jfNckKQezK?cluster=devnet
+[2025-08-22T10:00:57.307Z]
+[2025-08-22T10:00:57.307Z] 🔍 VERIFICATION
+[2025-08-22T10:00:57.307Z] ===========================================
+[2025-08-22T10:00:57.307Z] Verifying pool initialization...
+[2025-08-22T10:00:57.309Z] 📍 Pool Config PDA: DNNetX8iV1H7tuDioQ5AFxUhAX1gEqUdWDtCpgYvPmEE
+[2025-08-22T10:00:57.552Z] ✅ Pool initialization verified successfully!
+[2025-08-22T10:00:57.552Z] ✅ State PDA confirmed active: DNNetX8iV1H7tuDioQ5AFxUhAX1gEqUdWDtCpgYvPmEE
+[2025-08-22T10:00:57.552Z]
+[2025-08-22T10:00:57.552Z] 🎯 POOL CREATION SUMMARY
+[2025-08-22T10:00:57.552Z] ===============================================
+[2025-08-22T10:00:57.552Z] Token Mint: 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
+[2025-08-22T10:00:57.552Z] State PDA: DNNetX8iV1H7tuDioQ5AFxUhAX1gEqUdWDtCpgYvPmEE
+[2025-08-22T10:00:57.553Z] Owner: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[2025-08-22T10:00:57.553Z] Program: 41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB
+[2025-08-22T10:00:57.553Z]
 ```
 
 </Fragment>
 </Tabs>
 
-### Verify Pool Creation
+### Step 3: Verify Pool Creation
 
 In this step, you will use the `svm:pool:get-info` script to verify that your token pool was initialized correctly. This command queries the on-chain state and displays comprehensive information about your pool configuration, including the Pool Signer PDA and current ownership.
 
@@ -526,69 +582,67 @@ yarn svm:pool:get-info \
 <Fragment slot="panel.2">
 
 ```bash
-yarn run v1.22.22
-$ ts-node ./ccip-scripts/svm/pool/get-pool-info.ts --token-mint 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG --burn-mint-pool-program 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
-[2025-08-05T09:02:35.136Z] 🏊 CCIP Token Pool Information
-[2025-08-05T09:02:35.138Z] ===========================================
-[2025-08-05T09:02:35.180Z] Network: solana-devnet
-[2025-08-05T09:02:35.182Z] Querying as: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-
-[2025-08-05T09:02:35.182Z] ⚙️ QUERY CONFIGURATION
-[2025-08-05T09:02:35.182Z] ===========================================
-[2025-08-05T09:02:35.183Z] Token Mint: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T09:02:35.183Z] Program ID: 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
-
-[2025-08-05T09:02:35.186Z] 🔍 POOL EXISTENCE CHECK
-[2025-08-05T09:02:35.186Z] ===========================================
-[2025-08-05T09:02:35.191Z] 📍 Pool Config PDA: B6yVeSSESLtmyaqwnzWDAxg8ZrSz58Z9WezYaK1SK9jc
-
-[2025-08-05T09:02:36.116Z] ================================================================================
-[2025-08-05T09:02:36.116Z] 🏊 BURN-MINT TOKEN POOL INFORMATION
-[2025-08-05T09:02:36.116Z] ================================================================================
-[2025-08-05T09:02:36.116Z]
-🌍 GLOBAL CONFIGURATION
-[2025-08-05T09:02:36.116Z] ----------------------------------------
-[2025-08-05T09:02:36.116Z] Program Version: 1
-[2025-08-05T09:02:36.116Z] Self-Served Pools: ✅ Enabled
-[2025-08-05T09:02:36.116Z]
-📋 BASIC INFORMATION
-[2025-08-05T09:02:36.116Z] ----------------------------------------
-[2025-08-05T09:02:36.116Z] Pool Type: burn-mint
-[2025-08-05T09:02:36.116Z] Version: 1
-[2025-08-05T09:02:36.116Z] Token Mint: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T09:02:36.116Z] Decimals: 9
-[2025-08-05T09:02:36.116Z]
-👥 OWNERSHIP & PERMISSIONS
-[2025-08-05T09:02:36.116Z] ----------------------------------------
-[2025-08-05T09:02:36.116Z] Current Owner: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-[2025-08-05T09:02:36.116Z] Proposed Owner: 11111111111111111111111111111111 (default/unset)
-[2025-08-05T09:02:36.116Z] Rate Limit Admin: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-[2025-08-05T09:02:36.116Z]
-🪙 TOKEN CONFIGURATION
-[2025-08-05T09:02:36.116Z] ----------------------------------------
-[2025-08-05T09:02:36.116Z] Token Program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
-[2025-08-05T09:02:36.117Z] Pool Signer PDA: 7WTnVd9Q6de3GgPCpDfHX5S2T5XzGDeMDZRev3FVbZo5
-[2025-08-05T09:02:36.117Z] Pool Token Account: 6VmKxsSRVCGZkUusMvF97UZd2FHJyDF9FhPnAdpwQKvK
-[2025-08-05T09:02:36.117Z]
-📍 ADDRESS SUMMARY
-[2025-08-05T09:02:36.117Z] ----------------------------------------
-[2025-08-05T09:02:36.117Z] Token Mint: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T09:02:36.117Z] Pool Program: 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
-[2025-08-05T09:02:36.117Z] Pool Config PDA: B6yVeSSESLtmyaqwnzWDAxg8ZrSz58Z9WezYaK1SK9jc (Pool state account)
-[2025-08-05T09:02:36.117Z] Global Config PDA: 3sM46YunqEj7xWQaV3fzogeuAnqDZkW1suiVfGqpTRHz (Program global config)
-[2025-08-05T09:02:36.117Z] Pool Owner: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-[2025-08-05T09:02:36.117Z] Pool Signer PDA: 7WTnVd9Q6de3GgPCpDfHX5S2T5XzGDeMDZRev3FVbZo5 (Token authority)
-[2025-08-05T09:02:36.117Z]
-================================================================================
-[2025-08-05T09:02:36.117Z] ✅ Pool information retrieved successfully!
-✨ Done in 3.97s.
-
+[2025-08-22T10:01:49.699Z] 🔍 POOL EXISTENCE CHECK
+[2025-08-22T10:01:49.699Z] ===========================================
+[2025-08-22T10:01:49.699Z] Checking if pool exists...
+[2025-08-22T10:01:49.700Z] 📍 Pool Config PDA: DNNetX8iV1H7tuDioQ5AFxUhAX1gEqUdWDtCpgYvPmEE
+[2025-08-22T10:01:50.075Z]
+[2025-08-22T10:01:50.075Z] 📊 FETCHING POOL DATA
+[2025-08-22T10:01:50.075Z] ===========================================
+[2025-08-22T10:01:50.075Z] Fetching pool information...
+[2025-08-22T10:01:50.075Z] 📍 Pool Config PDA: DNNetX8iV1H7tuDioQ5AFxUhAX1gEqUdWDtCpgYvPmEE
+[2025-08-22T10:01:50.247Z] 📍 Global Config PDA: E4Bsi43kX3iwXAFia2ebm1mS5Xkmmdv3minZDnfo7Zzf
+[2025-08-22T10:01:50.343Z] \n================================================================================
+[2025-08-22T10:01:50.343Z] 🏊 BURN-MINT TOKEN POOL INFORMATION
+[2025-08-22T10:01:50.343Z] ================================================================================
+[2025-08-22T10:01:50.343Z] \n🌍 GLOBAL CONFIGURATION
+[2025-08-22T10:01:50.343Z] ----------------------------------------
+[2025-08-22T10:01:50.343Z] Program Version: 1
+[2025-08-22T10:01:50.343Z] Self-Served Pools: ✅ Enabled
+[2025-08-22T10:01:50.343Z] \n📋 BASIC INFORMATION
+[2025-08-22T10:01:50.343Z] ----------------------------------------
+[2025-08-22T10:01:50.343Z] Pool Type: burn-mint
+[2025-08-22T10:01:50.343Z] Version: 1
+[2025-08-22T10:01:50.343Z] Token Mint: 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
+[2025-08-22T10:01:50.343Z] Decimals: 9
+[2025-08-22T10:01:50.343Z] \n👥 OWNERSHIP & PERMISSIONS
+[2025-08-22T10:01:50.343Z] ----------------------------------------
+[2025-08-22T10:01:50.343Z] Current Owner: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[2025-08-22T10:01:50.343Z] Proposed Owner: 11111111111111111111111111111111 (default/unset)
+[2025-08-22T10:01:50.343Z] Rate Limit Admin: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[2025-08-22T10:01:50.343Z] \n🪙 TOKEN CONFIGURATION
+[2025-08-22T10:01:50.344Z] ----------------------------------------
+[2025-08-22T10:01:50.344Z] Token Program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+[2025-08-22T10:01:50.344Z] Pool Signer PDA: GLgULP9HDnQy5kQkeEdJJeLXTW1qK7NAbQRJ8xNniNFo
+[2025-08-22T10:01:50.344Z] Pool Token Account: HaBXCZtWkJLAgagxeemKWoXmGYqP2fNQqtazuj6uJrxX
+[2025-08-22T10:01:50.344Z] \n🌉 CCIP INTEGRATION
+[2025-08-22T10:01:50.344Z] ----------------------------------------
+[2025-08-22T10:01:50.344Z] CCIP Router: Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C
+[2025-08-22T10:01:50.344Z] Router Onramp Authority: H6ZviaabTYZqUPgiSoMDbeVthcNW9ULcAuUu3zRLFqDR
+[2025-08-22T10:01:50.344Z] RMN Remote: RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7
+[2025-08-22T10:01:50.344Z] \n🔒 SECURITY & CONTROLS
+[2025-08-22T10:01:50.344Z] ----------------------------------------
+[2025-08-22T10:01:50.344Z] Allowlist: ❌ Disabled
+[2025-08-22T10:01:50.344Z] \n⚖️ REBALANCING (Lock/Release Only)
+[2025-08-22T10:01:50.344Z] ----------------------------------------
+[2025-08-22T10:01:50.344Z] Rebalancer: 11111111111111111111111111111111 (default/unset)
+[2025-08-22T10:01:50.344Z] Can Accept Liquidity: ❌ Disabled
+[2025-08-22T10:01:50.344Z] \n📍 ADDRESS SUMMARY
+[2025-08-22T10:01:50.344Z] ----------------------------------------
+[2025-08-22T10:01:50.344Z] Token Mint:           8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
+[2025-08-22T10:01:50.344Z] Pool Program:         41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB
+[2025-08-22T10:01:50.344Z] Pool Config PDA:      DNNetX8iV1H7tuDioQ5AFxUhAX1gEqUdWDtCpgYvPmEE  (Pool state account)
+[2025-08-22T10:01:50.344Z] Global Config PDA:    E4Bsi43kX3iwXAFia2ebm1mS5Xkmmdv3minZDnfo7Zzf  (Program global config)
+[2025-08-22T10:01:50.344Z] Pool Owner:           EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[2025-08-22T10:01:50.345Z] Pool Signer PDA:      GLgULP9HDnQy5kQkeEdJJeLXTW1qK7NAbQRJ8xNniNFo  (Token authority)
+[2025-08-22T10:01:50.345Z] \n================================================================================
+[2025-08-22T10:01:50.345Z] ✅ Pool information retrieved successfully!
 ```
 
 </Fragment>
 </Tabs>
 
-### Create Pool Token Account
+### Step 4: Create Pool Token Account
 
 In this step, you will use the `svm:pool:create-token-account` script to create an Associated Token Account (ATA) for the Pool Signer PDA. This ATA is required for the pool to hold and manage tokens during cross-chain transfer operations.
 
@@ -610,57 +664,81 @@ yarn svm:pool:create-token-account \
 <Fragment slot="panel.2">
 
 ```bash
-yarn run v1.22.22
-$ ts-node ./ccip-scripts/svm/pool/create-pool-token-account.ts --token-mint 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG --burn-mint-pool-program 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
-[2025-08-05T09:03:08.419Z] 🏊 CCIP Pool Token Account Creation
-[2025-08-05T09:03:08.421Z] ==========================================
-[2025-08-05T09:03:08.456Z] Network: solana-devnet
-[2025-08-05T09:03:08.458Z] Wallet: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-
-[2025-08-05T09:03:08.458Z] 💰 WALLET BALANCE
-[2025-08-05T09:03:08.458Z] ==========================================
-[2025-08-05T09:03:08.836Z] SOL Balance: 36410079306 lamports (36.410079306 SOL)
-
-[2025-08-05T09:03:08.837Z] 📋 ACCOUNT CREATION CONFIGURATION
-[2025-08-05T09:03:08.837Z] ==========================================
-[2025-08-05T09:03:08.837Z] Token Mint: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T09:03:08.837Z] Burn-Mint Pool Program: 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
-
-[2025-08-05T09:03:09.575Z] ✅ Pool exists
-[2025-08-05T09:03:09.575Z] Current pool token account: 6VmKxsSRVCGZkUusMvF97UZd2FHJyDF9FhPnAdpwQKvK
-[2025-08-05T09:03:09.947Z] Detected Standard Token Program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
-[2025-08-05T09:03:09.947Z] Pool signer PDA: 7WTnVd9Q6de3GgPCpDfHX5S2T5XzGDeMDZRev3FVbZo5
-[2025-08-05T09:03:09.948Z] Expected pool token account (ATA): 6VmKxsSRVCGZkUusMvF97UZd2FHJyDF9FhPnAdpwQKvK
-
-[2025-08-05T09:03:10.569Z] 🔧 CREATING POOL TOKEN ACCOUNT
-[2025-08-05T09:03:10.569Z] ==========================================
-[2025-08-05T09:03:11.874Z]
-[2025-08-05T09:03:11.874Z] ✅ POOL TOKEN ACCOUNT CREATED SUCCESSFULLY
-[2025-08-05T09:03:11.874Z] ==========================================
-[2025-08-05T09:03:11.874Z] Transaction Signature: 5CuRE7mduGZNATDdyKBrqJCajtGpTWhZ1AvXJdxLGghtFHAgruUoAfdFC5m3VpENZYr4mTz4mcpQY2JVPYMDR1FY
-[2025-08-05T09:03:11.874Z] Pool Token Account Address: 6VmKxsSRVCGZkUusMvF97UZd2FHJyDF9FhPnAdpwQKvK
-
-[2025-08-05T09:03:12.382Z] 🎉 Pool Token Account Setup Complete!
-[2025-08-05T09:03:12.382Z] ✅ ATA Address: 6VmKxsSRVCGZkUusMvF97UZd2FHJyDF9FhPnAdpwQKvK
-[2025-08-05T09:03:12.382Z] ✅ Owner: 7WTnVd9Q6de3GgPCpDfHX5S2T5XzGDeMDZRev3FVbZo5 (Pool Signer PDA)
-[2025-08-05T09:03:12.382Z] ✅ Ready for cross-chain token operations
-✨ Done in 7.30s.
-
+[2025-08-22T10:03:03.718Z] 🔍 VERIFYING POOL EXISTENCE
+[2025-08-22T10:03:03.718Z] ==========================================
+[2025-08-22T10:03:03.720Z] 📍 Pool Config PDA: DNNetX8iV1H7tuDioQ5AFxUhAX1gEqUdWDtCpgYvPmEE
+[2025-08-22T10:03:03.819Z] ✅ Pool exists
+[2025-08-22T10:03:03.820Z] Current pool token account: HaBXCZtWkJLAgagxeemKWoXmGYqP2fNQqtazuj6uJrxX
+[2025-08-22T10:03:03.820Z] Getting mint account info for 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS to determine token program ID...
+[2025-08-22T10:03:03.916Z] Detected Standard Token Program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+[2025-08-22T10:03:03.917Z] Pool signer PDA: GLgULP9HDnQy5kQkeEdJJeLXTW1qK7NAbQRJ8xNniNFo
+[2025-08-22T10:03:03.918Z] Expected pool token account (ATA): HaBXCZtWkJLAgagxeemKWoXmGYqP2fNQqtazuj6uJrxX
+[2025-08-22T10:03:03.918Z]
+[2025-08-22T10:03:03.918Z] 🔍 CHECKING EXISTING ACCOUNT
+[2025-08-22T10:03:03.918Z] ==========================================
+[2025-08-22T10:03:04.012Z]
+[2025-08-22T10:03:04.012Z] 🔧 CREATING POOL TOKEN ACCOUNT
+[2025-08-22T10:03:04.012Z] ==========================================
+[2025-08-22T10:03:04.012Z] Creating pool token account (ATA)...
+[2025-08-22T10:03:05.348Z]
+[2025-08-22T10:03:05.348Z] ✅ POOL TOKEN ACCOUNT CREATED SUCCESSFULLY
+[2025-08-22T10:03:05.348Z] ==========================================
+[2025-08-22T10:03:05.349Z] Transaction Signature: 2Coz7UvAbQdCDbqbCxFNky9GoGek7ispM2FQrydVoww8Bk4QGgUyMcxPuDiat1sTQwtcAcFsze4ogHkJ42N7E3RE
+[2025-08-22T10:03:05.349Z] Pool Token Account Address: HaBXCZtWkJLAgagxeemKWoXmGYqP2fNQqtazuj6uJrxX
+[2025-08-22T10:03:05.349Z]
+[2025-08-22T10:03:05.349Z] 🔍 EXPLORER URLS
+[2025-08-22T10:03:05.349Z] ==========================================
+[2025-08-22T10:03:05.349Z] Transaction: https://explorer.solana.com/tx/2Coz7UvAbQdCDbqbCxFNky9GoGek7ispM2FQrydVoww8Bk4QGgUyMcxPuDiat1sTQwtcAcFsze4ogHkJ42N7E3RE?cluster=devnet
+[2025-08-22T10:03:05.349Z]
+[2025-08-22T10:03:05.349Z] 🔍 VERIFYING ACCOUNT CREATION
+[2025-08-22T10:03:05.349Z] ==========================================
+[2025-08-22T10:03:05.477Z] ✅ Account creation verified!
+[2025-08-22T10:03:05.477Z]
+[2025-08-22T10:03:05.477Z] 🎉 Pool Token Account Setup Complete!
+[2025-08-22T10:03:05.477Z] ✅ ATA Address: HaBXCZtWkJLAgagxeemKWoXmGYqP2fNQqtazuj6uJrxX
+[2025-08-22T10:03:05.477Z] ✅ Owner: GLgULP9HDnQy5kQkeEdJJeLXTW1qK7NAbQRJ8xNniNFo (Pool Signer PDA)
 ```
 
 </Fragment>
 </Tabs>
 
-### Set Pool Signer Environment Variable
+### Step 5: Set Pool Environment Variables
 
-Set the Pool Signer PDA for use in multisig creation:
+Set the Pool Signer PDA and Pool Config PDA from the Step 3 output above:
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Set Pool Env Variables</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
 
 ```bash
-# Set Pool Signer PDA from the output above
-export SOL_POOL_SIGNER_PDA=7WTnVd9Q6de3GgPCpDfHX5S2T5XzGDeMDZRev3FVbZo5
+# Set Pool Signer PDA from the Step 3 output above
+export SOL_POOL_SIGNER_PDA="<REPLACE_WITH_YOUR_POOL_SIGNER_PDA>"
+
+# Set Pool Config PDA from the Step 3 output above
+export SOL_POOL_CONFIG_PDA="<REPLACE_WITH_YOUR_CONFIG_PDA>"
 ```
 
-### Administrator Registration
+Verify output:
+
+```bash
+echo "Pool Signer PDA: $SOL_POOL_SIGNER_PDA"
+echo "Pool Config PDA: $SOL_POOL_CONFIG_PDA"
+```
+
+</Fragment>
+<Fragment slot="panel.2">
+
+```bash
+Pool Signer PDA: GLgULP9HDnQy5kQkeEdJJeLXTW1qK7NAbQRJ8xNniNFo
+Pool Config PDA: DNNetX8iV1H7tuDioQ5AFxUhAX1gEqUdWDtCpgYvPmEE
+```
+
+</Fragment>
+</Tabs>
+
+### Step 6: Claim Admin
 
 In this step, you will use the `svm:admin:propose-administrator` and `svm:admin:accept-admin-role` scripts to register yourself as the CCIP administrator for the Solana token. This process establishes your control over the token's CCIP configuration on Solana.
 
@@ -688,36 +766,29 @@ yarn svm:admin:propose-administrator \
 <Fragment slot="panel.2">
 
 ```bash
-yarn run v1.22.22
-$ ts-node ./ccip-scripts/svm/admin/propose-administrator.ts --token-mint 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T09:06:28.162Z] CCIP Token Admin Registry - Propose Administrator
-[2025-08-05T09:06:28.163Z] =========================================================
-[2025-08-05T09:06:28.199Z] Network: solana-devnet
-[2025-08-05T09:06:28.201Z] Router Program: Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C
-[2025-08-05T09:06:28.201Z] Wallet (Mint Authority): EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-[2025-08-05T09:06:28.201Z] Token Mint: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T09:06:28.201Z] Proposed New Administrator: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB (current signer)
-
-[2025-08-05T09:06:29.000Z] SOL Balance: 36.408035026 SOL (36408035026 lamports)
-[2025-08-05T09:06:29.001Z] ✅ Sufficient balance for transaction fees (minimum: 0.01 SOL)
-
-[2025-08-05T09:06:29.237Z] 🎯 PROPOSING ADMINISTRATOR
-[2025-08-05T09:06:29.237Z] =========================================================
-[2025-08-05T09:06:43.069Z] Administrator proposed successfully. Tx signature: cMQwkxJhd8zKSCHFX6kfRAZMFDcT4StcSCc9D7hfRSJrHFAnXEshv8HwGufyk6YA34T2GQFYzEd8BXdu7HnzqvL
-
-[2025-08-05T09:06:43.070Z] ✅ ADMINISTRATOR PROPOSAL SUCCESSFUL!
-[2025-08-05T09:06:43.070Z] =========================================================
-[2025-08-05T09:06:43.070Z] Transaction Signature: cMQwkxJhd8zKSCHFX6kfRAZMFDcT4StcSCc9D7hfRSJrHFAnXEshv8HwGufyk6YA34T2GQFYzEd8BXdu7HnzqvL
-[2025-08-05T09:06:43.071Z] Token Mint: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T09:06:43.071Z] Proposed Administrator: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-
-[2025-08-05T09:06:43.071Z] 🎉 SUCCESS!
-[2025-08-05T09:06:43.071Z] Administrator proposal completed successfully!
-✨  Done in 18.39s.
+[2025-08-22T10:22:08.424Z] ✅ ADMINISTRATOR PROPOSAL SUCCESSFUL!
+[2025-08-22T10:22:08.424Z] =========================================================
+[2025-08-22T10:22:08.424Z] Transaction Signature: 4hcxmjWdMX91qWxKRs4RAGAo3eYZm5QXahEfHa118D69RyddPqgaReJyAPtcNzaxomuSKMd6Tb4k5DMSCWKP1vUH
+[2025-08-22T10:22:08.424Z] Explorer URL: https://explorer.solana.com/tx/4hcxmjWdMX91qWxKRs4RAGAo3eYZm5QXahEfHa118D69RyddPqgaReJyAPtcNzaxomuSKMd6Tb4k5DMSCWKP1vUH?cluster=devnet
+[2025-08-22T10:22:08.425Z]
+[2025-08-22T10:22:08.425Z] 📋 REGISTRY INFORMATION
+[2025-08-22T10:22:08.425Z] =========================================================
+[2025-08-22T10:22:08.425Z] Token Mint: 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
+[2025-08-22T10:22:08.425Z] Proposed Administrator: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[2025-08-22T10:22:08.425Z] Registry Created/Updated By: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[2025-08-22T10:22:08.425Z]
+[2025-08-22T10:22:08.425Z] 🎉 SUCCESS!
+[2025-08-22T10:22:08.426Z] Administrator proposal completed successfully!
+[2025-08-22T10:22:08.426Z] Since you proposed yourself, you can now accept the role.
+[2025-08-22T10:22:08.426Z]
 ```
 
 </Fragment>
 </Tabs>
+
+### Step 7: Accept Admin Role
+
+In this step, you will use the `svm:admin:accept-admin-role` script to accept the proposed administrator role. This process establishes your control over the token's CCIP configuration on Solana.
 
 <Tabs client:visible>
 <Fragment slot="tab.1">Accept Admin Role</Fragment>
@@ -736,44 +807,34 @@ yarn svm:admin:accept-admin-role \
 <Fragment slot="panel.2">
 
 ```bash
-yarn run v1.22.22
-$ ts-node ./ccip-scripts/svm/admin/accept-admin-role.ts --token-mint 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T09:08:39.481Z] CCIP Token Admin Registry - Accept Admin Role
-[2025-08-05T09:08:39.483Z] ======================================================
-[2025-08-05T09:08:39.522Z] Network: solana-devnet
-[2025-08-05T09:08:39.522Z] Router Program: Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C
-[2025-08-05T09:08:39.522Z] Wallet: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-[2025-08-05T09:08:39.522Z] Token Mint: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-
-[2025-08-05T09:08:40.215Z] SOL Balance: 36.405962906 SOL (36405962906 lamports)
-[2025-08-05T09:08:40.215Z] ✅ Sufficient balance for transaction fees (minimum: 0.01 SOL)
-[2025-08-05T09:08:40.340Z] ✅ Token admin registry found!
-[2025-08-05T09:08:40.340Z] Current Administrator: 11111111111111111111111111111111
-[2025-08-05T09:08:40.340Z] Pending Administrator: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-[2025-08-05T09:08:40.340Z] ✅ Verified: You are the pending administrator
-
-[2025-08-05T09:08:40.340Z] 🎯 ACCEPTING ADMINISTRATOR ROLE
-[2025-08-05T09:08:40.340Z] ======================================================
-[2025-08-05T09:08:53.861Z] Admin role accepted successfully. Tx signature: 3gYZWCtDK5RV9TsdXSptEMTBhtr7rkt4vUqSM8VcZAWTYLguFxnbeqifgPV2w96dJSftQYZJfxXJmVxd35U38f3h
-
-[2025-08-05T09:08:53.861Z] ✅ ROLE ACCEPTANCE SUCCESSFUL!
-[2025-08-05T09:08:53.861Z] ======================================================
-[2025-08-05T09:08:53.861Z] Transaction Signature: 3gYZWCtDK5RV9TsdXSptEMTBhtr7rkt4vUqSM8VcZAWTYLguFxnbeqifgPV2w96dJSftQYZJfxXJmVxd35U38f3h
-[2025-08-05T09:08:53.862Z] Token Mint: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T09:08:53.862Z] New Administrator: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-
-[2025-08-05T09:08:53.862Z] 🎉 SUCCESS!
-[2025-08-05T09:08:53.862Z] You are now the administrator for this token's CCIP registry.
-✨ Done in 17.97s.
-
+[2025-08-22T10:23:08.598Z] 🎯 ACCEPTING ADMINISTRATOR ROLE
+[2025-08-22T10:23:08.598Z] ======================================================
+[2025-08-22T10:23:08.598Z] Preparing to accept administrator role...
+[2025-08-22T10:23:08.598Z] Token: 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
+[2025-08-22T10:23:08.598Z] New Administrator (you): EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[2025-08-22T10:23:08.598Z] Previous Administrator: 11111111111111111111111111111111
+[2025-08-22T10:23:08.598Z] Accepting admin role for token: 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
+[2025-08-22T10:23:22.425Z] Admin role accepted successfully. Tx signature: 445fREW1ipPSSnp57hvVo31DU69LVaxbhvRbvgsgCQfzk1agg4wbu2Z9iP5W6pHCW4qZXFukNuhsE1n7VjVgHZ86
+[2025-08-22T10:23:22.425Z]
+[2025-08-22T10:23:22.425Z] ✅ ROLE ACCEPTANCE SUCCESSFUL!
+[2025-08-22T10:23:22.425Z] ======================================================
+[2025-08-22T10:23:22.426Z] Transaction Signature: 445fREW1ipPSSnp57hvVo31DU69LVaxbhvRbvgsgCQfzk1agg4wbu2Z9iP5W6pHCW4qZXFukNuhsE1n7VjVgHZ86
+[2025-08-22T10:23:22.426Z] Explorer URL: https://explorer.solana.com/tx/445fREW1ipPSSnp57hvVo31DU69LVaxbhvRbvgsgCQfzk1agg4wbu2Z9iP5W6pHCW4qZXFukNuhsE1n7VjVgHZ86?cluster=devnet
+[2025-08-22T10:23:22.426Z]
+[2025-08-22T10:23:22.426Z] 📋 UPDATED REGISTRY INFORMATION
+[2025-08-22T10:23:22.426Z] ======================================================
+[2025-08-22T10:23:22.428Z] Token Mint: 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
+[2025-08-22T10:23:22.429Z] New Administrator: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[2025-08-22T10:23:22.429Z] Previous Administrator: 11111111111111111111111111111111
+[2025-08-22T10:23:22.429Z]
 ```
 
 </Fragment>
 </Tabs>
 
-### Create Production Multisig
+### Step 8: Create SPL Token Multisig
 
-NOW that CCIP registration is complete, create the SPL token multisig that will serve as the mint authority:
+Now that CCIP registration is complete, create the SPL token multisig that will serve as the mint authority:
 
 <Tabs client:visible>
 <Fragment slot="tab.1">Create Multisig</Fragment>
@@ -783,18 +844,29 @@ NOW that CCIP registration is complete, create the SPL token multisig that will 
 
 ```bash
 # Create 1-of-2 multisig with Pool Signer PDA and admin wallet (tutorial setup)
-spl-token create-multisig 1 $SOL_POOL_SIGNER_PDA $ADMIN_WALLET
+spl-token create-multisig 1 $SOL_POOL_SIGNER_PDA $SOL_ADMIN_WALLET
 ```
+
+<Aside type="note" title="Mutlisig Command details">
+
+The `spl-token create-multisig` command creates a multisig account that can be used as the mint authority for the token.
+
+The command takes the following arguments:
+
+- `1`: The number of signers required to authorize a transaction.
+- `$SOL_POOL_SIGNER_PDA`: The PDA of the pool signer.
+- `$SOL_ADMIN_WALLET`: The wallet address of the admin.
+
+</Aside>
 
 </Fragment>
 
 <Fragment slot="panel.2">
 
 ```bash
-Creating 1/2 multisig EFpxujcKwYiLhNZyt9NWUsDqFDMUGbsRBdqqvxrfuvGj under program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+Creating 1/2 multisig 555G9UPbWGpDAcbpLbvhe793fLHVT72hBU9xWP2pJNxm under program TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
 
-Signature: 2LKsazwGdaNnNRvjEyrgF8St7o6XPN6qkePvQc9PHNBfNCQnFmCK4RYoRkV4oerB5stXU8pdLfCWWD3K4Rak57Mt
-
+Signature: 3Ds6bZgQ5s8BjiKHzCPb32ro916y653tNUcSarwvbcLuzXK4gDtpUxAzwFF5Z4st35fEfvfF8ppLPi9X58K6kn8W
 ```
 
 </Fragment>
@@ -802,12 +874,35 @@ Signature: 2LKsazwGdaNnNRvjEyrgF8St7o6XPN6qkePvQc9PHNBfNCQnFmCK4RYoRkV4oerB5stXU
 
 **Set the multisig address environment variable:**
 
+<Tabs client:visible>
+<Fragment slot="tab.1">Set Multisig Address</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
 ```bash
 # Set multisig address from the output above
-export SOL_MULTISIG_ADDRESS=EFpxujcKwYiLhNZyt9NWUsDqFDMUGbsRBdqqvxrfuvGj
+export SOL_MULTISIG_ADDRESS="<REPLACE_WITH_YOUR_MULTISIG_ADDRESS>"
 ```
 
-### Transfer Mint Authority to Multisig
+Verify output:
+
+```bash
+echo "Multisig Address: $SOL_MULTISIG_ADDRESS"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+Multisig Address: 555G9UPbWGpDAcbpLbvhe793fLHVT72hBU9xWP2pJNxm
+```
+
+</Fragment>
+</Tabs>
+
+### Step 9: Transfer Mint Authority to Multisig
 
 Now transfer the mint authority from your wallet to the multisig:
 
@@ -826,18 +921,17 @@ spl-token authorize $SOL_TOKEN_MINT mint $SOL_MULTISIG_ADDRESS
 <Fragment slot="panel.2">
 
 ```bash
-Updating 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
+Updating 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
   Current mint: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-  New mint: EFpxujcKwYiLhNZyt9NWUsDqFDMUGbsRBdqqvxrfuvGj
+  New mint: 555G9UPbWGpDAcbpLbvhe793fLHVT72hBU9xWP2pJNxm
 
-Signature: MDqfqscTN2Lkiuf1MPgkHBSxBqhdmCG58duDXnkC5DUJbt1wQNbyYyKeB7nff15GhQ3aY1GuXg8cGiBTPd5oFjS
-
+Signature: 2SowgDgySvC1Mz42j5ScReqWWdjPV6sk8GbTqB6mL9m7AMpiton1oR2WHhEtJbwsbuRV7HRUttgqLA54RNYCGrxE
 ```
 
 </Fragment>
 </Tabs>
 
-### Verify Multisig Configuration
+### Step 10: Verify Multisig Configuration
 
 Verify that the multisig has been properly configured and the mint authority has been transferred:
 
@@ -860,23 +954,22 @@ spl-token display $SOL_MULTISIG_ADDRESS
 <Fragment slot="panel.2">
 
 ```bash
-# Token details
 SPL Token Mint
-  Address: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
+  Address: 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
   Program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
   Supply: 1000000000000
   Decimals: 9
-  Mint authority: EFpxujcKwYiLhNZyt9NWUsDqFDMUGbsRBdqqvxrfuvGj
+  Mint authority: 555G9UPbWGpDAcbpLbvhe793fLHVT72hBU9xWP2pJNxm
   Freeze authority: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
 
-SPL Token Multisig
-Address: EFpxujcKwYiLhNZyt9NWUsDqFDMUGbsRBdqqvxrfuvGj
-Program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
-M/N: 1/2
-Signers:
-1: 7WTnVd9Q6de3GgPCpDfHX5S2T5XzGDeMDZRev3FVbZo5
-2: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
 
+SPL Token Multisig
+  Address: 555G9UPbWGpDAcbpLbvhe793fLHVT72hBU9xWP2pJNxm
+  Program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+  M/N: 1/2
+  Signers:
+    1: GLgULP9HDnQy5kQkeEdJJeLXTW1qK7NAbQRJ8xNniNFo
+    2: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
 ```
 
 </Fragment>
@@ -886,14 +979,15 @@ Save the Phase 2 variables for cross-terminal access:
 
 ```bash
 # Save all variables from Phases 1 and 2 to complete vars file
-cat > ~/.ccip_complete_vars << 'EOF'
-export ETH_TOKEN_ADDRESS=0xd3d2f66dd4Eead2cF2cD4C6219Eb1e1E80e6109d
-export ETH_POOL_ADDRESS=0x1a65BA94731a6541efDbeb1E72A7b1E9771B64b7
-export SOL_TOKEN_MINT=9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-export ADMIN_WALLET=$(solana address)
-export CCIP_POOL_PROGRAM=3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
-export SOL_POOL_SIGNER_PDA=7WTnVd9Q6de3GgPCpDfHX5S2T5XzGDeMDZRev3FVbZo5
-export SOL_MULTISIG_ADDRESS=EFpxujcKwYiLhNZyt9NWUsDqFDMUGbsRBdqqvxrfuvGj
+cat > ~/.ccip_complete_vars << EOF
+export ETH_TOKEN_ADDRESS="$ETH_TOKEN_ADDRESS"
+export ETH_POOL_ADDRESS="$ETH_POOL_ADDRESS"
+export SOL_TOKEN_MINT="$SOL_TOKEN_MINT"
+export SOL_ADMIN_WALLET="$SOL_ADMIN_WALLET"
+export CCIP_POOL_PROGRAM="$CCIP_POOL_PROGRAM"
+export SOL_POOL_SIGNER_PDA="$SOL_POOL_SIGNER_PDA"
+export SOL_POOL_CONFIG_PDA="$SOL_POOL_CONFIG_PDA"
+export SOL_MULTISIG_ADDRESS="$SOL_MULTISIG_ADDRESS"
 EOF
 
 echo "All variables saved to ~/.ccip_complete_vars for cross-terminal access"
@@ -903,25 +997,11 @@ echo "All variables saved to ~/.ccip_complete_vars for cross-terminal access"
 
 In this step, you will configure bidirectional connectivity between the token pools on both chains. Each chain uses different tools: **Solana** uses Starter Kit scripts to configure its pool to recognize Ethereum tokens and pools, while **Ethereum** uses Hardhat tasks to configure its pool to recognize Solana tokens and pools.
 
-### Configure Solana → Ethereum
-
-**Stay in Terminal 1 (Solana Starter Kit)**
-
-Load the Ethereum addresses from Phase 1:
-
-```bash
-source ~/.phase1_vars
-echo "Loaded Phase 1 variables: ETH_TOKEN_ADDRESS=$ETH_TOKEN_ADDRESS, ETH_POOL_ADDRESS=$ETH_POOL_ADDRESS"
-```
+### Step 1: Configure Solana -> Ethereum
 
 #### Initialize Chain Remote Configuration
 
 In this step, you will use the `svm:pool:init-chain-remote-config` script to initialize the configuration for Ethereum Sepolia as a remote chain. This creates the basic chain configuration with token information but without pool addresses (those will be added in the next step).
-
-<Aside type="note" title="Expected Error Message">
-  You will see "Error: Chain config not found" in the output - this is **expected behavior** since we are creating the
-  configuration for the first time. The script will continue and successfully create the new configuration.
-</Aside>
 
 <Tabs client:visible>
 <Fragment slot="tab.1">Initialize Config</Fragment>
@@ -938,52 +1018,38 @@ yarn svm:pool:init-chain-remote-config \
   --decimals 9
 ```
 
+<Aside type="note" title="Expected Error Message">
+  You will see "Error: Chain config not found" in the output - this is **expected behavior** since we are creating the
+  configuration for the first time. The script will continue and successfully create the new configuration.
+</Aside>
+
 </Fragment>
 
 <Fragment slot="panel.2">
 
 ```bash
-yarn run v1.22.22
-$ ts-node ./ccip-scripts/svm/pool/init-chain-remote-config.ts --token-mint 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG --burn-mint-pool-program 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo --remote-chain ethereum-sepolia --token-address 0xd3d2f66dd4Eead2cF2cD4C6219Eb1e1E80e6109d --decimals 9
-[2025-08-05T09:24:00.616Z] 🔗 CCIP Chain Remote Configuration Initialization
-[2025-08-05T09:24:00.618Z] ==========================================
-[2025-08-05T09:24:00.652Z] Network: solana-devnet
-[2025-08-05T09:24:00.653Z] Wallet: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-
-[2025-08-05T09:24:00.653Z] 💰 WALLET BALANCE
-[2025-08-05T09:24:00.653Z] ==========================================
-[2025-08-05T09:24:01.085Z] SOL Balance: 36402581226 lamports (36.402581226 SOL)
-
-[2025-08-05T09:24:01.086Z] 📋 INITIALIZATION CONFIGURATION
-[2025-08-05T09:24:01.086Z] ==========================================
-[2025-08-05T09:24:01.086Z] Token Mint: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T09:24:01.086Z] Burn-Mint Pool Program: 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
-[2025-08-05T09:24:01.086Z] Remote Chain: ethereum-sepolia
-[2025-08-05T09:24:01.086Z] Remote Chain Selector: 16015286601757825753
-[2025-08-05T09:24:01.086Z] Token Address: 0xd3d2f66dd4Eead2cF2cD4C6219Eb1e1E80e6109d
-[2025-08-05T09:24:01.086Z] Decimals: 9
-
-[2025-08-05T09:24:01.089Z] 🔧 INITIALIZING CHAIN REMOTE CONFIG
-[2025-08-05T09:24:01.089Z] ==========================================
-[2025-08-05T09:24:01.089Z] Creating chain remote configuration...
-[2025-08-05T09:24:01.089Z] Note: Pool addresses will be empty initially
-[2025-08-05T09:24:01.091Z] 📍 Pool Config PDA: B6yVeSSESLtmyaqwnzWDAxg8ZrSz58Z9WezYaK1SK9jc
-[2025-08-05T09:24:05.019Z] 📍 Chain Config PDA: DUNhMQBdgjYVakBLbtTJryqwbjmuUYfcERETkLE7PcST
-[2025-08-05T09:24:08.479Z] Error: Chain config not found for mint: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG, chain: 16015286601757825753
-[2025-08-05T09:24:22.360Z] Chain remote config initialized: 5MNaG2no5EaSu3NQ6Bn4u74GVNqQg2yFWqgUmcEVNjBvYczMfEFFGTPmQPGWgptoXRELtFqdeA1hcdSddGMPkh1B
-
-[2025-08-05T09:24:22.529Z] ✅ CHAIN CONFIG INITIALIZED SUCCESSFULLY
-[2025-08-05T09:24:22.529Z] ==========================================
-[2025-08-05T09:24:22.529Z] Transaction Signature: 5MNaG2no5EaSu3NQ6Bn4u74GVNqQg2yFWqgUmcEVNjBvYczMfEFFGTPmQPGWgptoXRELtFqdeA1hcdSddGMPkh1B
-
-[2025-08-05T09:24:22.531Z] 🔗 Next step: Add pool addresses with 'yarn svm:pool:edit-chain-remote-config' to enable cross-chain transfers
-
-[2025-08-05T09:24:22.531Z] 🎉 Chain Configuration Initialization Complete!
-[2025-08-05T09:24:22.531Z] ✅ Remote chain ethereum-sepolia configuration created
-[2025-08-05T09:24:22.531Z] ✅ Token address and decimals configured
-[2025-08-05T09:24:22.531Z] ⚠️ Pool addresses must be added before transfers can occur
-✨ Done in 26.03s.
-
+[2025-08-22T10:36:13.643Z] Chain remote config initialized: 4DUicb3oeh5dpBYvZJsYc3kkHtjcUZUt1fkwhMVWHDra1p2J7mdcd7tsfrTEGP1wT7LFve7aQoD57VmHZQugT6jJ
+[2025-08-22T10:36:13.975Z]
+[2025-08-22T10:36:13.976Z] ✅ CHAIN CONFIG INITIALIZED SUCCESSFULLY
+[2025-08-22T10:36:13.976Z] ==========================================
+[2025-08-22T10:36:13.976Z] Transaction Signature: 4DUicb3oeh5dpBYvZJsYc3kkHtjcUZUt1fkwhMVWHDra1p2J7mdcd7tsfrTEGP1wT7LFve7aQoD57VmHZQugT6jJ
+[2025-08-22T10:36:13.976Z]
+[2025-08-22T10:36:13.976Z] 🔍 EXPLORER URLS
+[2025-08-22T10:36:13.976Z] ==========================================
+[2025-08-22T10:36:13.976Z] Transaction: https://explorer.solana.com/tx/4DUicb3oeh5dpBYvZJsYc3kkHtjcUZUt1fkwhMVWHDra1p2J7mdcd7tsfrTEGP1wT7LFve7aQoD57VmHZQugT6jJ?cluster=devnet
+[2025-08-22T10:36:13.976Z]
+[2025-08-22T10:36:13.976Z] 📋 NEXT STEPS
+[2025-08-22T10:36:13.976Z] ==========================================
+[2025-08-22T10:36:13.976Z] 1. View configuration details:
+[2025-08-22T10:36:13.976Z]    yarn svm:pool:get-info --token-mint 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS --burn-mint-pool-program 41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB
+[2025-08-22T10:36:13.976Z]
+[2025-08-22T10:36:13.976Z] 2. Add pool addresses to enable cross-chain transfers:
+[2025-08-22T10:36:13.976Z]    yarn svm:pool:edit-chain-remote-config --token-mint 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS --burn-mint-pool-program 41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB --remote-chain ethereum-sepolia --pool-addresses "0x..." --token-address "0x84426E21208D73E8D3760d9cbc4FaEFa279d3720" --decimals 9
+[2025-08-22T10:36:13.976Z]
+[2025-08-22T10:36:13.976Z] 🎉 Chain Configuration Initialization Complete!
+[2025-08-22T10:36:13.976Z] ✅ Remote chain ethereum-sepolia configuration created
+[2025-08-22T10:36:13.976Z] ✅ Token address and decimals configured
+[2025-08-22T10:36:13.976Z] ⚠️  Pool addresses must be added before transfers can occur
 ```
 
 </Fragment>
@@ -1015,43 +1081,30 @@ yarn svm:pool:edit-chain-remote-config \
 <Fragment slot="panel.2">
 
 ```bash
-yarn run v1.22.22
-$ ts-node ./ccip-scripts/svm/pool/edit-chain-remote-config.ts --token-mint 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG --burn-mint-pool-program 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo --remote-chain ethereum-sepolia --pool-addresses 0x1a65BA94731a6541efDbeb1E72A7b1E9771B64b7 --token-address 0xd3d2f66dd4Eead2cF2cD4C6219Eb1e1E80e6109d --decimals 9
-[2025-08-05T09:25:34.710Z] 🔗 CCIP Chain Remote Configuration Editor
-[2025-08-05T09:25:34.712Z] ==========================================
-[2025-08-05T09:25:34.746Z] Network: solana-devnet
-[2025-08-05T09:25:34.747Z] Wallet: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-
-[2025-08-05T09:25:34.747Z] 💰 WALLET BALANCE
-[2025-08-05T09:25:34.747Z] ==========================================
-[2025-08-05T09:25:35.595Z] SOL Balance: 36400662226 lamports (36.400662226 SOL)
-
-[2025-08-05T09:25:35.596Z] 📋 EDIT CONFIGURATION
-[2025-08-05T09:25:35.596Z] ==========================================
-[2025-08-05T09:25:35.596Z] Token Mint: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T09:25:35.596Z] Burn-Mint Pool Program: 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
-[2025-08-05T09:25:35.596Z] Remote Chain: ethereum-sepolia
-[2025-08-05T09:25:35.596Z] Remote Chain Selector: 16015286601757825753
-[2025-08-05T09:25:35.596Z] Pool Addresses: 0x1a65BA94731a6541efDbeb1E72A7b1E9771B64b7
-[2025-08-05T09:25:35.596Z] Token Address: 0xd3d2f66dd4Eead2cF2cD4C6219Eb1e1E80e6109d
-[2025-08-05T09:25:35.596Z] Decimals: 9
-
-[2025-08-05T09:25:35.598Z] 🔧 EDITING CHAIN REMOTE CONFIG
-[2025-08-05T09:25:35.598Z] ==========================================
-[2025-08-05T09:25:35.598Z] Updating chain remote configuration...
-[2025-08-05T09:25:35.599Z] 📍 Pool Config PDA: B6yVeSSESLtmyaqwnzWDAxg8ZrSz58Z9WezYaK1SK9jc
-[2025-08-05T09:25:35.832Z] 📍 Chain Config PDA: DUNhMQBdgjYVakBLbtTJryqwbjmuUYfcERETkLE7PcST
-[2025-08-05T09:25:49.422Z] Chain remote config edited: 4UsqFKEhuJYt5gMU8ZBqFXDU9xcJVwtxoYy2M3FnZtysmQWWQRW18Le8MigaAC8RYNVCbVP46bom6AWNwTN93XBW
-
-[2025-08-05T09:25:49.770Z] ✅ CHAIN CONFIG EDITED SUCCESSFULLY
-[2025-08-05T09:25:49.770Z] ==========================================
-[2025-08-05T09:25:49.770Z] Transaction Signature: 4UsqFKEhuJYt5gMU8ZBqFXDU9xcJVwtxoYy2M3FnZtysmQWWQRW18Le8MigaAC8RYNVCbVP46bom6AWNwTN93XBW
-
-[2025-08-05T09:25:49.770Z] 🎉 Chain Configuration Update Complete!
-[2025-08-05T09:25:49.770Z] ✅ Remote chain ethereum-sepolia configuration updated
-[2025-08-05T09:25:49.770Z] ✅ Pool addresses: 1 configured
-✨ Done in 17.97s.
-
+[2025-08-22T10:37:29.719Z] 🔧 EDITING CHAIN REMOTE CONFIG
+[2025-08-22T10:37:29.719Z] ==========================================
+[2025-08-22T10:37:29.719Z] Updating chain remote configuration...
+[2025-08-22T10:37:29.719Z] Editing chain remote config for chain 16015286601757825753 on mint: 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
+[2025-08-22T10:37:29.721Z] 📍 Pool Config PDA: DNNetX8iV1H7tuDioQ5AFxUhAX1gEqUdWDtCpgYvPmEE
+[2025-08-22T10:37:29.985Z] 📍 Chain Config PDA: 6NLyRKr3tr4f2QxfCbMRWvEyzSjPY67XiByWnTWFdSvf
+[2025-08-22T10:37:43.454Z] Chain remote config edited: 3sj7g59kxpktuBD7wWTi7GKoB7Ktj9zTFmCssUR1PFDju3N7Q3ikCQaHDJXYd3N5ntmep8gSXvaYNjbnGGDy7KwP
+[2025-08-22T10:37:43.779Z]
+[2025-08-22T10:37:43.779Z] ✅ CHAIN CONFIG EDITED SUCCESSFULLY
+[2025-08-22T10:37:43.779Z] ==========================================
+[2025-08-22T10:37:43.779Z] Transaction Signature: 3sj7g59kxpktuBD7wWTi7GKoB7Ktj9zTFmCssUR1PFDju3N7Q3ikCQaHDJXYd3N5ntmep8gSXvaYNjbnGGDy7KwP
+[2025-08-22T10:37:43.779Z]
+[2025-08-22T10:37:43.779Z] 🔍 EXPLORER URLS
+[2025-08-22T10:37:43.780Z] ==========================================
+[2025-08-22T10:37:43.780Z] Transaction: https://explorer.solana.com/tx/3sj7g59kxpktuBD7wWTi7GKoB7Ktj9zTFmCssUR1PFDju3N7Q3ikCQaHDJXYd3N5ntmep8gSXvaYNjbnGGDy7KwP?cluster=devnet
+[2025-08-22T10:37:43.780Z]
+[2025-08-22T10:37:43.780Z] 📋 NEXT STEPS
+[2025-08-22T10:37:43.780Z] ==========================================
+[2025-08-22T10:37:43.780Z] View updated configuration:
+[2025-08-22T10:37:43.780Z]   yarn svm:pool:get-info --token-mint 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS --burn-mint-pool-program 41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB
+[2025-08-22T10:37:43.780Z]
+[2025-08-22T10:37:43.780Z] 🎉 Chain Configuration Update Complete!
+[2025-08-22T10:37:43.780Z] ✅ Remote chain ethereum-sepolia configuration updated
+[2025-08-22T10:37:43.780Z] ✅ Pool addresses: 1 configured
 ```
 
 </Fragment>
@@ -1080,57 +1133,54 @@ yarn svm:pool:get-chain-config \
 <Fragment slot="panel.2">
 
 ```bash
-yarn run v1.22.22
-$ ts-node ./ccip-scripts/svm/pool/get-chain-config.ts --token-mint 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG --burn-mint-pool-program 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo --remote-chain ethereum-sepolia
-[2025-08-05T09:26:13.730Z] 🔍 CCIP Chain Configuration Reader (Read-Only)
-[2025-08-05T09:26:13.732Z] ==========================================
-[2025-08-05T09:26:13.732Z] Network: solana-devnet
-[2025-08-05T09:26:13.733Z] Token Mint: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T09:26:13.733Z] Burn-Mint Pool Program: 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
-[2025-08-05T09:26:13.733Z] Remote Chain: ethereum-sepolia
-[2025-08-05T09:26:13.733Z] Remote Chain Selector: 16015286601757825753
-
-[2025-08-05T09:26:13.775Z] 🔄 RETRIEVING CHAIN CONFIGURATION
-[2025-08-05T09:26:13.775Z] ==========================================
-[2025-08-05T09:26:13.776Z] 📍 Chain Config PDA: DUNhMQBdgjYVakBLbtTJryqwbjmuUYfcERETkLE7PcST
-
-[2025-08-05T09:26:14.553Z] 📋 CHAIN CONFIGURATION DETAILS
-[2025-08-05T09:26:14.553Z] ==========================================
-[2025-08-05T09:26:14.553Z] Account Address: DUNhMQBdgjYVakBLbtTJryqwbjmuUYfcERETkLE7PcST
-
-[2025-08-05T09:26:14.554Z] 🔗 REMOTE CHAIN INFORMATION
-[2025-08-05T09:26:14.554Z] ------------------------------------------
-[2025-08-05T09:26:14.554Z] Decimals: 9
-[2025-08-05T09:26:14.554Z] Token Address: 0x000000000000000000000000d3d2f66dd4eead2cf2cd4c6219eb1e1e80e6109d
-
-[2025-08-05T09:26:14.554Z] 🏊 POOL ADDRESSES
-[2025-08-05T09:26:14.554Z] ------------------------------------------
-[2025-08-05T09:26:14.554Z] 1. 0x1a65ba94731a6541efdbeb1e72a7b1e9771b64b7
-
-[2025-08-05T09:26:14.554Z] ⬇️ INBOUND RATE LIMIT
-[2025-08-05T09:26:14.554Z] ------------------------------------------
-[2025-08-05T09:26:14.554Z] Enabled: false
-[2025-08-05T09:26:14.555Z] Capacity: 0
-[2025-08-05T09:26:14.555Z] Rate: 0 tokens/second
-[2025-08-05T09:26:14.555Z] Current Bucket Value: 0
-[2025-08-05T09:26:14.555Z] Last Updated: 1970-01-01T00:00:00.000Z
-
-[2025-08-05T09:26:14.555Z] ⬆️ OUTBOUND RATE LIMIT
-[2025-08-05T09:26:14.555Z] ------------------------------------------
-[2025-08-05T09:26:14.555Z] Enabled: false
-[2025-08-05T09:26:14.555Z] Rate: 0 tokens/second
-[2025-08-05T09:26:14.555Z] Current Bucket Value: 0
-[2025-08-05T09:26:14.555Z] Last Updated: 1970-01-01T00:00:00.000Z
-
-[2025-08-05T09:26:14.555Z] 🎉 Chain Configuration Retrieved Successfully!
-✨ Done in 3.50s.
-
+[2025-08-22T10:38:14.385Z] 🔍 CCIP Chain Configuration Reader (Read-Only)
+[2025-08-22T10:38:14.387Z] ==========================================
+[2025-08-22T10:38:14.387Z] Network: solana-devnet
+[2025-08-22T10:38:14.387Z] Token Mint: 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
+[2025-08-22T10:38:14.387Z] Burn-Mint Pool Program: 41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB
+[2025-08-22T10:38:14.387Z] Remote Chain: ethereum-sepolia
+[2025-08-22T10:38:14.387Z] Remote Chain Selector: 16015286601757825753
+[2025-08-22T10:38:14.416Z]
+[2025-08-22T10:38:14.416Z] 🔄 RETRIEVING CHAIN CONFIGURATION
+[2025-08-22T10:38:14.416Z] ==========================================
+[2025-08-22T10:38:14.416Z] Fetching chain configuration...
+[2025-08-22T10:38:14.417Z] 📍 Chain Config PDA: 6NLyRKr3tr4f2QxfCbMRWvEyzSjPY67XiByWnTWFdSvf
+[2025-08-22T10:38:15.131Z]
+[2025-08-22T10:38:15.131Z] 📋 CHAIN CONFIGURATION DETAILS
+[2025-08-22T10:38:15.131Z] ==========================================
+[2025-08-22T10:38:15.131Z] Account Address: 6NLyRKr3tr4f2QxfCbMRWvEyzSjPY67XiByWnTWFdSvf
+[2025-08-22T10:38:15.131Z]
+[2025-08-22T10:38:15.132Z] 🔗 REMOTE CHAIN INFORMATION
+[2025-08-22T10:38:15.132Z] ------------------------------------------
+[2025-08-22T10:38:15.132Z] Decimals: 9
+[2025-08-22T10:38:15.132Z] Token Address: 0x00000000000000000000000084426e21208d73e8d3760d9cbc4faefa279d3720
+[2025-08-22T10:38:15.132Z]
+[2025-08-22T10:38:15.132Z] 🏊 POOL ADDRESSES
+[2025-08-22T10:38:15.132Z] ------------------------------------------
+[2025-08-22T10:38:15.132Z] 1. 0x22d99df2246ed52063b0d2d0f24e03d7319b9299
+[2025-08-22T10:38:15.132Z]
+[2025-08-22T10:38:15.132Z] ⬇️  INBOUND RATE LIMIT
+[2025-08-22T10:38:15.132Z] ------------------------------------------
+[2025-08-22T10:38:15.132Z] Enabled: false
+[2025-08-22T10:38:15.132Z] Capacity: 0 (0 tokens)
+[2025-08-22T10:38:15.132Z] Rate: 0 (0 tokens/second)
+[2025-08-22T10:38:15.132Z] Current Bucket Value: 0 (0 tokens)
+[2025-08-22T10:38:15.132Z] Last Updated: 1970-01-01T00:00:00.000Z
+[2025-08-22T10:38:15.132Z]
+[2025-08-22T10:38:15.132Z] ⬆️  OUTBOUND RATE LIMIT
+[2025-08-22T10:38:15.132Z] ------------------------------------------
+[2025-08-22T10:38:15.132Z] Enabled: false
+[2025-08-22T10:38:15.132Z] Capacity: 0 (0 tokens)
+[2025-08-22T10:38:15.132Z] Rate: 0 (0 tokens/second)
+[2025-08-22T10:38:15.132Z] Current Bucket Value: 0 (0 tokens)
+[2025-08-22T10:38:15.132Z] Last Updated: 1970-01-01T00:00:00.000Z
+[2025-08-22T10:38:15.132Z]
 ```
 
 </Fragment>
 </Tabs>
 
-### Configure Ethereum → Solana
+### Step 2: Configure Ethereum → Solana
 
 **Switch to Terminal 2 (Smart Contract Examples)**
 
@@ -1141,25 +1191,22 @@ pwd
 
 Load all variables from previous phases:
 
-```bash
-source ~/.ccip_complete_vars
-echo "Loaded variables: ETH_TOKEN_ADDRESS=$ETH_TOKEN_ADDRESS, SOL_TOKEN_MINT=$SOL_TOKEN_MINT"
-```
-
-#### Calculate Solana Pool Config PDA
-
-In this step, you will use the `calculateCCIPTokenPoolPDA.ts` script to calculate the **Pool Config Program Derived Address (PDA)** for your Solana token pool. This PDA represents the configuration account of your Solana token pool and is what the Ethereum pool needs to know about to communicate with your Solana pool during cross-chain transfers.
-
 <Tabs client:visible>
-<Fragment slot="tab.1">Calculate PDA</Fragment>
+<Fragment slot="tab.1">Load Variables</Fragment>
 <Fragment slot="tab.2">Expected Output</Fragment>
 
 <Fragment slot="panel.1">
+
 ```bash
-# Calculate the Pool Config PDA for Ethereum cross-chain configuration
-npx tsx scripts/calculateCCIPTokenPoolPDA.ts \
-  $SOL_TOKEN_MINT \
-  $CCIP_POOL_PROGRAM
+source ~/.ccip_complete_vars
+echo "Loaded variables:"
+echo "ETH_TOKEN_ADDRESS=$ETH_TOKEN_ADDRESS"
+echo "SOL_TOKEN_MINT=$SOL_TOKEN_MINT"
+echo "Pool Config PDA: $SOL_POOL_CONFIG_PDA"
+echo "Pool Signer PDA: $SOL_POOL_SIGNER_PDA"
+echo "Multisig Address: $SOL_MULTISIG_ADDRESS"
+echo "Admin Wallet: $SOL_ADMIN_WALLET"
+echo "Pool Program: $CCIP_POOL_PROGRAM"
 ```
 
 </Fragment>
@@ -1167,49 +1214,20 @@ npx tsx scripts/calculateCCIPTokenPoolPDA.ts \
 <Fragment slot="panel.2">
 
 ```bash
-Need to install the following packages:
-tsx@4.20.3
-Ok to proceed? (y) y
-
-=== CCIP TokenPool Configuration PDA Calculation ===
-Token Mint Address: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-Token Mint (hex): 0x83557163152b3bfc2fea257dfd22cf0b175843cc6fc7515b4b5fc8df6ec3db9d
-Pool Program Address: 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
-Pool Program (hex): 0x207f6e87f2a931722a8945f772be5b3f763d4177ad2c90d3bc606850d2f2f2a0
-
-Calculating TokenPool Config PDA...
-
-=== PDA Calculation Result ===
-✅ Pool Config PDA: B6yVeSSESLtmyaqwnzWDAxg8ZrSz58Z9WezYaK1SK9jc
-🔗 Pool Config PDA (hex for EVM): 0x961ca6b1dce5bf640036d422ae8ce4b58f79f10f1faffe79edcf191294b7c027
-📊 Bump Seed: 255
-
-=== PDA Derivation Details ===
-Seeds used:
-
-1. "ccip_tokenpool_config" (string literal)
-2. 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG (token mint address bytes)
-   Program: 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
-
-=== Usage Instructions ===
-📋 For EVM pool configuration, use this hex address:
-0x961ca6b1dce5bf640036d422ae8ce4b58f79f10f1faffe79edcf191294b7c027
-
+Loaded variables:
+ETH_TOKEN_ADDRESS=0x84426E21208D73E8D3760d9cbc4FaEFa279d3720
+SOL_TOKEN_MINT=8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
+Pool Config PDA: DNNetX8iV1H7tuDioQ5AFxUhAX1gEqUdWDtCpgYvPmEE
+Pool Signer PDA: GLgULP9HDnQy5kQkeEdJJeLXTW1qK7NAbQRJ8xNniNFo
+Multisig Address: 555G9UPbWGpDAcbpLbvhe793fLHVT72hBU9xWP2pJNxm
+Admin Wallet: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+Pool Program: 41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB
 ```
 
 </Fragment>
 </Tabs>
 
-#### Export Pool Config PDA
-
-Export the calculated Pool Config PDA to use in the next command:
-
-```bash
-# Export the Pool Config PDA (use the address from the previous step output)
-export SOL_POOL_CONFIG_PDA=B6yVeSSESLtmyaqwnzWDAxg8ZrSz58Z9WezYaK1SK9jc
-```
-
-#### Apply Chain Updates
+#### Configure Remote Chain
 
 In this step, you will use the `applyChainUpdates` Hardhat task to configure the Ethereum pool to recognize the Solana token and pool. This tells the Ethereum pool which Solana pool (via its Pool Config PDA) and token it should interact with for cross-chain transfers.
 
@@ -1232,26 +1250,73 @@ npx hardhat applyChainUpdates \
 
 <Fragment slot="panel.2">
 ```bash
-2025-08-05T09:43:25.153Z info: === Starting Chain Update Configuration ===
-2025-08-05T09:43:25.153Z info: 🔹 Local network: sepolia
-2025-08-05T09:43:25.154Z info: 🔹 Pool address: 0x1a65BA94731a6541efDbeb1E72A7b1E9771B64b7
-2025-08-05T09:43:25.154Z info: 🔹 Remote chain: solanaDevnet
-2025-08-05T09:43:25.154Z info: 🔹 Remote chain type detected: svm
-2025-08-05T09:43:25.154Z info: 🔹 Remote chain selector: 16423721717087811551
-2025-08-05T09:43:25.154Z info: 🔹 Parsed 1 remote pool addresses
-2025-08-05T09:43:25.188Z info: ✅ All addresses validated successfully
-2025-08-05T09:43:25.521Z info: 🔹 Using signer: 0x9d087fC03ae39b088326b67fA3C788236645b717
-2025-08-05T09:43:25.889Z info: ✅ Connected to pool contract
-2025-08-05T09:43:25.889Z info: 🔹 Remote pool address 1: B6yVeSSESLtmyaqwnzWDAxg8ZrSz58Z9WezYaK1SK9jc → 0x961ca6b1dce5bf640036d422ae8ce4b58f79f10f1faffe79edcf191294b7c027
-2025-08-05T09:43:25.889Z info: 🔹 Remote token address: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG → 0x83557163152b3bfc2fea257dfd22cf0b175843cc6fc7515b4b5fc8df6ec3db9d
-2025-08-05T09:43:25.889Z info: === Rate Limiter Configuration ===
-2025-08-05T09:43:25.889Z info: 🔹 Outbound enabled: false
-2025-08-05T09:43:25.889Z info: 🔹 Inbound enabled: false
-2025-08-05T09:43:25.889Z info: === Executing Transaction ===
-2025-08-05T09:43:25.889Z info: 🔹 Sending applyChainUpdates transaction...
-2025-08-05T09:43:26.366Z info: 🔹 Transaction sent: 0x286e07074a848ad8441ec3a857f8ea3ba1148801c38723acab5484c78c1d92b3
-2025-08-05T09:43:26.366Z info: 🔹 Waiting for 3 confirmations...
-2025-08-05T09:44:01.198Z info: ✅ Chain update applied successfully!
+2025-08-22T10:45:49.006Z info: === Starting Chain Update Configuration ===
+2025-08-22T10:45:49.007Z info: 🔹 Local network: sepolia
+2025-08-22T10:45:49.007Z info: 🔹 Pool address: 0x22d99DF2246eD52063B0d2d0f24E03d7319b9299
+2025-08-22T10:45:49.007Z info: 🔹 Remote chain: solanaDevnet
+2025-08-22T10:45:49.007Z info: 🔹 Remote chain type detected: svm
+2025-08-22T10:45:49.008Z info: 🔹 Remote chain selector: 16423721717087811551
+2025-08-22T10:45:49.008Z info: 🔹 Parsed 1 remote pool addresses
+2025-08-22T10:45:49.032Z info: ✅ All addresses validated successfully
+2025-08-22T10:45:49.346Z info: 🔹 Using signer: 0x9d087fC03ae39b088326b67fA3C788236645b717
+2025-08-22T10:45:49.700Z info: ✅ Connected to pool contract
+2025-08-22T10:45:49.700Z info: 🔹 Remote pool address 1: DNNetX8iV1H7tuDioQ5AFxUhAX1gEqUdWDtCpgYvPmEE → 0xb7c5ec6b288ecaa92615f43fa0c26bc0126312a51c8b9c5e91bd2f531d70498f
+2025-08-22T10:45:49.701Z info: 🔹 Remote token address: 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS → 0x7397eec252840cdb17409721e595fa494940289a0b1cf301577e31ca68a2d211
+2025-08-22T10:45:49.701Z info: === Rate Limiter Configuration ===
+2025-08-22T10:45:49.701Z info: 🔹 Outbound enabled: false
+2025-08-22T10:45:49.701Z info: 🔹 Inbound enabled: false
+2025-08-22T10:45:49.701Z info: === Executing Transaction ===
+2025-08-22T10:45:49.701Z info: 🔹 Sending applyChainUpdates transaction...
+2025-08-22T10:45:50.241Z info: 🔹 Transaction sent: 0x834104dc29fa9dd9e5a32f37fa7c1ea49409fc05144045b44006a3c7ff5a093a
+2025-08-22T10:45:50.241Z info: 🔹 Waiting for 3 confirmations...
+2025-08-22T10:46:24.834Z info: ✅ Chain update applied successfully!
+```
+
+</Fragment>
+</Tabs>
+
+#### Verify Remote Chain Configuration
+
+Verify that the Ethereum pool is correctly configured to recognize the Solana chain:
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Verify Configuration</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Verify Ethereum pool configuration
+npx hardhat getPoolConfig \
+  --pooladdress $ETH_POOL_ADDRESS \
+  --network sepolia
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+2025-08-22T10:47:23.975Z info:
+Pool Basic Information:
+2025-08-22T10:47:23.975Z info:   Rate Limit Admin: 0x0000000000000000000000000000000000000000
+2025-08-22T10:47:23.975Z info:   Router Address: 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+2025-08-22T10:47:23.976Z info:   Token Address: 0x84426E21208D73E8D3760d9cbc4FaEFa279d3720
+2025-08-22T10:47:23.976Z info:   Allow List Enabled: false
+2025-08-22T10:47:23.976Z info: Fetching configuration for pool at address: 0x22d99DF2246eD52063B0d2d0f24E03d7319b9299
+2025-08-22T10:47:24.126Z info:
+Configuration for Remote Chain: solanaDevnet
+2025-08-22T10:47:24.126Z info:   Remote Pool Addresses:
+2025-08-22T10:47:24.126Z info:     1: DNNetX8iV1H7tuDioQ5AFxUhAX1gEqUdWDtCpgYvPmEE
+2025-08-22T10:47:24.127Z info:   Remote Token Address: 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
+2025-08-22T10:47:24.127Z info:   Outbound Rate Limiter:
+2025-08-22T10:47:24.127Z info:     Enabled: false
+2025-08-22T10:47:24.127Z info:     Capacity: 0
+2025-08-22T10:47:24.127Z info:     Rate: 0
+2025-08-22T10:47:24.127Z info:   Inbound Rate Limiter:
+2025-08-22T10:47:24.127Z info:     Enabled: false
+2025-08-22T10:47:24.127Z info:     Capacity: 0
+2025-08-22T10:47:24.127Z info:     Rate: 0
 ```
 
 </Fragment>
@@ -1266,7 +1331,7 @@ Pool registration works differently on each platform:
 - **Ethereum**: Links the token directly to its pool contract address
 - **Solana**: Links the token to an Address Lookup Table containing all necessary pool accounts
 
-### Ethereum Sepolia Pool Registration
+### Step 1: Ethereum Sepolia Pool Registration
 
 **Stay in Terminal 2 (Smart Contract Examples)**
 
@@ -1299,14 +1364,14 @@ npx hardhat setPool \
 <Fragment slot="panel.2">
 
 ```bash
-2025-08-05T09:47:16.351Z info: Setting pool for token 0xd3d2f66dd4Eead2cF2cD4C6219Eb1e1E80e6109d to 0x1a65BA94731a6541efDbeb1E72A7b1E9771B64b7 by 0x9d087fC03ae39b088326b67fA3C788236645b717
-2025-08-05T09:47:49.753Z info: Pool set for token 0xd3d2f66dd4Eead2cF2cD4C6219Eb1e1E80e6109d to 0x1a65BA94731a6541efDbeb1E72A7b1E9771B64b7
+2025-08-22T10:48:38.108Z info: Setting pool for token 0x84426E21208D73E8D3760d9cbc4FaEFa279d3720 to 0x22d99DF2246eD52063B0d2d0f24E03d7319b9299 by 0x9d087fC03ae39b088326b67fA3C788236645b717
+2025-08-22T10:49:12.434Z info: Pool set for token 0x84426E21208D73E8D3760d9cbc4FaEFa279d3720 to 0x22d99DF2246eD52063B0d2d0f24E03d7319b9299
 ```
 
 </Fragment>
 </Tabs>
 
-### Solana Devnet Pool Registration
+### Step 2: Solana Devnet Pool Registration
 
 **Switch to Terminal 1 (Solana Starter Kit)**
 
@@ -1337,78 +1402,38 @@ yarn svm:admin:create-alt \
 <Fragment slot="panel.2">
 
 ```bash
-yarn run v1.22.22
-$ ts-node ./ccip-scripts/svm/admin/create-alt.ts --token-mint 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG --pool-program 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo --additional-addresses EFpxujcKwYiLhNZyt9NWUsDqFDMUGbsRBdqqvxrfuvGj
-[2025-08-05T10:21:25.441Z] CCIP Token Pool Address Lookup Table Creation
-[2025-08-05T10:21:25.443Z] ===================================================
-[2025-08-05T10:21:25.483Z] Network: solana-devnet
-[2025-08-05T10:21:25.484Z] Wallet: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-[2025-08-05T10:21:25.484Z]
-[2025-08-05T10:21:25.484Z] 💰 WALLET BALANCE
-[2025-08-05T10:21:25.484Z] ===================================================
-[2025-08-05T10:21:26.036Z] SOL Balance: 36389951666 lamports (36.389951666 SOL)
-[2025-08-05T10:21:26.036Z]
-[2025-08-05T10:21:26.037Z] ⚙️  ALT CONFIGURATION
-[2025-08-05T10:21:26.037Z] ===================================================
-[2025-08-05T10:21:26.037Z] Token Mint: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T10:21:26.037Z] Pool Program: 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo
-[2025-08-05T10:21:26.037Z] Fee Quoter Program: FeeQPGkKDeRV1MgoYfMH6L8o3KeuYjwUZrgn4LRKfjHi
-[2025-08-05T10:21:26.037Z] Router Program: Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C
-[2025-08-05T10:21:26.037Z] Token Program: Auto-detected from on-chain mint data
-[2025-08-05T10:21:26.037Z] Additional Addresses: 1 addresses to be added
-[2025-08-05T10:21:26.038Z]
-[2025-08-05T10:21:26.038Z] 🏗️  CREATING ADDRESS LOOKUP TABLE
-[2025-08-05T10:21:26.038Z] ===================================================
-[2025-08-05T10:21:26.038Z] Creating token pool lookup table for mint: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T10:21:26.038Z] Getting mint account info for 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG to determine token program ID...
-[2025-08-05T10:21:26.151Z] Detected Standard Token Program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
-[2025-08-05T10:21:39.887Z] Token pool lookup table created successfully. ALT address: 9TG3CoF2XyLAH8usfCm7ADJQNxopEAu4CyiWmYCEVuUw
-[2025-08-05T10:21:39.887Z] Transaction signature: 34AF6X8VwZu5GwyCbPxEEUWdZp489RbrXYLYp4W26Kf6eKC3RcinxAwEb36ZpUsqhaHjz2GPfD4DumzTsrcQjcm8
-[2025-08-05T10:21:39.887Z]
-[2025-08-05T10:21:39.887Z] ✅ ALT CREATED SUCCESSFULLY
-[2025-08-05T10:21:39.887Z] ===================================================
-[2025-08-05T10:21:39.887Z] ALT Address: 9TG3CoF2XyLAH8usfCm7ADJQNxopEAu4CyiWmYCEVuUw
-[2025-08-05T10:21:39.887Z] Transaction Signature: 34AF6X8VwZu5GwyCbPxEEUWdZp489RbrXYLYp4W26Kf6eKC3RcinxAwEb36ZpUsqhaHjz2GPfD4DumzTsrcQjcm8
-[2025-08-05T10:21:39.887Z] Total Addresses Count: 11
-[2025-08-05T10:21:39.887Z] Base CCIP Addresses: 10
-[2025-08-05T10:21:39.887Z] Additional Custom Addresses: 1
-[2025-08-05T10:21:39.887Z]
-[2025-08-05T10:21:39.887Z] 📋 ALT CONTENTS
-[2025-08-05T10:21:39.887Z] ===================================================
-[2025-08-05T10:21:39.887Z] [0]: 9TG3CoF2XyLAH8usfCm7ADJQNxopEAu4CyiWmYCEVuUw (Lookup table itself)
-[2025-08-05T10:21:39.887Z] [1]: 6jcYe1NV9mdXVwfqD2j23EdSYfuBBJWhj4CiBkukKEjb (Token admin registry)
-[2025-08-05T10:21:39.887Z] [2]: 3BrkN1XcyeafuMZxomLZBUVdasEtpdMmpWfsEQmzN7vo (Pool program)
-[2025-08-05T10:21:39.887Z] [3]: B6yVeSSESLtmyaqwnzWDAxg8ZrSz58Z9WezYaK1SK9jc (Pool configuration)
-[2025-08-05T10:21:39.887Z] [4]: 6VmKxsSRVCGZkUusMvF97UZd2FHJyDF9FhPnAdpwQKvK (Pool token account)
-[2025-08-05T10:21:39.887Z] [5]: 7WTnVd9Q6de3GgPCpDfHX5S2T5XzGDeMDZRev3FVbZo5 (Pool signer)
-[2025-08-05T10:21:39.887Z] [6]: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA (Token program)
-[2025-08-05T10:21:39.887Z] [7]: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG (Token mint)
-[2025-08-05T10:21:39.887Z] [8]: 2Q2umaQLoB4VdmY1T1whSVdA1BvXdTD9jm9Vg5RXfQun (Fee token config)
-[2025-08-05T10:21:39.887Z] [9]: 5SzgKkC7gbD4rYe1sNw7cJohrSKG29uE8HsWx7MUQ6e2 (CCIP router pool signer)
-[2025-08-05T10:21:39.887Z] [10]: EFpxujcKwYiLhNZyt9NWUsDqFDMUGbsRBdqqvxrfuvGj (Custom address 1)
-[2025-08-05T10:21:39.887Z]
-[2025-08-05T10:21:39.887Z] 🔍 EXPLORER URLS
-[2025-08-05T10:21:39.887Z] ===================================================
-[2025-08-05T10:21:39.887Z] Transaction: https://explorer.solana.com/tx/34AF6X8VwZu5GwyCbPxEEUWdZp489RbrXYLYp4W26Kf6eKC3RcinxAwEb36ZpUsqhaHjz2GPfD4DumzTsrcQjcm8?cluster=devnet
-[2025-08-05T10:21:39.887Z]
-[2025-08-05T10:21:39.887Z] 🎉 ALT Creation Complete!
-[2025-08-05T10:21:39.887Z] ✅ Address Lookup Table: 9TG3CoF2XyLAH8usfCm7ADJQNxopEAu4CyiWmYCEVuUw
-[2025-08-05T10:21:39.887Z] ✅ Contains 10 base CCIP addresses
-[2025-08-05T10:21:39.887Z] ✅ Plus 1 additional custom addresses
-[2025-08-05T10:21:39.887Z] ✅ Total addresses: 11
-[2025-08-05T10:21:39.887Z] ✅ Ready to be registered with setPool
-[2025-08-05T10:21:39.887Z]
-[2025-08-05T10:21:39.887Z] 📋 NEXT STEPS
-[2025-08-05T10:21:39.887Z] ===================================================
-[2025-08-05T10:21:39.887Z] 1. Ensure you are the administrator for token 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T10:21:39.887Z] 2. Register this ALT with the token using setPool:
-[2025-08-05T10:21:39.887Z]    yarn svm:admin:set-pool \\
-[2025-08-05T10:21:39.887Z]      --token-mint 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG \\
-[2025-08-05T10:21:39.887Z]      --lookup-table 9TG3CoF2XyLAH8usfCm7ADJQNxopEAu4CyiWmYCEVuUw \\
-[2025-08-05T10:21:39.887Z]      --writable-indices 3,4,7
-[2025-08-05T10:21:39.887Z] 3. The token will then be ready for CCIP cross-chain operations
-✨  Done in 18.30s.
-
+[2025-08-22T10:50:00.506Z] ✅ ALT CREATED SUCCESSFULLY
+[2025-08-22T10:50:00.506Z] ===================================================
+[2025-08-22T10:50:00.506Z] ALT Address: 4EZuCBu5f3jjLE8iVDkSxLwGqvEahuuYMim48GRj8ryP
+[2025-08-22T10:50:00.506Z] Transaction Signature: 3Y1tvRtEzcWjn7He2CJmrr2FWRRCb5ohU4LiqdRrzRUwwds8JTSCaa2wqgtRW44UscphQmvQFUwd4n8URPcj5Uaf
+[2025-08-22T10:50:00.506Z] Total Addresses Count: 11
+[2025-08-22T10:50:00.506Z] Base CCIP Addresses: 10
+[2025-08-22T10:50:00.506Z] Additional Custom Addresses: 1
+[2025-08-22T10:50:00.506Z]
+[2025-08-22T10:50:00.506Z] 📋 ALT CONTENTS
+[2025-08-22T10:50:00.506Z] ===================================================
+[2025-08-22T10:50:00.507Z] [0]: 4EZuCBu5f3jjLE8iVDkSxLwGqvEahuuYMim48GRj8ryP (Lookup table itself)
+[2025-08-22T10:50:00.507Z] [1]: 5qDd6VMfsemjo5shd4tGV9JvP3rzZuzSmJLNpBbkgoir (Token admin registry)
+[2025-08-22T10:50:00.507Z] [2]: 41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB (Pool program)
+[2025-08-22T10:50:00.507Z] [3]: DNNetX8iV1H7tuDioQ5AFxUhAX1gEqUdWDtCpgYvPmEE (Pool configuration)
+[2025-08-22T10:50:00.507Z] [4]: HaBXCZtWkJLAgagxeemKWoXmGYqP2fNQqtazuj6uJrxX (Pool token account)
+[2025-08-22T10:50:00.507Z] [5]: GLgULP9HDnQy5kQkeEdJJeLXTW1qK7NAbQRJ8xNniNFo (Pool signer)
+[2025-08-22T10:50:00.507Z] [6]: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA (Token program)
+[2025-08-22T10:50:00.507Z] [7]: 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS (Token mint)
+[2025-08-22T10:50:00.507Z] [8]: EM98PFRiMG4ktNzXzmDKh6bHhiyJckWQYANVotpGAADC (Fee token config)
+[2025-08-22T10:50:00.507Z] [9]: H6ZviaabTYZqUPgiSoMDbeVthcNW9ULcAuUu3zRLFqDR (CCIP router pool signer)
+[2025-08-22T10:50:00.508Z] [10]: 555G9UPbWGpDAcbpLbvhe793fLHVT72hBU9xWP2pJNxm (Custom address 1)
+[2025-08-22T10:50:00.508Z]
+[2025-08-22T10:50:00.508Z] 🔍 EXPLORER URLS
+[2025-08-22T10:50:00.508Z] ===================================================
+[2025-08-22T10:50:00.508Z] Transaction: https://explorer.solana.com/tx/3Y1tvRtEzcWjn7He2CJmrr2FWRRCb5ohU4LiqdRrzRUwwds8JTSCaa2wqgtRW44UscphQmvQFUwd4n8URPcj5Uaf?cluster=devnet
+[2025-08-22T10:50:00.508Z]
+[2025-08-22T10:50:00.508Z] 🎉 ALT Creation Complete!
+[2025-08-22T10:50:00.508Z] ✅ Address Lookup Table: 4EZuCBu5f3jjLE8iVDkSxLwGqvEahuuYMim48GRj8ryP
+[2025-08-22T10:50:00.508Z] ✅ Contains 10 base CCIP addresses
+[2025-08-22T10:50:00.508Z] ✅ Plus 1 additional custom addresses
+[2025-08-22T10:50:00.508Z] ✅ Total addresses: 11
+[2025-08-22T10:50:00.508Z] ✅ Ready to be registered with setPool
 ```
 
 </Fragment>
@@ -1416,9 +1441,32 @@ $ ts-node ./ccip-scripts/svm/admin/create-alt.ts --token-mint 9qfyXQhZt1ZUvEX1kK
 
 **Set ALT environment variable:**
 
+<Tabs client:visible>
+<Fragment slot="tab.1">Set ALT</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
 ```bash
-export SOL_ALT_ADDRESS=9TG3CoF2XyLAH8usfCm7ADJQNxopEAu4CyiWmYCEVuUw
+export SOL_ALT_ADDRESS="<REPLACE_WITH_YOUR_ALT_ADDRESS>"
 ```
+
+Verify output:
+
+```bash
+echo "ALT Address: $SOL_ALT_ADDRESS"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+ALT Address: 4EZuCBu5f3jjLE8iVDkSxLwGqvEahuuYMim48GRj8ryP
+```
+
+</Fragment>
+</Tabs>
 
 #### Register Pool with Router
 
@@ -1442,71 +1490,36 @@ yarn svm:admin:set-pool \
 <Fragment slot="panel.2">
 
 ```bash
-yarn run v1.22.22
-$ ts-node ./ccip-scripts/svm/admin/set-pool.ts --token-mint 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG --lookup-table 9TG3CoF2XyLAH8usfCm7ADJQNxopEAu4CyiWmYCEVuUw --writable-indices 3,4,7
-[2025-08-05T10:31:09.266Z] CCIP Token Admin Registry Set Pool
-[2025-08-05T10:31:09.268Z] =============================================
-[2025-08-05T10:31:09.318Z] Network: solana-devnet
-[2025-08-05T10:31:09.319Z] Wallet: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-[2025-08-05T10:31:09.319Z]
-[2025-08-05T10:31:09.319Z] 💰 WALLET BALANCE
-[2025-08-05T10:31:09.319Z] =============================================
-[2025-08-05T10:31:09.871Z] SOL Balance: 36386216106 lamports (36.386216106 SOL)
-[2025-08-05T10:31:09.871Z]
-[2025-08-05T10:31:09.871Z] ⚙️  POOL CONFIGURATION
-[2025-08-05T10:31:09.871Z] =============================================
-[2025-08-05T10:31:09.872Z] Token Mint: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T10:31:09.872Z] Lookup Table: 9TG3CoF2XyLAH8usfCm7ADJQNxopEAu4CyiWmYCEVuUw
-[2025-08-05T10:31:09.872Z] Writable Indices: [3, 4, 7]
-[2025-08-05T10:31:09.872Z]
-[2025-08-05T10:31:09.872Z] 🔍 REGISTRY VERIFICATION
-[2025-08-05T10:31:09.872Z] =============================================
-[2025-08-05T10:31:09.872Z] Checking current token admin registry...
-[2025-08-05T10:31:09.873Z] Fetching token admin registry for mint: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T10:31:09.988Z] Current administrator: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-[2025-08-05T10:31:09.988Z] Current pending administrator: 11111111111111111111111111111111
-[2025-08-05T10:31:09.988Z] Current lookup table: 11111111111111111111111111111111
-[2025-08-05T10:31:09.988Z]
-[2025-08-05T10:31:09.988Z] 🔍 LOOKUP TABLE VERIFICATION
-[2025-08-05T10:31:09.988Z] =============================================
-[2025-08-05T10:31:09.988Z] Verifying lookup table exists...
-[2025-08-05T10:31:10.091Z] Lookup table verified with 11 addresses
-[2025-08-05T10:31:10.091Z]
-[2025-08-05T10:31:10.091Z] 🏊 SETTING POOL
-[2025-08-05T10:31:10.091Z] =============================================
-[2025-08-05T10:31:10.091Z] Setting pool (registering ALT with token)...
-[2025-08-05T10:31:10.091Z] Setting pool for token 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG with lookup table 9TG3CoF2XyLAH8usfCm7ADJQNxopEAu4CyiWmYCEVuUw
-[2025-08-05T10:31:23.360Z] Pool set successfully. Tx signature: SuBgPFsJyTroHpzffJ7KXAUGPqnFrc8uZBLowtKXpz15WWCPawVfYZM54arkqF5RhgfMXr3txqsqDpBbkJf4RZk
-[2025-08-05T10:31:23.360Z]
-[2025-08-05T10:31:23.360Z] ✅ POOL SET SUCCESSFULLY
-[2025-08-05T10:31:23.360Z] =============================================
-[2025-08-05T10:31:23.360Z] Transaction Signature: SuBgPFsJyTroHpzffJ7KXAUGPqnFrc8uZBLowtKXpz15WWCPawVfYZM54arkqF5RhgfMXr3txqsqDpBbkJf4RZk
-[2025-08-05T10:31:23.360Z]
-[2025-08-05T10:31:23.360Z] 🔍 EXPLORER URLS
-[2025-08-05T10:31:23.360Z] =============================================
-[2025-08-05T10:31:23.361Z] Transaction: https://explorer.solana.com/tx/SuBgPFsJyTroHpzffJ7KXAUGPqnFrc8uZBLowtKXpz15WWCPawVfYZM54arkqF5RhgfMXr3txqsqDpBbkJf4RZk?cluster=devnet
-[2025-08-05T10:31:23.361Z]
-[2025-08-05T10:31:23.361Z] 🔍 FINAL VERIFICATION
-[2025-08-05T10:31:23.361Z] =============================================
-[2025-08-05T10:31:23.361Z] Verifying pool registration...
-[2025-08-05T10:31:23.361Z] Fetching token admin registry for mint: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T10:31:23.487Z] ✅ Pool registration verified successfully!
-[2025-08-05T10:31:23.487Z] Registered lookup table: 9TG3CoF2XyLAH8usfCm7ADJQNxopEAu4CyiWmYCEVuUw
-[2025-08-05T10:31:23.487Z] Writable indices: [3, 4, 7]
-[2025-08-05T10:31:23.487Z]
-[2025-08-05T10:31:23.487Z] 🎉 Pool Registration Complete!
-[2025-08-05T10:31:23.488Z] ✅ Token: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T10:31:23.488Z] ✅ ALT: 9TG3CoF2XyLAH8usfCm7ADJQNxopEAu4CyiWmYCEVuUw
-[2025-08-05T10:31:23.488Z] ✅ Ready for CCIP cross-chain operations
-[2025-08-05T10:31:23.488Z]
-[2025-08-05T10:31:23.488Z] 📋 NEXT STEPS
-[2025-08-05T10:31:23.488Z] =============================================
-[2025-08-05T10:31:23.488Z] • The token is now enabled for CCIP transfers
-[2025-08-05T10:31:23.488Z] • Test cross-chain operations using the CCIP router scripts
-[2025-08-05T10:31:23.488Z] • Use yarn ccip:send to send tokens cross-chain
-[2025-08-05T10:31:23.488Z] • Monitor transactions on CCIP Explorer
-✨  Done in 19.30s.
-
+[2025-08-22T10:53:06.746Z] 🔍 LOOKUP TABLE VERIFICATION
+[2025-08-22T10:53:06.746Z] =============================================
+[2025-08-22T10:53:06.746Z] Verifying lookup table exists...
+[2025-08-22T10:53:06.987Z] Lookup table verified with 11 addresses
+[2025-08-22T10:53:06.987Z]
+[2025-08-22T10:53:06.987Z] 🏊 SETTING POOL
+[2025-08-22T10:53:06.987Z] =============================================
+[2025-08-22T10:53:06.987Z] Setting pool (registering ALT with token)...
+[2025-08-22T10:53:06.987Z] Setting pool for token 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS with lookup table 4EZuCBu5f3jjLE8iVDkSxLwGqvEahuuYMim48GRj8ryP
+[2025-08-22T10:53:20.651Z] Pool set successfully. Tx signature: 3UPoHJcUNdw2CWKNHzcTQBhGy5WoEtTFuSMZFjUnARZ2q1mXAkvpPWBf4tNnhwCjmDk7ZQa4bmaowq57vfmKyikj
+[2025-08-22T10:53:20.652Z]
+[2025-08-22T10:53:20.653Z] ✅ POOL SET SUCCESSFULLY
+[2025-08-22T10:53:20.653Z] =============================================
+[2025-08-22T10:53:20.653Z] Transaction Signature: 3UPoHJcUNdw2CWKNHzcTQBhGy5WoEtTFuSMZFjUnARZ2q1mXAkvpPWBf4tNnhwCjmDk7ZQa4bmaowq57vfmKyikj
+[2025-08-22T10:53:20.653Z]
+[2025-08-22T10:53:20.653Z] 🔍 EXPLORER URLS
+[2025-08-22T10:53:20.653Z] =============================================
+[2025-08-22T10:53:20.654Z] Transaction: https://explorer.solana.com/tx/3UPoHJcUNdw2CWKNHzcTQBhGy5WoEtTFuSMZFjUnARZ2q1mXAkvpPWBf4tNnhwCjmDk7ZQa4bmaowq57vfmKyikj?cluster=devnet
+[2025-08-22T10:53:20.654Z]
+[2025-08-22T10:53:20.654Z] 🔍 FINAL VERIFICATION
+[2025-08-22T10:53:20.654Z] =============================================
+[2025-08-22T10:53:20.654Z] Verifying pool registration...
+[2025-08-22T10:53:20.654Z] Fetching token admin registry for mint: 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
+[2025-08-22T10:53:20.934Z] ✅ Pool registration verified successfully!
+[2025-08-22T10:53:20.934Z] Registered lookup table: 4EZuCBu5f3jjLE8iVDkSxLwGqvEahuuYMim48GRj8ryP
+[2025-08-22T10:53:20.934Z] Writable indices: [3, 4, 7]
+[2025-08-22T10:53:20.935Z]
+[2025-08-22T10:53:20.935Z] 🎉 Pool Registration Complete!
+[2025-08-22T10:53:20.935Z] ✅ Token: 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
+[2025-08-22T10:53:20.935Z] ✅ ALT: 4EZuCBu5f3jjLE8iVDkSxLwGqvEahuuYMim48GRj8ryP
 ```
 
 </Fragment>
@@ -1514,9 +1527,9 @@ $ ts-node ./ccip-scripts/svm/admin/set-pool.ts --token-mint 9qfyXQhZt1ZUvEX1kKep
 
 ## Phase 5: Testing Cross-Chain Transfers
 
-Test the complete cross-chain token transfer functionality in both directions using the production multisig configuration.
+Test the complete cross-chain token transfer functionality in both directions.
 
-### Transfer Direction 1: Solana → Ethereum
+### Step 1: Transfer Solana → Ethereum
 
 **Stay in Terminal 1 (Solana Starter Kit)**
 
@@ -1525,13 +1538,6 @@ Confirm you are in the correct directory:
 ```bash
 pwd
 # Should show: .../solana-starter-kit
-```
-
-Load all variables for testing:
-
-```bash
-source ~/.ccip_complete_vars
-echo "Environment loaded: SOL_TOKEN_MINT=$SOL_TOKEN_MINT, SOL_ALT_ADDRESS=$SOL_ALT_ADDRESS"
 ```
 
 #### Prepare for Testing
@@ -1563,79 +1569,79 @@ yarn svm:token:check --token-mint $SOL_TOKEN_MINT
 <Fragment slot="panel.2">
 
 ```bash
-yarn run v1.22.22
-$ ts-node ./ccip-scripts/svm/token/delegate-token-authority.ts --token-mint 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T10:43:12.461Z] CCIP Token Authority Delegator
-[2025-08-05T10:43:12.463Z] =============================================
-[2025-08-05T10:43:12.507Z] Network: solana-devnet
-[2025-08-05T10:43:12.508Z] Router Program: Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C
-[2025-08-05T10:43:12.508Z] Wallet: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-[2025-08-05T10:43:12.509Z]
-[2025-08-05T10:43:12.509Z] 💰 WALLET BALANCE
-[2025-08-05T10:43:12.509Z] =============================================
-[2025-08-05T10:43:12.897Z] SOL Balance: 36.386211106 SOL (36386211106 lamports)
-[2025-08-05T10:43:12.898Z]
-[2025-08-05T10:43:12.898Z] 🔐 PROCESSING TOKEN DELEGATIONS
-[2025-08-05T10:43:12.898Z] =============================================
-[2025-08-05T10:43:12.899Z] Custom token mints provided: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T10:43:12.899Z] Using 'fee-billing' delegation type for ccip_send compatibility
-[2025-08-05T10:43:12.899Z] Added custom token delegation for: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T10:43:12.899Z]
-[1/1] Processing delegation for mint: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T10:43:12.900Z] Getting mint account info for 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG to determine token program ID...
-[2025-08-05T10:43:13.018Z] Detected Standard Token Program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
-[2025-08-05T10:43:13.019Z] Token Program ID: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
-[2025-08-05T10:43:13.019Z] Delegation Type: fee-billing
-[2025-08-05T10:43:13.019Z] Delegate Address: 2AjuzTy6z2webxEUu7eZ1DkAyLagZaqH2dgzhbBYjJiG
-[2025-08-05T10:43:13.019Z] Amount to delegate: 18446744073709551615
-[2025-08-05T10:43:13.020Z] User Token Account: DwTHftH6DNbPoFnwKEawmFi8JyhthDJKkxv9z5KKQu3j
-[2025-08-05T10:43:13.122Z] Token account DwTHftH6DNbPoFnwKEawmFi8JyhthDJKkxv9z5KKQu3j exists.
-[2025-08-05T10:43:13.227Z] Sending transaction to delegate token authority...
-[2025-08-05T10:43:13.953Z] ✅ Token delegation successful!
-[2025-08-05T10:43:13.954Z] Transaction signature: 5Qmn7oZMXaLfbPhvjjAdun5kNVZpkaFwdXRcynZ5semNXQoUkwx7JYRV4WoVLosuWvEYNJWzGRkUZt1ugofHykBr
-[2025-08-05T10:43:13.954Z] Explorer URL: https://explorer.solana.com/tx/5Qmn7oZMXaLfbPhvjjAdun5kNVZpkaFwdXRcynZ5semNXQoUkwx7JYRV4WoVLosuWvEYNJWzGRkUZt1ugofHykBr?cluster=devnet
-[2025-08-05T10:43:13.954Z]
-[2025-08-05T10:43:13.954Z] ✅ All delegations processed successfully
-✨ Done in 4.81s.
-yarn run v1.22.22
-$ ts-node ./ccip-scripts/svm/token/check-token-approval.ts --token-mint 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T10:43:17.256Z] CCIP Token Approval Checker
-[2025-08-05T10:43:17.260Z] =========================================
-[2025-08-05T10:43:17.296Z] Network: solana-devnet
-[2025-08-05T10:43:17.297Z] Router Program: Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C
-[2025-08-05T10:43:17.297Z] Wallet: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-[2025-08-05T10:43:17.297Z]
-[2025-08-05T10:43:17.297Z] 💰 WALLET BALANCE
-[2025-08-05T10:43:17.297Z] =========================================
-[2025-08-05T10:43:17.671Z] SOL Balance: 36.386206106 SOL (36386206106 lamports)
-[2025-08-05T10:43:17.671Z]
-[2025-08-05T10:43:17.671Z] 🔍 PROCESSING TOKEN APPROVALS
-[2025-08-05T10:43:17.671Z] =========================================
-[2025-08-05T10:43:17.671Z] Custom token mints provided: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T10:43:17.671Z] Using 'fee-billing' delegation type for ccip_send compatibility
-[2025-08-05T10:43:17.671Z] Added custom token check for: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T10:43:17.671Z]
-[1/1] Processing token: Custom Token (9qfyXQhZ...)
-[2025-08-05T10:43:17.671Z] Mint: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T10:43:17.672Z] Getting mint account info for 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG to determine token program ID...
-[2025-08-05T10:43:17.798Z] Detected Standard Token Program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
-[2025-08-05T10:43:17.798Z] Token Program ID: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
-[2025-08-05T10:43:17.800Z] Token Account: DwTHftH6DNbPoFnwKEawmFi8JyhthDJKkxv9z5KKQu3j
-[2025-08-05T10:43:17.801Z] Expected Delegate (fee-billing): 2AjuzTy6z2webxEUu7eZ1DkAyLagZaqH2dgzhbBYjJiG
-[2025-08-05T10:43:17.909Z] Balance: 1000000000000
-[2025-08-05T10:43:17.909Z] Actual Delegate: 2AjuzTy6z2webxEUu7eZ1DkAyLagZaqH2dgzhbBYjJiG
-[2025-08-05T10:43:17.909Z] Delegated Amount: 18446744073709551615
-[2025-08-05T10:43:17.909Z] Matches Expected Delegate: ✓ Yes
-[2025-08-05T10:43:17.909Z]
-[2025-08-05T10:43:17.909Z] 📋 TOKEN APPROVAL SUMMARY
-[2025-08-05T10:43:17.909Z] =========================================
-[2025-08-05T10:43:17.909Z] Token | Description | Balance | Delegate | Delegated Amount | Status
-[2025-08-05T10:43:17.909Z] ------|-------------|---------|----------|-----------------|-------
-[2025-08-05T10:43:17.909Z] 9qfyXQhZ... | Custom Token (9qfyXQhZ...) | 1000000000000 | 2AjuzTy6... | 18446744073709551615 | ✓ Correct
-[2025-08-05T10:43:17.909Z]
-[2025-08-05T10:43:17.909Z] ✅ Token approval check completed successfully
-✨ Done in 3.25s.
+1000
 
+yarn run v1.22.22
+$ ts-node ./ccip-scripts/svm/token/delegate-token-authority.ts --token-mint 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
+[2025-08-22T10:55:29.652Z] CCIP Token Authority Delegator
+[2025-08-22T10:55:29.654Z] =============================================
+[2025-08-22T10:55:29.681Z] Network: solana-devnet
+[2025-08-22T10:55:29.681Z] Router Program: Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C
+[2025-08-22T10:55:29.681Z] Wallet: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[2025-08-22T10:55:29.681Z]
+[2025-08-22T10:55:29.681Z] 💰 WALLET BALANCE
+[2025-08-22T10:55:29.681Z] =============================================
+[2025-08-22T10:55:30.472Z] SOL Balance: 65.633320271 SOL (65633320271 lamports)
+[2025-08-22T10:55:30.473Z]
+[2025-08-22T10:55:30.473Z] 🔐 PROCESSING TOKEN DELEGATIONS
+[2025-08-22T10:55:30.473Z] =============================================
+[2025-08-22T10:55:30.473Z] Custom token mints provided: 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
+[2025-08-22T10:55:30.473Z] Using 'fee-billing' delegation type for ccip_send compatibility
+[2025-08-22T10:55:30.473Z] Added custom token delegation for: 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
+[2025-08-22T10:55:30.473Z]
+[1/1] Processing delegation for mint: 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
+[2025-08-22T10:55:30.473Z] Getting mint account info for 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS to determine token program ID...
+[2025-08-22T10:55:30.777Z] Detected Standard Token Program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+[2025-08-22T10:55:30.780Z] Token Program ID: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+[2025-08-22T10:55:30.780Z] Delegation Type: fee-billing
+[2025-08-22T10:55:30.780Z] Delegate Address: 2AjuzTy6z2webxEUu7eZ1DkAyLagZaqH2dgzhbBYjJiG
+[2025-08-22T10:55:30.780Z] Amount to delegate: 18446744073709551615
+[2025-08-22T10:55:30.782Z] User Token Account: 4k3FoESSV3MHg1iKScE1Ccqeb3PfHiz71nX5PgkaL1kz
+[2025-08-22T10:55:31.037Z] Token account 4k3FoESSV3MHg1iKScE1Ccqeb3PfHiz71nX5PgkaL1kz exists.
+[2025-08-22T10:55:31.273Z] Sending transaction to delegate token authority...
+[2025-08-22T10:55:32.535Z] ✅ Token delegation successful!
+[2025-08-22T10:55:32.535Z] Transaction signature: oUspMZ2t4ndUVPN7r1KD5tBTiVkZcYuJhMWt377Xwmn5W97jbKrqb2w8tHipL2RQtKpCRoH6atkRETg4YZSbj9v
+[2025-08-22T10:55:32.535Z] Explorer URL: https://explorer.solana.com/tx/oUspMZ2t4ndUVPN7r1KD5tBTiVkZcYuJhMWt377Xwmn5W97jbKrqb2w8tHipL2RQtKpCRoH6atkRETg4YZSbj9v?cluster=devnet
+[2025-08-22T10:55:32.535Z]
+[2025-08-22T10:55:32.535Z] ✅ All delegations processed successfully
+✨  Done in 6.04s.
+yarn run v1.22.22
+$ ts-node ./ccip-scripts/svm/token/check-token-approval.ts --token-mint 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
+[2025-08-22T10:55:35.519Z] CCIP Token Approval Checker
+[2025-08-22T10:55:35.521Z] =========================================
+[2025-08-22T10:55:35.548Z] Network: solana-devnet
+[2025-08-22T10:55:35.548Z] Router Program: Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C
+[2025-08-22T10:55:35.548Z] Wallet: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[2025-08-22T10:55:35.548Z]
+[2025-08-22T10:55:35.548Z] 💰 WALLET BALANCE
+[2025-08-22T10:55:35.548Z] =========================================
+[2025-08-22T10:55:35.898Z] SOL Balance: 65.633315271 SOL (65633315271 lamports)
+[2025-08-22T10:55:35.898Z]
+[2025-08-22T10:55:35.898Z] 🔍 PROCESSING TOKEN APPROVALS
+[2025-08-22T10:55:35.899Z] =========================================
+[2025-08-22T10:55:35.899Z] Custom token mints provided: 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
+[2025-08-22T10:55:35.899Z] Using 'fee-billing' delegation type for ccip_send compatibility
+[2025-08-22T10:55:35.899Z] Added custom token check for: 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
+[2025-08-22T10:55:35.899Z]
+[1/1] Processing token: Custom Token (8nEFofUq...)
+[2025-08-22T10:55:35.899Z] Mint: 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
+[2025-08-22T10:55:35.900Z] Getting mint account info for 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS to determine token program ID...
+[2025-08-22T10:55:35.996Z] Detected Standard Token Program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+[2025-08-22T10:55:35.996Z] Token Program ID: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+[2025-08-22T10:55:35.998Z] Token Account: 4k3FoESSV3MHg1iKScE1Ccqeb3PfHiz71nX5PgkaL1kz
+[2025-08-22T10:55:35.999Z] Expected Delegate (fee-billing): 2AjuzTy6z2webxEUu7eZ1DkAyLagZaqH2dgzhbBYjJiG
+[2025-08-22T10:55:36.093Z] Balance: 1000000000000
+[2025-08-22T10:55:36.093Z] Actual Delegate: 2AjuzTy6z2webxEUu7eZ1DkAyLagZaqH2dgzhbBYjJiG
+[2025-08-22T10:55:36.093Z] Delegated Amount: 18446744073709551615
+[2025-08-22T10:55:36.093Z] Matches Expected Delegate: ✓ Yes
+[2025-08-22T10:55:36.093Z]
+[2025-08-22T10:55:36.093Z] 📋 TOKEN APPROVAL SUMMARY
+[2025-08-22T10:55:36.093Z] =========================================
+[2025-08-22T10:55:36.093Z] Token | Description | Balance | Delegate | Delegated Amount | Status
+[2025-08-22T10:55:36.093Z] ------|-------------|---------|----------|-----------------|-------
+[2025-08-22T10:55:36.093Z] 8nEFofUq... | Custom Token (8nEFofUq...) | 1000000000000 | 2AjuzTy6... | 18446744073709551615 | ✓ Correct
+[2025-08-22T10:55:36.093Z]
+[2025-08-22T10:55:36.093Z] ✅ Token approval check completed successfully
 ```
 
 </Fragment>
@@ -1648,84 +1654,36 @@ $ ts-node ./ccip-scripts/svm/token/check-token-approval.ts --token-mint 9qfyXQhZ
 <Fragment slot="tab.2">Expected Output</Fragment>
 
 <Fragment slot="panel.1">
+
 ```bash
 # Execute cross-chain transfer from Solana to Ethereum
-yarn svm:token-transfer --token-mint $SOL_TOKEN_MINT
+yarn svm:token-transfer --token-mint $SOL_TOKEN_MINT --token-amount 1000000 --receiver <REPLACE_WITH_YOUR_ETHEREUM_RECEIVER_ADDRESS>
+
 ```
-
-**Customization Options:**
-
-You can override the default transfer amount and destination receiver:
-
-```bash
-# Override amount and receiver address
-yarn svm:token-transfer --token-mint $SOL_TOKEN_MINT --token-amount 1000000 --receiver 0x9d087fC03ae39b088326b67fA3C788236645b717
-```
-
-**Parameters:**
-
-- `--token-amount`: Amount to transfer (in token base units)
-- `--receiver`: EVM address that will receive the tokens on the destination chain
 
 </Fragment>
 
 <Fragment slot="panel.2">
+
 ```bash
-yarn run v1.22.22
-$ ts-node ./ccip-scripts/svm/router/1_token-transfer.ts --token-mint 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG --token-amount 1000000 --receiver 0x9d087fC03ae39b088326b67fA3C788236645b717
-[2025-08-05T10:46:18.424Z] 🚀 CCIP Token Transfer
-[2025-08-05T10:46:18.427Z] =======================================
-[2025-08-05T10:46:18.465Z] Network: devnet
-[2025-08-05T10:46:18.466Z] Wallet: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-[2025-08-05T10:46:18.466Z]
-[2025-08-05T10:46:18.466Z] 💰 WALLET BALANCE
-[2025-08-05T10:46:18.466Z] =======================================
-[2025-08-05T10:46:18.894Z] SOL Balance: 36386206106 lamports (36.386206106 SOL)
-[2025-08-05T10:46:18.895Z]
-[2025-08-05T10:46:18.895Z] 🌉 CCIP ROUTER INFORMATION
-[2025-08-05T10:46:18.895Z] =======================================
-[2025-08-05T10:46:18.895Z] CCIP Router Program ID: Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C
-[2025-08-05T10:46:18.895Z] Fee Quoter Program ID: FeeQPGkKDeRV1MgoYfMH6L8o3KeuYjwUZrgn4LRKfjHi
-[2025-08-05T10:46:18.895Z] RMN Remote Program ID: RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7
-[2025-08-05T10:46:18.895Z] Using native SOL as fee token
-[2025-08-05T10:46:18.895Z]
-[2025-08-05T10:46:18.895Z] 📋 TOKEN TRANSFER PARAMETERS
-[2025-08-05T10:46:18.895Z] ===========================================
-[2025-08-05T10:46:18.895Z] Destination Chain: ethereum-sepolia
-[2025-08-05T10:46:18.895Z] Destination Chain Selector: 16015286601757825753
-[2025-08-05T10:46:18.895Z] EVM Receiver Address: 0x9d087fC03ae39b088326b67fA3C788236645b717
-[2025-08-05T10:46:18.895Z] Token Mint: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-[2025-08-05T10:46:18.895Z] Token Amount: 1000000
-[2025-08-05T10:46:18.895Z] Fee Token: 11111111111111111111111111111111
-[2025-08-05T10:46:18.895Z] Gas Limit: 0
-[2025-08-05T10:46:18.896Z] Allow Out Of Order Execution: true
-[2025-08-05T10:46:18.897Z]
-[2025-08-05T10:46:18.897Z] 🔄 SENDING TOKEN TRANSFER
-[2025-08-05T10:46:18.897Z] =======================================
-[2025-08-05T10:46:18.897Z] Preparing CCIP message...
-[2025-08-05T10:46:18.899Z] Sending CCIP message to destination chain 16015286601757825753
-[2025-08-05T10:46:18.901Z] Building accounts for CCIP send to chain 16015286601757825753
-[2025-08-05T10:46:18.908Z] Getting mint account info for 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG to determine token program ID...
-[2025-08-05T10:46:19.011Z] Detected Standard Token Program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
-[2025-08-05T10:46:33.012Z] CCIP message sent successfully: 5iq6ZVF7TePnaM4SZmo5xFkGpawmqsp6racfECqsbEzeXQJfmnS4A2QMkRyoqwxZKww1LhhicN8G1EenkfkF1TW7
-[2025-08-05T10:46:33.015Z] Parsing CCIP message sent event for transaction: 5iq6ZVF7TePnaM4SZmo5xFkGpawmqsp6racfECqsbEzeXQJfmnS4A2QMkRyoqwxZKww1LhhicN8G1EenkfkF1TW7
-[2025-08-05T10:46:33.137Z] Successfully extracted messageId: 0xec5c9fca307facf1296014510a65f7b95449991bf59182c0724dcdd2db4d77ef
-[2025-08-05T10:46:33.137Z]
-[2025-08-05T10:46:33.137Z] ✅ TOKEN TRANSFER SENT SUCCESSFULLY
-[2025-08-05T10:46:33.137Z] =======================================
-[2025-08-05T10:46:33.137Z] Transaction Signature: 5iq6ZVF7TePnaM4SZmo5xFkGpawmqsp6racfECqsbEzeXQJfmnS4A2QMkRyoqwxZKww1LhhicN8G1EenkfkF1TW7
-[2025-08-05T10:46:33.137Z] CCIP Message ID: 0xec5c9fca307facf1296014510a65f7b95449991bf59182c0724dcdd2db4d77ef
-[2025-08-05T10:46:33.137Z]
-[2025-08-05T10:46:33.137Z] 🔍 EXPLORER URLS
-[2025-08-05T10:46:33.137Z] =======================================
-[2025-08-05T10:46:33.137Z] Solana Transaction: https://explorer.solana.com/tx/5iq6ZVF7TePnaM4SZmo5xFkGpawmqsp6racfECqsbEzeXQJfmnS4A2QMkRyoqwxZKww1LhhicN8G1EenkfkF1TW7?cluster=devnet
-[2025-08-05T10:46:33.137Z] CCIP Explorer: https://ccip.chain.link/msg/0xec5c9fca307facf1296014510a65f7b95449991bf59182c0724dcdd2db4d77ef
-[2025-08-05T10:46:33.137Z]
-[2025-08-05T10:46:33.137Z] 🎉 Transfer Complete!
-[2025-08-05T10:46:33.137Z] ✅ Sent 1000000 tokens to 0x9d087fC03ae39b088326b67fA3C788236645b717
-[2025-08-05T10:46:33.137Z] ✅ Message ID: 0xec5c9fca307facf1296014510a65f7b95449991bf59182c0724dcdd2db4d77ef
-[2025-08-05T10:46:33.137Z] ✅ Monitor progress on CCIP Explorer: https://ccip.chain.link/msg/0xec5c9fca307facf1296014510a65f7b95449991bf59182c0724dcdd2db4d77ef
-✨  Done in 18.23s.
+[2025-08-22T10:58:33.715Z] CCIP message sent successfully: sb2kHXW3M4P56WNNH74LviWcPmeYXjNA4f6opmt8iPrYF1cu5FC9grLhyu2XTEwkABQUrTdaJoDWc5CHe2gQL2u
+[2025-08-22T10:58:33.716Z] Parsing CCIP message sent event for transaction: sb2kHXW3M4P56WNNH74LviWcPmeYXjNA4f6opmt8iPrYF1cu5FC9grLhyu2XTEwkABQUrTdaJoDWc5CHe2gQL2u
+[2025-08-22T10:58:33.825Z] Successfully extracted messageId: 0x9c486ce15650d0bbff3f9cd8ead0510aadd854f7247bf9b775918a1296408aaa
+[2025-08-22T10:58:33.826Z]
+[2025-08-22T10:58:33.826Z] ✅ TOKEN TRANSFER SENT SUCCESSFULLY
+[2025-08-22T10:58:33.826Z] =======================================
+[2025-08-22T10:58:33.826Z] Transaction Signature: sb2kHXW3M4P56WNNH74LviWcPmeYXjNA4f6opmt8iPrYF1cu5FC9grLhyu2XTEwkABQUrTdaJoDWc5CHe2gQL2u
+[2025-08-22T10:58:33.826Z] CCIP Message ID: 0x9c486ce15650d0bbff3f9cd8ead0510aadd854f7247bf9b775918a1296408aaa
+[2025-08-22T10:58:33.826Z]
+[2025-08-22T10:58:33.826Z] 🔍 EXPLORER URLS
+[2025-08-22T10:58:33.826Z] =======================================
+[2025-08-22T10:58:33.826Z] Solana Transaction: https://explorer.solana.com/tx/sb2kHXW3M4P56WNNH74LviWcPmeYXjNA4f6opmt8iPrYF1cu5FC9grLhyu2XTEwkABQUrTdaJoDWc5CHe2gQL2u?cluster=devnet
+[2025-08-22T10:58:33.826Z] CCIP Explorer: https://ccip.chain.link/msg/0x9c486ce15650d0bbff3f9cd8ead0510aadd854f7247bf9b775918a1296408aaa
+[2025-08-22T10:58:33.826Z]
+[2025-08-22T10:58:33.826Z] 🎉 Transfer Complete!
+[2025-08-22T10:58:33.826Z] ✅ Sent 1000000 tokens to 0x9d087fC03ae39b088326b67fA3C788236645b717
+[2025-08-22T10:58:33.826Z] ✅ Message ID: 0x9c486ce15650d0bbff3f9cd8ead0510aadd854f7247bf9b775918a1296408aaa
+[2025-08-22T10:58:33.826Z] ✅ Monitor progress on CCIP Explorer: https://ccip.chain.link/msg/0x9c486ce15650d0bbff3f9cd8ead0510aadd854f7247bf9b775918a1296408aaa
 ```
 
 </Fragment>
@@ -1738,13 +1696,13 @@ Upon successful execution, the system generates critical tracking identifiers fo
 
 **Transaction Identifiers:**
 
-- **Transaction Signature**: `5iq6ZVF7TePnaM4SZmo5xFkGpawmqsp6racfECqsbEzeXQJfmnS4A2QMkRyoqwxZKww1LhhicN8G1EenkfkF1TW7`
-- **CCIP Message ID**: `0xec5c9fca307facf1296014510a65f7b95449991bf59182c0724dcdd2db4d77ef`
+- **Transaction Signature**: `sb2kHXW3M4P56WNNH74LviWcPmeYXjNA4f6opmt8iPrYF1cu5FC9grLhyu2XTEwkABQUrTdaJoDWc5CHe2gQL2u`
+- **CCIP Message ID**: `0x9c486ce15650d0bbff3f9cd8ead0510aadd854f7247bf9b775918a1296408aaa`
 
 **CCIP Explorer** (Primary monitoring interface):
 
 ```
-https://ccip.chain.link/msg/0xec5c9fca307facf1296014510a65f7b95449991bf59182c0724dcdd2db4d77ef
+https://ccip.chain.link/msg/0x9c486ce15650d0bbff3f9cd8ead0510aadd854f7247bf9b775918a1296408aaa
 ```
 
 The CCIP Explorer provides comprehensive transaction visibility:
@@ -1757,10 +1715,10 @@ The CCIP Explorer provides comprehensive transaction visibility:
 **Solana Explorer** (Source chain verification):
 
 ```
-https://explorer.solana.com/tx/5iq6ZVF7TePnaM4SZmo5xFkGpawmqsp6racfECqsbEzeXQJfmnS4A2QMkRyoqwxZKww1LhhicN8G1EenkfkF1TW7?cluster=devnet
+https://explorer.solana.com/tx/sb2kHXW3M4P56WNNH74LviWcPmeYXjNA4f6opmt8iPrYF1cu5FC9grLhyu2XTEwkABQUrTdaJoDWc5CHe2gQL2u?cluster=devnet
 ```
 
-### Transfer Direction 2: Ethereum → Solana
+### Step 2: Transfer Ethereum → Solana
 
 **In Terminal 1 (Solana Starter Kit)**
 
@@ -1773,61 +1731,16 @@ https://explorer.solana.com/tx/5iq6ZVF7TePnaM4SZmo5xFkGpawmqsp6racfECqsbEzeXQJfm
 <Fragment slot="panel.1">
 ```bash
 # Execute cross-chain transfer from Ethereum to Solana
-yarn evm:transfer --token $ETH_TOKEN_ADDRESS
+yarn evm:transfer --token $ETH_TOKEN_ADDRESS --amount 1000000000000000000 --token-receiver $SOL_ADMIN_WALLET
 ```
 
-**Customization Options:**
-
-You can override the default transfer amount and destination receiver:
-
-```bash
-# Override amount and receiver address
-yarn evm:transfer --token $ETH_TOKEN_ADDRESS --amount 1000000000000000000 --token-receiver EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-```
-
-**Parameters:**
-
-- `--amount`: Amount to transfer (in wei for 18-decimal tokens)
-- `--token-receiver`: Solana wallet address that will receive the tokens on the destination chain
+**Note**: You can replace the token receiver with another Solana address.
 
 </Fragment>
 
 <Fragment slot="panel.2">
+
 ```bash
-yarn run v1.22.22
-$ ts-node ./ccip-scripts/evm/router/1_token-transfer.ts --token 0xd3d2f66dd4Eead2cF2cD4C6219Eb1e1E80e6109d --amount 1000000000000000000 --token-receiver EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-Current working directory: /Users/aelmanaa/Documents/Blockchain/chainlink/solana-starter-kit
-Found .env file at: /Users/aelmanaa/Documents/Blockchain/chainlink/solana-starter-kit/.env
-Successfully loaded environment variables from /Users/aelmanaa/Documents/Blockchain/chainlink/solana-starter-kit/.env
-[token-transfer] [INFO] 🚀 EVM to Solana CCIP Token Transfer
-[token-transfer] [INFO] =========================================
-chainId ethereum-sepolia
-[token-transfer] [INFO] Source Chain: ethereum-sepolia
-[token-transfer] [INFO] Fee Token: link
-[token-transfer] [INFO] Token Receiver: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
-[token-transfer] [INFO] Compute Units: 0
-[token-transfer] [INFO]
-==== Environment Information ====
-chainId ethereum-sepolia
-[token-transfer] [INFO] Router Address: 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
-[ccip-messenger] [INFO] Creating client for chain: Ethereum Sepolia (ethereum-sepolia)
-[token-transfer] [INFO] Wallet Address: 0x9d087fC03ae39b088326b67fA3C788236645b717
-[token-transfer] [INFO] Native Balance: 592.735864997776343064 ETH
-[token-transfer] [INFO]
-🔍 Validating Token Transfer
-[token-transfer] [INFO] =========================================
-[token-transfer] [INFO] Token: BnMAEM (0xd3d2f66dd4Eead2cF2cD4C6219Eb1e1E80e6109d)
-[token-transfer] [INFO] Token Balance: 1000.001 BnMAEM
-[token-transfer] [INFO] Token: BnMAEM (0xd3d2f66dd4Eead2cF2cD4C6219Eb1e1E80e6109d)
-[token-transfer] [INFO] Token Balance: 1000.001 BnMAEM
-[token-transfer] [INFO] Transfer Amount: 1.0 BnMAEM
-[token-transfer] [INFO] ✅ Token validation successful
-[token-transfer] [INFO] Using fee token: 0x779877A7B0D9E8603169DdbD7836e478b4624789
-[token-transfer] [INFO] Creating CCIP message request
-[token-transfer] [INFO]
-📋 Transfer Summary
-[token-transfer] [INFO] =========================================
-[token-transfer] [INFO]
 ==== Transfer Summary ====
 [token-transfer] [INFO] Source Chain: Ethereum Sepolia
 [token-transfer] [INFO] Destination Chain: Solana Devnet (16423721717087811551)
@@ -1837,48 +1750,34 @@ chainId ethereum-sepolia
 [token-transfer] [INFO] Fee Token: 0x779877A7B0D9E8603169DdbD7836e478b4624789
 [token-transfer] [INFO]
 Token Transfers:
-[token-transfer] [INFO]   1. 1000000000000000000 raw units (0xd3d2f66dd4Eead2cF2cD4C6219Eb1e1E80e6109d)
+[token-transfer] [INFO]   1. 1000000000000000000 raw units (0x84426E21208D73E8D3760d9cbc4FaEFa279d3720)
 [token-transfer] [INFO]
 Extra Args: Solana-specific, 228 bytes
 [token-transfer] [INFO]
 🚀 Executing Token Transfer
 [token-transfer] [INFO] =========================================
 [token-transfer] [INFO] Sending CCIP message...
-[ccip-messenger] [INFO] Estimated fee: 18785561290872855
-[ccip-messenger] [INFO] Approving 0.022542673549047426 LINK for CCIP Router
-[ccip-messenger] [INFO] This token is being used as the fee token with a 20% buffer included
-[ccip-messenger] [INFO] Approving 0.022542673549047426 tokens for 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
-[ccip-messenger] [INFO] LINK approved for CCIP Router
-[ccip-messenger] [INFO] ✅ Verified on-chain allowance for LINK: 0.022542673549047426 (required: 0.022542673549047426)
+[ccip-messenger] [INFO] Estimated fee: 12806000814649244
+[ccip-messenger] [INFO] LINK already has sufficient allowance: 0.015367200977579092 (needed: 0.015367200977579092, surplus: 0.0)
+[ccip-messenger] [INFO] Using existing allowance for fee token
 [ccip-messenger] [INFO] Approving 1.0 BnMAEM for CCIP Router
 [ccip-messenger] [INFO] Approving 1.0 tokens for 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
 [ccip-messenger] [INFO] BnMAEM approved for CCIP Router
 [ccip-messenger] [INFO] ✅ Verified on-chain allowance for BnMAEM: 1.0 (required: 1.0)
 [ccip-messenger] [INFO] Sending CCIP message...
 [ccip-messenger] [INFO] Sending CCIP message...
-[ccip-messenger] [INFO] Transaction sent: 0x5fe6adda5c98831731860800e1f779915b51974f5433166bf50169d139c9499a
-[ccip-messenger] [INFO] Transaction sent: 0x5fe6adda5c98831731860800e1f779915b51974f5433166bf50169d139c9499a
-[ccip-messenger] [INFO] Message ID: 0x3d28c9aa40c6059c7b592c9824b5ca85c6ba3e4c5afa84a4b3fcd495cba93828
+[ccip-messenger] [INFO] Transaction sent: 0xb2d48398a4d57dde2aaf0551209abad448b092602ca5087e0d108eadd8a8c319
+[ccip-messenger] [INFO] Transaction sent: 0xb2d48398a4d57dde2aaf0551209abad448b092602ca5087e0d108eadd8a8c319
+[ccip-messenger] [INFO] Message ID: 0x567f4cdb2e1c52f6aef6354bd9acbeac6761aa4b1a5e74a356785c2e67197d88
 [token-transfer] [INFO]
 🎉 Transfer Results
 [token-transfer] [INFO] =========================================
 [token-transfer] [INFO]
 ==== Transfer Results ====
-[token-transfer] [INFO] Transaction Hash: 0x5fe6adda5c98831731860800e1f779915b51974f5433166bf50169d139c9499a
-[token-transfer] [INFO] Transaction URL: https://sepolia.etherscan.io/tx/0x5fe6adda5c98831731860800e1f779915b51974f5433166bf50169d139c9499a
-[token-transfer] [INFO] Message ID: 0x3d28c9aa40c6059c7b592c9824b5ca85c6ba3e4c5afa84a4b3fcd495cba93828
-[token-transfer] [INFO] 👉 CCIP Explorer: https://ccip.chain.link/msg/0x3d28c9aa40c6059c7b592c9824b5ca85c6ba3e4c5afa84a4b3fcd495cba93828
-[token-transfer] [INFO] Destination Chain Selector: 16423721717087811551
-[token-transfer] [INFO] Sequence Number: 420
-[token-transfer] [INFO]
-Message tracking for Solana destinations:
-[token-transfer] [INFO] Please check the CCIP Explorer link to monitor your message status.
-[token-transfer] [INFO]
-✅ Transaction completed on the source chain
-[token-transfer] [INFO]
-✅ Token Transfer Complete!
-[token-transfer] [INFO] 🔗 Your tokens are being bridged to Solana
-✨  Done in 126.75s.
+[token-transfer] [INFO] Transaction Hash: 0xb2d48398a4d57dde2aaf0551209abad448b092602ca5087e0d108eadd8a8c319
+[token-transfer] [INFO] Transaction URL: https://sepolia.etherscan.io/tx/0xb2d48398a4d57dde2aaf0551209abad448b092602ca5087e0d108eadd8a8c319
+[token-transfer] [INFO] Message ID: 0x567f4cdb2e1c52f6aef6354bd9acbeac6761aa4b1a5e74a356785c2e67197d88
+[token-transfer] [INFO] 👉 CCIP Explorer: https://ccip.chain.link/msg/0x567f4cdb2e1c52f6aef6354bd9acbeac6761aa4b1a5e74a356785c2e67197d88
 ```
 
 </Fragment>
@@ -1891,13 +1790,13 @@ Upon successful execution, the system generates distinct tracking identifiers fo
 
 **Transaction Identifiers:**
 
-- **Ethereum Transaction Hash**: `0x5fe6adda5c98831731860800e1f779915b51974f5433166bf50169d139c9499a`
-- **CCIP Message ID**: `0x3d28c9aa40c6059c7b592c9824b5ca85c6ba3e4c5afa84a4b3fcd495cba93828`
+- **Ethereum Transaction Hash**: `0xb2d48398a4d57dde2aaf0551209abad448b092602ca5087e0d108eadd8a8c319`
+- **CCIP Message ID**: `0x567f4cdb2e1c52f6aef6354bd9acbeac6761aa4b1a5e74a356785c2e67197d88`
 
 **CCIP Explorer** (Primary monitoring interface):
 
 ```
-https://ccip.chain.link/msg/0x3d28c9aa40c6059c7b592c9824b5ca85c6ba3e4c5afa84a4b3fcd495cba93828
+https://ccip.chain.link/msg/0x567f4cdb2e1c52f6aef6354bd9acbeac6761aa4b1a5e74a356785c2e67197d88
 ```
 
 The CCIP Explorer provides comprehensive transaction visibility:
@@ -1910,7 +1809,7 @@ The CCIP Explorer provides comprehensive transaction visibility:
 **Ethereum Sepolia Explorer** (Source chain verification):
 
 ```
-https://sepolia.etherscan.io/tx/0x5fe6adda5c98831731860800e1f779915b51974f5433166bf50169d139c9499a
+https://sepolia.etherscan.io/tx/0xb2d48398a4d57dde2aaf0551209abad448b092602ca5087e0d108eadd8a8c319
 ```
 
 ## Optional: Verify Mint Authority Control
@@ -1953,9 +1852,11 @@ solana config get
 </Aside>
 
 <Aside type="caution" title="Production Considerations">
-**Tutorial vs Production**: This tutorial uses your single wallet as the admin signer for simplicity. In production, replace the admin wallet with a proper governance multisig (like [Squads](https://squads.so/)) for enhanced security.
+**Tutorial vs Production**: This tutorial uses your single wallet as the admin signer for simplicity. In production, replace the admin wallet with a proper governance multisig (Such as [Squads](https://squads.so/)) for enhanced security.
 
 **Scope Limitation**: This SPL token multisig only controls mint authority. For comprehensive governance (CCIP admin roles, pool ownership), implement separate governance infrastructure.
+
+To learn more, see the [Production Multisig Tutorial](/ccip/tutorials/svm/cross-chain-tokens/production-multisig-tutorial).
 
 </Aside>
 
@@ -1965,16 +1866,10 @@ solana config get
 
 ```bash
 Minting 1 tokens
-  Token: 9qfyXQhZt1ZUvEX1kKephoTqpiXnh1FBskRFB6udRwQG
-  Recipient: DwTHftH6DNbPoFnwKEawmFi8JyhthDJKkxv9z5KKQu3j
+  Token: 8nEFofUqsXSxpvYzfw1TXZFVSM8L8UH1sLbQHdn4WNFS
+  Recipient: 4k3FoESSV3MHg1iKScE1Ccqeb3PfHiz71nX5PgkaL1kz
 
-Signature: 4dYQyf8oTWojuVKNQdPNkdPLVwdJcGCbekW3sXP7ZdTd7UVksft9ekKLDWtkE4rgUvuTtFeTRNGWpgmF7HJNFJ3J
-
-✅ Manual mint through multisig successful!
-✅ 1 token minted using multisig authority
-✅ Demonstrates retained mint authority control through your admin wallet
-
-🎯 Key Takeaway: You haven't "lost" mint authority - it's managed through the multisig!
+Signature: 3y1kBhxJ1XG9qtDSfhtStV3AYJXTE2TvKJysg5JiJzsNrUmzRBWKby9sg67dsWf7Vr6hAYjAS5UTPSrCfuVohLtj
 ```
 
 **Verify Transaction on Solana Explorer:**

@@ -323,6 +323,81 @@ export function detectChainlinkProduct(pathname?: string): string | null {
 }
 
 /**
+ * Detect blockchain platforms from pathname
+ * Returns array of blockchain platforms mentioned in the URL
+ */
+export function detectBlockchainPlatforms(pathname?: string): string[] {
+  if (!pathname) return []
+
+  const path = pathname.toLowerCase()
+  const platforms: string[] = []
+
+  // Check for specific blockchain platforms in URL
+  if (path.includes("svm") || path.includes("solana")) {
+    platforms.push("Solana")
+  }
+  if (path.includes("evm")) {
+    platforms.push("EVM")
+    platforms.push("Ethereum") // EVM implies Ethereum compatibility
+  }
+  if (path.includes("aptos")) {
+    platforms.push("Aptos")
+  }
+  if (path.includes("sui")) {
+    platforms.push("Sui")
+  }
+
+  return platforms
+}
+
+/**
+ * Generate enhanced 'about' property with blockchain platforms
+ * Creates array of Thing objects for product and platforms
+ */
+export function generateEnhancedAbout(pathname?: string, product?: string | null): object | object[] {
+  const platforms = detectBlockchainPlatforms(pathname)
+  const aboutEntities: object[] = []
+
+  // Add primary product entity
+  if (product) {
+    aboutEntities.push({
+      "@type": "Thing",
+      name: `${product} Development`,
+      description: `Smart contract and blockchain development using Chainlink ${product}`,
+    })
+  } else {
+    aboutEntities.push({
+      "@type": "Thing",
+      name: "Blockchain Development",
+      description: "Smart contract and blockchain development using Chainlink",
+    })
+  }
+
+  // Add blockchain platform entities
+  platforms.forEach((platform) => {
+    aboutEntities.push({
+      "@type": "Thing",
+      name: platform,
+      description:
+        platform === "EVM"
+          ? "Ethereum Virtual Machine - Smart contract runtime environment"
+          : platform === "Ethereum"
+            ? "Ethereum blockchain platform"
+            : platform === "Solana"
+              ? "Solana blockchain platform"
+              : platform === "Aptos"
+                ? "Aptos blockchain platform"
+                : platform === "Sui"
+                  ? "Sui blockchain platform"
+                  : `${platform} blockchain platform`,
+    })
+  })
+
+  // Return single object if only one entity, otherwise return array
+  return aboutEntities.length === 1 ? aboutEntities[0] : aboutEntities
+}
+
+/**
  * Detect multiple Chainlink products from quickstart frontmatter
  * Maps products array to productChainLinks keys
  */
@@ -547,14 +622,8 @@ export function generateTechArticle(
     ...(technicalProperties.length > 0 && {
       additionalProperty: technicalProperties,
     }),
-    // Add technical article specific properties with product info
-    about: {
-      "@type": "Thing",
-      name: product ? `${product} Development` : "Blockchain Development",
-      description: product
-        ? `Smart contract and blockchain development using Chainlink ${product}`
-        : "Smart contract and blockchain development using Chainlink",
-    },
+    // Add technical article specific properties with product info and blockchain platforms
+    about: generateEnhancedAbout(pathname, product),
     // Add Chainlink product mention for better topical SEO
     ...(product && {
       mentions: [
@@ -682,13 +751,7 @@ export function generateHowTo(
     ...(technicalProperties.length > 0 && {
       additionalProperty: technicalProperties,
     }),
-    about: {
-      "@type": "Thing",
-      name: product ? `${product} Development` : "Smart Contract Development",
-      description: product
-        ? `Building decentralized applications with Chainlink ${product}`
-        : "Building decentralized applications with Chainlink",
-    },
+    about: generateEnhancedAbout(pathname, product),
     // Add Chainlink product mention for better topical SEO
     ...(product && {
       mentions: [
@@ -763,13 +826,7 @@ export function generateAPIReference(
     ...(technicalProperties.length > 0 && {
       additionalProperty: technicalProperties,
     }),
-    about: {
-      "@type": "Thing",
-      name: product ? `Chainlink ${product}` : "Chainlink Protocol",
-      description: product
-        ? `${product} - Decentralized oracle network for smart contracts`
-        : "Decentralized oracle network for smart contracts",
-    },
+    about: generateEnhancedAbout(pathname, product),
     // Add Chainlink product mention for better topical SEO
     ...(product && {
       mentions: [
@@ -952,13 +1009,7 @@ export function generateQuickstartHowTo(
       audienceType: difficulty === "Beginner" ? "Beginner" : "Developer",
     },
     // Note: programmingLanguage removed for LearningResource compatibility
-    about: {
-      "@type": "Thing",
-      name: primaryProduct ? `${primaryProduct} Development` : "Smart Contract Development",
-      description: primaryProduct
-        ? `Building decentralized applications with Chainlink ${primaryProduct}`
-        : "Building decentralized applications with Chainlink",
-    },
+    about: generateEnhancedAbout(pathname, primaryProduct),
     // Quickstart-specific properties
     genre: "Quickstart Guide",
     ...(frontmatter.githubSourceCodeUrl && {
