@@ -416,9 +416,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                       <span className="ccip-chain-hero__pool-program-type">LockRelease:</span>
                       <Address
                         endLength={4}
-                        contractUrl={getExplorerAddressUrl(network.explorer)(
-                          network.poolPrograms.LockReleaseTokenPool
-                        )}
+                        contractUrl={getExplorerAddressUrl(network.explorer)(network.poolPrograms.LockReleaseTokenPool)}
                         address={network.poolPrograms.LockReleaseTokenPool}
                       />
                     </div>
