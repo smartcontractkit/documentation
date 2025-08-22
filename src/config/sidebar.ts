@@ -344,6 +344,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Streams & Report Schemas",
       contents: [
         {
+          title: "Overview",
+          url: "data-streams/reference/report-schema-overview",
+        },
+        {
           title: "Cryptocurrency Streams",
           url: "data-streams/crypto-streams",
           children: [
@@ -402,25 +406,13 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Fetch and decode reports",
-          url: "data-streams/tutorials/api-go",
-          highlightAsCurrent: [
-            "data-streams/tutorials/api-rust",
-            "data-streams/tutorials/api-rwa-go",
-            "data-streams/tutorials/api-rwa-rust",
-            "data-streams/tutorials/api-nav-rust",
-            "data-streams/tutorials/api-nav-go",
-          ],
+          url: "data-streams/tutorials/go-sdk-decode",
+          highlightAsCurrent: ["data-streams/tutorials/rust-sdk-decode"],
         },
         {
           title: "Stream and decode reports (WebSocket)",
-          url: "data-streams/tutorials/ws-go",
-          highlightAsCurrent: [
-            "data-streams/tutorials/ws-rust",
-            "data-streams/tutorials/ws-rwa-go",
-            "data-streams/tutorials/ws-rwa-rust",
-            "data-streams/tutorials/ws-nav-go",
-            "data-streams/tutorials/ws-nav-rust",
-          ],
+          url: "data-streams/tutorials/go-sdk-stream",
+          highlightAsCurrent: ["data-streams/tutorials/rust-sdk-stream"],
         },
         {
           title: "Verify report data (EVM)",
