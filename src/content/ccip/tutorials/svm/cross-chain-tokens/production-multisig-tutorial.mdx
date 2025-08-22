@@ -1,7 +1,7 @@
 ---
 section: ccip
 date: Last Modified
-title: "Cross-Chain Tokens with Production Multisig Governance"
+title: "Cross-Chain Token Setup: BurnMint with Production Multisig Governance"
 isIndex: false
 metadata:
   description: "Build enterprise-grade cross-chain SPL, Token-2022 tokens with dual-layer multisig governance. Production-ready Chainlink CCIP implementation using Squads + SPL multisig."
@@ -18,17 +18,31 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 This tutorial implements **production-grade cross-chain tokens** using Chainlink CCIP with **dual-layer multisig governance** between Solana Devnet and Ethereum Sepolia. You'll build a **production-ready governance architecture** following **Path A** from the [CCIP Cross-Chain Token Integration Guide](/ccip/concepts/cross-chain-token/svm/integration-guide#path-a-full-self-service-mint-authority-controlled).
 
-## What You will Build
+## What You Will Build
 
-This tutorial builds a cross-chain token with enterprise-grade governance using Chainlink CCIP between Solana Devnet and Ethereum Sepolia.
+This tutorial implements the **production multisig governance** variant of **Path A** from the [CCIP Cross-Chain Token Integration Guide](/ccip/concepts/cross-chain-token/svm/integration-guide). This approach is designed for **production environments** with enterprise-grade dual-layer governance.
 
-| Component                | Implementation                       | Security Model            |
+### Cross-Chain Token Architecture
+
+This tutorial implements the **[Burn and Mint](/ccip/concepts/cross-chain-token/overview#burn-and-mint)** token handling mechanism between Solana Devnet and Ethereum Sepolia with **dual-layer multisig governance**. You'll deploy **two BurnMint pools** (one on each chain) that work together to maintain consistent token supply across chains while providing enterprise-grade security controls.
+
+**How Burn and Mint Works:**
+
+1. **Source Chain**: Burns tokens from sender's account
+1. **CCIP Protocol**: Transmits message cross-chain
+1. **Destination Chain**: Mints equivalent tokens to the receiver
+
+For complete details on token handling mechanisms, see [Token Handling Mechanisms](/ccip/concepts/cross-chain-token/overview#token-handling-mechanisms).
+
+### Component Overview
+
+| Component                | Implementation                       | Authority Model           |
 | ------------------------ | ------------------------------------ | ------------------------- |
 | **Ethereum Sepolia**     | ERC20 token with CCIP BurnMint pool  | EOA-controlled (tutorial) |
 | **Solana Devnet**        | SPL token with dual-layer governance | Squads + SPL multisig     |
 | **Cross-Chain Transfer** | Bidirectional token transfers        | Autonomous operations     |
 
-**Key Innovation: Dual-Layer Governance**
+### Dual-Layer Governance Architecture
 
 This tutorial implements **dual-layer multisig governance** that separates concerns:
 
@@ -40,14 +54,6 @@ This tutorial implements **dual-layer multisig governance** that separates conce
 - **Comprehensive Security**: Two independent governance layers
 - **Operational Autonomy**: Pool Signer PDA enables autonomous cross-chain transfers
 - **Administrative Control**: Squads provides enterprise-grade governance
-
-**Implementation Path:**
-
-1. **Deploy EVM token and pool** on Ethereum Sepolia
-1. **Create governed SPL tokens** with Squads as mint authority
-1. **Establish dual-layer multisig** (Squads → SPL multisig transfer)
-1. **Configure cross-chain pools**
-1. **Test bidirectional transfers** and validate governance
 
 <Aside type="caution" title="SPL Token Multisig Limitations">
   **Critical Understanding**: The SPL token multisig demonstrated in this tutorial can **ONLY execute SPL token
@@ -302,6 +308,19 @@ Variables use prefixes to prevent confusion across repositories:
 | `ETH_*`  | Ethereum addresses | `ETH_TOKEN_ADDRESS`, `ETH_POOL_ADDRESS`    |
 | `SOL_*`  | Solana addresses   | `SOL_TOKEN_MINT`, `SOL_POOL_ADDRESS`       |
 | `CCIP_*` | Protocol constants | `CCIP_POOL_PROGRAM`, `CCIP_ROUTER_PROGRAM` |
+
+## Tutorial Approach
+
+This tutorial provides step-by-step instructions with detailed explanations of what each command does and why. You'll work primarily in Terminal 1 (Solana) with occasional switches to Terminal 2 (EVM).
+
+**Environment Variable Management**: This tutorial uses phase-based variable files (e.g., `~/.phase1_vars`, `~/.ccip_complete_vars`) to eliminate manual variable re-entry when switching between terminals. Each phase saves its variables to files that subsequent phases can load automatically.
+
+For detailed implementation code explanations, refer to the comprehensive READMEs in both repositories:
+
+- **[Solana Starter Kit README](https://github.com/smartcontractkit/solana-starter-kit/blob/main/README.md)**: Detailed explanations of all SVM commands and implementation
+- **[Smart Contract Examples README](https://github.com/smartcontractkit/smart-contract-examples/blob/main/ccip/cct/hardhat/README.md)**: Comprehensive EVM implementation guide
+
+The READMEs contain detailed technical explanations, troubleshooting guides, and advanced configuration options.
 
 ## Phase 1: EVM Chain Setup (Ethereum Sepolia)
 
@@ -704,6 +723,15 @@ pwd
 ```
 
 Set up CCIP constants on Solana Devnet (DO NOT CHANGE THESE)
+
+<Aside type="note" title="CCIP BurnMint Pool Program">
+  The CCIP BurnMint pool program is a self-service pool program that allows you to create a pool for your token.
+  You can find the program ID in the CCIP Directory for:
+
+     - [Solana Devnet](/ccip/directory/testnet/chain/solana-devnet)
+     - [Solana Mainnet](/ccip/directory/mainnet/chain/solana-mainnet)
+
+</Aside>
 
 ```bash
 export CCIP_POOL_PROGRAM="41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB"
@@ -1431,7 +1459,19 @@ This creates an **SPL Token Multisig** account that will control your token's mi
 - **Threshold**: 1 (either signer can authorize mint operations)
 - **Hybrid Control**: Enables both automated CCIP operations and human governance
 
-**Execute this transaction through Squads and set the variable for the next step:**
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+- **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
+
+**After execution, set the variable for the next step:**
 
 <Tabs client:visible>
 <Fragment slot="tab.1">Set Variable</Fragment>

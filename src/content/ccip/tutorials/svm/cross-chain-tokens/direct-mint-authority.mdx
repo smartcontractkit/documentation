@@ -25,10 +25,29 @@ This comprehensive tutorial demonstrates how to create and configure cross-chain
 
 This tutorial implements the **direct mint authority transfer** variant of **Path A** from the [CCIP Cross-Chain Token Integration Guide](/ccip/concepts/cross-chain-token/svm/integration-guide). This approach is designed for development and testing environments where you transfer complete mint authority to the Pool Signer PDA for simplified setup.
 
+### Cross-Chain Token Architecture
+
+This tutorial implements the **[Burn and Mint](/ccip/concepts/cross-chain-token/overview#burn-and-mint)** token handling mechanism between Solana Devnet and Ethereum Sepolia. You'll deploy **two BurnMint pools** (one on each chain) that work together to maintain consistent token supply across chains.
+
+**How Burn and Mint Works:**
+
+1. **Source Chain**: Burns tokens from sender's account
+1. **CCIP Protocol**: Transmits message cross-chain
+1. **Destination Chain**: Mints equivalent tokens to the receiver
+
+### Component Overview
+
 | Component            | Implementation                      | Authority Model                        |
 | -------------------- | ----------------------------------- | -------------------------------------- |
 | **Ethereum Sepolia** | ERC20 token with CCIP BurnMint pool | Multiple minters: EOA + Pool           |
 | **Solana Devnet**    | SPL token with CCIP BurnMint pool   | Single mint authority: Pool Signer PDA |
+
+### Authority Model Differences
+
+- **Ethereum**: Your EOA + Pool both have mint privileges (multiple minters supported)
+- **Solana**: Pool Signer PDA has exclusive mint authority (single authority constraint)
+
+For complete details on token handling mechanisms, see [Token Handling Mechanisms](/ccip/concepts/cross-chain-token/overview#token-handling-mechanisms).
 
 <Aside type="caution" title="Development Environment Approach">
 
@@ -59,23 +78,6 @@ For deeper technical implementation details, refer to:
 
 - **[Solana Starter Kit README](https://github.com/smartcontractkit/solana-starter-kit/blob/main/README.md)**: SVM command details
 - **[Smart Contract Examples README](https://github.com/smartcontractkit/smart-contract-examples/blob/main/ccip/cct/hardhat/README.md)**: EVM implementation guide
-
-## What You'll Implement
-
-This tutorial implements the **[Burn and Mint](/ccip/concepts/cross-chain-token/overview#burn-and-mint)** token handling mechanism between Solana Devnet and Ethereum Sepolia. You'll deploy **two BurnMint pools** (one on each chain) that work together to maintain consistent token supply across chains.
-
-**How Burn and Mint Works:**
-
-1. **Source Chain**: Burns tokens from sender's account
-1. **CCIP Protocol**: Transmits message cross-chain
-1. **Destination Chain**: Mints equivalent tokens to the receiver
-
-**Authority Model Differences:**
-
-- **Ethereum**: Your EOA + Pool both have mint privileges (multiple minters supported)
-- **Solana**: Pool Signer PDA has exclusive mint authority (single authority constraint)
-
-For complete details on token handling mechanisms, see [Token Handling Mechanisms](/ccip/concepts/cross-chain-token/overview#token-handling-mechanisms).
 
 ## Phase 1: Ethereum Sepolia Token Setup
 
@@ -503,6 +505,15 @@ Set the token mint variable:
 <Fragment slot="tab.2">Expected Output</Fragment>
 
 <Fragment slot="panel.1">
+
+<Aside type="note" title="CCIP BurnMint Pool Program">
+  The CCIP BurnMint pool program is a self-service pool program that allows you to create a pool for your token.
+  You can find the program ID in the CCIP Directory for:
+
+     - [Solana Devnet](/ccip/directory/testnet/chain/solana-devnet)
+     - [Solana Mainnet](/ccip/directory/mainnet/chain/solana-mainnet)
+
+</Aside>
 
 ```bash
 # REPLACE with your actual token mint address
