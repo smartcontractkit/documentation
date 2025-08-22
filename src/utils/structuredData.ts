@@ -7,6 +7,7 @@
  */
 
 import type { Metadata, QuickstartsFrontmatter } from "~/content.config.ts"
+import { generateEnhancedSchemaProperties } from "./seo/entities.ts"
 
 /**
  * Base URLs - Environment-aware constants
@@ -566,23 +567,36 @@ export function generateTechArticle(
     }),
   }
 
+  // Apply enhanced entity extraction and keyword formatting
+  const enhancedProperties = generateEnhancedSchemaProperties(
+    baseArticle,
+    metadata?.excerpt || "",
+    pathname,
+    metadata?.title || title
+  )
+
   // Add LearningResource properties if applicable
   if (isLearningResource) {
-    return {
-      ...baseArticle,
-      "@type": ["TechArticle", "LearningResource"],
-      name: metadata?.title || title, // Required for LearningResource
-      educationalLevel: difficulty,
-      teaches: product ? `${category} for ${product}` : category,
-      learningResourceType: category,
-      audience: {
-        "@type": "Audience",
-        audienceType: difficulty === "Beginner" ? "Beginner" : "Developer",
+    return generateEnhancedSchemaProperties(
+      {
+        ...enhancedProperties,
+        "@type": ["TechArticle", "LearningResource"],
+        name: metadata?.title || title, // Required for LearningResource
+        educationalLevel: difficulty,
+        teaches: product ? `${category} for ${product}` : category,
+        learningResourceType: category,
+        audience: {
+          "@type": "Audience",
+          audienceType: difficulty === "Beginner" ? "Beginner" : "Developer",
+        },
       },
-    }
+      metadata?.excerpt || "",
+      pathname,
+      metadata?.title || title
+    )
   }
 
-  return baseArticle
+  return enhancedProperties
 }
 
 /**
@@ -608,7 +622,7 @@ export function generateHowTo(
   // Generate Schema.org compliant technical properties
   const technicalProperties = generateTechnicalProperties(programmingModel, targetPlatform, programmingLanguages)
 
-  return {
+  const baseHowTo = {
     "@context": "https://schema.org",
     "@type": ["HowTo", "TechArticle"],
     name: metadata?.title || title,
@@ -686,6 +700,9 @@ export function generateHowTo(
       ],
     }),
   }
+
+  // Apply enhanced entity extraction and keyword formatting to HowTo
+  return generateEnhancedSchemaProperties(baseHowTo, metadata?.excerpt || "", pathname, metadata?.title || title)
 }
 
 /**
