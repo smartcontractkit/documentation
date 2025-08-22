@@ -1,0 +1,70 @@
+---
+section: dataStreams
+date: Last Modified
+title: "Backed xStock Report Schema (v10)"
+metadata:
+  title: "Backed xStock Report Schema (v10) | Chainlink Data Streams"
+  description: "Learn about Chainlink Backed xStock report schema (v10), including fields, encoding, and examples for integrating tokenized asset data in your applications."
+  keywords: ["Report Schema", "Tokenized Assets", "Backed xStock", "v10 Schema", "Data Format", "Report Structure"]
+---
+
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+import { PageTabs } from "@components"
+
+<DataStreams section="dsNotes" />
+
+<PageTabs
+  pages={[
+
+    {
+      name: "Cryptocurrency Report Schema (v3)",
+      url: "/data-streams/reference/report-schema-v3",
+    },
+    {
+      name: "DEX State Price Report Schema (v3)",
+      url: "/data-streams/reference/report-schema-v3-dex",
+    },
+    {
+      name: "RWA Report Schema (v8)",
+      url: "/data-streams/reference/report-schema-v8",
+    },
+    {
+      name: "NAV Report Schema (v9)",
+      url: "/data-streams/reference/report-schema-v9",
+    },
+    {
+      name: "Backed xStock Report Schema (v10)",
+      url: "/data-streams/reference/report-schema-v10",
+    },
+
+]}
+headerTitle="Available Report Schemas"
+headerDescription="Choose the schema version you want to explore."
+/>
+
+Chainlink Backed xStock Data Streams adhere to the report schema outlined below.
+
+### Schema Fields
+
+| Field                   | Type      | Description                                                                                                          |
+| ----------------------- | --------- | -------------------------------------------------------------------------------------------------------------------- |
+| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                                                                          |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid                                                                           |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid                                                                             |
+| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)                                                                         |
+| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                                                                                 |
+| `expiresAt`             | `uint32`  | Expiration date of the report                                                                                        |
+| `lastUpdateTimestamp`   | `uint64`  | Timestamp of the last valid price update                                                                             |
+| `price`                 | `int192`  | Last traded price from the real-world equity market                                                                  |
+| `marketStatus`          | `uint32`  | Status of the real-world equity market. <br/> Possible values: `0` (Unknown), `1` (Closed), `2` (Open), `3` (Halted) |
+| `currentMultiplier`     | `int192`  | Currently applied multiplier accounting for past corporate actions                                                   |
+| `newMultiplier`         | `int192`  | Multiplier to be applied at the activationDateTime <br/> (set to `0` if none is scheduled)                           |
+| `activationDateTime`    | `uint32`  | When the next corporate action takes effect <br/> (set to `0` if none is scheduled)                                  |
+| `tokenizedPrice`        | `int192`  | 24/7 tokenized equity price as traded on supported exchanges <br/> (In development; currently returns `0`).          |
+
+**Notes:**
+
+- `price` updates in real time during market open, but may become stale during market closed periods.
+- `tokenizedPrice` will be available in an upcoming release of Backed xStock Data Streams. Currently, it will always return `0`.
+- `currentMultiplier` reflects all past corporate actions and is updated only when a new action is activated.
+- `activationDateTime` and `newMultiplier` provide advance notice of upcoming corporate actions, allowing protocols to prepare.

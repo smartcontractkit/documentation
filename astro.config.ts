@@ -107,6 +107,25 @@ export default defineConfig({
   adapter: vercel(),
   vite: {
     plugins: [yaml()],
+    build: {
+      target: "esnext", // Use latest ES features, no transpilation for modern browsers
+      // Optimize CSS delivery
+      cssMinify: true,
+      // Increase the threshold for inlining assets to reduce render-blocking CSS
+      assetsInlineLimit: 20000, // Inline CSS files up to 20KB to eliminate render-blocking
+      // Removed manual chunking to prevent serverless function bloat
+      // rollupOptions: {
+      //   output: {
+      //     manualChunks: ...
+      //   }
+      // },
+    },
+    esbuild: {
+      target: "esnext", // Match build target for consistency
+    },
+    css: {
+      devSourcemap: false,
+    },
   },
   legacy: {
     collections: false,
