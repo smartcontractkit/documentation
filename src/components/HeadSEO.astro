@@ -3,6 +3,7 @@ import { Metadata, QuickstartsFrontmatter } from "src/content.config.ts"
 import { SITE, OPEN_GRAPH, PAGE } from "../config"
 import { getOgType } from "~/utils/seo/og"
 import { resolveCanonical, getMimeFromUrlPath, toAbsoluteUrl } from "~/utils/seo/url"
+import { enhanceExcerpt } from "~/utils/seo/excerpt"
 import { detectApiReference } from "@components/VersionSelector/utils/versions"
 import { extractVersionInfo } from "@components/VersionSelector/utils/extractVersionInfo"
 import VersionSelectorHead from "@components/VersionSelector/base/VersionSelectorHead.astro"
@@ -23,7 +24,9 @@ const { metadata, canonicalURL, quickstartFrontmatter, pageTitle, howToSteps, su
 const contentTitle = pageTitle ?? metadata?.title ?? PAGE.titleFallback
 const formattedContentTitle = `${contentTitle} | ${SITE.title}`
 const description = metadata?.description ?? SITE.description
-const excerpt = metadata?.excerpt ?? description
+
+// Enhance excerpt with path-based keywords (currentPage declared below)
+const baseExcerpt = metadata?.excerpt ?? description
 
 // Check that the metadata image property exists, else use OPEN_GRAPH.image.src
 var canonicalImageSrc = OPEN_GRAPH.image.src
@@ -42,6 +45,9 @@ ogImageAlt = pageTitle || metadata?.title || OPEN_GRAPH.image.alt
 // Detect if this is an API reference page and get the product
 const currentPage = new URL(Astro.request.url).pathname
 const isCcipDirectoryPath = currentPage.startsWith("/ccip/directory")
+
+// Apply centralized excerpt enhancement
+const excerpt = enhanceExcerpt(baseExcerpt, currentPage)
 const { isApiReference, product, isVersioned } = detectApiReference(currentPage)
 
 // Extract version information for API reference pages
@@ -62,7 +68,15 @@ const resolvedCanonicalHref = resolveCanonical(metadata?.canonical, Astro.site, 
 // Contextual Open Graph type
 const ogType = getOgType(currentPage)
 
-// Use quickstart frontmatter if available, otherwise use regular metadata
+// Create enhanced metadata with improved excerpt for structured data
+const enhancedMetadata = metadata
+  ? {
+      ...metadata,
+      excerpt: excerpt, // Use our centrally enhanced excerpt
+    }
+  : metadata
+
+// Use quickstart frontmatter if available, otherwise use enhanced metadata
 // Suppress default structured data for CCIP directory pages (handled by page-level generators)
 const structuredDataObjects =
   suppressDefaultStructuredData || isCcipDirectoryPath
@@ -78,11 +92,11 @@ const structuredDataObjects =
           howToSteps
         )
       : generateStructuredData(
-          metadata,
+          enhancedMetadata,
           contentTitle,
           canonicalURLObj,
           currentPage,
-          metadata?.estimatedTime,
+          enhancedMetadata?.estimatedTime,
           versionInfo,
           howToSteps
         )
