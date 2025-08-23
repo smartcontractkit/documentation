@@ -114,6 +114,42 @@ contract ClientReportsVerifier {
         uint32 marketStatus;
     }
 
+    /**
+     * @dev Data Streams report schema v9 (NAV streams).
+     */
+    struct ReportV9 {
+        bytes32 feedId;
+        uint32 validFromTimestamp;
+        uint32 observationsTimestamp;
+        uint192 nativeFee;
+        uint192 linkFee;
+        uint32 expiresAt;
+        uint64 lastUpdateTimestamp;
+        int192 navPerShare;
+        uint64 navDate;
+        int192 aum;
+        uint32 ripcord;
+    }
+
+    /**
+     * @dev Data Streams report schema v10 (Backed xStock streams).
+     */
+    struct ReportV10 {
+        bytes32 feedId;
+        uint32 validFromTimestamp;
+        uint32 observationsTimestamp;
+        uint192 nativeFee;
+        uint192 linkFee;
+        uint32 expiresAt;
+        uint64 lastUpdateTimestamp;
+        int192 price;
+        uint32 marketStatus;
+        int192 currentMultiplier;
+        int192 newMultiplier;
+        uint32 activationDateTime;
+        int192 tokenizedPrice;
+    }
+
     // ----------------- Storage -----------------
     IVerifierProxy public immutable i_verifierProxy;
     address private immutable i_owner;
@@ -141,11 +177,11 @@ contract ClientReportsVerifier {
     // ----------------- Public API -----------------
 
     /**
-     * @notice Verify a Data Streams report (schema v3 or v8).
+     * @notice Verify a Data Streams report (schema v3, v8, v9, or v10).
      *
      * @dev Steps:
      *  1. Decode the unverified report to get `reportData`.
-     *  2. Read the first two bytes → schema version (`0x0003` or `0x0008`).
+     *  2. Read the first two bytes → schema version (`0x0003`, `0x0008`, `0x0009`, `0x000A`).
      *     - Revert if the version is unsupported.
      *  3. Fee handling:
      *     - Query `s_feeManager()` on the proxy.
@@ -156,7 +192,7 @@ contract ClientReportsVerifier {
      *  5. Decode the verified report into the correct struct and emit the price.
      *
      *  @param unverifiedReport Full payload returned by Streams Direct.
-     *  @custom:reverts InvalidReportVersion when schema ≠ v3/v8.
+     *  @custom:reverts InvalidReportVersion when schema ≠ v3/v8/v9/v10.
      */
     function verifyReport(bytes memory unverifiedReport) external {
         // ─── 1. & 2. Extract reportData and schema version ──
@@ -167,8 +203,12 @@ contract ClientReportsVerifier {
 
         uint16 reportVersion = (uint16(uint8(reportData[0])) << 8) |
             uint16(uint8(reportData[1]));
-        if (reportVersion != 3 && reportVersion != 8)
-            revert InvalidReportVersion(reportVersion);
+        if (
+            reportVersion != 3 &&
+            reportVersion != 8 &&
+            reportVersion != 9 &&
+            reportVersion != 10
+        ) revert InvalidReportVersion(reportVersion);
 
         // ─── 3. Fee handling ──
         IFeeManager feeManager = IFeeManager(
@@ -204,8 +244,16 @@ contract ClientReportsVerifier {
             int192 price = abi.decode(verified, (ReportV3)).price;
             lastDecodedPrice = price;
             emit DecodedPrice(price);
-        } else {
+        } else if (reportVersion == 8) {
             int192 price = abi.decode(verified, (ReportV8)).midPrice;
+            lastDecodedPrice = price;
+            emit DecodedPrice(price);
+        } else if (reportVersion == 9) {
+            int192 price = abi.decode(verified, (ReportV9)).navPerShare;
+            lastDecodedPrice = price;
+            emit DecodedPrice(price);
+        } else {
+            int192 price = abi.decode(verified, (ReportV10)).price;
             lastDecodedPrice = price;
             emit DecodedPrice(price);
         }
