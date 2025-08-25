@@ -10,11 +10,11 @@ whatsnext:
   {
     "Learn how to stream and decode reports via a WebSocket connection": "/data-streams/tutorials/go-sdk-stream",
     "Learn how to verify your data onchain": "/data-streams/reference/data-streams-api/onchain-verification",
-    "Find the list of available Stream IDs": "/data-streams/crypto-streams",
+    "Find the list of available Streams and view their schemas": "/data-streams/reference/report-schema-overview",
   }
 ---
 
-import { CopyText, PageTabs } from "@components"
+import { Aside, CopyText, PageTabs } from "@components"
 import DataStreams from "@features/data-streams/common/DataStreams.astro"
 
 <DataStreams section="dsNotes" />
@@ -34,10 +34,7 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
   ]}
 />
 
-In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/data-streams-api/go-sdk) for Go
-to fetch and decode [V3 reports](/data-streams/reference/report-schema-v3) for [Crypto
-streams](/data-streams/crypto-streams) from the Data Streams Aggregation Network. You'll set up your Go project,
-retrieve reports, decode them, and log their attributes.
+In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/data-streams-api/go-sdk) for Go to fetch and decode [reports](/data-streams/reference/report-schema-overview) from the Data Streams Aggregation Network. You'll set up your Go project, retrieve reports, decode them, and log their attributes.
 
 <DataStreams section="asideDisclaimer" />
 
@@ -49,7 +46,7 @@ retrieve reports, decode them, and log their attributes.
 
 ## Tutorial
 
-You'll start with the set up of your Go project. Next, you'll fetch and decode reports for both single and multiple [crypto streams](/data-streams/crypto-streams), and log their attributes to your terminal.
+You'll start with the set up of your Go project, installing the SDK and pasting example code. This will let you decode reports for both single and multiple [streams](/data-streams/crypto-streams), logging their attributes to your terminal.
 
 ### Set up your Go project
 
@@ -66,7 +63,7 @@ You'll start with the set up of your Go project. Next, you'll fetch and decode r
    go mod init my-data-streams-project
    ```
 
-1. Install the Data Streams SDK:
+1. Install the [Data Streams SDK](https://github.com/smartcontractkit/data-streams-sdk/tree/main/go):
 
    ```bash
    go get github.com/smartcontractkit/data-streams-sdk/go
@@ -74,190 +71,181 @@ You'll start with the set up of your Go project. Next, you'll fetch and decode r
 
 ### Fetch and decode a report with a single stream
 
-1. Create a new Go file, `single-stream.go`, in your project directory:
+1.  Create a new Go file, `single-stream.go`, in your project directory:
 
-   ```bash
-   touch single-stream.go
-   ```
+    ```bash
+    touch single-stream.go
+    ```
 
-1. Insert the following code example and save your `single-stream.go` file:
+1.  Insert the following code example and save your `single-stream.go` file:
 
-   ```go
-   package main
+    ```go
+    package main
 
-   import (
-       "context"
-       "fmt"
-       "os"
-       "time"
+    import (
+        "context"
+        "fmt"
+        "os"
+        "time"
 
-       streams "github.com/smartcontractkit/data-streams-sdk/go"
-       feed "github.com/smartcontractkit/data-streams-sdk/go/feed"
-       report "github.com/smartcontractkit/data-streams-sdk/go/report"
-       v3 "github.com/smartcontractkit/data-streams-sdk/go/report/v3" // Import the v3 report schema for Crypto streams
-   )
+        streams "github.com/smartcontractkit/data-streams-sdk/go"
+        feed "github.com/smartcontractkit/data-streams-sdk/go/feed"
+        report "github.com/smartcontractkit/data-streams-sdk/go/report"
+        // NOTE: Use the report version (v3, v8, etc.) that matches your stream
+        v3 "github.com/smartcontractkit/data-streams-sdk/go/report/v3"
+    )
 
-   func main() {
-       // Validate command-line arguments
-       if len(os.Args) < 2 {
-           fmt.Printf("Usage: go run main.go [FeedID]\nExample: go run main.go 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782\n")
-           os.Exit(1)
-       }
-       feedIDInput := os.Args[1]
+    func main() {
+        // Validate command-line arguments
+        if len(os.Args) < 2 {
+            fmt.Printf("Usage: go run main.go [FeedID]\nExample: go run main.go 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782\n")
+            os.Exit(1)
+        }
+        feedIDInput := os.Args[1]
 
-       // Get API credentials from environment variables
-       apiKey := os.Getenv("API_KEY")
-       apiSecret := os.Getenv("API_SECRET")
-       if apiKey == "" || apiSecret == "" {
-           fmt.Printf("API_KEY and API_SECRET environment variables must be set\n")
-           os.Exit(1)
-       }
+        // Get API credentials from environment variables
+        apiKey := os.Getenv("API_KEY")
+        apiSecret := os.Getenv("API_SECRET")
+        if apiKey == "" || apiSecret == "" {
+            fmt.Printf("API_KEY and API_SECRET environment variables must be set\n")
+            os.Exit(1)
+        }
 
-       // Define the configuration for the SDK client
-       cfg := streams.Config{
-           ApiKey:    apiKey,
-           ApiSecret: apiSecret,
-           RestURL:   "https://api.testnet-dataengine.chain.link",
-           Logger:    streams.LogPrintf,
-       }
+        // Define the configuration for the SDK client
+        cfg := streams.Config{
+            ApiKey:    apiKey,
+            ApiSecret: apiSecret,
+            RestURL:   "https://api.testnet-dataengine.chain.link",
+            Logger:    streams.LogPrintf,
+        }
 
-       // Initialize the SDK client
-       client, err := streams.New(cfg)
-       if err != nil {
-           cfg.Logger("Failed to create client: %v\n", err)
-           os.Exit(1)
-       }
+        // Initialize the SDK client
+        client, err := streams.New(cfg)
+        if err != nil {
+            cfg.Logger("Failed to create client: %v\n", err)
+            os.Exit(1)
+        }
 
-       // Create context with timeout
-       ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-       defer cancel()
+        // Create context with timeout
+        ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+        defer cancel()
 
-       // Parse the feed ID
-       var feedID feed.ID
-       if err := feedID.FromString(feedIDInput); err != nil {
-           cfg.Logger("Invalid feed ID format '%s': %v\n", feedIDInput, err)
-           os.Exit(1)
-       }
+        // Parse the feed ID
+        var feedID feed.ID
+        if err := feedID.FromString(feedIDInput); err != nil {
+            cfg.Logger("Invalid feed ID format '%s': %v\n", feedIDInput, err)
+            os.Exit(1)
+        }
 
-       // Fetch the latest report
-       reportResponse, err := client.GetLatestReport(ctx, feedID)
-       if err != nil {
-           cfg.Logger("Failed to get latest report: %v\n", err)
-           os.Exit(1)
-       }
+        // Fetch the latest report
+        reportResponse, err := client.GetLatestReport(ctx, feedID)
+        if err != nil {
+            cfg.Logger("Failed to get latest report: %v\n", err)
+            os.Exit(1)
+        }
 
-       // Log the raw report data
-       cfg.Logger("Raw report data: %+v\n", reportResponse)
+        // Log the raw report data
+        cfg.Logger("Raw report data: %+v\n", reportResponse)
 
-       // Decode the report
-       decodedReport, err := report.Decode[v3.Data](reportResponse.FullReport)
-       if err != nil {
-           cfg.Logger("Failed to decode report: %v\n", err)
-           os.Exit(1)
-       }
+        // Decode the report
+        // NOTE: Use the report version (v3, v8, etc.) that matches your stream
+        decodedReport, err := report.Decode[v3.Data](reportResponse.FullReport)
+        if err != nil {
+            cfg.Logger("Failed to decode report: %v\n", err)
+            os.Exit(1)
+        }
 
-       // Format and display the decoded report
-       fmt.Printf("\nDecoded Report for Stream ID %s:\n"+
-           "------------------------------------------\n"+
-           "Observations Timestamp: %d\n"+
-           "Benchmark Price       : %s\n"+
-           "Bid                   : %s\n"+
-           "Ask                   : %s\n"+
-           "Valid From Timestamp  : %d\n"+
-           "Expires At            : %d\n"+
-           "Link Fee              : %s\n"+
-           "Native Fee            : %s\n"+
-           "------------------------------------------\n",
-           feedIDInput,
-           decodedReport.Data.ObservationsTimestamp,
-           decodedReport.Data.BenchmarkPrice.String(),
-           decodedReport.Data.Bid.String(),
-           decodedReport.Data.Ask.String(),
-           decodedReport.Data.ValidFromTimestamp,
-           decodedReport.Data.ExpiresAt,
-           decodedReport.Data.LinkFee.String(),
-           decodedReport.Data.NativeFee.String(),
-       )
-   }
-   ```
+        // Format and display the decoded report
+        // NOTE: Adjust for your report and desired output
+        fmt.Printf("\nDecoded Report for Stream ID %s:\n"+
+            "------------------------------------------\n"+
+            "Observations Timestamp: %d\n"+
+            "Benchmark Price       : %s\n"+
+            "Bid                   : %s\n"+
+            "Ask                   : %s\n"+
+            "Valid From Timestamp  : %d\n"+
+            "Expires At            : %d\n"+
+            "Link Fee              : %s\n"+
+            "Native Fee            : %s\n"+
+            "------------------------------------------\n",
+            feedIDInput,
+            decodedReport.Data.ObservationsTimestamp,
+            decodedReport.Data.BenchmarkPrice.String(),
+            decodedReport.Data.Bid.String(),
+            decodedReport.Data.Ask.String(),
+            decodedReport.Data.ValidFromTimestamp,
+            decodedReport.Data.ExpiresAt,
+            decodedReport.Data.LinkFee.String(),
+            decodedReport.Data.NativeFee.String(),
+        )
+    }
+    ```
 
-1. Download the required dependencies and update the `go.mod` and `go.sum` files:
+    <Aside type="note" title="Adapt the example">
+      The above example decodes a crypto report using the [v3 schema](/data-streams/reference/report-schema-v3). If
+      you're working with a different type of stream (e.g., RWA, NAV), make sure to adjust the import statement,
+      decoding logic, and access patterns to match the appropriate report version (e.g., v8, v9). Refer to the [Report
+      Schemas](/data-streams/reference/report-schema-overview) for your stream. <br /> Learn more about [adapting code
+      for different report schema versions](#adapting-code-for-different-report-schema-versions).
+    </Aside>
 
-   ```bash
-   go mod tidy
-   ```
+1.  Download the required dependencies and update the `go.mod` and `go.sum` files:
 
-1. Set up the SDK client configuration within `single-stream.go` with your API credentials and the REST endpoint:
+    ```bash
+    go mod tidy
+    ```
 
-   ```go
-   cfg := streams.Config{
-       ApiKey:    os.Getenv("API_KEY"),
-       ApiSecret: os.Getenv("API_SECRET"),
-       RestURL:   "https://api.testnet-dataengine.chain.link",
-       Logger: streams.LogPrintf,
-   }
-   ```
+1.  Set up your API credentials as environment variables:
 
-   - Set your API credentials as environment variables:
+    ```bash
+    export API_KEY="<YOUR_API_KEY>"
+    export API_SECRET="<YOUR_API_SECRET>"
+    ```
 
-     ```bash
-     export API_KEY="<YOUR_API_KEY>"
-     export API_SECRET="<YOUR_API_SECRET>"
-     ```
+    Replace `<YOUR_API_KEY>` and `<YOUR_API_SECRET>` with your actual credentials.
 
-     Replace `<YOUR_API_KEY>` and `<YOUR_API_SECRET>` with your API credentials.
+    The Go script uses `os.Getenv("API_KEY")` and `os.Getenv("API_SECRET")` in its `streams.Config` to read these values. From the code sample above:
 
-   - `RestURL` is the REST endpoint to poll for specific reports. See the [Data Streams Interface](/data-streams/reference/data-streams-api/interface-api#domains) page for more information.
+    ```go
+    cfg := streams.Config{
+        ApiKey:    os.Getenv("API_KEY"),
+        ApiSecret: os.Getenv("API_SECRET"),
+        RestURL:   "https://api.testnet-dataengine.chain.link",
+        Logger: streams.LogPrintf,
+    }
+    ```
 
-   See the [SDK Reference](/data-streams/reference/data-streams-api/go-sdk#config-struct) page for more configuration options.
+    This configuration also specifies the `RestURL`, which the base URL for the API. In this case, it is already set to the testnet URL for Data Streams.
 
-1. For this example, you will read from the ETH/USD crypto stream. This stream ID is <CopyText text="0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782" code/>. See the [Stream Addresses](/data-streams/crypto-streams) page for a complete list of available crypto assets.
+    See the [SDK Reference](/data-streams/reference/data-streams-api/go-sdk#config-struct) page for more configuration options.
 
-   Execute your application:
+1.  Read from a [testnet crypto stream](/data-streams/crypto-streams?page=1&testnetPage=1#testnet-crypto-streams). The below example executes the application, reading from the `ETH/USD` crypto stream:
 
-```bash
-go run single-stream.go 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
-```
+    ```bash
+    go run single-stream.go 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+    ```
 
-Expect output similar to the following in your terminal:
+    Expect output similar to the following in your terminal:
 
-```bash
-Raw report data: {"fullReport":"0x0006f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff1578000000000000000000000000000000000000000000000000000000004f8e8a11000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba78200000000000000000000000000000000000000000000000000000000675e0a5b00000000000000000000000000000000000000000000000000000000675e0a5b00000000000000000000000000000000000000000000000000001787ff5c6fb8000000000000000000000000000000000000000000000000000c01807477ecd000000000000000000000000000000000000000000000000000000000675f5bdb0000000000000000000000000000000000000000000000d1865f8f627c4113300000000000000000000000000000000000000000000000d18572c6cdc3b915000000000000000000000000000000000000000000000000d1879ab8e98f743ad00000000000000000000000000000000000000000000000000000000000000002f3316e5c964d118f6683eecda454985fcc696e4ba34d65edb4a71a8d0cfe970676f465618c7d01196e433cc35b6994e7ad7b8189b0462b51458e663d601fdfaa0000000000000000000000000000000000000000000000000000000000000002219a4493fdf311421d664e0c8d69efa74b776461f8e252d191eda7edb980ab9a5cce69ec0ad35ba210cf60a201ceff6771b35b44860fda859f4aaba242c476bf","feedID":"0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782","validFromTimestamp":1734216283,"observationsTimestamp":1734216283}
+    ```bash
+    Raw report data: {"fullReport":"0x0006f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff1578000000000000000000000000000000000000000000000000000000004f8e8a11000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba78200000000000000000000000000000000000000000000000000000000675e0a5b00000000000000000000000000000000000000000000000000000000675e0a5b00000000000000000000000000000000000000000000000000001787ff5c6fb8000000000000000000000000000000000000000000000000000c01807477ecd000000000000000000000000000000000000000000000000000000000675f5bdb0000000000000000000000000000000000000000000000d1865f8f627c4113300000000000000000000000000000000000000000000000d18572c6cdc3b915000000000000000000000000000000000000000000000000d1879ab8e98f743ad00000000000000000000000000000000000000000000000000000000000000002f3316e5c964d118f6683eecda454985fcc696e4ba34d65edb4a71a8d0cfe970676f465618c7d01196e433cc35b6994e7ad7b8189b0462b51458e663d601fdfaa0000000000000000000000000000000000000000000000000000000000000002219a4493fdf311421d664e0c8d69efa74b776461f8e252d191eda7edb980ab9a5cce69ec0ad35ba210cf60a201ceff6771b35b44860fda859f4aaba242c476bf","feedID":"0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782","validFromTimestamp":1734216283,"observationsTimestamp":1734216283}
 
-Decoded Report for Stream ID 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782:
-------------------------------------------
-Observations Timestamp: 1734216283
-Benchmark Price       : 3865052126782320350000
-Bid                   : 3864985478146740000000
-Ask                   : 3865140837060103650000
-Valid From Timestamp  : 1734216283
-Expires At            : 1734302683
-Link Fee              : 3379350941986000
-Native Fee            : 25872872271800
-------------------------------------------
-```
+    Decoded Report for Stream ID 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782:
+    ------------------------------------------
+    Observations Timestamp: 1734216283
+    Benchmark Price       : 3865052126782320350000
+    Bid                   : 3864985478146740000000
+    Ask                   : 3865140837060103650000
+    Valid From Timestamp  : 1734216283
+    Expires At            : 1734302683
+    Link Fee              : 3379350941986000
+    Native Fee            : 25872872271800
+    ------------------------------------------
+    ```
 
-#### Decoded report details
+    Your application has successfully decoded the report data.
 
-The decoded report details include:
-
-| Attribute                | Value                                                                | Description                                                                                                                                                                                                                                                                                                                                  |
-| ------------------------ | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Stream ID`              | `0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782` | The unique identifier for the stream. In this example, the stream is for ETH/USD.                                                                                                                                                                                                                                                            |
-| `Observations Timestamp` | `1734216283`                                                         | The timestamp indicating when the data was captured.                                                                                                                                                                                                                                                                                         |
-| `Benchmark Price`        | `3865052126782320350000`                                             | The observed price in the report, with 18 decimals. For readability: `3,865.0521267823204` USD per ETH.                                                                                                                                                                                                                                      |
-| `Bid`                    | `3864985478146740000000`                                             | The highest price a buyer is willing to pay for an asset, with 18 decimals. For readability: `3,864.9854781467400` USD per ETH. Learn more about the [Bid price](/data-streams/concepts/liquidity-weighted-prices). (For [DEX State Price streams](/data-streams/concepts/dex-state-price-streams), this value equals `Benchmark Price`.)    |
-| `Ask`                    | `3865140837060103650000`                                             | The lowest price a seller is willing to accept for an asset, with 18 decimals. For readability: `3,865.1408370601037` USD per ETH. Learn more about the [Ask price](/data-streams/concepts/liquidity-weighted-prices). (For [DEX State Price streams](/data-streams/concepts/dex-state-price-streams), this value equals `Benchmark Price`.) |
-| `Valid From Timestamp`   | `1734216283`                                                         | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                                                                                                                                                                                      |
-| `Expires At`             | `1734302683`                                                         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                                                                                                                                                                             |
-| `Link Fee`               | `3379350941986000`                                                   | The fee to pay in LINK tokens for the onchain verification of the report data. With 18 decimals. For readability: `0.03379350941986` LINK. **Note:** This example fee is not indicative of actual fees.                                                                                                                                      |
-| `Native Fee`             | `25872872271800`                                                     | The fee to pay in the native blockchain token (e.g., ETH on Ethereum) for the onchain verification of the report data. With 18 decimals. **Note:** This example fee is not indicative of actual fees.                                                                                                                                        |
-
-#### Payload for onchain verification
-
-In this tutorial, you log and decode the `full_report` payload to extract the report data. In a
-production environment, you should verify the data to ensure its integrity and authenticity. Refer to the
-[Verify report data onchain](/data-streams/tutorials/evm-onchain-report-verification) tutorial.
+    [Learn more about the decoded report details](#decoded-report-details).
 
 ### Fetch and decode reports for multiple streams
 
@@ -281,7 +269,8 @@ production environment, you should verify the data to ensure its integrity and a
         streams "github.com/smartcontractkit/data-streams-sdk/go"
         feed "github.com/smartcontractkit/data-streams-sdk/go/feed"
         report "github.com/smartcontractkit/data-streams-sdk/go/report"
-        v3 "github.com/smartcontractkit/data-streams-sdk/go/report/v3" // Import the v3 report schema for Crypto streams
+        // NOTE: Use the report version (v3, v8, etc.) that matches your stream
+        v3 "github.com/smartcontractkit/data-streams-sdk/go/report/v3"
     )
 
     func main() {
@@ -360,6 +349,7 @@ production environment, you should verify the data to ensure its integrity and a
             }
 
             // Format and display the decoded report
+            // NOTE: Adjust for your report and desired output
             fmt.Printf("\nDecoded Report for Stream ID %s:\n"+
                 "------------------------------------------\n"+
                 "Observations Timestamp: %d\n"+
@@ -385,6 +375,16 @@ production environment, you should verify the data to ensure its integrity and a
     }
     ```
 
+    <Aside type="note" title="Adapt the example">
+
+    The above example decodes a crypto report using the [v3 schema](/data-streams/reference/report-schema-v3). If
+    you're working with a different type of stream (e.g., RWA, NAV), make sure to adjust the import statement,
+    decoding logic, and access patterns to match the appropriate report version (e.g., v8, v9). Refer to the [Report
+    Schemas](/data-streams/reference/report-schema-overview) for your stream. <br /> Learn more about [adapting code
+    for different report schema versions](#adapting-code-for-different-report-schema-versions).
+
+    </Aside>
+
 1.  Before running the example, verify that your API credentials are still set in your current terminal session:
 
     ```bash
@@ -399,7 +399,7 @@ production environment, you should verify the data to ensure its integrity and a
     export API_SECRET="<YOUR_API_SECRET>"
     ```
 
-1.  For this example, you will read from the ETH/USD and LINK/USD Data Streams crypto streams. Run your application:
+1.  Read from two [testnet crypto streams](/data-streams/crypto-streams?page=1&testnetPage=1#testnet-crypto-streams). For this example, you will read from the ETH/USD and LINK/USD Data Streams crypto streams. Run your application:
 
     ```bash
     go run multiple-streams.go 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782 0x00036fe43f87884450b4c7e093cd5ed99cac6640d8c2000e6afc02c8838d0265
@@ -440,11 +440,65 @@ production environment, you should verify the data to ensure its integrity and a
 
     Your application has successfully fetched and decoded data for both streams.
 
-#### Payload for onchain verification
+    [Learn more about the decoded report details](#decoded-report-details).
 
-In this guide, you log and decode the `fullReport` payloads to extract the report data. In a
-production environment, you should verify the data to ensure its integrity and authenticity. Refer to the
-[Verify report data onchain](/data-streams/tutorials/evm-onchain-report-verification) guide.
+### Decoded report details
+
+The decoded [crypto v3 report](/data-streams/reference/report-schema-v3) details include:
+
+| Attribute              | Value                                                                | Description                                                                                                                                                                                                                                                                                                                                  |
+| ---------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stream ID              | `0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782` | The unique identifier for the stream. In this example, the stream is for ETH/USD.                                                                                                                                                                                                                                                            |
+| Observations Timestamp | `1734216283`                                                         | The timestamp indicating when the data was captured.                                                                                                                                                                                                                                                                                         |
+| Benchmark Price        | `3865052126782320350000`                                             | The observed price in the report, with 18 decimals. For readability: `3,865.0521267823204` USD per ETH.                                                                                                                                                                                                                                      |
+| Bid                    | `3864985478146740000000`                                             | The highest price a buyer is willing to pay for an asset, with 18 decimals. For readability: `3,864.9854781467400` USD per ETH. Learn more about the [Bid price](/data-streams/concepts/liquidity-weighted-prices). (For [DEX State Price streams](/data-streams/concepts/dex-state-price-streams), this value equals `Benchmark Price`.)    |
+| Ask                    | `3865140837060103650000`                                             | The lowest price a seller is willing to accept for an asset, with 18 decimals. For readability: `3,865.1408370601037` USD per ETH. Learn more about the [Ask price](/data-streams/concepts/liquidity-weighted-prices). (For [DEX State Price streams](/data-streams/concepts/dex-state-price-streams), this value equals `Benchmark Price`.) |
+| Valid From Timestamp   | `1734216283`                                                         | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                                                                                                                                                                                      |
+| Expires At             | `1734302683`                                                         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                                                                                                                                                                             |
+| Link Fee               | `3379350941986000`                                                   | The fee to pay in LINK tokens for the onchain verification of the report data. With 18 decimals. For readability: `0.03379350941986` LINK. **Note:** This example fee is not indicative of actual fees.                                                                                                                                      |
+| Native Fee             | `25872872271800`                                                     | The fee to pay in the native blockchain token (e.g., ETH on Ethereum) for the onchain verification of the report data. With 18 decimals. **Note:** This example fee is not indicative of actual fees.                                                                                                                                        |
+
+For descriptions and data types of other report schemas, see the [Report Schema Overview](/data-streams/reference/report-schema-overview).
+
+### Payload for onchain verification
+
+In this tutorial, you logged and decoded the `full_report` payloads to extract the report data. However, in a production environment, you should verify the data to ensure its integrity and authenticity.
+
+Refer to the [Verify report data onchain](/data-streams/tutorials/evm-onchain-report-verification) tutorial to learn more.
+
+## Adapting code for different report schema versions
+
+When working with different versions of [Data Stream reports](/data-streams/reference/report-schema-overview), you'll need to adapt your code to handle the specific report schema version they use:
+
+1. Import the correct schema version. Examples:
+
+   - For v3 schema (as used in this example):
+
+     ```go
+     v3 "github.com/smartcontractkit/data-streams-sdk/go/report/v3"
+     ```
+
+   - For v8 schema:
+
+     ```go
+     v8 "github.com/smartcontractkit/data-streams-sdk/go/report/v8"
+     ```
+
+1. Update the decode function to use the correct schema version. Examples:
+
+   - For v3 schema (as used in this example):
+
+     ```go
+     decodedReport, err := report.Decode[v3.Data](reportResponse.FullReport)
+     ```
+
+   - For v8 schema:
+
+     ```go
+     decodedReport, err := report.Decode[v8.Data](reportResponse.FullReport)
+     ```
+
+1. Access fields according to the schema version structure. Refer to the [Report Schemas](/datalink/pull-delivery/reference/report-schemas) documentation for complete field references for each version.
 
 ## Explanation
 
@@ -468,6 +522,8 @@ The Data Streams client is initialized in two steps:
    - `ApiKey` and `ApiSecret` for authentication (required)
    - `RestURL` for the API endpoint (required)
    - `Logger` for debugging and error tracking (optional, defaults to `streams.LogPrintf`)
+
+   See the [SDK Reference](/data-streams/reference/data-streams-api/go-sdk#config-struct) page for more configuration options.
 
 2. Create the client with [`streams.New`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/client.go#L56):
    ```go
@@ -522,10 +578,10 @@ Reports are decoded in two steps:
 
    This step:
 
-   - Takes the raw `FullReport` bytes from the response
-   - Uses `v3.Data` schema for Crypto streams (use `v8.Data` for RWA streams)
-   - Validates the format and decodes using Go generics
-   - Returns a structured report with typed data
+   1. Takes the raw `FullReport` bytes from the response
+   1. Uses `v3.Data` schema for Crypto streams (use the appropriate schema for your stream)
+   1. Validates the format and decodes using Go generics
+   1. Returns a structured report with typed data
 
 2. Data access:
    ```go
@@ -535,6 +591,7 @@ Reports are decoded in two steps:
    ask := data.Ask.String()
    validFrom := data.ValidFromTimestamp  // Unix timestamp
    expiresAt := data.ExpiresAt          // Unix timestamp
+   // ...additional or different fields depending on the report schema
    ```
    Provides access to:
    - Benchmark price, bid, and ask prices (as big numbers)
