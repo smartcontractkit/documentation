@@ -1,19 +1,19 @@
 ---
 section: dataStreams
 date: Last Modified
-title: "Stream and decode V3 reports via WebSocket using the Rust SDK"
+title: "Stream and decode Data Streams reports via WebSocket using the Rust SDK"
 metadata:
-  title: "WebSocket Integration with Rust SDK | Chainlink Data Streams"
-  description: "Learn how to stream and decode Chainlink Data Streams V3 reports using WebSocket connections with the Rust SDK."
-  keywords: ["WebSocket", "Rust SDK", "Data Streams", "Real-time data", "Crypto pricing", "Tutorial"]
+  title: "Stream Real-time Data Streams Reports with Rust SDK | WebSocket Tutorial"
+  description: "Learn how to stream and decode Chainlink Data Streams reports using WebSocket connections with the Rust SDK."
+  keywords: ["WebSocket", "Rust SDK", "Data Streams", "Real-time data", "Tutorial"]
 whatsnext:
   {
     "Learn how to verify your data onchain": "/data-streams/reference/data-streams-api/onchain-verification",
-    "Find the list of available Stream IDs": "/data-streams/crypto-streams",
+    "Find the list of available Streams and view their schemas": "/data-streams/reference/report-schema-overview",
   }
 ---
 
-import { CopyText, PageTabs } from "@components"
+import { Aside, CopyText, PageTabs } from "@components"
 import DataStreams from "@features/data-streams/common/DataStreams.astro"
 
 <DataStreams section="dsNotes" />
@@ -21,49 +21,19 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
 <PageTabs
   pages={[
     {
-      name: "Go SDK - V3 reports for Crypto streams",
-      url: "/data-streams/tutorials/ws-go",
+      name: "Go SDK",
+      url: "/data-streams/tutorials/go-sdk-stream",
       icon: "/images/tutorial-icons/go_logo_black.png",
     },
     {
-      name: "Go SDK - V8 reports for RWA streams",
-      url: "/data-streams/tutorials/ws-rwa-go",
-      icon: "/images/tutorial-icons/go_logo_black.png",
-    },
-    {
-      name: "Go SDK - V9 reports for NAV streams",
-      url: "/data-streams/tutorials/ws-nav-go",
-      icon: "/images/tutorial-icons/go_logo_black.png",
-    },
-    {
-      name: "Go SDK - V10 reports for Backed assets",
-      url: "/data-streams/tutorials/ws-backed-go",
-      icon: "/images/tutorial-icons/go_logo_black.png",
-    },
-    {
-      name: "Rust SDK - V3 reports for Crypto streams",
-      url: "/data-streams/tutorials/ws-rust",
-      icon: "/images/tutorial-icons/rust_logo_blk.svg",
-    },
-    {
-      name: "Rust SDK - V8 reports for RWA streams",
-      url: "/data-streams/tutorials/ws-rwa-rust",
-      icon: "/images/tutorial-icons/rust_logo_blk.svg",
-    },
-    {
-      name: "Rust SDK - V9 reports for NAV streams",
-      url: "/data-streams/tutorials/ws-nav-rust",
-      icon: "/images/tutorial-icons/rust_logo_blk.svg",
-    },
-    {
-      name: "Rust SDK - V10 reports for Backed assets",
-      url: "/data-streams/tutorials/ws-backed-rust",
+      name: "Rust SDK",
+      url: "/data-streams/tutorials/rust-sdk-stream",
       icon: "/images/tutorial-icons/rust_logo_blk.svg",
     },
   ]}
 />
 
-In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/data-streams-api/rust-sdk) for Rust to subscribe to real-time [V3 reports](/data-streams/reference/report-schema-v3) for [Crypto streams](/data-streams/crypto-streams) via a [WebSocket connection](/data-streams/reference/data-streams-api/interface-ws). You'll set up your Rust project, listen for real-time reports from the Data Streams Aggregation Network, decode the report data, and log their attributes to your terminal.
+In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/data-streams-api/rust-sdk) for Rust to subscribe to real-time [reports](/data-streams/reference/report-schema-overview) via a [WebSocket connection](/data-streams/reference/data-streams-api/interface-ws). You'll set up your Rust project, listen for real-time reports from the Data Streams Aggregation Network, decode the report data, and log their attributes to your terminal.
 
 <DataStreams section="asideDisclaimer" />
 
@@ -108,6 +78,7 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
 
    ```rust
    use chainlink_data_streams_report::feed_id::ID;
+   // NOTE: Use the report version (v3, v8, etc.) that matches your stream
    use chainlink_data_streams_report::report::{ decode_full_report, v3::ReportDataV3 };
    use chainlink_data_streams_sdk::config::Config;
    use chainlink_data_streams_sdk::stream::Stream;
@@ -166,9 +137,11 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
                   // Decode the report
                   let full_report = hex::decode(&response.report.full_report[2..])?;
                   let (_report_context, report_blob) = decode_full_report(&full_report)?;
+                  // NOTE: Use the report version (v3, v8, etc.) that matches your stream
                   let report_data = ReportDataV3::decode(&report_blob)?;
 
                   // Print decoded report details
+                  // NOTE: Adjust for your report and desired output
                   info!(
                      "\n--- Report Stream ID: {} ---\n\
                         ------------------------------------------\n\
@@ -221,6 +194,14 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
    }
    ```
 
+   <Aside type="note" title="Adapt the example">
+     The above example streams a crypto report using the [v3 schema](/data-streams/reference/report-schema-v3). If
+     you're working with a different type of stream (e.g., RWA, NAV), make sure to adjust the import statement, decoding
+     logic, and access patterns to match the appropriate report version (e.g., v8, v9). Refer to the [Report
+     Schemas](/data-streams/reference/report-schema-overview) for your stream. <br /> Learn more about [adapting code
+     for different report schema versions](#adapting-code-for-different-report-schema-versions).
+   </Aside>
+
 1. Set up your API credentials as environment variables:
 
    ```bash
@@ -230,9 +211,26 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
 
    Replace `<YOUR_API_KEY>` and `<YOUR_API_SECRET>` with your API credentials.
 
-1. For this example, you'll subscribe to the ETH/USD Data Streams crypto stream. This stream ID is <CopyText text="0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782" code/>. See the [Crypto Streams](/data-streams/crypto-streams) page for a complete list of available crypto assets.
+   The Rust code sample reads these environment variables using `std::env::var("API_KEY")` and `std::env::var("API_SECRET")` when building the client configuration:
 
-   Build and run your application:
+   ```rust
+   let api_key = std::env::var("API_KEY").expect("API_KEY must be set");
+   let api_secret = std::env::var("API_SECRET").expect("API_SECRET must be set");
+
+   // Initialize the configuration
+   let config = Config::new(
+      api_key,
+      api_secret,
+      "https://api.testnet-dataengine.chain.link".to_string(),
+      "wss://api.testnet-dataengine.chain.link/ws".to_string()
+   ).build()?;
+   ```
+
+   This configuration also specifies the `rest_url`, which is the base URL for the API, along with the WebSocket endpoint [for subscribing to a streamed data report](rust-sdk-stream). In this example, both are set to the testnet URLs for Data Streams.
+
+   See the [Rust SDK Reference](/data-streams/reference/data-streams-api/rust-sdk#config-struct) page for more configuration options.
+
+1. Subscribe to a [testnet crypto stream](/data-streams/crypto-streams?page=1&testnetPage=1#testnet-crypto-streams). The below example executes the application, subscribing to the `ETH/USD` crypto stream:
 
    ```bash
    cargo run -- 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
@@ -263,13 +261,13 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
    2024-12-13T23:07:57.062489Z  INFO my_data_streams_project:
    --- Stream Stats ---
    StatsSnapshot {
-       accepted: 1,
-       deduplicated: 0,
-       total_received: 1,
-       partial_reconnects: 0,
-       full_reconnects: 0,
-       configured_connections: 1,
-       active_connections: 1,
+      accepted: 1,
+      deduplicated: 0,
+      total_received: 1,
+      partial_reconnects: 0,
+      full_reconnects: 0,
+      configured_connections: 1,
+      active_connections: 1,
    }
    --------------------------------------------------------------------------------------------------------------------------------------------
    2024-12-13T23:07:58.065686Z  INFO data_streams_sdk::stream::monitor_connection: Received new report from Data Streams Endpoint.
@@ -291,17 +289,23 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
    2024-12-13T23:07:58.067633Z  INFO my_data_streams_project:
    --- Stream Stats ---
    StatsSnapshot {
-       accepted: 2,
-       deduplicated: 0,
-       total_received: 2,
-       partial_reconnects: 0,
-       full_reconnects: 0,
-       configured_connections: 1,
-       active_connections: 1,
+      accepted: 2,
+      deduplicated: 0,
+      total_received: 2,
+      partial_reconnects: 0,
+      full_reconnects: 0,
+      configured_connections: 1,
+      active_connections: 1,
    }
 
    [...]
    ```
+
+   Your application has successfully subscribed to the report data.
+
+   [Learn more about the decoded report details](#decoded-report-details).
+
+### High Availability (HA) Mode
 
 The example above demonstrates streaming data from a single crypto stream. For production environments, especially when subscribing to multiple streams, it's recommended to enable [High Availability (HA) mode](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/docs/examples/wss_multiple.md). This can be achieved by:
 
@@ -330,7 +334,7 @@ cargo run -- \
 
 This will subscribe to both ETH/USD and BTC/USD streams.
 
-#### Decoded report details
+### Decoded report details
 
 The decoded report details include:
 
@@ -346,11 +350,47 @@ The decoded report details include:
 | `Link Fee`               | `3513685734964500`                                                   | The fee to pay in LINK tokens for the onchain verification of the report data. For readability: `0.0035136857349645` LINK. **Note:** This example fee is not indicative of actual fees.                                        |
 | `Native Fee`             | `25600606005500`                                                     | The fee to pay in the native blockchain token (e.g., ETH on Ethereum) for the onchain verification of the report data. For readability: `0.0000256006060055` ETH. **Note:** This example fee is not indicative of actual fees. |
 
-#### Payload for onchain verification
+For descriptions and data types of other report schemas, see the [Report Schema Overview](/data-streams/reference/report-schema-overview).
 
-In this tutorial, you log and decode the `full_report` payload to extract the report data. In a
-production environment, you should verify the data to ensure its integrity and authenticity. Refer to the
-[Verify report data onchain](/data-streams/tutorials/evm-onchain-report-verification) tutorial.
+### Payload for onchain verification
+
+In this tutorial, you logged and decoded the `full_report` payloads to extract the report data. However, in a production environment, you should verify the data to ensure its integrity and authenticity.
+
+Refer to the [Verify report data onchain](/data-streams/tutorials/evm-onchain-report-verification) tutorial to learn more.
+
+## Adapting code for different report schema versions
+
+When working with different DataLink providers, you'll need to adapt your code to handle the specific report schema version they use:
+
+1. Import the correct schema version module. Examples:
+
+   - For v3 schema (as used in this example):
+
+     ```rust
+      use chainlink_data_streams_report::report::{ decode_full_report, v3::ReportDataV3 };
+     ```
+
+   - For v8 schema:
+
+     ```rust
+     use chainlink_data_streams_report::report::{ decode_full_report, v8::ReportDataV8 };
+     ```
+
+1. Update the decode function to use the correct schema version. Examples:
+
+   - For v3 schema (as used in this example):
+
+     ```rust
+     let report_data = ReportDataV3::decode(&report_blob)?;
+     ```
+
+   - For v8 schema:
+
+     ```rust
+     let report_data = ReportDataV8::decode(&report_blob)?;
+     ```
+
+1. Access fields according to the schema version structure. Refer to the [Report Schemas](/datalink/pull-delivery/reference/report-schemas) documentation for complete field references for each version.
 
 ## Explanation
 
@@ -373,10 +413,10 @@ As data reports arrive via the WebSocket connection, they are processed in real-
 
    - Awaits the next report from the WebSocket connection
    - Handles backpressure automatically
-   - Returns a [`WebSocketReport`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/sdk/src/stream.rs#L43) containing the report data
+   - Returns a [`WebSocketReport`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/sdk/src/stream.rs#L51) containing the report data
 
 2. Decoding reports: Each report is decoded in two stages:
-   - [`decode_full_report`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report.rs#L77) parses the raw hexadecimal data, separating the report context (containing metadata) from the report blob
+   - [`decode_full_report`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report.rs#L83) parses the raw hexadecimal data, separating the report context (containing metadata) from the report blob
    - [`ReportDataV3::decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report/v3.rs#L80) transforms the report blob into a structured format containing:
      - The benchmark price
      - Bid and ask prices for [liquidity-weighted pricing](/data-streams/concepts/liquidity-weighted-prices)
