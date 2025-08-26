@@ -22,7 +22,7 @@ export async function enhanceFeedWithRiskTier(feed: FeedData, network: string): 
     // Return the enhanced feed object with risk tier from Supabase
     const feedWithRiskTier = {
       ...feed,
-      feedCategory: feedRiskTier,
+      feedCategory: feedRiskTier ?? undefined,
     }
 
     return feedWithRiskTier
