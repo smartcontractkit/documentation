@@ -1,13 +1,27 @@
 import { supabase } from "./supabase.js"
 
-// Type for the docs_feeds_risk table
+/* ===========================
+   Types
+   =========================== */
+
+type FeedRiskRow = {
+  proxy_address: string
+  network: string
+  risk_status: string | null
+}
+
 type FeedRiskData = {
   proxy_address: string
   network: string
   risk_status: string
 }
 
-// Centralized category configuration
+export type FeedTierResult = { final: string | null }
+
+/* ===========================
+   Category Config
+   =========================== */
+
 export const FEED_CATEGORY_CONFIG = {
   low: {
     key: "low",
@@ -58,108 +72,108 @@ export const FEED_CATEGORY_CONFIG = {
   },
 } as const
 
-export const getDefaultCategories = () => Object.values(FEED_CATEGORY_CONFIG)
+export type CategoryKey = keyof typeof FEED_CATEGORY_CONFIG
 
+/* ===========================
+   Small helpers
+   =========================== */
+
+const TABLE = "docs_feeds_risk"
+
+const normalizeKey = (v?: string | null): CategoryKey | undefined => {
+  if (!v) return undefined
+  const key = v.toLowerCase() as CategoryKey
+  return key in FEED_CATEGORY_CONFIG ? key : undefined
+}
+
+const chooseTier = (dbTier: string | null | undefined, fallback?: string): string | null => dbTier ?? fallback ?? null
+
+const defaultCategoryList = () => Object.values(FEED_CATEGORY_CONFIG).map(({ key, name }) => ({ key, name }))
+
+/** Optional convenience for consumers */
+export function getCategoryMeta(category?: string | null) {
+  const key = normalizeKey(category)
+  return key ? FEED_CATEGORY_CONFIG[key] : undefined
+}
+
+/* ===========================
+   Public API
+   =========================== */
+
+export const getDefaultCategories = defaultCategoryList
+
+/** Fetch rows (optionally filtered by network). Returns [] on any error. */
 export async function getFeedRiskData(network?: string): Promise<FeedRiskData[]> {
   if (!supabase) return []
 
   try {
-    let query = supabase.from("docs_feeds_risk").select("*")
+    let query = supabase.from(TABLE).select("*")
     if (network) query = query.eq("network", network)
 
     const { data, error } = await query.limit(1000)
-    if (error) return []
-    return data || []
+    if (error || !data) return []
+
+    // Narrow to non-null risk_status to match FeedRiskData type
+    return (data as FeedRiskRow[]).filter((r): r is FeedRiskData => !!r.risk_status)
   } catch {
     return []
   }
 }
 
+/** Single lookup with fallback-first behavior. */
 export async function getFeedRiskTier(
   contractAddress: string,
   network: string,
   fallbackCategory?: string
 ): Promise<string | null> {
   try {
-    if (!supabase) return fallbackCategory || null
+    if (!supabase) return chooseTier(null, fallbackCategory)
 
     const { data, error } = await supabase
-      .from("docs_feeds_risk")
+      .from(TABLE)
       .select("risk_status")
       .eq("proxy_address", contractAddress)
       .eq("network", network)
       .limit(1)
 
-    if (error) return fallbackCategory || null
-    if (!data || data.length === 0) return fallbackCategory || null
-
-    return data[0]?.risk_status || fallbackCategory || null
+    if (error || !data?.length) return chooseTier(null, fallbackCategory)
+    return chooseTier(data[0]?.risk_status, fallbackCategory)
   } catch {
-    return fallbackCategory || null
+    return chooseTier(null, fallbackCategory)
   }
 }
 
+/** Merge static categories with those dynamically present in the table. */
 export async function getFeedCategories() {
   try {
-    if (!supabase) {
-      return Object.values(FEED_CATEGORY_CONFIG).map((config) => ({
-        key: config.key,
-        name: config.name,
-      }))
-    }
+    if (!supabase) return defaultCategoryList()
 
     const { data, error } = await supabase
-      .from("docs_feeds_risk")
+      .from(TABLE)
       .select("risk_status")
       .not("risk_status", "is", null)
       .neq("risk_status", "hidden")
 
-    if (error) {
-      return Object.values(FEED_CATEGORY_CONFIG).map((config) => ({
-        key: config.key,
-        name: config.name,
-      }))
-    }
+    if (error || !data) return defaultCategoryList()
 
-    const uniqueStatuses = Array.from(new Set(data.map((item) => item.risk_status).filter(Boolean))).filter(
-      (status: string) => status.toLowerCase() !== "hidden"
-    )
+    const dynamic = Array.from(
+      new Set(data.map((d) => normalizeKey(d.risk_status)).filter(Boolean) as CategoryKey[])
+    ).map((key) => ({ key, name: FEED_CATEGORY_CONFIG[key].name }))
 
-    const dynamicCategories = uniqueStatuses.map((status: string) => {
-      const config = FEED_CATEGORY_CONFIG[status.toLowerCase() as keyof typeof FEED_CATEGORY_CONFIG]
-      return {
-        key: status.toLowerCase() as keyof typeof FEED_CATEGORY_CONFIG,
-        name: config?.name || status,
-      }
-    })
+    // Dedup by key while keeping all defaults first
+    const byKey = new Map<string, { key: string; name: string }>()
+    defaultCategoryList().forEach((c) => byKey.set(c.key, c))
+    dynamic.forEach((c) => byKey.set(c.key, c))
 
-    const defaultCategories = Object.values(FEED_CATEGORY_CONFIG).map((config) => ({
-      key: config.key,
-      name: config.name,
-    }))
-
-    const allCategories = [...defaultCategories]
-    dynamicCategories.forEach((dynCat) => {
-      if (!allCategories.find((cat) => cat.key === dynCat.key)) {
-        allCategories.push(dynCat as (typeof allCategories)[0])
-      }
-    })
-
-    return allCategories
+    return Array.from(byKey.values())
   } catch {
-    return Object.values(FEED_CATEGORY_CONFIG).map((config) => ({
-      key: config.key,
-      name: config.name,
-    }))
+    return defaultCategoryList()
   }
 }
 
-// Minimal batch result type
-export type FeedTierResult = { final: string | null }
-
 /**
- * Batched lookup that returns the final category per (address, network) wrapped in { final }.
- * Map key format: `${contractAddress}-${network}`
+ * Batch lookup: returns a Map of `${address}-${network}` → { final }.
+ * Uses DB value when present; otherwise uses per-item fallback.
  */
 export async function getFeedRiskTiersBatch(
   feedRequests: Array<{
@@ -168,50 +182,50 @@ export async function getFeedRiskTiersBatch(
     fallbackCategory?: string
   }>
 ): Promise<Map<string, FeedTierResult>> {
-  const resultMap = new Map<string, FeedTierResult>()
+  const out = new Map<string, FeedTierResult>()
+  const keyFor = (addr: string, net: string) => `${addr}-${net}`
 
   if (!supabase) {
-    feedRequests.forEach(({ contractAddress, network, fallbackCategory }) => {
-      resultMap.set(`${contractAddress}-${network}`, { final: fallbackCategory ?? null })
-    })
-    return resultMap
+    feedRequests.forEach(({ contractAddress, network, fallbackCategory }) =>
+      out.set(keyFor(contractAddress, network), { final: chooseTier(null, fallbackCategory) })
+    )
+    return out
   }
 
-  const uniqueNetworks = Array.from(new Set(feedRequests.map((r) => r.network)))
-  const uniqueAddresses = Array.from(new Set(feedRequests.map((r) => r.contractAddress)))
+  const networks = Array.from(new Set(feedRequests.map((r) => r.network)))
+  const addresses = Array.from(new Set(feedRequests.map((r) => r.contractAddress)))
 
   try {
     const { data, error } = await supabase
-      .from("docs_feeds_risk")
+      .from(TABLE)
       .select("proxy_address, network, risk_status")
-      .in("proxy_address", uniqueAddresses)
-      .in("network", uniqueNetworks)
+      .in("proxy_address", addresses)
+      .in("network", networks)
       .limit(1000)
 
     if (error) {
-      feedRequests.forEach(({ contractAddress, network, fallbackCategory }) => {
-        resultMap.set(`${contractAddress}-${network}`, { final: fallbackCategory ?? null })
-      })
-      return resultMap
+      feedRequests.forEach(({ contractAddress, network, fallbackCategory }) =>
+        out.set(keyFor(contractAddress, network), { final: chooseTier(null, fallbackCategory) })
+      )
+      return out
     }
 
-    const supabaseData = new Map<string, string | null>()
-    data?.forEach((row: any) => {
-      supabaseData.set(`${row.proxy_address}-${row.network}`, row.risk_status ?? null)
-    })
+    const lookup = new Map<string, string | null>()
+    ;(data as FeedRiskRow[] | null)?.forEach((row) =>
+      lookup.set(keyFor(row.proxy_address, row.network), row.risk_status ?? null)
+    )
 
     feedRequests.forEach(({ contractAddress, network, fallbackCategory }) => {
-      const key = `${contractAddress}-${network}`
-      const supaTier = supabaseData.get(key)
-      resultMap.set(key, { final: supaTier ?? fallbackCategory ?? null })
+      const key = keyFor(contractAddress, network)
+      out.set(key, { final: chooseTier(lookup.get(key), fallbackCategory) })
     })
 
-    return resultMap
+    return out
   } catch {
-    feedRequests.forEach(({ contractAddress, network, fallbackCategory }) => {
-      resultMap.set(`${contractAddress}-${network}`, { final: fallbackCategory ?? null })
-    })
-    return resultMap
+    feedRequests.forEach(({ contractAddress, network, fallbackCategory }) =>
+      out.set(keyFor(contractAddress, network), { final: chooseTier(null, fallbackCategory) })
+    )
+    return out
   }
 }
 
@@ -227,26 +241,20 @@ export async function getFeedRiskTierWithFallback(
     if (typeof window === "undefined") {
       const riskTier = await getFeedRiskTier(contractAddress, network, fallbackCategory)
       return riskTier ?? fallbackCategory
-    } else {
-      return fallbackCategory
     }
+    return fallbackCategory
   } catch {
     return fallbackCategory
   }
 }
 
+/** Lightweight connectivity check. */
 export async function testSupabaseConnection() {
   try {
     if (!supabase) {
-      return {
-        success: false,
-        data: null,
-        error: "Supabase client not available",
-      }
+      return { success: false, data: null, error: "Supabase client not available" }
     }
-
-    const { data, error } = await supabase.from("docs_feeds_risk").select("*").limit(1)
-
+    const { data, error } = await supabase.from(TABLE).select("*").limit(1)
     return {
       success: !error || (error as any)?.code === "PGRST116",
       data,
