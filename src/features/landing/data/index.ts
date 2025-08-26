@@ -10,6 +10,9 @@ import automationShape from "../../../assets/product-logos/automation-shape.svg"
 import dataFeedShape from "../../../assets/product-logos/data-feeds-shape.svg"
 import dataStreamsLogo from "../../../assets/product-logos/data-streams-logo.svg"
 import dataStreamsShape from "../../../assets/product-logos/data-streams-shape.svg"
+// TODO: Use correct DTA logo and shape when available. Currently using Data Streams assets for both.
+import dtaLogo from "../../../assets/product-logos/dta-logo.svg"
+import dtaShape from "../../../assets/product-logos/dta-shape.svg"
 import { ProductCardProps } from "../components/ProductCard.tsx"
 
 const baseChains = [
@@ -92,6 +95,14 @@ export const evmProducts = [
       { id: "avalanche", title: "Avalanche" },
       { id: "base", title: "Base" },
     ],
+  },
+  {
+    title: "DTA",
+    description: "Todo.",
+    docsLandingLink: "/dta",
+    // learnMoreLink: "https://dev.chain.link/products/dta",
+    image: dtaLogo,
+    shape: dtaShape,
   },
   {
     title: "Functions",

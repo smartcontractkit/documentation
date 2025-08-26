@@ -2329,4 +2329,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
+  [SIDEBAR_SECTIONS.DTA]: [
+    {
+      section: "DTA",
+      contents: [
+        {
+          title: "Overview",
+          url: "dta",
+        },
+      ],
+    },
+  ],
 }

@@ -4,6 +4,7 @@ import functionsLogo from "../../assets/product-logos/functions-logo.svg"
 import automationLogo from "../../assets/product-logos/automation-logo.svg"
 import dataFeedsLogo from "../../assets/product-logos/data-feeds-logo.svg"
 import dataStreamsLogo from "../../assets/product-logos/data-streams-logo.svg"
+import dtaLogo from "../../assets/product-logos/dta-logo.svg"
 import chainlinkLocal from "../../assets/product-logos/chainlink-local.svg"
 import generalLogo from "../../assets/product-logos/general-logo.svg"
 import nodesLogo from "../../assets/product-logos/node-logo.svg"
@@ -59,6 +60,12 @@ const desktopSubProductsNav = [
     label: "Data Streams",
     href: "/data-streams",
     icon: dataStreamsLogo.src,
+    col: 1,
+  },
+  {
+    label: "DTA",
+    href: "/dta",
+    icon: dtaLogo.src,
     col: 1,
   },
   {

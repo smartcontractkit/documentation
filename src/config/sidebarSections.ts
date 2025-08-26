@@ -7,6 +7,7 @@
  */
 export const SIDEBAR_SECTIONS = {
   DATA_FEEDS: "dataFeeds",
+  DTA: "dta",
   DATA_STREAMS: "dataStreams",
   CCIP: "ccip",
   CHAINLINK_FUNCTIONS: "chainlinkFunctions",
