@@ -49,10 +49,16 @@ export function useBatchedFeedCategories(network: ChainNetwork | null): BatchedF
         }> = []
 
         network.metadata?.forEach((metadata) => {
-          const contractAddress = metadata.contractAddress || metadata.proxyAddress
-          if (contractAddress) {
+          // Use proxyAddress for Aptos, contractAddress/proxyAddress for others
+          let feedKey: string | undefined
+          if (network.name.toLowerCase().includes("aptos")) {
+            feedKey = metadata.proxyAddress ?? undefined
+          } else {
+            feedKey = metadata.contractAddress ?? metadata.proxyAddress ?? undefined
+          }
+          if (feedKey) {
             feedRequests.push({
-              contractAddress,
+              contractAddress: feedKey,
               network: network.networkType || "unknown",
               fallbackCategory: metadata.feedCategory,
             })
@@ -66,6 +72,13 @@ export function useBatchedFeedCategories(network: ChainNetwork | null): BatchedF
 
         // Batched DB lookup (returns Map<key, { final }>)
         const batchResults = await getFeedRiskTiersBatch(feedRequests)
+
+        // Debug logging for each feed
+        feedRequests.forEach(({ contractAddress, network, fallbackCategory }) => {
+          const key = `${contractAddress}-${network}`
+          const result = batchResults.get(key)
+          console.log(`[FeedCategoryDebug] key: ${key}, fallback: ${fallbackCategory}, final: ${result?.final}`)
+        })
 
         setState({
           data: batchResults,
