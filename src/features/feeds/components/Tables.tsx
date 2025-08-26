@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-import { useState, useEffect } from "preact/hooks"
+import { useState } from "preact/hooks"
 import { Fragment } from "preact"
 import feedList from "./FeedList.module.css"
 import { clsx } from "~/lib/clsx/clsx.ts"
@@ -13,29 +13,15 @@ import { FEED_CATEGORY_CONFIG } from "../../../db/feedCategories.js"
 import {
   useBatchedFeedCategories,
   getFeedCategoryFromBatch,
-  type FeedCategoryData,
 } from "./useBatchedFeedCategories.ts"
 
 const feedItems = monitoredFeeds.mainnet
 
-// Centralized function to get feed category element using the shared config
-const getFeedCategoryElement = (riskTier: string | undefined, isLoading = false) => {
-  // Show gray circle while loading
-  if (isLoading) {
-    return (
-      <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title="Loading risk tier...">
-        ⚪
-      </span>
-    )
-  }
-
+// Render a category icon/link from the config
+const getFeedCategoryElement = (riskTier: string | undefined) => {
   if (!riskTier) return ""
-
-  const lowerTier = riskTier.toLowerCase()
-  const category = FEED_CATEGORY_CONFIG[lowerTier]
-
+  const category = FEED_CATEGORY_CONFIG[riskTier.toLowerCase()]
   if (!category) return ""
-
   return (
     <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title={category.title}>
       <a href={category.link} aria-label={category.name} target="_blank">
@@ -45,110 +31,9 @@ const getFeedCategoryElement = (riskTier: string | undefined, isLoading = false)
   )
 }
 
-// Dev mode warning banner
-const DevModeWarning = () => {
-  const [showDevMode, setShowDevMode] = useState(false)
-
-  useEffect(() => {
-    const checkDevMode = () => {
-      const devMode =
-        typeof window !== "undefined" &&
-        (window as unknown as { CHAINLINK_DEV_MODE?: boolean }).CHAINLINK_DEV_MODE === true
-      setShowDevMode(devMode)
-    }
-
-    checkDevMode()
-    // Check every 2 seconds in case dev mode is toggled
-    const interval = setInterval(checkDevMode, 2000)
-    return () => clearInterval(interval)
-  }, [])
-
-  if (!showDevMode) return null
-
-  return (
-    <div
-      style={{
-        background: "#fef3c7",
-        border: "1px solid #f59e0b",
-        borderRadius: "8px",
-        padding: "12px 16px",
-        margin: "16px 0",
-        color: "#92400e",
-        fontSize: "14px",
-        fontWeight: "500",
-      }}
-    >
-      🔬 <strong>DEVELOPER TEST MODE ACTIVE</strong> - Categories show original → Supabase comparison. Disable with{" "}
-      <code style={{ background: "#fbbf24", padding: "2px 4px", borderRadius: "4px" }}>
-        window.CHAINLINK_DEV_MODE = false
-      </code>
-    </div>
-  )
-}
-const getFeedCategoryWithComparison = (
-  comparisonData: {
-    final: string | null
-    original: string | null
-    supabase: string | null
-    changed: boolean
-    devMode: boolean
-  },
-  isLoading = false
-) => {
-  const { final } = comparisonData
-
-  // Always show the final category icon (or loading state)
-  return getFeedCategoryElement(final || undefined, isLoading)
-}
-
-// New function to show comparison text under feed name
-const getComparisonText = (comparisonData: {
-  final: string | null
-  original: string | null
-  supabase: string | null
-  changed: boolean
-  devMode: boolean
-}) => {
-  const { original, supabase, changed, devMode } = comparisonData
-
-  if (!devMode || !changed) {
-    return null
-  }
-
-  const getIconForCategory = (category: string | null) => {
-    if (!category) return "❓"
-    const config = FEED_CATEGORY_CONFIG[category.toLowerCase()]
-    return config?.icon || "❓"
-  }
-
-  const originalIcon = getIconForCategory(original)
-  const supabaseIcon = getIconForCategory(supabase)
-
-  return (
-    <div
-      style={{
-        fontSize: "11px",
-        color: "#666",
-        marginTop: "4px",
-        background: "#f0f9ff",
-        padding: "2px 6px",
-        borderRadius: "3px",
-        border: "1px solid #0ea5e9",
-      }}
-    >
-      🔬
-      <br />
-      {originalIcon} {original || "none"} → {supabaseIcon} {supabase || "none"}
-    </div>
-  )
-}
-
 const Pagination = ({ addrPerPage, totalAddr, paginate, currentPage, firstAddr, lastAddr }) => {
   const pageNumbers: number[] = []
-
-  for (let i = 1; i <= Math.ceil(totalAddr / addrPerPage); i++) {
-    pageNumbers.push(i)
-  }
+  for (let i = 1; i <= Math.ceil(totalAddr / addrPerPage); i++) pageNumbers.push(i)
 
   return (
     <div className={tableStyles.pagination}>
@@ -181,11 +66,7 @@ const Pagination = ({ addrPerPage, totalAddr, paginate, currentPage, firstAddr, 
 
 const handleClick = (e, additionalInfo) => {
   e.preventDefault()
-
-  const dataLayerEvent = {
-    event: "docs_product_interaction",
-    ...additionalInfo,
-  }
+  const dataLayerEvent = { event: "docs_product_interaction", ...additionalInfo }
   window.dataLayer = window.dataLayer || []
   window.dataLayer.push(dataLayerEvent)
 }
@@ -202,7 +83,6 @@ const CopyableAddress = ({
   environment: string
 }) => {
   if (!address) return null
-
   return (
     <div className={tableStyles.compactAddressContainer}>
       <a
@@ -232,10 +112,7 @@ const CopyableAddress = ({
 }
 
 const getNetworkStatusUrl = (network: NetworkData): string | null => {
-  if (network.networkStatus) {
-    return network.networkStatus
-  }
-
+  if (network.networkStatus) return network.networkStatus
   if (network.mainnet?.explorerUrl) {
     try {
       return new URL(network.mainnet.explorerUrl.replace("%s", "")).origin
@@ -243,13 +120,11 @@ const getNetworkStatusUrl = (network: NetworkData): string | null => {
       return null
     }
   }
-
   return null
 }
 
 const DefaultTHead = ({ showExtraDetails, networkName }: { showExtraDetails: boolean; networkName: string }) => {
   const isAptosNetwork = networkName === "Aptos Mainnet" || networkName === "Aptos Testnet"
-
   return (
     <thead>
       <tr>
@@ -264,81 +139,23 @@ const DefaultTHead = ({ showExtraDetails, networkName }: { showExtraDetails: boo
 }
 
 const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData }) => {
-  // Use batched category data instead of individual API calls
-  const [comparisonData, setComparisonData] = useState<FeedCategoryData>({
-    final: metadata.feedCategory,
-    original: metadata.feedCategory,
-    supabase: null,
-    changed: false,
-    devMode: false,
-  })
-
-  // No longer need loading state since batch loading is handled at network level
-
-  // Effect to get data from batch results when they're available
-  useEffect(() => {
-    // For testnet or networks without batch data, just use fallback
-    if (!batchedCategoryData || batchedCategoryData.size === 0) {
-      setComparisonData({
-        final: metadata.feedCategory,
-        original: metadata.feedCategory,
-        supabase: null,
-        changed: false,
-        devMode: false,
-      })
-      return
-    }
-
-    if (metadata.proxyAddress || metadata.contractAddress) {
-      const contractAddress = metadata.contractAddress || metadata.proxyAddress
-      const networkIdentifier = network?.networkType || "unknown"
-
-      if (contractAddress) {
-        const batchResult = getFeedCategoryFromBatch(
-          batchedCategoryData,
-          contractAddress,
-          networkIdentifier,
-          metadata.feedCategory
-        )
-        setComparisonData(batchResult)
-
-        // Only log differences in dev mode
-        if (batchResult.devMode && batchResult.changed) {
-          console.log(`📊 ${metadata.name}: ${batchResult.original} → ${batchResult.supabase}`)
-        }
-      }
-    } else {
-      // Fallback to original category if no proxy address
-      setComparisonData({
-        final: metadata.feedCategory,
-        original: metadata.feedCategory,
-        supabase: null,
-        changed: false,
-        devMode: false,
-      })
-    }
-  }, [
-    batchedCategoryData,
-    metadata.proxyAddress,
-    metadata.contractAddress,
-    metadata.feedCategory,
-    network?.networkType,
-    metadata.name,
-  ])
-
-  const getFinalFeedCategory = () => {
-    return getFeedCategoryWithComparison(comparisonData, false)
-  }
+  // Resolve the final category using batched data, falling back to metadata if absent
+  const contractAddress = metadata.contractAddress || metadata.proxyAddress
+  const networkIdentifier = network?.networkType || "unknown"
+  const finalTier =
+    contractAddress && batchedCategoryData?.size
+      ? getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)?.final ??
+        metadata.feedCategory
+      : metadata.feedCategory
 
   return (
     <tr>
       <td className={tableStyles.pairCol}>
         <div className={tableStyles.assetPair}>
           <div className={tableStyles.pairNameRow}>
-            {getFinalFeedCategory()}
+            {getFeedCategoryElement(finalTier || undefined)}
             {metadata.name}
           </div>
-          {getComparisonText(comparisonData)}
           {metadata.secondaryProxyAddress && (
             <div style={{ marginTop: "5px" }}>
               <a
@@ -493,65 +310,18 @@ const SmartDataTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => 
 )
 
 const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData }) => {
-  // Check if this is an MVR feed
+  // MVR badge only when explicitly flagged and has decoding schema
   const hasDecoding = Array.isArray(metadata.docs?.decoding) && metadata.docs.decoding.length > 0
-  const isMVRFlagSet = metadata.docs?.isMVR === true
+  const finalIsMVRFeed = metadata.docs?.isMVR === true && hasDecoding
 
-  // Only show MVR badge if explicitly flagged as MVR
-  const finalIsMVRFeed = isMVRFlagSet && hasDecoding
-
-  // Use batched category data instead of individual API calls
-  const [comparisonData, setComparisonData] = useState<FeedCategoryData>({
-    final: metadata.feedCategory,
-    original: metadata.feedCategory,
-    supabase: null,
-    changed: false,
-    devMode: false,
-  })
-
-  // No longer need loading state since batch loading is handled at network level
-
-  useEffect(() => {
-    if (batchedCategoryData && metadata.proxyAddress) {
-      const networkIdentifier = network?.networkType || "unknown"
-      const contractAddress = metadata.contractAddress || metadata.proxyAddress
-
-      if (contractAddress) {
-        const batchResult = getFeedCategoryFromBatch(
-          batchedCategoryData,
-          contractAddress,
-          networkIdentifier,
-          metadata.feedCategory
-        )
-        setComparisonData(batchResult)
-
-        // Only log differences in dev mode
-        if (batchResult.devMode && batchResult.changed) {
-          console.log(`📊 SmartData ${metadata.name}: ${batchResult.original} → ${batchResult.supabase}`)
-        }
-      }
-    } else {
-      // Fallback to original category if no batch data
-      setComparisonData({
-        final: metadata.feedCategory,
-        original: metadata.feedCategory,
-        supabase: null,
-        changed: false,
-        devMode: false,
-      })
-    }
-  }, [
-    batchedCategoryData,
-    metadata.proxyAddress,
-    metadata.contractAddress,
-    metadata.feedCategory,
-    network?.networkType,
-    metadata.name,
-  ])
-
-  const getSmartDataFeedCategory = () => {
-    return getFeedCategoryWithComparison(comparisonData, false)
-  }
+  // Resolve final category from batch (fallback to metadata)
+  const contractAddress = metadata.contractAddress || metadata.proxyAddress
+  const networkIdentifier = network?.networkType || "unknown"
+  const finalTier =
+    contractAddress && batchedCategoryData?.size
+      ? getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)?.final ??
+        metadata.feedCategory
+      : metadata.feedCategory
 
   return (
     <tr>
@@ -572,9 +342,8 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
           return ""
         })}
         <div className={tableStyles.assetPair}>
-          {getSmartDataFeedCategory()} {metadata.name}
+          {getFeedCategoryElement(finalTier || undefined)} {metadata.name}
         </div>
-        {getComparisonText(comparisonData)}
         {metadata.docs.shutdownDate && (
           <div className={clsx(feedList.shutDate)}>
             <hr />
@@ -742,20 +511,15 @@ export const StreamsNetworkAddressesTable = () => {
   const [searchValue, setSearchValue] = useState("")
 
   const normalizedSearch = searchValue.toLowerCase().replaceAll(" ", "")
-
   const match = (value?: string) => !!value && value.toLowerCase().replaceAll(" ", "").includes(normalizedSearch)
 
   const filteredNetworks = StreamsNetworksData.filter((network) => {
     if (!normalizedSearch) return true
-
     const networkMatch = match(network.network)
-
     const mainnetLabel = network.mainnet?.label
     const testnetLabel = network.testnet?.label
-
     const mainnetAddr = network.isSolana ? network.mainnet?.verifierProgramId : network.mainnet?.verifierProxy
     const testnetAddr = network.isSolana ? network.testnet?.verifierProgramId : network.testnet?.verifierProxy
-
     return networkMatch || match(mainnetLabel) || match(testnetLabel) || match(mainnetAddr) || match(testnetAddr)
   })
 
@@ -894,12 +658,7 @@ export const StreamsNetworkAddressesTable = () => {
                   <tr key={`${network.network}-status-explorer`} className={tableStyles.statusRow}>
                     <td colSpan={3} className={tableStyles.statusCell}>
                       <div style={{ display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
-                        <a
-                          href={statusUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={tableStyles.statusLink}
-                        >
+                        <a href={statusUrl} target="_blank" rel="noopener noreferrer" className={tableStyles.statusLink}>
                           View {network.network} Network Status →
                         </a>
                       </div>
@@ -925,14 +684,8 @@ const StreamsTHead = () => (
 )
 
 const streamsCategoryMap = {
-  custom: {
-    text: "Custom",
-    link: "/data-streams/developer-responsibilities/#custom-data-streams",
-  },
-  new_token: {
-    text: "New token",
-    link: "/data-streams/developer-responsibilities#new-token-data-streams",
-  },
+  custom: { text: "Custom", link: "/data-streams/developer-responsibilities/#custom-data-streams" },
+  new_token: { text: "New token", link: "/data-streams/developer-responsibilities#new-token-data-streams" },
 }
 
 const StreamsTr = ({ metadata, isMainnet }) => (
@@ -941,11 +694,7 @@ const StreamsTr = ({ metadata, isMainnet }) => (
       <div className={tableStyles.assetPair}>
         {metadata.pair[0]}/{metadata.pair[1]}
         {metadata.feedType === "Crypto-DEX" && (
-          <a
-            href="/data-streams/concepts/dex-state-price-streams"
-            target="_blank"
-            className={tableStyles.feedVariantBadge}
-          >
+          <a href="/data-streams/concepts/dex-state-price-streams" target="_blank" className={tableStyles.feedVariantBadge}>
             DEX State Price
           </a>
         )}
@@ -983,30 +732,22 @@ const StreamsTr = ({ metadata, isMainnet }) => (
         <dl className={tableStyles.listContainer}>
           {isMainnet && metadata.docs.clicProductName && (
             <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Full name:</span>
-              </dt>
+              <dt><span className="label">Full name:</span></dt>
               <dd>{metadata.docs.clicProductName}</dd>
             </div>
           )}
           {metadata.assetName && (
             <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Asset name:</span>
-              </dt>
+              <dt><span className="label">Asset name:</span></dt>
               <dd>{metadata.assetName}</dd>
             </div>
           )}
           {metadata.docs.assetClass ? (
             <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Asset class:</span>
-              </dt>
+              <dt><span className="label">Asset class:</span></dt>
               <dd>
                 {metadata.docs.assetClass}
-                {metadata.docs.assetSubClass &&
-                metadata.docs.assetSubClass !== "Crypto" &&
-                metadata.docs.assetSubClass !== "Equities"
+                {metadata.docs.assetSubClass && metadata.docs.assetSubClass !== "Crypto" && metadata.docs.assetSubClass !== "Equities"
                   ? " - " + metadata.docs.assetSubClass
                   : ""}
               </dd>
@@ -1014,21 +755,15 @@ const StreamsTr = ({ metadata, isMainnet }) => (
           ) : null}
           {metadata.docs.marketHours ? (
             <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Market hours:</span>
-              </dt>
+              <dt><span className="label">Market hours:</span></dt>
               <dd>
-                <a href="/data-streams/market-hours" target="_blank">
-                  {metadata.docs.marketHours}
-                </a>
+                <a href="/data-streams/market-hours" target="_blank">{metadata.docs.marketHours}</a>
               </dd>
             </div>
           ) : null}
           {streamsCategoryMap[metadata.feedCategory] ? (
             <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Category:</span>
-              </dt>
+              <dt><span className="label">Category:</span></dt>
               <dd>
                 <a href={streamsCategoryMap[metadata.feedCategory].link}>
                   {streamsCategoryMap[metadata.feedCategory].text}
@@ -1038,17 +773,13 @@ const StreamsTr = ({ metadata, isMainnet }) => (
           ) : null}
           {metadata.decimals ? (
             <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Decimals:</span>
-              </dt>
+              <dt><span className="label">Decimals:</span></dt>
               <dd>{metadata.decimals}</dd>
             </div>
           ) : null}
           {metadata.feedType === "Crypto-DEX" && (
             <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Report Schema:</span>
-              </dt>
+              <dt><span className="label">Report Schema:</span></dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v3-dex" rel="noreferrer" target="_blank">
                   Crypto Schema - DEX (v3)
@@ -1058,21 +789,17 @@ const StreamsTr = ({ metadata, isMainnet }) => (
           )}
           {metadata.feedType === "Crypto" && (
             <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Report Schema:</span>
-              </dt>
+              <dt><span className="label">Report Schema:</span></dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v3" rel="noreferrer" target="_blank">
                   Crypto Schema (v3)
                 </a>
               </dd>
             </div>
-          )}{" "}
+          )}
           {metadata.feedType === "Equities" && (
             <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Report Schema:</span>
-              </dt>
+              <dt><span className="label">Report Schema:</span></dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v8" rel="noreferrer" target="_blank">
                   RWA Schema (v8)
@@ -1119,7 +846,6 @@ export const MainnetTable = ({
 }) => {
   if (!network.metadata) return null
 
-  // Use batched feed category loading for this network
   const { data: batchedCategoryData, isLoading: isBatchLoading } = useBatchedFeedCategories(network)
 
   const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa"
@@ -1130,22 +856,14 @@ export const MainnetTable = ({
   const filteredMetadata = network.metadata
     .sort((a, b) => (a.name < b.name ? -1 : 1))
     .filter((metadata) => {
-      if (showOnlySVR && !metadata.secondaryProxyAddress) {
-        return false
-      }
-
+      if (showOnlySVR && !metadata.secondaryProxyAddress) return false
       if (isDeprecating) return !!metadata.docs.shutdownDate
 
       if (dataFeedType === "streamsCrypto") {
         const isValidStreamsFeed =
           metadata.contractType === "verifier" &&
           (metadata.docs.feedType === "Crypto" || metadata.docs.feedType === "Crypto-DEX")
-
-        if (showOnlyDEXFeeds) {
-          return isValidStreamsFeed && metadata.docs.feedType === "Crypto-DEX"
-        }
-
-        return isValidStreamsFeed
+        return showOnlyDEXFeeds ? isValidStreamsFeed && metadata.docs.feedType === "Crypto-DEX" : isValidStreamsFeed
       }
 
       if (dataFeedType === "streamsRwa") {
@@ -1153,10 +871,7 @@ export const MainnetTable = ({
       }
 
       if (isSmartData) {
-        if (showOnlyMVRFeeds) {
-          return !metadata.docs?.hidden && metadata.docs?.isMVR === true
-        }
-
+        if (showOnlyMVRFeeds) return !metadata.docs?.hidden && metadata.docs?.isMVR === true
         return (
           !metadata.docs?.hidden &&
           (metadata.docs.productType === "Proof of Reserve" ||
@@ -1166,7 +881,7 @@ export const MainnetTable = ({
         )
       }
 
-      // Exclude MVR feeds from default view
+      // Default table excludes SmartData feeds
       return (
         !metadata.docs.porType &&
         metadata.contractType !== "verifier" &&
@@ -1177,16 +892,11 @@ export const MainnetTable = ({
     })
     .filter((metadata) => {
       if (isSmartData) {
-        // Include MVR category in SmartData filter
-        if (selectedFeedCategories.includes("MVR") && metadata.docs?.isMVR) {
-          return true
-        }
-
-        const included =
+        if (selectedFeedCategories.includes("MVR") && metadata.docs?.isMVR) return true
+        return (
           selectedFeedCategories.length === 0 ||
           (metadata.docs.productType && selectedFeedCategories.includes(metadata.docs.productType))
-
-        return included
+        )
       }
       return (
         selectedFeedCategories.length === 0 ||
@@ -1196,28 +906,16 @@ export const MainnetTable = ({
     .filter(
       (metadata) =>
         metadata.name.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.proxyAddress
-          ?.toLowerCase()
-          .replaceAll(" ", "")
-          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        metadata.proxyAddress?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
         metadata.secondaryProxyAddress
           ?.toLowerCase()
           .replaceAll(" ", "")
           .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
         metadata.assetName.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
         metadata.feedType.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.docs.porType
-          ?.toLowerCase()
-          .replaceAll(" ", "")
-          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.docs.porAuditor
-          ?.toLowerCase()
-          .replaceAll(" ", "")
-          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.docs.porSource
-          ?.toLowerCase()
-          .replaceAll(" ", "")
-          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        metadata.docs.porType?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        metadata.docs.porAuditor?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        metadata.docs.porSource?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
         metadata.feedId?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", ""))
     )
 
@@ -1225,7 +923,6 @@ export const MainnetTable = ({
 
   return (
     <>
-      <DevModeWarning />
       {isBatchLoading && <p>Loading...</p>}
       <div className={tableStyles.tableWrapper}>
         <table className={tableStyles.table} data-show-details={showExtraDetails}>
@@ -1297,9 +994,7 @@ export const TestnetTable = ({
   lastAddr = 1000,
   addrPerPage = 8,
   currentPage = 1,
-  paginate = () => {
-    /* Default no-op function */
-  },
+  paginate = () => {},
   searchValue = "",
   showOnlyMVRFeeds,
   showOnlyDEXFeeds,
@@ -1319,7 +1014,6 @@ export const TestnetTable = ({
 }) => {
   if (!network.metadata) return null
 
-  // Use batched feed category loading for this network
   const { data: batchedCategoryData, isLoading: isBatchLoading } = useBatchedFeedCategories(network)
 
   const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa"
@@ -1335,25 +1029,15 @@ export const TestnetTable = ({
           const isValidStreamsFeed =
             metadata.contractType === "verifier" &&
             (metadata.feedType === "Crypto" || metadata.feedType === "Crypto-DEX")
-
-          if (showOnlyDEXFeeds) {
-            return isValidStreamsFeed && metadata.feedType === "Crypto-DEX"
-          }
-
-          return isValidStreamsFeed
+          return showOnlyDEXFeeds ? isValidStreamsFeed && metadata.feedType === "Crypto-DEX" : isValidStreamsFeed
         }
-
         if (dataFeedType === "streamsRwa") {
           return metadata.contractType === "verifier" && metadata.feedType === "Equities"
         }
       }
 
       if (isSmartData) {
-        if (showOnlyMVRFeeds) {
-          return !metadata.docs?.hidden && metadata.docs?.isMVR === true
-        }
-
-        // Otherwise, include all SmartData feeds (MVR, PoR, NAVLink, SmartAUM)
+        if (showOnlyMVRFeeds) return !metadata.docs?.hidden && metadata.docs?.isMVR === true
         return (
           !metadata.docs?.hidden &&
           (metadata.docs.productType === "Proof of Reserve" ||
@@ -1366,7 +1050,7 @@ export const TestnetTable = ({
       if (isRates)
         return !!(metadata.docs.productType === "Rates" || metadata.docs.productSubType === "Realized Volatility")
 
-      // Exclude MVR feeds from default view
+      // Default table excludes SmartData and Rates
       return (
         !metadata.feedId &&
         !metadata.docs.porType &&
@@ -1379,15 +1063,11 @@ export const TestnetTable = ({
     })
     .filter((metadata) => {
       if (isSmartData) {
-        if (selectedFeedCategories.includes("MVR") && metadata.docs?.isMVR) {
-          return true
-        }
-
-        const included =
+        if (selectedFeedCategories.includes("MVR") && metadata.docs?.isMVR) return true
+        return (
           selectedFeedCategories.length === 0 ||
           (metadata.docs.productType && selectedFeedCategories.includes(metadata.docs.productType))
-
-        return included
+        )
       }
       return (
         selectedFeedCategories.length === 0 ||
@@ -1431,35 +1111,50 @@ export const TestnetTable = ({
               {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} networkName={network.name} />}
               {isRates && <DefaultTHead showExtraDetails={showExtraDetails} networkName={network.name} />}
               <tbody>
-                {slicedFilteredMetadata.map((metadata) => (
-                  <>
-                    {isStreams && <StreamsTr metadata={metadata} isMainnet={false} />}
-                    {isSmartData && (
-                      <SmartDataTr
-                        network={network}
-                        metadata={metadata}
-                        showExtraDetails={showExtraDetails}
-                        batchedCategoryData={batchedCategoryData}
-                      />
-                    )}
-                    {isDefault && (
-                      <DefaultTr
-                        network={network}
-                        metadata={metadata}
-                        showExtraDetails={showExtraDetails}
-                        batchedCategoryData={batchedCategoryData}
-                      />
-                    )}
-                    {isRates && (
-                      <DefaultTr
-                        network={network}
-                        metadata={metadata}
-                        showExtraDetails={showExtraDetails}
-                        batchedCategoryData={batchedCategoryData}
-                      />
-                    )}
-                  </>
-                ))}
+                {slicedFilteredMetadata.map((metadata) => {
+                  // For rows that display category, compute the final tier once
+                  const contractAddress = metadata.contractAddress || metadata.proxyAddress
+                  const networkIdentifier = network?.networkType || "unknown"
+                  const finalTier =
+                    contractAddress && batchedCategoryData?.size
+                      ? getFeedCategoryFromBatch(
+                          batchedCategoryData,
+                          contractAddress,
+                          networkIdentifier,
+                          metadata.feedCategory
+                        )?.final ?? metadata.feedCategory
+                      : metadata.feedCategory
+
+                  return (
+                    <>
+                      {isStreams && <StreamsTr metadata={metadata} isMainnet={false} />}
+                      {isSmartData && (
+                        <SmartDataTr
+                          network={network}
+                          metadata={{ ...metadata, feedCategory: finalTier }}
+                          showExtraDetails={showExtraDetails}
+                          batchedCategoryData={batchedCategoryData}
+                        />
+                      )}
+                      {isDefault && (
+                        <DefaultTr
+                          network={network}
+                          metadata={{ ...metadata, feedCategory: finalTier }}
+                          showExtraDetails={showExtraDetails}
+                          batchedCategoryData={batchedCategoryData}
+                        />
+                      )}
+                      {isRates && (
+                        <DefaultTr
+                          network={network}
+                          metadata={{ ...metadata, feedCategory: finalTier }}
+                          showExtraDetails={showExtraDetails}
+                          batchedCategoryData={batchedCategoryData}
+                        />
+                      )}
+                    </>
+                  )
+                })}
               </tbody>
             </>
           )}
