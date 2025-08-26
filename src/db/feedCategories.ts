@@ -1,12 +1,5 @@
 import { supabase } from "./supabase.js"
 
-// Development flag getter
-function getDevTestFlag(): boolean {
-  return (
-    typeof window !== "undefined" && (window as unknown as { CHAINLINK_DEV_MODE?: boolean }).CHAINLINK_DEV_MODE === true
-  )
-}
-
 // Type for the docs_feeds_risk table
 type FeedRiskData = {
   proxy_address: string
@@ -68,70 +61,40 @@ export const FEED_CATEGORY_CONFIG = {
 export const getDefaultCategories = () => Object.values(FEED_CATEGORY_CONFIG)
 
 export async function getFeedRiskData(network?: string): Promise<FeedRiskData[]> {
-  if (!supabase) {
-    console.warn("getFeedRiskData: Supabase client not available")
-    return []
-  }
+  if (!supabase) return []
 
   try {
     let query = supabase.from("docs_feeds_risk").select("*")
+    if (network) query = query.eq("network", network)
 
-    if (network) {
-      query = query.eq("network", network)
-    }
-
-    const { data, error } = await query.limit(1000) // Use reasonable limit instead of .single()
-
-    if (error) {
-      console.error("Supabase query error:", error)
-      return []
-    }
-
+    const { data, error } = await query.limit(1000)
+    if (error) return []
     return data || []
-  } catch (error) {
-    console.error("Error in getFeedRiskData:", error)
+  } catch {
     return []
   }
 }
 
-export async function getFeedRiskTier(contractAddress: string, network: string, fallbackCategory?: string) {
+export async function getFeedRiskTier(
+  contractAddress: string,
+  network: string,
+  fallbackCategory?: string
+): Promise<string | null> {
   try {
-    // Always fetch from Supabase if available, even in non-dev mode
-    if (!supabase) {
-      console.warn("Supabase client not available, using fallback")
-      return fallbackCategory || null
-    }
+    if (!supabase) return fallbackCategory || null
 
-    // Map the network identifier to match the database schema
     const { data, error } = await supabase
       .from("docs_feeds_risk")
-      .select("*")
+      .select("risk_status")
       .eq("proxy_address", contractAddress)
       .eq("network", network)
       .limit(1)
 
-    if (error) {
-      console.warn("Error fetching feed risk tier:", error.message)
-      return fallbackCategory || null
-    }
+    if (error) return fallbackCategory || null
+    if (!data || data.length === 0) return fallbackCategory || null
 
-    // Handle empty results - no matching records found
-    if (!data || data.length === 0) {
-      return fallbackCategory || null
-    }
-
-    const supabaseRiskTier = data[0]?.risk_status || null
-    const finalCategory = supabaseRiskTier || fallbackCategory || null
-
-    // Only log diffs when dev mode is enabled
-    const devMode = getDevTestFlag()
-    if (devMode && supabaseRiskTier && supabaseRiskTier !== fallbackCategory) {
-      console.log(`� ${contractAddress}: ${fallbackCategory} → ${supabaseRiskTier}`)
-    }
-
-    return finalCategory
-  } catch (error) {
-    console.error("Error in getFeedRiskTier:", error)
+    return data[0]?.risk_status || fallbackCategory || null
+  } catch {
     return fallbackCategory || null
   }
 }
@@ -139,7 +102,6 @@ export async function getFeedRiskTier(contractAddress: string, network: string, 
 export async function getFeedCategories() {
   try {
     if (!supabase) {
-      console.warn("Supabase client not available, using fallback categories")
       return Object.values(FEED_CATEGORY_CONFIG).map((config) => ({
         key: config.key,
         name: config.name,
@@ -153,7 +115,6 @@ export async function getFeedCategories() {
       .neq("risk_status", "hidden")
 
     if (error) {
-      console.warn("Error fetching feed categories:", error.message)
       return Object.values(FEED_CATEGORY_CONFIG).map((config) => ({
         key: config.key,
         name: config.name,
@@ -185,8 +146,7 @@ export async function getFeedCategories() {
     })
 
     return allCategories
-  } catch (e) {
-    console.error("Error fetching feed categories:", e)
+  } catch {
     return Object.values(FEED_CATEGORY_CONFIG).map((config) => ({
       key: config.key,
       name: config.name,
@@ -194,211 +154,70 @@ export async function getFeedCategories() {
   }
 }
 
-// Enhanced function for dev mode that returns comparison data
-export async function getFeedRiskTierWithComparison(
-  contractAddress: string,
-  network: string,
-  fallbackCategory?: string
-): Promise<{
-  final: string | null
-  original: string | null
-  supabase: string | null
-  changed: boolean
-  devMode: boolean
-}> {
-  const devMode = getDevTestFlag()
-  const original = fallbackCategory || null
+// Minimal batch result type
+export type FeedTierResult = { final: string | null }
 
-  try {
-    if (!supabase) {
-      return {
-        final: original,
-        original,
-        supabase: null,
-        changed: false,
-        devMode,
-      }
-    }
-
-    const { data, error } = await supabase
-      .from("docs_feeds_risk")
-      .select("*")
-      .eq("proxy_address", contractAddress)
-      .eq("network", network)
-      .limit(1)
-
-    if (error) {
-      return {
-        final: original,
-        original,
-        supabase: null,
-        changed: false,
-        devMode,
-      }
-    }
-
-    // Handle empty results - no matching records found
-    if (!data || data.length === 0) {
-      return {
-        final: original,
-        original,
-        supabase: null,
-        changed: false,
-        devMode,
-      }
-    }
-
-    const supabaseRiskTier = data[0]?.risk_status || null
-    const final = supabaseRiskTier || original
-    const changed = supabaseRiskTier !== null && supabaseRiskTier !== original
-
-    const result = {
-      final,
-      original,
-      supabase: supabaseRiskTier,
-      changed,
-      devMode,
-    }
-
-    // Only log diffs in dev mode
-    if (devMode && changed) {
-      console.log(`🔄 ${contractAddress}: ${original} → ${supabaseRiskTier}`)
-    }
-
-    return result
-  } catch (error) {
-    console.error("Error in getFeedRiskTierWithComparison:", error)
-    return {
-      final: original,
-      original,
-      supabase: null,
-      changed: false,
-      devMode,
-    }
-  }
-}
-
-// Batched version for improved performance
+/**
+ * Batched lookup that returns the final category per (address, network) wrapped in { final }.
+ * Map key format: `${contractAddress}-${network}`
+ */
 export async function getFeedRiskTiersBatch(
   feedRequests: Array<{
     contractAddress: string
     network: string
     fallbackCategory?: string
   }>
-): Promise<
-  Map<
-    string,
-    {
-      final: string | null
-      original: string | null
-      supabase: string | null
-      changed: boolean
-      devMode: boolean
-    }
-  >
-> {
-  const devMode = getDevTestFlag()
-  const resultMap = new Map<
-    string,
-    {
-      final: string | null
-      original: string | null
-      supabase: string | null
-      changed: boolean
-      devMode: boolean
-    }
-  >()
+): Promise<Map<string, FeedTierResult>> {
+  const resultMap = new Map<string, FeedTierResult>()
 
-  // If no Supabase client, return fallback values for all requests
   if (!supabase) {
     feedRequests.forEach(({ contractAddress, network, fallbackCategory }) => {
-      const key = `${contractAddress}-${network}`
-      resultMap.set(key, {
-        final: fallbackCategory || null,
-        original: fallbackCategory || null,
-        supabase: null,
-        changed: false,
-        devMode,
-      })
+      resultMap.set(`${contractAddress}-${network}`, { final: fallbackCategory ?? null })
     })
     return resultMap
   }
 
-  // Get unique networks and contract addresses
-  const uniqueNetworks = Array.from(new Set(feedRequests.map((req) => req.network)))
-  const uniqueAddresses = Array.from(new Set(feedRequests.map((req) => req.contractAddress)))
+  const uniqueNetworks = Array.from(new Set(feedRequests.map((r) => r.network)))
+  const uniqueAddresses = Array.from(new Set(feedRequests.map((r) => r.contractAddress)))
 
   try {
-    // Single query for all addresses and networks
     const { data, error } = await supabase
       .from("docs_feeds_risk")
-      .select("*")
+      .select("proxy_address, network, risk_status")
       .in("proxy_address", uniqueAddresses)
       .in("network", uniqueNetworks)
-      .limit(1000) // Reasonable limit for batch operations
+      .limit(1000)
 
     if (error) {
-      console.error("Batch Supabase query error:", error)
-      // Return fallback values for all requests
       feedRequests.forEach(({ contractAddress, network, fallbackCategory }) => {
-        const key = `${contractAddress}-${network}`
-        resultMap.set(key, {
-          final: fallbackCategory || null,
-          original: fallbackCategory || null,
-          supabase: null,
-          changed: false,
-          devMode,
-        })
+        resultMap.set(`${contractAddress}-${network}`, { final: fallbackCategory ?? null })
       })
       return resultMap
     }
 
-    // Create a lookup map from the batch results
-    const supabaseData = new Map<string, string>()
-    data?.forEach((row) => {
-      const key = `${row.proxy_address}-${row.network}`
-      supabaseData.set(key, row.risk_status)
+    const supabaseData = new Map<string, string | null>()
+    data?.forEach((row: any) => {
+      supabaseData.set(`${row.proxy_address}-${row.network}`, row.risk_status ?? null)
     })
 
-    // Process each request using the batch data
     feedRequests.forEach(({ contractAddress, network, fallbackCategory }) => {
       const key = `${contractAddress}-${network}`
-      const original = fallbackCategory || null
-      const supabaseRiskTier = supabaseData.get(key) || null
-      const final = supabaseRiskTier || original
-      const changed = supabaseRiskTier !== null && supabaseRiskTier !== original
-
-      resultMap.set(key, {
-        final,
-        original,
-        supabase: supabaseRiskTier,
-        changed,
-        devMode,
-      })
-
-      // Only log diffs in dev mode
-      if (devMode && changed) {
-        console.log(`🔄 ${contractAddress}: ${original} → ${supabaseRiskTier}`)
-      }
+      const supaTier = supabaseData.get(key)
+      resultMap.set(key, { final: supaTier ?? fallbackCategory ?? null })
     })
-  } catch (error) {
-    console.error("Error in getFeedRiskTiersBatch:", error)
-    // Return fallback values for all requests on error
+
+    return resultMap
+  } catch {
     feedRequests.forEach(({ contractAddress, network, fallbackCategory }) => {
-      const key = `${contractAddress}-${network}`
-      resultMap.set(key, {
-        final: fallbackCategory || null,
-        original: fallbackCategory || null,
-        supabase: null,
-        changed: false,
-        devMode,
-      })
+      resultMap.set(`${contractAddress}-${network}`, { final: fallbackCategory ?? null })
     })
+    return resultMap
   }
-
-  return resultMap
 }
 
+/**
+ * Server-safe helper: uses Supabase on the server; uses fallback on the client.
+ */
 export async function getFeedRiskTierWithFallback(
   contractAddress: string,
   network: string,
@@ -407,13 +226,11 @@ export async function getFeedRiskTierWithFallback(
   try {
     if (typeof window === "undefined") {
       const riskTier = await getFeedRiskTier(contractAddress, network, fallbackCategory)
-      return riskTier || fallbackCategory
+      return riskTier ?? fallbackCategory
     } else {
-      console.log("Client-side context: using fallback category instead of Supabase")
       return fallbackCategory
     }
-  } catch (error) {
-    console.warn("Failed to fetch risk tier from Supabase, using fallback:", error)
+  } catch {
     return fallbackCategory
   }
 }
@@ -431,9 +248,9 @@ export async function testSupabaseConnection() {
     const { data, error } = await supabase.from("docs_feeds_risk").select("*").limit(1)
 
     return {
-      success: !error || error.code === "PGRST116",
+      success: !error || (error as any)?.code === "PGRST116",
       data,
-      error: error?.message,
+      error: (error as any)?.message,
     }
   } catch (e) {
     return {
