@@ -2,16 +2,12 @@ import { useEffect, useState } from "preact/hooks"
 import { getFeedRiskTiersBatch } from "~/db/feedCategories.js"
 import { ChainNetwork } from "~/features/data/chains.ts"
 
-// Type definition for the comparison data
+// Final category only
 export type FeedCategoryData = {
   final: string | null
-  original: string | null
-  supabase: string | null
-  changed: boolean
-  devMode: boolean
 }
 
-// Type for the batched feed category hook
+// Batched feed category hook state
 type BatchedFeedCategoriesState = {
   data: Map<string, FeedCategoryData>
   isLoading: boolean
@@ -19,8 +15,8 @@ type BatchedFeedCategoriesState = {
 }
 
 /**
- * Custom hook to batch-load feed category data for all feeds in a network
- * This replaces individual API calls with a single batched request per network
+ * Batch-load feed category data for all feeds in a network.
+ * Uses DB values when available; falls back to per-item defaults otherwise.
  */
 export function useBatchedFeedCategories(network: ChainNetwork | null): BatchedFeedCategoriesState {
   const [state, setState] = useState<BatchedFeedCategoriesState>({
@@ -31,64 +27,44 @@ export function useBatchedFeedCategories(network: ChainNetwork | null): BatchedF
 
   useEffect(() => {
     if (!network || !network.metadata) {
-      setState({
-        data: new Map(),
-        isLoading: false,
-        error: null,
-      })
+      setState({ data: new Map(), isLoading: false, error: null })
       return
     }
 
-    // Only load batch data for mainnet networks - testnet doesn't have risk categories
+    // Only load batch data for mainnet networks
     if (network.networkType !== "mainnet") {
-      setState({
-        data: new Map(),
-        isLoading: false,
-        error: null,
-      })
+      setState({ data: new Map(), isLoading: false, error: null })
       return
     }
 
     const loadBatchedCategories = async () => {
-      setState((prev) => ({
-        ...prev,
-        isLoading: true,
-        error: null,
-      }))
+      setState((prev) => ({ ...prev, isLoading: true, error: null }))
 
       try {
-        // Collect all feed requests for this network
+        // Collect requests for this network
         const feedRequests: Array<{
           contractAddress: string
           network: string
           fallbackCategory?: string
         }> = []
 
-        if (network.metadata) {
-          network.metadata.forEach((metadata) => {
-            // Only process feeds that have proxy addresses
-            const contractAddress = metadata.contractAddress || metadata.proxyAddress
-            if (contractAddress) {
-              feedRequests.push({
-                contractAddress,
-                network: network.networkType || "unknown",
-                fallbackCategory: metadata.feedCategory,
-              })
-            }
-          })
-        }
+        network.metadata?.forEach((metadata) => {
+          const contractAddress = metadata.contractAddress || metadata.proxyAddress
+          if (contractAddress) {
+            feedRequests.push({
+              contractAddress,
+              network: network.networkType || "unknown",
+              fallbackCategory: metadata.feedCategory,
+            })
+          }
+        })
 
-        // Skip batch request if no feeds with addresses
         if (feedRequests.length === 0) {
-          setState({
-            data: new Map(),
-            isLoading: false,
-            error: null,
-          })
+          setState({ data: new Map(), isLoading: false, error: null })
           return
         }
 
-        // Make the batched API call
+        // Batched DB lookup (returns Map<key, { final }>)
         const batchResults = await getFeedRiskTiersBatch(feedRequests)
 
         setState({
@@ -113,7 +89,7 @@ export function useBatchedFeedCategories(network: ChainNetwork | null): BatchedF
 }
 
 /**
- * Helper function to get feed category data from batched results
+ * Get final category from batched results with fallback.
  */
 export function getFeedCategoryFromBatch(
   batchData: Map<string, FeedCategoryData>,
@@ -121,30 +97,13 @@ export function getFeedCategoryFromBatch(
   network: string,
   fallbackCategory?: string
 ): FeedCategoryData {
-  // If no batch data (e.g., testnet), return fallback immediately
   if (!batchData || batchData.size === 0) {
-    return {
-      final: fallbackCategory || null,
-      original: fallbackCategory || null,
-      supabase: null,
-      changed: false,
-      devMode: false,
-    }
+    return { final: fallbackCategory ?? null }
   }
 
   const key = `${contractAddress}-${network}`
-  const batchResult = batchData.get(key)
+  const found = batchData.get(key)
+  if (found) return found
 
-  if (batchResult) {
-    return batchResult
-  }
-
-  // Return fallback if not found in batch
-  return {
-    final: fallbackCategory || null,
-    original: fallbackCategory || null,
-    supabase: null,
-    changed: false,
-    devMode: false,
-  }
+  return { final: fallbackCategory ?? null }
 }
