@@ -10,10 +10,7 @@ import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat.tsx"
 import { monitoredFeeds, FeedDataItem } from "~/features/data/index.ts"
 import { StreamsNetworksData, type NetworkData } from "../data/StreamsNetworksData.ts"
 import { FEED_CATEGORY_CONFIG } from "../../../db/feedCategories.js"
-import {
-  useBatchedFeedCategories,
-  getFeedCategoryFromBatch,
-} from "./useBatchedFeedCategories.ts"
+import { useBatchedFeedCategories, getFeedCategoryFromBatch } from "./useBatchedFeedCategories.ts"
 
 const feedItems = monitoredFeeds.mainnet
 
@@ -144,8 +141,8 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData })
   const networkIdentifier = network?.networkType || "unknown"
   const finalTier =
     contractAddress && batchedCategoryData?.size
-      ? getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)?.final ??
-        metadata.feedCategory
+      ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)
+          ?.final ?? metadata.feedCategory)
       : metadata.feedCategory
 
   return (
@@ -319,8 +316,8 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
   const networkIdentifier = network?.networkType || "unknown"
   const finalTier =
     contractAddress && batchedCategoryData?.size
-      ? getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)?.final ??
-        metadata.feedCategory
+      ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)
+          ?.final ?? metadata.feedCategory)
       : metadata.feedCategory
 
   return (
@@ -658,7 +655,12 @@ export const StreamsNetworkAddressesTable = () => {
                   <tr key={`${network.network}-status-explorer`} className={tableStyles.statusRow}>
                     <td colSpan={3} className={tableStyles.statusCell}>
                       <div style={{ display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
-                        <a href={statusUrl} target="_blank" rel="noopener noreferrer" className={tableStyles.statusLink}>
+                        <a
+                          href={statusUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={tableStyles.statusLink}
+                        >
                           View {network.network} Network Status →
                         </a>
                       </div>
@@ -694,7 +696,11 @@ const StreamsTr = ({ metadata, isMainnet }) => (
       <div className={tableStyles.assetPair}>
         {metadata.pair[0]}/{metadata.pair[1]}
         {metadata.feedType === "Crypto-DEX" && (
-          <a href="/data-streams/concepts/dex-state-price-streams" target="_blank" className={tableStyles.feedVariantBadge}>
+          <a
+            href="/data-streams/concepts/dex-state-price-streams"
+            target="_blank"
+            className={tableStyles.feedVariantBadge}
+          >
             DEX State Price
           </a>
         )}
@@ -732,22 +738,30 @@ const StreamsTr = ({ metadata, isMainnet }) => (
         <dl className={tableStyles.listContainer}>
           {isMainnet && metadata.docs.clicProductName && (
             <div className={tableStyles.definitionGroup}>
-              <dt><span className="label">Full name:</span></dt>
+              <dt>
+                <span className="label">Full name:</span>
+              </dt>
               <dd>{metadata.docs.clicProductName}</dd>
             </div>
           )}
           {metadata.assetName && (
             <div className={tableStyles.definitionGroup}>
-              <dt><span className="label">Asset name:</span></dt>
+              <dt>
+                <span className="label">Asset name:</span>
+              </dt>
               <dd>{metadata.assetName}</dd>
             </div>
           )}
           {metadata.docs.assetClass ? (
             <div className={tableStyles.definitionGroup}>
-              <dt><span className="label">Asset class:</span></dt>
+              <dt>
+                <span className="label">Asset class:</span>
+              </dt>
               <dd>
                 {metadata.docs.assetClass}
-                {metadata.docs.assetSubClass && metadata.docs.assetSubClass !== "Crypto" && metadata.docs.assetSubClass !== "Equities"
+                {metadata.docs.assetSubClass &&
+                metadata.docs.assetSubClass !== "Crypto" &&
+                metadata.docs.assetSubClass !== "Equities"
                   ? " - " + metadata.docs.assetSubClass
                   : ""}
               </dd>
@@ -755,15 +769,21 @@ const StreamsTr = ({ metadata, isMainnet }) => (
           ) : null}
           {metadata.docs.marketHours ? (
             <div className={tableStyles.definitionGroup}>
-              <dt><span className="label">Market hours:</span></dt>
+              <dt>
+                <span className="label">Market hours:</span>
+              </dt>
               <dd>
-                <a href="/data-streams/market-hours" target="_blank">{metadata.docs.marketHours}</a>
+                <a href="/data-streams/market-hours" target="_blank">
+                  {metadata.docs.marketHours}
+                </a>
               </dd>
             </div>
           ) : null}
           {streamsCategoryMap[metadata.feedCategory] ? (
             <div className={tableStyles.definitionGroup}>
-              <dt><span className="label">Category:</span></dt>
+              <dt>
+                <span className="label">Category:</span>
+              </dt>
               <dd>
                 <a href={streamsCategoryMap[metadata.feedCategory].link}>
                   {streamsCategoryMap[metadata.feedCategory].text}
@@ -773,13 +793,17 @@ const StreamsTr = ({ metadata, isMainnet }) => (
           ) : null}
           {metadata.decimals ? (
             <div className={tableStyles.definitionGroup}>
-              <dt><span className="label">Decimals:</span></dt>
+              <dt>
+                <span className="label">Decimals:</span>
+              </dt>
               <dd>{metadata.decimals}</dd>
             </div>
           ) : null}
           {metadata.feedType === "Crypto-DEX" && (
             <div className={tableStyles.definitionGroup}>
-              <dt><span className="label">Report Schema:</span></dt>
+              <dt>
+                <span className="label">Report Schema:</span>
+              </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v3-dex" rel="noreferrer" target="_blank">
                   Crypto Schema - DEX (v3)
@@ -789,7 +813,9 @@ const StreamsTr = ({ metadata, isMainnet }) => (
           )}
           {metadata.feedType === "Crypto" && (
             <div className={tableStyles.definitionGroup}>
-              <dt><span className="label">Report Schema:</span></dt>
+              <dt>
+                <span className="label">Report Schema:</span>
+              </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v3" rel="noreferrer" target="_blank">
                   Crypto Schema (v3)
@@ -799,7 +825,9 @@ const StreamsTr = ({ metadata, isMainnet }) => (
           )}
           {metadata.feedType === "Equities" && (
             <div className={tableStyles.definitionGroup}>
-              <dt><span className="label">Report Schema:</span></dt>
+              <dt>
+                <span className="label">Report Schema:</span>
+              </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v8" rel="noreferrer" target="_blank">
                   RWA Schema (v8)
@@ -906,16 +934,28 @@ export const MainnetTable = ({
     .filter(
       (metadata) =>
         metadata.name.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.proxyAddress?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        metadata.proxyAddress
+          ?.toLowerCase()
+          .replaceAll(" ", "")
+          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
         metadata.secondaryProxyAddress
           ?.toLowerCase()
           .replaceAll(" ", "")
           .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
         metadata.assetName.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
         metadata.feedType.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.docs.porType?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.docs.porAuditor?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
-        metadata.docs.porSource?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        metadata.docs.porType
+          ?.toLowerCase()
+          .replaceAll(" ", "")
+          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        metadata.docs.porAuditor
+          ?.toLowerCase()
+          .replaceAll(" ", "")
+          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
+        metadata.docs.porSource
+          ?.toLowerCase()
+          .replaceAll(" ", "")
+          .includes(searchValue.toLowerCase().replaceAll(" ", "")) ||
         metadata.feedId?.toLowerCase().replaceAll(" ", "").includes(searchValue.toLowerCase().replaceAll(" ", ""))
     )
 
@@ -1117,12 +1157,12 @@ export const TestnetTable = ({
                   const networkIdentifier = network?.networkType || "unknown"
                   const finalTier =
                     contractAddress && batchedCategoryData?.size
-                      ? getFeedCategoryFromBatch(
+                      ? (getFeedCategoryFromBatch(
                           batchedCategoryData,
                           contractAddress,
                           networkIdentifier,
                           metadata.feedCategory
-                        )?.final ?? metadata.feedCategory
+                        )?.final ?? metadata.feedCategory)
                       : metadata.feedCategory
 
                   return (
