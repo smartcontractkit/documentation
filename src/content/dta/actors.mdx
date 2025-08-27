@@ -1,0 +1,76 @@
+---
+section: dta
+date: Last Modified
+title: "Digital Transfer Agent (DTA): Core Concepts"
+metadata:
+  title: "Digital Transfer Agent: Core Concepts"
+  description: "TODO"
+---
+
+{/* TODO: Update this page with links to other pages. See developer docs. */}
+
+import { ClickToZoom } from "@components"
+import Dta from "@features/dta/common/Dta.astro"
+
+<Dta section="dtaNotes" />
+
+The Digital Transfer Agent (DTA) ecosystem defines specific onchain roles for managing a fund, but these roles operate within a broader business context. The following diagram illustrates the relationship between the **Core DTA Protocol Actors** and the **Wider Ecosystem Participants** who, while not interacting directly with the DTA smart contracts, are crucial to the overall fund management lifecycle.
+
+<ClickToZoom
+  src="/images/DTA/dta-actors-ecosystem.png"
+  caption="The relationship between Core DTA Protocol Actors and the Wider Business Ecosystem."
+/>
+
+## Core DTA actors
+
+The DTA protocol is built around three core onchain roles with distinct responsibilities and permissions.
+
+### Fund Administrator
+
+The Fund Administrator is the day-to-day manager and operator of a tokenized fund within the DTA marketplace. They are responsible for the fund's configuration and for processing all investment activities.
+
+- **Analogy:** In traditional finance, this role is most similar to a **Transfer Agent**, which is responsible for processing transactions and managing the official registry of who is authorized to invest in the fund.
+
+**Key Responsibilities:**
+
+- Deploying and owning the `DTAWallet` contract for their fund.
+- Registering their fund tokens on the `DTAOpenMarketplace`, defining all operational rules like the payment method, processing model (`navTTL`), rate limits, and timezones.
+- Managing an allowlist of approved Fund Distributors for each fund.
+- Processing pending subscription and redemption requests at regular intervals (e.g., end of day).
+- Completing the settlement process for offchain payments.
+
+### Fund Distributor
+
+The Fund Distributor is an entity that invests in (subscribes to) or divests from (redeems) funds on behalf of their end clients. They typically **batch requests from multiple investors** into a single transaction with the DTA system.
+
+- **Analogy:** A Fund Distributor is like a **brokerage firm, a wealth management platform, or an institutional investor** that offers various funds to its customers.
+
+**Key Responsibilities:**
+
+- Registering their address on the `DTAOpenMarketplace`.
+- Gaining allowlist approval from Fund Administrators to access specific funds.
+- Approving the DTA contracts to spend their onchain payment tokens.
+- Submitting `requestSubscription` and `requestRedemption` transactions.
+- Maintaining their holdings of various fund tokens.
+- Managing open requests, including the ability to fetch request status and cancel requests.
+
+### Fund Issuer
+
+The Fund Issuer is the entity that creates the underlying tokenized asset. Their primary role is to establish the fund token itself and to grant the necessary permissions to the DTA system to manage its supply.
+
+- **Analogy:** The Fund Issuer is the **founding company** that legally constitutes the fund. This role is often fulfilled by the same entity acting as the Fund Administrator.
+
+**Key Responsibilities:**
+
+- Deploying the compliant fund token contract.
+- Granting the `MINTER_ROLE` and `BURNER_ROLE` to the Fund Administrator's `DTAWallet` contract, authorizing it to mint and burn tokens in response to processed requests.
+- Ensuring the `DTAWallet` is authorized to hold tokens within the token's compliance framework.
+
+## The wider ecosystem
+
+The core DTA actors are supported by a number of offchain or external participants.
+
+- **End Investors:** These are the ultimate beneficiaries, such as family offices or accredited investors, who gain exposure to the fund. They interact with the DTA system indirectly _through_ a Fund Distributor.
+- **Service Providers:** These are specialized firms that can assist the Fund Issuer with creating the tokenized asset, developing the compliance logic for the token, or other related services.
+- **Accountants / NAV Calculators:** This external role is responsible for calculating the fund's Net Asset Value (NAV). This value is then brought onchain by a Chainlink Data Feed, which the `DTAOpenMarketplace` is configured to use for all price calculations.
+- **Regulators / Auditors:** These entities provide oversight, ensuring all participants adhere to legal and financial standards.

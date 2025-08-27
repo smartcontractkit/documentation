@@ -1,0 +1,84 @@
+---
+section: dta
+title: "The Request Lifecycle"
+---
+
+import { ClickToZoom, Aside } from "@components"
+import Dta from "@features/dta/common/Dta.astro"
+
+<Dta section="dtaNotes" />
+
+Every subscription and redemption request submitted to the `DTAOpenMarketplace` moves through a predictable lifecycle controlled by a state machine. However, the exact flow depends on a critical parameter set for each fund: the **Net Asset Value (NAV) Time-to-Live (`navTTL`)**.
+
+The `navTTL` determines whether requests are processed manually in batches or automatically as they arrive. Understanding this distinction is key to managing your fund's operations.
+
+{/* TODO: New section on fetching Fund Token Info? */}
+
+## Manual processing lifecycle (`navTTL = 0`)
+
+This is the standard lifecycle for open-ended funds that are priced daily. When `navTTL` is set to `0`, requests enter a `Pending` state, creating a window for end-of-day batch processing and allowing distributors to cancel their requests before they are finalized.
+
+<ClickToZoom
+  src="/images/DTA/request-lifecycle.png"
+  caption="State diagram for the manual DTA request lifecycle, used when navTTL is 0."
+/>
+
+### `Pending`
+
+This is the initial state of every new request in the manual flow.
+
+- **Trigger:** A Fund Distributor successfully calls `requestSubscription` or `requestRedemption`.
+- **What it means:** The request has been recorded and is waiting for the Fund Administrator to begin processing. The request's details (e.g., share amount) are not yet final.
+- **Possible Next Steps:**
+  - The Fund Administrator can move it to `Processing`.
+  - The original Fund Distributor can cancel it, moving it to `Canceled`.
+
+### `Processing`
+
+This state indicates that a request is actively being settled.
+
+- **Trigger:** The Fund Administrator calls `processDistributorRequest` on a `Pending` request.
+- **What it means:** The request is now locked. The `DTAOpenMarketplace` has validated it, calculated the final share/amount based on the current NAV, and forwarded the settlement instructions to the Fund Administrator's `DTAWallet`.
+- **Possible Next Steps:**
+  - The request will move to `Processed` on successful settlement.
+  - The request will move to `Failed` if the settlement is unsuccessful.
+
+### `Canceled`
+
+This is a final state for a request that was withdrawn by the user.
+
+- **Trigger:** The Fund Distributor calls `cancelDistributorRequest` while the request is in the `Pending` state.
+- **What it means:** The request has been successfully withdrawn and will not be processed.
+- **Possible Next Steps:** None. This is a terminal state.
+
+### `Processed`
+
+This is the "happy path" final state for a successfully completed request.
+
+- **Trigger:** The `DTAWallet` completes the settlement and sends a success confirmation back to the `DTAOpenMarketplace`.
+- **What it means:** The subscription or redemption was successful, and all assets have been transferred correctly.
+- **Possible Next Steps:** None. This is a terminal state.
+
+### `Failed`
+
+This is a final state for a request that could not be completed.
+
+- **Trigger:** An error occurred during the `Processing` state (e.g., a failed compliance check). The `DTAWallet` sends a failure confirmation back to the `DTAOpenMarketplace`.
+- **What it means:** The request was not completed, and any assets that were moved are returned to their owner.
+- **Possible Next Steps:** None. This is a terminal state.
+
+## Automatic processing lifecycle (`navTTL > 0`)
+
+This lifecycle is designed for funds where trades should be processed immediately upon submission, such as those with a frequently updating onchain NAV. When a `navTTL` value, **defined in seconds**, is configured (e.g., `3600` for one hour), the system checks if the latest NAV is fresh enough to be used instantly.
+
+In this mode, requests **bypass the `Pending` and `Canceled` states entirely**.
+
+1. A Fund Distributor calls `requestSubscription` or `requestRedemption`.
+1. The `DTAOpenMarketplace` immediately checks if the last NAV update occurred within the `navTTL` window.
+1. If the NAV is fresh, the request moves **directly to the `Processing` state**.
+1. From here, the flow is the same as the manual lifecycle, moving to either `Processed` or `Failed` upon settlement.
+
+<Aside type="caution" title="No Cancellation Window">
+  Because the `Pending` state is bypassed in the automatic processing model, there is **no opportunity for a Fund
+  Distributor to cancel a request**. It is locked and processed in a single, atomic step.
+</Aside>

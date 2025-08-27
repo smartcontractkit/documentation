@@ -63,7 +63,7 @@ const desktopSubProductsNav = [
     col: 1,
   },
   {
-    label: "DTA",
+    label: "Digital Transfer Agent (DTA)",
     href: "/dta",
     icon: dtaLogo.src,
     col: 1,

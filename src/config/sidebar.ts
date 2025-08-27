@@ -2331,13 +2331,35 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   ],
   [SIDEBAR_SECTIONS.DTA]: [
     {
-      section: "DTA",
+      section: "Chainlink Digital Transfer Agent (DTA)",
       contents: [
         {
-          title: "Overview",
+          title: "About DTA",
           url: "dta",
         },
+        {
+          title: "How It Works",
+          url: "dta/how-it-works",
+        },
+        {
+          title: "Actors in the Ecosystem",
+          url: "dta/actors",
+        },
       ],
+    },
+    {
+      section: "Concepts",
+      contents: [
+        { title: "Architecture", url: "dta/concepts/architecture" },
+        { title: "The Request Lifecycle", url: "dta/concepts/request-lifecycle" },
+        { title: "Payment Modes", url: "dta/concepts/payment-modes" },
+        // { title: "Token Compliance and DTA", url: "dta/concepts/token-compliance-and-dta" },
+        // { title: "Cross-Chain with CCIP", url: "dta/concepts/cross-chain-ccip" },
+      ],
+    },
+    {
+      section: "Reference",
+      contents: [{ title: "Glossary", url: "dta/reference/glossary" }],
     },
   ],
 }

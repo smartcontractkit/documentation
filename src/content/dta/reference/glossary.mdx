@@ -1,0 +1,86 @@
+---
+section: dta
+title: "Glossary"
+---
+
+import Dta from "@features/dta/common/Dta.astro"
+
+<Dta section="dtaNotes" />
+
+A list of key terms used throughout the Digital Transfer Agent (DTA) documentation.
+
+## Allowlisting
+
+A security mechanism used throughout the DTA system to grant explicit permission for an action. For example, a Fund Administrator must allowlist a Fund Distributor before they can subscribe to a fund. Similarly, the `DTAWallet` allowlists the `DTAOpenMarketplace` to authorize it to initiate minting and burning operations.
+
+## Chain Selector
+
+A unique `uint64` identifier used by Chainlink CCIP to specify a destination blockchain. Find a list of available chains [here](https://github.com/smartcontractkit/chain-selectors/blob/main/selectors.yml) or browse the Chainlink [CCIP Directory](https://docs.chain.link/ccip/directory/mainnet) to find the correct value for your chain.
+
+## CCIP (Cross-Chain Interoperability Protocol)
+
+Chainlink's protocol for enabling communication and token transfers between different blockchains. The DTA system uses CCIP for its cross-chain settlement model. Learn more about CCIP in the [CCIP documentation](https://docs.chain.link/ccip).
+
+## DTAOpenMarketplace
+
+The central, public-facing smart contract of the DTA system. It acts as a global registry for all actors and funds, and is the primary entry point for all subscription and redemption requests.
+
+## DTAWallet
+
+A private, secure smart contract wallet deployed and owned by a Fund Administrator. This contract is the fund's operational treasury, with the exclusive authority to mint and burn the fund's tokens.
+
+## Fund Administrator
+
+The entity responsible for managing the day-to-day operations of a fund on the DTA platform. Their tasks include listing funds, processing requests, and managing distributor allowlists.
+
+## Fund Distributor
+
+The entity that makes subscription and redemption requests on behalf of their clients. They are the investors in the DTA ecosystem.
+
+## Fund Issuer
+
+The entity that legally creates and deploys the fund's underlying token contract. This role is often fulfilled by the same entity acting as the Fund Administrator.
+
+## Fund Token
+
+The onchain asset that represents a share in a fund. In the context of the DTA system, this is typically a `BurnMintERC20` contract that adheres to the required burn/mint interface.
+
+## `fundTokenId`
+
+A unique `bytes32` identifier for a specific fund listed on the `DTAOpenMarketplace`. It is generated from the fund's name and is used to distinguish between different funds, especially those that might be managed by the same token contract in the future.
+
+## `NAV_TTL` (Net Asset Value Time-to-Live)
+
+A critical fund parameter, set in seconds, that determines the processing model for requests. A value of `0` enables **manual processing**, where the Fund Administrator must explicitly trigger request processing. A value greater than `0` enables **automatic processing**, where the system processes a request immediately if the last NAV update is within the TTL window.
+
+## Net Asset Value (NAV)
+
+The price per share of a fund. The DTA system uses the NAV at the time of processing to calculate how many shares a distributor receives for their investment amount.
+
+## Offchain Settlement
+
+A settlement model where the monetary payment happens through traditional, off-band channels (e.g., a wire transfer). The DTA system coordinates the onchain token transfer, which is finalized after the Fund Administrator manually confirms receipt of the offchain payment.
+
+## Onchain Settlement (Local)
+
+A fully automated settlement model where the payment token, fund token, and marketplace all reside on the same blockchain. The transfer of payment and minting of shares occur atomically in a single transaction.
+
+## Onchain Settlement (Cross-Chain)
+
+A fully automated settlement model that uses Chainlink CCIP to manage a transaction where the payment is made on one chain and the fund shares are minted on another.
+
+## Primary Chain
+
+An advanced concept where a Fund Distributor uses a pair of personal proxy contracts (`DTADistributor` and `DTADistributorReceiver`) to manage all their DTA interactions from their preferred home chain, even if it's different from the DTA marketplace chain.
+
+## Redemption Request
+
+The onchain action initiated by a Fund Distributor to sell their fund shares back to the fund in exchange for the underlying settlement currency.
+
+## Request Lifecycle
+
+The series of states a subscription or redemption request moves through: `Pending` -> `Processing` -> `Processed` / `Failed` / `Canceled`. Each state represents a specific stage in the workflow.
+
+## Subscription Request
+
+The onchain action initiated by a Fund Distributor to invest in a fund by committing a specific amount of settlement currency in exchange for fund shares.

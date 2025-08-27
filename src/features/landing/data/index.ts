@@ -98,7 +98,7 @@ export const evmProducts = [
   },
   {
     title: "DTA",
-    description: "Todo.",
+    description: "Programmable agent for cross-chain subscriptions, redemptions, and settlements.",
     docsLandingLink: "/dta",
     // learnMoreLink: "https://dev.chain.link/products/dta",
     image: dtaLogo,

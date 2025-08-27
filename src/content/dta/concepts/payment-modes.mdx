@@ -1,0 +1,97 @@
+---
+section: dta
+title: "Payment Modes"
+---
+
+{/* TODO: Diagram updates. See gdoc discussion. */}
+
+import { ClickToZoom } from "@components"
+import Dta from "@features/dta/common/Dta.astro"
+
+<Dta section="dtaNotes" />
+
+The Digital Transfer Agent (DTA) system is designed for maximum flexibility, supporting three distinct payment and settlement models. This allows Fund Administrators to choose the workflow that best suits their operational needs, whether they are bridging traditional finance with onchain technology or operating a fully cross-chain native fund.
+
+The payment model for a fund is defined by the Fund Administrator when they register the `fundTokenId` on the `DTAOpenMarketplace`.
+
+## Comparing the payment models
+
+| Mode                               | Key Characteristic                                                                                                                  | Ideal For                                                                              |
+| :--------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------- |
+| **Offchain Settlement**            | **Manual admin confirmation required.** The `DTAWallet` escrows tokens until payment is settled via traditional, off-band channels. | Funds with established, traditional payment relationships (e.g., bank wire transfers). |
+| **Local Onchain Settlement**       | **Fully automated settlement.** Payment and token minting occur atomically in a single onchain transaction.                         | Digitally native funds operating entirely within a single blockchain ecosystem.        |
+| **Cross-chain Onchain Settlement** | **Fully automated settlement** using Chainlink CCIP to send payment and instructions to the fund's chain.                           | Global funds that accept investments on one chain and manage the token on another.     |
+
+## 1. Offchain settlement
+
+This model is designed for funds that handle payments through traditional, offchain channels (e.g., bank wires, direct peer-to-peer transfers). The DTA contracts act as a secure onchain coordination and token escrow layer, while the actual monetary settlement happens off-band.
+
+**Use Case:** Ideal for tokenizing traditional funds where investors and managers already have established payment relationships.
+
+**Workflow (Subscription):**
+
+<ClickToZoom
+  src="/images/DTA/offchain-settlement.png"
+  caption="Offchain settlement flow, where the DTAWallet escrows tokens until the Fund Administrator confirms off-band payment."
+/>
+
+1. A Distributor submits a request on the `DTAOpenMarketplace`.
+1. The Fund Administrator processes the request.
+1. The `DTAWallet` mints the corresponding fund tokens but holds them **in escrow within the wallet contract**. It then emits an event to signal that the onchain portion is ready and is awaiting payment.
+1. The Fund Administrator and the Fund Distributor settle the payment using their agreed-upon offchain method.
+1. Once payment is confirmed, the Fund Administrator calls `completeRequestProcessing` on their `DTAWallet`.
+1. The `DTAWallet` releases the escrowed tokens to the Fund Distributor, completing the transaction.
+
+**Workflow (Redemption):**
+
+1. After the Fund Administrator processes the redemption request, the `DTAWallet` preemptively **burns** the fund tokens from the Distributor's address. It then emits an event to signal that the onchain portion is complete.
+1. The Fund Administrator settles the payment to the Distributor through their offchain method.
+1. Once payment is complete, the Fund Administrator calls `completeRequestProcessing`. If successful, the request is marked as `Processed`. If the payment fails, the `DTAWallet` **mints** new tokens back to the Distributor, making them whole again.
+
+## 2. Local onchain settlement
+
+This is the simplest, fully automated model. It is used when the `DTAOpenMarketplace`, the `DTAWallet`, the Fund Token, and the payment token all reside on the same blockchain.
+
+**Use Case:** Perfect for digitally native funds operating within a single blockchain ecosystem.
+
+**Workflow (Subscription):**
+
+<ClickToZoom
+  src="/images/DTA/local-onchain-settlement.png"
+  caption="Local onchain settlement, where all interactions occur atomically on a single blockchain."
+/>
+
+1. A Distributor submits a request.
+1. The Fund Administrator processes the request.
+1. The `DTAOpenMarketplace` makes a direct external call to the `DTAWallet` on the same chain.
+1. The `DTAWallet` atomically executes the full settlement in a single transaction: it pulls the payment tokens from the distributor and calls the `mint` function on the Fund Token contract, delivering the new shares directly to the distributor's wallet. There is no manual completion step required.
+
+**Workflow (Redemption):**
+
+1. After the Fund Administrator processes the request, the `DTAWallet` atomically executes the full settlement: it **burns** the fund tokens from the Distributor's address and transfers the corresponding payment tokens from its own balance to the Distributor.
+
+## 3. Cross-chain onchain settlement
+
+This is the most advanced model, leveraging Chainlink CCIP to enable seamless cross-chain fund management. It is used when the `DTAOpenMarketplace` exists on a different blockchain from the `DTAWallet` and Fund Token.
+
+**Use Case:** For global fund platforms that want to accept investments on a major chain like Ethereum Mainnet (`DTAChain`) while managing the fund's assets on a more cost-effective chain (`FundTokenChain`).
+
+**Workflow (Subscription):**
+
+<ClickToZoom
+  src="/images/DTA/cross-chain-onchain-settlement.png"
+  caption="Cross-chain settlement, where a request on Chain A is fulfilled by the DTAWallet on Chain B via a CCIP message."
+/>
+
+1. A Distributor submits a request on Chain A.
+1. The Fund Administrator processes the request on Chain A.
+1. The `DTAOpenMarketplace` escrows the payment tokens on Chain A.
+1. It then constructs and sends a CCIP message to the `DTAWallet`'s address on Chain B. This message contains all settlement instructions and the payment tokens.
+1. The `DTAWallet` on Chain B receives the CCIP message and payment. It then automatically calls the `mint` function on the Fund Token contract (also on Chain B), delivering the new shares to the distributor. There is no manual completion step required.
+
+**Workflow (Redemption):**
+
+1. After the Fund Administrator processes the request on Chain A, the `DTAOpenMarketplace` sends a CCIP message with the redemption instructions to the `DTAWallet` on Chain B.
+1. The `DTAWallet` on Chain B **burns** the fund tokens from the Distributor's address.
+1. It then sends a CCIP message back to the `DTAOpenMarketplace` on Chain A, including the payment tokens from its own balance.
+1. When the message arrives on Chain A, the `DTAOpenMarketplace` transfers the received payment tokens to the Distributor's address, completing the redemption.

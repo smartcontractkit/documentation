@@ -1,11 +1,55 @@
 ---
 section: dta
 date: Last Modified
-title: "DTA"
-metadata:
-  title: "DTA"
-  description: "TODO"
+title: "Digital Transfer Agent (DTA): Preview"
 isIndex: true
 ---
 
-TODO
+import { Aside } from "@components"
+import Dta from "@features/dta/common/Dta.astro"
+
+<Dta section="dtaNotes" />
+
+The Digital Transfer Agent (DTA) is a suite of smart contracts that provides a standardized, blockchain-based framework for the primary issuance and redemption of tokenized investment funds. It acts as an on/off-ramp solution, creating a global, interoperable marketplace where Fund Administrators can securely interact with Fund Distributors across multiple chains.
+
+## Modernizing and streamlining fund management
+
+In traditional finance, transfer agents are responsible for the complex and often manual record-keeping involved in tracking fund investors and processing their transactions. This process can be slow, opaque, and fragmented across different systems.
+
+The DTA system reimagines this role for the onchain economy. It provides a transparent, automated, and highly efficient alternative, using smart contracts to handle key operations.
+
+## Who is DTA for?
+
+The DTA ecosystem is designed for two primary actors:
+
+- **Fund Administrators:** Entities who manage and operate tokenized investment funds.
+- **Fund Distributors:** Entities who invest in funds on behalf of their clients, such as wealth management platforms, brokers, or institutional investors.
+
+To learn more about the specific responsibilities of each role, see the [Actors in the Ecosystem](/dta/actors) page.
+
+## Core Features
+
+{/* NOTE: This is less technical than the developer version */}
+
+| Feature                        | What it means operationally                                                                                                                                                                         |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Flexible Settlement Models** | Offchain wires, same-chain atomic token/payment settlement, and cross-chain settlement via CCIP are supported per fund configuration. Operators communicate the applicable model during onboarding. |
+| **Granular Access Control**    | Distributors must be explicitly **allowlisted** per fund before submitting requests, ensuring controlled, compliant access.                                                                         |
+| **Operational Controls**       | Daily request limits and **timezone-based cutoff windows** are enforced at the marketplace/wallet layer.                                                                                            |
+| **Cross-Chain Native**         | Requests may originate on one chain and settle on another using **CCIP**, enabling L2 distribution with L1 settlement.                                                                              |
+| **Token Compatibility**        | Works with standardized fund tokens that expose compliance configuration. Administrators handle requirements during onboarding; the protocol abstracts token internals for Distributors.            |
+
+## DTA and token compliance
+
+It is important to understand the separation of concerns between the DTA protocol and your Fund Token's own compliance layer.
+
+- **DTA's Role:** The DTA protocol manages the operational flow of primary issuance and redemption. Its distributor allowlisting feature acts as a first-level access control, determining who can receive shares directly from the issuer.
+- **Token's Role:** The DTA does **not** enforce rules on secondary transfers (re-selling). Your Fund Token contract is solely responsible for its own comprehensive compliance, including KYC/AML checks and transfer restrictions, to prevent shares from being moved to unauthorized wallets.
+
+{/* TODO: Prerequisites? (See developer docs) */}
+
+## Next steps
+
+Get a high-level overview of the system's components and request flows.
+
+- **[How It Works](/dta/how-it-works)**: Explore the architecture and a typical subscription flow.
