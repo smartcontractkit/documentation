@@ -18,6 +18,7 @@ export interface Docs {
   porSourceType?: string
   productSubType?: string
   productType?: string
+  productTypeCode?: string
   shutdownDate?: string
   isMVR?: boolean
   decoding?: DecodingVariable[]

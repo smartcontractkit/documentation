@@ -17,6 +17,7 @@ export type DataFeedType =
   | "default"
   | "smartdata"
   | "rates"
+  | "usGovernmentMacroeconomicData"
   | "streamsCrypto"
   | "streamsRwa"
   | "streamsNav"
@@ -39,6 +40,7 @@ export const FeedList = ({
     dataFeedType === "streamsNav" ||
     dataFeedType === "streamsBacked"
   const isSmartData = dataFeedType === "smartdata"
+  const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
 
   // Get network directly from URL
   const networkFromURL =
@@ -613,6 +615,7 @@ export const FeedList = ({
                 if (isStreams) return chain.tags?.includes("streams")
                 if (isSmartData) return chain.tags?.includes("smartData")
                 if (isRates) return chain.tags?.includes("rates")
+                if (isUSGovernmentMacroeconomicData) return chain.tags?.includes("usGovernmentMacroeconomicData")
                 return chain.tags?.includes("default")
               })
               .map((chain) => {
@@ -671,6 +674,8 @@ export const FeedList = ({
           if (isSmartData) return network.tags?.includes("smartData")
 
           if (isRates) return network.tags?.includes("rates")
+
+          if (isUSGovernmentMacroeconomicData) return network.tags?.includes("usGovernmentMacroeconomicData")
 
           return true
         })
@@ -843,7 +848,7 @@ export const FeedList = ({
                             Show Multiple-Variable Response (MVR) feeds
                           </label>
                         )}
-                        {!isStreams && !isSmartData && (
+                        {!isStreams && !isSmartData && !isUSGovernmentMacroeconomicData && (
                           <label className={feedList.detailsLabel}>
                             <input
                               type="checkbox"

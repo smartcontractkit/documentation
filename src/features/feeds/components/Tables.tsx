@@ -9,7 +9,6 @@ import button from "@chainlink/design-system/button.module.css"
 import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat.tsx"
 import { monitoredFeeds, FeedDataItem } from "~/features/data/index.ts"
 import { StreamsNetworksData, type NetworkData } from "../data/StreamsNetworksData.ts"
-import { type Docs } from "~/features/data/api/index.ts"
 
 const feedItems = monitoredFeeds.mainnet
 const feedCategories = {
@@ -185,13 +184,22 @@ const getNetworkStatusUrl = (network: NetworkData): string | null => {
   return null
 }
 
-const DefaultTHead = ({ showExtraDetails, networkName }: { showExtraDetails: boolean; networkName: string }) => {
+const DefaultTHead = ({
+  showExtraDetails,
+  networkName,
+  dataFeedType,
+}: {
+  showExtraDetails: boolean
+  networkName: string
+  dataFeedType: string
+}) => {
   const isAptosNetwork = networkName === "Aptos Mainnet" || networkName === "Aptos Testnet"
+  const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
 
   return (
     <thead>
       <tr>
-        <th className={tableStyles.heading}>Pair</th>
+        <th className={tableStyles.heading}>{isUSGovernmentMacroeconomicData ? "Feed" : "Pair"}</th>
         <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Deviation</th>
         <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Heartbeat</th>
         <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Dec</th>
@@ -201,130 +209,74 @@ const DefaultTHead = ({ showExtraDetails, networkName }: { showExtraDetails: boo
   )
 }
 
-const DefaultTr = ({ network, metadata, showExtraDetails }) => (
-  <tr>
-    <td className={tableStyles.pairCol}>
-      <div className={tableStyles.assetPair}>
-        <div className={tableStyles.pairNameRow}>
-          {feedCategories[metadata.feedCategory?.toLowerCase()] || ""}
-          {metadata.name}
+const DefaultTr = ({ network, metadata, showExtraDetails, dataFeedType }) => {
+  const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
+  const label = isUSGovernmentMacroeconomicData ? "Category" : "Asset type"
+  const value = isUSGovernmentMacroeconomicData
+    ? metadata.docs.assetClass === "Macroeconomics"
+      ? "U.S. Government Macroeconomic Data Feeds"
+      : metadata.docs.assetClass
+    : metadata.feedType
+  return (
+    <tr>
+      <td className={tableStyles.pairCol}>
+        <div className={tableStyles.assetPair}>
+          <div className={tableStyles.pairNameRow}>
+            {feedCategories[metadata.feedCategory?.toLowerCase()] || ""}
+            {metadata.name}
+          </div>
+          {metadata.secondaryProxyAddress && (
+            <div style={{ marginTop: "5px" }}>
+              <a
+                href="/data-feeds/svr-feeds"
+                target="_blank"
+                className={tableStyles.feedVariantBadge}
+                title="SVR-enabled Feed"
+              >
+                SVR
+              </a>
+            </div>
+          )}
         </div>
-        {metadata.secondaryProxyAddress && (
-          <div style={{ marginTop: "5px" }}>
-            <a
-              href="/data-feeds/svr-feeds"
-              target="_blank"
-              className={tableStyles.feedVariantBadge}
-              title="SVR-enabled Feed"
-            >
-              SVR
-            </a>
+        {metadata.docs.shutdownDate && (
+          <div className={clsx(feedList.shutDate)}>
+            <hr />
+            Deprecating:
+            <br />
+            {metadata.docs.shutdownDate}
           </div>
         )}
-      </div>
-      {metadata.docs.shutdownDate && (
-        <div className={clsx(feedList.shutDate)}>
-          <hr />
-          Deprecating:
-          <br />
-          {metadata.docs.shutdownDate}
-        </div>
-      )}
-    </td>
-    <td style={{ display: showExtraDetails ? "table-cell" : "none" }}>
-      {metadata.threshold ? metadata.threshold + "%" : "N/A"}
-    </td>
-    <td style={{ display: showExtraDetails ? "table-cell" : "none" }}>
-      {metadata.heartbeat ? metadata.heartbeat + "s" : "N/A"}
-    </td>
-    <td style={{ display: showExtraDetails ? "table-cell" : "none" }}>
-      {metadata.decimals ? metadata.decimals : "N/A"}
-    </td>
-    <td>
-      <div>
-        <dl className={tableStyles.listContainer}>
-          <div className={tableStyles.definitionGroup}>
-            {metadata.secondaryProxyAddress && (
-              <dt>
-                <span className="label">Standard Proxy:</span>
-              </dt>
-            )}
-            <dd>
-              <div className={tableStyles.assetAddress}>
-                <button
-                  className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                  data-clipboard-text={metadata.proxyAddress ?? metadata.transmissionsAccount}
-                  onClick={(e) =>
-                    handleClick(e, {
-                      product: "FEEDS",
-                      action: "feedId_copied",
-                      extraInfo1: network.name,
-                      extraInfo2: metadata.name,
-                      extraInfo3: metadata.proxyAddress,
-                    })
-                  }
-                >
-                  <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
-                </button>
-                <a
-                  className={tableStyles.addressLink}
-                  href={network.explorerUrl.replace("%s", metadata.proxyAddress ?? metadata.transmissionsAccount)}
-                  target="_blank"
-                >
-                  {metadata.proxyAddress ?? metadata.transmissionsAccount}
-                </a>
-              </div>
-            </dd>
-          </div>
-          {metadata.assetName && (
+      </td>
+      <td style={{ display: showExtraDetails ? "table-cell" : "none" }}>
+        {metadata.threshold ? metadata.threshold + "%" : "N/A"}
+      </td>
+      <td style={{ display: showExtraDetails ? "table-cell" : "none" }}>
+        {metadata.heartbeat ? metadata.heartbeat + "s" : "N/A"}
+      </td>
+      <td style={{ display: showExtraDetails ? "table-cell" : "none" }}>
+        {metadata.decimals ? metadata.decimals : "N/A"}
+      </td>
+      <td>
+        <div>
+          <dl className={tableStyles.listContainer}>
             <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Asset name:</span>
-              </dt>
-              <dd>{metadata.assetName}</dd>
-            </div>
-          )}
-          {metadata.feedType && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Asset type:</span>
-              </dt>
-              <dd>
-                {metadata.feedType}
-                {metadata.docs.assetSubClass === "UK" ? " - " + metadata.docs.assetSubClass : ""}
-              </dd>
-            </div>
-          )}
-          {metadata.docs.marketHours && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Market hours:</span>
-              </dt>
-              <dd>
-                <a href="/data-feeds/selecting-data-feeds#market-hours" target="_blank">
-                  {metadata.docs.marketHours}
-                </a>
-              </dd>
-            </div>
-          )}
-          {metadata.secondaryProxyAddress && (
-            <>
-              <div className={tableStyles.separator} />
-              <div className={tableStyles.assetAddress}>
+              {metadata.secondaryProxyAddress && (
                 <dt>
-                  <span className="label">AAVE SVR Proxy:</span>
+                  <span className="label">Standard Proxy:</span>
                 </dt>
-                <dd>
+              )}
+              <dd>
+                <div className={tableStyles.assetAddress}>
                   <button
                     className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                    data-clipboard-text={metadata.secondaryProxyAddress}
+                    data-clipboard-text={metadata.proxyAddress ?? metadata.transmissionsAccount}
                     onClick={(e) =>
                       handleClick(e, {
                         product: "FEEDS",
-                        action: "SVR_proxy_copied",
+                        action: "feedId_copied",
                         extraInfo1: network.name,
                         extraInfo2: metadata.name,
-                        extraInfo3: metadata.secondaryProxyAddress,
+                        extraInfo3: metadata.proxyAddress,
                       })
                     }
                   >
@@ -332,28 +284,93 @@ const DefaultTr = ({ network, metadata, showExtraDetails }) => (
                   </button>
                   <a
                     className={tableStyles.addressLink}
-                    href={network.explorerUrl.replace("%s", metadata.secondaryProxyAddress)}
+                    href={network.explorerUrl.replace("%s", metadata.proxyAddress ?? metadata.transmissionsAccount)}
                     target="_blank"
                   >
-                    {metadata.secondaryProxyAddress}
+                    {metadata.proxyAddress ?? metadata.transmissionsAccount}
+                  </a>
+                </div>
+              </dd>
+            </div>
+            {metadata.assetName && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Asset name:</span>
+                </dt>
+                <dd>{metadata.assetName}</dd>
+              </div>
+            )}
+            {value && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">{label}:</span>
+                </dt>
+                <dd>
+                  {value}
+                  {metadata.docs.assetSubClass === "UK" ? " - " + metadata.docs.assetSubClass : ""}
+                </dd>
+              </div>
+            )}
+            {metadata.docs.marketHours && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Market hours:</span>
+                </dt>
+                <dd>
+                  <a href="/data-feeds/selecting-data-feeds#market-hours" target="_blank">
+                    {metadata.docs.marketHours}
                   </a>
                 </dd>
               </div>
-              <div className={clsx(tableStyles.aaveCallout)}>
-                <strong>⚠️ Aave Dedicated Feed:</strong> This SVR proxy feed is dedicated exclusively for use by the
-                Aave protocol. Learn more about{" "}
-                <a href="/data-feeds/svr-feeds" target="_blank">
-                  SVR-enabled Feeds
-                </a>
-                .
-              </div>
-            </>
-          )}
-        </dl>
-      </div>
-    </td>
-  </tr>
-)
+            )}
+            {metadata.secondaryProxyAddress && (
+              <>
+                <div className={tableStyles.separator} />
+                <div className={tableStyles.assetAddress}>
+                  <dt>
+                    <span className="label">AAVE SVR Proxy:</span>
+                  </dt>
+                  <dd>
+                    <button
+                      className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                      data-clipboard-text={metadata.secondaryProxyAddress}
+                      onClick={(e) =>
+                        handleClick(e, {
+                          product: "FEEDS",
+                          action: "SVR_proxy_copied",
+                          extraInfo1: network.name,
+                          extraInfo2: metadata.name,
+                          extraInfo3: metadata.secondaryProxyAddress,
+                        })
+                      }
+                    >
+                      <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+                    </button>
+                    <a
+                      className={tableStyles.addressLink}
+                      href={network.explorerUrl.replace("%s", metadata.secondaryProxyAddress)}
+                      target="_blank"
+                    >
+                      {metadata.secondaryProxyAddress}
+                    </a>
+                  </dd>
+                </div>
+                <div className={clsx(tableStyles.aaveCallout)}>
+                  <strong>⚠️ Aave Dedicated Feed:</strong> This SVR proxy feed is dedicated exclusively for use by the
+                  Aave protocol. Learn more about{" "}
+                  <a href="/data-feeds/svr-feeds" target="_blank">
+                    SVR-enabled Feeds
+                  </a>
+                  .
+                </div>
+              </>
+            )}
+          </dl>
+        </div>
+      </td>
+    </tr>
+  )
+}
 
 const SmartDataTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => (
   <thead>
@@ -976,7 +993,8 @@ export const MainnetTable = ({
     dataFeedType === "streamsNav" ||
     dataFeedType === "streamsBacked"
   const isSmartData = dataFeedType === "smartdata"
-  const isDefault = !isStreams && !isSmartData
+  const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
+  const isDefault = !isStreams && !isSmartData && !isUSGovernmentMacroeconomicData
   const isDeprecating = ecosystem === "deprecating"
 
   const filteredMetadata = network.metadata
@@ -1027,13 +1045,19 @@ export const MainnetTable = ({
         )
       }
 
+      if (isUSGovernmentMacroeconomicData) {
+        const isMacro = metadata.docs?.productTypeCode === "RefMacro"
+        return isMacro
+      }
+
       // Exclude MVR feeds from default view
       return (
         !metadata.docs.porType &&
         metadata.contractType !== "verifier" &&
         metadata.docs.productType !== "Proof of Reserve" &&
         metadata.docs.productType !== "NAVLink" &&
-        metadata.docs.productType !== "SmartAUM"
+        metadata.docs.productType !== "SmartAUM" &&
+        metadata.docs?.productTypeCode !== "RefMacro"
       )
     })
     .filter((metadata) => {
@@ -1105,7 +1129,13 @@ export const MainnetTable = ({
             <>
               {isStreams && <StreamsTHead />}
               {isSmartData && <SmartDataTHead showExtraDetails={showExtraDetails} />}
-              {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} networkName={network.name} />}
+              {(isDefault || isUSGovernmentMacroeconomicData) && (
+                <DefaultTHead
+                  showExtraDetails={showExtraDetails}
+                  networkName={network.name}
+                  dataFeedType={dataFeedType}
+                />
+              )}
               <tbody>
                 {slicedFilteredMetadata.map((metadata) => (
                   <>
@@ -1113,8 +1143,13 @@ export const MainnetTable = ({
                     {isSmartData && (
                       <SmartDataTr network={network} metadata={metadata} showExtraDetails={showExtraDetails} />
                     )}
-                    {isDefault && (
-                      <DefaultTr network={network} metadata={metadata} showExtraDetails={showExtraDetails} />
+                    {(isDefault || isUSGovernmentMacroeconomicData) && (
+                      <DefaultTr
+                        network={network}
+                        metadata={metadata}
+                        showExtraDetails={showExtraDetails}
+                        dataFeedType={dataFeedType}
+                      />
                     )}
                   </>
                 ))}
@@ -1175,7 +1210,8 @@ export const TestnetTable = ({
     dataFeedType === "streamsBacked"
   const isSmartData = dataFeedType === "smartdata"
   const isRates = dataFeedType === "rates"
-  const isDefault = !isSmartData && !isRates && !isStreams
+  const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
+  const isDefault = !isSmartData && !isRates && !isStreams && !isUSGovernmentMacroeconomicData
 
   const filteredMetadata = network.metadata
     .sort((a, b) => (a.name < b.name ? -1 : 1))
@@ -1225,6 +1261,10 @@ export const TestnetTable = ({
       if (isRates)
         return !!(metadata.docs.productType === "Rates" || metadata.docs.productSubType === "Realized Volatility")
 
+      if (isUSGovernmentMacroeconomicData) {
+        return metadata.docs?.productTypeCode === "RefMacro"
+      }
+
       // Exclude MVR feeds from default view
       return (
         !metadata.feedId &&
@@ -1233,7 +1273,8 @@ export const TestnetTable = ({
         metadata.docs.productSubType !== "Realized Volatility" &&
         metadata.docs.productType !== "Proof of Reserve" &&
         metadata.docs.productType !== "NAVLink" &&
-        metadata.docs.productType !== "SmartAUM"
+        metadata.docs.productType !== "SmartAUM" &&
+        metadata.docs?.productTypeCode !== "RefMacro"
       )
     })
     .filter((metadata) => {
@@ -1286,8 +1327,20 @@ export const TestnetTable = ({
             <>
               {isStreams && <StreamsTHead />}
               {isSmartData && <SmartDataTHead showExtraDetails={showExtraDetails} />}
-              {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} networkName={network.name} />}
-              {isRates && <DefaultTHead showExtraDetails={showExtraDetails} networkName={network.name} />}
+              {(isDefault || isUSGovernmentMacroeconomicData) && (
+                <DefaultTHead
+                  showExtraDetails={showExtraDetails}
+                  networkName={network.name}
+                  dataFeedType={dataFeedType}
+                />
+              )}
+              {isRates && (
+                <DefaultTHead
+                  showExtraDetails={showExtraDetails}
+                  networkName={network.name}
+                  dataFeedType={dataFeedType}
+                />
+              )}
               <tbody>
                 {slicedFilteredMetadata.map((metadata) => (
                   <>
@@ -1295,10 +1348,22 @@ export const TestnetTable = ({
                     {isSmartData && (
                       <SmartDataTr network={network} metadata={metadata} showExtraDetails={showExtraDetails} />
                     )}
-                    {isDefault && (
-                      <DefaultTr network={network} metadata={metadata} showExtraDetails={showExtraDetails} />
+                    {(isDefault || isUSGovernmentMacroeconomicData) && (
+                      <DefaultTr
+                        network={network}
+                        metadata={metadata}
+                        showExtraDetails={showExtraDetails}
+                        dataFeedType={dataFeedType}
+                      />
                     )}
-                    {isRates && <DefaultTr network={network} metadata={metadata} showExtraDetails={showExtraDetails} />}
+                    {isRates && (
+                      <DefaultTr
+                        network={network}
+                        metadata={metadata}
+                        showExtraDetails={showExtraDetails}
+                        dataFeedType={dataFeedType}
+                      />
+                    )}
                   </>
                 ))}
               </tbody>
