@@ -121,15 +121,19 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Feed Addresses",
       contents: [
         {
-          title: "Price Feed Addresses",
+          title: "Price Feeds",
           url: "data-feeds/price-feeds/addresses",
         },
         {
-          title: "SmartData Feed Addresses",
+          title: "U.S. Government Macroeconomic Data Feeds",
+          url: "data-feeds/us-government-macroeconomic/addresses",
+        },
+        {
+          title: "SmartData Feeds",
           url: "data-feeds/smartdata/addresses",
         },
         {
-          title: "Rate and Volatility Feed Addresses",
+          title: "Rate and Volatility Feeds",
           url: "data-feeds/rates-feeds/addresses",
         },
         {
