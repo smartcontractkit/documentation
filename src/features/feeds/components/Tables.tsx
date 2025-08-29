@@ -347,8 +347,11 @@ const SmartDataTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => 
 const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData }) => {
   // Check if this is an MVR feed
   const hasDecoding = Array.isArray(metadata.docs?.decoding) && metadata.docs.decoding.length > 0
-  const finalIsMVRFeed = metadata.docs?.isMVR === true && hasDecoding
+  const isMVRFlagSet = metadata.docs?.isMVR === true
 
+  // Only show MVR badge if explicitly flagged as MVR
+  const finalIsMVRFeed = isMVRFlagSet && hasDecoding
+  
   // Resolve final category from batch (fallback to metadata)
   const contractAddress = metadata.contractAddress || metadata.proxyAddress
   const networkIdentifier = network?.networkType || "unknown"
