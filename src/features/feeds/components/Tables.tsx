@@ -345,7 +345,7 @@ const SmartDataTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => 
 )
 
 const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData }) => {
-  // MVR badge only when explicitly flagged and has decoding schema
+  // Check if this is an MVR feed
   const hasDecoding = Array.isArray(metadata.docs?.decoding) && metadata.docs.decoding.length > 0
   const finalIsMVRFeed = metadata.docs?.isMVR === true && hasDecoding
 
@@ -978,9 +978,12 @@ export const MainnetTable = ({
         const isValidStreamsFeed =
           metadata.contractType === "verifier" &&
           (metadata.docs.feedType === "Crypto" || metadata.docs.feedType === "Crypto-DEX")
-        return showOnlyDEXFeeds ? isValidStreamsFeed && metadata.docs.feedType === "Crypto-DEX" : isValidStreamsFeed
-      }
 
+        if (showOnlyDEXFeeds) {
+          return isValidStreamsFeed && metadata.docs.feedType === "Crypto-DEX"
+        }
+
+        return isValidStreamsFeed      }
       if (dataFeedType === "streamsRwa") {
         return metadata.contractType === "verifier" && metadata.docs.feedType === "Equities"
       }
