@@ -174,7 +174,10 @@ The `verifyReport` function is the core function that handles onchain report ver
     - Schema version `0x0003` corresponds to the [report schema v3](/data-streams/reference/report-schema-v3) (Crypto assets).
     - Schema version `0x0008` corresponds to the [report schema v8](/data-streams/reference/report-schema-v8) (Real World Assets).
     - Schema version `0x0009` corresponds to the [report schema v9](/data-streams/reference/report-schema-v9) (NAV data).
+    - Schema version `0x000A` corresponds to the [report schema v10](/data-streams/reference/report-schema-v10) (Backed xStock data).
   - If the report version is unsupported, the function reverts with an InvalidReportVersion error.
+
+  For more information, see the [Report Schemas](/data-streams/reference/report-schema-overview) documentation.
 
 - **Fee calculation and handling**:
 
@@ -196,7 +199,7 @@ The `verifyReport` function is the core function that handles onchain report ver
 
 - **Data decoding**:
 
-  - Depending on the report version, the function decodes the verified report data into the appropriate struct (`ReportV3`, `ReportV8`, or `ReportV9`).
+  - Depending on the [report version](/data-streams/reference/report-schema-overview), the function decodes the verified report data into the appropriate struct (`ReportV3`, `ReportV8`,`ReportV9`, etc.).
   - It emits a `DecodedPrice` event with the price extracted from the verified report.
   - The `lastDecodedPrice` state variable is updated with the new price.
 
