@@ -983,7 +983,8 @@ export const MainnetTable = ({
           return isValidStreamsFeed && metadata.docs.feedType === "Crypto-DEX"
         }
 
-        return isValidStreamsFeed      }
+        return isValidStreamsFeed
+      }
       if (dataFeedType === "streamsRwa") {
         return metadata.contractType === "verifier" && metadata.docs.feedType === "Equities"
       }
