@@ -27,7 +27,7 @@ const productEnum = z.preprocess((val) => (val as string).toLowerCase(), z.nativ
 const sectionEnum = z.enum(sectionValues)
 export type Sections = z.infer<typeof sectionEnum>
 
-/** metadata object */
+/** metadata object with enhanced fields for JSON-LD structured data */
 const metadata = z
   .object({
     title: z.string().optional(),
@@ -36,6 +36,12 @@ const metadata = z
     linkToWallet: z.boolean().optional(),
     canonical: z.string().optional(),
     excerpt: z.string().optional(),
+    // Enhanced fields for structured data (all optional for backward compatibility)
+    estimatedTime: z.string().optional(), // e.g., "30 minutes", "1 hour"
+    difficulty: z.enum(["beginner", "intermediate", "advanced"]).optional(),
+    datePublished: z.string().optional(), // ISO date string
+    lastModified: z.string().optional(), // ISO date string
+    version: z.string().optional(), // For API references
   })
   .optional()
 
@@ -65,6 +71,10 @@ const quickstartsFrontmatter = z
     products: z.array(productEnum),
     time: z.string(),
     requires: z.string().optional(),
+    // Enhanced fields for structured data (optional for backward compatibility)
+    datePublished: z.string().optional(), // ISO date string
+    lastModified: z.string().optional(), // ISO date string
+    difficulty: z.enum(["beginner", "intermediate", "advanced"]).optional(),
   })
   .strict()
 

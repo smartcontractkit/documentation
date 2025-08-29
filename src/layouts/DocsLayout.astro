@@ -46,9 +46,19 @@ const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWall
 
 // Detect if this is an API reference page and get the product
 const { isApiReference, product, isVersioned } = detectApiReference(currentPage)
+
+// Derive HowTo steps from headings (H2/H3)
+const howToSteps = initialHeadings
+  .filter((h) => h.depth === 2 || h.depth === 3)
+  .map((h) => ({ name: h.text, slug: h.slug }))
 ---
 
-<BaseLayout title={formattedContentTitle} metadata={frontmatter.metadata}>
+<BaseLayout
+  title={formattedContentTitle}
+  metadata={frontmatter.metadata}
+  pageTitle={frontmatter.title}
+  howToSteps={howToSteps}
+>
   <StickyHeader client:media="(max-width: 50em)" {initialHeadings} />
   <DocsNavigation client:load pathname={currentPage} />
   <main>

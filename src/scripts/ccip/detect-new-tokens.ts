@@ -22,7 +22,7 @@
 // cSpell:ignore delisted Delisted lookback LOOKBACK Lookback
 import fs from "fs"
 import { execFileSync } from "child_process"
-import { pino } from "pino"
+import pino from "pino"
 import type { TokensConfig, LanesConfig, ChainsConfig } from "../../config/data/ccip/types.ts"
 import { Environment, Version } from "../../config/data/ccip/types.ts"
 import { loadReferenceData } from "../../config/data/ccip/data.ts"

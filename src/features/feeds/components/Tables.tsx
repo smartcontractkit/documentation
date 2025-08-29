@@ -30,10 +30,13 @@ const getFeedCategoryElement = (riskTier: string | undefined) => {
 
 const Pagination = ({ addrPerPage, totalAddr, paginate, currentPage, firstAddr, lastAddr }) => {
   const pageNumbers: number[] = []
-  for (let i = 1; i <= Math.ceil(totalAddr / addrPerPage); i++) pageNumbers.push(i)
+
+  for (let i = 1; i <= Math.ceil(totalAddr / addrPerPage); i++) {
+    pageNumbers.push(i)
+  }
 
   return (
-    <div className={tableStyles.pagination}>
+    <div className={tableStyles.pagination} role="navigation" aria-label="Table pagination">
       {totalAddr !== 0 && (
         <>
           <button
@@ -41,10 +44,11 @@ const Pagination = ({ addrPerPage, totalAddr, paginate, currentPage, firstAddr, 
             style={"outline-offset: 2px"}
             disabled={currentPage === 1}
             onClick={() => paginate(Number(currentPage) - 1)}
+            aria-label={`Go to previous page, page ${currentPage - 1}`}
           >
             Prev
           </button>
-          <p>
+          <p aria-live="polite">
             Showing {firstAddr + 1} to {lastAddr > totalAddr ? totalAddr : lastAddr} of {totalAddr} entries
           </p>
           <button
@@ -52,6 +56,7 @@ const Pagination = ({ addrPerPage, totalAddr, paginate, currentPage, firstAddr, 
             style={"outline-offset: 2px"}
             disabled={lastAddr >= totalAddr}
             onClick={() => paginate(Number(currentPage) + 1)}
+            aria-label={`Go to next page, page ${currentPage + 1}`}
           >
             Next
           </button>
@@ -63,7 +68,11 @@ const Pagination = ({ addrPerPage, totalAddr, paginate, currentPage, firstAddr, 
 
 const handleClick = (e, additionalInfo) => {
   e.preventDefault()
-  const dataLayerEvent = { event: "docs_product_interaction", ...additionalInfo }
+
+  const dataLayerEvent = {
+    event: "docs_product_interaction",
+    ...additionalInfo,
+  }
   window.dataLayer = window.dataLayer || []
   window.dataLayer.push(dataLayerEvent)
 }
@@ -80,6 +89,7 @@ const CopyableAddress = ({
   environment: string
 }) => {
   if (!address) return null
+
   return (
     <div className={tableStyles.compactAddressContainer}>
       <a
@@ -109,7 +119,10 @@ const CopyableAddress = ({
 }
 
 const getNetworkStatusUrl = (network: NetworkData): string | null => {
-  if (network.networkStatus) return network.networkStatus
+  if (network.networkStatus) {
+    return network.networkStatus
+  }
+
   if (network.mainnet?.explorerUrl) {
     try {
       return new URL(network.mainnet.explorerUrl.replace("%s", "")).origin
@@ -117,26 +130,37 @@ const getNetworkStatusUrl = (network: NetworkData): string | null => {
       return null
     }
   }
+
   return null
 }
 
-const DefaultTHead = ({ showExtraDetails, networkName }: { showExtraDetails: boolean; networkName: string }) => {
+const DefaultTHead = ({
+  showExtraDetails,
+  networkName,
+  dataFeedType,
+}: {
+  showExtraDetails: boolean
+  networkName: string
+  dataFeedType: string
+}) => {
   const isAptosNetwork = networkName === "Aptos Mainnet" || networkName === "Aptos Testnet"
+  const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
+
   return (
     <thead>
       <tr>
-        <th className={tableStyles.heading}>Pair</th>
-        <th aria-hidden={!showExtraDetails}>Deviation</th>
-        <th aria-hidden={!showExtraDetails}>Heartbeat</th>
-        <th aria-hidden={!showExtraDetails}>Dec</th>
+        <th className={tableStyles.heading}>{isUSGovernmentMacroeconomicData ? "Feed" : "Pair"}</th>
+        <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Deviation</th>
+        <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Heartbeat</th>
+        <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Dec</th>
         <th>{isAptosNetwork ? "Feed ID and info" : "Address and info"}</th>
       </tr>
     </thead>
   )
 }
 
-const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData }) => {
-  // Resolve the final category using batched data, falling back to metadata if absent
+const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, dataFeedType }) => {
+  // Risk categorization logic
   const contractAddress = metadata.contractAddress || metadata.proxyAddress
   const networkIdentifier = network?.networkType || "unknown"
   const finalTier =
@@ -145,6 +169,14 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData })
           ?.final ?? metadata.feedCategory)
       : metadata.feedCategory
 
+  // US Government Macroeconomic Data logic
+  const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
+  const label = isUSGovernmentMacroeconomicData ? "Category" : "Asset type"
+  const value = isUSGovernmentMacroeconomicData
+    ? metadata.docs.assetClass === "Macroeconomics"
+      ? "U.S. Government Macroeconomic Data Feeds"
+      : metadata.docs.assetClass
+    : metadata.feedType
   return (
     <tr>
       <td className={tableStyles.pairCol}>
@@ -175,9 +207,15 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData })
           </div>
         )}
       </td>
-      <td aria-hidden={!showExtraDetails}>{metadata.threshold ? metadata.threshold + "%" : "N/A"}</td>
-      <td aria-hidden={!showExtraDetails}>{metadata.heartbeat ? metadata.heartbeat + "s" : "N/A"}</td>
-      <td aria-hidden={!showExtraDetails}>{metadata.decimals ? metadata.decimals : "N/A"}</td>
+      <td style={{ display: showExtraDetails ? "table-cell" : "none" }}>
+        {metadata.threshold ? metadata.threshold + "%" : "N/A"}
+      </td>
+      <td style={{ display: showExtraDetails ? "table-cell" : "none" }}>
+        {metadata.heartbeat ? metadata.heartbeat + "s" : "N/A"}
+      </td>
+      <td style={{ display: showExtraDetails ? "table-cell" : "none" }}>
+        {metadata.decimals ? metadata.decimals : "N/A"}
+      </td>
       <td>
         <div>
           <dl className={tableStyles.listContainer}>
@@ -222,13 +260,13 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData })
                 <dd>{metadata.assetName}</dd>
               </div>
             )}
-            {metadata.feedType && (
+            {value && (
               <div className={tableStyles.definitionGroup}>
                 <dt>
-                  <span className="label">Asset type:</span>
+                  <span className="label">{label}:</span>
                 </dt>
                 <dd>
-                  {metadata.feedType}
+                  {value}
                   {metadata.docs.assetSubClass === "UK" ? " - " + metadata.docs.assetSubClass : ""}
                 </dd>
               </div>
@@ -298,9 +336,9 @@ const SmartDataTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => 
   <thead>
     <tr>
       <th className={tableStyles.heading}>SmartData Feed</th>
-      <th aria-hidden={!showExtraDetails}>Deviation</th>
-      <th aria-hidden={!showExtraDetails}>Heartbeat</th>
-      <th aria-hidden={!showExtraDetails}>Dec</th>
+      <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Deviation</th>
+      <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Heartbeat</th>
+      <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Dec</th>
       <th>Address and Info</th>
     </tr>
   </thead>
@@ -367,9 +405,15 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
         )}
       </td>
 
-      <td aria-hidden={!showExtraDetails}>{metadata.threshold ? metadata.threshold + "%" : "N/A"}</td>
-      <td aria-hidden={!showExtraDetails}>{metadata.heartbeat ? metadata.heartbeat : "N/A"}</td>
-      <td aria-hidden={!showExtraDetails}>{metadata.decimals ? metadata.decimals : "N/A"}</td>
+      <td style={{ display: showExtraDetails ? "table-cell" : "none" }}>
+        {metadata.threshold ? metadata.threshold + "%" : "N/A"}
+      </td>
+      <td style={{ display: showExtraDetails ? "table-cell" : "none" }}>
+        {metadata.heartbeat ? metadata.heartbeat : "N/A"}
+      </td>
+      <td style={{ display: showExtraDetails ? "table-cell" : "none" }}>
+        {metadata.decimals ? metadata.decimals : "N/A"}
+      </td>
       <td>
         <div className={tableStyles.assetAddress}>
           <a
@@ -508,15 +552,20 @@ export const StreamsNetworkAddressesTable = () => {
   const [searchValue, setSearchValue] = useState("")
 
   const normalizedSearch = searchValue.toLowerCase().replaceAll(" ", "")
+
   const match = (value?: string) => !!value && value.toLowerCase().replaceAll(" ", "").includes(normalizedSearch)
 
   const filteredNetworks = StreamsNetworksData.filter((network) => {
     if (!normalizedSearch) return true
+
     const networkMatch = match(network.network)
+
     const mainnetLabel = network.mainnet?.label
     const testnetLabel = network.testnet?.label
+
     const mainnetAddr = network.isSolana ? network.mainnet?.verifierProgramId : network.mainnet?.verifierProxy
     const testnetAddr = network.isSolana ? network.testnet?.verifierProgramId : network.testnet?.verifierProxy
+
     return networkMatch || match(mainnetLabel) || match(testnetLabel) || match(mainnetAddr) || match(testnetAddr)
   })
 
@@ -686,8 +735,14 @@ const StreamsTHead = () => (
 )
 
 const streamsCategoryMap = {
-  custom: { text: "Custom", link: "/data-streams/developer-responsibilities/#custom-data-streams" },
-  new_token: { text: "New token", link: "/data-streams/developer-responsibilities#new-token-data-streams" },
+  custom: {
+    text: "Custom",
+    link: "/data-streams/developer-responsibilities/#custom-data-streams",
+  },
+  new_token: {
+    text: "New token",
+    link: "/data-streams/developer-responsibilities#new-token-data-streams",
+  },
 }
 
 const StreamsTr = ({ metadata, isMainnet }) => (
@@ -736,7 +791,7 @@ const StreamsTr = ({ metadata, isMainnet }) => (
       </div>
       <div>
         <dl className={tableStyles.listContainer}>
-          {isMainnet && metadata.docs.clicProductName && (
+          {isMainnet && metadata.docs.clicProductName && metadata.feedType !== "Tokenized Equities" && (
             <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Full name:</span>
@@ -822,7 +877,7 @@ const StreamsTr = ({ metadata, isMainnet }) => (
                 </a>
               </dd>
             </div>
-          )}
+          )}{" "}
           {metadata.feedType === "Equities" && (
             <div className={tableStyles.definitionGroup}>
               <dt>
@@ -831,6 +886,30 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               <dd>
                 <a href="/data-streams/reference/report-schema-v8" rel="noreferrer" target="_blank">
                   RWA Schema (v8)
+                </a>
+              </dd>
+            </div>
+          )}
+          {metadata.feedType === "Net Asset Value" && (
+            <div className={tableStyles.definitionGroup}>
+              <dt>
+                <span className="label">Report Schema:</span>
+              </dt>
+              <dd>
+                <a href="/data-streams/reference/report-schema-v9" rel="noreferrer" target="_blank">
+                  NAV Schema (v9)
+                </a>
+              </dd>
+            </div>
+          )}
+          {metadata.feedType === "Tokenized Equities" && (
+            <div className={tableStyles.definitionGroup}>
+              <dt>
+                <span className="label">Report Schema:</span>
+              </dt>
+              <dd>
+                <a href="/data-streams/reference/report-schema-v10" rel="noreferrer" target="_blank">
+                  Backed xStock Schema (v10)
                 </a>
               </dd>
             </div>
@@ -876,15 +955,23 @@ export const MainnetTable = ({
 
   const { data: batchedCategoryData, isLoading: isBatchLoading } = useBatchedFeedCategories(network)
 
-  const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa"
+  const isStreams =
+    dataFeedType === "streamsCrypto" ||
+    dataFeedType === "streamsRwa" ||
+    dataFeedType === "streamsNav" ||
+    dataFeedType === "streamsBacked"
   const isSmartData = dataFeedType === "smartdata"
-  const isDefault = !isStreams && !isSmartData
+  const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
+  const isDefault = !isStreams && !isSmartData && !isUSGovernmentMacroeconomicData
   const isDeprecating = ecosystem === "deprecating"
 
   const filteredMetadata = network.metadata
     .sort((a, b) => (a.name < b.name ? -1 : 1))
     .filter((metadata) => {
-      if (showOnlySVR && !metadata.secondaryProxyAddress) return false
+      if (showOnlySVR && !metadata.secondaryProxyAddress) {
+        return false
+      }
+
       if (isDeprecating) return !!metadata.docs.shutdownDate
 
       if (dataFeedType === "streamsCrypto") {
@@ -898,33 +985,56 @@ export const MainnetTable = ({
         return metadata.contractType === "verifier" && metadata.docs.feedType === "Equities"
       }
 
+      if (dataFeedType === "streamsNav") {
+        return metadata.contractType === "verifier" && metadata.docs.feedType === "Net Asset Value"
+      }
+
+      if (dataFeedType === "streamsBacked") {
+        return metadata.contractType === "verifier" && metadata.docs.feedType === "Tokenized Equities"
+      }
+
       if (isSmartData) {
-        if (showOnlyMVRFeeds) return !metadata.docs?.hidden && metadata.docs?.isMVR === true
+        if (showOnlyMVRFeeds) {
+          return !metadata.docs?.hidden && metadata.docs?.isMVR === true && metadata.docs?.deliveryChannelCode !== "DS"
+        }
+
         return (
           !metadata.docs?.hidden &&
-          (metadata.docs.productType === "Proof of Reserve" ||
-            metadata.docs.productType === "NAVLink" ||
-            metadata.docs.productType === "SmartAUM" ||
+          metadata.docs?.deliveryChannelCode !== "DS" &&
+          (metadata.docs?.productType === "Proof of Reserve" ||
+            metadata.docs?.productType === "NAVLink" ||
+            metadata.docs?.productType === "SmartAUM" ||
             metadata.docs?.isMVR === true)
         )
       }
 
-      // Default table excludes SmartData feeds
+      if (isUSGovernmentMacroeconomicData) {
+        const isMacro = metadata.docs?.productTypeCode === "RefMacro"
+        return isMacro
+      }
+
+      // Exclude MVR feeds from default view
       return (
         !metadata.docs.porType &&
         metadata.contractType !== "verifier" &&
         metadata.docs.productType !== "Proof of Reserve" &&
         metadata.docs.productType !== "NAVLink" &&
-        metadata.docs.productType !== "SmartAUM"
+        metadata.docs.productType !== "SmartAUM" &&
+        metadata.docs?.productTypeCode !== "RefMacro"
       )
     })
     .filter((metadata) => {
       if (isSmartData) {
-        if (selectedFeedCategories.includes("MVR") && metadata.docs?.isMVR) return true
-        return (
+        // Include MVR category in SmartData filter
+        if (selectedFeedCategories.includes("MVR") && metadata.docs?.isMVR) {
+          return true
+        }
+
+        const included =
           selectedFeedCategories.length === 0 ||
           (metadata.docs.productType && selectedFeedCategories.includes(metadata.docs.productType))
-        )
+
+        return included
       }
       return (
         selectedFeedCategories.length === 0 ||
@@ -983,7 +1093,13 @@ export const MainnetTable = ({
             <>
               {isStreams && <StreamsTHead />}
               {isSmartData && <SmartDataTHead showExtraDetails={showExtraDetails} />}
-              {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} networkName={network.name} />}
+              {(isDefault || isUSGovernmentMacroeconomicData) && (
+                <DefaultTHead
+                  showExtraDetails={showExtraDetails}
+                  networkName={network.name}
+                  dataFeedType={dataFeedType}
+                />
+              )}
               <tbody>
                 {slicedFilteredMetadata.map((metadata) => (
                   <>
@@ -996,12 +1112,13 @@ export const MainnetTable = ({
                         batchedCategoryData={batchedCategoryData}
                       />
                     )}
-                    {isDefault && (
+                    {(isDefault || isUSGovernmentMacroeconomicData) && (
                       <DefaultTr
                         network={network}
                         metadata={metadata}
                         showExtraDetails={showExtraDetails}
                         batchedCategoryData={batchedCategoryData}
+                        dataFeedType={dataFeedType}
                       />
                     )}
                   </>
@@ -1056,10 +1173,15 @@ export const TestnetTable = ({
 
   const { data: batchedCategoryData, isLoading: isBatchLoading } = useBatchedFeedCategories(network)
 
-  const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa"
+  const isStreams =
+    dataFeedType === "streamsCrypto" ||
+    dataFeedType === "streamsRwa" ||
+    dataFeedType === "streamsNav" ||
+    dataFeedType === "streamsBacked"
   const isSmartData = dataFeedType === "smartdata"
   const isRates = dataFeedType === "rates"
-  const isDefault = !isSmartData && !isRates && !isStreams
+  const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
+  const isDefault = !isSmartData && !isRates && !isStreams && !isUSGovernmentMacroeconomicData
 
   const filteredMetadata = network.metadata
     .sort((a, b) => (a.name < b.name ? -1 : 1))
@@ -1069,20 +1191,39 @@ export const TestnetTable = ({
           const isValidStreamsFeed =
             metadata.contractType === "verifier" &&
             (metadata.feedType === "Crypto" || metadata.feedType === "Crypto-DEX")
-          return showOnlyDEXFeeds ? isValidStreamsFeed && metadata.feedType === "Crypto-DEX" : isValidStreamsFeed
+
+          if (showOnlyDEXFeeds) {
+            return isValidStreamsFeed && metadata.feedType === "Crypto-DEX"
+          }
+
+          return isValidStreamsFeed
         }
+
         if (dataFeedType === "streamsRwa") {
-          return metadata.contractType === "verifier" && metadata.feedType === "Equities"
+          return metadata.contractType === "verifier" && metadata.docs.feedType === "Equities"
+        }
+
+        if (dataFeedType === "streamsNav") {
+          return metadata.contractType === "verifier" && metadata.docs.feedType === "Net Asset Value"
+        }
+
+        if (dataFeedType === "streamsBacked") {
+          return metadata.contractType === "verifier" && metadata.docs.feedType === "Tokenized Equities"
         }
       }
 
       if (isSmartData) {
-        if (showOnlyMVRFeeds) return !metadata.docs?.hidden && metadata.docs?.isMVR === true
+        if (showOnlyMVRFeeds) {
+          return !metadata.docs?.hidden && metadata.docs?.isMVR === true && metadata.docs?.deliveryChannelCode !== "DS"
+        }
+
+        // Otherwise, include all SmartData feeds (MVR, PoR, NAVLink, SmartAUM)
         return (
           !metadata.docs?.hidden &&
-          (metadata.docs.productType === "Proof of Reserve" ||
-            metadata.docs.productType === "NAVLink" ||
-            metadata.docs.productType === "SmartAUM" ||
+          metadata.docs?.deliveryChannelCode !== "DS" &&
+          (metadata.docs?.productType === "Proof of Reserve" ||
+            metadata.docs?.productType === "NAVLink" ||
+            metadata.docs?.productType === "SmartAUM" ||
             metadata.docs?.isMVR === true)
         )
       }
@@ -1090,7 +1231,11 @@ export const TestnetTable = ({
       if (isRates)
         return !!(metadata.docs.productType === "Rates" || metadata.docs.productSubType === "Realized Volatility")
 
-      // Default table excludes SmartData and Rates
+      if (isUSGovernmentMacroeconomicData) {
+        return metadata.docs?.productTypeCode === "RefMacro"
+      }
+
+      // Exclude MVR feeds from default view
       return (
         !metadata.feedId &&
         !metadata.docs.porType &&
@@ -1098,16 +1243,21 @@ export const TestnetTable = ({
         metadata.docs.productSubType !== "Realized Volatility" &&
         metadata.docs.productType !== "Proof of Reserve" &&
         metadata.docs.productType !== "NAVLink" &&
-        metadata.docs.productType !== "SmartAUM"
+        metadata.docs.productType !== "SmartAUM" &&
+        metadata.docs?.productTypeCode !== "RefMacro"
       )
     })
     .filter((metadata) => {
       if (isSmartData) {
-        if (selectedFeedCategories.includes("MVR") && metadata.docs?.isMVR) return true
-        return (
+        if (selectedFeedCategories.includes("MVR") && metadata.docs?.isMVR) {
+          return true
+        }
+
+        const included =
           selectedFeedCategories.length === 0 ||
           (metadata.docs.productType && selectedFeedCategories.includes(metadata.docs.productType))
-        )
+
+        return included
       }
       return (
         selectedFeedCategories.length === 0 ||
@@ -1148,53 +1298,52 @@ export const TestnetTable = ({
             <>
               {isStreams && <StreamsTHead />}
               {isSmartData && <SmartDataTHead showExtraDetails={showExtraDetails} />}
-              {isDefault && <DefaultTHead showExtraDetails={showExtraDetails} networkName={network.name} />}
-              {isRates && <DefaultTHead showExtraDetails={showExtraDetails} networkName={network.name} />}
+              {(isDefault || isUSGovernmentMacroeconomicData) && (
+                <DefaultTHead
+                  showExtraDetails={showExtraDetails}
+                  networkName={network.name}
+                  dataFeedType={dataFeedType}
+                />
+              )}
+              {isRates && (
+                <DefaultTHead
+                  showExtraDetails={showExtraDetails}
+                  networkName={network.name}
+                  dataFeedType={dataFeedType}
+                />
+              )}
               <tbody>
-                {slicedFilteredMetadata.map((metadata) => {
-                  // For rows that display category, compute the final tier once
-                  const contractAddress = metadata.contractAddress || metadata.proxyAddress
-                  const networkIdentifier = network?.networkType || "unknown"
-                  const finalTier =
-                    contractAddress && batchedCategoryData?.size
-                      ? (getFeedCategoryFromBatch(
-                          batchedCategoryData,
-                          contractAddress,
-                          networkIdentifier,
-                          metadata.feedCategory
-                        )?.final ?? metadata.feedCategory)
-                      : metadata.feedCategory
-
-                  return (
-                    <>
-                      {isStreams && <StreamsTr metadata={metadata} isMainnet={false} />}
-                      {isSmartData && (
-                        <SmartDataTr
-                          network={network}
-                          metadata={{ ...metadata, feedCategory: finalTier }}
-                          showExtraDetails={showExtraDetails}
-                          batchedCategoryData={batchedCategoryData}
-                        />
-                      )}
-                      {isDefault && (
-                        <DefaultTr
-                          network={network}
-                          metadata={{ ...metadata, feedCategory: finalTier }}
-                          showExtraDetails={showExtraDetails}
-                          batchedCategoryData={batchedCategoryData}
-                        />
-                      )}
-                      {isRates && (
-                        <DefaultTr
-                          network={network}
-                          metadata={{ ...metadata, feedCategory: finalTier }}
-                          showExtraDetails={showExtraDetails}
-                          batchedCategoryData={batchedCategoryData}
-                        />
-                      )}
-                    </>
-                  )
-                })}
+                {slicedFilteredMetadata.map((metadata) => (
+                  <>
+                    {isStreams && <StreamsTr metadata={metadata} isMainnet={false} />}
+                    {isSmartData && (
+                      <SmartDataTr
+                        network={network}
+                        metadata={metadata}
+                        showExtraDetails={showExtraDetails}
+                        batchedCategoryData={batchedCategoryData}
+                      />
+                    )}
+                    {(isDefault || isUSGovernmentMacroeconomicData) && (
+                      <DefaultTr
+                        network={network}
+                        metadata={metadata}
+                        showExtraDetails={showExtraDetails}
+                        dataFeedType={dataFeedType}
+                        batchedCategoryData={batchedCategoryData}
+                      />
+                    )}
+                    {isRates && (
+                      <DefaultTr
+                        network={network}
+                        metadata={metadata}
+                        showExtraDetails={showExtraDetails}
+                        dataFeedType={dataFeedType}
+                        batchedCategoryData={batchedCategoryData}
+                      />
+                    )}
+                  </>
+                ))}
               </tbody>
             </>
           )}

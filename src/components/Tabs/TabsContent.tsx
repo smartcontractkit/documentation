@@ -67,7 +67,9 @@ export function TabsContent({ sharedStore, ...slots }: Props) {
       <div role="tablist" onKeyDown={moveFocus}>
         {tabs.map(([key, content]) => (
           <button
-            ref={(el) => (tabButtonRefs.current[key] = el)}
+            ref={(el) => {
+              tabButtonRefs.current[key] = el
+            }}
             onClick={() => {
               setCurrStore(getBaseKeyFromTab(key))
             }}
