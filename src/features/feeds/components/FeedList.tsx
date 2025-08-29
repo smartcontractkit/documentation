@@ -153,9 +153,7 @@ export const FeedList = ({
       try {
         const categories = await getFeedCategories()
         setDataFeedCategory(categories)
-      } catch (error) {
-        console.warn("Failed to load categories from Supabase:", error)
-      }
+      } catch (error) {}
     }
 
     loadCategories()

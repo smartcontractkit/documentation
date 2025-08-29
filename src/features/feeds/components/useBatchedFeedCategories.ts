@@ -73,20 +73,12 @@ export function useBatchedFeedCategories(network: ChainNetwork | null): BatchedF
         // Batched DB lookup (returns Map<key, { final }>)
         const batchResults = await getFeedRiskTiersBatch(feedRequests)
 
-        // Debug logging for each feed
-        feedRequests.forEach(({ contractAddress, network, fallbackCategory }) => {
-          const key = `${contractAddress}-${network}`
-          const result = batchResults.get(key)
-          console.log(`[FeedCategoryDebug] key: ${key}, fallback: ${fallbackCategory}, final: ${result?.final}`)
-        })
-
         setState({
           data: batchResults,
           isLoading: false,
           error: null,
         })
       } catch (error) {
-        console.error("Failed to load batched feed categories:", error)
         setState((prev) => ({
           ...prev,
           isLoading: false,
