@@ -230,7 +230,7 @@ export async function getFeedRiskTiersBatch(
 }
 
 /**
- * Server-safe helper: uses Supabase on the server; uses fallback on the client.
+ * Server-safe helper: uses Supabase on the server; fallback on the client.
  */
 export async function getFeedRiskTierWithFallback(
   contractAddress: string,
