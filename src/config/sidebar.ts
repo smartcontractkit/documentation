@@ -406,8 +406,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Fetch and decode reports",
-          url: "data-streams/tutorials/go-sdk-decode",
-          highlightAsCurrent: ["data-streams/tutorials/rust-sdk-decode"],
+          url: "data-streams/tutorials/go-sdk-fetch",
+          highlightAsCurrent: ["data-streams/tutorials/rust-sdk-fetch"],
         },
         {
           title: "Stream and decode reports (WebSocket)",
