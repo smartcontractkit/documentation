@@ -1155,7 +1155,9 @@ export const TestnetTable = ({
   lastAddr = 1000,
   addrPerPage = 8,
   currentPage = 1,
-  paginate = () => {},
+  paginate = (_page: number) => {
+    /* Default no-op function */
+  },
   searchValue = "",
   showOnlyMVRFeeds,
   showOnlyDEXFeeds,
