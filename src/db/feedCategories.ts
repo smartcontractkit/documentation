@@ -10,12 +10,6 @@ type FeedRiskRow = {
   risk_status: string | null
 }
 
-type FeedRiskData = {
-  proxy_address: string
-  network: string
-  risk_status: string
-}
-
 export type FeedTierResult = { final: string | null }
 
 /* ===========================
@@ -90,58 +84,11 @@ const chooseTier = (dbTier: string | null | undefined, fallback?: string): strin
 
 const defaultCategoryList = () => Object.values(FEED_CATEGORY_CONFIG).map(({ key, name }) => ({ key, name }))
 
-/** Optional convenience for consumers */
-export function getCategoryMeta(category?: string | null) {
-  const key = normalizeKey(category)
-  return key ? FEED_CATEGORY_CONFIG[key] : undefined
-}
-
 /* ===========================
    Public API
    =========================== */
 
 export const getDefaultCategories = defaultCategoryList
-
-/** Fetch rows (optionally filtered by network). Returns [] on any error. */
-export async function getFeedRiskData(network?: string): Promise<FeedRiskData[]> {
-  if (!supabase) return []
-
-  try {
-    let query = supabase.from(TABLE).select("*")
-    if (network) query = query.eq("network", network)
-
-    const { data, error } = await query.limit(1000)
-    if (error || !data) return []
-
-    // Narrow to non-null risk_status to match FeedRiskData type
-    return (data as FeedRiskRow[]).filter((r): r is FeedRiskData => !!r.risk_status)
-  } catch {
-    return []
-  }
-}
-
-/** Single lookup with fallback-first behavior. */
-export async function getFeedRiskTier(
-  contractAddress: string,
-  network: string,
-  fallbackCategory?: string
-): Promise<string | null> {
-  try {
-    if (!supabase) return chooseTier(null, fallbackCategory)
-
-    const { data, error } = await supabase
-      .from(TABLE)
-      .select("risk_status")
-      .eq("proxy_address", contractAddress)
-      .eq("network", network)
-      .limit(1)
-
-    if (error || !data?.length) return chooseTier(null, fallbackCategory)
-    return chooseTier(data[0]?.risk_status, fallbackCategory)
-  } catch {
-    return chooseTier(null, fallbackCategory)
-  }
-}
 
 /** Merge static categories with those dynamically present in the table. */
 export async function getFeedCategories() {
@@ -226,45 +173,5 @@ export async function getFeedRiskTiersBatch(
       out.set(keyFor(contractAddress, network), { final: chooseTier(null, fallbackCategory) })
     )
     return out
-  }
-}
-
-/**
- * Server-safe helper: uses Supabase on the server; fallback on the client.
- */
-export async function getFeedRiskTierWithFallback(
-  contractAddress: string,
-  network: string,
-  fallbackCategory?: string
-): Promise<string | undefined> {
-  try {
-    if (typeof window === "undefined") {
-      const riskTier = await getFeedRiskTier(contractAddress, network, fallbackCategory)
-      return riskTier ?? fallbackCategory
-    }
-    return fallbackCategory
-  } catch {
-    return fallbackCategory
-  }
-}
-
-/** Lightweight connectivity check. */
-export async function testSupabaseConnection() {
-  try {
-    if (!supabase) {
-      return { success: false, data: null, error: "Supabase client not available" }
-    }
-    const { data, error } = await supabase.from(TABLE).select("*").limit(1)
-    return {
-      success: !error || (error as any)?.code === "PGRST116",
-      data,
-      error: (error as any)?.message,
-    }
-  } catch (e) {
-    return {
-      success: false,
-      data: null,
-      error: e instanceof Error ? e.message : "Unknown error",
-    }
   }
 }
