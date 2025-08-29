@@ -144,7 +144,7 @@ export const FeedList = ({
     { key: "high", name: "High Market Risk" },
     { key: "custom", name: "Custom" },
     { key: "new", name: "New Token" },
-  ])
+    { key: "deprecating", name: "Deprecating" },  ])
 
   // Load dynamic categories from Supabase on component mount
   useEffect(() => {
