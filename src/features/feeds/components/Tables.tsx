@@ -969,7 +969,7 @@ export const MainnetTable = ({
   const isDeprecating = ecosystem === "deprecating"
 
   const filteredMetadata = network.metadata
-    .sort((a, b) => (a.name < b.name ? -1 : 1))
+    .sort((a, b) => (a.name.toUpperCase() < b.name.toUpperCase() ? -1 : 1))
     .filter((metadata) => {
       // ---
       // Categorization logic:
@@ -1208,7 +1208,7 @@ export const TestnetTable = ({
   const isDefault = !isSmartData && !isRates && !isStreams && !isUSGovernmentMacroeconomicData
 
   const filteredMetadata = network.metadata
-    .sort((a, b) => (a.name < b.name ? -1 : 1))
+    .sort((a, b) => (a.name.toUpperCase() < b.name.toUpperCase() ? -1 : 1))
     .filter((metadata) => {
       // ---
       // Categorization logic:
