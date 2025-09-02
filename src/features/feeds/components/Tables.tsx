@@ -971,6 +971,19 @@ export const MainnetTable = ({
   const filteredMetadata = network.metadata
     .sort((a, b) => (a.name < b.name ? -1 : 1))
     .filter((metadata) => {
+      // ---
+      // Categorization logic:
+      // 1. Try to get the risk category for this feed from Supabase (batchedCategoryData).
+      //    - Uses contractAddress and networkIdentifier as lookup keys.
+      //    - If found, use the DB value; if not, fall back to the default from metadata.
+      // 2. If the risk category is 'hidden', exclude this feed from the docs.
+      // ---
+      const contractAddress = metadata.contractAddress || metadata.proxyAddress
+      const networkIdentifier = network?.networkType || "unknown"
+      const batchCategory = contractAddress && batchedCategoryData?.size
+        ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)?.final ?? metadata.feedCategory)
+        : metadata.feedCategory
+      if (batchCategory === "hidden") return false;
       if (showOnlySVR && !metadata.secondaryProxyAddress) {
         return false
       }
@@ -1195,6 +1208,19 @@ export const TestnetTable = ({
   const filteredMetadata = network.metadata
     .sort((a, b) => (a.name < b.name ? -1 : 1))
     .filter((metadata) => {
+      // ---
+      // Categorization logic:
+      // 1. Try to get the risk category for this feed from Supabase (batchedCategoryData).
+      //    - Uses contractAddress and networkIdentifier as lookup keys.
+      //    - If found, use the DB value; if not, fall back to the default from metadata.
+      // 2. If the risk category is 'hidden', exclude this feed from the docs.
+      // ---
+      const contractAddress = metadata.contractAddress || metadata.proxyAddress
+      const networkIdentifier = network?.networkType || "unknown"
+      const batchCategory = contractAddress && batchedCategoryData?.size
+        ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)?.final ?? metadata.feedCategory)
+        : metadata.feedCategory
+      if (batchCategory === "hidden") return false;
       if (isStreams) {
         if (dataFeedType === "streamsCrypto") {
           const isValidStreamsFeed =
