@@ -980,10 +980,12 @@ export const MainnetTable = ({
       // ---
       const contractAddress = metadata.contractAddress || metadata.proxyAddress
       const networkIdentifier = network?.networkType || "unknown"
-      const batchCategory = contractAddress && batchedCategoryData?.size
-        ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)?.final ?? metadata.feedCategory)
-        : metadata.feedCategory
-      if (batchCategory === "hidden") return false;
+      const batchCategory =
+        contractAddress && batchedCategoryData?.size
+          ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)
+              ?.final ?? metadata.feedCategory)
+          : metadata.feedCategory
+      if (batchCategory === "hidden") return false
       if (showOnlySVR && !metadata.secondaryProxyAddress) {
         return false
       }
@@ -1217,10 +1219,12 @@ export const TestnetTable = ({
       // ---
       const contractAddress = metadata.contractAddress || metadata.proxyAddress
       const networkIdentifier = network?.networkType || "unknown"
-      const batchCategory = contractAddress && batchedCategoryData?.size
-        ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)?.final ?? metadata.feedCategory)
-        : metadata.feedCategory
-      if (batchCategory === "hidden") return false;
+      const batchCategory =
+        contractAddress && batchedCategoryData?.size
+          ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)
+              ?.final ?? metadata.feedCategory)
+          : metadata.feedCategory
+      if (batchCategory === "hidden") return false
       if (isStreams) {
         if (dataFeedType === "streamsCrypto") {
           const isValidStreamsFeed =
