@@ -11,23 +11,23 @@ A list of key terms used throughout the Digital Transfer Agent (DTA) documentati
 
 ## Allowlisting
 
-A security mechanism used throughout the DTA system to grant explicit permission for an action. For example, a Fund Administrator must allowlist a Fund Distributor before they can subscribe to a fund. Similarly, the `DTAWallet` allowlists the `DTAOpenMarketplace` to authorize it to initiate minting and burning operations.
+A security mechanism used throughout the DTA system to grant explicit permission for an action. For example, a Fund Administrator must allowlist a Fund Distributor before they can subscribe to a fund. Similarly, the DTA Wallet allowlists the DTA Open Marketplace to authorize it to initiate minting and burning operations.
 
 ## Chain Selector
 
-A unique `uint64` identifier used by Chainlink CCIP to specify a destination blockchain. Find a list of available chains [here](https://github.com/smartcontractkit/chain-selectors/blob/main/selectors.yml) or browse the Chainlink [CCIP Directory](https://docs.chain.link/ccip/directory/mainnet) to find the correct value for your chain.
+A way for Chainlink CCIP to identify and route transactions to the correct blockchain network. Each blockchain has its own unique identifier, which ensures that cross-chain messages and payments reach the intended destination.
 
 ## CCIP (Cross-Chain Interoperability Protocol)
 
 Chainlink's protocol for enabling communication and token transfers between different blockchains. The DTA system uses CCIP for its cross-chain settlement model. Learn more about CCIP in the [CCIP documentation](https://docs.chain.link/ccip).
 
-## DTAOpenMarketplace
+## DTA Open Marketplace
 
-The central, public-facing smart contract of the DTA system. It acts as a global registry for all actors and funds, and is the primary entry point for all subscription and redemption requests.
+The central, public-facing contract of the DTA system. It acts as a global registry for all actors and funds, and is the primary entry point for all subscription and redemption requests.
 
-## DTAWallet
+## DTA Wallet
 
-A private, secure smart contract wallet deployed and owned by a Fund Administrator. This contract is the fund's operational treasury, with the exclusive authority to mint and burn the fund's tokens.
+A private, secure wallet contract deployed and owned by a Fund Administrator. This contract is the fund's operational treasury, with the exclusive authority to mint and burn the fund's tokens.
 
 ## Fund Administrator
 
@@ -43,15 +43,15 @@ The entity that legally creates and deploys the fund's underlying token contract
 
 ## Fund Token
 
-The onchain asset that represents a share in a fund. In the context of the DTA system, this is typically a `BurnMintERC20` contract that adheres to the required burn/mint interface.
+The onchain asset that represents a share in a fund. In the context of the DTA system, this is typically a token contract that supports minting and burning.
 
-## `fundTokenId`
+## Fund Token ID
 
-A unique `bytes32` identifier for a specific fund listed on the `DTAOpenMarketplace`. It is generated from the fund's name and is used to distinguish between different funds, especially those that might be managed by the same token contract in the future.
+A unique identifier for a specific fund listed on the DTA Open Marketplace. It is generated from the fund's name and is used to distinguish between different funds, especially those that might be managed by the same token contract in the future.
 
-## `NAV_TTL` (Net Asset Value Time-to-Live)
+## NAV TTL (Net Asset Value Time-to-Live)
 
-A critical fund parameter, set in seconds, that determines the processing model for requests. A value of `0` enables **manual processing**, where the Fund Administrator must explicitly trigger request processing. A value greater than `0` enables **automatic processing**, where the system processes a request immediately if the last NAV update is within the TTL window.
+A critical fund parameter, set in seconds, that determines the processing model for requests. A value of 0 enables manual processing, where the Fund Administrator must explicitly trigger request processing. A value greater than 0 enables automatic processing, where the system processes a request immediately if the last NAV update is within the TTL window.
 
 ## Net Asset Value (NAV)
 
@@ -71,7 +71,7 @@ A fully automated settlement model that uses Chainlink CCIP to manage a transact
 
 ## Primary Chain
 
-An advanced concept where a Fund Distributor uses a pair of personal proxy contracts (`DTADistributor` and `DTADistributorReceiver`) to manage all their DTA interactions from their preferred home chain, even if it's different from the DTA marketplace chain.
+An advanced concept where a Fund Distributor uses a pair of personal proxy contracts to manage all their DTA interactions from their preferred home chain, even if it's different from the DTA marketplace chain.
 
 ## Redemption Request
 
@@ -79,7 +79,7 @@ The onchain action initiated by a Fund Distributor to sell their fund shares bac
 
 ## Request Lifecycle
 
-The series of states a subscription or redemption request moves through: `Pending` -> `Processing` -> `Processed` / `Failed` / `Canceled`. Each state represents a specific stage in the workflow.
+The series of states a subscription or redemption request moves through: Pending → Processing → Processed / Failed / Canceled. Each state represents a specific stage in the workflow.
 
 ## Subscription Request
 

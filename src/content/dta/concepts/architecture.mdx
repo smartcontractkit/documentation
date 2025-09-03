@@ -14,37 +14,37 @@ This design allows for a multi-tenant public marketplace to coexist with single-
 
 <ClickToZoom
   src="/images/DTA/archi.png"
-  caption="The DTA architecture separates the public, multi-tenant DTAOpenMarketplace from private, single-tenant DTAWallets owned by each Fund Administrator."
+  caption="The DTA architecture separates the public, multi-tenant DTA Open Marketplace from private, single-tenant DTA Wallets owned by each Fund Administrator."
 />
 
 ## Core components
 
-### `DTAOpenMarketplace`: The front office
+### DTA Open Marketplace: The front office
 
-Think of the `DTAOpenMarketplace` contract as the public-facing "front office" or lobby of the entire system. It is a single, multi-tenant contract that serves as the central hub for discovery and requests.
-
-**Key Responsibilities:**
-
-- **Global Registry:** It maintains onchain registries of all Fund Administrators, Fund Distributors, and the Fund Tokens they list.
-- **Request Intake:** It is the sole entry point for all `requestSubscription` and `requestRedemption` calls from distributors.
-- **Initial Validation & Calculation:** When a Fund Administrator triggers processing, this contract validates the request against the fund's operational rules (e.g., rate limits, timezone) and uses the NAV feed to calculate the final share or payment amount.
-- **Request Routing:** After processing, it routes the finalized request details to the correct `DTAWallet` for settlement.
-
-### `DTAWallet`: The back office
-
-Think of the `DTAWallet` as a private, secure "back office" or vault that is deployed and owned by each Fund Administrator. It is the workhorse of the system, handling the actual movement of assets and the core settlement logic.
+Think of the DTA Open Marketplace as the "front office" or lobby of the system. It serves as the central hub for discovery and requests, supporting multiple organizations.
 
 **Key Responsibilities:**
 
-- **Asset Custody:** It is the contract that is granted the `MINTER_ROLE` and `BURNER_ROLE` on the Fund Token. It securely holds newly minted tokens in escrow during offchain settlements.
-- **Settlement Engine:** It receives finalized request instructions from the marketplace and executes the settlement. This includes transferring payment tokens, minting or burning fund tokens, and releasing tokens from escrow.
-- **Access Control:** It maintains an allowlist of which `DTAOpenMarketplace` contracts are permitted to send it requests, preventing unauthorized interactions.
+- **Global Registry:** Maintains onchain registries of all Fund Administrators, Fund Distributors, and the Fund Tokens they list.
+- **Request Intake:** Acts as the single entry point for all subscription and redemption requests from distributors.
+- **Initial Validation & Calculation:** When a fund administrator initiates processing, the DTA Open Marketplace validates requests against operational rules (such as rate limits and time zones) and calculates final share or payment amounts using the net asset value feed.
+- **Request Routing:** After processing, it forwards finalized request details to the appropriate private vault for settlement.
+
+### DTA Wallet: The back office
+
+The DTA Wallet is a secure "back office" or vault deployed and owned by each Fund Administrator. It is the workhorse of the system, handling the actual movement of assets the core settlement logic.
+
+**Key Responsibilities:**
+
+- **Asset Custody:** Holds the authority to manage investment product tokens, securely storing newly created tokens during offchain settlements.
+- **Settlement Engine:** Receives finalized instructions from the DTA Open Marketplace and executes settlements, including transferring payment tokens, managing tokens, and releasing tokens from escrow.
+- **Access Control:** Maintains a list of approved DTA Open Marketplaces allowed to send requests, preventing unauthorized interactions.
 
 ## Interaction patterns
 
-The communication between the "front office" and the "back office" is designed for maximum flexibility, supporting both local and cross-chain operations.
+Communication between the "front office" (DTA Open Marketplace) and "back office" (DTA Wallet) is designed for flexibility, supporting both local and cross-chain operations.
 
-- **Local Interaction (Same Chain):** If the `DTAWallet` is on the same blockchain as the `DTAOpenMarketplace`, the marketplace makes a simple, direct external contract call (`directHandleDTAMessage`) to the wallet to deliver the settlement instructions.
-- **Remote Interaction (Cross-Chain):** If the `DTAWallet` is on a different blockchain, the `DTAOpenMarketplace` uses Chainlink CCIP to send a secure and reliable cross-chain message containing the settlement instructions. The `DTAWallet` then receives this message via its `ccipReceive` function.
+- **Local Interaction (Same Network):** If the DTA Wallet is on the same blockchain as the DTA Open Marketplace, the marketplace makes a direct call to deliver settlement instructions.
+- **Remote Interaction (Cross-Network):** If the DTA Wallet is on a different blockchain, the DTA Open Marketplace uses secure cross-chain messaging to send settlement instructions, which the DTA Wallet receives and processes.
 
-This dual-interaction pattern ensures that the DTA system can function as both a self-contained local application and a globally interconnected cross-chain protocol without changing the core logic.
+This dual-interaction pattern allows the DTA system to function as both a local application and a globally interconnected protocol, without changing its core logic.
