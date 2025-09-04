@@ -656,8 +656,10 @@ export const FeedList = ({
 
       {chainMetadata.loading && !chainMetadata.processedData && <p>Loading...</p>}
 
-      {isDeprecating && initialCache && initialCache.deprecated && (initialCache.deprecated as any).networks
-        ? (initialCache.deprecated as any).networks
+      {(() => {
+        // Handle deprecating feeds from initialCache if available
+        if (isDeprecating && initialCache && initialCache.deprecated && (initialCache.deprecated as any).networks) {
+          return (initialCache.deprecated as any).networks
             .filter((network: any) => {
               let foundDeprecated = false
               network.metadata?.forEach((feed: any) => {
@@ -704,7 +706,10 @@ export const FeedList = ({
                 />
               </SectionWrapper>
             ))
-        : chainMetadata.processedData?.networks
+        }
+
+        // Handle regular network processing
+        return chainMetadata.processedData?.networks
             ?.filter((network: { metadata: unknown[]; tags: string | string[] }) => {
               if (isDeprecating) {
                 let foundDeprecated = false
@@ -1159,7 +1164,8 @@ export const FeedList = ({
                   </SectionWrapper>
                 </>
               )
-            })}
+            })
+      })()}
       {isDeprecating && netCount === 0 && (
         <div>
           <strong>No data feeds are scheduled for deprecation at this time.</strong>
