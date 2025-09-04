@@ -40,10 +40,46 @@ import { PageTabs } from "@components"
 
 Below is a summary of all available Data Streams reports, schemas, their main use cases, and key fields.
 
-| Report                                                             | Schema                                   | Use Case / Purpose                        | Key Fields                                                                                                                                   |
-| ------------------------------------------------------------------ | ---------------------------------------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Cryptocurrency](/data-streams/reference/report-schema)            | [View schema (v3)](report-schema-v3)     | Crypto price streams                      | `price`, `bid`, `ask`                                                                                                                        |
-| [DEX State Price](/data-streams/reference/report-schema-v3-dex)    | [View schema (v3)](report-schema-v3-dex) | DEX state crypto price streams            | `price`, `bid`, `ask` <br/> (All fields equal; [details](/data-streams/concepts/dex-state-price-streams#how-to-use-dex-state-price-streams)) |
-| [Real World Asset (RWA)](/data-streams/reference/report-schema-v8) | [View schema (v8)](report-schema-v8)     | Real World Asset (RWA) price streams      | `midPrice`, `marketStatus`                                                                                                                   |
-| [Net Asset Value (NAV)](/data-streams/reference/report-schema-v9)  | [View schema (v9)](report-schema-v9)     | Net Asset Value (NAV) streams             | `navPerShare`, `navDate`, `ripcord`                                                                                                          |
-| [Backed xStock](/data-streams/reference/report-schema-v10)         | [View schema (v10)](report-schema-v10)   | Tokenized stocks and backed asset streams | `price`, `tokenizedPrice`, <br/> `marketStatus`, `currentMultiplier`, `newMultiplier`                                                        |
+| Report                                                 | Schema                                   | Use Case / Purpose                        | Key Fields                                                                                                                                   |
+| ------------------------------------------------------ | ---------------------------------------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Cryptocurrency](#cryptocurrency-report)               | [View schema (v3)](report-schema-v3)     | Crypto price streams                      | `price`, `bid`, `ask`                                                                                                                        |
+| [DEX State Price](#dex-state-price-report)             | [View schema (v3)](report-schema-v3-dex) | DEX state crypto price streams            | `price`, `bid`, `ask` <br/> (All fields equal; [details](/data-streams/concepts/dex-state-price-streams#how-to-use-dex-state-price-streams)) |
+| [Real World Asset (RWA)](#real-world-asset-rwa-report) | [View schema (v8)](report-schema-v8)     | Real World Asset (RWA) price streams      | `midPrice`, `marketStatus`                                                                                                                   |
+| [Net Asset Value (NAV)](#net-asset-value-nav-report)   | [View schema (v9)](report-schema-v9)     | Net Asset Value (NAV) streams             | `navPerShare`, `navDate`, `ripcord`                                                                                                          |
+| [Backed xStock](#backed-xstock-report)                 | [View schema (v10)](report-schema-v10)   | Tokenized stocks and backed asset streams | `price`, `tokenizedPrice`, <br/> `marketStatus`, `currentMultiplier`, `newMultiplier`                                                        |
+
+## Cryptocurrency Report
+
+[Chainlink Cryptocurrency Reports](report-schema-v3) provide market data for digital assets, supporting high-frequency, onchain use cases. Each report includes a consensus price (`price`), as well as simulated bid (`bid`) and ask (`ask`) prices that estimate the impact of buying or selling at a specified liquidity depth. These values help protocols and applications understand current market conditions and potential slippage for larger trades.
+
+For a deeper explanation of how liquidity-weighted bid and ask prices work, see [Liquidity-Weighted Bid-Ask Prices (LWBA)](/data-streams/concepts/liquidity-weighted-prices).
+
+## DEX State Price Report
+
+[Chainlink DEX State Price Reports](report-schema-v3-dex) are designed for assets that derive most or all of their liquidity from decentralized exchanges (DEXs). Unlike standard crypto price streams, these reports use onchain market data to reflect the unique conditions of AMM pools and DEX-dominant tokens. In this report, the `price`, `bid`, and `ask` fields are all equal, representing the execution price a trader would receive based on the current state of onchain liquidity pools, rather than order-book mechanics. This approach enables accurate, real-time pricing for long-tail or newly launched tokens, even in low-volume environments.
+
+The DEX State Price methodology aggregates data from multiple DEX pools, applies volume-based weighting, using filters to reduce manipulation and smooth volatility. Users should be aware of the specific risks inherent to DeFi, such as smart contract vulnerabilities, bridge dependencies, and external price manipulation. It is important to review risk mitigation guidance and adjust protocol parameters accordingly when integrating DEX State Price Reports.
+
+For more details on the methodology and risk considerations, see [DEX State Price Streams](/data-streams/concepts/dex-state-price-streams).
+
+## Real World Asset (RWA) Report
+
+[Chainlink RWA Data Streams](report-schema-v8) provide fresh, reliable, and accurate financial market data for real-world assets, enabling DeFi users to gain onchain exposure to physical assets. Streams produce offchain market data reports, at a rate of at least once/second, which can be pulled onchain and verified by Chainlink’s Verify Contract as needed by your application. Each report includes a consensus median price (`midPrice`) and market status (`marketStatus`).
+
+RWA assets trade on traditional exchanges during [market hours](/data-streams/market-hours). These market hours depend per asset class and can be subject to unexpected halts, pauses and other behaviours affecting traditional markets. For this reason, this class of Data Streams contains a market hours flag and a staleness measure to equip our users to handle these events correctly. It is critical that users implement correct safeguards on their side to pause markets, add more conservative risk caps, or do whatever else is appropriate for their application.
+
+## Net Asset Value (NAV) Report
+
+[Chainlink NAV Data Streams](report-schema-v9) provide real-time, tamper-proof access to the Net Asset Value (`navPerShare`) of tokenized assets, funds, or portfolios, delivered over the low latency, high frequency Chainlink Data Streams infrastructure. Each report includes NAV per share (`navPerShare`), NAV date (`navDate`), assets under management (`aum`), ripcord status (`ripcord`).
+
+NAV is a fundamental financial metric that represents the value of an investment vehicle such as a mutual fund or ETF and is calculated as the total assets minus the total liabilities.
+
+Data Streams ensures that any NAV update, whenever it occurs, is captured and made available immediately and at low latency, allowing for seamless integration with onchain applications alongside other real-time data streams. Although the NAV value may not change frequently, Data Streams provides the most recent NAV as soon as it is published by the source. NAV is typically updated by the underlying data source approximately once per day, in line with standard market practices.
+
+## Backed xStock Report
+
+[Chainlink Backed xStock Data Streams](report-schema-v10) provide fresh, reliable, and accurate financial market data for [xStock](https://xstocks.com/us) assets, enabling DeFi users to gain onchain exposure to tokenized stocks via the xStocks framework. These Streams are a unique product provided by Chainlink Labs as the official oracle provider of xStocks. They combine data from our US equity Data Streams with data from xStocks, which enables users to correctly handle corporate actions affecting the underlying xStocks. Each report includes the last traded price (`price`), market status (`marketStatus`), current multiplier (`currentMultiplier`, the number of underlying shares each xStock is redeemable for), new multiplier (`newMultiplier`, the future number of shares after a scheduled corporate action), activation date/time (`activationDateTime`), tokenized price (`tokenizedPrice`), and last update timestamp (`lastUpdateTimestamp`).
+
+The underlying US equities trade on traditional exchanges during [market hours](/data-streams/market-hours). These market hours depend per asset class and can be subject to unexpected halts, pauses and other behaviours affecting traditional markets. For this reason, this class of Data Streams contains a market hours flag and a staleness measure to equip our users to handle these events correctly. It is critical that users implement correct safeguards on their side to pause markets, add more conservative risk caps, or whatever else is appropriate for their application.
+
+The schema is designed specifically for xStocks data and contains data from the Chainlink US equities streams, combined with data provided by xStocks to properly handle corporate actions. This reports the `price`, the `marketStatus`, and the last received update from our Data Providers. With this enhanced data our users are able to handle expected and unexpected market events such as pauses, halts and market off hours. xStocks layers in data around the `currentMultiplier`, the `newMultiplier` and the `activationDateTime` of the new multiplier.
