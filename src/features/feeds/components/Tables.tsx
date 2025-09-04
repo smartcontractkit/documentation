@@ -1004,7 +1004,7 @@ export const MainnetTable = ({
         return false
       }
 
-  if (isDeprecating) return !!(((metadata as any).shutdownDate) || metadata.docs?.shutdownDate)
+      if (isDeprecating) return !!((metadata as any).shutdownDate || metadata.docs?.shutdownDate)
 
       if (dataFeedType === "streamsCrypto") {
         const isValidStreamsFeed =
