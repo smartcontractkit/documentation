@@ -758,7 +758,7 @@ export const FeedList = ({
                           <br />
                           Several Data Feeds on Solana{" "}
                           <a
-                            href="/data-feeds/deprecating-feeds?page=1&testnetPage=1#solana-mainnet"
+                            href="/data-feeds/deprecating-feeds"
                             target="_blank"
                             rel="noopener noreferrer"
                             style={{ color: "#856404", textDecoration: "underline" }}
@@ -768,7 +768,7 @@ export const FeedList = ({
                           as Chainlink migrates support to Data Streams’ pull-based model.
                           <br />
                           <a
-                            href="https://docs.chain.link/data-streams/crypto-streams?page=1&testnetPage=1"
+                            href="/data-streams/crypto-streams"
                             target="_blank"
                             rel="noopener noreferrer"
                             style={{ color: "#856404", textDecoration: "underline" }}
