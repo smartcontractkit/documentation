@@ -1947,6 +1947,28 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "resources/bridge-risks",
         },
         {
+          title: "Chainlink Oracle Platform",
+          url: "oracle-platform/overview",
+          children: [
+            {
+              title: "Data Standard",
+              url: "oracle-platform/data-standard",
+            },
+            {
+              title: "Interoperability Standard",
+              url: "oracle-platform/interoperability-standard",
+            },
+            {
+              title: "Compliance Standard",
+              url: "oracle-platform/compliance-standard",
+            },
+            {
+              title: "Privacy Standard",
+              url: "oracle-platform/privacy-standard",
+            },
+          ],
+        },
+        {
           title: "Chainlink Architecture",
           url: "architecture-overview/architecture-overview",
           children: [
