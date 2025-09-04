@@ -756,8 +756,16 @@ export const FeedList = ({
                         <div>
                           <strong>ALERT:</strong>
                           <br />
-                          Several Data Feeds on Solana are being deprecated as Chainlink migrates support to Data
-                          Streams’ pull-based model.
+                          Several Data Feeds on Solana{" "}
+                          <a
+                            href="/data-feeds/deprecating-feeds?page=1&testnetPage=1#solana-mainnet"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: "#856404", textDecoration: "underline" }}
+                          >
+                            are being deprecated
+                          </a>{" "}
+                          as Chainlink migrates support to Data Streams’ pull-based model.
                           <br />
                           <a
                             href="https://docs.chain.link/data-streams/crypto-streams?page=1&testnetPage=1"
