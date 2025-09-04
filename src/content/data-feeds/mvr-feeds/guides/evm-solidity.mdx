@@ -62,25 +62,21 @@ struct Data {
 
 Your consumer contract must replicate this structure in the **exact same order** and with the same data types to decode the feed data correctly.
 
-### 2. Set Up the BundleAggregatorProxy
+### 2. Import the IBundleAggregatorProxy Interface
 
-Your contract will need a reference to the [`IBundleAggregatorProxy`](/data-feeds/mvr-feeds/api-reference#ibundleaggregatorproxy) interface so it can:
+Your contract will need to interact with the MVR feed's proxy contract. The [`IBundleAggregatorProxy`](/data-feeds/mvr-feeds/api-reference#ibundleaggregatorproxy) interface provides the necessary functions:
 
-- Retrieve the raw bytes via [`latestBundle()`](/data-feeds/mvr-feeds/api-reference#latestbundle).
-- Retrieve decimals via [`bundleDecimals()`](/data-feeds/mvr-feeds/api-reference#bundledecimals) if the feed includes numeric fields.
-- Check the timestamp of the last update via [`latestBundleTimestamp()`](/data-feeds/mvr-feeds/api-reference#latestbundletimestamp).
+- [`latestBundle()`](/data-feeds/mvr-feeds/api-reference#latestbundle): Retrieves the raw data bundle.
+- [`bundleDecimals()`](/data-feeds/mvr-feeds/api-reference#bundledecimals): Retrieves the decimal places for numeric fields.
+- [`latestBundleTimestamp()`](/data-feeds/mvr-feeds/api-reference#latestbundletimestamp): Retrieves the timestamp of the last update.
+
+Import it directly from the `@chainlink/contracts` library:
 
 ```solidity
-interface IBundleAggregatorProxy {
-  function latestBundle() external view returns (bytes memory);
-  function bundleDecimals() external view returns (uint8[] memory);
-  function latestBundleTimestamp() external view returns (uint256);
-
-  // Additional inherited functions omitted for brevity
-}
+import {IBundleAggregatorProxy} from "@chainlink/contracts/src/v0.8/data-feeds/interfaces/IBundleAggregatorProxy.sol";
 ```
 
-You will set the correct proxy address in your consumer contract.
+You will then use this interface to create an instance of the proxy in your consumer contract.
 
 ### 3. Validate Data Staleness
 
