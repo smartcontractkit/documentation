@@ -710,160 +710,323 @@ export const FeedList = ({
 
         // Handle regular network processing
         return chainMetadata.processedData?.networks
-            ?.filter((network: { metadata: unknown[]; tags: string | string[] }) => {
-              if (isDeprecating) {
-                let foundDeprecated = false
-                network.metadata?.forEach((feed: any) => {
-                  if (feed.feedCategory === "deprecating") {
-                    foundDeprecated = true
-                  }
-                })
-                if (foundDeprecated) {
-                  netCount++
+          ?.filter((network: { metadata: unknown[]; tags: string | string[] }) => {
+            if (isDeprecating) {
+              let foundDeprecated = false
+              network.metadata?.forEach((feed: any) => {
+                if (feed.feedCategory === "deprecating") {
+                  foundDeprecated = true
                 }
-                return foundDeprecated
+              })
+              if (foundDeprecated) {
+                netCount++
               }
+              return foundDeprecated
+            }
 
-              if (isStreams) return network.tags?.includes("streams")
+            if (isStreams) return network.tags?.includes("streams")
 
-              if (isSmartData) return network.tags?.includes("smartData")
+            if (isSmartData) return network.tags?.includes("smartData")
 
-              if (isRates) return network.tags?.includes("rates")
+            if (isRates) return network.tags?.includes("rates")
 
-              if (isUSGovernmentMacroeconomicData) return network.tags?.includes("usGovernmentMacroeconomicData")
+            if (isUSGovernmentMacroeconomicData) return network.tags?.includes("usGovernmentMacroeconomicData")
 
-              return true
-            })
-            .map((network: ChainNetwork) => {
-              return (
-                <>
-                  <SectionWrapper
-                    title={network.name}
-                    depth={3}
-                    key={network.name}
-                    idOverride={network.name.toLowerCase().replace(/\s+/g, "-")}
-                  >
-                    {network.name === "Solana Mainnet" && (
-                      <div
-                        style={{
-                          background: "#fff3cd",
-                          border: "1px solid #ffeeba",
-                          color: "#856404",
-                          padding: "1rem",
-                          borderRadius: "6px",
-                          marginBottom: "1rem",
-                          display: "flex",
-                          alignItems: "flex-start",
-                          gap: "0.75rem",
-                        }}
-                      >
-                        <span style={{ fontSize: "1.5rem" }}>⚠️</span>
-                        <div>
-                          <strong>ALERT:</strong>
-                          <br />
-                          Several Data Feeds on Solana{" "}
-                          <a
-                            href="/data-feeds/deprecating-feeds"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{ color: "#856404", textDecoration: "underline" }}
-                          >
-                            are being deprecated
-                          </a>{" "}
-                          as Chainlink migrates support to Data Streams’ pull-based model.
-                          <br />
-                          <a
-                            href="/data-streams/crypto-streams"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{ color: "#856404", textDecoration: "underline" }}
-                          >
-                            See this page for the complete list of Data Streams available on Solana
-                          </a>
+            return true
+          })
+          .map((network: ChainNetwork) => {
+            return (
+              <>
+                <SectionWrapper
+                  title={network.name}
+                  depth={3}
+                  key={network.name}
+                  idOverride={network.name.toLowerCase().replace(/\s+/g, "-")}
+                >
+                  {network.name === "Solana Mainnet" && (
+                    <div
+                      style={{
+                        background: "#fff3cd",
+                        border: "1px solid #ffeeba",
+                        color: "#856404",
+                        padding: "1rem",
+                        borderRadius: "6px",
+                        marginBottom: "1rem",
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: "0.75rem",
+                      }}
+                    >
+                      <span style={{ fontSize: "1.5rem" }}>⚠️</span>
+                      <div>
+                        <strong>ALERT:</strong>
+                        <br />
+                        Several Data Feeds on Solana{" "}
+                        <a
+                          href="/data-feeds/deprecating-feeds"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: "#856404", textDecoration: "underline" }}
+                        >
+                          are being deprecated
+                        </a>{" "}
+                        as Chainlink migrates support to Data Streams’ pull-based model.
+                        <br />
+                        <a
+                          href="/data-streams/crypto-streams"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: "#856404", textDecoration: "underline" }}
+                        >
+                          See this page for the complete list of Data Streams available on Solana
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  {network.networkType === "mainnet" ? (
+                    <>
+                      {!isStreams && chain.l2SequencerFeed && (
+                        <p>
+                          {network.name} is an L2 network. As a best practice, use the L2 sequencer feed to verify the
+                          status of the sequencer when running applications on L2 networks. See the{" "}
+                          <a href="/docs/data-feeds/l2-sequencer-feeds/">L2 Sequencer Uptime Feeds</a> page for
+                          examples.
+                        </p>
+                      )}
+                      {network.name === "Aptos Mainnet" && (
+                        <>
+                          <p>
+                            Chainlink Data Feeds on Aptos provides data through a single price feed contract that
+                            handles multiple data feeds. You interact with this contract by passing the specific feed
+                            ID(s) for the data you need. For more details, refer to the{" "}
+                            <a href="/data-feeds/aptos/">Using Data Feeds on Aptos</a> guide.
+                          </p>
+                          <ul>
+                            <li>
+                              ChainlinkDataFeeds package address on Aptos Mainnet:{" "}
+                              <a
+                                className={tableStyles.addressLink}
+                                href="https://explorer.aptoslabs.com/object/0x3f985798ce4975f430ef5c75776ff98a77b9f9d0fb38184d225adc9c1cc6b79b/modules/packages/ChainlinkDataFeeds?network=mainnet"
+                                target="_blank"
+                              >
+                                0x3f985798ce4975f430ef5c75776ff98a77b9f9d0fb38184d225adc9c1cc6b79b
+                              </a>
+                              <button
+                                className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                                style={{ height: "16px", width: "16px", marginLeft: "5px" }}
+                                data-clipboard-text="0x3f985798ce4975f430ef5c75776ff98a77b9f9d0fb38184d225adc9c1cc6b79b"
+                              >
+                                <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+                              </button>
+                            </li>
+                            <li>
+                              ChainlinkPlatform package address on Aptos Mainnet:{" "}
+                              <a
+                                className={tableStyles.addressLink}
+                                href="https://explorer.aptoslabs.com/object/0x9976bb288ed9177b542d568fa1ac386819dc99141630e582315804840f41928a/modules/packages/ChainlinkPlatform?network=mainnet"
+                                target="_blank"
+                              >
+                                0x9976bb288ed9177b542d568fa1ac386819dc99141630e582315804840f41928a
+                              </a>
+                              <button
+                                className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                                style={{ height: "16px", width: "16px", marginLeft: "5px" }}
+                                data-clipboard-text="0x9976bb288ed9177b542d568fa1ac386819dc99141630e582315804840f41928a"
+                              >
+                                <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+                              </button>
+                            </li>
+                          </ul>
+                        </>
+                      )}
+                      <div className={feedList.tableFilters}>
+                        {!isStreams && !isSmartData && (
+                          <details class={feedList.filterDropdown_details}>
+                            <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
+                              Data Feed Categories
+                            </summary>
+                            <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
+                              <ul>
+                                {dataFeedCategory.map((category) => (
+                                  <li>
+                                    <button onClick={() => handleCategorySelection(category.key)}>
+                                      <input
+                                        type="checkbox"
+                                        checked={selectedFeedCategories?.includes(category.key)}
+                                        readonly
+                                        style="cursor:pointer;"
+                                      />
+                                      <span> {category.name}</span>
+                                    </button>
+                                  </li>
+                                ))}
+                              </ul>
+                            </nav>
+                          </details>
+                        )}
+                        {isSmartData && (
+                          <details class={feedList.filterDropdown_details}>
+                            <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
+                              SmartData Type
+                            </summary>
+                            <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
+                              <ul>
+                                {smartDataTypes.map((category) => (
+                                  <li>
+                                    <button onClick={() => handleCategorySelection(category.key)}>
+                                      <input
+                                        type="checkbox"
+                                        checked={selectedFeedCategories?.includes(category.key)}
+                                        readonly
+                                        style="cursor:pointer;"
+                                      />
+                                      <span> {category.name}</span>
+                                    </button>
+                                  </li>
+                                ))}
+                              </ul>
+                            </nav>
+                          </details>
+                        )}
+                        <div className={feedList.searchAndCheckbox}>
+                          <form class={feedList.filterDropdown_search}>
+                            <input
+                              id="search"
+                              class={feedList.filterDropdown_searchInput}
+                              placeholder="Search"
+                              onInput={(event) => {
+                                setSearchValue((event.target as HTMLInputElement).value)
+                                setCurrentPage("1")
+                              }}
+                            />
+                            {searchValue && (
+                              <button
+                                type="button"
+                                className={clsx(button.secondary, feedList.clearFilterBtn)}
+                                onClick={() => {
+                                  setSearchValue("")
+                                  setCurrentPage("1")
+                                  const inputElement = document.getElementById("search") as HTMLInputElement
+                                  if (inputElement) {
+                                    inputElement.value = ""
+                                  }
+                                }}
+                                aria-label="Clear search filter"
+                              >
+                                Clear filter
+                              </button>
+                            )}
+                          </form>
+                          {!isStreams && (
+                            <label className={feedList.detailsLabel}>
+                              <input
+                                type="checkbox"
+                                style="width:15px;height:15px;display:inline;margin-right:8px;"
+                                checked={showExtraDetails}
+                                onChange={() => setShowExtraDetails((old) => !old)}
+                              />
+                              Show more details
+                            </label>
+                          )}
+                        </div>
+                        <div className={feedList.checkboxContainer}>
+                          {!isStreams && isSmartData && (
+                            <label className={feedList.detailsLabel}>
+                              <input
+                                type="checkbox"
+                                style="width:15px;height:15px;display:inline;margin-right:8px;"
+                                checked={showOnlyMVRFeeds}
+                                onChange={() => {
+                                  setShowOnlyMVRFeeds((old) => !old)
+                                  setCurrentPage("1") // Reset to first page when filter changes
+                                }}
+                              />
+                              Show Multiple-Variable Response (MVR) feeds
+                            </label>
+                          )}
+                          {!isStreams && !isSmartData && !isUSGovernmentMacroeconomicData && (
+                            <label className={feedList.detailsLabel}>
+                              <input
+                                type="checkbox"
+                                style="width:15px;height:15px;display:inline;margin-right:8px;"
+                                checked={showOnlySVR}
+                                onChange={() => {
+                                  setShowOnlySVR((old) => !old)
+                                  setCurrentPage("1")
+                                }}
+                              />
+                              Show Smart Value Recapture (SVR) feeds
+                            </label>
+                          )}
                         </div>
                       </div>
-                    )}
-                    {network.networkType === "mainnet" ? (
-                      <>
-                        {!isStreams && chain.l2SequencerFeed && (
-                          <p>
-                            {network.name} is an L2 network. As a best practice, use the L2 sequencer feed to verify the
-                            status of the sequencer when running applications on L2 networks. See the{" "}
-                            <a href="/docs/data-feeds/l2-sequencer-feeds/">L2 Sequencer Uptime Feeds</a> page for
-                            examples.
-                          </p>
-                        )}
-                        {network.name === "Aptos Mainnet" && (
-                          <>
-                            <p>
-                              Chainlink Data Feeds on Aptos provides data through a single price feed contract that
-                              handles multiple data feeds. You interact with this contract by passing the specific feed
-                              ID(s) for the data you need. For more details, refer to the{" "}
-                              <a href="/data-feeds/aptos/">Using Data Feeds on Aptos</a> guide.
-                            </p>
-                            <ul>
-                              <li>
-                                ChainlinkDataFeeds package address on Aptos Mainnet:{" "}
-                                <a
-                                  className={tableStyles.addressLink}
-                                  href="https://explorer.aptoslabs.com/object/0x3f985798ce4975f430ef5c75776ff98a77b9f9d0fb38184d225adc9c1cc6b79b/modules/packages/ChainlinkDataFeeds?network=mainnet"
-                                  target="_blank"
-                                >
-                                  0x3f985798ce4975f430ef5c75776ff98a77b9f9d0fb38184d225adc9c1cc6b79b
-                                </a>
-                                <button
-                                  className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                                  style={{ height: "16px", width: "16px", marginLeft: "5px" }}
-                                  data-clipboard-text="0x3f985798ce4975f430ef5c75776ff98a77b9f9d0fb38184d225adc9c1cc6b79b"
-                                >
-                                  <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
-                                </button>
-                              </li>
-                              <li>
-                                ChainlinkPlatform package address on Aptos Mainnet:{" "}
-                                <a
-                                  className={tableStyles.addressLink}
-                                  href="https://explorer.aptoslabs.com/object/0x9976bb288ed9177b542d568fa1ac386819dc99141630e582315804840f41928a/modules/packages/ChainlinkPlatform?network=mainnet"
-                                  target="_blank"
-                                >
-                                  0x9976bb288ed9177b542d568fa1ac386819dc99141630e582315804840f41928a
-                                </a>
-                                <button
-                                  className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                                  style={{ height: "16px", width: "16px", marginLeft: "5px" }}
-                                  data-clipboard-text="0x9976bb288ed9177b542d568fa1ac386819dc99141630e582315804840f41928a"
-                                >
-                                  <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
-                                </button>
-                              </li>
-                            </ul>
-                          </>
-                        )}
+                      <MainnetTable
+                        selectedFeedCategories={
+                          Array.isArray(selectedFeedCategories)
+                            ? selectedFeedCategories
+                            : selectedFeedCategories
+                              ? [selectedFeedCategories]
+                              : []
+                        }
+                        network={network}
+                        showExtraDetails={showExtraDetails}
+                        showOnlySVR={showOnlySVR}
+                        showOnlyMVRFeeds={showOnlyMVRFeeds}
+                        showOnlyDEXFeeds={false}
+                        dataFeedType={dataFeedType}
+                        ecosystem={ecosystem}
+                        lastAddr={lastAddr}
+                        firstAddr={firstAddr}
+                        addrPerPage={addrPerPage}
+                        currentPage={Number(currentPage)}
+                        paginate={paginate}
+                        searchValue={typeof searchValue === "string" ? searchValue : ""}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      {network.name === "Aptos Testnet" && (
+                        <>
+                          <ul>
+                            <li>
+                              ChainlinkDataFeeds package address on Aptos Testnet:{" "}
+                              <a
+                                className={tableStyles.addressLink}
+                                href="https://explorer.aptoslabs.com/object/0xf1099f135ddddad1c065203431be328a408b0ca452ada70374ce26bd2b32fdd3/modules/packages/ChainlinkDataFeeds?network=testnet"
+                                target="_blank"
+                              >
+                                0xf1099f135ddddad1c065203431be328a408b0ca452ada70374ce26bd2b32fdd3
+                              </a>
+                              <button
+                                className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                                style={{ height: "16px", width: "16px", marginLeft: "5px" }}
+                                data-clipboard-text="0xf1099f135ddddad1c065203431be328a408b0ca452ada70374ce26bd2b32fdd3"
+                              >
+                                <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+                              </button>
+                            </li>
+                            <li>
+                              ChainlinkPlatform package address on Aptos Testnet:{" "}
+                              <a
+                                className={tableStyles.addressLink}
+                                href="https://explorer.aptoslabs.com/object/0x516e771e1b4a903afe74c27d057c65849ecc1383782f6642d7ff21425f4f9c99/modules/packages/ChainlinkPlatform?network=testnet"
+                                target="_blank"
+                              >
+                                0x516e771e1b4a903afe74c27d057c65849ecc1383782f6642d7ff21425f4f9c99
+                              </a>
+                              <button
+                                className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                                style={{ height: "16px", width: "16px", marginLeft: "5px" }}
+                                data-clipboard-text="0x516e771e1b4a903afe74c27d057c65849ecc1383782f6642d7ff21425f4f9c99"
+                              >
+                                <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+                              </button>
+                            </li>
+                          </ul>
+                        </>
+                      )}
+                      {!isStreams && (
                         <div className={feedList.tableFilters}>
-                          {!isStreams && !isSmartData && (
-                            <details class={feedList.filterDropdown_details}>
-                              <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
-                                Data Feed Categories
-                              </summary>
-                              <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
-                                <ul>
-                                  {dataFeedCategory.map((category) => (
-                                    <li>
-                                      <button onClick={() => handleCategorySelection(category.key)}>
-                                        <input
-                                          type="checkbox"
-                                          checked={selectedFeedCategories?.includes(category.key)}
-                                          readonly
-                                          style="cursor:pointer;"
-                                        />
-                                        <span> {category.name}</span>
-                                      </button>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </nav>
-                            </details>
-                          )}
                           {isSmartData && (
                             <details class={feedList.filterDropdown_details}>
                               <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
@@ -889,227 +1052,6 @@ export const FeedList = ({
                             </details>
                           )}
                           <div className={feedList.searchAndCheckbox}>
-                            <form class={feedList.filterDropdown_search}>
-                              <input
-                                id="search"
-                                class={feedList.filterDropdown_searchInput}
-                                placeholder="Search"
-                                onInput={(event) => {
-                                  setSearchValue((event.target as HTMLInputElement).value)
-                                  setCurrentPage("1")
-                                }}
-                              />
-                              {searchValue && (
-                                <button
-                                  type="button"
-                                  className={clsx(button.secondary, feedList.clearFilterBtn)}
-                                  onClick={() => {
-                                    setSearchValue("")
-                                    setCurrentPage("1")
-                                    const inputElement = document.getElementById("search") as HTMLInputElement
-                                    if (inputElement) {
-                                      inputElement.value = ""
-                                    }
-                                  }}
-                                  aria-label="Clear search filter"
-                                >
-                                  Clear filter
-                                </button>
-                              )}
-                            </form>
-                            {!isStreams && (
-                              <label className={feedList.detailsLabel}>
-                                <input
-                                  type="checkbox"
-                                  style="width:15px;height:15px;display:inline;margin-right:8px;"
-                                  checked={showExtraDetails}
-                                  onChange={() => setShowExtraDetails((old) => !old)}
-                                />
-                                Show more details
-                              </label>
-                            )}
-                          </div>
-                          <div className={feedList.checkboxContainer}>
-                            {!isStreams && isSmartData && (
-                              <label className={feedList.detailsLabel}>
-                                <input
-                                  type="checkbox"
-                                  style="width:15px;height:15px;display:inline;margin-right:8px;"
-                                  checked={showOnlyMVRFeeds}
-                                  onChange={() => {
-                                    setShowOnlyMVRFeeds((old) => !old)
-                                    setCurrentPage("1") // Reset to first page when filter changes
-                                  }}
-                                />
-                                Show Multiple-Variable Response (MVR) feeds
-                              </label>
-                            )}
-                            {!isStreams && !isSmartData && !isUSGovernmentMacroeconomicData && (
-                              <label className={feedList.detailsLabel}>
-                                <input
-                                  type="checkbox"
-                                  style="width:15px;height:15px;display:inline;margin-right:8px;"
-                                  checked={showOnlySVR}
-                                  onChange={() => {
-                                    setShowOnlySVR((old) => !old)
-                                    setCurrentPage("1")
-                                  }}
-                                />
-                                Show Smart Value Recapture (SVR) feeds
-                              </label>
-                            )}
-                          </div>
-                        </div>
-                        <MainnetTable
-                          selectedFeedCategories={
-                            Array.isArray(selectedFeedCategories)
-                              ? selectedFeedCategories
-                              : selectedFeedCategories
-                                ? [selectedFeedCategories]
-                                : []
-                          }
-                          network={network}
-                          showExtraDetails={showExtraDetails}
-                          showOnlySVR={showOnlySVR}
-                          showOnlyMVRFeeds={showOnlyMVRFeeds}
-                          showOnlyDEXFeeds={false}
-                          dataFeedType={dataFeedType}
-                          ecosystem={ecosystem}
-                          lastAddr={lastAddr}
-                          firstAddr={firstAddr}
-                          addrPerPage={addrPerPage}
-                          currentPage={Number(currentPage)}
-                          paginate={paginate}
-                          searchValue={typeof searchValue === "string" ? searchValue : ""}
-                        />
-                      </>
-                    ) : (
-                      <>
-                        {network.name === "Aptos Testnet" && (
-                          <>
-                            <ul>
-                              <li>
-                                ChainlinkDataFeeds package address on Aptos Testnet:{" "}
-                                <a
-                                  className={tableStyles.addressLink}
-                                  href="https://explorer.aptoslabs.com/object/0xf1099f135ddddad1c065203431be328a408b0ca452ada70374ce26bd2b32fdd3/modules/packages/ChainlinkDataFeeds?network=testnet"
-                                  target="_blank"
-                                >
-                                  0xf1099f135ddddad1c065203431be328a408b0ca452ada70374ce26bd2b32fdd3
-                                </a>
-                                <button
-                                  className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                                  style={{ height: "16px", width: "16px", marginLeft: "5px" }}
-                                  data-clipboard-text="0xf1099f135ddddad1c065203431be328a408b0ca452ada70374ce26bd2b32fdd3"
-                                >
-                                  <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
-                                </button>
-                              </li>
-                              <li>
-                                ChainlinkPlatform package address on Aptos Testnet:{" "}
-                                <a
-                                  className={tableStyles.addressLink}
-                                  href="https://explorer.aptoslabs.com/object/0x516e771e1b4a903afe74c27d057c65849ecc1383782f6642d7ff21425f4f9c99/modules/packages/ChainlinkPlatform?network=testnet"
-                                  target="_blank"
-                                >
-                                  0x516e771e1b4a903afe74c27d057c65849ecc1383782f6642d7ff21425f4f9c99
-                                </a>
-                                <button
-                                  className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                                  style={{ height: "16px", width: "16px", marginLeft: "5px" }}
-                                  data-clipboard-text="0x516e771e1b4a903afe74c27d057c65849ecc1383782f6642d7ff21425f4f9c99"
-                                >
-                                  <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
-                                </button>
-                              </li>
-                            </ul>
-                          </>
-                        )}
-                        {!isStreams && (
-                          <div className={feedList.tableFilters}>
-                            {isSmartData && (
-                              <details class={feedList.filterDropdown_details}>
-                                <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
-                                  SmartData Type
-                                </summary>
-                                <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
-                                  <ul>
-                                    {smartDataTypes.map((category) => (
-                                      <li>
-                                        <button onClick={() => handleCategorySelection(category.key)}>
-                                          <input
-                                            type="checkbox"
-                                            checked={selectedFeedCategories?.includes(category.key)}
-                                            readonly
-                                            style="cursor:pointer;"
-                                          />
-                                          <span> {category.name}</span>
-                                        </button>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </nav>
-                              </details>
-                            )}
-                            <div className={feedList.searchAndCheckbox}>
-                              <form class={feedList.filterDropdown_search}>
-                                <input
-                                  id="testnetSearch"
-                                  class={feedList.filterDropdown_searchInput}
-                                  placeholder="Search"
-                                  onInput={(event) => {
-                                    setTestnetSearchValue((event.target as HTMLInputElement).value)
-                                    setTestnetCurrentPage("1")
-                                  }}
-                                />
-                                {testnetSearchValue && (
-                                  <button
-                                    type="button"
-                                    className={clsx(button.secondary, feedList.clearFilterBtn)}
-                                    onClick={() => {
-                                      setTestnetSearchValue("")
-                                      setTestnetCurrentPage("1")
-                                      const inputElement = document.getElementById("testnetSearch") as HTMLInputElement
-                                      if (inputElement) {
-                                        inputElement.value = ""
-                                      }
-                                    }}
-                                    aria-label="Clear search filter"
-                                  >
-                                    Clear filter
-                                  </button>
-                                )}
-                              </form>
-                              <label className={feedList.detailsLabel}>
-                                <input
-                                  type="checkbox"
-                                  style="width:15px;height:15px;display:inline;margin-right:8px;"
-                                  checked={showExtraDetails}
-                                  onChange={() => setShowExtraDetails((old) => !old)}
-                                />
-                                Show more details
-                              </label>
-                            </div>
-                            <div className={feedList.checkboxContainer}>
-                              {!isStreams && isSmartData && (
-                                <label className={feedList.detailsLabel}>
-                                  <input
-                                    type="checkbox"
-                                    style="width:15px;height:15px;display:inline;margin-right:8px;"
-                                    checked={showOnlyMVRFeedsTestnet}
-                                    onChange={() => {
-                                      setShowOnlyMVRFeedsTestnet((old) => !old)
-                                      setTestnetCurrentPage("1") // Reset to first page when filter changes
-                                    }}
-                                  />
-                                  Show Multiple-Variable Response (MVR) feeds
-                                </label>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                        {isStreams && (
-                          <div className={feedList.tableFilters}>
                             <form class={feedList.filterDropdown_search}>
                               <input
                                 id="testnetSearch"
@@ -1138,33 +1080,91 @@ export const FeedList = ({
                                 </button>
                               )}
                             </form>
+                            <label className={feedList.detailsLabel}>
+                              <input
+                                type="checkbox"
+                                style="width:15px;height:15px;display:inline;margin-right:8px;"
+                                checked={showExtraDetails}
+                                onChange={() => setShowExtraDetails((old) => !old)}
+                              />
+                              Show more details
+                            </label>
                           </div>
-                        )}
-                        <TestnetTable
-                          network={network}
-                          showExtraDetails={showExtraDetails}
-                          dataFeedType={dataFeedType}
-                          selectedFeedCategories={
-                            Array.isArray(selectedFeedCategories)
-                              ? selectedFeedCategories
-                              : selectedFeedCategories
-                                ? [selectedFeedCategories]
-                                : []
-                          }
-                          showOnlyMVRFeeds={showOnlyMVRFeedsTestnet}
-                          firstAddr={testnetFirstAddr}
-                          lastAddr={testnetLastAddr}
-                          addrPerPage={testnetAddrPerPage}
-                          currentPage={Number(testnetCurrentPage)}
-                          paginate={testnetPaginate}
-                          searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
-                        />
-                      </>
-                    )}
-                  </SectionWrapper>
-                </>
-              )
-            })
+                          <div className={feedList.checkboxContainer}>
+                            {!isStreams && isSmartData && (
+                              <label className={feedList.detailsLabel}>
+                                <input
+                                  type="checkbox"
+                                  style="width:15px;height:15px;display:inline;margin-right:8px;"
+                                  checked={showOnlyMVRFeedsTestnet}
+                                  onChange={() => {
+                                    setShowOnlyMVRFeedsTestnet((old) => !old)
+                                    setTestnetCurrentPage("1") // Reset to first page when filter changes
+                                  }}
+                                />
+                                Show Multiple-Variable Response (MVR) feeds
+                              </label>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      {isStreams && (
+                        <div className={feedList.tableFilters}>
+                          <form class={feedList.filterDropdown_search}>
+                            <input
+                              id="testnetSearch"
+                              class={feedList.filterDropdown_searchInput}
+                              placeholder="Search"
+                              onInput={(event) => {
+                                setTestnetSearchValue((event.target as HTMLInputElement).value)
+                                setTestnetCurrentPage("1")
+                              }}
+                            />
+                            {testnetSearchValue && (
+                              <button
+                                type="button"
+                                className={clsx(button.secondary, feedList.clearFilterBtn)}
+                                onClick={() => {
+                                  setTestnetSearchValue("")
+                                  setTestnetCurrentPage("1")
+                                  const inputElement = document.getElementById("testnetSearch") as HTMLInputElement
+                                  if (inputElement) {
+                                    inputElement.value = ""
+                                  }
+                                }}
+                                aria-label="Clear search filter"
+                              >
+                                Clear filter
+                              </button>
+                            )}
+                          </form>
+                        </div>
+                      )}
+                      <TestnetTable
+                        network={network}
+                        showExtraDetails={showExtraDetails}
+                        dataFeedType={dataFeedType}
+                        selectedFeedCategories={
+                          Array.isArray(selectedFeedCategories)
+                            ? selectedFeedCategories
+                            : selectedFeedCategories
+                              ? [selectedFeedCategories]
+                              : []
+                        }
+                        showOnlyMVRFeeds={showOnlyMVRFeedsTestnet}
+                        firstAddr={testnetFirstAddr}
+                        lastAddr={testnetLastAddr}
+                        addrPerPage={testnetAddrPerPage}
+                        currentPage={Number(testnetCurrentPage)}
+                        paginate={testnetPaginate}
+                        searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
+                      />
+                    </>
+                  )}
+                </SectionWrapper>
+              </>
+            )
+          })
       })()}
       {isDeprecating && netCount === 0 && (
         <div>
