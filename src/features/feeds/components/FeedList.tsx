@@ -13,7 +13,15 @@ import SectionWrapper from "~/components/SectionWrapper/SectionWrapper.tsx"
 import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/TableOfContents/tocStore.ts"
 
-export type DataFeedType = "default" | "smartdata" | "rates" | "streamsCrypto" | "streamsRwa"
+export type DataFeedType =
+  | "default"
+  | "smartdata"
+  | "rates"
+  | "usGovernmentMacroeconomicData"
+  | "streamsCrypto"
+  | "streamsRwa"
+  | "streamsNav"
+  | "streamsBacked"
 export const FeedList = ({
   initialNetwork,
   dataFeedType = "default",
@@ -26,8 +34,13 @@ export const FeedList = ({
   initialCache?: Record<string, ChainMetadata>
 }) => {
   const chains = ecosystem === "deprecating" ? ALL_CHAINS : CHAINS
-  const isStreams = dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa"
+  const isStreams =
+    dataFeedType === "streamsCrypto" ||
+    dataFeedType === "streamsRwa" ||
+    dataFeedType === "streamsNav" ||
+    dataFeedType === "streamsBacked"
   const isSmartData = dataFeedType === "smartdata"
+  const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
 
   // Get network directly from URL
   const networkFromURL =
@@ -320,8 +333,22 @@ export const FeedList = ({
   const isDeprecating = ecosystem === "deprecating"
   let netCount = 0
 
-  const streamsMainnetSectionTitle = dataFeedType === "streamsCrypto" ? "Mainnet Crypto Streams" : "Mainnet RWA Streams"
-  const streamsTestnetSectionTitle = dataFeedType === "streamsCrypto" ? "Testnet Crypto Streams" : "Testnet RWA Streams"
+  const streamsMainnetSectionTitle =
+    dataFeedType === "streamsCrypto"
+      ? "Mainnet Crypto Streams"
+      : dataFeedType === "streamsNav"
+        ? "Mainnet NAV Streams"
+        : dataFeedType === "streamsBacked"
+          ? "Mainnet Backed xStock Streams"
+          : "Mainnet RWA Streams"
+  const streamsTestnetSectionTitle =
+    dataFeedType === "streamsCrypto"
+      ? "Testnet Crypto Streams"
+      : dataFeedType === "streamsNav"
+        ? "Testnet NAV Streams"
+        : dataFeedType === "streamsBacked"
+          ? "Testnet Backed xStock Streams"
+          : "Testnet RWA Streams"
 
   // Initialize search input fields with URL parameter values
   useEffect(() => {
@@ -387,7 +414,12 @@ export const FeedList = ({
     return null
   }
 
-  if (dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa") {
+  if (
+    dataFeedType === "streamsCrypto" ||
+    dataFeedType === "streamsRwa" ||
+    dataFeedType === "streamsNav" ||
+    dataFeedType === "streamsBacked"
+  ) {
     const mainnetFeeds: ChainNetwork[] = []
     const testnetFeeds: ChainNetwork[] = []
 
@@ -441,20 +473,22 @@ export const FeedList = ({
                 </button>
               )}
             </form>
-            <div className={feedList.checkboxContainer}>
-              <label className={feedList.detailsLabel}>
-                <input
-                  type="checkbox"
-                  style="width:15px;height:15px;display:inline;margin-right:8px;"
-                  checked={showOnlyDEXFeeds}
-                  onChange={() => {
-                    setShowOnlyDEXFeeds((old) => !old)
-                    setCurrentPage("1") // Reset to first page when filter changes
-                  }}
-                />
-                Show DEX State Price streams
-              </label>
-            </div>
+            {dataFeedType === "streamsCrypto" && (
+              <div className={feedList.checkboxContainer}>
+                <label className={feedList.detailsLabel}>
+                  <input
+                    type="checkbox"
+                    style="width:15px;height:15px;display:inline;margin-right:8px;"
+                    checked={showOnlyDEXFeeds}
+                    onChange={() => {
+                      setShowOnlyDEXFeeds((old) => !old)
+                      setCurrentPage("1") // Reset to first page when filter changes
+                    }}
+                  />
+                  Show DEX State Price streams
+                </label>
+              </div>
+            )}
           </div>
           {mainnetFeeds.length ? (
             mainnetFeeds.map((network) => (
@@ -520,20 +554,22 @@ export const FeedList = ({
                 </button>
               )}
             </form>
-            <div className={feedList.checkboxContainer}>
-              <label className={feedList.detailsLabel}>
-                <input
-                  type="checkbox"
-                  style="width:15px;height:15px;display:inline;margin-right:8px;"
-                  checked={showOnlyDEXFeedsTestnet}
-                  onChange={() => {
-                    setShowOnlyDEXFeedsTestnet((old) => !old)
-                    setTestnetCurrentPage("1") // Reset to first page when filter changes
-                  }}
-                />
-                Show DEX State Price streams
-              </label>
-            </div>
+            {dataFeedType === "streamsCrypto" && (
+              <div className={feedList.checkboxContainer}>
+                <label className={feedList.detailsLabel}>
+                  <input
+                    type="checkbox"
+                    style="width:15px;height:15px;display:inline;margin-right:8px;"
+                    checked={showOnlyDEXFeedsTestnet}
+                    onChange={() => {
+                      setShowOnlyDEXFeedsTestnet((old) => !old)
+                      setTestnetCurrentPage("1") // Reset to first page when filter changes
+                    }}
+                  />
+                  Show DEX State Price streams
+                </label>
+              </div>
+            )}
           </div>
           {testnetFeeds.length ? (
             testnetFeeds.map((network) => (
@@ -579,6 +615,7 @@ export const FeedList = ({
                 if (isStreams) return chain.tags?.includes("streams")
                 if (isSmartData) return chain.tags?.includes("smartData")
                 if (isRates) return chain.tags?.includes("rates")
+                if (isUSGovernmentMacroeconomicData) return chain.tags?.includes("usGovernmentMacroeconomicData")
                 return chain.tags?.includes("default")
               })
               .map((chain) => {
@@ -686,6 +723,8 @@ export const FeedList = ({
           if (isSmartData) return network.tags?.includes("smartData")
 
           if (isRates) return network.tags?.includes("rates")
+
+          if (isUSGovernmentMacroeconomicData) return network.tags?.includes("usGovernmentMacroeconomicData")
 
           return true
         })
@@ -882,7 +921,7 @@ export const FeedList = ({
                             Show Multiple-Variable Response (MVR) feeds
                           </label>
                         )}
-                        {!isStreams && !isSmartData && (
+                        {!isStreams && !isSmartData && !isUSGovernmentMacroeconomicData && (
                           <label className={feedList.detailsLabel}>
                             <input
                               type="checkbox"
