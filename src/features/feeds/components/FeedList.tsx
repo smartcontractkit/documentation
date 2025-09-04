@@ -661,7 +661,7 @@ export const FeedList = ({
             .filter((network: any) => {
               let foundDeprecated = false
               network.metadata?.forEach((feed: any) => {
-                if (feed.shutdownDate) {
+                if (feed.feedCategory === "deprecating") {
                   foundDeprecated = true
                 }
               })
@@ -685,7 +685,10 @@ export const FeedList = ({
                         ? [selectedFeedCategories]
                         : []
                   }
-                  network={{ ...network, metadata: network.metadata.filter((feed: any) => feed.shutdownDate) }}
+                  network={{
+                    ...network,
+                    metadata: network.metadata.filter((feed: any) => feed.feedCategory === "deprecating"),
+                  }}
                   showExtraDetails={showExtraDetails}
                   showOnlySVR={showOnlySVR}
                   showOnlyMVRFeeds={showOnlyMVRFeeds}
@@ -705,8 +708,8 @@ export const FeedList = ({
             ?.filter((network: { metadata: unknown[]; tags: string | string[] }) => {
               if (isDeprecating) {
                 let foundDeprecated = false
-                network.metadata?.forEach((feed: { docs: { shutdownDate: unknown } }) => {
-                  if (feed.docs?.shutdownDate) {
+                network.metadata?.forEach((feed: any) => {
+                  if (feed.feedCategory === "deprecating") {
                     foundDeprecated = true
                   }
                 })
@@ -753,8 +756,8 @@ export const FeedList = ({
                         <div>
                           <strong>ALERT:</strong>
                           <br />
-                          The following list of Data Feeds on Solana are being deprecated as Chainlink migrates support
-                          to Data Streams’ pull-based model.
+                          Several Data Feeds on Solana are being deprecated as Chainlink migrates support to Data
+                          Streams’ pull-based model.
                           <br />
                           <a
                             href="https://docs.chain.link/data-streams/crypto-streams?page=1&testnetPage=1"
