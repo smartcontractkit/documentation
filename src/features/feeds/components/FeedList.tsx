@@ -708,13 +708,18 @@ export const FeedList = ({
                     borderRadius: '6px',
                     marginBottom: '1rem',
                     display: 'flex',
-                    alignItems: 'center',
+                    alignItems: 'flex-start',
                     gap: '0.75rem'
                   }}>
                     <span style={{fontSize: '1.5rem'}}>⚠️</span>
-                    <span>
-                      <strong>Deprecation Notice:</strong> Solana Mainnet feeds are scheduled for deprecation. This is a placeholder notice. Please check back for updated information.
-                    </span>
+                    <div>
+                      <strong>ALERT:</strong><br />
+                      The following list of Data Feeds on Solana are being deprecated as Chainlink migrates support to Data Streams’ pull-based model.
+                      <br />
+                      <a href="https://docs.chain.link/data-streams/crypto-streams?page=1&testnetPage=1" target="_blank" rel="noopener noreferrer" style={{ color: '#856404', textDecoration: 'underline' }}>
+                        (See this page for the complete list of Data Streams available on Solana)
+                      </a>
+                    </div>
                   </div>
                 )}
                 {network.networkType === "mainnet" ? (
