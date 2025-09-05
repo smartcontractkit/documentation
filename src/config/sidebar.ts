@@ -411,12 +411,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Fetch and decode reports",
           url: "data-streams/tutorials/go-sdk-fetch",
-          highlightAsCurrent: ["data-streams/tutorials/rust-sdk-fetch"],
+          highlightAsCurrent: ["data-streams/tutorials/rust-sdk-fetch", "data-streams/tutorials/ts-sdk-fetch"],
         },
         {
           title: "Stream and decode reports (WebSocket)",
           url: "data-streams/tutorials/go-sdk-stream",
-          highlightAsCurrent: ["data-streams/tutorials/rust-sdk-stream"],
+          highlightAsCurrent: ["data-streams/tutorials/rust-sdk-stream", "data-streams/tutorials/ts-sdk-stream"],
         },
         {
           title: "Verify report data (EVM)",
@@ -490,7 +490,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "SDK References",
               url: "data-streams/reference/data-streams-api/go-sdk",
-              highlightAsCurrent: ["data-streams/reference/data-streams-api/rust-sdk"],
+              highlightAsCurrent: [
+                "data-streams/reference/data-streams-api/rust-sdk",
+                "data-streams/reference/data-streams-api/ts-sdk",
+              ],
             },
             {
               title: "Onchain report verification (EVM chains)",
