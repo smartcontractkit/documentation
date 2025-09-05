@@ -1,0 +1,70 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.6.0 Aptos Client API Reference"
+metadata:
+  description: "API documentation for the CCIP client helper module on the Aptos blockchain, focusing on extra args encoding."
+---
+
+import { Aside, ClickToZoom } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## Client
+
+The `ccip::client` module provides helper `#[view]` functions that can be called on-chain to aid in constructing CCIP messages. The primary use case is encoding the `extra_args` parameter for different destination chain families.
+
+### `encode_generic_extra_args_v2`
+
+This function encodes the extra arguments required when sending a CCIP message from Aptos to an **EVM-based chain (like Ethereum) or another Aptos module**. It takes a gas limit and a boolean flag, BCS-encodes them, and prepends the standard `GENERIC_EXTRA_ARGS_V2_TAG` (`0x181dcf10`).
+
+```rust
+#[view]
+public fun encode_generic_extra_args_v2(
+    gas_limit: u256,
+    allow_out_of_order_execution: bool
+): vector<u8>
+```
+
+#### Parameters
+
+| Name                                        | Type                | Description                                                                                              |
+| ------------------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------- |
+| <nobr>`gas_limit`</nobr>                    | <nobr>`u256`</nobr> | The gas limit to allocate for the execution of the message on the destination chain.                     |
+| <nobr>`allow_out_of_order_execution`</nobr> | <nobr>`bool`</nobr> | A flag indicating if the message can be processed out of order. It is recommended to set this to `true`. |
+
+#### Returns
+
+| Name                          | Type                      | Description                                                                                                      |
+| ----------------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| <nobr>`encoded_vector`</nobr> | <nobr>`vector<u8>`</nobr> | A byte vector containing the 4-byte tag followed by the BCS-encoded parameters, ready to be used in `ccip_send`. |
+
+### `encode_svm_extra_args_v1`
+
+This function encodes the more complex extra arguments required when sending a CCIP message from Aptos to an **SVM-based chain (like Solana)**. It constructs a byte vector by prepending the `SVM_EXTRA_ARGS_V1_TAG` (`0x1f3b3aba`) to the BCS-encoded parameters, which include details specific to the SVM account model.
+
+```rust
+#[view]
+public fun encode_svm_extra_args_v1(
+    compute_units: u32,
+    account_is_writable_bitmap: u64,
+    allow_out_of_order_execution: bool,
+    token_receiver: vector<u8>,
+    accounts: vector<vector<u8>>
+): vector<u8>
+```
+
+#### Parameters
+
+| Name                                        | Type                              | Description                                                                                                              |
+| ------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| <nobr>`compute_units`</nobr>                | <nobr>`u32`</nobr>                | The number of compute units to allocate for the message's execution on the destination SVM chain.                        |
+| <nobr>`account_is_writable_bitmap`</nobr>   | <nobr>`u64`</nobr>                | A bitmask indicating which of the provided `accounts` are writable. Bit `i` corresponds to `accounts[i]`.                |
+| <nobr>`allow_out_of_order_execution`</nobr> | <nobr>`bool`</nobr>               | A flag indicating if the message can be processed out of order.                                                          |
+| <nobr>`token_receiver`</nobr>               | <nobr>`vector<u8>`</nobr>         | The 32-byte public key of the account on the SVM chain that will receive any transferred tokens.                         |
+| <nobr>`accounts`</nobr>                     | <nobr>`vector<vector<u8>>`</nobr> | A vector of 32-byte public keys representing the accounts required by the receiver program on the destination SVM chain. |
+
+#### Returns
+
+| Name                          | Type                      | Description                                                                                  |
+| ----------------------------- | ------------------------- | -------------------------------------------------------------------------------------------- |
+| <nobr>`encoded_vector`</nobr> | <nobr>`vector<u8>`</nobr> | A byte vector containing the 4-byte tag followed by the BCS-encoded SVM-specific parameters. |

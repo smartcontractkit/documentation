@@ -68,7 +68,7 @@ export type SupportedTechnology =
   | "NEO_X"
   | "POLYGON_KATANA"
 
-export type ChainType = "evm" | "solana" | "aptos"
+export type ChainType = "evm" | "solana" | "aptos" | "sui"
 
 export type ChainFamily = "evm" | "mvm" | "svm"
 
@@ -213,6 +213,8 @@ export type SupportedChain =
   | "KATANA_TATARA"
   | "KATANA_MAINNET"
   | "BOTANIX_MAINNET"
+  | "APTOS_MAINNET"
+  | "APTOS_TESTNET"
 
 export type ExplorerInfo = {
   baseUrl: string
