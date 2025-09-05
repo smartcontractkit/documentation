@@ -9,73 +9,23 @@ import button from "@chainlink/design-system/button.module.css"
 import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat.tsx"
 import { monitoredFeeds, FeedDataItem } from "~/features/data/index.ts"
 import { StreamsNetworksData, type NetworkData } from "../data/StreamsNetworksData.ts"
+import { FEED_CATEGORY_CONFIG } from "../../../db/feedCategories.js"
+import { useBatchedFeedCategories, getFeedCategoryFromBatch } from "./useBatchedFeedCategories.ts"
 
 const feedItems = monitoredFeeds.mainnet
-const feedCategories = {
-  low: (
-    <span
-      className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")}
-      title="Low Market Risk - Feeds that deliver a market price for liquid assets with robust market structure."
-    >
-      <a href="/data-feeds/selecting-data-feeds#-low-market-risk-feeds" aria-label="Low Market Risk" target="_blank">
-        🟢
+
+// Render a category icon/link from the config
+const getFeedCategoryElement = (riskTier: string | undefined) => {
+  if (!riskTier) return ""
+  const category = FEED_CATEGORY_CONFIG[riskTier.toLowerCase()]
+  if (!category) return ""
+  return (
+    <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title={category.title}>
+      <a href={category.link} aria-label={category.name} target="_blank">
+        {category.icon}
       </a>
     </span>
-  ),
-  medium: (
-    <span
-      className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")}
-      title="Medium Market Risk - Feeds that deliver a market price for assets that show signs of liquidity-related risk or other market structure-related risk."
-    >
-      <a
-        href="/data-feeds/selecting-data-feeds#-medium-market-risk-feeds"
-        aria-label="Medium Market Risk"
-        target="_blank"
-      >
-        🟡
-      </a>
-    </span>
-  ),
-  high: (
-    <span
-      className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")}
-      title="High Market Risk - Feeds that deliver a heightened degree of some of the risk factors associated with Medium Market Risk Feeds, or a separate risk that makes the market price subject to uncertainty or volatile. In using a high market risk data feed you acknowledge that you understand the risks associated with such a feed and that you are solely responsible for monitoring and mitigating such risks."
-    >
-      <a href="/data-feeds/selecting-data-feeds#-high-market-risk-feeds" aria-label="High Market Risk" target="_blank">
-        🔴
-      </a>
-    </span>
-  ),
-  new: (
-    <span
-      className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")}
-      title="New Token - Tokens without the historical data required to implement a risk assessment framework may be launched in this category. Users must understand the additional market and volatility risks inherent with such assets. Users of New Token Feeds are responsible for independently verifying the liquidity and stability of the assets priced by feeds that they use."
-    >
-      <a href="/data-feeds/selecting-data-feeds#-new-token-feeds" aria-label="New Token" target="_blank">
-        🟠
-      </a>
-    </span>
-  ),
-  custom: (
-    <span
-      className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")}
-      title="Custom - Feeds built to serve a specific use case or rely on external contracts or data sources. These might not be suitable for general use or your use case's risk parameters. Users must evaluate the properties of a feed to make sure it aligns with their intended use case."
-    >
-      <a href="/data-feeds/selecting-data-feeds#-custom-feeds" aria-label="Custom" target="_blank">
-        🔵
-      </a>
-    </span>
-  ),
-  deprecating: (
-    <span
-      className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")}
-      title="Deprecating - These feeds are scheduled for deprecation. See the [Deprecation](/data-feeds/deprecating-feeds) page to learn more."
-    >
-      <a href="/data-feeds/deprecating-feeds" aria-label="Deprecating" target="_blank">
-        ⭕
-      </a>
-    </span>
-  ),
+  )
 }
 
 const Pagination = ({ addrPerPage, totalAddr, paginate, currentPage, firstAddr, lastAddr }) => {
@@ -209,7 +159,17 @@ const DefaultTHead = ({
   )
 }
 
-const DefaultTr = ({ network, metadata, showExtraDetails, dataFeedType }) => {
+const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, dataFeedType }) => {
+  // Risk categorization logic
+  const contractAddress = metadata.contractAddress || metadata.proxyAddress
+  const networkIdentifier = network?.networkType || "unknown"
+  const finalTier =
+    contractAddress && batchedCategoryData?.size
+      ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)
+          ?.final ?? metadata.feedCategory)
+      : metadata.feedCategory
+
+  // US Government Macroeconomic Data logic
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
   const label = isUSGovernmentMacroeconomicData ? "Category" : "Asset type"
   const value = isUSGovernmentMacroeconomicData
@@ -222,7 +182,7 @@ const DefaultTr = ({ network, metadata, showExtraDetails, dataFeedType }) => {
       <td className={tableStyles.pairCol}>
         <div className={tableStyles.assetPair}>
           <div className={tableStyles.pairNameRow}>
-            {feedCategories[metadata.feedCategory?.toLowerCase()] || ""}
+            {getFeedCategoryElement(finalTier || undefined)}
             {metadata.name}
           </div>
           {metadata.secondaryProxyAddress && (
@@ -384,13 +344,22 @@ const SmartDataTHead = ({ showExtraDetails }: { showExtraDetails: boolean }) => 
   </thead>
 )
 
-const SmartDataTr = ({ network, metadata, showExtraDetails }) => {
+const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData }) => {
   // Check if this is an MVR feed
   const hasDecoding = Array.isArray(metadata.docs?.decoding) && metadata.docs.decoding.length > 0
   const isMVRFlagSet = metadata.docs?.isMVR === true
 
   // Only show MVR badge if explicitly flagged as MVR
   const finalIsMVRFeed = isMVRFlagSet && hasDecoding
+
+  // Resolve final category from batch (fallback to metadata)
+  const contractAddress = metadata.contractAddress || metadata.proxyAddress
+  const networkIdentifier = network?.networkType || "unknown"
+  const finalTier =
+    contractAddress && batchedCategoryData?.size
+      ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)
+          ?.final ?? metadata.feedCategory)
+      : metadata.feedCategory
 
   return (
     <tr>
@@ -411,7 +380,7 @@ const SmartDataTr = ({ network, metadata, showExtraDetails }) => {
           return ""
         })}
         <div className={tableStyles.assetPair}>
-          {feedCategories[metadata.feedCategory?.toLowerCase()] || ""} {metadata.name}
+          {getFeedCategoryElement(finalTier || undefined)} {metadata.name}
         </div>
         {metadata.docs.shutdownDate && (
           <div className={clsx(feedList.shutDate)}>
@@ -987,6 +956,8 @@ export const MainnetTable = ({
 }) => {
   if (!network.metadata) return null
 
+  const { data: batchedCategoryData, isLoading: isBatchLoading } = useBatchedFeedCategories(network)
+
   const isStreams =
     dataFeedType === "streamsCrypto" ||
     dataFeedType === "streamsRwa" ||
@@ -998,8 +969,23 @@ export const MainnetTable = ({
   const isDeprecating = ecosystem === "deprecating"
 
   const filteredMetadata = network.metadata
-    .sort((a, b) => (a.name < b.name ? -1 : 1))
+    .sort((a, b) => (a.name.toUpperCase() < b.name.toUpperCase() ? -1 : 1))
     .filter((metadata) => {
+      // ---
+      // Categorization logic:
+      // 1. Try to get the risk category for this feed from Supabase (batchedCategoryData).
+      //    - Uses contractAddress and networkIdentifier as lookup keys.
+      //    - If found, use the DB value; if not, fall back to the default from metadata.
+      // 2. If the risk category is 'hidden', exclude this feed from the docs.
+      // ---
+      const contractAddress = metadata.contractAddress || metadata.proxyAddress
+      const networkIdentifier = network?.networkType || "unknown"
+      const batchCategory =
+        contractAddress && batchedCategoryData?.size
+          ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)
+              ?.final ?? metadata.feedCategory)
+          : metadata.feedCategory
+      if (batchCategory === "hidden") return false
       if (showOnlySVR && !metadata.secondaryProxyAddress) {
         return false
       }
@@ -1017,7 +1003,6 @@ export const MainnetTable = ({
 
         return isValidStreamsFeed
       }
-
       if (dataFeedType === "streamsRwa") {
         return metadata.contractType === "verifier" && metadata.docs.feedType === "Equities"
       }
@@ -1110,6 +1095,7 @@ export const MainnetTable = ({
 
   return (
     <>
+      {isBatchLoading && <p>Loading...</p>}
       <div className={tableStyles.tableWrapper}>
         <table className={tableStyles.table} data-show-details={showExtraDetails}>
           {slicedFilteredMetadata.length === 0 ? (
@@ -1141,13 +1127,19 @@ export const MainnetTable = ({
                   <>
                     {isStreams && <StreamsTr metadata={metadata} isMainnet />}
                     {isSmartData && (
-                      <SmartDataTr network={network} metadata={metadata} showExtraDetails={showExtraDetails} />
+                      <SmartDataTr
+                        network={network}
+                        metadata={metadata}
+                        showExtraDetails={showExtraDetails}
+                        batchedCategoryData={batchedCategoryData}
+                      />
                     )}
                     {(isDefault || isUSGovernmentMacroeconomicData) && (
                       <DefaultTr
                         network={network}
                         metadata={metadata}
                         showExtraDetails={showExtraDetails}
+                        batchedCategoryData={batchedCategoryData}
                         dataFeedType={dataFeedType}
                       />
                     )}
@@ -1203,6 +1195,8 @@ export const TestnetTable = ({
 }) => {
   if (!network.metadata) return null
 
+  const { data: batchedCategoryData, isLoading: isBatchLoading } = useBatchedFeedCategories(network)
+
   const isStreams =
     dataFeedType === "streamsCrypto" ||
     dataFeedType === "streamsRwa" ||
@@ -1214,8 +1208,23 @@ export const TestnetTable = ({
   const isDefault = !isSmartData && !isRates && !isStreams && !isUSGovernmentMacroeconomicData
 
   const filteredMetadata = network.metadata
-    .sort((a, b) => (a.name < b.name ? -1 : 1))
+    .sort((a, b) => (a.name.toUpperCase() < b.name.toUpperCase() ? -1 : 1))
     .filter((metadata) => {
+      // ---
+      // Categorization logic:
+      // 1. Try to get the risk category for this feed from Supabase (batchedCategoryData).
+      //    - Uses contractAddress and networkIdentifier as lookup keys.
+      //    - If found, use the DB value; if not, fall back to the default from metadata.
+      // 2. If the risk category is 'hidden', exclude this feed from the docs.
+      // ---
+      const contractAddress = metadata.contractAddress || metadata.proxyAddress
+      const networkIdentifier = network?.networkType || "unknown"
+      const batchCategory =
+        contractAddress && batchedCategoryData?.size
+          ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)
+              ?.final ?? metadata.feedCategory)
+          : metadata.feedCategory
+      if (batchCategory === "hidden") return false
       if (isStreams) {
         if (dataFeedType === "streamsCrypto") {
           const isValidStreamsFeed =
@@ -1308,6 +1317,7 @@ export const TestnetTable = ({
 
   return (
     <>
+      {isBatchLoading && <p>Loading...</p>}
       <div className={tableStyles.tableWrapper}>
         <table className={tableStyles.table}>
           {slicedFilteredMetadata.length === 0 ? (
@@ -1346,7 +1356,12 @@ export const TestnetTable = ({
                   <>
                     {isStreams && <StreamsTr metadata={metadata} isMainnet={false} />}
                     {isSmartData && (
-                      <SmartDataTr network={network} metadata={metadata} showExtraDetails={showExtraDetails} />
+                      <SmartDataTr
+                        network={network}
+                        metadata={metadata}
+                        showExtraDetails={showExtraDetails}
+                        batchedCategoryData={batchedCategoryData}
+                      />
                     )}
                     {(isDefault || isUSGovernmentMacroeconomicData) && (
                       <DefaultTr
@@ -1354,6 +1369,7 @@ export const TestnetTable = ({
                         metadata={metadata}
                         showExtraDetails={showExtraDetails}
                         dataFeedType={dataFeedType}
+                        batchedCategoryData={batchedCategoryData}
                       />
                     )}
                     {isRates && (
@@ -1362,6 +1378,7 @@ export const TestnetTable = ({
                         metadata={metadata}
                         showExtraDetails={showExtraDetails}
                         dataFeedType={dataFeedType}
+                        batchedCategoryData={batchedCategoryData}
                       />
                     )}
                   </>
