@@ -30,6 +30,11 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
       url: "/data-streams/tutorials/rust-sdk-stream",
       icon: "/images/tutorial-icons/rust_logo_blk.svg",
     },
+    {
+      name: "TypeScript SDK",
+      url: "/data-streams/tutorials/ts-sdk-stream",
+      icon: "/images/tutorial-icons/ts_logo_black.svg",
+    },
   ]}
 />
 
@@ -363,6 +368,7 @@ Refer to the [Verify report data onchain](/data-streams/tutorials/evm-onchain-re
 When working with different versions of [Data Stream reports](/data-streams/reference/report-schema-overview), you'll need to adapt your code to handle the specific report schema version they use:
 
 1. Import the correct schema version module. Examples:
+
    - For v3 schema (as used in this example):
 
      ```rust
@@ -376,6 +382,7 @@ When working with different versions of [Data Stream reports](/data-streams/refe
      ```
 
 1. Update the decode function to use the correct schema version. Examples:
+
    - For v3 schema (as used in this example):
 
      ```rust
@@ -408,6 +415,7 @@ The WebSocket connection is established in two steps:
 As data reports arrive via the WebSocket connection, they are processed in real-time through several steps:
 
 1. Reading streams: The [`read`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/sdk/src/stream.rs#L218) method on the Stream object is called within a loop. This asynchronous method:
+
    - Awaits the next report from the WebSocket connection
    - Handles backpressure automatically
    - Returns a [`WebSocketReport`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/sdk/src/stream.rs#L51) containing the report data
@@ -425,11 +433,13 @@ As data reports arrive via the WebSocket connection, they are processed in real-
 The example demonstrates several best practices for handling the decoded data:
 
 1. Logging:
+
    - Uses the [`tracing`](https://github.com/tokio-rs/tracing) crate for structured logging
    - Configures UTC timestamps for consistent time representation
    - Includes both raw report data and decoded fields for debugging
 
 2. Error handling:
+
    - Uses Rust's `Result` type for robust error handling
    - Implements the `?` operator for clean error propagation
    - Logs errors with appropriate context using `warn!` macro
