@@ -1,27 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-// NOTE: The required interfaces will soon be available in the Chainlink package for you to import.
-
-interface IBundleAggregatorProxy {
-    /**
-     * @notice Returns the latest bundle data
-     * @return bundle The latest bundle as raw bytes
-     */
-    function latestBundle() external view returns (bytes memory);
-
-    /**
-     * @notice Returns the timestamp of the latest bundle
-     * @return timestamp The timestamp of the latest bundle
-     */
-    function latestBundleTimestamp() external view returns (uint256);
-
-    /**
-     * @notice Returns the decimals for each field in the bundle
-     * @return decimalsArray Array of decimals for each value in the bundle
-     */
-    function bundleDecimals() external view returns (uint8[] memory);
-}
+import {IBundleAggregatorProxy} from "@chainlink/contracts/src/v0.8/data-feeds/interfaces/IBundleAggregatorProxy.sol";
 
 /**
  * @notice This struct defines the exact data structure of the MVR feed
