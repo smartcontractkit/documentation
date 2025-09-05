@@ -176,6 +176,14 @@ const architectureOverviewCollection = defineCollection({
   schema: baseFrontmatter,
 })
 
+const oraclePlatformCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/oracle-platform",
+    pattern: "**/*.md?(x)",
+  }),
+  schema: baseFrontmatter,
+})
+
 const gettingStartedCollection = defineCollection({
   loader: glob({
     base: "./src/content/getting-started",
@@ -210,6 +218,7 @@ export const collections = {
   "architecture-overview": architectureOverviewCollection,
   "getting-started": gettingStartedCollection,
   "any-api": anyApiCollection,
+  "oracle-platform": oraclePlatformCollection,
 }
 
 export type Collection = keyof typeof collections
