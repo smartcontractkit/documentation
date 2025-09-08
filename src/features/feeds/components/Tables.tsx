@@ -233,7 +233,7 @@ const DefaultTr = ({ network, metadata, showExtraDetails, dataFeedType }) => {
                 isAaveSVR(metadata)
                   ? "/data-feeds/svr-feeds#aave-svr-feeds"
                   : isSharedSVR(metadata)
-                    ? "/data-feeds/svr-feeds#canonical-svr-feeds"
+                    ? "/data-feeds/svr-feeds"
                     : "/data-feeds/svr-feeds"
               }
                 target="_blank"
@@ -241,12 +241,12 @@ const DefaultTr = ({ network, metadata, showExtraDetails, dataFeedType }) => {
                 title={
                 isAaveSVR(metadata)
                   ? "Aave Dedicated SVR Feed"
-                  : isSharedSVR(metadata)
-                    ? "Canonical SVR Feed"
-                    : "SVR-enabled Feed"
+                : isSharedSVR(metadata)
+                    ? " SVR Feed"
+                    : "SVR Feed"
               }
               >
-                {isAaveSVR(metadata) ? "Aave SVR" : isSharedSVR(metadata) ? "Canonical SVR" : "SVR"}
+                {isAaveSVR(metadata) ? "Aave SVR" : isSharedSVR(metadata) ? "SVR" : "SVR"}
               </a>
             </div>
           )}
@@ -380,10 +380,10 @@ const DefaultTr = ({ network, metadata, showExtraDetails, dataFeedType }) => {
               )}
               {isSharedSVR(metadata) && (
                 <div className={clsx(tableStyles.sharedCallout)}>
-                  <strong>🔗 Canonical SVR Feed:</strong> This SVR proxy feed is usable by any protocol. Learn more
+                  <strong>🔗 SVR Feed:</strong> This SVR proxy feed is usable by any protocol. Learn more
                   about{" "}
-                  <a href="/data-feeds/svr-feeds#canonical-svr-feeds" target="_blank">
-                    Canonical SVR Feeds
+                  <a href="/data-feeds/svr-feeds" target="_blank">
+                    SVR Feeds
                   </a>
                   .
                 </div>

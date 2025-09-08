@@ -4,9 +4,9 @@ import { type ChainMetadata } from "~/features/data/api/index.ts"
 // These functions are used to identify specific types of SVR feeds based on their metadata properties
 
 /**
- * Determines if a feed is a Shared (Canonical) SVR feed based on its path
+ * Determines if a feed is a Shared SVR feed based on its path
  * @param metadata - The feed metadata object
- * @returns true if the feed is a shared/canonical SVR feed
+ * @returns true if the feed is a shared SVR feed
  */
 export const isSharedSVR = (metadata: ChainMetadata): boolean => {
   // Check the path field for feeds ending with "-shared-svr"

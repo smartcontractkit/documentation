@@ -56,14 +56,14 @@ const data = await response.json()
         feedGroups[baseName] = {
           name: baseName,
           aaveAddress: null,
-          canonicalAddress: null
+          svrAddress: null
         }
       }
 
       if (isAaveSVR(feed)) {
         feedGroups[baseName].aaveAddress = feed.contractAddress
       } else if (isSharedSVR(feed)) {
-        feedGroups[baseName].canonicalAddress = feed.contractAddress
+        feedGroups[baseName].svrAddress = feed.contractAddress
       }
     })
 
@@ -160,19 +160,11 @@ If the **private route** fails or times out, the SVR feed automatically **revert
 
 ## SVR Feed Variants
 
-Chainlink SVR Feeds are currently available in two variants: [Canonical SVR Feeds](#canonical-svr-feeds) and [Aave SVR Feeds](#aave-svr-feeds).
-
-### Canonical SVR Feeds
-
-Canonical SVR feeds are designed to be used by any protocol.
-
-{/* [More info] */}
+Chainlink SVR Feeds are available as standard feeds for general use and specialized [Aave SVR Feeds](#aave-svr-feeds) for the Aave protocol. More specialized SVR feeds may be developed in the future for other protocols.
 
 ### Aave SVR Feeds
 
-Aave SVR feeds are specifically tailored for the Aave protocol.
-
-{/* [More info] */}
+Aave SVR feeds are specifically tailored for the Aave protocol and are only intended for use by Aave.
 
 ## How Protocols Can Utilize SVR Feeds
 
@@ -340,7 +332,7 @@ When processing forward calls, verify that the `to` address from the code sample
     <tr>
       <th>Feed</th>
       <th>Aave Dedicated SVR Feed</th>
-      <th>Canonical SVR Feed</th>
+      <th>SVR Feed</th>
     </tr>
   </thead>
   <tbody>
@@ -358,8 +350,8 @@ When processing forward calls, verify that the `to` address from the code sample
             )}
           </td>
           <td>
-            {feed.canonicalAddress ? (
-              <CopyText text={feed.canonicalAddress} code />
+            {feed.svrAddress ? (
+              <CopyText text={feed.svrAddress} code />
             ) : (
               <span style={{ color: "#888" }}>Not available</span>
             )}
