@@ -282,6 +282,28 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "resources/bridge-risks?parent=dataFeeds",
         },
         {
+          title: "Chainlink Oracle Platform",
+          url: "oracle-platform/overview?parent=dataFeeds",
+          children: [
+            {
+              title: "Data Standard",
+              url: "oracle-platform/data-standard?parent=dataFeeds",
+            },
+            {
+              title: "Interoperability Standard",
+              url: "oracle-platform/interoperability-standard?parent=dataFeeds",
+            },
+            {
+              title: "Compliance Standard",
+              url: "oracle-platform/compliance-standard?parent=dataFeeds",
+            },
+            {
+              title: "Privacy Standard",
+              url: "oracle-platform/privacy-standard?parent=dataFeeds",
+            },
+          ],
+        },
+        {
           title: "Chainlink Architecture",
           url: "architecture-overview/architecture-overview?parent=dataFeeds",
           children: [
@@ -570,6 +592,28 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "resources/bridge-risks?parent=dataStreams",
         },
         {
+          title: "Chainlink Oracle Platform",
+          url: "oracle-platform/overview?parent=dataStreams",
+          children: [
+            {
+              title: "Data Standard",
+              url: "oracle-platform/data-standard?parent=dataStreams",
+            },
+            {
+              title: "Interoperability Standard",
+              url: "oracle-platform/interoperability-standard?parent=dataStreams",
+            },
+            {
+              title: "Compliance Standard",
+              url: "oracle-platform/compliance-standard?parent=dataStreams",
+            },
+            {
+              title: "Privacy Standard",
+              url: "oracle-platform/privacy-standard?parent=dataStreams",
+            },
+          ],
+        },
+        {
           title: "Chainlink Architecture",
           url: "architecture-overview/architecture-overview?parent=dataStreams",
           children: [
@@ -751,6 +795,28 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Bridges and Associated Risks",
           url: "resources/bridge-risks?parent=automation",
+        },
+        {
+          title: "Chainlink Oracle Platform",
+          url: "oracle-platform/overview?parent=automation",
+          children: [
+            {
+              title: "Data Standard",
+              url: "oracle-platform/data-standard?parent=automation",
+            },
+            {
+              title: "Interoperability Standard",
+              url: "oracle-platform/interoperability-standard?parent=automation",
+            },
+            {
+              title: "Compliance Standard",
+              url: "oracle-platform/compliance-standard?parent=automation",
+            },
+            {
+              title: "Privacy Standard",
+              url: "oracle-platform/privacy-standard?parent=automation",
+            },
+          ],
         },
         {
           title: "Chainlink Architecture",
@@ -944,6 +1010,28 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "resources/bridge-risks?parent=chainlinkFunctions",
         },
         {
+          title: "Chainlink Oracle Platform",
+          url: "oracle-platform/overview?parent=chainlinkFunctions",
+          children: [
+            {
+              title: "Data Standard",
+              url: "oracle-platform/data-standard?parent=chainlinkFunctions",
+            },
+            {
+              title: "Interoperability Standard",
+              url: "oracle-platform/interoperability-standard?parent=chainlinkFunctions",
+            },
+            {
+              title: "Compliance Standard",
+              url: "oracle-platform/compliance-standard?parent=chainlinkFunctions",
+            },
+            {
+              title: "Privacy Standard",
+              url: "oracle-platform/privacy-standard?parent=chainlinkFunctions",
+            },
+          ],
+        },
+        {
           title: "Chainlink Architecture",
           url: "architecture-overview/architecture-overview?parent=chainlinkFunctions",
           children: [
@@ -1101,6 +1189,28 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Bridges and Associated Risks",
           url: "resources/bridge-risks?parent=vrf",
+        },
+        {
+          title: "Chainlink Oracle Platform",
+          url: "oracle-platform/overview?parent=vrf",
+          children: [
+            {
+              title: "Data Standard",
+              url: "oracle-platform/data-standard?parent=vrf",
+            },
+            {
+              title: "Interoperability Standard",
+              url: "oracle-platform/interoperability-standard?parent=vrf",
+            },
+            {
+              title: "Compliance Standard",
+              url: "oracle-platform/compliance-standard?parent=vrf",
+            },
+            {
+              title: "Privacy Standard",
+              url: "oracle-platform/privacy-standard?parent=vrf",
+            },
+          ],
         },
         {
           title: "Chainlink Architecture",
