@@ -31,19 +31,9 @@ try {
 const response = await fetch(rddUrl)
 const data = await response.json()
 
-    const targetFeeds = [
-      "AAVE/USD-RefPrice-DF-Ethereum-001",
-      "BTC/USD-RefPrice-DF-Ethereum-001",
-      "COMP/USD-RefPrice-DF-Ethereum-001",
-      "ETH/USD-RefPrice-DF-Ethereum-001",
-      "LINK/USD-RefPrice-DF-Ethereum-001",
-      "USDC/USD-RefPrice-DF-Ethereum-001",
-      "USDT/USD-RefPrice-DF-Ethereum-001",
-    ]
-
+    // Find all feeds that have SVR variants (either Aave or Shared SVR) and are not hidden
     const svrFeeds = data.filter(
-      (feed) =>
-        feed.secondaryProxyAddress && feed.docs?.clicProductName && targetFeeds.includes(feed.docs.clicProductName)
+      (feed) => feed.secondaryProxyAddress && !feed.docs?.hidden && (isAaveSVR(feed) || isSharedSVR(feed))
     )
 
     // Group feeds by their base name (e.g., "BTC/USD", "ETH/USD")
