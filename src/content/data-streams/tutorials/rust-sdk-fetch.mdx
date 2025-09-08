@@ -73,129 +73,137 @@ You'll start with the set up of your Rust project, installing the SDK and pastin
 
 ### Fetch and decode a report with a single stream
 
-1. Replace the contents of `src/main.rs` with the following code:
+1.  Replace the contents of `src/main.rs` with the following code:
 
-   ```rust
-   use chainlink_data_streams_report::feed_id::ID;
-   // NOTE: Use the report version (v3, v8, etc.) that matches your stream
-   use chainlink_data_streams_report::report::{ decode_full_report, v3::ReportDataV3 };
-   use chainlink_data_streams_sdk::client::Client;
-   use chainlink_data_streams_sdk::config::Config;
-   use std::env;
-   use std::error::Error;
+    ```rust
+    use chainlink_data_streams_report::feed_id::ID;
+    // NOTE: Use the report version (v3, v8, etc.) that matches your stream
+    use chainlink_data_streams_report::report::{ decode_full_report, v3::ReportDataV3 };
+    use chainlink_data_streams_sdk::client::Client;
+    use chainlink_data_streams_sdk::config::Config;
+    use std::env;
+    use std::error::Error;
 
-   #[tokio::main]
-   async fn main() -> Result<(), Box<dyn Error>> {
-      // Get feed ID from command line arguments
-      let args: Vec<String> = env::args().collect();
-      if args.len() < 2 {
-         eprintln!("Usage: cargo run [FeedID]");
-         std::process::exit(1);
-      }
-      let feed_id_input = &args[1];
+    #[tokio::main]
+    async fn main() -> Result<(), Box<dyn Error>> {
+       // Get feed ID from command line arguments
+       let args: Vec<String> = env::args().collect();
+       if args.len() < 2 {
+          eprintln!("Usage: cargo run [FeedID]");
+          std::process::exit(1);
+       }
+       let feed_id_input = &args[1];
 
-      // Get API credentials from environment variables
-      let api_key = env::var("API_KEY").expect("API_KEY must be set");
-      let api_secret = env::var("API_SECRET").expect("API_SECRET must be set");
+       // Get API credentials from environment variables
+       let api_key = env::var("API_KEY").expect("API_KEY must be set");
+       let api_secret = env::var("API_SECRET").expect("API_SECRET must be set");
 
-      // Initialize the configuration
-      let config = Config::new(
-         api_key,
-         api_secret,
-         "https://api.testnet-dataengine.chain.link".to_string(),
-         "wss://api.testnet-dataengine.chain.link/ws".to_string()
-      ).build()?;
+       // Initialize the configuration
+       let config = Config::new(
+          api_key,
+          api_secret,
+          "https://api.testnet-dataengine.chain.link".to_string(),
+          "wss://api.testnet-dataengine.chain.link/ws".to_string()
+       ).build()?;
 
-      // Initialize the client
-      let client = Client::new(config)?;
+       // Initialize the client
+       let client = Client::new(config)?;
 
-      // Parse the feed ID
-      let feed_id = ID::from_hex_str(feed_id_input)?;
+       // Parse the feed ID
+       let feed_id = ID::from_hex_str(feed_id_input)?;
 
-      // Fetch the latest report
-      let response = client.get_latest_report(feed_id).await?;
-      println!("\nRaw report data: {:?}\n", response.report);
+       // Fetch the latest report
+       let response = client.get_latest_report(feed_id).await?;
+       println!("\nRaw report data: {:?}\n", response.report);
 
-      // Decode the report
-      let full_report = hex::decode(&response.report.full_report[2..])?;
-      let (_report_context, report_blob) = decode_full_report(&full_report)?;
-      // NOTE: Use the report version (v3, v8, etc.) that matches your stream
-      let report_data = ReportDataV3::decode(&report_blob)?;
+       // Decode the report
+       let full_report = hex::decode(&response.report.full_report[2..])?;
+       let (_report_context, report_blob) = decode_full_report(&full_report)?;
+       // NOTE: Use the report version (v3, v8, etc.) that matches your stream
+       let report_data = ReportDataV3::decode(&report_blob)?;
 
-      // Print decoded report details
-      // NOTE: Adjust for your report and desired output
-      println!("\nDecoded Report for Stream ID {}:", feed_id_input);
-      println!("------------------------------------------");
-      println!("Observations Timestamp: {}", response.report.observations_timestamp);
-      println!("Benchmark Price       : {}", report_data.benchmark_price);
-      println!("Bid                   : {}", report_data.bid);
-      println!("Ask                   : {}", report_data.ask);
-      println!("Valid From Timestamp  : {}", response.report.valid_from_timestamp);
-      println!("Expires At            : {}", report_data.expires_at);
-      println!("Link Fee              : {}", report_data.link_fee);
-      println!("Native Fee            : {}", report_data.native_fee);
-      println!("------------------------------------------");
+       // Print decoded report details
+       // NOTE: Adjust for your report and desired output
+       println!("\nDecoded Report for Stream ID {}:", feed_id_input);
+       println!("------------------------------------------");
+       println!("Observations Timestamp: {}", response.report.observations_timestamp);
+       println!("Benchmark Price       : {}", report_data.benchmark_price);
+       println!("Bid                   : {}", report_data.bid);
+       println!("Ask                   : {}", report_data.ask);
+       println!("Valid From Timestamp  : {}", response.report.valid_from_timestamp);
+       println!("Expires At            : {}", report_data.expires_at);
+       println!("Link Fee              : {}", report_data.link_fee);
+       println!("Native Fee            : {}", report_data.native_fee);
+       println!("------------------------------------------");
 
-      Ok(())
-   }
-   ```
+       Ok(())
+    }
+    ```
 
-1. Set up your API credentials as environment variables:
+    <Aside type="note" title="Adapt the example">
+      The above example decodes a crypto report using the [v3 schema](/data-streams/reference/report-schema-v3). If
+      you're working with a different type of stream (e.g., RWA, NAV), make sure to adjust the import statement,
+      decoding logic, and access patterns to match the appropriate report version (e.g., v8, v9). Refer to the [Report
+      Schemas](/data-streams/reference/report-schema-overview) for your stream. <br /> Learn more about [adapting code
+      for different report schema versions](#adapting-code-for-different-report-schema-versions).
+    </Aside>
 
-   ```bash
-   export API_KEY="<YOUR_API_KEY>"
-   export API_SECRET="<YOUR_API_SECRET>"
-   ```
+1.  Set up your API credentials as environment variables:
 
-   Replace `<YOUR_API_KEY>` and `<YOUR_API_SECRET>` with your API credentials.
+    ```bash
+    export API_KEY="<YOUR_API_KEY>"
+    export API_SECRET="<YOUR_API_SECRET>"
+    ```
 
-   The Rust code sample reads these environment variables using `std::env::var("API_KEY")` and `std::env::var("API_SECRET")` when building the client configuration:
+    Replace `<YOUR_API_KEY>` and `<YOUR_API_SECRET>` with your API credentials.
 
-   ```rust
-   let api_key = std::env::var("API_KEY").expect("API_KEY must be set");
-   let api_secret = std::env::var("API_SECRET").expect("API_SECRET must be set");
+    The Rust code sample reads these environment variables using `std::env::var("API_KEY")` and `std::env::var("API_SECRET")` when building the client configuration:
 
-   // Initialize the configuration
-   let config = Config::new(
-      api_key,
-      api_secret,
-      "https://api.testnet-dataengine.chain.link".to_string(),
-      "wss://api.testnet-dataengine.chain.link/ws".to_string()
-   ).build()?;
-   ```
+    ```rust
+    let api_key = std::env::var("API_KEY").expect("API_KEY must be set");
+    let api_secret = std::env::var("API_SECRET").expect("API_SECRET must be set");
 
-   This configuration also specifies the `rest_url`, which is the base URL for the API, along with the WebSocket endpoint [for subscribing to a streamed data report](rust-sdk-stream). In this example, both are set to the testnet URLs for Data Streams.
+    // Initialize the configuration
+    let config = Config::new(
+       api_key,
+       api_secret,
+       "https://api.testnet-dataengine.chain.link".to_string(),
+       "wss://api.testnet-dataengine.chain.link/ws".to_string()
+    ).build()?;
+    ```
 
-   See the [Rust SDK Reference](/data-streams/reference/data-streams-api/rust-sdk#configuration-reference) page for more configuration options.
+    This configuration also specifies the `rest_url`, which is the base URL for the API, along with the WebSocket endpoint [for subscribing to a streamed data report](rust-sdk-stream). In this example, both are set to the testnet URLs for Data Streams.
 
-1. Read from a [testnet crypto stream](/data-streams/crypto-streams?page=1&testnetPage=1#testnet-crypto-streams). The below example executes the application, reading from the `ETH/USD` crypto stream:
+    See the [Rust SDK Reference](/data-streams/reference/data-streams-api/rust-sdk#configuration-reference) page for more configuration options.
 
-   ```bash
-   cargo run -- 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
-   ```
+1.  Read from a [testnet crypto stream](/data-streams/crypto-streams?page=1&testnetPage=1#testnet-crypto-streams). The below example executes the application, reading from the `ETH/USD` crypto stream:
 
-   Expect output similar to the following in your terminal:
+    ```bash
+    cargo run -- 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+    ```
 
-   ```bash
-   Raw report data: Report { feed_id: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782, valid_from_timestamp: 1734124400, observations_timestamp: 1734124400, full_report: "0x0006f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff1578000000000000000000000000000000000000000000000000000000004f56930f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba78200000000000000000000000000000000000000000000000000000000675ca37000000000000000000000000000000000000000000000000000000000675ca3700000000000000000000000000000000000000000000000000000174be1bd8758000000000000000000000000000000000000000000000000000cb326ce8c3ea800000000000000000000000000000000000000000000000000000000675df4f00000000000000000000000000000000000000000000000d3a30bcc15e207c0000000000000000000000000000000000000000000000000d3a1557b5e634060200000000000000000000000000000000000000000000000d3ab99a974ff10f400000000000000000000000000000000000000000000000000000000000000000292bdd75612560e46ed9b0c2437898f81eb0e18b6b902a161b9708e9177175cf3b8ef2b279f230f766fb29306250ee90856516ee349ca42b2d7fb141deb006745000000000000000000000000000000000000000000000000000000000000000221c156e80276827e1bfeb6542ab064dfa958f5be955f516fb62b1c93437472c31cc65fcaba68c9d661701190bc32025a0690af0eefe027ac218fd15c588dd4d5" }
+    Expect output similar to the following in your terminal:
+
+    ```bash
+    Raw report data: Report { feed_id: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782, valid_from_timestamp: 1734124400, observations_timestamp: 1734124400, full_report: "0x0006f9b553e393ced311551efd30d1decedb63d76ad41737462e2cdbbdff1578000000000000000000000000000000000000000000000000000000004f56930f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028001010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba78200000000000000000000000000000000000000000000000000000000675ca37000000000000000000000000000000000000000000000000000000000675ca3700000000000000000000000000000000000000000000000000000174be1bd8758000000000000000000000000000000000000000000000000000cb326ce8c3ea800000000000000000000000000000000000000000000000000000000675df4f00000000000000000000000000000000000000000000000d3a30bcc15e207c0000000000000000000000000000000000000000000000000d3a1557b5e634060200000000000000000000000000000000000000000000000d3ab99a974ff10f400000000000000000000000000000000000000000000000000000000000000000292bdd75612560e46ed9b0c2437898f81eb0e18b6b902a161b9708e9177175cf3b8ef2b279f230f766fb29306250ee90856516ee349ca42b2d7fb141deb006745000000000000000000000000000000000000000000000000000000000000000221c156e80276827e1bfeb6542ab064dfa958f5be955f516fb62b1c93437472c31cc65fcaba68c9d661701190bc32025a0690af0eefe027ac218fd15c588dd4d5" }
 
 
-   Decoded Report for Stream ID 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782:
-   ------------------------------------------
-   Observations Timestamp: 1734124400
-   Benchmark Price       : 3904011708000000000000
-   Bid                   : 3903888333211164500000
-   Ask                   : 3904628100124598400000
-   Valid From Timestamp  : 1734124400
-   Expires At            : 1734210800
-   Link Fee              : 3574678975954600
-   Native Fee            : 25614677280600
-   ------------------------------------------
-   ```
+    Decoded Report for Stream ID 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782:
+    ------------------------------------------
+    Observations Timestamp: 1734124400
+    Benchmark Price       : 3904011708000000000000
+    Bid                   : 3903888333211164500000
+    Ask                   : 3904628100124598400000
+    Valid From Timestamp  : 1734124400
+    Expires At            : 1734210800
+    Link Fee              : 3574678975954600
+    Native Fee            : 25614677280600
+    ------------------------------------------
+    ```
 
-   Your application has successfully decoded the report data.
+    Your application has successfully decoded the report data.
 
-   [Learn more about the decoded report details](#decoded-report-details).
+    [Learn more about the decoded report details](#decoded-report-details).
 
 #### Decoded report details
 
