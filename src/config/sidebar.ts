@@ -10,6 +10,7 @@ import evmCcipV151Contents from "./sidebar/ccip/api-reference/evm/v1_5_1.json" w
 import evmCcipV160Contents from "./sidebar/ccip/api-reference/evm/v1_6_0.json" with { type: "json" }
 import aptosCcipV160Contents from "./sidebar/ccip/api-reference/aptos/v1_6_0.json" with { type: "json" }
 import svmCcipV011Contents from "./sidebar/ccip/api-reference/svm/v0_1_1.json" with { type: "json" }
+import evmCcipV161Contents from "./sidebar/ccip/api-reference/evm/v1_6_1.json" with { type: "json" }
 import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" with { type: "json" }
 import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" with { type: "json" }
 import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/v0_2_3.json" with { type: "json" }
@@ -1781,7 +1782,13 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "ccip/api-reference/evm",
               children: [
                 {
-                  title: "v1.6.0 (Latest)",
+                  title: "v1.6.1 (Latest)",
+                  url: "ccip/api-reference/evm/v1.6.1",
+                  isCollapsible: true,
+                  children: evmCcipV161Contents,
+                },
+                {
+                  title: "v1.6.0",
                   url: "ccip/api-reference/evm/v1.6.0",
                   isCollapsible: true,
                   children: evmCcipV160Contents,
