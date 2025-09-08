@@ -48,6 +48,8 @@ import * as errors_v1_5_0 from "./errors/v1_5_0/index.ts"
 import * as errors_v1_5_1 from "./errors/v1_5_1/index.ts"
 // eslint-disable-next-line camelcase
 import * as errors_v1_6_0 from "./errors/v1_6_0/index.ts"
+// eslint-disable-next-line camelcase
+import * as errors_v1_6_1 from "./errors/v1_6_1/index.ts"
 
 export const getAllEnvironments = () => [Environment.Mainnet, Environment.Testnet]
 export const getAllVersions = () => [Version.V1_2_0]
@@ -71,10 +73,13 @@ type ErrorTypesV160 = ErrorTypesV151 & {
   feequoterCCIPSendErrors: CCIPSendErrorEntry[]
 }
 
+type ErrorTypesV161 = ErrorTypesV160
+
 type VersionedErrors = {
   v1_5_0: ErrorTypesV150
   v1_5_1: ErrorTypesV151
   v1_6_0: ErrorTypesV160
+  v1_6_1: ErrorTypesV161
 }
 
 // Export errors by version with type safety
@@ -85,6 +90,8 @@ export const errors: VersionedErrors = {
   v1_5_1: errors_v1_5_1 as ErrorTypesV151,
   // eslint-disable-next-line camelcase
   v1_6_0: errors_v1_6_0 as ErrorTypesV160,
+  // eslint-disable-next-line camelcase
+  v1_6_1: errors_v1_6_1 as ErrorTypesV161,
 }
 
 export const networkFees: NetworkFees = {
