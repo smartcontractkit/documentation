@@ -44,8 +44,8 @@ In this tutorial, you'll learn how to verify onchain the integrity of reports by
 
 Make sure you understand how to fetch reports via the [REST API](/data-streams/reference/data-streams-api/interface-api) or [WebSocket](/data-streams/reference/data-streams-api/interface-ws) connection. Refer to the following tutorials for more information:
 
-- [Fetch and decode reports via a REST API](/data-streams/tutorials/api-go)
-- [Stream and decode reports via WebSocket](/data-streams/tutorials/ws-go)
+- [Fetch and decode reports via a REST API](/data-streams/tutorials/go-sdk-fetch)
+- [Stream and decode reports via WebSocket](/data-streams/tutorials/go-sdk-stream)
 
 ## Requirements
 
@@ -126,7 +126,7 @@ For this tutorial on _Arbitrum Sepolia_, fees are required, so you need to fund 
 
 1.  In Remix, on the **Deploy & Run Transactions** tab, expand your verifier contract under the **Deployed Contracts** section.
 
-1.  Fill in the `verifyReport` function input parameter with the report payload you want to verify. You can use the following full report payload obtained in the [Fetch and decode report via a REST API](/data-streams/tutorials/api-go) tutorial as an example:
+1.  Fill in the `verifyReport` function input parameter with the report payload you want to verify. You can use the following full report payload obtained in the [Fetch and decode report via a REST API](/data-streams/tutorials/go-sdk-fetch) tutorial as an example:
 
     ```
     0x000660403d36be006d0c15d9b306f93c8660c5cfeab7db8e28c78ba316d395970000000000000000000000000000000000000000000000000000000032c3780a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000002200000000000000000000000000000000000000000000000000000000000000280010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001200003c8e550d2fc5304993010112de9b69798297e4cc11990ee6250e464daf760000000000000000000000000000000000000000000000000000000006706e595000000000000000000000000000000000000000000000000000000006706e595000000000000000000000000000000000000000000000000000025bd3eb74c080000000000000000000000000000000000000000000000000021c6a95c654c7400000000000000000000000000000000000000000000000000000000670837150000000000000000000000000000000000000000000000079a2ab4077fc8fc6000000000000000000000000000000000000000000000000799fcb42536dfd8300000000000000000000000000000000000000000000000079a59496c3f29a0000000000000000000000000000000000000000000000000000000000000000002bd4acd37ce3cd5799de05d156ab328a5effd94468ebbaf2ff18d13d9631259cbe66cca01af6a8bb36e79d2d731a44e16791ee31e46ce27ed6530f1590cd7734c0000000000000000000000000000000000000000000000000000000000000002391562f1f2e4986bdb978fbf5ee27f7012992a79301af42d3473761ef2ede6271a61fbf4b32ac5be68a598bcfa523e035b624dab3b3d9a46276834f824ee592a
@@ -174,7 +174,10 @@ The `verifyReport` function is the core function that handles onchain report ver
     - Schema version `0x0003` corresponds to the [report schema v3](/data-streams/reference/report-schema-v3) (Crypto assets).
     - Schema version `0x0008` corresponds to the [report schema v8](/data-streams/reference/report-schema-v8) (Real World Assets).
     - Schema version `0x0009` corresponds to the [report schema v9](/data-streams/reference/report-schema-v9) (NAV data).
+    - Schema version `0x000A` corresponds to the [report schema v10](/data-streams/reference/report-schema-v10) (Backed xStock data).
   - If the report version is unsupported, the function reverts with an InvalidReportVersion error.
+
+  For more information, see the [Report Schemas](/data-streams/reference/report-schema-overview) documentation.
 
 - **Fee calculation and handling**:
 
@@ -196,7 +199,7 @@ The `verifyReport` function is the core function that handles onchain report ver
 
 - **Data decoding**:
 
-  - Depending on the report version, the function decodes the verified report data into the appropriate struct (`ReportV3`, `ReportV8`, or `ReportV9`).
+  - Depending on the [report version](/data-streams/reference/report-schema-overview), the function decodes the verified report data into the appropriate struct (`ReportV3`, `ReportV8`,`ReportV9`, etc.).
   - It emits a `DecodedPrice` event with the price extracted from the verified report.
   - The `lastDecodedPrice` state variable is updated with the new price.
 
