@@ -427,6 +427,20 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "Sei",
+    logoUrl: "/assets/chains/sei.svg",
+    mainnet: {
+      label: "Sei Mainnet",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://seitrace.com/address/%s",
+    },
+    testnet: {
+      label: "Sei Testnet",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://testnet.seitrace.com/address/%s",
+    },
+  },
+  {
     network: "Shibarium",
     logoUrl: "/assets/chains/shibarium.svg",
     mainnet: {
