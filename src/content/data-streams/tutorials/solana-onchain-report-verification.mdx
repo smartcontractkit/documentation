@@ -169,6 +169,7 @@ use anchor_lang::solana_program::{
     pubkey::Pubkey,
     instruction::Instruction,
 };
+// NOTE: Adjust for your report version
 use data_streams_report::report::v3::ReportDataV3;
 use chainlink_solana_data_streams::VerifierInstructions;
 
@@ -212,10 +213,12 @@ pub mod example_verify {
         // Decode and log the verified report data
         if let Some((_program_id, return_data)) = get_return_data() {
             msg!("Report data found");
+            // NOTE: Adjust for your report version (V3, V4, V8, etc.)
             let report = ReportDataV3::decode(&return_data)
                 .map_err(|_| error!(CustomError::InvalidReportData))?;
 
             // Log report fields
+            // NOTE: Adjust for your report and desired output
             msg!("FeedId: {}", report.feed_id);
             msg!("Valid from timestamp: {}", report.valid_from_timestamp);
             msg!("Observations Timestamp: {}", report.observations_timestamp);
@@ -261,6 +264,15 @@ pub struct ExampleProgramContext<'info> {
     pub verifier_program_id: AccountInfo<'info>,
 }
 ```
+
+    <Aside type="note" title="Adapt the example">
+
+    The above example verifies report data from the [Cryptocurrency v3 schema](/data-streams/reference/report-schema-v3). If
+    you're working with a different type of stream (e.g., RWA, NAV), make sure to adjust the report fields to match the appropriate schema (e.g., v8, v9). Refer to the [Report
+    Schemas](/data-streams/reference/report-schema-overview) for your stream. <br /> Learn more about [adapting code
+    for different report schema versions](#adapting-code-for-different-report-schema-versions).
+
+    </Aside>
 
 Replace `<YOUR_PROGRAM_ID>` with your program ID in the `declare_id!` macro. You can run <CopyText text="solana-keygen pubkey target/deploy/example_verify-keypair.json" code/> to get your program ID.
 
@@ -522,3 +534,41 @@ This tutorial provides a basic example on how to verify reports. When you implem
   - Price threshold checks to prevent processing extreme values
   - Timestamp validations to ensure data freshness
   - Custom feed-specific validations based on your use case
+
+## Adapting code for different report schema versions
+
+When working with different versions of [Data Stream reports](/data-streams/reference/report-schema-overview), you'll need to adapt your code to handle the specific report schema version they use:
+
+1. **Import the correct schema version module.** Examples:
+
+   - For v3 schema (as used in this example):
+
+     ```rust
+     use data_streams_report::report::v3::ReportDataV3;
+     ```
+
+   - For v8 schema:
+
+     ```rust
+     use data_streams_report::report::v8::ReportDataV8;
+     ```
+
+1. **Update the decode function to use the correct schema version.** Examples:
+
+   - For v3 schema (as used in this example):
+
+     ```rust
+     let report = ReportDataV3::decode(&return_data)?;
+     ```
+
+   - For v8 schema:
+
+     ```rust
+     let report = ReportDataV8::decode(&return_data)?;
+     ```
+
+1. **Adjust report field access and logic for the schema version.**
+
+   - The fields you access and log (e.g., `feed_id`, `benchmark_price`, `bid`, `ask`, etc.) must match the schema version's structure and available fields.
+
+Refer to the [Report Schemas](/data-streams/reference/report-schema-overview) documentation for details on each version's fields and usage.
