@@ -1,0 +1,160 @@
+---
+title: "Hyperliquid Integration Guide"
+section: "ccip"
+metadata:
+  description: "CCIP is fully compatible with Hyperliquid, allowing multichain tokens to be eligible for trading on the Hyperliquid decentralized exchange."
+  excerpt: "ccip hyperliquid hyperevm hypercore bridge cross-chain token"
+  datePublished: "2024-08-08T07:51:46Z"
+---
+
+import { CopyText } from "@components"
+import { Aside } from "@components"
+
+CCIP is fully compatible with Hyperliquid, allowing multichain tokens to be eligible for trading on the Hyperliquid decentralized exchange. This guide will provide comprehensive information about Hyperliquid for CCIP users who want to get enabled on Hyperliquid.
+
+<Aside type="note" title="Enable Your CCIP Token on Hyperliquid">
+  We currently offer white glove support to validate your configuration and automatically execute the process for CCIP
+  users who are ready to deploy to Hyperliquid. Please contact us
+  [here](https://chain.link/ccip-contact?v=General%20Technical%20Support) to schedule a deployment and stay tuned for
+  enhanced tooling to further simplify this process for CCIP users.
+</Aside>
+
+## How Hyperliquid Works
+
+Hyperliquid is an emerging app-chain that powers a popular decentralized exchange with over $4B USDC bridged in. Hyperliquid operates on a dual network system made up of HyperCore and HyperEVM which are fully integrated together to compose the general Hyperliquid State.
+
+- HyperCore is the network where high-speed trading takes place at up to 200k orders per second, secured by HyperBFT Consensus. Trading occurs through a Central Limit Order Book (CLOB) which is different from most decentralized exchange liquidity pool structures.
+- HyperEVM is where the supporting infrastructure and contracts are deployed, such as the MintAndBurnERC20 tokens deployed as a part of a CCIP implementation. There is a growing DeFi ecosystem including Money Markets, LSTs and DEXes on HyperEVM.
+
+|                      |                              HyperCore                              |                        HyperEVM                        |
+| :------------------: | :-----------------------------------------------------------------: | :----------------------------------------------------: |
+| **Primary Function** | High-speed decentralized exchange trading via an onchain order book | Supporting infrastructure and external smart contracts |
+|    **Token Type**    |                            HIP-1 tokens                             |                      ERC20 tokens                      |
+|    **Deployment**    |                Requires winning a spot slot auction                 |               Standard ERC20 deployment                |
+|   **Interaction**    |        Posting “signed actions” through a Rest API Endpoint         |                  Standard RPC Methods                  |
+
+### HyperCore
+
+HyperCore is a bespoke L1 blockchain designed to deliver low latency, high throughput, and instant finality for the use case of high speed trading of spot assets and perpetual futures. This enables a user experience and market dynamic that feels like a centralized exchange. Users and developers interact with HyperCore by posting signed actions to the [HyperCore API](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api).
+
+#### HIP-1 Token Standard
+
+The native token standard for spot trading on HyperCore is called [HIP-1](https://hyperliquid.gitbook.io/hyperliquid-docs/hyperliquid-improvement-proposals-hips/hip-1-native-token-standard). HIP-1 tokens are fungible and have a fixed supply, which must be declared at the time of initialization.
+
+To deploy a HIP-1 token, the issuer must first win a Dutch auction for a spot slot—a permissioned right to enable a token for trading on Hyperliquid. These auctions are held every 31 hours and typically require a winning bid of tens of thousands of dollars worth of HYPE.
+
+Once a spot slot is secured, the owner can proceed with a defined deployment flow, including initializing the token supply and registering the trading pair—as outlined in the steps below.
+
+### HyperEVM
+
+HyperEVM is largely similar to any other EVM network, allowing standard development tooling to be used and similar smart contract design patterns. The main differences lie in the Dual Block Size architecture and the access to the HyperCore state via read precompiles.
+
+#### Dual Block Architecture
+
+The HyperEVM blockchain operates using a [dual block architecture, consisting of small, fast blocks and large, slow blocks](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/hyperevm/dual-block-architecture):
+
+- **Small blocks (2M gas limit)** are produced every 1 second and handle typical user transactions.
+
+- **Large blocks (30M gas limit)** are produced every 1 minute and are used for more complex operations such as contract deployments.
+
+Users can control which block type their transaction is included in by toggling their block size setting. This is done by submitting a signed action—a type of authenticated message—to a specific endpoint on the HyperCore API.
+
+For example, when deploying a CCIP token on HyperEVM, a developer must first switch to large blocks by submitting the appropriate action to the API. This ensures the transaction has sufficient gas capacity to succeed within a large block.
+
+```json
+{ "type": "evmUserModify", "usingBigBlocks": true }
+```
+
+#### Read Precompiles
+
+Smart contracts on HyperEVM can access data from HyperCore by calling special system-level addresses known as [precompiles](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/hyperevm/interacting-with-hypercore). These addresses don't correspond to regular smart contracts; instead, they trigger native code execution on the validator node.
+
+For example, when a contract on HyperEVM queries a token balance by calling a designated read precompile, it bypasses standard EVM execution. The call is handled directly by the validator, which fetches the requested data from HyperCore in real time. This mechanism provides secure, gas-efficient, read-only access to the core exchange state — including data such as order book balances, positions, and other protocol-level metrics.
+
+This design enables the development of onchain applications that can respond to the live state of the central limit order book on HyperCore. The same precompile infrastructure also powers cross-chain bridging, allowing seamless integration between ERC-20 tokens on HyperEVM and their linked HIP-1 counterparts on HyperCore.
+
+In the following example snippet, a smart contract on HyperEVM can trustlessly read the balance of an HIP1 token on HyperCore.
+
+```solidity
+address constant SPOT_BALANCE_PRECOMPILE_ADDRESS = 0x0000000000000000000000000000000000000801;
+ struct SpotBalance {
+    uint64 total;
+    uint64 hold;
+    uint64 entryNtl;
+  }
+function spotBalance(address user, uint64 token) external view returns (SpotBalance memory) {
+    bool success;
+    bytes memory result;
+    (success, result) = SPOT_BALANCE_PRECOMPILE_ADDRESS.staticcall(abi.encode(user, token));
+    require(success, "SpotBalance precompile call failed");
+    return abi.decode(result, (SpotBalance));
+  }
+```
+
+<Aside type="caution" title="Disclaimer">
+  This tutorial represents an example of using a Chainlink product or service and is provided to help you understand how
+  to interact with Chainlink's systems and services so that you can integrate them into your own. This template is
+  provided "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key
+  checks or error handling to make the usage of the product more clear. Do not use the code in this example in a
+  production environment without completing your own audits and application of best practices. Neither Chainlink Labs,
+  the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due
+  to errors in code.
+</Aside>
+
+## Integration Steps
+
+ERC-20 tokens deployed on HyperEVM can be linked to HIP-1 tokens on HyperCore by the same EOA that deployed the ERC-20 contract. Once linked, users can seamlessly convert their ERC-20 tokens on HyperEVM into the corresponding HIP-1 tokens on HyperCore using a native Lock-and-Release mechanism enabled by the dual-network architecture.
+
+Each HIP-1 token is assigned a unique token index, which serves two purposes:
+
+- It is used in API calls to identify the token.
+
+- It is used to derive the system address that acts as a bridge for transfers between HyperEVM and HyperCore.
+
+For example, the system address for token index 1385 is:
+`0x2000000000000000000000000000000000000569`.
+
+### Deploying CCIP Tokens on Hyperliquid
+
+To make a CCIP token tradable on Hyperliquid, follow these high-level steps:
+
+1. **Secure Spot Slot via Auction**  
+   Use the Hyperliquid UI to win the spot slot auction and secure the right to deploy a HIP-1 token.
+
+2. **Deploy Token on HyperEVM**
+
+   - Deploy your CCIP token to HyperEVM.
+   - In order to link the HIP-1 token on core to the deployed token on HyperEVM, ensure the token is deployed by an EOA (Externally Owned Account) capable of signing messages.
+
+3. **Initialize the HIP-1 Token**
+
+   - Allocate the **maximum intended supply** to the **System Address** derived from the spot slot ID.
+   - This System Address is consistent across HyperEVM and HyperCore and serves as a bridge between the ERC-20 and HIP-1 tokens.
+   - Think of this minting step as "funding the bridge" for inbound transfers.
+     - If the source token has **unbounded supply**, mint a large number (e.g., `2^64 - 1`).
+     - If the source token has **fixed supply**, mint the full max supply.
+   - Use the **HyperCore API** for this initialization.
+
+4. **Register Trading Pair**
+
+   - Register the trading pair between the HIP-1 token and **USDC** using the **HyperCore API**.
+
+5. **Link HIP-1 Token to ERC-20 Token**
+
+   - Make a signed API request to the **HyperCore network** from the EOA that deployed the ERC-20 token.
+   - This confirms the intent to link the tokens.
+
+6. **Connect the CCIP Token Pool**
+   - Deploy and configure a BurnAndMint Token Pool on HyperEVM using **CCIP Token Manager**.
+
+### Bridging Between HyperCore and HyperEVM
+
+Once the above steps are completed, a user can bridge their CCIP token from any connected network to HyperEVM as normal. Then they can [convert that ERC20 token into the corresponding HIP-1 token](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/hyperevm/hypercore-less-than-greater-than-hyperevm-transfers#transferring-between-core-and-evm) by simply sending it to the associated System Address. The system address then sends them the same amount of HIP-1 tokens on HyperCore. This works in the other direction in a similar fashion.
+
+## Contact Us
+
+Before proceeding, it’s essential to carefully review your deployment configuration. Even minor misconfigurations can permanently impact your spot slot, potentially requiring you to reacquire one through another auction.
+
+To help ensure a smooth and secure deployment, we currently offer white-glove support for CCIP users. Our team will validate your configuration and, if desired, provide tools and assistance to complete this process.
+
+If you're ready to deploy your CCIP token to Hyperliquid, please [contact us here](https://chain.link/ccip-contact?v=General%20Technical%20Support) to schedule a deployment. Stay tuned—enhanced tooling is on the way to further streamline this process for CCIP users.

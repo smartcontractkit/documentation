@@ -1,76 +1,140 @@
 ---
-import { Metadata } from "src/content.config.ts"
+import { Metadata, QuickstartsFrontmatter } from "src/content.config.ts"
 import { SITE, OPEN_GRAPH, PAGE } from "../config"
+import { getOgType } from "~/utils/seo/og"
+import { resolveCanonical, getMimeFromUrlPath, toAbsoluteUrl } from "~/utils/seo/url"
 import { detectApiReference } from "@components/VersionSelector/utils/versions"
+import { extractVersionInfo } from "@components/VersionSelector/utils/extractVersionInfo"
 import VersionSelectorHead from "@components/VersionSelector/base/VersionSelectorHead.astro"
+import StructuredData from "./StructuredData.astro"
+import { generateStructuredData, type VersionInfo } from "~/utils/structuredData"
 
 export interface Props {
   metadata?: Metadata
   canonicalURL: URL | string
+  quickstartFrontmatter?: QuickstartsFrontmatter
+  pageTitle?: string // Add page title from frontmatter
+  howToSteps?: { name: string; slug: string }[]
+  suppressDefaultStructuredData?: boolean
 }
 
-const { metadata, canonicalURL } = Astro.props
-const formattedContentTitle = metadata?.title
-  ? `${metadata.title} | ${SITE.title}`
-  : `${PAGE.titleFallback} | ${SITE.title}`
+const { metadata, canonicalURL, quickstartFrontmatter, pageTitle, howToSteps, suppressDefaultStructuredData } =
+  Astro.props
+const contentTitle = pageTitle ?? metadata?.title ?? PAGE.titleFallback
+const formattedContentTitle = `${contentTitle} | ${SITE.title}`
 const description = metadata?.description ?? SITE.description
 const excerpt = metadata?.excerpt ?? description
 
 // Check that the metadata image property exists, else use OPEN_GRAPH.image.src
 var canonicalImageSrc = OPEN_GRAPH.image.src
+let ogImageType = "image/png"
+let ogImageAlt = OPEN_GRAPH.image.alt
 if (metadata?.image) {
-  const imageUrl = new URL(metadata.image, Astro.site).toString()
-  const checkImgExists = async (url: string) => {
-    const res = await fetch(url, { method: "head" })
-    return res.status != 404
-  }
-  // Check that the metadata image is a valid URL, else use OPEN_GRAPH.image.src
-  if (await checkImgExists(imageUrl)) {
-    canonicalImageSrc = imageUrl
-  }
+  const imageUrl = toAbsoluteUrl(metadata.image, Astro.site)
+  canonicalImageSrc = imageUrl
+  const pathname = new URL(imageUrl).pathname
+  ogImageType = getMimeFromUrlPath(pathname) || ogImageType
 }
+
+// Prefer a context-specific image alt when possible
+ogImageAlt = pageTitle || metadata?.title || OPEN_GRAPH.image.alt
 
 // Detect if this is an API reference page and get the product
 const currentPage = new URL(Astro.request.url).pathname
+const isCcipDirectoryPath = currentPage.startsWith("/ccip/directory")
 const { isApiReference, product, isVersioned } = detectApiReference(currentPage)
+
+// Extract version information for API reference pages
+let versionInfo: VersionInfo | undefined = undefined
+if (isApiReference && product && isVersioned) {
+  const extractedVersionInfo = extractVersionInfo(product, currentPage)
+  if (extractedVersionInfo) {
+    versionInfo = extractedVersionInfo.toVersionInfo()
+  }
+}
+
+// Generate structured data
+const canonicalURLObj: URL = typeof canonicalURL === "string" ? new URL(canonicalURL) : (canonicalURL as URL)
+
+// Canonical override support (non-versioned pages only)
+const resolvedCanonicalHref = resolveCanonical(metadata?.canonical, Astro.site, canonicalURLObj)
+
+// Contextual Open Graph type
+const ogType = getOgType(currentPage)
+
+// Use quickstart frontmatter if available, otherwise use regular metadata
+// Suppress default structured data for CCIP directory pages (handled by page-level generators)
+const structuredDataObjects =
+  suppressDefaultStructuredData || isCcipDirectoryPath
+    ? []
+    : quickstartFrontmatter
+      ? generateStructuredData(
+          quickstartFrontmatter,
+          contentTitle,
+          canonicalURLObj,
+          currentPage,
+          undefined,
+          undefined,
+          howToSteps
+        )
+      : generateStructuredData(
+          metadata,
+          contentTitle,
+          canonicalURLObj,
+          currentPage,
+          metadata?.estimatedTime,
+          versionInfo,
+          howToSteps
+        )
 ---
+
+<!-- Page Metadata -->{/* Conditional canonical: Let VersionSelectorHead handle it for versioned pages */}
+{!(isApiReference && product && isVersioned) && <link rel="canonical" href={resolvedCanonicalHref} />}
 
 <!-- Version-specific SEO tags for API reference pages -->{
   isApiReference && product && isVersioned && <VersionSelectorHead product={product} currentPath={currentPage} />
 }
 
-<!-- Page Metadata -->
-<link rel="canonical" href={canonicalURL} />
-
 <!-- Primary Meta Tags -->
 <meta name="description" content={description} />
-<meta name="keywords" content={excerpt} />
+<meta name="author" content="Chainlink Labs" />
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+{metadata?.datePublished && <meta name="article:published_time" content={metadata.datePublished} />}
+{metadata?.lastModified && <meta name="article:modified_time" content={metadata.lastModified} />}
+<meta name="format-detection" content="telephone=no" />
 
 <!-- OpenGraph Tags -->
 <meta property="og:title" content={formattedContentTitle} />
-<meta property="og:type" content="article" />
+<meta property="og:type" content={ogType} />
 <meta property="og:url" content={canonicalURL} />
 <meta property="og:locale" content={SITE.defaultLanguage} />
 <meta property="og:image" content={canonicalImageSrc} />
-<meta property="og:image:alt" content={OPEN_GRAPH.image.alt} />
+<meta property="og:image:secure_url" content={canonicalImageSrc} />
+<meta property="og:image:alt" content={ogImageAlt} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:type" content={ogImageType} />
 <meta property="og:description" content={description} />
 <meta property="og:site_name" content={SITE.title} />
+{metadata?.datePublished && <meta property="article:published_time" content={metadata.datePublished} />}
+{metadata?.lastModified && <meta property="article:modified_time" content={metadata.lastModified} />}
+<meta property="article:author" content="Chainlink Labs" />
+<meta property="article:section" content="Documentation" />
 
 <!-- Twitter Tags -->
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:site" content={OPEN_GRAPH.twitter} />
+<meta name="twitter:site" content={`@${OPEN_GRAPH.twitter}`} />
+<meta name="twitter:creator" content="@chainlink" />
 <meta name="twitter:title" content={formattedContentTitle} />
 <meta name="twitter:description" content={description} />
 <meta name="twitter:image" content={canonicalImageSrc} />
-<meta name="twitter:image:alt" content={OPEN_GRAPH.image.alt} />
+<meta name="twitter:image:alt" content={ogImageAlt} />
+<meta name="twitter:domain" content="docs.chain.link" />
+<meta name="twitter:url" content={canonicalURL} />
 
 <!-- PWA Icons -->
 <link href="/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 <link href="/images/logo.png" rel="apple-touch-icon" />
 
-<!--
-  TODO: Add json+ld data, maybe https://schema.org/APIReference makes sense?
-  Docs: https://developers.google.com/search/docs/advanced/structured-data/intro-structured-data
-  https://www.npmjs.com/package/schema-dts seems like a great resource for implementing this.
-  Even better, there's a React component that integrates with `schema-dts`: https://github.com/google/react-schemaorg
--->
+<!-- Structured Data (JSON-LD) -->
+<StructuredData data={structuredDataObjects} />

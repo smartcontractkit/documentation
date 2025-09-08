@@ -5,7 +5,15 @@ import { Aside } from "@components"
 export type Props = {
   initialNetwork?: string
   ecosystem: string
-  dataFeedType?: DataFeedType
+  dataFeedType?:
+    | DataFeedType
+    | "streamsBacked"
+    | "streamsCrypto"
+    | "streamsRwa"
+    | "streamsNav"
+    | "smartdata"
+    | "default"
+    | "rates"
 }
 import { getServerSideChainMetadata } from "~/features/data/api/backend"
 import { CHAINS, ALL_CHAINS } from "~/features/data/chains"
@@ -65,11 +73,14 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
     </>
   ) : (
     <>
-      {dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa" ? (
+      {dataFeedType === "streamsCrypto" ||
+      dataFeedType === "streamsRwa" ||
+      dataFeedType === "streamsNav" ||
+      dataFeedType === "streamsBacked" ? (
         <>
           <p>
             To learn how to use Data Streams, see the{" "}
-            <a href="/data-streams/getting-started">Data Streams Getting Started</a> page.
+            <a href="/data-streams/tutorials/api-go">Fetch and decode reports</a> tutorial.
           </p>
           <p>
             For LINK token and Faucet details, see the{" "}
@@ -109,6 +120,28 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
             <a href="/resources/link-token-contracts?parent=dataFeeds">LINK Token Contracts</a> page.
           </p>
         </>
+      ) : dataFeedType === "usGovernmentMacroeconomicData" ? (
+        <>
+          <p>
+            To learn more about the U.S. Government Macroeconomic data feeds, see the{" "}
+            <a href="https://blog.chain.link/united-states-department-of-commerce-macroeconomic-data">blog article.</a>
+          </p>
+          <p>
+            To learn how to use these feeds, see the <a href="/data-feeds/using-data-feeds">Using Data Feeds</a> guide.
+          </p>
+          <p>
+            For LINK token and Faucet details, see the{" "}
+            <a href="/resources/link-token-contracts?parent=dataFeeds">LINK Token Contracts</a> page.
+          </p>
+          <Aside type="note" title="Talk to an expert">
+            <p>
+              <a href="https://chain.link/contact?ref_id=DataFeed">Contact us</a> to talk to an expert about integrating
+              Chainlink Data Feeds with your applications.
+            </p>
+          </Aside>
+
+          <FeedsCommonCallout callout="quality" />
+        </>
       ) : (
         <>
           <p>
@@ -147,7 +180,11 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
         </p>
       </Aside>
     </>
-  ) : dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa" ? (
+  ) : dataFeedType === "streamsCrypto" ||
+    dataFeedType === "streamsRwa" ||
+    dataFeedType === "streamsNav" ||
+    dataFeedType === "streamsBacked" ||
+    dataFeedType === "usGovernmentMacroeconomicData" ? (
     <> </>
   ) : (
     <>

@@ -6,6 +6,7 @@ import { useEffect } from "react"
 
 interface MegaMenuProps {
   cancel: () => void
+  id?: string
 }
 
 export const megaMenuSections = [
@@ -130,7 +131,7 @@ export const megaMenuSections = [
   },
 ]
 
-function MegaMenu({ cancel }: MegaMenuProps) {
+function MegaMenu({ cancel, id }: MegaMenuProps) {
   useEffect(() => {
     const onESC = (ev: KeyboardEvent) => {
       if (ev.key === "Escape") {
@@ -139,12 +140,12 @@ function MegaMenu({ cancel }: MegaMenuProps) {
     }
     window.addEventListener("keyup", onESC, false)
     return () => {
-      window.addEventListener("keyup", onESC, false)
+      window.removeEventListener("keyup", onESC, false)
     }
   }, [])
 
   return (
-    <div className={styles.megaMenuContainer}>
+    <div className={styles.megaMenuContainer} id={id}>
       <div className={styles.wrapper} onMouseLeave={cancel}>
         <div className={styles.resourcesMenuContentMain}>
           {megaMenuSections.map((section) => (

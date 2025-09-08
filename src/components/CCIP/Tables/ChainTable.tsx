@@ -117,9 +117,9 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
               .map((network, index) => (
                 <tr key={index}>
                   <td>
-                    <div
+                    <button
+                      type="button"
                       className="ccip-table__network-name"
-                      role="button"
                       onClick={() => {
                         const laneData = getLane({
                           sourceChain: sourceNetwork.key as SupportedChain,
@@ -143,10 +143,11 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
                           />
                         ))
                       }}
+                      aria-label={`View lane details for ${network.name}`}
                     >
-                      <img src={network.logo} alt={network.name} className="ccip-table__logo" />
+                      <img src={network.logo} alt={`${network.name} blockchain logo`} className="ccip-table__logo" />
                       {network.name}
-                    </div>
+                    </button>
                   </td>
                   <td
                     style={{ textAlign: "right" }}
