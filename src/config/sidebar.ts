@@ -9,6 +9,7 @@ import evmCcipV150Contents from "./sidebar/ccip/api-reference/evm/v1_5_0.json" w
 import evmCcipV151Contents from "./sidebar/ccip/api-reference/evm/v1_5_1.json" with { type: "json" }
 import evmCcipV160Contents from "./sidebar/ccip/api-reference/evm/v1_6_0.json" with { type: "json" }
 import svmCcipV160Contents from "./sidebar/ccip/api-reference/svm/v1_6_0.json" with { type: "json" }
+import aptosCcipV160Contents from "./sidebar/ccip/api-reference/aptos/v1_6_0.json" with { type: "json" }
 import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" with { type: "json" }
 import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" with { type: "json" }
 import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/v0_2_3.json" with { type: "json" }
@@ -1286,6 +1287,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "ccip/service-limits/svm",
             },
             {
+              title: "Aptos",
+              url: "ccip/service-limits/aptos",
+            },
+            {
               title: "Network Specific",
               url: "ccip/service-limits/network-specific-limits",
             },
@@ -1361,6 +1366,24 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                     {
                       title: "Upgradability",
                       url: "ccip/concepts/architecture/onchain/svm/upgradability",
+                    },
+                  ],
+                },
+                {
+                  title: "Aptos",
+                  url: "ccip/concepts/architecture/onchain/aptos",
+                  children: [
+                    {
+                      title: "Overview",
+                      url: "ccip/concepts/architecture/onchain/aptos/overview",
+                    },
+                    {
+                      title: "Components",
+                      url: "ccip/concepts/architecture/onchain/aptos/components",
+                    },
+                    {
+                      title: "Upgradability",
+                      url: "ccip/concepts/architecture/onchain/aptos/upgradability",
                     },
                   ],
                 },
@@ -1460,6 +1483,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "SVM",
               url: "ccip/concepts/best-practices/svm",
             },
+            {
+              title: "Aptos",
+              url: "ccip/concepts/best-practices/aptos",
+            },
           ],
         },
       ],
@@ -1467,6 +1494,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Tutorials",
       contents: [
+        {
+          title: "Acquire Test Tokens",
+          url: "ccip/test-tokens",
+        },
         {
           title: "EVM",
           url: "ccip/tutorials/evm",
@@ -1576,10 +1607,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Optimizing Gas Limit Settings in CCIP Messages",
               url: "ccip/tutorials/evm/ccipreceive-gaslimit",
             },
-            {
-              title: "Acquire Test Tokens",
-              url: "ccip/test-tokens",
-            },
           ],
         },
         {
@@ -1629,6 +1656,64 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Cross-Chain Token (CCT) standard",
               url: "ccip/tutorials/svm/cross-chain-tokens",
+            },
+          ],
+        },
+        {
+          title: "Aptos",
+          url: "ccip/tutorials/aptos",
+          children: [
+            {
+              title: "Implement CCIP Receiver",
+              url: "ccip/tutorials/aptos/receivers",
+            },
+            {
+              title: "Aptos as Source",
+              url: "ccip/tutorials/aptos/source",
+              children: [
+                {
+                  title: "Build CCIP Messages",
+                  url: "ccip/tutorials/aptos/source/build-messages",
+                },
+                {
+                  title: "Prerequisites",
+                  url: "ccip/tutorials/aptos/source/prerequisites",
+                },
+                {
+                  title: "Token Transfers",
+                  url: "ccip/tutorials/aptos/source/token-transfers",
+                },
+              ],
+            },
+            {
+              title: "Aptos as Destination",
+              url: "ccip/tutorials/aptos/destination",
+              children: [
+                {
+                  title: "Build CCIP Messages",
+                  url: "ccip/tutorials/aptos/destination/build-messages",
+                },
+                {
+                  title: "Prerequisites",
+                  url: "ccip/tutorials/aptos/destination/prerequisites",
+                },
+                {
+                  title: "Token Transfers",
+                  url: "ccip/tutorials/aptos/destination/token-transfers",
+                },
+                {
+                  title: "Arbitrary Messaging",
+                  url: "ccip/tutorials/aptos/destination/arbitrary-messaging",
+                },
+                {
+                  title: "Programmatic Token Transfers",
+                  url: "ccip/tutorials/aptos/destination/programmatic-token-transfers",
+                },
+              ],
+            },
+            {
+              title: "Cross-Chain Token (CCT) standard",
+              url: "ccip/tutorials/aptos/cross-chain-tokens",
             },
           ],
         },
@@ -1692,6 +1777,18 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   url: "ccip/api-reference/svm/v1.6.0",
                   isCollapsible: true,
                   children: svmCcipV160Contents,
+                },
+              ],
+            },
+            {
+              title: "Aptos",
+              url: "ccip/api-reference/aptos",
+              children: [
+                {
+                  title: "v1.6.0 (Latest)",
+                  url: "ccip/api-reference/aptos/v1.6.0",
+                  isCollapsible: true,
+                  children: aptosCcipV160Contents,
                 },
               ],
             },

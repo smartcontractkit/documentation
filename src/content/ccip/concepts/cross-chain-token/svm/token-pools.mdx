@@ -25,12 +25,10 @@ All token pools, whether standard or custom, must adhere to the following guidel
 When CCIP interacts with your token pools, it expects the presence of the following functions:
 
 1. For locking or burning tokens:
-
    - `lock_or_burn_tokens(ctx: Context<TokenOnramp>, lock_or_burn: LockOrBurnInV1,) -> Result<LockOrBurnOutV1>`: This locks or burns tokens on the source blockchain.
    - Read the [API reference](/ccip/api-reference/svm) to learn more about the parameters.
 
 1. For releasing or minting tokens:
-
    - `release_or_mint_tokens(ctx: Context<TokenOfframp>, release_or_mint: ReleaseOrMintInV1,) -> Result<ReleaseOrMintOutV1>`: This releases or mints tokens on the destination blockchain.
    - Read the [API reference](/ccip/api-reference/svm) to learn more about the parameters.
 
@@ -172,12 +170,10 @@ For many cross-chain use cases—especially when transferring a token from an SV
 The [`lockrelease-token-pool`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-release/1.6.0/chains/solana/contracts/programs/lockrelease-token-pool) token pool implements a program that:
 
 1. **Locks Tokens**:
-
    - Users send tokens to the pool's ATA.
    - The pool program "locks" these tokens (i.e., holds them in its account).
 
 1. **Releases Tokens**:
-
    - The pool program transfers tokens from its ATA to the user's ATA, effectively "unlocking" them on the destination side.
 
 In this scenario, **no mint authority** is needed.

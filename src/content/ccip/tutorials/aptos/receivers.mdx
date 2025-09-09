@@ -1,0 +1,262 @@
+---
+section: ccip
+date: Last Modified
+title: "Implementing CCIP Receivers"
+isIndex: false
+metadata:
+  description: "Build secure Aptos CCIP receivers. Learn to implement ccip_receive, handle cross-chain messages/tokens, understand security patterns & module deployment."
+  image: "/images/ccip/concepts/architecture/ccip-aptos-destination-chain.jpg"
+  excerpt: "CCIP receivers, Aptos modules, Aptos resource account, security, accounts, patterns, Aptos FA, Fungible Asset, ERC-20, ERC20, token, CCIP"
+  datePublished: "2025-09-03"
+  lastModified: "2025-09-03"
+  estimatedTime: "25 minutes"
+  difficulty: "advanced"
+---
+
+import { Aside } from "@components"
+import { Tabs } from "@components/Tabs"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<Aside type="note" title="Prerequisites">
+
+This reference guide assumes familiarity with:
+
+- The [Move language](https://move-language.github.io/move/) and the [Aptos framework](https://aptos.dev/en/network/blockchain/move)
+- [Aptos module development and deployment](https://aptos.dev/en/build/smart-contracts)
+- The [CCIP architecture](/ccip/concepts/architecture)
+
+</Aside>
+
+# Implementing CCIP Receivers for Aptos
+
+This reference guide explains the key components and security patterns required for building Aptos Move modules that can receive cross-chain messages via Chainlink's Cross-Chain Interoperability Protocol (CCIP).
+
+## Introduction
+
+A CCIP Receiver is an Aptos Move module that contains a `ccip_receive` entry function and is registered with the CCIP `ReceiverRegistry`. This allows it to process incoming cross-chain messages, handling both arbitrary data payloads and/or token transfers, serving as the on-chain destination endpoint for CCIP messages.
+
+## Security Architecture
+
+To build a secure CCIP receiver, you need to understand how your module interacts with the core CCIP on-chain components. The security model relies on a chain of trust originating from the authorized CCIP Off-Ramp module.
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">Architectural Components</Fragment>
+  <Fragment slot="tab.2">Security Model</Fragment>
+
+  <Fragment slot="panel.1">
+
+    The on-chain architecture consists of:
+
+    1.  **Receiver Module** (your custom Move module)
+        -   Implements the `ccip_receive` entry function.
+        -   Is registered with the `ReceiverRegistry`.
+        -   Should validate that messages come from an authorized Off-Ramp.
+
+    2.  **CCIP Off-Ramp Module**
+        -   The only module authorized to deliver messages to your receiver.
+        -   Calls your module via the secure `ReceiverDispatcher`.
+
+    3.  **CCIP Receiver Registry & Dispatcher**
+        -   The `ReceiverRegistry` maintains a list of valid receiver modules.
+        -   The `ReceiverDispatcher` ensures only the Off-Ramp can trigger a `ccip_receive` call on a registered module.
+
+  </Fragment>
+
+  <Fragment slot="panel.2">
+
+    The security model is layered, combining guarantees provided by the CCIP protocol with validations you must implement.
+
+    **Protocol Security Guarantees (Handled *before* your function is called):**
+
+    1.  **Caller Validation**: The `Receiver Dispatcher` module cryptographically verifies that the caller is a legitimate and authorized CCIP Off-Ramp. This is the most critical check and prevents any unauthorized module from invoking your receiver.
+
+    **Developer Responsibilities (Implemented *within* your `ccip_receive` function):**
+
+    1.  **Source Chain Validation**: You should check the `source_chain_selector` from the message against an allowlist of blockchains you trust.
+    2.  **Sender Validation (Optional)**: If your use case requires it, you should check the `sender` address from the message against an allowlist of trusted source accounts.
+
+  </Fragment>
+</Tabs>
+
+## Core Components of a CCIP Receiver
+
+A complete CCIP Receiver implementation on Aptos contains several key components.
+
+### Message Structure
+
+Your module must be prepared to handle the `Any2AptosMessage` struct, which it fetches from the `ReceiverRegistry`.
+
+```rust
+// From the ccip::client module
+struct Any2AptosMessage has store, drop, copy {
+    message_id: vector<u8>,
+    source_chain_selector: u64,
+    sender: vector<u8>,
+    data: vector<u8>,
+    dest_token_amounts: vector<Any2AptosTokenAmount>
+}
+
+struct Any2AptosTokenAmount has store, drop, copy {
+    token: address,
+    amount: u64
+}
+```
+
+These structures contain:
+
+- `message_id`: A unique identifier for the message
+- `source_chain_selector`: The chain ID of the source chain
+- `sender`: The address of the sender on the source chain
+- `data`: The arbitrary data payload
+- `dest_token_amounts`: An array of tokens and amounts being transferred
+
+### Module State (Resources)
+
+Your module will likely need to store state in on-chain resources. If your module will handle tokens, it's critical to store the `SignerCapability` from its resource account. You also need handles to emit custom events.
+
+```rust
+// Example of a state resource from the ccip_message_receiver
+struct CCIPReceiverState has key {
+    signer_cap: account::SignerCapability,
+    received_message_handle: event::EventHandle<ReceivedMessage>,
+    forwarded_tokens_handle: event::EventHandle<ForwardedTokens>,
+}
+```
+
+### The `ccip_receive` Entry Function
+
+This is the core function that implements the CCIP receiver interface. It acts as a secure callback, triggered by the **Receiver Dispatcher** (which is itself called by the CCIP Off-Ramp), and should be designed as a dispatcher to handle different types of incoming messages.
+
+```rust
+// A skeleton ccip_receive function
+public entry fun ccip_receive<ProofType: drop>(
+    _receiver_account: &signer, // The signer of the receiver module's account
+    _proof: ProofType,          // A proof object required for the callback mechanism
+) acquires State {
+    // 1. Fetch the message payload securely from the registry
+    let message = receiver_registry::get_receiver_input(signer::address_of(_receiver_account), _proof);
+
+    // 2. Perform security checks (source chain, sender, etc.)
+    let source_chain = client::get_source_chain_selector(&message);
+    assert!(source_chain == 12345, E_UNAUTHORIZED_CHAIN); // Example check
+
+    // 3. Process the message data
+    let received_data = client::get_data(&message);
+    if (!received_data.is_empty()) {
+        // Your custom data processing logic here
+        let state = borrow_global_mut<State>(signer::address_of(_receiver_account));
+        state.latest_message = received_data;
+    }
+
+    // 4. Process token transfers (if applicable)
+    // Note: Tokens are automatically deposited into the receiver's primary store.
+    // This logic would be for forwarding or utilizing them.
+    let tokens = client::get_dest_token_amounts(&message);
+    if (!tokens.is_empty()) {
+        // Your custom token handling logic here
+    }
+
+    // 5. Emit an event for tracking
+    event::emit(MessageReceived {
+        message_id: client::get_message_id(&message),
+        // ...
+    });
+}
+```
+
+### Administrative Functions
+
+A robust receiver module should include permissioned entry functions for maintenance and security, such as a function to withdraw tokens that may have been sent to it accidentally or for administrative purposes.
+
+```rust
+// Example of a permissioned withdrawal function
+public entry fun withdraw_token(
+    sender: &signer,
+    recipient: address,
+    token_address: address,
+) acquires CCIPReceiverState {
+    // Only allow the original deployer to call this function
+    assert!(signer::address_of(sender) == @deployer, E_UNAUTHORIZED);
+
+    let state = borrow_global_mut<CCIPReceiverState>(@receiver);
+    let state_signer = account::create_signer_with_capability(&state.signer_cap);
+
+    // ... logic to transfer the full balance of a token to the recipient
+    fungible_asset::transfer(
+        &state_signer,
+        // ...
+    );
+}
+```
+
+## Publishing Your Receiver Module
+
+How you publish your module is critical and depends on its purpose.
+
+- **For Data-Only Modules**: If your module only processes data and will never hold assets, you can publish it to a regular user account or code object account (the code object account is recommended).
+
+- **For Token-Handling Modules**: If your module will receive tokens, it **must** be deployed to a **Resource Account**. This gives the module an on-chain `signer` capability, which is required to authorize the transfer of tokens _out_ of its own account. The `createResourceAccountAndPublishReceiver.ts` script in the starter kit handles this process.
+
+---
+
+## Security Considerations
+
+Building a secure CCIP Receiver on Aptos requires careful attention to several key validation patterns.
+
+### Caller Validation (Protocol Guarantee)
+
+The most critical security check—verifying that the call originates from a legitimate CCIP Off-Ramp—is a **protocol-level guarantee**. This check is performed by the `Receiver Dispatcher` module before your `ccip_receive` function is ever called. It asserts that the caller's signer address is on an allowlist of authorized Off-Ramps, preventing unauthorized modules from sending fake messages to your receiver. Your module's security is built on this foundational guarantee.
+
+### Source Chain and Sender Validation
+
+Your application is responsible for validating the content of the message payload. Inside your `ccip_receive` function, after fetching the `Any2AptosMessage`, you should implement checks against the `source_chain_selector` and `sender` fields if your use case requires it.
+
+```rust
+// Inside your ccip_receive function:
+let message = receiver_registry::get_receiver_input(...);
+
+// Get the source chain and sender from the message
+let source_chain = client::get_source_chain_selector(&message);
+let sender_bytes = client::get_sender(&message);
+
+// Verify against your module's allowlists
+assert!(is_allowed_source_chain(source_chain), E_UNTRUSTED_SOURCE_CHAIN);
+assert!(is_allowed_sender(sender_bytes), E_UNTRUSTED_SENDER);
+```
+
+### Message Deduplication
+
+To prevent replay attacks where the same message could be executed multiple times, your receiver should track processed message IDs.
+
+- **Mechanism**: Store recently processed `message_id`s in an on-chain resource (e.g., a `Table` or a `vector`).
+- **Implementation**: In your `ccip_receive` function, check if the incoming `message_id` already exists in your store. If it does, abort the transaction. If it doesn't, process the message and then add its ID to the store.
+
+### Asset Management and Account Types
+
+A critical security consideration on Aptos is the account type used for your receiver module.
+
+- To manage (e.g., withdraw or forward) tokens received via CCIP, the receiver module **must** be deployed to a **Resource Account**.
+- This provides the necessary on-chain `SignerCapability` for the module to authorize outgoing transactions for the assets it holds.
+- Deploying a token-handling module to a standard user or object account will result in **permanently locked funds**, as the module will have no authority to sign for transfers.
+
+---
+
+## Key Implementation Concepts
+
+### Secure Payload Fetching
+
+As shown in the example, your `ccip_receive` function does not get the message payload in its arguments. It **must** call `receiver_registry::get_receiver_input` to securely fetch the `Any2AptosMessage`. This security pattern ensures that only your registered module can access the payload during a valid CCIP execution.
+
+### Token Handling for Receivers
+
+When tokens are sent to your module, the CCIP Off-Ramp automatically deposits them into your module account's primary fungible store _before_ your `ccip_receive` function is called. To do anything with these tokens (like forward them to another user), your module must be able to sign for the transfer. This is why deploying to a **Resource Account** and using its `SignerCapability` is mandatory for any module that acts as a custodian of assets.
+
+### The Dispatcher Pattern
+
+The `ReceiverRegistry` maps one account address to one `ccip_receive` function. To handle multiple types of actions, use the **dispatcher pattern** within your `ccip_receive` function. By inspecting the `data` and `token_amounts` fields, you can route the logic to different internal functions, allowing a single, secure entry point to manage many functionalities.
+
+## Example Implementation
+
+For a complete reference implementation of a CCIP Receiver on Aptos, you can examine the `ccip_message_receiver` module within the **[Aptos Starter Kit](https://github.com/smartcontractkit/aptos-starter-kit)**. This example demonstrates many of the security patterns and best practices covered in this guide and serves as an excellent starting point for your own implementation.
+
+<CcipCommon callout="educationalDisclaimer" />

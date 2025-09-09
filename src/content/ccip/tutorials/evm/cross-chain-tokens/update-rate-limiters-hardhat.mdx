@@ -35,7 +35,6 @@ This tutorial will guide you through the process of updating the rate limiter se
 ## Prerequisites
 
 - **Tokens and pools deployed**: Ensure that you have tokens and token pools already deployed on both networks you plan to use. If not, refer to one of the following tutorials:
-
   - [Register from an EOA (Burn & Mint)](/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-hardhat)
   - [Register from an EOA (Lock & Mint)](/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-lock-mint-hardhat)
 
@@ -84,7 +83,6 @@ This tutorial will guide you through the process of updating the rate limiter se
 
 1.  **Encrypt your environment variables for higher security:**  
     The project uses [@chainlink/env-enc](https://www.npmjs.com/package/@chainlink/env-enc) to encrypt your environment variables at rest. Follow the steps below to configure your environment securely:
-
     1. Set an encryption password for your environment variables:
 
        ```bash
@@ -98,7 +96,6 @@ This tutorial will guide you through the process of updating the rate limiter se
        ```
 
        Variables to configure:
-
        - <CopyText text="AVALANCHE_FUJI_RPC_URL" code />: A URL for the _Avalanche Fuji_ testnet. You can get a personal
          endpoint from services like [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/).
        - <CopyText text="ARBITRUM_SEPOLIA_RPC_URL" code />: A URL for the _Arbitrum Sepolia_ testnet. You can get a
@@ -253,9 +250,7 @@ npx hardhat updateRateLimiters \
 Suppose you want to enable inbound and outbound rate limits for your token pool on Avalanche Fuji to control the number of tokens received or sent from/to Arbitrum Sepolia. We will use an existing token pool that interacts with an ERC20 token with 18 decimals:
 
 - **Token Pool on Avalanche Fuji**:
-
   - **Outbound Rate Limiter**:
-
     - **Enabled**: `true`
     - **Capacity**: `10000000000000000000` wei (equivalent to 10 tokens, based on 18 decimals)
     - **Rate**: `100000000000000000` wei (equivalent to 0.1 token per second, based on 18 decimals)
@@ -507,7 +502,6 @@ In the example below, we use a token pool at address `0xcC8bb3E03c59603522732B17
    Notice in the logs that the transfer failed because the capacity was exceeded: `TokenMaxCapacityExceeded`.
 
 1. **Test Rate**: Now, let's transfer `10000000000000000000` tokens from Avalanche Fuji to Arbitrum Sepolia, which will empty the bucket. After this transfer, we will attempt to transfer another `10000000000000000000` tokens. This transfer will fail because it takes 100 seconds to replenish the bucket.
-
    1. **First transfer** (Successful):
 
       Command:

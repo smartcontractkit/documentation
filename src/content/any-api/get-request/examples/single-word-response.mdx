@@ -91,7 +91,6 @@ To use this contract:
 1. Open the [contract in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/APIConsumer.sol).
 
 1. Compile and deploy the contract using the Injected Provider environment. The contract includes all the configuration variables for the _Sepolia_ testnet. Make sure your wallet is set to use _Sepolia_. The _constructor_ sets the following parameters:
-
    - The Chainlink Token address for _Sepolia_ by calling the [`setChainlinkToken`](/any-api/api-reference/#setchainlinktoken) function.
    - The Oracle contract address for _Sepolia_ by calling the [`setChainlinkOracle`](/any-api/api-reference/#setchainlinkoracle) function.
    - The `jobId`: A specific job for the oracle node to run. In this case, you must call a job that is configured to call a public API, parse a number from the response and remove any decimals from it. We are going to use a generic **_GET>uint256_** job that can be found [here](/any-api/testnet-oracles/#jobs).
@@ -101,7 +100,6 @@ To use this contract:
 1. Call the `volume` function to confirm that the `volume` state variable is equal to _zero_.
 
 1. Run the `requestVolumeData` function. This builds the `Chainlink.Request` using the correct parameters:
-
    - The `req._add("get", "CRYPTOCOMPARE_URL")` request parameter provides the oracle node with the [URL](https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD) from which to fetch _ETH-USD_ trading info.
    - The `req._add('path', 'RAW,ETH,USD,VOLUME24HOUR')` request parameter tells the oracle node where to fetch the 24h ETH volume in the _json_ response. It uses a [JSONPath expression](https://jsonpath.com/) with comma(,) delimited string for nested objects. For example: `'RAW,ETH,USD,VOLUME24HOUR'`.
    - The `req._addInt('times', timesAmount)` request parameter provides the oracle node with the multiplier `timesAmount` by which the fetched volume is multiplied. Use this to remove any decimals from the volume. **_Note_**: The `times` parameter is mandatory. If the API that you call returns a number without any decimals then provide `1`as `timesAmount`.

@@ -116,37 +116,31 @@ The sequence diagram below explains how the `set_pool` instruction updates the `
 The configuration of token pools includes adding new blockchains, setting remote pool addresses, and applying rate limits for cross-chain transfers. The following instructions are used for configuring token pools:
 
 1.  **Initialize a Remote Configuration**
-
     - **Instruction:** `init_chain_remote_config`
     - **Use Case:** Create a new onchain account (PDA derived from the chain selector and token pool program ID) holding configuration details for a specific remote blockchain (e.g., remote token address).
     - Read the [API reference](/ccip/api-reference/svm) to learn more.
 
 1.  **Edit an Existing Remote Configuration**
-
     - **Instruction:** `edit_chain_remote_config`
     - **Use Case:** Update the entire stored configuration for a remote chain (`RemoteConfig`), including the remote token address and decimals.
     - Read the [API reference](/ccip/api-reference/svm) to learn more.
 
 1.  **Add Remote Pool Address**
-
     - **Instruction:** `append_remote_pool_addresses`
     - **Use Case:** Register one or more remote pool addresses for the same remote chain. This can happen when you deploy a new pool version on that blockchain but keep the old address functional until all in-flight messages are processed. Note: To remove a remote pool address, call `edit_chain_remote_config` with a new configuration without that address.
     - Read the [API reference](/ccip/api-reference/svm) to learn more.
 
 1.  **Configure Rate Limits**
-
     - **Instruction:** `set_chain_rate_limit`
     - **Use Case:** Apply or modify the remote blockchain's inbound/outbound rate-limit configuration. This uses a token bucket algorithm in which you can configure the capacity (maximum tokens) and rate (tokens per second refill rate) for both inbound and outbound transfers.
     - Read the [API reference](/ccip/api-reference/svm) to learn more.
 
 1.  **Remove Chain Config**
-
     - **Instruction:** `delete_chain_config`
     - **Use Case:** Remove the remote blockchain configuration PDA to stop supporting it permanently.
     - Read the [API reference](/ccip/api-reference/svm) to learn more.
 
 1.  **Liquidity Management (Lock/Release only)**
-
     - **Instruction**
     - `set_rebalancer`: Configure which public key is authorized to add (via `provide_liquidity`) or withdraw liquidity (via `withdraw_liquidity`) from the pool.
     - `set_can_accept_liquidity`: Enable or disable whether the pool can accept incoming liquidity via the `provide_liquidity` instruction.
@@ -154,7 +148,6 @@ The configuration of token pools includes adding new blockchains, setting remote
     - Read the [API reference](/ccip/api-reference/svm) to learn more.
 
 1.  **Optional Allowlist**
-
     - **Instruction**
     - `configure_allow_list`: Set `enabled = true` or `false` and optionally add new addresses. When the allowlist is enabled, only addresses that appear on it can initiate cross‐chain transfers.
     - `remove_from_allow_list`: Remove specific addresses from the existing list.
