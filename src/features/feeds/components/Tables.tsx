@@ -889,7 +889,7 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               </dd>
             </div>
           )}
-          {metadata.feedType === "Crypto" && (
+          {metadata.feedType === "Crypto" && metadata.docs?.productTypeCode !== "ExRate" && (
             <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Report Schema:</span>
@@ -900,7 +900,7 @@ const StreamsTr = ({ metadata, isMainnet }) => (
                 </a>
               </dd>
             </div>
-          )}{" "}
+          )}
           {metadata.feedType === "Equities" && (
             <div className={tableStyles.definitionGroup}>
               <dt>
@@ -909,6 +909,18 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               <dd>
                 <a href="/data-streams/reference/report-schema-v8" rel="noreferrer" target="_blank">
                   RWA Schema (v8)
+                </a>
+              </dd>
+            </div>
+          )}
+          {metadata.docs?.productTypeCode === "ExRate" && (
+            <div className={tableStyles.definitionGroup}>
+              <dt>
+                <span className="label">Report Schema:</span>
+              </dt>
+              <dd>
+                <a href="/data-streams/reference/report-schema-v7" rel="noreferrer" target="_blank">
+                  Exchange Rate Schema (v7)
                 </a>
               </dd>
             </div>
@@ -982,6 +994,7 @@ export const MainnetTable = ({
     dataFeedType === "streamsCrypto" ||
     dataFeedType === "streamsRwa" ||
     dataFeedType === "streamsNav" ||
+    dataFeedType === "streamsExRate" ||
     dataFeedType === "streamsBacked"
   const isSmartData = dataFeedType === "smartdata"
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
@@ -1029,6 +1042,10 @@ export const MainnetTable = ({
 
       if (dataFeedType === "streamsNav") {
         return metadata.contractType === "verifier" && metadata.docs.feedType === "Net Asset Value"
+      }
+
+      if (dataFeedType === "streamsExRate") {
+        return metadata.contractType === "verifier" && metadata.docs?.productTypeCode === "ExRate"
       }
 
       if (dataFeedType === "streamsBacked") {
@@ -1221,6 +1238,7 @@ export const TestnetTable = ({
     dataFeedType === "streamsCrypto" ||
     dataFeedType === "streamsRwa" ||
     dataFeedType === "streamsNav" ||
+    dataFeedType === "streamsExRate" ||
     dataFeedType === "streamsBacked"
   const isSmartData = dataFeedType === "smartdata"
   const isRates = dataFeedType === "rates"
@@ -1260,6 +1278,11 @@ export const TestnetTable = ({
 
         if (dataFeedType === "streamsRwa") {
           return metadata.contractType === "verifier" && metadata.docs.feedType === "Equities"
+        }
+
+
+        if (dataFeedType === "streamsExRate") {
+          return metadata.contractType === "verifier" && metadata.docs?.productTypeCode === "ExRate"
         }
 
         if (dataFeedType === "streamsNav") {

@@ -389,6 +389,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "Exchange Rate Streams",
+          url: "data-streams/exchange-rate-streams",
+          children: [
+            {
+              title: "Report Schema v7",
+              url: "data-streams/reference/report-schema-v7",
+            },
+          ],
+        },
+        {
           title: "Real World Asset (RWA) Streams",
           url: "data-streams/rwa-streams",
           children: [

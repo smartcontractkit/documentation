@@ -23,6 +23,7 @@ export type DataFeedType =
   | "streamsCrypto"
   | "streamsRwa"
   | "streamsNav"
+  | "streamsExRate"
   | "streamsBacked"
 export const FeedList = ({
   initialNetwork,
@@ -40,6 +41,7 @@ export const FeedList = ({
     dataFeedType === "streamsCrypto" ||
     dataFeedType === "streamsRwa" ||
     dataFeedType === "streamsNav" ||
+    dataFeedType === "streamsExRate" ||
     dataFeedType === "streamsBacked"
   const isSmartData = dataFeedType === "smartdata"
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
@@ -353,17 +355,21 @@ export const FeedList = ({
       ? "Mainnet Crypto Streams"
       : dataFeedType === "streamsNav"
         ? "Mainnet NAV Streams"
-        : dataFeedType === "streamsBacked"
-          ? "Mainnet Backed xStock Streams"
-          : "Mainnet RWA Streams"
+        : dataFeedType === "streamsExRate"
+          ? "Mainnet Exchange Rate Streams"
+          : dataFeedType === "streamsBacked"
+            ? "Mainnet Backed xStock Streams"
+            : "Mainnet RWA Streams"
   const streamsTestnetSectionTitle =
     dataFeedType === "streamsCrypto"
       ? "Testnet Crypto Streams"
       : dataFeedType === "streamsNav"
         ? "Testnet NAV Streams"
-        : dataFeedType === "streamsBacked"
-          ? "Testnet Backed xStock Streams"
-          : "Testnet RWA Streams"
+        : dataFeedType === "streamsExRate"
+          ? "Testnet Exchange Rate Streams"
+          : dataFeedType === "streamsBacked"
+            ? "Testnet Backed xStock Streams"
+            : "Testnet RWA Streams"
 
   // Initialize search input fields with URL parameter values
   useEffect(() => {
@@ -433,6 +439,7 @@ export const FeedList = ({
     dataFeedType === "streamsCrypto" ||
     dataFeedType === "streamsRwa" ||
     dataFeedType === "streamsNav" ||
+    dataFeedType === "streamsExRate" ||
     dataFeedType === "streamsBacked"
   ) {
     const mainnetFeeds: ChainNetwork[] = []
