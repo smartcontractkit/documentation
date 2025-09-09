@@ -160,6 +160,7 @@ export const productChainLinks: ProductChainLinks = {
       polygon: "/data-streams/crypto-streams",
       polygonkatana: "/data-streams/crypto-streams",
       ronin: "/data-streams/crypto-streams",
+      sei: "/data-streams/crypto-streams",
       scroll: "/data-streams/crypto-streams",
       shibarium: "/data-streams/crypto-streams",
       solana: "/data-streams/crypto-streams",
