@@ -19,6 +19,7 @@ Below is a summary of all available Data Streams report schemas, their main use 
 | :------------------------------------------------------------ | :----------------------------------------- | :---------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------- |
 | [Cryptocurrency](#cryptocurrency-report-schema)               | [View schema (v3)](./report-schema-v3)     | Crypto price streams                      | `price`, `bid`, `ask`                                                                                                       |
 | [DEX State Price](#dex-state-price-report-schema)             | [View schema (v3)](./report-schema-v3-dex) | DEX state crypto price streams            | `price`, `bid`, `ask` (All fields equal; [details](../concepts/dex-state-price-streams#how-to-use-dex-state-price-streams)) |
+| [Exchange Rate](#exchange-rate-report-schema)                 | [View schema (v7)](./report-schema-v7)     | Tokenized asset exchange rates            | `exchangeRate`                                                                                                              |
 | [Real World Asset (RWA)](#real-world-asset-rwa-report-schema) | [View schema (v8)](./report-schema-v8)     | Real World Asset (RWA) price streams      | `midPrice`, `marketStatus`, `lastUpdateTimestamp`                                                                           |
 | [Net Asset Value (NAV)](#net-asset-value-nav-report-schema)   | [View schema (v9)](./report-schema-v9)     | Net Asset Value (NAV) streams             | `aum`, `navPerShare`, `navDate`, `ripcord`                                                                                  |
 | [Backed xStock](#backed-xstock-report-schema)                 | [View schema (v10)](./report-schema-v10)   | Tokenized stocks and backed asset streams | `price`, `tokenizedPrice`, `marketStatus`, `currentMultiplier`, `newMultiplier`                                             |
@@ -36,6 +37,14 @@ For a deeper explanation of how liquidity-weighted bid and ask prices work, see 
 [The DEX State Price methodology](/data-streams/concepts/dex-state-price-streams#high-level-outline-of-the-dex-state-price-methodology) aggregates data from multiple DEX pools, applies volume and TVL-based weighting, and uses filters to reduce manipulation and smooth volatility. Users should be aware of the specific risks inherent to DeFi, such as smart contract vulnerabilities, bridge dependencies, and external price manipulation. It is important to review [risk mitigation guidance](/data-streams/concepts/dex-state-price-streams#risk-mitigation) and adjust protocol parameters accordingly when integrating DEX State Price Reports.
 
 For more details on the methodology and risk considerations, see [DEX State Price Streams](../concepts/dex-state-price-streams).
+
+## Exchange Rate Report Schema
+
+[Chainlink Exchange Rate Data Streams](./report-schema-v7) provide tamper-proof access to the exchange rate of tokenized assets, delivered over the low latency, high frequency Chainlink Data Streams infrastructure. Exchange rates typically read directly from onchain smart contracts. These exchange rates generally have a single calculating agent: the issuing protocol.
+
+While the Data Streams architecture is designed to deliver updates at least once per second, the exchange rate itself is often updated only once per day by the data source, in line with standard market practices. Data Streams ensures that any Exchange Rate update, whenever it occurs, is captured and made available immediately and at low latency, allowing seamless integration into onchain applications alongside other real-time data streams.
+
+The v7 schema is designed specifically for Exchange Rate feeds and reports a single value: the exchange rate (`exchangeRate`).
 
 ## Real World Asset (RWA) Report Schema
 
