@@ -1,7 +1,10 @@
 ---
 import { PageTabs } from "@components"
 
-const reportSchemaPages = [
+// Get current page URL to determine if we should show deprecated schemas
+const currentUrl = Astro.url.pathname
+
+const allReportSchemaPages = [
   {
     name: "Cryptocurrency Report Schema (v3)",
     url: "/data-streams/reference/report-schema-v3",
@@ -13,6 +16,7 @@ const reportSchemaPages = [
   {
     name: "(Deprecated) RWA Report Schema (v4)",
     url: "/data-streams/reference/report-schema-v4",
+    deprecated: true,
   },
   {
     name: "Exchange Rate Report Schema (v7)",
@@ -31,6 +35,11 @@ const reportSchemaPages = [
     url: "/data-streams/reference/report-schema-v10",
   },
 ]
+
+// Only show deprecated schemas if user is currently on a deprecated page
+const isOnDeprecatedPage = allReportSchemaPages.some((page) => page.deprecated && currentUrl === page.url)
+
+const reportSchemaPages = allReportSchemaPages.filter((page) => !page.deprecated || isOnDeprecatedPage)
 ---
 
 <PageTabs
