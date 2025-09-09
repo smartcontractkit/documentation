@@ -26,17 +26,14 @@ This section provides more detail on the Onchain components for Aptos.
 **CCIP messages can be sent in any of the following combinations (terminology adapts to the destination blockchain):**
 
 - **User Account → User Account / EOA / Wallet**
-
   - **Supported Message Type**: Token-only transfers.
   - **Reason**: The recipient is a simple user account that does not have executable code. While a data payload can be sent in the CCIP message, the recipient account has no way to act upon or process that data.
 
 - **User Account → Module / Smart Contract / Program**
-
   - **Supported Message Type**: Token transfers, arbitrary data, and programmable token transfers (data + tokens).
   - **Reason**: The receiving module is designed with a `ccip_receive` function that can be programmed to handle incoming tokens, process arbitrary data, or both simultaneously according to your application's logic.
 
 - **Module / Smart Contract / Program → User Account / EOA / Wallet**
-
   - **Supported Message Type**: Token-only transfers.
   - **Reason**: Similar to the first case, the destination is a simple user account that cannot execute logic to process an incoming data payload.
 
@@ -78,21 +75,17 @@ The `ccip_onramp::onramp` module is an internal CCIP module that handles the cor
 When the Router forwards a `ccip_send` request, the OnRamp performs the following actions:
 
 - **Validations**
-
   - Ensures that the destination chain is not cursed.
   - Verifies that the sender is on the allowlist if one is enabled for the destination lane.
 
 - **Fee Collection**
-
   - Withdraws the pre-calculated fee amount from the sender's specified `fee_token_store`, defaulting to the user's primary store if `0x0` is provided.
 
 - **Token Handling**
-
   - If the message involves token transfers, it initiates a secure callback pattern by calling the `Token Admin Dispatcher`.
   - The dispatcher uses the `Token Admin Registry` to store the message context (sender, receiver, etc.) before invoking the correct `Token Pool` to `lock_or_burn` the assets.
 
 - **Nonce Management**
-
   - For ordered messages, it calls the `Nonce Manager` to retrieve and increment the sender's nonce for that destination.
 
 - **Event Emission**
@@ -116,7 +109,6 @@ During the **Commit Phase**, the following steps occur:
    The Committing DON calls the `commit` function on the `OffRamp` with a report that includes Merkle roots and price updates.
 
 1. **Validation**:
-
    - The `OffRamp` verifies the DON's signatures.
    - It verifies any "blessed" Merkle roots.
 

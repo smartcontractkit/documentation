@@ -128,3 +128,16 @@ export interface TokenFilterType {
   token_id?: string
   chain_id?: string
 }
+
+// Faucet API Types
+export type {
+  FaucetChainConfig,
+  ChallengeParams,
+  ChallengeResponse,
+  VerifyRequest,
+  VerifyResponse,
+  VerifySignatureArgs,
+  FamilyAdapter,
+  FaucetApiResponse,
+  FaucetError,
+} from "./faucet.ts"

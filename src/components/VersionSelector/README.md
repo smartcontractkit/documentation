@@ -229,25 +229,21 @@ import { VersionSelector } from "@components/VersionSelector"
 ## Important Notes
 
 1. **SEO Handling**:
-
    - Canonical URLs are automatically handled by VersionSelectorHead
    - No need to specify canonical in page frontmatter
    - Alternate links are generated only for available versions
 
 2. **Version Availability**:
-
    - Pages can be marked as only available in specific versions
    - Pages can be marked as not available in specific versions
    - Default behavior assumes page is available in all versions
 
 3. **URL Handling**:
-
    - Trailing slashes are preserved during version changes
    - URLs are built consistently using buildVersionUrl utility
    - Version patterns are validated against configuration
 
 4. **Error Handling**:
-
    - Clear error messages for unavailable versions
    - Graceful fallbacks for unsupported features
    - Loading states during version changes

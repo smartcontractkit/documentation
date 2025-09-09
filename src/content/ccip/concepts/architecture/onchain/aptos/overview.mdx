@@ -66,9 +66,7 @@ On the Aptos destination blockchain, an onchain module called the `OffRamp` rece
 This outlines the process when initiating a CCIP transaction from the Aptos blockchain.
 
 1. **Preparation**
-
    - The Sender (a user's wallet or another module) prepares the information for a CCIP Message, including:
-
      - **Receiver**: A byte array representing the destination address (e.g., a 20-byte EVM address).
      - **Data payload**: Arbitrary bytes to be delivered to the receiver.
      - **Tokens and amounts** (if applicable).
@@ -80,13 +78,10 @@ This outlines the process when initiating a CCIP transaction from the Aptos bloc
    - The Sender prepares to call the `ccip_router::router::ccip_send` entry function. Unlike EVM and SVM chains, a separate token approve transaction is not required. The user's signature on the `ccip_send` transaction itself authorizes the CCIP modules to withdraw the necessary tokens and fees from the sender's account.
 
 1. **Sending**
-
    - When the `ccip_send` transaction is executed:
-
      - The `Router` module, as the entry point, performs initial validations and forwards the call to the appropriate `OnRamp` module.
 
      - The `OnRamp` module executes the core logic:
-
        - Verifications: It ensures that the destination chain is not cursed by checking with the `RMN Remote` module.
        - Fee Collection: It withdraws the required fee from the sender's fungible asset store. If the fee_token_store address is specified as 0x0, the module automatically resolves to the primary_fungible_store corresponding to the sender's account and the chosen fee_token.
        - Sequence Management: It increments the sequence number for the given destination chain. If required, it also interacts with the `Nonce Manager` to handle ordered message nonces.
@@ -98,7 +93,6 @@ This outlines the process when initiating a CCIP transaction from the Aptos bloc
      - Event Emission: A unique messageId is generated, and the `OnRamp` emits a `CCIPMessageSent` event containing the full, sequenced message details.
 
 1. **Initial Offchain Processing**
-
    - The CCIP Committing DON monitors the Aptos blockchain for the `CCIPMessageSent` event and begins processing the message offchain to prepare it for commitment on the destination chain.
 
 ### Destination Blockchain (Aptos)
@@ -106,7 +100,6 @@ This outlines the process when initiating a CCIP transaction from the Aptos bloc
 This outlines the process when Aptos is the receiving chain for a CCIP message.
 
 1. **Commit Phase**
-
    - The final OCR report from the Committing DON, containing Merkle roots of batched messages and any price updates, is submitted to the `OffRamp` module's `commit` function.
    - The `OffRamp` verifies the DON's signatures.
    - If the report includes blessed Merkle roots, the `OffRamp` verifies the RMN signatures.
@@ -114,11 +107,9 @@ This outlines the process when Aptos is the receiving chain for a CCIP message.
    - The `OffRamp` stores the verified Merkle root and emits a `CommitReportAccepted` event, confirming the messages are ready for execution.
 
 1. **Secondary Offchain Processing**
-
    - The CCIP Executing DON monitors for the `CommitReportAccepted` event. For each message in the committed batch, the DON computes its specific Merkle proof. Each message is then submitted in a separate transaction to the Aptos blockchain.
 
 1. **Execution Phase**
-
    - When the Executing DON calls the `OffRamp` module's `execute` function, the `OffRamp` first verifies the message's Merkle proof against a stored Merkle root. It performs several validations, including checking the `RMN Remote` module and ensuring the message has not already been executed.
      - If the message includes tokens, the `OffRamp` calls the `Token Admin Dispatcher`. This dispatcher follows a secure callback pattern using the `Token Admin Registry`: it initiates a `release_or_mint` operation, which invokes the correct Token Pool. The pool then calls the registry to get its input data, mints or releases the tokens, and sets the output. The released tokens are then deposited into the receiver's primary fungible store.
      - If the message contains arbitrary data, the `OffRamp` calls the `Receiver Dispatcher`. The dispatcher does not pass the message data directly. Instead, it securely stores the payload in the `Receiver Registry` and then triggers the `ccip_receive` entry function of the registered receiver module. The receiver module, in turn, must call receiver_registry::`get_receiver_input` within its own execution to securely fetch the message payload it is meant to process.

@@ -76,7 +76,6 @@ To run the example:
    ```
 
    The output of the example gives you the following information:
-
    - Your request is first run on a sandbox environment to ensure it is correctly configured.
    - The fulfillment costs are estimated before making the request.
    - Your request was successfully sent to Chainlink Functions. The transaction in this example is [0x7df8240d23ef5c951ea73634b2346a459c8cd5b9a0bf76dbe0bb4d912e099b22](https://sepolia.etherscan.io/tx/0x7df8240d23ef5c951ea73634b2346a459c8cd5b9a0bf76dbe0bb4d912e099b22) and the request ID is `0x91a72a36a94ddedfc9e7bcfe33aaa13dd5747c4e985d9baa8c0c34175ac6c715`.
@@ -101,7 +100,6 @@ The main steps are:
 - Read the numbers provided as arguments in the `args` setting. Because `args` is an array of `string`, call `parseInt` to convert from `string` to `number`. **Note**: `args` contains string values that are injected into the JavaScript source code when the Decentralized Oracle Network executes your function. You can access theses values from your JavaScript code using the name `args`.
 - Calculate the average (geometric mean): First, compute the product of the numbers. Then, calculate the nth root of the product where `n` is the length of `args`.
 - Return the result as a [buffer](https://nodejs.org/api/buffer.html#buffer) using the `Functions.encodeUint256` helper function. Because Solidity doesn't support decimals, multiply the result by `100` and round the result to the nearest integer. There are other helper functions that you could use depending on the response type:
-
   - `Functions.encodeUint256`: Takes a positive JavaScript integer number and returns a Buffer of 32 bytes representing a uint256 type in Solidity.
   - `Functions.encodeInt256`: Takes a JavaScript integer number and returns a Buffer of 32 bytes representing an int256 type in Solidity.
   - `Functions.encodeString`: Takes a JavaScript string and returns a Buffer representing a string type in Solidity.
@@ -130,7 +128,6 @@ const subscriptionId = 3 // REPLACE this with your subscription ID
 The primary function that the script executes is `makeRequestSepolia`. This function consists of five main parts:
 
 1. Definition of necessary identifiers:
-
    - `routerAddress`: Chainlink Functions router address on the Sepolia testnet.
    - `donId`: Identifier of the DON that will fulfill your requests on the Sepolia testnet.
    - `explorerUrl`: Block explorer URL of the Sepolia testnet.
@@ -140,21 +137,17 @@ The primary function that the script executes is `makeRequestSepolia`. This func
    - Initialization of ethers `signer` and `provider` objects. The signer is used to make transactions on the blockchain, and the provider reads data from the blockchain.
 
 1. Simulating your request in a local sandbox environment:
-
    - Use `simulateScript` from the Chainlink Functions NPM package.
    - Read the `response` of the simulation. If successful, use the Functions NPM package `decodeResult` function and `ReturnType` enum to decode the response to the expected returned type (`ReturnType.uint256` in this example).
 
 1. Estimating the costs:
-
    - Initialize a `SubscriptionManager` from the Functions NPM package, then call the `estimateFunctionsRequestCost`.
    - The response is returned in Juels (1 LINK = 10\*\*18 Juels). Use the `ethers.utils.formatEther` utility function to convert the output to LINK.
 
 1. Making a Chainlink Functions request:
-
    - Initialize your functions consumer contract using the contract address, abi, and ethers signer.
    - Call the `sendRequest` function of your consumer contract.
 
 1. Waiting for the response:
-
    - Initialize a `ResponseListener` from the Functions NPM package and then call the `listenForResponseFromTransaction` function to wait for a response. By default, this function waits for five minutes.
    - Upon reception of the response, use the Functions NPM package `decodeResult` function and `ReturnType` enum to decode the response to the expected returned type (`ReturnType.uint256` in this example).

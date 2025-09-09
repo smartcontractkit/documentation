@@ -152,12 +152,10 @@ Below are the core requirements for SPL tokens to integrate with CCIP transfer o
 In this token handling mechanism, the same token pool type (BurnMint) is used on both source and destination blockchains, so these requirements are similar for both blockchains.
 
 1. **Set the Token Pool as Mint Authority**
-
    - The token pool program must hold the mint authority to enable minting tokens.
    - For further details on mint authority configurations, refer to the [Mint Authority for BurnMint](#mint-authority-for-burnmint) section.
 
 1. **Burning Tokens**
-
    - Solana's SPL Token Program has no separate "burn" permission. Instead, the token pool program must own the token account that holds the tokens to be burned.
    - Users typically transfer their tokens to the token pool's associated token account (ATA), which the pool program controls. Once the tokens reside in that ATA, the pool program can execute burn as needed.
    - Because the pool program does not automatically create this ATA, the token administrator must ensure it is initialized beforehand. This one-time setup guarantees that tokens can be safely sent to the token pool ATA.
@@ -173,7 +171,6 @@ Locking tokens is ideal for tokens that no longer have an accessible `mint_autho
 #### Lock and Mint
 
 1. **Source Blockchain: LockRelease token pool**
-
    - The token pool program has an Associated Token Account (ATA) where users send their tokens.
    - Tokens received in this ATA are locked in escrow, meaning no `mint_authority` is required.
    - The token administrator must create the token pool's ATA in advance to receive locked tokens.
@@ -185,7 +182,6 @@ Locking tokens is ideal for tokens that no longer have an accessible `mint_autho
 #### Burn and Unlock
 
 1. **Source blockchain: BurnMint token pool**
-
    - Users send tokens to the token pool's ATA on the source blockchain.
    - The token pool program then calls the SPL `burn` instruction on that account.
 

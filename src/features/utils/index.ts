@@ -77,6 +77,17 @@ export const getExplorerAddressUrl =
     return queryString ? `${url}?${queryString}` : url
   }
 
+export const getExplorerTransactionUrl = (explorer: ExplorerInfo) => (transactionSignature: string) => {
+  const url = `${explorer.baseUrl}/tx/${transactionSignature}`
+  if (!explorer.queryParameters) return url
+
+  const queryString = Object.entries(explorer.queryParameters)
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join("&")
+
+  return queryString ? `${url}?${queryString}` : url
+}
+
 export const getTitle = (supportedChain: SupportedChain) => {
   const technology = chainToTechnology[supportedChain]
   if (!technology) return

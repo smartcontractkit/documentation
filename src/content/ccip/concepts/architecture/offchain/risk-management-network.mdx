@@ -31,17 +31,14 @@ The RMN utilizes a separate, minimal implementation of the Chainlink node softwa
 The verification process of the RMN can be detailed as follows:
 
 1. **Observing Merkle Roots**
-
    - When the Committing DON posts a merkle root of new cross-chain messages on the destination blockchain, each RMN node independently fetches the underlying messages from the source blockchain.
    - If the node's locally reconstructed merkle root matches the merkle root posted on the destination chain, it signs an RMN observation stating that the commit is valid.
 
 1. **Assembling Offchain Reports**
-
    - The Committing DON collects identical observations from a sufficient number of RMN nodes, and those nodes produce a final signed RMN report.
    - This report consists of cryptographic signatures proving that most RMN nodes have confirmed the commit's integrity.
 
 1. **Verification in Final Onchain Commit**
-
    - The Committing DON attaches these RMN signatures to its final onchain commit.
    - On EVM-based blockchains, the OffRamp contract checks the RMN signatures via the RMNRemote contract, ensuring the Executing DON can only finalize merkle roots with sufficient RMN blessings. A similar verification mechanism applies on non-EVM blockchains, tailored to their specific contract or program model.
 
