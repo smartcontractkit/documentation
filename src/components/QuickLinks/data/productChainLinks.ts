@@ -22,6 +22,7 @@ export const productChainLinks: ProductChainLinks = {
     chains: {
       abstract: "/ccip/directory/mainnet/chain/abstract-mainnet",
       arbitrum: "/ccip/directory/mainnet/chain/ethereum-mainnet-arbitrum-1",
+      aptos: "/ccip/directory/mainnet/chain/aptos-mainnet",
       astar: "/ccip/directory/mainnet/chain/polkadot-mainnet-astar",
       avalanche: "/ccip/directory/mainnet/chain/avalanche-mainnet",
       "bnb-chain": "/ccip/directory/mainnet/chain/bsc-mainnet",
