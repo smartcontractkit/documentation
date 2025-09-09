@@ -193,38 +193,6 @@ function getRebalancer() external view returns (address);
 | --------- | ------------------------------------- |
 | `address` | The current liquidity manager address |
 
-### lockOrBurn
-
-Locks tokens in the pool for cross-chain transfer.
-
-```solidity
-function lockOrBurn(
-  Pool.LockOrBurnInV1 calldata lockOrBurnIn
-) external virtual override returns (Pool.LockOrBurnOutV1 memory);
-```
-
-<Aside>
-
-Processes token locking with security validation:
-
-- Performs essential security checks through `_validateLockOrBurn`
-- Emits a `Locked` event upon successful locking
-- Returns destination token information
-
-</Aside>
-
-**Parameters**
-
-| Name           | Type                                                                        | Description                             |
-| -------------- | --------------------------------------------------------------------------- | --------------------------------------- |
-| `lockOrBurnIn` | [`Pool.LockOrBurnInV1`](/ccip/api-reference/evm/v1.6.1/pool#lockorburninv1) | Input parameters for the lock operation |
-
-**Returns**
-
-| Type                                                                          | Description                                      |
-| ----------------------------------------------------------------------------- | ------------------------------------------------ |
-| [`Pool.LockOrBurnOutV1`](/ccip/api-reference/evm/v1.6.1/pool#lockorburnoutv1) | Contains destination token address and pool data |
-
 ### provideLiquidity
 
 Adds external liquidity to the pool.
@@ -249,38 +217,29 @@ Allows the rebalancer to add liquidity to the pool:
 | -------- | --------- | ---------------------------------- |
 | `amount` | `uint256` | The amount of liquidity to provide |
 
-### releaseOrMint
+### \_releaseOrMint
 
-Releases tokens from the pool to a recipient.
+Internal function that implements the token release logic for a `LockReleaseTokenPool`.
 
 ```solidity
-function releaseOrMint(
-  Pool.ReleaseOrMintInV1 calldata releaseOrMintIn
-) external virtual override returns (Pool.ReleaseOrMintOutV1 memory);
+function _releaseOrMint(address receiver, uint256 amount) internal virtual override;
 ```
 
 <Aside>
 
-Processes token release with security validation:
+Overrides the virtual [`_releaseOrMint`](/ccip/api-reference/evm/v1.6.1/token-pool#_releaseormint) function from the base `TokenPool` contract:
 
-- Performs essential security checks through `_validateReleaseOrMint`
-- Calculates correct local token amounts using decimal adjustments
-- Transfers tokens to the specified receiver
-- Emits a `Released` event
+- Provides the specific "release" implementation for the `LockReleaseTokenPool`.
+- Uses `safeTransfer` to send the specified amount of tokens to the receiver.
 
 </Aside>
 
 **Parameters**
 
-| Name              | Type                                                                              | Description                                |
-| ----------------- | --------------------------------------------------------------------------------- | ------------------------------------------ |
-| `releaseOrMintIn` | [`Pool.ReleaseOrMintInV1`](/ccip/api-reference/evm/v1.6.1/pool#releaseormintinv1) | Input parameters for the release operation |
-
-**Returns**
-
-| Type                                                                                | Description                                        |
-| ----------------------------------------------------------------------------------- | -------------------------------------------------- |
-| [`Pool.ReleaseOrMintOutV1`](/ccip/api-reference/evm/v1.6.1/pool#releaseormintoutv1) | Contains the final amount released in local tokens |
+| Name       | Type      | Description                       |
+| ---------- | --------- | --------------------------------- |
+| `receiver` | `address` | The address to receive the tokens |
+| `amount`   | `uint256` | The number of tokens to release   |
 
 ### setRebalancer
 
@@ -297,28 +256,6 @@ function setRebalancer(address rebalancer) external onlyOwner;
 | Name         | Type      | Description                       |
 | ------------ | --------- | --------------------------------- |
 | `rebalancer` | `address` | The new rebalancer address to set |
-
-### supportsInterface
-
-Checks interface support using ERC165.
-
-```solidity
-function supportsInterface(bytes4 interfaceId) public pure virtual override returns (bool);
-```
-
-<Aside>Implements ERC165 interface detection.</Aside>
-
-**Parameters**
-
-| Name          | Type     | Description                       |
-| ------------- | -------- | --------------------------------- |
-| `interfaceId` | `bytes4` | The interface identifier to check |
-
-**Returns**
-
-| Type   | Description                        |
-| ------ | ---------------------------------- |
-| `bool` | True if the interface is supported |
 
 ### transferLiquidity
 

@@ -732,6 +732,29 @@ function _encodeLocalDecimals() internal view virtual returns (bytes memory);
 | ------- | --------------------------------------------- |
 | `bytes` | ABI-encoded decimal places of the local token |
 
+### \_lockOrBurn
+
+Abstract internal function designed to be overridden with the specific token lock or burn logic.
+
+```solidity
+function _lockOrBurn(uint256 amount) internal virtual;
+```
+
+<Aside>
+
+This function is a virtual placeholder within the main `lockOrBurn` workflow:
+
+- It is called by the public `lockOrBurn` function after all validations are complete.
+- Concrete child contracts (e.g., `LockReleaseTokenPool`, `BurnMintTokenPool`) must provide a specific implementation (either locking or burning tokens).
+
+</Aside>
+
+**Parameters**
+
+| Name     | Type      | Description                          |
+| -------- | --------- | ------------------------------------ |
+| `amount` | `uint256` | The amount of tokens to lock or burn |
+
 ### \_onlyOffRamp
 
 Checks whether remote chain selector is configured on this contract, and if the msg.sender
@@ -824,6 +847,30 @@ Reverts with [`InvalidRemoteChainDecimals`](#invalidremotechaindecimals) if:
 | Type    | Description                                     |
 | ------- | ----------------------------------------------- |
 | `uint8` | The number of decimals used on the remote chain |
+
+### \_releaseOrMint
+
+Abstract internal function designed to be overridden with the specific token release or mint logic.
+
+```solidity
+function _releaseOrMint(address receiver, uint256 amount) internal virtual;
+```
+
+<Aside>
+
+This function is a virtual placeholder within the main `releaseOrMint` workflow:
+
+- It is called by the public `releaseOrMint` function after validation and amount calculations.
+- Concrete child contracts must implement the logic to either release (transfer) existing tokens or mint new ones to the receiver.
+
+</Aside>
+
+**Parameters**
+
+| Name       | Type      | Description                             |
+| ---------- | --------- | --------------------------------------- |
+| `receiver` | `address` | The address receiving the tokens        |
+| `amount`   | `uint256` | The amount of tokens to release or mint |
 
 ### \_setRateLimitConfig
 
@@ -1250,6 +1297,71 @@ function isSupportedToken(address token) public view virtual returns (bool);
 | Type   | Description                                 |
 | ------ | ------------------------------------------- |
 | `bool` | True if the token is supported by this pool |
+
+### lockOrBurn
+
+Locks tokens in the pool for cross-chain transfer.
+
+```solidity
+function lockOrBurn(
+  Pool.LockOrBurnInV1 calldata lockOrBurnIn
+) external virtual override returns (Pool.LockOrBurnOutV1 memory);
+```
+
+<Aside>
+
+Processes token locking with security validation:
+
+- Performs essential security checks through `_validateLockOrBurn`
+- Emits a [`LockedOrBurned`](#lockedorburned) event upon successful locking
+- Returns destination token information
+
+</Aside>
+
+**Parameters**
+
+| Name           | Type                                                                        | Description                             |
+| -------------- | --------------------------------------------------------------------------- | --------------------------------------- |
+| `lockOrBurnIn` | [`Pool.LockOrBurnInV1`](/ccip/api-reference/evm/v1.6.0/pool#lockorburninv1) | Input parameters for the lock operation |
+
+**Returns**
+
+| Type                                                                          | Description                                      |
+| ----------------------------------------------------------------------------- | ------------------------------------------------ |
+| [`Pool.LockOrBurnOutV1`](/ccip/api-reference/evm/v1.6.0/pool#lockorburnoutv1) | Contains destination token address and pool data |
+
+### releaseOrMint
+
+Releases tokens from the pool to a recipient.
+
+```solidity
+function releaseOrMint(
+  Pool.ReleaseOrMintInV1 calldata releaseOrMintIn
+) external virtual override returns (Pool.ReleaseOrMintOutV1 memory);
+```
+
+<Aside>
+
+Processes token release with security validation:
+
+- Performs essential security checks through `_validateReleaseOrMint`
+- Calculates correct local token amounts using decimal adjustments
+- Transfers tokens to the specified receiver
+- Emits a [`ReleasedOrMinted`](#releasedorminted) event
+
+</Aside>
+
+**Parameters**
+
+| Name              | Type                                                                              | Description                                |
+| ----------------- | --------------------------------------------------------------------------------- | ------------------------------------------ |
+| `releaseOrMintIn` | [`Pool.ReleaseOrMintInV1`](/ccip/api-reference/evm/v1.6.0/pool#releaseormintinv1) | Input parameters for the release operation |
+
+**Returns**
+
+| Type                                                                                | Description                                        |
+| ----------------------------------------------------------------------------------- | -------------------------------------------------- |
+| [`Pool.ReleaseOrMintOutV1`](/ccip/api-reference/evm/v1.6.0/pool#releaseormintoutv1) | Contains the final amount released in local tokens |
 
 ### removeRemotePool
 
