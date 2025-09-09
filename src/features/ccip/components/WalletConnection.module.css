@@ -1,0 +1,446 @@
+/* Shared wallet connection styles for consistency */
+
+.connectionContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4x);
+  text-align: center;
+  padding: var(--space-4x);
+}
+
+.connectionMessage {
+  font-size: var(--text-base);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.buttonWrapper {
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.connectButton {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  width: 100% !important; /* Force same width as secondary */
+  max-width: 300px !important; /* Prevent exceeding container */
+  min-height: 48px; /* Accessibility: minimum touch target */
+  box-sizing: border-box; /* Ensure consistent sizing */
+  /* Don't override design system transitions */
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+/* Enhanced micro-interactions that work with design system */
+.connectButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.connectButton:active {
+  transform: translateY(0) !important;
+}
+
+.connectButton:focus-visible {
+  /* Use design system focus but add transform */
+  transform: translateY(-1px);
+}
+
+/* Enhanced status and interaction styles */
+.statusWithNetwork {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1x);
+}
+
+.networkInfo {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  font-weight: 400;
+}
+
+.actionTooltip {
+  position: relative;
+  display: block; /* Changed from inline-block to block for full width */
+  width: 100%; /* Ensure tooltip container takes full width */
+}
+
+.actionTooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--color-background-inverse, #1f2937);
+  color: var(--color-text-inverse, #ffffff);
+  padding: var(--space-1x) var(--space-2x);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+  z-index: 1000;
+  margin-bottom: var(--space-1x);
+}
+
+.actionTooltip:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-2px);
+}
+
+.primaryActionSuccess {
+  position: relative;
+  overflow: hidden;
+}
+
+.primaryActionSuccess::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.5s ease;
+}
+
+.primaryActionSuccess.celebrating::after {
+  left: 100%;
+}
+
+.loadingState {
+  position: relative;
+}
+
+.loadingState::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    var(--color-primary, #3b82f6) 0%,
+    var(--color-primary-light, #60a5fa) 50%,
+    var(--color-primary, #3b82f6) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: inherit;
+  opacity: 0.1;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Wallet address display */
+.walletAddress {
+  font-size: var(--text-sm);
+  font-family: monospace;
+  margin-top: var(--space-1x);
+  cursor: pointer;
+  opacity: 0.9;
+  color: var(--color-text-secondary);
+  transition: opacity 0.2s ease;
+}
+
+.walletAddress:hover {
+  opacity: 1;
+}
+
+.walletIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* Wallet selection area */
+.walletSelection {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.walletSelectionLabel {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-2x);
+  font-weight: 500;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .connectionContainer {
+    padding: var(--space-3x);
+    gap: var(--space-3x);
+  }
+
+  .connectButton {
+    min-height: 44px;
+    font-size: var(--text-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .connectionContainer {
+    padding: var(--space-2x);
+  }
+
+  .walletSelection {
+    max-width: 100%;
+  }
+}
+
+/* Dark theme support */
+[data-theme="dark"] .connectionMessage {
+  color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .walletSelectionLabel {
+  color: var(--color-text-secondary);
+}
+
+/* Connected state styles */
+.connectedContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4x);
+  padding: var(--space-4x);
+}
+
+.connectionStatus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2x);
+  padding: var(--space-3x) var(--space-3x);
+  background: linear-gradient(
+    135deg,
+    var(--color-success-background, #ecfdf5) 0%,
+    var(--color-success-background-light, #f0fdf4) 100%
+  );
+  border: 1px solid var(--color-success-border, #bbf7d0);
+  border-radius: var(--border-radius-primary);
+  font-size: var(--text-base);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 300px; /* Match button width constraint */
+  margin: 0 auto; /* Center the box */
+  box-sizing: border-box;
+  /* No transitions for informational elements */
+}
+
+/* Remove hover effect from connection status - it's informational, not interactive */
+
+.successIcon {
+  color: var(--color-success, #059669);
+  font-weight: 600;
+}
+
+.networkSelector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2x);
+  align-items: center;
+}
+
+.networkSelectorLabel {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.actionSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3x);
+  align-items: center;
+  width: 100%;
+  max-width: 300px; /* Constrain the entire action section */
+  margin: 0 auto; /* Center the action section */
+}
+
+.primaryAction {
+  width: 100%; /* Inherit from parent actionSection */
+}
+
+.secondaryActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2x);
+  width: 100%; /* Inherit from parent actionSection */
+  opacity: 0.8;
+  transform: translateY(4px);
+  transition: all 0.3s ease;
+}
+
+.secondaryActions:hover {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.secondaryActionsVisible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.secondaryAction {
+  width: 100% !important; /* Force same width as primary */
+  max-width: 300px !important; /* Match primary button width constraint */
+  min-height: 48px !important; /* Match primary button height */
+  box-sizing: border-box; /* Ensure consistent sizing */
+  display: flex !important; /* Match primary button display */
+  align-items: center; /* Center content vertically */
+  justify-content: center; /* Center content horizontally */
+  /* Let design system handle colors and borders, only add enhancements */
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+/* Enhanced micro-interactions that work with design system */
+.secondaryAction:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.secondaryAction:active {
+  transform: translateY(0) !important;
+}
+
+.secondaryAction:focus-visible {
+  /* Use design system focus but add transform */
+  transform: translateY(-1px);
+}
+
+.tokenDivider {
+  width: 100%;
+  height: 1px;
+  background-color: var(--color-border-secondary);
+  margin: var(--space-2x) 0;
+}
+
+/* Enhanced Mobile-First Responsive Design */
+@media (max-width: 768px) {
+  .connectedContainer {
+    padding: var(--space-3x);
+    gap: var(--space-3x);
+  }
+
+  .connectionStatus {
+    padding: var(--space-3x) var(--space-2x);
+    font-size: var(--text-sm);
+  }
+
+  .secondaryActions {
+    gap: var(--space-2x);
+    /* Make secondary actions more prominent on mobile */
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .secondaryAction {
+    min-height: 48px; /* Larger touch target on mobile */
+    font-size: var(--text-sm);
+    padding: var(--space-3x) var(--space-2x);
+  }
+
+  .primaryAction {
+    max-width: none; /* Full width on mobile */
+  }
+
+  .connectButton {
+    min-height: 48px;
+    font-size: var(--text-base);
+    padding: var(--space-3x) var(--space-4x);
+  }
+
+  .actionTooltip::after {
+    /* Hide tooltips on mobile to avoid touch conflicts */
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .connectedContainer {
+    padding: var(--space-2x);
+    gap: var(--space-2x);
+  }
+
+  .connectionStatus {
+    padding: var(--space-2x);
+    font-size: var(--text-sm);
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .statusWithNetwork {
+    gap: var(--space-1x);
+  }
+
+  .connectButton {
+    font-size: var(--text-sm);
+    padding: var(--space-2x) var(--space-3x);
+  }
+
+  .secondaryAction {
+    min-height: 44px;
+    font-size: var(--text-xs);
+    padding: var(--space-2x);
+  }
+}
+
+/* Dark theme support */
+[data-theme="dark"] .connectionStatus {
+  background-color: var(--color-success-background-dark, #064e3b);
+  border-color: var(--color-success-border-dark, #059669);
+}
+
+[data-theme="dark"] .successIcon {
+  color: var(--color-success-dark, #34d399);
+}
+
+/* Reduced motion support - 100% consistent */
+@media (prefers-reduced-motion: reduce) {
+  .connectButton,
+  .secondaryAction,
+  .secondaryActions,
+  .actionTooltip {
+    transition: none !important;
+  }
+
+  .connectButton:hover,
+  .connectButton:active,
+  .connectButton:focus-visible,
+  .secondaryAction:hover,
+  .secondaryAction:active,
+  .secondaryAction:focus-visible {
+    transform: none !important;
+  }
+
+  .secondaryActions:hover {
+    transform: none !important;
+  }
+
+  .primaryActionSuccess::after,
+  .loadingState::before {
+    animation: none !important;
+  }
+}

@@ -11,6 +11,7 @@ import { monitoredFeeds, FeedDataItem } from "~/features/data/index.ts"
 import { StreamsNetworksData, type NetworkData } from "../data/StreamsNetworksData.ts"
 import { FEED_CATEGORY_CONFIG } from "../../../db/feedCategories.js"
 import { useBatchedFeedCategories, getFeedCategoryFromBatch } from "./useBatchedFeedCategories.ts"
+import { isSharedSVR, isAaveSVR } from "~/features/feeds/utils/svrDetection.ts"
 
 const feedItems = monitoredFeeds.mainnet
 
@@ -188,12 +189,20 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
           {metadata.secondaryProxyAddress && (
             <div style={{ marginTop: "5px" }}>
               <a
-                href="/data-feeds/svr-feeds"
+                href={
+                  isAaveSVR(metadata)
+                    ? "/data-feeds/svr-feeds#aave-svr-feeds"
+                    : isSharedSVR(metadata)
+                      ? "/data-feeds/svr-feeds"
+                      : "/data-feeds/svr-feeds"
+                }
                 target="_blank"
                 className={tableStyles.feedVariantBadge}
-                title="SVR-enabled Feed"
+                title={
+                  isAaveSVR(metadata) ? "Aave Dedicated SVR Feed" : isSharedSVR(metadata) ? " SVR Feed" : "SVR Feed"
+                }
               >
-                SVR
+                {isAaveSVR(metadata) ? "Aave SVR" : isSharedSVR(metadata) ? "SVR" : "SVR"}
               </a>
             </div>
           )}
@@ -288,7 +297,7 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                 <div className={tableStyles.separator} />
                 <div className={tableStyles.assetAddress}>
                   <dt>
-                    <span className="label">AAVE SVR Proxy:</span>
+                    <span className="label">{isAaveSVR(metadata) ? "AAVE SVR Proxy:" : "SVR Proxy:"}</span>
                   </dt>
                   <dd>
                     <button
@@ -315,14 +324,25 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                     </a>
                   </dd>
                 </div>
-                <div className={clsx(tableStyles.aaveCallout)}>
-                  <strong>⚠️ Aave Dedicated Feed:</strong> This SVR proxy feed is dedicated exclusively for use by the
-                  Aave protocol. Learn more about{" "}
-                  <a href="/data-feeds/svr-feeds" target="_blank">
-                    SVR-enabled Feeds
-                  </a>
-                  .
-                </div>
+                {isAaveSVR(metadata) && (
+                  <div className={clsx(tableStyles.aaveCallout)}>
+                    <strong>⚠️ Aave Dedicated Feed:</strong> This SVR proxy feed is dedicated exclusively for use by the
+                    Aave protocol. Learn more about{" "}
+                    <a href="/data-feeds/svr-feeds#aave-svr-feeds" target="_blank">
+                      Aave SVR Feeds
+                    </a>
+                    .
+                  </div>
+                )}
+                {isSharedSVR(metadata) && (
+                  <div className={clsx(tableStyles.sharedCallout)}>
+                    <strong>🔗 SVR Feed:</strong> This SVR proxy feed is usable by any protocol. Learn more about{" "}
+                    <a href="/data-feeds/svr-feeds" target="_blank">
+                      SVR Feeds
+                    </a>
+                    .
+                  </div>
+                )}
               </>
             )}
           </dl>

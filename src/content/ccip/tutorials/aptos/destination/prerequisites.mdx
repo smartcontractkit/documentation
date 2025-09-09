@@ -1,0 +1,190 @@
+---
+section: ccip
+date: Last Modified
+title: "Prerequisites for EVM to Aptos Tutorials"
+isIndex: false
+metadata:
+  description: "Complete setup guide for EVM to Aptos cross-chain development. Install Aptos CLI, Node.js, configure wallets, and get testnet tokens for CCIP Chainlink tutorials. Step-by-step instructions for developers building cross-chain applications."
+  image: "/images/ccip/concepts/architecture/ccip-aptos-destination-chain.jpg"
+  excerpt: "prerequisites, Aptos, CLI, wallets, tokens, setup"
+  datePublished: "2025-09-03"
+  lastModified: "2025-09-03"
+  estimatedTime: "15 minutes"
+  difficulty: "beginner"
+---
+
+import { Aside } from "@components"
+
+Before starting the EVM to Aptos tutorials, ensure you have:
+
+## Development Environment
+
+- **Aptos CLI**: Install the Aptos CLI by following the official [installation guide](https://aptos.dev/en/build/cli).
+
+    <Aside type="caution" title="Update Aptos CLI">
+
+  If you have an existing installation of the Aptos CLI, make sure to update it to the latest version to avoid compatibility issues.
+
+    </Aside>
+
+- **Node.js v20 or higher**: You can use the [nvm package](http://nvm.sh/) to install and switch between Node.js versions. Once installed, verify the node version with:
+
+  ```bash
+  node -v
+  ```
+
+  Example output:
+
+  ```text
+  $ node -v
+  v22.15.0
+  ```
+
+- **Npm**: For installing and managing dependencies.
+- **Git**: For cloning the repository.
+
+## Starter Kit Repository
+
+1.  Clone the CCIP Aptos Starter Kit:
+
+    ```bash
+    git clone https://github.com/smartcontractkit/aptos-starter-kit.git
+    ```
+
+1.  Navigate to the directory:
+
+    ```bash
+    cd aptos-starter-kit
+    ```
+
+1.  Install dependencies:
+
+    ```bash
+    npm install
+    ```
+
+## Understanding Named Addresses in the Manifest File (`Move.toml`)
+
+The Move build system uses a manifest file, `Move.toml`, to define a package, its dependencies, and any named addresses it references. Named addresses are human-readable aliases for on-chain hexadecimal addresses, which makes the Move code cleaner, more readable, and easier to manage.
+
+When you compile a Move package, the compiler replaces these aliases (e.g., `@ccip_router`) with their actual address values from the `Move.toml` file.
+
+In the [`aptos-starter-kit`](https://github.com/smartcontractkit/aptos-starter-kit), the example modules (like `ccip_message_sender`, `ccip_message_receiver`) need to interact with the core CCIP modules already deployed on the Aptos Testnet. The `[addresses]` section in their `Move.toml` files provides the necessary references.
+
+**Example `Move.toml` Address Block:**
+
+```toml
+[addresses]
+ccip = "0xc748085bd02022a9696dfa2058774f92a07401208bbd34cfd0c6d0ac0287ee45"
+mcms = "0xbdf1b9aacb4e21bf6f255105831df0172e911d4748e488196fde10d2e2a4e32d"
+mcms_register_entrypoints = "0x0"
+ccip_onramp = "0xc748085bd02022a9696dfa2058774f92a07401208bbd34cfd0c6d0ac0287ee45"
+ccip_router = "0xc748085bd02022a9696dfa2058774f92a07401208bbd34cfd0c6d0ac0287ee45"
+```
+
+Here is a breakdown of what each named address represents:
+
+- **`ccip`**: This is the main **Object address** under which the core CCIP packages and their modules (like `fee_quoter`, `rmn_remote`, `token_admin_registry`, etc.) are published.
+
+- **`ccip_router`** & **`ccip_onramp`**: These aliases also point to the main CCIP Object address. This is because the `router` and `onramp` modules are part of the packages published under that single, unified Object. The aliases are defined for clarity and consistency in the Move code's `use` statements.
+
+- **`mcms`**: This is the address of the on-chain **ManyChainMultiSig (MCMS)** module, which is responsible for handling governance and administrative actions for the CCIP protocol through a secure, time-locked [implementation process](/ccip/concepts/architecture/onchain/aptos/upgradability#implementation-process).
+
+- **`mcms_register_entrypoints`**: This is a special value used as a **compile-time flag**. By setting it to `0x0`, the module is compiled in a way that bypasses the logic for registering with the MCMS system. This is useful for certain testing or deployment scenarios where the MCMS module is not relevant.
+
+By defining these addresses in the `Move.toml` file, the example modules can interact with the core CCIP protocol without hardcoding long addresses, making the code portable and easier to update for different networks.
+
+<Aside type="note" title="Mainnet Addresses">
+  For the corresponding Aptos Mainnet addresses, refer to the [CCIP
+  Directory](/ccip/directory/mainnet/chain/aptos-mainnet).
+</Aside>
+
+## Wallets
+
+- **EVM Wallet and Private Key**: To send transactions from an EVM chain (like Ethereum Sepolia), you need a wallet and its private key.
+  - Set up a wallet like [MetaMask](https://metamask.io/).
+  - You will need to export the private key for the account you intend to send _from_. Follow the [official MetaMask guide](https://support.metamask.io/configure/accounts/how-to-export-an-accounts-private-key/) to obtain your private key and add it to the `.env` file as shown below.
+
+- **Aptos Account**: You'll need an Aptos account. If you don't have one, create it with:
+
+  ```bash
+  aptos init --network testnet
+  ```
+
+  This command will guide you through creating a new account for Testnet and will save the credentials in a `.aptos/config.yaml` file. This also configures your Aptos CLI to use Testnet.
+
+  {/* prettier-ignore */}
+  <Aside type="note" title="Note">
+    If you want to use your existing account from [Petra Wallet](https://petra.app/), you can 
+    [export your account's private key](https://petra.app/docs/use#find-account-phrase-and-keys),
+    copy it, and use it in the following command:
+    ```bash
+    aptos init --private-key <YOUR_PRIVATE_KEY> --network testnet
+    ```
+    <br></br>
+    This command configures your Aptos CLI to use your existing account on Testnet and saves the credentials in a `.aptos/config.yaml` file.
+  </Aside>
+
+  Verify your current configuration with:
+
+  ```bash
+  aptos config show-profiles
+  ```
+
+  This should show your `default` profile configured for Testnet, with the `network` set to `Testnet`.
+
+  Example output:
+
+  ```text
+  $ aptos config show-profiles
+
+  {
+    "Result": {
+      "default": {
+        "network": "Testnet",
+        "has_private_key": true,
+        "public_key": "ed25519-pub-0x2ecdd2d7bc0cbfe2e44c219ef9a9fddc986b384f4a01fb5d821cf0dab5d2fbae",
+        "account": "d0e227835c33932721d54ae401cfaae753c295024fe454aa029b5e2782d2fad4",
+        "rest_url": "https://fullnode.testnet.aptoslabs.com"
+      }
+    }
+  }
+  ```
+
+  Note down the `account` value from the output and **prepend `0x` to it**. You will need to use this value as one of the environment variables in your `.env` file, as shown below.
+
+## Environment Configuration (`.env` file)
+
+The starter kit uses a `.env` file to manage sensitive information like private keys and RPC URLs. Create a new file named `.env` in the root of the `aptos-starter-kit` directory by copying the example file:
+
+```bash
+cp .env.example .env
+```
+
+Next, open the `.env` file and fill in the following values:
+
+- `PRIVATE_KEY`: The private key of your source wallet (EOA) on Ethereum Sepolia from which you're sending CCIP-BnM tokens. You can export your private key from your MetaMask Wallet, as shown in the [Wallets](/ccip/tutorials/aptos/destination/prerequisites#wallets) section above.
+- `ETHEREUM_SEPOLIA_RPC_URL`: The RPC endpoint for the Ethereum Sepolia testnet. This is required to interact with the Ethereum Sepolia network. You can obtain an RPC URL by signing up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
+
+**Example `.env` file:**
+
+```
+PRIVATE_KEY=<YOUR_EVM_PRIVATE_KEY>
+ETHEREUM_SEPOLIA_RPC_URL=<RPC_URL_FOR_ETHEREUM_SEPOLIA>
+```
+
+## Native Tokens for Transaction Fees
+
+**ETH** tokens are used for Ethereum Sepolia transaction fees. For these tutorials, we will also use **ETH** to pay for CCIP fees.
+
+- You can use the [Chainlink Faucet](https://faucet.chain.link) to get test ETH.
+
+## Obtaining Testnet Tokens
+
+### LINK Tokens on EVM Chains
+
+When using LINK tokens to pay for CCIP fees, you will need LINK tokens on Ethereum Sepolia. You can use the [Chainlink Faucet](https://faucet.chain.link) to get test LINK tokens.
+
+### BnM Tokens on EVM Chains
+
+To obtain CCIP-BnM tokens on Ethereum Sepolia, you can use the [EVM Chains](/ccip/test-tokens#evm-chains) section to get test BnM tokens.

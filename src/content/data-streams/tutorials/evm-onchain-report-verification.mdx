@@ -74,7 +74,6 @@ Deploy a `ClientReportsVerifier` contract on _Arbitrum Sepolia_. This contract i
 1. Compile the contract.
 
 1. Open MetaMask and set the network to _Arbitrum Sepolia_. If you need to add Arbitrum Sepolia to your wallet, you can find the chain ID and the LINK token contract address on the [LINK Token Contracts](/resources/link-token-contracts#arbitrum-sepolia-testnet) page.
-
    - <a
        class="erc-token-address"
        id="421614_0xb1D4538B4571d411F07960EF2838Ce337FE1E80E"
@@ -168,7 +167,6 @@ When deploying the contract, you define the verifier proxy address for the strea
 The `verifyReport` function is the core function that handles onchain report verification. Here's how it works:
 
 - **Report data extraction**:
-
   - The function decodes the `unverifiedReport` to extract the report data.
   - It then extracts the report version by reading the first two bytes of the report data, which correspond to the schema version encoded in the stream ID:
     - Schema version `0x0003` corresponds to the [report schema v3](/data-streams/reference/report-schema-v3) (Crypto assets).
@@ -180,7 +178,6 @@ The `verifyReport` function is the core function that handles onchain report ver
   For more information, see the [Report Schemas](/data-streams/reference/report-schema-overview) documentation.
 
 - **Fee calculation and handling**:
-
   - The function first checks if a `FeeManager` contract exists by querying `s_feeManager()` on the verifier proxy.
   - **If a `FeeManager` exists** (non-zero address):
     - It calculates the fees required for verification using the `getFeeAndReward` function.
@@ -193,12 +190,10 @@ The `verifyReport` function is the core function that handles onchain report ver
   - This automatic detection makes the contract compatible with any network, regardless of whether fee management is deployed.
 
 - **Report verification**:
-
   - The `verify` function of the verifier proxy is called to perform the actual verification.
   - It passes the `unverifiedReport` and the `parameterPayload` (which contains either the encoded fee token address or empty bytes) as parameters.
 
 - **Data decoding**:
-
   - Depending on the [report version](/data-streams/reference/report-schema-overview), the function decodes the verified report data into the appropriate struct (`ReportV3`, `ReportV8`,`ReportV9`, etc.).
   - It emits a `DecodedPrice` event with the price extracted from the verified report.
   - The `lastDecodedPrice` state variable is updated with the new price.

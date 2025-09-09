@@ -5,7 +5,7 @@ import { Environment } from "@config/data/ccip/types.ts"
 export { Environment }
 
 // Chain type and family declarations
-export type ChainType = "evm" | "solana" | "aptos"
+export type ChainType = "evm" | "solana" | "aptos" | "sui"
 export type ChainFamily = "evm" | "mvm" | "svm"
 
 export const prerender = false
@@ -128,3 +128,16 @@ export interface TokenFilterType {
   token_id?: string
   chain_id?: string
 }
+
+// Faucet API Types
+export type {
+  FaucetChainConfig,
+  ChallengeParams,
+  ChallengeResponse,
+  VerifyRequest,
+  VerifyResponse,
+  VerifySignatureArgs,
+  FamilyAdapter,
+  FaucetApiResponse,
+  FaucetError,
+} from "./faucet.ts"
