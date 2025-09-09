@@ -56,18 +56,19 @@ string public constant override typeAndVersion = "BurnMintTokenPool 1.6.1";
 
 ## Functions
 
-### \_burn
+### \_lockOrBurn
 
-Internal function that executes the token burning operation using the standard burn interface.
+Internal function that implements the token burning logic for the `BurnMintTokenPool`.
 
 ```solidity
-function _burn(uint256 amount) internal virtual override;
+function _lockOrBurn(uint256 amount) internal virtual override;
 ```
 
 <Aside>
 
-Implements the abstract burn function from BurnMintTokenPoolAbstract:
+Overrides the virtual [`_lockOrBurn`](/ccip/api-reference/evm/v1.6.1/token-pool#_lockorburn) function from the base `TokenPool` contract:
 
+- Provides the specific "burn" implementation for the `BurnMintTokenPool`.
 - Calls the token's `burn(amount)` function directly
 - Requires the pool to have sufficient burning permissions
 
