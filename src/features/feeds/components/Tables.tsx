@@ -1280,7 +1280,6 @@ export const TestnetTable = ({
           return metadata.contractType === "verifier" && metadata.docs.feedType === "Equities"
         }
 
-
         if (dataFeedType === "streamsExRate") {
           return metadata.contractType === "verifier" && metadata.docs?.productTypeCode === "ExRate"
         }
