@@ -104,7 +104,7 @@ export const VersionSelectorClient = <T extends string>({
         // 2. Extended: /{product}/api-reference/{vm_type}/v{version}/{page}
         const standardPathMatch = currentPath.match(new RegExp(`/${config.product.name}/api-reference/v[^/]+/(.+?)/?$`))
         const extendedPathMatch = currentPath.match(
-          new RegExp(`/${config.product.name}/api-reference/(?:evm|svm)/v[^/]+/(.+?)/?$`)
+          new RegExp(`/${config.product.name}/api-reference/(?:evm|svm|aptos)/v[^/]+/(.+?)/?$`)
         )
 
         const pagePath = extendedPathMatch?.[1] || standardPathMatch?.[1]

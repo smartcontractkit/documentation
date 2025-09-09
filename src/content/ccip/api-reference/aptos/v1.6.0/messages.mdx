@@ -1,0 +1,163 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.6.0 Aptos Messages API Reference"
+metadata:
+  description: "API documentation for CCIP message structures and extra args on the Aptos blockchain."
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## Messages
+
+This section details the data structures used for sending and receiving CCIP messages on Aptos.
+
+### Any2AptosTokenAmount
+
+The `Any2AptosTokenAmount` struct represents a specific token and amount being delivered to the Aptos chain as part of a cross-chain message.
+
+```rust
+// As defined in ccip::client
+struct Any2AptosTokenAmount has store, drop, copy {
+    token: address,
+    amount: u64
+}
+```
+
+**Parameters**
+
+| Field                 | Type                   | Description                                                                                                    |
+| --------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------- |
+| <nobr>`token`</nobr>  | <nobr>`address`</nobr> | The address of the token on Aptos.                                                                             |
+| <nobr>`amount`</nobr> | <nobr>`u64`</nobr>     | The number of tokens transferred, represented in the token's smallest unit (e.g., Octas for APT-based tokens). |
+
+**Where it's used**:
+
+- As part of the `dest_token_amounts` vector in the `Any2AptosMessage` struct when receiving a message on Aptos.
+
+### Aptos2AnyMessage
+
+(Conceptual)
+
+This isn't a formal struct but represents the parameters passed to the `onramp::ccip_send` entry function to initiate a cross-chain message from Aptos.
+
+**Parameters**
+
+| Field                                | Type                           | Description                                                                                                                                    |
+| ------------------------------------ | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| <nobr>`receiver`</nobr>              | <nobr>`vector<u8>`</nobr>      | The destination address in its native byte format (e.g., 20 bytes for EVM addresses, 32 for Aptos).                                            |
+| <nobr>`data`</nobr>                  | <nobr>`vector<u8>`</nobr>      | The arbitrary data payload to be processed by the receiver on the destination chain.                                                           |
+| <nobr>`token_addresses`</nobr>       | <nobr>`vector<address>`</nobr> | A vector of Aptos token type addresses to transfer.                                                                                            |
+| <nobr>`token_amounts`</nobr>         | <nobr>`vector<u64>`</nobr>     | A vector of amounts for each corresponding token, in the token's smallest denomination.                                                        |
+| <nobr>`token_store_addresses`</nobr> | <nobr>`vector<address>`</nobr> | A vector of Fungible Asset store addresses from which tokens are withdrawn. Use `0x0` to default to the primary store of the sender's account. |
+| <nobr>`fee_token`</nobr>             | <nobr>`address`</nobr>         | The type address of the token used to pay CCIP fees. Use `0xa` if paying with native APT.                                                      |
+| <nobr>`fee_token_store`</nobr>       | <nobr>`address`</nobr>         | The Fungible Asset store address for the fee token. Use `0x0` to default to the primary store.                                                 |
+| <nobr>`extra_args`</nobr>            | <nobr>`vector<u8>`</nobr>      | Serialized byte vector containing additional arguments for the destination chain, such as gas limits.                                          |
+
+### Any2AptosMessage
+
+```rust
+// As defined in ccip::client
+struct Any2AptosMessage has store, drop, copy {
+    message_id: vector<u8>,
+    source_chain_selector: u64,
+    sender: vector<u8>,
+    data: vector<u8>,
+    dest_token_amounts: vector<Any2AptosTokenAmount>
+}
+```
+
+**Parameters**
+
+| Field                                | Type                                        | Description                                                                                                   |
+| ------------------------------------ | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| <nobr>`message_id`</nobr>            | <nobr>`vector<u8>`</nobr>                   | The unique 32-byte identifier for this cross-chain message.                                                   |
+| <nobr>`source_chain_selector`</nobr> | <nobr>`u64`</nobr>                          | The unique identifier of the blockchain where the message originated.                                         |
+| <nobr>`sender`</nobr>                | <nobr>`vector<u8>`</nobr>                   | The sender's address on the source blockchain, in its native byte format.                                     |
+| <nobr>`data`</nobr>                  | <nobr>`vector<u8>`</nobr>                   | The arbitrary data payload sent from the source chain for your module to process.                             |
+| <nobr>`dest_token_amounts`</nobr>    | <nobr>`vector<Any2AptosTokenAmount>`</nobr> | A list of tokens and their amounts that were bridged and are being delivered to the receiver module on Aptos. |
+
+### Aptos2AnyRampMessage
+
+```rust
+// As defined in the OnRamp module
+struct Aptos2AnyRampMessage has store, drop, copy {
+    header: RampMessageHeader,
+    sender: address,
+    data: vector<u8>,
+    receiver: vector<u8>,
+    extra_args: vector<u8>,
+    fee_token: address,
+    fee_token_amount: u64,
+    fee_value_juels: u256,
+    token_amounts: vector<Aptos2AnyTokenTransfer>
+}
+```
+
+**Parameters**
+
+| Field                           | Type                                          | Description                                                                                                               |
+| ------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| <nobr>`header`</nobr>           | <nobr>`RampMessageHeader`</nobr>              | Metadata about the message: `message_id`, `source_chain_selector`, `dest_chain_selector`, `sequence_number`, and `nonce`. |
+| <nobr>`sender`</nobr>           | <nobr>`address`</nobr>                        | The sender's 32-byte Aptos account address on the source chain.                                                           |
+| <nobr>`data`</nobr>             | <nobr>`vector<u8>`</nobr>                     | The arbitrary payload data.                                                                                               |
+| <nobr>`receiver`</nobr>         | <nobr>`vector<u8>`</nobr>                     | The destination address in its native byte format.                                                                        |
+| <nobr>`extra_args`</nobr>       | <nobr>`vector<u8>`</nobr>                     | The serialized "extra arguments" relevant to the destination, such as gas limits.                                         |
+| <nobr>`fee_token`</nobr>        | <nobr>`address`</nobr>                        | The type address of the token used to pay CCIP fees.                                                                      |
+| <nobr>`fee_token_amount`</nobr> | <nobr>`u64`</nobr>                            | The amount of the `fee_token` (in its native denomination) that was charged.                                              |
+| <nobr>`fee_value_juels`</nobr>  | <nobr>`u256`</nobr>                           | The total fee value converted to LINK Juels (1e18 decimals) for standardized value reporting.                             |
+| <nobr>`token_amounts`</nobr>    | <nobr>`vector<Aptos2AnyTokenTransfer>`</nobr> | A list of tokens locked or burned on Aptos as part of the message.                                                        |
+
+## Extra Args
+
+### Tags
+
+| Constant                             | Value (Hex)               | Purpose                                                                 |
+| ------------------------------------ | ------------------------- | ----------------------------------------------------------------------- |
+| <nobr>`EVM_EXTRA_ARGS_V2_TAG`</nobr> | <nobr>`0x181dcf10`</nobr> | Denotes `GenericExtraArgsV2` for Aptos → EVM or Aptos → Aptos messages. |
+| <nobr>`SVM_EXTRA_ARGS_V1_TAG`</nobr> | <nobr>`0x1f3b3aba`</nobr> | Denotes `SVMExtraArgsV1` for Aptos → SVM messages.                      |
+
+---
+
+### GenericExtraArgsV2
+
+```rust
+// Conceptual representation of data to be encoded
+struct GenericExtraArgsV2 {
+    gas_limit: u256,
+    allow_out_of_order_execution: bool,
+}
+```
+
+**Parameters**
+
+| Field                                       | Type                | Description                                                                                                                                                            |
+| ------------------------------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <nobr>`gas_limit`</nobr>                    | <nobr>`u256`</nobr> | The gas limit for calling the receiver on the destination chain. For EVM, this is the gas for `ccipReceive`. For Aptos, it's the gas for your `ccip_receive` function. |
+| <nobr>`allow_out_of_order_execution`</nobr> | <nobr>`bool`</nobr> | If `true`, the message can be processed by the CCIP network in a different order than it was sent. It is recommended to set this to `true`.                            |
+
+---
+
+### SVMExtraArgsV1
+
+```rust
+// Conceptual representation of data to be encoded
+struct SVMExtraArgsV1 {
+    compute_units: u32,
+    account_is_writable_bitmap: u64,
+    allow_out_of_order_execution: bool,
+    token_receiver: [u8; 32],
+    accounts: vector<vector<u8>>,
+}
+```
+
+**Parameters**
+
+| Field                                       | Type                              | Description                                                                                                                           |
+| ------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| <nobr>`compute_units`</nobr>                | <nobr>`u32`</nobr>                | The number of compute units allocated to the SVM program.                                                                             |
+| <nobr>`account_is_writable_bitmap`</nobr>   | <nobr>`u64`</nobr>                | Bitmap indicating which accounts are writable during program execution.                                                               |
+| <nobr>`allow_out_of_order_execution`</nobr> | <nobr>`bool`</nobr>               | If `true`, allows the message to be processed out of order by the CCIP network.                                                       |
+| <nobr>`token_receiver`</nobr>               | <nobr>`[u8; 32]`</nobr>           | A 32-byte Solana address that will receive any bridged tokens. If input is shorter than 32 bytes, it will be zero-padded on the left. |
+| <nobr>`accounts`</nobr>                     | <nobr>`vector<vector<u8>>`</nobr> | A list of serialized SVM accounts passed to the program.                                                                              |
