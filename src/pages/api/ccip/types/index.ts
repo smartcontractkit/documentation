@@ -39,6 +39,7 @@ export interface ChainDetails {
   tokenPoolFactory?: string
   feeQuoter?: string
   rmnPermeable?: boolean
+  mcms?: string
 }
 
 export type ChainApiResponse = {

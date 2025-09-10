@@ -305,17 +305,84 @@ class SolanaChainStrategy extends BaseChainStrategy {
   }
 }
 
-// Strategy Factory
-class ChainStrategyFactory {
-  static getStrategy(chainType: ChainType, requestId: string): IChainProcessingStrategy {
-    switch (chainType) {
-      case "evm":
-        return new EvmChainStrategy(requestId)
-      case "solana":
-        return new SolanaChainStrategy(requestId)
-      default:
-        throw new Error(`Unsupported chain type: ${chainType}`)
+class AptosChainStrategy extends BaseChainStrategy {
+  private static readonly REQUIRED_FIELDS = {
+    tokenAdminRegistry: (config: ChainsConfig[string]) => !config.tokenAdminRegistry?.address,
+    mcms: (config: ChainsConfig[string]) => !config.mcms?.address,
+  } as const
+
+  validateChainData(
+    chainId: number | string | undefined,
+    networkId: string,
+    chainConfig: ChainsConfig[string],
+    selectorEntry?: { selector: string; name: string },
+    supportedChain?: SupportedChain
+  ): {
+    isValid: boolean
+    missingFields: string[]
+    validatedData?: ChainDetails
+  } {
+    const baseValidation = this.validateBaseFields(chainId, networkId, chainConfig, selectorEntry, supportedChain)
+
+    if (!baseValidation.isValid || !baseValidation.baseData) {
+      return {
+        isValid: false,
+        missingFields: baseValidation.missingFields,
+      }
     }
+
+    const missingFields = this.validateAptosRequirements(chainConfig)
+
+    if (missingFields.length > 0) {
+      logger.warn({
+        message: "Aptos chain configuration incomplete",
+        requestId: this.requestId,
+        networkId,
+        missingFields,
+      })
+
+      return {
+        isValid: false,
+        missingFields,
+      }
+    }
+
+    const validatedData: ChainDetails = {
+      ...(baseValidation.baseData as ChainDetails),
+      tokenAdminRegistry: chainConfig.tokenAdminRegistry?.address ?? "",
+      mcms: chainConfig.mcms?.address ?? "",
+    }
+
+    return {
+      isValid: true,
+      missingFields: [],
+      validatedData,
+    }
+  }
+
+  private validateAptosRequirements(chainConfig: ChainsConfig[string]): string[] {
+    return Object.entries(AptosChainStrategy.REQUIRED_FIELDS)
+      .filter(([_, validator]) => validator(chainConfig))
+      .map(([field]) => field)
+  }
+}
+
+class ChainStrategyFactory {
+  private static readonly strategies = new Map<ChainType, new (requestId: string) => IChainProcessingStrategy>([
+    ["evm", EvmChainStrategy],
+    ["solana", SolanaChainStrategy],
+    ["aptos", AptosChainStrategy],
+  ])
+
+  static getStrategy(chainType: ChainType, requestId: string): IChainProcessingStrategy {
+    const StrategyClass = this.strategies.get(chainType)
+
+    if (!StrategyClass) {
+      const supportedTypes = Array.from(this.strategies.keys()).join(", ")
+      throw new Error(`Chain type "${chainType}" not supported. Available strategies: ${supportedTypes}`)
+    }
+
+    return new StrategyClass(requestId)
   }
 }
 
