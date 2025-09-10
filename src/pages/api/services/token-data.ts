@@ -10,7 +10,7 @@ import {
 import { Version } from "@config/data/ccip/types.ts"
 import { SupportedChain } from "@config/index.ts"
 import { getAllSupportedTokens, getAllTokenLanes, getTokenData } from "@config/data/ccip/data.ts"
-import { resolveChainOrThrow } from "@api/ccip/utils.ts"
+import { resolveChainOrThrow, generateChainKey } from "@api/ccip/utils.ts"
 import { logger } from "@lib/logging/index.js"
 import { getChainId, getChainTypeAndFamily, getTitle } from "../../../features/utils/index.ts"
 import { getSelectorEntry } from "@config/data/ccip/selectors.ts"
@@ -134,17 +134,17 @@ export class TokenDataService {
             .map((destChainId) => {
               const destSupportedChain = resolveChainOrThrow(destChainId)
               const destNumericChainId = getChainId(destSupportedChain)
-              const { chainType } = getChainTypeAndFamily(destSupportedChain)
+              const { chainType: destChainType } = getChainTypeAndFamily(destSupportedChain)
 
               if (!destNumericChainId) return destChainId
 
               if (outputKey === "chainId") {
-                return destNumericChainId.toString()
+                return generateChainKey(destNumericChainId, destChainType, outputKey)
               } else if (outputKey === "selector") {
-                const selectorEntry = getSelectorEntry(destNumericChainId, chainType)
+                const selectorEntry = getSelectorEntry(destNumericChainId, destChainType)
                 return selectorEntry?.selector || destChainId
               } else if (outputKey === "internalId") {
-                const selectorEntry = getSelectorEntry(destNumericChainId, chainType)
+                const selectorEntry = getSelectorEntry(destNumericChainId, destChainType)
                 return selectorEntry?.name || destChainId
               }
               return destChainId
@@ -154,7 +154,7 @@ export class TokenDataService {
           // Get the appropriate key based on outputKey parameter
           let chainKey = chainId
           if (outputKey === "chainId") {
-            chainKey = numericChainId.toString()
+            chainKey = generateChainKey(numericChainId, chainType, outputKey)
           } else if (outputKey === "selector") {
             const selectorEntry = getSelectorEntry(numericChainId, chainType)
             if (selectorEntry) {
