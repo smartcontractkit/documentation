@@ -3,6 +3,7 @@ import {
   validateEnvironment,
   validateFilters,
   validateOutputKey,
+  generateChainKey,
   createMetadata,
   handleApiError,
   successHeaders,
@@ -90,7 +91,12 @@ export const GET: APIRoute = async ({ request }) => {
       (acc, [family, chainList]) => {
         acc[family] = chainList.reduce(
           (familyAcc, chain) => {
-            const key = outputKey ? chain[outputKey].toString() : chain.internalId
+            const key =
+              outputKey === "chainId"
+                ? generateChainKey(chain.chainId, chain.chainType, outputKey)
+                : outputKey
+                  ? chain[outputKey].toString()
+                  : chain.internalId
             familyAcc[key] = chain
             return familyAcc
           },
