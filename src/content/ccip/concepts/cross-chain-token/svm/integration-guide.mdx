@@ -25,7 +25,6 @@ Before starting integration, ensure you meet these requirements:
 - **Token Compatibility**: Your token must meet [compatibility requirements](/ccip/concepts/cross-chain-token/svm/tokens#compatibility)
 - **Decimal Planning**: Plan [decimal configuration](/ccip/concepts/cross-chain-token/svm/tokens#decimal-planning) across all target blockchains
 - **Pool Type Selection**: Choose the appropriate token pool type for your use case:
-
   - **[BurnMint Pools](/ccip/concepts/cross-chain-token/svm/token-pools#burnmint-token-pool)**: Burn tokens on source, mint on destination. Requires transferring mint authority to pool. Best for tokens designed to have variable supply across chains.
 
   - **[LockRelease Pools](/ccip/concepts/cross-chain-token/svm/token-pools#lockrelease-token-pool)**: Lock tokens on source, release on destination. No mint authority transfer required. Requires liquidity management. Best for retaining mint authority control or capped-supply tokens.
@@ -95,14 +94,12 @@ Based on your mint authority control, follow the appropriate integration path:
 **Pool Deployment Options:**
 
 1. **[Self-Serve Mode](/ccip/concepts/cross-chain-token/svm/token-pools#approach-1-self-serve-mode-recommended) (Recommended)**
-
    - Use Chainlink-deployed standard pool programs
    - Initialize your pool using [`initialize`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#initialize) instruction
    - Automatic governance-controlled upgrades
    - Lowest operational overhead
 
 2. **[Self-Deployed Standard Pools](/ccip/concepts/cross-chain-token/svm/token-pools#approach-2-self-deployed-standard-pools)**
-
    - Deploy standard pool programs yourself
    - Control upgrade authority and timing
    - Initialize your own pools
@@ -164,7 +161,6 @@ Once you've determined your path, follow these implementation steps:
 Choose your deployment approach:
 
 - **Self-serve mode**: Initialize pool from existing Chainlink-deployed programs
-
   - **If you can sign as mint authority**: Use the [`initialize`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#initialize) instruction directly
   - **If you cannot sign as mint authority** (mint authority is `None`, held by SPL token multisig, or controlled by another party): Submit [registration request](https://chain.link/ccip-contact?v=Tokens:%20Token%20admin%20registration) for assisted initialization
 
@@ -210,7 +206,6 @@ See [Mint Authority Management](/ccip/concepts/cross-chain-token/svm/token-pools
 After determining your integration path:
 
 1. **Review Detailed Documentation**:
-
    - [Architecture](/ccip/concepts/cross-chain-token/svm/architecture): Understand component interactions
    - [Tokens](/ccip/concepts/cross-chain-token/svm/tokens): Token requirements and compatibility
    - [Token Pools](/ccip/concepts/cross-chain-token/svm/token-pools): Pool implementation details
