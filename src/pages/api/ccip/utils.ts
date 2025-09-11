@@ -4,7 +4,7 @@ import { ChainsConfig, Environment, loadReferenceData, Version } from "@config/d
 import { SupportedChain } from "@config/index.ts"
 import { directoryToSupportedChain } from "@features/utils/index.ts"
 import { v4 as uuidv4 } from "uuid"
-import type { TokenMetadata } from "./types/index.ts"
+import type { TokenMetadata, ChainType, OutputKeyType } from "./types/index.ts"
 
 export const prerender = false
 
@@ -262,6 +262,16 @@ export const validateOutputKey = (outputKey?: string): "chainId" | "selector" | 
     throw new CCIPError(400, "outputKey must be one of: chainId, selector, or internalId")
   }
   return outputKey as "chainId" | "selector" | "internalId"
+}
+
+export const generateChainKey = (chainId: number | string, chainType: ChainType, outputKey: OutputKeyType): string => {
+  const chainIdStr = chainId.toString()
+
+  if (outputKey === "chainId" && chainType !== "evm" && chainType !== "solana") {
+    return `${chainType}-${chainIdStr}`
+  }
+
+  return chainIdStr
 }
 
 /**
