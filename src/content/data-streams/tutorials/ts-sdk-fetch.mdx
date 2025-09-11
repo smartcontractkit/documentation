@@ -32,3 +32,145 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
     },
   ]}
 />
+
+In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/data-streams-api/ts-sdk) for TypeScript to fetch and decode [reports](/data-streams/reference/report-schema-overview) from the Data Streams Aggregation Network. You'll set up your TypeScript project, retrieve reports, decode them, and log their attributes.
+
+<DataStreams section="asideDisclaimer" />
+
+## Requirements
+
+- **Git**: Make sure you have Git installed. You can check your current version by running <CopyText text="git --version" code/> in your terminal and download the latest version from the official [Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if necessary.
+- **Node.js**: Make sure you have Node.js 20.0 or higher. You can check your current version by running <CopyText text="node --version" code/> in your terminal and download the latest version from the official [Node.js website](https://nodejs.org/) if necessary.
+- **TypeScript**: Make sure you have TypeScript 5.3 or higher. You can check your current version by running <CopyText text="npx tsc --version" code/> in your terminal and install or update TypeScript by running <CopyText text="npm install -g typescript" code/> if necessary.
+- **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to request mainnet or testnet access.
+
+## Tutorial
+
+You'll start with the set up of your TypeScript project, installing the SDK and pasting example code. This will let you decode reports for both single and multiple [streams](/data-streams/crypto-streams), logging their attributes to your terminal.
+
+### Set up your TypeScript project
+
+1. Create a new directory for your project and navigate to it:
+
+   ```bash
+   mkdir my-data-streams-project
+   cd my-data-streams-project
+   ```
+
+1. Initialize a new Node.js project:
+
+   ```bash
+   npm init -y
+   ```
+
+1. Install the TypeScript SDK and other required packages:
+
+   ```bash
+   npm install @chainlink/data-streams-sdk
+   npm install -D typescript @types/node ts-node
+   ```
+
+1. Set your API credentials:
+
+   Option 1 - Environment variables:
+
+   ```bash
+   export API_KEY="your_api_key_here"
+   export USER_SECRET="your_user_secret_here"
+   ```
+
+   Option 2 - `.env` file:
+
+   ```bash
+   # Create .env file
+   touch .env
+
+   # Add your credentials
+   API_KEY="your_api_key_here"
+   USER_SECRET="your_user_secret_here"
+   ```
+
+### Fetch and decode a report with a single stream
+
+1.  Create a new new TypeScript file, `singleStream.ts`, in your project directory:
+
+    ```bash
+    touch singleStream.ts
+    ```
+
+1.  Insert the following code example and save your `singleStream.ts` file:
+
+    {/* TODO: UPDATE WHEN ON NPM */}
+
+    ```typescript
+    import { createClient, decodeReport, LogLevel } from "../src"
+    import { getReportVersion, formatReport } from "../src/utils/report"
+    import "dotenv/config"
+
+    async function main() {
+      if (process.argv.length < 3) {
+        console.error("Please provide a feed ID as an argument")
+        console.error(
+          "Example: npx ts-node examples/get-latest-report.ts 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"
+        )
+        process.exit(1)
+      }
+
+      const feedId = process.argv[2]
+      const version = getReportVersion(feedId)
+
+      try {
+        const config = {
+          apiKey: process.env.API_KEY || "YOUR_API_KEY",
+          userSecret: process.env.USER_SECRET || "YOUR_USER_SECRET",
+          endpoint: "https://api.testnet-dataengine.chain.link",
+          wsEndpoint: "wss://ws.testnet-dataengine.chain.link",
+          // Comment to disable SDK logging:
+          logging: {
+            logger: console,
+            logLevel: LogLevel.INFO,
+          },
+        }
+
+        const client = createClient(config)
+        console.log(`\nFetching latest report for feed ${feedId} (${version})...\n`)
+
+        // Get raw report data
+        const report = await client.getLatestReport(feedId)
+        console.log(`Raw Report Blob: ${report.fullReport}`)
+
+        // Decode the report
+        const decodedData = decodeReport(report.fullReport, report.feedID)
+
+        // Combine decoded data with report metadata
+        const decodedReport = {
+          ...decodedData,
+          feedID: report.feedID,
+          validFromTimestamp: report.validFromTimestamp,
+          observationsTimestamp: report.observationsTimestamp,
+        }
+        console.log(formatReport(decodedReport, version))
+      } catch (error) {
+        if (error instanceof Error) {
+          console.error("Error:", error.message)
+        } else {
+          console.error("Unknown error:", error)
+        }
+        process.exit(1)
+      }
+    }
+
+    main()
+    ```
+
+    <Aside type="note" title="Report detection">
+      The TypeScript SDK automatically detects the report version based on the provided feed ID.
+    </Aside>
+
+1.  Read from a [testnet crypto stream](/data-streams/crypto-streams?page=1&testnetPage=1#testnet-crypto-streams). The below example executes the application, reading from the `ETH/USD` crypto stream:
+
+    ```bash
+    npx ts-node singleStream.ts 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+    ```
+
+1.  You should see output similar to the below, with the latest report's attributes logged to your terminal:
