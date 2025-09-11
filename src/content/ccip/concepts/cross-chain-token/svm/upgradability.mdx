@@ -3,8 +3,8 @@ section: ccip
 date: Last Modified
 title: "Cross-Chain Token Standard - Upgradability (SVM)"
 metadata:
-  description: "Learn about upgrading CCIP token pools on SVM chains like Solana. Covers in-place upgrades, preserving mint authority, user workflow, and best practices."
-  excerpt: "SVM upgradability Solana program upgrades In-place upgrades Mint authority preservation Program ID stability Upgrade authority Backward compatibility Governance Version management Token pool upgrades"
+  description: "Learn about CCIP token pool upgrades on SVM chains like Solana. Covers the three deployment approaches: self-serve mode with governance-controlled updates (similar to SPL Token programs), self-deployed pools with user-controlled upgrades, and custom pool upgrade management."
+  excerpt: "CCIP, token pool upgrades, SVM, Solana, deployment approaches, self-serve mode, governance, multisig, timelock, node operators, SPL Token programs, self-deployed pools, custom pools, upgrade authority, in-place upgrades, mint authority, program ID, governance process, ManyChainMultiSig, MCMS, upgrade management"
   datePublished: "2025-05-19"
   lastModified: "2025-05-19"
 ---
@@ -12,43 +12,134 @@ metadata:
 import { Aside } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-<CcipCommon callout="calloutCCTSVM" />
+Token pool upgradability on SVM-based blockchains (e.g., Solana) depends entirely on which [deployment approach](/ccip/concepts/cross-chain-token/svm/token-pools#deployment-approaches) you choose. Your upgrade responsibilities and capabilities vary significantly based on whether you use self-serve mode, deploy standard pools yourself, or build custom pools.
 
-On SVM-based blockchains (e.g., Solana), token pools can be upgraded in place by token developers to preserve both the mint authority (for Burn and Mint pools) and the transaction workflow (for any token pool). Rather than deploying a brand-new program ID each time you change pool logic, you can push new code to the existing ID and maintain stability for all users referencing that pool.
+## Upgrade Approaches by Deployment Type
 
-## In-Place Upgrades
+Your upgrade experience depends entirely on which deployment approach you chose when setting up your token pool:
 
-1. **Retain Mint Authority (Burn and Mint Pools):** SPL tokens have a single `mint_authority`. When you delegate this authority to a Burn and Mint token pool program, that program holds the exclusive rights to mint tokens. As detailed in the [Mint Authority for BurnMint](/ccip/concepts/cross-chain-token/svm/tokens#mint-authority-for-burnmint) section of the Tokens page, while it is possible to deploy a new pool program and reassign the mint authority, doing so involves extra overhead. In-place upgrades allow you to:
+### Approach 1: Self-Serve Mode (Recommended - No Action Required)
+
+**How it works:**
+
+This approach follows the same pattern as **SPL Token programs** on Solana: you create and manage your own token pools (like creating your own mints), but the underlying token pool programs are maintained by the program authority through established governance processes.
+
+**What it means for upgrades:**
+
+- **Governance-controlled upgrades**: The standard BurnMint and LockRelease programs are upgraded through CCIP's [governance process](/ccip/concepts/architecture/onchain/svm/upgradability) involving multisig approvals, timelock reviews, and node operator oversight
+- **Seamless updates**: Security fixes and feature updates are deployed through the governance process without breaking your pool configuration or mint authority
+- **No action required**: You don't manage program upgrades, similar to how you don't upgrade the SPL Token program when using standard Solana tokens
+- **Preserved functionality**: Updates happen at the program level while your individual pool state and configuration remain intact
+
+**Your responsibilities:**
+
+- **None** - program upgrades are handled through CCIP governance
+- Monitor CCIP announcements for new features or breaking changes
+- Test your integration after major protocol updates
+
+**Benefits:**
+
+- Always up-to-date with latest security patches through proven governance
+- No operational overhead for program upgrade management
+- Professional maintenance through decentralized governance
+- Immediate access to new CCIP features
+
+<Aside type="note" title="Most Users Stop Here">
+  If you're using **self-serve mode** (the recommended approach), you don't need to read the rest of this document. Your
+  pools are automatically maintained through CCIP's governance process.
+</Aside>
+
+### Approach 2: Self-Deployed Standard Pools (User-Controlled Upgrades)
+
+**What it means for upgrades:**
+
+- **You control the upgrade authority** for your deployed standard pool programs
+- **Manual upgrades**: You decide when to apply updates from the Chainlink repository
+- **Full control**: You can customize timing, test extensively, and coordinate with your governance
+
+**Your responsibilities:**
+
+- Monitor Chainlink repository for new releases
+- Test upgrades in development environments
+- Execute upgrade transactions using Solana CLI or Anchor tooling
+- Coordinate upgrades with your governance/operational processes
+
+### Approach 3: Custom Token Pools (User-Controlled Upgrades)
+
+**What it means for upgrades:**
+
+- **You control the upgrade authority** for your custom pool program
+- **Custom development**: You develop your own upgrades and improvements
+- **Complete responsibility**: All upgrade planning, development, and execution is your responsibility
+
+**Your responsibilities:**
+
+- Develop custom upgrade code
+- Ensure CCIP compatibility after upgrades
+- Test thoroughly with CCIP Router integration
+- Execute upgrade transactions
+- Monitor for breaking changes in CCIP protocol updates
+
+## In-Place Upgrades (Approaches 2 & 3 Only)
+
+<Aside type="caution" title="Advanced Users Only">
+  This section applies only to **self-deployed** and **custom** token pools where you control the upgrade authority. If
+  you're using self-serve mode, these upgrades are handled through CCIP's governance process.
+</Aside>
+
+When you control the upgrade authority, in-place upgrades provide significant benefits:
+
+### Benefits of In-Place Upgrades
+
+1. **Retain Mint Authority (Burn and Mint Pools):** SPL tokens have a single `mint_authority`. When you delegate this authority to a Burn and Mint token pool program, that program holds the exclusive rights to mint tokens. As detailed in the [Mint Authority Management](/ccip/concepts/cross-chain-token/svm/token-pools#mint-authority-management) section, in-place upgrades allow you to:
    - **Maintain Control:** Upgrade the pool code without reassigning the mint authority, which avoids the complexity of modifying the multisig membership or reconfiguring authorities.
    - **Reduce Overhead:** Avoid manual reassignments, such as adding a new pool to the multisig and removing the old one, thereby simplifying maintenance and reducing the risk of errors.
 
-1. **Preserve User Workflow (All Pools):** On SVM-based blockchains, instructions require specifying all involved accounts, including the token pool program ID. If you redeploy your pool to a new Program ID, users and integrators must update their transaction code to reference it. In-place upgrades keep the original ID so that existing references and account parameters remain valid.
+2. **Preserve User Workflow (All Pools):** On SVM-based blockchains, instructions require specifying all involved accounts, including the token pool program ID. If you redeploy your pool to a new Program ID, users and integrators must update their transaction code to reference it. In-place upgrades keep the original ID so that existing references and account parameters remain valid.
 
-## Recommended Practices
+## Best Practices for User-Controlled Upgrades
 
-<Aside>
+<Aside type="note" title="Responsibility Disclaimer">
   You bear responsibility for any manner in which you use the Chainlink Network, its software, and documentation.
   Chainlink Labs does not take responsibility for the use of Chainlink software. Neither Chainlink Labs, the Chainlink
   Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due to errors in
   code.
 </Aside>
 
-1. **Set Yourself as the Upgrade Authority**
-   - When first deploying your pool program, configure its upgrade authority to your key or a trusted multisig.
-   - This ensures you can publish new code to the same program ID whenever changes are needed.
+### Governance and Security
 
-1. **Upgrade Instead of Redeploy**
-   - Replacing your token pool with an entirely new Program ID forces you to re-register, reassign mint authority, or force all your users to update their references.
-   - An in-place upgrade seamlessly updates functionality without breaking the existing references or token authority.
+1. **Secure Upgrade Authority Management**
+   - Configure the upgrade authority to a trusted multisig or governance program
+   - Never use single-key control for production pools
+   - Implement time delays and approval processes for critical upgrades
 
-1. **Plan Governance and Access Controls**
-   - Because the upgrade authority can make impactful changes, ensure your upgrade authority follows strict best security practices and governance rules.
-   - Consider using a multisig wallet or a governance program for managing the upgrade authority.
+2. **Plan Governance Processes**
+   - Establish clear governance rules for when and how upgrades are approved
+   - Consider community input for significant changes
+   - Document upgrade procedures and emergency response plans
 
-1. **Test Before Upgrading**
-   - Develop and validate your pool updates in a test environment.
-   - When ready, use the Solana CLI or Anchor tooling to execute an upgrade transaction that pushes your new code to the existing Program ID.
-   - Perform thorough testing after upgrade to verify all functionality works as expected.
+### Development and Testing
 
-1. **Backward Compatibility**
-   - Design your upgrades to maintain compatibility with existing state accounts and PDAs.
+3. **Comprehensive Testing**
+   - Develop and validate pool updates in test environments first
+   - Test integration with CCIP Router and cross-chain operations
+   - Verify all existing functionality works after upgrade
+   - Test edge cases and error conditions
+
+4. **Backward Compatibility**
+   - Design upgrades to maintain compatibility with existing state accounts and PDAs
+   - Ensure existing user configurations remain valid
+   - Plan migration strategies for breaking changes
+
+### Execution
+
+5. **Upgrade Execution**
+   - Use Solana CLI or Anchor tooling to execute upgrade transactions
+   - Perform upgrades during low-traffic periods when possible
+   - Have rollback plans ready in case of issues
+   - Monitor system behavior immediately after upgrades
+
+6. **Prefer Upgrades Over Redeployment**
+   - In-place upgrades preserve all existing references and authorities
+   - Redeployment forces re-registration, mint authority reassignment, and user workflow updates
+   - Only redeploy when absolutely necessary (e.g., fundamental architecture changes)

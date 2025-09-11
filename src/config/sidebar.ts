@@ -8,8 +8,8 @@ import { SIDEBAR_SECTIONS } from "./sidebarSections.ts"
 import evmCcipV150Contents from "./sidebar/ccip/api-reference/evm/v1_5_0.json" with { type: "json" }
 import evmCcipV151Contents from "./sidebar/ccip/api-reference/evm/v1_5_1.json" with { type: "json" }
 import evmCcipV160Contents from "./sidebar/ccip/api-reference/evm/v1_6_0.json" with { type: "json" }
-import svmCcipV160Contents from "./sidebar/ccip/api-reference/svm/v1_6_0.json" with { type: "json" }
 import aptosCcipV160Contents from "./sidebar/ccip/api-reference/aptos/v1_6_0.json" with { type: "json" }
+import svmCcipV011Contents from "./sidebar/ccip/api-reference/svm/v0_1_1.json" with { type: "json" }
 import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" with { type: "json" }
 import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" with { type: "json" }
 import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/v0_2_3.json" with { type: "json" }
@@ -1268,6 +1268,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "EVM",
               url: "ccip/getting-started/evm",
             },
+            {
+              title: "Solana",
+              url: "ccip/getting-started/svm",
+            },
           ],
         },
         {
@@ -1293,7 +1297,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "ccip/service-limits/evm",
             },
             {
-              title: "SVM",
+              title: "Solana",
               url: "ccip/service-limits/svm",
             },
             {
@@ -1362,7 +1366,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   ],
                 },
                 {
-                  title: "SVM",
+                  title: "Solana",
                   url: "ccip/concepts/architecture/onchain/svm",
                   children: [
                     {
@@ -1450,9 +1454,13 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               ],
             },
             {
-              title: "SVM",
+              title: "Solana",
               url: "ccip/concepts/cross-chain-token/svm",
               children: [
+                {
+                  title: "Architecture",
+                  url: "ccip/concepts/cross-chain-token/svm/architecture",
+                },
                 {
                   title: "Tokens",
                   url: "ccip/concepts/cross-chain-token/svm/tokens",
@@ -1462,8 +1470,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   url: "ccip/concepts/cross-chain-token/svm/token-pools",
                 },
                 {
-                  title: "Architecture",
-                  url: "ccip/concepts/cross-chain-token/svm/architecture",
+                  title: "Integration Guide",
+                  url: "ccip/concepts/cross-chain-token/svm/integration-guide",
                 },
                 {
                   title: "Registration and Administration",
@@ -1490,7 +1498,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "ccip/concepts/best-practices/evm",
             },
             {
-              title: "SVM",
+              title: "Solana",
               url: "ccip/concepts/best-practices/svm",
             },
             {
@@ -1620,7 +1628,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
-          title: "SVM",
+          title: "Solana",
           url: "ccip/tutorials/svm",
           children: [
             {
@@ -1628,7 +1636,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "ccip/tutorials/svm/receivers",
             },
             {
-              title: "SVM as Source",
+              title: "Solana as Source",
               url: "ccip/tutorials/svm/source",
               children: [
                 {
@@ -1646,7 +1654,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               ],
             },
             {
-              title: "SVM as Destination",
+              title: "Solana as Destination",
               url: "ccip/tutorials/svm/destination",
               children: [
                 {
@@ -1666,6 +1674,20 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Cross-Chain Token (CCT) standard",
               url: "ccip/tutorials/svm/cross-chain-tokens",
+              children: [
+                {
+                  title: "BurnMint: Direct Mint Authority Transfer",
+                  url: "ccip/tutorials/svm/cross-chain-tokens/direct-mint-authority",
+                },
+                {
+                  title: "BurnMint: SPL Token Multisig Tutorial",
+                  url: "ccip/tutorials/svm/cross-chain-tokens/spl-token-multisig-tutorial",
+                },
+                {
+                  title: "BurnMint: Production Multisig Governance",
+                  url: "ccip/tutorials/svm/cross-chain-tokens/production-multisig-tutorial",
+                },
+              ],
             },
           ],
         },
@@ -1779,14 +1801,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               ],
             },
             {
-              title: "SVM",
+              title: "Solana",
               url: "ccip/api-reference/svm",
               children: [
                 {
-                  title: "v1.6.0 (Latest)",
-                  url: "ccip/api-reference/svm/v1.6.0",
+                  title: "v0.1.1 (Latest)",
+                  url: "ccip/api-reference/svm/v0.1.1",
                   isCollapsible: true,
-                  children: svmCcipV160Contents,
+                  children: svmCcipV011Contents,
                 },
               ],
             },

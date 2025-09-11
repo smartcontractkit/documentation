@@ -80,6 +80,11 @@ export type ChainConfig = {
   mcms?: {
     address: string
   }
+  poolPrograms?: {
+    BurnMintTokenPool?: string
+    LockReleaseTokenPool?: string
+    CCTPTokenPool?: string
+  }
 }
 
 export type ChainsConfig = {
@@ -198,6 +203,11 @@ export interface Network {
   feeQuoter?: string
   rmnPermeable: boolean
   mcms?: string
+  poolPrograms?: {
+    BurnMintTokenPool?: string
+    LockReleaseTokenPool?: string
+    CCTPTokenPool?: string
+  }
 }
 
 export type DecomConfig = {

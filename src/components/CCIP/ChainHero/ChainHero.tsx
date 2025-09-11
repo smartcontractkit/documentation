@@ -14,6 +14,7 @@ import {
 } from "~/features/utils/index.ts"
 import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
 import { getChainTooltip } from "../Tooltip/index.ts"
+import { PoolProgramTooltip } from "../Tooltip/PoolProgramTooltip.tsx"
 import { ExplorerInfo, ChainType } from "@config/types.ts"
 
 interface ChainHeroProps {
@@ -388,6 +389,37 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                     />
                   ) : (
                     "n/a"
+                  )}
+                </div>
+              </div>
+            )}
+
+            {network.chainType === "solana" && network.poolPrograms && (
+              <div className="ccip-chain-hero__details__item">
+                <div className="ccip-chain-hero__details__label">
+                  Self-service pool programs
+                  <PoolProgramTooltip />
+                </div>
+                <div className="ccip-chain-hero__details__value ccip-chain-hero__pool-programs-container">
+                  {network.poolPrograms.BurnMintTokenPool && (
+                    <div className="ccip-chain-hero__pool-program-entry">
+                      <span className="ccip-chain-hero__pool-program-type">BurnMint:</span>
+                      <Address
+                        endLength={4}
+                        contractUrl={getExplorerAddressUrl(network.explorer)(network.poolPrograms.BurnMintTokenPool)}
+                        address={network.poolPrograms.BurnMintTokenPool}
+                      />
+                    </div>
+                  )}
+                  {network.poolPrograms.LockReleaseTokenPool && (
+                    <div className="ccip-chain-hero__pool-program-entry">
+                      <span className="ccip-chain-hero__pool-program-type">LockRelease:</span>
+                      <Address
+                        endLength={4}
+                        contractUrl={getExplorerAddressUrl(network.explorer)(network.poolPrograms.LockReleaseTokenPool)}
+                        address={network.poolPrograms.LockReleaseTokenPool}
+                      />
+                    </div>
                   )}
                 </div>
               </div>
