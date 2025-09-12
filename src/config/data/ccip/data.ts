@@ -450,6 +450,7 @@ export const getAllNetworks = ({ filter }: { filter: Environment }): Network[] =
       feeQuoter: chainType === "solana" ? chains[chain]?.feeQuoter : undefined,
       rmnPermeable: chains[chain]?.rmnPermeable,
       mcms: chainType === "aptos" ? chains[chain]?.mcms?.address : undefined,
+      poolPrograms: chainType === "solana" ? chains[chain]?.poolPrograms : undefined,
     })
   }
 
