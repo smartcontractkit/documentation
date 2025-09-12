@@ -8,6 +8,7 @@ import {
   ChainType,
   ChainFamily,
 } from "@config/index.ts"
+import { CCIP_TOKEN_ICON_MAPPINGS } from "@config/data/ccip/tokenIconMappings.ts"
 import { toQuantity } from "ethers"
 import referenceChains from "src/scripts/reference/chains.json" with { type: "json" }
 
@@ -152,9 +153,13 @@ const transformTokenName = (token: string): string => {
 
 export const getTokenIconUrl = (token: string, size = 40) => {
   if (!token) return ""
+
+  // Resolve icon identifier, fallback to original token name
+  const iconIdentifier = CCIP_TOKEN_ICON_MAPPINGS[token] ?? token
+
   // Request appropriately sized images from CloudFront
   // For 40x40 display, request 80x80 for retina displays (2x)
-  return `https://d2f70xi62kby8n.cloudfront.net/tokens/${transformTokenName(token)}.webp?auto=compress%2Cformat&q=60&w=${size}&h=${size}&fit=cover`
+  return `https://d2f70xi62kby8n.cloudfront.net/tokens/${transformTokenName(iconIdentifier)}.webp?auto=compress%2Cformat&q=60&w=${size}&h=${size}&fit=cover`
 }
 
 export const fallbackTokenIconUrl = "/assets/icons/generic-token.svg"
