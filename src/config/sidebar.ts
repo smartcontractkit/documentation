@@ -1273,6 +1273,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Solana",
               url: "ccip/getting-started/svm",
             },
+            {
+              title: "Aptos",
+              url: "ccip/getting-started/aptos",
+            },
           ],
         },
         {
