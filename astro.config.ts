@@ -109,18 +109,30 @@ export default defineConfig({
   adapter: vercel(),
   vite: {
     plugins: [yaml()],
+    resolve: {
+      // Ensure only ONE copy of these ends up in any chunk
+      dedupe: ["react", "react-dom", "@aptos-labs/ts-sdk", "@aptos-labs/wallet-adapter-react"],
+    },
     build: {
       target: "esnext", // Use latest ES features, no transpilation for modern browsers
       // Optimize CSS delivery
       cssMinify: true,
       // Increase the threshold for inlining assets to reduce render-blocking CSS
       assetsInlineLimit: 20000, // Inline CSS files up to 20KB to eliminate render-blocking
-      // Removed manual chunking to prevent serverless function bloat
-      // rollupOptions: {
-      //   output: {
-      //     manualChunks: ...
-      //   }
-      // },
+      // ⬇️ Split vendor families so duplicate minified helpers don't share a chunk
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (!id.includes("node_modules")) return
+            if (id.includes("@aptos-labs")) return "aptos"
+            if (id.includes("@aptos-connect") || id.includes("@identity-connect")) return "aptos-ic"
+            if (id.includes("@solana")) return "solana"
+            if (id.includes("@keystonehq") || id.includes("react-qr-reader") || id.includes("qrcode.react")) {
+              return "keystone-legacy"
+            }
+          },
+        },
+      },
     },
     esbuild: {
       target: "esnext", // Match build target for consistency
