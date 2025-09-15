@@ -362,7 +362,7 @@ class AptosChainStrategy extends BaseChainStrategy {
 
   private validateAptosRequirements(chainConfig: ChainsConfig[string]): string[] {
     return Object.entries(AptosChainStrategy.REQUIRED_FIELDS)
-      .filter(([_, validator]) => validator(chainConfig))
+      .filter(([, validator]) => validator(chainConfig))
       .map(([field]) => field)
   }
 }

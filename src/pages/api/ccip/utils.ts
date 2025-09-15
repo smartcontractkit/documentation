@@ -275,6 +275,34 @@ export const generateChainKey = (chainId: number | string, chainType: ChainType,
 }
 
 /**
+ * Normalizes version strings to consistent semantic versioning format
+ * @param version - Version string to normalize
+ * @returns Normalized version in x.y.z format
+ */
+export const normalizeVersion = (version: string): string => {
+  // Handle "OnRamp 1.6.0" or "OffRamp 1.6.0" formats
+  const contractVersionMatch = version.match(/(?:OnRamp|OffRamp)\s+(\d+\.\d+\.\d+)/i)
+  if (contractVersionMatch) {
+    return contractVersionMatch[1] // Extract "1.6.0"
+  }
+
+  // Handle "V1" format (typically for Solana)
+  if (version.toUpperCase() === "V1") {
+    return "1.6.0" // Map V1 to 1.6.0 for Solana
+  }
+
+  // Handle already correct semver format
+  const semverMatch = version.match(/^(\d+\.\d+\.\d+)$/)
+  if (semverMatch) {
+    return semverMatch[1]
+  }
+
+  // Fallback for unknown formats
+  console.warn(`Unknown version format: ${version}`)
+  return "1.0.0"
+}
+
+/**
  * Handles API errors and converts them to standardized responses
  * @param error - Error to handle
  * @returns Standardized error response
