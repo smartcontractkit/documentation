@@ -1,0 +1,105 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.6.0 Aptos Errors API Reference"
+metadata:
+  description: "API documentation for CCIP errors on the Aptos blockchain, with functions specified."
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## Errors
+
+### router
+
+Errors that can occur in the main `router` module during a `ccip_send` call.
+
+#### `ccip_send_with_message_id`
+
+| Error Code         | Symbol                                         | Description                                                                                                                          |
+| ------------------ | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| <nobr>**2**</nobr> | <nobr>`E_UNSUPPORTED_DESTINATION_CHAIN`</nobr> | The provided `dest_chain_selector` does not correspond to a configured and supported destination chain in the router's state.        |
+| <nobr>**3**</nobr> | <nobr>`E_UNSUPPORTED_ON_RAMP_VERSION`</nobr>   | The on-ramp version for the specified destination chain is not supported by the current router implementation. The call was aborted. |
+
+### onramp
+
+Errors originating from the `onramp` module, which handles the core logic for sending messages and tokens.
+
+#### `get_fee_internal`
+
+| Error Code          | Symbol                         | Description                                                   |
+| ------------------- | ------------------------------ | ------------------------------------------------------------- |
+| <nobr>**12**</nobr> | <nobr>`E_CURSED_BY_RMN`</nobr> | The transfer is blocked by the Risk Management Network (RMN). |
+
+#### `resolve_fungible_asset`
+
+| Error Code          | Symbol                         | Description                                                               |
+| ------------------- | ------------------------------ | ------------------------------------------------------------------------- |
+| <nobr>**13**</nobr> | <nobr>`E_INVALID_TOKEN`</nobr> | The provided token address is not a valid fungible asset metadata object. |
+
+#### `resolve_fungible_store`
+
+| Error Code          | Symbol                               | Description                                                                                                                           |
+| ------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| <nobr>**14**</nobr> | <nobr>`E_INVALID_TOKEN_STORE`</nobr> | The provided token store address (or the primary store if `0x0` was passed) is not a valid fungible store object for the given token. |
+
+#### `ccip_send`
+
+| Error Code          | Symbol                                       | Description                                                                                                            |
+| ------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| <nobr>**4**</nobr>  | <nobr>`E_UNKNOWN_DEST_CHAIN_SELECTOR`</nobr> | The destination chain configuration for the given `dest_chain_selector` does not exist.                                |
+| <nobr>**6**</nobr>  | <nobr>`E_SENDER_NOT_ALLOWED`</nobr>          | The allow-list is enabled for the destination chain, and the caller's address is not in the list of permitted senders. |
+| <nobr>**10**</nobr> | <nobr>`E_UNSUPPORTED_TOKEN`</nobr>           | The token being transferred is not registered with the token admin registry and has no associated token pool.          |
+| <nobr>**15**</nobr> | <nobr>`E_UNEXPECTED_WITHDRAW_AMOUNT`</nobr>  | The amount of tokens withdrawn from the user's account did not match the expected amount.                              |
+| <nobr>**16**</nobr> | <nobr>`E_UNEXPECTED_FUNGIBLE_ASSET`</nobr>   | The fungible asset withdrawn from the user's account does not match the expected asset metadata.                       |
+| <nobr>**18**</nobr> | <nobr>`E_MUST_BE_CALLED_BY_ROUTER`</nobr>    | An internal consistency check failed; the on-ramp can only be called by its designated router.                         |
+| <nobr>**19**</nobr> | <nobr>`E_TOKEN_AMOUNT_MISMATCH`</nobr>       | The number of items in `token_addresses` does not match the number of items in `token_store_addresses`.                |
+| <nobr>**20**</nobr> | <nobr>`E_CANNOT_SEND_ZERO_TOKENS`</nobr>     | An attempt was made to send a token amount of zero, which is not allowed.                                              |
+
+### fee_quoter
+
+Errors related to fee calculation and processing of message arguments.
+
+#### `get_token_receiver`
+
+| Error Code          | Symbol                                         | Description                                                                                                                 |
+| ------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| <nobr>**11**</nobr> | <nobr>`E_UNKNOWN_CHAIN_FAMILY_SELECTOR`</nobr> | The destination chain's family (e.g., EVM, SVM) is unknown or not supported, preventing correct processing of `extra_args`. |
+
+#### `process_message_args`
+
+| Error Code          | Symbol                                       | Description                                                                                          |
+| ------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| <nobr>**24**</nobr> | <nobr>`E_MESSAGE_FEE_TOO_HIGH`</nobr>        | The calculated fee in Juels exceeds the maximum allowed fee per message configured in the FeeQuoter. |
+| <nobr>**25**</nobr> | <nobr>`E_SOURCE_TOKEN_DATA_TOO_LARGE`</nobr> | The return data from a token pool's `lockOrBurn` function is larger than the allowed size.           |
+
+### token_admin_registry
+
+Errors that occur when interacting with the token registry to manage token pool states.
+
+#### `start_lock_or_burn`
+
+| Error Code          | Symbol                                            | Description                                                                                                      |
+| ------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| <nobr>**3**</nobr>  | <nobr>`E_INVALID_TOKEN_POOL`</nobr>               | The token pool address is not a valid, registered `TokenPoolRegistration` object.                                |
+| <nobr>**9**</nobr>  | <nobr>`E_NOT_IN_IDLE_STATE`</nobr>                | The token pool is not in an idle state and cannot start a new `lockOrBurn` operation because it is already busy. |
+| <nobr>**12**</nobr> | <nobr>`E_NON_EMPTY_LOCK_OR_BURN_INPUT`</nobr>     | Internal state inconsistency: The `lock_or_burn_input` storage was expected to be empty but was not.             |
+| <nobr>**13**</nobr> | <nobr>`E_NON_EMPTY_LOCK_OR_BURN_OUTPUT`</nobr>    | Internal state inconsistency: The `lock_or_burn_output` storage was expected to be empty but was not.            |
+| <nobr>**14**</nobr> | <nobr>`E_NON_EMPTY_RELEASE_OR_MINT_INPUT`</nobr>  | Internal state inconsistency: The `release_or_mint_input` storage was expected to be empty but was not.          |
+| <nobr>**15**</nobr> | <nobr>`E_NON_EMPTY_RELEASE_OR_MINT_OUTPUT`</nobr> | Internal state inconsistency: The `release_or_mint_output` storage was expected to be empty but was not.         |
+
+#### `finish_lock_or_burn`
+
+| Error Code          | Symbol                                       | Description                                                                                                              |
+| ------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| <nobr>**10**</nobr> | <nobr>`E_NOT_IN_LOCK_OR_BURN_STATE`</nobr>   | An attempt to finish a `lockOrBurn` operation failed because the token pool was not in the correct `LOCK_OR_BURN` state. |
+| <nobr>**17**</nobr> | <nobr>`E_MISSING_LOCK_OR_BURN_OUTPUT`</nobr> | The `lockOrBurn` operation could not be completed because the expected output data from the token pool was missing.      |
+
+### token_admin_dispatcher
+
+This module dispatches calls to the appropriate token pool.
+
+#### `dispatch_lock_or_burn`
+
+The errors this function can revert with originate from the `token_admin_registry` module during the `start_lock_or_burn` and `finish_lock_or_burn` calls. Refer to the `token_admin_registry` table for a list of possible errors.

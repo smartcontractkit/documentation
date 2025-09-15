@@ -4,14 +4,14 @@ import { ChainsConfig, Environment, loadReferenceData, Version } from "@config/d
 import { SupportedChain } from "@config/index.ts"
 import { directoryToSupportedChain } from "@features/utils/index.ts"
 import { v4 as uuidv4 } from "uuid"
-import type { TokenMetadata } from "./types/index.ts"
+import type { TokenMetadata, ChainType, OutputKeyType } from "./types/index.ts"
 
 export const prerender = false
 
 // Re-export types from CCIP config
 export type { ChainsConfig, Version }
 export { Environment }
-export type { SelectorsConfig } from "../../../config/data/ccip/selectors.ts"
+export type { SelectorsConfig } from "@config/data/ccip/selectors.ts"
 
 /**
  * Common HTTP headers used across all API responses
@@ -264,6 +264,16 @@ export const validateOutputKey = (outputKey?: string): "chainId" | "selector" | 
   return outputKey as "chainId" | "selector" | "internalId"
 }
 
+export const generateChainKey = (chainId: number | string, chainType: ChainType, outputKey: OutputKeyType): string => {
+  const chainIdStr = chainId.toString()
+
+  if (outputKey === "chainId" && chainType !== "evm" && chainType !== "solana") {
+    return `${chainType}-${chainIdStr}`
+  }
+
+  return chainIdStr
+}
+
 /**
  * Handles API errors and converts them to standardized responses
  * @param error - Error to handle
@@ -347,55 +357,6 @@ export const loadChainConfiguration = async (
   } catch (error) {
     console.error("Error loading chain configuration:", error)
     throw new CCIPError(500, "Failed to load chain configuration")
-  }
-}
-
-/**
- * Log levels for structured logging
- */
-export enum LogLevel {
-  DEBUG = "debug",
-  INFO = "info",
-  WARN = "warn",
-  ERROR = "error",
-}
-
-/**
- * Base interface for structured log entries
- */
-interface BaseLogEntry {
-  message: string
-  timestamp: string
-  requestId?: string
-  level: LogLevel
-  [key: string]: unknown
-}
-
-/**
- * Structured logging utility for consistent log format across the API
- * @param level - Log level (debug, info, warn, error)
- * @param entry - Log entry data
- */
-export function structuredLog(level: LogLevel, entry: { message: string } & Omit<BaseLogEntry, "timestamp" | "level">) {
-  const logEntry: BaseLogEntry = {
-    ...entry,
-    level,
-    timestamp: new Date().toISOString(),
-  }
-
-  switch (level) {
-    case LogLevel.DEBUG:
-      console.debug(logEntry)
-      break
-    case LogLevel.INFO:
-      console.info(logEntry)
-      break
-    case LogLevel.WARN:
-      console.warn(logEntry)
-      break
-    case LogLevel.ERROR:
-      console.error(logEntry)
-      break
   }
 }
 

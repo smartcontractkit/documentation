@@ -131,6 +131,7 @@ function TokenDrawer({
           name: network.name,
           logo: network.logo,
           explorer: network.explorer,
+          chainType: network.chainType,
         }}
       />
       <div className="ccip-table__drawer-container">
@@ -162,7 +163,7 @@ function TokenDrawer({
                   Rate limit capacity
                   <Tooltip
                     label=""
-                    tip="Rate limit data is currently unavailable. You can find this Token Pool rate limit by reading the Token Pool contract directly on the relevant blockchain."
+                    tip="Maximum amount per transaction"
                     labelStyle={{
                       marginRight: "5px",
                     }}

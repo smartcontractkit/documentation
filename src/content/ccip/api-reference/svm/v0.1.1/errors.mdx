@@ -1,0 +1,121 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v0.1.1 SVM Errors API Reference"
+metadata:
+  description: "Complete API documentation for CCIP error codes and handling on SVM-based blockchains like Solana. Comprehensive reference covering router errors, token pool errors, shared errors, error resolution strategies, and debugging guidance for cross-chain development."
+  excerpt: "CCIP errors, SVM error codes, Solana errors, cross-chain errors, router errors, token pool errors, error handling, debugging, error resolution, blockchain troubleshooting"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## Errors
+
+### Router
+
+The Router program uses error codes starting from **7000** (Anchor's base custom error code 6000 + offset 1000).
+
+#### Common Errors
+
+| Error Code | Symbol                       | Description                                                                           |
+| ---------- | ---------------------------- | ------------------------------------------------------------------------------------- |
+| **7000**   | `Unauthorized`               | The signer is not authorized to perform this operation.                               |
+| **7002**   | `InvalidVersion`             | The on-chain state has a version number higher than expected or zero (uninitialized). |
+| **7017**   | `InvalidInputsChainSelector` | The provided chain selector is invalid (e.g., zero when it shouldn't be).             |
+
+#### Message Sending Errors (`ccip_send`, `get_fee`)
+
+| Error Code | Symbol                                    | Description                                                                                                                                               |
+| ---------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **7001**   | `InvalidRMNRemoteAddress`                 | The RMN Remote program address does not match the configured address.                                                                                     |
+| **7003**   | `InvalidInputsMint`                       | The mint account input is invalid or doesn't match expected requirements.                                                                                 |
+| **7004**   | `FeeTokenMismatch`                        | The fee token doesn't match the expected token for the transfer.                                                                                          |
+| **7005**   | `ReachedMaxSequenceNumber`                | The sequence number cannot be incremented further (u64 overflow). This is very unlikely.                                                                  |
+| **7006**   | `InvalidInputsTokenIndices`               | The sub-slice token index calculations are invalid, or `token_indexes.len()` doesn't match the number of tokens.                                          |
+| **7007**   | `InvalidInputsPoolAccounts`               | The passed "pool sub-slice" accounts do not match the expected PDAs for the token pool's configuration.                                                   |
+| **7008**   | `InvalidInputsTokenAccounts`              | The user token or pool token account is invalid (wrong ATAs or minted by a different token).                                                              |
+| **7009**   | `InvalidInputsTokenAdminRegistryAccounts` | The `token_admin_registry` passed does not match the expected PDA or has invalid state.                                                                   |
+| **7010**   | `InvalidInputsLookupTableAccounts`        | The Address Lookup Table (ALT) provided is invalid or does not match what the `token_admin_registry` expects.                                             |
+| **7011**   | `InvalidInputsLookupTableAccountWritable` | One or more accounts in the lookup table are incorrectly marked as writable / non-writable.                                                               |
+| **7012**   | `InvalidInputsTokenAmount`                | An attempt was made to send a token amount of zero.                                                                                                       |
+| **7014**   | `InvalidInputsAtaAddress`                 | The associated token account address does not match what was expected.                                                                                    |
+| **7015**   | `InvalidInputsAtaWritable`                | The user's fee-token ATA is not flagged as writable when it needs to be debited.                                                                          |
+| **7017**   | `InsufficientLamports`                    | Users paying with native SOL have insufficient lamports to cover the required fee transfer.                                                               |
+| **7018**   | `InsufficientFunds`                       | Insufficient funds in a token account.                                                                                                                    |
+| **7019**   | `SourceTokenDataTooLarge`                 | The returned "dest_pool_data" from `lockOrBurnOut` is larger than the allowed `CCIP_LOCK_OR_BURN_V1_RET_BYTES`, or larger than the `dest_bytes_overhead`. |
+| **7022**   | `SenderNotAllowed`                        | The sender (caller) is not in the `allowed_senders` list for that destination chain, and the allow-list is enabled.                                       |
+
+#### Token Administration Errors
+
+| Error Code | Symbol                                       | Description                                                                                     |
+| ---------- | -------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| **7020**   | `InvalidTokenAdminRegistryInputsZeroAddress` | The proposed administrator cannot be the zero address.                                          |
+| **7021**   | `InvalidTokenAdminRegistryProposedAdmin`     | An already owned registry cannot have its administrator proposed again, or invalid admin state. |
+
+#### Administrative Operation Errors
+
+| Error Code | Symbol                           | Description                                                                      |
+| ---------- | -------------------------------- | -------------------------------------------------------------------------------- |
+| **7013**   | `InvalidInputsTransferAllAmount` | When using `transfer_all` flag, the desired amount must be zero.                 |
+| **7023**   | `InvalidCodeVersion`             | The specified code version is invalid or not supported.                          |
+| **7024**   | `InvalidCcipVersionRollback`     | Invalid rollback attempt on the CCIP version; may have already been rolled back. |
+| **7006**   | `RedundantOwnerProposal`         | The proposed owner is the same as the current owner.                             |
+
+#### Account Derivation Errors
+
+| Error Code | Symbol                                      | Description                                                                      |
+| ---------- | ------------------------------------------- | -------------------------------------------------------------------------------- |
+| **7025**   | `InvalidAccountListForPdaDerivation`        | The account list provided for PDA derivation is invalid or incomplete.           |
+| **7026**   | `InvalidDerivationStage`                    | Unexpected or invalid account derivation stage specified.                        |
+| **7027**   | `InvalidNonceVersion`                       | The nonce account has an invalid version that doesn't match expected values.     |
+| **7028**   | `InvalidTokenPoolAccountDerivationResponse` | Token pool returned an unexpected or invalid derivation response.                |
+| **7029**   | `AccountDerivationResponseTooLarge`         | The account derivation response is too large to fit in the instruction response. |
+
+### BurnMint Token Pool
+
+The BurnMint Token Pool program uses error codes starting from **6000** (Anchor's default base).
+
+| Error Code | Symbol                              | Description                                                                              |
+| ---------- | ----------------------------------- | ---------------------------------------------------------------------------------------- |
+| **6000**   | `InvalidMultisig`                   | Invalid multisig mint authority or multisig account.                                     |
+| **6001**   | `MintAuthorityAlreadySet`           | The mint authority has already been transferred to the specified multisig.               |
+| **6002**   | `FixedMintToken`                    | Token has no mint authority (fixed supply), preventing minting operations.               |
+| **6003**   | `UnsupportedTokenProgram`           | The token program is not supported (must be SPL Token or Token-2022).                    |
+| **6004**   | `InvalidToken2022Multisig`          | Invalid multisig account data for Token-2022 program.                                    |
+| **6005**   | `InvalidSPLTokenMultisig`           | Invalid multisig account data for SPL Token program.                                     |
+| **6006**   | `PoolSignerNotInMultisig`           | Pool signer PDA must appear at least `threshold` times as a signer in the multisig.      |
+| **6007**   | `MultisigMustHaveAtLeastTwoSigners` | Multisig account must have at least 2 valid signers.                                     |
+| **6008**   | `MultisigMustHaveMoreThanOneSigner` | Multisig account must require at least 1 signature (threshold ≥ 1).                      |
+| **6009**   | `InvalidMultisigOwner`              | Multisig account owner must match the token program ID.                                  |
+| **6010**   | `InvalidMultisigThreshold`          | Invalid multisig threshold: required signatures cannot exceed total signers.             |
+| **6011**   | `InvalidMultisigThresholdTooHigh`   | Invalid multisig threshold: required signatures cannot exceed available outside signers. |
+
+## Shared Token Pool Errors
+
+The Base Token Pool library defines shared errors (`CcipTokenPoolError`) that are used by both BurnMint and Lock-Release token pool implementations. These errors are returned by validation functions and common operations across all pool types.
+
+| Error Code | Symbol                            | Description                                                                |
+| ---------- | --------------------------------- | -------------------------------------------------------------------------- |
+| **6012**   | `InvalidInitPoolPermissions`      | Pool authority does not match token mint owner during initialization.      |
+| **6013**   | `InvalidRMNRemoteAddress`         | The provided RMN Remote address is invalid or doesn't match configuration. |
+| **6014**   | `Unauthorized`                    | The signer is not authorized to perform this operation.                    |
+| **6015**   | `InvalidInputs`                   | Invalid input parameters provided to the instruction.                      |
+| **6016**   | `InvalidVersion`                  | Invalid state version encountered during operation.                        |
+| **6017**   | `InvalidPoolCaller`               | Caller is not an authorized ramp on the router.                            |
+| **6018**   | `InvalidSender`                   | Sender is not allowed when allowlist is enabled.                           |
+| **6019**   | `InvalidSourcePoolAddress`        | Invalid source pool address provided for cross-chain operation.            |
+| **6020**   | `InvalidToken`                    | Invalid token address or token mismatch.                                   |
+| **6021**   | `InvalidTokenAmountConversion`    | Failed to convert token amounts between different decimal systems.         |
+| **6022**   | `AllowlistKeyAlreadyExisted`      | Attempted to add a key that already exists in the allowlist.               |
+| **6023**   | `AllowlistKeyDidNotExist`         | Attempted to remove a key that doesn't exist in the allowlist.             |
+| **6024**   | `RemotePoolAddressAlreadyExisted` | Remote pool address already exists in the configuration.                   |
+| **6025**   | `NonemptyPoolAddressesInit`       | Pool addresses must be empty during initialization.                        |
+| **6026**   | `InvalidDerivationStage`          | Unexpected account derivation stage encountered.                           |
+| **6027**   | `RLBucketOverfilled`              | Rate limit bucket overfilled during operation.                             |
+| **6028**   | `RLMaxCapacityExceeded`           | Request exceeds maximum rate limit capacity.                               |
+| **6029**   | `RLRateLimitReached`              | Rate limit reached, transfer temporarily blocked.                          |
+| **6030**   | `RLInvalidRateLimitRate`          | Invalid rate limit rate configuration.                                     |
+| **6031**   | `RLDisabledNonZeroRateLimit`      | Non-zero rate limit values provided when rate limiting is disabled.        |
+| **6032**   | `LiquidityNotAccepted`            | Liquidity operations are not currently accepted by this pool.              |
+| **6033**   | `TransferZeroTokensNotAllowed`    | Transferring zero tokens is not allowed in liquidity operations.           |
