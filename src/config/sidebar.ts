@@ -8,7 +8,9 @@ import { SIDEBAR_SECTIONS } from "./sidebarSections.ts"
 import evmCcipV150Contents from "./sidebar/ccip/api-reference/evm/v1_5_0.json" with { type: "json" }
 import evmCcipV151Contents from "./sidebar/ccip/api-reference/evm/v1_5_1.json" with { type: "json" }
 import evmCcipV160Contents from "./sidebar/ccip/api-reference/evm/v1_6_0.json" with { type: "json" }
-import svmCcipV160Contents from "./sidebar/ccip/api-reference/svm/v1_6_0.json" with { type: "json" }
+import evmCcipV161Contents from "./sidebar/ccip/api-reference/evm/v1_6_1.json" with { type: "json" }
+import aptosCcipV160Contents from "./sidebar/ccip/api-reference/aptos/v1_6_0.json" with { type: "json" }
+import svmCcipV011Contents from "./sidebar/ccip/api-reference/svm/v0_1_1.json" with { type: "json" }
 import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" with { type: "json" }
 import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" with { type: "json" }
 import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/v0_2_3.json" with { type: "json" }
@@ -282,6 +284,28 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "resources/bridge-risks?parent=dataFeeds",
         },
         {
+          title: "Chainlink Oracle Platform",
+          url: "oracle-platform/overview?parent=dataFeeds",
+          children: [
+            {
+              title: "Data Standard",
+              url: "oracle-platform/data-standard?parent=dataFeeds",
+            },
+            {
+              title: "Interoperability Standard",
+              url: "oracle-platform/interoperability-standard?parent=dataFeeds",
+            },
+            {
+              title: "Compliance Standard",
+              url: "oracle-platform/compliance-standard?parent=dataFeeds",
+            },
+            {
+              title: "Privacy Standard",
+              url: "oracle-platform/privacy-standard?parent=dataFeeds",
+            },
+          ],
+        },
+        {
           title: "Chainlink Architecture",
           url: "architecture-overview/architecture-overview?parent=dataFeeds",
           children: [
@@ -348,6 +372,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Streams & Report Schemas",
       contents: [
         {
+          title: "Overview",
+          url: "data-streams/reference/report-schema-overview",
+        },
+        {
           title: "Cryptocurrency Streams",
           url: "data-streams/crypto-streams",
           children: [
@@ -358,6 +386,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Report Schema v3 (DEX State Price)",
               url: "data-streams/reference/report-schema-v3-dex",
+            },
+          ],
+        },
+        {
+          title: "Exchange Rate Streams",
+          url: "data-streams/exchange-rate-streams",
+          children: [
+            {
+              title: "Report Schema v7",
+              url: "data-streams/reference/report-schema-v7",
             },
           ],
         },
@@ -406,25 +444,13 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Fetch and decode reports",
-          url: "data-streams/tutorials/api-go",
-          highlightAsCurrent: [
-            "data-streams/tutorials/api-rust",
-            "data-streams/tutorials/api-rwa-go",
-            "data-streams/tutorials/api-rwa-rust",
-            "data-streams/tutorials/api-nav-rust",
-            "data-streams/tutorials/api-nav-go",
-          ],
+          url: "data-streams/tutorials/go-sdk-fetch",
+          highlightAsCurrent: ["data-streams/tutorials/rust-sdk-fetch"],
         },
         {
           title: "Stream and decode reports (WebSocket)",
-          url: "data-streams/tutorials/ws-go",
-          highlightAsCurrent: [
-            "data-streams/tutorials/ws-rust",
-            "data-streams/tutorials/ws-rwa-go",
-            "data-streams/tutorials/ws-rwa-rust",
-            "data-streams/tutorials/ws-nav-go",
-            "data-streams/tutorials/ws-nav-rust",
-          ],
+          url: "data-streams/tutorials/go-sdk-stream",
+          highlightAsCurrent: ["data-streams/tutorials/rust-sdk-stream"],
         },
         {
           title: "Verify report data (EVM)",
@@ -572,6 +598,28 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Bridges and Associated Risks",
           url: "resources/bridge-risks?parent=dataStreams",
+        },
+        {
+          title: "Chainlink Oracle Platform",
+          url: "oracle-platform/overview?parent=dataStreams",
+          children: [
+            {
+              title: "Data Standard",
+              url: "oracle-platform/data-standard?parent=dataStreams",
+            },
+            {
+              title: "Interoperability Standard",
+              url: "oracle-platform/interoperability-standard?parent=dataStreams",
+            },
+            {
+              title: "Compliance Standard",
+              url: "oracle-platform/compliance-standard?parent=dataStreams",
+            },
+            {
+              title: "Privacy Standard",
+              url: "oracle-platform/privacy-standard?parent=dataStreams",
+            },
+          ],
         },
         {
           title: "Chainlink Architecture",
@@ -755,6 +803,28 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Bridges and Associated Risks",
           url: "resources/bridge-risks?parent=automation",
+        },
+        {
+          title: "Chainlink Oracle Platform",
+          url: "oracle-platform/overview?parent=automation",
+          children: [
+            {
+              title: "Data Standard",
+              url: "oracle-platform/data-standard?parent=automation",
+            },
+            {
+              title: "Interoperability Standard",
+              url: "oracle-platform/interoperability-standard?parent=automation",
+            },
+            {
+              title: "Compliance Standard",
+              url: "oracle-platform/compliance-standard?parent=automation",
+            },
+            {
+              title: "Privacy Standard",
+              url: "oracle-platform/privacy-standard?parent=automation",
+            },
+          ],
         },
         {
           title: "Chainlink Architecture",
@@ -948,6 +1018,28 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "resources/bridge-risks?parent=chainlinkFunctions",
         },
         {
+          title: "Chainlink Oracle Platform",
+          url: "oracle-platform/overview?parent=chainlinkFunctions",
+          children: [
+            {
+              title: "Data Standard",
+              url: "oracle-platform/data-standard?parent=chainlinkFunctions",
+            },
+            {
+              title: "Interoperability Standard",
+              url: "oracle-platform/interoperability-standard?parent=chainlinkFunctions",
+            },
+            {
+              title: "Compliance Standard",
+              url: "oracle-platform/compliance-standard?parent=chainlinkFunctions",
+            },
+            {
+              title: "Privacy Standard",
+              url: "oracle-platform/privacy-standard?parent=chainlinkFunctions",
+            },
+          ],
+        },
+        {
           title: "Chainlink Architecture",
           url: "architecture-overview/architecture-overview?parent=chainlinkFunctions",
           children: [
@@ -1107,6 +1199,28 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "resources/bridge-risks?parent=vrf",
         },
         {
+          title: "Chainlink Oracle Platform",
+          url: "oracle-platform/overview?parent=vrf",
+          children: [
+            {
+              title: "Data Standard",
+              url: "oracle-platform/data-standard?parent=vrf",
+            },
+            {
+              title: "Interoperability Standard",
+              url: "oracle-platform/interoperability-standard?parent=vrf",
+            },
+            {
+              title: "Compliance Standard",
+              url: "oracle-platform/compliance-standard?parent=vrf",
+            },
+            {
+              title: "Privacy Standard",
+              url: "oracle-platform/privacy-standard?parent=vrf",
+            },
+          ],
+        },
+        {
           title: "Chainlink Architecture",
           url: "architecture-overview/architecture-overview?parent=vrf",
           children: [
@@ -1159,6 +1273,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "EVM",
               url: "ccip/getting-started/evm",
             },
+            {
+              title: "Solana",
+              url: "ccip/getting-started/svm",
+            },
           ],
         },
         {
@@ -1184,8 +1302,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "ccip/service-limits/evm",
             },
             {
-              title: "SVM",
+              title: "Solana",
               url: "ccip/service-limits/svm",
+            },
+            {
+              title: "Aptos",
+              url: "ccip/service-limits/aptos",
             },
             {
               title: "Network Specific",
@@ -1249,7 +1371,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   ],
                 },
                 {
-                  title: "SVM",
+                  title: "Solana",
                   url: "ccip/concepts/architecture/onchain/svm",
                   children: [
                     {
@@ -1263,6 +1385,24 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                     {
                       title: "Upgradability",
                       url: "ccip/concepts/architecture/onchain/svm/upgradability",
+                    },
+                  ],
+                },
+                {
+                  title: "Aptos",
+                  url: "ccip/concepts/architecture/onchain/aptos",
+                  children: [
+                    {
+                      title: "Overview",
+                      url: "ccip/concepts/architecture/onchain/aptos/overview",
+                    },
+                    {
+                      title: "Components",
+                      url: "ccip/concepts/architecture/onchain/aptos/components",
+                    },
+                    {
+                      title: "Upgradability",
+                      url: "ccip/concepts/architecture/onchain/aptos/upgradability",
                     },
                   ],
                 },
@@ -1319,9 +1459,13 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               ],
             },
             {
-              title: "SVM",
+              title: "Solana",
               url: "ccip/concepts/cross-chain-token/svm",
               children: [
+                {
+                  title: "Architecture",
+                  url: "ccip/concepts/cross-chain-token/svm/architecture",
+                },
                 {
                   title: "Tokens",
                   url: "ccip/concepts/cross-chain-token/svm/tokens",
@@ -1331,8 +1475,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   url: "ccip/concepts/cross-chain-token/svm/token-pools",
                 },
                 {
-                  title: "Architecture",
-                  url: "ccip/concepts/cross-chain-token/svm/architecture",
+                  title: "Integration Guide",
+                  url: "ccip/concepts/cross-chain-token/svm/integration-guide",
                 },
                 {
                   title: "Registration and Administration",
@@ -1359,8 +1503,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "ccip/concepts/best-practices/evm",
             },
             {
-              title: "SVM",
+              title: "Solana",
               url: "ccip/concepts/best-practices/svm",
+            },
+            {
+              title: "Aptos",
+              url: "ccip/concepts/best-practices/aptos",
             },
           ],
         },
@@ -1369,6 +1517,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Tutorials",
       contents: [
+        {
+          title: "Acquire Test Tokens",
+          url: "ccip/test-tokens",
+        },
         {
           title: "EVM",
           url: "ccip/tutorials/evm",
@@ -1478,14 +1630,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Optimizing Gas Limit Settings in CCIP Messages",
               url: "ccip/tutorials/evm/ccipreceive-gaslimit",
             },
-            {
-              title: "Acquire Test Tokens",
-              url: "ccip/test-tokens",
-            },
           ],
         },
         {
-          title: "SVM",
+          title: "Solana",
           url: "ccip/tutorials/svm",
           children: [
             {
@@ -1493,7 +1641,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "ccip/tutorials/svm/receivers",
             },
             {
-              title: "SVM as Source",
+              title: "Solana as Source",
               url: "ccip/tutorials/svm/source",
               children: [
                 {
@@ -1511,7 +1659,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               ],
             },
             {
-              title: "SVM as Destination",
+              title: "Solana as Destination",
               url: "ccip/tutorials/svm/destination",
               children: [
                 {
@@ -1531,6 +1679,78 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Cross-Chain Token (CCT) standard",
               url: "ccip/tutorials/svm/cross-chain-tokens",
+              children: [
+                {
+                  title: "BurnMint: Direct Mint Authority Transfer",
+                  url: "ccip/tutorials/svm/cross-chain-tokens/direct-mint-authority",
+                },
+                {
+                  title: "BurnMint: SPL Token Multisig Tutorial",
+                  url: "ccip/tutorials/svm/cross-chain-tokens/spl-token-multisig-tutorial",
+                },
+                {
+                  title: "BurnMint: Production Multisig Governance",
+                  url: "ccip/tutorials/svm/cross-chain-tokens/production-multisig-tutorial",
+                },
+              ],
+            },
+          ],
+        },
+        {
+          title: "Aptos",
+          url: "ccip/tutorials/aptos",
+          children: [
+            {
+              title: "Implement CCIP Receiver",
+              url: "ccip/tutorials/aptos/receivers",
+            },
+            {
+              title: "Aptos as Source",
+              url: "ccip/tutorials/aptos/source",
+              children: [
+                {
+                  title: "Build CCIP Messages",
+                  url: "ccip/tutorials/aptos/source/build-messages",
+                },
+                {
+                  title: "Prerequisites",
+                  url: "ccip/tutorials/aptos/source/prerequisites",
+                },
+                {
+                  title: "Token Transfers",
+                  url: "ccip/tutorials/aptos/source/token-transfers",
+                },
+              ],
+            },
+            {
+              title: "Aptos as Destination",
+              url: "ccip/tutorials/aptos/destination",
+              children: [
+                {
+                  title: "Build CCIP Messages",
+                  url: "ccip/tutorials/aptos/destination/build-messages",
+                },
+                {
+                  title: "Prerequisites",
+                  url: "ccip/tutorials/aptos/destination/prerequisites",
+                },
+                {
+                  title: "Token Transfers",
+                  url: "ccip/tutorials/aptos/destination/token-transfers",
+                },
+                {
+                  title: "Arbitrary Messaging",
+                  url: "ccip/tutorials/aptos/destination/arbitrary-messaging",
+                },
+                {
+                  title: "Programmatic Token Transfers",
+                  url: "ccip/tutorials/aptos/destination/programmatic-token-transfers",
+                },
+              ],
+            },
+            {
+              title: "Cross-Chain Token (CCT) standard",
+              url: "ccip/tutorials/aptos/cross-chain-tokens",
             },
           ],
         },
@@ -1566,7 +1786,13 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "ccip/api-reference/evm",
               children: [
                 {
-                  title: "v1.6.0 (Latest)",
+                  title: "v1.6.1 (Latest)",
+                  url: "ccip/api-reference/evm/v1.6.1",
+                  isCollapsible: true,
+                  children: evmCcipV161Contents,
+                },
+                {
+                  title: "v1.6.0",
                   url: "ccip/api-reference/evm/v1.6.0",
                   isCollapsible: true,
                   children: evmCcipV160Contents,
@@ -1586,14 +1812,26 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               ],
             },
             {
-              title: "SVM",
+              title: "Solana",
               url: "ccip/api-reference/svm",
               children: [
                 {
-                  title: "v1.6.0 (Latest)",
-                  url: "ccip/api-reference/svm/v1.6.0",
+                  title: "v0.1.1 (Latest)",
+                  url: "ccip/api-reference/svm/v0.1.1",
                   isCollapsible: true,
-                  children: svmCcipV160Contents,
+                  children: svmCcipV011Contents,
+                },
+              ],
+            },
+            {
+              title: "Aptos",
+              url: "ccip/api-reference/aptos",
+              children: [
+                {
+                  title: "v1.6.0 (Latest)",
+                  url: "ccip/api-reference/aptos/v1.6.0",
+                  isCollapsible: true,
+                  children: aptosCcipV160Contents,
                 },
               ],
             },
@@ -1949,6 +2187,28 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Bridges and Associated Risks",
           url: "resources/bridge-risks",
+        },
+        {
+          title: "Chainlink Oracle Platform",
+          url: "oracle-platform/overview",
+          children: [
+            {
+              title: "Data Standard",
+              url: "oracle-platform/data-standard",
+            },
+            {
+              title: "Interoperability Standard",
+              url: "oracle-platform/interoperability-standard",
+            },
+            {
+              title: "Compliance Standard",
+              url: "oracle-platform/compliance-standard",
+            },
+            {
+              title: "Privacy Standard",
+              url: "oracle-platform/privacy-standard",
+            },
+          ],
         },
         {
           title: "Chainlink Architecture",

@@ -70,7 +70,6 @@ To use this contract:
 1. [Open the contract in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/APIRequests/MultiWordConsumer.sol).
 
 1. Compile and deploy the contract using the Injected Provider environment. The contract includes all the configuration variables for the _Sepolia_ testnet. Make sure your wallet is set to use _Sepolia_. The _constructor_ sets the following parameters:
-
    - The Chainlink Token address for _Sepolia_ by calling the [`setChainlinkToken`](/any-api/api-reference/#setchainlinktoken) function.
    - The Oracle contract address for _Sepolia_ by calling the [`setChainlinkOracle`](/any-api/api-reference/#setchainlinkoracle) function.
    - The `jobId`: A specific job for the oracle node to run. In this case, you must call a job that is specifically configured to return _ETH_ price against _BTC_, _USD_ and _EUR_. You can find the job spec for the Chainlink node [here](/chainlink-nodes/job-specs/multi-word-job).
@@ -80,7 +79,6 @@ To use this contract:
 1. Call the `btc`, `usd` , and `eur` functions to confirm that the respective `btc`, `usd` , and `eur` state variables are equal to _zero_.
 
 1. Run the `requestMultipleParameters` function. This builds the `Chainlink.Request` using the correct parameters:
-
    - The `req._add("urlBTC", "CRYPTOCOMPARE_ETH_BTC_URL")` request parameter provides the oracle node with the [url](https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=BTC) where to fetch the _ETH-BTC_ price. Same logic for `req._add("urlEUR", "CRYPTOCOMPARE_ETH_BTC_URL")` and `req._add("urlUSD", "CRYPTOCOMPARE_ETH_BTC_URL")`.
    - THe `req._add('pathBTC', 'BTC')` request parameter tells the oracle node where to fetch the _ETH-BTC_ price in the _json_ response. Same logic for `req._add('pathUSD', 'EUR')` and `req._add('pathEUR', 'USD')`.
      Because you provide the URLs and paths, the `MultiWordConsumer` in the example can call any public API as long as the URLs and paths are correct.

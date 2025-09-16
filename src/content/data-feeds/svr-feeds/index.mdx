@@ -14,6 +14,7 @@ whatsnext:
 import { Aside, ClickToZoom, CodeSample, CopyText } from "@components"
 import { Tabs } from "@components/Tabs"
 import { CHAINS } from "@features/data/chains"
+import { isSharedSVR, isAaveSVR } from "~/features/feeds/utils/svrDetection.ts"
 
 export async function getFeeds() {
   const ethereumMainnet = CHAINS.find((chain) => chain.page === "ethereum")?.networks.find(
@@ -30,26 +31,37 @@ try {
 const response = await fetch(rddUrl)
 const data = await response.json()
 
-    const targetFeeds = [
-      "AAVE/USD-RefPrice-DF-Ethereum-001",
-      "BTC/USD-RefPrice-DF-Ethereum-001",
-      "ETH/USD-RefPrice-DF-Ethereum-001",
-      "LINK/USD-RefPrice-DF-Ethereum-001",
-      "USDC/USD-RefPrice-DF-Ethereum-001",
-      "USDT/USD-RefPrice-DF-Ethereum-001",
-    ]
-
+    // Find all feeds that have SVR variants (either Aave or Shared SVR) and are not hidden
     const svrFeeds = data.filter(
-      (feed) =>
-        feed.secondaryProxyAddress && feed.docs?.clicProductName && targetFeeds.includes(feed.docs.clicProductName)
+      (feed) => feed.secondaryProxyAddress && !feed.docs?.hidden && (isAaveSVR(feed) || isSharedSVR(feed))
     )
 
-    return svrFeeds
-      .map((feed) => ({
-        name: feed.name.replace(" / ", "/"),
-        address: feed.contractAddress,
-      }))
+    // Group feeds by their base name (e.g., "BTC/USD", "ETH/USD")
+    const feedGroups = {}
+
+    svrFeeds.forEach(feed => {
+      const baseName = feed.name.replace(" / ", "/")
+
+      if (!feedGroups[baseName]) {
+        feedGroups[baseName] = {
+          name: baseName,
+          aaveAddress: null,
+          svrAddress: null
+        }
+      }
+
+      if (isAaveSVR(feed)) {
+        feedGroups[baseName].aaveAddress = feed.secondaryProxyAddress
+      } else if (isSharedSVR(feed)) {
+        feedGroups[baseName].svrAddress = feed.secondaryProxyAddress
+      }
+    })
+
+    // Convert to array and sort
+    const combinedFeeds = Object.values(feedGroups)
       .sort((a, b) => a.name.localeCompare(b.name))
+
+    return combinedFeeds
 
 } catch (error) {
 return []
@@ -116,25 +128,29 @@ Chainlink Smart Value Recapture (SVR) extends standard Chainlink Price Feeds wit
 <ClickToZoom src="/images/data-feed/svr/svr-integration-flow.webp" />
 
 1. **Dual Transmission**
-
    - **(1a) Standard Feed (Public Route)**: The Chainlink Data DON (triggered by a heartbeat or deviation threshold) sends a price report to the **Standard Aggregator** via the public mempool—this is the traditional Chainlink flow. If anything goes wrong with the private route, the system can still rely on the standard aggregator's updates.
    - **(1b) SVR Feed (Private Route)**: Simultaneously, the Data DON sends the **same** price report to the **SVR Aggregator** through a private channel (e.g., Flashbots MEV-Share). This private route creates an **auction** for liquidations.
 
 2. **MEV-Share Auction**
-
    - **(2) Liquidation Bid**: In the private channel, searchers see the incoming oracle report and bid to backrun the price update with a liquidation transaction. Builders select the highest bid, bundling that liquidation in the same block. If no bid is placed, the price update can still be published onchain without any bundled liquidation. If not, the fallback in the dual aggregator is triggered.
 
 3. **SVR Update and Liquidation**
-
    - **(3a) SVR Price Report**: The winning bundle is published onchain, and the **SVR Feed** is updated with the new price.
    - **(3b) Liquidation Execution**: In the same block, the **backrunning** transaction can use the freshly updated price to liquidate the undercollateralized position. The oracle-related MEV can thereby be partly recaptured by the DeFi protocol and the Chainlink Network.
 
 4. **Token Price Consumption**
-
    - **(4) DeFi Protocol**: The updated price from the **SVR Feed** is now available to the DeFi protocol (e.g., Aave) for accurate liquidation logic or other price-dependent actions.
 
 **Fail-Safe Fallback Mechanism**  
 If the **private route** fails or times out, the SVR feed automatically **reverts** to the **Standard Feed price** after a configurable delay. This delay can be set to any amount of seconds. This helps ensures the feed doesn't stall and that price data is accessible through the public route if the private channel is unavailable.
+
+## SVR Feed Variants
+
+Chainlink SVR Feeds are available as standard feeds for general use and specialized [Aave SVR Feeds](#aave-svr-feeds) for the Aave protocol. More specialized SVR feeds may be developed in the future for other protocols.
+
+### Aave SVR Feeds
+
+Aave SVR feeds are specifically tailored for the Aave protocol and are only intended for use by Aave.
 
 ## How Protocols Can Utilize SVR Feeds
 
@@ -204,7 +220,6 @@ For more background on how Aave liquidations work, see [Aave Documentation](http
 1. **Monitor and Identify SVR Price Updates**: Chainlink SVR sends oracle reports through Flashbots Protect (MEV-Share). Your searcher node must watch private transactions, not just the public mempool. It must also filter by these SVR data feed update events, and determine which feed address the update is for.
 
 1. **Bundle and Bid**
-
    - Detect an eligible liquidation (e.g., an undercollateralized Aave position) triggered by the new price update.
    - Submit your liquidation transaction **in the same bundle** as the price update, placing a bid to entice block builders.
 
@@ -293,30 +308,44 @@ The following code samples demonstrate the complete decoding process, including 
   </Fragment>
 </Tabs>
 
-#### 4. Detect SVR-enabled Feeds for the Aave Protocol
+#### 4. Detect SVR-enabled Feeds
 
 When processing forward calls, verify that the `to` address from the code sample above (the destination of the forward call) matches one of these feed addresses. This tells you which SVR data feed the price update is for:
 
 <table>
   <thead>
     <tr>
-      <th>Feed name</th>
-      <th>Address</th>
+      <th>Feed</th>
+      <th>SVR Feed</th>
+      <th>Aave Dedicated SVR Feed</th>
     </tr>
   </thead>
   <tbody>
     {feeds &&
       feeds.map((feed) => (
-        <tr key={feed.address}>
-          <td>{feed.name}</td>
+        <tr key={feed.name}>
           <td>
-            <CopyText text={feed.address} code />
+            <strong>{feed.name}</strong>
+          </td>
+          <td>
+            {feed.svrAddress ? (
+              <CopyText text={feed.svrAddress} code />
+            ) : (
+              <span style={{ color: "#888" }}>Not available</span>
+            )}
+          </td>
+          <td>
+            {feed.aaveAddress ? (
+              <CopyText text={feed.aaveAddress} code />
+            ) : (
+              <span style={{ color: "#888" }}>Not available</span>
+            )}
           </td>
         </tr>
       ))}
     {(!feeds || feeds.length === 0) && (
       <tr>
-        <td colSpan="2">No SVR feeds found.</td>
+        <td colSpan="3">No SVR feeds found.</td>
       </tr>
     )}
   </tbody>
@@ -339,19 +368,16 @@ To use this price effectively, convert it to the appropriate decimal representat
 Once you've detected an SVR update and identified a profitable liquidation opportunity, you need to construct and submit a bundle to Flashbots. Consider these key aspects when preparing your submission:
 
 - **Bundle Components**: Your bundle must contain two elements in this exact order:
-
   1. The original oracle update transaction (referenced by its hash)
   1. Your liquidation transaction (fully signed transaction bytes)
 
 - **Backrun Position**: MEV-Share only permits backruns, meaning your liquidation transaction must come after the target transaction. This order is enforced by the bundle structure.
 
 - **Bidding Strategy**: Block builders typically select the highest-paying bundle. Your bid must be competitive while leaving room for profit. The bundle's economic value comes from:
-
   - The gas price of your transaction
   - Any explicit payment you include to the builder
 
 - **Inclusion Parameters**: Specify the target block range for your bundle to be considered
-
   - Typically target the next block plus a small range for redundancy
   - A narrow block range can increase chances of inclusion but risks missing execution
 
@@ -382,18 +408,16 @@ For gas management, simulations, and other advanced usage, see the official [Fla
 #### 8. Next Steps for Searchers
 
 1. **Set Up Your Searcher Node**
-
    - Integrate with [Flashbots MEV-Share](https://docs.flashbots.net/) to read private transactions.
    - Filter for calls matching function selector `6fadcf72` directed at the correct contract address.
 
 2. **Test Your Bundles**
-
    - Construct atomic bundles combining the price update and your liquidation transaction.
    - Try local simulations or testnet deployments where available.
 
 3. **Stay Updated**
    - Keep track of any updates to the SVR aggregator address, function signatures, or Flashbots MEV-Share changes.
-   - Monitor for changes in Aave liquidation parameters (e.g., new assets, different collateral thresholds).
+   - Monitor for changes in liquidation parameters (e.g., new assets, different collateral thresholds).
 
 ## Economics and Revenue Split
 

@@ -9,38 +9,11 @@ metadata:
 ---
 
 import DataStreams from "@features/data-streams/common/DataStreams.astro"
-import { PageTabs } from "@components"
+import ReportSchemaTabs from "@features/data-streams/common/ReportSchemaTabs.astro"
 
 <DataStreams section="dsNotes" />
 
-<PageTabs
-  pages={[
-
-    {
-      name: "Cryptocurrency Report Schema (v3)",
-      url: "/data-streams/reference/report-schema-v3",
-    },
-    {
-      name: "DEX State Price Report Schema (v3)",
-      url: "/data-streams/reference/report-schema-v3-dex",
-    },
-    {
-      name: "RWA Report Schema (v8)",
-      url: "/data-streams/reference/report-schema-v8",
-    },
-    {
-      name: "NAV Report Schema (v9)",
-      url: "/data-streams/reference/report-schema-v9",
-    },
-    {
-      name: "Backed xStock Report Schema (v10)",
-      url: "/data-streams/reference/report-schema-v10",
-    },
-
-]}
-headerTitle="Available Report Schemas"
-headerDescription="Choose the schema version you want to explore."
-/>
+<ReportSchemaTabs />
 
 RWA streams adhere to the report schema outlined below.
 
@@ -49,12 +22,12 @@ RWA streams adhere to the report schema outlined below.
 | Value                   | Type      | Description                                                                                                 |
 | ----------------------- | --------- | ----------------------------------------------------------------------------------------------------------- |
 | `feedID`                | `bytes32` | Unique identifier for the Data Streams feed                                                                 |
-| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid                                                                  |
-| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid                                                                    |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                                                        |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                                                          |
 | `nativeFee`             | `uint192` | Cost to verify report onchain (native token)                                                                |
 | `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                                                                        |
-| `expiresAt`             | `uint32`  | Expiration date of the report                                                                               |
-| `lastUpdateTimestamp`   | `uint64`  | Timestamp of the last valid price update                                                                    |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                                                     |
+| `lastUpdateTimestamp`   | `uint64`  | Timestamp of the last valid price update (nanoseconds)                                                      |
 | `midPrice`              | `int192`  | DON's consensus median price                                                                                |
 | `marketStatus`          | `uint32`  | [Market status](/data-streams/market-hours). Possible values: `0` (`Unknown`), `1` (`Closed`), `2` (`Open`) |
 
@@ -63,3 +36,4 @@ RWA streams adhere to the report schema outlined below.
 - `marketStatus`:
   - Users are responsible for handle market status changes in their applications.
   - For further guidance, refer to the [Market Hours Best Practices](/data-streams/concepts/best-practices#market-hours-best-practices) documentation.
+- Future RWA streams may use different report schemas.

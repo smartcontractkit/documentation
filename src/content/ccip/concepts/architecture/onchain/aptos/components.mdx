@@ -1,0 +1,194 @@
+---
+section: ccip
+date: Last Modified
+title: "Onchain Architecture - Components (Aptos)"
+metadata:
+  description: "Explore the onchain components of CCIP architecture on Aptos: Sender/Receiver, Router, OffRamp, FeeQuoter, Tokens, Token Pools, and RMN module details."
+  image: "/images/ccip/concepts/architecture/ccip-aptos-source-chain.jpg"
+  excerpt: "ccip aptos components, architecture, router module, offramp module, fee quoter, token pools, rmn module, token admin dispatcher, token admin registry, receiver dispatcher, receiver registry"
+  datePublished: "2025-09-03"
+  lastModified: "2025-09-03"
+  difficulty: "advanced"
+  estimatedTime: "35 minutes"
+---
+
+import { Aside } from "@components"
+
+This section provides more detail on the Onchain components for Aptos.
+
+## Sender/Receiver
+
+**CCIP supports the following as senders and receivers:**
+
+- A user-controlled account – A wallet/user account controlled by a private key (also called EOA on EVM blockchains).
+- An onchain program – Smart contract logic (called "programs" on Solana, "modules" on Aptos, "smart contracts" on EVM chains).
+
+**CCIP messages can be sent in any of the following combinations (terminology adapts to the destination blockchain):**
+
+- **User Account → User Account / EOA / Wallet**
+  - **Supported Message Type**: Token-only transfers.
+  - **Reason**: The recipient is a simple user account that does not have executable code. While a data payload can be sent in the CCIP message, the recipient account has no way to act upon or process that data.
+
+- **User Account → Module / Smart Contract / Program**
+  - **Supported Message Type**: Token transfers, arbitrary data, and programmable token transfers (data + tokens).
+  - **Reason**: The receiving module is designed with a `ccip_receive` function that can be programmed to handle incoming tokens, process arbitrary data, or both simultaneously according to your application's logic.
+
+- **Module / Smart Contract / Program → User Account / EOA / Wallet**
+  - **Supported Message Type**: Token-only transfers.
+  - **Reason**: Similar to the first case, the destination is a simple user account that cannot execute logic to process an incoming data payload.
+
+- **Module / Smart Contract / Program → Module / Smart Contract / Program**
+  - **Supported Message Type**: Token transfers, arbitrary data, and programmable token transfers (data + tokens).
+  - **Reason**: Both the sender and receiver are programmable entities, allowing for any combination of token and data to be sent and processed according to custom application logic.
+
+**A CCIP Message can include:**
+
+- An arbitrary bytes payload.
+- A token transfer.
+- A programmable token transfer (data + tokens).
+
+**Sender Responsibilities:**
+
+- Prepare the arguments for the `ccip_send` function.
+- Retrieve a fee estimate by calling the `router::get_fee` view function.
+- Call the `router::ccip_send` entry function to send the message. The sender's signature on this transaction authorizes the withdrawal of any tokens and fees.
+
+**Receiver Considerations:**
+
+- **Data Processing:** If the CCIP Message contains a data payload or a programmable token transfer, the receiver must be a Move module that implements a `ccip_receive` entry function.
+- **Registration:** The receiver module must be registered with the `Receiver Registry` to be able to receive messages from the CCIP OffRamp.
+- **Security Validation:** The receiver module should validate that any call to its `ccip_receive` function originates from an authorized CCIP OffRamp address.
+
+## Router
+
+The `ccip_router::router` module serves as the single, user-facing interface for sending all outbound CCIP messages from the Aptos blockchain. As a minimal module, its primary role is to act as a stable entry point that directs traffic to the appropriate `OnRamp`.
+
+The Router exposes two primary functions for the sender:
+
+- `get_fee`: A view function that retrieves the CCIP fee for a given message by forwarding the request to the `OnRamp`.
+- `ccip_send`: The entry function that initiates a cross-chain message. It performs initial validations and then forwards the call to the correct `OnRamp` module for processing.
+
+## OnRamp
+
+The `ccip_onramp::onramp` module is an internal CCIP module that handles the core logic for processing outbound messages on the source chain.
+
+When the Router forwards a `ccip_send` request, the OnRamp performs the following actions:
+
+- **Validations**
+  - Ensures that the destination chain is not cursed.
+  - Verifies that the sender is on the allowlist if one is enabled for the destination lane.
+
+- **Fee Collection**
+  - Withdraws the pre-calculated fee amount from the sender's specified `fee_token_store`, defaulting to the user's primary store if `0x0` is provided.
+
+- **Token Handling**
+  - If the message involves token transfers, it initiates a secure callback pattern by calling the `Token Admin Dispatcher`.
+  - The dispatcher uses the `Token Admin Registry` to store the message context (sender, receiver, etc.) before invoking the correct `Token Pool` to `lock_or_burn` the assets.
+
+- **Nonce Management**
+  - For ordered messages, it calls the `Nonce Manager` to retrieve and increment the sender's nonce for that destination.
+
+- **Event Emission**
+  - Generates a unique `messageId` and emits a `CCIPMessageSent` event containing the complete, sequenced message details.
+
+## Nonce Manager
+
+The `ccip::nonce_manager` module enables optional strict message ordering. It tracks outbound nonces on a per-sender and per-destination-chain basis.
+
+When out-of-order execution is disabled for a message, the `OnRamp` module uses the `Nonce Manager` to assign an incrementing nonce, which is then verified by the `OffRamp` on the destination chain.
+
+## OffRamp
+
+The `ccip_offramp::offramp` module is an internal CCIP module that operates on the destination chain. It is the primary module that the offchain DONs interact with to deliver messages to Aptos.
+
+### Commit Phase
+
+During the **Commit Phase**, the following steps occur:
+
+1. **Commit Report Submission**:  
+   The Committing DON calls the `commit` function on the `OffRamp` with a report that includes Merkle roots and price updates.
+
+1. **Validation**:
+   - The `OffRamp` verifies the DON's signatures.
+   - It verifies any "blessed" Merkle roots.
+
+1. **Price Updates**:  
+   It calls the `Fee Quoter` to update its onchain token and gas price data.
+
+1. **Event Emission**:  
+   At the end of the Commit Phase, the `OffRamp` emits a `CommitReportAccepted` event.
+
+### Execution Phase
+
+In the **Execution Phase**, the `OffRamp` processes messages one by one:
+
+1. **Merkle Proof Verification**:  
+   The `OffRamp` verifies the message's Merkle proof against a previously committed Merkle root.
+
+1. **Additional Validations**:  
+   The `OffRamp` performs final validations, including ensuring the source chain is not cursed.
+
+1. **Token Processing (if applicable)**:  
+   It calls the `Token Admin Dispatcher` to initiate the `release_or_mint` process. This follows a secure callback pattern where the dispatcher and `Token Pool` interact with the `Token Admin Registry` to securely process the token transfer before depositing the assets into the receiver's primary fungible store.
+
+1. **Message Delivery (if applicable)**:  
+   It calls the `Receiver Dispatcher`, which securely stores the message payload in the `Receiver Registry` and then triggers the `ccip_receive` function on the registered receiver module. The receiver module is then responsible for calling the `Receiver Registry` to fetch this payload.
+
+1. **Final Execution Status**:  
+   The `OffRamp` emits a final `ExecutionStateChanged` event, indicating a `SUCCESS` state. Due to Aptos's transaction atomicity, failed executions revert entirely, leaving the message state as `UNTOUCHED` for a potential retry.
+
+### Permissionless Manual Execution (Fallback)
+
+The `OffRamp` includes a `manually_execute` function. If automated execution fails, this function can be called permissionlessly after a configured time delay to ensure message delivery. For more information, read the [manual execution](/ccip/concepts/manual-execution) page.
+
+## Fee Quoter
+
+The `ccip::fee_quoter` module is responsible for all fee-related calculations.
+
+- **Source Chain**: Called by the `OnRamp` to provide a precise fee estimate for a given message.
+- **Destination Chain**: Called by the `OffRamp` to receive and store updated token and gas price data included in commit reports from the CCIP network.
+
+## Token Admin Dispatcher
+
+The `ccip::token_admin_dispatcher` is a security-focused module that acts as a secure entry point for all token operations. Only authorized CCIP modules (specifically, the `OnRamp` and `OffRamp`) are permitted to call this dispatcher. It then looks up the correct `Token Pool` via the `Token Admin Registry` and initiates the `lock_or_burn` or `release_or_mint` operations, preventing direct, unauthorized calls to the token pools.
+
+## Token Admin Registry
+
+The `ccip::token_admin_registry` is a central onchain module that maintains the critical mapping between a token's address and the address of its designated `Token Pool` module. It serves as the single source of truth for the CCIP network to determine how to handle a specific token for cross-chain transfers. It also manages administrative rights for token configurations.
+
+## Receiver Dispatcher
+
+The `ccip::receiver_dispatcher` is a security-focused module that ensures only the authorized `OffRamp` module can deliver a message to a registered receiver module. When a message containing data arrives, the `OffRamp` calls this dispatcher. The dispatcher first verifies that the destination module is registered in the `Receiver Registry` before safely calling the `ccip_receive` function on that end-user's module.
+
+## Receiver Registry
+
+The `ccip::receiver_registry` is a module where developers can register their custom Move modules to make them officially recognizable as valid CCIP message receivers. A module must be registered here before it can receive data or programmatic token transfers from the `OffRamp` via the `Receiver Dispatcher`.
+
+## Tokens and Token Pools
+
+### Tokens
+
+- Tokens are developed by token developers and exist independently of the core CCIP modules.
+- Most tokens built on the Aptos [Fungible Asset](https://aptos.dev/en/build/smart-contracts/fungible-asset) standard are compatible with CCIP. For more information on compatibility, refer to the CCT documentation.
+
+### Token Pools
+
+- Token Pools are deployed by token developers and exist independently of the core CCIP modules.
+- Token Pools are modules interact with tokens created using the [Fungible Asset](https://aptos.dev/en/build/smart-contracts/fungible-asset) standard.
+- Token pools follow standard models:
+  - **Lock/Release**
+  - **Burn/Mint**
+- Audited code for `lock_release_token_pool` and `burn_mint_token_pool` modules is available in the CCIP repository.
+- For tokens requiring custom logic before burn/mint/lock/release, developers may build custom pools on top of these base modules. More details are available in the CCT documentation.
+
+## RMN (Risk Management Network) Remote
+
+The `ccip::rmn_remote` module is a critical security component deployed on every CCIP-enabled chain. Various CCIP modules (like `OnRamp`, `OffRamp`, `Token Pools`) query this component to verify the status of other chains in the network. It maintains an onchain list of "cursed" (i.e., blocklisted) chains. If a source or destination chain is cursed, CCIP transactions involving that chain are halted.
+
+<Aside type="caution" title="Phased Deployments">
+  Certain blockchains may be integrated with CCIP in a phased approach, with the Committing and Executing DONs deployed
+  first and the Risk Management Network added in a later update. In cases of a phased deployment, merkle roots in
+  relevant Commit Stores are always considered blessed until the Risk Management Network has been deployed for that
+  blockchain. Please see the [CCIP Directory](/ccip/directory) for which integrations utilize a phased approach. Please
+  review [CCIP Service Responsibility](/ccip/service-responsibility) for more information.
+</Aside>

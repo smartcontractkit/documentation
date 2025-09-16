@@ -48,7 +48,6 @@ Deploy the `Sender.sol` contract on _Avalanche Fuji_. To see a detailed explanat
 1. Compile the contract.
 
 1. Deploy the sender contract on _Avalanche Fuji_:
-
    1. Open MetaMask and select the _Avalanche Fuji_ network.
    1. In Remix under the **Deploy & Run Transactions** tab, select _Injected Provider - MetaMask_ in the **Environment** list. Remix will use the MetaMask wallet to communicate with _Avalanche Fuji_.
    1. Under the **Deploy** section, fill in the router address and the LINK token contract addresses for your specific blockchain. You can find both of these addresses on the [CCIP Directory](/ccip/directory). The LINK token contract address is also listed on the [LINK Token Contracts](/resources/link-token-contracts) page. For _Avalanche Fuji_, the router address is <CopyText text="0xF694E193200268f9a4868e4Aa017A0118C9a8177" code/> and the LINK address is <CopyText text="0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" code/>.
@@ -84,7 +83,6 @@ Deploy the receiver contract on _Ethereum Sepolia_. You will use this contract t
 1. Compile the contract.
 
 1. Deploy the receiver contract on _Ethereum Sepolia_:
-
    1. Open MetaMask and select the _Ethereum Sepolia_ network.
 
    1. In Remix under the **Deploy & Run Transactions** tab, make sure the **Environment** is still set to _Injected Provider - MetaMask_.
@@ -187,7 +185,6 @@ The router address provides functions that are required for this example:
 The `sendMessage` function completes several operations:
 
 1. Construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/evm/v1.6.0/client#evm2anymessage):
-
    - The `receiver` address is encoded in bytes format to accommodate non-EVM destination blockchains with distinct address formats. The encoding is achieved through [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `data` is encoded from a string text to bytes using [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `tokenAmounts` is an array. Each element comprises a [struct](/ccip/api-reference/evm/v1.6.0/client#evmtokenamount) that contains the token address and amount. In this example, the array is empty because no tokens are sent.
@@ -218,7 +215,6 @@ On the destination blockchain:
 1. The CCIP Router invokes the `ccipReceive` [function](/ccip/api-reference/evm/v1.6.0/ccip-receiver#ccipreceive). **Note**: This function is protected by the `onlyRouter` [modifier](/ccip/api-reference/evm/v1.6.0/ccip-receiver#onlyrouter), which ensures that only the router can call the receiver contract.
 1. The `ccipReceive` [function](/ccip/api-reference/evm/v1.6.0/ccip-receiver#ccipreceive) calls an internal function `_ccipReceive` [function](/ccip/api-reference/evm/v1.6.0/ccip-receiver#_ccipreceive). The receiver contract implements this function.
 1. This `_ccipReceive` [function](/ccip/api-reference/evm/v1.6.0/ccip-receiver#_ccipreceive) expects an `Any2EVMMessage` [struct](/ccip/api-reference/evm/v1.6.0/client#any2evmmessage) that contains the following values:
-
    - The CCIP `messageId`.
    - The `sourceChainSelector`.
    - The `sender` address in bytes format. The sender is a contract deployed on an EVM-compatible blockchain, so the address is decoded from bytes to an Ethereum address using the [ABI specification](https://docs.soliditylang.org/en/v0.8.20/abi-spec.html).

@@ -77,6 +77,14 @@ export type ChainConfig = {
     symbol: string
     logo: string
   }
+  mcms?: {
+    address: string
+  }
+  poolPrograms?: {
+    BurnMintTokenPool?: string
+    LockReleaseTokenPool?: string
+    CCTPTokenPool?: string
+  }
 }
 
 export type ChainsConfig = {
@@ -194,6 +202,12 @@ export interface Network {
   routerExplorerUrl: string
   feeQuoter?: string
   rmnPermeable: boolean
+  mcms?: string
+  poolPrograms?: {
+    BurnMintTokenPool?: string
+    LockReleaseTokenPool?: string
+    CCTPTokenPool?: string
+  }
 }
 
 export type DecomConfig = {

@@ -15,6 +15,7 @@ export const SIDEBAR_SECTIONS = {
   VRF: "vrf",
   AUTOMATION: "automation",
   ARCHITECTURE: "architecture",
+  ORACLE: "oracle",
   RESOURCES: "resources",
   LEGACY: "legacy",
   GLOBAL: "global",

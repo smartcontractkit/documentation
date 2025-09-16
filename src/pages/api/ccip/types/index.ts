@@ -5,7 +5,7 @@ import { Environment } from "@config/data/ccip/types.ts"
 export { Environment }
 
 // Chain type and family declarations
-export type ChainType = "evm" | "solana" | "aptos"
+export type ChainType = "evm" | "solana" | "aptos" | "sui"
 export type ChainFamily = "evm" | "mvm" | "svm"
 
 export const prerender = false
@@ -39,6 +39,7 @@ export interface ChainDetails {
   tokenPoolFactory?: string
   feeQuoter?: string
   rmnPermeable?: boolean
+  mcms?: string
 }
 
 export type ChainApiResponse = {
@@ -128,3 +129,93 @@ export interface TokenFilterType {
   token_id?: string
   chain_id?: string
 }
+
+// Lane Data API Types
+
+export type LaneConfigError = {
+  sourceChain: string
+  destinationChain: string
+  reason: string
+  missingFields: string[]
+}
+
+export type LaneMetadata = {
+  environment: Environment
+  timestamp: string
+  requestId: string
+  ignoredLaneCount: number
+  validLaneCount: number
+}
+
+// Internal interface with chainType and chainFamily for processing
+export interface ChainInfoInternal {
+  chainId: number | string
+  displayName: string
+  selector: string
+  internalId: string
+  chainType: ChainType
+  chainFamily: ChainFamily
+}
+
+// Public interface for API responses without chainType and chainFamily
+export interface ChainInfo {
+  chainId: number | string
+  displayName: string
+  selector: string
+  internalId: string
+}
+
+export interface LaneDetails {
+  sourceChain: ChainInfo
+  destinationChain: ChainInfo
+  onRamp: {
+    address: string
+    version: string
+    enforceOutOfOrder?: boolean
+  }
+  offRamp: {
+    address: string
+    version: string
+  }
+  supportedTokens: string[]
+}
+
+export type LaneDataResponse = Record<string, LaneDetails>
+
+export type LaneServiceResponse = {
+  data: LaneDataResponse
+  errors: LaneConfigError[]
+  metadata: {
+    validLaneCount: number
+    ignoredLaneCount: number
+  }
+}
+
+export type LaneApiResponse = {
+  metadata: LaneMetadata
+  data: LaneDataResponse
+  ignored: LaneConfigError[]
+}
+
+export interface LaneFilterType {
+  sourceChainId?: string
+  destinationChainId?: string
+  sourceSelector?: string
+  destinationSelector?: string
+  sourceInternalId?: string
+  destinationInternalId?: string
+  version?: string
+}
+
+// Faucet API Types
+export type {
+  FaucetChainConfig,
+  ChallengeParams,
+  ChallengeResponse,
+  VerifyRequest,
+  VerifyResponse,
+  VerifySignatureArgs,
+  FamilyAdapter,
+  FaucetApiResponse,
+  FaucetError,
+} from "./faucet.ts"

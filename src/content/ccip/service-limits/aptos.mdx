@@ -1,0 +1,44 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP Service Limits (Aptos)"
+metadata:
+  description: "Explore Chainlink CCIP service limits for the Aptos blockchain, including message size, gas limits, token transfers, and execution parameters for EVM-Aptos lanes."
+  excerpt: "Chainlink CCIP, Aptos service limits, Aptos constraints, Message size limits, Token transfers, Cross-chain execution, Aptos parameters, EVM to Aptos, Aptos to EVM"
+  datePublished: "2025-09-03"
+  lastModified: "2025-09-03"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<Aside type="note" title="Contact for Exception Requests">
+  If you consistently need more gas for your use case, please reach out to your Chainlink Labs point of contact or
+  contact us via this [contact form](https://chain.link/ccip-contact).
+</Aside>
+
+## EVM to Aptos
+
+These limits apply to messages sent from an EVM-compatible chain to the Aptos blockchain.
+
+| Item                           | Description                                                                                                                       | Limit          |
+| :----------------------------- | :-------------------------------------------------------------------------------------------------------------------------------- | :------------- |
+| Maximum message data length    | The total payload for the message, including user data and token transfer information.                                            | 30,000 bytes   |
+| Message execution gas limit    | The user-specified `gasLimit` in `extraArgs` for the execution of the `ccip_receive` function on Aptos.                           | 100,000 gas    |
+| Maximum number of tokens       | The maximum number of distinct tokens that can be transferred in a single transaction.                                            | 1              |
+| Smart Execution time window    | The maximum duration that CCIP will attempt to automatically execute a message on Aptos before manual execution is required.      | 8 hours        |
+| Token pool execution gas limit | The default gas overhead allocated for a standard token transfer operation on Aptos when a message is received from an EVM chain. | 36 gas         |
+| Out of Order execution         | The `allowOutOfOrderExecution` parameter in the `extraArgs` of a CCIP message from an EVM chain.                                  | Must be `true` |
+
+## Aptos to EVM
+
+These limits apply to messages sent from the Aptos blockchain to an EVM-compatible chain.
+
+| Item                           | Description                                                                                                                | Limit          |
+| :----------------------------- | :------------------------------------------------------------------------------------------------------------------------- | :------------- |
+| Maximum message data length    | The `data` payload sent within the [CCIP message](/ccip/api-reference/aptos/v1.6.0/messages#aptos2anymessage).             | 30,000 bytes   |
+| Message execution gas limit    | The user-specified `gasLimit` in `extraArgs` for the execution of the `ccipReceive` function on the destination EVM chain. | 100,000 gas    |
+| Maximum number of tokens       | The maximum number of distinct tokens that can be transferred in a single transaction.                                     | 1              |
+| Smart Execution time window    | The maximum duration for the execution of a CCIP message on the destination EVM chain.                                     | 8 hours        |
+| Token pool execution gas limit | The default gas overhead for executing token pool logic on the destination EVM chain for a standard token transfer.        | 36 gas         |
+| Out of Order execution         | The `allow_out_of_order_execution` parameter in the `extraArgs` of a CCIP message from Aptos.                              | Must be `true` |
