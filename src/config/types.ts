@@ -67,6 +67,8 @@ export type SupportedTechnology =
   | "JANCTION"
   | "NEO_X"
   | "POLYGON_KATANA"
+  | "KAIA"
+  | "TAC"
 
 export type ChainType = "evm" | "solana" | "aptos" | "sui"
 
@@ -215,6 +217,10 @@ export type SupportedChain =
   | "BOTANIX_MAINNET"
   | "APTOS_MAINNET"
   | "APTOS_TESTNET"
+  | "KAIA_MAINNET"
+  | "KAIA_TESTNET_KAIROS"
+  | "TAC_MAINNET"
+  | "TAC_TESTNET"
 
 export type ExplorerInfo = {
   baseUrl: string

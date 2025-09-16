@@ -291,6 +291,7 @@ export const productChainLinks: ProductChainLinks = {
     polygonkatana: "/resources/link-token-contracts#polygon-katana",
     "0g": "/resources/link-token-contracts#0g",
     hyperevm: "/resources/link-token-contracts#hyperevm",
+    kaia: "/resources/link-token-contracts#kaia",
   },
 }
 
@@ -370,4 +371,6 @@ export const chainNames: Record<string, string> = {
   janction: "Janction",
   neox: "Neo X",
   polygonkatana: "Polygon Katana",
+  tac: "Tac",
+  kaia: "Kaia",
 }
