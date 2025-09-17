@@ -40,6 +40,9 @@ function AlgoliaSearch({ algoliaVars }) {
       categoryOrder={["Documentation"]}
       popularCards={popularCards}
       ariaLabel="Open AI search"
+      spotlight={["Documentation"]}
+      categoriesToShow={["Documentation", "CCIP Network"]}
+      hideSuggestions={true}
     />
   )
 }
