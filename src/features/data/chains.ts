@@ -459,7 +459,7 @@ export const CHAINS: Chain[] = [
     title: "OP Data Feeds",
     img: "/assets/chains/optimism.svg",
     networkStatusUrl: "https://status.optimism.io/",
-    tags: ["default", "usGovernmentMacroeconomicData", "smartData"],
+    tags: ["default", "smartData", "usGovernmentMacroeconomicData"],
     supportedFeatures: ["feeds"],
     l2SequencerFeed: true,
     networks: [
@@ -469,7 +469,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-optimism-1.json",
         queryString: "optimism-mainnet",
-        tags: ["usGovernmentMacroeconomicData", "smartData"],
+        tags: ["smartData", "usGovernmentMacroeconomicData"],
       },
       {
         name: "OP Sepolia",
