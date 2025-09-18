@@ -491,6 +491,10 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "TAC_MAINNET"
     case "tac-testnet":
       return "TAC_TESTNET"
+    case "plasma-mainnet":
+      return "PLASMA_MAINNET"
+    case "plasma-testnet":
+      return "PLASMA_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -778,6 +782,10 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "tac-mainnet"
     case "TAC_TESTNET":
       return "tac-testnet"
+    case "PLASMA_MAINNET":
+      return "plasma-mainnet"
+    case "PLASMA_TESTNET":
+      return "plasma-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

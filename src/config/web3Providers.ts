@@ -151,6 +151,8 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   KAIA_TESTNET_KAIROS: () => new JsonRpcProvider("https://public-en-kairos.node.kaia.io"),
   TAC_MAINNET: () => new JsonRpcProvider("https://rpc.tac.build"),
   TAC_TESTNET: () => new JsonRpcProvider("https://spb.rpc.tac.build"),
+  PLASMA_MAINNET: () => new JsonRpcProvider("https://rpc.plasma.to"),
+  PLASMA_TESTNET: () => new JsonRpcProvider("https://testnet-rpc.plasma.to"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {

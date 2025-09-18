@@ -221,6 +221,8 @@ export type SupportedChain =
   | "KAIA_TESTNET_KAIROS"
   | "TAC_MAINNET"
   | "TAC_TESTNET"
+  | "PLASMA_MAINNET"
+  | "PLASMA_TESTNET"
 
 export type ExplorerInfo = {
   baseUrl: string
