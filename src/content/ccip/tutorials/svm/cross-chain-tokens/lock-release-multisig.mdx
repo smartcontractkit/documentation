@@ -2450,3 +2450,554 @@ echo "✅ All variables saved to ~/.all_vars"
 
 </Fragment>
 </Tabs>
+
+## Phase 4: EVM Cross-Chain Setup
+
+Configure the Ethereum pool to recognize the Solana chain and set production rate limits.
+
+<Aside type="note" title="Terminal Context Check">
+  **Current Focus: Terminal 2 (EVM Hardhat)** - Ensure you're in the Hardhat repository for EVM configuration.
+</Aside>
+
+### Step 1: Load Phase 3 Variables
+
+Ensure you're in Terminal 2 (Hardhat) and load all the variables from Phase 3.
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Verify you are in the Hardhat directory (Terminal 2)
+# Should be: /.../smart-contract-examples/ccip/cct/hardhat
+pwd
+
+# Load all environment variables from Phase 3
+source ~/.all_vars
+
+# Verify key variables are loaded
+echo "✅ ETH Token: $ETH_TOKEN_ADDRESS"
+echo "✅ ETH Pool: $ETH_POOL_ADDRESS"
+echo "✅ SOL Token: $SOL_TOKEN_MINT"
+echo "✅ SOL Pool: $SOL_POOL_ADDRESS"
+echo "✅ SOL ALT: $SOL_ADDRESS_LOOKUP_TABLE"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+/.../smart-contract-examples/ccip/cct/hardhat
+✅ ETH Token: 0x563eb47F0D8bE95CAF70ec2b7bB9Cdca6f045715
+✅ ETH Pool: 0x4678b403781467761Df2f9364FeC48ae3f4F3857
+✅ SOL Token: FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1
+✅ SOL Pool: 9VnLxEtwJgnGALzhhXJTtRr4GF83z95aCypPiRFGi9d1
+✅ SOL ALT: C3a5U5C4Sn8fywXmV4ZX6JAfYoQrEhAqF5daL39ScKSy
+```
+
+</Fragment>
+</Tabs>
+
+### Step 2: Configure Cross-Chain Settings
+
+Configure the Ethereum pool to recognize the Solana chain and set production rate limits using [`applyChainUpdates`](/ccip/api-reference/evm/v1.6.0/token-pool#applychainupdates).
+
+<Aside type="tip" title="CCIP Rate Limit Best Practices">
+
+**Recommendations for rate limits**:
+
+- **Outbound = 90% of Inbound**: Prevents in-flight congestion during high-volume periods
+- **Conservative Values**: The example uses 20 tokens inbound capacity with 0.1 tokens/second refill rate
+- **18-Decimal Tokens**: All values are in wei (smallest token unit)
+- **Configuration Controls**:
+  - **Pause lane**: Set capacity=1, rate=1 for both directions
+  - **Remove limits**: Set enabled=false, capacity=0, rate=0 for both directions
+- **Value Calculations**:
+  - 20 tokens = `20000000000000000000` wei (20 × 10^18)
+  - 18 tokens = `18000000000000000000` wei (18 × 10^18)
+  - 0.1 tokens/sec = `100000000000000000` wei (0.1 × 10^18)
+
+</Aside>
+
+<Tabs client:visible>
+<Fragment slot="tab.1">With Rate Limits</Fragment>
+<Fragment slot="tab.2">Without Rate Limits</Fragment>
+<Fragment slot="tab.3">Expected Output (With Limits)</Fragment>
+<Fragment slot="tab.4">Expected Output (Without Limits)</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Configure cross-chain settings WITH rate limits
+npx hardhat applyChainUpdates \
+ --pooladdress $ETH_POOL_ADDRESS \
+ --remotechain solanaDevnet \
+ --remotepooladdresses $SOL_POOL_ADDRESS \
+  --remotetokenaddress $SOL_TOKEN_MINT \
+  --outboundratelimitenabled true \
+  --outboundratelimitcapacity 18000000000000000000 \
+  --outboundratelimitrate 100000000000000000 \
+  --inboundratelimitenabled true \
+  --inboundratelimitcapacity 20000000000000000000 \
+  --inboundratelimitrate 100000000000000000 \
+ --network sepolia
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+# Configure cross-chain settings WITHOUT rate limits
+npx hardhat applyChainUpdates \
+  --pooladdress $ETH_POOL_ADDRESS \
+  --remotechain solanaDevnet \
+  --remotepooladdresses $SOL_POOL_ADDRESS \
+  --remotetokenaddress $SOL_TOKEN_MINT \
+  --network sepolia
+```
+
+</Fragment>
+
+<Fragment slot="panel.3">
+
+```bash
+2025-09-18T09:21:58.804Z info: === Starting Chain Update Configuration ===
+2025-09-18T09:21:58.805Z info: 🔹 Local network: sepolia
+2025-09-18T09:21:58.805Z info: 🔹 Pool address: 0x4678b403781467761Df2f9364FeC48ae3f4F3857
+2025-09-18T09:21:58.805Z info: 🔹 Remote chain: solanaDevnet
+2025-09-18T09:21:58.805Z info: 🔹 Remote chain type detected: svm
+2025-09-18T09:21:58.805Z info: 🔹 Remote chain selector: 16423721717087811551
+2025-09-18T09:21:58.805Z info: 🔹 Parsed 1 remote pool addresses
+2025-09-18T09:21:58.825Z info: ✅ All addresses validated successfully
+2025-09-18T09:21:59.376Z info: 🔹 Using signer: 0x9d087fC03ae39b088326b67fA3C788236645b717
+2025-09-18T09:21:59.716Z info: ✅ Connected to pool contract
+2025-09-18T09:21:59.716Z info: 🔹 Remote pool address 1: 9VnLxEtwJgnGALzhhXJTtRr4GF83z95aCypPiRFGi9d1 → 0x7e3d0758b16a2af735e7079ea4490eae495f7e444028346384a3a95f593f5ce0
+2025-09-18T09:21:59.716Z info: 🔹 Remote token address: FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1 → 0xd743d465642ec7a0828aacbbada2acaa6884c4b92ae41638cf2325a7a70af840
+2025-09-18T09:21:59.716Z info: === Rate Limiter Configuration ===
+2025-09-18T09:21:59.716Z info: 🔹 Outbound enabled: true
+2025-09-18T09:21:59.716Z info: 🔹 Outbound capacity: 18000000000000000000
+2025-09-18T09:21:59.716Z info: 🔹 Outbound rate: 100000000000000000
+2025-09-18T09:21:59.716Z info: 🔹 Inbound enabled: true
+2025-09-18T09:21:59.716Z info: 🔹 Inbound capacity: 20000000000000000000
+2025-09-18T09:21:59.716Z info: 🔹 Inbound rate: 100000000000000000
+2025-09-18T09:21:59.716Z info: === Executing Transaction ===
+2025-09-18T09:21:59.716Z info: 🔹 Sending applyChainUpdates transaction...
+2025-09-18T09:22:00.455Z info: 🔹 Transaction sent: 0x2a0ea9c95b3ad9945b82a55a3871b9ba475e453daf2eaf4dcf266cdd0b46f088
+2025-09-18T09:22:00.455Z info: 🔹 Waiting for 3 confirmations...
+```
+
+</Fragment>
+
+<Fragment slot="panel.4">
+
+```bash
+2025-09-18T09:21:58.804Z info: === Starting Chain Update Configuration ===
+2025-09-18T09:21:58.805Z info: 🔹 Local network: sepolia
+2025-09-18T09:21:58.805Z info: 🔹 Pool address: 0x4678b403781467761Df2f9364FeC48ae3f4F3857
+2025-09-18T09:21:58.805Z info: 🔹 Remote chain: solanaDevnet
+2025-09-18T09:21:58.805Z info: 🔹 Remote chain type detected: svm
+2025-09-18T09:21:58.805Z info: 🔹 Remote chain selector: 16423721717087811551
+2025-09-18T09:21:58.805Z info: 🔹 Parsed 1 remote pool addresses
+2025-09-18T09:21:58.825Z info: ✅ All addresses validated successfully
+2025-09-18T09:21:59.376Z info: 🔹 Using signer: 0x9d087fC03ae39b088326b67fA3C788236645b717
+2025-09-18T09:21:59.716Z info: ✅ Connected to pool contract
+2025-09-18T09:21:59.716Z info: 🔹 Remote pool address 1: 9VnLxEtwJgnGALzhhXJTtRr4GF83z95aCypPiRFGi9d1 → 0x7e3d0758b16a2af735e7079ea4490eae495f7e444028346384a3a95f593f5ce0
+2025-09-18T09:21:59.716Z info: 🔹 Remote token address: FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1 → 0xd743d465642ec7a0828aacbbada2acaa6884c4b92ae41638cf2325a7a70af840
+2025-09-18T09:21:58.804Z  info: === Rate Limiter Configuration ===
+2025-09-18T09:21:58.804Z  info: 🔹 No rate limits configured (unlimited transfers)
+2025-09-18T09:21:58.804Z  info: === Executing Transaction ===
+2025-09-18T09:21:58.804Z  info: 🔹 Sending applyChainUpdates transaction...
+2025-09-18T09:21:58.804Z  info: 🔹 Transaction sent: 0x7f89ab2c3d4e5f6789abc123def4567890abcdef1234567890abcdef12345678
+2025-09-18T09:21:58.804Z  info: 🔹 Waiting for 3 confirmations...
+2025-09-18T09:21:58.804Z  info: ✅ Chain update applied successfully!
+```
+
+</Fragment>
+</Tabs>
+
+## Phase 5: Testing and Validation
+
+<Aside type="note" title="Terminal Context Check">
+  **Current Focus: Terminal 3 (Solana Testing)** Switch to the Solana Starter Kit repository for comprehensive testing.
+</Aside>
+
+### Step 1: Load Phase 4 Variables
+
+Before testing cross-chain transfers, ensure your terminal environment is properly configured:
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Check current directory
+# This should be the solana-starter-kit directory (Terminal 3)
+pwd
+```
+
+Load all environment variables
+
+```bash
+source ~/.all_vars
+```
+
+Set Ethereum receiver for testing
+
+```bash
+export ETH_RECEIVER_ADDRESS="<YOUR_ETH_RECEIVER_ADDRESS>"
+```
+
+Verify critical variables for Solana Starter Kit
+
+```bash
+echo "SOL_TOKEN_MINT: $SOL_TOKEN_MINT"
+echo "ETH_TOKEN_ADDRESS: $ETH_TOKEN_ADDRESS"
+echo "ETH_RECEIVER_ADDRESS: $ETH_RECEIVER_ADDRESS"
+echo "SOL_WALLET_ADDRESS: $SOL_WALLET_ADDRESS"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+/.../solana-starter-kit
+SOL_TOKEN_MINT: FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1
+ETH_TOKEN_ADDRESS: 0x563eb47F0D8bE95CAF70ec2b7bB9Cdca6f045715
+ETH_RECEIVER_ADDRESS: 0x9d087fC03ae39b088326b67fA3C788236645b717
+SOL_WALLET_ADDRESS: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+```
+
+</Fragment>
+</Tabs>
+
+### Transfer Direction 1: Solana → Ethereum
+
+Test the production multisig setup with a cross-chain transfer from Solana Devnet to Ethereum Sepolia:
+
+#### Prepare for Testing
+
+Before testing cross-chain transfers, you need to create the pool's Associated Token Account (ATA) and prepare your tokens:
+
+##### Check Token Balance
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Check your current token balance
+spl-token balance $SOL_TOKEN_MINT
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+```bash
+5001
+```
+</Fragment>
+</Tabs>
+
+##### Delegate Token Authority
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Delegate tokens for CCIP transfers
+yarn svm:token:delegate --token-mint $SOL_TOKEN_MINT
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+[2025-09-18T09:27:29.767Z] CCIP Token Authority Delegator
+[2025-09-18T09:27:29.770Z] =============================================
+[2025-09-18T09:27:29.797Z] Network: solana-devnet
+[2025-09-18T09:27:29.797Z] Router Program: Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C
+[2025-09-18T09:27:29.797Z] Wallet: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[2025-09-18T09:27:29.798Z]
+[2025-09-18T09:27:29.798Z] 💰 WALLET BALANCE
+[2025-09-18T09:27:29.798Z] =============================================
+[2025-09-18T09:27:30.160Z] SOL Balance: 94.525081465 SOL (94525081465 lamports)
+[2025-09-18T09:27:30.161Z]
+[2025-09-18T09:27:30.161Z] 🔐 PROCESSING TOKEN DELEGATIONS
+[2025-09-18T09:27:30.161Z] =============================================
+[2025-09-18T09:27:30.161Z] Custom token mints provided: FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1
+[2025-09-18T09:27:30.161Z] Using 'fee-billing' delegation type for ccip_send compatibility
+[2025-09-18T09:27:30.161Z] Added custom token delegation for: FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1
+[2025-09-18T09:27:30.161Z]
+[1/1] Processing delegation for mint: FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1
+[2025-09-18T09:27:30.161Z] Getting mint account info for FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1 to determine token program ID...
+[2025-09-18T09:27:30.277Z] Detected Standard Token Program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+[2025-09-18T09:27:30.278Z] Token Program ID: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+[2025-09-18T09:27:30.278Z] Delegation Type: fee-billing
+[2025-09-18T09:27:30.279Z] Delegate Address: 2AjuzTy6z2webxEUu7eZ1DkAyLagZaqH2dgzhbBYjJiG
+[2025-09-18T09:27:30.279Z] Amount to delegate: 18446744073709551615
+[2025-09-18T09:27:30.280Z] User Token Account: 5dQxPofcZCuWASgwdCgR7MKzGGx9d596nsbMUcbuBrDZ
+[2025-09-18T09:27:30.385Z] Token account 5dQxPofcZCuWASgwdCgR7MKzGGx9d596nsbMUcbuBrDZ exists.
+[2025-09-18T09:27:30.490Z] Sending transaction to delegate token authority...
+[2025-09-18T09:27:31.259Z] ✅ Token delegation successful!
+[2025-09-18T09:27:31.259Z] Transaction signature: 58P1nNhRQz44HF1sPvXh6PkLf7MWCCBYeP5Jaq7xADjfxQHAJLoxroGjRoRTpwKDzgi5zan2Xom6JHztPkgdZYdk
+[2025-09-18T09:27:31.259Z] Explorer URL: https://explorer.solana.com/tx/58P1nNhRQz44HF1sPvXh6PkLf7MWCCBYeP5Jaq7xADjfxQHAJLoxroGjRoRTpwKDzgi5zan2Xom6JHztPkgdZYdk?cluster=devnet
+[2025-09-18T09:27:31.259Z]
+[2025-09-18T09:27:31.259Z] ✅ All delegations processed successfully
+```
+
+</Fragment>
+</Tabs>
+
+#### Transfer tokens from Solana Devnet to Ethereum Sepolia
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Transfer Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Execute cross-chain transfer from Solana to Ethereum
+yarn svm:token-transfer --token-mint $SOL_TOKEN_MINT --token-amount 1000000 --receiver $ETH_RECEIVER_ADDRESS
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+[2025-09-18T09:28:17.635Z] 🚀 CCIP Token Transfer
+[2025-09-18T09:28:17.636Z] =======================================
+[2025-09-18T09:28:17.666Z] Network: devnet
+[2025-09-18T09:28:17.667Z] Wallet: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[2025-09-18T09:28:17.667Z]
+[2025-09-18T09:28:17.667Z] 💰 WALLET BALANCE
+[2025-09-18T09:28:17.667Z] =======================================
+[2025-09-18T09:28:18.066Z] SOL Balance: 94525076465 lamports (94.525076465 SOL)
+[2025-09-18T09:28:18.067Z]
+[2025-09-18T09:28:18.067Z] 🌉 CCIP ROUTER INFORMATION
+[2025-09-18T09:28:18.067Z] =======================================
+[2025-09-18T09:28:18.067Z] CCIP Router Program ID: Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C
+[2025-09-18T09:28:18.067Z] Fee Quoter Program ID: FeeQPGkKDeRV1MgoYfMH6L8o3KeuYjwUZrgn4LRKfjHi
+[2025-09-18T09:28:18.067Z] RMN Remote Program ID: RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7
+[2025-09-18T09:28:18.068Z] Using native SOL as fee token
+[2025-09-18T09:28:18.068Z]
+[2025-09-18T09:28:18.068Z] 📋 TOKEN TRANSFER PARAMETERS
+[2025-09-18T09:28:18.068Z] ===========================================
+[2025-09-18T09:28:18.068Z] Destination Chain: ethereum-sepolia
+[2025-09-18T09:28:18.068Z] Destination Chain Selector: 16015286601757825753
+[2025-09-18T09:28:18.068Z] EVM Receiver Address: 0x9d087fC03ae39b088326b67fA3C788236645b717
+[2025-09-18T09:28:18.068Z] Token Mint: FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1
+[2025-09-18T09:28:18.068Z] Token Amount: 1000000
+[2025-09-18T09:28:18.068Z] Fee Token: 11111111111111111111111111111111
+[2025-09-18T09:28:18.068Z] Gas Limit: 0
+[2025-09-18T09:28:18.068Z] Allow Out Of Order Execution: true
+[2025-09-18T09:28:18.069Z]
+[2025-09-18T09:28:18.069Z] 🔄 SENDING TOKEN TRANSFER
+[2025-09-18T09:28:18.069Z] =======================================
+[2025-09-18T09:28:18.069Z] Preparing CCIP message...
+[2025-09-18T09:28:18.072Z] Sending CCIP message to destination chain 16015286601757825753
+[2025-09-18T09:28:18.073Z] Building accounts for CCIP send to chain 16015286601757825753
+[2025-09-18T09:28:18.079Z] Getting mint account info for FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1 to determine token program ID...
+[2025-09-18T09:28:18.194Z] Detected Standard Token Program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+[2025-09-18T09:28:31.439Z] CCIP message sent successfully: 4w81mpUozjJsEvHrkukCejbA9byMjkHacwtqM5cJD19XQu8MvXzoJ4YTqqkoEvBfP7HPvdivMA3Q1MePA16PdCXM
+[2025-09-18T09:28:31.441Z] Parsing CCIP message sent event for transaction: 4w81mpUozjJsEvHrkukCejbA9byMjkHacwtqM5cJD19XQu8MvXzoJ4YTqqkoEvBfP7HPvdivMA3Q1MePA16PdCXM
+[2025-09-18T09:28:31.564Z] Successfully extracted messageId: 0xd92433fea1fab2b9b2efa8d6091df0b5156bb159c883b94dada725539e5edace
+[2025-09-18T09:28:31.564Z]
+[2025-09-18T09:28:31.564Z] ✅ TOKEN TRANSFER SENT SUCCESSFULLY
+[2025-09-18T09:28:31.564Z] =======================================
+[2025-09-18T09:28:31.564Z] Transaction Signature: 4w81mpUozjJsEvHrkukCejbA9byMjkHacwtqM5cJD19XQu8MvXzoJ4YTqqkoEvBfP7HPvdivMA3Q1MePA16PdCXM
+[2025-09-18T09:28:31.564Z] CCIP Message ID: 0xd92433fea1fab2b9b2efa8d6091df0b5156bb159c883b94dada725539e5edace
+[2025-09-18T09:28:31.564Z]
+[2025-09-18T09:28:31.564Z] 🔍 EXPLORER URLS
+[2025-09-18T09:28:31.564Z] =======================================
+[2025-09-18T09:28:31.565Z] Solana Transaction: https://explorer.solana.com/tx/4w81mpUozjJsEvHrkukCejbA9byMjkHacwtqM5cJD19XQu8MvXzoJ4YTqqkoEvBfP7HPvdivMA3Q1MePA16PdCXM?cluster=devnet
+[2025-09-18T09:28:31.565Z] CCIP Explorer: https://ccip.chain.link/msg/0xd92433fea1fab2b9b2efa8d6091df0b5156bb159c883b94dada725539e5edace
+[2025-09-18T09:28:31.565Z]
+[2025-09-18T09:28:31.565Z] 🎉 Transfer Complete!
+[2025-09-18T09:28:31.565Z] ✅ Sent 1000000 tokens to 0x9d087fC03ae39b088326b67fA3C788236645b717
+[2025-09-18T09:28:31.565Z] ✅ Message ID: 0xd92433fea1fab2b9b2efa8d6091df0b5156bb159c883b94dada725539e5edace
+[2025-09-18T09:28:31.565Z] ✅ Monitor progress on CCIP Explorer: https://ccip.chain.link/msg/0xd92433fea1fab2b9b2efa8d6091df0b5156bb159c883b94dada725539e5edace
+```
+
+</Fragment>
+</Tabs>
+
+#### Monitor and Verify Transaction
+
+Upon successful execution, the system generates critical tracking identifiers for transaction monitoring and verification.
+
+**Transaction Identifiers:**
+
+- **Transaction Signature**: `4w81mpUozjJsEvHrkukCejbA9byMjkHacwtqM5cJD19XQu8MvXzoJ4YTqqkoEvBfP7HPvdivMA3Q1MePA16PdCXM`
+- **CCIP Message ID**: `0xd92433fea1fab2b9b2efa8d6091df0b5156bb159c883b94dada725539e5edace`
+
+**CCIP Explorer** (Primary monitoring interface):
+
+```
+https://ccip.chain.link/msg/0xd92433fea1fab2b9b2efa8d6091df0b5156bb159c883b94dada725539e5edace
+```
+
+The CCIP Explorer provides comprehensive transaction visibility:
+
+- Source chain (Solana) transaction confirmation
+- CCIP message processing and routing
+- Destination chain (Ethereum) message delivery
+- Token minting completion on Ethereum
+
+**Solana Explorer** (Source chain verification):
+
+```
+https://explorer.solana.com/tx/4w81mpUozjJsEvHrkukCejbA9byMjkHacwtqM5cJD19XQu8MvXzoJ4YTqqkoEvBfP7HPvdivMA3Q1MePA16PdCXM?cluster=devnet
+```
+
+### Transfer Direction 2: Ethereum → Solana
+
+<Aside type="note" title="Terminal Environment">
+  **Continue in Terminal 3** (Solana Starter Kit directory). No need to switch terminals - the Solana Starter Kit
+  handles Ethereum → Solana transfers as well.
+</Aside>
+
+#### Transfer tokens from Ethereum Sepolia to Solana Devnet
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Transfer Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Execute cross-chain transfer from Ethereum to Solana
+yarn evm:transfer --token $ETH_TOKEN_ADDRESS --amount 1000000000000000000 --token-receiver $SOL_WALLET_ADDRESS
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+[token-transfer] [INFO] 🚀 EVM to Solana CCIP Token Transfer
+[token-transfer] [INFO] =========================================
+chainId ethereum-sepolia
+[token-transfer] [INFO] Source Chain: ethereum-sepolia
+[token-transfer] [INFO] Fee Token: link
+[token-transfer] [INFO] Token Receiver: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[token-transfer] [INFO] Compute Units: 0
+[token-transfer] [INFO]
+==== Environment Information ====
+chainId ethereum-sepolia
+[token-transfer] [INFO] Router Address: 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+[ccip-messenger] [INFO] Creating client for chain: Ethereum Sepolia (ethereum-sepolia)
+[token-transfer] [INFO] Wallet Address: 0x9d087fC03ae39b088326b67fA3C788236645b717
+[token-transfer] [INFO] Native Balance: 572.729689746812179857 ETH
+[token-transfer] [INFO]
+🔍 Validating Token Transfer
+[token-transfer] [INFO] =========================================
+[token-transfer] [INFO] Token: BnmAEM (0x563eb47F0D8bE95CAF70ec2b7bB9Cdca6f045715)
+[token-transfer] [INFO] Token Balance: 1000.0 BnmAEM
+[token-transfer] [INFO] Token: BnmAEM (0x563eb47F0D8bE95CAF70ec2b7bB9Cdca6f045715)
+[token-transfer] [INFO] Token Balance: 1000.0 BnmAEM
+[token-transfer] [INFO] Transfer Amount: 1.0 BnmAEM
+[token-transfer] [INFO] ✅ Token validation successful
+[token-transfer] [INFO] Using fee token: 0x779877A7B0D9E8603169DdbD7836e478b4624789
+[token-transfer] [INFO] Creating CCIP message request
+[token-transfer] [INFO]
+📋 Transfer Summary
+[token-transfer] [INFO] =========================================
+[token-transfer] [INFO]
+==== Transfer Summary ====
+[token-transfer] [INFO] Source Chain: Ethereum Sepolia
+[token-transfer] [INFO] Destination Chain: Solana Devnet (16423721717087811551)
+[token-transfer] [INFO] Sender: 0x9d087fC03ae39b088326b67fA3C788236645b717
+[token-transfer] [INFO] Receiver: 11111111111111111111111111111111
+[token-transfer] [INFO] Token Receiver: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[token-transfer] [INFO] Fee Token: 0x779877A7B0D9E8603169DdbD7836e478b4624789
+[token-transfer] [INFO]
+Token Transfers:
+[token-transfer] [INFO]   1. 1000000000000000000 raw units (0x563eb47F0D8bE95CAF70ec2b7bB9Cdca6f045715)
+[token-transfer] [INFO]
+Extra Args: Solana-specific, 228 bytes
+[token-transfer] [INFO]
+🚀 Executing Token Transfer
+[token-transfer] [INFO] =========================================
+[token-transfer] [INFO] Sending CCIP message...
+[ccip-messenger] [INFO] Estimated fee: 13007637462782528
+[ccip-messenger] [INFO] Approving 0.015609164955339033 LINK for CCIP Router
+[ccip-messenger] [INFO] This token is being used as the fee token with a 20% buffer included
+[ccip-messenger] [INFO] Approving 0.015609164955339033 tokens for 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+[ccip-messenger] [INFO] LINK approved for CCIP Router
+[ccip-messenger] [INFO] ✅ Verified on-chain allowance for LINK: 0.015609164955339033 (required: 0.015609164955339033)
+[ccip-messenger] [INFO] Approving 1.0 BnmAEM for CCIP Router
+[ccip-messenger] [INFO] Approving 1.0 tokens for 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+[ccip-messenger] [INFO] BnmAEM approved for CCIP Router
+[ccip-messenger] [INFO] ✅ Verified on-chain allowance for BnmAEM: 1.0 (required: 1.0)
+[ccip-messenger] [INFO] Sending CCIP message...
+[ccip-messenger] [INFO] Sending CCIP message...
+[ccip-messenger] [INFO] Transaction sent: 0xcacca1de44800d4e88544597b1b9f8190db93ae2f2144bb3b92aafd73b626c3d
+[ccip-messenger] [INFO] Transaction sent: 0xcacca1de44800d4e88544597b1b9f8190db93ae2f2144bb3b92aafd73b626c3d
+[ccip-messenger] [INFO] Message ID: 0xb8327a54fcf042f6fa9ca236372ea68835204802ca13ebfc34c7f839631ee567
+[token-transfer] [INFO]
+🎉 Transfer Results
+[token-transfer] [INFO] =========================================
+[token-transfer] [INFO]
+==== Transfer Results ====
+[token-transfer] [INFO] Transaction Hash: 0xcacca1de44800d4e88544597b1b9f8190db93ae2f2144bb3b92aafd73b626c3d
+[token-transfer] [INFO] Transaction URL: https://sepolia.etherscan.io/tx/0xcacca1de44800d4e88544597b1b9f8190db93ae2f2144bb3b92aafd73b626c3d
+[token-transfer] [INFO] Message ID: 0xb8327a54fcf042f6fa9ca236372ea68835204802ca13ebfc34c7f839631ee567
+[token-transfer] [INFO] 👉 CCIP Explorer: https://ccip.chain.link/msg/0xb8327a54fcf042f6fa9ca236372ea68835204802ca13ebfc34c7f839631ee567
+[token-transfer] [INFO] Destination Chain Selector: 16423721717087811551
+[token-transfer] [INFO] Sequence Number: 1263
+[token-transfer] [INFO]
+Message tracking for Solana destinations:
+[token-transfer] [INFO] Please check the CCIP Explorer link to monitor your message status.
+[token-transfer] [INFO]
+✅ Transaction completed on the source chain
+[token-transfer] [INFO]
+✅ Token Transfer Complete!
+[token-transfer] [INFO] 🔗 Your tokens are being bridged to Solana
+✨  Done in 130.28s.
+```
+
+</Fragment>
+</Tabs>
+
+#### Monitor and Verify Transaction
+
+Upon successful execution, the system generates distinct tracking identifiers for comprehensive monitoring across both blockchain networks.
+
+**Transaction Identifiers:**
+
+- **Ethereum Transaction Hash**: `0xcacca1de44800d4e88544597b1b9f8190db93ae2f2144bb3b92aafd73b626c3d`
+- **CCIP Message ID**: `0xb8327a54fcf042f6fa9ca236372ea68835204802ca13ebfc34c7f839631ee567`
+
+**CCIP Explorer** (Primary monitoring interface):
+
+```
+https://ccip.chain.link/msg/0xb8327a54fcf042f6fa9ca236372ea68835204802ca13ebfc34c7f839631ee567
+```
+
+The CCIP Explorer provides comprehensive transaction visibility:
+
+- Source chain (Ethereum) transaction confirmation
+- CCIP message processing and routing
+- Destination chain (Solana) message delivery
+- Token minting completion on Solana network
+
+**Ethereum Sepolia Explorer** (Source chain verification):
+
+```
+https://sepolia.etherscan.io/tx/0xcacca1de44800d4e88544597b1b9f8190db93ae2f2144bb3b92aafd73b626c3d
+```
