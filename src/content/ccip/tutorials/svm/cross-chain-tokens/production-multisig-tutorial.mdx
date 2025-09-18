@@ -1518,7 +1518,7 @@ echo "✅ Wallet Address: $SOL_WALLET_ADDRESS"
 
 </Aside>
 
-## Phase 3: Cross-Chain Configuration
+## Phase 3: Solana Cross-Chain Setup
 
 In this phase, you will configure the cross-chain connection and complete the CCIP setup.
 
@@ -1770,78 +1770,6 @@ INFO [2025-08-19 11:38:44.676 +0200]:     4. 11111111111111111111111111111111 (r
 
 </Fragment>
 
-<Fragment slot="panel.4">
-
-```bash
-$ pnpm bs58 burnmint-token-pool --env devnet --instruction edit-chain-remote-config \
-  --program-id $CCIP_POOL_PROGRAM \
-  --mint $SOL_TOKEN_MINT \
-  --authority $SOL_SQUAD_VAULT_MULTISIG \
-  --remote-chain-selector $ETHEREUM_SEPOLIA_CHAIN_SELECTOR \
-  --pool-addresses "[\"0x88965fF139bbA53D6e02a49a80c29d8c65645bA7\"]" \
-  --token-address $ETH_TOKEN_ADDRESS \
-  --decimals "18"
-
-> ccip-solana-bs58-generator@1.0.0 bs58 /Users/.../ccip-solana-bs58-generator
-> tsx src/index.ts burnmint-token-pool --env devnet --instruction edit-chain-remote-config --program-id 41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB --mint 3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci --authority 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY --remote-chain-selector 16015286601757825753 --pool-addresses "[\"0x88965fF139bbA53D6e02a49a80c29d8c65645bA7\"]" --token-address 0x7c57A9d966c3E6e344621C512d510f76575640ED --decimals 18
-
-bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
-🔗 Validating RPC connectivity...
-INFO: Starting editChainRemoteConfig command
-    command: "edit-chain-remote-config"
-    programId: "41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB"
-    mint: "3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci"
-    authority: "59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY"
-    remoteChainSelector: "16015286601757825753"
-    poolAddresses: ["0x88965fF139bbA53D6e02a49a80c29d8c65645bA7"]
-    tokenAddress: "0x7c57A9d966c3E6e344621C512d510f76575640ED"
-    decimals: "18"
-
-✅ RPC connection verified
-
-🔄 Generating editChainRemoteConfig transaction...
-   RPC URL: https://api.devnet.solana.com
-   Program ID: 41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB
-   Mint: 3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci
-   Authority: 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY
-   Remote Chain Selector: 16015286601757825753
-   Pool Addresses: 1 address
-   Token Address: 9cE471d0a7bE21ee32276ddE49104fE02C812906
-   Decimals: 18
-
-⚙️ Building transaction instruction...
-   ✅ Instruction built successfully
-
-🔄 Building and simulating transaction...
-
-🎯 COPY TRANSACTION DATA BELOW:
-
-Ym3kR9wF2nH5vT8qL1cX6pB4mZ7sA3dE9jN5uY2wK8xP7hM1gF4tR6sB9vC3qL5eN8jY2wM7kR4xP1hF6gT9sB3cE5nL8jY2wM7kR4xP1hF6gT9sB3cE5nL8jY2wM7kR4xP1hF6gT9sB3cE5nL8jY2wM7kR4xP1hF6gT9sB3cE5nL8jY2wM7kR4xP1hF6gT9sB3cE5nL8jY2wM7kR4xP1hF6gT9sB3cE5nL8jY2wM7kR4xP1hF6gT9sB3cE5nL
-
-────────────────────────────────────────────────────────────────────────────────
-
-🎉 Transaction generated successfully!
-
-📋 Transaction Details:
-   Instruction: editChainRemoteConfig
-   Size: 292 bytes
-   Base58 length: 398 characters
-   Compute units: 17,834
-   Generated: 2025-08-19T19:15:23.487Z
-
-🔗 Transaction Data (Base58):
-
-💡 Triple-click the line above to select the entire transaction data
-
-📊 Account Information:
-   Total accounts: 4
-    1. 2pGY9WAjanpR3RnY5hQ1a23uDNomzFCAD5HMBgo8nH6M (read-only)
-    2. 8zdWLvsAgLQkRmBDATR3j8xVQzcdwrRNZtPZH5kU37jg (writable)
-    3. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer, writable)
-    4. 11111111111111111111111111111111 (read-only)
-```
-
-</Fragment>
 </Tabs>
 
 **Account Breakdown from the Transaction:**
@@ -2301,7 +2229,6 @@ export SOL_ADDRESS_LOOKUP_TABLE="$SOL_ADDRESS_LOOKUP_TABLE"
 # Chain Selectors
 
 export ETHEREUM_SEPOLIA_CHAIN_SELECTOR="$ETHEREUM_SEPOLIA_CHAIN_SELECTOR"
-export SOLANA_CHAIN_SELECTOR="$SOLANA_CHAIN_SELECTOR"
 EOF
 
 echo "=== Phase 3 Complete - Cross-Chain Configuration ==="

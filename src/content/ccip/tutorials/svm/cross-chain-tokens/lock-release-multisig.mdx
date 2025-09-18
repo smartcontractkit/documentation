@@ -1721,3 +1721,732 @@ echo "✅ Wallet Address: $SOL_WALLET_ADDRESS"
 
 </Fragment>
 </Tabs>
+
+## Phase 3: Solana Cross-Chain Setup
+
+In this phase, you will configure the cross-chain connection and complete the CCIP setup.
+
+<Aside type="note" title="Terminal Context Check">
+  **Current Focus: Terminal 1 (base58 Generator)** Continue using the base58 generator repository for cross-chain
+  configuration.
+</Aside>
+
+### Step 1: Load Phase 1 Variables
+
+Load Phase 1 variables and set the Ethereum Sepolia chain selector for cross-chain configuration.
+
+**What This Step Does:**
+
+- **Terminal Verification**: Confirms you're in the correct base58 generator repository
+- **Variable Loading**: Imports EVM token and pool addresses from Phase 1
+- **Chain Selector Setup**: Establishes Ethereum Sepolia chain selector for cross-chain configuration
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Load Variables</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Verify you are in the correct terminal (terminal 1)
+# Should output: /Users/.../ccip-solana-bs58-generator
+pwd
+
+# Load Phase 1 EVM variables
+
+source ~/.phase1_vars
+```
+
+```bash
+# Set chain selector for Ethereum Sepolia
+
+export ETHEREUM_SEPOLIA_CHAIN_SELECTOR="16015286601757825753"
+
+# Verify variables are loaded
+
+echo "✅ ETH Token: $ETH_TOKEN_ADDRESS"
+echo "✅ ETH Pool: $ETH_POOL_ADDRESS"
+echo "✅ Chain Selector: $ETHEREUM_SEPOLIA_CHAIN_SELECTOR"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+$ pwd
+/Users/.../ccip-solana-bs58-generator
+
+$ source ~/.phase1_vars
+
+$ export ETHEREUM_SEPOLIA_CHAIN_SELECTOR="16015286601757825753"
+
+$ echo "✅ ETH Token: $ETH_TOKEN_ADDRESS"
+✅ ETH Token: 0x563eb47F0D8bE95CAF70ec2b7bB9Cdca6f045715
+
+$ echo "✅ ETH Pool: $ETH_POOL_ADDRESS"
+✅ ETH Pool: 0x4678b403781467761Df2f9364FeC48ae3f4F3857
+
+$ echo "✅ Chain Selector: $ETHEREUM_SEPOLIA_CHAIN_SELECTOR"
+✅ Chain Selector: 16015286601757825753
+```
+
+</Fragment>
+</Tabs>
+
+### Step 2: Configure Cross-Chain Pool Settings
+
+Configure your token pool for cross-chain transfers to Ethereum Sepolia. This process involves two sequential operations:
+
+1. **Initialize Chain Remote Config**: Create the basic cross-chain configuration using [init_chain_remote_config](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#init_chain_remote_config)
+1. **Edit Chain Remote Config**: Add the remote pool address using [edit_chain_remote_config](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#edit_chain_remote_config)
+
+#### Step 2A: Initialize Chain Remote Config
+
+Initialize the basic remote chain configuration for Ethereum Sepolia. Pool addresses must be empty at initialization and rate limits are not configured at this stage.
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Initialize basic cross-chain configuration (no rate limits, no pool addresses)
+pnpm bs58 lockrelease-token-pool --env devnet --instruction init-chain-remote-config \
+  --program-id $CCIP_POOL_PROGRAM \
+  --mint $SOL_TOKEN_MINT \
+  --authority $SOL_SQUAD_VAULT_MULTISIG \
+  --remote-chain-selector $ETHEREUM_SEPOLIA_CHAIN_SELECTOR \
+  --token-address $ETH_TOKEN_ADDRESS \
+  --decimals "18"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+🎯 COPY TRANSACTION DATA BELOW:
+
+Q14fzko7Rj4xtdvdxXYm7mVfqp8TtR6cCGwrWbEbohtoj9wCcLTpph6k2ST8ZM1GkJRFo1y4ANBbu3LQHCrGwPmZLKSFbjZhpiTqkCyoYy54VVyMtFDpupzto4MiRgmGY9Gg559TEhU8Z14PDuBuKrsps2V2tvZA2KhCRCAivQZLBaVHjUf9HZ5zmecwoQAepwU7ECtnDMxCyLxA9QKzpuAXZQUqYr7yR21Ejz5oQthigzkhvt7WYAD9sphFr3x4SuzndiRFxGF4LE3RoNaKTT4EKQQsB7t3xT6dWXHWoNkZacc99YSLu1KiKqMTJYYZMssbqxnmnfmE69gpmuKFbT4fsYUWzYGec8TPJMXS3j2ojwF4AYNQNDyGDoEykqk4fWieTNh9exX5kNd
+
+────────────────────────────────────────────────────────────────────────────────
+INFO [2025-09-18 10:47:34.774 +0200]: Transaction built successfully
+    instructionName: "initChainRemoteConfig"
+    transactionSize: "293 bytes"
+    base58Length: "399 characters"
+    hexLength: "586 characters"
+    accountCount: 4
+    signerCount: 1
+    computeUnits: 14928
+INFO [2025-09-18 10:47:34.774 +0200]: Completed buildTransaction (initChainRemoteConfig)
+    durationMs: 1022
+INFO [2025-09-18 10:47:34.775 +0200]:
+INFO [2025-09-18 10:47:34.775 +0200]: 🎉 Transaction generated successfully!
+INFO [2025-09-18 10:47:34.775 +0200]:
+INFO [2025-09-18 10:47:34.775 +0200]: 📋 Transaction Details:
+INFO [2025-09-18 10:47:34.775 +0200]:    Instruction: initChainRemoteConfig
+INFO [2025-09-18 10:47:34.775 +0200]:    Size: 293 bytes
+INFO [2025-09-18 10:47:34.775 +0200]:    Base58 length: 399 characters
+INFO [2025-09-18 10:47:34.811 +0200]:    Compute units: 14 928
+INFO [2025-09-18 10:47:34.811 +0200]:    Generated: 2025-09-18T08:47:34.773Z
+INFO [2025-09-18 10:47:34.811 +0200]:
+INFO [2025-09-18 10:47:34.812 +0200]: 🔗 Transaction Data (Base58):
+INFO [2025-09-18 10:47:34.812 +0200]:
+INFO [2025-09-18 10:47:34.812 +0200]: 💡 Triple-click the line above to select the entire transaction data
+INFO [2025-09-18 10:47:34.812 +0200]:
+INFO [2025-09-18 10:47:34.812 +0200]: 📊 Account Information:
+INFO [2025-09-18 10:47:34.812 +0200]:    Total accounts: 4
+INFO [2025-09-18 10:47:34.812 +0200]:     1. 9VnLxEtwJgnGALzhhXJTtRr4GF83z95aCypPiRFGi9d1 (read-only)
+INFO [2025-09-18 10:47:34.812 +0200]:     2. DzPjdCvEgJq6tyTvQtuh6i8WtPn6gWGmhaRM3DnCvwq9 (writable)
+INFO [2025-09-18 10:47:34.812 +0200]:     3. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer, writable)
+INFO [2025-09-18 10:47:34.812 +0200]:     4. 11111111111111111111111111111111 (read-only)
+INFO [2025-09-18 10:47:34.812 +0200]:
+```
+
+</Fragment>
+</Tabs>
+
+**Account Breakdown from the Transaction (Example):**
+
+| Account | Address                                        | Description                                         |
+| ------- | ---------------------------------------------- | --------------------------------------------------- |
+| **#1**  | `9VnLxEtwJgnGALzhhXJTtRr4GF83z95aCypPiRFGi9d1` | **Pool State PDA** (read-only - validation)         |
+| **#2**  | `DzPjdCvEgJq6tyTvQtuh6i8WtPn6gWGmhaRM3DnCvwq9` | **Chain Remote Config PDA** (writable - created)    |
+| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault** (signer, writable - pool authority) |
+| **#4**  | `11111111111111111111111111111111`             | **System Program** (read-only - account creation)   |
+
+**What This Command Does:**
+This initializes the **cross-chain configuration** for your Solana token to enable CCIP bridging to Ethereum Sepolia. This creates the foundational connection without rate limits or pool addresses.
+
+**Key Details:**
+
+- **Remote Chain**: Ethereum Sepolia (chain selector: `16015286601757825753`)
+- **Token Mapping**: Links to ERC20 token `0x563eb47F0D8bE95CAF70ec2b7bB9Cdca6f045715`
+- **Decimal Precision**: 18 decimals (standard EVM token format)
+- **Basic Setup**: No rate limits or pool addresses configured at this stage
+- **Account Creation**: Creates a new Chain Remote Config PDA for this cross-chain relationship
+
+**Transaction Flow:**
+
+1. **Authority Verification**: Confirms Squad vault owns the pool state
+1. **PDA Derivation**: Calculates Chain Remote Config PDA using pool state + chain selector
+1. **Account Creation**: Creates new account with rent-exempt balance
+1. **Basic Configuration**: Stores minimal cross-chain parameters (no rate limits, no pool addresses)
+
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+- **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
+
+#### Step 2B: Edit Chain Remote Config (Add Remote Pool Address)
+
+After initializing the chain remote config, add the remote pool address to enable bidirectional cross-chain transfers. This uses [`edit_chain_remote_config`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#edit_chain_remote_config) to specify the Ethereum pool address.
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Configure chain connection and remote pool address
+pnpm bs58 lockrelease-token-pool --env devnet --instruction edit-chain-remote-config \
+  --program-id $CCIP_POOL_PROGRAM \
+  --mint $SOL_TOKEN_MINT \
+  --authority $SOL_SQUAD_VAULT_MULTISIG \
+  --remote-chain-selector $ETHEREUM_SEPOLIA_CHAIN_SELECTOR \
+  --pool-addresses "[\"$ETH_POOL_ADDRESS\"]" \
+  --token-address $ETH_TOKEN_ADDRESS \
+  --decimals "18"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+🎯 COPY TRANSACTION DATA BELOW:
+
+AFoMMPcqYbM5kCTDs346jiU3HGiWW1moQm7vwGoWZ1eBtxTpuZLdtndY6k9ni2rBBeT4gS6G26tfJeaHnVzPaaK5Par896XgqZku6pU9kNJbTzbYVzekvTwnPftcvenPRHZvwXSJWVsWp1FzyNnHrVMQu8LUhMU6rFLBRDP1GK7BmPYrwuCnSoHcFDV2SPRFjJUAjJffbwmttYjztPXgeZfVYJv8JhNYYgKghtjZZaHEDG2vvLL1z6rkL2Way3WxDerELR9LsaTKMandU5m9CB5FLL4J4ps5H4J5D1Y7ePZ5RuUY3Th8cS35i23Nj9in6dZBk2HDxNznBCQ2cwvoXTwRvGV4dQi6LXTGAU45RTAJEyj6CYH8HdPFJVxGE8L6vGUDxakXYCvVzkXyZAjNQ9BZDkSAtPTvtydyMnrzHtVs7DA9
+
+────────────────────────────────────────────────────────────────────────────────
+INFO [2025-09-18 10:49:45.470 +0200]: Transaction built successfully
+    instructionName: "editChainRemoteConfig"
+    transactionSize: "317 bytes"
+    base58Length: "432 characters"
+    hexLength: "634 characters"
+    accountCount: 4
+    signerCount: 1
+    computeUnits: 16058
+INFO [2025-09-18 10:49:45.470 +0200]: Completed buildTransaction (editChainRemoteConfig)
+    durationMs: 1055
+INFO [2025-09-18 10:49:45.470 +0200]:
+INFO [2025-09-18 10:49:45.470 +0200]: 🎉 Transaction generated successfully!
+INFO [2025-09-18 10:49:45.470 +0200]:
+INFO [2025-09-18 10:49:45.470 +0200]: 📋 Transaction Details:
+INFO [2025-09-18 10:49:45.470 +0200]:    Instruction: editChainRemoteConfig
+INFO [2025-09-18 10:49:45.470 +0200]:    Size: 317 bytes
+INFO [2025-09-18 10:49:45.470 +0200]:    Base58 length: 432 characters
+INFO [2025-09-18 10:49:45.482 +0200]:    Compute units: 16 058
+INFO [2025-09-18 10:49:45.482 +0200]:    Generated: 2025-09-18T08:49:45.469Z
+INFO [2025-09-18 10:49:45.482 +0200]:
+INFO [2025-09-18 10:49:45.482 +0200]: 🔗 Transaction Data (Base58):
+INFO [2025-09-18 10:49:45.482 +0200]:
+INFO [2025-09-18 10:49:45.482 +0200]: 💡 Triple-click the line above to select the entire transaction data
+INFO [2025-09-18 10:49:45.482 +0200]:
+INFO [2025-09-18 10:49:45.482 +0200]: 📊 Account Information:
+INFO [2025-09-18 10:49:45.482 +0200]:    Total accounts: 4
+INFO [2025-09-18 10:49:45.482 +0200]:     1. 9VnLxEtwJgnGALzhhXJTtRr4GF83z95aCypPiRFGi9d1 (read-only)
+INFO [2025-09-18 10:49:45.482 +0200]:     2. DzPjdCvEgJq6tyTvQtuh6i8WtPn6gWGmhaRM3DnCvwq9 (writable)
+INFO [2025-09-18 10:49:45.482 +0200]:     3. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer, writable)
+INFO [2025-09-18 10:49:45.482 +0200]:     4. 11111111111111111111111111111111 (read-only)
+```
+
+</Fragment>
+
+</Tabs>
+
+**Account Breakdown from the Transaction:**
+
+| Account | Address                                        | Description                                                    |
+| ------- | ---------------------------------------------- | -------------------------------------------------------------- |
+| **#1**  | `9VnLxEtwJgnGALzhhXJTtRr4GF83z95aCypPiRFGi9d1` | **Pool State PDA** (read-only - authority validation)          |
+| **#2**  | `DzPjdCvEgJq6tyTvQtuh6i8WtPn6gWGmhaRM3DnCvwq9` | **Chain Remote Config PDA** (writable - configuration updated) |
+| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault Authority** (signer, writable - fee payer)       |
+| **#4**  | `11111111111111111111111111111111`             | **System Program** (read-only - account operations)            |
+
+**Transaction Flow:**
+
+1. **Authority Verification**: Confirms Squad vault owns the pool state
+1. **PDA Access**: Updates the existing Chain Remote Config PDA
+1. **Pool Address Addition**: Adds the remote pool to the the remote pool list for Ethereum Sepolia
+
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+- **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
+
+### Step 3: Configure Rate Limits (Optional)
+
+This command configures inbound and outbound rate limiting for token transfers between your Solana token and Ethereum Sepolia. Rate limits act as "token buckets" that control the flow of tokens across chains.
+
+<Aside type="note" title="CCIP Rate Limit Best Practices">
+
+**Recommendations for rate limits:**
+
+- **Outbound = 90% of Inbound**: Prevents in-flight congestion during high-volume periods
+- **Conservative Values**: The example uses 20 tokens inbound capacity with 0.1 tokens/second refill rate
+- **9-Decimal Tokens**: All values are in smallest token units (Solana uses 9 decimals)
+
+**Configuration Controls:**
+
+- **Pause lane**: Set `capacity=1`, `rate=1` for both directions
+- **Remove limits**: Set `enabled=false`, `capacity=0`, `rate=0` for both directions
+
+**Value Calculations:**
+
+- 20 tokens = `20000000000` (20 × 10^9)
+- 18 tokens = `18000000000` (18 × 10^9)
+- 0.1 tokens/sec = `100000000` (0.1 × 10^9)
+
+</Aside>
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Configure rate limits for cross-chain token transfers
+pnpm bs58 lockrelease-token-pool \
+  --env devnet \
+  --instruction set-chain-rate-limit \
+  --program-id $CCIP_POOL_PROGRAM \
+  --mint $SOL_TOKEN_MINT \
+  --authority $SOL_SQUAD_VAULT_MULTISIG \
+  --remote-chain-selector $ETHEREUM_SEPOLIA_CHAIN_SELECTOR \
+  --inbound-enabled "true" \
+  --inbound-capacity "20000000000" \
+  --inbound-rate "100000000" \
+  --outbound-enabled "true" \
+  --outbound-capacity "18000000000" \
+  --outbound-rate "100000000"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+   ✅ Transaction simulation completed
+🎯 COPY TRANSACTION DATA BELOW:
+
+2osuKVgAa7jk8Ahvr7KPjeNDY7RAx29vFbgbkrKwtnGKbSjECQcQjPMm6h9QVSo2jAk3ouZqHMvedvxpspQThPe4mh73jvUCdhEnxkRqb3Qr3f6wNtgW2bYRRBupfZia75n5Twp1M9sjqfphZWx54gWa9MuMRR29BP4LxU3gHQuFMbuR6pfrEbZg73THtLiq3DFnAxVS7ns2FcukKbET62p4GCJdgWUm4g3XntsrfCXCYrZjXkZa2TveQBy4oZuWhR92R4kdPMLAUaLZSHNLKYFugXxWMAv9Zbh48gWRNC4Tm6PToMokBoSpMJ3Kr9kg1pYH22WKRQro5jSFh4wPCRmRq
+
+────────────────────────────────────────────────────────────────────────────────
+INFO [2025-09-18 10:59:45.133 +0200]: Transaction built successfully
+    instructionName: "setChainRateLimit"
+    transactionSize: "253 bytes"
+    base58Length: "345 characters"
+    hexLength: "506 characters"
+    accountCount: 3
+    signerCount: 1
+    computeUnits: 12586
+INFO [2025-09-18 10:59:45.133 +0200]: Completed buildTransaction (setChainRateLimit)
+    durationMs: 1018
+INFO [2025-09-18 10:59:45.133 +0200]:
+INFO [2025-09-18 10:59:45.133 +0200]: 🎉 Transaction generated successfully!
+INFO [2025-09-18 10:59:45.133 +0200]:
+INFO [2025-09-18 10:59:45.133 +0200]: 📋 Transaction Details:
+INFO [2025-09-18 10:59:45.133 +0200]:    Instruction: setChainRateLimit
+INFO [2025-09-18 10:59:45.133 +0200]:    Size: 253 bytes
+INFO [2025-09-18 10:59:45.133 +0200]:    Base58 length: 345 characters
+INFO [2025-09-18 10:59:45.155 +0200]:    Compute units: 12 586
+INFO [2025-09-18 10:59:45.155 +0200]:    Generated: 2025-09-18T08:59:45.132Z
+INFO [2025-09-18 10:59:45.155 +0200]:
+INFO [2025-09-18 10:59:45.155 +0200]: 🔗 Transaction Data (Base58):
+INFO [2025-09-18 10:59:45.155 +0200]:
+INFO [2025-09-18 10:59:45.155 +0200]: 💡 Triple-click the line above to select the entire transaction data
+INFO [2025-09-18 10:59:45.155 +0200]:
+INFO [2025-09-18 10:59:45.155 +0200]: 📊 Account Information:
+INFO [2025-09-18 10:59:45.155 +0200]:    Total accounts: 3
+INFO [2025-09-18 10:59:45.155 +0200]:     1. 9VnLxEtwJgnGALzhhXJTtRr4GF83z95aCypPiRFGi9d1 (read-only)
+INFO [2025-09-18 10:59:45.155 +0200]:     2. DzPjdCvEgJq6tyTvQtuh6i8WtPn6gWGmhaRM3DnCvwq9 (writable)
+INFO [2025-09-18 10:59:45.155 +0200]:     3. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer, writable)
+INFO [2025-09-18 10:59:45.155 +0200]:
+```
+
+</Fragment>
+</Tabs>
+
+**Transaction Accounts (3 total):**
+
+| Account | Address                                        | Type                 | Purpose                                                           |
+| ------- | ---------------------------------------------- | -------------------- | ----------------------------------------------------------------- |
+| **#1**  | `9VnLxEtwJgnGALzhhXJTtRr4GF83z95aCypPiRFGi9d1` | **Read-only**        | **Pool State PDA** - Main pool configuration account              |
+| **#2**  | `DzPjdCvEgJq6tyTvQtuh6i8WtPn6gWGmhaRM3DnCvwq9` | **Writable**         | **Chain Config PDA** - Chain-specific config (stores rate limits) |
+| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Signer, Writable** | **Authority** - Your Squad vault that can modify rate limits      |
+
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+- **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
+
+### Step 4: Create Address Lookup Table
+
+Create an Address Lookup Table (ALT) containing all accounts needed for CCIP router operations.
+
+**What This Command Does:**
+
+This command creates an **Address Lookup Table (ALT)** that stores frequently used accounts for CCIP operations. ALTs are a Solana optimization that reduces transaction size and costs by replacing full 32-byte addresses with small 1-byte indices.
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Generate address lookup table creation transaction
+pnpm bs58 router --env devnet --instruction create-lookup-table \
+  --program-id $CCIP_ROUTER_PROGRAM \
+  --fee-quoter-program-id $CCIP_FEE_QUOTER_PROGRAM \
+  --pool-program-id $CCIP_POOL_PROGRAM \
+  --mint $SOL_TOKEN_MINT \
+  --authority $SOL_SQUAD_VAULT_MULTISIG
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+📮 Derived Lookup Table Address: C3a5U5C4Sn8fywXmV4ZX6JAfYoQrEhAqF5daL39ScKSy
+   ✅ Transaction simulation completed
+🎯 COPY TRANSACTION DATA BELOW:
+
+CfLxxNdmxNBMcAM3gnQ1YoKRx7fTChKjPVewQBLAXx8tWyp6Cxc5GTzM3QCCQDosAG1h6uVRNy3yHz8GPthfefdKJkz1eeFPV1AugM1gnfKRWvgzLNzfCK9mtrHgzJQnc2t6xVzsziGmUbyBktdCcWLqcG484hcxMgwzTwPoU1M7E5eTx2Up1JMdBMups2KPCE99cqV9t7KpghhB8A2KhFjKLjJNp3YN4Kz3vht3QXK13Qo6TcUn5DmE3eGY7p8LtFiGzEWD1tkvkAGjnHB5mZnFZvghnLruSRr73Cfr4LTEBntfR7zVDRx4idNCPRGH6jy5LMEMCMUpu6GoZ4SbvtmwYmN4ZRqKqehB71MNoj2hkU5QdqxctMFJ61NDNUL7Zhdh9SdZxJRoa7GnMaHVyzErPhFSdoM2obiJjwTFGCDKiwyxpZZyvJjV7srJeaFTKrdi5crnf54riAmGjRYzxPngpchTjQwq8Ezxp8uaiWNxYnzEBCdLnjp1mUAA9WgfDEEtbJRMxP7A4uf8rFhrekrdLTvD9pVspcLzVY8T3Dp2bbVHE6x5YtN8JnXJQM7CGaTuy54b8zwS6Q5sswgJ3Y6HWXK5y2tKEwMcShGcszuNPw1uiJQJMQJwinCGTKodtjXw1DYcVA7ujVT7vDxWjhrvmwBqUgKqNMfMfGwHtbJTcAp46knwvkfcoAizMWCSsrUMcDZsFxEe
+
+────────────────────────────────────────────────────────────────────────────────
+INFO [2025-09-18 11:00:56.836 +0200]: Transaction built successfully
+    instructionName: "router.create_lookup_table"
+    transactionSize: "525 bytes"
+    base58Length: "716 characters"
+    hexLength: "1050 characters"
+    accountCount: 4
+    signerCount: 2
+    computeUnits: 19341
+INFO [2025-09-18 11:00:56.836 +0200]: Completed buildTransaction (router.create_lookup_table)
+    durationMs: 515
+INFO [2025-09-18 11:00:56.836 +0200]:
+INFO [2025-09-18 11:00:56.836 +0200]: 🎉 Transaction generated successfully!
+INFO [2025-09-18 11:00:56.836 +0200]:
+INFO [2025-09-18 11:00:56.836 +0200]: 📋 Transaction Details:
+INFO [2025-09-18 11:00:56.836 +0200]:    Instruction: router.create_lookup_table
+INFO [2025-09-18 11:00:56.836 +0200]:    Size: 525 bytes
+INFO [2025-09-18 11:00:56.836 +0200]:    Base58 length: 716 characters
+INFO [2025-09-18 11:00:56.852 +0200]:    Compute units: 19 341
+INFO [2025-09-18 11:00:56.852 +0200]:    Generated: 2025-09-18T09:00:56.835Z
+INFO [2025-09-18 11:00:56.852 +0200]:
+INFO [2025-09-18 11:00:56.852 +0200]: 🔗 Transaction Data (Base58):
+INFO [2025-09-18 11:00:56.852 +0200]:
+INFO [2025-09-18 11:00:56.853 +0200]: 💡 Triple-click the line above to select the entire transaction data
+INFO [2025-09-18 11:00:56.853 +0200]:
+INFO [2025-09-18 11:00:56.853 +0200]: 📊 Account Information:
+INFO [2025-09-18 11:00:56.853 +0200]:    Total accounts: 4
+INFO [2025-09-18 11:00:56.853 +0200]:     1. C3a5U5C4Sn8fywXmV4ZX6JAfYoQrEhAqF5daL39ScKSy (writable)
+INFO [2025-09-18 11:00:56.853 +0200]:     2. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer)
+INFO [2025-09-18 11:00:56.853 +0200]:     3. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer, writable)
+INFO [2025-09-18 11:00:56.853 +0200]:     4. 11111111111111111111111111111111 (read-only)
+INFO [2025-09-18 11:00:56.853 +0200]:
+```
+
+</Fragment>
+</Tabs>
+
+**Account Breakdown from the Transaction:**
+
+| Account | Address                                        | Description                                               |
+| ------- | ---------------------------------------------- | --------------------------------------------------------- |
+| **#1**  | `C3a5U5C4Sn8fywXmV4ZX6JAfYoQrEhAqF5daL39ScKSy` | **ALT Account** (writable - being created)                |
+| **#2**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **ALT Authority** (signer - will own the table)           |
+| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Fee Payer** (signer, writable - pays creation costs)    |
+| **#4**  | `11111111111111111111111111111111`             | **System Program** (read-only - handles account creation) |
+
+**What This Command Does:**
+
+This command creates the ALT infrastructure needed for efficient CCIP operations by storing frequently used account addresses in a lookup table.
+
+**Transaction Flow:**
+
+1. **ALT Creation**: Creates lookup table account `C3a5U...` with Squad Vault as authority
+1. **Core Address Addition**: Adds essential CCIP accounts (programs, PDAs) to the table
+1. **Index Assignment**: Each address gets a unique 1-byte index for future reference
+
+**ALT Contents (What Gets Stored):**
+The created lookup table will contain indices for these accounts in this exact order:
+
+<Aside type="note" title="Example-Specific Values">
+  The addresses shown below are from our specific tutorial example. Your actual addresses will be different based on
+  your token mint, multisig addresses, and derived PDAs.
+</Aside>
+
+| Index | Account Address                                | Purpose                                    |
+| ----- | ---------------------------------------------- | ------------------------------------------ |
+| **0** | `C3a5U5C4Sn8fywXmV4ZX6JAfYoQrEhAqF5daL39ScKSy` | **ALT Address (Self-Reference)**           |
+| **1** | `89Jy2ZEz6LcvBPVQgR2YxPYVoF1sLugNRs3havQP8SvF` | **Token Admin Registry PDA**               |
+| **2** | `8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC` | **Pool Program ID**                        |
+| **3** | `9VnLxEtwJgnGALzhhXJTtRr4GF83z95aCypPiRFGi9d1` | **Pool State PDA**                         |
+| **4** | `A57bH91QkGuARh37JTN41fd3Vwcmf2bLzVHAVPB8Gaeg` | **Pool Signer's Associated Token Account** |
+| **5** | `E8odUv4V4DXy3RWvkNYF7H33X9J56RtsFp4ExVXB86UA` | **Pool Signer PDA**                        |
+| **6** | `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`  | **Token Program ID (SPL Token v1)**        |
+| **7** | `FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1` | **Token Mint**                             |
+| **8** | `84grjTssjNyuDsaxJGkpJB8t17Y9sQt1G81R5AQyZ1Rr` | **Fee Quoter Token Config PDA**            |
+| **9** | `DPyeT76APQQVQD7EJRVw8Y6gLYjGkC5CdbdHQTQkpoN2` | **Router External Token Pools Signer PDA** |
+
+**Transaction Efficiency Impact:**
+
+- **Before ALT**: Each account = 32 bytes (9 accounts = 288 bytes)
+- **After ALT**: Each account = 1 byte index (9 accounts = 9 bytes)
+- **Savings**: ~279 bytes per future CCIP transaction!
+
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+- **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
+
+**Set Variables:**
+
+Copy the ALT address from the transaction output and set the environment variable:
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Set Variable</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+export SOL_ADDRESS_LOOKUP_TABLE="<YOUR_ALT_ADDRESS>"
+```
+
+Verify the variable is set:
+
+```bash
+echo "✅ Address Lookup Table: $SOL_ADDRESS_LOOKUP_TABLE"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+✅ Address Lookup Table: C3a5U5C4Sn8fywXmV4ZX6JAfYoQrEhAqF5daL39ScKSy
+```
+
+</Fragment>
+</Tabs>
+
+### Step 5: Register Pool with Router
+
+Register your token pool with the CCIP Router using [set_pool](/ccip/api-reference/svm/v0.1.1/router#set_pool). This enables the router to route cross-chain transfers through your token pool.
+
+**What This Command Does:**
+
+- **Pool Registration**: Connects your token pool to the CCIP Router for cross-chain operations
+- **Lookup Table Integration**: Uses the ALT created in the previous step for efficient account management
+- **Router Configuration**: Enables the router to call your pool's token operations
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Generate pool registration transaction
+pnpm bs58 router --env devnet --instruction set-pool \
+  --program-id $CCIP_ROUTER_PROGRAM \
+  --mint $SOL_TOKEN_MINT \
+  --authority $SOL_SQUAD_VAULT_MULTISIG \
+  --pool-lookup-table $SOL_ADDRESS_LOOKUP_TABLE \
+  --writable-indexes "[3,4,7]"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+   ✅ Transaction simulation completed
+🎯 COPY TRANSACTION DATA BELOW:
+
+QmCar77mNEqzAzGvMRsXQY9UpezF7qcPt7iURnmpvC88c6Kwr3gd6bJHPKGmwqcPxFQjtKgHxjCRqcutU6hnZAn1bTiz7K2M9c4VBqvUqtMMJRvBk7AcL2nohnjwrKEgatZwoxftC4f4MyvhTizzbBBgyzuFEnduq3oGKaPFXKDeWFpTmfZfmDWeqeYQMFYS5xxnGrxNJWpRXgStvfbEcKy3AnaJd2rDRHp8rXtissTD3x3rHsd6GkWTRh1ZtmdBCjkmTGoGFaVZPdELSdkmA9Aw7Dyo9qPUymsMQPWvHNXx7jjct4ovGBRcRC7WajLHJDPCcztCtPSKGuHfuRk9jmx
+
+────────────────────────────────────────────────────────────────────────────────
+INFO [2025-09-18 11:10:00.055 +0200]: Transaction built successfully
+    instructionName: "router.set_pool"
+    transactionSize: "252 bytes"
+    base58Length: "343 characters"
+    hexLength: "504 characters"
+    accountCount: 5
+    signerCount: 1
+    computeUnits: 29867
+INFO [2025-09-18 11:10:00.056 +0200]: Completed buildTransaction (router.set_pool)
+    durationMs: 445
+INFO [2025-09-18 11:10:00.056 +0200]:
+INFO [2025-09-18 11:10:00.056 +0200]: 🎉 Transaction generated successfully!
+INFO [2025-09-18 11:10:00.056 +0200]:
+INFO [2025-09-18 11:10:00.056 +0200]: 📋 Transaction Details:
+INFO [2025-09-18 11:10:00.056 +0200]:    Instruction: router.set_pool
+INFO [2025-09-18 11:10:00.056 +0200]:    Size: 252 bytes
+INFO [2025-09-18 11:10:00.056 +0200]:    Base58 length: 343 characters
+INFO [2025-09-18 11:10:00.093 +0200]:    Compute units: 29 867
+INFO [2025-09-18 11:10:00.093 +0200]:    Generated: 2025-09-18T09:10:00.051Z
+INFO [2025-09-18 11:10:00.093 +0200]:
+INFO [2025-09-18 11:10:00.093 +0200]: 🔗 Transaction Data (Base58):
+INFO [2025-09-18 11:10:00.093 +0200]:
+INFO [2025-09-18 11:10:00.093 +0200]: 💡 Triple-click the line above to select the entire transaction data
+INFO [2025-09-18 11:10:00.093 +0200]:
+INFO [2025-09-18 11:10:00.093 +0200]: 📊 Account Information:
+INFO [2025-09-18 11:10:00.093 +0200]:    Total accounts: 5
+INFO [2025-09-18 11:10:00.093 +0200]:     1. 3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3 (read-only)
+INFO [2025-09-18 11:10:00.093 +0200]:     2. 89Jy2ZEz6LcvBPVQgR2YxPYVoF1sLugNRs3havQP8SvF (writable)
+INFO [2025-09-18 11:10:00.093 +0200]:     3. FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1 (read-only)
+INFO [2025-09-18 11:10:00.093 +0200]:     4. C3a5U5C4Sn8fywXmV4ZX6JAfYoQrEhAqF5daL39ScKSy (read-only)
+INFO [2025-09-18 11:10:00.093 +0200]:     5. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer, writable)
+INFO [2025-09-18 11:10:00.093 +0200]:
+```
+
+</Fragment>
+</Tabs>
+
+**Account Breakdown from the Transaction:**
+
+| Account | Address                                        | Description                                                 |
+| ------- | ---------------------------------------------- | ----------------------------------------------------------- |
+| **#1**  | `3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3` | **Router Config PDA** (read-only - configuration reference) |
+| **#2**  | `89Jy2ZEz6LcvBPVQgR2YxPYVoF1sLugNRs3havQP8SvF` | **Token Admin Registry PDA** (writable - pool registration) |
+| **#3**  | `FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1` | **Token Mint** (read-only - token identification)           |
+| **#4**  | `C3a5U5C4Sn8fywXmV4ZX6JAfYoQrEhAqF5daL39ScKSy` | **Address Lookup Table** (read-only - ALT registration)     |
+| **#5**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault Authority** (signer, writable - admin & fees) |
+
+**What This Command Does:**
+
+This command **registers your token pool** with the CCIP Router. It configures the router to use your Address Lookup Table and specifies which accounts need write access during CCIP operations.
+
+**Key Configuration:**
+
+- **ALT Integration**: Uses the lookup table `C3a5U...` you just created
+- **Writable Indexes**: `[3,4,7]` - Specific accounts from the ALTthat need write access during CCIP operations
+
+**Transaction Flow:**
+
+1. **Authority Verification**: Confirms Squad Vault has CCIP token admin permissions
+1. **Pool Registration**: Updates Token Admin Registry with pool configuration
+1. **ALT Association**: Links your token with the specific lookup table
+1. **Permission Setup**: Defines which accounts can be modified during cross-chain operations
+
+**Writable Indexes Analysis: `[3,4,7]`**
+
+Based on the ALT order established earlier:
+
+| **Index** | **ALT Account** | **Why Writable**                                 |
+| --------- | --------------- | ------------------------------------------------ |
+| **3**     | Pool State PDA  | Gets updated during cross-chain operations       |
+| **4**     | Pool Token ATA  | Tokens get minted/burned during transfers        |
+| **7**     | Token Mint      | Supply gets modified during mint/burn operations |
+
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+- **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
+
+**Phase 3 Complete**: Save all variables:
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Save Configuration</Fragment>
+<Fragment slot="tab.2">Summary</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Save all variables for testing phase
+cat > ~/.all_vars << EOF
+# Phase 1 - EVM
+export ETH_TOKEN_ADDRESS="$ETH_TOKEN_ADDRESS"
+export ETH_POOL_ADDRESS="$ETH_POOL_ADDRESS"
+
+# Phase 2 - Solana
+
+export CCIP_POOL_PROGRAM="$CCIP_POOL_PROGRAM"
+export CCIP_ROUTER_PROGRAM="$CCIP_ROUTER_PROGRAM"
+export SOL_SQUAD_VAULT_MULTISIG="$SOL_SQUAD_VAULT_MULTISIG"
+export SOL_WALLET_ADDRESS="$SOL_WALLET_ADDRESS"
+export SOL_TOKEN_MINT="$SOL_TOKEN_MINT"
+export SOL_POOL_ADDRESS="$SOL_POOL_ADDRESS"
+export SOL_POOL_SIGNER_PDA="$SOL_POOL_SIGNER_PDA"
+export SOL_SPL_MULTISIG="$SOL_SPL_MULTISIG"
+export SOL_ADDRESS_LOOKUP_TABLE="$SOL_ADDRESS_LOOKUP_TABLE"
+
+# Chain Selectors
+
+export ETHEREUM_SEPOLIA_CHAIN_SELECTOR="$ETHEREUM_SEPOLIA_CHAIN_SELECTOR"
+EOF
+
+echo "=== Phase 3 Complete - Cross-Chain Configuration ==="
+echo "✅ Address Lookup Table: $SOL_ADDRESS_LOOKUP_TABLE"
+echo "✅ Cross-chain connection configured"
+echo "✅ All variables saved to ~/.all_vars"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+=== Phase 3 Complete - Cross-Chain Configuration ===
+✅ Address Lookup Table: C3a5U5C4Sn8fywXmV4ZX6JAfYoQrEhAqF5daL39ScKSy
+✅ Cross-chain connection configured
+✅ All variables saved to ~/.all_vars
+```
+
+</Fragment>
+</Tabs>
