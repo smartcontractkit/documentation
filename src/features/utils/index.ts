@@ -483,6 +483,14 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "APTOS_MAINNET"
     case "aptos-testnet":
       return "APTOS_TESTNET"
+    case "kaia-mainnet":
+      return "KAIA_MAINNET"
+    case "kaia-testnet-kairos":
+      return "KAIA_TESTNET_KAIROS"
+    case "tac-mainnet":
+      return "TAC_MAINNET"
+    case "tac-testnet":
+      return "TAC_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -762,6 +770,14 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "aptos-mainnet"
     case "APTOS_TESTNET":
       return "aptos-testnet"
+    case "KAIA_MAINNET":
+      return "kaia-mainnet"
+    case "KAIA_TESTNET_KAIROS":
+      return "kaia-testnet-kairos"
+    case "TAC_MAINNET":
+      return "tac-mainnet"
+    case "TAC_TESTNET":
+      return "tac-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

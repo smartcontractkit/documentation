@@ -88,6 +88,8 @@ export const productChainLinks: ProductChainLinks = {
       "0g": "/ccip/directory/testnet/chain/0g-testnet-galileo",
       hyperevm: "/ccip/directory/mainnet/chain/hyperevm-mainnet",
       etherlink: "/ccip/directory/testnet/chain/etherlink-testnet",
+      kaia: "/ccip/directory/mainnet/chain/kaia-mainnet",
+      tac: "/ccip/directory/mainnet/chain/tac-mainnet",
     },
   },
   "Data Feeds": {
@@ -291,6 +293,8 @@ export const productChainLinks: ProductChainLinks = {
     polygonkatana: "/resources/link-token-contracts#polygon-katana",
     "0g": "/resources/link-token-contracts#0g",
     hyperevm: "/resources/link-token-contracts#hyperevm",
+    kaia: "/resources/link-token-contracts#kaia",
+    tac: "/resources/link-token-contracts#tac",
   },
 }
 
@@ -370,4 +374,6 @@ export const chainNames: Record<string, string> = {
   janction: "Janction",
   neox: "Neo X",
   polygonkatana: "Polygon Katana",
+  tac: "Tac",
+  kaia: "Kaia",
 }

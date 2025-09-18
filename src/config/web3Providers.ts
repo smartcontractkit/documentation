@@ -147,6 +147,10 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   BOTANIX_MAINNET: () => new JsonRpcProvider("https://rpc.botanix.org"),
   APTOS_MAINNET: () => new JsonRpcProvider("https://fullnode.mainnet.aptoslabs.com/v1"),
   APTOS_TESTNET: () => new JsonRpcProvider("https://fullnode.testnet.aptoslabs.com/v1"),
+  KAIA_MAINNET: () => new JsonRpcProvider("https://public-en.node.kaia.io"),
+  KAIA_TESTNET_KAIROS: () => new JsonRpcProvider("https://public-en-kairos.node.kaia.io"),
+  TAC_MAINNET: () => new JsonRpcProvider("https://rpc.tac.build"),
+  TAC_TESTNET: () => new JsonRpcProvider("https://spb.rpc.tac.build"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {
