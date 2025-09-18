@@ -1069,7 +1069,44 @@ This is the **acceptance step** of the two-phase administrator registration. It 
 
 After both transactions are executed, your Squad vault will be the CCIP token administrator. See [Registration & Administration](/ccip/concepts/cross-chain-token/svm/registration-administration) for more details.
 
-### Step 6: Mint Tokens for Pool Liquidity
+### Step 6: Create Squad Vault Token Account
+
+Create the Associated Token Account (ATA) for the Squad vault. This account will receive the minted tokens that will later be used for pool liquidity.
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Create Associated Token Account for Squad vault
+spl-token create-account $SOL_TOKEN_MINT \
+  --owner $SOL_SQUAD_VAULT_MULTISIG \
+  --fee-payer $HOME/.config/solana/id.json
+```
+
+**Note**: You can use a different fee payer if needed by changing the `--fee-payer` parameter.
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+Creating account G7yVJJKDRBQDdbFttmA3G3oytFKBcsZH8VMdJWBXJKJB
+
+Signature: 5pdDVU5gM9jmHy39HZjus4gGwZdRszmRYCuArikNok65dFcapEXgYJHexgvDKQkFgV4NzKXmQ2Fmgk2NASNgPGdB
+```
+
+</Fragment>
+</Tabs>
+
+**Transaction Details:**
+
+- **Squad Vault ATA**: `G7yVJJKDRBQDdbFttmA3G3oytFKBcsZH8VMdJWBXJKJB` (example)
+- **Owner**: Squad vault PDA
+
+### Step 7: Mint Tokens for Pool Liquidity
 
 Mint tokens to your Squad vault to prepare for LockRelease pool liquidity provisioning. Since LockRelease pools require liquidity management, we'll mint tokens that the Squad vault (acting as rebalancer) can later provide to the pool.
 
@@ -1092,7 +1129,7 @@ pnpm bs58 spl-token --env devnet --instruction mint \
   --authority "$SOL_SQUAD_VAULT_MULTISIG" \
   --mint "$SOL_TOKEN_MINT" \
   --amount 100000000000 \
-  --recipient "$SOL_WALLET_ADDRESS"
+  --recipient "$SOL_SQUAD_VAULT_MULTISIG"
 ```
 
 </Fragment>
@@ -1100,11 +1137,16 @@ pnpm bs58 spl-token --env devnet --instruction mint \
 <Fragment slot="panel.2">
 
 ```bash
-INFO [2025-09-17 16:53:41.443 +0200]: Detected SPL Token v1
+INFO [2025-09-18 09:33:52.996 +0200]: Detected SPL Token v1
     mint: "FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1"
     programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-INFO [2025-09-17 16:53:42.093 +0200]: 🔄 Building and simulating transaction...
-INFO [2025-09-17 16:53:42.305 +0200]: Transaction built successfully
+INFO [2025-09-18 09:33:53.356 +0200]: 🔄 Building and simulating transaction...
+🎯 COPY TRANSACTION DATA BELOW:
+
+7HigstJQ54Hujv6W7j2KzbrADP2y2tsFY4tKdu4ZtzFMND8JksgYRQbY364Zcqwxn2FyCEZ4AsL9AoT25MBtMJnufiVRcsXY9KAm1qGXWXGZnAdPwANmRmiV4zXRxzdDSjfZhFDHU1Vze2m8YBZnuwGcJ8uV8quBVZB3CnWMDXAfioQNuAx8rFTHRhRbqUUgCStZUuGQHZ2xFMumiz2rynKSgSLAtvKmDSVALDb4zo34ej6CgAupK
+
+────────────────────────────────────────────────────────────────────────────────
+INFO [2025-09-18 09:33:53.856 +0200]: Transaction built successfully
     instructionName: "spl.mint"
     transactionSize: "180 bytes"
     base58Length: "245 characters"
@@ -1112,29 +1154,29 @@ INFO [2025-09-17 16:53:42.305 +0200]: Transaction built successfully
     accountCount: 3
     signerCount: 1
     computeUnits: 4537
-INFO [2025-09-17 16:53:42.305 +0200]: Completed buildTransaction (spl.mint)
-    durationMs: 211
-INFO [2025-09-17 16:53:42.305 +0200]: ✅ Transaction simulation completed
-INFO [2025-09-17 16:53:42.305 +0200]:
-INFO [2025-09-17 16:53:42.305 +0200]: 🎉 Transaction generated successfully!
-INFO [2025-09-17 16:53:42.305 +0200]:
-INFO [2025-09-17 16:53:42.305 +0200]: 📋 Transaction Details:
-INFO [2025-09-17 16:53:42.305 +0200]:    Instruction: spl.mint
-INFO [2025-09-17 16:53:42.305 +0200]:    Size: 180 bytes
-INFO [2025-09-17 16:53:42.305 +0200]:    Base58 length: 245 characters
-INFO [2025-09-17 16:53:42.328 +0200]:    Compute units: 4 537
-INFO [2025-09-17 16:53:42.328 +0200]:    Generated: 2025-09-17T14:53:42.302Z
-INFO [2025-09-17 16:53:42.328 +0200]:
-INFO [2025-09-17 16:53:42.328 +0200]: 🔗 Transaction Data (Base58):
-INFO [2025-09-17 16:53:42.328 +0200]:
-INFO [2025-09-17 16:53:42.329 +0200]: 💡 Triple-click the line above to select the entire transaction data
-INFO [2025-09-17 16:53:42.329 +0200]:
-INFO [2025-09-17 16:53:42.329 +0200]: 📊 Account Information:
-INFO [2025-09-17 16:53:42.329 +0200]:    Total accounts: 3
-INFO [2025-09-17 16:53:42.329 +0200]:     1. FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1 (writable)
-INFO [2025-09-17 16:53:42.329 +0200]:     2. 5dQxPofcZCuWASgwdCgR7MKzGGx9d596nsbMUcbuBrDZ (writable)
-INFO [2025-09-17 16:53:42.329 +0200]:     3. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer)
-INFO [2025-09-17 16:53:42.329 +0200]:
+INFO [2025-09-18 09:33:53.856 +0200]: Completed buildTransaction (spl.mint)
+    durationMs: 500
+INFO [2025-09-18 09:33:53.856 +0200]: ✅ Transaction simulation completed
+INFO [2025-09-18 09:33:53.856 +0200]:
+INFO [2025-09-18 09:33:53.856 +0200]: 🎉 Transaction generated successfully!
+INFO [2025-09-18 09:33:53.856 +0200]:
+INFO [2025-09-18 09:33:53.856 +0200]: 📋 Transaction Details:
+INFO [2025-09-18 09:33:53.856 +0200]:    Instruction: spl.mint
+INFO [2025-09-18 09:33:53.856 +0200]:    Size: 180 bytes
+INFO [2025-09-18 09:33:53.856 +0200]:    Base58 length: 245 characters
+INFO [2025-09-18 09:33:53.878 +0200]:    Compute units: 4 537
+INFO [2025-09-18 09:33:53.878 +0200]:    Generated: 2025-09-18T07:33:53.855Z
+INFO [2025-09-18 09:33:53.878 +0200]:
+INFO [2025-09-18 09:33:53.878 +0200]: 🔗 Transaction Data (Base58):
+INFO [2025-09-18 09:33:53.878 +0200]:
+INFO [2025-09-18 09:33:53.878 +0200]: 💡 Triple-click the line above to select the entire transaction data
+INFO [2025-09-18 09:33:53.878 +0200]:
+INFO [2025-09-18 09:33:53.878 +0200]: 📊 Account Information:
+INFO [2025-09-18 09:33:53.878 +0200]:    Total accounts: 3
+INFO [2025-09-18 09:33:53.878 +0200]:     1. FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1 (writable)
+INFO [2025-09-18 09:33:53.878 +0200]:     2. G7yVJJKDRBQDdbFttmA3G3oytFKBcsZH8VMdJWBXJKJB (writable)
+INFO [2025-09-18 09:33:53.878 +0200]:     3. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer)
+INFO [2025-09-18 09:33:53.878 +0200]:
 ```
 
 </Fragment>
@@ -1142,11 +1184,11 @@ INFO [2025-09-17 16:53:42.329 +0200]:
 
 **Account Breakdown from the Transaction (Example):**
 
-| Account | Address                                        | Description                                      |
-| ------- | ---------------------------------------------- | ------------------------------------------------ |
-| **#1**  | `FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1` | **Token Mint** (writable - supply updated)       |
-| **#2**  | `5dQxPofcZCuWASgwdCgR7MKzGGx9d596nsbMUcbuBrDZ` | **Recipient's ATA** (writable - receives tokens) |
-| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault** (signer)                         |
+| Account | Address                                        | Description                                        |
+| ------- | ---------------------------------------------- | -------------------------------------------------- |
+| **#1**  | `FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1` | **Token Mint** (writable - supply updated)         |
+| **#2**  | `G7yVJJKDRBQDdbFttmA3G3oytFKBcsZH8VMdJWBXJKJB` | **Squad vault's ATA** (writable - receives tokens) |
+| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault** (signer)                           |
 
 **What This Transaction Does:**
 This is a standard SPL token mint operation that mints tokens for the Squad vault to use as liquidity for the LockRelease pool. Since the Squad vault retains mint authority, it can directly mint tokens without requiring multisig operations.
@@ -1171,6 +1213,464 @@ This is a standard SPL token mint operation that mints tokens for the Squad vaul
 
 - **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
 - **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
+
+### Step 8: Set Rebalancer Role
+
+Configure the Squad vault as the rebalancer for the LockRelease pool. The rebalancer role is required before any liquidity operations can be performed.
+
+**What This Command Does:**
+
+- **Rebalancer Assignment**: Designates the Squad vault as the authorized liquidity manager
+- **Pool Configuration**: Updates the pool state to allow liquidity operations
+- **Governance Setup**: Establishes who can provide and withdraw pool liquidity
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Generate set rebalancer transaction
+pnpm bs58 lockrelease-token-pool \
+  --env devnet \
+  --instruction set-rebalancer \
+  --program-id $CCIP_POOL_PROGRAM \
+  --mint $SOL_TOKEN_MINT \
+  --authority $SOL_SQUAD_VAULT_MULTISIG \
+  --rebalancer $SOL_SQUAD_VAULT_MULTISIG
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+🎯 COPY TRANSACTION DATA BELOW:
+
+RYjPmsuLnHHYWtrvFZ6PMPQQmTA7RBMDoijaBaAdrADSaYTbJZot5TX7vFMp74a8iV3yxPJnpJQhbzDGGceVTEQs91WY9fquwqobjPEu6GZmxkxpr1VpYx1c3NScVNSE3Qr6cw2RTka2hdsFrBQAFrSHzcTCprL8UovLCd82dNcRvJapo7Us2FgwGAJ97JyKYCWqPSRBJbjbq5ZnNDAPi9nDzGopuV9UFZb9rC5q1xmhnF2Gn3nTwAPGh4GJF6JgFZJ23Ct2A2yz3LP31S6QD8uDrYszq1n
+
+────────────────────────────────────────────────────────────────────────────────
+INFO [2025-09-18 09:04:43.213 +0200]: Transaction built successfully
+    instructionName: "setRebalancer"
+    transactionSize: "211 bytes"
+    base58Length: "287 characters"
+    hexLength: "422 characters"
+    accountCount: 3
+    signerCount: 1
+    computeUnits: 8420
+INFO [2025-09-18 09:04:43.213 +0200]: Completed buildTransaction (setRebalancer)
+    durationMs: 1026
+INFO [2025-09-18 09:04:43.214 +0200]:
+INFO [2025-09-18 09:04:43.214 +0200]: 🎉 Transaction generated successfully!
+INFO [2025-09-18 09:04:43.214 +0200]:
+INFO [2025-09-18 09:04:43.214 +0200]: 📋 Transaction Details:
+INFO [2025-09-18 09:04:43.214 +0200]:    Instruction: setRebalancer
+INFO [2025-09-18 09:04:43.214 +0200]:    Size: 211 bytes
+INFO [2025-09-18 09:04:43.214 +0200]:    Base58 length: 287 characters
+INFO [2025-09-18 09:04:43.231 +0200]:    Compute units: 8 420
+INFO [2025-09-18 09:04:43.231 +0200]:    Generated: 2025-09-18T07:04:43.213Z
+INFO [2025-09-18 09:04:43.231 +0200]:
+INFO [2025-09-18 09:04:43.231 +0200]: 🔗 Transaction Data (Base58):
+INFO [2025-09-18 09:04:43.231 +0200]:
+INFO [2025-09-18 09:04:43.231 +0200]: 💡 Triple-click the line above to select the entire transaction data
+INFO [2025-09-18 09:04:43.231 +0200]:
+INFO [2025-09-18 09:04:43.231 +0200]: 📊 Account Information:
+INFO [2025-09-18 09:04:43.231 +0200]:    Total accounts: 3
+INFO [2025-09-18 09:04:43.231 +0200]:     1. 9VnLxEtwJgnGALzhhXJTtRr4GF83z95aCypPiRFGi9d1 (writable)
+INFO [2025-09-18 09:04:43.231 +0200]:     2. FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1 (read-only)
+INFO [2025-09-18 09:04:43.231 +0200]:     3. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer)
+INFO [2025-09-18 09:04:43.231 +0200]:
+```
+
+</Fragment>
+</Tabs>
+
+**Account Breakdown:**
+
+| Account | Address                                        | Description                                  |
+| ------- | ---------------------------------------------- | -------------------------------------------- |
+| **#1**  | `9VnLxEtwJgnGALzhhXJTtRr4GF83z95aCypPiRFGi9d1` | **Pool state PDA** (writable)                |
+| **#2**  | `FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1` | **Token Mint** (read-only - your token mint) |
+| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault** (signer)                     |
+
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+- **Review**: Verify rebalancer address matches your Squad vault
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
+
+### Step 9: Create Pool Token Account
+
+Create the Associated Token Account (ATA) for the Pool Signer PDA. This account will hold the pool's token reserves for cross-chain operations.
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Create Associated Token Account for Pool Signer PDA
+spl-token create-account $SOL_TOKEN_MINT \
+  --owner $SOL_POOL_SIGNER_PDA \
+  --fee-payer $HOME/.config/solana/id.json
+```
+
+**Note**: You can use a different fee payer if needed by changing the `--fee-payer` parameter.
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+Creating account A57bH91QkGuARh37JTN41fd3Vwcmf2bLzVHAVPB8Gaeg
+
+Signature: aXkYhnwBDk8wm2Ymc2SAmCbfVkC8beCfJZBfbJyhj3V4cTsYdU8V2fN3Cj35oBcEVn8BKwTJDyaE9QG93x3EEEt
+```
+
+</Fragment>
+</Tabs>
+
+**Transaction Details:**
+
+- **Pool ATA**: `A57bH91QkGuARh37JTN41fd3Vwcmf2bLzVHAVPB8Gaeg` (example)
+- **Owner**: Pool Signer PDA
+
+### Step 10: Set Can Accept Liquidity
+
+Configure the LockRelease pool to accept liquidity from the rebalancer. This setting must be enabled before the pool can receive liquidity provisions.
+
+**What This Command Does:**
+
+- **Liquidity Configuration**: Enables the pool to accept liquidity from the authorized rebalancer
+- **Pool Setting**: Updates the `can_accept_liquidity` flag to `true`
+- **Required Setup**: Must be completed before providing liquidity to the pool
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Generate set can accept liquidity transaction
+pnpm bs58 lockrelease-token-pool \
+  --env devnet \
+  --instruction set-can-accept-liquidity \
+  --program-id $CCIP_POOL_PROGRAM \
+  --mint $SOL_TOKEN_MINT \
+  --authority $SOL_SQUAD_VAULT_MULTISIG \
+  --allow true
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+🔄 Generating setCanAcceptLiquidity transaction...
+   RPC URL: https://api.devnet.solana.com
+   Program ID: 8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC
+   Mint: FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1
+   Authority (Pool Owner): 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY
+   Allow Liquidity: true
+⚙️  Building transaction instruction...
+   ✅ Instruction built successfully
+🔄 Building and simulating transaction...
+   ✅ Transaction simulation completed
+🎯 COPY TRANSACTION DATA BELOW:
+
+7Hj1bhWRhKR5W7YP8TbaTcGKiNTisZtdxfinXNypECf1twL34v3Ai2YdJkEqCF2rSZWAFgagJ2pVQMz67hypz75R1VhwPdj2jVhCiXByBWXA4Sn1YvPVBtr2gAc3anvu4joRrSzYQQwxPYrT48Ji5rkf728vwz7smZG36qyeHQ3R5L2XfA6FGHXuznpLZKf3yGQtm6sUxy6b6iK7xqhALjYDmBmVMtTy33uKmuZAuwxPorrMEwHUc
+
+────────────────────────────────────────────────────────────────────────────────
+INFO [2025-09-18 09:43:34.382 +0200]: Transaction built successfully
+    instructionName: "setCanAcceptLiquidity"
+    transactionSize: "180 bytes"
+    base58Length: "245 characters"
+    hexLength: "360 characters"
+    accountCount: 3
+    signerCount: 1
+    computeUnits: 8382
+INFO [2025-09-18 09:43:34.382 +0200]: Completed buildTransaction (setCanAcceptLiquidity)
+    durationMs: 1156
+INFO [2025-09-18 09:43:34.382 +0200]:
+INFO [2025-09-18 09:43:34.382 +0200]: 🎉 Transaction generated successfully!
+INFO [2025-09-18 09:43:34.382 +0200]:
+INFO [2025-09-18 09:43:34.382 +0200]: 📋 Transaction Details:
+INFO [2025-09-18 09:43:34.382 +0200]:    Instruction: setCanAcceptLiquidity
+INFO [2025-09-18 09:43:34.382 +0200]:    Size: 180 bytes
+INFO [2025-09-18 09:43:34.382 +0200]:    Base58 length: 245 characters
+INFO [2025-09-18 09:43:34.395 +0200]:    Compute units: 8 382
+INFO [2025-09-18 09:43:34.395 +0200]:    Generated: 2025-09-18T07:43:34.381Z
+INFO [2025-09-18 09:43:34.395 +0200]:
+INFO [2025-09-18 09:43:34.395 +0200]: 🔗 Transaction Data (Base58):
+INFO [2025-09-18 09:43:34.395 +0200]:
+INFO [2025-09-18 09:43:34.395 +0200]: 💡 Triple-click the line above to select the entire transaction data
+INFO [2025-09-18 09:43:34.395 +0200]:
+INFO [2025-09-18 09:43:34.395 +0200]: 📊 Account Information:
+INFO [2025-09-18 09:43:34.395 +0200]:    Total accounts: 3
+INFO [2025-09-18 09:43:34.395 +0200]:     1. 9VnLxEtwJgnGALzhhXJTtRr4GF83z95aCypPiRFGi9d1 (writable)
+INFO [2025-09-18 09:43:34.395 +0200]:     2. FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1 (read-only)
+INFO [2025-09-18 09:43:34.395 +0200]:     3. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer)
+INFO [2025-09-18 09:43:34.395 +0200]:
+```
+
+</Fragment>
+</Tabs>
+
+**Account Breakdown:**
+
+| Account | Address                                        | Description                                           |
+| ------- | ---------------------------------------------- | ----------------------------------------------------- |
+| **#1**  | `9VnLxEtwJgnGALzhhXJTtRr4GF83z95aCypPiRFGi9d1` | **Pool State PDA** (writable - configuration updated) |
+| **#2**  | `FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1` | **Token Mint** (read-only)                            |
+| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault** (signer - pool owner authority)       |
+
+**Transaction Flow:**
+
+1. **Authority Verification**: Confirms Squad vault is the pool owner
+1. **Configuration Update**: Sets `can_accept_liquidity` flag to `true`
+1. **Pool Preparation**: Enables the pool to accept liquidity from the rebalancer
+
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+- **Review**: Verify the liquidity acceptance setting is enabled
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
+
+### Step 11: Approve Pool Signer as Delegate
+
+Approve the Pool Signer PDA to spend tokens from the Squad vault's ATA. This delegation is required for the pool to transfer tokens during liquidity operations.
+
+**What This Command Does:**
+
+- **Token Delegation**: Authorizes Pool Signer PDA to spend tokens from Squad vault's ATA
+- **Liquidity Permission**: Enables the pool to access Squad vault's tokens for liquidity operations
+- **Required Setup**: Must be completed before the pool can provide liquidity
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Generate approve delegation transaction
+pnpm bs58 spl-token \
+  --env devnet \
+  --instruction approve \
+  --mint $SOL_TOKEN_MINT \
+  --authority $SOL_SQUAD_VAULT_MULTISIG \
+  --delegate $SOL_POOL_SIGNER_PDA \
+  --amount "50000000000"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+🔗 Validating RPC connectivity...
+INFO [2025-09-18 10:31:23.250 +0200]: Starting approve command
+    command: "spl-token.approve"
+    mint: "FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1"
+    delegate: "E8odUv4V4DXy3RWvkNYF7H33X9J56RtsFp4ExVXB86UA"
+    authority: "59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY"
+    amount: "50000000000"
+   ✅ RPC connection verified
+🔍 Detecting token program...
+   ✅ Detected token program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+🔍 Auto-deriving Associated Token Account...
+   ✅ Derived ATA: G7yVJJKDRBQDdbFttmA3G3oytFKBcsZH8VMdJWBXJKJB
+🔄 Generating approve transaction...
+   ✅ Transaction simulation completed
+🎯 COPY TRANSACTION DATA BELOW:
+
+7Hj1bhWRhKR5W7YP8TbaTcGKiNTisZtdxfinXNypECf1twL3AQR2en5q8KUf724VbhaHMbSoTXeSe48z4V13fJ6A8JSSdihBt7KZ5UebTx44jyQwdjSXAkFSyJAE8cbC1SxaZdav5G836vhVzmP8ZPG8BcNofTzRBkEw6YdhSvZHXveZhC6fwJFmUFNacJ8z1VJdNGLPNhQwVTNV1Cd1ApdNKSxEhbKyiN6EQxhaJP6CnKFCusR1q
+
+────────────────────────────────────────────────────────────────────────────────
+INFO [2025-09-18 10:31:25.343 +0200]: Transaction built successfully
+    instructionName: "approve"
+    transactionSize: "180 bytes"
+    base58Length: "245 characters"
+    hexLength: "360 characters"
+    accountCount: 3
+    signerCount: 1
+    computeUnits: 2903
+INFO [2025-09-18 10:31:25.343 +0200]: Completed buildTransaction (approve)
+    durationMs: 510
+INFO [2025-09-18 10:31:25.343 +0200]: ✅ Transaction simulation completed
+INFO [2025-09-18 10:31:25.343 +0200]: 🎉 Transaction generated successfully!
+INFO [2025-09-18 10:31:25.343 +0200]: 📋 Transaction Details:
+INFO [2025-09-18 10:31:25.343 +0200]:    Instruction: approve
+INFO [2025-09-18 10:31:25.343 +0200]:    Size: 180 bytes
+INFO [2025-09-18 10:31:25.343 +0200]:    Base58 length: 245 characters
+INFO [2025-09-18 10:31:25.364 +0200]:    Compute units: 2 903
+INFO [2025-09-18 10:31:25.364 +0200]:    Generated: 2025-09-18T08:31:25.341Z
+INFO [2025-09-18 10:31:25.364 +0200]: 🔗 Transaction Data (Base58):
+INFO [2025-09-18 10:31:25.364 +0200]: 💡 Triple-click the line above to select the entire transaction data
+INFO [2025-09-18 10:31:25.364 +0200]: 📊 Account Information:
+INFO [2025-09-18 10:31:25.364 +0200]:    Total accounts: 3
+INFO [2025-09-18 10:31:25.364 +0200]:     1. G7yVJJKDRBQDdbFttmA3G3oytFKBcsZH8VMdJWBXJKJB (writable)
+INFO [2025-09-18 10:31:25.364 +0200]:     2. E8odUv4V4DXy3RWvkNYF7H33X9J56RtsFp4ExVXB86UA (read-only)
+INFO [2025-09-18 10:31:25.364 +0200]:     3. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer)
+INFO [2025-09-18 10:31:25.364 +0200]:
+```
+
+</Fragment>
+</Tabs>
+
+**Account Breakdown:**
+
+| Account | Address                                        | Description                                         |
+| ------- | ---------------------------------------------- | --------------------------------------------------- |
+| **#1**  | `G7yVJJKDRBQDdbFttmA3G3oytFKBcsZH8VMdJWBXJKJB` | **Squad Vault ATA** (writable - delegation updated) |
+| **#2**  | `E8odUv4V4DXy3RWvkNYF7H33X9J56RtsFp4ExVXB86UA` | **Pool Signer PDA** (read-only - delegate)          |
+| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault** (signer - token account owner)      |
+
+**Transaction Flow:**
+
+1. **Authority Verification**: Confirms Squad vault owns the token account
+1. **Delegation Setup**: Authorizes Pool Signer PDA to spend up to 50 tokens
+
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+- **Review**: Verify delegate address is the Pool Signer PDA
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
+
+### Step 12: Provide Liquidity to Pool
+
+Provide initial liquidity to the LockRelease pool using the tokens minted in Step 7. Liquidity management is essential to ensure that for inbound token transfers (when Solana is the destination chain), the pool has sufficient token balance in its reserves to transfer tokens to receivers.
+
+**What This Command Does:**
+
+- **Liquidity Transfer**: Moves tokens from Squad vault's ATA to the pool's ATA
+- **Pool Funding**: Provides the pool with tokens needed for cross-chain operations
+- **Rebalancer Operation**: Uses the rebalancer role set in Step 7
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Generate provide liquidity transaction
+pnpm bs58 lockrelease-token-pool \
+  --env devnet \
+  --instruction provide-liquidity \
+  --program-id $CCIP_POOL_PROGRAM \
+  --mint $SOL_TOKEN_MINT \
+  --authority $SOL_SQUAD_VAULT_MULTISIG \
+  --amount "50000000000"
+```
+
+**Note**: This provides 50 tokens (50,000,000,000 smallest units) as initial pool liquidity.
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+🔄 Building and simulating transaction...
+   ✅ Transaction simulation completed
+🎯 COPY TRANSACTION DATA BELOW:
+
+47JrPNc32mdHLoAoD37ENgdggVTuZK2U9Qs59FsdJYsvq1KrMWU1APVBZqH6Yk4y1neaRRUBPyRCzTrz5PNZo8PwDvfUVuRswVYyaZD1ATYpiVirhgXDz86RHbUo3avZt89KErmWvr8NcjuvgZEfeH6QjfnTqBYxUiAYd7cbJh7LohKRZc9KHjkWRUrjPf9ogjkzieUQ5EkXVX3S4uUDca4hwckqCuCnSh8edkNwXdMdbPNjPdomiuiJnWMCmeJo7KkoZrq1tBVqftzdfJtNGrJHGVYjVGYPZq333edoiXzP16GGR2QCT218e6qm4phhdamqKNTeHuWynpDnC4nzZdBNXevZqqYihBPhk2tNEP1YSh1QAZyM1gtah5ZajCDRBZoEXVXnsDr7aVRWegPEeVTEbZkkqJMuHCyxKvQAMYRMm9kjE55
+
+────────────────────────────────────────────────────────────────────────────────
+INFO [2025-09-18 10:37:14.484 +0200]: Detected SPL Token v1
+    mint: "FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1"
+    programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+INFO [2025-09-18 10:37:15.022 +0200]: Transaction built successfully
+    instructionName: "provideLiquidity"
+    transactionSize: "319 bytes"
+    base58Length: "435 characters"
+    hexLength: "638 characters"
+    accountCount: 7
+    signerCount: 1
+    computeUnits: 28900
+INFO [2025-09-18 10:37:15.022 +0200]: Completed buildTransaction (provideLiquidity)
+    durationMs: 527
+INFO [2025-09-18 10:37:15.022 +0200]:
+INFO [2025-09-18 10:37:15.022 +0200]: 🎉 Transaction generated successfully!
+INFO [2025-09-18 10:37:15.022 +0200]:
+INFO [2025-09-18 10:37:15.022 +0200]: 📋 Transaction Details:
+INFO [2025-09-18 10:37:15.022 +0200]:    Instruction: provideLiquidity
+INFO [2025-09-18 10:37:15.022 +0200]:    Size: 319 bytes
+INFO [2025-09-18 10:37:15.022 +0200]:    Base58 length: 435 characters
+INFO [2025-09-18 10:37:15.059 +0200]:    Compute units: 28 900
+INFO [2025-09-18 10:37:15.059 +0200]:    Generated: 2025-09-18T08:37:15.021Z
+INFO [2025-09-18 10:37:15.059 +0200]:
+INFO [2025-09-18 10:37:15.059 +0200]: 🔗 Transaction Data (Base58):
+INFO [2025-09-18 10:37:15.059 +0200]:
+INFO [2025-09-18 10:37:15.059 +0200]: 💡 Triple-click the line above to select the entire transaction data
+INFO [2025-09-18 10:37:15.059 +0200]:
+INFO [2025-09-18 10:37:15.059 +0200]: 📊 Account Information:
+INFO [2025-09-18 10:37:15.059 +0200]:    Total accounts: 7
+INFO [2025-09-18 10:37:15.060 +0200]:     1. 9VnLxEtwJgnGALzhhXJTtRr4GF83z95aCypPiRFGi9d1 (read-only)
+INFO [2025-09-18 10:37:15.060 +0200]:     2. TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA (read-only)
+INFO [2025-09-18 10:37:15.060 +0200]:     3. FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1 (writable)
+INFO [2025-09-18 10:37:15.060 +0200]:     4. E8odUv4V4DXy3RWvkNYF7H33X9J56RtsFp4ExVXB86UA (read-only)
+INFO [2025-09-18 10:37:15.060 +0200]:     5. A57bH91QkGuARh37JTN41fd3Vwcmf2bLzVHAVPB8Gaeg (writable)
+INFO [2025-09-18 10:37:15.060 +0200]:     6. G7yVJJKDRBQDdbFttmA3G3oytFKBcsZH8VMdJWBXJKJB (writable)
+INFO [2025-09-18 10:37:15.060 +0200]:     7. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer)
+INFO [2025-09-18 10:37:15.060 +0200]:
+```
+
+</Fragment>
+</Tabs>
+
+**Account Breakdown:**
+
+| Account | Address                                        | Description                                         |
+| ------- | ---------------------------------------------- | --------------------------------------------------- |
+| **#1**  | `9VnLxEtwJgnGALzhhXJTtRr4GF83z95aCypPiRFGi9d1` | **Pool State PDA** (read-only)                      |
+| **#2**  | `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`  | **Token Program** (read-only)                       |
+| **#3**  | `FVJeMAQSH9dJvVmhe8NHC2DHTEEqT5cgVXTL5CYYmKu1` | **Token Mint** (writable)                           |
+| **#4**  | `E8odUv4V4DXy3RWvkNYF7H33X9J56RtsFp4ExVXB86UA` | **Pool Signer PDA** (read-only)                     |
+| **#5**  | `A57bH91QkGuARh37JTN41fd3Vwcmf2bLzVHAVPB8Gaeg` | **Pool Token ATA** (writable - receives liquidity)  |
+| **#6**  | `G7yVJJKDRBQDdbFttmA3G3oytFKBcsZH8VMdJWBXJKJB` | **Squad Vault ATA** (writable - provides liquidity) |
+| **#7**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault** (signer - rebalancer authority)     |
+
+**Transaction Flow:**
+
+1. **Authority Verification**: Confirms Squad vault has rebalancer permissions
+1. **Token Transfer**: Moves 50 tokens from Squad vault ATA to pool ATA
+1. **Pool Update**: Updates pool's available liquidity balance
+1. **Ready for Operations**: Pool can now fulfill cross-chain transfer requests
+
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+- **Review**: Verify liquidity amount and token addresses
 - **Simulate**: Simulate the transaction to ensure it will succeed
 - **Approve**: Obtain required threshold signatures
 - **Execute**: Complete the transaction execution
