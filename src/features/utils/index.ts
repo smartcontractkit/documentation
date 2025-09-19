@@ -401,6 +401,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "CRONOS_ZKEVM_MAINNET"
     case "0g-testnet-galileo":
       return "0G_GALILEO_TESTNET"
+    case "0g-mainnet":
+      return "0G_MAINNET"
     case "megaeth-testnet":
       return "MEGAETH_TESTNET"
     case "mind-testnet":
@@ -491,6 +493,10 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "TAC_MAINNET"
     case "tac-testnet":
       return "TAC_TESTNET"
+    case "plasma-mainnet":
+      return "PLASMA_MAINNET"
+    case "plasma-testnet":
+      return "PLASMA_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -690,6 +696,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "cronos-zkevm-mainnet"
     case "0G_GALILEO_TESTNET":
       return "0g-testnet-galileo"
+    case "0G_MAINNET":
+      return "0g-mainnet"
     case "MEGAETH_TESTNET":
       return "megaeth-testnet"
     case "MIND_NETWORK_TESTNET":
@@ -778,6 +786,10 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "tac-mainnet"
     case "TAC_TESTNET":
       return "tac-testnet"
+    case "PLASMA_MAINNET":
+      return "plasma-mainnet"
+    case "PLASMA_TESTNET":
+      return "plasma-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
