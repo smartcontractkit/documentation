@@ -14,7 +14,7 @@ whatsnext:
 ---
 
 import DataStreams from "@features/data-streams/common/DataStreams.astro"
-import { PageTabs } from "@components"
+import { Aside, PageTabs } from "@components"
 
 <DataStreams section="dsNotes" />
 
@@ -49,11 +49,11 @@ The Data Streams SDK for accessing Chainlink Data Streams with real-time streami
 
 ## Features
 
-- **Real-time streaming** via WebSocket connections
-- **High Availability mode** with multiple connections and automatic failover
-- **Historical data access** via REST API
-- **Automatic report decoding** for all supported formats (V2, V3, V4, V5, V6, V7, V8, V9, V10)
-- **Metrics** for monitoring and observability
+- **[Real-time streaming](#streaming)** via WebSocket connections
+- **[High Availability mode](#high-availability-mode)** with multiple connections and automatic failover
+- **Historical data access** via [REST API](#rest-api)
+- **[Automatic report decoding](#schema-auto-detection)** for all supported formats (V2, V3, V4, V5, V6, V7, V8, V9, V10)
+- **[Metrics](#observability-logs--metrics)** for monitoring and observability
 - **Type-safe** with full TypeScript support
 - **Event-driven architecture** for complete developer control
 
@@ -113,12 +113,15 @@ const haClient = createClient({
 })
 ```
 
-**Note:** High Availability mode is only available on mainnet, not testnet.
+**Note:** [High Availability mode](#high-availability-mode) is only available on mainnet, not testnet.
 
 ## Examples
 
-> Important: These commands are intended to be executed from the [SDK’s GitHub repository root](https://github.com/smartcontractkit/data-streams-sdk/tree/main/typescript). If you installed the library via npm, replicate the [example code](https://github.com/smartcontractkit/data-streams-sdk/tree/main/typescript/examples) in your project and adjust imports to @chainlink/data-streams-sdk.
-
+<Aside title="Important">
+  These commands assume you're running examples from a local clone of the SDK repository:
+  https://github.com/smartcontractkit/data-streams-sdk/tree/main/typescript. If you installed the package from npm, copy
+  the example code into your project and change imports to <code>@chainlink/data-streams-sdk</code>.
+</Aside>
 **Quick Commands:**
 
 ```bash
@@ -135,8 +138,8 @@ npx ts-node examples/get-latest-report.ts 0x000359843a543ee2fe414dc14c7e7920ef10
 npx ts-node examples/list-feeds.ts
 ```
 
-**Complete Examples:**  
-See [`examples/README.md`](./examples/README.md) for detailed usage instructions, setup, and all available examples including:
+**Complete examples**
+See the [SDK repo examples](https://github.com/smartcontractkit/data-streams-sdk/tree/main/typescript/examples) for detailed usage and setup. Available examples include:
 
 - **Streaming:** Basic streaming, HA mode, metrics monitoring
 - **REST API:** Latest reports, historical data, bulk operations, feed management
@@ -246,7 +249,7 @@ interface BaseFields {
 - **V9**: `navPerShare: bigint, navDate: number, aum: bigint, ripcord: number` - NAV fund data
 - **V10**: `price: bigint, lastUpdateTimestamp: number, marketStatus: MarketStatus, currentMultiplier: bigint, newMultiplier: bigint, activationDateTime: number, tokenizedPrice: bigint` - Tokenized equity data
 
-For complete field definitions, see the [documentation](https://docs.chain.link/data-streams/reference/report-schema-v3).
+For complete field definitions, see the [complete list of available reports and their schemas](/data-streams/reference/report-schema-overview).
 
 ## High Availability Mode
 
@@ -267,7 +270,7 @@ const client = createClient({
 
 **How it works:** When `haMode` is `true`, the SDK automatically discovers multiple origin endpoints behind the single URL and establishes separate connections to each origin.
 
-**Connection monitoring:** The optional `connectionStatusCallback` can be used to integrate with external monitoring systems. The SDK already provides comprehensive connection logs, so this callback is primarily useful for custom alerting or metrics collection. See [`examples/metrics-monitoring.ts`](./examples/metrics-monitoring.ts) for a complete implementation example.
+**Connection monitoring:** The optional `connectionStatusCallback` can be used to integrate with external monitoring systems. The SDK already provides comprehensive connection logs, so this callback is primarily useful for custom alerting or metrics collection. See [`examples/metrics-monitoring.ts`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/typescript/examples/metrics-monitoring.ts) for a complete implementation example.
 
 **Important:** HA mode is only available on mainnet endpoints.
 
@@ -527,4 +530,4 @@ npm run test:integration # Integration tests only
 
 ## Feed IDs
 
-For available feed IDs, see the [official documentation](https://docs.chain.link/data-streams/crypto-streams).
+For available feed IDs, select your desired report [from the report schema overview](/data-streams/report-schema-overview).
