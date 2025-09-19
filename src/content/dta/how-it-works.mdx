@@ -8,57 +8,56 @@ import Dta from "@features/dta/common/Dta.astro"
 
 <Dta section="dtaNotes" />
 
-The Digital Transfer Agent (DTA) system facilitates a secure and transparent workflow for the distribution and redemption of tokenized funds. At a high level, the process involves two main smart contracts and a clear, four-step process for subscriptions.
+### Components of the Chainlink DTA Technical Standard
 
-## The key contracts in the flow
+The Chainlink DTA technical standard consists of multiple components that enable onchain transfer agency services:
 
-A typical DTA transaction involves two primary smart contracts working in concert:
-
-- **DTA Open Marketplace**: The public-facing contract that serves as a global hub for discovering funds and submitting requests.
-- **DTA Wallet**: The private vault contract, owned by a Fund Administrator, that handles the secure settlement of requests.
-
-This separation of public and private logic is fundamental to the protocol. For a deep dive into the specific design and responsibilities of each component, see the detailed [Architecture](/dta/concepts/architecture) page.
+- **DTA Smart Contracts**: Enable onchain subscription and redemption of tokenized assets across multiple blockchains, supporting both onchain and offchain settlement.
+  - **DTA Request Management**: Accessed by fund distributors to submit subscription/redemption requests and by transfer agents to process pending requests.
+  - **DTA Request Settlement**: Deployed by each fund administrator or transfer agent, the contract is responsible for minting, burning, and transferring the tokenized fund upon successful settlement.
+- **CCIP**: Support transfer agency services across multiple blockchains. This allows requests to be submitted on one chain and settled on another. Furthermore, fund tokens can be deployed and made available to investors across multiple blockchain ecosystems.
+- **Chainlink ACE**: Provide flexible, programmable compliance enforcement (e.g., eligibility checks, rate limits, role-based access) to ensure regulators’ and institutions’ requirements are adhered to onchain.
+- **NAVLink Feeds**: Securely link tokenized funds to the fund administrators’ NAV reporting systems to ensure accurate pricing for subscriptions and redemptions across both fiat and digital asset settlement.
+- **CRE**: Ensure compatibility with legacy systems, facilitate access to fiat settlement via [established payment rails](https://www.swift.com/news-events/press-releases/swift-ubs-asset-management-and-chainlink-successfully-complete-innovative-pilot-bridge-tokenized-assets-existing-payment-systems), and enable record reconciliation with offchain systems.
 
 ## The subscription flow
 
-A typical subscription (buy) order follows a clear, four-step process that moves from the distributor to the marketplace, to the admin's wallet, and back.
+A typical subscription (buy) order follows a clear, four-step process that moves from the distributor to Request Management, Request Settlement, and back.
 
 <ClickToZoom
   src="/images/DTA/subscription-flow.png"
   caption="High-level overview of the DTA contract interactions for a typical subscription flow."
 />
 
-1. **Request Submission:** A registered and allowlisted Fund Distributor submits a subscription request to the DTA Open Marketplace, specifying which fund they want to invest in and the amount of payment currency they wish to use.
+1. **Request Submission:** A registered and allowlisted Fund Distributor submits a subscription request to the DTA Request Management contract, specifying which fund they want to invest in and the subscription amount.
 
-1. **Request Processing:** At a predetermined time (e.g., end of day), the Fund Administrator initiates processing. The DTA Open Marketplace then performs two key actions:
+1. **NAV update:** Fund Administrator updates the NAV value. This results in the NAV Feed being updated onchain.
 
-- **Price Calculation:** It calls a Chainlink Data Feed to fetch the fund's official Net Asset Value (NAV) and calculates the exact number of shares to be issued.
-- **Request Forwarding:** It forwards the finalized request, including the calculated share amount, to the Fund Administrator's DTA Wallet.
+1. **Request Processing:** At a predetermined time (e.g., end of day), the Transfer Agent initiates processing. DTA Request Management then performs two key actions:
 
-1. **Token Minting & Escrow:** The DTA Wallet receives the request and mints the associated Fund Token.
+   - **Price Calculation:** It calls the NAV feed to fetch the fund's official Net Asset Value (NAV) and calculates the exact number of shares to be issued.
+   - **Request Forwarding:** It forwards the finalized request, including the calculated share amount, to the Transfer Agent's DTA Request Settlement contract.
 
-   <Aside type="note" title="A critical compliance checkpoint">
-     At this point, the token contract itself can enforce its own compliance rules (for example, using Chainlink ACE to
-     verify the DTA Wallet's permissions and the distributor's eligibility). Upon a successful compliance check, the new
-     shares are created and held in escrow by the DTA Wallet itself, pending final payment settlement.
-   </Aside>
+1. **Token Minting & Escrow:** DTA Request Settlement receives the request and mints the associated Fund Token.
 
-1. **Settlement:** The final step is settlement. Depending on the fund's payment model, the DTA Wallet coordinates the transfer of payment from the distributor and, upon successful settlement, releases the newly minted fund tokens from escrow to the distributor's wallet.
+   _Note: At this point, the token contract itself can enforce its own compliance rules (for example, using Chainlink ACE to verify DTA Request Settlement’s permissions and the distributor's eligibility). Upon a successful compliance check, the new shares are created and held in escrow by the DTA Request Settlement itself, pending final payment settlement._
 
-Each of these steps corresponds to a formal status change in the DTA system. To see a detailed breakdown of these states, from `Pending` to `Processed`, see the [The Request Lifecycle](/dta/concepts/request-lifecycle) page.
+1. **Settlement:** Depending on the fund’s payment model, DTA Request Settlement completes settlement by either pulling payment tokens onchain, awaiting and recording offchain payment confirmation, or receiving cross-chain payment via CCIP. Upon successful settlement, it releases the newly minted fund tokens from escrow to the Fund Distributor’s address.
+
+Each of these steps corresponds to a formal status change in the DTA technical standard. To see a detailed breakdown of these states, from **Pending** to **Processed**, see [The Request Lifecycle](/dta/request-lifecycle) page.
 
 ## The redemption flow
 
-The process for redemptions (selling shares) follows a similar four-step lifecycle in reverse: a distributor requests to redeem shares, the administrator processes the request, the DTA Wallet burns the shares, and finally settles the payment.
+The process for redemptions (selling shares) follows a similar lifecycle in reverse: a distributor requests to redeem shares, the fund administrator sets the NAV, the transfer agent processes the request, DTA Request Settlement burns the shares, and finally settles the payment.
 
-The key operational difference is that for onchain settlements, the **Fund Administrator's DTA Wallet must be funded with the payment token** to send to the distributor.
+The key operational difference is that for onchain settlements, the **Fund Administrator's DTA Request Settlement contract must be funded with the payment token** to send to the distributor.
 
 ## Flexible settlement models
 
 The final "Settlement" step of the flow can occur in one of three ways, depending on how the fund is configured:
 
-- **Offchain Settlement:** The DTA Wallet escrows the tokens while payment is made through traditional channels (e.g., a wire transfer). The administrator then manually confirms receipt onchain.
+- **Offchain Settlement:** DTA Request Settlement escrows the tokens while payment is made through traditional channels (e.g., using Swift infrastructure). The administrator then manually confirms receipt onchain.
 - **Local Onchain Settlement:** The entire process, from payment transfer to token minting, happens atomically in a single transaction on one blockchain.
-- **Cross-Chain Settlement:** The request is made on one chain, and Chainlink CCIP is used to securely transfer payment and instructions to the DTA Wallet on another chain for final settlement. This model allows a fund to exist on a single primary blockchain while being accessible to distributors across many different networks, enabling operational patterns like taking requests on a low-cost L2 while the fund itself is administered on an L1.
+- **Cross-Chain Settlement:** The request is made on one chain, and Chainlink CCIP is used to securely transfer payment and instructions to DTA Request Settlement on another chain for final settlement. This model allows a fund to exist on a single primary blockchain while being accessible to distributors across many different networks, enabling operational patterns like taking requests on a low-cost L2 while the fund itself is administered on an L1.
 
-To learn more about the specific workflows for each of these models, see the [Payment Modes](/dta/concepts/payment-modes) page.
+To learn more about the specific workflows for each of these models, see the [Payment Modes](/dta/payment-modes) page.

@@ -97,14 +97,6 @@ export const evmProducts = [
     ],
   },
   {
-    title: "DTA",
-    description: "Programmable agent for cross-chain subscriptions, redemptions, and settlements.",
-    docsLandingLink: "/dta",
-    // learnMoreLink: "https://dev.chain.link/products/dta",
-    image: dtaLogo,
-    shape: dtaShape,
-  },
-  {
     title: "Functions",
     description: "Serverless platform that fetches data from any API & runs custom compute.",
     docsLandingLink: "/chainlink-functions",
@@ -145,5 +137,13 @@ export const evmProducts = [
     shape: vrfShape,
     chains: [...baseChains, { id: "arbitrum", title: "Arbitrum" }, { id: "base", title: "BASE" }],
     video: "https://www.youtube.com/watch?v=JqZWariqh5s&list=PLVP9aGDn-X0QHDyBRvbITizWrRoecR0D8&index=2",
+  },
+  {
+    title: "DTA",
+    description: "Technical standard for subscriptions, redemptions, and settlements.",
+    docsLandingLink: "/dta",
+    // learnMoreLink: "https://dev.chain.link/products/dta",
+    image: dtaLogo,
+    shape: dtaShape,
   },
 ] as ProductCardProps[]

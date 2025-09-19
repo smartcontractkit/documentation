@@ -2331,7 +2331,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   ],
   [SIDEBAR_SECTIONS.DTA]: [
     {
-      section: "Chainlink Digital Transfer Agent (DTA)",
+      section: "Digital Transfer Agent (DTA) Technical Standard",
       contents: [
         {
           title: "About DTA",

@@ -8,43 +8,44 @@ import Dta from "@features/dta/common/Dta.astro"
 
 <Dta section="dtaNotes" />
 
-The Digital Transfer Agent (DTA) architecture is designed around a core principle: **separation of concerns**. This ensures a system that is secure, decentralized, and flexible. The architecture clearly distinguishes between the public-facing "marketplace" where users interact and the private, secure "wallets" where fund operations occur.
+# Architecture
 
-This design allows for a multi-tenant public marketplace to coexist with single-tenant, admin-controlled operational vaults, providing both open discovery and robust security.
+The Digital Transfer Agent (DTA) technical standard is designed around a core principle: **separation of concerns**. This ensures a system that is secure, decentralized, and flexible. The architecture clearly distinguishes between the public-facing Request Management contract, where users interact, and the private, secure Request Settlement contract, where fund operations occur.
 
-<ClickToZoom
-  src="/images/DTA/archi.png"
-  caption="The DTA architecture separates the public, multi-tenant DTA Open Marketplace from private, single-tenant DTA Wallets owned by each Fund Administrator."
-/>
+This design allows the public, multi-tenant DTA Request Management to coexist with private, single-tenant DTA Request Settlement contracts controlled by each Transfer Agent, delivering open discovery with segregated, secure settlement.
+
+_The DTA technical standard separates the public, multi-tenant DTA Request Management from private, single-tenant DTA Request Settlement owned by each Transfer Agent_
 
 ## Core components
 
-### DTA Open Marketplace: The front office
+### Digital Transfer Agency contracts
 
-Think of the DTA Open Marketplace as the "front office" or lobby of the system. It serves as the central hub for discovery and requests, supporting multiple organizations.
+#### DTA Request Management
 
-**Key Responsibilities:**
-
-- **Global Registry:** Maintains onchain registries of all Fund Administrators, Fund Distributors, and the Fund Tokens they list.
-- **Request Intake:** Acts as the single entry point for all subscription and redemption requests from distributors.
-- **Initial Validation & Calculation:** When a fund administrator initiates processing, the DTA Open Marketplace validates requests against operational rules (such as rate limits and time zones) and calculates final share or payment amounts using the net asset value feed.
-- **Request Routing:** After processing, it forwards finalized request details to the appropriate private vault for settlement.
-
-### DTA Wallet: The back office
-
-The DTA Wallet is a secure "back office" or vault deployed and owned by each Fund Administrator. It is the workhorse of the system, handling the actual movement of assets the core settlement logic.
+DTA Request Management serves as the central hub for discovery and requests.
 
 **Key Responsibilities:**
 
+- **Request Intake:** Acts as the entry point for all subscription and redemption requests from distributors.
+- **Initial Validation & Calculation:** When a Transfer Agent initiates processing, DTA Request Management validates requests against operational rules (such as rate limits and time zones) and calculates final share or payment amounts using the NAVLink feed.
+- **Request Routing:** After processing, it forwards finalized request details to the appropriate DTA Request Settlement contract, which is deployed and owned by the fund’s Transfer Agent.
+
+#### DTA Request Settlement
+
+The DTA Request Settlement is owned and deployed by the Transfer Agent. This contract manages the asset movement and the core settlement logic.
+
+**Key Responsibilities:**
+
+- **Token Control Authority:** Holds rights to mint, burn, and transfer the fund’s tokenized shares, enforced via role-based permissions.
 - **Asset Custody:** Holds the authority to manage investment product tokens, securely storing newly created tokens during offchain settlements.
-- **Settlement Engine:** Receives finalized instructions from the DTA Open Marketplace and executes settlements, including transferring payment tokens, managing tokens, and releasing tokens from escrow.
-- **Access Control:** Maintains a list of approved DTA Open Marketplaces allowed to send requests, preventing unauthorized interactions.
+- **Settlement Engine:** Receives finalized instructions from DTA Request Management and executes settlements, including transferring payment tokens, managing tokens, and releasing tokens from escrow.
+- **Access Control:** Maintains a list of approved DTA Request Management contract addresses allowed to send requests, preventing unauthorized interactions.
 
 ## Interaction patterns
 
-Communication between the "front office" (DTA Open Marketplace) and "back office" (DTA Wallet) is designed for flexibility, supporting both local and cross-chain operations.
+Communication between the (DTA Request Management) and (DTA Request Settlement) is designed for flexibility, supporting both local and cross-chain operations.
 
-- **Local Interaction (Same Network):** If the DTA Wallet is on the same blockchain as the DTA Open Marketplace, the marketplace makes a direct call to deliver settlement instructions.
-- **Remote Interaction (Cross-Network):** If the DTA Wallet is on a different blockchain, the DTA Open Marketplace uses secure cross-chain messaging to send settlement instructions, which the DTA Wallet receives and processes.
+- **Local Interaction (Same Network):** If DTA Request Settlement is on the same blockchain as DTA Request Management, DTA Request Management makes a direct call to deliver settlement instructions.
+- **Remote Interaction (Cross-Network):** If DTA Request Settlement is on a different blockchain, DTA Request Management uses Chainlink CCIP to send settlement instructions, which DTA Request Settlement receives and processes.
 
-This dual-interaction pattern allows the DTA system to function as both a local application and a globally interconnected protocol, without changing its core logic.
+This dual-interaction pattern allows the Transfer Agents and Fund Administrators to set up onchain transfer agency services using the DTA Technical Standard.

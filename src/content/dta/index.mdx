@@ -1,7 +1,7 @@
 ---
 section: dta
 date: Last Modified
-title: "Digital Transfer Agent (DTA): Preview"
+title: "Digital Transfer Agent (DTA) Technical Standard"
 isIndex: true
 ---
 
@@ -9,49 +9,30 @@ import { Aside } from "@components"
 import Dta from "@features/dta/common/Dta.astro"
 
 <Dta section="dtaNotes" />
-The Digital Transfer Agent (DTA) is a suite of smart contracts that provides a standardized, blockchain-based framework
-for the primary issuance and redemption of tokenized investment funds. It acts as an on/off-ramp solution, creating a
-global, interoperable marketplace where Fund Administrators can securely interact with Fund Distributors across multiple
-chains.
 
-## Modernizing and streamlining fund management
+The **Chainlink Digital Transfer Agent (DTA) technical standard** defines how transfer agents and fund administrators
+can expand their operations onchain to support tokenized assets, while remaining within their applicable regulatory
+frameworks.
 
-In traditional finance, transfer agents are responsible for the complex and often manual record-keeping involved in tracking fund investors and processing their transactions. This process can be slow, opaque, and fragmented across different systems.
+The Chainlink DTA technical standard leverages multiple time-tested Chainlink capabilities to provide the easiest and most reliable path for market participants to launch their own onchain transfer agency services and capture the emerging opportunity of tokenized financial markets.
 
-The DTA system reimagines this role for the onchain economy. It provides a transparent, automated, and highly efficient alternative, using smart contracts to handle key operations.
+Now live in production, and starting with tokenized investment funds as the initial product use case, the Chainlink DTA technical standard allows transfer agents, fund administrators, issuers, distributors, and custodians to quickly and easily offer the following services:
 
-## Who is DTA for?
+- Real-time subscription and redemption processing of tokenized funds across multiple blockchains.
+- Seamless integration of pre-built fiat and digital asset settlement workflows, reducing the need for manual reconciliation.
+- Programmable compliance enforcement directly in the transaction flow, powered by Chainlink Automated Compliance Engine (ACE), eliminating fragmented eligibility checks.
+- An onchain golden record of fund lifecycle activities that is automatically synchronized with each transaction rather than via delayed reconciliation.
+- Cross-chain interoperability for tokenized funds, removing the siloed nature of single-chain tokenization initiatives.
+- Transparent, auditable records that build regulator and market participant confidence, with extensibility to additional products beyond investment funds such as ETFs, corporate debt, and private equity.
 
-The DTA ecosystem is designed for two primary actors:
+The Chainlink DTA technical standard is powered by the [Chainlink Runtime Environment (CRE)](https://chain.link/cre). It leverages core CRE capabilities such as compatibility with legacy systems, access to fiat settlement via [established payment rails](https://www.swift.com/news-events/press-releases/swift-ubs-asset-management-and-chainlink-successfully-complete-innovative-pilot-bridge-tokenized-assets-existing-payment-systems), and record reconciliation with offchain systems. Furthermore, the Chainlink DTA technical standard leverages multiple standards and services within the Chainlink platform, including:
 
-- **Fund Administrators:** Entities who manage and operate tokenized investment funds.
-- **Fund Distributors:** Entities who invest in funds on behalf of their clients, such as wealth management platforms, brokers, or institutional investors.
-
-To learn more about the specific responsibilities of each role, see the [Actors in the Ecosystem](/dta/actors) page.
-
-## Core Features
-
-{/* NOTE: This is less technical than the developer version */}
-
-| Feature                        | What it means operationally                                                                                                                                                                         |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Flexible Settlement Models** | Offchain wires, same-chain atomic token/payment settlement, and cross-chain settlement via CCIP are supported per fund configuration. Operators communicate the applicable model during onboarding. |
-| **Granular Access Control**    | Distributors **must be explicitly approved** per fund before submitting requests, ensuring controlled, compliant access.                                                                            |
-| **Operational Controls**       | Daily request limits and **timezone-based cutoff windows** are enforced at the marketplace/wallet layer.                                                                                            |
-| **Cross-Chain Native**         | Requests may originate on one chain and settle on another using **CCIP**, enabling L2 distribution with L1 settlement.                                                                              |
-| **Token Compatibility**        | Works with standardized fund tokens that expose compliance configuration. Administrators handle requirements during onboarding; the protocol abstracts token internals for Distributors.            |
-
-## DTA and token compliance
-
-It is important to understand the separation of concerns between the DTA protocol and your Fund Token's own compliance layer.
-
-- **DTA's Role:** The DTA protocol manages the operational flow of primary issuance and redemption. Its distributor allowlisting feature acts as a first-level access control, determining who can receive shares directly from the issuer.
-- **Token's Role:** The DTA does **not** enforce rules on secondary transfers (re-selling). Your Fund Token contract is solely responsible for its own comprehensive compliance, including KYC/AML checks and transfer restrictions, to prevent shares from being moved to unauthorized wallets.
-
-{/* TODO: Prerequisites? (See developer docs) */}
+- [Cross-Chain Interoperability Protocol (CCIP)](/ccip) to enable multi-chain distribution of tokenized assets.
+- [Automated Compliance Engine (ACE)](https://chain.link/automated-compliance-engine) to enforce role-based controls and compliance requirements onchain.
+- [NAVLink Feeds](/data-feeds/smartdata#navlink-feeds) to ensure accurate NAV pricing for tokenized fund subscriptions and redemptions.
 
 ## Next steps
 
 Get a high-level overview of the system's components and request flows.
 
-- **[How It Works](/dta/how-it-works)**: Explore the architecture and a typical subscription flow.
+- [**How It Works**](/dta/how-it-works): Explore the architecture and a typical subscription flow.
