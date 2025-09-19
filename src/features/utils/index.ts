@@ -401,6 +401,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "CRONOS_ZKEVM_MAINNET"
     case "0g-testnet-galileo":
       return "0G_GALILEO_TESTNET"
+    case "0g-mainnet":
+      return "0G_MAINNET"
     case "megaeth-testnet":
       return "MEGAETH_TESTNET"
     case "mind-testnet":
@@ -694,6 +696,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "cronos-zkevm-mainnet"
     case "0G_GALILEO_TESTNET":
       return "0g-testnet-galileo"
+    case "0G_MAINNET":
+      return "0g-mainnet"
     case "MEGAETH_TESTNET":
       return "megaeth-testnet"
     case "MIND_NETWORK_TESTNET":
