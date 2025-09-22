@@ -376,4 +376,5 @@ export const chainNames: Record<string, string> = {
   polygonkatana: "Polygon Katana",
   tac: "Tac",
   kaia: "Kaia",
+  plasma: "Plasma",
 }
