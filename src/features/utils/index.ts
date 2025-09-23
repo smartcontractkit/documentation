@@ -8,6 +8,7 @@ import {
   ChainType,
   ChainFamily,
 } from "@config/index.ts"
+import { CCIP_TOKEN_ICON_MAPPINGS } from "@config/data/ccip/tokenIconMappings.ts"
 import { toQuantity } from "ethers"
 import referenceChains from "src/scripts/reference/chains.json" with { type: "json" }
 
@@ -62,8 +63,23 @@ export const getNativeCurrency = (supportedChain: SupportedChain) => {
   return chains[technology]?.chains[supportedChain]?.nativeCurrency
 }
 
-export const getExplorerAddressUrl = (explorer: ExplorerInfo) => (contractAddress: string) => {
-  const url = `${explorer.baseUrl}/address/${contractAddress}`
+export const getExplorerAddressUrl =
+  (explorer: ExplorerInfo, chainType: ChainType = "evm") =>
+  (contractAddress: string) => {
+    // Use appropriate path segment based on chain type
+    const pathSegment = chainType === "aptos" ? "object" : "address"
+    const url = `${explorer.baseUrl}/${pathSegment}/${contractAddress}`
+    if (!explorer.queryParameters) return url
+
+    const queryString = Object.entries(explorer.queryParameters)
+      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+      .join("&")
+
+    return queryString ? `${url}?${queryString}` : url
+  }
+
+export const getExplorerTransactionUrl = (explorer: ExplorerInfo) => (transactionSignature: string) => {
+  const url = `${explorer.baseUrl}/tx/${transactionSignature}`
   if (!explorer.queryParameters) return url
 
   const queryString = Object.entries(explorer.queryParameters)
@@ -106,6 +122,9 @@ export const getChainTypeAndFamily = (supportedChain: SupportedChain): ChainType
     case "solana":
       chainFamily = "svm"
       break
+    case "sui":
+      chainFamily = "svm"
+      break
     default:
       throw new Error(`Unknown chain type: ${chainType}`)
   }
@@ -134,9 +153,13 @@ const transformTokenName = (token: string): string => {
 
 export const getTokenIconUrl = (token: string, size = 40) => {
   if (!token) return ""
+
+  // Resolve icon identifier, fallback to original token name
+  const iconIdentifier = CCIP_TOKEN_ICON_MAPPINGS[token] ?? token
+
   // Request appropriately sized images from CloudFront
   // For 40x40 display, request 80x80 for retina displays (2x)
-  return `https://d2f70xi62kby8n.cloudfront.net/tokens/${transformTokenName(token)}.webp?auto=compress%2Cformat&q=60&w=${size}&h=${size}&fit=cover`
+  return `https://d2f70xi62kby8n.cloudfront.net/tokens/${transformTokenName(iconIdentifier)}.webp?auto=compress%2Cformat&q=60&w=${size}&h=${size}&fit=cover`
 }
 
 export const fallbackTokenIconUrl = "/assets/icons/generic-token.svg"
@@ -378,6 +401,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "CRONOS_ZKEVM_MAINNET"
     case "0g-testnet-galileo":
       return "0G_GALILEO_TESTNET"
+    case "0g-mainnet":
+      return "0G_MAINNET"
     case "megaeth-testnet":
       return "MEGAETH_TESTNET"
     case "mind-testnet":
@@ -456,6 +481,22 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "KATANA_TATARA"
     case "bitcoin-mainnet-botanix":
       return "BOTANIX_MAINNET"
+    case "aptos-mainnet":
+      return "APTOS_MAINNET"
+    case "aptos-testnet":
+      return "APTOS_TESTNET"
+    case "kaia-mainnet":
+      return "KAIA_MAINNET"
+    case "kaia-testnet-kairos":
+      return "KAIA_TESTNET_KAIROS"
+    case "tac-mainnet":
+      return "TAC_MAINNET"
+    case "tac-testnet":
+      return "TAC_TESTNET"
+    case "plasma-mainnet":
+      return "PLASMA_MAINNET"
+    case "plasma-testnet":
+      return "PLASMA_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -655,6 +696,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "cronos-zkevm-mainnet"
     case "0G_GALILEO_TESTNET":
       return "0g-testnet-galileo"
+    case "0G_MAINNET":
+      return "0g-mainnet"
     case "MEGAETH_TESTNET":
       return "megaeth-testnet"
     case "MIND_NETWORK_TESTNET":
@@ -731,6 +774,22 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "polygon-testnet-tatara"
     case "BOTANIX_MAINNET":
       return "bitcoin-mainnet-botanix"
+    case "APTOS_MAINNET":
+      return "aptos-mainnet"
+    case "APTOS_TESTNET":
+      return "aptos-testnet"
+    case "KAIA_MAINNET":
+      return "kaia-mainnet"
+    case "KAIA_TESTNET_KAIROS":
+      return "kaia-testnet-kairos"
+    case "TAC_MAINNET":
+      return "tac-mainnet"
+    case "TAC_TESTNET":
+      return "tac-testnet"
+    case "PLASMA_MAINNET":
+      return "plasma-mainnet"
+    case "PLASMA_TESTNET":
+      return "plasma-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

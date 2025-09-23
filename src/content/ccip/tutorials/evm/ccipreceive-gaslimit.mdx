@@ -307,7 +307,6 @@ To estimate the gas usage of the `ccipReceive` function within your own Hardhat 
 1. Create a testing file in your project's `test` directory.
 1. Inside the `deployFixture` function, deploy the `MockCCIPRouter` contract and use its address to deploy your CCIP Sender and CCIP Receiver contracts. For more details, check this [example](https://github.com/smartcontractkit/smart-contract-examples/blob/4b3800967e475ecd990fd417bec9960dd9ebe2af/ccip/estimate-gas/hardhat/test/Send-Receive.ts#L14).
 1. In your test cases:
-
    1. Send the CCIP message to the `MockCCIPRouter` contract. For more details, check this [example](https://github.com/smartcontractkit/smart-contract-examples/blob/4b3800967e475ecd990fd417bec9960dd9ebe2af/ccip/estimate-gas/hardhat/test/Send-Receive.ts#L51).
    1. Parse the logs to find the `MsgExecuted(bool,bytes,uint256)` event and extract the gas used. For more details, check this [example](https://github.com/smartcontractkit/smart-contract-examples/blob/main/ccip/estimate-gas/hardhat/test/Send-Receive.ts#L59).
 
@@ -479,7 +478,6 @@ The scripts are located in the `src` directory. Each script is self-explanatory 
 - `estimateGasTenderly.ts`: This script leverages the Tenderly `simulate` API to estimate the gas usage of the `ccipReceive` function. Similar to the previous script, it simulates sending three CCIP messages to the Receiver contract with different numbers of iterations and estimates the gas usage using the [Tenderly `simulate` API](https://docs.tenderly.co/reference/api#tag/Simulations/operation/simulateTransaction).
 
 - `helper.ts`: This script contains helper functions used by the other scripts. The two main functions are:
-
   - `buildTransactionData`: This function constructs a CCIP message for a specified number of iterations and then returns the transaction data.
   - `estimateIntrinsicGas`: Exclusively called by the `estimateGasProvider.ts` script, this function estimates the intrinsic gas of a transaction. The intrinsic gas represents the minimum amount of gas required before executing a transaction. It is determined by the transaction data and the type of transaction. Since this gas is paid by the initiator of the transaction, we use this function to estimate the intrinsic gas and then deduct it from the total gas used to isolate the gas consumed by the `ccipReceive` function.
 

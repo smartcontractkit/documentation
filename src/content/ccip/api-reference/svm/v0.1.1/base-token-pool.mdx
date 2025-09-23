@@ -1,0 +1,457 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v0.1.1 SVM Base Token Pool Library Reference"
+metadata:
+  description: "Complete API documentation for the Base Token Pool library that provides shared functionality and common components for CCIP token pool implementations on SVM-based blockchains like Solana. Covers data structures, rate limiting, validation functions, and core utilities for token pool development."
+  excerpt: "Base Token Pool, SVM token pool library, Solana token pools, shared token pool functionality, rate limiting, token pool validation, cross-chain token transfers, token pool development, anchor library"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## Base Token Pool Library
+
+[Git Source](https://github.com/smartcontractkit/chainlink-ccip/tree/v0.1.1-solana/chains/solana/contracts/programs/base-token-pool)
+
+The Base Token Pool library provides foundational components and shared functionality for CCIP token pool implementations on SVM-based blockchains. This library is not deployable as a standalone program but serves as a dependency for concrete token pool implementations like BurnMint and Lock-Release pools.
+
+<Aside>
+  This library contains shared code, data structures, validation logic, and constants used by all CCIP token pool
+  implementations. It ensures consistency and reduces code duplication across different pool types.
+</Aside>
+
+### Core Components
+
+The Base Token Pool library provides several key modules:
+
+#### Common Module (`common.rs`)
+
+Contains shared data structures, constants, validation functions, and events used across all token pool implementations.
+
+#### Rate Limiter Module (`rate_limiter.rs`)
+
+Implements token bucket rate limiting functionality to control cross-chain transfer rates.
+
+### Data Structures
+
+#### Core Configuration Structures
+
+##### `BaseConfig`
+
+The fundamental configuration structure used by all token pools.
+
+```rust
+pub struct BaseConfig {
+    // Token configuration
+    pub token_program: Pubkey,      // SPL Token or Token-2022 program ID
+    pub mint: Pubkey,               // Token mint address
+    pub decimals: u8,               // Token decimals
+    pub pool_signer: Pubkey,        // Pool signer PDA
+    pub pool_token_account: Pubkey, // Pool's associated token account
+
+    // Ownership and administration
+    pub owner: Pubkey,              // Current pool owner
+    pub proposed_owner: Pubkey,     // Proposed new owner (for ownership transfer)
+    pub rate_limit_admin: Pubkey,   // Rate limit administrator (currently unused - rate limits managed by pool owner)
+
+    // CCIP integration
+    pub router_onramp_authority: Pubkey, // Router's onramp authority PDA
+    pub router: Pubkey,                  // CCIP Router program address
+    pub rmn_remote: Pubkey,              // RMN Remote program address
+
+    // Lock-Release specific (unused in BurnMint pools)
+    pub rebalancer: Pubkey,         // Rebalancer address for liquidity management
+    pub can_accept_liquidity: bool, // Whether pool accepts liquidity operations
+
+    // Access control
+    pub list_enabled: bool,         // Whether allowlist is enabled
+    pub allow_list: Vec<Pubkey>,    // Allowlisted addresses for pool operations
+}
+```
+
+**Key Methods:**
+
+- `init()`: Initializes BaseConfig with default values
+- `transfer_ownership()`: Proposes ownership transfer
+- `accept_ownership()`: Accepts proposed ownership transfer
+- `set_router()`: Updates router address and derives new onramp authority
+- `set_rmn()`: Updates RMN remote address
+- `set_rebalancer()`: Sets rebalancer address (Lock-Release pools only)
+- `set_can_accept_liquidity()`: Enables/disables liquidity operations
+
+##### `BaseChain`
+
+Configuration for a specific remote chain destination.
+
+```rust
+pub struct BaseChain {
+    pub remote: RemoteConfig,                    // Remote chain token and pool configuration
+    pub inbound_rate_limit: RateLimitTokenBucket,  // Rate limiting for incoming transfers
+    pub outbound_rate_limit: RateLimitTokenBucket, // Rate limiting for outgoing transfers
+}
+```
+
+**Key Methods:**
+
+- `set()`: Updates remote chain configuration
+- `append_remote_pool_addresses()`: Adds remote pool addresses
+- `set_chain_rate_limit()`: Configures rate limits for the chain
+
+##### `RemoteConfig`
+
+Configuration for tokens and pools on remote chains.
+
+```rust
+pub struct RemoteConfig {
+    pub pool_addresses: Vec<RemoteAddress>, // Remote pool addresses (supports multiple versions)
+    pub token_address: RemoteAddress,       // Remote token address
+    pub decimals: u8,                       // Remote token decimals
+}
+```
+
+##### `RemoteAddress`
+
+Represents an address on a remote chain (supports various address formats).
+
+```rust
+pub struct RemoteAddress {
+    pub address: Vec<u8>, // Address bytes (max 64 bytes)
+}
+```
+
+#### Cross-Chain Transfer Structures
+
+##### `LockOrBurnInV1`
+
+Input parameters for locking or burning tokens (source chain operation).
+
+```rust
+pub struct LockOrBurnInV1 {
+    pub receiver: Vec<u8>,           // Recipient address on destination chain
+    pub remote_chain_selector: u64, // Destination chain ID
+    pub original_sender: Pubkey,     // Original transaction sender
+    pub amount: u64,                 // Amount to lock/burn (local decimals)
+    pub local_token: Pubkey,         // Local token mint address
+    pub msg_total_nonce: u64,        // Message nonce from onramp
+}
+```
+
+##### `LockOrBurnOutV1`
+
+Output from lock or burn operations.
+
+```rust
+pub struct LockOrBurnOutV1 {
+    pub dest_token_address: RemoteAddress, // Remote token address
+    pub dest_pool_data: Vec<u8>,           // ABI-encoded local token decimals
+}
+```
+
+##### `ReleaseOrMintInV1`
+
+Input parameters for releasing or minting tokens (destination chain operation).
+
+```rust
+pub struct ReleaseOrMintInV1 {
+    pub original_sender: RemoteAddress,   // Original sender on source chain
+    pub remote_chain_selector: u64,      // Source chain ID
+    pub receiver: Pubkey,                 // Token recipient on this chain
+    pub amount: [u8; 32],                 // Amount in source decimals (u256)
+    pub local_token: Pubkey,              // Local token mint address
+    pub source_pool_address: RemoteAddress, // Source pool address (must be validated)
+    pub source_pool_data: Vec<u8>,        // Data from source pool
+    pub offchain_token_data: Vec<u8>,     // Untrusted offchain data
+}
+```
+
+##### `ReleaseOrMintOutV1`
+
+Output from release or mint operations.
+
+```rust
+pub struct ReleaseOrMintOutV1 {
+    pub destination_amount: u64, // Amount released/minted (local decimals)
+}
+```
+
+### Rate Limiting
+
+The library provides comprehensive rate limiting functionality using a token bucket algorithm.
+
+#### `RateLimitTokenBucket`
+
+Implements rate limiting for cross-chain transfers.
+
+```rust
+pub struct RateLimitTokenBucket {
+    pub tokens: u64,       // Current tokens in bucket
+    pub last_updated: u64, // Last refill timestamp
+    cfg: RateLimitConfig,  // Rate limit configuration
+}
+```
+
+**Key Methods:**
+
+- `consume<C: Timestamper>()`: Attempts to consume tokens from bucket
+- `set_token_bucket_config()`: Updates rate limit configuration
+
+#### `RateLimitConfig`
+
+Configuration for rate limiting behavior.
+
+```rust
+pub struct RateLimitConfig {
+    pub enabled: bool,  // Whether rate limiting is enabled
+    pub capacity: u64,  // Maximum tokens in bucket
+    pub rate: u64,      // Tokens per second refill rate
+}
+```
+
+**Validation Rules:**
+
+- When enabled: `rate < capacity` and `rate != 0`
+- When disabled: `rate == 0` and `capacity == 0`
+
+### Constants and Seeds
+
+The library defines critical constants used for PDA derivation across all pool implementations:
+
+```rust
+// PDA Seeds
+pub const POOL_CHAINCONFIG_SEED: &[u8] = b"ccip_tokenpool_chainconfig";
+pub const POOL_STATE_SEED: &[u8] = b"ccip_tokenpool_config";
+pub const POOL_SIGNER_SEED: &[u8] = b"ccip_tokenpool_signer";
+pub const CONFIG_SEED: &[u8] = b"config";
+
+// Router Integration
+pub const EXTERNAL_TOKEN_POOLS_SIGNER: &[u8] = b"external_token_pools_signer";
+pub const ALLOWED_OFFRAMP: &[u8] = b"allowed_offramp";
+
+// Other Constants
+pub const ANCHOR_DISCRIMINATOR: usize = 8;
+```
+
+<Aside>
+  These seed constants ensure consistent PDA derivation across all token pool implementations and enable proper
+  integration with the CCIP Router program.
+</Aside>
+
+### Validation Functions
+
+The library provides critical validation functions that ensure security and correctness of cross-chain operations.
+
+#### `validate_lock_or_burn`
+
+Validates parameters for locking or burning tokens on the source chain.
+
+```rust
+pub fn validate_lock_or_burn<'info>(
+    lock_or_burn_in: &LockOrBurnInV1,
+    config_mint: Pubkey,
+    outbound_rate_limit: &mut RateLimitTokenBucket,
+    allow_list_enabled: bool,
+    allow_list: &[Pubkey],
+    rmn_remote: AccountInfo<'info>,
+    rmn_remote_curses: AccountInfo<'info>,
+    rmn_remote_config: AccountInfo<'info>,
+) -> Result<()>
+```
+
+**Validation Checks:**
+
+1. **Token Validation**: Ensures `local_token` matches the pool's configured mint
+2. **Allowlist Check**: Validates `original_sender` is allowlisted (if enabled)
+3. **Curse Check**: Verifies destination chain is not cursed via RMN Remote CPI
+4. **Rate Limiting**: Consumes tokens from outbound rate limit bucket
+
+#### `validate_release_or_mint`
+
+Validates parameters for releasing or minting tokens on the destination chain.
+
+```rust
+pub fn validate_release_or_mint<'info>(
+    release_or_mint_in: &ReleaseOrMintInV1,
+    parsed_amount: u64,
+    config_mint: Pubkey,
+    pool_addresses: &[RemoteAddress],
+    inbound_rate_limit: &mut RateLimitTokenBucket,
+    rmn_remote: AccountInfo<'info>,
+    rmn_remote_curses: AccountInfo<'info>,
+    rmn_remote_config: AccountInfo<'info>,
+) -> Result<()>
+```
+
+**Validation Checks:**
+
+1. **Token Validation**: Ensures `local_token` matches the pool's configured mint
+1. **Source Pool Validation**: Verifies `source_pool_address` is in the configured pool addresses list
+1. **Curse Check**: Verifies source chain is not cursed via RMN Remote CPI
+1. **Rate Limiting**: Consumes tokens from inbound rate limit bucket
+
+#### `verify_uncursed_cpi`
+
+Performs CPI to RMN Remote to verify a chain is not cursed.
+
+```rust
+pub fn verify_uncursed_cpi<'info>(
+    rmn_remote: AccountInfo<'info>,
+    rmn_remote_config: AccountInfo<'info>,
+    rmn_remote_curses: AccountInfo<'info>,
+    chain_selector: u64,
+) -> Result<()>
+```
+
+### Utility Functions
+
+#### `to_svm_token_amount`
+
+Converts cross-chain token amounts to local SVM amounts, handling decimal differences.
+
+```rust
+pub fn to_svm_token_amount(
+    incoming_amount_bytes: [u8; 32], // LE encoded u256 from source chain
+    incoming_decimal: u8,            // Source token decimals
+    local_decimal: u8,               // Local token decimals
+) -> Result<u64>
+```
+
+**Conversion Logic:**
+
+- **More incoming decimals**: Divides by `10^(incoming_decimal - local_decimal)`
+- **Fewer incoming decimals**: Multiplies by `10^(local_decimal - incoming_decimal)`
+- **Equal decimals**: No conversion needed
+- **Overflow protection**: Validates result fits in u64
+
+### Account Meta Utilities
+
+#### `CcipAccountMeta`
+
+Serializable version of Solana's `AccountMeta` for cross-program communication.
+
+```rust
+pub struct CcipAccountMeta {
+    pub pubkey: Pubkey,
+    pub is_signer: bool,
+    pub is_writable: bool,
+}
+```
+
+#### `ToMeta` Trait
+
+Provides convenient methods for creating `CcipAccountMeta` instances.
+
+```rust
+pub trait ToMeta {
+    fn readonly(self) -> CcipAccountMeta;
+    fn writable(self) -> CcipAccountMeta;
+    fn signer(self) -> CcipAccountMeta;
+}
+```
+
+### Error Types
+
+The library defines comprehensive error types used across all pool implementations:
+
+```rust
+pub enum CcipTokenPoolError {
+    // Authorization errors
+    InvalidInitPoolPermissions,
+    Unauthorized,
+    InvalidPoolCaller,
+
+    // Configuration errors
+    InvalidInputs,
+    InvalidVersion,
+    InvalidRMNRemoteAddress,
+
+    // Token operation errors
+    InvalidSender,
+    InvalidSourcePoolAddress,
+    InvalidToken,
+    InvalidTokenAmountConversion,
+
+    // Allowlist errors
+    AllowlistKeyAlreadyExisted,
+    AllowlistKeyDidNotExist,
+
+    // Remote pool errors
+    RemotePoolAddressAlreadyExisted,
+    NonemptyPoolAddressesInit,
+
+    // Rate limiting errors (RL prefix)
+    RLBucketOverfilled,
+    RLMaxCapacityExceeded,
+    RLRateLimitReached,
+    RLInvalidRateLimitRate,
+    RLDisabledNonZeroRateLimit,
+
+    // Lock-Release specific errors
+    LiquidityNotAccepted,
+    TransferZeroTokensNotAllowed,
+
+    // Other
+    InvalidDerivationStage,
+}
+```
+
+### Events
+
+The library defines events that are emitted by pool implementations. See the [Events API Reference](/ccip/api-reference/svm/v0.1.1/events) for detailed documentation of all events including:
+
+- Configuration events (`GlobalConfigUpdated`, `RemoteChainConfigured`, etc.)
+- Token operation events (`Burned`, `Minted`, `Locked`, `Released`)
+- Administrative events (`OwnershipTransferred`, `RouterUpdated`, etc.)
+- Rate limiting events (`TokensConsumed`, `ConfigChanged`)
+
+### Usage by Pool Implementations
+
+The Base Token Pool library is used by concrete pool implementations as follows:
+
+#### Import Pattern
+
+```rust
+use base_token_pool::{
+    common::*,
+    rate_limiter::*,
+};
+```
+
+#### Structure Embedding
+
+Pool implementations embed base structures:
+
+```rust
+#[account]
+#[derive(InitSpace)]
+pub struct State {
+    pub version: u8,
+    pub config: BaseConfig,  // Embedded base configuration
+}
+
+#[account]
+#[derive(InitSpace)]
+pub struct ChainConfig {
+    pub base: BaseChain,     // Embedded base chain configuration
+}
+```
+
+#### Validation Integration
+
+Pool operations call base validation functions:
+
+```rust
+// In lock_or_burn_tokens instruction
+validate_lock_or_burn(
+    &lock_or_burn,
+    ctx.accounts.state.config.mint,
+    &mut ctx.accounts.chain_config.base.outbound_rate_limit,
+    ctx.accounts.state.config.list_enabled,
+    &ctx.accounts.state.config.allow_list,
+    ctx.accounts.rmn_remote.to_account_info(),
+    ctx.accounts.rmn_remote_curses.to_account_info(),
+    ctx.accounts.rmn_remote_config.to_account_info(),
+)?;
+```
+
+This shared foundation ensures consistency, security, and maintainability across all CCIP token pool implementations on SVM-based blockchains.

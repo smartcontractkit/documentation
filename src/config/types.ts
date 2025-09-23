@@ -67,8 +67,10 @@ export type SupportedTechnology =
   | "JANCTION"
   | "NEO_X"
   | "POLYGON_KATANA"
+  | "KAIA"
+  | "TAC"
 
-export type ChainType = "evm" | "solana" | "aptos"
+export type ChainType = "evm" | "solana" | "aptos" | "sui"
 
 export type ChainFamily = "evm" | "mvm" | "svm"
 
@@ -175,6 +177,7 @@ export type SupportedChain =
   | "CRONOS_ZKEVM_TESTNET"
   | "CRONOS_ZKEVM_MAINNET"
   | "0G_GALILEO_TESTNET"
+  | "0G_MAINNET"
   | "MIND_NETWORK_TESTNET"
   | "MIND_NETWORK_MAINNET"
   | "MEGAETH_TESTNET"
@@ -213,6 +216,14 @@ export type SupportedChain =
   | "KATANA_TATARA"
   | "KATANA_MAINNET"
   | "BOTANIX_MAINNET"
+  | "APTOS_MAINNET"
+  | "APTOS_TESTNET"
+  | "KAIA_MAINNET"
+  | "KAIA_TESTNET_KAIROS"
+  | "TAC_MAINNET"
+  | "TAC_TESTNET"
+  | "PLASMA_MAINNET"
+  | "PLASMA_TESTNET"
 
 export type ExplorerInfo = {
   baseUrl: string

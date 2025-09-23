@@ -73,7 +73,6 @@ When initiating a CCIP transaction from a SVM-based source chain.
      - **Note**: The fee receiver ATA is a token account owned by the Router's fee billing signer PDA that accumulates CCIP fees. There is a separate fee receiver ATA for each supported fee token.
 
    - The Sender calls the Router `ccip_send`, with:
-
      - The destination chain selector.
      - The CCIP message (as detailed above).
      - For token transfers: An ordered list of indexes that tell the Router which accounts in the transaction correspond to which tokens being transferred.
@@ -114,7 +113,6 @@ When initiating a CCIP transaction from a SVM-based source chain.
    - The message is returned to the Sender.
 
 1. **Initial Offchain Processing**
-
    - The CCIP Commit DON monitors for the `CCIPMessageSent` event to process the message offchain. More details about the offchain processing are available here.
 
 ### Destination Blockchain (SVM)
@@ -135,7 +133,6 @@ When processing a CCIP transaction on a SVM-based destination chain:
    - The CCIP Executing DON monitors for the `CommitReportAccepted` event to identify commit reports with pending executions. Each message associated with these commit reports is processed individually. For each message ready for execution, the Executing DON computes its specific merkle proof against the committed merkle root. Each message is then submitted in a separate transaction to the SVM chain, with the message's merkle proof included in the Execute Plugin Report. The execution plugin implementation for SVM chains executes one message per transaction.
 
 1. **Execution Phase**
-
    - When the execution plugin submits a report, it calls the Offramp program's `execute` function, which verifies the merkle proof against the stored merkle root. **Note**: Unlike EVM implementations, the SVM Offramp verifies a single message execution at a time, with each execution report containing proof specifically for that message.
    - The OffRamp performs several validations:
      - Verifying the message sequence number is correct.

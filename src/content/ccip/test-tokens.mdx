@@ -1,36 +1,67 @@
 ---
 section: ccip
 date: Last Modified
-title: "Acquire CCIP Test Tokens - CCIP-BnM and CCIP-LnM Faucets"
+title: "CCIP Test Tokens - Faucets for EVM and Solana"
 metadata:
-  description: "Learn to mint CCIP test tokens (CCIP-BnM and CCIP-LnM) for cross-chain testing. Step-by-step guide for faucet access via documentation or block explorer."
-  excerpt: "CCIP test tokens, CCIP-BnM, CCIP-LnM, test token faucet, testnet tokens, burn and mint tokens, lock and mint tokens, MetaMask integration, token minting"
+  description: "Mint CCIP-BnM and CCIP-LnM test tokens on EVM and Solana testnets. Call drip functions on EVM contracts or use the Solana faucet for cross-chain testing."
+  excerpt: "CCIP test tokens, CCIP-BnM, CCIP-LnM, Solana faucet, EVM faucet, testnet tokens, burn mint tokens, lock mint tokens, MetaMask, Phantom wallet, cross-chain testing, wallet connect, SPL token, Token-2022, ERC20"
   datePublished: "2023-08-03"
-  lastModified: "2025-05-19"
-  estimatedTime: "10 minutes"
+  lastModified: "2025-08-19"
+  estimatedTime: "5 minutes"
 ---
 
 import { ClickToZoom, Aside } from "@components"
 import { MintTokenButton } from "@features/ccip/components/MintTokenButton"
+
+import { SVMTestTokensClient } from "@features/ccip/components/faucet"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-As a best practice, always test your applications thoroughly on testnet before going live on mainnet. When testing token transfers, you must have enough tokens and ensure the [token pools](/ccip/concepts/cross-chain-token/evm/token-pools) have enough funds. Public faucets sometimes limit how many tokens a user can create and token pools might not have enough liquidity. To resolve these issues, CCIP supports two test tokens that you can mint permissionlessly so you don't run out of tokens while testing different scenarios.
+CCIP provides test tokens that you can mint on testnets for development and testing.
 
-## Tokens
+## Quick Start
 
-Two ERC20 test tokens are currently available on each testnet. You can find the token addresses for each testnet on the [CCIP Directory](/ccip/directory).
+### EVM Chains
 
-| Name                                             | Decimals                                  | Type                                                | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| ------------------------------------------------ | ----------------------------------------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <div style="white-space: nowrap;">CCIP-BnM</div> | <div style="text-align: center;">18</div> | <div style="white-space: nowrap;">Burn & Mint</div> | These tokens are minted on each testnet. When transferring these tokens between testnet blockchains, CCIP burns the tokens on the source chain and mint them on the destination chain.                                                                                                                                                                                                                                                                                     |
-| <div style="white-space: nowrap;">CCIP-LnM</div> | <div style="text-align: center;">18</div> | <div style="white-space: nowrap;">Lock & Mint</div> | These tokens are only minted on **Ethereum Sepolia**. On other testnet blockchains, the token representation is a wrapped/synthetic asset called _clCCIP-LnM_. When transferring these tokens from Ethereum Sepolia to another testnet, CCIP locks the _CCIP-LnM_ tokens on the source chain and mint the wrapped representation _clCCIP-LnM_ on the destination chain. Between non-Ethereum Sepolia chains, CCIP burns and mints the wrapped representation _clCCIP-LnM_. |
+Call the `drip` function directly on token contracts using the interface below or through block explorers:
 
-## Mint Test Tokens
+<MintTokenButton client:only="react" />
 
-You can mint both of these tokens using the following function call on the token contract. This function acts like a faucet. Each call mints 10\*\*18 units of a token to the specified address.
+### Solana Devnet
 
-- For _CCIP-BnM_, you can call `drip` on all testnet blockchains.
-- For _CCIP-LnM_, you can call `drip` only on Ethereum Sepolia.
+Use the dedicated faucet interface for CCIP-BnM tokens:
+
+<SVMTestTokensClient client:only="react" />
+
+#### Amount and rate limits
+
+- The faucet mints **1 CCIP‑BnM** per request.
+- Requests are **rate‑limited to about once every 3 hours per wallet**.
+
+#### Signature requirement
+
+The faucet requires wallet signature verification. When you request tokens, your wallet will prompt you to sign a message.
+
+- Message signing is free (no SOL required) and grants no spending permissions.
+- After signature verification, the server executes the token mint transaction.
+
+## About CCIP Test Tokens
+
+CCIP supports specialized test tokens designed for cross-chain testing. These tokens are available on all CCIP-supported testnets.
+
+| Token        | Type        | Availability                                                       | Description                                                    |
+| ------------ | ----------- | ------------------------------------------------------------------ | -------------------------------------------------------------- |
+| **CCIP-BnM** | Burn & Mint | All testnets                                                       | Burned on source chain, minted on destination chain            |
+| **CCIP-LnM** | Lock & Mint | Ethereum Sepolia (native)<br/>Other chains (wrapped as clCCIP-LnM) | Locked on Ethereum Sepolia, minted as wrapped tokens elsewhere |
+
+On EVM chains, tokens are minted by calling the `drip` function directly on contracts. On Solana Devnet, CCIP-BnM tokens are available through a dedicated faucet interface.
+
+## LINK Token Faucets
+
+For CCIP operations, you also need LINK tokens to pay transaction fees. Use the official [Chainlink faucets](https://faucets.chain.link/) to obtain LINK tokens on supported testnets by connecting your wallet.
+
+## Block Explorer Method (EVM Chains)
+
+For EVM chains, you call the `drip` function directly on token contracts. You can use block explorers instead of the interface above:
 
 ```solidity
 function drip(address to) external {
@@ -38,53 +69,12 @@ function drip(address to) external {
 }
 ```
 
-### Mint tokens in the documentation
+### General Process
 
-You can use this interface to connect your MetaMask wallet, select a testnet, and mint tokens to your wallet address. Alternatively, you can call these same functions in the block explorer (Read the [Mint tokens in a block explorer](#mint-tokens-in-a-block-explorer) section).
+Navigate to the [CCIP Directory](/ccip/directory/testnet) to find token contract addresses, open the contract on the appropriate block explorer, connect your wallet, and call the `drip` function with your wallet address.
 
-<MintTokenButton client:visible />
+### Example: Ethereum Sepolia CCIP-BnM
 
-### Mint tokens in a block explorer
-
-Follow these steps to learn how to mint these tokens. The steps explain how to mint _CCIP-BnM_ on _Ethereum Sepolia_:
-
-- Go to the [CCIP Directory](/ccip/directory/testnet).
-- Go to [Ethereum Sepolia section](/ccip/directory/testnet/chain/ethereum-testnet-sepolia). You will find a list of active lanes where the source chain is _Ethereum Sepolia_. You will find the list of supported tokens you can transfer for each lane. You should find _CCIP-BnM_ in the list for each testnet.
-- Click on the token address to display it on the block explorer ([CCIP-BnM on Ethereum Sepolia Etherscan](https://sepolia.etherscan.io/address/0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05) in this case).
-
-  <ClickToZoom src="/images/ccip/test-tokens/token-etherscan.jpg" alt="Chainlink CCIP Test token etherscan" />
-
-- Click the _Contract_ tab and then on _Write Contract_ to see the list of transactions. Notice _Connect to Web3_.
-
-  <ClickToZoom
-    src="/images/ccip/test-tokens/token-etherscan-connect-to-web3.jpg"
-    alt="Chainlink CCIP Test token etherscan connect to web3."
-  />
-
-- Click _Connect to Web3_ to connect your MetaMask wallet to the block explorer.
-- Once connected, you can call the `drip` function.
-
-  <ClickToZoom
-    src="/images/ccip/test-tokens/token-etherscan-connected-to-web3.jpg"
-    alt="Chainlink CCIP Test token etherscan connected to web3."
-  />
-
-- Fill in the text field with your EOA, then click _Write_.
-- MetaMask will open and asks you to confirm the transaction.
-- After the transaction is confirmed, click _View your transaction_ to view your transaction.
-
-  <ClickToZoom
-    src="/images/ccip/test-tokens/token-etherscan-view-transaction.jpg"
-    alt="Chainlink CCIP Test token etherscan view your transaction."
-  />
-
-- You should see a successful transaction confirming that 1 _CCIP-BnM_ was sent to your EOA.
-
-  <ClickToZoom
-    src="/images/ccip/test-tokens/token-etherscan-token-minted.jpg"
-    alt="Chainlink CCIP Test token etherscan minted."
-  />
-
-- Follow this [MetaMask guide](https://support.metamask.io/hc/en-us/articles/360015489031#h_01FWH492CHY60HWPC28RW0872H) to import _CCIP-BnM_ in your wallet.
+Locate the CCIP-BnM contract address in the [CCIP Directory](/ccip/directory/testnet) under [Ethereum Sepolia](/ccip/directory/testnet/chain/ethereum-testnet-sepolia). Open the [contract on Etherscan](https://sepolia.etherscan.io/address/0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05), navigate to the Contract tab, select Write Contract, and connect your wallet. Call the `drip` function with your wallet address to mint 1 CCIP-BnM token. Import the token in your wallet using this [MetaMask guide](https://support.metamask.io/hc/en-us/articles/360015489031#h_01FWH492CHY60HWPC28RW0872H).
 
 <CcipCommon callout="educationalDisclaimer" />

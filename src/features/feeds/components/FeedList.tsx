@@ -9,6 +9,7 @@ import { useGetChainMetadata } from "./useGetChainMetadata.ts"
 import { ChainMetadata } from "~/features/data/api/index.ts"
 import useQueryString from "~/hooks/useQueryString.ts"
 import { RefObject } from "preact"
+import { getFeedCategories } from "../../../db/feedCategories.js"
 import SectionWrapper from "~/components/SectionWrapper/SectionWrapper.tsx"
 import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/TableOfContents/tocStore.ts"
@@ -22,6 +23,7 @@ export type DataFeedType =
   | "streamsCrypto"
   | "streamsRwa"
   | "streamsNav"
+  | "streamsExRate"
   | "streamsBacked"
 export const FeedList = ({
   initialNetwork,
@@ -39,6 +41,7 @@ export const FeedList = ({
     dataFeedType === "streamsCrypto" ||
     dataFeedType === "streamsRwa" ||
     dataFeedType === "streamsNav" ||
+    dataFeedType === "streamsExRate" ||
     dataFeedType === "streamsBacked"
   const isSmartData = dataFeedType === "smartdata"
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
@@ -137,14 +140,27 @@ export const FeedList = ({
   const testnetLastAddr = Number(testnetCurrentPage) * testnetAddrPerPage
   const testnetFirstAddr = testnetLastAddr - testnetAddrPerPage
 
-  const dataFeedCategory = [
+  // Dynamic feed categories loaded from Supabase
+  const [dataFeedCategory, setDataFeedCategory] = useState([
     { key: "low", name: "Low Market Risk" },
     { key: "medium", name: "Medium Market Risk" },
     { key: "high", name: "High Market Risk" },
     { key: "custom", name: "Custom" },
     { key: "new", name: "New Token" },
     { key: "deprecating", name: "Deprecating" },
-  ]
+  ])
+
+  // Load dynamic categories from Supabase on component mount
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const categories = await getFeedCategories()
+        setDataFeedCategory(categories)
+      } catch (error) {}
+    }
+
+    loadCategories()
+  }, [])
   const smartDataTypes = [
     { key: "Proof of Reserve", name: "Proof of Reserve" },
     { key: "NAVLink", name: "NAVLink" },
@@ -339,17 +355,21 @@ export const FeedList = ({
       ? "Mainnet Crypto Streams"
       : dataFeedType === "streamsNav"
         ? "Mainnet NAV Streams"
-        : dataFeedType === "streamsBacked"
-          ? "Mainnet Backed xStock Streams"
-          : "Mainnet RWA Streams"
+        : dataFeedType === "streamsExRate"
+          ? "Mainnet Exchange Rate Streams"
+          : dataFeedType === "streamsBacked"
+            ? "Mainnet Backed xStock Streams"
+            : "Mainnet RWA Streams"
   const streamsTestnetSectionTitle =
     dataFeedType === "streamsCrypto"
       ? "Testnet Crypto Streams"
       : dataFeedType === "streamsNav"
         ? "Testnet NAV Streams"
-        : dataFeedType === "streamsBacked"
-          ? "Testnet Backed xStock Streams"
-          : "Testnet RWA Streams"
+        : dataFeedType === "streamsExRate"
+          ? "Testnet Exchange Rate Streams"
+          : dataFeedType === "streamsBacked"
+            ? "Testnet Backed xStock Streams"
+            : "Testnet RWA Streams"
 
   // Initialize search input fields with URL parameter values
   useEffect(() => {
@@ -419,6 +439,7 @@ export const FeedList = ({
     dataFeedType === "streamsCrypto" ||
     dataFeedType === "streamsRwa" ||
     dataFeedType === "streamsNav" ||
+    dataFeedType === "streamsExRate" ||
     dataFeedType === "streamsBacked"
   ) {
     const mainnetFeeds: ChainNetwork[] = []
