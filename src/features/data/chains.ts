@@ -454,42 +454,6 @@ export const CHAINS: Chain[] = [
     ],
   },
   {
-    page: "moonbeam",
-    label: "Moonbeam",
-    title: "Moonbeam Data Feeds",
-    img: "/assets/chains/moonbeam.svg",
-    networkStatusUrl: "https://moonscan.freshstatus.io/",
-    tags: ["default"],
-    supportedFeatures: ["feeds"],
-    networks: [
-      {
-        name: "Moonbeam Mainnet",
-        explorerUrl: "https://moonscan.io/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-polkadot-mainnet-moonbeam.json",
-        queryString: "moonbeam-mainnet",
-      },
-    ],
-  },
-  {
-    page: "moonriver",
-    title: "Moonriver Data Feeds",
-    label: "Moonriver",
-    img: "/assets/chains/moonriver.svg",
-    networkStatusUrl: "https://moonscan.freshstatus.io/",
-    tags: ["default"],
-    supportedFeatures: ["feeds"],
-    networks: [
-      {
-        name: "Moonriver Mainnet",
-        explorerUrl: "https://moonriver.moonscan.io/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-kusama-mainnet-moonriver.json",
-        queryString: "moonriver-mainnet",
-      },
-    ],
-  },
-  {
     page: "optimism",
     label: "OP",
     title: "OP Data Feeds",
