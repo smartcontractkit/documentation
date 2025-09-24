@@ -310,25 +310,6 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
 
    [Learn more about the decoded report details](#decoded-report-details).
 
-### High Availability (HA) Mode
-
-The example above demonstrates streaming data from a single crypto stream. For production environments, especially when subscribing to multiple streams, it's recommended to enable [High Availability (HA) mode](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/docs/examples/wss_multiple.md). This can be achieved by:
-
-1. Adding multiple WebSocket endpoints in the configuration:
-
-   ```rust
-   "wss://ws.testnet-dataengine.chain.link,wss://ws.testnet-dataengine.chain.link"
-   ```
-
-1. Enabling HA mode in the configuration:
-   ```rust
-   use chainlink_data_streams_sdk::config::WebSocketHighAvailability;
-   // ...
-   .with_ws_ha(WebSocketHighAvailability::Enabled)
-   ```
-
-When HA mode is enabled and multiple WebSocket origins are provided, the Stream will maintain concurrent connections to different instances. This ensures high availability, fault tolerance, and minimizes the risk of report gaps.
-
 #### Subscribing to multiple streams
 
 You can subscribe to multiple streams by providing additional stream IDs as command-line arguments:
@@ -340,6 +321,41 @@ cargo run -- \
 ```
 
 This will subscribe to both ETH/USD and BTC/USD streams.
+
+### High Availability (HA) mode
+
+<Aside type="note" title="Mainnet only">
+  HA mode is only available on mainnet endpoints, not testnet.
+</Aside>
+
+The example above demonstrates streaming data from a single crypto stream. For production environments, especially when subscribing to multiple streams, it's recommended to enable [High Availability (HA) mode](/data-streams/reference/data-streams-api/rust-sdk#high-availability-mode).
+
+High Availability (HA) mode creates multiple WebSocket connections to different origin endpoints for improved reliability. When HA mode is enabled, the Stream will maintain at least 2 concurrent connections to different instances to ensure high availability, fault tolerance and minimize the risk of report gaps.
+
+#### Enabling HA mode
+
+To enable HA mode in your streaming application, make these changes to the basic example. You also must use a mainnet endpoint, as HA mode is not currently supported on testnet.
+
+```rust
+// ... existing code ...
+
+use chainlink_data_streams_sdk::config::{Config, WebSocketHighAvailability}; // Import WebSocketHighAvailability
+
+// Initialize the configuration with HA mode
+let config = Config::new(
+    api_key,
+    api_secret,
+    "https://api.dataengine.chain.link".to_string(), // Mainnet endpoint
+    "wss://ws.dataengine.chain.link,wss://ws.dataengine.chain.link".to_string(), // Multiple WebSocket endpoints
+)
+.with_ws_ha(WebSocketHighAvailability::Enabled) // Enable WebSocket High Availability Mode
+.build()?;
+
+
+// ... existing code ...
+```
+
+See more details about HA mode in the [SDK Reference](/data-streams/reference/data-streams-api/rust-sdk#high-availability-mode).
 
 ### Decoded report details
 
@@ -358,14 +374,6 @@ The decoded report details include:
 | `Native Fee`             | `25600606005500`                                                     | The fee to pay in the native blockchain token (e.g., ETH on Ethereum) for the onchain verification of the report data. For readability: `0.0000256006060055` ETH. **Note:** This example fee is not indicative of actual fees. |
 
 For descriptions and data types of other report schemas, see the [Report Schema Overview](/data-streams/reference/report-schema-overview).
-
-### High Availability (HA) mode
-
-<Aside type="note" title="Mainnet only">
-  HA mode is only available on mainnet endpoints, not testnet.
-</Aside>
-
-High Availability (HA) mode creates multiple WebSocket connections to different origin endpoints for improved reliability. When enabled, the SDK automatically handles failover, deduplicates reports, and provides connection-level metrics.
 
 ### Payload for onchain verification
 

@@ -346,68 +346,6 @@ The decoded report details include:
 
 For descriptions and data types of other report schemas, see the [Report Schema Overview](/data-streams/reference/report-schema-overview).
 
-### High Availability (HA) mode
-
-<Aside type="note" title="Mainnet only">
-  HA mode is only available on mainnet endpoints, not testnet.
-</Aside>
-
-High Availability (HA) mode creates multiple WebSocket connections to different origin endpoints for improved reliability. When enabled, the SDK automatically handles failover, deduplicates reports, and provides connection-level metrics.
-
-#### Enabling HA mode
-
-To enable HA mode in your streaming application, make these changes to the basic example:
-
-1. Add `haMode: true` to the client configuration. You also must use a mainnet endpoint, as HA mode is not currently supported on testnet.
-
-```typescript
-const client = createClient({
-  apiKey: process.env.API_KEY || "YOUR_API_KEY",
-  userSecret: process.env.USER_SECRET || "YOUR_USER_SECRET",
-  endpoint: "https://api.dataengine.chain.link", // Mainnet endpoint
-  wsEndpoint: "wss://ws.dataengine.chain.link", // Mainnet WebSocket
-  haMode: true, // Enable High Availability mode
-
-  // Optional: Monitor connection status changes
-  connectionStatusCallback: (isConnected: boolean, host: string, origin?: string) => {
-    const status = isConnected ? "🟢 Connected" : "🔴 Disconnected"
-    console.log(`${status}: ${host}${origin ? ` (${origin})` : ""}`)
-  },
-
-  logging: {
-    logger: console,
-    logLevel: LogLevel.INFO,
-  },
-})
-```
-
-2. Optionally, monitor HA metrics using the existing `getMetrics()` calls in your report handler:
-
-```typescript
-stream.on("report", (report) => {
-  // ... your report processing logic
-
-  // HA-specific metrics
-  const stats = stream.getMetrics()
-  console.log(
-    `📊 HA Stats: ${stats.accepted} reports | ${stats.activeConnections}/${stats.configuredConnections} connections`
-  )
-  console.log(`Reconnects: ${stats.partialReconnects} partial, ${stats.fullReconnects} full`)
-
-  // Check deduplication (important for HA mode)
-  if (stats.totalReceived > 0) {
-    const deduplicationRate = ((stats.deduplicated / stats.totalReceived) * 100).toFixed(1)
-    console.log(`📈 Deduplication: ${deduplicationRate}% (${stats.deduplicated} filtered)`)
-  }
-})
-```
-
-When `haMode` is `true`, the SDK automatically discovers multiple origin endpoints behind the single URL and establishes separate connections to each origin.
-
-The optional `connectionStatusCallback` can be used to integrate with external monitoring systems. The SDK already provides comprehensive connection logs, so this callback is primarily useful for custom alerting or metrics collection.
-
-See more details about HA mode in the [SDK Reference](/ts-sdk#high-availability-mode).
-
 ### Subscribing to multiple streams
 
 You can subscribe to multiple streams by providing additional stream IDs as command-line arguments:
@@ -417,6 +355,57 @@ npx tsx stream.ts 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1b
 ```
 
 This will subscribe to both ETH/USD and BTC/USD streams.
+
+### High Availability (HA) mode
+
+<Aside type="note" title="Mainnet only">
+  HA mode is only available on mainnet endpoints, not testnet.
+</Aside>
+
+The example above demonstrates streaming data from a single crypto stream. For production environments, especially when subscribing to multiple streams, it's recommended to enable [High Availability (HA) mode](/data-streams/reference/data-streams-api/ts-sdk#high-availability-mode).
+
+High Availability (HA) mode creates multiple WebSocket connections to different origin endpoints for improved reliability. When HA mode is enabled, the Stream will maintain at least 2 concurrent connections to different instances to ensure high availability, fault tolerance and minimize the risk of report gaps.
+
+#### Enabling HA mode
+
+To enable HA mode in your streaming application, make these changes to the basic example:
+
+```typescript
+// ... existing code ...
+
+const client = createClient({
+  apiKey: process.env.API_KEY || "YOUR_API_KEY",
+  userSecret: process.env.USER_SECRET || "YOUR_USER_SECRET",
+  endpoint: "https://api.dataengine.chain.link", // Mainnet endpoint
+  wsEndpoint: "wss://ws.dataengine.chain.link", // Single endpoint (mainnet only)
+  haMode: true, // Enable High Availability mode
+
+  // Optional: Advanced connection monitoring with origin tracking
+  connectionStatusCallback: (isConnected, host, origin) => {
+    const timestamp = new Date().toISOString().substring(11, 19)
+    const status = isConnected ? "🟢 UP" : "🔴 DOWN"
+    console.log(`[${timestamp}] ${status} ${host}${origin || ""}`)
+
+    // Example: Send alerts for specific origins
+    if (!isConnected && origin) {
+      console.warn(`⚠️ Alert: Origin ${origin} on ${host} went offline`)
+    }
+  },
+
+  logging: {
+    logger: console,
+    logLevel: LogLevel.INFO,
+  },
+})
+
+// ... existing code ...
+```
+
+When `haMode` is `true`, the SDK automatically discovers multiple origin endpoints behind the single URL and establishes separate connections to each origin. You also must use a mainnet endpoint, as HA mode is not currently supported on testnet.
+
+The optional `connectionStatusCallback` can be used to integrate with external monitoring systems. The SDK already provides comprehensive connection logs, so this callback is primarily useful for custom alerting or metrics collection.
+
+See more details about HA mode in the [SDK Reference](/data-streams/reference/data-streams-api/ts-sdk#high-availability-ha-mode).
 
 ### Payload for onchain verification
 

@@ -327,21 +327,34 @@ The decoded report details include:
 
 For descriptions and data types of other report schemas, see the [Report Schema Overview](/data-streams/reference/report-schema-overview).
 
+### Subscribing to multiple streams
+
+You can subscribe to multiple streams by providing additional stream IDs as command-line arguments:
+
+```bash
+go run stream.go 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782 0x00036fe43f87884450b4c7e093cd5ed99cac6640d8c2000e6afc02c8838d0265
+```
+
+This will subscribe to both ETH/USD and BTC/USD streams.
+
 ### High Availability (HA) mode
 
 <Aside type="note" title="Mainnet only">
   HA mode is only available on mainnet endpoints, not testnet.
 </Aside>
 
-High Availability (HA) mode creates multiple WebSocket connections to different origin endpoints for improved reliability. When enabled, the SDK automatically handles failover, deduplicates reports, and provides connection-level metrics.
+The example above demonstrates streaming data from a single crypto stream. For production environments, especially when subscribing to multiple streams, it's recommended to enable [High Availability (HA) mode](/data-streams/reference/data-streams-api/go-sdk#high-availability-ha-mode).
+
+High Availability (HA) mode creates multiple WebSocket connections to different origin endpoints for improved reliability. When HA mode is enabled, the Stream will maintain at least 2 concurrent connections to different instances to ensure high availability, fault tolerance and minimize the risk of report gaps.
 
 #### Enabling HA mode
 
 To enable HA mode in your streaming application, make these changes to the basic example:
 
-1. Add HA mode to the client configuration and use a mainnet endpoint, as HA mode is not currently supported on testnet:
-
 ```go
+// ... existing code ...
+
+// Enable HA mode with mainnet endpoint
 cfg := streams.Config{
     ApiKey:    os.Getenv("API_KEY"),
     ApiSecret: os.Getenv("API_SECRET"),
@@ -349,31 +362,14 @@ cfg := streams.Config{
     WsHA:      true,                             // Enable High Availability mode
     Logger:    streams.LogPrintf,
 }
-```
 
-2. Monitor HA metrics using the existing `Stats()` calls in your report handler:
-
-```go
-// In your report processing loop
-for {
-    reportResponse, err := stream.Read(context.Background())
-    if err != nil {
-        cfg.Logger("Error reading from stream: %v\n", err)
-        continue
-    }
-
-    // Process the report...
-
-    // Monitor HA statistics (includes HA-specific metrics)
-    cfg.Logger("Stream Stats: %s\n", stream.Stats().String())
-    // Output example: "accepted: 150, deduplicated: 3, total_received: 153, partial_reconnects: 1, full_reconnects: 0, configured_connections: 2, active_connections: 2"
+client, err := streams.New(cfg)
+if err != nil {
+    cfg.Logger("Failed to create client: %v\n", err)
+    os.Exit(1)
 }
-```
 
-3. Optionally, monitor individual connection status using `StreamWithStatusCallback`:
-
-```go
-// Subscribe to the feeds with connection status monitoring
+// Optional: Use StreamWithStatusCallback for connection monitoring
 stream, err := client.StreamWithStatusCallback(
     ctx, ids,
     func(isConnected bool, host string, origin string) {
@@ -384,21 +380,15 @@ stream, err := client.StreamWithStatusCallback(
         cfg.Logger("Host: %s, Origin: %s, Status: %s\n", host, origin, status)
     },
 )
+
+// ... existing code ...
 ```
 
-When HA mode is enabled, the SDK maintains at least 2 concurrent connections to different instances to ensure high availability, fault tolerance, and minimize the risk of report gaps.
+When `WsHA` is `true`, the SDK automatically discovers multiple origin endpoints behind the single URL and establishes separate connections to each origin. You also must use a mainnet endpoint, as HA mode is not currently supported on testnet.
+
+The optional `StreamWithStatusCallback` can be used to monitor individual connection status. The SDK already provides comprehensive connection logs through `stream.Stats().String()`, so this callback is primarily useful for custom alerting or connection monitoring.
 
 See more details about HA mode in the [SDK Reference](/data-streams/reference/data-streams-api/go-sdk#high-availability-ha-mode).
-
-### Subscribing to multiple streams
-
-You can subscribe to multiple streams by providing additional stream IDs as command-line arguments:
-
-```bash
-go run stream.go 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782 0x00036fe43f87884450b4c7e093cd5ed99cac6640d8c2000e6afc02c8838d0265
-```
-
-This will subscribe to both ETH/USD and BTC/USD streams.
 
 ### Payload for onchain verification
 
