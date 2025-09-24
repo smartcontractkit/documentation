@@ -18,6 +18,21 @@ export type NetworkData = {
 
 export const StreamsNetworksData: NetworkData[] = [
   {
+    network: "0G",
+    logoUrl: "/assets/chains/0g.svg",
+    networkStatus: "https://status.0g.ai/",
+    mainnet: {
+      label: "0G Aristotle (Mainnet)",
+      verifierProxy: "0x2e6621e5e3F916d5e512124dD79e06b55E258054",
+      explorerUrl: "https://chainscan.0g.ai/address/%s",
+    },
+    testnet: {
+      label: "0G Galileo (Testnet)",
+      verifierProxy: "0x7C8bf15e7d4d44AB1b29F0aC047600295111de4c",
+      explorerUrl: "https://chainscan-galileo.0g.ai/address/%s",
+    },
+  },
+  {
     network: "Apechain",
     logoUrl: "/assets/chains/apechain.svg",
     mainnet: {
@@ -260,6 +275,20 @@ export const StreamsNetworksData: NetworkData[] = [
       label: "Ink Sepolia Testnet",
       verifierProxy: "0x1f27392cC2394d54fFBA83B89C881200b5d5632C",
       explorerUrl: "https://explorer-sepolia.inkonchain.com/address/%s",
+    },
+  },
+  {
+    network: "Jovay",
+    logoUrl: "/assets/chains/jovay.svg",
+    mainnet: {
+      label: "Jovay Mainnet",
+      verifierProxy: "0x57a97148c1fa50f35f0639f380077017d8893b6b",
+      explorerUrl: "https://explorer.jovay.io/l2/address/%s",
+    },
+    testnet: {
+      label: "Jovay Sepolia Testnet",
+      verifierProxy: "0x60faa7fac949af392dfc858f5d97e3eefa07e9eb",
+      explorerUrl: "https://sepolia-explorer.jovay.io/l2/address/%s",
     },
   },
   {

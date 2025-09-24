@@ -134,6 +134,7 @@ export const productChainLinks: ProductChainLinks = {
     learnMoreLink: "data-streams",
     logo: dataStreamsLogo,
     chains: {
+      "0g": "/data-streams/crypto-streams",
       apechain: "/data-streams/crypto-streams",
       arbitrum: "/data-streams/crypto-streams",
       avalanche: "/data-streams/crypto-streams",
@@ -151,6 +152,7 @@ export const productChainLinks: ProductChainLinks = {
       hashkey: "/data-streams/crypto-streams",
       hyperevm: "/data-streams/crypto-streams",
       ink: "/data-streams/crypto-streams",
+      jovay: "/data-streams/crypto-streams",
       lens: "/data-streams/crypto-streams",
       linea: "/data-streams/crypto-streams",
       mantle: "/data-streams/crypto-streams",
