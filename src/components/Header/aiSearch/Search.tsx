@@ -41,7 +41,6 @@ function AlgoliaSearch({ algoliaVars }) {
       popularCards={popularCards}
       ariaLabel="Open AI search"
       spotlight={["Documentation"]}
-      categoriesToShow={[]}
       hideSuggestions={true}
     />
   )
