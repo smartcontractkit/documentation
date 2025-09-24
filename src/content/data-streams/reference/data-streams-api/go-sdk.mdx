@@ -42,6 +42,26 @@ import { PageTabs } from "@components"
 
 This documentation provides a detailed reference for the Data Streams SDK for Go. It implements a client library that offers a domain-oriented abstraction for interacting with the Data Streams API and enables both point-in-time data retrieval and real-time data streaming with built-in fault tolerance capabilities.
 
+## Requirements
+
+- Go 1.22.4 or later
+- Valid Chainlink Data Streams credentials
+
+## Features
+
+- **REST API Client**: Fetch point-in-time data from Data Streams
+- **WebSocket Client**: Stream real-time data with automatic reconnection
+- **[High Availability mode](#high-availability-ha-mode)**: Multiple WebSocket connections with automatic failover
+- **Report Decoding**: Built-in support for decoding multiple report formats (V1-V10)
+- **Type-safe**: Full Go type safety with generics
+- **Context Support**: Built on Go's context package for cancellation and timeouts
+
+## Installation
+
+```go
+go get github.com/smartcontractkit/data-streams-sdk/go
+```
+
 ## streams
 
 ### Installation
@@ -61,31 +81,37 @@ import streams "github.com/smartcontractkit/data-streams-sdk/go"
 - `GetFeeds`: Lists all streams available to you.
 
   ```go
-  GetFeeds(ctx context.Context) (r []*Feed, err error)
+  GetFeeds(ctx context.Context) (r []*feed.Feed, err error)
   ```
 
 - `GetLatestReport`: Fetches the latest report available for the specified `FeedID`.
 
   ```go
-  GetLatestReport(ctx context.Context, id FeedID) (r *Report, err error)
+  GetLatestReport(ctx context.Context, id feed.ID) (r *ReportResponse, err error)
   ```
 
 - `GetReports`: Fetches reports for the specified stream IDs and a given timestamp.
 
   ```go
-  GetReports(ctx context.Context, ids []FeedID, timestamp uint64) ([]*Report, error)
+  GetReports(ctx context.Context, ids []feed.ID, timestamp uint64) ([]*ReportResponse, error)
   ```
 
 - `GetReportPage`: Paginates the reports for a specified `FeedID` starting from a given timestamp.
 
   ```go
-  GetReportPage(ctx context.Context, id FeedID, startTS uint64) (*ReportPage, error)
+  GetReportPage(ctx context.Context, id feed.ID, startTS uint64) (*ReportPage, error)
   ```
 
 - `Stream`: Creates a real-time report stream for specified stream IDs.
 
   ```go
-  Stream(ctx context.Context, feedIDs []FeedID) (Stream, error)
+  Stream(ctx context.Context, feedIDs []feed.ID) (Stream, error)
+  ```
+
+- `StreamWithStatusCallback`: Creates a real-time report stream for specified stream IDs with a callback function for connection status updates.
+
+  ```go
+  StreamWithStatusCallback(ctx context.Context, feedIDs []feed.ID, connStatusCallback func(isConnected bool, host string, origin string)) (Stream, error)
   ```
 
 #### `Config` struct
@@ -94,23 +120,23 @@ Configuration struct for the client. `Config` specifies the client configuration
 
 ```go
 type Config struct {
-	ApiKey             string // Client API key
-	ApiSecret          string // Client API secret
-	RestURL            string // Rest API URL
-
-	WsURL              string // Websocket API URL
-
-	WsHA               bool // Use concurrent connections to multiple Streams servers
-	WsMaxReconnect     int // Maximum number of reconnection attempts for Stream underlying connections
-	LogDebug           bool // Log debug information
-	InsecureSkipVerify bool // Skip server certificate chain and host name verification
+	ApiKey             string                        // Client API key
+	ApiSecret          string                        // Client API secret
+	RestURL            string                        // Rest API URL
+	WsURL              string                        // Websocket API URL
+	WsHA               bool                          // Use concurrent connections to multiple Streams servers
+	WsMaxReconnect     int                           // Maximum number of reconnection attempts for Stream underlying connections
+	LogDebug           bool                          // Log debug information
+	InsecureSkipVerify bool                          // Skip server certificate chain and host name verification
 	Logger             func(format string, a ...any) // Logger function
 
-	// InspectHttp intercepts http responses for rest requests.
+	// InspectHttpResponse intercepts http responses for rest requests.
 	// The response object must not be modified.
 	InspectHttpResponse func(*http.Response)
 }
 ```
+
+**Note**: If `WsMaxReconnect` is not specified, it defaults to 5 attempts.
 
 #### `CtxKey` string
 
@@ -138,8 +164,8 @@ Represents a paginated response of reports.
 
 ```go
 type ReportPage struct {
-	Reports    []*Report // Slice of Report, representing individual report entries.
-	NextPageTS uint64 // Timestamp for the next page, used for fetching subsequent pages.
+	Reports    []*ReportResponse // Slice of ReportResponse, representing individual report entries.
+	NextPageTS uint64            // Timestamp for the next page, used for fetching subsequent pages.
 }
 ```
 
@@ -201,7 +227,9 @@ type Stats struct {
 
 #### `Stream` interface
 
-[Interface](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/stream.go#L39) for managing a real-time data stream.
+[Interface](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/stream.go#L39) for managing a real-time data stream. The Stream is safe for concurrent usage and automatically handles [High Availability scenarios](#high-availability-ha-mode) when enabled.
+
+When HA mode is enabled, the Stream will maintain concurrent connections to different instances to ensure high availability, fault tolerance and minimize the risk of report gaps.
 
 ##### Interface Methods
 
@@ -211,7 +239,7 @@ type Stats struct {
   - An error state is encountered in any of the underlying connections, such as a network failure.
 
   ```go
-  Read(context.Context) (*Report, error)
+  Read(context.Context) (*ReportResponse, error)
   ```
 
 - `Stats`: Returns statistics about the stream operations as `Stats`.
@@ -225,6 +253,30 @@ type Stats struct {
   ```go
   Close() error
   ```
+
+### High Availability (HA) Mode
+
+The Data Streams SDK supports High Availability mode for WebSocket connections. When enabled with `WsHA: true`, the SDK maintains concurrent connections to different instances to ensure high availability, fault tolerance and minimize the risk of report gaps.
+
+#### HA Mode Behavior
+
+When high availability mode is enabled:
+
+- The client queries the server for available origins using the `X-Cll-Available-Origins` header
+- Multiple WebSocket connections are established to different server instances
+- Reports are deduplicated when received across connections
+- Partial reconnects occur when some connections fail while others remain active
+- Full reconnects occur when all connections fail
+
+#### HA Configuration
+
+HA mode is controlled by the `WsHA` field in the client configuration:
+
+```go
+config := streams.Config{
+    WsHA: true, // Use concurrent connections to multiple Streams servers
+}
+```
 
 ### Functions
 
@@ -240,10 +292,20 @@ func New(cfg Config) (c Client, err error)
 
 #### `LogPrintf`
 
-Utility function for logging.
+Utility function for logging that implements a LogFunction using fmt.Printf.
 
 ```go
 func LogPrintf(format string, a ...any)
+```
+
+### Errors
+
+#### `ErrStreamClosed`
+
+Error returned when attempting to use a closed stream.
+
+```go
+var ErrStreamClosed = fmt.Errorf("client: use of closed Stream")
 ```
 
 ## feed
@@ -270,11 +332,24 @@ Where `ID` is the unique identifier for the stream.
 
 #### `FeedVersion` uint16
 
-Represents the stream [report schema](/data-streams/reference/report-schema-v3) version.
+Represents the stream [report schema](/data-streams/reference/report-schema-overview) version.
 
 ```go
 type FeedVersion uint16
 ```
+
+##### Constants
+
+- `FeedVersion1`: Version 1 schema
+- `FeedVersion2`: Version 2 schema
+- `FeedVersion3`: Version 3 schema
+- `FeedVersion4`: Version 4 schema
+- `FeedVersion5`: Version 5 schema
+- `FeedVersion6`: Version 6 schema
+- `FeedVersion7`: Version 7 schema
+- `FeedVersion8`: Version 8 schema
+- `FeedVersion9`: Version 9 schema
+- `FeedVersion10`: Version 10 schema
 
 #### `ID` [32]byte
 
@@ -328,11 +403,11 @@ import report "github.com/smartcontractkit/data-streams-sdk/go/report"
 
 #### `Data` interface
 
-[Interface](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/report/report.go#L13) that represents the actual report data and attributes.
+[Interface](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/report/report.go#L20) that represents the actual report data and attributes.
 
 ```go
 type Data interface {
-    v1.Data | v2.Data | v3.Data | v4.Data | v8.Data | v9.Data
+    v1.Data | v2.Data | v3.Data | v4.Data | v5.Data | v6.Data | v7.Data | v8.Data | v9.Data | v10.Data
     Schema() abi.Arguments
 }
 ```
@@ -387,3 +462,44 @@ streams.LogPrintf(
     report.Data.ExpiresAt,
 )
 ```
+
+## Report Format and Schema Versions
+
+### Schema Versions
+
+The SDK supports multiple report schema versions (v1-v10), each optimized for different use cases:
+
+- **v2**: Feed IDs starting with `0x0002`
+- **v3**: Feed IDs starting with `0x0003` (Crypto Streams)
+- **v4**: Feed IDs starting with `0x0004` (Real-World Assets)
+- **v5**: Feed IDs starting with `0x0005`
+- **v6**: Feed IDs starting with `0x0006` (Multiple Price Values)
+- **v7**: Feed IDs starting with `0x0007` (Exchange Rate)
+- **v8**: Feed IDs starting with `0x0008` (Non-OTC RWA)
+- **v9**: Feed IDs starting with `0x0009` (NAV Fund Data)
+- **v10**: Feed IDs starting with `0x000a` (Tokenized Equity)
+
+### Common Fields
+
+All report versions include standard metadata:
+
+- `FeedID`: Unique identifier for the data stream
+- `ValidFromTimestamp`: When the report becomes valid
+- `ExpiresAt`: When the report expires
+- `LinkFee`: Fee in LINK tokens
+- `NativeFee`: Fee in native blockchain currency
+- `ObservationsTimestamp`: When the data was observed
+
+### Usage Pattern
+
+Each version follows the same decoding pattern:
+
+```go
+import v3 "github.com/smartcontractkit/data-streams-sdk/go/report/v3"
+
+report, err := report.Decode[v3.Data](fullReport)
+```
+
+Use the appropriate version import based on your feed's schema version, which can be determined by calling `feedID.Version()`.
+
+For complete field definitions and decoding examples, see the [report schema overview](/data-streams/reference/report-schema-overview) and [fetch tutorial](/data-streams/tutorials/go-sdk-fetch).

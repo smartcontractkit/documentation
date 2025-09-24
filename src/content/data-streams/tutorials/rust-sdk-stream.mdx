@@ -357,6 +357,64 @@ The decoded report details include:
 
 For descriptions and data types of other report schemas, see the [Report Schema Overview](/data-streams/reference/report-schema-overview).
 
+### High Availability (HA) mode
+
+<Aside type="note" title="Mainnet only">
+  HA mode is only available on mainnet endpoints, not testnet.
+</Aside>
+
+High Availability (HA) mode creates multiple WebSocket connections to different origin endpoints for improved reliability. When enabled, the SDK automatically handles failover, deduplicates reports, and provides connection-level metrics.
+
+#### Enabling HA mode
+
+To enable HA mode in your streaming application, make these changes to the basic example:
+
+1. Add multiple WebSocket endpoints and enable HA mode in the client configuration. You also must use a mainnet endpoint, as HA mode is not currently supported on testnet.
+
+```rust
+use chainlink_data_streams_sdk::config::{Config, WebSocketHighAvailability};
+
+let config = Config::new(
+    api_key,
+    api_secret,
+    "https://api.dataengine.chain.link".to_string(), // Mainnet endpoint
+    "wss://ws1.dataengine.chain.link,wss://ws2.dataengine.chain.link".to_string(), // Multiple WebSocket endpoints
+)
+.with_ws_ha(WebSocketHighAvailability::Enabled) // Enable High Availability mode
+.with_ws_max_reconnect(10) // Optional: Increase max reconnection attempts
+.build()?;
+```
+
+2. Optionally, monitor HA metrics using the existing `get_stats()` calls in your report handler:
+
+```rust
+// In your report processing loop
+match stream.read().await {
+    Ok(report) => {
+        // ... your report processing logic
+
+        // HA-specific metrics
+        let stats = stream.get_stats();
+        info!(
+            "📊 Stats: {} reports | {}/{} connections",
+            stats.accepted, stats.active_connections, stats.configured_connections
+        );
+        info!("Reconnects: {} partial, {} full", stats.partial_reconnects, stats.full_reconnects);
+
+        // Check deduplication (important for HA mode)
+        if stats.total_received > 0 {
+            let dedup_rate = (stats.deduplicated as f64 / stats.total_received as f64) * 100.0;
+            info!("Deduplication rate: {:.1}%", dedup_rate);
+        }
+    }
+    Err(e) => {
+        warn!("Error reading from stream: {}", e);
+    }
+}
+```
+
+See more details about HA mode in the [SDK Reference](/rust-sdk#websocket-features).
+
 ### Payload for onchain verification
 
 In this tutorial, you logged and decoded the `full_report` payloads to extract the report data. However, in a production environment, you should verify the data to ensure its integrity and authenticity.
