@@ -40,6 +40,9 @@ function AlgoliaSearch({ algoliaVars }) {
       categoryOrder={["Documentation"]}
       popularCards={popularCards}
       ariaLabel="Open AI search"
+      spotlight={["Documentation"]}
+      hideSuggestions={true}
+      baseApiUrl="https://cl-ai-search-api-preview.vercel.app/api"
     />
   )
 }
