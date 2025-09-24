@@ -37,10 +37,10 @@ function AlgoliaSearch({ algoliaVars }) {
     <SearchButtonComponent
       algoliaAppId={algoliaVars.algoliaAppId}
       algoliaPublicApiKey={algoliaVars.algoliaPublicApiKey}
-      categoryOrder={["Documentation"]}
+      categoryOrder={["Transaction"]}
       popularCards={popularCards}
       ariaLabel="Open AI search"
-      spotlight={["Documentation"]}
+      spotlight={["Tranasaction"]}
       hideSuggestions={true}
       baseApiUrl="https://cl-ai-search-api-preview.vercel.app/api"
     />
