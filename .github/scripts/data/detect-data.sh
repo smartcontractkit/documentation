@@ -154,9 +154,9 @@ node <<EOF
 
     // === data-streams networks
     const STREAMS_NETWORKS = [
-      "apechain", "arbitrum", "avalanche", "base", "berachain", "bitlayer", "blast",
+      "0g", apechain", "arbitrum", "avalanche", "base", "berachain", "bitlayer", "blast",
       "bnb-chain", "bob", "botanix", "celo", "ethereum", "gnosis-chain", "gravity", "hashkey", "hyperliquid",
-      "ink", "katana", "lens", "linea", "mantle", "metis", "opbnb", "optimism", "polygon", "ronin",
+      "ink", jovay, "katana", "lens", "linea", "mantle", "metis", "opbnb", "optimism", "polygon", "ronin",
       "scroll", "shibarium", "sei", "soneium", "sonic",
       "solana", "taiko", "unichain", "worldchain", "zksync"
     ];
