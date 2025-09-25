@@ -85,11 +85,12 @@ export const productChainLinks: ProductChainLinks = {
       janction: "/ccip/directory/testnet/chain/janction-testnet-sepolia",
       neox: "/ccip/directory/testnet/chain/neox-testnet-t4",
       polygonkatana: "/ccip/directory/mainnet/chain/polygon-mainnet-katana",
-      "0g": "/ccip/directory/testnet/chain/0g-testnet-galileo",
+      "0g": "/ccip/directory/mainnet/chain/0g-mainnet",
       hyperevm: "/ccip/directory/mainnet/chain/hyperevm-mainnet",
       etherlink: "/ccip/directory/testnet/chain/etherlink-testnet",
       kaia: "/ccip/directory/mainnet/chain/kaia-mainnet",
       tac: "/ccip/directory/mainnet/chain/tac-mainnet",
+      plasma: "/ccip/directory/mainnet/chain/plasma-mainnet",
     },
   },
   "Data Feeds": {
@@ -379,4 +380,5 @@ export const chainNames: Record<string, string> = {
   tac: "Tac",
   kaia: "Kaia",
   plasma: "Plasma",
+  jovay: "Jovay",
 }
