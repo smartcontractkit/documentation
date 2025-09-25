@@ -1,0 +1,455 @@
+---
+title: "Automated Data Relay with Push Engine"
+description: "A guide for third-party integrators to set up and manage a self-hosted, automated relay to push off-chain Data Streams to smart contracts."
+githubSourceCodeUrl: "https://github.com/hackbg/push-engine"
+image: "QuickStarts-DataStreams-PushEngine.webp"
+products: ["streams"]
+time: "25 minutes"
+requires: "Foundry, Docker, Node.js, pnpm, Redis, Wallet with AVAX, Contract funded with LINK, Data Streams credentials."
+---
+
+import { Accordion, Address, Aside, ClickToZoom, CodeSample, CopyText } from "@components"
+import { TabsContent } from "@components/Tabs"
+
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+
+{/* Common Links */}
+
+[DOCKER_INSTALL]: https://docs.docker.com/get-started/get-docker/
+[NODE_INSTALL]: https://nodejs.org/en/download/
+[REDIS_INSTALL]: https://redis.io/docs/latest/operate/oss_and_stack/install/archive/install-redis/
+[GITHUB_REPO]: https://github.com/hackbg/push-engine
+[DATA_STREAMS_CONTACT]: https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs
+[FOUNDRY_INSTALL]: https://book.getfoundry.sh/getting-started/installation
+
+## Overview
+
+<Aside type="caution" title="Disclaimer">
+  This reference implementation is provided to help you understand how to interact with Chainlink's systems and services
+  so that you can integrate them into your own. This reference implementation is provided on an “AS IS” and “AS
+  AVAILABLE” basis without any representations, warranties, covenants, or conditions of any kind. Use at your own risk.
+  Users remain fully responsible for reviewing, auditing, and deploying any code or contracts. Do not use the code in
+  this reference implementation in a production environment without completing your own audits and application of best
+  practices. Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for
+  unintended outputs that are generated due to errors in code. Please review the Chainlink Terms of Service which
+  provides important information and disclosures. By using this reference implementation, you expressly acknowledge and
+  agree to accept these terms.
+</Aside>
+
+While [Chainlink Data Streams](/data-streams/index) provide access to low-latency market data offchain, the process of bringing this data onchain requires significant engineering. Developers must build, deploy, and maintain a custom infrastructure service that can reliably connect to the Data Streams API, implement robust WebSocket reconnection logic, and manage the onchain transaction logic for when and how to push updates.
+
+[Push Engine](https://github.com/hackbg/push-engine), a reference implementation made available for third-party integrators, provides a foundational framework for the DevOps teams and Infrastructure Managers tasked with building these systems. Push Engine is a configurable service that handles the core logic of monitoring off-chain Data Streams and pushing values to your smart contracts based on predefined conditions, such as time intervals or price deviations. It also includes a web interface to manage your feeds and monitor their status.
+
+This guide walks you through deploying a `DataStreamsFeed` consumer contract, setting up Push Engine, and configuring it to monitor a specific Data Stream and relay it to your onchain contract.
+
+---
+
+## High-level Architecture
+
+<Aside type="tip" title="Learn More">
+  This is a high-level overview of the Data Stream Push Engine architecture. For a more detailed overview of the core
+  Data Streams architecture, including its components and pull-based model, refer to the [Data Streams
+  Architecture](/data-streams/architecture) documentation.
+</Aside>
+
+Push Engine relays data from the offchain Chainlink network to your onchain contracts in the following sequence:
+
+1.  **Offchain | Data Generation:** A Chainlink Decentralized Oracle Network (DON) generates and signs low-latency data reports, making them available in the offchain Data Streams Aggregation Network.
+
+1.  **Offchain | Monitoring:** Push Engine, which you operate, continuously monitors this offchain network for new reports via a WebSocket connection.
+
+1.  **Onchain | Transmission:** Based on your predefined conditions (such as a time interval or price deviation), Push Engine bundles the latest report into a transaction and submits it to your designated Oracle Contract.
+
+1.  **Onchain | Verification:** Within that single transaction, your Oracle Contract immediately calls the Chainlink Verifier Contract, which uses its `LINK` allowance to submit the verification request. The Verifier authenticates the report by checking the DON's cryptographic signature. If verification fails, the entire transaction reverts, ensuring no state change occurs.
+
+1.  **Onchain | Consumption:** Upon successful verification, the data is written to your Oracle Contract's storage. This freshly verified, low-latency data is now available onchain for your dApp or other smart contracts to consume.
+
+<ClickToZoom
+  src="/images/quickstarts/feature/QuickStarts-DataStreams-PushEngine.webp"
+  alt="Data Streams Push Engine Diagram"
+/>
+
+---
+
+## Requirements
+
+<DataStreams section="dsNotes" />
+
+Before you start this tutorial, ensure you have the following prerequisites:
+
+- **Deployment Host**: A stable server environment (cloud or on-premise) is required for a production deployment of the Push Engine service. This guide uses your local machine for initial setup and testing.
+- **Software Dependencies**: [Foundry][FOUNDRY_INSTALL], [Docker][DOCKER_INSTALL], [Node.js][NODE_INSTALL], and [Redis][REDIS_INSTALL] installed on your deployment host. This guide uses `pnpm` for package management.
+- **Development Wallet**: This guide requires a funded development wallet and its **private key** to send transactions.
+  - **Network Configuration**: This guide uses **Avalanche Fuji**. You can find RPC URLs on [Chainlist](https://chainlist.org).
+- **Testnet Funds**: The wallet must be funded with testnet `AVAX` to pay for transaction fees on the **Avalanche Fuji** network. Testnet `LINK` must be provided to the deployed contract to pay for onchain verification fees. Both are available from the [Chainlink Faucet](https://faucets.chain.link/).
+- **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us][DATA_STREAMS_CONTACT] to request Data Streams access.
+- **Web3 Foundation**: A basic understanding of [smart contracts and blockchain development](/quickstarts/deploy-your-first-contract).
+
+---
+
+## Steps to Implement
+
+<Accordion title="Deploy Consumer Contract" number={1}>
+First, deploy a [`DataStreamsFeed.sol` contract](https://github.com/woogieboogie-jl/push-engine-contract/blob/main/src/feed/DataStreamsFeed.sol), which receives, verifies, and stores the data relayed by Push Engine.
+
+1.  Install [Foundry][FOUNDRY_INSTALL], or update it to the latest version by running `foundryup` in your terminal.
+
+1.  Clone the `push-engine-contract` repository and navigate into the directory:
+
+    ```bash
+    git clone https://github.com/woogieboogie-jl/push-engine-contract.git
+    cd push-engine-contract
+    ```
+
+1.  Install the dependencies using `pnpm` and install/initialize Foundry:
+
+    ```bash
+    pnpm add --save-dev @openzeppelin/contracts @chainlink/contracts && curl -L https://foundry.paradigm.xyz | bash && forge install
+    ```
+
+1.  Create a `.env` file in the project's root directory to store your private key, RPC URL, and link token address:
+
+    ```bash
+    cat << 'EOF' > .env
+    PRIVATE_KEY=0xYOUR_PRIVATE_KEY
+    RPC_URL_AVAX_FUJI=https://...
+    LINK_TOKEN=0x5947BB275c521040051D82396192181b413227A3
+    EOF
+    ```
+
+    Replace `0xYOUR_PRIVATE_KEY` with your development wallet's private key and `<https://...>` with the [RPC URL for the Avalanche Fuji network](https://build.avax.network/docs/quick-start/networks/fuji-testnet#add-avalanche-c-chain-testnet-to-wallet).
+
+The `LINK_TOKEN` address for Avalanche Fuji is <CopyText text="0x5947BB275c521040051D82396192181b413227A3" code/>. Refer to the [Chainlink documentation for `LINK` token addresses on other networks](/resources/link-token-contracts).
+
+1.  Load the environment variables into your current shell session:
+
+    ```bash
+    source .env
+    ```
+
+1.  Configure `script/DeployDataStreamsFeed.s.sol`.
+
+    This script deploys the `DataStreamsFeed` contract, which will receive data from Push Engine.
+
+    You must set the constructor arguments for the contract:
+
+    | Parameter              | Value                                                                                      | Description                                |
+    | :--------------------- | :----------------------------------------------------------------------------------------- | :----------------------------------------- |
+    | `verifierProxyAddress` | <CopyText text="0x2bf612C65f5a4d388E687948bb2CF842FFb8aBB3" code/>                         | Avalanche Fuji Verifier                    |
+    | `feedId`               | <CopyText text="0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782" code/> | ETH/USD                                    |
+    | `decimals`             | <CopyText text="18" code/>                                                                 | The number of decimals for the data.       |
+    | `description`          | <CopyText text="ETH / USD Feed" code/>                                                     | A human-readable description for the feed. |
+
+1.  Deploy the contract via the command line.
+
+    Run the deployment script to deploy to **Avalanche Fuji**:
+
+    ```sh
+    forge script script/DeployDataStreamsFeed.s.sol:DeployDataStreamsFeed \
+      --rpc-url $RPC_URL_AVAX_FUJI \
+      --private-key $PRIVATE_KEY \
+      --broadcast
+    ```
+
+    After deployment, copy the **Deployed Contract Address** and **ABI** from the output.
+
+    **Save this information in a place you can later refer to it!** You will need them to configure Push Engine.
+
+    - **Contract Address:** Find the contract address in your terminal output under `deployedAddress`.
+    - **Contract ABI:** Foundry saves the ABI in `out/DataStreamsFeed.sol/DataStreamsFeed.json`.
+
+    Before we can use Push Engine, we need to fund this contract with `LINK`.
+
+1.  Fund the contract with `LINK`.
+
+    After deployment, transfer some testnet `LINK` to the feed contract address, which allows the contract to pay for verification fees.
+
+    ```sh
+    # Example using cast to transfer 5 LINK (18 decimals)
+    cast send $LINK_TOKEN "transfer(address,uint256)" \
+        <DEPLOYED_FEED_ADDRESS> 5000000000000000000 \
+        --rpc-url $RPC_URL_AVAX_FUJI \
+        --private-key $PRIVATE_KEY
+    ```
+
+</Accordion>
+
+<Accordion title="Set Up Push Engine" number={2}>
+With a consumer contract onchain, you can now set up Push Engine service to relay data to it.
+
+1.  In a new terminal window, navigate to your development space and clone the [Push Engine repository][GITHUB_REPO]:
+
+    ```bash
+    git clone https://github.com/hackbg/push-engine.git
+    cd push-engine
+    ```
+
+1.  Install the project dependencies using `npm`:
+
+    ```bash
+    npm install
+    ```
+
+1.  Copy the example environment file:
+
+    ```bash
+    cp .env.example .env
+    ```
+
+1.  Open your `.env` file in a text editor and provide the required values:
+    | Variable | Description |
+    | :-------------------------- | :------------------------------------------------------------------------------------ |
+    | `PRIVATE_KEY_EVM` | The private key of your developer wallet (ensure this is kept secure and not shared). |
+    | `DATASTREAMS_CLIENT_ID` | Your Data Streams client ID. |
+    | `DATASTREAMS_CLIENT_SECRET` | Your Data Streams client secret. |
+
+         <Aside type="danger" title="Configuration Warning">
+
+        **These configuration files reference sensitive information**.
+
+        The `.env` file references your Data Streams API credentials and your wallet's private key. It is your responsibility to ensure that you provide these values in a way that you or your organization deems secure.
+
+        </Aside>
+
+1.  Create the runtime configuration file by copying the example:
+
+    ```bash
+    cp config-chainlink-example.yml config.yml
+    ```
+
+1.  Open `config.yml` in a text editor. Update the `targetChains` section to point to the contract you deployed on **Avalanche Fuji**.
+
+    ```yaml
+    feeds:
+      - name: "ETH/USD"
+        feedId: "0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"
+
+    # --- Default Global Settings ---
+
+    # The default chainId to use for transactions if not specified in a target.
+    chainId: 43113 # Default to Avalanche Fuji
+
+    # The maximum gas limit you are willing to spend on a transaction.
+    gasCap: "250000"
+
+    # Cron expression defining the data update frequency.
+    # This example runs every 30 seconds.
+    interval: "*/30 * * * * *"
+
+    # The minimum price change percentage to trigger an on-chain update.
+    # This example is set to 0.1%
+    priceDeltaPercentage: 0.001
+
+    # --- Chain & Verifier Definitions ---
+
+    # A list of all supported blockchain networks with their RPC URLs.
+    chains:
+      - id: 43113
+        name: "Avalanche Fuji Testnet"
+        currencyName: "Fuji AVAX"
+        currencySymbol: "AVAX"
+        currencyDecimals: 18
+        rpc: "https://api.avax-test.network/ext/bc/C/rpc" # <-- TODO: Replace with your own reliable RPC URL
+        testnet: true
+      - id: 421614
+        name: "Arbitrum Sepolia"
+        currencyName: "Arbitrum Sepolia Ether"
+        currencySymbol: "ETH"
+        currencyDecimals: 18
+        rpc: "https://sepolia-rollup.arbitrum.io/rpc" # <-- TODO: Replace with your own reliable RPC URL
+        testnet: true
+
+    # The addresses of the official Chainlink Verifier contracts on each network.
+    verifierAddresses:
+      - chainId: 43113
+        address: "0x2bf612C65f5a4d388E687948bb2CF842FFb8aBB3"
+      - chainId: 421614
+        address: "0x2ff010DEbC1297f19579B4246cad07bd24F2488A"
+
+    # --- On-Chain Target Configurations ---
+
+    # This section defines which smart contracts to call for each feed on each chain.
+    # You can have multiple targets for the same feed.
+    targetChains:
+      - chainId: 43113 # Target is on Avalanche Fuji
+        targetContracts:
+          # This configuration sends ETH/USD data to a contract on Fuji
+          - feedId: "0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"
+            address: "0xYourDataStreamsFeedContractOnFuji" # <-- TODO: Update with your deployed contract address
+            # The name of the function to call on your smart contract
+            functionName: "verifyAndUpdateReport"
+            # The arguments Push Engine should prepare and send to the function
+            #   • rawReport          = the unverified payload from the Data Streams websocket
+            #   • parameterPayload   = abi.encode(address feeToken) – produced automatically by Push Engine
+            functionArgs: ["rawReport", "parameterPayload"]
+            # The ABI for the target function, required to encode the transaction
+            abi:
+              - name: "verifyAndUpdateReport"
+                type: "function"
+                stateMutability: "nonpayable"
+                inputs:
+                  - { "internalType": "bytes", "name": "unverifiedReportData", "type": "bytes" }
+                  - { "internalType": "bytes", "name": "parameterPayload", "type": "bytes" }
+                outputs: []
+            # Off-chain verification must run so keep skipVerify false (default)
+            skipVerify: false
+    ```
+
+    Use the following guidelines when updating your configuration:
+
+    - Replace `0xYourDataStreamsFeedContractOnFuji` with the address of the contract you deployed in the previous step.
+    - The `feedId` should match the one you set in the contract deployment.
+    - Each target block must keep `skipVerify: false`, `functionName: verifyAndUpdateReport`, and `functionArgs: ["rawReport", "parameterPayload"]` to ensure Push Engine correctly prepares the transaction for onchain verification.
+
+1.  Start the Docker daemon.
+
+    The Docker daemon is required to run the Redis instance that Push Engine uses. Starting the daemon depends on your operating system. Please refer to the [Docker documentation](https://docs.docker.com/engine/daemon/start/) for instructions.
+
+1.  Run the following command to start Push Engine and its services in the background:
+
+    ```bash
+    docker compose up -d
+    ```
+
+1.  Open your web browser and navigate to `http://localhost:3000` to access the Push Engine UI. Because you pre-configured the contract in `config.yml`, the `ETH/USD` stream on the dashboard should show a `Running` status.
+
+<Aside type="tip" title="Troubleshooting">
+  If you experience any crashes or issues, see the [Troubleshooting](#troubleshooting) section at the end of this guide
+  for common problems and solutions.
+</Aside>
+</Accordion>
+
+---
+
+## UI Overview
+
+The Push Engine UI lets you manage your feeds, monitor their status, and define how and where data is pushed onchain. Although we configured the basics in `config.yml`, you can manage the service from this dashboard.
+
+<ClickToZoom src="/images/quickstarts/push-engine/push-engine-home.png" alt="The Push Engine home page" />
+
+The optional sections below provide a detailed overview of the Push Engine UI, explaining each section and its functionality.
+
+<Accordion title="Chain" >
+
+On the upper-right corner of the page you will find the **Chain** section. Since the default chain is configured to `Avalanche Fuji`, you should see that network listed along with details for your wallet.
+
+| Field                    | Description                                                                         |
+| :----------------------- | :---------------------------------------------------------------------------------- |
+| **Current Chain**        | The current chain, which is where data will be pushed.                              |
+| **Chain ID**             | The unique numeric identifier for the current chain.                                |
+| **Wallet Address**       | Your unique wallet address.                                                         |
+| **Native Token Balance** | Your native token balance, which is used to pay for onchain transaction fees (gas). |
+| **LINK Balance**         | Your `LINK` token balance, used to pay for Chainlink Data Streams transactions.     |
+
+Your balance should reflect the amount of testnet LINK and AVAX you have in your wallet. If you need more, you can use the [Chainlink Faucet](https://faucets.chain.link/).
+
+</Accordion>
+
+<Accordion title="Logs">
+
+On the top-right corner of the page, you will find the **Logs** section, which contains details for all Push Engine actions. When operating correctly, the log should reflect a clear, step-by-step process for each onchain update.
+
+Example log output:
+
+```bash
+[2025-07-01 16:48:44] info: 🩺 Health check endpoint running at http://localhost:8081/ready
+[2025-07-01 16:48:44] info: 🚀 running at http://localhost:3000
+[2025-07-01 16:48:44] warn: ℹ️ App already configured
+[2025-07-01 16:48:44] info: 🏁 Streams have been started
+[2025-07-01 16:50:00] info: 🚨 Price deviation detected | ETH/USD: 3450.06$ | 📉 -0.2135% (-7.36$)
+[2025-07-01 16:50:00] info: 📆 Scheduled for writing onchain
+[2025-07-01 16:50:00] info: ⛽️ Estimated fee: 0.024395523392104215 LINK # This fee is deducted from the contract's LINK allowance, NOT the sender's balance
+[2025-07-01 16:50:04] info: ✅ Report verified
+[2025-07-01 16:50:06] info: 📝 Prepared verification transaction
+[2025-07-01 16:50:07] info: ⌛️ Sending transaction 0xa59aa3e9c7a2cd020d79bd73e6c7f1aca9a576b77edb43ee35180001709fdf43
+[2025-07-01 16:50:08] info: ℹ️ Transaction status: success
+[2025-07-01 16:50:08] info: 💾 Price stored | ETH/USD: 3450.06$
+```
+
+</Accordion>
+
+<Accordion title="Data Streams" >
+
+The **Data Streams** section lists all Data Streams, their status, and any related contracts. You should see the `ETH/USD` feed listed here, which was set in the `config.yml` file.
+
+| Field             | Description                                                                                                                                         |
+| :---------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Stream**        | The name of the stream. This is the name set by the user for easier tracking and feed identification.                                               |
+| **Feed ID**       | The feed ID. Check [Chainlink Data Streams Documentation](/data-streams/crypto-streams) for a list of supported streams.                            |
+| **Contract**      | Target contract for the feed on the current chain. Click to open a configuration page where you can define the target contract, functions, and ABI. |
+| **Saved price**   | The latest price recorded onchain.                                                                                                                  |
+| **Last reported** | The latest price reported by the stream.                                                                                                            |
+| **Status**        | Current status of the stream. Possible states include: `Running`, `Connecting`, `Stopping` or `Stopped`.                                            |
+| **Remove**        | Click to remove the stream.                                                                                                                         |
+
+</Accordion>
+
+<Accordion title="Schedule" >
+
+The **Schedule** section allows you to define how often the Push Engine should push data onchain, using a cron expression. We have already defined this in the `config.yml` file, but you can change it here.
+
+</Accordion>
+
+<Accordion title="Verifier Contracts" >
+
+The **Verifier Contracts** section lets you specify contracts that will verify the data being pushed onchain. The verifier contract for your current network will be automatically selected based on `config.yml`.
+
+</Accordion>
+
+<Accordion title="Price Delta" >
+
+The **Price Delta** section lets you define the price change threshold that will trigger an onchain update. We set this in the `config.yml` file, but you can change this value here.
+
+</Accordion>
+
+<Accordion title="Gas Cap" >
+
+The **Gas Cap** section lets you set the maximum gas limit for transactions. We set this in the `config.yml` file, but you can change it here.
+
+</Accordion>
+
+---
+
+## Troubleshooting
+
+If you run into issues during setup or operation, refer to these common problems and their solutions.
+
+---
+
+### Push Engine Service Issues
+
+- **Service fails to start or crashes immediately**
+
+  - Double-check that your `push-engine/.env` file is present and correctly populated with your `PRIVATE_KEY` and Data Streams credentials.
+  - Run `docker compose logs -f` in the `push-engine` directory to view real-time logs and identify specific error messages.
+
+- **Data is not updating on your contract**
+  - Review the logs in Push Engine for specific error messages related to the feed or contract interaction.
+  - **Authentication:** Verify that your `DATASTREAMS_CLIENT_ID` and `DATASTREAMS_CLIENT_SECRET` are correct and do not have extra spaces or characters.
+  - **LINK Balance:** Ensure the contract holds sufficient `LINK` balance to pay for onchain verification fees. Top up the contract if needed -- testnet `LINK` can be found at the [Chainlink Faucet](https://faucets.chain.link/).
+  - **RPC Endpoint:** Confirm the RPC URL in your `config.yml` is correct and the node is reachable.
+
+---
+
+### Contract Deployment & Onchain Errors
+
+- **`Gas estimation too high` error**
+
+  - When deploying with Foundry, you can adjust the `gas_limit` in your `foundry.toml` file.
+  - You can increase the `gasCap` value in your `config.yml` file. You can also update it in the Push Engine UI under the **Gas Cap** section.
+
+- **Missing private key**
+  - `forge script` will silently fall back to Foundry's default dev key and assign contract roles to `0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38`.
+  - Always pass your key via `--private-key` or export it in `.env/shell`.
+
+---
+
+## Conclusion
+
+Congratulations! 🎉 You have successfully deployed a `DataStreamsFeed` contract, set up the Push Engine, and linked them together.
+
+You can now monitor offchain Data Streams and push updates to your smart contracts without writing any code or managing your own backend infrastructure. The Push Engine handles all the complexity of connecting to Data Streams, monitoring data changes, and pushing updates onchain.
+
+For more advanced usage, troubleshooting, or to contribute, visit the [GitHub repository][GITHUB_REPO] or check out the [official Data Streams documentation](/data-streams/index).
+
+Happy building!
