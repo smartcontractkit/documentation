@@ -299,6 +299,8 @@ export const productChainLinks: ProductChainLinks = {
     hyperevm: "/resources/link-token-contracts#hyperevm",
     kaia: "/resources/link-token-contracts#kaia",
     tac: "/resources/link-token-contracts#tac",
+    plasma: "/resources/link-token-contracts#plasma",
+    aptos: "/resources/link-token-contracts#aptos",
   },
 }
 
