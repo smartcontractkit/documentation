@@ -119,6 +119,7 @@ export const productChainLinks: ProductChainLinks = {
       polygonkatana: "/data-feeds/price-feeds/addresses?page=1&network=polygonkatana#networks",
       polygonzkevm: "/data-feeds/price-feeds/addresses?page=1&network=polygonzkevm#networks",
       polygon: "/data-feeds/price-feeds/addresses?page=1&network=polygon#networks",
+      plasma: "/data-feeds/price-feeds/addresses?page=1&network=plasma#networks",
       ronin: "/data-feeds/price-feeds/addresses?page=1&network=ronin#networks",
       scroll: "/data-feeds/price-feeds/addresses?page=1&network=scroll#networks",
       solana: "/data-feeds/price-feeds/addresses?page=1&network=solana#networks",

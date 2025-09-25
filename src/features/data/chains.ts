@@ -534,6 +534,24 @@ export const CHAINS: Chain[] = [
     ],
   },
   {
+    page: "plasma",
+    label: "Plasma",
+    title: "Plasma Data Feeds",
+    img: "/assets/chains/plasma.svg",
+    networkStatusUrl: "https://statuspage.incident.io/plasmanetwork",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "Plasma Mainnet",
+        explorerUrl: "https://plasmascan.to/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-plasma-mainnet.json",
+        queryString: "plasma-mainnet",
+      },
+    ],
+  },
+  {
     page: "ronin",
     label: "Ronin",
     title: "Ronin Data Feeds",
