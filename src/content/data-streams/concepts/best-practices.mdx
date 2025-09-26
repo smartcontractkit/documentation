@@ -149,6 +149,12 @@ Positions may need to be manually adjusted if the DEX doesn't support tracking t
 
 #### Stock splits & reverse splits
 
+<Aside type="note" title="Tokenized Stocks Guidance">
+  Tokenized stocks such as [Backed xStock](/data-streams/reference/report-schema-v10) handle stock splits differently
+  using activation dates and staged multipliers to maintain price continuity. [Learn more about advanced stock split
+  handling](#stock-splits).
+</Aside>
+
 A stock split increases the number of shares while reducing the price per share (e.g., 2-for-1 split), often making shares more accessible to investors. A reverse split does the opposite, consolidating shares to increase the price per share.
 
 A 2-for-1 split would reduce the price by 50% from the previous trading session, any leveraged user could get liquidated.
@@ -196,10 +202,10 @@ Corporate actions that change the share count (splits and reverse splits) alter 
 In the [v10 report schema](/data-streams/reference/report-schema-v10), continuity is preserved by staging a multiplier change with a scheduled `activationDateTime` so the Theoretical Price (`price` \* `currentMultiplier`) remains continuous. Split ratios are typically known in advance, but activation may occur while markets are closed, so some external price sources may not reflect the split until trading resumes.
 
 <Aside type="note" title="Note">
-  This guidance focuses on multiplier handling in the [v10 report schema](/data-streams/reference/report-schema-v10) and
-  what integrators should expect around activation windows and protocol behavior. Similar principles may apply to future
-  schemas that host tokenized stocks, but applicability and exact behavior will depend on each schema's design and are
-  not guaranteed.
+  This guidance is designed for multiplier handling in the [v10 report
+  schema](/data-streams/reference/report-schema-v10) and what integrators should expect around activation windows and
+  protocol behavior. Similar principles may apply to future schemas that host tokenized stocks, but applicability and
+  exact behavior will depend on each schema's design and are not guaranteed.
 </Aside>
 
 #### Guiding principle
@@ -253,9 +259,9 @@ The stock split has taken effect. Generally, this occurs after the market closes
 
 Users should pause markets before `activationDateTime` and keep them paused until:
 
-- the market has reopened (monitor `marketStatus`),
-- `price` has updated in line with the split ratio (e.g., 10:1), and
-- you have verified the Theoretical Price matches expectations.
+- The market has reopened (monitor `marketStatus`)
+- `price` has updated in line with the split ratio (e.g., 10:1)
+- You have confirmed that the Theoretical Price matches expectations
 
 After all the above checks have been confirmed, users can unpause their protocol and continue and resume normal operation.
 
