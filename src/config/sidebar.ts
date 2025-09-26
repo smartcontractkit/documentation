@@ -1692,6 +1692,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   title: "BurnMint: Production Multisig Governance",
                   url: "ccip/tutorials/svm/cross-chain-tokens/production-multisig-tutorial",
                 },
+                {
+                  title: "LockRelease: Production Governance",
+                  url: "ccip/tutorials/svm/cross-chain-tokens/lock-release-multisig",
+                },
               ],
             },
           ],

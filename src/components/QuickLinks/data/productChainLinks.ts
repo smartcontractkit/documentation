@@ -85,9 +85,12 @@ export const productChainLinks: ProductChainLinks = {
       janction: "/ccip/directory/testnet/chain/janction-testnet-sepolia",
       neox: "/ccip/directory/testnet/chain/neox-testnet-t4",
       polygonkatana: "/ccip/directory/mainnet/chain/polygon-mainnet-katana",
-      "0g": "/ccip/directory/testnet/chain/0g-testnet-galileo",
+      "0g": "/ccip/directory/mainnet/chain/0g-mainnet",
       hyperevm: "/ccip/directory/mainnet/chain/hyperevm-mainnet",
       etherlink: "/ccip/directory/testnet/chain/etherlink-testnet",
+      kaia: "/ccip/directory/mainnet/chain/kaia-mainnet",
+      tac: "/ccip/directory/mainnet/chain/tac-mainnet",
+      plasma: "/ccip/directory/mainnet/chain/plasma-mainnet",
     },
   },
   "Data Feeds": {
@@ -116,6 +119,7 @@ export const productChainLinks: ProductChainLinks = {
       polygonkatana: "/data-feeds/price-feeds/addresses?page=1&network=polygonkatana#networks",
       polygonzkevm: "/data-feeds/price-feeds/addresses?page=1&network=polygonzkevm#networks",
       polygon: "/data-feeds/price-feeds/addresses?page=1&network=polygon#networks",
+      plasma: "/data-feeds/price-feeds/addresses?page=1&network=plasma#networks",
       ronin: "/data-feeds/price-feeds/addresses?page=1&network=ronin#networks",
       scroll: "/data-feeds/price-feeds/addresses?page=1&network=scroll#networks",
       solana: "/data-feeds/price-feeds/addresses?page=1&network=solana#networks",
@@ -132,6 +136,7 @@ export const productChainLinks: ProductChainLinks = {
     learnMoreLink: "data-streams",
     logo: dataStreamsLogo,
     chains: {
+      "0g": "/data-streams/crypto-streams",
       apechain: "/data-streams/crypto-streams",
       arbitrum: "/data-streams/crypto-streams",
       avalanche: "/data-streams/crypto-streams",
@@ -149,6 +154,7 @@ export const productChainLinks: ProductChainLinks = {
       hashkey: "/data-streams/crypto-streams",
       hyperevm: "/data-streams/crypto-streams",
       ink: "/data-streams/crypto-streams",
+      jovay: "/data-streams/crypto-streams",
       lens: "/data-streams/crypto-streams",
       linea: "/data-streams/crypto-streams",
       mantle: "/data-streams/crypto-streams",
@@ -291,6 +297,8 @@ export const productChainLinks: ProductChainLinks = {
     polygonkatana: "/resources/link-token-contracts#polygon-katana",
     "0g": "/resources/link-token-contracts#0g",
     hyperevm: "/resources/link-token-contracts#hyperevm",
+    kaia: "/resources/link-token-contracts#kaia",
+    tac: "/resources/link-token-contracts#tac",
   },
 }
 
@@ -370,4 +378,8 @@ export const chainNames: Record<string, string> = {
   janction: "Janction",
   neox: "Neo X",
   polygonkatana: "Polygon Katana",
+  tac: "Tac",
+  kaia: "Kaia",
+  plasma: "Plasma",
+  jovay: "Jovay",
 }
