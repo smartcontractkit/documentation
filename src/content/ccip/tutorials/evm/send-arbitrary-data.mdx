@@ -49,7 +49,6 @@ To use this contract:
 
 1. Compile your contract.
 1. Deploy your sender contract on _Avalanche Fuji_ and enable sending messages to _Ethereum Sepolia_:
-
    1. Open MetaMask and select the network _Avalanche Fuji_.
    1. In Remix IDE, click on _Deploy & Run Transactions_ and select _Injected Provider - MetaMask_ from the environment list. Remix will then interact with your MetaMask wallet to communicate with _Avalanche Fuji_.
    1. Fill in the router address and the link address for your network. You can find the router address on the [CCIP Directory](/ccip/directory) and the LINK token address on the [LINK Token contracts page](/resources/link-token-contracts?parent=ccip). For _Avalanche Fuji_:
@@ -62,7 +61,6 @@ To use this contract:
       1. Call the `allowlistDestinationChain` with <CopyText text="16015286601757825753" code/> as the destination chain selector, and <CopyText text="true" code/> as allowed. Each chain selector is found on the [CCIP Directory](/ccip/directory).
 
 1. Deploy your receiver contract on _Ethereum Sepolia_ and enable receiving messages from your sender contract:
-
    1. Open MetaMask and select the network _Ethereum Sepolia_.
    1. In Remix IDE, under _Deploy & Run Transactions_, make sure the environment is still _Injected Provider - MetaMask_.
    1. Fill in the router address and the LINK address for your network. You can find the router address on the [CCIP Directory](/ccip/directory) and the LINK contract address on the [LINK token contracts page](/resources/link-token-contracts). For _Ethereum Sepolia_:
@@ -89,7 +87,6 @@ You will use CCIP to send a text. The CCIP fees for using CCIP will be paid in L
     from [faucets.chain.link](https://faucets.chain.link) or use a supported testnet other than Sepolia.
 
 1.  Send "Hello World!" from _Avalanche Fuji_:
-
     1.  Open MetaMask and select the network _Avalanche Fuji_.
     1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Avalanche Fuji_.
     1.  Fill in the arguments of the _**sendMessagePayLINK**_ function:
@@ -119,7 +116,6 @@ You will use CCIP to send a text. The CCIP fees for using CCIP will be paid in L
           />
 
 1.  Check the receiver contract on the destination chain:
-
     1.  Open MetaMask and select the network _Ethereum Sepolia_.
     1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Ethereum Sepolia_.
     1.  Call the `getLastReceivedMessageDetails`.
@@ -142,7 +138,6 @@ You will use CCIP to send a text. The CCIP fees for using CCIP will be paid in n
 1.  Open MetaMask and connect to _Avalanche Fuji_. Fund your contract with AVAX. You can transfer <CopyText text="1" code/> _AVAX_ to your contract. In this example, AVAX is used to pay the CCIP fees.
 
 1.  Send "Hello World!" from _Avalanche Fuji_:
-
     1.  Open MetaMask and select the network _Avalanche Fuji_.
     1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Avalanche Fuji_.
     1.  Fill in the arguments of the _**sendMessagePayNative**_ function:
@@ -179,7 +174,6 @@ You will use CCIP to send a text. The CCIP fees for using CCIP will be paid in n
           />
 
 1.  Check the receiver contract on the destination chain:
-
     1.  Open MetaMask and select the network _Ethereum Sepolia_.
     1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Ethereum Sepolia_.
     1.  Call the `getLastReceivedMessageDetails`.
@@ -207,7 +201,6 @@ When deploying the contract, we define the router address and LINK contract addr
 Defining the router address is useful for the following:
 
 - Sender part:
-
   - Calls the router's `getFee` [function](/ccip/api-reference/evm/v1.6.0/i-router-client#getfee) to estimate the CCIP fees.
   - Calls the router's `ccipSend` [function](/ccip/api-reference/evm/v1.6.0/i-router-client#ccipsend) to send CCIP messages.
 
@@ -219,7 +212,6 @@ Defining the router address is useful for the following:
 The `sendMessagePayLINK` function undertakes five primary operations:
 
 1. Call the `_buildCCIPMessage` private function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/evm/v1.6.0/client#any2evmmessage):
-
    - The `_receiver` address is encoded in bytes to accommodate non-EVM destination blockchains with distinct address formats. The encoding is achieved through [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `data` is encoded from a `string` to `bytes` using [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `tokenAmounts` is an empty `EVMTokenAmount` [struct](/ccip/api-reference/evm/v1.6.0/client#evmtokenamount) array as no tokens are transferred.
@@ -242,7 +234,6 @@ The `sendMessagePayLINK` function undertakes five primary operations:
 The `sendMessagePayNative` function undertakes four primary operations:
 
 1. Call the `_buildCCIPMessage` private function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/evm/v1.6.0/client#any2evmmessage):
-
    - The `_receiver` address is encoded in bytes to accommodate non-EVM destination blockchains with distinct address formats. The encoding is achieved through [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `data` is encoded from a `string` to `bytes` using [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `tokenAmounts` is an empty `EVMTokenAmount` [struct](/ccip/api-reference/evm/v1.6.0/client#evmtokenamount) array as no tokens are transferred.

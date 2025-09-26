@@ -17,13 +17,13 @@ const { product, currentPath, enableEnhanced = true } = Astro.props
 
 // Support multiple path patterns for version detection
 const standardPathMatch = currentPath.match(new RegExp(`/${product}/api-reference/(v[^/]+)`))
-const extendedPathMatch = currentPath.match(new RegExp(`/${product}/api-reference/(?:evm|svm)/(v[^/]+)`))
+const extendedPathMatch = currentPath.match(new RegExp(`/${product}/api-reference/(?:evm|svm|aptos)/(v[^/]+)`))
 let pathVersion = extendedPathMatch?.[1] || standardPathMatch?.[1]
 
 // Extract VM type from the path (for CCIP)
 let vmType: string | undefined = undefined
 if (extendedPathMatch) {
-  const vmTypeMatch = currentPath.match(new RegExp(`/${product}/api-reference/(evm|svm)/`))
+  const vmTypeMatch = currentPath.match(new RegExp(`/${product}/api-reference/(evm|svm|aptos)/`))
   vmType = vmTypeMatch?.[1]
 }
 

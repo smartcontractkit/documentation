@@ -35,7 +35,6 @@ This tutorial will guide you through the process of updating the rate limiter se
 ## Prerequisites
 
 - **Tokens and pools deployed**: Ensure that you have tokens and token pools already deployed on both networks you plan to use. If not, refer to one of the following tutorials:
-
   - [Register from an EOA (Burn & Mint)](/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-hardhat)
   - [Register from an EOA (Lock & Mint)](/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-lock-mint-hardhat)
 
@@ -88,7 +87,6 @@ This tutorial will guide you through the process of updating the rate limiter se
     ```
 
     Variables to configure:
-
     - <CopyText text="PRIVATE_KEY" code />: The private key for your testnet wallet, **must** begin with `0x`. If you
       use MetaMask, you can follow this
       [guide](https://support.metamask.io/managing-my-wallet/secret-recovery-phrase-and-private-keys/how-to-export-an-accounts-private-key/)
@@ -408,7 +406,6 @@ In the example below, we use a token pool at address `0xeB841acbc25549D4deB6Ed94
 1. In your `script/output/` directory, make sure the `deployedToken_avalancheFuji.json` and `deployedTokenPool_avalancheFuji.json` files contain the correct token and token pool addresses.
 
 1. **Test Capacity**: Because the outbound capacity set is `10000000000000000000` , let's transfer `10000000000000000001` tokens from Avalanche Fuji to Arbitrum Sepolia. This transfer should fail because the capacity is less than the number of tokens being transferred.
-
    - In your `script/` directory, open your `config.json` file, and set `tokenAmountToTransfer` to `10000000000000000001`.
 
    - Run the following command:
@@ -428,7 +425,6 @@ In the example below, we use a token pool at address `0xeB841acbc25549D4deB6Ed94
    Notice in the logs that the transfer failed because the capacity was exceeded: `TokenMaxCapacityExceeded`.
 
 1. **Test Rate**: Now, let's transfer `10000000000000000000` tokens from Avalanche Fuji to Arbitrum Sepolia, which will empty the bucket. After this transfer, we will attempt to transfer another `10000000000000000000` tokens. This transfer will fail because it takes 100 seconds to replenish the bucket.
-
    1. In your `script/` directory, open your `config.json` file, and set `tokenAmountToTransfer` to `10000000000000000000`.
 
    1. **First transfer** (Successful):

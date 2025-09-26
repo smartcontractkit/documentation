@@ -19,7 +19,7 @@ describe("OpenAPI Specification", () => {
 
   it("should have required info fields", () => {
     expect(openApiDoc.info).toBeDefined()
-    expect(openApiDoc.info.title).toBe("CCIP Chains API")
+    expect(openApiDoc.info.title).toBe("CCIP Docs config API")
     expect(openApiDoc.info.version).toBeDefined()
     expect(openApiDoc.info.description).toBeDefined()
   })

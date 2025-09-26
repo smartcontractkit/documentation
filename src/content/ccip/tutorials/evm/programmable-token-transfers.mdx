@@ -40,7 +40,7 @@ In this tutorial, you will use Chainlink CCIP to transfer tokens and arbitrary d
 1. You should understand how to write, compile, deploy, and fund a smart contract. If you need to brush up on the basics, read this [tutorial](/quickstarts/deploy-your-first-contract), which will guide you through using the [Solidity programming language](https://soliditylang.org/), interacting with the [MetaMask wallet](https://metamask.io) and working within the [Remix Development Environment](https://remix.ethereum.org/).
 1. Your account must have some AVAX and LINK tokens on _Avalanche Fuji_ and ETH tokens on _Ethereum Sepolia_. Learn how to [Acquire testnet LINK](/resources/acquire-link).
 1. Check the [CCIP Directory](/ccip/directory) to confirm that the tokens you will transfer are supported for your lane. In this example, you will transfer tokens from _Avalanche Fuji_ to _Ethereum Sepolia_ so check the list of supported tokens [here](/ccip/directory/testnet/chain/avalanche-fuji-testnet).
-1. Learn how to [acquire CCIP test tokens](/ccip/test-tokens#mint-test-tokens). Following this guide, you should have CCIP-BnM tokens, and CCIP-BnM should appear in the list of your tokens in MetaMask.
+1. Learn how to [acquire CCIP test tokens](/ccip/test-tokens#evm-chains). Following this guide, you should have CCIP-BnM tokens, and CCIP-BnM should appear in the list of your tokens in MetaMask.
 1. Learn how to [fund your contract](/resources/fund-your-contract). This guide shows how to fund your contract in LINK, but you can use the same guide for funding your contract with any ERC20 tokens as long as they appear in the list of tokens in MetaMask.
 1. Follow the previous tutorial: [_Transfer tokens_](/ccip/tutorials/evm/transfer-tokens-from-contract).
 
@@ -60,7 +60,6 @@ To use this contract:
 
 1. Compile your contract.
 1. Deploy, fund your sender contract on _Avalanche Fuji_ and enable sending messages to _Ethereum Sepolia_:
-
    1. Open MetaMask and select the network _Avalanche Fuji_.
    1. In Remix IDE, click on _Deploy & Run Transactions_ and select _Injected Provider - MetaMask_ from the environment list. Remix will then interact with your MetaMask wallet to communicate with _Avalanche Fuji_.
    1. Fill in your blockchain's router and LINK contract addresses. The router address can be found on the [CCIP Directory](/ccip/directory) and the LINK contract address on the [LINK token contracts page](/resources/link-token-contracts). For _Avalanche Fuji_:
@@ -74,7 +73,6 @@ To use this contract:
       1. Call the `allowlistDestinationChain`, setting the destination chain selector to <CopyText text="16015286601757825753" code/> and setting `allowed` to <CopyText text="true" code/>. Each chain selector is found on the [CCIP Directory](/ccip/directory).
 
 1. Deploy your receiver contract on _Ethereum Sepolia_ and enable receiving messages from your sender contract:
-
    1. Open MetaMask and select the network _Ethereum Sepolia_.
    1. In Remix IDE, under _Deploy & Run Transactions_, make sure the environment is still _Injected Provider - MetaMask_.
    1. Fill in your blockchain's router and LINK contract addresses. The router address can be found on the [CCIP Directory](/ccip/directory) and the LINK contract address on the [LINK token contracts page](/resources/link-token-contracts). For _Ethereum Sepolia_, the router address is <CopyText text="0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59" code/> and the LINK contract address is <CopyText text="0x779877A7B0D9E8603169DdbD7836e478b4624789" code/>.
@@ -101,7 +99,6 @@ You will transfer _0.001 CCIP-BnM_ and a text. The CCIP fees for using CCIP will
     from [faucets.chain.link](https://faucets.chain.link) or use a supported testnet other than Sepolia.
 
 1.  Send a string data with tokens from _Avalanche Fuji_:
-
     1.  Open MetaMask and select the network _Avalanche Fuji_.
     1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of functions of your smart contract deployed on _Avalanche Fuji_.
     1.  Fill in the arguments of the _**sendMessagePayLINK**_ function:
@@ -140,7 +137,6 @@ You will transfer _0.001 CCIP-BnM_ and a text. The CCIP fees for using CCIP will
           />
 
 1.  Check the receiver contract on the destination chain:
-
     1.  Open MetaMask and select the network _Ethereum Sepolia_.
     1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of functions of your smart contract deployed on _Ethereum Sepolia_.
     1.  Call the `getLastReceivedMessageDetails` function.
@@ -164,7 +160,6 @@ You will transfer _0.001 CCIP-BnM_ and a text. The CCIP fees for using CCIP will
 1.  Open MetaMask and connect to _Avalanche Fuji_. Fund your contract with AVAX tokens. You can transfer <CopyText text="0.2" code/> _AVAX_ to your contract. The native gas tokens are used to pay the CCIP fees.
 
 1.  Send a string data with tokens from _Avalanche Fuji_:
-
     1.  Open MetaMask and select the network _Avalanche Fuji_.
     1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of functions of your smart contract deployed on _Avalanche Fuji_.
     1.  Fill in the arguments of the _**sendMessagePayNative**_ function:
@@ -203,7 +198,6 @@ You will transfer _0.001 CCIP-BnM_ and a text. The CCIP fees for using CCIP will
           />
 
 1.  Check the receiver contract on the destination chain:
-
     1.  Open MetaMask and select the network _Ethereum Sepolia_.
     1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of functions of your smart contract deployed on _Ethereum Sepolia_.
     1.  Call the `getLastReceivedMessageDetails` function.
@@ -232,7 +226,6 @@ When deploying the contract, we define the router address and LINK contract addr
 Defining the router address is useful for the following:
 
 - Sender part:
-
   - Calls the router's `getFee` [function](/ccip/api-reference/evm/v1.6.0/i-router-client#getfee) to estimate the CCIP fees.
   - Calls the router's `ccipSend` [function](/ccip/api-reference/evm/v1.6.0/i-router-client#ccipsend) to send CCIP messages.
 
@@ -244,7 +237,6 @@ Defining the router address is useful for the following:
 The `sendMessagePayLINK` function undertakes six primary operations:
 
 1. Call the `_buildCCIPMessage` private function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/evm/v1.6.0/client#any2evmmessage):
-
    - The `_receiver` address is encoded in bytes to accommodate non-EVM destination blockchains with distinct address formats. The encoding is achieved through [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `data` is encoded from a `string` to `bytes` using [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `tokenAmounts` is an array, with each element comprising an `EVMTokenAmount` [struct](/ccip/api-reference/evm/v1.6.0/client#evmtokenamount) containing the token address and amount. The array contains one element where the `_token` (token address) and `_amount` (token amount) are passed by the user when calling the `sendMessagePayLINK` function.
@@ -268,7 +260,6 @@ The `sendMessagePayLINK` function undertakes six primary operations:
 The `sendMessagePayNative` function undertakes five primary operations:
 
 1. Call the `_buildCCIPMessage` private function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/evm/v1.6.0/client#any2evmmessage):
-
    - The `_receiver` address is encoded in bytes to accommodate non-EVM destination blockchains with distinct address formats. The encoding is achieved through [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `data` is encoded from a `string` to `bytes` using [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `tokenAmounts` is an array, with each element comprising an `EVMTokenAmount` [struct](/ccip/api-reference/evm/v1.6.0/client#evmtokenamount) containing the token address and amount. The array contains one element where the `_token` (token address) and `_amount` (token amount) are passed by the user when calling the `sendMessagePayNative` function.

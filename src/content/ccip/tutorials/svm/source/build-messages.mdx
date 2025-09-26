@@ -23,7 +23,7 @@ This guide explains how to construct CCIP Messages from SVM chains (e.g. Solana)
 
 ## CCIP Message Structure
 
-CCIP messages from SVM are built using the [`SVM2AnyMessage`](/ccip/api-reference/svm/v1.6.0/messages#svm2anymessage) struct from the CCIP Router program. See the [CCIP Router API Reference](/ccip/api-reference/svm/v1.6.0/router) for complete details. The `SVM2AnyMessage` struct is defined as follows:
+CCIP messages from SVM are built using the [`SVM2AnyMessage`](/ccip/api-reference/svm/v0.1.1/messages#svm2anymessage) struct from the CCIP Router program. See the [CCIP Router API Reference](/ccip/api-reference/svm/v0.1.1/router) for complete details. The `SVM2AnyMessage` struct is defined as follows:
 
 ```rust
 pub struct SVM2AnyMessage {
@@ -299,7 +299,7 @@ The core of sending CCIP messages from SVM is the `ccip_send` instruction in the
 1. **Destination Chain Selector**: A unique identifier for the target blockchain
 1. **Message Structure**: The `SVM2AnyMessage` containing receiver, data, tokens, etc.
 1. **Required Accounts**: All accounts needed for the instruction
-1. **Token Indices**: For token transfers, indices marking where each token's accounts begin. See [detailed explanation in the API Reference](/ccip/api-reference/svm/v1.6.0/router#how-remaining_accounts-and-token_indexes-work)
+1. **Token Indices**: For token transfers, indices marking where each token's accounts begin. See [detailed explanation in the API Reference](/ccip/api-reference/svm/v0.1.1/router#how-remaining_accounts-and-token_indexes-work)
 
 ### Data Encoding for Cross-Chain Compatibility
 
@@ -344,7 +344,7 @@ When sending data from SVM to EVM chains, proper encoding is crucial:
 
 ### Account Requirements
 
-Unlike EVM chains which use a simple mapping storage model, SVM account model requires explicit specification of all accounts needed for an operation. When sending CCIP messages, several account types are needed. For complete account specifications, see the [CCIP Router API Reference](/ccip/api-reference/svm/v1.6.0/router#context-accounts):
+Unlike EVM chains which use a simple mapping storage model, SVM account model requires explicit specification of all accounts needed for an operation. When sending CCIP messages, several account types are needed. For complete account specifications, see the [CCIP Router API Reference](/ccip/api-reference/svm/v0.1.1/router#context-accounts):
 
 <Tabs client:visible>
 
@@ -379,9 +379,9 @@ Unlike EVM chains which use a simple mapping storage model, SVM account model re
         1. **RMN Remote Curses (index 16)**: Curse records for the Remote Monitoring Network - Stores validation information.
         1. **RMN Remote Config (index 17)**: Configuration for the Remote Monitoring Network - Stores settings for the RMN program.
 
-    These accounts must be provided in exactly this order in the `remaining_accounts` parameter. See [structure of token sub-slices](/ccip/api-reference/svm/v1.6.0/router#structure-of-each-tokens-sub-slice) in the API reference.
+    These accounts must be provided in exactly this order in the `remaining_accounts` parameter. See [structure of token sub-slices](/ccip/api-reference/svm/v0.1.1/router#structure-of-each-tokens-sub-slice) in the API reference.
 
-    **Note**: The [`tokenIndexes` parameter](/ccip/api-reference/svm/v1.6.0/router#how-remaining_accounts-and-token_indexes-work) must be provided in the `ccip_send` instruction parameter, containing the starting indices in the remaining accounts array where each token's accounts begin. See [examples](/ccip/api-reference/svm/v1.6.0/router#examples) of single and multi-token transfers in the API reference.
+    **Note**: The [`tokenIndexes` parameter](/ccip/api-reference/svm/v0.1.1/router#how-remaining_accounts-and-token_indexes-work) must be provided in the `ccip_send` instruction parameter, containing the starting indices in the remaining accounts array where each token's accounts begin. See [examples](/ccip/api-reference/svm/v0.1.1/router#examples) of single and multi-token transfers in the API reference.
 
   </Fragment>
   
@@ -412,7 +412,7 @@ Unlike EVM chains which use a simple mapping storage model, SVM account model re
 
 <Aside title="Account Derivation">
 
-For complete account derivation documentation, see the [CCIP Router API Reference](/ccip/api-reference/svm/v1.6.0/router#context-accounts).
+For complete account derivation documentation, see the [CCIP Router API Reference](/ccip/api-reference/svm/v0.1.1/router#context-accounts).
 
 These accounts are Program Derived Addresses (PDAs) that must be derived with specific seeds:
 
@@ -451,12 +451,10 @@ Using incorrect seeds or deriving PDAs from the wrong program will result in acc
 SVM chains have transaction size limitations that become important when sending CCIP messages:
 
 1.  **Account Reference Limit:**
-
     - **SVM transactions** have a limit on how many accounts they can reference
     - **Each token transfer** adds approximately 11-12 accounts to your transaction
 
 1.  **Address Lookup Tables (ALTs):**
-
     - **ALTs allow** transactions to reference accounts without including full public keys
     - **The CCIP Router** requires each token to have an ALT in its Token Admin Registry
     - **The CCIP Router** relies on these ALTs to locate the correct Pool Program and other token-specific accounts
@@ -474,7 +472,6 @@ SVM chains have transaction size limitations that become important when sending 
      </Aside>
 
 1.  **Transaction Serialized Size:**
-
     - **Even with ALTs**, SVM transactions have a maximum serialized size (1232 bytes)
     - **Each token transfer** increases the transaction size
     - **If your transaction** exceeds this limit, you'll need to split it into multiple transactions
@@ -508,8 +505,8 @@ Store this identifier in your application for transaction tracking and reconcili
 
 ## Further Resources
 
-- [CCIP Router API Reference](/ccip/api-reference/svm/v1.6.0/router): Complete technical details about message structure, account requirements, and token handling
-- [CCIP Messages API Reference](/ccip/api-reference/svm/v1.6.0/messages): Comprehensive documentation of all message structures
-- [How token_indexes and remaining_accounts Work](/ccip/api-reference/svm/v1.6.0/router#how-remaining_accounts-and-token_indexes-work): Step-by-step explanation with examples
+- [CCIP Router API Reference](/ccip/api-reference/svm/v0.1.1/router): Complete technical details about message structure, account requirements, and token handling
+- [CCIP Messages API Reference](/ccip/api-reference/svm/v0.1.1/messages): Comprehensive documentation of all message structures
+- [How token_indexes and remaining_accounts Work](/ccip/api-reference/svm/v0.1.1/router#how-remaining_accounts-and-token_indexes-work): Step-by-step explanation with examples
 
 <CcipCommon callout="educationalDisclaimer" />

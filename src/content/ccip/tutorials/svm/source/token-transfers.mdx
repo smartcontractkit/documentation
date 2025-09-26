@@ -136,30 +136,25 @@ The token amount format needs to account for token decimals:
 The token transfer script handles the interaction with the CCIP Router program without requiring you to write any code. Here's what happens behind the scenes:
 
 1. **Context Initialization**:
-
    - The script initializes the Solana connection
    - Loads your keypair
    - Sets up CCIP configuration
 
 1. **Balance Validation**:
-
    - Checks SOL balance (minimum 0.005 SOL required)
    - Validates token balances for all tokens being transferred
    - Verifies token delegation approvals
 
 1. **Fee Calculation**:
-
    - Queries the Router program to calculate cross-chain fees
    - Validates sufficient balance for fees
 
 1. **Message Construction**:
-
    - Builds the `SVM2AnyMessage` structure with token amounts, receiver, etc.
    - Encodes the message according to CCIP standards
    - Sets extra arguments for Ethereum compatibility
 
 1. **Transaction Building**:
-
    - Builds the CCIP send transaction with all necessary accounts
    - Includes all token accounts in the correct order
 

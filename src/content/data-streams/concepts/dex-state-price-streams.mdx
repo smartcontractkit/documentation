@@ -31,32 +31,26 @@ DEX state can introduce risks inherent to DeFi. Consumers of State Pricing must 
 ## High-Level Outline of the DEX State Price Methodology
 
 1. **Asset Selection**
-
    - Focuses on DEX-dominant or DEX-exclusive assets, generally those where 80% or more of trading volume is on decentralized exchanges.
    - Uses preliminary screens to identify relevant liquidity pools (e.g., top 95% of trading volume).
 
 1. **Onchain Pool Monitoring**
-
    - Selects pools across multiple DEX protocols to capture an aggregate view of token price and liquidity.
    - Gathers end-of-block state information (reserves, ticks, or pool-specific data) rather than raw trade-by-trade events to protect against temporary price swings or intra-block MEV.
 
 1. **Weighted Aggregation**
-
    - Aggregates individual pool prices using a volume-based weighting scheme.
    - Each pool's long-term trading volume or liquidity depth influences its weight, helping ensure more dominant pools have a proportionally greater impact on the final price.
 
 1. **Outlier & Time-Lag Filters**
-
    - Applies outlier detection to remove anomalous values that deviate significantly from broader market activity.
    - Introduces a mild time-lag filter to smooth short-term volatility and mitigate sudden spikes or dips due to low-liquidity trades.
 
 1. **Liquidity Metrics**
-
    - Incorporates advanced liquidity metrics (e.g., market depth, liquidity distribution across pools) to refine the weighting and guard against abrupt liquidity shifts.
    - An emergency pause mechanism can temporarily suspend price reporting if a severe liquidity drop is detected.
 
 1. **Final DEX State Price**
-
    - The result is a price that reflects both onchain market activity and relevant liquidity conditions, providing a robust solution for DEX-based assets.
 
 ## How to Use DEX State Price Streams

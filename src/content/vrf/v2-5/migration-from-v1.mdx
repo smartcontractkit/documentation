@@ -58,7 +58,6 @@ To modify your existing smart contract code to work with VRF v2.5, complete the 
    </div>
 
 1. Add the following imports to your contract:
-
    - [`VRFConsumerBaseV2Plus`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol). Remove the v1 `VRFConsumerBase.sol` import. `VRFConsumerBaseV2Plus` includes the `fulfillRandomWords` function. The `VRFConsumerBaseV2Plus` contract imports the `IVRFCoordinatorV2Plus` interface, which includes the `requestRandomWords` function.
    - [`VRFV2PlusClient`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/vrf/dev//libraries/VRFV2PlusClient.sol) is a library used to format your VRF requests.
 
@@ -99,7 +98,6 @@ To modify your existing smart contract code to work with VRF v2.5, complete the 
 1.  Add a `VRFV2PlusWrapperConsumerBase` constructor, passing in the VRF wrapper address for the network you're using, as shown in the [Get a Random Number](/vrf/v2-5/direct-funding/get-a-random-number) example.
 
 1.  You can still call the `requestRandomness` function. However, the v2 `requestRandomness` function requires several different parameters. See the [Supported networks](/vrf/v2-5/supported-networks) page to adjust them for your own needs.
-
     - The `requestRandomness` function in the wrapper contract requires a new `extraArgs` argument that allows you to add extra arguments related to new VRF features. Use the `nativePayment` argument to enable or disable payment in native tokens.
     - Additionally, the `requestRandomness` function now returns two arguments instead of one: the request ID and the request price.
 
@@ -117,7 +115,6 @@ To modify your existing smart contract code to work with VRF v2.5, complete the 
     ```
 
 1.  If you're paying for requests with LINK, you can still call the `requestRandomness` function. However, if you're paying with native tokens, call the `requestRandomnessPayInNative` function instead.
-
     - Both functions return two arguments instead of one: the request ID and the request price.
     - Both functions require one additional parameter, `extraArgs`. Use `nativePayment` to specify whether or not you want to pay for VRF requests using native tokens:
 

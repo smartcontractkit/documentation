@@ -110,13 +110,11 @@ For a complete list, refer to [Shiki's supported languages](https://github.com/s
 ## Best Practices
 
 1. **Concise Explanations**
-
    - Keep explanations clear and focused
    - Use bullet points for better readability
    - Highlight only the most important code sections
 
 2. **Responsive Design**
-
    - Component automatically adjusts for different screen sizes
    - Code and explanation stack vertically on mobile
    - Maintains readability across devices
@@ -166,13 +164,11 @@ For a complete list, refer to [Shiki's supported languages](https://github.com/s
 ## Troubleshooting
 
 1. **Code Not Loading**
-
    - For local files: Ensure the file exists in `public/samples`
    - For URLs: Verify the URL is accessible and returns raw code
    - Check file permissions and CORS settings
 
 2. **Syntax Highlighting Issues**
-
    - Verify the language is supported
    - Check the language identifier is correct
    - Ensure code is properly formatted

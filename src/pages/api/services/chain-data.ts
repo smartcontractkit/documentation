@@ -1,7 +1,8 @@
 import { Environment, ChainDetails, FilterType, ChainConfigError } from "../ccip/types/index.ts"
 import { ChainsConfig } from "@config/data/ccip/index.ts"
 import { getSelectorEntry } from "@config/data/ccip/selectors.ts"
-import { resolveChainOrThrow, LogLevel, structuredLog } from "../ccip/utils.ts"
+import { resolveChainOrThrow } from "@api/ccip/utils.ts"
+import { logger } from "@lib/logging/index.js"
 import { getChainId, getNativeCurrency, getTitle, getChainTypeAndFamily } from "../../../features/utils/index.ts"
 import { SupportedChain, ChainType, ChainFamily } from "~/config/index.ts"
 
@@ -45,7 +46,7 @@ abstract class BaseChainStrategy implements IChainProcessingStrategy {
 
     // Early validation for required dependencies
     if (!selectorEntry || !chainConfig || !supportedChain) {
-      structuredLog(LogLevel.WARN, {
+      logger.warn({
         message: "Missing required dependencies for chain validation",
         requestId: this.requestId,
         networkId,
@@ -64,7 +65,7 @@ abstract class BaseChainStrategy implements IChainProcessingStrategy {
 
     // Validate chainId and selectorEntry
     if (!chainId || !selectorEntry) {
-      structuredLog(LogLevel.WARN, {
+      logger.warn({
         message: "Missing chain ID or selector entry",
         requestId: this.requestId,
         networkId,
@@ -81,7 +82,7 @@ abstract class BaseChainStrategy implements IChainProcessingStrategy {
     // Validate display name
     const displayName = getTitle(supportedChain)
     if (!displayName) {
-      structuredLog(LogLevel.WARN, {
+      logger.warn({
         message: "Missing display name for chain",
         requestId: this.requestId,
         networkId,
@@ -97,7 +98,7 @@ abstract class BaseChainStrategy implements IChainProcessingStrategy {
     // Validate native token
     const nativeTokenSymbol = getNativeCurrency(supportedChain)
     if (!nativeTokenSymbol) {
-      structuredLog(LogLevel.WARN, {
+      logger.warn({
         message: "Missing native token symbol",
         requestId: this.requestId,
         networkId,
@@ -124,7 +125,7 @@ abstract class BaseChainStrategy implements IChainProcessingStrategy {
     })
 
     if (missingFields.length > 0) {
-      structuredLog(LogLevel.WARN, {
+      logger.warn({
         message: "Missing required fields in chain configuration",
         requestId: this.requestId,
         networkId,
@@ -213,7 +214,7 @@ class EvmChainStrategy extends BaseChainStrategy {
     })
 
     if (missingFields.length > 0) {
-      structuredLog(LogLevel.WARN, {
+      logger.warn({
         message: "Missing EVM-specific fields in chain configuration",
         requestId: this.requestId,
         networkId,
@@ -277,7 +278,7 @@ class SolanaChainStrategy extends BaseChainStrategy {
     })
 
     if (missingFields.length > 0) {
-      structuredLog(LogLevel.WARN, {
+      logger.warn({
         message: "Missing Solana-specific fields in chain configuration",
         requestId: this.requestId,
         networkId,
@@ -304,17 +305,84 @@ class SolanaChainStrategy extends BaseChainStrategy {
   }
 }
 
-// Strategy Factory
-class ChainStrategyFactory {
-  static getStrategy(chainType: ChainType, requestId: string): IChainProcessingStrategy {
-    switch (chainType) {
-      case "evm":
-        return new EvmChainStrategy(requestId)
-      case "solana":
-        return new SolanaChainStrategy(requestId)
-      default:
-        throw new Error(`Unsupported chain type: ${chainType}`)
+class AptosChainStrategy extends BaseChainStrategy {
+  private static readonly REQUIRED_FIELDS = {
+    tokenAdminRegistry: (config: ChainsConfig[string]) => !config.tokenAdminRegistry?.address,
+    mcms: (config: ChainsConfig[string]) => !config.mcms?.address,
+  } as const
+
+  validateChainData(
+    chainId: number | string | undefined,
+    networkId: string,
+    chainConfig: ChainsConfig[string],
+    selectorEntry?: { selector: string; name: string },
+    supportedChain?: SupportedChain
+  ): {
+    isValid: boolean
+    missingFields: string[]
+    validatedData?: ChainDetails
+  } {
+    const baseValidation = this.validateBaseFields(chainId, networkId, chainConfig, selectorEntry, supportedChain)
+
+    if (!baseValidation.isValid || !baseValidation.baseData) {
+      return {
+        isValid: false,
+        missingFields: baseValidation.missingFields,
+      }
     }
+
+    const missingFields = this.validateAptosRequirements(chainConfig)
+
+    if (missingFields.length > 0) {
+      logger.warn({
+        message: "Aptos chain configuration incomplete",
+        requestId: this.requestId,
+        networkId,
+        missingFields,
+      })
+
+      return {
+        isValid: false,
+        missingFields,
+      }
+    }
+
+    const validatedData: ChainDetails = {
+      ...(baseValidation.baseData as ChainDetails),
+      tokenAdminRegistry: chainConfig.tokenAdminRegistry?.address ?? "",
+      mcms: chainConfig.mcms?.address ?? "",
+    }
+
+    return {
+      isValid: true,
+      missingFields: [],
+      validatedData,
+    }
+  }
+
+  private validateAptosRequirements(chainConfig: ChainsConfig[string]): string[] {
+    return Object.entries(AptosChainStrategy.REQUIRED_FIELDS)
+      .filter(([, validator]) => validator(chainConfig))
+      .map(([field]) => field)
+  }
+}
+
+class ChainStrategyFactory {
+  private static readonly strategies = new Map<ChainType, new (requestId: string) => IChainProcessingStrategy>([
+    ["evm", EvmChainStrategy],
+    ["solana", SolanaChainStrategy],
+    ["aptos", AptosChainStrategy],
+  ])
+
+  static getStrategy(chainType: ChainType, requestId: string): IChainProcessingStrategy {
+    const StrategyClass = this.strategies.get(chainType)
+
+    if (!StrategyClass) {
+      const supportedTypes = Array.from(this.strategies.keys()).join(", ")
+      throw new Error(`Chain type "${chainType}" not supported. Available strategies: ${supportedTypes}`)
+    }
+
+    return new StrategyClass(requestId)
   }
 }
 
@@ -335,7 +403,7 @@ export class ChainDataService {
     this.chainConfig = chainConfig
     this.requestId = crypto.randomUUID()
 
-    structuredLog(LogLevel.DEBUG, {
+    logger.debug({
       message: "ChainDataService initialized",
       requestId: this.requestId,
       chainCount: Object.keys(chainConfig).length,
@@ -359,7 +427,7 @@ export class ChainDataService {
   private async getChainDetails(chainConfig: ChainsConfig[string], chainKey: string): Promise<ChainDetails | null> {
     const networkId = chainKey
 
-    structuredLog(LogLevel.DEBUG, {
+    logger.debug({
       message: "Getting chain details",
       requestId: this.requestId,
       networkId,
@@ -370,7 +438,7 @@ export class ChainDataService {
     try {
       supportedChain = resolveChainOrThrow(networkId)
     } catch (error) {
-      structuredLog(LogLevel.ERROR, {
+      logger.error({
         message: "Failed to resolve chain identifier",
         requestId: this.requestId,
         networkId,
@@ -398,7 +466,7 @@ export class ChainDataService {
     const validation = strategy.validateChainData(chainId, networkId, chainConfig, selectorEntry, supportedChain)
 
     if (!validation.isValid || !validation.validatedData) {
-      structuredLog(LogLevel.WARN, {
+      logger.warn({
         message: "Chain validation failed",
         requestId: this.requestId,
         networkId,
@@ -415,7 +483,7 @@ export class ChainDataService {
       return null
     }
 
-    structuredLog(LogLevel.DEBUG, {
+    logger.debug({
       message: "Chain details retrieved successfully",
       requestId: this.requestId,
       networkId,
@@ -449,7 +517,7 @@ export class ChainDataService {
     errors: ChainConfigError[]
     metadata: { validChainCount: number; ignoredChainCount: number }
   }> {
-    structuredLog(LogLevel.INFO, {
+    logger.info({
       message: "Starting chain filtering process",
       requestId: this.requestId,
       environment,
@@ -486,7 +554,7 @@ export class ChainDataService {
         filteredChains = filteredChains.filter((chain) => internalIds.includes(chain.internalId))
       }
 
-      structuredLog(LogLevel.DEBUG, {
+      logger.debug({
         message: "Applied chain filters",
         requestId: this.requestId,
         originalCount,
@@ -515,7 +583,7 @@ export class ChainDataService {
       ignoredChainCount: this.errors.length,
     }
 
-    structuredLog(LogLevel.INFO, {
+    logger.info({
       message: "Chain filtering completed",
       requestId: this.requestId,
       metadata,
