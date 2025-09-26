@@ -429,6 +429,7 @@ export const StreamsNetworksData: NetworkData[] = [
   {
     network: "Plasma",
     logoUrl: "/assets/chains/plasma.svg",
+    networkStatus: "https://statuspage.incident.io/plasmanetwork",
     mainnet: {
       label: "Plasma Mainnet",
       verifierProxy: "0xB4626C56c8d66b09adC57e38a5A15CcCd51BE082",
