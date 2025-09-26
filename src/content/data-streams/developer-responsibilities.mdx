@@ -34,6 +34,8 @@ Developers are responsible for maintaining the security and user experience of t
 
 In particular, developers implementing Chainlink Data Streams in their code and applications are responsible for their application's market integrity and code risks that may cause unanticipated pricing data behavior. These are described below in more detail:
 
+For guidance on mitigations, see the [Data Streams Best Practices](/data-streams/concepts/best-practices) — developers remain solely responsible for their integrations.
+
 ### Market Integrity Risks
 
 Market conditions can impact the pricing behavior of assets in ways beyond the ability of Chainlink node operators to predict or control.
@@ -51,6 +53,17 @@ The market status provided on Streams serves as an indication of the open and cl
 Under the shared responsibility model, developers must thoroughly understand the methodologies, trading behaviors, and market liquidity patterns related to traditional asset classes and instruments, particularly during and around market opening and closing hours. Developers should be aware of unique risks such as price volatility, sudden liquidity shifts, and trading halts that can affect data reliability and availability. A comprehensive understanding of these factors will help developers better anticipate and address potential issues, resulting in more resilient and trustworthy integrations for end users.
 
 **Data Streams developers are solely responsible for defining and implementing their own risk procedures and systems, including being aware of market open and closing times, and bank holidays, when integrating associated Chainlink Data Streams.**
+
+### Market hours
+
+Some Data Streams reflect assets that trade only during specific market windows or are published with a delay. Developers must not assume 24/7 trading availability for these streams and should implement validations and fallback logic where appropriate:
+
+- Offchain equity and ETF assets are traded only during standard [market hours](/data-streams/market-hours). Do not use these streams outside those windows.
+- Forex (foreign exchange) assets trade only during defined market hours for the pair and, for some currencies, primarily during local banking hours. Do not use Forex streams outside the market hours relevant to the currency pair.
+- UK ETF price streams may be published with a 15-minute delay from their original source. These assets are traded only during standard market hours — do not use UK ETF streams outside their specified trading windows or assume real-time prices.
+- Other assets may have specific market hours defined by their respective exchanges or liquidity providers.
+
+For more information, see the [Market Hours Best Practices](/data-streams/concepts/best-practices#market-hours); developers remain solely responsible for how they use this guidance and for any risks or liabilities resulting from their integrations.
 
 #### DEX-based Assets
 
