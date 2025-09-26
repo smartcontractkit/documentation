@@ -427,6 +427,20 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "Plasma",
+    logoUrl: "/assets/chains/plasma.svg",
+    mainnet: {
+      label: "Plasma Mainnet",
+      verifierProxy: "0xB4626C56c8d66b09adC57e38a5A15CcCd51BE082",
+      explorerUrl: "https://plasmascan.to/address/%s",
+    },
+    testnet: {
+      label: "Plasma Testnet",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://testnet.plasmascan.to/address/%s",
+    },
+  },
+  {
     network: "Ronin",
     logoUrl: "/assets/chains/ronin.svg",
     mainnet: {
