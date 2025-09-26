@@ -193,7 +193,7 @@ Announcements can cause sharp price spikes or sustained moves.
 
 Corporate actions that change the share count (splits and reverse splits) alter per‑share pricing while leaving the underlying economic exposure unchanged. These events can produce abrupt per‑share price moves and must be handled carefully to avoid incorrect onchain price computations and unexpected liquidations.
 
-In the [v10 report schema](/data-streams/reference/report-schema-v10), continuity is preserved by staging a multiplier change with a scheduled `activationDateTime` so the Calculated Tokenized Price remains continuous. Split ratios are typically known in advance, but activation may occur while markets are closed, so some external price sources may not reflect the split until trading resumes.
+In the [v10 report schema](/data-streams/reference/report-schema-v10), continuity is preserved by staging a multiplier change with a scheduled `activationDateTime` so the Theoretical Price (`price` \* `currentMultiplier`) remains continuous. Split ratios are typically known in advance, but activation may occur while markets are closed, so some external price sources may not reflect the split until trading resumes.
 
 <Aside type="note" title="Note">
   This guidance focuses on multiplier handling in the [v10 report schema](/data-streams/reference/report-schema-v10) and
@@ -206,14 +206,14 @@ In the [v10 report schema](/data-streams/reference/report-schema-v10), continuit
 
 Follow these principles when handling multiplier changes during corporate actions:
 
-1. The protocol considers the xStock price to be Theoretical Price = `price` \* `currentMultiplier`
+1. The protocol considers the xStock's Theoretical Price as `price` \* `currentMultiplier`.
 1. Ahead of the event, `newMultiplier` and `activationDateTime` are staged.
 1. At `activationDateTime` (unix), `currentMultiplier` becomes `newMultiplier`.
    - The underlying `price` from traditional markets should start reflecting the split the next time trading opens, so at the next `price` update, the Theoretical Price should remain continuous.
 
-#### Example (10:1 split)
+#### Example (10:1 split, AAPL)
 
-The following hypothetical scenario demonstrates how a 10:1 stock split is handled through the staged multiplier system, showing the progression from announcement through protocol reopening with proper price continuity maintained throughout.
+The following hypothetical scenario demonstrates how a 10:1 AAPL stock split is handled through the staged multiplier system, showing the progression from announcement through protocol reopening with proper price continuity maintained throughout.
 
 The following timeline outlines the key events and actions taken at each stage:
 
@@ -225,7 +225,7 @@ The following timeline outlines the key events and actions taken at each stage:
 
 ##### Announcement (T-2)
 
-A 10:1 stock split is announced. [The report](/data-streams/reference/report-schema-v10) updates to stage the split:
+A 10:1 AAPL stock split is announced. [The report](/data-streams/reference/report-schema-v10) updates to stage the split:
 
 - `newMultiplier` is set to 10x the value of `currentMultiplier`.
 - `activationDateTime` is set to the unix timestamp of the split.
@@ -243,7 +243,7 @@ When the provider applies the split, [the report](/data-streams/reference/report
 - `activationDateTime` is set to `0`.
 - `currentMultiplier` is updated to the same value as `newMultiplier`.
 
-If activation occurs while the underlying market is closed, prices may still show the pre‑event last trade. Do not compute the Calculated Tokenized Price during this pre-adjustment window. Monitor `marketStatus` and keep the protocol paused until the first post‑event trade prints and the Theoretical Price is continuous.
+If activation occurs while the underlying market is closed, prices may still show the pre‑event last trade. Do not compute the Theoretical Price during this pre-adjustment window. Monitor `marketStatus` and keep the protocol paused until the first post‑event trade prints and the Theoretical Price is continuous.
 
 ##### Market reopening (T1)
 
