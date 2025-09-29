@@ -14,7 +14,7 @@ The Chainlink DTA technical standard consists of multiple components that enable
   - **DTA Request Management**: Accessed by fund distributors to submit subscription/redemption requests and by transfer agents to process pending requests.
   - **DTA Request Settlement**: Deployed by each fund administrator or transfer agent, the contract is responsible for minting, burning, and transferring the tokenized fund upon successful settlement.
 - **CCIP**: Support transfer agency services across multiple blockchains. This allows requests to be submitted on one chain and settled on another. Furthermore, fund tokens can be deployed and made available to investors across multiple blockchain ecosystems.
-- **Chainlink ACE**: Provide flexible, programmable compliance enforcement (e.g., eligibility checks, rate limits, role-based access) to ensure regulators’ and institutions’ requirements are adhered to onchain.
+- **Chainlink ACE**: Provide flexible, programmable compliance enforcement (e.g., eligibility checks, rate limits, role-based access) to enable regulators’ and institutions’ requirements to be adhered to onchain.
 - **NAVLink Feeds**: Securely link tokenized funds to the fund administrators’ NAV reporting systems to ensure accurate pricing for subscriptions and redemptions across both fiat and digital asset settlement.
 - **CRE**: Ensure compatibility with legacy systems, facilitate access to fiat settlement via [established payment rails](https://www.swift.com/news-events/press-releases/swift-ubs-asset-management-and-chainlink-successfully-complete-innovative-pilot-bridge-tokenized-assets-existing-payment-systems), and enable record reconciliation with offchain systems.
 
@@ -32,7 +32,6 @@ A typical subscription (buy) order follows a clear, four-step process that moves
 1. **NAV update:** Fund Administrator updates the NAV value. This results in the NAV Feed being updated onchain.
 
 1. **Request Processing:** At a predetermined time (e.g., end of day), the Transfer Agent initiates processing. DTA Request Management then performs two key actions:
-
    - **Price Calculation:** It calls the NAV feed to fetch the fund's official Net Asset Value (NAV) and calculates the exact number of shares to be issued.
    - **Request Forwarding:** It forwards the finalized request, including the calculated share amount, to the Transfer Agent's DTA Request Settlement contract.
 
@@ -42,7 +41,7 @@ A typical subscription (buy) order follows a clear, four-step process that moves
 
 1. **Settlement:** Depending on the fund’s payment model, DTA Request Settlement completes settlement by either pulling payment tokens onchain, awaiting and recording offchain payment confirmation, or receiving cross-chain payment via CCIP. Upon successful settlement, it releases the newly minted fund tokens from escrow to the Fund Distributor’s address.
 
-Each of these steps corresponds to a formal status change in the DTA technical standard. To see a detailed breakdown of these states, from **Pending** to **Processed**, see [The Request Lifecycle](/dta/request-lifecycle) page.
+Each of these steps corresponds to a formal status change in the DTA technical standard. To see a detailed breakdown of these states, from **Pending** to **Processed**, see [The Request Lifecycle](/dta-technical-standard/request-lifecycle) page.
 
 ## The redemption flow
 
@@ -58,4 +57,4 @@ The final "Settlement" step of the flow can occur in one of three ways, dependin
 - **Local Onchain Settlement:** The entire process, from payment transfer to token minting, happens atomically in a single transaction on one blockchain.
 - **Cross-Chain Settlement:** The request is made on one chain, and Chainlink CCIP is used to securely transfer payment and instructions to DTA Request Settlement on another chain for final settlement. This model allows a fund to exist on a single primary blockchain while being accessible to distributors across many different networks, enabling operational patterns like taking requests on a low-cost L2 while the fund itself is administered on an L1.
 
-To learn more about the specific workflows for each of these models, see the [Payment Modes](/dta/payment-modes) page.
+To learn more about the specific workflows for each of these models, see the [Payment Modes](/dta-technical-standard/payment-modes) page.
