@@ -3,7 +3,7 @@ import DocsLayout from "~/layouts/DocsLayout.astro"
 import { getCollection, render } from "astro:content"
 
 export async function getStaticPaths() {
-  const dtaEntries = await getCollection("dta")
+  const dtaEntries = await getCollection("dta-technical-standard")
 
   return dtaEntries.map((entry) => {
     const routeId = entry.id.replace(/\.(md|mdx)$/, "")
@@ -15,8 +15,8 @@ export async function getStaticPaths() {
   })
 }
 
-interface Props {
-  entry: Awaited<ReturnType<typeof getCollection<"dta">>>[number]
+type Props = {
+  entry: Awaited<ReturnType<typeof getCollection<"dta-technical-standard">>>[number]
 }
 
 const { entry } = Astro.props

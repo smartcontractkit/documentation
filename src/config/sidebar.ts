@@ -2329,7 +2329,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  [SIDEBAR_SECTIONS.DTA]: [
+  [SIDEBAR_SECTIONS.DTA_TECHNICAL_STANDARD]: [
     {
       section: "Digital Transfer Agent (DTA) Technical Standard",
       contents: [
