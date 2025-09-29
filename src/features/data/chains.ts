@@ -158,7 +158,7 @@ export const CHAINS: Chain[] = [
     title: "BNB Chain Data Feeds",
     img: "/assets/chains/bnb-chain.svg",
     networkStatusUrl: "https://bscscan.freshstatus.io/",
-    tags: ["default", "smartData"],
+    tags: ["default", "smartData", "usGovernmentMacroeconomicData"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
@@ -167,7 +167,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-bsc-mainnet.json",
         queryString: "bnb-mainnet",
-        tags: ["smartData"],
+        tags: ["smartData", "usGovernmentMacroeconomicData"],
       },
       {
         name: "BNB Chain Testnet",
