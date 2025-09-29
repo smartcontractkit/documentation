@@ -141,7 +141,7 @@ export const evmProducts = [
   {
     title: "DTA",
     description: "Technical standard for subscriptions, redemptions, and settlements.",
-    docsLandingLink: "/dta",
+    docsLandingLink: "/dta-technical-standard",
     // learnMoreLink: "https://dev.chain.link/products/dta",
     image: dtaLogo,
     shape: dtaShape,

@@ -2335,31 +2335,31 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       contents: [
         {
           title: "About DTA",
-          url: "dta",
+          url: "dta-technical-standard",
         },
         {
           title: "How It Works",
-          url: "dta/how-it-works",
+          url: "dta-technical-standard/how-it-works",
         },
         {
           title: "Actors",
-          url: "dta/actors",
+          url: "dta-technical-standard/actors",
         },
       ],
     },
     {
       section: "Concepts",
       contents: [
-        { title: "Architecture", url: "dta/concepts/architecture" },
-        { title: "The Request Lifecycle", url: "dta/concepts/request-lifecycle" },
-        { title: "Payment Modes", url: "dta/concepts/payment-modes" },
-        // { title: "Token Compliance and DTA", url: "dta/concepts/token-compliance-and-dta" },
-        // { title: "Cross-Chain with CCIP", url: "dta/concepts/cross-chain-ccip" },
+        { title: "Architecture", url: "dta-technical-standard/concepts/architecture" },
+        { title: "The Request Lifecycle", url: "dta-technical-standard/concepts/request-lifecycle" },
+        { title: "Payment Modes", url: "dta-technical-standard/concepts/payment-modes" },
+        // { title: "Token Compliance and DTA", url: "dta-technical-standard/concepts/token-compliance-and-dta" },
+        // { title: "Cross-Chain with CCIP", url: "dta-technical-standard/concepts/cross-chain-ccip" },
       ],
     },
     {
       section: "Reference",
-      contents: [{ title: "Glossary", url: "dta/reference/glossary" }],
+      contents: [{ title: "Glossary", url: "dta-technical-standard/reference/glossary" }],
     },
   ],
 }
