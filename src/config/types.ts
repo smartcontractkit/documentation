@@ -177,6 +177,7 @@ export type SupportedChain =
   | "CRONOS_ZKEVM_TESTNET"
   | "CRONOS_ZKEVM_MAINNET"
   | "0G_GALILEO_TESTNET"
+  | "0G_MAINNET"
   | "MIND_NETWORK_TESTNET"
   | "MIND_NETWORK_MAINNET"
   | "MEGAETH_TESTNET"
@@ -221,6 +222,8 @@ export type SupportedChain =
   | "KAIA_TESTNET_KAIROS"
   | "TAC_MAINNET"
   | "TAC_TESTNET"
+  | "PLASMA_MAINNET"
+  | "PLASMA_TESTNET"
 
 export type ExplorerInfo = {
   baseUrl: string
