@@ -2441,24 +2441,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "API, SDKs, Onchain Verification",
               url: "datalink/pull-delivery/reference/api-sdk-onchain-verification",
             },
-            {
-              title: "Report Schemas",
-              url: "datalink/pull-delivery/reference/report-schemas",
-              children: [
-                {
-                  title: "V2",
-                  url: "datalink/pull-delivery/reference/report-schemas/v2",
-                },
-                {
-                  title: "V3",
-                  url: "datalink/pull-delivery/reference/report-schemas/v3",
-                },
-                {
-                  title: "V4",
-                  url: "datalink/pull-delivery/reference/report-schemas/v4",
-                },
-              ],
-            },
           ],
         },
       ],

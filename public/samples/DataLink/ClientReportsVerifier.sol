@@ -82,7 +82,7 @@ contract ClientReportsVerifier {
     error InvalidReportVersion(uint16 version);
 
     // ----------------- Report schemas -----------------
-    // More info: https://docs.chain.link/datalink/pull-delivery/reference/report-schemas/v3
+    // Extract schema version from feed ID (first 2 bytes of the feed ID)
     /**
      * @dev DataLink report schema v3.
      *      Prices, bids and asks use 8 or 18 decimals depending on the feed.
