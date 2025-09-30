@@ -12,6 +12,8 @@ import dataStreamsLogo from "../../../assets/product-logos/data-streams-logo.svg
 import dataStreamsShape from "../../../assets/product-logos/data-streams-shape.svg"
 import dtaLogo from "../../../assets/product-logos/dta-logo.svg"
 import dtaShape from "../../../assets/product-logos/dta-shape.svg"
+import datalinkLogo from "../../../assets/product-logos/datalink-logo.svg"
+import datalinkShape from "../../../assets/product-logos/datalink-shape.svg"
 import { ProductCardProps } from "../components/ProductCard.tsx"
 
 const baseChains = [
@@ -136,6 +138,14 @@ export const evmProducts = [
     shape: vrfShape,
     chains: [...baseChains, { id: "arbitrum", title: "Arbitrum" }, { id: "base", title: "BASE" }],
     video: "https://www.youtube.com/watch?v=JqZWariqh5s&list=PLVP9aGDn-X0QHDyBRvbITizWrRoecR0D8&index=2",
+  },
+  {
+    title: "DataLink",
+    description: "Institutional-grade data publishing solution for specialized market data onchain.",
+    docsLandingLink: "/datalink",
+    // learnMoreLink: "https://dev.chain.link/products/datalink",
+    image: datalinkLogo,
+    shape: datalinkShape,
   },
   {
     title: "DTA",

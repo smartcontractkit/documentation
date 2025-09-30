@@ -1,0 +1,138 @@
+---
+section: dataLink
+date: Last Modified
+title: "DataLink"
+metadata:
+  title: "DataLink"
+  description: "Institutional-grade data publishing service enabling data providers to seamlessly commercialize specialized market data onchain through Chainlink's secure infrastructure."
+isIndex: true
+whatsnext:
+  {
+    "Understand data quality & responsibility": "/datalink/data-quality-responsibility",
+    "View the Provider Catalog": "/datalink/provider-catalog",
+    "Learn how to integrate DataLink (Pull-Based Delivery)": "/datalink/pull-delivery/overview",
+    "View the DataLink Architecture (Pull-Based Delivery)": "/datalink/pull-delivery/architecture",
+  }
+---
+
+import { Aside, ClickToZoom } from "@components"
+
+DataLink is an institutional-grade data publishing service that enables data providers to commercialize specialized market data onchain through Chainlink's secure infrastructure.
+
+DataLink connects data providers with blockchain applications without requiring blockchain development expertise. It serves both institutional capital markets and DeFi protocols by enabling data providers to deliver specialized datasets across public chains, private institutional chains, and capital markets infrastructure.
+
+Data providers can integrate through existing REST or WebSocket APIs, eliminating custom blockchain development while maintaining control over data distribution and access rights.
+
+## Key Features
+
+### Data Providers
+
+DataLink offers a robust and secure gateway for Data Providers to commercialize valuable data onchain without requiring blockchain expertise. This unlocks a range of benefits for data providers, including:
+
+- **New revenue streams**: Commercialize proprietary data across any supported blockchain using Chainlink's enterprise-grade infrastructure, transforming valuable market data into new revenue streams.
+- **Access Control**: Maintain control over data with configurable access rights, supporting commercializing models aligned with existing business practices.
+- **New Distribution Channels**: Reach 2,400+ dApps, RWA issuers, and tokenization platforms across public and private blockchains, along with Chainlink’s global network of [institutional partners](https://blog.chain.link/chainlink-banking-capital-markets-announcements/), including leading banks, tokenized asset platforms, and financial market infrastructures.
+- **Seamless integration**: Deliver data across any supported chain through a single integration that connects directly to existing REST or WebSocket APIs—no custom blockchain development or data re-architecture required.
+
+Interested in being a data provider for DataLink? [Contact Chainlink Labs](https://chain.link/datalink-data-provider) to learn more.
+
+### Web3 Protocols and dApps
+
+DataLink empowers Web3 protocols to access new data types and launch new markets faster than ever before. Key benefits for onchain applications include:
+
+- **Faster Market Launches**: Access specialized, high-quality data to quickly deploy new assets and markets, gaining a first-mover advantage.
+- **Proven Infrastructure**: DataLink is underpinned by Chainlink’s proven infrastructure, which has enabled tens of trillions in transaction value.
+- **Seamless Integration**: Access the full DataLink catalog with one integration and easily combine multiple data subscriptions.
+- **Institutional-Grade Data**: Leverage the same high-quality datasets trusted by global financial institutions, including equities, forex, bonds, commodities, derivatives, and more.
+
+Interested in integrating DataLink into your DeFi protocol or onchain workflow? [Reach out to learn more](https://chain.link/datalink-data-consumer).
+
+## How DataLink Works
+
+DataLink makes specialized data available to blockchain applications through a three-step process:
+
+1. **Data Connectivity:** Chainlink Labs curates and onboards data providers offering market-leading data, including specialized datasets such as sector indices, long-tail asset pricing, and volatility metrics.
+1. **Data Consensus and Delivery:** Multiple Chainlink nodes within a Decentralized Oracle Network (DON) fetch data from a provider and reach consensus:
+   - **Pull-based feeds:** Nodes reach consensus and create cryptographically signed oracle reports that are delivered to the Aggregation Layer for offchain retrieval
+   - **Push-based feeds:** Nodes reach consensus and directly transmit results onchain to aggregator contracts
+1. **Application Integration:** Developers integrate data through two delivery methods:
+   - **Pull-based feeds:** REST APIs, WebSocket connections, or SDKs to fetch signed oracle reports offchain and validate their integrity onchain via verifier contracts
+   - **Push-based feeds:** Direct smart contract calls to aggregator proxy contracts for onchain data access
+
+<ClickToZoom
+  src="/images/datalink/datalink-overview.png"
+  alt="DataLink Overview"
+  caption="Overview of DataLink architecture and how data flows from providers to blockchains."
+/>
+
+## Specialized Data Types
+
+DataLink enables access to a wide range of institutional and specialized market data types:
+
+- **Credit Ratings:** Independent assessments of issuers’ and instruments’ creditworthiness, default risk, and rating outlooks.
+- **Equities:** Comprehensive data on global equity markets.
+- **FX Rates:** Accurate and timely FX rate data across major, minor, and emerging market currency pairs.
+- **Bonds:** Detailed market data including bond yields, maturities, issuer information, and historical pricing.
+- **Commodities:** Extensive coverage of spot and futures prices for commodities such as metals, energy, and agriculture.
+- **Reference Data:** Foundational datasets including security identifiers, classifications, corporate hierarchies, and market conventions to ensure consistency across financial instruments.
+- **Perpetual Funding Rates:** Periodic payments exchanged between long and short traders in perpetual futures markets, designed to anchor perpetual contract prices closely to the underlying asset’s spot price.
+- **Corporate Actions Data:** Events such as dividends, stock splits, mergers, acquisitions, rights issues, and reorganizations, with detailed terms and effective dates.
+- **Derivatives:** Options, futures, swaps, and structured products, with data on pricing, implied volatility, and contract specifications.
+- **Long-Tail Crypto Assets:** Price data for long-tail crypto-native assets.
+- **Any Custom Dataset:** Tailored data solutions designed to meet unique specifications or requirements for specialized investment strategies or analytics.
+
+## Technical Integration
+
+DataLink leverages Chainlink's existing infrastructure to provide flexible data delivery options:
+
+### Pull Delivery
+
+- **Infrastructure:** Built on [Chainlink Data Streams](/data-streams/streams-direct) architecture
+- **Access methods:** REST API, WebSocket, [Go SDK](/data-streams/reference/streams-direct/streams-direct-go-sdk), and [Rust SDK](/data-streams/reference/streams-direct/streams-direct-rust-sdk)
+- **Use cases:** High-frequency trading applications, on-demand data retrieval, sub-second data resolution, and applications requiring commit-and-reveal mechanisms to prevent frontrunning
+- **Efficiency:** Retrieves data only when needed, reducing unnecessary onchain transactions
+
+<ClickToZoom
+  src="/images/datalink/datalink-pull-conceptual-diagram.png"
+  alt="DataLink Pull-Based Architecture"
+  caption="DataLink pull-based feeds enable data providers to deliver specialized data through the Chainlink Aggregation Layer for offchain retrieval and onchain verification."
+/>
+
+Learn more about [pull-based DataLink feeds](/datalink/pull-delivery/overview).
+
+### Push Delivery
+
+- **Infrastructure:** Built on [Chainlink Data Feeds](/data-feeds/) architecture
+- **Access method:** Direct onchain smart contract calls to proxy aggregator contracts
+- **Use cases:** Applications requiring regular onchain data updates at fixed intervals, automated execution based on data thresholds, and continuous data availability for smart contract logic
+- **Pattern:** Data is automatically pushed onchain at set intervals or when predefined conditions are met
+
+<ClickToZoom
+  src="/images/datalink/datalink-push-conceptual-diagram.png"
+  alt="DataLink Push-Based Architecture"
+  caption="DataLink push-based feeds enable data providers to deliver specialized data directly onchain through Chainlink Price aggregator contracts for smart contract access."
+/>
+
+Learn more about [push-based DataLink feeds](/datalink/push-delivery/overview).
+
+## Data Quality, Responsibility & Trust Assumptions
+
+<Aside type="caution" title="Provider Responsibility & Single-Source Data">
+  Some DataLink feeds rely on single-source data from individual providers. DataLink solely provides infrastructure for
+  data providers to make their data available onchain. None of Chainlink Labs, the Chainlink Foundation, or Chainlink
+  node operators verify, guarantee, or assume responsibility for the accuracy, reliability, availability, or quality of
+  the data provided. Such responsibilities lie solely with the respective data providers. Protocols utilizing DataLink
+  are strongly encouraged to independently validate that the quality and reliability of data received from data
+  providers meet their use case requirements and implement comprehensive risk mitigation strategies, fallback
+  mechanisms, and contingency plans to address potential inaccuracies or interruptions in data delivery from data
+  providers. Any use of DataLink, whether obtained directly from Chainlink or acquired independently, remains subject to
+  the [Terms of Service](https://chainlinklabs.com/terms).
+</Aside>
+
+DataLink connects protocols to data providers through Chainlink infrastructure. Key considerations for protocol integrators using single-source data include:
+
+- Single source: Consuming single-source data introduces unique trust assumptions that protocols must manage through risk mitigation and fallback mechanisms.
+- Provider responsibility: Data providers are solely responsible for managing data quality, accuracy, uptime, and support.
+- Protocol due diligence: Integrating protocols must validate that a provider's data meets their application's specific use case requirements around data quality and reliability.
+
+Review the [Data Quality and Responsibility](/datalink/data-quality-responsibility) page for detailed guidance on risk management and trust assumptions.

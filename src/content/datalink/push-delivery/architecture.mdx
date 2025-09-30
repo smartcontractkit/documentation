@@ -1,0 +1,37 @@
+---
+section: dataLink
+date: Last Modified
+title: DataLink Architecture (Push Delivery)
+metadata:
+  title: "DataLink Architecture (Push Delivery)"
+  description: "Overview of the DataLink architecture (Push Delivery)."
+whatsnext:
+  {
+    "Learn about DataLink": "/datalink",
+    "View available DataLink feeds": "/datalink/provider-catalog",
+    "Understand data quality and responsibility": "/datalink/data-quality-responsibility",
+    "Learn how to use DataLink (Push Delivery)": "/datalink/push-delivery/tutorials",
+  }
+---
+
+import { ClickToZoom } from "@components"
+
+DataLink (Push Delivery) provides infrastructure for Data Providers to make their specialized data available onchain through direct delivery to smart contracts, leveraging the proven [Chainlink Data Feeds](/data-feeds) architecture.
+
+1. **Data Provider Connection**
+   - Chainlink Labs curates and onboards premium Data Providers who make their specialized data available via secure API endpoints
+   - The provider makes their proprietary data available via a secure API endpoint.
+
+1. **Data Fetching & Consensus (Data DON)**
+   - Multiple nodes within a Chainlink Decentralized Oracle Network (DON) independently fetch data from the provider's API.
+   - Nodes reach consensus on the data received from the provider.
+
+1. **Onchain Delivery**
+   - **Automatic Updates**: Aggregated data is automatically pushed onchain to aggregator contracts based on:
+     - **Deviation Threshold**: Updates trigger when offchain values deviate beyond a defined threshold from the onchain value
+     - **Heartbeat Threshold**: Updates occur after a specified time interval, regardless of price movement
+   - **Smart Contract Storage**: Data is stored onchain in aggregator contracts, making it immediately available for smart contract consumption
+
+1. **Consumer Access**
+   - **Proxy Architecture**: Consumer contracts access data through proxy contracts that point to the current aggregator
+   - **Standard Interface**: Integration uses the familiar [`AggregatorV3Interface`](/datalink/push-delivery/api-reference#aggregatorv3interface) for seamless compatibility

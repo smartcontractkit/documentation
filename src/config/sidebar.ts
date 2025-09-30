@@ -2350,16 +2350,145 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Concepts",
       contents: [
-        { title: "Architecture", url: "dta-technical-standard/concepts/architecture" },
-        { title: "The Request Lifecycle", url: "dta-technical-standard/concepts/request-lifecycle" },
-        { title: "Payment Modes", url: "dta-technical-standard/concepts/payment-modes" },
-        // { title: "Token Compliance and DTA", url: "dta-technical-standard/concepts/token-compliance-and-dta" },
-        // { title: "Cross-Chain with CCIP", url: "dta-technical-standard/concepts/cross-chain-ccip" },
+        {
+          title: "Architecture",
+          url: "dta-technical-standard/concepts/architecture",
+        },
+        {
+          title: "Payment Modes",
+          url: "dta-technical-standard/concepts/payment-modes",
+        },
+        {
+          title: "Request Lifecycle",
+          url: "dta-technical-standard/concepts/request-lifecycle",
+        },
       ],
     },
     {
       section: "Reference",
-      contents: [{ title: "Glossary", url: "dta-technical-standard/reference/glossary" }],
+      contents: [
+        {
+          title: "Glossary",
+          url: "dta-technical-standard/reference/glossary",
+        },
+      ],
+    },
+  ],
+  [SIDEBAR_SECTIONS.DATALINK]: [
+    {
+      section: "DataLink",
+      contents: [
+        {
+          title: "Overview",
+          url: "datalink",
+        },
+        {
+          title: "Data Quality, Responsibility & Trust Model",
+          url: "datalink/data-quality-responsibility",
+        },
+        {
+          title: "Billing",
+          url: "datalink/billing",
+        },
+      ],
+    },
+    {
+      section: "Pull Delivery",
+      contents: [
+        {
+          title: "Overview",
+          url: "datalink/pull-delivery/overview",
+        },
+        {
+          title: "Supported Networks",
+          url: "datalink/pull-delivery/supported-networks",
+          children: [
+            {
+              title: "Verifier Proxy Addresses",
+              url: "datalink/pull-delivery/verifier-proxy-addresses",
+            },
+          ],
+        },
+        {
+          title: "Tutorials",
+          url: "datalink/pull-delivery/tutorials",
+          children: [
+            {
+              title: "Fetch and Decode reports",
+              url: "datalink/pull-delivery/tutorials/fetch-decode/api-go",
+              highlightAsCurrent: ["datalink/pull-delivery/tutorials/fetch-decode/api-rust"],
+            },
+            {
+              title: "Stream and Decode reports (WebSocket)",
+              url: "datalink/pull-delivery/tutorials/stream-decode/ws-go",
+              highlightAsCurrent: ["datalink/pull-delivery/tutorials/stream-decode/ws-rust"],
+            },
+            {
+              title: "Verify report data (EVM)",
+              url: "datalink/pull-delivery/tutorials/onchain-verification-evm",
+            },
+          ],
+        },
+        {
+          title: "Architecture",
+          url: "datalink/pull-delivery/architecture",
+        },
+        {
+          title: "Reference",
+          url: "datalink/pull-delivery/reference",
+          children: [
+            {
+              title: "API, SDKs, Onchain Verification",
+              url: "datalink/pull-delivery/reference/api-sdk-onchain-verification",
+            },
+            {
+              title: "Report Schemas",
+              url: "datalink/pull-delivery/reference/report-schemas",
+              children: [
+                {
+                  title: "V2",
+                  url: "datalink/pull-delivery/reference/report-schemas/v2",
+                },
+                {
+                  title: "V3",
+                  url: "datalink/pull-delivery/reference/report-schemas/v3",
+                },
+                {
+                  title: "V4",
+                  url: "datalink/pull-delivery/reference/report-schemas/v4",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      section: "Push Delivery",
+      contents: [
+        {
+          title: "Overview",
+          url: "datalink/push-delivery/overview",
+        },
+        {
+          title: "Tutorials",
+          url: "datalink/push-delivery/tutorials",
+          children: [
+            {
+              title: "Using DataLink Feeds",
+              url: "datalink/push-delivery/tutorials/using-datalink-feeds",
+            },
+          ],
+        },
+        {
+          title: "Architecture",
+          url: "datalink/push-delivery/architecture",
+        },
+        {
+          title: "API Reference",
+          url: "datalink/push-delivery/api-reference",
+        },
+      ],
     },
   ],
 }

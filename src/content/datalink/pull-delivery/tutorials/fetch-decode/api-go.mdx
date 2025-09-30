@@ -1,0 +1,435 @@
+---
+section: dataLink
+date: Last Modified
+title: "Fetch and Decode reports using the Go SDK"
+metadata:
+  title: "Fetch and Decode reports using the Go SDK"
+  description: "DataLink - Learn how to fetch and decode reports using the Go SDK."
+---
+
+import { CopyText, PageTabs } from "@components"
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+
+<PageTabs
+  pages={[
+    {
+      name: "Fetch and decode reports using the Go SDK",
+      url: "/datalink/pull-delivery/tutorials/fetch-decode/api-go",
+      icon: "/images/tutorial-icons/go_logo_black.png",
+    },
+    {
+      name: "Fetch and decode reports using the Rust SDK",
+      url: "/datalink/pull-delivery/tutorials/fetch-decode/api-rust",
+      icon: "/images/tutorial-icons/rust_logo_blk.svg",
+    },
+  ]}
+/>
+
+In this guide, you'll learn how to use the [Data Streams SDK](/data-streams/reference/streams-direct/streams-direct-go-sdk) for Go to fetch and decode DataLink feeds from the Aggregation Network. You'll set up your Go project, retrieve a report, decode it, and log its attributes.
+
+<DataStreams section="asideDisclaimer" />
+
+## Requirements
+
+- **Git**: Make sure you have Git installed. You can check your current version by running <CopyText text="git --version" code/> in your terminal and download the latest version from the official [Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if necessary.
+- **Go Version**: Make sure you have Go version 1.22.4 or higher. You can check your current version by running <CopyText text="go version" code/> in your terminal and download the latest version from the official [Go website](https://go.dev/) if necessary.
+- **API Credentials**: Access to DataLink requires API credentials to connect to the Aggregation Network. If you haven't already, [contact us](https://chain.link/contact) to request access.
+
+## Guide
+
+You'll start with the set up of your Go project. Next, you'll fetch and decode a report and log its attributes to your terminal.
+
+### Set up your Go project
+
+1. Create a new directory for your project and navigate to it:
+
+   ```bash
+   mkdir my-datalink-project
+   cd my-datalink-project
+   ```
+
+1. Initialize a new Go module:
+
+   ```bash
+   go mod init my-datalink-project
+   ```
+
+1. Install the Data Streams SDK:
+
+   ```bash
+   go get github.com/smartcontractkit/data-streams-sdk/go
+   ```
+
+### Understanding Report Schema Versions
+
+Data Providers may use different report schema versions. The schema version determines the structure of the data returned by the feed and affects how you should decode the report.
+
+1. Import the appropriate schema version in your code (e.g., `v4`).
+1. Use that version when decoding the report with `report.Decode[v4.Data]()`.
+
+Different schema versions have different fields and structures. For detailed information about each schema version and its fields, refer to the [Report Schemas](/datalink/pull-delivery/reference/report-schemas) documentation.
+
+In this example, we're using report schema `v4` for the EUR/USD feed, but your implementation should match the schema version specified by your Data Provider.
+
+### Fetch and decode a report with a single feed
+
+1. Create a new Go file, `single-feed.go`, in your project directory:
+
+   ```bash
+   touch single-feed.go
+   ```
+
+1. Insert the following code example and save your `single-feed.go` file:
+
+   ```go
+   package main
+
+   import (
+      "context"
+      "fmt"
+      "os"
+      "time"
+
+      streams "github.com/smartcontractkit/data-streams-sdk/go"
+      feed "github.com/smartcontractkit/data-streams-sdk/go/feed"
+      report "github.com/smartcontractkit/data-streams-sdk/go/report"
+      v4 "github.com/smartcontractkit/data-streams-sdk/go/report/v4"
+      // Import the v4 report schema
+   )
+
+   func main() {
+      // Validate command-line arguments
+      if len(os.Args) < 2 {
+         fmt.Printf("Usage: go run main.go [FeedID]\nExample: go run main.go 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce\n")
+         os.Exit(1)
+      }
+      feedIDInput := os.Args[1]
+
+      // Get API credentials from environment variables
+      apiKey := os.Getenv("API_KEY")
+      apiSecret := os.Getenv("API_SECRET")
+      if apiKey == "" || apiSecret == "" {
+         fmt.Printf("API_KEY and API_SECRET environment variables must be set\n")
+         os.Exit(1)
+      }
+
+      // Define the configuration for the SDK client
+      cfg := streams.Config{
+         ApiKey:    apiKey,
+         ApiSecret: apiSecret,
+         RestURL:   "https://api.testnet-dataengine.chain.link",
+         Logger:    streams.LogPrintf,
+      }
+
+      // Initialize the SDK client
+      client, err := streams.New(cfg)
+      if err != nil {
+         cfg.Logger("Failed to create client: %v\n", err)
+         os.Exit(1)
+      }
+
+      // Create context with timeout
+      ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+      defer cancel()
+
+      // Parse the feed ID
+      var feedID feed.ID
+      if err := feedID.FromString(feedIDInput); err != nil {
+         cfg.Logger("Invalid feed ID format '%s': %v\n", feedIDInput, err)
+         os.Exit(1)
+      }
+
+      // Fetch the latest report
+      reportResponse, err := client.GetLatestReport(ctx, feedID)
+      if err != nil {
+         cfg.Logger("Failed to get latest report: %v\n", err)
+         os.Exit(1)
+      }
+
+      // Log the raw report data
+      cfg.Logger("Raw report data: %+v\n", reportResponse)
+
+      // Decode the report
+      decodedReport, err := report.Decode[v4.Data](reportResponse.FullReport)
+      if err != nil {
+         cfg.Logger("Failed to decode report: %v\n", err)
+         os.Exit(1)
+      }
+
+      // Format and display the decoded report
+      fmt.Printf("\nDecoded Report for Feed ID %s:\n"+
+            "------------------------------------------\n"+
+            "Observations Timestamp: %d\n"+
+            "Benchmark Price       : %s\n"+
+            "Valid From Timestamp  : %d\n"+
+            "Expires At            : %d\n"+
+            "Link Fee              : %s\n"+
+            "Native Fee            : %s\n"+
+            "Market Status         : %d\n"+
+            "------------------------------------------\n",
+            feedIDInput,
+            decodedReport.Data.ObservationsTimestamp,
+            decodedReport.Data.BenchmarkPrice.String(),
+            decodedReport.Data.ValidFromTimestamp,
+            decodedReport.Data.ExpiresAt,
+            decodedReport.Data.LinkFee.String(),
+            decodedReport.Data.NativeFee.String(),
+            decodedReport.Data.MarketStatus,
+      )
+   }
+   ```
+
+1. Download the required dependencies and update the `go.mod` and `go.sum` files:
+
+   ```bash
+   go mod tidy
+   ```
+
+1. Set up the SDK client configuration within `single-feed.go` with your API credentials and the REST endpoint:
+
+   ```go
+   cfg := streams.Config{
+       ApiKey:    os.Getenv("API_KEY"),
+       ApiSecret: os.Getenv("API_SECRET"),
+       RestURL:   "https://api.testnet-dataengine.chain.link",
+       Logger: streams.LogPrintf,
+   }
+   ```
+
+   - Set your API credentials as environment variables:
+
+     ```bash
+     export API_KEY="<YOUR_API_KEY>"
+     export API_SECRET="<YOUR_API_SECRET>"
+     ```
+
+     Replace `<YOUR_API_KEY>` and `<YOUR_API_SECRET>` with your API credentials.
+
+   - `RestURL` is the REST endpoint to poll for specific reports. See the [Data Streams API Interface](/data-streams/reference/streams-direct/streams-direct-interface-api#domains) page for more information.
+
+   See the [SDK Reference](/data-streams/reference/streams-direct/streams-direct-go-sdk#config-struct) page for more configuration options.
+
+1. For this example, you will read from the EUR/USD DataLink feed on testnet. This feed ID is <CopyText text="0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce" code/>.
+
+   Execute your application:
+
+   ```bash
+   go run single-feed.go 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce
+   ```
+
+   Expect output similar to the following in your terminal:
+
+   ```bash
+   2025-06-03T10:25:18-05:00 Raw report data: {"fullReport":"0x00090d9e8d96765a0c49e03a6ae05c82e8f8de70cf179baa632f18313e54bd69000000000000000000000000000000000000000000000000000000000041438a000000000000000000000000000000000000000000000000000000030000000100000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000260000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce00000000000000000000000000000000000000000000000000000000683f13dd00000000000000000000000000000000000000000000000000000000683f13dd00000000000000000000000000000000000000000000000000006e0e3915bcc3000000000000000000000000000000000000000000000000004edc1454fb6ef0000000000000000000000000000000000000000000000000000000006866a0dd0000000000000000000000000000000000000000000000000fcaa20569eac064000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000027b160a6824ccce49dc0bd19f636c40de2f3033410c7d1a7400b9a3cb0073d19dde0f87cfd6d9ce03156464a49cacb07136d2e7d717efcf42bc2795fd5c513e4a00000000000000000000000000000000000000000000000000000000000000025e075a9d8a6223ce2b9e524a7b5a563c2924a67b544e6676a751f5374b2a42ee37684b560eb72546f87b7287cefc668705461b7f4ebe4dabd7babe397cc98b89","feedID":"0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce","validFromTimestamp":1748964317,"observationsTimestamp":1748964317}
+
+
+   Decoded Report for Feed ID 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce:
+   ------------------------------------------
+   Observations Timestamp: 1748964317
+   Benchmark Price       : 1137900000000000100
+   Valid From Timestamp  : 1748964317
+   Expires At            : 1751556317
+   Link Fee              : 22197028066651888
+   Native Fee            : 121007366323395
+   Market Status         : 2
+   ------------------------------------------
+   ```
+
+#### Decoded report details
+
+The decoded report details include:
+
+| Attribute                | Value                                                                | Description                                                                                                                                                                                                                                        |
+| ------------------------ | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Feed ID`                | `0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce` | The unique identifier for the feed. In this example, the feed is for EUR/USD.                                                                                                                                                                      |
+| `Observations Timestamp` | `1748964317`                                                         | The timestamp indicating when the data was captured.                                                                                                                                                                                               |
+| `Benchmark Price`        | `1137900000000000100`                                                | The observed price in the report, with 18 decimals. For readability: `1.1379` USD per EUR.                                                                                                                                                         |
+| `Valid From Timestamp`   | `1748964317`                                                         | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                                                                                            |
+| `Expires At`             | `1751556317`                                                         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                                                                                   |
+| `Link Fee`               | `22197028066651888`                                                  | The fee to pay in LINK tokens for the onchain verification of the report data. With 18 decimals. For readability: `0.022197028066651888` LINK. **Note:** This example fee is not indicative of actual fees.                                        |
+| `Native Fee`             | `121007366323395`                                                    | The fee to pay in the native blockchain token (e.g., ETH on Ethereum) for the onchain verification of the report data. With 18 decimals. For readability: `0.000121007366323395` ETH. **Note:** This example fee is not indicative of actual fees. |
+| `Market Status`          | `2`                                                                  | The current market status. `2` indicates the market is `Open`.                                                                                                                                                                                     |
+
+#### Payload for onchain verification
+
+In this guide, you log and decode the `full_report` payload to extract the report data. In a
+production environment, you should verify the data to ensure its integrity and authenticity. Refer to the
+[Verify report data onchain](/datalink/pull-delivery/tutorials/onchain-verification-evm) guide.
+
+## Adapting code for different report schema versions
+
+When working with different DataLink providers, you'll need to adapt your code to handle the specific report schema version they use:
+
+1. Import the correct schema version. Examples:
+   - For v4 schema (as used in this example):
+
+     ```go
+     v4 "github.com/smartcontractkit/data-streams-sdk/go/report/v4"
+     ```
+
+   - For v3 schema:
+
+     ```go
+     v3 "github.com/smartcontractkit/data-streams-sdk/go/report/v3"
+     ```
+
+1. Update the decode function to use the correct schema version. Examples:
+   - For v4 schema (as used in this example):
+
+     ```go
+     decodedReport, err := report.Decode[v4.Data](reportResponse.FullReport)
+     ```
+
+   - For v3 schema:
+
+     ```go
+     decodedReport, err := report.Decode[v3.Data](reportResponse.FullReport)
+     ```
+
+1. Access fields according to the schema version structure. Refer to the [Report Schemas](/datalink/pull-delivery/reference/report-schemas) documentation for complete field references for each version.
+
+## Explanation
+
+### Initializing the client and configuration
+
+The Data Streams client is initialized in two steps:
+
+1. Configure the client with [`streams.Config`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/config.go#L10):
+
+   ```go
+   cfg := streams.Config{
+       ApiKey:    os.Getenv("API_KEY"),
+       ApiSecret: os.Getenv("API_SECRET"),
+       RestURL:   "https://api.testnet-dataengine.chain.link",
+       Logger:    streams.LogPrintf,
+   }
+   ```
+
+   In the configuration, you need:
+   - `ApiKey` and `ApiSecret` for authentication (required)
+   - `RestURL` for the API endpoint (required)
+   - `Logger` for debugging and error tracking (optional, defaults to `streams.LogPrintf`)
+
+2. Create the client with [`streams.New`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/client.go#L56):
+   ```go
+   client, err := streams.New(cfg)
+   ```
+   The client handles:
+   - Authentication with HMAC signatures
+   - Connection management and timeouts
+   - Error handling and retries
+
+### Fetching reports
+
+The SDK provides two main methods to fetch reports:
+
+1. Latest report for a single feed with [`GetLatestReport`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/client.go#L130):
+
+   ```go
+   reportResponse, err := client.GetLatestReport(ctx, feedID)
+   ```
+
+   - Takes a context and feed ID
+   - Returns a single `ReportResponse` with the most recent data
+   - No timestamp parameter needed
+   - Useful for real-time price monitoring
+
+2. Latest reports for multiple feeds with [`GetReports`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/client.go#L208):
+
+   ```go
+   reportResponses, err := client.GetReports(ctx, ids, timestamp)
+   ```
+
+   - Takes context, feed IDs array, and Unix timestamp
+   - Returns array of `ReportResponse`, one per feed ID
+   - Timestamp determines the point in time for the reports
+   - Efficient for monitoring multiple assets simultaneously
+
+Each API request automatically:
+
+- Handles authentication with API credentials
+- Manages request timeouts via context
+- Processes responses into structured types
+
+### Decoding reports
+
+Reports are decoded in two steps:
+
+1. Report decoding with [`report.Decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/report/report.go#L30):
+
+   ```go
+   decodedReport, err := report.Decode[v4.Data](reportResponse.FullReport)
+   ```
+
+   This step:
+   - Takes the raw `FullReport` bytes from the response
+   - Uses `v4.Data` schema (for this example)
+   - Validates the format and decodes using Go generics
+   - Returns a structured report with typed data
+
+1. Data access:
+
+   ```go
+   data := decodedReport.Data
+   feedID := data.FeedID                    // Feed identifier
+   observationsTimestamp := data.ObservationsTimestamp  // Unix timestamp
+   price := data.BenchmarkPrice.String()    // Convert big number to string, 18 decimal places
+   validFrom := data.ValidFromTimestamp     // Unix timestamp
+   expiresAt := data.ExpiresAt             // Unix timestamp
+   linkFee := data.LinkFee.String()        // Convert big number to string, 18 decimal places
+   nativeFee := data.NativeFee.String()    // Convert big number to string, 18 decimal places
+   marketStatus := data.MarketStatus       // Market status (0=Unknown, 1=Closed, 2=Open, 3=Suspended)
+   ```
+
+   Provides access to:
+   - Feed ID (hex string identifier)
+   - Observations timestamp (when data was captured)
+   - Benchmark price (as big number with 18 decimals)
+   - Fee information (LINK and native token fees as big numbers with 18 decimals)
+   - Timestamp data (validity period)
+   - Market status (`0`=Unknown, `1`=Closed, `2`=Open)
+
+   **Note:** Price and fee values require `.String()` for display as they are big number types.
+
+### Error handling
+
+The SDK uses Go's standard error handling patterns with some enhancements:
+
+1. Context management:
+
+   ```go
+   ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+   defer cancel()
+   ```
+
+   - Sets request timeouts for API calls
+   - `defer cancel()` ensures cleanup of resources
+   - Same context pattern for both single and multiple reports
+
+2. Error checking:
+
+   ```go
+   if err != nil {
+       cfg.Logger("Failed to decode report: %v\n", err)
+       os.Exit(1)           // Fatal errors: exit the program
+       // or
+       continue            // Non-fatal errors: skip this report
+   }
+   ```
+
+   - Fatal errors (client creation, no valid feeds) use `os.Exit(1)`
+   - Non-fatal errors (single report decode) use `continue`
+   - All errors are logged before handling
+
+3. SDK logging:
+
+   ```go
+   cfg.Logger("Raw report data: %+v\n", reportResponse)
+   ```
+
+   - Uses configured logger for SDK operations
+   - `fmt.Printf` for user-facing output
+   - Debug information includes raw report data
+   - Structured error messages with context
+
+The decoded data can be used for further processing or display in your application. For production environments, you must verify the data onchain using the provided `fullReport` payload.
