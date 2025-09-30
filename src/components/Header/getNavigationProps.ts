@@ -5,6 +5,7 @@ import automationLogo from "../../assets/product-logos/automation-logo.svg"
 import dataFeedsLogo from "../../assets/product-logos/data-feeds-logo.svg"
 import dataStreamsLogo from "../../assets/product-logos/data-streams-logo.svg"
 import dtaLogo from "../../assets/product-logos/dta-logo.svg"
+import dataLinkLogo from "../../assets/product-logos/datalink-logo.svg"
 import chainlinkLocal from "../../assets/product-logos/chainlink-local.svg"
 import generalLogo from "../../assets/product-logos/general-logo.svg"
 import nodesLogo from "../../assets/product-logos/node-logo.svg"
@@ -66,6 +67,12 @@ const desktopSubProductsNav = [
     label: "DTA",
     href: "/dta-technical-standard",
     icon: dtaLogo.src,
+    col: 1,
+  },
+  {
+    label: "DataLink",
+    href: "/datalink",
+    icon: dataLinkLogo.src,
     col: 1,
   },
   {
@@ -146,6 +153,12 @@ const docsSections = [
         href: "/data-streams",
         icon: dataStreamsLogo.src,
         subProducts: getSubProducts(sidebar.dataStreams),
+      },
+      {
+        label: "DataLink",
+        href: "/datalink",
+        icon: dataLinkLogo.src,
+        subProducts: getSubProducts(sidebar.dataLink),
       },
       {
         label: "CCIP",

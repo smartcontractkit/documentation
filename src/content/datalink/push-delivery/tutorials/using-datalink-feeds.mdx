@@ -1,0 +1,260 @@
+---
+section: dataLink
+date: Last Modified
+title: "Using Data Link Feeds on EVM Chains"
+metadata:
+  title: "Using Data Link Feeds on EVM Chains"
+  description: "Learn how to read Data Link push-based feeds using smart contracts and offchain applications across EVM-compatible blockchains."
+---
+
+import { Aside, CodeSample } from "@components"
+import { Tabs } from "@components/Tabs"
+
+The code for reading Data Link Feeds is the same across all EVM-compatible blockchains. This tutorial shows example code that reads feeds using the following languages:
+
+- Onchain consumer contracts:
+  - [Solidity](#solidity)
+- Offchain reads using Web3 packages:
+  - [Javascript](#javascript) with [web3.js](https://web3js.readthedocs.io/)
+  - [Python](#python) with [Web3.py](https://web3py.readthedocs.io/en/stable/)
+  - [Golang](#golang) with [go-ethereum](https://github.com/ethereum/go-ethereum)
+
+## Reading Data Link feeds onchain
+
+These code examples demonstrate how to deploy a consumer contract onchain that reads a feed and stores the value.
+
+### Solidity
+
+To consume data, your smart contract should reference [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol), which defines the external functions implemented by Data Link Feeds.
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.7;
+
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
+/**
+ * If you are reading data feeds on L2 networks, you must
+ * check the latest answer from the L2 Sequencer Uptime
+ * Feed to ensure that the data is accurate in the event
+ * of an L2 sequencer outage. See the
+ * https://docs.chain.link/data-feeds/l2-sequencer-feeds
+ * page for details.
+ */
+
+contract DataConsumerV3 {
+    AggregatorV3Interface internal dataLinkFeed;
+
+    constructor() {
+        dataLinkFeed = AggregatorV3Interface(
+            <PROXY_CONTRACT_ADDRESS>
+        );
+    }
+
+    /**
+     * Returns the latest answer.
+     */
+    function getChainlinkDataLinkFeedLatestAnswer() public view returns (int) {
+        // prettier-ignore
+        (
+            /* uint80 roundId */,
+            int256 answer,
+            /*uint256 startedAt*/,
+            /*uint256 updatedAt*/,
+            /*uint80 answeredInRound*/
+        ) = dataLinkFeed.latestRoundData();
+        return answer;
+    }
+}
+```
+
+The `latestRoundData` function returns five values representing information about the latest price data. See the [API Reference](/datalink/push-delivery/api-reference) for more details.
+
+## Reading data feeds offchain
+
+These code examples demonstrate how to read feeds directly offchain using Web3 packages for each language.
+
+### Javascript
+
+These examples use [web3.js](https://web3js.readthedocs.io/) and [ethers.js](https://docs.ethers.org/v5/) to retrieve feed data on the Sepolia testnet.
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">web3.js</Fragment>
+  <Fragment slot="tab.2">ethers.js</Fragment>
+  <Fragment slot="panel.1">
+
+    ```javascript
+    /**
+     * THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
+     * THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
+     * DO NOT USE THIS CODE IN PRODUCTION.
+     */
+
+    const Web3 = require("web3") // for nodejs only
+    const web3 = new Web3("https://rpc.ankr.com/eth_sepolia")
+    const aggregatorV3InterfaceABI = [
+      {
+        inputs: [],
+        name: "decimals",
+        outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
+        stateMutability: "view",
+        type: "function",
+      },
+      {
+        inputs: [],
+        name: "description",
+        outputs: [{ internalType: "string", name: "", type: "string" }],
+        stateMutability: "view",
+        type: "function",
+      },
+      {
+        inputs: [{ internalType: "uint80", name: "_roundId", type: "uint80" }],
+        name: "getRoundData",
+        outputs: [
+          { internalType: "uint80", name: "roundId", type: "uint80" },
+          { internalType: "int256", name: "answer", type: "int256" },
+          { internalType: "uint256", name: "startedAt", type: "uint256" },
+          { internalType: "uint256", name: "updatedAt", type: "uint256" },
+          { internalType: "uint80", name: "answeredInRound", type: "uint80" },
+        ],
+        stateMutability: "view",
+        type: "function",
+      },
+      {
+        inputs: [],
+        name: "latestRoundData",
+        outputs: [
+          { internalType: "uint80", name: "roundId", type: "uint80" },
+          { internalType: "int256", name: "answer", type: "int256" },
+          { internalType: "uint256", name: "startedAt", type: "uint256" },
+          { internalType: "uint256", name: "updatedAt", type: "uint256" },
+          { internalType: "uint80", name: "answeredInRound", type: "uint80" },
+        ],
+        stateMutability: "view",
+        type: "function",
+      },
+      {
+        inputs: [],
+        name: "version",
+        outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+        stateMutability: "view",
+        type: "function",
+      },
+    ]
+    const addr = "<PROXY_CONTRACT_ADDRESS>"
+    const dataLinkFeed = new web3.eth.Contract(aggregatorV3InterfaceABI, addr)
+    dataLinkFeed.methods
+      .latestRoundData()
+      .call()
+      .then((roundData) => {
+        // Do something with roundData
+        console.log("Latest Round Data", roundData)
+      })
+    ```
+
+  </Fragment>
+  <Fragment slot="panel.2">
+
+    ```javascript
+    /**
+    * THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
+    * THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
+    * DO NOT USE THIS CODE IN PRODUCTION.
+    */
+
+    const { ethers } = require("ethers") // for nodejs only
+    const provider = new ethers.providers.JsonRpcProvider("https://rpc.ankr.com/eth_sepolia")
+    const aggregatorV3InterfaceABI = [
+      {
+        inputs: [],
+        name: "decimals",
+        outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
+        stateMutability: "view",
+        type: "function",
+      },
+      {
+        inputs: [],
+        name: "description",
+        outputs: [{ internalType: "string", name: "", type: "string" }],
+        stateMutability: "view",
+        type: "function",
+      },
+      {
+        inputs: [{ internalType: "uint80", name: "_roundId", type: "uint80" }],
+        name: "getRoundData",
+        outputs: [
+          { internalType: "uint80", name: "roundId", type: "uint80" },
+          { internalType: "int256", name: "answer", type: "int256" },
+          { internalType: "uint256", name: "startedAt", type: "uint256" },
+          { internalType: "uint256", name: "updatedAt", type: "uint256" },
+          { internalType: "uint80", name: "answeredInRound", type: "uint80" },
+        ],
+        stateMutability: "view",
+        type: "function",
+      },
+      {
+        inputs: [],
+        name: "latestRoundData",
+        outputs: [
+          { internalType: "uint80", name: "roundId", type: "uint80" },
+          { internalType: "int256", name: "answer", type: "int256" },
+          { internalType: "uint256", name: "startedAt", type: "uint256" },
+          { internalType: "uint256", name: "updatedAt", type: "uint256" },
+          { internalType: "uint80", name: "answeredInRound", type: "uint80" },
+        ],
+        stateMutability: "view",
+        type: "function",
+      },
+      {
+        inputs: [],
+        name: "version",
+        outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+        stateMutability: "view",
+        type: "function",
+      },
+    ]
+    const addr = "<PROXY_CONTRACT_ADDRESS>"
+    const dataLinkFeed = new ethers.Contract(addr, aggregatorV3InterfaceABI, provider)
+    dataLinkFeed.latestRoundData().then((roundData) => {
+      // Do something with roundData
+      console.log("Latest Round Data", roundData)
+    })
+    ```
+
+  </Fragment>
+</Tabs>
+
+### Python
+
+This example uses [Web3.py](https://web3py.readthedocs.io/en/stable/) to retrieve feed data on the Sepolia testnet.
+
+```python
+# THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
+# THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
+# DO NOT USE THIS CODE IN PRODUCTION.
+
+from web3 import Web3
+
+# Change this to use your own RPC URL
+web3 = Web3(Web3.HTTPProvider('https://rpc.ankr.com/eth_sepolia'))
+# AggregatorV3Interface ABI
+abi = '[{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"description","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint80","name":"_roundId","type":"uint80"}],"name":"getRoundData","outputs":[{"internalType":"uint80","name":"roundId","type":"uint80"},{"internalType":"int256","name":"answer","type":"int256"},{"internalType":"uint256","name":"startedAt","type":"uint256"},{"internalType":"uint256","name":"updatedAt","type":"uint256"},{"internalType":"uint80","name":"answeredInRound","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"latestRoundData","outputs":[{"internalType":"uint80","name":"roundId","type":"uint80"},{"internalType":"int256","name":"answer","type":"int256"},{"internalType":"uint256","name":"startedAt","type":"uint256"},{"internalType":"uint256","name":"updatedAt","type":"uint256"},{"internalType":"uint80","name":"answeredInRound","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"version","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]'
+# Data Link Feed address
+addr = '<PROXY_CONTRACT_ADDRESS>'
+
+# Set up contract instance
+contract = web3.eth.contract(address=addr, abi=abi)
+# Make call to latestRoundData()
+latestData = contract.functions.latestRoundData().call()
+print(latestData)
+```
+
+### Golang
+
+You can find an example with all the source files [here](https://github.com/smartcontractkit/smart-contract-examples/tree/main/pricefeed-golang). This example uses [go-ethereum](https://github.com/ethereum/go-ethereum) to retrieve feed data on the Sepolia testnet.
+To learn how to run the example, see the [README](https://github.com/smartcontractkit/smart-contract-examples/blob/main/pricefeed-golang/README.md).
