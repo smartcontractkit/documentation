@@ -1,0 +1,308 @@
+---
+section: dataLink
+date: Last Modified
+title: "Fetch and Decode reports using the Rust SDK"
+metadata:
+  title: "Fetch and Decode reports using the Rust SDK"
+  description: "DataLink - Learn how to fetch and decode reports using the Rust SDK."
+---
+
+import { CopyText, PageTabs } from "@components"
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+
+<PageTabs
+  pages={[
+    {
+      name: "Fetch and decode reports using the Go SDK",
+      url: "/datalink/pull-delivery/tutorials/fetch-decode/api-go",
+      icon: "/images/tutorial-icons/go_logo_black.png",
+    },
+    {
+      name: "Fetch and decode reports using the Rust SDK",
+      url: "/datalink/pull-delivery/tutorials/fetch-decode/api-rust",
+      icon: "/images/tutorial-icons/rust_logo_blk.svg",
+    },
+  ]}
+/>
+
+In this guide, you'll learn how to use the [Data Streams SDK](/data-streams/reference/streams-direct/streams-direct-rust-sdk) for Rust to fetch and decode DataLink feeds from the Aggregation Network. You'll set up your Rust project, retrieve a report, decode it, and log its attributes.
+
+<DataStreams section="asideDisclaimer" />
+
+## Requirements
+
+- **Rust**: Make sure you have Rust installed. You can install Rust by following the instructions on the official [Rust website](https://www.rust-lang.org/tools/install).
+- **API Credentials**: Access to DataLink requires API credentials to connect to the Aggregation Network. If you haven't already, [contact us](https://chain.link/contact) to request access.
+
+## Guide
+
+You'll start with the set up of your Rust project. Next, you'll fetch and decode a report and log its attributes to your terminal.
+
+### Set up your Rust project
+
+1. Create a new directory for your project and navigate to it:
+
+   ```bash
+   mkdir my-datalink-project && cd my-datalink-project
+   ```
+
+1. Initialize a new Rust project:
+
+   ```bash
+   cargo init
+   ```
+
+1. Add the following dependencies to your `Cargo.toml` file:
+
+   ```toml
+   [dependencies]
+   chainlink-data-streams-sdk = "1.0.0"
+   chainlink-data-streams-report = "1.0.0"
+   tokio = { version = "1.4", features = ["full"] }
+   hex = "0.4"
+   ```
+
+### Understanding Report Schema Versions
+
+Data Providers may use different report schema versions. The schema version determines the structure of the data returned by the feed and affects how you should decode the report.
+
+1. Import the appropriate schema version in your code (e.g., `v4`).
+1. Use that version when decoding the report with `report.Decode[v4.Data]()`.
+
+Different schema versions have different fields and structures.
+
+In this example, we're using report schema `v4` for the EUR/USD feed, but your implementation should match the schema version specified by your Data Provider.
+
+### Fetch and decode a report with a single stream
+
+1. Replace the contents of `src/main.rs` with the following code:
+
+   ```rust
+   use chainlink_data_streams_report::feed_id::ID;
+   use chainlink_data_streams_report::report::{ decode_full_report, v4::ReportDataV4 };
+   use chainlink_data_streams_sdk::client::Client;
+   use chainlink_data_streams_sdk::config::Config;
+   use std::env;
+   use std::error::Error;
+
+   #[tokio::main]
+   async fn main() -> Result<(), Box<dyn Error>> {
+      // Get feed ID from command line arguments
+      let args: Vec<String> = env::args().collect();
+      if args.len() < 2 {
+         eprintln!("Usage: cargo run [FeedID]");
+         std::process::exit(1);
+      }
+      let feed_id_input = &args[1];
+
+      // Get API credentials from environment variables
+      let api_key = env::var("API_KEY").expect("API_KEY must be set");
+      let api_secret = env::var("API_SECRET").expect("API_SECRET must be set");
+
+      // Initialize the configuration
+      let config = Config::new(
+         api_key,
+         api_secret,
+         "https://api.testnet-dataengine.chain.link".to_string(),
+         "wss://api.testnet-dataengine.chain.link/ws".to_string()
+      ).build()?;
+
+      // Initialize the client
+      let client = Client::new(config)?;
+
+      // Parse the feed ID
+      let feed_id = ID::from_hex_str(feed_id_input)?;
+
+      // Fetch the latest report
+      let response = client.get_latest_report(feed_id).await?;
+      println!("\nRaw report data: {:?}\n", response.report);
+
+      // Decode the report
+      let full_report = hex::decode(&response.report.full_report[2..])?;
+      let (_report_context, report_blob) = decode_full_report(&full_report)?;
+      let report_data = ReportDataV4::decode(&report_blob)?;
+
+      // Print decoded report details
+      println!("\nDecoded Report for Stream ID {}:", feed_id_input);
+      println!("------------------------------------------");
+      println!("Observations Timestamp: {}", response.report.observations_timestamp);
+      println!("Benchmark Price       : {}", report_data.price);
+      println!("Valid From Timestamp  : {}", response.report.valid_from_timestamp);
+      println!("Expires At            : {}", report_data.expires_at);
+      println!("Link Fee              : {}", report_data.link_fee);
+      println!("Native Fee            : {}", report_data.native_fee);
+      println!("Market Status         : {}", report_data.market_status);
+      println!("------------------------------------------");
+
+      Ok(())
+   }
+   ```
+
+1. Set up your API credentials as environment variables:
+
+   ```bash
+   export API_KEY="<YOUR_API_KEY>"
+   export API_SECRET="<YOUR_API_SECRET>"
+   ```
+
+   Replace `<YOUR_API_KEY>` and `<YOUR_API_SECRET>` with your API credentials.
+
+1. For this example, you will read from the EUR/USD DataLink feed. This feed ID is <CopyText text="0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce" code/>.
+
+   Build and run your application:
+
+   ```bash
+   cargo run -- 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce
+   ```
+
+   Expect output similar to the following in your terminal:
+
+   ```bash
+   Raw report data: Report { feed_id: 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce, valid_from_timestamp: 1748966929, observations_timestamp: 1748966929, full_report: "0x00090d9e8d96765a0c49e03a6ae05c82e8f8de70cf179baa632f18313e54bd690000000000000000000000000000000000000000000000000000000000415fd1000000000000000000000000000000000000000000000000000000030000000100000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000260010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce00000000000000000000000000000000000000000000000000000000683f1e1100000000000000000000000000000000000000000000000000000000683f1e1100000000000000000000000000000000000000000000000000006f281ec8c2c6000000000000000000000000000000000000000000000000004f6b0f877eab70000000000000000000000000000000000000000000000000000000006866ab110000000000000000000000000000000000000000000000000fcac666a3b54000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000026c31dc4316b41ab7561ea418b6f6ca693583479b4743c2578c5e30874059c326bba94e9aeeeba7689d16da5b0df2eb19a6d6b650440be0a4959e9ef32fca7c280000000000000000000000000000000000000000000000000000000000000002110cc59c55562602ae9212e71b25c5730286185fe0f8eb6537c5a267ce7a6f0c5f55b424ecdf617b38b0a1fdaffbc34b662b29a5054125c9b2be5d57724466ee" }
+
+
+   Decoded Report for Stream ID 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce:
+   ------------------------------------------
+   Observations Timestamp: 1748966929
+   Benchmark Price       : 1137940000000000000
+   Valid From Timestamp  : 1748966929
+   Expires At            : 1751558929
+   Link Fee              : 22354237602048880
+   Native Fee            : 122218105848518
+   Market Status         : 2
+   ------------------------------------------
+   ```
+
+#### Decoded report details
+
+The decoded report details include:
+
+| Attribute                | Value                                                                | Description                                                                                                                                                                                                                                        |
+| ------------------------ | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Feed ID`                | `0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce` | The unique identifier for the feed. In this example, the feed is for EUR/USD.                                                                                                                                                                      |
+| `Observations Timestamp` | `1748966929`                                                         | The timestamp indicating when the data was captured.                                                                                                                                                                                               |
+| `Benchmark Price`        | `1137940000000000000`                                                | The observed price in the report, with 18 decimals. For readability: `1.13794` USD per EUR.                                                                                                                                                        |
+| `Valid From Timestamp`   | `1748966929`                                                         | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                                                                                            |
+| `Expires At`             | `1751558929`                                                         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                                                                                   |
+| `Link Fee`               | `22354237602048880`                                                  | The fee to pay in LINK tokens for the onchain verification of the report data. With 18 decimals. For readability: `0.022354237602048880` LINK. **Note:** This example fee is not indicative of actual fees.                                        |
+| `Native Fee`             | `122218105848518`                                                    | The fee to pay in the native blockchain token (e.g., ETH on Ethereum) for the onchain verification of the report data. With 18 decimals. For readability: `0.000122218105848518` ETH. **Note:** This example fee is not indicative of actual fees. |
+| `Market Status`          | `2`                                                                  | The current market status. `2` indicates the market is `Open`.                                                                                                                                                                                     |
+
+#### Payload for onchain verification
+
+In this guide, you log and decode the `full_report` payload to extract the report data. In a
+production environment, you should verify the data to ensure its integrity and authenticity. Refer to the
+[Verify report data onchain](/datalink/pull-delivery/tutorials/onchain-verification-evm) guide.
+
+## Adapting code for different report schema versions
+
+When working with different DataLink providers, you'll need to adapt your code to handle the specific report schema version they use:
+
+1. Import the correct schema version module. Examples:
+   - For v4 schema (as used in this example):
+
+     ```rust
+      use chainlink_data_streams_report::report::{ decode_full_report, v4::ReportDataV4 };
+     ```
+
+   - For v3 schema:
+
+     ```rust
+     use chainlink_data_streams_report::report::{ decode_full_report, v3::ReportDataV3 };
+     ```
+
+1. Update the decode function to use the correct schema version. Examples:
+   - For v4 schema (as used in this example):
+
+     ```rust
+     let report_data = ReportDataV4::decode(&report_blob)?;
+     ```
+
+   - For v3 schema:
+
+     ```rust
+     let report_data = ReportDataV3::decode(&report_blob)?;
+     ```
+
+1. Access fields according to the schema version structure.
+
+## Explanation
+
+### Initializing the API client and configuration
+
+The API client is initialized in two steps:
+
+1. [`Config::new`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/sdk/src/config.rs#L131) creates a configuration with your API credentials and endpoints. This function:
+   - Validates your API key and secret
+   - Sets up the REST API endpoint for data retrieval
+   - Configures optional settings like TLS verification
+
+1. [`Client::new`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/sdk/src/client.rs#L131) creates the HTTP client with your configuration. This client:
+   - Handles authentication automatically
+   - Manages HTTP connections
+   - Implements retry logic for failed requests
+
+### Fetching reports
+
+The SDK provides several methods to fetch reports through the REST API:
+
+1. Latest report: [`get_latest_report`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/sdk/src/client.rs#L165) retrieves the most recent report for a feed:
+   - Takes a feed ID as input
+   - Returns a single report with the latest timestamp
+   - Useful for applications that need the most current data
+
+1. Historical report: [`get_report`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/sdk/src/client.rs#L242) fetches a report at a specific timestamp:
+   - Takes both feed ID and timestamp
+   - Returns the report closest to the requested timestamp
+   - Helpful for historical analysis or verification
+
+Each API request automatically:
+
+- Generates HMAC authentication headers
+- Includes proper timestamps
+- Handles HTTP response status codes
+- Deserializes the JSON response into Rust structures
+
+### Decoding reports
+
+Reports are decoded in three stages:
+
+1. Hex decoding: The `full_report` field comes as a hex string prefixed with "0x":
+
+   ```rust
+   let full_report = hex::decode(&response.report.full_report[2..])?;
+   ```
+
+1. Report separation: [`decode_full_report`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report.rs#L77) splits the binary data:
+   - Extracts the report context (metadata)
+   - Isolates the report blob (actual data)
+   - Validates the report format
+
+1. Data extraction: [`ReportDataV4::decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report/v4.rs#L57) parses the report blob into structured data:
+   - Feed ID (unique identifier for the feed)
+   - Observations timestamp (when the data was captured)
+   - Benchmark price (18 decimal places)
+   - Validity timestamps (valid from and expires at)
+   - Fee information for onchain verification (LINK and native token fees)
+   - Market status (0=Unknown, 1=Closed, 2=Open, 3=Suspended)
+
+### Error handling
+
+The example demonstrates Rust's robust error handling:
+
+1. Type-safe errors:
+   - Uses custom error types for different failure scenarios
+   - Implements the `Error` trait for proper error propagation
+   - Provides detailed error messages for debugging
+
+1. Error propagation:
+   - Uses the `?` operator for clean error handling
+   - Converts errors between types when needed
+   - Bubbles up errors to the main function
+
+1. Input validation:
+   - Checks command-line arguments
+   - Validates environment variables
+   - Verifies feed ID format
+
+The decoded data can be used for further processing, analysis, or display in your application. For production environments, you must verify the data onchain using the provided `full_report` payload.
