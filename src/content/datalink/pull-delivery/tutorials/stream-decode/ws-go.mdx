@@ -1,0 +1,359 @@
+---
+section: dataLink
+date: Last Modified
+title: "Stream and Decode reports using the Go SDK (WebSocket)"
+metadata:
+  title: "Stream and Decode reports using the Go SDK (WebSocket)"
+  description: "DataLink - Learn how to stream and decode reports (WebSocket) using the Go SDK."
+---
+
+import { CopyText, PageTabs } from "@components"
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+
+<PageTabs
+  pages={[
+    {
+      name: "Stream and decode reports using the Go SDK",
+      url: "/datalink/pull-delivery/tutorials/stream-decode/ws-go",
+      icon: "/images/tutorial-icons/go_logo_black.png",
+    },
+    {
+      name: "Stream and decode reports using the Rust SDK",
+      url: "/datalink/pull-delivery/tutorials/stream-decode/ws-rust",
+      icon: "/images/tutorial-icons/rust_logo_blk.svg",
+    },
+  ]}
+/>
+
+In this guide, you'll learn how to use the [Data Streams SDK](/data-streams/reference/streams-direct/streams-direct-go-sdk) for Go to stream and decode DataLink feeds from the Aggregation Network. You'll set up your Go project, listen for real-time reports, decode them, and log their attributes.
+
+<DataStreams section="asideDisclaimer" />
+
+## Requirements
+
+- **Git**: Make sure you have Git installed. You can check your current version by running <CopyText text="git --version" code/> in your terminal and download the latest version from the official [Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if necessary.
+- **Go Version**: Make sure you have Go version 1.22.4 or higher. You can check your current version by running `go version` in your terminal and download the latest version from the official [Go website](https://go.dev/) if necessary.
+- **API Credentials**: Access to DataLink requires API credentials to connect to the Aggregation Network. If you haven't already, [contact us](https://chain.link/contact) to request access.
+
+## Guide
+
+### Set up your Go project
+
+1. Create a new directory for your project and navigate to it:
+
+   ```bash
+   mkdir my-datalink-project
+   cd my-datalink-project
+   ```
+
+1. Initialize a new Go module:
+
+   ```bash
+   go mod init my-datalink-project
+   ```
+
+1. Install the Data Streams SDK:
+
+   ```bash
+   go get github.com/smartcontractkit/data-streams-sdk/go
+   ```
+
+### Understanding Report Schema Versions
+
+Data Providers may use different report schema versions. The schema version determines the structure of the data returned by the feed and affects how you should decode the report.
+
+1. Import the appropriate schema version in your code (e.g., `v4`).
+1. Use that version when decoding the report with `report.Decode[v4.Data]()`.
+
+Different schema versions have different fields and structures.
+
+In this example, we're using report schema `v4` for the EUR/USD feed, but your implementation should match the schema version specified by your Data Provider.
+
+### Establish a WebSocket connection and listen for real-time reports
+
+1. Create a new Go file, `stream.go`, in your project directory:
+
+   ```bash
+   touch stream.go
+   ```
+
+1. Insert the following code example and save your `stream.go` file:
+
+   ```go
+   package main
+
+   import (
+     "context"
+     "fmt"
+     "os"
+     "time"
+
+     streams "github.com/smartcontractkit/data-streams-sdk/go"
+     feed "github.com/smartcontractkit/data-streams-sdk/go/feed"
+     report "github.com/smartcontractkit/data-streams-sdk/go/report"
+     v4 "github.com/smartcontractkit/data-streams-sdk/go/report/v4" // Import the v4 report schema.
+   )
+
+   func main() {
+     if len(os.Args) < 2 {
+     fmt.Println("Usage: go run stream.go [StreamID1] [StreamID2] ...")
+     os.Exit(1)
+     }
+
+     // Set up the SDK client configuration
+     cfg := streams.Config{
+     ApiKey:    os.Getenv("API_KEY"),
+     ApiSecret: os.Getenv("API_SECRET"),
+     WsURL: "wss://ws.testnet-dataengine.chain.link",
+     Logger: streams.LogPrintf,
+     }
+
+     // Create a new client
+     client, err := streams.New(cfg)
+     if err != nil {
+     cfg.Logger("Failed to create client: %v\n", err)
+     os.Exit(1)
+     }
+
+     // Parse the feed IDs from the command line arguments
+     var ids []feed.ID
+     for _, arg := range os.Args[1:] {
+     var fid feed.ID
+     if err := fid.FromString(arg); err != nil {
+       cfg.Logger("Invalid stream ID %s: %v\n", arg, err)
+       os.Exit(1)
+     }
+     ids = append(ids, fid)
+     }
+
+     ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+     defer cancel()
+
+     // Subscribe to the feed(s)
+     stream, err := client.Stream(ctx, ids)
+     if err != nil {
+     cfg.Logger("Failed to subscribe: %v\n", err)
+     os.Exit(1)
+     }
+
+     defer stream.Close()
+     for {
+       reportResponse, err := stream.Read(context.Background())
+       if err != nil {
+         cfg.Logger("Error reading from stream: %v\n", err)
+         continue
+       }
+
+       // Log the contents of the report before decoding
+       cfg.Logger("Raw report data: %+v\n", reportResponse)
+
+         // Decode each report as it comes in
+         decodedReport, decodeErr := report.Decode[v4.Data](reportResponse.FullReport)
+         if decodeErr != nil {
+           cfg.Logger("Failed to decode report: %v\n", decodeErr)
+           continue
+         }
+
+           // Log the decoded report
+           cfg.Logger("\n--- Report Stream ID: %s ---\n" +
+             "------------------------------------------\n" +
+             "Observations Timestamp : %d\n" +
+             "Benchmark Price        : %s\n" +
+             "Valid From Timestamp   : %d\n" +
+             "Expires At             : %d\n" +
+             "Link Fee               : %s\n" +
+             "Native Fee             : %s\n" +
+             "Market Status          : %d\n" +
+             "------------------------------------------\n",
+             reportResponse.FeedID.String(),
+             decodedReport.Data.ObservationsTimestamp,
+             decodedReport.Data.BenchmarkPrice.String(),
+             decodedReport.Data.ValidFromTimestamp,
+             decodedReport.Data.ExpiresAt,
+             decodedReport.Data.LinkFee.String(),
+             decodedReport.Data.NativeFee.String(),
+             decodedReport.Data.MarketStatus,
+           )
+
+           // Also, log the stream stats
+           cfg.Logger("\n--- Stream Stats ---\n" +
+           stream.Stats().String() + "\n" +
+           "--------------------------------------------------------------------------------------------------------------------------------------------\n",
+           )
+     }
+   }
+   ```
+
+1. Download the required dependencies and update the `go.mod` and `go.sum` files:
+
+   ```bash
+   go mod tidy
+   ```
+
+1. Set up the SDK client configuration within `stream.go` with your API credentials and the WebSocket URL:
+
+   ```go
+   cfg := streams.Config{
+       ApiKey:    os.Getenv("API_KEY"),
+       ApiSecret: os.Getenv("API_SECRET"),
+       WsURL: "wss://ws.testnet-dataengine.chain.link",
+       Logger: streams.LogPrintf,
+   }
+   ```
+
+   - Set your API credentials as environment variables:
+
+     ```bash
+     export API_KEY="<YOUR_API_KEY>"
+     export API_SECRET="<YOUR_API_SECRET>"
+     ```
+
+     Replace `<YOUR_API_KEY>` and `<YOUR_API_SECRET>` with your API credentials.
+
+   - `WsURL` is the [WebSocket URL](/data-streams/reference/data-streams-api/interface-ws) for the Data Streams Aggregation Network. Use <CopyText text="wss://ws.testnet-dataengine.chain.link" code/> for the testnet environment.
+
+   See the [SDK Reference](/data-streams/reference/data-streams-api/go-sdk) page for more configuration options.
+
+1. For this example, you'll subscribe to the EUR/USD DataLink feed on testnet. This feed ID is <CopyText text="0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce" code/>.
+
+   Execute your application:
+
+   ```bash
+   go run stream.go 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce
+   ```
+
+   Expect output similar to the following in your terminal:
+
+   ```bash
+   2025-06-03T11:00:21-05:00 Raw report data: {"fullReport":"0x00090d9e8d96765a0c49e03a6ae05c82e8f8de70cf179baa632f18313e54bd690000000000000000000000000000000000000000000000000000000000415a52000000000000000000000000000000000000000000000000000000030000000100000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000260000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce00000000000000000000000000000000000000000000000000000000683f1c1500000000000000000000000000000000000000000000000000000000683f1c1500000000000000000000000000000000000000000000000000006ed14d655b7f000000000000000000000000000000000000000000000000004f3ee8709ff739000000000000000000000000000000000000000000000000000000006866a9150000000000000000000000000000000000000000000000000fc8b012a2e7080000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002ba6f4e2b770d818a554bd2b2a3c5bc1c0f15632af10e7b08c29d79fb0ad77fa16091843dd3ab39ece9274fb0c44f7fd8694b87724d9d4906e715672170bd8abb00000000000000000000000000000000000000000000000000000000000000026dc37bff09cd3673d53e60872b65ee6e566f11f2f1a308b38a6f0bdfa9f25ab15bd4599ab01c9d06c744b9f6d41e3f50e5cccc1a564e7e2c930c7af0b74f1f36","feedID":"0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce","validFromTimestamp":1748966421,"observationsTimestamp":1748966421}
+
+   2025-06-03T11:00:21-05:00
+   --- Report Stream ID: 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce ---
+   ------------------------------------------
+   Observations Timestamp : 1748966421
+   Benchmark Price        : 1137352500000000000
+   Valid From Timestamp   : 1748966421
+   Expires At             : 1751558421
+   Link Fee               : 22305691203008313
+   Native Fee             : 121845225708415
+   Market Status          : 2
+   ------------------------------------------
+
+   2025-06-03T11:00:21-05:00
+   --- Stream Stats ---
+   accepted: 1, deduplicated: 0, total_received 1, partial_reconnects: 0, full_reconnects: 0, configured_connections: 1, active_connections 1
+   --------------------------------------------------------------------------------------------------------------------------------------------
+
+   2025-06-03T11:00:22-05:00 Raw report data: {"fullReport":"0x00090d9e8d96765a0c49e03a6ae05c82e8f8de70cf179baa632f18313e54bd690000000000000000000000000000000000000000000000000000000000415a55000000000000000000000000000000000000000000000000000000030000000100000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000260010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce00000000000000000000000000000000000000000000000000000000683f1c1600000000000000000000000000000000000000000000000000000000683f1c1600000000000000000000000000000000000000000000000000006ed0247f9673000000000000000000000000000000000000000000000000004f3f25cd2ee9ee000000000000000000000000000000000000000000000000000000006866a9160000000000000000000000000000000000000000000000000fc8dd8c2b242800000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000024e36294fb0464d2d1fa23512a03ca207d3adc9a9eef0291fd541eefdc364085a208276cb25ceb18587a8bd7bc8de54a74e3040cfda1aca3591913b51fa8b9bda0000000000000000000000000000000000000000000000000000000000000002347dd491b33b8dbd78c1a0d4b4641beb9cee1d761c3e56e7181845ac73b4efca490e36c776ac856bbf89a68064fde4c3bed22c43e48a4c3c4fb7cbe470eaa544","feedID":"0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce","validFromTimestamp":1748966422,"observationsTimestamp":1748966422}
+
+   2025-06-03T11:00:22-05:00
+   --- Report Stream ID: 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce ---
+   ------------------------------------------
+   Observations Timestamp : 1748966422
+   Benchmark Price        : 1137402500000000000
+   Valid From Timestamp   : 1748966422
+   Expires At             : 1751558422
+   Link Fee               : 22305954748885486
+   Native Fee             : 121840244594291
+   Market Status          : 2
+   ------------------------------------------
+
+   2025-06-03T11:00:22-05:00
+   --- Stream Stats ---
+   accepted: 2, deduplicated: 0, total_received 2, partial_reconnects: 0, full_reconnects: 0, configured_connections: 1, active_connections 1
+   --------------------------------------------------------------------------------------------------------------------------------------------
+
+   2025-06-03T11:00:23-05:00 Raw report data: {"fullReport":"0x00090d9e8d96765a0c49e03a6ae05c82e8f8de70cf179baa632f18313e54bd690000000000000000000000000000000000000000000000000000000000415a58000000000000000000000000000000000000000000000000000000030000000100000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000260000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce00000000000000000000000000000000000000000000000000000000683f1c1700000000000000000000000000000000000000000000000000000000683f1c1700000000000000000000000000000000000000000000000000006ed11dd755d2000000000000000000000000000000000000000000000000004f3ee813f33a33000000000000000000000000000000000000000000000000000000006866a9170000000000000000000000000000000000000000000000000fc8dd8c2b24280000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002622edb20ce1b998661a29c9b45953e2d37aee73fd68305183bd00240b1b2c89f95df58e73235dd3b4872ad2c185605985cf952ce1837f6724af00aba74eb42b300000000000000000000000000000000000000000000000000000000000000024cec2d619f9e12c9caf22f675bc4df44a5930644be5562b8bb0fe3e3c859e7f34937b468c19f3c41c6bab8813311724897b1ab1c3aa1ffa783ad9aa5fcf258eb","feedID":"0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce","validFromTimestamp":1748966423,"observationsTimestamp":1748966423}
+
+   2025-06-03T11:00:23-05:00
+   --- Report Stream ID: 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce ---
+   ------------------------------------------
+   Observations Timestamp : 1748966423
+   Benchmark Price        : 1137402500000000000
+   Valid From Timestamp   : 1748966423
+   Expires At             : 1751558423
+   Link Fee               : 22305689648183859
+   Native Fee             : 121844427871698
+   Market Status          : 2
+   ------------------------------------------
+
+   2025-06-03T11:00:23-05:00
+   --- Stream Stats ---
+   accepted: 3, deduplicated: 0, total_received 3, partial_reconnects: 0, full_reconnects: 0, configured_connections: 1, active_connections 1
+   --------------------------------------------------------------------------------------------------------------------------------------------
+
+   [...]
+   ```
+
+#### Decoded report details
+
+The decoded report details include:
+
+| Attribute                | Value                                                                | Description                                                                                                                                                                                                                                        |
+| ------------------------ | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Feed ID`                | `0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce` | The unique identifier for the feed. In this example, the feed is for EUR/USD.                                                                                                                                                                      |
+| `Observations Timestamp` | `1748966423`                                                         | The timestamp indicating when the data was captured.                                                                                                                                                                                               |
+| `Benchmark Price`        | `1137402500000000000`                                                | The observed price in the report, with 18 decimals. For readability: `1.1374025` USD per EUR.                                                                                                                                                      |
+| `Valid From Timestamp`   | `1748966423`                                                         | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                                                                                            |
+| `Expires At`             | `1751558423`                                                         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                                                                                   |
+| `Link Fee`               | `22305689648183859`                                                  | The fee to pay in LINK tokens for the onchain verification of the report data. With 18 decimals. For readability: `0.022305689648183859` LINK. **Note:** This example fee is not indicative of actual fees.                                        |
+| `Native Fee`             | `121844427871698`                                                    | The fee to pay in the native blockchain token (e.g., ETH on Ethereum) for the onchain verification of the report data. With 18 decimals. For readability: `0.000121844427871698` ETH. **Note:** This example fee is not indicative of actual fees. |
+| `Market Status`          | `2`                                                                  | The current market status. `2` indicates the market is `Open`.                                                                                                                                                                                     |
+
+#### Payload for onchain verification
+
+In this guide, you log and decode the `full_report` payload to extract the report data. In a
+production environment, you should verify the data to ensure its integrity and authenticity. Refer to the
+[Verify report data onchain](/datalink/pull-delivery/tutorials/onchain-verification-evm) guide.
+
+## Adapting code for different report schema versions
+
+When working with different DataLink providers, you'll need to adapt your code to handle the specific report schema version they use:
+
+1. Import the correct schema version module. Examples:
+   - For v4 schema (as used in this example):
+
+     ```go
+     v4 "github.com/smartcontractkit/data-streams-sdk/go/report/v4"
+     ```
+
+   - For v3 schema:
+
+     ```go
+     v3 "github.com/smartcontractkit/data-streams-sdk/go/report/v3"
+     ```
+
+1. Update the decode function to use the correct schema version. Examples:
+   - For v4 schema (as used in this example):
+
+     ```go
+     decodedReport, decodeErr := report.Decode[v4.Data](reportResponse.FullReport)
+     ```
+
+   - For v3 schema:
+
+     ```go
+     decodedReport, decodeErr := report.Decode[v3.Data](reportResponse.FullReport)
+     ```
+
+1. Access fields according to the schema version structure.
+
+## Explanation
+
+### Establishing a WebSocket connection and listening for reports
+
+Your application uses the [Stream](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/client.go#L98) function in the [Data Streams SDK](/data-streams/reference/streams-direct/streams-direct-go-sdk)'s client package to establish a real-time WebSocket connection with the Data Streams Aggregation Network.
+
+Once the WebSocket connection is established, your application subscribes to one or more streams by passing an array of `feed.IDs` to the `Stream` function. This subscription lets the client receive real-time updates whenever new report data is available for the specified streams.
+
+### Decoding a report
+
+As data reports arrive via the established WebSocket connection, they are processed in real-time:
+
+- Reading streams: The [`Read`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/stream.go#L266) method on the returned Stream object is continuously called within a loop. This method blocks until new data is available, ensuring that all incoming reports are captured as soon as they are broadcasted.
+
+- Decoding reports: For each received report, the SDK's [`Decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/report/report.go#L30) function parses and transforms the raw data into a structured format (`v4.Data` for this example). This decoded data includes data such as the benchmark price.
+
+### Handling the decoded data
+
+In this example, the application logs the structured report data to the terminal. However, this data can be used for further processing, analysis, or display in your own application.
