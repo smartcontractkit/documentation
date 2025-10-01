@@ -1,10 +1,15 @@
 ---
 section: dta-technical-standard
 title: "How It Works"
+metadata:
+  title: "DTA Technical Standard: How It Works"
+  description: "Learn how the Chainlink Digital Transfer Agent (DTA) technical standard works, including subscription and redemption flows and supported settlement models."
 ---
 
 import { ClickToZoom, Aside } from "@components"
 import Dta from "@features/dta/common/Dta.astro"
+
+<Dta section="dtaNotes" />
 
 ### Components of the Chainlink DTA Technical Standard
 
@@ -13,10 +18,10 @@ The Chainlink DTA technical standard consists of multiple components that enable
 - **DTA Smart Contracts**: Enable onchain subscription and redemption of tokenized assets across multiple blockchains, supporting both onchain and offchain settlement.
   - **DTA Request Management**: Accessed by fund distributors to submit subscription/redemption requests and by transfer agents to process pending requests.
   - **DTA Request Settlement**: Deployed by each fund administrator or transfer agent, the contract is responsible for minting, burning, and transferring the tokenized fund upon successful settlement.
-- **CCIP**: Support transfer agency services across multiple blockchains. This allows requests to be submitted on one chain and settled on another. Furthermore, fund tokens can be deployed and made available to investors across multiple blockchain ecosystems.
-- **Chainlink ACE**: Provide flexible, programmable compliance enforcement (e.g., eligibility checks, rate limits, role-based access) to enable regulators’ and institutions’ requirements to be adhered to onchain.
-- **NAVLink Feeds**: Securely link tokenized funds to the fund administrators’ NAV reporting systems to ensure accurate pricing for subscriptions and redemptions across both fiat and digital asset settlement.
-- **CRE**: Ensure compatibility with legacy systems, facilitate access to fiat settlement via [established payment rails](https://www.swift.com/news-events/press-releases/swift-ubs-asset-management-and-chainlink-successfully-complete-innovative-pilot-bridge-tokenized-assets-existing-payment-systems), and enable record reconciliation with offchain systems.
+- **[CCIP](/ccip)**: Support transfer agency services across multiple blockchains. This allows requests to be submitted on one chain and settled on another. Furthermore, fund tokens can be deployed and made available to investors across multiple blockchain ecosystems.
+- **[Chainlink ACE](https://chain.link/automated-compliance-engine)**: Provide flexible, programmable compliance enforcement (e.g., eligibility checks, rate limits, role-based access) to enable regulators’ and institutions’ requirements to be adhered to onchain.
+- **[NAVLink Feeds](/data-feeds/smartdata#navlink-feeds)**: Securely link tokenized funds to the fund administrators’ NAV reporting systems to ensure accurate pricing for subscriptions and redemptions across both fiat and digital asset settlement.
+- **[CRE](https://chain.link/chainlink-runtime-environment)**: Ensure compatibility with legacy systems, facilitate access to fiat settlement via [established payment rails](https://www.swift.com/news-events/press-releases/swift-ubs-asset-management-and-chainlink-successfully-complete-innovative-pilot-bridge-tokenized-assets-existing-payment-systems), and enable record reconciliation with offchain systems.
 
 ## The subscription flow
 
@@ -39,7 +44,7 @@ A typical subscription (buy) order follows a clear, four-step process that moves
 
    _Note: At this point, the token contract itself can enforce its own compliance rules (for example, using Chainlink ACE to verify DTA Request Settlement’s permissions and the distributor's eligibility). Upon a successful compliance check, the new shares are created and held in escrow by the DTA Request Settlement itself, pending final payment settlement._
 
-1. **Settlement:** Depending on the fund’s payment model, DTA Request Settlement completes settlement by either pulling payment tokens onchain, awaiting and recording offchain payment confirmation, or receiving cross-chain payment via CCIP. Upon successful settlement, it releases the newly minted fund tokens from escrow to the Fund Distributor’s address.
+1. **Settlement:** Depending on the fund’s payment model, DTA Request Settlement completes settlement by either pulling payment tokens onchain, awaiting and recording offchain payment confirmation, or receiving cross-chain payment via [CCIP](/ccip). Upon successful settlement, it releases the newly minted fund tokens from escrow to the Fund Distributor’s address.
 
 Each of these steps corresponds to a formal status change in the DTA technical standard. To see a detailed breakdown of these states, from **Pending** to **Processed**, see [The Request Lifecycle](/dta-technical-standard/concepts/request-lifecycle) page.
 

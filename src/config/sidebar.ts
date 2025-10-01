@@ -2393,6 +2393,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
+      section: "Provider Catalog",
+      contents: [
+        {
+          title: "DataLink Providers",
+          url: "datalink/provider-catalog",
+        },
+      ],
+    },
+    {
       section: "Pull Delivery",
       contents: [
         {
