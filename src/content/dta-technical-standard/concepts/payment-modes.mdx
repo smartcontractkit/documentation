@@ -1,6 +1,9 @@
 ---
 section: dta-technical-standard
 title: "Payment Modes"
+metadata:
+  title: "DTA Technical Standard: Payment Modes"
+  description: "Learn about the payment modes (offchain, local onchain, and cross-chain settlement) supported by the Chainlink Digital Transfer Agent (DTA) technical standard."
 ---
 
 import { ClickToZoom } from "@components"
@@ -18,11 +21,11 @@ The payment model for a fund is defined by the Transfer Agent when they register
 | :--------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------- |
 | **Offchain Settlement**            | **Manual admin confirmation required.** DTA Request Settlement escrows tokens until payment is settled via traditional, offchain channels. | Funds with established, traditional payment relationships (e.g., bank wire transfers). |
 | **Local Onchain Settlement**       | **Fully automated settlement.** Payment and token minting occur atomically in a single onchain transaction.                                | Digitally native funds operating entirely within a single blockchain ecosystem.        |
-| **Cross-chain Onchain Settlement** | **Fully automated settlement** using Chainlink CCIP to send payment and instructions to the fund's chain.                                  | Global funds that accept investments on one chain and manage the token on another.     |
+| **Cross-chain Onchain Settlement** | **Fully automated settlement** using [Chainlink CCIP](/ccip) to send payment and instructions to the fund's chain.                         | Global funds that accept investments on one chain and manage the token on another.     |
 
 ## 1. Offchain settlement
 
-This model is designed for funds that handle payments through traditional, offchain channels (e.g., bank wires, direct peer-to-peer transfers). The DTA contracts act as a secure onchain coordination and token escrow layer, while the actual monetary settlement happens off-chain.
+This model is designed for funds that handle payments through traditional, offchain channels (e.g., bank wires, direct peer-to-peer transfers). The DTA contracts act as a secure onchain coordination and token escrow layer, while the actual monetary settlement happens offchain.
 
 **Use Case:** Ideal for tokenized traditional funds where distributors and transfer agents / fund administrators already have established payment relationships.
 
@@ -30,10 +33,10 @@ This model is designed for funds that handle payments through traditional, offch
 
 <ClickToZoom
   src="/images/DTA/offchain-settlement.png"
-  caption="Offchain settlement flow, where DTA Request Settlement escrows tokens until the Transfer Agent confirms off-chain payment."
+  caption="Offchain settlement flow, where DTA Request Settlement escrows tokens until the Transfer Agent confirms offchain payment."
 />
 
-_Offchain settlement flow, where DTA Request Settlement escrows tokens until the Transfer Agent confirms off-chain payment._
+_Offchain settlement flow, where DTA Request Settlement escrows tokens until the Transfer Agent confirms offchain payment._
 
 1. A Distributor submits a request on DTA Request Management.
 1. The Transfer Agent processes the request.
@@ -74,7 +77,7 @@ _Local onchain settlement, where all interactions occur atomically on a single b
 
 ## 3. Cross-chain onchain settlement
 
-This is the most advanced model, leveraging Chainlink CCIP to enable seamless cross-chain fund management. It is used when DTA Request Management is on a different blockchain from DTA Request Settlement and the Fund Token.
+This is the most advanced model, leveraging [Chainlink CCIP](/ccip) to enable seamless cross-chain fund management. It is used when DTA Request Management is on a different blockchain from DTA Request Settlement and the Fund Token.
 
 **Use Case:** For global fund platforms that want to accept investments on a major chain like Ethereum Mainnet while managing the fund's assets on a more cost-effective blockchain.
 
