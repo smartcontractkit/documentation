@@ -183,8 +183,8 @@ export function ChainSelector({
             src={selectedChain.img} 
             alt={`${selectedChain.label} icon`}
             className={styles.chainIcon}
-            width={42}
-            height={42}
+            width={28}
+            height={28}
           />
             <span className={styles.chainLabel}>{selectedChain.label}</span>
           </div>
