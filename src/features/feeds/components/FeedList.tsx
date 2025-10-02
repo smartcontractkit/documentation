@@ -217,41 +217,7 @@ export const FeedList = ({
   const chainMetadata = useGetChainMetadata(chain, initialCache && initialCache[chain.page])
   const wrapperRef = useRef(null)
 
-  // Determine available network types for the current chain
-  const availableNetworkTypes = useMemo(() => {
-    if (!chainMetadata.processedData?.networks) return { mainnet: false, testnet: false }
 
-    const networkTypes = {
-      mainnet: false,
-      testnet: false,
-    }
-
-    chainMetadata.processedData.networks.forEach((network) => {
-      if (network.networkType === "mainnet") {
-        networkTypes.mainnet = true
-      } else if (network.networkType === "testnet") {
-        networkTypes.testnet = true
-      }
-    })
-
-    return networkTypes
-  }, [chainMetadata.processedData?.networks])
-
-  // Auto-adjust selectedNetworkType based on what's available
-  useEffect(() => {
-    if (!chainMetadata.loading && chainMetadata.processedData) {
-      const { mainnet, testnet } = availableNetworkTypes
-
-      // If current selection is not available, switch to what's available
-      if (selectedNetworkType === "mainnet" && !mainnet && testnet) {
-        setSelectedNetworkType("testnet")
-      } else if (selectedNetworkType === "testnet" && !testnet && mainnet) {
-        setSelectedNetworkType("mainnet")
-      }
-      // If both are available, keep current selection
-      // If neither are available, keep current selection (edge case)
-    }
-  }, [chainMetadata.loading, chainMetadata.processedData, availableNetworkTypes, selectedNetworkType])
 
   // scroll handler
   useEffect(() => {
@@ -445,6 +411,57 @@ export const FeedList = ({
   const isRates = dataFeedType === "rates"
   const isDeprecating = ecosystem === "deprecating"
   let netCount = 0
+
+  // Available network types for current feed type
+  const availableNetworkTypes = useMemo(() => {
+    if (!chainMetadata.processedData?.networks) return { mainnet: false, testnet: false }
+
+    const networkTypes = { mainnet: false, testnet: false }
+
+    // Filter networks by feed type
+    const filteredNetworks = chainMetadata.processedData.networks.filter((network) => {
+      if (isDeprecating) {
+        let foundDeprecated = false
+        network.metadata?.forEach((feed: any) => {
+          if (feed.feedCategory === "deprecating") {
+            foundDeprecated = true
+          }
+        })
+        return foundDeprecated
+      }
+
+      if (isStreams) return network.tags?.includes("streams")
+      if (isSmartData) return network.tags?.includes("smartData")
+      if (isRates) return network.tags?.includes("rates")
+      if (isUSGovernmentMacroeconomicData) return network.tags?.includes("usGovernmentMacroeconomicData")
+
+      return true
+    })
+
+    // Check available network types
+    filteredNetworks.forEach((network) => {
+      if (network.networkType === "mainnet") {
+        networkTypes.mainnet = true
+      } else if (network.networkType === "testnet") {
+        networkTypes.testnet = true
+      }
+    })
+
+    return networkTypes
+  }, [chainMetadata.processedData?.networks, isDeprecating, isStreams, isSmartData, isRates, isUSGovernmentMacroeconomicData])
+
+  // Auto-switch network type if current selection isn't available
+  useEffect(() => {
+    if (!chainMetadata.loading && chainMetadata.processedData) {
+      const { mainnet, testnet } = availableNetworkTypes
+
+      if (selectedNetworkType === "mainnet" && !mainnet && testnet) {
+        setSelectedNetworkType("testnet")
+      } else if (selectedNetworkType === "testnet" && !testnet && mainnet) {
+        setSelectedNetworkType("mainnet")
+      }
+    }
+  }, [chainMetadata.loading, chainMetadata.processedData, availableNetworkTypes, selectedNetworkType, dataFeedType, ecosystem])
 
   const streamsMainnetSectionTitle =
     dataFeedType === "streamsCrypto"
@@ -773,16 +790,16 @@ export const FeedList = ({
               if (foundDeprecated) {
                 netCount++
               }
-              return foundDeprecated
+              return foundDeprecated && network.networkType === selectedNetworkType
             }
 
-            if (isStreams) return network.tags?.includes("streams")
+            if (isStreams) return network.tags?.includes("streams") && network.networkType === selectedNetworkType
 
-            if (isSmartData) return network.tags?.includes("smartData")
+            if (isSmartData) return network.tags?.includes("smartData") && network.networkType === selectedNetworkType
 
-            if (isRates) return network.tags?.includes("rates")
+            if (isRates) return network.tags?.includes("rates") && network.networkType === selectedNetworkType
 
-            if (isUSGovernmentMacroeconomicData) return network.tags?.includes("usGovernmentMacroeconomicData")
+            if (isUSGovernmentMacroeconomicData) return network.tags?.includes("usGovernmentMacroeconomicData") && network.networkType === selectedNetworkType
 
             // Filter by selected network type (mainnet/testnet)
             return network.networkType === selectedNetworkType

@@ -21,12 +21,9 @@ export function ChainSelector({
   onNetworkTypeChange,
   dataFeedType = "default",
   availableNetworkTypes = { mainnet: true, testnet: true },
-  selectedNetworkType: externalSelectedNetworkType,
+  selectedNetworkType = "mainnet",
 }: ChainSelectorProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [selectedNetworkType, setSelectedNetworkType] = useState<"mainnet" | "testnet">(
-    externalSelectedNetworkType || "mainnet"
-  )
   const [searchTerm, setSearchTerm] = useState("")
   const [focusedIndex, setFocusedIndex] = useState(-1)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -136,8 +133,6 @@ export function ChainSelector({
   }
 
   const handleNetworkTypeToggle = (networkType: "mainnet" | "testnet") => {
-    setSelectedNetworkType(networkType)
-
     // Notify parent component about the network type change
     if (onNetworkTypeChange) {
       onNetworkTypeChange(networkType, selectedChain)
