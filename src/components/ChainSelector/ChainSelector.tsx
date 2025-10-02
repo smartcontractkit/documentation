@@ -11,6 +11,8 @@ interface ChainSelectorProps {
   onChainSelect: (chain: Chain) => void
   onNetworkTypeChange?: (networkType: "mainnet" | "testnet", chain: Chain) => void
   dataFeedType?: string
+  availableNetworkTypes?: { mainnet: boolean; testnet: boolean }
+  selectedNetworkType?: "mainnet" | "testnet"
 }
 
 export function ChainSelector({
@@ -19,10 +21,14 @@ export function ChainSelector({
   currentNetwork,
   onChainSelect,
   onNetworkTypeChange,
-  dataFeedType = "default"
+  dataFeedType = "default",
+  availableNetworkTypes = { mainnet: true, testnet: true },
+  selectedNetworkType: externalSelectedNetworkType
 }: ChainSelectorProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [selectedNetworkType, setSelectedNetworkType] = useState<"mainnet" | "testnet">("mainnet")
+  const [selectedNetworkType, setSelectedNetworkType] = useState<"mainnet" | "testnet">(
+    externalSelectedNetworkType || "mainnet"
+  )
   const [searchTerm, setSearchTerm] = useState("")
   const [focusedIndex, setFocusedIndex] = useState(-1)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -65,17 +71,12 @@ export function ChainSelector({
     }
   }, [isOpen, focusedIndex, filteredChains])
 
-  // Find current network type based on selected chain and currentNetwork
+  // Sync with external selectedNetworkType
   useEffect(() => {
-    if (selectedChain) {
-      const currentChainNetwork = selectedChain.networks.find(network => 
-        network.queryString === currentNetwork || selectedChain.page === currentNetwork
-      )
-      if (currentChainNetwork) {
-        setSelectedNetworkType(currentChainNetwork.networkType)
-      }
+    if (externalSelectedNetworkType && externalSelectedNetworkType !== selectedNetworkType) {
+      setSelectedNetworkType(externalSelectedNetworkType)
     }
-  }, [selectedChain, currentNetwork])
+  }, [externalSelectedNetworkType])
 
   // Scroll focused item into view
   useEffect(() => {
@@ -198,9 +199,12 @@ export function ChainSelector({
             type="button"
             className={clsx(
               styles.networkToggle,
-              selectedNetworkType === "mainnet" && styles.networkToggleActive
+              selectedNetworkType === "mainnet" && styles.networkToggleActive,
+              !availableNetworkTypes.mainnet && styles.networkToggleDisabled
             )}
-            onClick={() => handleNetworkTypeToggle("mainnet")}
+            onClick={() => availableNetworkTypes.mainnet && handleNetworkTypeToggle("mainnet")}
+            disabled={!availableNetworkTypes.mainnet}
+            title={!availableNetworkTypes.mainnet ? `${selectedChain.label} feeds are not available on mainnet` : undefined}
           >
             Mainnet
           </button>
@@ -208,9 +212,12 @@ export function ChainSelector({
             type="button"
             className={clsx(
               styles.networkToggle,
-              selectedNetworkType === "testnet" && styles.networkToggleActive
+              selectedNetworkType === "testnet" && styles.networkToggleActive,
+              !availableNetworkTypes.testnet && styles.networkToggleDisabled
             )}
-            onClick={() => handleNetworkTypeToggle("testnet")}
+            onClick={() => availableNetworkTypes.testnet && handleNetworkTypeToggle("testnet")}
+            disabled={!availableNetworkTypes.testnet}
+            title={!availableNetworkTypes.testnet ? `${selectedChain.label} feeds are not available on testnet` : undefined}
           >
             Testnet
           </button>

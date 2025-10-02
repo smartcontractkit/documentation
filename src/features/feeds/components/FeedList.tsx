@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-import { useEffect, useState, useRef } from "preact/hooks"
+import { useEffect, useState, useRef, useMemo } from "preact/hooks"
 import { MainnetTable, TestnetTable, StreamsNetworkAddressesTable } from "./Tables.tsx"
 import feedList from "./FeedList.module.css"
 import tableStyles from "./Tables.module.css"
@@ -166,6 +166,42 @@ export const FeedList = ({
   const chain = chains.find((c) => c.page === activeChain) || chains[0]
   const chainMetadata = useGetChainMetadata(chain, initialCache && initialCache[chain.page])
   const wrapperRef = useRef(null)
+
+  // Determine available network types for the current chain
+  const availableNetworkTypes = useMemo(() => {
+    if (!chainMetadata.processedData?.networks) return { mainnet: false, testnet: false }
+    
+    const networkTypes = {
+      mainnet: false,
+      testnet: false
+    }
+    
+    chainMetadata.processedData.networks.forEach((network) => {
+      if (network.networkType === "mainnet") {
+        networkTypes.mainnet = true
+      } else if (network.networkType === "testnet") {
+        networkTypes.testnet = true
+      }
+    })
+    
+    return networkTypes
+  }, [chainMetadata.processedData?.networks])
+
+  // Auto-adjust selectedNetworkType based on what's available
+  useEffect(() => {
+    if (!chainMetadata.loading && chainMetadata.processedData) {
+      const { mainnet, testnet } = availableNetworkTypes
+      
+      // If current selection is not available, switch to what's available
+      if (selectedNetworkType === "mainnet" && !mainnet && testnet) {
+        setSelectedNetworkType("testnet")
+      } else if (selectedNetworkType === "testnet" && !testnet && mainnet) {
+        setSelectedNetworkType("mainnet")
+      }
+      // If both are available, keep current selection
+      // If neither are available, keep current selection (edge case)
+    }
+  }, [chainMetadata.loading, chainMetadata.processedData, availableNetworkTypes, selectedNetworkType])
 
   // scroll handler
   useEffect(() => {
@@ -616,6 +652,8 @@ export const FeedList = ({
               onChainSelect={handleNetworkSelect}
               onNetworkTypeChange={handleNetworkTypeChange}
               dataFeedType={dataFeedType}
+              availableNetworkTypes={availableNetworkTypes}
+              selectedNetworkType={selectedNetworkType}
             />
           </div>
         </>
