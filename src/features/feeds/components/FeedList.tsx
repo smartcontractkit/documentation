@@ -693,7 +693,6 @@ export const FeedList = ({
                 key={`chain-selector-${chain.page}`} // Force re-render when chain changes
                 chains={chains}
                 selectedChain={chain}
-                currentNetwork={currentNetwork}
                 onChainSelect={handleNetworkSelect}
                 onNetworkTypeChange={handleNetworkTypeChange}
                 dataFeedType={dataFeedType}

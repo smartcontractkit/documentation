@@ -1,13 +1,12 @@
 /** @jsxImportSource preact */
 import { useState, useRef, useEffect } from "preact/hooks"
 import { clsx } from "~/lib/clsx/clsx.ts"
-import { Chain, ChainNetwork } from "~/features/data/chains.ts"
+import { Chain } from "~/features/data/chains.ts"
 import styles from "./ChainSelector.module.css"
 
 interface ChainSelectorProps {
   chains: Chain[]
   selectedChain: Chain
-  currentNetwork: string
   onChainSelect: (chain: Chain) => void
   onNetworkTypeChange?: (networkType: "mainnet" | "testnet", chain: Chain) => void
   dataFeedType?: string
@@ -18,7 +17,6 @@ interface ChainSelectorProps {
 export function ChainSelector({
   chains,
   selectedChain,
-  currentNetwork,
   onChainSelect,
   onNetworkTypeChange,
   dataFeedType = "default",
