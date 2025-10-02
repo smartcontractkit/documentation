@@ -47,12 +47,18 @@ export const FeedList = ({
   const isSmartData = dataFeedType === "smartdata"
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
 
-  // Get network directly from URL
-  const networkFromURL =
-    typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("network") : null
+  // Get network directly from URL with better SSR handling
+  const getInitialNetwork = () => {
+    if (typeof window === "undefined") return initialNetwork
+    const params = new URLSearchParams(window.location.search)
+    const networkParam = params.get("network")
+    return networkParam || initialNetwork
+  }
+
+  const networkFromURL = getInitialNetwork()
 
   // If URL has a network param, use it directly
-  const effectiveInitialNetwork = networkFromURL || initialNetwork
+  const effectiveInitialNetwork = networkFromURL
 
   // Initialize state with the URL value
   const [currentNetwork, setCurrentNetwork] = useState(effectiveInitialNetwork)
@@ -87,27 +93,46 @@ export const FeedList = ({
     }
   }, [currentNetwork, isStreams])
 
-  // Force initial sync with URL
+  // Force initial sync with URL - handle hydration mismatches
   useEffect(() => {
-    // Get the latest network from URL
-    const latestNetworkFromURL = getNetworkFromURL()
-    if (latestNetworkFromURL !== currentNetwork) {
-      setCurrentNetwork(latestNetworkFromURL)
-    }
-
-    // Force a redraw after a short delay
+    // Only run this effect on the client side after mount
     if (typeof window !== "undefined") {
-      // execute after the DOM is fully loaded
-      window.addEventListener("load", () => {
+      const latestNetworkFromURL = getNetworkFromURL()
+      if (latestNetworkFromURL !== currentNetwork) {
+        setCurrentNetwork(latestNetworkFromURL)
+      }
+    }
+  }, []) // Run only once on mount
+
+  // Additional sync for when window loads (fallback)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const handleLoad = () => {
         const networkFromURL = getNetworkFromURL()
-        setCurrentNetwork(networkFromURL)
-        // Note: network button updates removed since we now use dropdown selector
-      })
+        if (networkFromURL !== currentNetwork) {
+          setCurrentNetwork(networkFromURL)
+        }
+      }
+
+      // If window is already loaded, run immediately
+      if (document.readyState === 'complete') {
+        handleLoad()
+      } else {
+        window.addEventListener("load", handleLoad)
+        return () => window.removeEventListener("load", handleLoad)
+      }
     }
   }, [])
 
   // Track the selected network type (mainnet/testnet)
   const [selectedNetworkType, setSelectedNetworkType] = useState<"mainnet" | "testnet">("mainnet")
+  
+  // Track hydration to prevent SSR mismatch
+  const [isHydrated, setIsHydrated] = useState(false)
+  
+  useEffect(() => {
+    setIsHydrated(true)
+  }, [])
 
   // Regular query string states
   const [searchValue, setSearchValue] = useQueryString("search", "")
@@ -163,7 +188,32 @@ export const FeedList = ({
   ]
   const [streamsChain] = useState(initialNetwork)
   const activeChain = isStreams ? streamsChain : currentNetwork
-  const chain = chains.find((c) => c.page === activeChain) || chains[0]
+  
+  // More robust chain finding - ensure we have a valid chain
+  const chain = useMemo(() => {
+    // During SSR, if we don't have an activeChain but we have a network param in the URL,
+    // try to find the chain directly from the URL param to prevent hydration mismatch
+    if (!activeChain) {
+      // Check if we have a network param that we can use directly
+      if (typeof window !== "undefined") {
+        const urlParams = new URLSearchParams(window.location.search)
+        const networkParam = urlParams.get("network")
+        if (networkParam) {
+          const foundFromUrl = chains.find((c) => c.page === networkParam)
+          if (foundFromUrl) {
+            return foundFromUrl
+          }
+        }
+      }
+      return chains[0] // fallback only if no activeChain
+    }
+    
+    const foundChain = chains.find((c) => c.page === activeChain)
+    if (!foundChain) {
+      return chains[0]
+    }
+    return foundChain
+  }, [activeChain, chains])
   const chainMetadata = useGetChainMetadata(chain, initialCache && initialCache[chain.page])
   const wrapperRef = useRef(null)
 
@@ -644,16 +694,19 @@ export const FeedList = ({
               flexWrap: "nowrap"
             }}
           >
-            <ChainSelector
-              chains={chains}
-              selectedChain={chain}
-              currentNetwork={currentNetwork}
-              onChainSelect={handleNetworkSelect}
-              onNetworkTypeChange={handleNetworkTypeChange}
-              dataFeedType={dataFeedType}
-              availableNetworkTypes={availableNetworkTypes}
-              selectedNetworkType={selectedNetworkType}
-            />
+            {isHydrated && (
+              <ChainSelector
+                key={`chain-selector-${chain.page}`} // Force re-render when chain changes
+                chains={chains}
+                selectedChain={chain}
+                currentNetwork={currentNetwork}
+                onChainSelect={handleNetworkSelect}
+                onNetworkTypeChange={handleNetworkTypeChange}
+                dataFeedType={dataFeedType}
+                availableNetworkTypes={availableNetworkTypes}
+                selectedNetworkType={selectedNetworkType}
+              />
+            )}
           </div>
         </>
       )}
