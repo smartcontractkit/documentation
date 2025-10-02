@@ -56,6 +56,9 @@ export const FeedList = ({
 
   // Initialize state with the URL value
   const [currentNetwork, setCurrentNetwork] = useState(effectiveInitialNetwork)
+  
+  // Track the selected network type (mainnet/testnet)
+  const [selectedNetworkType, setSelectedNetworkType] = useState<"mainnet" | "testnet">("mainnet")
 
   // Get network directly from URL or fall back to initialNetwork
   const getNetworkFromURL = () => {
@@ -297,6 +300,9 @@ export const FeedList = ({
 
   // Network type change handler for testnet/mainnet switching
   function handleNetworkTypeChange(networkType: "mainnet" | "testnet", chain: Chain) {
+    // Update the selected network type
+    setSelectedNetworkType(networkType)
+    
     // Reset filters and pagination when switching network types
     setSearchValue("")
     setTestnetSearchValue("")
@@ -673,7 +679,7 @@ export const FeedList = ({
 
         // Handle regular network processing
         return chainMetadata.processedData?.networks
-          ?.filter((network: { metadata: unknown[]; tags: string | string[] }) => {
+          ?.filter((network: { metadata: unknown[]; tags: string | string[]; networkType: string }) => {
             if (isDeprecating) {
               let foundDeprecated = false
               network.metadata?.forEach((feed: any) => {
@@ -695,7 +701,8 @@ export const FeedList = ({
 
             if (isUSGovernmentMacroeconomicData) return network.tags?.includes("usGovernmentMacroeconomicData")
 
-            return true
+            // Filter by selected network type (mainnet/testnet)
+            return network.networkType === selectedNetworkType
           })
           .map((network: ChainNetwork) => {
             return (
@@ -759,7 +766,7 @@ export const FeedList = ({
                       </div>
                     </div>
                   )}
-                  {network.networkType === "mainnet" ? (
+                  {selectedNetworkType === "mainnet" ? (
                     <>
                       {!isStreams && chain.l2SequencerFeed && (
                         <p>
@@ -1147,122 +1154,6 @@ export const FeedList = ({
           <strong>No data feeds are scheduled for deprecation at this time.</strong>
         </div>
       )}
-
-      {!isDeprecating &&
-        chainMetadata.processedData?.testnetProcessedData &&
-        chainMetadata.processedData?.testnetProcessedData.length > 0 && (
-          <SectionWrapper
-            title={isStreams ? streamsTestnetSectionTitle : "Testnet Feeds"}
-            depth={2}
-            updateTOC={true}
-            idOverride={
-              chainMetadata.processedData.testnetNetwork?.name?.toLowerCase().replace(/\s+/g, "-") || "testnet-feeds"
-            }
-          >
-            <div className={feedList.tableFilters}>
-              {!isStreams && isSmartData && (
-                <details class={feedList.filterDropdown_details}>
-                  <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
-                    SmartData Type
-                  </summary>
-                  <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
-                    <ul>
-                      {smartDataTypes.map((category) => (
-                        <li>
-                          <button onClick={() => handleCategorySelection(category.key)}>
-                            <input
-                              type="checkbox"
-                              checked={selectedFeedCategories?.includes(category.key)}
-                              readonly
-                              style="cursor:pointer;"
-                            />
-                            <span> {category.name}</span>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </nav>
-                </details>
-              )}
-              <div className={feedList.searchAndCheckbox}>
-                <form class={feedList.filterDropdown_search}>
-                  <input
-                    id="testnetSearch"
-                    class={feedList.filterDropdown_searchInput}
-                    placeholder="Search"
-                    onInput={(event) => {
-                      setTestnetSearchValue((event.target as HTMLInputElement).value)
-                      setTestnetCurrentPage("1")
-                    }}
-                  />
-                  {testnetSearchValue && (
-                    <button
-                      type="button"
-                      className={clsx(button.secondary, feedList.clearFilterBtn)}
-                      onClick={() => {
-                        setTestnetSearchValue("")
-                        setTestnetCurrentPage("1")
-                        const inputElement = document.getElementById("testnetSearch") as HTMLInputElement
-                        if (inputElement) {
-                          inputElement.value = ""
-                        }
-                      }}
-                      aria-label="Clear search filter"
-                    >
-                      Clear filter
-                    </button>
-                  )}
-                </form>
-                {!isStreams && (
-                  <label className={feedList.detailsLabel}>
-                    <input
-                      type="checkbox"
-                      style="width:15px;height:15px;display:inline;margin-right:8px;"
-                      checked={showExtraDetails}
-                      onChange={() => setShowExtraDetails((old) => !old)}
-                    />
-                    Show more details
-                  </label>
-                )}
-              </div>
-              <div className={feedList.checkboxContainer}>
-                {!isStreams && isSmartData && (
-                  <label className={feedList.detailsLabel}>
-                    <input
-                      type="checkbox"
-                      style="width:15px;height:15px;display:inline;margin-right:8px;"
-                      checked={showOnlyMVRFeedsTestnet}
-                      onChange={() => {
-                        setShowOnlyMVRFeedsTestnet((old) => !old)
-                        setTestnetCurrentPage("1") // Reset to first page when filter changes
-                      }}
-                    />
-                    Show Multiple-Variable Response (MVR) feeds
-                  </label>
-                )}
-              </div>
-            </div>
-            <TestnetTable
-              network={chainMetadata.processedData.testnetNetwork}
-              showExtraDetails={showExtraDetails}
-              dataFeedType={dataFeedType}
-              selectedFeedCategories={
-                Array.isArray(selectedFeedCategories)
-                  ? selectedFeedCategories
-                  : selectedFeedCategories
-                    ? [selectedFeedCategories]
-                    : []
-              }
-              showOnlyMVRFeeds={showOnlyMVRFeedsTestnet}
-              firstAddr={testnetFirstAddr}
-              lastAddr={testnetLastAddr}
-              addrPerPage={testnetAddrPerPage}
-              currentPage={Number(testnetCurrentPage)}
-              paginate={testnetPaginate}
-              searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
-            />
-          </SectionWrapper>
-        )}
     </SectionWrapper>
   )
 }
