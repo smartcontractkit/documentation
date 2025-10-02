@@ -14,6 +14,7 @@ import SectionWrapper from "~/components/SectionWrapper/SectionWrapper.tsx"
 import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/TableOfContents/tocStore.ts"
 import alertIcon from "../../../components/Alert/Assets/alert-icon.svg"
+import { ChainSelector } from "~/components/ChainSelector/ChainSelector.tsx"
 
 export type DataFeedType =
   | "default"
@@ -100,16 +101,7 @@ export const FeedList = ({
       window.addEventListener("load", () => {
         const networkFromURL = getNetworkFromURL()
         setCurrentNetwork(networkFromURL)
-
-        // Force a repaint of aria-selected attributes
-        document.querySelectorAll(".network-button").forEach((button) => {
-          const buttonId = button.getAttribute("id")
-          if (buttonId === networkFromURL) {
-            button.setAttribute("aria-selected", "true")
-          } else {
-            button.setAttribute("aria-selected", "false")
-          }
-        })
+        // Note: network button updates removed since we now use dropdown selector
       })
     }
   }, [])
@@ -303,6 +295,18 @@ export const FeedList = ({
     setShowOnlyMVRFeedsTestnet(false)
   }
 
+  // Network type change handler for testnet/mainnet switching
+  function handleNetworkTypeChange(networkType: "mainnet" | "testnet", chain: Chain) {
+    // Reset filters and pagination when switching network types
+    setSearchValue("")
+    setTestnetSearchValue("")
+    setSelectedFeedCategories([])
+    setCurrentPage("1")
+    setTestnetCurrentPage("1")
+    setShowOnlyMVRFeeds(false)
+    setShowOnlyMVRFeedsTestnet(false)
+  }
+
   const handleCategorySelection = (category) => {
     paginate(1)
     if (typeof selectedFeedCategories === "string" && selectedFeedCategories !== category) {
@@ -390,48 +394,8 @@ export const FeedList = ({
     }
   }, [searchValue, testnetSearchValue, chainMetadata.loading])
 
-  // handles button selection based on URL
+  // handles button selection based on URL - simplified since we now use dropdown
   const NetworkSelectionUpdater = () => {
-    // Update network buttons based on URL
-    useEffect(() => {
-      function updateNetworkButtons() {
-        if (typeof window === "undefined") return
-
-        // Get network from URL
-        const urlParams = new URLSearchParams(window.location.search)
-        const networkFromURL = urlParams.get("network")
-
-        if (!networkFromURL) return
-
-        // Update all network buttons using DOM API
-        document.querySelectorAll(".network-button").forEach((button) => {
-          const buttonId = button.getAttribute("id")
-          if (buttonId === networkFromURL) {
-            button.setAttribute("aria-selected", "true")
-          } else {
-            button.setAttribute("aria-selected", "false")
-          }
-        })
-      }
-
-      // Run immediately
-      updateNetworkButtons()
-
-      // Also run when DOM is fully loaded
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", updateNetworkButtons)
-      }
-
-      // And run after everything is loaded
-      window.addEventListener("load", updateNetworkButtons)
-
-      return () => {
-        // Clean up listeners
-        document.removeEventListener("DOMContentLoaded", updateNetworkButtons)
-        window.removeEventListener("load", updateNetworkButtons)
-      }
-    }, [])
-
     return null
   }
 
@@ -631,46 +595,23 @@ export const FeedList = ({
 
       {!isDeprecating && (
         <>
-          <div class={feedList.clChainnavProduct} role="tablist">
-            {chains
-              .filter((chain) => {
-                if (isStreams) return chain.tags?.includes("streams")
-                if (isSmartData) return chain.tags?.includes("smartData")
-                if (isRates) return chain.tags?.includes("rates")
-                if (isUSGovernmentMacroeconomicData) return chain.tags?.includes("usGovernmentMacroeconomicData")
-                return chain.tags?.includes("default")
-              })
-              .map((chain) => {
-                // Get network directly from URL
-                const urlNetworkParam =
-                  typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("network") : null
-
-                // Consider selected if either state or URL parameter matches
-                const isSelected = chain.page === (urlNetworkParam || currentNetwork)
-
-                return (
-                  <button
-                    key={chain.page}
-                    id={chain.page}
-                    role="tab"
-                    aria-selected={isSelected}
-                    class={clsx(feedList.networkSwitchButton, "network-button")}
-                    onClick={() => handleNetworkSelect(chain)}
-                  >
-                    <img src={chain.img} title={chain.label} loading="lazy" width={32} height={32} />
-                    <span>{chain.label}</span>
-                  </button>
-                )
-              })}
+          <div 
+            className={feedList.clChainnavProduct} 
+            style={{ 
+              marginBottom: "var(--space-4x)",
+              justifyContent: "flex-start",
+              flexWrap: "nowrap"
+            }}
+          >
+            <ChainSelector
+              chains={chains}
+              selectedChain={chain}
+              currentNetwork={currentNetwork}
+              onChainSelect={handleNetworkSelect}
+              onNetworkTypeChange={handleNetworkTypeChange}
+              dataFeedType={dataFeedType}
+            />
           </div>
-          {chainMetadata.processedData?.networkStatusUrl && !isDeprecating && (
-            <p>
-              Track the status of this network at{" "}
-              <a href={chainMetadata.processedData?.networkStatusUrl}>
-                {chainMetadata.processedData?.networkStatusUrl}
-              </a>
-            </p>
-          )}
         </>
       )}
 
