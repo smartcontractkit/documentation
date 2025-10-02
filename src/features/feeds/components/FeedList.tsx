@@ -57,9 +57,6 @@ export const FeedList = ({
   // Initialize state with the URL value
   const [currentNetwork, setCurrentNetwork] = useState(effectiveInitialNetwork)
   
-  // Track the selected network type (mainnet/testnet)
-  const [selectedNetworkType, setSelectedNetworkType] = useState<"mainnet" | "testnet">("mainnet")
-
   // Get network directly from URL or fall back to initialNetwork
   const getNetworkFromURL = () => {
     if (typeof window === "undefined") return initialNetwork
@@ -108,6 +105,9 @@ export const FeedList = ({
       })
     }
   }, [])
+
+  // Track the selected network type (mainnet/testnet)
+  const [selectedNetworkType, setSelectedNetworkType] = useState<"mainnet" | "testnet">("mainnet")
 
   // Regular query string states
   const [searchValue, setSearchValue] = useQueryString("search", "")
@@ -363,6 +363,8 @@ export const FeedList = ({
     }
   }
 
+
+
   useEffect(() => {
     if (searchValue === "") {
       const searchParams = new URLSearchParams(window.location.search)
@@ -436,10 +438,7 @@ export const FeedList = ({
     }
   }, [searchValue, testnetSearchValue, chainMetadata.loading])
 
-  // handles button selection based on URL - simplified since we now use dropdown
-  const NetworkSelectionUpdater = () => {
-    return null
-  }
+
 
   if (
     dataFeedType === "streamsCrypto" ||
@@ -633,7 +632,7 @@ export const FeedList = ({
 
   return (
     <SectionWrapper title="Networks" depth={2} updateTOC={false}>
-      <NetworkSelectionUpdater />
+
 
       {!isDeprecating && (
         <>

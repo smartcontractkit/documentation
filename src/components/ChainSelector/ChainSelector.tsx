@@ -71,12 +71,7 @@ export function ChainSelector({
     }
   }, [isOpen, focusedIndex, filteredChains])
 
-  // Sync with external selectedNetworkType
-  useEffect(() => {
-    if (externalSelectedNetworkType && externalSelectedNetworkType !== selectedNetworkType) {
-      setSelectedNetworkType(externalSelectedNetworkType)
-    }
-  }, [externalSelectedNetworkType])
+
 
   // Scroll focused item into view
   useEffect(() => {
@@ -88,10 +83,7 @@ export function ChainSelector({
     }
   }, [focusedIndex])
 
-  // Reset refs array when filtered chains change
-  useEffect(() => {
-    chainOptionsRef.current = []
-  }, [filteredChains])
+
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen)
@@ -151,21 +143,9 @@ export function ChainSelector({
   const handleNetworkTypeToggle = (networkType: "mainnet" | "testnet") => {
     setSelectedNetworkType(networkType)
     
-    // Find a network of the selected type for the current chain
-    const targetNetwork = selectedChain.networks.find(network => network.networkType === networkType)
-    if (targetNetwork) {
-      // Update URL to show the correct network
-      if (typeof window !== "undefined" && !dataFeedType.includes("streams")) {
-        const params = new URLSearchParams(window.location.search)
-        params.set("network", selectedChain.page)
-        const newUrl = window.location.pathname + "?" + params.toString()
-        window.history.replaceState({ path: newUrl }, "", newUrl)
-      }
-      
-      // Notify parent component about the network type change
-      if (onNetworkTypeChange) {
-        onNetworkTypeChange(networkType, selectedChain)
-      }
+    // Notify parent component about the network type change
+    if (onNetworkTypeChange) {
+      onNetworkTypeChange(networkType, selectedChain)
     }
   }
 
