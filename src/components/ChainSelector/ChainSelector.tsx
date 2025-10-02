@@ -141,8 +141,12 @@ export function ChainSelector({
 
   return (
     <div className={styles.container} ref={containerRef}>
+      <label className={styles.label} htmlFor="chain-selector-trigger">
+        Select blockchain:
+      </label>
       <div className={styles.controls}>
         <button
+          id="chain-selector-trigger"
           className={styles.trigger}
           onClick={toggleDropdown}
           aria-expanded={isOpen}
