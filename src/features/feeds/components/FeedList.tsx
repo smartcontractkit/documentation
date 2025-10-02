@@ -62,7 +62,7 @@ export const FeedList = ({
 
   // Initialize state with the URL value
   const [currentNetwork, setCurrentNetwork] = useState(effectiveInitialNetwork)
-  
+
   // Get network directly from URL or fall back to initialNetwork
   const getNetworkFromURL = () => {
     if (typeof window === "undefined") return initialNetwork
@@ -115,7 +115,7 @@ export const FeedList = ({
       }
 
       // If window is already loaded, run immediately
-      if (document.readyState === 'complete') {
+      if (document.readyState === "complete") {
         handleLoad()
       } else {
         window.addEventListener("load", handleLoad)
@@ -126,10 +126,10 @@ export const FeedList = ({
 
   // Track the selected network type (mainnet/testnet)
   const [selectedNetworkType, setSelectedNetworkType] = useState<"mainnet" | "testnet">("mainnet")
-  
+
   // Track hydration to prevent SSR mismatch
   const [isHydrated, setIsHydrated] = useState(false)
-  
+
   useEffect(() => {
     setIsHydrated(true)
   }, [])
@@ -188,7 +188,7 @@ export const FeedList = ({
   ]
   const [streamsChain] = useState(initialNetwork)
   const activeChain = isStreams ? streamsChain : currentNetwork
-  
+
   // More robust chain finding - ensure we have a valid chain
   const chain = useMemo(() => {
     // During SSR, if we don't have an activeChain but we have a network param in the URL,
@@ -207,7 +207,7 @@ export const FeedList = ({
       }
       return chains[0] // fallback only if no activeChain
     }
-    
+
     const foundChain = chains.find((c) => c.page === activeChain)
     if (!foundChain) {
       return chains[0]
@@ -220,12 +220,12 @@ export const FeedList = ({
   // Determine available network types for the current chain
   const availableNetworkTypes = useMemo(() => {
     if (!chainMetadata.processedData?.networks) return { mainnet: false, testnet: false }
-    
+
     const networkTypes = {
       mainnet: false,
-      testnet: false
+      testnet: false,
     }
-    
+
     chainMetadata.processedData.networks.forEach((network) => {
       if (network.networkType === "mainnet") {
         networkTypes.mainnet = true
@@ -233,7 +233,7 @@ export const FeedList = ({
         networkTypes.testnet = true
       }
     })
-    
+
     return networkTypes
   }, [chainMetadata.processedData?.networks])
 
@@ -241,7 +241,7 @@ export const FeedList = ({
   useEffect(() => {
     if (!chainMetadata.loading && chainMetadata.processedData) {
       const { mainnet, testnet } = availableNetworkTypes
-      
+
       // If current selection is not available, switch to what's available
       if (selectedNetworkType === "mainnet" && !mainnet && testnet) {
         setSelectedNetworkType("testnet")
@@ -388,7 +388,7 @@ export const FeedList = ({
   function handleNetworkTypeChange(networkType: "mainnet" | "testnet", chain: Chain) {
     // Update the selected network type
     setSelectedNetworkType(networkType)
-    
+
     // Reset filters and pagination when switching network types
     setSearchValue("")
     setTestnetSearchValue("")
@@ -412,8 +412,6 @@ export const FeedList = ({
       setSelectedFeedCategories([...selectedFeedCategories, category])
     }
   }
-
-
 
   useEffect(() => {
     if (searchValue === "") {
@@ -487,8 +485,6 @@ export const FeedList = ({
       }
     }
   }, [searchValue, testnetSearchValue, chainMetadata.loading])
-
-
 
   if (
     dataFeedType === "streamsCrypto" ||
@@ -682,16 +678,14 @@ export const FeedList = ({
 
   return (
     <SectionWrapper title="Networks" depth={2} updateTOC={false}>
-
-
       {!isDeprecating && (
         <>
-          <div 
-            className={feedList.clChainnavProduct} 
-            style={{ 
+          <div
+            className={feedList.clChainnavProduct}
+            style={{
               marginBottom: "var(--space-4x)",
               justifyContent: "flex-start",
-              flexWrap: "nowrap"
+              flexWrap: "nowrap",
             }}
           >
             {isHydrated && (

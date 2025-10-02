@@ -23,7 +23,7 @@ export function ChainSelector({
   onNetworkTypeChange,
   dataFeedType = "default",
   availableNetworkTypes = { mainnet: true, testnet: true },
-  selectedNetworkType: externalSelectedNetworkType
+  selectedNetworkType: externalSelectedNetworkType,
 }: ChainSelectorProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedNetworkType, setSelectedNetworkType] = useState<"mainnet" | "testnet">(
@@ -43,13 +43,14 @@ export function ChainSelector({
       if (dataFeedType.includes("streams")) return chain.tags?.includes("streams") ?? false
       if (dataFeedType === "smartdata") return chain.tags?.includes("smartData") ?? false
       if (dataFeedType === "rates") return chain.tags?.includes("rates") ?? false
-      if (dataFeedType === "usGovernmentMacroeconomicData") return chain.tags?.includes("usGovernmentMacroeconomicData") ?? false
+      if (dataFeedType === "usGovernmentMacroeconomicData")
+        return chain.tags?.includes("usGovernmentMacroeconomicData") ?? false
       return chain.tags?.includes("default") ?? false
     })()
-    
+
     // Filter by search term
     const matchesSearch = !searchTerm || chain.label.toLowerCase().includes(searchTerm.toLowerCase())
-    
+
     return matchesDataFeedType && matchesSearch
   })
 
@@ -71,19 +72,15 @@ export function ChainSelector({
     }
   }, [isOpen, focusedIndex, filteredChains])
 
-
-
   // Scroll focused item into view
   useEffect(() => {
     if (focusedIndex >= 0 && chainOptionsRef.current[focusedIndex]) {
       chainOptionsRef.current[focusedIndex]?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest'
+        behavior: "smooth",
+        block: "nearest",
       })
     }
   }, [focusedIndex])
-
-
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen)
@@ -111,19 +108,19 @@ export function ChainSelector({
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault()
-        setFocusedIndex(prev => (prev < filteredChains.length - 1 ? prev + 1 : prev))
+        setFocusedIndex((prev) => (prev < filteredChains.length - 1 ? prev + 1 : prev))
         break
       case "ArrowUp":
         e.preventDefault()
-        setFocusedIndex(prev => (prev > 0 ? prev - 1 : prev))
+        setFocusedIndex((prev) => (prev > 0 ? prev - 1 : prev))
         break
       case "PageDown":
         e.preventDefault()
-        setFocusedIndex(prev => Math.min(prev + 5, filteredChains.length - 1))
+        setFocusedIndex((prev) => Math.min(prev + 5, filteredChains.length - 1))
         break
       case "PageUp":
         e.preventDefault()
-        setFocusedIndex(prev => Math.max(prev - 5, 0))
+        setFocusedIndex((prev) => Math.max(prev - 5, 0))
         break
       case "Enter":
         e.preventDefault()
@@ -142,7 +139,7 @@ export function ChainSelector({
 
   const handleNetworkTypeToggle = (networkType: "mainnet" | "testnet") => {
     setSelectedNetworkType(networkType)
-    
+
     // Notify parent component about the network type change
     if (onNetworkTypeChange) {
       onNetworkTypeChange(networkType, selectedChain)
@@ -160,13 +157,13 @@ export function ChainSelector({
           type="button"
         >
           <div className={styles.selectedChain}>
-                      <img 
-            src={selectedChain.img} 
-            alt={`${selectedChain.label} icon`}
-            className={styles.chainIcon}
-            width={28}
-            height={28}
-          />
+            <img
+              src={selectedChain.img}
+              alt={`${selectedChain.label} icon`}
+              className={styles.chainIcon}
+              width={28}
+              height={28}
+            />
             <span className={styles.chainLabel}>{selectedChain.label}</span>
           </div>
           <div className={clsx(styles.caret, isOpen && styles.caretOpen)}>
@@ -184,7 +181,9 @@ export function ChainSelector({
             )}
             onClick={() => availableNetworkTypes.mainnet && handleNetworkTypeToggle("mainnet")}
             disabled={!availableNetworkTypes.mainnet}
-            title={!availableNetworkTypes.mainnet ? `${selectedChain.label} feeds are not available on mainnet` : undefined}
+            title={
+              !availableNetworkTypes.mainnet ? `${selectedChain.label} feeds are not available on mainnet` : undefined
+            }
           >
             Mainnet
           </button>
@@ -197,7 +196,9 @@ export function ChainSelector({
             )}
             onClick={() => availableNetworkTypes.testnet && handleNetworkTypeToggle("testnet")}
             disabled={!availableNetworkTypes.testnet}
-            title={!availableNetworkTypes.testnet ? `${selectedChain.label} feeds are not available on testnet` : undefined}
+            title={
+              !availableNetworkTypes.testnet ? `${selectedChain.label} feeds are not available on testnet` : undefined
+            }
           >
             Testnet
           </button>
@@ -269,9 +270,7 @@ export function ChainSelector({
                 </button>
               ))}
               {filteredChains.length === 0 && (
-                <div className={styles.noResults}>
-                  No chains found matching "{searchTerm}"
-                </div>
+                <div className={styles.noResults}>No chains found matching "{searchTerm}"</div>
               )}
             </div>
           </div>
