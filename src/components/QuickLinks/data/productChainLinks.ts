@@ -383,4 +383,5 @@ export const chainNames: Record<string, string> = {
   kaia: "Kaia",
   plasma: "Plasma",
   jovay: "Jovay",
+  memento: "Memento",
 }
