@@ -13,7 +13,7 @@ metadata:
 import { ClickToZoom, Aside } from "@components"
 import { MintTokenButton } from "@features/ccip/components/MintTokenButton"
 
-import { SVMTestTokensClient } from "@features/ccip/components/faucet"
+import { SVMTestTokensClient, AptosTestTokensClient } from "@features/ccip/components/faucet"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 CCIP provides test tokens that you can mint on testnets for development and testing.
@@ -43,6 +43,30 @@ The faucet requires wallet signature verification. When you request tokens, your
 
 - Message signing is free (no SOL required) and grants no spending permissions.
 - After signature verification, the server executes the token mint transaction.
+
+### Aptos Testnet
+
+Use the dedicated faucet interface for CCIP-BnM tokens:
+
+<AptosTestTokensClient client:only="react" />
+
+#### Amount
+
+- The faucet mints **1 CCIP‑BnM** per request.
+
+#### Transaction requirement
+
+The Aptos faucet call is an **on-chain entry-function transaction** initiated from your wallet (not a server-side mint).
+
+- Your wallet will prompt you to sign and submit a transaction that calls the faucet’s `drip` entry function on **Aptos Testnet**.
+
+- Faucet module address: [`0xf92c11250dd30e7d11090326b6057c3ed5555fc1a2d29765ea0307bbebd4e77e`](https://explorer.aptoslabs.com/object/0xf92c11250dd30e7d11090326b6057c3ed5555fc1a2d29765ea0307bbebd4e77e/modules/packages/Faucet?network=testnet).
+
+- You need a small amount of **testnet APT for gas**. If you don’t have any, use the [official Aptos Testnet faucet](https://aptos.dev/network/faucet) to fund your address.
+
+- Transaction signing only authorizes that specific function call; it does not grant blanket spending permissions/approvals.
+
+- (Optional) If your environment enables [gas sponsorship](https://aptos.dev/build/guides/sponsored-transactions), another account may cover gas and you won’t need test APT.
 
 ## About CCIP Test Tokens
 
