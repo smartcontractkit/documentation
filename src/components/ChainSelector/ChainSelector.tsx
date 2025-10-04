@@ -142,7 +142,7 @@ export function ChainSelector({
   return (
     <div className={styles.container} ref={containerRef}>
       <label className={styles.label} htmlFor="chain-selector-trigger">
-        Select blockchain:
+        Select network:
       </label>
       <div className={styles.controls}>
         <button
