@@ -190,7 +190,7 @@ export const FeedList = ({
   const activeChain = isStreams ? streamsChain : currentNetwork
 
   // More robust chain finding - ensure we have a valid chain
-  const chain = useMemo(() => {
+  const selectedChain = useMemo(() => {
     // During SSR, if we don't have an activeChain but we have a network param in the URL,
     // try to find the chain directly from the URL param to prevent hydration mismatch
     if (!activeChain) {
@@ -214,10 +214,8 @@ export const FeedList = ({
     }
     return foundChain
   }, [activeChain, chains])
-  const chainMetadata = useGetChainMetadata(chain, initialCache && initialCache[chain.page])
+  const chainMetadata = useGetChainMetadata(selectedChain, initialCache && initialCache[selectedChain.page])
   const wrapperRef = useRef(null)
-
-
 
   // scroll handler
   useEffect(() => {
@@ -448,7 +446,14 @@ export const FeedList = ({
     })
 
     return networkTypes
-  }, [chainMetadata.processedData?.networks, isDeprecating, isStreams, isSmartData, isRates, isUSGovernmentMacroeconomicData])
+  }, [
+    chainMetadata.processedData?.networks,
+    isDeprecating,
+    isStreams,
+    isSmartData,
+    isRates,
+    isUSGovernmentMacroeconomicData,
+  ])
 
   // Auto-switch network type if current selection isn't available
   useEffect(() => {
@@ -461,7 +466,14 @@ export const FeedList = ({
         setSelectedNetworkType("mainnet")
       }
     }
-  }, [chainMetadata.loading, chainMetadata.processedData, availableNetworkTypes, selectedNetworkType, dataFeedType, ecosystem])
+  }, [
+    chainMetadata.loading,
+    chainMetadata.processedData,
+    availableNetworkTypes,
+    selectedNetworkType,
+    dataFeedType,
+    ecosystem,
+  ])
 
   const streamsMainnetSectionTitle =
     dataFeedType === "streamsCrypto"
@@ -707,9 +719,9 @@ export const FeedList = ({
           >
             {isHydrated && (
               <ChainSelector
-                key={`chain-selector-${chain.page}`} // Force re-render when chain changes
+                key={`chain-selector-${selectedChain.page}`} // Force re-render when chain changes
                 chains={chains}
-                selectedChain={chain}
+                selectedChain={selectedChain}
                 onChainSelect={handleNetworkSelect}
                 onNetworkTypeChange={handleNetworkTypeChange}
                 dataFeedType={dataFeedType}
@@ -799,7 +811,10 @@ export const FeedList = ({
 
             if (isRates) return network.tags?.includes("rates") && network.networkType === selectedNetworkType
 
-            if (isUSGovernmentMacroeconomicData) return network.tags?.includes("usGovernmentMacroeconomicData") && network.networkType === selectedNetworkType
+            if (isUSGovernmentMacroeconomicData)
+              return (
+                network.tags?.includes("usGovernmentMacroeconomicData") && network.networkType === selectedNetworkType
+              )
 
             // Filter by selected network type (mainnet/testnet)
             return network.networkType === selectedNetworkType
@@ -868,7 +883,7 @@ export const FeedList = ({
                   )}
                   {selectedNetworkType === "mainnet" ? (
                     <>
-                      {!isStreams && chain.l2SequencerFeed && (
+                      {!isStreams && selectedChain.l2SequencerFeed && (
                         <p>
                           {network.name} is an L2 network. As a best practice, use the L2 sequencer feed to verify the
                           status of the sequencer when running applications on L2 networks. See the{" "}
