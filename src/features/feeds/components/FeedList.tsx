@@ -513,9 +513,32 @@ export const FeedList = ({
       const { mainnet, testnet } = availableNetworkTypes
 
       if (selectedNetworkType === "mainnet" && !mainnet && testnet) {
+        console.log("Auto-switching from mainnet to testnet (mainnet not available)")
         setSelectedNetworkType("testnet")
+
+        // Update URL parameters to reflect the auto-switch
+        if (typeof window !== "undefined") {
+          const params = new URLSearchParams(window.location.search)
+          params.set("networkType", "testnet")
+          if (!params.get("testnetPage")) {
+            params.set("testnetPage", "1")
+          }
+          params.delete("testnetSearch") // Clear any previous testnet search
+          const newUrl = window.location.pathname + "?" + params.toString()
+          window.history.replaceState({ path: newUrl }, "", newUrl)
+        }
       } else if (selectedNetworkType === "testnet" && !testnet && mainnet) {
+        console.log("Auto-switching from testnet to mainnet (testnet not available)")
         setSelectedNetworkType("mainnet")
+
+        // Update URL parameters to reflect the auto-switch
+        if (typeof window !== "undefined") {
+          const params = new URLSearchParams(window.location.search)
+          params.delete("networkType")
+          params.delete("testnetSearch")
+          const newUrl = window.location.pathname + "?" + params.toString()
+          window.history.replaceState({ path: newUrl }, "", newUrl)
+        }
       }
     }
   }, [
