@@ -139,6 +139,49 @@ export function ChainSelector({
     }
   }
 
+  // Handle keyboard navigation for the main dropdown trigger button
+  // Allows users to open/close dropdown with Enter/Space, navigate with arrows, or close with Escape
+  const handleTriggerKeyDown = (e: KeyboardEvent) => {
+    switch (e.key) {
+      case "Enter":
+      case " ": // Spacebar
+        e.preventDefault()
+        toggleDropdown()
+        break
+      case "ArrowDown":
+        e.preventDefault()
+        if (!isOpen) {
+          toggleDropdown()
+        }
+        break
+      case "Escape":
+        if (isOpen) {
+          e.preventDefault()
+          setIsOpen(false)
+          setSearchTerm("")
+          setFocusedIndex(-1)
+        }
+        break
+    }
+  }
+
+  // Handle keyboard navigation for network type toggle buttons (Mainnet/Testnet)
+  // Allows users to switch between mainnet and testnet using Enter or Spacebar
+  const handleNetworkToggleKeyDown = (e: KeyboardEvent, networkType: "mainnet" | "testnet") => {
+    switch (e.key) {
+      case "Enter":
+      case " ": // Spacebar
+        e.preventDefault()
+        if (
+          (networkType === "mainnet" && availableNetworkTypes.mainnet) ||
+          (networkType === "testnet" && availableNetworkTypes.testnet)
+        ) {
+          handleNetworkTypeToggle(networkType)
+        }
+        break
+    }
+  }
+
   return (
     <div className={styles.container} ref={containerRef}>
       <label className={styles.label} htmlFor="chain-selector-trigger">
@@ -149,6 +192,7 @@ export function ChainSelector({
           id="chain-selector-trigger"
           className={styles.trigger}
           onClick={toggleDropdown}
+          onKeyDown={handleTriggerKeyDown}
           aria-expanded={isOpen}
           aria-haspopup="listbox"
           type="button"
@@ -177,7 +221,9 @@ export function ChainSelector({
               !availableNetworkTypes.mainnet && styles.networkToggleDisabled
             )}
             onClick={() => availableNetworkTypes.mainnet && handleNetworkTypeToggle("mainnet")}
+            onKeyDown={(e) => handleNetworkToggleKeyDown(e, "mainnet")}
             disabled={!availableNetworkTypes.mainnet}
+            aria-pressed={selectedNetworkType === "mainnet"}
             title={
               !availableNetworkTypes.mainnet ? `${selectedChain.label} feeds are not available on mainnet` : undefined
             }
@@ -192,7 +238,9 @@ export function ChainSelector({
               !availableNetworkTypes.testnet && styles.networkToggleDisabled
             )}
             onClick={() => availableNetworkTypes.testnet && handleNetworkTypeToggle("testnet")}
+            onKeyDown={(e) => handleNetworkToggleKeyDown(e, "testnet")}
             disabled={!availableNetworkTypes.testnet}
+            aria-pressed={selectedNetworkType === "testnet"}
             title={
               !availableNetworkTypes.testnet ? `${selectedChain.label} feeds are not available on testnet` : undefined
             }
