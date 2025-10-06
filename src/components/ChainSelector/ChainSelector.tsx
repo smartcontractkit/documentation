@@ -220,7 +220,11 @@ export function ChainSelector({
               selectedNetworkType === "mainnet" && styles.networkToggleActive,
               !availableNetworkTypes.mainnet && styles.networkToggleDisabled
             )}
-            onClick={() => availableNetworkTypes.mainnet && handleNetworkTypeToggle("mainnet")}
+            onClick={() => {
+              if (availableNetworkTypes.mainnet) {
+                handleNetworkTypeToggle("mainnet")
+              }
+            }}
             onKeyDown={(e) => handleNetworkToggleKeyDown(e, "mainnet")}
             disabled={!availableNetworkTypes.mainnet}
             aria-pressed={selectedNetworkType === "mainnet"}
@@ -237,7 +241,11 @@ export function ChainSelector({
               selectedNetworkType === "testnet" && styles.networkToggleActive,
               !availableNetworkTypes.testnet && styles.networkToggleDisabled
             )}
-            onClick={() => availableNetworkTypes.testnet && handleNetworkTypeToggle("testnet")}
+            onClick={() => {
+              if (availableNetworkTypes.testnet) {
+                handleNetworkTypeToggle("testnet")
+              }
+            }}
             onKeyDown={(e) => handleNetworkToggleKeyDown(e, "testnet")}
             disabled={!availableNetworkTypes.testnet}
             aria-pressed={selectedNetworkType === "testnet"}
