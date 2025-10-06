@@ -1777,7 +1777,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             },
             {
               title: "HyperEVM Testnet RPC Guide",
-              url: "/ccip/tools-resources/network-specific/hyperevm-testnet-rpc",
+              url: "ccip/tools-resources/network-specific/hyperevm-testnet-rpc",
             },
           ],
         },
