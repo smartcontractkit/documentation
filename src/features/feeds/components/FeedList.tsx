@@ -55,6 +55,28 @@ export const FeedList = ({
     return networkParam || initialNetwork
   }
 
+  // Get network type from URL parameters (detect testnet from testnetSearch, testnetPage, or explicit networkType)
+  const getNetworkTypeFromURL = (): "mainnet" | "testnet" => {
+    if (typeof window === "undefined") return "mainnet"
+    const params = new URLSearchParams(window.location.search)
+
+    // Check explicit networkType parameter first
+    const networkType = params.get("networkType")
+    if (networkType === "testnet") {
+      return "testnet"
+    }
+
+    // If there's testnetSearch or testnetPage > 1, user is viewing testnet
+    const testnetSearch = params.get("testnetSearch")
+    const testnetPage = params.get("testnetPage")
+
+    if (testnetSearch || (testnetPage && testnetPage !== "1")) {
+      return "testnet"
+    }
+
+    return "mainnet"
+  }
+
   // Initialize state with the URL value
   const [currentNetwork, setCurrentNetwork] = useState(getNetworkFromURL())
 
@@ -112,7 +134,29 @@ export const FeedList = ({
   }, [])
 
   // Track the selected network type (mainnet/testnet)
-  const [selectedNetworkType, setSelectedNetworkType] = useState<"mainnet" | "testnet">("mainnet")
+  const [selectedNetworkType, setSelectedNetworkType] = useState<"mainnet" | "testnet">(getNetworkTypeFromURL())
+
+  // Sync network type with URL when it changes externally (browser back/forward)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const handleNetworkTypeUrlChange = () => {
+        const networkTypeFromURL = getNetworkTypeFromURL()
+        if (networkTypeFromURL !== selectedNetworkType) {
+          setSelectedNetworkType(networkTypeFromURL)
+        }
+      }
+
+      // Listen for popstate events (back/forward navigation)
+      window.addEventListener("popstate", handleNetworkTypeUrlChange)
+
+      // Also check immediately in case URL was changed externally
+      handleNetworkTypeUrlChange()
+
+      return () => {
+        window.removeEventListener("popstate", handleNetworkTypeUrlChange)
+      }
+    }
+  }, [selectedNetworkType])
 
   // Track hydration state
   const [isHydrated, setIsHydrated] = useState(false)
@@ -338,6 +382,28 @@ export const FeedList = ({
   function handleNetworkTypeChange(networkType: "mainnet" | "testnet") {
     // Update the selected network type
     setSelectedNetworkType(networkType)
+
+    // Update URL parameters to reflect network type state
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search)
+
+      if (networkType === "testnet") {
+        // Set networkType parameter to testnet
+        params.set("networkType", "testnet")
+        // Ensure testnetPage is set (default to 1 if not present)
+        if (!params.get("testnetPage")) {
+          params.set("testnetPage", "1")
+        }
+      } else {
+        // Remove testnet-specific parameters when switching to mainnet
+        params.delete("networkType")
+        params.delete("testnetSearch")
+        // Keep testnetPage for potential future navigation
+      }
+
+      const newUrl = window.location.pathname + "?" + params.toString()
+      window.history.replaceState({ path: newUrl }, "", newUrl)
+    }
 
     // Reset filters and pagination when switching network types
     setSearchValue("")
