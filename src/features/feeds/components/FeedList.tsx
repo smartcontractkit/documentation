@@ -513,7 +513,6 @@ export const FeedList = ({
       const { mainnet, testnet } = availableNetworkTypes
 
       if (selectedNetworkType === "mainnet" && !mainnet && testnet) {
-        console.log("Auto-switching from mainnet to testnet (mainnet not available)")
         setSelectedNetworkType("testnet")
 
         // Update URL parameters to reflect the auto-switch
@@ -528,7 +527,6 @@ export const FeedList = ({
           window.history.replaceState({ path: newUrl }, "", newUrl)
         }
       } else if (selectedNetworkType === "testnet" && !testnet && mainnet) {
-        console.log("Auto-switching from testnet to mainnet (testnet not available)")
         setSelectedNetworkType("mainnet")
 
         // Update URL parameters to reflect the auto-switch
