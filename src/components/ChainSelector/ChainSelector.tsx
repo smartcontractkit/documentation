@@ -8,7 +8,7 @@ interface ChainSelectorProps {
   chains: Chain[]
   selectedChain: Chain
   onChainSelect: (chain: Chain) => void
-  onNetworkTypeChange?: (networkType: "mainnet" | "testnet", chain: Chain) => void
+  onNetworkTypeChange?: (networkType: "mainnet" | "testnet") => void
   dataFeedType?: string
   availableNetworkTypes?: { mainnet: boolean; testnet: boolean }
   selectedNetworkType?: "mainnet" | "testnet"
@@ -135,7 +135,7 @@ export function ChainSelector({
   const handleNetworkTypeToggle = (networkType: "mainnet" | "testnet") => {
     // Notify parent component about the network type change
     if (onNetworkTypeChange) {
-      onNetworkTypeChange(networkType, selectedChain)
+      onNetworkTypeChange(networkType)
     }
   }
 

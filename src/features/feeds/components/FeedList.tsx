@@ -47,29 +47,16 @@ export const FeedList = ({
   const isSmartData = dataFeedType === "smartdata"
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
 
-  // Get network directly from URL with better SSR handling
-  const getInitialNetwork = () => {
-    if (typeof window === "undefined") return initialNetwork
-    const params = new URLSearchParams(window.location.search)
-    const networkParam = params.get("network")
-    return networkParam || initialNetwork
-  }
-
-  const networkFromURL = getInitialNetwork()
-
-  // If URL has a network param, use it directly
-  const effectiveInitialNetwork = networkFromURL
-
-  // Initialize state with the URL value
-  const [currentNetwork, setCurrentNetwork] = useState(effectiveInitialNetwork)
-
-  // Get network directly from URL or fall back to initialNetwork
+  // Get network from URL parameters or fall back to initialNetwork
   const getNetworkFromURL = () => {
     if (typeof window === "undefined") return initialNetwork
     const params = new URLSearchParams(window.location.search)
     const networkParam = params.get("network")
     return networkParam || initialNetwork
   }
+
+  // Initialize state with the URL value
+  const [currentNetwork, setCurrentNetwork] = useState(getNetworkFromURL())
 
   // Sync with URL when it changes externally (browser back/forward)
   useEffect(() => {
@@ -93,7 +80,7 @@ export const FeedList = ({
     }
   }, [currentNetwork, isStreams])
 
-  // Force initial sync with URL - handle hydration mismatches
+  // Sync with URL when it changes externally (browser back/forward)
   useEffect(() => {
     // Only run this effect on the client side after mount
     if (typeof window !== "undefined") {
@@ -127,7 +114,7 @@ export const FeedList = ({
   // Track the selected network type (mainnet/testnet)
   const [selectedNetworkType, setSelectedNetworkType] = useState<"mainnet" | "testnet">("mainnet")
 
-  // Track hydration to prevent SSR mismatch
+  // Track hydration state
   const [isHydrated, setIsHydrated] = useState(false)
 
   useEffect(() => {
@@ -189,10 +176,9 @@ export const FeedList = ({
   const [streamsChain] = useState(initialNetwork)
   const activeChain = isStreams ? streamsChain : currentNetwork
 
-  // More robust chain finding - ensure we have a valid chain
+  // Find the selected chain from available chains
   const selectedChain = useMemo(() => {
-    // During SSR, if we don't have an activeChain but we have a network param in the URL,
-    // try to find the chain directly from the URL param to prevent hydration mismatch
+    // During SSR, try to find the chain from URL param if activeChain is not available
     if (!activeChain) {
       // Check if we have a network param that we can use directly
       if (typeof window !== "undefined") {
@@ -336,7 +322,7 @@ export const FeedList = ({
     if (!isStreams) {
       const params = new URLSearchParams(window.location.search)
       params.set("network", chain.page)
-      // Remove hash fragment when changing networks to avoid mismatched anchors
+      // Clear hash when changing networks
       const newUrl = window.location.pathname + "?" + params.toString()
       window.history.replaceState({ path: newUrl }, "", newUrl)
       setCurrentNetwork(chain.page)
@@ -349,7 +335,7 @@ export const FeedList = ({
   }
 
   // Network type change handler for testnet/mainnet switching
-  function handleNetworkTypeChange(networkType: "mainnet" | "testnet", chain: Chain) {
+  function handleNetworkTypeChange(networkType: "mainnet" | "testnet") {
     // Update the selected network type
     setSelectedNetworkType(networkType)
 
