@@ -109,6 +109,16 @@ export function ChainSelector({
         e.preventDefault()
         setFocusedIndex((prev) => (prev > 0 ? prev - 1 : prev))
         break
+      case "Tab":
+        e.preventDefault()
+        if (e.shiftKey) {
+          // Shift+Tab: move up like ArrowUp
+          setFocusedIndex((prev) => (prev > 0 ? prev - 1 : prev))
+        } else {
+          // Tab: move down like ArrowDown
+          setFocusedIndex((prev) => (prev < filteredChains.length - 1 ? prev + 1 : prev))
+        }
+        break
       case "PageDown":
         e.preventDefault()
         setFocusedIndex((prev) => Math.min(prev + 5, filteredChains.length - 1))
