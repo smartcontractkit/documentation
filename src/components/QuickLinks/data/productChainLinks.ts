@@ -91,6 +91,7 @@ export const productChainLinks: ProductChainLinks = {
       kaia: "/ccip/directory/mainnet/chain/kaia-mainnet",
       tac: "/ccip/directory/mainnet/chain/tac-mainnet",
       plasma: "/ccip/directory/mainnet/chain/plasma-mainnet",
+      memento: "/ccip/directory/mainnet/chain/memento-mainnet",
     },
   },
   "Data Feeds": {
@@ -300,6 +301,7 @@ export const productChainLinks: ProductChainLinks = {
     hyperevm: "/resources/link-token-contracts#hyperevm",
     kaia: "/resources/link-token-contracts#kaia",
     tac: "/resources/link-token-contracts#tac",
+    memento: "/resources/link-token-contracts#memento",
   },
 }
 
