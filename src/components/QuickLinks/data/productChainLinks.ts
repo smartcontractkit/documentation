@@ -87,7 +87,7 @@ export const productChainLinks: ProductChainLinks = {
       polygonkatana: "/ccip/directory/mainnet/chain/polygon-mainnet-katana",
       "0g": "/ccip/directory/mainnet/chain/0g-mainnet",
       hyperevm: "/ccip/directory/mainnet/chain/hyperevm-mainnet",
-      etherlink: "/ccip/directory/testnet/chain/etherlink-testnet",
+      etherlink: "/ccip/directory/mainnet/chain/etherlink-mainnet",
       kaia: "/ccip/directory/mainnet/chain/kaia-mainnet",
       tac: "/ccip/directory/mainnet/chain/tac-mainnet",
       plasma: "/ccip/directory/mainnet/chain/plasma-mainnet",
