@@ -74,7 +74,7 @@ contract StreamsUpkeepWithErrorHandler is
     /**
      * @dev Represents a data report from a Data Streams feed for v3 schema (crypto streams).
      * The `price`, `bid`, and `ask` values are carried to either 8 or 18 decimal places, depending on the feed.
-     * For more information, see https://docs.chain.link/data-streams/crypto-streams and https://docs.chain.link/data-streams/reference/report-schema-v3
+     * For more information, see https://docs.chain.link/data-streams/crypto-streams and https://docs.chain.link/data-streams/reference/report-schema
      */
     struct ReportV3 {
         bytes32 feedId; // The feed ID the report has data for.
