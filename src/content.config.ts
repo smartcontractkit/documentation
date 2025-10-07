@@ -10,6 +10,8 @@ enum Products {
   FEEDS = "feeds",
   GENERAL = "general",
   CHAINLINK_LOCAL = "chainlink-local",
+  DTA_TECHNICAL_STANDARD = "dta-technical-standard",
+  DATALINK = "datalink",
 }
 
 export const productsInfo: Record<Products, { name: string; slug: string }> = {
@@ -20,6 +22,8 @@ export const productsInfo: Record<Products, { name: string; slug: string }> = {
   feeds: { name: "Data Feeds", slug: "data-feeds" },
   general: { name: "General", slug: "/" },
   "chainlink-local": { name: "Chainlink Local", slug: "chainlink-local" },
+  "dta-technical-standard": { name: "DTA", slug: "dta-technical-standard" },
+  datalink: { name: "DataLink", slug: "datalink" },
 }
 
 const productEnum = z.preprocess((val) => (val as string).toLowerCase(), z.nativeEnum(Products))
@@ -159,6 +163,22 @@ const chainlinkLocalCollection = defineCollection({
   schema: baseFrontmatter,
 })
 
+const dtaTechnicalStandardCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/dta-technical-standard",
+    pattern: "**/*.md?(x)",
+  }),
+  schema: baseFrontmatter,
+})
+
+const datalinkCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/datalink",
+    pattern: "**/*.md?(x)",
+  }),
+  schema: baseFrontmatter,
+})
+
 /** Quickstarts collection uses a different schema */
 const quickstartsCollection = defineCollection({
   loader: glob({
@@ -211,6 +231,8 @@ export const collections = {
   "chainlink-functions": chainlinkFunctionsCollection,
   "chainlink-nodes": chainlinkNodesCollection,
   "data-streams": dataStreamsCollection,
+  "dta-technical-standard": dtaTechnicalStandardCollection,
+  datalink: datalinkCollection,
   resources: resourcesCollection,
   vrf: vrfCollection,
   "chainlink-local": chainlinkLocalCollection,

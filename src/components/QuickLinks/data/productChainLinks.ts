@@ -87,10 +87,11 @@ export const productChainLinks: ProductChainLinks = {
       polygonkatana: "/ccip/directory/mainnet/chain/polygon-mainnet-katana",
       "0g": "/ccip/directory/mainnet/chain/0g-mainnet",
       hyperevm: "/ccip/directory/mainnet/chain/hyperevm-mainnet",
-      etherlink: "/ccip/directory/testnet/chain/etherlink-testnet",
+      etherlink: "/ccip/directory/mainnet/chain/etherlink-mainnet",
       kaia: "/ccip/directory/mainnet/chain/kaia-mainnet",
       tac: "/ccip/directory/mainnet/chain/tac-mainnet",
       plasma: "/ccip/directory/mainnet/chain/plasma-mainnet",
+      memento: "/ccip/directory/mainnet/chain/memento-mainnet",
     },
   },
   "Data Feeds": {
@@ -165,6 +166,7 @@ export const productChainLinks: ProductChainLinks = {
       optimism: "/data-streams/crypto-streams",
       polygon: "/data-streams/crypto-streams",
       polygonkatana: "/data-streams/crypto-streams",
+      plasma: "/data-streams/crypto-streams",
       ronin: "/data-streams/crypto-streams",
       sei: "/data-streams/crypto-streams",
       scroll: "/data-streams/crypto-streams",
@@ -299,6 +301,7 @@ export const productChainLinks: ProductChainLinks = {
     hyperevm: "/resources/link-token-contracts#hyperevm",
     kaia: "/resources/link-token-contracts#kaia",
     tac: "/resources/link-token-contracts#tac",
+    memento: "/resources/link-token-contracts#memento",
   },
 }
 
@@ -382,4 +385,5 @@ export const chainNames: Record<string, string> = {
   kaia: "Kaia",
   plasma: "Plasma",
   jovay: "Jovay",
+  memento: "Memento",
 }

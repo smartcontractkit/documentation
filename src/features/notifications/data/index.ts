@@ -1,9 +1,9 @@
 import { BannerContent } from "../components/HeaderBanner.tsx"
 
 export const NotificationData: BannerContent = {
-  description: "Chainlink CCIP is now officially live on Aptos.",
+  description: "Introducing DataLink: Bringing Institutional Market Data Onchain With Launch Partner Deutsche Börse.",
   type: "info",
-  linkText: "View lanes and tokens.",
+  linkText: "Learn more.",
   linkUrl:
-    "https://docs.chain.link/ccip/directory/mainnet/chain/aptos-mainnet?utm_medium=referral&utm_source=chainlink-docs&utm_campaign=aptos-ccip",
+    "https://blog.chain.link/introducing-datalink/?utm_campaign=datalink&utm_source=chainlink-docs&utm_medium=referral",
 }
