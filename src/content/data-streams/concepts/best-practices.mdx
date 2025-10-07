@@ -69,7 +69,7 @@ A large price jump at market open could cause sudden liquidations, potentially l
 
 Certain assets (e.g., FX open on Sunday afternoon) experience gradual price discovery due to fragmented liquidity and delayed trading activity.
 
-The perpetual DEX should be careful of not opening their market with the last close price.
+The perpetual DEX should avoid opening their market with the last close price.
 
 | Data Stream behavior                                                                                                                                                                                                                             | User guidance                                                                                                   |
 | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
@@ -175,7 +175,7 @@ Announcements can cause sharp price spikes or sustained moves.
 
 #### Share buybacks & stock issuance
 
-Reduced share supply from a buyback can drive stock prices higher, while increase in share supply can lead to price dilution.
+Reduced share supply from a buyback can drive stock prices higher, while an increase in share supply can lead to price dilution.
 
 Announcements can cause sharp price spikes or sustained moves.
 
@@ -214,7 +214,7 @@ Follow these principles when handling multiplier changes during corporate action
 
 1. The protocol considers the Theoretical Price as `price` \* `currentMultiplier`.
 1. Ahead of the event, `newMultiplier` and `activationDateTime` are staged.
-1. At `activationDateTime` (unix), `currentMultiplier` becomes `newMultiplier`.
+1. At `activationDateTime` (Unix), `currentMultiplier` becomes `newMultiplier`.
    - The underlying `price` from traditional markets should start reflecting the split the next time trading opens, so at the next `price` update, the Theoretical Price should remain continuous.
 
 #### Example (10:1 split, AAPL)
@@ -234,7 +234,7 @@ The following timeline outlines the key events and actions taken at each stage:
 A 10:1 AAPL stock split is announced. [The report](/data-streams/reference/report-schema-v10) updates to stage the split:
 
 - `newMultiplier` is set to 10x the value of `currentMultiplier`.
-- `activationDateTime` is set to the unix timestamp of the split.
+- `activationDateTime` is set to the Unix timestamp of the split.
 - `currentMultiplier` is unaffected until activation.
 
 ##### Protocol engagement (T-1)
@@ -273,7 +273,7 @@ After all the above checks have been confirmed, users can unpause their protocol
 
 #### Activation-time convention
 
-Each tokenized asset issuer sets their own activation time. For example, the xStocks default `activationDateTime` is 00:00 UTC on the effective date. Once `activationDateTime` is reached, `currentMultiplier` becomes `newMultiplier`.
+Each tokenized asset issuer sets its own activation time. For example, the xStocks default `activationDateTime` is 00:00 UTC on the effective date. Once `activationDateTime` is reached, `currentMultiplier` becomes `newMultiplier`.
 
 Because underlying venues may be closed at activation, some external price sources may not reflect the split immediately. If `activationDateTime` occurs while the underlying market is closed, the report’s `currentMultiplier` will become `newMultiplier`; however, `price` can remain at the pre-event level until the market reopens. During this post-activation, pre-adjustment interval (after the multiplier has changed but before the underlying `price` updates), the Theoretical Price can be incorrect. Use `marketStatus` to pause until `price` reflects the event.
 
