@@ -1,0 +1,19 @@
+---
+import { getNavigationProps } from "../Header/getNavigationProps"
+import { isMatchedPath } from "../Header/Nav/isMatchedPath"
+import defaultLogo from "../../assets/product-logos/default-logo.svg"
+import styles from "./docsHeaderTitle.module.css"
+const { subProductsNav } = getNavigationProps()
+
+const { pathname } = Astro.props
+
+const subProductTrigger = subProductsNav?.find(({ href }) => isMatchedPath(pathname, href))
+
+const label = subProductTrigger?.label || "Resources"
+const icon = subProductTrigger?.label ? subProductTrigger.icon : defaultLogo.src
+---
+
+<div class={styles.docsHeaderTitleWrapper}>
+  <img src={icon} alt="" class={styles.logo} />
+  <span>{label}</span>
+</div>
