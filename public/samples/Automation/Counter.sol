@@ -6,18 +6,19 @@ pragma solidity ^0.8.20;
  * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
-
 contract Counter {
-    /**
-     * Public counter variable
-     */
-    uint public counter;
+  /**
+   * Public counter variable
+   */
+  uint256 public counter;
 
-    constructor() {
-        counter = 0;
-    }
+  constructor() {
+    counter = 0;
+  }
 
-    function updateCounter(uint updateAmount) external {
-        counter += updateAmount;
-    }
+  function updateCounter(
+    uint256 updateAmount
+  ) external {
+    counter += updateAmount;
+  }
 }
