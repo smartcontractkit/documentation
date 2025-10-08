@@ -5,6 +5,7 @@ import type { SectionEntry, SectionContent } from "../../config"
 import RecursiveSidebar from "./RecursiveSidebar.astro"
 import styles from "./leftSidebar.module.css"
 import DocsHeaderTitle from "../DocsHeaderTitle/DocsHeaderTitle.astro"
+import * as CONFIG from "../../config"
 
 type SectionEntryWithParent = SectionEntry & { parentSection?: string }
 
@@ -114,12 +115,16 @@ const sidebarSections = getSidebarSections(section)
           <span>Github</span>
         </a>
       </li>
-      <li class={styles.headerLink}>
-        <a href="https://discord.gg/aSK4zew" target="_blank" rel="noopener noreferrer">
-          <img src="/images/discord.svg" loading="lazy" width="16" height="16" alt="Discord" />
-          <span>Join our community</span>
-        </a>
-      </li>
+      {
+        CONFIG.COMMUNITY_INVITE_URL && (
+          <li class={styles.headerLink}>
+            <a href={CONFIG.COMMUNITY_INVITE_URL} target="_blank" rel="noopener noreferrer">
+              <img src="/images/discord.svg" loading="lazy" width="16" height="16" alt="Discord" />
+              <span>Join our community</span>
+            </a>
+          </li>
+        )
+      }
     </div>
   </ul>
 </nav>
