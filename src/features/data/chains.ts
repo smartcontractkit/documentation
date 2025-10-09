@@ -912,14 +912,14 @@ export const ALL_CHAINS: Chain[] = [
         name: "Moonriver Mainnet",
         explorerUrl: "https://moonriver.moonscan.io/address/%s",
         networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-polkadot-mainnet-moonbeam.json",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-kusama-mainnet-moonriver.json",
         queryString: "moonriver-mainnet",
       },
       {
         name: "Moonbeam Mainnet",
         explorerUrl: "https://moonscan.io/address/%s",
         networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-kusama-mainnet-moonriver.json",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-polkadot-mainnet-moonbeam.json",
         queryString: "moonbeam-mainnet",
       },
       {
