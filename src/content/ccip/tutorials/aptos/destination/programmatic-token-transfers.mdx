@@ -54,6 +54,12 @@ A programmatic token transfer combines the features of a token transfer and an a
 
 ### The `ccip_message_receiver` Module
 
+<Aside title="Disclaimer" type="caution">
+  The `ccip_message_receiver` module used in this tutorial **should only be used with non-dispatchable tokens**, as it
+  is currently incompatible with [dispatchable
+  tokens](https://aptosfoundation.org/currents/dispatchable-fungible-assets-101).
+</Aside>
+
 This tutorial uses the `ccip_message_receiver` module from the `aptos-starter-kit`. Its `ccip_receive` function contains dispatcher logic. For this tutorial, we will trigger the part of its logic that handles a message containing both tokens and data.
 
 - **Logic**: When the module receives both tokens and data, it interprets the `data` payload as the 32-byte address of a final recipient. It then uses its on-chain `signer` capability (derived from being deployed on a Resource Account) to transfer the tokens it just received to that final recipient address. Finally, it emits a `ForwardedTokens` event.
