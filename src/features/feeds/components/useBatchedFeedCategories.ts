@@ -2,6 +2,15 @@ import { useEffect, useState } from "preact/hooks"
 import { getFeedRiskTiersBatch } from "~/db/feedCategories.js"
 import { ChainNetwork } from "~/features/data/chains.ts"
 
+// Prefer the slug, but patch Ethereum until Supabase data is normalized (it still stores "mainnet").
+export const getNetworkIdentifier = (network?: ChainNetwork | null): string => {
+  if (!network) return "unknown"
+  if (network.queryString === "ethereum-mainnet") {
+    return "mainnet"
+  }
+  return network.queryString ?? "unknown"
+}
+
 // Final category only
 export type FeedCategoryData = {
   final: string | null
@@ -40,6 +49,8 @@ export function useBatchedFeedCategories(network: ChainNetwork | null): BatchedF
     const loadBatchedCategories = async () => {
       setState((prev) => ({ ...prev, isLoading: true, error: null }))
 
+      const networkKey = getNetworkIdentifier(network)
+
       try {
         // Collect requests for this network
         const feedRequests: Array<{
@@ -59,7 +70,7 @@ export function useBatchedFeedCategories(network: ChainNetwork | null): BatchedF
           if (feedKey) {
             feedRequests.push({
               contractAddress: feedKey,
-              network: network.networkType || "unknown",
+              network: networkKey,
               fallbackCategory: metadata.feedCategory,
             })
           }
@@ -69,7 +80,6 @@ export function useBatchedFeedCategories(network: ChainNetwork | null): BatchedF
           setState({ data: new Map(), isLoading: false, error: null })
           return
         }
-
         // Batched DB lookup (returns Map<key, { final }>)
         const batchResults = await getFeedRiskTiersBatch(feedRequests)
 
@@ -88,7 +98,7 @@ export function useBatchedFeedCategories(network: ChainNetwork | null): BatchedF
     }
 
     loadBatchedCategories()
-  }, [network?.name, network?.networkType, network?.metadata?.length])
+  }, [network?.name, network?.networkType, network?.queryString, network?.metadata?.length])
 
   return state
 }

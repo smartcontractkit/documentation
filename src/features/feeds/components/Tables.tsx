@@ -10,7 +10,7 @@ import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat.tsx"
 import { monitoredFeeds, FeedDataItem } from "~/features/data/index.ts"
 import { StreamsNetworksData, type NetworkData } from "../data/StreamsNetworksData.ts"
 import { FEED_CATEGORY_CONFIG } from "../../../db/feedCategories.js"
-import { useBatchedFeedCategories, getFeedCategoryFromBatch } from "./useBatchedFeedCategories.ts"
+import { useBatchedFeedCategories, getFeedCategoryFromBatch, getNetworkIdentifier } from "./useBatchedFeedCategories.ts"
 import { isSharedSVR, isAaveSVR } from "~/features/feeds/utils/svrDetection.ts"
 
 const feedItems = monitoredFeeds.mainnet
@@ -163,7 +163,7 @@ const DefaultTHead = ({
 const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, dataFeedType }) => {
   // Risk categorization logic
   const contractAddress = metadata.contractAddress || metadata.proxyAddress
-  const networkIdentifier = network?.networkType || "unknown"
+  const networkIdentifier = getNetworkIdentifier(network)
   const finalTier =
     contractAddress && batchedCategoryData?.size
       ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)
@@ -374,7 +374,7 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
 
   // Resolve final category from batch (fallback to metadata)
   const contractAddress = metadata.contractAddress || metadata.proxyAddress
-  const networkIdentifier = network?.networkType || "unknown"
+  const networkIdentifier = getNetworkIdentifier(network)
   const finalTier =
     contractAddress && batchedCategoryData?.size
       ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)
@@ -1012,12 +1012,23 @@ export const MainnetTable = ({
       // 2. If the risk category is 'hidden', exclude this feed from the docs.
       // ---
       const contractAddress = metadata.contractAddress || metadata.proxyAddress
-      const networkIdentifier = network?.networkType || "unknown"
-      const batchCategory =
-        contractAddress && batchedCategoryData?.size
-          ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)
-              ?.final ?? metadata.feedCategory)
-          : metadata.feedCategory
+      const networkIdentifier = getNetworkIdentifier(network)
+      let batchCategory = metadata.feedCategory
+
+      if (contractAddress && batchedCategoryData?.size) {
+        const categoryResult = getFeedCategoryFromBatch(
+          batchedCategoryData,
+          contractAddress,
+          networkIdentifier,
+          metadata.feedCategory
+        )
+        const finalCategory = categoryResult?.final ?? null
+
+        if (finalCategory) {
+          batchCategory = finalCategory
+        }
+      }
+
       if (batchCategory === "hidden") return false
       if (showOnlySVR && !metadata.secondaryProxyAddress) {
         return false
@@ -1256,12 +1267,23 @@ export const TestnetTable = ({
       // 2. If the risk category is 'hidden', exclude this feed from the docs.
       // ---
       const contractAddress = metadata.contractAddress || metadata.proxyAddress
-      const networkIdentifier = network?.networkType || "unknown"
-      const batchCategory =
-        contractAddress && batchedCategoryData?.size
-          ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)
-              ?.final ?? metadata.feedCategory)
-          : metadata.feedCategory
+      const networkIdentifier = getNetworkIdentifier(network)
+      let batchCategory = metadata.feedCategory
+
+      if (contractAddress && batchedCategoryData?.size) {
+        const categoryResult = getFeedCategoryFromBatch(
+          batchedCategoryData,
+          contractAddress,
+          networkIdentifier,
+          metadata.feedCategory
+        )
+        const finalCategory = categoryResult?.final ?? null
+
+        if (finalCategory) {
+          batchCategory = finalCategory
+        }
+      }
+
       if (batchCategory === "hidden") return false
       if (isStreams) {
         if (dataFeedType === "streamsCrypto") {
