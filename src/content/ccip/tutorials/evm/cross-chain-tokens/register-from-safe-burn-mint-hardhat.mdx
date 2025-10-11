@@ -76,18 +76,18 @@ We will cover the following key steps:
 
 1. **Creating a Safe Account**: You will create a 2-of-3 multi-signature Safe that will serve as the owner of the token and token pool contracts. This Safe will also manage administrative tasks, such as configuring token pools and registering as the token admin in the token admin registry.
 
-1. **Deploying Tokens**: You will deploy your [`BurnMintERC20`](https://github.com/smartcontractkit/chainlink-evm/blob/contracts-release/1.4.0/contracts/src/v0.8/shared/token/ERC20/BurnMintERC20.sol) tokens on the Ethereum Sepolia and BASE Sepolia testnets and transfer ownership to the Safe account.
+1. **Deploying Tokens**: You will deploy your [`BurnMintERC20`](https://github.com/smartcontractkit/chainlink-evm/blob/contracts-solidity/1.5.0/contracts/src/v0.8/shared/token/ERC20/BurnMintERC20.sol) tokens on the Ethereum Sepolia and BASE Sepolia testnets and transfer ownership to the Safe account.
 
-1. **Deploying Token Pools**: Once your tokens are deployed, you will deploy [`BurnMintTokenPool`](/ccip/api-reference/evm/v1.6.0/burn-mint-token-pool) token pools on Ethereum Sepolia and BASE Sepolia. The Safe account will own each token pool.
+1. **Deploying Token Pools**: Once your tokens are deployed, you will deploy [`BurnMintTokenPool`](/ccip/api-reference/evm/v1.6.2/burn-mint-token-pool) token pools on Ethereum Sepolia and BASE Sepolia. The Safe account will own each token pool.
 
 1. **Claiming and Accepting the Admin Role**: This is a two-step process that will be managed using the Safe multi-signature account. It involves creating and signing multiple meta-transactions off-chain before executing them on-chain to register Safe as the token admin and accept the admin role for managing the tokens and token pools.
-   1. You will call the [`RegistryModuleOwnerCustom`](/ccip/api-reference/evm/v1.6.0/registry-module-owner-custom) contract's [`registerAdminViaGetCCIPAdmin`](/ccip/api-reference/evm/v1.6.0/registry-module-owner-custom#registeradminviagetccipadmin) function to register the Safe as the token admin. This role is required to enable your token in CCIP.
+   1. You will call the [`RegistryModuleOwnerCustom`](/ccip/api-reference/evm/v1.6.2/registry-module-owner-custom) contract's [`registerAdminViaGetCCIPAdmin`](/ccip/api-reference/evm/v1.6.2/registry-module-owner-custom#registeradminviagetccipadmin) function to register the Safe as the token admin. This role is required to enable your token in CCIP.
 
-   1. Once claimed, you will call the [`TokenAdminRegistry`](/ccip/api-reference/evm/v1.6.0/token-admin-registry) contract's [`acceptAdminRole`](/ccip/api-reference/evm/v1.6.0/token-admin-registry#acceptadminrole) function to complete the registration process.
+   1. Once claimed, you will call the [`TokenAdminRegistry`](/ccip/api-reference/evm/v1.6.2/token-admin-registry) contract's [`acceptAdminRole`](/ccip/api-reference/evm/v1.6.2/token-admin-registry#acceptadminrole) function to complete the registration process.
 
    Meta-transactions are used here to batch these two actions, allowing both steps to be executed efficiently. The meta-transactions are created off-chain and signed by each of the two required Safe owners. This off-chain signing process reduces gas costs and enhances security, as the transactions are only broadcasted to the blockchain once all required signatures are collected.
 
-1. **Linking Tokens to Pools**: You will use the Safe account to call the [`TokenAdminRegistry`](/ccip/api-reference/evm/v1.6.0/token-admin-registry) contract's [`setPool`](/ccip/api-reference/evm/v1.6.0/token-admin-registry#setpool) function to associate each token with its respective token pool.
+1. **Linking Tokens to Pools**: You will use the Safe account to call the [`TokenAdminRegistry`](/ccip/api-reference/evm/v1.6.2/token-admin-registry) contract's [`setPool`](/ccip/api-reference/evm/v1.6.2/token-admin-registry#setpool) function to associate each token with its respective token pool.
 
 1. **Configuring Token Pools**: You will configure each token pool by setting cross-chain transfer parameters, such as token pool rate limits and enabled destination chains, using multisig transactions through the Safe account.
 

@@ -58,7 +58,7 @@ In this section, you'll execute a token transfer from Ethereum Sepolia to Aptos 
 
 ### Token Transfer Configuration
 
-The core of the transfer is configuring the [`EVM2AnyMessage`](/ccip/api-reference/evm/v1.6.0/client#evm2anymessage) correctly. The script handles this for you by calling a `buildCCIPMessage` function. Here's what the configuration looks like within the script:
+The core of the transfer is configuring the [`EVM2AnyMessage`](/ccip/api-reference/evm/v1.6.2/client#evm2anymessage) correctly. The script handles this for you by calling a `buildCCIPMessage` function. Here's what the configuration looks like within the script:
 
 ```typescript
 // Inside the transferTokenPayNative function for example:
@@ -123,11 +123,11 @@ The `evm2aptos/ccipSendTokenRouter.ts` script automates the entire cross-chain t
 
 1.  **Selects Chain Configuration**: Selects the correct RPC URL and contract addresses for the Ethereum Sepolia testnet based on the `--sourceChain sepolia` argument.
 1.  **Builds the CCIP Message**: Configures the message with the parameters shown above.
-1.  **Calculates Fees**: Calls the [`getFee`](/ccip/api-reference/evm/v1.6.0/i-router-client#getfee) function on the source chain's Router to determine the required CCIP fee.
+1.  **Calculates Fees**: Calls the [`getFee`](/ccip/api-reference/evm/v1.6.2/i-router-client#getfee) function on the source chain's Router to determine the required CCIP fee.
 1.  **Approves Tokens**:
     - Approves the Router to spend the CCIP-BnM tokens you are transferring.
     - If paying with LINK, it also approves the Router to spend the required amount of LINK tokens for the fee.
-1.  **Executes Transfer**: Calls the [`ccipSend`](/ccip/api-reference/evm/v1.6.0/i-router-client#ccipsend) function on the CCIP Router contract to initiate the cross-chain transfer, sending native tokens for the fee if specified.
+1.  **Executes Transfer**: Calls the [`ccipSend`](/ccip/api-reference/evm/v1.6.2/i-router-client#ccipsend) function on the CCIP Router contract to initiate the cross-chain transfer, sending native tokens for the fee if specified.
 1.  **Returns Message ID**: Parses the transaction receipt to find and display the `CCIPMessageSent` event and its unique `messageId`.
 
 ## Running the Token Transfer

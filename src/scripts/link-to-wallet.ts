@@ -1,6 +1,6 @@
 import { MetaMaskInpageProvider } from "@metamask/providers"
 import { BrowserProvider, ethers, toQuantity } from "ethers"
-import LinkToken from "@chainlink/contracts/abi/v0.8/LinkToken.json" with { type: "json" }
+import LinkToken from "@chainlink/contracts/abi/v0.8/shared/LinkToken.abi.json" with { type: "json" }
 import chains from "./reference/chains.json" with { type: "json" }
 import linkNameSymbol from "./reference/linkNameSymbol.json" with { type: "json" }
 import buttonStyles from "@chainlink/design-system/button.module.css"
