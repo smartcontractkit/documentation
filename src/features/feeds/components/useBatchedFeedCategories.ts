@@ -2,12 +2,22 @@ import { useEffect, useState } from "preact/hooks"
 import { getFeedRiskTiersBatch } from "~/db/feedCategories.js"
 import { ChainNetwork } from "~/features/data/chains.ts"
 
-// Prefer the slug, but patch Ethereum until Supabase data is normalized (it still stores "mainnet").
+/**
+ * Extract the database network identifier from the rddUrl.
+ * Falls back to queryString if rddUrl is not available.
+ */
 export const getNetworkIdentifier = (network?: ChainNetwork | null): string => {
   if (!network) return "unknown"
-  if (network.queryString === "ethereum-mainnet") {
-    return "mainnet"
+
+  // Extract network identifier from rddUrl (e.g., "feeds-ethereum-mainnet-linea-1.json" -> "ethereum-mainnet-linea-1")
+  if (network.rddUrl) {
+    const match = network.rddUrl.match(/feeds-(.+)\.json$/)
+    if (match) {
+      return match[1]
+    }
   }
+
+  // Fallback to queryString for networks without rddUrl or in case of parsing failure
   return network.queryString ?? "unknown"
 }
 
