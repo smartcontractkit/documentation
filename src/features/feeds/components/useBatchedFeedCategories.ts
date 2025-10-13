@@ -2,40 +2,23 @@ import { useEffect, useState } from "preact/hooks"
 import { getFeedRiskTiersBatch } from "~/db/feedCategories.js"
 import { ChainNetwork } from "~/features/data/chains.ts"
 
-// Patch mismatches
-const SUPABASE_NETWORK_SLUG_OVERRIDES: Record<string, string> = {
-  // Ethereum
-  "ethereum-mainnet": "mainnet",
-
-  // L2s / EVM networks that db stores as ethereum-*-<chain>-1
-  "arbitrum-mainnet": "ethereum-mainnet-arbitrum-1",
-  "base-mainnet": "ethereum-mainnet-base-1",
-  "optimism-mainnet": "ethereum-mainnet-optimism-1",
-  "scroll-mainnet": "ethereum-mainnet-scroll-1",
-  "linea-mainnet": "ethereum-mainnet-linea-1",
-  "mantle-mainnet": "ethereum-mainnet-mantle-1",
-  "metis-mainnet": "ethereum-mainnet-andromeda-1",
-  "xlayer-mainnet": "ethereum-mainnet-xlayer-1",
-  "starknet-mainnet": "ethereum-mainnet-starknet-1",
-  "zksync-mainnet": "ethereum-mainnet-zksync-1",
-  "polygon-zkevm-mainnet": "ethereum-mainnet-polygon-zkevm-1",
-
-  // Legacy/alt naming in db
-  "bnb-mainnet": "bsc-mainnet",
-  "polygon-mainnet": "matic-mainnet",
-  "moonbeam-mainnet": "polkadot-mainnet-moonbeam",
-  "moonriver-mainnet": "kusama-mainnet-moonriver",
-  "bob-mainnet": "bitcoin-mainnet-bob-1",
-  "botanix-mainnet": "bitcoin-mainnet-botanix",
-
-  // typo in chains.ts (queryString is "katara-mainnet")
-  "katara-mainnet": "polygon-mainnet-katana",
-}
-
+/**
+ * Extract the database network identifier from the rddUrl.
+ * Falls back to queryString if rddUrl is not available.
+ */
 export const getNetworkIdentifier = (network?: ChainNetwork | null): string => {
   if (!network) return "unknown"
-  const slug = network.queryString ?? "unknown"
-  return SUPABASE_NETWORK_SLUG_OVERRIDES[slug] ?? slug
+
+  // Extract network identifier from rddUrl (e.g., "feeds-ethereum-mainnet-linea-1.json" -> "ethereum-mainnet-linea-1")
+  if (network.rddUrl) {
+    const match = network.rddUrl.match(/feeds-(.+)\.json$/)
+    if (match) {
+      return match[1]
+    }
+  }
+
+  // Fallback to queryString for networks without rddUrl or in case of parsing failure
+  return network.queryString ?? "unknown"
 }
 
 // Final category only
