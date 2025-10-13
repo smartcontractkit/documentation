@@ -15,6 +15,7 @@ module.exports = {
   moduleNameMapper: {
     "\\.(css)$": "<rootDir>/src/__mocks__/styleMock.ts",
     "^~/(.*)$": "<rootDir>/src/$1",
+    "^@api/(.*)$": "<rootDir>/src/pages/api/$1",
     "^@components": "<rootDir>/src/components/index.ts",
     "^@components/(.*)$": "<rootDir>/src/components/$1",
     "^@config$": "<rootDir>/src/config/index.ts",
@@ -27,6 +28,8 @@ module.exports = {
     "^@utils/(.*)$": "<rootDir>/src/utils/$1",
     "^@variables$": "<rootDir>/src/config/markdown-variables.ts",
     "^@abi$": "<rootDir>/src/features/abi/index.ts",
+    "^@lib$": "<rootDir>/src/lib/index.ts",
+    "^@lib/(.*)$": "<rootDir>/src/lib/$1",
     "\\.ya?ml$": "<rootDir>/src/__mocks__/yamlMock.ts",
   },
   transformIgnorePatterns: ["/node_modules/(?!.*\\.mjs$)"],
