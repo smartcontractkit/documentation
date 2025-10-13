@@ -2,13 +2,40 @@ import { useEffect, useState } from "preact/hooks"
 import { getFeedRiskTiersBatch } from "~/db/feedCategories.js"
 import { ChainNetwork } from "~/features/data/chains.ts"
 
-// Prefer the slug, but patch Ethereum until Supabase data is normalized (it still stores "mainnet").
+// Patch mismatches
+const SUPABASE_NETWORK_SLUG_OVERRIDES: Record<string, string> = {
+  // Ethereum
+  "ethereum-mainnet": "mainnet",
+
+  // L2s / EVM networks that db stores as ethereum-*-<chain>-1
+  "arbitrum-mainnet": "ethereum-mainnet-arbitrum-1",
+  "base-mainnet": "ethereum-mainnet-base-1",
+  "optimism-mainnet": "ethereum-mainnet-optimism-1",
+  "scroll-mainnet": "ethereum-mainnet-scroll-1",
+  "linea-mainnet": "ethereum-mainnet-linea-1",
+  "mantle-mainnet": "ethereum-mainnet-mantle-1",
+  "metis-mainnet": "ethereum-mainnet-andromeda-1",
+  "xlayer-mainnet": "ethereum-mainnet-xlayer-1",
+  "starknet-mainnet": "ethereum-mainnet-starknet-1",
+  "zksync-mainnet": "ethereum-mainnet-zksync-1",
+  "polygon-zkevm-mainnet": "ethereum-mainnet-polygon-zkevm-1",
+
+  // Legacy/alt naming in db
+  "bnb-mainnet": "bsc-mainnet",
+  "polygon-mainnet": "matic-mainnet",
+  "moonbeam-mainnet": "polkadot-mainnet-moonbeam",
+  "moonriver-mainnet": "kusama-mainnet-moonriver",
+  "bob-mainnet": "bitcoin-mainnet-bob-1",
+  "botanix-mainnet": "bitcoin-mainnet-botanix",
+
+  // typo in chains.ts (queryString is "katara-mainnet")
+  "katara-mainnet": "polygon-mainnet-katana",
+}
+
 export const getNetworkIdentifier = (network?: ChainNetwork | null): string => {
   if (!network) return "unknown"
-  if (network.queryString === "ethereum-mainnet") {
-    return "mainnet"
-  }
-  return network.queryString ?? "unknown"
+  const slug = network.queryString ?? "unknown"
+  return SUPABASE_NETWORK_SLUG_OVERRIDES[slug] ?? slug
 }
 
 // Final category only
