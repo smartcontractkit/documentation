@@ -2,7 +2,7 @@ import { useEffect, useState } from "preact/hooks"
 import { getFeedRiskTiersBatch } from "~/db/feedCategories.js"
 import { ChainNetwork } from "~/features/data/chains.ts"
 
-// Prefer the slug, but patch known mismatches until Supabase data is normalized.
+// Patch mismatches
 const SUPABASE_NETWORK_SLUG_OVERRIDES: Record<string, string> = {
   // Ethereum
   "ethereum-mainnet": "mainnet",
