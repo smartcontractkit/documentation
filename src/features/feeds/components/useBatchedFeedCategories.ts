@@ -20,7 +20,7 @@ const SUPABASE_NETWORK_SLUG_OVERRIDES: Record<string, string> = {
   "zksync-mainnet": "ethereum-mainnet-zksync-1",
   "polygon-zkevm-mainnet": "ethereum-mainnet-polygon-zkevm-1",
 
-  // Legacy/alt naming in Supabase
+  // Legacy/alt naming in db
   "bnb-mainnet": "bsc-mainnet",
   "polygon-mainnet": "matic-mainnet",
   "moonbeam-mainnet": "polkadot-mainnet-moonbeam",
