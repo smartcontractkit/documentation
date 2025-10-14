@@ -249,6 +249,20 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "Hedera",
+    logoUrl: "/assets/chains/hedera.svg",
+    mainnet: {
+      label: "Hedera Mainnet",
+      verifierProxy: "0x38818Ba0e01E7743F5c001e8Aae095dE56a137db",
+      explorerUrl: "https://hashscan.io/mainnet/contract/%s",
+    },
+    testnet: {
+      label: "Hedera Testnet",
+      verifierProxy: "0x57A97148C1fa50f35F0639f380077017D8893b6b",
+      explorerUrl: "https://hashscan.io/testnet/contract/%s",
+    },
+  },
+  {
     network: "HyperEVM",
     logoUrl: "/assets/chains/hyperliquid.svg",
     mainnet: {
