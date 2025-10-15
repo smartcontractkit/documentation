@@ -164,11 +164,16 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
   // Risk categorization logic
   const contractAddress = metadata.contractAddress || metadata.proxyAddress
   const networkIdentifier = getNetworkIdentifier(network)
-  const finalTier =
+  let finalTier =
     contractAddress && batchedCategoryData?.size
       ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)
           ?.final ?? metadata.feedCategory)
       : metadata.feedCategory
+
+  // Override with deprecating category if feed has shutdown date
+  if (metadata.docs?.shutdownDate) {
+    finalTier = "deprecating"
+  }
 
   // US Government Macroeconomic Data logic
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
@@ -375,11 +380,16 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
   // Resolve final category from batch (fallback to metadata)
   const contractAddress = metadata.contractAddress || metadata.proxyAddress
   const networkIdentifier = getNetworkIdentifier(network)
-  const finalTier =
+  let finalTier =
     contractAddress && batchedCategoryData?.size
       ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)
           ?.final ?? metadata.feedCategory)
       : metadata.feedCategory
+
+  // Override with deprecating category if feed has shutdown date
+  if (metadata.docs?.shutdownDate) {
+    finalTier = "deprecating"
+  }
 
   return (
     <tr>
