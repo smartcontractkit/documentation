@@ -765,59 +765,6 @@ export const FeedList = ({
                   key={network.name}
                   idOverride={network.name.toLowerCase().replace(/\s+/g, "-")}
                 >
-                  {network.name === "Solana Mainnet" && (
-                    <div
-                      style={{
-                        padding: "var(--space-4x)",
-                        gap: "var(--space-4x)",
-                        backgroundColor: "var(--color-background-warning)",
-                        border: "1px solid #eee",
-                        borderRadius: "var(--border-radius-10)",
-                        outline: "1px solid transparent",
-                        display: "flex",
-                        marginBottom: "1rem",
-                      }}
-                    >
-                      <div style={{ flexShrink: 0, width: "1.5em" }}>
-                        <img src={alertIcon.src} style={{ width: "1.5em", height: "1.5em" }} alt="caution" />
-                      </div>
-                      <div>
-                        <p
-                          style={{
-                            fontWeight: 600,
-                            textTransform: "uppercase",
-                            color: "var(--theme-text)",
-                            fontSize: "14px",
-                            marginBottom: "0.5rem",
-                            fontFamily: "TASAOrbiterDisplay",
-                          }}
-                        >
-                          Solana Data Feeds Deprecation
-                        </p>
-                        <p style={{ color: "var(--theme-text-light)", lineHeight: 1.5, fontSize: "14px" }}>
-                          Several Data Feeds on Solana{" "}
-                          <a
-                            href="/data-feeds/deprecating-feeds"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{ color: "var(--color-text-link)", textDecoration: "underline" }}
-                          >
-                            are being deprecated
-                          </a>{" "}
-                          as Chainlink migrates support to Data Streams' pull-based model. See{" "}
-                          <a
-                            href="/data-streams/crypto-streams"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{ color: "var(--color-text-link)", textDecoration: "underline" }}
-                          >
-                            this page
-                          </a>{" "}
-                          for the complete list of Data Streams available on Solana.
-                        </p>
-                      </div>
-                    </div>
-                  )}
                   {network.networkType === "mainnet" ? (
                     <>
                       {!isStreams && chain.l2SequencerFeed && (
