@@ -9,7 +9,7 @@ export const getServerSideChainMetadata = async (chains: Chain[]): Promise<Recor
     const requests = chain.networks.map((nw) =>
       nw?.rddUrl
         ? EleventyFetch(nw?.rddUrl, {
-            duration: "1d", // save for 1 day
+            duration: "5m",
             type: "json", // we'll parse JSON for you
           }).then((metadata) => ({
             ...nw,
@@ -26,7 +26,7 @@ export const getServerSideChainMetadata = async (chains: Chain[]): Promise<Recor
 
   try {
     const mvrFeeds = await EleventyFetch(POR_MVR_FEEDS_URL, {
-      duration: "1d",
+      duration: "5m",
       type: "json",
     })
 
