@@ -1,0 +1,144 @@
+---
+import StickyHeader from "~/components/StickyHeader/StickyHeader"
+import BaseLayout from "../BaseLayout.astro"
+import { MarkdownHeading } from "astro"
+import { BaseFrontmatter } from "~/content.config"
+import * as CONFIG from "~/config"
+import LeftSidebar from "~/components/LeftSidebar/LeftSidebar.astro"
+import PageContent from "~/components/PageContent/PageContent.astro"
+
+interface Props {
+  frontmatter: BaseFrontmatter
+  headings?: MarkdownHeading[]
+}
+const { frontmatter, headings } = Astro.props
+
+const titleHeading: MarkdownHeading = {
+  text: frontmatter.title,
+  slug: "overview",
+  depth: 1,
+}
+
+const filteredHeadings = headings?.filter((h) => h.depth < 5)
+const initialHeadings = [titleHeading].concat(filteredHeadings ?? [])
+
+const formattedContentTitle = `${frontmatter.title} | ${CONFIG.SITE.title}`
+
+const currentPage = new URL(Astro.request.url).pathname
+
+const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWallet
+---
+
+<BaseLayout title={formattedContentTitle} metadata={frontmatter.metadata} pageTitle={frontmatter.title}>
+  <StickyHeader client:media="(max-width: 50em)" {initialHeadings} />
+
+  <main>
+    <div id="left-bg"></div>
+    <div class="layout">
+      <aside id="grid-left">
+        <LeftSidebar currentPage={currentPage} section={frontmatter.section} />
+      </aside>
+      <div id="grid-main">
+        <PageContent {titleHeading}>
+          <slot />
+        </PageContent>
+      </div>
+    </div>
+  </main>
+
+  <style>
+    main {
+      margin-bottom: 0 !important;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: auto;
+      --gutter: var(--space-6x);
+      --doc-padding: var(--space-6x);
+      margin-bottom: 0;
+    }
+
+    #grid-left,
+    #grid-right {
+      display: none;
+    }
+
+    #grid-main {
+      padding: var(--doc-padding) var(--gutter);
+      display: flex;
+      flex-direction: column;
+      margin-bottom: var(--space-10x);
+      min-width: 0;
+    }
+
+    @media (min-width: 50em) {
+      main {
+        display: grid;
+        grid-template-columns: auto fit-content(100%) auto;
+      }
+
+      .layout {
+        grid-template-columns: auto 1fr auto;
+        gap: var(--gutter);
+        width: 100vw;
+        max-width: 1505px;
+      }
+
+      #grid-left,
+      #left-bg {
+        background: #fafbfd;
+      }
+
+      #grid-left,
+      #grid-right {
+        display: flex;
+      }
+
+      #grid-main {
+        padding: 0 0 var(--doc-padding) 0;
+      }
+
+      #grid-left {
+        width: 260px;
+        padding-left: var(--space-6x);
+      }
+
+      #grid-right {
+        width: 0;
+        padding-right: 0;
+        transition: 300ms ease-in-out;
+        transition-property: width padding-right;
+      }
+    }
+
+    @media (min-width: 992px) {
+      .layout {
+        gap: var(--doc-padding);
+      }
+
+      #grid-left {
+        width: 350px;
+        padding-left: var(--space-6x);
+      }
+    }
+
+    @media (min-width: 1200px) {
+      #grid-right {
+        width: 315px;
+        padding-right: var(--space-16x);
+      }
+    }
+  </style>
+
+  <script define:vars={{ includeLinkToWalletScript }}>
+    window["includeLinkToWalletScript"] = includeLinkToWalletScript
+  </script>
+
+  <script>
+    import "~/scripts"
+    if (window["includeLinkToWalletScript"]) {
+      import("~/scripts/link-to-wallet.ts")
+    }
+  </script>
+</BaseLayout>
