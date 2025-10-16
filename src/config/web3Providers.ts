@@ -156,6 +156,8 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   PLASMA_TESTNET: () => new JsonRpcProvider("https://testnet-rpc.plasma.to"),
   MEMENTO_MAINNET: () => new JsonRpcProvider("https://rpc.mementoblockchain.com"),
   MEMENTO_TESTNET: () => new JsonRpcProvider("https://testnet-rpc.mementoblockchain.com"),
+  XDC_MAINNET: () => new JsonRpcProvider("https://erpc.xinfin.network"),
+  XDC_TESTNET: () => new JsonRpcProvider("https://rpc.apothem.network/"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {
