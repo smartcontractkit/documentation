@@ -93,6 +93,7 @@ export const productChainLinks: ProductChainLinks = {
       tac: "/ccip/directory/mainnet/chain/tac-mainnet",
       plasma: "/ccip/directory/mainnet/chain/plasma-mainnet",
       memento: "/ccip/directory/mainnet/chain/memento-mainnet",
+      xdc: "/ccip/directory/mainnet/chain/xdc-mainnet",
     },
   },
   "Data Feeds": {
