@@ -501,6 +501,10 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "MEMENTO_MAINNET"
     case "memento-testnet":
       return "MEMENTO_TESTNET"
+    case "xdc-mainnet":
+      return "XDC_MAINNET"
+    case "xdc-testnet":
+      return "XDC_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -798,6 +802,10 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "memento-mainnet"
     case "MEMENTO_TESTNET":
       return "memento-testnet"
+    case "XDC_MAINNET":
+      return "xdc-mainnet"
+    case "XDC_TESTNET":
+      return "xdc-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

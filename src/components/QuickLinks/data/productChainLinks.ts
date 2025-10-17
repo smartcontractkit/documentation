@@ -93,6 +93,7 @@ export const productChainLinks: ProductChainLinks = {
       tac: "/ccip/directory/mainnet/chain/tac-mainnet",
       plasma: "/ccip/directory/mainnet/chain/plasma-mainnet",
       memento: "/ccip/directory/mainnet/chain/memento-mainnet",
+      xdc: "/ccip/directory/mainnet/chain/xdc-mainnet",
     },
   },
   "Data Feeds": {
@@ -253,6 +254,7 @@ export const productChainLinks: ProductChainLinks = {
     moonbeam: "/resources/link-token-contracts#moonbeam",
     moonriver: "/resources/link-token-contracts#moonriver",
     optimism: "/resources/link-token-contracts#op",
+    plasma: "/resources/link-token-contracts#plasma",
     polygonzkevm: "/resources/link-token-contracts#polygon-zkevm",
     polygon: "/resources/link-token-contracts#polygon",
     scroll: "/resources/link-token-contracts#scroll",
@@ -267,6 +269,7 @@ export const productChainLinks: ProductChainLinks = {
     sonic: "/resources/link-token-contracts#sonic",
     bob: "/resources/link-token-contracts#bob",
     worldchain: "/resources/link-token-contracts#world",
+    xdc: "/resources/link-token-contracts#xdc",
     xlayer: "/resources/link-token-contracts#x-layer",
     ink: "/resources/link-token-contracts#ink",
     corn: "/resources/link-token-contracts#corn",
@@ -389,4 +392,5 @@ export const chainNames: Record<string, string> = {
   plasma: "Plasma",
   jovay: "Jovay",
   memento: "Memento",
+  xdc: "XDC",
 }
