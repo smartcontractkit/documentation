@@ -111,6 +111,7 @@ export const productChainLinks: ProductChainLinks = {
       fantom: "/data-feeds/price-feeds/addresses?page=1&network=fantom#networks",
       "gnosis-chain": "/data-feeds/price-feeds/addresses?page=1&network=gnosis-chain#networks",
       hedera: "/data-feeds/price-feeds/addresses?page=1&network=hedera#networks",
+      hyperevm: "/data-feeds/price-feeds/addresses?page=1&network=hyperevm#networks",
       linea: "/data-feeds/price-feeds/addresses?page=1&network=linea#networks",
       mantle: "/data-feeds/price-feeds/addresses?page=1&network=mantle#networks",
       metis: "/data-feeds/price-feeds/addresses?page=1&network=metis#networks",

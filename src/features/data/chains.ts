@@ -346,6 +346,24 @@ export const CHAINS: Chain[] = [
     ],
   },
   {
+    page: "hyperevm",
+    label: "HyperEVM",
+    title: "HyperEVM Data Feeds",
+    img: "/assets/chains/hyperevm.svg",
+    networkStatusUrl: "https://hyperevmscan.statuspage.io/",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "HyperEVM Mainnet",
+        explorerUrl: "https://hyperevmscan.io/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-hyperliquid-mainnet.json",
+        queryString: "hyperliquid-mainnet",
+      },
+    ],
+  },
+  {
     page: "katana",
     label: "Katana",
     title: "Katana Data Feeds",
