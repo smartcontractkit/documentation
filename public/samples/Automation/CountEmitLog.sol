@@ -2,11 +2,11 @@
 pragma solidity ^0.8.20;
 
 contract CountEmitLog {
-    event WantsToCount(address indexed msgSender);
+  event WantsToCount(address indexed msgSender);
 
-    constructor() {}
+  constructor() {}
 
-    function emitCountLog() public {
-        emit WantsToCount(msg.sender);
-    }
+  function emitCountLog() public {
+    emit WantsToCount(msg.sender);
+  }
 }
