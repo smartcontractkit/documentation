@@ -50,7 +50,7 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v5
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
@@ -58,13 +58,17 @@ jobs:
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      # Restore node_modules from setup job
+      # Install Foundry
+      - uses: foundry-rs/foundry-toolchain@82dee4ba654bd2146511f85f0d013af94670c4de # v1.4.0
+        with:
+          version: stable   # or nightly
+
+      # Restore node_modules
       - name: Restore node_modules
         uses: actions/cache@v4
         continue-on-error: true
         with:
-          path: |
-            node_modules
+          path: node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-modules-
@@ -76,21 +80,6 @@ jobs:
             npm ci --prefer-offline --no-audit
           fi
 
-      # Cache Solidity compilation artifacts
-      - name: Restore compilation caches
-        id: cache-solidity
-        uses: actions/cache@v4
-        continue-on-error: true
-        with:
-          path: |
-            .test/artifacts
-            .test/cache
-            ~/.cache/hardhat
-            typechain-types
-          key: ${{ runner.os }}-solidity-${{ hashFiles('public/samples/**/*.sol', 'hardhat.config.cts') }}
-          restore-keys: |
-            ${{ runner.os }}-solidity-
-
       - name: Check Solidity Compilation
         run: |
           echo "Running Solidity compilation with cache..."
@@ -100,7 +89,7 @@ jobs:
         run: |
           echo "Running Solhint..."
           npm run lint-solc
-
+          
   # Job 2: Check ESLint
   eslint:
     needs: setup
