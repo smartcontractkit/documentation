@@ -4,7 +4,6 @@ import functionsLogo from "../assets/products/functions-logo.svg"
 import automationLogo from "../assets/products/automation-logo.svg"
 import dataFeedsLogo from "../assets/products/data-feeds-logo.svg"
 import dataStreamsLogo from "../assets/products/data-streams-logo.svg"
-import { h } from "preact"
 
 export interface ProductData {
   learnMoreLink: string
@@ -142,6 +141,7 @@ export const productChainLinks: ProductChainLinks = {
     chains: {
       "0g": "/data-streams/crypto-streams",
       apechain: "/data-streams/crypto-streams",
+      aptos: "/data-streams/crypto-streams",
       arbitrum: "/data-streams/crypto-streams",
       avalanche: "/data-streams/crypto-streams",
       base: "/data-streams/crypto-streams",

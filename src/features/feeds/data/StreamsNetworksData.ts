@@ -47,6 +47,21 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "Aptos",
+    logoUrl: "/assets/chains/aptos.svg",
+    networkStatus: "https://explorer.aptoslabs.com/?network=mainnet",
+    mainnet: {
+      label: "Aptos Mainnet",
+      verifierProxy: "0x5e6ee502816abcbe49b5bb670da4a1d5af520db11732e93f19ddd15b4608d01d",
+      explorerUrl: "https://explorer.aptoslabs.com/account/%s?network=mainnet",
+    },
+    testnet: {
+      label: "Aptos Testnet",
+      verifierProxy: "0x0c68769ae9efe2d02f10bc5baed793cfe0fe780c41e428d087d5d61286448090",
+      explorerUrl: "https://explorer.aptoslabs.com/account/%s?network=testnet",
+    },
+  },
+  {
     network: "Arbitrum",
     logoUrl: "/assets/chains/arbitrum.svg",
     networkStatus: "https://arbiscan.freshstatus.io/",
