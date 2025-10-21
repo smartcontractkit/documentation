@@ -48,7 +48,7 @@ contract CustomAutomatedFunctionsConsumerExample is FunctionsClient, AutomationC
   ) external view override returns (bool upkeepNeeded, bytes memory performData) {
     upkeepNeeded = block.number - lastBlockNumber > 0; // Check if the current block number has incremented since the
       // last recorded block number
-    // We don't use the checkData in this example. The checkData is defined when the Upkeep was registered.
+      // We don't use the checkData in this example. The checkData is defined when the Upkeep was registered.
     return (upkeepNeeded, ""); // Return an empty bytes value for performData
   }
 
@@ -62,8 +62,11 @@ contract CustomAutomatedFunctionsConsumerExample is FunctionsClient, AutomationC
     if (block.number - lastBlockNumber > 0) {
       lastBlockNumber = block.number;
       s_upkeepCounter = s_upkeepCounter + 1;
-      try i_router.sendRequest(subscriptionId, request, FunctionsRequest.REQUEST_DATA_VERSION, gasLimit, donID)
-      returns (bytes32 requestId) {
+      try i_router.sendRequest(
+        subscriptionId, request, FunctionsRequest.REQUEST_DATA_VERSION, gasLimit, donID
+      ) returns (
+        bytes32 requestId
+      ) {
         s_lastRequestId = requestId;
         s_requestCounter = s_requestCounter + 1;
         emit RequestSent(requestId);
@@ -102,7 +105,11 @@ contract CustomAutomatedFunctionsConsumerExample is FunctionsClient, AutomationC
    * @param err Aggregated error from the user code or from the execution pipeline
    * Either response or error parameter will be set, but never both
    */
-  function fulfillRequest(bytes32 requestId, bytes memory response, bytes memory err) internal override {
+  function fulfillRequest(
+    bytes32 requestId,
+    bytes memory response,
+    bytes memory err
+  ) internal override {
     if (s_lastRequestId != requestId) {
       revert UnexpectedRequestID(requestId);
     }

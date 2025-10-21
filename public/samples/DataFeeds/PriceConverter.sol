@@ -18,7 +18,11 @@ import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interf
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
 contract PriceConverter {
-  function getDerivedPrice(address _base, address _quote, uint8 _decimals) public view returns (int256) {
+  function getDerivedPrice(
+    address _base,
+    address _quote,
+    uint8 _decimals
+  ) public view returns (int256) {
     require(_decimals > uint8(0) && _decimals <= uint8(18), "Invalid _decimals");
     int256 decimals = int256(10 ** uint256(_decimals));
     (, int256 basePrice,,,) = AggregatorV3Interface(_base).latestRoundData();
@@ -32,7 +36,11 @@ contract PriceConverter {
     return (basePrice * decimals) / quotePrice;
   }
 
-  function scalePrice(int256 _price, uint8 _priceDecimals, uint8 _decimals) internal pure returns (int256) {
+  function scalePrice(
+    int256 _price,
+    uint8 _priceDecimals,
+    uint8 _decimals
+  ) internal pure returns (int256) {
     if (_priceDecimals < _decimals) {
       return _price * int256(10 ** uint256(_decimals - _priceDecimals));
     } else if (_priceDecimals > _decimals) {

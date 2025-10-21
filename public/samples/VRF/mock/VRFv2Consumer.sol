@@ -54,7 +54,11 @@ contract RandomNumberConsumerV2 is VRFConsumerBaseV2 {
    * @param vrfCoordinator - coordinator, check https://docs.chain.link/docs/vrf-contracts/#configurations
    * @param keyHash - the gas lane to use, which specifies the maximum gas price to bump to
    */
-  constructor(uint64 subscriptionId, address vrfCoordinator, bytes32 keyHash) VRFConsumerBaseV2(vrfCoordinator) {
+  constructor(
+    uint64 subscriptionId,
+    address vrfCoordinator,
+    bytes32 keyHash
+  ) VRFConsumerBaseV2(vrfCoordinator) {
     COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
     s_keyHash = keyHash;
     s_owner = msg.sender;
@@ -77,7 +81,11 @@ contract RandomNumberConsumerV2 is VRFConsumerBaseV2 {
    * @param  - id of the request
    * @param randomWords - array of random results from VRF Coordinator
    */
-  function fulfillRandomWords(uint256, /* requestId */ uint256[] memory randomWords) internal override {
+  function fulfillRandomWords(
+    uint256,
+    /* requestId */
+    uint256[] memory randomWords
+  ) internal override {
     s_randomWords = randomWords;
     emit ReturnedRandomness(randomWords);
   }

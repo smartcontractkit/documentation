@@ -2,8 +2,9 @@
 pragma solidity ^0.8.20;
 
 import {ILogAutomation, Log} from "@chainlink/contracts/src/v0.8/automation/interfaces/ILogAutomation.sol";
-import {StreamsLookupCompatibleInterface} from
-  "@chainlink/contracts/src/v0.8/automation/interfaces/StreamsLookupCompatibleInterface.sol";
+import {
+  StreamsLookupCompatibleInterface
+} from "@chainlink/contracts/src/v0.8/automation/interfaces/StreamsLookupCompatibleInterface.sol";
 
 import {Common} from "@chainlink/contracts/src/v0.8/llo-feeds/libraries/Common.sol";
 import {IRewardManager} from "@chainlink/contracts/src/v0.8/llo-feeds/v0.3.0/interfaces/IRewardManager.sol";
@@ -137,7 +138,10 @@ contract StreamsUpkeepWithErrorHandler is ILogAutomation, StreamsLookupCompatibl
 
   // This function uses revert to convey call information.
   // See https://eips.ethereum.org/EIPS/eip-3668#rationale for details.
-  function checkLog(Log calldata log, bytes memory) external returns (bool upkeepNeeded, bytes memory performData) {
+  function checkLog(
+    Log calldata log,
+    bytes memory
+  ) external returns (bool upkeepNeeded, bytes memory performData) {
     revert StreamsLookup(STRING_DATASTREAMS_FEEDLABEL, feedIds, STRING_DATASTREAMS_QUERYLABEL, log.timestamp, "");
   }
 

@@ -64,14 +64,17 @@ contract FetchFromArray is ChainlinkClient, ConfirmedOwner {
     // .. }]
     // request.add("path", "0.id"); // Chainlink nodes prior to 1.0.0 support this format
     req._add("path", "0,id"); // Chainlink nodes 1.0.0 and later support this format
-    // Sends the request
+      // Sends the request
     return _sendChainlinkRequest(req, fee);
   }
 
   /**
    * Receive the response in the form of string
    */
-  function fulfill(bytes32 _requestId, string memory _id) public recordChainlinkFulfillment(_requestId) {
+  function fulfill(
+    bytes32 _requestId,
+    string memory _id
+  ) public recordChainlinkFulfillment(_requestId) {
     emit RequestFirstId(_requestId, _id);
     id = _id;
   }

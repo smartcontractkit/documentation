@@ -54,7 +54,10 @@ contract MVRDataConsumer {
    * @dev The threshold should be based on the feed's heartbeat interval from documentation
    * For example, if a feed updates every 24 hours (86400s), you might set this to 86400s + some buffer
    */
-  constructor(IBundleAggregatorProxy _proxy, uint256 _stalenessThreshold) {
+  constructor(
+    IBundleAggregatorProxy _proxy,
+    uint256 _stalenessThreshold
+  ) {
     s_proxy = _proxy;
     STALENESS_THRESHOLD = _stalenessThreshold;
   }

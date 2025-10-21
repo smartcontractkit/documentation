@@ -62,7 +62,10 @@ contract GenericLargeResponse is ChainlinkClient, ConfirmedOwner {
    * @notice Fulfillment function for variable bytes
    * @dev This is called by the oracle. recordChainlinkFulfillment must be used.
    */
-  function fulfillBytes(bytes32 requestId, bytes memory bytesData) public recordChainlinkFulfillment(requestId) {
+  function fulfillBytes(
+    bytes32 requestId,
+    bytes memory bytesData
+  ) public recordChainlinkFulfillment(requestId) {
     emit RequestFulfilled(requestId, bytesData);
     data = bytesData;
     image_url = string(data);

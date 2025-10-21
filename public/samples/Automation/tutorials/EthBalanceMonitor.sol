@@ -81,10 +81,7 @@ contract EthBalanceMonitor is ConfirmedOwner, Pausable, AutomationCompatibleInte
         revert InvalidWatchList();
       }
       s_targets[addresses[idx]] = Target({
-        isActive: true,
-        minBalanceWei: minBalancesWei[idx],
-        topUpAmountWei: topUpAmountsWei[idx],
-        lastTopUpTimestamp: 0
+        isActive: true, minBalanceWei: minBalancesWei[idx], topUpAmountWei: topUpAmountsWei[idx], lastTopUpTimestamp: 0
       });
     }
     s_watchList = addresses;
@@ -178,7 +175,10 @@ contract EthBalanceMonitor is ConfirmedOwner, Pausable, AutomationCompatibleInte
    * @param amount The amount of eth (in wei) to withdraw
    * @param payee The address to pay
    */
-  function withdraw(uint256 amount, address payable payee) external onlyOwner {
+  function withdraw(
+    uint256 amount,
+    address payable payee
+  ) external onlyOwner {
     require(payee != address(0));
     emit FundsWithdrawn(amount, payee);
     payee.transfer(amount);

@@ -10,7 +10,10 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
 interface IStaker {
-  function stake(address beneficiary, uint256 amount) external;
+  function stake(
+    address beneficiary,
+    uint256 amount
+  ) external;
 
   function redeem() external;
 }
@@ -42,7 +45,10 @@ contract Staker is IStaker, ERC20 {
     if (i_decimals == 0) revert InvalidNumberOfDecimals();
   }
 
-  function stake(address _beneficiary, uint256 _amount) external {
+  function stake(
+    address _beneficiary,
+    uint256 _amount
+  ) external {
     if (_beneficiary == address(0)) revert InvalidBeneficiary();
     if (_amount == 0) revert InvalidAmount();
 

@@ -197,7 +197,10 @@ contract VRFSubscriptionBalanceMonitor is ConfirmedOwner, Pausable, KeeperCompat
    * @param amount the amount of LINK (in juels) to withdraw
    * @param payee the address to pay
    */
-  function withdraw(uint256 amount, address payable payee) external onlyOwner {
+  function withdraw(
+    uint256 amount,
+    address payable payee
+  ) external onlyOwner {
     require(payee != address(0));
     emit FundsWithdrawn(amount, payee);
     LINKTOKEN.transfer(payee, amount);

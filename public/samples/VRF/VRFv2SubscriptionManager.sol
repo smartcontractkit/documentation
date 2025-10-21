@@ -67,7 +67,11 @@ contract VRFv2SubscriptionManager is VRFConsumerBaseV2 {
       COORDINATOR.requestRandomWords(keyHash, s_subscriptionId, requestConfirmations, callbackGasLimit, numWords);
   }
 
-  function fulfillRandomWords(uint256, /* requestId */ uint256[] memory randomWords) internal override {
+  function fulfillRandomWords(
+    uint256,
+    /* requestId */
+    uint256[] memory randomWords
+  ) internal override {
     s_randomWords = randomWords;
   }
 
@@ -110,7 +114,10 @@ contract VRFv2SubscriptionManager is VRFConsumerBaseV2 {
 
   // Transfer this contract's funds to an address.
   // 1000000000000000000 = 1 LINK
-  function withdraw(uint256 amount, address to) external onlyOwner {
+  function withdraw(
+    uint256 amount,
+    address to
+  ) external onlyOwner {
     LINKTOKEN.transfer(to, amount);
   }
 

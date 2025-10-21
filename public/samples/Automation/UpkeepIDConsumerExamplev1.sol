@@ -35,7 +35,11 @@ contract UpkeepIDConsumerExamplev1 {
   IAutomationRegistryMaster2_3 public immutable i_registry;
   bytes4 registerSig = KeeperRegistrarInterface.register.selector;
 
-  constructor(LinkTokenInterface _link, address _registrar, IAutomationRegistryMaster2_3 _registry) {
+  constructor(
+    LinkTokenInterface _link,
+    address _registrar,
+    IAutomationRegistryMaster2_3 _registry
+  ) {
     i_link = _link;
     registrar = _registrar;
     i_registry = _registry;
@@ -53,8 +57,9 @@ contract UpkeepIDConsumerExamplev1 {
   ) public {
     (IAutomationV21PlusCommon.StateLegacy memory state,,,,) = i_registry.getState();
     uint256 oldNonce = state.nonce;
-    bytes memory payload =
-      abi.encode(name, encryptedEmail, upkeepContract, gasLimit, adminAddress, checkData, amount, source, address(this));
+    bytes memory payload = abi.encode(
+      name, encryptedEmail, upkeepContract, gasLimit, adminAddress, checkData, amount, source, address(this)
+    );
 
     i_link.transferAndCall(registrar, amount, bytes.concat(registerSig, payload));
     (state,,,,) = i_registry.getState();

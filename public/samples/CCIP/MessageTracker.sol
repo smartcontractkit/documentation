@@ -44,7 +44,6 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
     NotSent, // 0
     Sent, // 1
     ProcessedOnDestination // 2
-
   }
 
   // Struct to store the status and acknowledger message ID of a message.
@@ -83,17 +82,24 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
   // Event emitted when the sender contract receives an acknowledgment
   // that the receiver contract has successfully received and processed the message.
   event MessageProcessedOnDestination( // The unique ID of the CCIP acknowledgment message.
-    // The unique ID of the message acknowledged by the receiver.
-    // The chain selector of the source chain.
-    // The address of the sender from the source chain.
-  bytes32 indexed messageId, bytes32 indexed acknowledgedMsgId, uint64 indexed sourceChainSelector, address sender);
+      // The unique ID of the message acknowledged by the receiver.
+      // The chain selector of the source chain.
+      // The address of the sender from the source chain.
+    bytes32 indexed messageId,
+    bytes32 indexed acknowledgedMsgId,
+    uint64 indexed sourceChainSelector,
+    address sender
+  );
 
   IERC20 private s_linkToken;
 
   /// @notice Constructor initializes the contract with the router address.
   /// @param _router The address of the router contract.
   /// @param _link The address of the link contract.
-  constructor(address _router, address _link) CCIPReceiver(_router) {
+  constructor(
+    address _router,
+    address _link
+  ) CCIPReceiver(_router) {
     s_linkToken = IERC20(_link);
   }
 
@@ -112,7 +118,10 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
   /// allowlisted.
   /// @param _sourceChainSelector The selector of the destination chain.
   /// @param _sender The address of the sender.
-  modifier onlyAllowlisted(uint64 _sourceChainSelector, address _sender) {
+  modifier onlyAllowlisted(
+    uint64 _sourceChainSelector,
+    address _sender
+  ) {
     if (!allowlistedSourceChains[_sourceChainSelector]) {
       revert SourceChainNotAllowlisted(_sourceChainSelector);
     }
@@ -130,17 +139,26 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
   }
 
   /// @dev Updates the allowlist status of a destination chain for transactions.
-  function allowlistDestinationChain(uint64 _destinationChainSelector, bool allowed) external onlyOwner {
+  function allowlistDestinationChain(
+    uint64 _destinationChainSelector,
+    bool allowed
+  ) external onlyOwner {
     allowlistedDestinationChains[_destinationChainSelector] = allowed;
   }
 
   /// @dev Updates the allowlist status of a source chain for transactions.
-  function allowlistSourceChain(uint64 _sourceChainSelector, bool allowed) external onlyOwner {
+  function allowlistSourceChain(
+    uint64 _sourceChainSelector,
+    bool allowed
+  ) external onlyOwner {
     allowlistedSourceChains[_sourceChainSelector] = allowed;
   }
 
   /// @dev Updates the allowlist status of a sender for transactions.
-  function allowlistSender(address _sender, bool allowed) external onlyOwner {
+  function allowlistSender(
+    address _sender,
+    bool allowed
+  ) external onlyOwner {
     allowlistedSenders[_sender] = allowed;
   }
 
@@ -210,6 +228,7 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
     override
     onlyAllowlisted(any2EvmMessage.sourceChainSelector, abi.decode(any2EvmMessage.sender, (address))) // Ensure the
       // source chain and sender are allowlisted for added security
+
   {
     bytes32 initialMsgId = abi.decode(any2EvmMessage.data, (bytes32)); // Decode the data sent by the receiver
     bytes32 acknowledgerMsgId = any2EvmMessage.messageId;
@@ -262,7 +281,8 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
         // https://docs.chain.link/ccip/concepts/best-practices/evm#using-extraargs
         Client.GenericExtraArgsV2({
           gasLimit: 300_000,
-          allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages from
+          allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages
+            // from
             // the same sender
         })
       ),
@@ -275,7 +295,10 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
   /// @dev This function reverts with a 'NothingToWithdraw' error if there are no tokens to withdraw.
   /// @param _beneficiary The address to which the tokens will be sent.
   /// @param _token The contract address of the ERC20 token to be withdrawn.
-  function withdrawToken(address _beneficiary, address _token) public onlyOwner {
+  function withdrawToken(
+    address _beneficiary,
+    address _token
+  ) public onlyOwner {
     // Retrieve the balance of this contract
     uint256 amount = IERC20(_token).balanceOf(address(this));
 

@@ -41,7 +41,10 @@ contract Sender is OwnerIsCreator {
   /// @notice Constructor initializes the contract with the router address.
   /// @param _router The address of the router contract.
   /// @param _link The address of the link contract.
-  constructor(address _router, address _link) {
+  constructor(
+    address _router,
+    address _link
+  ) {
     s_router = IRouterClient(_router);
     s_linkToken = LinkTokenInterface(_link);
   }
@@ -70,7 +73,8 @@ contract Sender is OwnerIsCreator {
         // https://docs.chain.link/ccip/concepts/best-practices/evm#using-extraargs
         Client.GenericExtraArgsV2({
           gasLimit: 200_000, // Gas limit for the callback on the destination chain
-          allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages from
+          allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages
+            // from
             // the same sender
         })
       ),
