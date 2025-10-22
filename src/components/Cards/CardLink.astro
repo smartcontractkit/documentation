@@ -1,0 +1,27 @@
+---
+import styles from "./cards.module.css"
+import { ILink } from "./types"
+
+import tokenIcon from "../../assets/icons/token-icon.svg"
+import remixIcon from "../../assets/icons/remix-logo.svg"
+
+interface Props {
+  link: ILink
+}
+
+const { link } = Astro.props
+
+const iconMap = {
+  token: tokenIcon,
+  remix: remixIcon,
+}
+
+const iconSrc = iconMap[link.icon]
+---
+
+<a href={link.href} class={styles.link}>
+  <img src={iconSrc.src} alt="" />
+
+  <span>{link.label}</span>
+  <img src="/assets/icons/Arrow Right.svg" alt="arrow right" />
+</a>
