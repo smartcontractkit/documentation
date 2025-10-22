@@ -7,12 +7,13 @@ metadata:
   image: "/images/ccip/basic-architecture.png"
   excerpt: "gas limit, estimation, ccipReceive, Hardhat, Foundry, Tenderly, CCIP"
   datePublished: "2024-03-25"
-  lastModified: "2025-05-19"
+  lastModified: "2025-10-21"
   estimatedTime: "45 minutes"
   difficulty: "advanced"
 ---
 
 import CcipCommon from "@features/ccip/CcipCommon.astro"
+import { Aside } from "@components"
 
 When constructing a [CCIP message](/ccip/api-reference/evm/v1.6.2/client#evm2anymessage), it's crucial to set the gas limit accurately. The gas limit represents the maximum amount of gas consumed to execute the [`ccipReceive`](/ccip/api-reference/evm/v1.6.2/ccip-receiver#ccipreceive) function on the CCIP Receiver, which influences the transaction fees for sending a CCIP message. Notably, unused gas is not reimbursed, making it essential to estimate the gas limit carefully:
 
@@ -74,7 +75,7 @@ To facilitate testing within a local environment, you will use the [MockCCIPRout
 A notable feature of the `MockCCIPRouter` contract is its ability to emit a `MsgExecuted` event:
 
 ```solidity
-event MsgExecuted(bool success, bytes retData, uint256 gassed))
+event MsgExecuted(bool success, bytes retData, uint256 gasUsed)
 ```
 
 This event reports the amount of gas consumed by the `ccipReceive` function.
@@ -100,10 +101,13 @@ This event reports the amount of gas consumed by the `ccipReceive` function.
    The output should be similar to the following:
 
    ```text
-   forge 0.2.0 (545cd0b 2024-03-14T00:20:00.210934000Z)
+   forge Version: 1.4.2-stable
+   Commit SHA: 828441d243f552f82c5a89bdc818e52bdd57b26b
+   Build Timestamp: 2025-10-18T08:19:39.947006000Z (1760775579)
+   Build Profile: maxperf
    ```
 
-   You need version 0.2.0 or above. Run `foundryup` to update Foundry if necessary.
+   You need version 1.4.2 or above. Run `foundryup` to update Foundry if necessary.
 
 1. Build your project:
 
@@ -115,8 +119,8 @@ This event reports the amount of gas consumed by the `ccipReceive` function.
 
    ```text
    [⠊] Compiling...
-   [⠔] Compiling 52 files with 0.8.19
-   [⠑] Solc 0.8.19 finished in 2.55s
+   [⠑] Compiling 59 files with Solc 0.8.24
+   [⠘] Solc 0.8.24 finished in 1.67s
    Compiler run successful!
    ```
 
@@ -138,35 +142,33 @@ Output example:
 
 ```text
 [⠊] Compiling...
-[⠘] Compiling 52 files with 0.8.19
-[⠃] Solc 0.8.19 finished in 2.72s
-Compiler run successful!
+No files changed, compilation skipped
 
 Ran 3 tests for test/SendReceive.t.sol:SenderReceiverTest
-[PASS] test_SendReceiveAverage() (gas: 125166)
+[PASS] test_SendReceiveAverage() (gas: 137800)
 Logs:
-  Number of iterations 50 - Gas used: 14740
+  Number of iterations 50 - Gas used: 11323
 
-[PASS] test_SendReceiveMax() (gas: 134501)
+[PASS] test_SendReceiveMax() (gas: 143803)
 Logs:
-  Number of iterations 99 - Gas used: 24099
+  Number of iterations 99 - Gas used: 17350
 
-[PASS] test_SendReceiveMin() (gas: 115581)
+[PASS] test_SendReceiveMin() (gas: 131614)
 Logs:
-  Number of iterations 0 - Gas used: 5190
+  Number of iterations 0 - Gas used: 5173
 
-Suite result: ok. 3 passed; 0 failed; 0 skipped; finished in 10.84ms (5.28ms CPU time)
+Suite result: ok. 3 passed; 0 failed; 0 skipped; finished in 8.26ms (9.35ms CPU time)
 
-Ran 1 test suite in 188.81ms (10.84ms CPU time): 3 tests passed, 0 failed, 0 skipped (3 total tests)
+Ran 1 test suite in 123.83ms (8.26ms CPU time): 3 tests passed, 0 failed, 0 skipped (3 total tests)
 ```
 
 This table summarizes the gas usage for different iterations:
 
 | Scenario                 | Number of iterations | Gas used |
 | ------------------------ | -------------------- | -------- |
-| Baseline gas consumption | 0                    | 5190     |
-| Average gas consumption  | 50                   | 14740    |
-| Peak gas consumption     | 99                   | 24099    |
+| Baseline gas consumption | 0                    | 5173     |
+| Average gas consumption  | 50                   | 11323    |
+| Peak gas consumption     | 99                   | 17350    |
 
 The output demonstrates that gas consumption increases with the number of iterations, peaking when the iteration count reaches `99`.
 In the next section, you will compare these results with those obtained from a local Hardhat environment.
@@ -214,42 +216,43 @@ In the next section, you will compare these results with those obtained from a l
     The output should be similar to:
 
     ```text
-    Generating typings for: 31 artifacts in dir: typechain-types for target: ethers-v6
-    Successfully generated 114 typings!
-    Compiled 33 Solidity files successfully (evm target: paris).
+    Compiled 4 Solidity files with solc 0.8.24 (evm target: shanghai)
+    Nothing to compile
     ```
 
 #### Estimate gas
 
 Located in the `test` directory, the `Send-Receive.ts` test file is designed to evaluate the gas usage of the `ccipReceive` function. This file employs the same logic as the Foundry test file, featuring three scenarios varying by the number of iterations. The test case transmits a CCIP message to the `MockCCIPRouter` contract, triggering the `MsgExecuted` event. This event provides insights into the gas requirements of the `ccipReceive` function by detailing the amount of gas used.
 
-To run the test, execute the following command:
+To run only the TypeScript tests, use the test nodejs task:
 
 ```bash
-npx hardhat test
+npx hardhat test nodejs
 ```
 
 Example of the output:
 
 ```text
-  Sender and Receiver
+Running node:test tests
+
 Final Gas Usage Report:
-Number of iterations 0 - Gas used: 5168
-Number of iterations 50 - Gas used: 14718
-Number of iterations 99 - Gas used: 24077
-    ✔ should CCIP message from sender to receiver (1716ms)
+Number of iterations 0 - Gas used: 5151
+Number of iterations 50 - Gas used: 11301
+Number of iterations 99 - Gas used: 17328
+  Sender and Receiver
+    ✔ should CCIP message from sender to receiver (760ms)
 
 
-  1 passing (2s)
+  1 passing (1036ms)
 ```
 
 This table summarizes the gas usage across different iterations:
 
 | Scenario                 | Number of iterations | Gas used |
 | ------------------------ | -------------------- | -------- |
-| Baseline gas consumption | 0                    | 5168     |
-| Average gas consumption  | 50                   | 14718    |
-| Peak gas consumption     | 99                   | 24077    |
+| Baseline gas consumption | 0                    | 5151     |
+| Average gas consumption  | 50                   | 11301    |
+| Peak gas consumption     | 99                   | 17328    |
 
 The output demonstrates that gas consumption increases with the number of iterations, peaking when the iteration count reaches `99`.
 
@@ -259,9 +262,9 @@ This table summarizes the gas usage for different iterations from both Foundry a
 
 | Scenario                 | Number of iterations | Gas used (Foundry) | Gas used (Hardhat) |
 | ------------------------ | -------------------- | ------------------ | ------------------ |
-| Baseline gas consumption | 0                    | 5190               | 5168               |
-| Average gas consumption  | 50                   | 14740              | 14718              |
-| Peak gas consumption     | 99                   | 24099              | 24077              |
+| Baseline gas consumption | 0                    | 5173               | 5151               |
+| Average gas consumption  | 50                   | 11323              | 11301              |
+| Peak gas consumption     | 99                   | 17350              | 17328              |
 
 Gas usage trends across different iterations are consistent between Foundry and Hardhat and increase with the number of iterations, reaching a peak at 99. However, slight variations in gas usage between the two environments at each iteration level demonstrate the importance of extending gas usage estimation beyond local environment testing. To accurately determine the appropriate gas limit, it is recommended to conduct additional validations on the target blockchain. Setting the gas limit with a buffer is advisable to account for differences between local environment estimations and actual gas usage on the target blockchain.
 
@@ -286,7 +289,7 @@ To estimate the gas usage of the `ccipReceive` function within your own Foundry 
 1. In your test cases:
    1. Before transmitting any CCIP messages, use `vm.recordLogs()` to start capturing events. For more details, check this [example](https://github.com/smartcontractkit/smart-contract-examples/blob/main/ccip/estimate-gas/foundry/test/SendReceive.t.sol#L39).
 
-   1. After sending the CCIP message, use `vm.getRecordedLogs()` to collect the recorded logs. For more details, check this [example](https://github.com/smartcontractkit/smart-contract-examples/blob/4b3800967e475ecd990fd417bec9960dd9ebe2af/ccip/estimate-gas/foundry/test/SendReceive.t.sol#L47C32-L47C52).
+   1. After sending the CCIP message, use `vm.getRecordedLogs()` to collect the recorded logs. For more details, check this [example](https://github.com/smartcontractkit/smart-contract-examples/blob/main/ccip/estimate-gas/foundry/test/SendReceive.t.sol#L47-L64).
 
    1. Parse the logs to find the `MsgExecuted(bool,bytes,uint256)` event and extract the gas used. For more details, check this [example](https://github.com/smartcontractkit/smart-contract-examples/blob/main/ccip/estimate-gas/foundry/test/SendReceive.t.sol#L53).
 
@@ -303,9 +306,9 @@ To estimate the gas usage of the `ccipReceive` function within your own Hardhat 
    **_Note_:** The `MockCCIPRouter` receives the CCIP message from your CCIP Sender, calls the `ccipReceive` function on your CCIP Receiver, and emits the `MsgExecuted` event with the gas used.
 
 1. Create a testing file in your project's `test` directory.
-1. Inside the `deployFixture` function, deploy the `MockCCIPRouter` contract and use its address to deploy your CCIP Sender and CCIP Receiver contracts. For more details, check this [example](https://github.com/smartcontractkit/smart-contract-examples/blob/4b3800967e475ecd990fd417bec9960dd9ebe2af/ccip/estimate-gas/hardhat/test/Send-Receive.ts#L14).
+1. Inside the `deployFixture` function, deploy the `MockCCIPRouter` contract and use its address to deploy your CCIP Sender and CCIP Receiver contracts. For more details, check this [example](https://github.com/smartcontractkit/smart-contract-examples/blob/ccip/estimate-gas/hardhat/test/Send-Receive.ts#L14).
 1. In your test cases:
-   1. Send the CCIP message to the `MockCCIPRouter` contract. For more details, check this [example](https://github.com/smartcontractkit/smart-contract-examples/blob/4b3800967e475ecd990fd417bec9960dd9ebe2af/ccip/estimate-gas/hardhat/test/Send-Receive.ts#L51).
+   1. Send the CCIP message to the `MockCCIPRouter` contract. For more details, check this [example](https://github.com/smartcontractkit/smart-contract-examples/blob/main/ccip/estimate-gas/hardhat/test/Send-Receive.ts#L77).
    1. Parse the logs to find the `MsgExecuted(bool,bytes,uint256)` event and extract the gas used. For more details, check this [example](https://github.com/smartcontractkit/smart-contract-examples/blob/main/ccip/estimate-gas/hardhat/test/Send-Receive.ts#L59).
 
 ## Gas estimation on a testnet
@@ -317,9 +320,9 @@ To accurately validate your local environment's gas usage estimations, follow th
 
    | Scenario                 | Number of iterations | Estimated gas usage (Hardhat) | Buffered gas limit (+10%) |
    | ------------------------ | -------------------- | ----------------------------- | ------------------------- |
-   | Baseline gas consumption | 0                    | 5168                          | 5685                      |
-   | Average gas consumption  | 50                   | 14718                         | 16190                     |
-   | Peak gas consumption     | 99                   | 24077                         | 26485                     |
+   | Baseline gas consumption | 0                    | 5151                          | 5666                      |
+   | Average gas consumption  | 50                   | 11301                         | 12431                     |
+   | Peak gas consumption     | 99                   | 17328                         | 19061                     |
 
 1. Use [Tenderly](https://dashboard.tenderly.co) to monitor and confirm that the transactions execute successfully within the buffered gas limits. Subsequently, compare the actual gas usage of the `ccipReceive` function on the Ethereum Sepolia testnet against the buffered limits to fine-tune the final gas limit.
 
@@ -367,40 +370,46 @@ Upon completion, you will find the CCIP Sender and Receiver contracts deployed a
 
    ```text
    $ npx hardhat run scripts/testing/sendCCIPMessages.ts --network avalancheFuji
-   Approving 0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846 for 0x32A24e40851E19d1eD2a7E697d1a38228e9388a3. Allowance is 115792089237316195423570985008687907853269984665640564039457584007913129639935. Signer 0x9d087fC03ae39b088326b67fA3C788236645b717...
-   115792089237316195423570985008687907853269984665640564039457584007913129639935n
+   Approving 0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846 for 0x6e80C9d77B12470A6158459cED1616F705aA13Ea. Allowance is max uint256. Signer 0x8c244f0b2164e6a3bed74ab429b0ebd661bb14ca...
 
-   Number of iterations 0 - Gas limit: 5685 - Message Id: 0xf23b17366d69159ea7d502835c4178a1c1d1d6325edf3d91dca08f2c7a2900f7
-   Number of iterations 50 - Gas limit: 16190 - Message Id: 0x4b3a97f6ac959f67d769492ab3e0414e87fdd9c143228f9c538b22bb695ca728
-   Number of iterations 99 - Gas limit: 26485 - Message Id: 0x37d1867518c0f8c54ceb0c5507b46b8d44c6c53864218f448cba0234f8de867a
+   Number of iterations 0 - Gas limit: 5685 - Message Id: 0x7a51c84fd0734afef641e3578b29e718c208d6ac2e50826f73a3fec24076a72b
+   Number of iterations 50 - Gas limit: 16190 - Message Id: 0x348ab504289f5a0a0ffed023d8315668dbdd8a8a2ae93349845e837e397aa1ac
+   Number of iterations 99 - Gas limit: 26485 - Message Id: 0xe4dfdac75ae90f355583b356033179a89a95e5174256a04c371ab10dfe433d96
    ```
 
 1. Open the [CCIP explorer](https://ccip.chain.link), search each message by its ID, and wait for each message to be successfully transmitted (`Status` in the explorer: `Success`).
 
 For the example above, here are the destination transaction hashes:
 
-    | Message id                                                         | Ethereum Sepolia transaction hash                                  |
-    | ------------------------------------------------------------------ | ------------------------------------------------------------------ |
-    | 0xf23b17366d69159ea7d502835c4178a1c1d1d6325edf3d91dca08f2c7a2900f7 | 0xf004eb6dab30b3cfb9d1d631c3f9832410b8d4b3179e65b85730563b67b1e689 |
-    | 0x4b3a97f6ac959f67d769492ab3e0414e87fdd9c143228f9c538b22bb695ca728 | 0xf004eb6dab30b3cfb9d1d631c3f9832410b8d4b3179e65b85730563b67b1e689 |
-    | 0x37d1867518c0f8c54ceb0c5507b46b8d44c6c53864218f448cba0234f8de867a | 0xf004eb6dab30b3cfb9d1d631c3f9832410b8d4b3179e65b85730563b67b1e689 |
+| Message id                                                         | Ethereum Sepolia transaction hash                                  |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| 0x7a51c84fd0734afef641e3578b29e718c208d6ac2e50826f73a3fec24076a72b | 0x25c26be00c5e72127588a29ef485b817dae0d1bf4cd59fd2446da9af03441413 |
+| 0x348ab504289f5a0a0ffed023d8315668dbdd8a8a2ae93349845e837e397aa1ac | 0x25c26be00c5e72127588a29ef485b817dae0d1bf4cd59fd2446da9af03441413 |
+| 0xe4dfdac75ae90f355583b356033179a89a95e5174256a04c371ab10dfe433d96 | 0x25c26be00c5e72127588a29ef485b817dae0d1bf4cd59fd2446da9af03441413 |
 
 **Note** that the Ethereum Sepolia transaction hash is the same for all the messages. This is because CCIP batched the messages.
 
 ### Check the actual gas usage
 
-1. Open [Tenderly](https://dashboard.tenderly.co) and search for the [destination transaction hash](https://dashboard.tenderly.co/tx/sepolia/0xf004eb6dab30b3cfb9d1d631c3f9832410b8d4b3179e65b85730563b67b1e689).
+1. Open [Tenderly](https://dashboard.tenderly.co) and Search for the [destination transaction hash](https://dashboard.tenderly.co/tx/sepolia/0x25c26be00c5e72127588a29ef485b817dae0d1bf4cd59fd2446da9af03441413).
 
-1. Search for `_callWithExactGasSafeReturnData` with a payload containing your `messageId` (without `0x`). [Example](https://dashboard.tenderly.co/tx/sepolia/0xf004eb6dab30b3cfb9d1d631c3f9832410b8d4b3179e65b85730563b67b1e689?trace=0.8.4.2) for `0xf23b17366d69159ea7d502835c4178a1c1d1d6325edf3d91dca08f2c7a2900f7`.
+1. Search for `_callWithExactGasSafeReturnData` that has payload containing your messageId (without `0x`). This is an [example](https://dashboard.tenderly.co/tx/0x25c26be00c5e72127588a29ef485b817dae0d1bf4cd59fd2446da9af03441413?trace=0.0.0.12.0.2.2) for `0x7a51c84fd0734afef641e3578b29e718c208d6ac2e50826f73a3fec24076a72b`.
 
-1. Below the payload with your `messageId`, you will find the call trace from the Router to your Receiver contract. [Call trace example](https://dashboard.tenderly.co/tx/sepolia/0xf004eb6dab30b3cfb9d1d631c3f9832410b8d4b3179e65b85730563b67b1e689?trace=0.8.4.2.0).
+1. Just below it, you will find the call trace from the Router to your Receiver contract. This is the [trace](https://dashboard.tenderly.co/tx/0x25c26be00c5e72127588a29ef485b817dae0d1bf4cd59fd2446da9af03441413?trace=0.0.0.12.0.2.2).
 
-1. Click on the _Debugger_ tab and you'll get the gas details:
+   <Aside type="caution" title="Note">
+     Tenderly's numeric trace indices aren't stable over time (reprocessing can shift them), so if the trace link above
+     doesn't work, you can still find the correct trace by searching for `_callWithExactGasSafeReturnData`.
+   </Aside>
+
+1. Right below the `_callWithExactGasSafeReturnData`, you will see the `Router` => `Receiver`.`ccipReceive` call. If it shows "No source for this contract", click on "Fetch the contract from public explorer" to load the source code from Etherscan since it's already verified. When you click on the value of the `message` parameter, it will display the exact message ID (as `messageId`) (i.e., `0x7a51c84fd0734afef641e3578b29e718c208d6ac2e50826f73a3fec24076a72b` in this case) as one of its fields.
+
+1. Click on the debugger and you'll get the gas details:
 
    ```text
    "gas":{
    "gas_left":5685
-   "gas_used":5031
+   "gas_used":5016
    "total_gas_used":7994315
    }
    ```
@@ -411,11 +420,11 @@ For the example above, here are the destination transaction hashes:
 
    | Scenario                 | Number of iterations | Estimated gas usage (Hardhat) | Buffered gas limit (+10%) | Gas used on testnet |
    | ------------------------ | -------------------- | ----------------------------- | ------------------------- | ------------------- |
-   | Baseline gas consumption | 0                    | 5168                          | 5685                      | 5031                |
-   | Average gas consumption  | 50                   | 14718                         | 16190                     | 14581               |
-   | Peak gas consumption     | 99                   | 24077                         | 26485                     | 23940               |
+   | Baseline gas consumption | 0                    | 5151                          | 5666                      | 5016                |
+   | Average gas consumption  | 50                   | 11301                         | 12431                     | 11166               |
+   | Peak gas consumption     | 99                   | 17328                         | 19061                     | 17193               |
 
-Testing on testnets has confirmed that a gas limit of 26,485 is adequate for the `ccipReceive` function to execute successfully under various conditions. However, it is important to note that gas usage may differ across testnets. Therefore, it is advisable to conduct similar validation efforts on the blockchain where you intend to deploy. Deploying and validating contracts across multiple testnets can be time-consuming. For efficiency, consider using [offchain methods](#offchain-methods) to estimate gas usage.
+Testing on testnets has confirmed that a gas limit of `19061` is adequate for the `ccipReceive` function to execute successfully under various conditions. However, it is important to note that gas usage may differ across testnets. Therefore, it is advisable to conduct similar validation efforts on the blockchain where you intend to deploy. Deploying and validating contracts across multiple testnets can be time-consuming. For efficiency, consider using [offchain methods](#offchain-methods) to estimate gas usage.
 
 ## Offchain methods
 
@@ -495,9 +504,9 @@ $ npm run estimate-gas-provider
 > ts-node src/estimateGasProvider.ts
 
 Final Gas Usage Report:
-Number of iterations 0 - Gas used: 5377
-Number of iterations 50 - Gas used: 14946
-Number of iterations 99 - Gas used: 24324
+Number of iterations: 0 - Gas used: 5363
+Number of iterations: 50 - Gas used: 11525
+Number of iterations: 99 - Gas used: 17564
 ```
 
 The estimate may exceed the actual gas used by the transaction for various reasons, including differences in node performance and EVM mechanics. For a more precise estimation, consider using Tenderly (see the next section for details).
@@ -519,9 +528,9 @@ $ npm run estimate-gas-tenderly
 > ts-node src/estimateGasTenderly.ts
 
 Final Gas Usage Report:
-Number of iterations 0 - Gas used: 5031
-Number of iterations 50 - Gas used: 14581
-Number of iterations 99 - Gas used: 23940
+Number of iterations: 0 - Gas used: 5016
+Number of iterations: 50 - Gas used: 11166
+Number of iterations: 99 - Gas used: 17193
 ```
 
 ### Comparison
@@ -530,9 +539,9 @@ The table below summarizes the gas estimations for different iterations using bo
 
 | Scenario                 | Number of iterations | Gas estimated (Web3 provider) | Gas estimated (Tenderly) |
 | ------------------------ | -------------------- | ----------------------------- | ------------------------ |
-| Baseline gas consumption | 0                    | 5377                          | 5031                     |
-| Average gas consumption  | 50                   | 14946                         | 14581                    |
-| Peak gas consumption     | 99                   | 24324                         | 23940                    |
+| Baseline gas consumption | 0                    | 5363                          | 5016                     |
+| Average gas consumption  | 50                   | 11525                         | 11166                    |
+| Peak gas consumption     | 99                   | 17564                         | 17193                    |
 
 The gas estimations from both Web3 provider and Tenderly are consistent across different iterations and align with actual testnet results. This demonstrates the accuracy and reliability of these offchain methods in estimating gas usage. However, you can notice that Tenderly provides more accurate results.
 
