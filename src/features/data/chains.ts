@@ -150,6 +150,7 @@ export const CHAINS: Chain[] = [
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-testnet-sepolia-base-1.json",
         queryString: "base-sepolia",
+        tags: ["smartData"],
       },
     ],
   },
