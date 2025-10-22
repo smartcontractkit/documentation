@@ -1,0 +1,60 @@
+.grid {
+  display: grid;
+  border-left: 1px solid var(--border);
+}
+
+.gridHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-8x);
+}
+
+.tabsTrigger {
+  height: 32px;
+  padding: var(--space-1x) var(--space-2x);
+  justify-content: center;
+  align-items: center;
+  border-radius: var(--space-2x);
+  background-color: var(--pill);
+  border: 1px solid var(--pill-border);
+}
+
+.tabsTrigger:hover {
+  background-color: var(--pill-hover);
+}
+
+.tabsTrigger[data-state="active"] {
+  background-color: var(--pill-active);
+  border-color: var(--pill-active);
+
+  & h3 {
+    color: var(--pill-active-foreground);
+  }
+}
+
+.tabTitle {
+  color: var(--pill-foreground);
+  font-weight: 400;
+}
+
+.tabsList {
+  display: flex;
+  gap: var(--space-2x);
+  border-bottom: 0;
+}
+
+/* Tablet: reduce columns to 2 for 3+ column layouts */
+@media (max-width: 1024px) {
+  [data-columns="3"],
+  [data-columns="4"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* Mobile: single column for all layouts */
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr !important;
+  }
+}
