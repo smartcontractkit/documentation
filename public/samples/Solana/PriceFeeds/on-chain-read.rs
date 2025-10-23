@@ -59,7 +59,7 @@ pub fn process_instruction(
 
     // Read the feed data directly from the account (v2 SDK)
     let result = read_feed_v2(
-        &feed_account.try_borrow_data()?,
+        feed_account.try_borrow_data()?,
         feed_account.owner.to_bytes(),
     )
     .map_err(|_| solana_program::program_error::ProgramError::InvalidAccountData)?;
