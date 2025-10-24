@@ -18,7 +18,14 @@ export const TabGrid = ({ tabs, header, columns = 3 }: TabGridProps) => {
   return (
     <Tabs defaultValue={tabs[0].name}>
       <header className={styles.gridHeader}>
-        <Typography variant="h2">{header}</Typography>
+        <Typography
+          variant="h2"
+          style={{
+            fontSize: "32px",
+          }}
+        >
+          {header}
+        </Typography>
         <TabsList className={styles.tabsList}>
           {tabs.map((tab) => (
             <TabsTrigger key={tab.name} value={tab.name} className={styles.tabsTrigger}>

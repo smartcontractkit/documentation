@@ -1,0 +1,47 @@
+---
+import { Typography, SvgArrowRight2 } from "@chainlink/blocks"
+import type { ImageMetadata } from "astro"
+import styles from "./ResourceCard.module.css"
+
+interface Props {
+  image?: string | ImageMetadata
+  imageAlt?: string
+  label: string
+  link: string
+  description: string
+  type: "article" | "video"
+}
+
+const { image, imageAlt, label, link, description, type } = Astro.props
+
+const imageSrc = typeof image === "string" ? image : image?.src
+---
+
+<a href={link} class={styles.card}>
+  {
+    imageSrc && (
+      <div class={styles.imageWrapper}>
+        <img src={imageSrc} alt={imageAlt} class={styles.image} />
+      </div>
+    )
+  }
+  <div class={styles.content}>
+    <Typography
+      variant="body-semi-l"
+      style={{
+        marginBottom: "var(--space-8x)",
+      }}>{label}</Typography
+    >
+    <Typography variant="body-s" color="muted">
+      {description}
+    </Typography>
+  </div>
+  {
+    type === "article" && (
+      <div class={styles.cardFooter}>
+        <span class={styles.footerText}>Read the full article</span>
+        <SvgArrowRight2 color="muted" width={12} height={12} />
+      </div>
+    )
+  }
+</a>
