@@ -8,6 +8,15 @@ import LeftSidebar from "~/components/LeftSidebar/LeftSidebar.astro"
 import PageContent from "~/components/PageContent/PageContent.astro"
 import { TabGrid } from "~/components/TabGrid/TabGrid"
 import LayoutHero from "~/components/LayoutHero/LayoutHero.astro"
+import QuickLinkCard from "~/components/QuickLinkCard/QuickLinkCard.astro"
+import {
+  SvgBulletList,
+  SvgCrossChain,
+  SvgEyeOptic,
+  SvgStartup,
+  SvgTransactionRepeatRecurring,
+  SvgWaveSignal,
+} from "@chainlink/blocks"
 
 interface Props {
   frontmatter: BaseFrontmatter
@@ -123,6 +132,40 @@ const exampleTutorials = [
     ],
   },
 ]
+
+// Quick links data
+const quickLinks = [
+  {
+    icon: SvgEyeOptic,
+    label: "View Network Configs",
+    link: "https://docs.chain.link/ccip/directory/mainnet",
+  },
+  {
+    icon: SvgTransactionRepeatRecurring,
+    label: "Check Transaction Status",
+    link: "https://ccip.chain.link/",
+  },
+  {
+    icon: SvgWaveSignal,
+    label: "View Lane Status",
+    link: "https://ccip.chain.link/status",
+  },
+  {
+    icon: SvgStartup,
+    label: "Get Testnet Tokens",
+    link: "https://tokenmanager.chain.link/",
+  },
+  {
+    icon: SvgCrossChain,
+    label: "Convert Chainlink tokens",
+    link: "https://www.transporter.io/",
+  },
+  {
+    icon: SvgBulletList,
+    label: "View the Changelog",
+    link: "https://dev.chain.link/changelog?product=CCIP",
+  },
+]
 ---
 
 <BaseLayout title={formattedContentTitle} metadata={frontmatter.metadata} pageTitle={frontmatter.title}>
@@ -144,6 +187,7 @@ const exampleTutorials = [
           ]}
           image="/images/ccip/ccip-hero.png"
         />
+        <QuickLinkCard links={quickLinks} />
         <PageContent {titleHeading}>
           <TabGrid header="Tutorials" client:visible tabs={exampleTutorials} />
           <slot />

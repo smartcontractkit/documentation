@@ -1,0 +1,45 @@
+---
+import { Typography } from "@chainlink/blocks"
+import type { ComponentType } from "astro/dist/runtime/server"
+import styles from "./QuickLinkCard.module.css"
+
+interface Link {
+  icon: ComponentType
+  label: string
+  link: string
+}
+
+interface Props {
+  links: Link[]
+}
+
+const { links } = Astro.props
+---
+
+<section class={styles.container}>
+  <h2 class={styles.srOnly}>Quick Links</h2>
+
+  <div class={styles.content}>
+    <div class={styles.sidebar} aria-hidden="true"></div>
+
+    <div class={styles.main}>
+      <div class={styles.linksGrid}>
+        {
+          links.map((link) => {
+            const Icon = link.icon
+            return (
+              <a href={link.link} class={styles.linkItem}>
+                <span class={styles.icon}>
+                  <Icon color="brand" />
+                </span>
+                <Typography color="muted" variant="body-s">
+                  {link.label}
+                </Typography>
+              </a>
+            )
+          })
+        }
+      </div>
+    </div>
+  </div>
+</section>
