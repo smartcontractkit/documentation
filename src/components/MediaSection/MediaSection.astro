@@ -1,0 +1,41 @@
+---
+import { Typography } from "@chainlink/blocks"
+import styles from "./MediaSection.module.css"
+
+interface Props {
+  heading: string
+  description: string
+  image?: string
+  video?: string
+}
+
+const { heading, description, image, video } = Astro.props
+---
+
+<section class={styles.section}>
+  <div class={styles.textContent}>
+    <Typography variant="h2">{heading}</Typography>
+    <Typography variant="body" color="muted">
+      {description}
+    </Typography>
+  </div>
+
+  {
+    image && (
+      <div class={styles.mediaWrapper}>
+        <img src={image} alt={heading} class={styles.media} />
+      </div>
+    )
+  }
+
+  {
+    !image && video && (
+      <div class={styles.mediaWrapper}>
+        <video class={styles.media} controls>
+          <source src={video} type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    )
+  }
+</section>
