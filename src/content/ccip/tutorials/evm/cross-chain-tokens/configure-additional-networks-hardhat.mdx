@@ -1,0 +1,259 @@
+---
+section: ccip
+date: Last Modified
+title: "Configure Additional Networks using Hardhat"
+metadata:
+  description: "Learn how to configure additional networks in the smart-contract-examples repository to add support for more CCIP-supported chains using Hardhat."
+  excerpt: "network configuration, Hardhat, config.json, CCIP Directory, chain configuration, smart-contract-examples"
+  image: "/images/ccip/basic-architecture.png"
+  datePublished: "2024-10-29"
+  lastModified: "2025-10-24"
+  estimatedTime: "10 minutes"
+  difficulty: "beginner"
+---
+
+import { Aside, CopyText, PageTabs } from "@components"
+
+<PageTabs
+  pages={[
+    {
+      name: "Hardhat",
+      url: "/ccip/tutorials/evm/cross-chain-tokens/configure-additional-networks-hardhat",
+      icon: "/images/tutorial-icons/hardhat-icn.png",
+    },
+    {
+      name: "Foundry",
+      url: "/ccip/tutorials/evm/cross-chain-tokens/configure-additional-networks-foundry",
+      icon: "/images/tutorial-icons/foundry-icn.png",
+    },
+  ]}
+/>
+
+When working with the [smart-contract-examples](https://github.com/smartcontractkit/smart-contract-examples/tree/main/ccip/cct) CCIP tutorials, you may need to add support for additional blockchain networks beyond the default testnet configurations (_Avalanche Fuji_, _Ethereum Sepolia_, _Arbitrum Sepolia_, _Base Sepolia_, and _Polygon Amoy_). This guide explains how to update the network configuration files in the Hardhat version of the repository.
+
+## Overview
+
+The [smart-contract-examples](https://github.com/smartcontractkit/smart-contract-examples/tree/main/ccip/cct/hardhat) repository includes pre-configured network settings for common CCIP testnets. These configuration files store network-specific information such as:
+
+- Chain selectors
+- Router addresses
+- RMN Proxy addresses
+- Token Admin Registry addresses
+- Registry Module Owner Custom addresses
+- LINK token addresses
+- Block confirmations
+- Native currency symbols
+
+**Default networks included**:
+
+- Avalanche Fuji
+- Ethereum Sepolia
+- Arbitrum Sepolia
+- Base Sepolia
+- Polygon Amoy
+
+These values vary by network and must be accurate for your CCIP transactions to work correctly. If you want to use additional networks (e.g., Optimism Sepolia, BNB Chain Testnet, or mainnet networks), you'll need to update the configuration files following this guide.
+
+## Finding Network Configuration Values
+
+All CCIP-supported networks and their configuration details are available in the **CCIP Directory**:
+
+- **Testnet networks**: [CCIP Directory - Testnet](/ccip/directory/testnet)
+- **Mainnet networks**: [CCIP Directory - Mainnet](/ccip/directory/mainnet)
+
+The CCIP Directory provides:
+
+- Chain selectors
+- Router contract addresses
+- RMN Proxy addresses
+- Token Admin Registry addresses
+- Registry Module Owner Custom addresses
+- LINK token addresses
+
+<Aside type="caution" title="Always Use Official Values">
+  Always retrieve configuration values from the official [CCIP Directory](/ccip/directory) to ensure accuracy. Using
+  incorrect addresses or chain selectors will cause your transactions to fail.
+</Aside>
+
+## Updating Configuration Files
+
+In the smart-contract-examples repository, Hardhat projects store network configuration in `config/config.json`.
+
+**File location**: [`smart-contract-examples/ccip/cct/hardhat/config/config.json`](https://github.com/smartcontractkit/smart-contract-examples/blob/main/ccip/cct/hardhat/config/config.json)
+
+**Example structure**:
+
+```json
+{
+  "avalancheFuji": {
+    "chainId": 43113,
+    "chainSelector": "14767482510784806043",
+    "router": "0xF694E193200268f9a4868e4Aa017A0118C9a8177",
+    "rmnProxy": "0xAc8CFc3762a979628334a0E4C1026244498E821b",
+    "tokenAdminRegistry": "0xA92053a4a3922084d992fD2835bdBa4caC6877e6",
+    "registryModuleOwnerCustom": "0x97300785aF1edE1343DB6d90706A35CF14aA3d81",
+    "link": "0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846",
+    "confirmations": 2,
+    "nativeCurrencySymbol": "AVAX",
+    "chainType": "l1",
+    "chainFamily": "evm"
+  },
+  "ethereumSepolia": {
+    "chainId": 11155111,
+    "chainSelector": "16015286601757825753",
+    "router": "0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59",
+    "rmnProxy": "0xba3f6251de62dED61Ff98590cB2fDf6871FbB991",
+    "tokenAdminRegistry": "0x95F29FEE11c5C55d26cCcf1DB6772DE953B37B82",
+    "registryModuleOwnerCustom": "0x62e731218d0D47305aba2BE3751E7EE9E5520790",
+    "link": "0x779877A7B0D9E8603169DdbD7836e478b4624789",
+    "confirmations": 3,
+    "nativeCurrencySymbol": "ETH",
+    "chainType": "l1",
+    "chainFamily": "evm"
+  }
+}
+```
+
+**Steps to add a new network**:
+
+1. Navigate to your cloned repository directory:
+
+   ```bash
+   cd smart-contract-examples/ccip/cct/hardhat
+   ```
+
+1. Open `config/config.json` in your preferred editor
+
+1. Visit the [CCIP Directory](/ccip/directory/testnet) (for testnet) or [Mainnet Directory](/ccip/directory/mainnet) (for mainnet)
+
+1. Locate your desired network in the directory and copy the following values:
+   - Chain Selector
+   - Router address
+   - RMN Proxy address
+   - Token Admin Registry address
+   - Registry Module Owner Custom address
+   - LINK token address
+
+1. Add a new entry to `config/config.json` following the existing structure
+
+1. Set appropriate values for:
+   - `chainId`: The EVM chain ID (find this on the network's official documentation)
+   - `confirmations`: Number of block confirmations to wait (typically 2-3 for testnets, 5-10 for mainnet)
+   - `nativeCurrencySymbol`: The native currency symbol (e.g., "ETH", "AVAX", "POL")
+   - `chainType`: Usually "l1" for Layer 1 or "op" for Optimistic rollups
+   - `chainFamily`: "evm" for Ethereum-compatible chains
+
+1. **Update the network TypeScript configuration**:
+   - Open `config/networks.ts` and add your new network to the `networks` object
+   - Add the corresponding RPC URL environment variable
+
+1. Save the files and test your configuration with a simple deployment
+
+**Example: Adding Optimism Sepolia Testnet**:
+
+First, add to `config/config.json`:
+
+```json
+{
+  "optimismSepolia": {
+    "chainId": 11155420,
+    "chainSelector": "5224473277236331295",
+    "router": "0x114A20A10b43D4115e5aeef7345a1A71d2a60C57",
+    "rmnProxy": "0xb40A3109075965cc09E93719e33E748abf680dAe",
+    "tokenAdminRegistry": "0x1d702b1FA12F347f0921C722f9D9166F00DEB67A",
+    "registryModuleOwnerCustom": "0x49c4ba01dc6F5090f9df43Ab8F79449Db91A0CBB",
+    "link": "0xE4aB69C077896252FAFBD49EFD26B5D171A32410",
+    "confirmations": 2,
+    "nativeCurrencySymbol": "ETH",
+    "chainType": "op",
+    "chainFamily": "evm"
+  }
+}
+```
+
+Then, add to `config/networks.ts`:
+
+```typescript
+[EVMChains.optimismSepolia]: {
+  type: "http",
+  ...configData.optimismSepolia,
+  url: process.env.OPTIMISM_SEPOLIA_RPC_URL || "https://UNSET-PLEASE-SET-OPTIMISM_SEPOLIA_RPC_URL",
+  gasPrice: undefined,
+  nonce: undefined,
+  accounts,
+},
+```
+
+## Verifying Your Configuration
+
+After updating your configuration files, verify that:
+
+1. **Chain Selector**: Matches the value in the CCIP Directory
+1. **Router Address**: Matches the CCIP Router address for your network
+1. **RMN Proxy**: Matches the RMN Proxy address
+1. **Token Admin Registry**: Matches the registry address
+1. **Registry Module Owner Custom**: Matches the registry module address
+1. **LINK Token**: Matches the LINK token address for your network
+1. **Chain ID**: Correct for your network
+1. **Block Confirmations**: Set to a reasonable value (2-3 for testnets, higher for mainnet)
+
+<Aside type="caution" title="Test Before Production">
+  Always test your configuration on testnet before deploying to mainnet. Incorrect configuration values can result in
+  failed transactions or loss of funds.
+</Aside>
+
+## Common Configuration Errors
+
+### Incorrect Chain Selector
+
+**Symptom**: Transactions fail with "destination chain not supported" error  
+**Solution**: Verify the chain selector matches the CCIP Directory exactly
+
+### Wrong Router Address
+
+**Symptom**: Transactions revert when calling CCIP Router  
+**Solution**: Ensure you're using the correct CCIP Router address from the directory
+
+### Mismatched Token Addresses
+
+**Symptom**: LINK approval or transfer operations fail  
+**Solution**: Verify the LINK token address for your specific network
+
+### Missing Network Configuration in networks.ts
+
+**Symptom**: Hardhat cannot find the network or RPC URL is undefined  
+**Solution**: Ensure you've added the network configuration to `config/networks.ts` and set the RPC URL environment variable
+
+## Related Resources
+
+- [CCIP Directory - Testnet](/ccip/directory/testnet): Complete list of testnet networks and configuration values
+- [CCIP Directory - Mainnet](/ccip/directory/mainnet): Complete list of mainnet networks and configuration values
+- [Register from an EOA (Burn & Mint)](/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-hardhat): Tutorial using these configuration files
+- [Set Token Pool rate limits](/ccip/tutorials/evm/cross-chain-tokens/update-rate-limiters-hardhat): Tutorial for configuring rate limiters
+
+## Adapting for Your Own Projects
+
+While this guide focuses on the smart-contract-examples repository structure, you can adapt these principles for your own projects:
+
+1. **Different project structure**: Adjust the file paths to match your project's organization
+1. **Custom configuration format**: You may use environment variables, YAML, TOML, or other formats—apply the same CCIP Directory values
+1. **Additional parameters**: Your project may require extra configuration fields beyond what's shown here
+1. **Multiple networks**: Consider organizing configurations by environment (development, staging, production)
+
+The key principle remains the same: **Always retrieve official CCIP configuration values from the [CCIP Directory](/ccip/directory)** to ensure compatibility and correctness.
+
+## Next Steps
+
+Once you've updated your network configuration in the smart-contract-examples repository:
+
+1. **Update RPC URLs**: Add the new network's RPC URL to your `.env.enc` file using `npx env-enc set`
+
+1. **Fund your wallet** with native tokens and LINK for the new network using the [Chainlink faucets](https://faucets.chain.link/) (for testnets)
+
+1. **Test the configuration** by running a simple deployment:
+
+   ```bash
+   npx hardhat deployToken --name "Test Token" --symbol TEST --network yourNewNetwork
+   ```
+
+1. **Follow the tutorials** using your newly configured network
