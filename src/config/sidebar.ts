@@ -15,6 +15,8 @@ import svmCcipV011Contents from "./sidebar/ccip/api-reference/svm/v0_1_1.json" w
 import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" with { type: "json" }
 import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" with { type: "json" }
 import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/v0_2_3.json" with { type: "json" }
+import evmCcipCctTutorialsHardhatFoundryContents from "./sidebar/ccip/cct-tutorials/evm/hardhat-foundry.json" with { type: "json" }
+import evmCcipCctTutorialsRemixIDEContents from "./sidebar/ccip/cct-tutorials/evm/remix-ide.json" with { type: "json" }
 
 /**
  * Represents a single item in the sidebar navigation.
@@ -1583,27 +1585,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "ccip/tutorials/evm/cross-chain-tokens",
               children: [
                 {
-                  title: "Deploy and Register Using Remix IDE",
-                  url: "ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-remix",
+                  title: "Using Remix IDE",
+                  url: "ccip/tutorials/evm/cross-chain-tokens/remix-ide",
+                  isCollapsible: true,
+                  children: evmCcipCctTutorialsRemixIDEContents,
                 },
                 {
-                  title: "Register from an EOA (Burn & Mint)",
-                  url: "ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-hardhat",
-                  highlightAsCurrent: ["ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-foundry"],
-                },
-                {
-                  title: "Register from an EOA (Lock & Mint)",
-                  url: "ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-lock-mint-hardhat",
-                  highlightAsCurrent: ["ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-lock-mint-foundry"],
-                },
-                {
-                  title: "Set Token Pool rate limits",
-                  url: "ccip/tutorials/evm/cross-chain-tokens/update-rate-limiters-hardhat",
-                  highlightAsCurrent: ["ccip/tutorials/evm/cross-chain-tokens/update-rate-limiters-foundry"],
-                },
-                {
-                  title: "Register from a Safe Smart Account (Burn & Mint)",
-                  url: "ccip/tutorials/evm/cross-chain-tokens/register-from-safe-burn-mint-hardhat",
+                  title: "Using Hardhat / Foundry",
+                  url: "ccip/tutorials/evm/cross-chain-tokens/hardhat-foundry",
+                  isCollapsible: true,
+                  children: evmCcipCctTutorialsHardhatFoundryContents,
                 },
               ],
             },
