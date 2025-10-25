@@ -5,7 +5,7 @@
  */
 
 use anchor_lang::prelude::*;
-use chainlink_solana as chainlink;
+use chainlink_solana::v2::read_feed_v2;
 
 //Program ID required by Anchor. Replace with your unique program ID once you build your project
 declare_id!("HPuUpM1bKbaqx7yY2EJ4hGBaA3QsfP5cofHHK99daz85");
@@ -41,24 +41,32 @@ impl std::fmt::Display for Decimal {
 #[program]
 pub mod chainlink_solana_demo {
     use super::*;
-        pub fn execute(ctx: Context<Execute>) -> Result<()>  {
-        let round = chainlink::latest_round_data(
-            ctx.accounts.chainlink_program.to_account_info(),
-            ctx.accounts.chainlink_feed.to_account_info(),
-        )?;
+    pub fn execute(ctx: Context<Execute>) -> Result<()> {
+        let feed = &ctx.accounts.chainlink_feed;
+        
+        // Read the feed data directly from the account (v2 SDK)
+        let result = read_feed_v2(
+            feed.try_borrow_data()?,
+            feed.owner.to_bytes(),
+        )
+        .map_err(|_| DemoError::ReadError)?;
 
-        let description = chainlink::description(
-            ctx.accounts.chainlink_program.to_account_info(),
-            ctx.accounts.chainlink_feed.to_account_info(),
-        )?;
+        // Get the latest round data
+        let round = result
+            .latest_round_data()
+            .ok_or(DemoError::RoundDataMissing)?;
 
-        let decimals = chainlink::decimals(
-            ctx.accounts.chainlink_program.to_account_info(),
-            ctx.accounts.chainlink_feed.to_account_info(),
-        )?;
+        let description = result.description();
+        let decimals = result.decimals();
+
+        // Convert description bytes to string
+        let description_str = std::str::from_utf8(&description)
+            .unwrap_or("Unknown")
+            .trim_end_matches('\0');
+
         // write the latest price to the program output
         let decimal_print = Decimal::new(round.answer, u32::from(decimals));
-        msg!("{} price is {}", description, decimal_print);
+        msg!("{} price is {}", description_str, decimal_print);
         Ok(())
     }
 }
@@ -67,6 +75,12 @@ pub mod chainlink_solana_demo {
 pub struct Execute<'info> {
     /// CHECK: We're reading data from this chainlink feed account
     pub chainlink_feed: AccountInfo<'info>,
-    /// CHECK: This is the Chainlink program library
-    pub chainlink_program: AccountInfo<'info>
+}
+
+#[error_code]
+pub enum DemoError {
+    #[msg("read error")]
+    ReadError,
+    #[msg("no round data")]
+    RoundDataMissing,
 }
