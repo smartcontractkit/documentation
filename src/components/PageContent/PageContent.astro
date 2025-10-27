@@ -3,197 +3,222 @@ import { MarkdownHeading } from "astro"
 
 export type Props = {
   titleHeading: MarkdownHeading
+  disableDefaultStyles?: boolean
+  hideTitle?: boolean
 }
-const { titleHeading } = Astro.props
+const { titleHeading, disableDefaultStyles, hideTitle } = Astro.props
 ---
 
-<article id="article">
-  <h1 id={titleHeading.slug}>{titleHeading.text}</h1>
+<article id="article" data-disable-default-styles={disableDefaultStyles || undefined}>
+  <h1 id={titleHeading.slug} class:list={{ "sr-only": hideTitle }}>{titleHeading.text}</h1>
 
   <slot />
 </article>
 
 <style is:inline>
-  article :is(h1, h2, h3, h4, h5, h6) > a {
-    display: inline-block;
-    color: inherit;
-    width: 100%;
-  }
-
-  article astro-slot > :first-child {
-    margin-top: 0;
+  /* Screen reader only - visually hidden but accessible */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
   }
 
   /* Using padding instead of margin so intersection observers work without spaces */
-  :where(article, astro-island, astro-slot) > section {
+  :where(article:not([data-disable-default-styles]), astro-island, astro-slot) > section {
     padding-top: var(--space-5x);
   }
 
-  /*
-    This is a bit of trickery that keeps the content
-    from shifting in the time between the DOM hydrating and the
-    wrapper script finishing. The margin is supplemented
-    by the section padding once the wrapper is created
-
-    This also keeps the spacing intact
-    in case JS isn't loading on the page
-  */
-  article > :where(h1, h2) {
-    margin-top: var(--space-5x) !important;
-  }
-
-  article * {
-    max-width: 100%;
-    margin-bottom: 0;
-  }
-
-  article a:not(:is(h1 a, h2 a, h3 a, h4 a, h5 a, h6 a)) {
-    color: var(--color-text-link);
-  }
-
-  article :is(h1, h2, h3, h4, h5, h6, p, li) {
-    word-break: break-word;
-  }
-
-  article p {
-    margin-bottom: 0;
-  }
-
-  article :is(p, li) {
-    line-height: 28px;
-  }
-
-  article label {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2x);
-  }
-
-  :where(article, article section, article astro-slot, article astro-island) > :not(section, astro-slot, astro-island) {
-    margin-top: var(--space-5x);
-  }
-
-  :where(article, article section, article astro-slot, article astro-island) > pre {
-    margin-top: var(--space-2x);
-  }
-
-  :where(article, article section) > :is(h1, h2, h3) + :not(section, astro-slot, astro-island, h5, h6) {
-    margin-top: var(--space-5x) !important;
-  }
-
-  :where(article, article section) > :is(h4, h5, h6) + :not(section, astro-slot, astro-island) {
-    margin-top: var(--space-3x) !important;
-  }
-
-  :where(article, article section, article astro-slot) > :is(h1, h2, h3, h4, h5, h6, li) {
-    font-weight: bold;
-    margin-top: 0;
-  }
-
-  :where(article, article section, article astro-slot) > h1 {
-    font-size: 32px;
-  }
-
-  :where(article, article section, article astro-slot) > h2 {
-    padding-top: var(--space-6x);
-    font-size: 28px;
-  }
-
-  :where(article, article section, article astro-slot) > h3 {
-    padding-top: var(--space-8x);
-    font-size: 24px;
-  }
-
-  :where(article, article section, article astro-slot) > h4 {
-    padding-top: var(--space-5x);
-    font-size: 20px;
-  }
-
-  :where(article, article section, article astro-slot) > :is(h5, h6) {
-    padding-top: var(--space-4x);
-    font-size: 16px;
-  }
-
-  article :is(ul, ol) {
-    margin-top: var(--space-3x);
-  }
-
-  article :is(ul, ol) > li,
-  article :is(ul, ol) > li > :is(ul, ol) {
-    margin-top: var(--space-2x);
-  }
-
-  article li > * {
-    margin-top: var(--space-2x);
-  }
-
-  article li {
-    list-style-type: disc;
-  }
-
-  article ul {
-    padding-left: calc(var(--space-4x) + 2px);
-  }
-
-  article ol {
-    padding-left: var(--space-8x);
-  }
-
-  /* Offset line-height difference */
-  article li > :not(p):last-child {
-    margin-bottom: var(--space-3x);
-  }
-
-  article ::marker {
-    font-weight: bold;
-    color: var(--theme-text-light);
-  }
-
-  article iframe {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 16 / 9;
-  }
-
-  /* Offsets padding */
-  article :is(section, h5, h6):target {
-    scroll-margin-top: var(--theme-navbar-height);
-  }
-
-  @media (min-width: 50em) {
-    :where(article, article section, article astro-slot) > :is(h1, h2) {
-      position: sticky;
-      top: 0;
-      z-index: 3;
-      background: white;
-      border-bottom: 2px solid var(--blue-200, #dfe7fb);
-      padding: var(--space-6x) 0;
+  /* Default content styles - opt-out with disableDefaultStyles prop for custom layouts like ccip/index.mdx */
+  article:not([data-disable-default-styles]) {
+    :is(h1, h2, h3, h4, h5, h6) > a {
+      display: inline-block;
+      color: inherit;
+      width: 100%;
     }
 
-    article section > :is(section, h5, h6):target {
-      scroll-margin-top: calc(var(--theme-navbar-height) + var(--space-20x));
+    astro-slot > :first-child {
+      margin-top: 0;
     }
 
-    :where(article, article section, article astro-slot) > h3 {
-      padding-top: var(--space-8x);
+    /*
+      This is a bit of trickery that keeps the content
+      from shifting in the time between the DOM hydrating and the
+      wrapper script finishing. The margin is supplemented
+      by the section padding once the wrapper is created
+
+      This also keeps the spacing intact
+      in case JS isn't loading on the page
+    */
+    > :where(h1, h2) {
+      margin-top: var(--space-5x) !important;
     }
 
-    :where(article, article section, article astro-slot) > h4 {
-      padding-top: var(--space-6x);
-    }
-  }
-
-  @media (min-width: 72em) {
-    :where(article, article section, article astro-slot) > h1 {
-      font-size: 40px;
+    * {
+      max-width: 100%;
+      margin-bottom: 0;
     }
 
-    :where(article, article section, article astro-slot) > h2 {
-      font-size: 32px;
+    a:not(:is(h1 a, h2 a, h3 a, h4 a, h5 a, h6 a)) {
+      color: var(--color-text-link);
     }
 
-    :where(article, article section, article astro-slot) > h3 {
-      font-size: 28px;
+    :is(h1, h2, h3, h4, h5, h6, p, li) {
+      word-break: break-word;
+    }
+
+    p {
+      margin-bottom: 0;
+    }
+
+    :is(p, li) {
+      line-height: 28px;
+    }
+
+    label {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2x);
+    }
+
+    :is(ul, ol) {
+      margin-top: var(--space-3x);
+
+      > li,
+      > li > :is(ul, ol) {
+        margin-top: var(--space-2x);
+      }
+    }
+
+    li {
+      list-style-type: disc;
+
+      > * {
+        margin-top: var(--space-2x);
+      }
+
+      /* Offset line-height difference */
+      > :not(p):last-child {
+        margin-bottom: var(--space-3x);
+      }
+    }
+
+    ul {
+      padding-left: calc(var(--space-4x) + 2px);
+    }
+
+    ol {
+      padding-left: var(--space-8x);
+    }
+
+    ::marker {
+      font-weight: bold;
+      color: var(--theme-text-light);
+    }
+
+    iframe {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+    }
+
+    /* Offsets padding */
+    :is(section, h5, h6):target {
+      scroll-margin-top: var(--theme-navbar-height);
+    }
+
+    /* Shared styles for article, section, and astro-slot contexts */
+    :where(&, & section, & astro-slot, & astro-island) {
+      > :not(section, astro-slot, astro-island) {
+        margin-top: var(--space-5x);
+      }
+
+      > pre {
+        margin-top: var(--space-2x);
+      }
+    }
+
+    :where(&, & section) {
+      > :is(h1, h2, h3) + :not(section, astro-slot, astro-island, h5, h6) {
+        margin-top: var(--space-5x) !important;
+      }
+
+      > :is(h4, h5, h6) + :not(section, astro-slot, astro-island) {
+        margin-top: var(--space-3x) !important;
+      }
+    }
+
+    :where(&, & section, & astro-slot) {
+      > :is(h1, h2, h3, h4, h5, h6, li) {
+        font-weight: bold;
+        margin-top: 0;
+      }
+
+      > h1 {
+        font-size: 32px;
+      }
+
+      > h2 {
+        padding-top: var(--space-6x);
+        font-size: 28px;
+      }
+
+      > h3 {
+        padding-top: var(--space-8x);
+        font-size: 24px;
+      }
+
+      > h4 {
+        padding-top: var(--space-5x);
+        font-size: 20px;
+      }
+
+      > :is(h5, h6) {
+        padding-top: var(--space-4x);
+        font-size: 16px;
+      }
+    }
+
+    @media (min-width: 50em) {
+      :where(&, & section, & astro-slot) > :is(h1, h2) {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        background: white;
+        border-bottom: 2px solid var(--blue-200, #dfe7fb);
+        padding: var(--space-6x) 0;
+      }
+
+      section > :is(section, h5, h6):target {
+        scroll-margin-top: calc(var(--theme-navbar-height) + var(--space-20x));
+      }
+
+      :where(&, & section, & astro-slot) > h3 {
+        padding-top: var(--space-8x);
+      }
+
+      :where(&, & section, & astro-slot) > h4 {
+        padding-top: var(--space-6x);
+      }
+    }
+
+    @media (min-width: 72em) {
+      :where(&, & section, & astro-slot) > h1 {
+        font-size: 40px;
+      }
+
+      :where(&, & section, & astro-slot) > h2 {
+        font-size: 32px;
+      }
+
+      :where(&, & section, & astro-slot) > h3 {
+        font-size: 28px;
+      }
     }
   }
 </style>

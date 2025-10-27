@@ -16,7 +16,7 @@ interface TabGridProps {
 
 export const TabGrid = ({ tabs, header, columns = 3 }: TabGridProps) => {
   return (
-    <Tabs defaultValue={tabs[0].name}>
+    <Tabs defaultValue={tabs[0].name} className={styles.tabGridWrapper}>
       <header className={styles.gridHeader}>
         <Typography
           variant="h2"

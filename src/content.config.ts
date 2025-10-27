@@ -58,6 +58,8 @@ const baseFrontmatter = z
     whatsnext: z.record(z.string(), z.string()).optional(),
     isMdx: z.boolean().optional(),
     isIndex: z.boolean().optional(),
+    disableDefaultStyles: z.boolean().optional(),
+    hideTitle: z.boolean().optional(),
     metadata,
     datafeedtype: z.string().optional(),
     fileExtension: z.string().optional(),

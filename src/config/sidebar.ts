@@ -1258,7 +1258,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Chainlink CCIP",
       contents: [
         {
-          title: "About CCIP",
+          title: "Overview",
           url: "ccip",
         },
         {
