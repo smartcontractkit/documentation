@@ -17,7 +17,7 @@ import { Tabs } from "@components/Tabs"
 
 <Aside type="note" title="SDK v2 is now available">
 
-The Chainlink [Solana SDK v2 is now available](https://crates.io/crates/chainlink_solana/), offering improved performance with lower compute unit usage through direct account reads instead of Cross-Program Invocation (CPI). This guide demonstrates the v2 SDK pattern. If you're using the v1 SDK, see the [migration guide](#migrating-from-v1-to-v2) to upgrade.
+The Chainlink [Solana SDK v2 is now available](https://crates.io/crates/chainlink_solana/), offering improved performance with lower compute unit usage through direct account reads instead of Cross-Program Invocation (CPI). This guide demonstrates the v2 SDK pattern. If you're using the v1 SDK, see the [migration guide below](#migrating-from-v1-to-v2) to upgrade.
 
 </Aside>
 
@@ -56,7 +56,7 @@ Import the Chainlink Solana Crate into your project and use the code sample to m
    chainlink_solana = "2.0.8"
    ```
 
-   If you're using the **Anchor framework** (identified by `anchor-lang` in your dependencies), also add:
+   If you're using [Anchor](https://www.anchor-lang.com/docs), also add:
 
    ```toml
    [dependencies]
@@ -65,8 +65,8 @@ Import the Chainlink Solana Crate into your project and use the code sample to m
    ```
 
 1. Choose the code sample that matches your project setup:
-   - **Rust (vanilla)**
-   - **Rust with Anchor**
+   - **Rust (Anchor)**
+   - **Rust (Vanilla)**
 
    Both samples demonstrate SDK v2, which reads data directly from the feed account. The code samples have the following components:
    - `read_feed_v2`: Reads feed data directly from the account data with the feed owner verification
@@ -77,13 +77,13 @@ Import the Chainlink Solana Crate into your project and use the code sample to m
 
 {/* prettier-ignore */}
 <Tabs client:visible>
-  <Fragment slot="tab.rust">Rust</Fragment>
-  <Fragment slot="tab.anchor">Rust with Anchor</Fragment>
-  <Fragment slot="panel.rust">
-    <CodeSample src="samples/Solana/PriceFeeds/on-chain-read.rs" />
-  </Fragment>
+  <Fragment slot="tab.anchor">Rust (Anchor)</Fragment>
+  <Fragment slot="tab.rust">Rust (Vanilla)</Fragment>
   <Fragment slot="panel.anchor">
     <CodeSample src="samples/Solana/PriceFeeds/on-chain-read-anchor.rs" />
+  </Fragment>
+  <Fragment slot="panel.rust">
+    <CodeSample src="samples/Solana/PriceFeeds/on-chain-read.rs" />
   </Fragment>
 </Tabs>
 
@@ -91,21 +91,21 @@ Program Transaction logs:
 
 {/* prettier-ignore */}
 <Tabs client:visible>
-  <Fragment slot="tab.rust">Rust</Fragment>
-  <Fragment slot="tab.rustAnchor">Rust with Anchor</Fragment>
+  <Fragment slot="tab.anchor">Rust (Anchor)</Fragment>
+  <Fragment slot="tab.rust">Rust (Vanilla)</Fragment>
+  <Fragment slot="panel.anchor">
+    ```shell Rust with Anchor
+    Fetching transaction logs... [ 'Program HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny
+    consumed 1826 of 1306895 compute units', 'Program return: HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny CA==',
+    'Program HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny success', 'Program log: SOL / USD price is 93.76988029', ]
+    ```
+  </Fragment>
   <Fragment slot="panel.rust">
     ```shell Rust
     > Program logged: "Chainlink Price Feed Consumer entrypoint" > Program logged: "SOL / USD price is
     83.99000000"
     > Program consumed: 95953 of 1400000 compute units > Program return:
     HNYSbr77Jc9LhHeb9tx53SrWbWfNBnQzQrM4b3BB3PCR CA==
-    ```
-  </Fragment>
-  <Fragment slot="panel.rustAnchor">
-    ```shell Rust with Anchor
-    Fetching transaction logs... [ 'Program HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny
-    consumed 1826 of 1306895 compute units', 'Program return: HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny CA==',
-    'Program HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny success', 'Program log: SOL / USD price is 93.76988029', ]
     ```
   </Fragment>
 </Tabs>
