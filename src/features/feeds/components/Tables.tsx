@@ -911,7 +911,7 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               </dd>
             </div>
           )}
-          {metadata.feedType === "Equities" && (
+          {(metadata.feedType === "Equities" || metadata.feedType === "Forex") && (
             <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Report Schema:</span>
@@ -1058,7 +1058,10 @@ export const MainnetTable = ({
         return isValidStreamsFeed
       }
       if (dataFeedType === "streamsRwa") {
-        return metadata.contractType === "verifier" && metadata.docs.feedType === "Equities"
+        return (
+          metadata.contractType === "verifier" &&
+          (metadata.docs.feedType === "Equities" || metadata.docs.feedType === "Forex")
+        )
       }
 
       if (dataFeedType === "streamsNav") {
@@ -1309,7 +1312,10 @@ export const TestnetTable = ({
         }
 
         if (dataFeedType === "streamsRwa") {
-          return metadata.contractType === "verifier" && metadata.docs.feedType === "Equities"
+          return (
+            metadata.contractType === "verifier" &&
+            (metadata.docs.feedType === "Equities" || metadata.docs.feedType === "Forex")
+          )
         }
 
         if (dataFeedType === "streamsExRate") {
