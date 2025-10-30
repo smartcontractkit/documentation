@@ -23,12 +23,12 @@ export const StreamsNetworksData: NetworkData[] = [
     networkStatus: "https://status.0g.ai/",
     mainnet: {
       label: "0G Aristotle (Mainnet)",
-      verifierProxy: "0x2e6621e5e3F916d5e512124dD79e06b55E258054",
+      verifierProxy: "0x673Dd1aA4Dafe735135d00058042D6ee3e85eF81",
       explorerUrl: "https://chainscan.0g.ai/address/%s",
     },
     testnet: {
       label: "0G Galileo (Testnet)",
-      verifierProxy: "0x7C8bf15e7d4d44AB1b29F0aC047600295111de4c",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
       explorerUrl: "https://chainscan-galileo.0g.ai/address/%s",
     },
   },
