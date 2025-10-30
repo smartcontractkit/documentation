@@ -12,7 +12,7 @@ metadata:
   difficulty: "beginner"
 ---
 
-import { Aside, CopyText, PageTabs } from "@components"
+import { Aside, PageTabs } from "@components"
 
 <PageTabs
   pages={[
@@ -31,164 +31,14 @@ import { Aside, CopyText, PageTabs } from "@components"
 
 The [smart-contract-examples](https://github.com/smartcontractkit/smart-contract-examples/tree/main/ccip/cct/foundry) repository includes default configurations for common CCIP testnet networks. This guide shows how to add support for additional networks.
 
-The configuration file in the [Foundry version of the repository](https://github.com/smartcontractkit/smart-contract-examples/tree/main/ccip/cct/foundry) stores network-specific information such as:
+## Add a Network
 
-- Chain selectors (unique CCIP identifiers)
-- Router addresses
-- RMN Proxy addresses
-- Token Admin Registry addresses
-- Registry Module Owner Custom addresses
-- LINK token addresses
-- Block confirmations
-- Native currency symbols
-
-These values vary by network and must be accurate for your CCIP transactions to work correctly. If you want to use additional networks (e.g., Optimism Sepolia, BNB Chain Testnet, or mainnet networks) supported by CCIP, you'll need to update the configuration file following this guide.
-
-## Find Network Configuration Values
-
-All CCIP-supported networks and their configuration details are available in the **CCIP Directory**:
-
-- **Testnet networks**: [CCIP Directory - Testnet](/ccip/directory/testnet)
-- **Mainnet networks**: [CCIP Directory - Mainnet](/ccip/directory/mainnet)
-
-The CCIP Directory provides:
-
-- Chain selectors (unique CCIP identifiers)
-- Router contract addresses
-- RMN Proxy addresses
-- Token Admin Registry addresses
-- Registry Module Owner Custom addresses
-- LINK token addresses
-
-<Aside type="caution" title="Always Use Official Values">
-  Always retrieve configuration values from the official [CCIP Directory](/ccip/directory) to ensure accuracy. Using
-  incorrect addresses or chain selectors will cause your transactions to fail.
-</Aside>
-
-## Add `RPC_URL` Environment Variable
-
-To add support for additional networks, you need to configure the `RPC_URL_<NEW_NETWORK_NAME>` environment variable in your `.env` file. This variable should point to the RPC endpoint of the network you want to add.
-
-1. Open the `.env` file in the root of [`smart-contract-examples/ccip/cct/foundry`](https://github.com/smartcontractkit/smart-contract-examples/tree/main/ccip/cct/foundry).
-
-2. Add a new line for the `RPC_URL_<NEW_NETWORK_NAME>` variable:
-
-   ```env
-   RPC_URL_<NEW_NETWORK_NAME>=https://your-new-network-rpc-url
-   ```
-
-   You can obtain an RPC URL by signing up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
-
-3. Save the file, then load the environment variables into the terminal session where you will run the commands:
-
-   ```bash
-   source .env
-   ```
-
-## Update Configuration File
-
-**File location**: [`smart-contract-examples/ccip/cct/foundry/script/HelperConfig.s.sol`](https://github.com/smartcontractkit/smart-contract-examples/blob/main/ccip/cct/foundry/script/HelperConfig.s.sol)
-
-**Example structure**:
-
-```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity 0.8.24;
-
-import {Script} from "forge-std/Script.sol";
-
-contract HelperConfig is Script {
-    // Rest of the code...
-
-    constructor() {
-
-        // Rest of the existing networks...
-
-        else if (block.chainid == 43113) {
-            activeNetworkConfig = getAvalancheFujiConfig();
-        }
-
-        // Rest of the existing networks...
-
-        else {
-            revert("Unsupported network");
-        }
-    }
-
-    function getAvalancheFujiConfig() public pure returns (NetworkConfig memory) {
-        NetworkConfig memory avalancheFujiConfig = NetworkConfig({
-            chainSelector: 14767482510784806043,
-            router: 0xF694E193200268f9a4868e4Aa017A0118C9a8177,
-            rmnProxy: 0xAc8CFc3762a979628334a0E4C1026244498E821b,
-            tokenAdminRegistry: 0xA92053a4a3922084d992fD2835bdBa4caC6877e6,
-            registryModuleOwnerCustom: 0x97300785aF1edE1343DB6d90706A35CF14aA3d81,
-            link: 0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846,
-            confirmations: 2,
-            nativeCurrencySymbol: "AVAX"
-        });
-        return avalancheFujiConfig;
-    }
-
-    // Rest of the existing network configurations...
-
-    function getNetworkConfig(uint256 chainId) public pure returns (NetworkConfig memory) {
-
-        // Rest of the existing networks...
-
-        else if (chainId == 43113) {
-            return getAvalancheFujiConfig();
-        }
-
-        // Rest of the existing networks...
-
-        else {
-            revert("Unsupported chain ID");
-        }
-    }
-
-}
-```
-
-**Steps to add a new network**:
-
-1. Navigate to your cloned repository directory:
-
-   ```bash
-   cd smart-contract-examples/ccip/cct/foundry
-   ```
-
-1. Open `script/HelperConfig.s.sol` in your preferred editor
-
-1. Visit the [CCIP Directory](/ccip/directory)
-
-1. Locate your desired network in the directory and copy the following values:
-   - Chain Selector
-   - Router address
-   - RMN Proxy address
-   - Token Admin Registry address
-   - Registry Module Owner Custom address
-   - LINK token address
-
-1. Determine the chain ID from official network documentation, from [ChainList](https://chainlist.org/), or by running the [`cast chain-id`](https://getfoundry.sh/cast/reference/chain-id/) command.
-
-1. Add a new condition in the `constructor()` to detect the chain ID
-
-1. Create a new function (e.g., `getOptimismSepoliaConfig()`) following the existing pattern
-
-1. Set appropriate values for:
-   - `confirmations`: Number of block confirmations to wait (typically 2-3 for testnets, 5-10 for mainnet)
-   - `nativeCurrencySymbol`: The native currency symbol (e.g., "ETH", "AVAX", "POL")
-
-**Example: Adding Optimism Sepolia Testnet**:
+Add the network configuration to [`script/HelperConfig.s.sol`](https://github.com/smartcontractkit/smart-contract-examples/blob/main/ccip/cct/foundry/script/HelperConfig.s.sol)
 
 ```solidity
 // Rest of the code...
 
 constructor() {
-    if (block.chainid == 11155111) {
-        activeNetworkConfig = getEthereumSepoliaConfig();
-    }
-
     // Rest of the existing networks...
 
     else if (block.chainid == 11155420) {
@@ -215,10 +65,6 @@ function getOptimismSepoliaConfig() public pure returns (NetworkConfig memory) {
 }
 
 function getNetworkConfig(uint256 chainId) public pure returns (NetworkConfig memory) {
-    if (chainId == 11155111) {
-        return getEthereumSepoliaConfig();
-    }
-
     // Rest of the existing networks...
 
     else if (chainId == 11155420) {
@@ -229,77 +75,60 @@ function getNetworkConfig(uint256 chainId) public pure returns (NetworkConfig me
 }
 ```
 
-<Aside type="caution" title="Test Before Production">
-  Always test your configuration on testnet before deploying to mainnet. Incorrect configuration values can result in
-  failed transactions or loss of funds.
+Set the RPC URL:
+
+```env
+RPC_URL_OPTIMISM_SEPOLIA="INSERT_YOUR_RPC_URL_HERE"
+```
+
+<Aside type="note" title="Note">
+  You can obtain RPC URLs from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node
+  provider.
 </Aside>
 
-## Next Steps
+Save the `.env` file, then load the environment variable into the terminal session:
 
-Once you've updated your network configuration in the smart-contract-examples repository:
+```bash
+source .env
+```
 
-1. **Fund your wallet** with native tokens and LINK for the new network using the [Chainlink faucets](https://faucets.chain.link/) (for testnets)
+The network is now available in all Foundry commands using `--rpc-url $RPC_URL_OPTIMISM_SEPOLIA`.
 
-1. **Test the configuration** by running a simple deployment:
+## Configuration Fields
 
-   ```bash
-   forge script script/DeployToken.s.sol --rpc-url $RPC_URL_<NEW_NETWORK_NAME> --private-key $PRIVATE_KEY --broadcast
-   ```
+| Field                       | Required | Description                                                        | Source                                                        |
+| --------------------------- | -------- | ------------------------------------------------------------------ | ------------------------------------------------------------- |
+| `chainSelector`             | Yes      | CCIP identifier for the network                                    | [CCIP Directory](/ccip/directory)                             |
+| `router`                    | Yes      | CCIP Router contract address                                       | [CCIP Directory](/ccip/directory)                             |
+| `rmnProxy`                  | Yes      | RMN Proxy contract address                                         | [CCIP Directory](/ccip/directory)                             |
+| `tokenAdminRegistry`        | Yes      | Token Admin Registry address                                       | [CCIP Directory](/ccip/directory)                             |
+| `registryModuleOwnerCustom` | Yes      | Registry Module Owner address                                      | [CCIP Directory](/ccip/directory)                             |
+| `link`                      | Yes      | LINK token contract address                                        | [CCIP Directory](/ccip/directory)                             |
+| `confirmations`             | No       | Number of block confirmations before considering transaction final | Blockchain's finality characteristics and your risk tolerance |
+| `nativeCurrencySymbol`      | No       | Native gas token symbol (e.g., `"ETH"`, `"AVAX"`, `"POL"`)         | Blockchain's official documentation                           |
 
-   <br></br>
+Find all CCIP addresses in the [CCIP Directory - Testnet](/ccip/directory/testnet) or [CCIP Directory - Mainnet](/ccip/directory/mainnet).
 
-   #### Contract Verification (Optional)
+## Test
 
-   **Automatic Verification (Natively Supported):**
-   Most standard networks are natively supported by Foundry for contract verification. Check [Foundry's `StdChains.sol::StdChains::initializeStdChains()`](https://github.com/foundry-rs/forge-std/blob/master/src/StdChains.sol#L193) function for the complete list of supported networks.
+Deploy a token to verify the configuration:
 
-   You just need to add the `--verify` flag when deploying:
+```bash
+forge script script/DeployToken.s.sol --rpc-url $RPC_URL_OPTIMISM_SEPOLIA --private-key $PRIVATE_KEY --broadcast
+```
 
-   ```bash
-   forge script script/DeployToken.s.sol --rpc-url $RPC_URL_<NEW_NETWORK_NAME> --private-key $PRIVATE_KEY --broadcast --verify
-   ```
+## Contract Verification (Optional)
 
-   Or if already deployed, you can verify using the [`forge verify-contract` command](https://getfoundry.sh/forge/reference/verify-contract#forge-verify-contract).
+Most networks are natively supported. Add `--verify` when deploying:
 
-   <br></br>
+```bash
+forge script script/DeployToken.s.sol --rpc-url $RPC_URL_OPTIMISM_SEPOLIA --private-key $PRIVATE_KEY --broadcast --verify
+```
 
-   #### Custom Network Deployment and Verification
+For networks not in [Foundry's `StdChains.sol::StdChains::initializeStdChains()`](https://github.com/foundry-rs/forge-std/blob/master/src/StdChains.sol#L193) function, include the `--verifier`, `--verifier-url`, and `--verifier-api-key` flags together with `--verify` when deploying:
 
-   **Custom Network Deployment:**
-   For networks not natively supported by Foundry, replace the dynamic chain name lookup (`getChain(block.chainid).chainAlias`) in your deployment script with a hardcoded string, as the `getChain` call will revert on unsupported networks.
+```bash
+forge script script/DeployToken.s.sol --rpc-url $RPC_URL_CUSTOM_NETWORK --private-key $PRIVATE_KEY --broadcast --verify --verifier custom --verifier-url $CUSTOM_EXPLORER_API_URL --verifier-api-key $CUSTOM_EXPLORER_API_KEY
+```
 
-   So, replace this line:
-
-   ```solidity
-   string memory chainName = getChain(block.chainid).chainAlias;
-   ```
-
-   with this:
-
-   ```solidity
-   string memory chainName = "custom"; // or any other string identifier you prefer
-   ```
-
-   <br></br>
-
-   **Custom Network Verification:**
-   For networks not natively supported by Foundry, include the `--verifier`, `--verifier-url`, and `--verifier-api-key` flags together with `--verify` when deploying, like:
-
-   ```bash
-   forge script script/DeployToken.s.sol --rpc-url $RPC_URL_<NEW_NETWORK_NAME> --private-key $PRIVATE_KEY --broadcast --verify --verifier custom --verifier-url $CUSTOM_EXPLORER_API_URL --verifier-api-key $CUSTOM_EXPLORER_API_KEY
-   ```
-
-   Refer to the [Foundry docs](https://getfoundry.sh/forge/reference/verify-check/) for more details.
-
-   This is particularly useful for:
-   - Newer networks not yet added to Hardhat
-   - Private/enterprise chains
-   - Custom testnets
-
-   **Note:** With [Etherscan API V2](https://docs.etherscan.io/introduction), a single `ETHERSCAN_API_KEY` works across all Etherscan-compatible networks.
-
-1. **Follow the tutorials** using your newly configured network
-
-## Adapt for Your Own Projects
-
-While this guide focuses on the smart-contract-examples repository structure, you can adapt these principles for your own projects.
+With [Etherscan API V2](https://docs.etherscan.io/introduction), a single `ETHERSCAN_API_KEY` works across all Etherscan-compatible networks.
