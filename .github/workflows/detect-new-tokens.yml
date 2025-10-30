@@ -49,7 +49,7 @@ jobs:
         with:
           fetch-depth: 0  # Fetch all history for git operations
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -80,7 +80,7 @@ jobs:
         with:
           fetch-depth: 0  # Fetch all history for git operations
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -116,7 +116,7 @@ jobs:
       # Create issue for script failures
       - name: Create Issue for Script Failure
         if: steps.check_errors.outputs.script_failed == 'true'
-        uses: peter-evans/create-issue-from-file@e8ef132d6df98ed982188e460ebb3b5d4ef3a9cd # v5.0.1
+        uses: peter-evans/create-issue-from-file@fca9117c27cdc29c6c4db3b86c48e4115a786710 # v6.0.0
         with:
           title: "Error: CCIP Token Detection Script Failed"
           content-filepath: ${{ env.TEMP_DIR }}/error_report.md
@@ -132,7 +132,7 @@ jobs:
       # Create issue for URL validation failures
       - name: Create Issue for URL Validation Failures
         if: steps.check_tokens.outputs.url_validation_failed == 'true'
-        uses: peter-evans/create-issue-from-file@e8ef132d6df98ed982188e460ebb3b5d4ef3a9cd # v5.0.1
+        uses: peter-evans/create-issue-from-file@fca9117c27cdc29c6c4db3b86c48e4115a786710 # v6.0.0
         with:
           title: "Warning: Invalid Token URLs Detected"
           content-filepath: ${{ env.TEMP_DIR }}/url_validation_report.md
@@ -160,7 +160,7 @@ jobs:
       # Capture output artifacts (always runs, even if previous steps failed)
       - name: Capture output files
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: token-detection-artifacts-${{ github.run_id }}
           path: |

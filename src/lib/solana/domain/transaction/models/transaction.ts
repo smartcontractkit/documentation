@@ -35,6 +35,7 @@ export interface SimulationAccountInfo {
   owner: string
   lamports: number
   data: [string, string] // [data, encoding] - matches Solana RPC spec
+  /** @deprecated Removed in @solana/kit v4.0.0 (SIMD-215). No longer returned by RPC. */
   rentEpoch?: number
 }
 

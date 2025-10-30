@@ -264,6 +264,21 @@ export const validateOutputKey = (outputKey?: string): "chainId" | "selector" | 
   return outputKey as "chainId" | "selector" | "internalId"
 }
 
+/**
+ * Validates the enrichFeeTokens parameter
+ * @param enrichFeeTokens - String value to validate
+ * @returns Boolean indicating whether to enrich fee tokens with addresses and metadata
+ * @throws CCIPError if enrichFeeTokens value is invalid
+ */
+export const validateEnrichFeeTokens = (enrichFeeTokens?: string): boolean => {
+  if (!enrichFeeTokens) return false
+  const normalizedValue = enrichFeeTokens.toLowerCase()
+  if (!["true", "false"].includes(normalizedValue)) {
+    throw new CCIPError(400, 'enrichFeeTokens must be "true" or "false"')
+  }
+  return normalizedValue === "true"
+}
+
 export const generateChainKey = (chainId: number | string, chainType: ChainType, outputKey: OutputKeyType): string => {
   const chainIdStr = chainId.toString()
 

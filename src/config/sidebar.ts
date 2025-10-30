@@ -9,6 +9,7 @@ import evmCcipV150Contents from "./sidebar/ccip/api-reference/evm/v1_5_0.json" w
 import evmCcipV151Contents from "./sidebar/ccip/api-reference/evm/v1_5_1.json" with { type: "json" }
 import evmCcipV160Contents from "./sidebar/ccip/api-reference/evm/v1_6_0.json" with { type: "json" }
 import evmCcipV161Contents from "./sidebar/ccip/api-reference/evm/v1_6_1.json" with { type: "json" }
+import evmCcipV162Contents from "./sidebar/ccip/api-reference/evm/v1_6_2.json" with { type: "json" }
 import aptosCcipV160Contents from "./sidebar/ccip/api-reference/aptos/v1_6_0.json" with { type: "json" }
 import svmCcipV011Contents from "./sidebar/ccip/api-reference/svm/v0_1_1.json" with { type: "json" }
 import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" with { type: "json" }
@@ -27,7 +28,7 @@ import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/
  */
 export type SectionContent = {
   title: string
-  url: string
+  url?: string
   highlightAsCurrent?: string[]
   children?: SectionContent[]
   isCollapsible?: boolean
@@ -469,6 +470,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Architecture",
           url: "data-streams/architecture",
+        },
+        {
+          title: "Best Practices",
+          url: "data-streams/concepts/best-practices",
         },
         {
           title: "Liquidity-Weighted Bid and Ask prices",
@@ -1578,27 +1583,44 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "ccip/tutorials/evm/cross-chain-tokens",
               children: [
                 {
-                  title: "Deploy and Register Using Remix IDE",
-                  url: "ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-remix",
+                  title: "Using Remix IDE",
+                  children: [
+                    {
+                      title: "Deploy and Register from an EOA",
+                      url: "ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-remix",
+                    },
+                  ],
                 },
                 {
-                  title: "Register from an EOA (Burn & Mint)",
-                  url: "ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-hardhat",
-                  highlightAsCurrent: ["ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-foundry"],
-                },
-                {
-                  title: "Register from an EOA (Lock & Mint)",
-                  url: "ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-lock-mint-hardhat",
-                  highlightAsCurrent: ["ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-lock-mint-foundry"],
-                },
-                {
-                  title: "Set Token Pool rate limits",
-                  url: "ccip/tutorials/evm/cross-chain-tokens/update-rate-limiters-hardhat",
-                  highlightAsCurrent: ["ccip/tutorials/evm/cross-chain-tokens/update-rate-limiters-foundry"],
-                },
-                {
-                  title: "Register from a Safe Smart Account (Burn & Mint)",
-                  url: "ccip/tutorials/evm/cross-chain-tokens/register-from-safe-burn-mint-hardhat",
+                  title: "Using Hardhat / Foundry",
+                  children: [
+                    {
+                      title: "Register from an EOA (Burn & Mint)",
+                      url: "ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-hardhat",
+                      highlightAsCurrent: ["ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-foundry"],
+                    },
+                    {
+                      title: "Register from an EOA (Lock & Mint)",
+                      url: "ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-lock-mint-hardhat",
+                      highlightAsCurrent: ["ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-lock-mint-foundry"],
+                    },
+                    {
+                      title: "Set Token Pool rate limits",
+                      url: "ccip/tutorials/evm/cross-chain-tokens/update-rate-limiters-hardhat",
+                      highlightAsCurrent: ["ccip/tutorials/evm/cross-chain-tokens/update-rate-limiters-foundry"],
+                    },
+                    {
+                      title: "Register from a Safe Smart Account (Burn & Mint)",
+                      url: "ccip/tutorials/evm/cross-chain-tokens/register-from-safe-burn-mint-hardhat",
+                    },
+                    {
+                      title: "Configure Additional Networks",
+                      url: "ccip/tutorials/evm/cross-chain-tokens/configure-additional-networks-hardhat",
+                      highlightAsCurrent: [
+                        "ccip/tutorials/evm/cross-chain-tokens/configure-additional-networks-foundry",
+                      ],
+                    },
+                  ],
                 },
               ],
             },
@@ -1775,6 +1797,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Hyperliquid Integration Guide",
               url: "ccip/tools-resources/network-specific/hyperliquid-integration-guide",
             },
+            {
+              title: "HyperEVM Testnet RPC Guide",
+              url: "ccip/tools-resources/network-specific/hyperevm-testnet-rpc",
+            },
           ],
         },
         {
@@ -1786,7 +1812,13 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "ccip/api-reference/evm",
               children: [
                 {
-                  title: "v1.6.1 (Latest)",
+                  title: "v1.6.2 (Latest)",
+                  url: "ccip/api-reference/evm/v1.6.2",
+                  isCollapsible: true,
+                  children: evmCcipV162Contents,
+                },
+                {
+                  title: "v1.6.1",
                   url: "ccip/api-reference/evm/v1.6.1",
                   isCollapsible: true,
                   children: evmCcipV161Contents,

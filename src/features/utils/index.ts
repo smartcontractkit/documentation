@@ -497,6 +497,14 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "PLASMA_MAINNET"
     case "plasma-testnet":
       return "PLASMA_TESTNET"
+    case "memento-mainnet":
+      return "MEMENTO_MAINNET"
+    case "memento-testnet":
+      return "MEMENTO_TESTNET"
+    case "xdc-mainnet":
+      return "XDC_MAINNET"
+    case "xdc-testnet":
+      return "XDC_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -790,6 +798,14 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "plasma-mainnet"
     case "PLASMA_TESTNET":
       return "plasma-testnet"
+    case "MEMENTO_MAINNET":
+      return "memento-mainnet"
+    case "MEMENTO_TESTNET":
+      return "memento-testnet"
+    case "XDC_MAINNET":
+      return "xdc-mainnet"
+    case "XDC_TESTNET":
+      return "xdc-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
