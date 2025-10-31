@@ -69,6 +69,9 @@ export type SupportedTechnology =
   | "POLYGON_KATANA"
   | "KAIA"
   | "TAC"
+  | "PLASMA"
+  | "MEMENTO"
+  | "XDC"
 
 export type ChainType = "evm" | "solana" | "aptos" | "sui"
 
@@ -224,7 +227,10 @@ export type SupportedChain =
   | "TAC_TESTNET"
   | "PLASMA_MAINNET"
   | "PLASMA_TESTNET"
-
+  | "MEMENTO_MAINNET"
+  | "MEMENTO_TESTNET"
+  | "XDC_MAINNET"
+  | "XDC_TESTNET"
 export type ExplorerInfo = {
   baseUrl: string
   queryParameters?: {

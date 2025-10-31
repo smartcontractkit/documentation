@@ -1,4 +1,6 @@
-import { SolflareWalletAdapter, CoinbaseWalletAdapter, TrustWalletAdapter } from "@solana/wallet-adapter-wallets"
+import { SolflareWalletAdapter } from "@solana/wallet-adapter-solflare"
+import { CoinbaseWalletAdapter } from "@solana/wallet-adapter-coinbase"
+import { TrustWalletAdapter } from "@solana/wallet-adapter-trust"
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base"
 import { getNetworkConfig } from "./networks.ts"
 

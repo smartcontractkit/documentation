@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-import { useEffect, useState, useRef } from "preact/hooks"
+import { useEffect, useState, useRef, useMemo } from "preact/hooks"
 import { MainnetTable, TestnetTable, StreamsNetworkAddressesTable } from "./Tables.tsx"
 import feedList from "./FeedList.module.css"
 import tableStyles from "./Tables.module.css"
@@ -14,6 +14,7 @@ import SectionWrapper from "~/components/SectionWrapper/SectionWrapper.tsx"
 import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/TableOfContents/tocStore.ts"
 import alertIcon from "../../../components/Alert/Assets/alert-icon.svg"
+import { ChainSelector } from "~/components/ChainSelector/ChainSelector.tsx"
 
 export type DataFeedType =
   | "default"
@@ -46,23 +47,38 @@ export const FeedList = ({
   const isSmartData = dataFeedType === "smartdata"
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
 
-  // Get network directly from URL
-  const networkFromURL =
-    typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("network") : null
-
-  // If URL has a network param, use it directly
-  const effectiveInitialNetwork = networkFromURL || initialNetwork
-
-  // Initialize state with the URL value
-  const [currentNetwork, setCurrentNetwork] = useState(effectiveInitialNetwork)
-
-  // Get network directly from URL or fall back to initialNetwork
+  // Get network from URL parameters or fall back to initialNetwork
   const getNetworkFromURL = () => {
     if (typeof window === "undefined") return initialNetwork
     const params = new URLSearchParams(window.location.search)
     const networkParam = params.get("network")
     return networkParam || initialNetwork
   }
+
+  // Get network type from URL parameters (detect testnet from testnetSearch, testnetPage, or explicit networkType)
+  const getNetworkTypeFromURL = (): "mainnet" | "testnet" => {
+    if (typeof window === "undefined") return "mainnet"
+    const params = new URLSearchParams(window.location.search)
+
+    // Check explicit networkType parameter first
+    const networkType = params.get("networkType")
+    if (networkType === "testnet") {
+      return "testnet"
+    }
+
+    // If there's testnetSearch or testnetPage > 1, user is viewing testnet
+    const testnetSearch = params.get("testnetSearch")
+    const testnetPage = params.get("testnetPage")
+
+    if (testnetSearch || (testnetPage && testnetPage !== "1")) {
+      return "testnet"
+    }
+
+    return "mainnet"
+  }
+
+  // Initialize state with the URL value
+  const [currentNetwork, setCurrentNetwork] = useState(getNetworkFromURL())
 
   // Sync with URL when it changes externally (browser back/forward)
   useEffect(() => {
@@ -86,32 +102,67 @@ export const FeedList = ({
     }
   }, [currentNetwork, isStreams])
 
-  // Force initial sync with URL
+  // Sync with URL when it changes externally (browser back/forward)
   useEffect(() => {
-    // Get the latest network from URL
-    const latestNetworkFromURL = getNetworkFromURL()
-    if (latestNetworkFromURL !== currentNetwork) {
-      setCurrentNetwork(latestNetworkFromURL)
-    }
-
-    // Force a redraw after a short delay
+    // Only run this effect on the client side after mount
     if (typeof window !== "undefined") {
-      // execute after the DOM is fully loaded
-      window.addEventListener("load", () => {
-        const networkFromURL = getNetworkFromURL()
-        setCurrentNetwork(networkFromURL)
-
-        // Force a repaint of aria-selected attributes
-        document.querySelectorAll(".network-button").forEach((button) => {
-          const buttonId = button.getAttribute("id")
-          if (buttonId === networkFromURL) {
-            button.setAttribute("aria-selected", "true")
-          } else {
-            button.setAttribute("aria-selected", "false")
-          }
-        })
-      })
+      const latestNetworkFromURL = getNetworkFromURL()
+      if (latestNetworkFromURL !== currentNetwork) {
+        setCurrentNetwork(latestNetworkFromURL)
+      }
     }
+  }, []) // Run only once on mount
+
+  // Additional sync for when window loads (fallback)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const handleLoad = () => {
+        const networkFromURL = getNetworkFromURL()
+        if (networkFromURL !== currentNetwork) {
+          setCurrentNetwork(networkFromURL)
+        }
+      }
+
+      // If window is already loaded, run immediately
+      if (document.readyState === "complete") {
+        handleLoad()
+      } else {
+        window.addEventListener("load", handleLoad)
+        return () => window.removeEventListener("load", handleLoad)
+      }
+    }
+  }, [])
+
+  // Track the selected network type (mainnet/testnet)
+  const [selectedNetworkType, setSelectedNetworkType] = useState<"mainnet" | "testnet">(getNetworkTypeFromURL())
+
+  // Sync network type with URL when it changes externally (browser back/forward)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const handleNetworkTypeUrlChange = () => {
+        const networkTypeFromURL = getNetworkTypeFromURL()
+        if (networkTypeFromURL !== selectedNetworkType) {
+          setSelectedNetworkType(networkTypeFromURL)
+        }
+      }
+
+      // Listen for popstate events (back/forward navigation)
+      window.addEventListener("popstate", handleNetworkTypeUrlChange)
+
+      // Also check immediately in case URL was changed externally
+      handleNetworkTypeUrlChange()
+
+      return () => {
+        window.removeEventListener("popstate", handleNetworkTypeUrlChange)
+      }
+    }
+  }, [selectedNetworkType])
+
+  // Track hydration state
+  const [isHydrated, setIsHydrated] = useState(false)
+
+  useEffect(() => {
+    setIsHydrated(true)
   }, [])
 
   // Regular query string states
@@ -168,8 +219,32 @@ export const FeedList = ({
   ]
   const [streamsChain] = useState(initialNetwork)
   const activeChain = isStreams ? streamsChain : currentNetwork
-  const chain = chains.find((c) => c.page === activeChain) || chains[0]
-  const chainMetadata = useGetChainMetadata(chain, initialCache && initialCache[chain.page])
+
+  // Find the selected chain from available chains
+  const selectedChain = useMemo(() => {
+    // During SSR, try to find the chain from URL param if activeChain is not available
+    if (!activeChain) {
+      // Check if we have a network param that we can use directly
+      if (typeof window !== "undefined") {
+        const urlParams = new URLSearchParams(window.location.search)
+        const networkParam = urlParams.get("network")
+        if (networkParam) {
+          const foundFromUrl = chains.find((c) => c.page === networkParam)
+          if (foundFromUrl) {
+            return foundFromUrl
+          }
+        }
+      }
+      return chains[0] // fallback only if no activeChain
+    }
+
+    const foundChain = chains.find((c) => c.page === activeChain)
+    if (!foundChain) {
+      return chains[0]
+    }
+    return foundChain
+  }, [activeChain, chains])
+  const chainMetadata = useGetChainMetadata(selectedChain, initialCache && initialCache[selectedChain.page])
   const wrapperRef = useRef(null)
 
   // scroll handler
@@ -291,7 +366,7 @@ export const FeedList = ({
     if (!isStreams) {
       const params = new URLSearchParams(window.location.search)
       params.set("network", chain.page)
-      // Remove hash fragment when changing networks to avoid mismatched anchors
+      // Clear hash when changing networks
       const newUrl = window.location.pathname + "?" + params.toString()
       window.history.replaceState({ path: newUrl }, "", newUrl)
       setCurrentNetwork(chain.page)
@@ -299,6 +374,43 @@ export const FeedList = ({
     setSearchValue("")
     setSelectedFeedCategories([])
     setCurrentPage("1")
+    setShowOnlyMVRFeeds(false)
+    setShowOnlyMVRFeedsTestnet(false)
+  }
+
+  // Network type change handler for testnet/mainnet switching
+  function handleNetworkTypeChange(networkType: "mainnet" | "testnet") {
+    // Update the selected network type
+    setSelectedNetworkType(networkType)
+
+    // Update URL parameters to reflect network type state
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search)
+
+      if (networkType === "testnet") {
+        // Set networkType parameter to testnet
+        params.set("networkType", "testnet")
+        // Ensure testnetPage is set (default to 1 if not present)
+        if (!params.get("testnetPage")) {
+          params.set("testnetPage", "1")
+        }
+      } else {
+        // Remove testnet-specific parameters when switching to mainnet
+        params.delete("networkType")
+        params.delete("testnetSearch")
+        // Keep testnetPage for potential future navigation
+      }
+
+      const newUrl = window.location.pathname + "?" + params.toString()
+      window.history.replaceState({ path: newUrl }, "", newUrl)
+    }
+
+    // Reset filters and pagination when switching network types
+    setSearchValue("")
+    setTestnetSearchValue("")
+    setSelectedFeedCategories([])
+    setCurrentPage("1")
+    setTestnetCurrentPage("1")
     setShowOnlyMVRFeeds(false)
     setShowOnlyMVRFeedsTestnet(false)
   }
@@ -350,6 +462,92 @@ export const FeedList = ({
   const isDeprecating = ecosystem === "deprecating"
   let netCount = 0
 
+  // Available network types for current feed type
+  const availableNetworkTypes = useMemo(() => {
+    if (!chainMetadata.processedData?.networks) return { mainnet: false, testnet: false }
+
+    const networkTypes = { mainnet: false, testnet: false }
+
+    // Filter networks by feed type
+    const filteredNetworks = chainMetadata.processedData.networks.filter((network) => {
+      if (isDeprecating) {
+        let foundDeprecated = false
+        network.metadata?.forEach((feed: any) => {
+          if (feed.feedCategory === "deprecating") {
+            foundDeprecated = true
+          }
+        })
+        return foundDeprecated
+      }
+
+      if (isStreams) return network.tags?.includes("streams")
+      if (isSmartData) return network.tags?.includes("smartData")
+      if (isRates) return network.tags?.includes("rates")
+      if (isUSGovernmentMacroeconomicData) return network.tags?.includes("usGovernmentMacroeconomicData")
+
+      return true
+    })
+
+    // Check available network types
+    filteredNetworks.forEach((network) => {
+      if (network.networkType === "mainnet") {
+        networkTypes.mainnet = true
+      } else if (network.networkType === "testnet") {
+        networkTypes.testnet = true
+      }
+    })
+
+    return networkTypes
+  }, [
+    chainMetadata.processedData?.networks,
+    isDeprecating,
+    isStreams,
+    isSmartData,
+    isRates,
+    isUSGovernmentMacroeconomicData,
+  ])
+
+  // Auto-switch network type if current selection isn't available
+  useEffect(() => {
+    if (!chainMetadata.loading && chainMetadata.processedData) {
+      const { mainnet, testnet } = availableNetworkTypes
+
+      if (selectedNetworkType === "mainnet" && !mainnet && testnet) {
+        setSelectedNetworkType("testnet")
+
+        // Update URL parameters to reflect the auto-switch
+        if (typeof window !== "undefined") {
+          const params = new URLSearchParams(window.location.search)
+          params.set("networkType", "testnet")
+          if (!params.get("testnetPage")) {
+            params.set("testnetPage", "1")
+          }
+          params.delete("testnetSearch") // Clear any previous testnet search
+          const newUrl = window.location.pathname + "?" + params.toString()
+          window.history.replaceState({ path: newUrl }, "", newUrl)
+        }
+      } else if (selectedNetworkType === "testnet" && !testnet && mainnet) {
+        setSelectedNetworkType("mainnet")
+
+        // Update URL parameters to reflect the auto-switch
+        if (typeof window !== "undefined") {
+          const params = new URLSearchParams(window.location.search)
+          params.delete("networkType")
+          params.delete("testnetSearch")
+          const newUrl = window.location.pathname + "?" + params.toString()
+          window.history.replaceState({ path: newUrl }, "", newUrl)
+        }
+      }
+    }
+  }, [
+    chainMetadata.loading,
+    chainMetadata.processedData,
+    availableNetworkTypes,
+    selectedNetworkType,
+    dataFeedType,
+    ecosystem,
+  ])
+
   const streamsMainnetSectionTitle =
     dataFeedType === "streamsCrypto"
       ? "Mainnet Crypto Streams"
@@ -389,51 +587,6 @@ export const FeedList = ({
       }
     }
   }, [searchValue, testnetSearchValue, chainMetadata.loading])
-
-  // handles button selection based on URL
-  const NetworkSelectionUpdater = () => {
-    // Update network buttons based on URL
-    useEffect(() => {
-      function updateNetworkButtons() {
-        if (typeof window === "undefined") return
-
-        // Get network from URL
-        const urlParams = new URLSearchParams(window.location.search)
-        const networkFromURL = urlParams.get("network")
-
-        if (!networkFromURL) return
-
-        // Update all network buttons using DOM API
-        document.querySelectorAll(".network-button").forEach((button) => {
-          const buttonId = button.getAttribute("id")
-          if (buttonId === networkFromURL) {
-            button.setAttribute("aria-selected", "true")
-          } else {
-            button.setAttribute("aria-selected", "false")
-          }
-        })
-      }
-
-      // Run immediately
-      updateNetworkButtons()
-
-      // Also run when DOM is fully loaded
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", updateNetworkButtons)
-      }
-
-      // And run after everything is loaded
-      window.addEventListener("load", updateNetworkButtons)
-
-      return () => {
-        // Clean up listeners
-        document.removeEventListener("DOMContentLoaded", updateNetworkButtons)
-        window.removeEventListener("load", updateNetworkButtons)
-      }
-    }, [])
-
-    return null
-  }
 
   if (
     dataFeedType === "streamsCrypto" ||
@@ -627,50 +780,29 @@ export const FeedList = ({
 
   return (
     <SectionWrapper title="Networks" depth={2} updateTOC={false}>
-      <NetworkSelectionUpdater />
-
       {!isDeprecating && (
         <>
-          <div class={feedList.clChainnavProduct} role="tablist">
-            {chains
-              .filter((chain) => {
-                if (isStreams) return chain.tags?.includes("streams")
-                if (isSmartData) return chain.tags?.includes("smartData")
-                if (isRates) return chain.tags?.includes("rates")
-                if (isUSGovernmentMacroeconomicData) return chain.tags?.includes("usGovernmentMacroeconomicData")
-                return chain.tags?.includes("default")
-              })
-              .map((chain) => {
-                // Get network directly from URL
-                const urlNetworkParam =
-                  typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("network") : null
-
-                // Consider selected if either state or URL parameter matches
-                const isSelected = chain.page === (urlNetworkParam || currentNetwork)
-
-                return (
-                  <button
-                    key={chain.page}
-                    id={chain.page}
-                    role="tab"
-                    aria-selected={isSelected}
-                    class={clsx(feedList.networkSwitchButton, "network-button")}
-                    onClick={() => handleNetworkSelect(chain)}
-                  >
-                    <img src={chain.img} title={chain.label} loading="lazy" width={32} height={32} />
-                    <span>{chain.label}</span>
-                  </button>
-                )
-              })}
+          <div
+            className={feedList.clChainnavProduct}
+            style={{
+              marginBottom: "var(--space-4x)",
+              justifyContent: "flex-start",
+              flexWrap: "nowrap",
+            }}
+          >
+            {isHydrated && (
+              <ChainSelector
+                key={`chain-selector-${selectedChain.page}`} // Force re-render when chain changes
+                chains={chains}
+                selectedChain={selectedChain}
+                onChainSelect={handleNetworkSelect}
+                onNetworkTypeChange={handleNetworkTypeChange}
+                dataFeedType={dataFeedType}
+                availableNetworkTypes={availableNetworkTypes}
+                selectedNetworkType={selectedNetworkType}
+              />
+            )}
           </div>
-          {chainMetadata.processedData?.networkStatusUrl && !isDeprecating && (
-            <p>
-              Track the status of this network at{" "}
-              <a href={chainMetadata.processedData?.networkStatusUrl}>
-                {chainMetadata.processedData?.networkStatusUrl}
-              </a>
-            </p>
-          )}
         </>
       )}
 
@@ -732,7 +864,7 @@ export const FeedList = ({
 
         // Handle regular network processing
         return chainMetadata.processedData?.networks
-          ?.filter((network: { metadata: unknown[]; tags: string | string[] }) => {
+          ?.filter((network: { metadata: unknown[]; tags: string | string[]; networkType: string }) => {
             if (isDeprecating) {
               let foundDeprecated = false
               network.metadata?.forEach((feed: any) => {
@@ -743,18 +875,22 @@ export const FeedList = ({
               if (foundDeprecated) {
                 netCount++
               }
-              return foundDeprecated
+              return foundDeprecated && network.networkType === selectedNetworkType
             }
 
-            if (isStreams) return network.tags?.includes("streams")
+            if (isStreams) return network.tags?.includes("streams") && network.networkType === selectedNetworkType
 
-            if (isSmartData) return network.tags?.includes("smartData")
+            if (isSmartData) return network.tags?.includes("smartData") && network.networkType === selectedNetworkType
 
-            if (isRates) return network.tags?.includes("rates")
+            if (isRates) return network.tags?.includes("rates") && network.networkType === selectedNetworkType
 
-            if (isUSGovernmentMacroeconomicData) return network.tags?.includes("usGovernmentMacroeconomicData")
+            if (isUSGovernmentMacroeconomicData)
+              return (
+                network.tags?.includes("usGovernmentMacroeconomicData") && network.networkType === selectedNetworkType
+              )
 
-            return true
+            // Filter by selected network type (mainnet/testnet)
+            return network.networkType === selectedNetworkType
           })
           .map((network: ChainNetwork) => {
             return (
@@ -765,62 +901,9 @@ export const FeedList = ({
                   key={network.name}
                   idOverride={network.name.toLowerCase().replace(/\s+/g, "-")}
                 >
-                  {network.name === "Solana Mainnet" && (
-                    <div
-                      style={{
-                        padding: "var(--space-4x)",
-                        gap: "var(--space-4x)",
-                        backgroundColor: "var(--color-background-warning)",
-                        border: "1px solid #eee",
-                        borderRadius: "var(--border-radius-10)",
-                        outline: "1px solid transparent",
-                        display: "flex",
-                        marginBottom: "1rem",
-                      }}
-                    >
-                      <div style={{ flexShrink: 0, width: "1.5em" }}>
-                        <img src={alertIcon.src} style={{ width: "1.5em", height: "1.5em" }} alt="caution" />
-                      </div>
-                      <div>
-                        <p
-                          style={{
-                            fontWeight: 600,
-                            textTransform: "uppercase",
-                            color: "var(--theme-text)",
-                            fontSize: "14px",
-                            marginBottom: "0.5rem",
-                            fontFamily: "TASAOrbiterDisplay",
-                          }}
-                        >
-                          Solana Data Feeds Deprecation
-                        </p>
-                        <p style={{ color: "var(--theme-text-light)", lineHeight: 1.5, fontSize: "14px" }}>
-                          Several Data Feeds on Solana{" "}
-                          <a
-                            href="/data-feeds/deprecating-feeds"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{ color: "var(--color-text-link)", textDecoration: "underline" }}
-                          >
-                            are being deprecated
-                          </a>{" "}
-                          as Chainlink migrates support to Data Streams' pull-based model. See{" "}
-                          <a
-                            href="/data-streams/crypto-streams"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{ color: "var(--color-text-link)", textDecoration: "underline" }}
-                          >
-                            this page
-                          </a>{" "}
-                          for the complete list of Data Streams available on Solana.
-                        </p>
-                      </div>
-                    </div>
-                  )}
                   {network.networkType === "mainnet" ? (
                     <>
-                      {!isStreams && chain.l2SequencerFeed && (
+                      {!isStreams && selectedChain.l2SequencerFeed && (
                         <p>
                           {network.name} is an L2 network. As a best practice, use the L2 sequencer feed to verify the
                           status of the sequencer when running applications on L2 networks. See the{" "}
@@ -1206,122 +1289,6 @@ export const FeedList = ({
           <strong>No data feeds are scheduled for deprecation at this time.</strong>
         </div>
       )}
-
-      {!isDeprecating &&
-        chainMetadata.processedData?.testnetProcessedData &&
-        chainMetadata.processedData?.testnetProcessedData.length > 0 && (
-          <SectionWrapper
-            title={isStreams ? streamsTestnetSectionTitle : "Testnet Feeds"}
-            depth={2}
-            updateTOC={true}
-            idOverride={
-              chainMetadata.processedData.testnetNetwork?.name?.toLowerCase().replace(/\s+/g, "-") || "testnet-feeds"
-            }
-          >
-            <div className={feedList.tableFilters}>
-              {!isStreams && isSmartData && (
-                <details class={feedList.filterDropdown_details}>
-                  <summary class="text-200" onClick={() => setShowCategoriesDropdown((prev) => !prev)}>
-                    SmartData Type
-                  </summary>
-                  <nav ref={wrapperRef} style={!showCategoriesDropdown ? { display: "none" } : {}}>
-                    <ul>
-                      {smartDataTypes.map((category) => (
-                        <li>
-                          <button onClick={() => handleCategorySelection(category.key)}>
-                            <input
-                              type="checkbox"
-                              checked={selectedFeedCategories?.includes(category.key)}
-                              readonly
-                              style="cursor:pointer;"
-                            />
-                            <span> {category.name}</span>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </nav>
-                </details>
-              )}
-              <div className={feedList.searchAndCheckbox}>
-                <form class={feedList.filterDropdown_search}>
-                  <input
-                    id="testnetSearch"
-                    class={feedList.filterDropdown_searchInput}
-                    placeholder="Search"
-                    onInput={(event) => {
-                      setTestnetSearchValue((event.target as HTMLInputElement).value)
-                      setTestnetCurrentPage("1")
-                    }}
-                  />
-                  {testnetSearchValue && (
-                    <button
-                      type="button"
-                      className={clsx(button.secondary, feedList.clearFilterBtn)}
-                      onClick={() => {
-                        setTestnetSearchValue("")
-                        setTestnetCurrentPage("1")
-                        const inputElement = document.getElementById("testnetSearch") as HTMLInputElement
-                        if (inputElement) {
-                          inputElement.value = ""
-                        }
-                      }}
-                      aria-label="Clear search filter"
-                    >
-                      Clear filter
-                    </button>
-                  )}
-                </form>
-                {!isStreams && (
-                  <label className={feedList.detailsLabel}>
-                    <input
-                      type="checkbox"
-                      style="width:15px;height:15px;display:inline;margin-right:8px;"
-                      checked={showExtraDetails}
-                      onChange={() => setShowExtraDetails((old) => !old)}
-                    />
-                    Show more details
-                  </label>
-                )}
-              </div>
-              <div className={feedList.checkboxContainer}>
-                {!isStreams && isSmartData && (
-                  <label className={feedList.detailsLabel}>
-                    <input
-                      type="checkbox"
-                      style="width:15px;height:15px;display:inline;margin-right:8px;"
-                      checked={showOnlyMVRFeedsTestnet}
-                      onChange={() => {
-                        setShowOnlyMVRFeedsTestnet((old) => !old)
-                        setTestnetCurrentPage("1") // Reset to first page when filter changes
-                      }}
-                    />
-                    Show Multiple-Variable Response (MVR) feeds
-                  </label>
-                )}
-              </div>
-            </div>
-            <TestnetTable
-              network={chainMetadata.processedData.testnetNetwork}
-              showExtraDetails={showExtraDetails}
-              dataFeedType={dataFeedType}
-              selectedFeedCategories={
-                Array.isArray(selectedFeedCategories)
-                  ? selectedFeedCategories
-                  : selectedFeedCategories
-                    ? [selectedFeedCategories]
-                    : []
-              }
-              showOnlyMVRFeeds={showOnlyMVRFeedsTestnet}
-              firstAddr={testnetFirstAddr}
-              lastAddr={testnetLastAddr}
-              addrPerPage={testnetAddrPerPage}
-              currentPage={Number(testnetCurrentPage)}
-              paginate={testnetPaginate}
-              searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
-            />
-          </SectionWrapper>
-        )}
     </SectionWrapper>
   )
 }

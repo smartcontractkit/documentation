@@ -233,6 +233,7 @@ export const mergeWithMVRFeeds = async (
         "ethereum-testnet-sepolia-arbitrum-1": ["arbitrum-sepolia"],
         "ethereum-testnet-sepolia": ["ethereum-sepolia"],
         "avalanche-mainnet": ["avalanche-mainnet"],
+        "ethereum-testnet-sepolia-base-1": ["base-sepolia"],
       }
 
       // Process each chain in the metadata

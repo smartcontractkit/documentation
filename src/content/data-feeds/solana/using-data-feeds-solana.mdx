@@ -15,10 +15,10 @@ metadata:
 import { Aside, CodeSample } from "@components"
 import { Tabs } from "@components/Tabs"
 
-<Aside type="caution" title="Solana Data Feeds Deprecation">
-  Several Data Feeds on Solana [are being deprecated](/data-feeds/deprecating-feeds) as Chainlink migrates support to
-  Data Streams' pull-based model. See [this page](/data-streams/crypto-streams) for the complete list of Data Streams
-  available on Solana.
+<Aside type="note" title="SDK v2 is now available">
+
+The Chainlink [Solana SDK v2 is now available](https://crates.io/crates/chainlink_solana/), offering improved performance with lower compute unit usage through direct account reads instead of Cross-Program Invocation (CPI). This guide demonstrates the v2 SDK pattern. If you're using the v1 SDK, see the [migration guide below](#migrating-from-v1-to-v2) to upgrade.
+
 </Aside>
 
 Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. This guide demonstrates how to deploy a program to the Solana Devnet cluster and access Data Feeds onchain using the [Chainlink Solana Starter Kit](https://github.com/smartcontractkit/solana-starter-kit). To learn how to read price feed data using offchain applications, see the [Using Data Feeds Offchain](/solana/using-data-feeds-off-chain) guide.
@@ -39,7 +39,7 @@ You can [add data feeds to an existing project](#adding-data-feeds-onchain-in-an
 
 ## Adding Data Feeds onchain in an existing project
 
-You can read Chainlink Data Feed data onchain in your existing project using the [Chainlink Solana Crate](https://crates.io/crates/chainlink_solana).
+You can read Chainlink Data Feed data onchain in your existing project using the [Chainlink Solana Crate](https://crates.io/crates/chainlink_solana). SDK v2 uses direct account reads for improved performance and lower compute unit usage compared to the deprecated v1 SDK which used Cross-Program Invocation (CPI).
 
 <Aside type="caution"title="Reading feed data">
 
@@ -53,42 +53,59 @@ Import the Chainlink Solana Crate into your project and use the code sample to m
 
    ```toml
    [dependencies]
-   chainlink_solana = "1.0.0"
+   chainlink_solana = "2.0.8"
    ```
 
-1. Use the following code sample to query price data. Each function call to the Chainlink Solana library takes two parameters:
-   - The [feed account](/data-feeds/price-feeds/addresses?network=solana) that you want to query.
-   - The [Chainlink Data Feeds OCR2 Program](#the-chainlink-data-feeds-ocr2-program) for the network. This is a static value that never changes.
+   If you're using [Anchor](https://www.anchor-lang.com/docs), also add:
 
-   The code sample has the following components:
+   ```toml
+   [dependencies]
+   anchor-lang = "0.31.1"
+   chainlink_solana = "2.0.8"
+   ```
+
+1. Choose the code sample that matches your project setup:
+   - **Rust (Anchor)**
+   - **Rust (Vanilla)**
+
+   Both samples demonstrate SDK v2, which reads data directly from the feed account. The code samples have the following components:
+   - `read_feed_v2`: Reads feed data directly from the account data with the feed owner verification
    - `latest_round_data`: Returns the latest round information for the specified price pair including the latest price
    - `description`: Returns a price pair description such as SOL/USD
    - `decimals`: Returns the precision of the price, as in how many numbers the price is padded out to
    - `Display`: A helper function that formats the padded out price data into a human-readable price
 
-   <CodeSample src="samples/Solana/PriceFeeds/on-chain-read.rs" />
+{/* prettier-ignore */}
+<Tabs client:visible>
+  <Fragment slot="tab.anchor">Rust (Anchor)</Fragment>
+  <Fragment slot="tab.rust">Rust (Vanilla)</Fragment>
+  <Fragment slot="panel.anchor">
+    <CodeSample src="samples/Solana/PriceFeeds/on-chain-read-anchor.rs" />
+  </Fragment>
+  <Fragment slot="panel.rust">
+    <CodeSample src="samples/Solana/PriceFeeds/on-chain-read.rs" />
+  </Fragment>
+</Tabs>
 
-   <CodeSample src="samples/Solana/PriceFeeds/on-chain-read-anchor.rs" />
-
-   Program Transaction logs:
+Program Transaction logs:
 
 {/* prettier-ignore */}
 <Tabs client:visible>
-  <Fragment slot="tab.rust">Rust</Fragment>
-  <Fragment slot="tab.rustAnchor">Rust with Anchor</Fragment>
+  <Fragment slot="tab.anchor">Rust (Anchor)</Fragment>
+  <Fragment slot="tab.rust">Rust (Vanilla)</Fragment>
+  <Fragment slot="panel.anchor">
+    ```shell Rust with Anchor
+    Fetching transaction logs... [ 'Program HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny
+    consumed 1826 of 1306895 compute units', 'Program return: HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny CA==',
+    'Program HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny success', 'Program log: SOL / USD price is 93.76988029', ]
+    ```
+  </Fragment>
   <Fragment slot="panel.rust">
     ```shell Rust
     > Program logged: "Chainlink Price Feed Consumer entrypoint" > Program logged: "SOL / USD price is
     83.99000000"
     > Program consumed: 95953 of 1400000 compute units > Program return:
     HNYSbr77Jc9LhHeb9tx53SrWbWfNBnQzQrM4b3BB3PCR CA==
-    ```
-  </Fragment>
-  <Fragment slot="panel.rustAnchor">
-    ```shell Rust with Anchor
-    Fetching transaction logs... [ 'Program HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny
-    consumed 1826 of 1306895 compute units', 'Program return: HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny CA==',
-    'Program HEvSKofvBgfaexv23kMabbYqxasxU3mQ4ibBMEmJWHny success', 'Program log: SOL / USD price is 93.76988029', ]
     ```
   </Fragment>
 </Tabs>
@@ -190,24 +207,48 @@ This example includes a contract written in Rust. Deploy the contract to the Sol
    anchor build
    ```
 
-1. The build process generates the keypair for your program's account. Before you deploy your program, you must add this public key to the `lib.rs` file:
-   1. Get the keypair from the `./target/deploy/chainlink_solana_demo-keypair.json` file that Anchor generated:
+1. The build process generates keypairs for your program accounts. Before you deploy your programs, you must add these public keys to the respective `lib.rs` files. The starter kit contains two programs that both need their IDs updated:
+   1. **For the `chainlink_solana_demo` program:**
+
+      Get the keypair from the `./target/deploy/chainlink_solana_demo-keypair.json` file that Anchor generated:
 
       ```shell
       solana address -k ./target/deploy/chainlink_solana_demo-keypair.json
       ```
 
-   1. Edit the `./programs/chainlink_solana_demo/src/lib.rs` file and replace the keypair in the `declare_id!()` definition:
+      Edit the `./programs/chainlink_solana_demo/src/lib.rs` file and replace the keypair in the `declare_id!()` definition with the output from the previous command:
 
       ```shell
       vi ./programs/chainlink_solana_demo/src/lib.rs
       ```
 
-      ```shell
+      Example (replace with your actual program ID):
+
+      ```rust
       declare_id!("JC16qi56dgcLoaTVe4BvnCoDL6FhH5NtahA7jmWZFdqm");
       ```
 
-1. With the new program ID added, run `anchor build` again. This recreates the necessary program files with the correct program ID:
+   1. **For the `ccip_basic_receiver` program:**
+
+      Get the keypair from the `./target/deploy/ccip_basic_receiver-keypair.json` file:
+
+      ```shell
+      solana address -k ./target/deploy/ccip_basic_receiver-keypair.json
+      ```
+
+      Edit the `./programs/ccip-basic-receiver/src/lib.rs` file and replace the keypair in the `declare_id!()` definition with the output from the previous command:
+
+      ```shell
+      vi ./programs/ccip-basic-receiver/src/lib.rs
+      ```
+
+      Example (replace with your actual program ID):
+
+      ```rust
+      declare_id!("ANvQpnDMhuuKmSWYV2ET7A78UZeU2bWbGjRpn4z27nv2");
+      ```
+
+1. With the new program IDs added to both files, run `anchor build` again. This recreates the necessary program files with the correct program IDs:
 
    ```shell
    anchor build
@@ -225,14 +266,15 @@ This example includes a contract written in Rust. Deploy the contract to the Sol
    solana program show --programs --keypair ./id.json --url devnet
    ```
 
-   The command prints the program ID, slot number, the wallet address that owns the program, and the program balance:
+   The command prints information for both deployed programs, including the program ID, slot number, the wallet address that owns each program, and the program balance:
 
    ```shell
    Program Id                                   | Slot      | Authority                                    | Balance
-   GRt21UnJFHZvcaWLbcUrXaTCFMREewDrm1DweDYBak3Z | 110801571 | FsQPnANKDhqpoayxCL3oDHFCBmrhP34NrfbDR34qbQUt | 3.07874904 SOL
+   ANvQpnDMhuuKmSWYV2ET7A78UZeU2bWbGjRpn4z27nv2 | 110801571 | FsQPnANKDhqpoayxCL3oDHFCBmrhP34NrfbDR34qbQUt | 2.23 SOL
+   JC16qi56dgcLoaTVe4BvnCoDL6FhH5NtahA7jmWZFdqm | 110801572 | FsQPnANKDhqpoayxCL3oDHFCBmrhP34NrfbDR34qbQUt | 1.47 SOL
    ```
 
-   To see additional details of your deployed program, copy the program ID and look it up in the [Solana Devnet Explorer](https://solscan.io/?cluster=devnet).
+   To see additional details of your deployed programs, copy a program ID and look it up in the [Solana Devnet Explorer](https://solscan.io/?cluster=devnet).
 
 Now that the program is onchain, you can call it.
 
@@ -273,11 +315,11 @@ Use your deployed program to retrieve price data from a Chainlink data feed on S
    ```shell
    node client.js \
    --program $(solana address -k ./target/deploy/chainlink_solana_demo-keypair.json) \
-   --feed CzZQBrJCLqjXRfMjRN3fhbxur2QYHUzkpaRwkWsiPqbz
+   --feed 6PxBx93S8x3tno1TsFZwT5VqP8drrRCbCXygEXYNkFJe
    ```
 
    ```shell
-   Price Is: 12.4215826
+   Price Is: 111198.0536333
    Success
    ```
 
@@ -340,3 +382,149 @@ After you are done with your deployed contract and no longer need it, it is nice
    Alternatively, you can send the remaining balance to a web wallet. Specify the public key for your wallet instead of the path the default wallet keypair. Now you can use those Devnet funds for other examples and development.
 
 To learn more about Solana and Anchor, see the [Solana Documentation](https://docs.solana.com/) and the [Anchor Documentation](https://www.anchor-lang.com/).
+
+## Migrating from v1 to v2
+
+SDK v2 uses direct account reads instead of Cross-Program Invocation (CPI), resulting in better performance, lower compute units, and simpler code.
+
+### Key changes
+
+1.  Update dependency in `Cargo.toml`:
+
+    ```toml
+    chainlink_solana = "2.0.8"  # was "1.0.0"
+    ```
+
+1.  Update imports:
+
+    ```rust
+    use chainlink_solana::v2::read_feed_v2;  // was: use chainlink_solana as chainlink;
+    ```
+
+1.  Remove `chainlink_program` from account context - only `chainlink_feed` is needed
+
+1.  Replace multiple CPI calls with a single read:
+
+    {/* prettier-ignore */}
+      <Tabs client:visible>
+         <Fragment slot="tab.v1">v1 Pattern</Fragment>
+         <Fragment slot="tab.v2">v2 Pattern</Fragment>
+         <Fragment slot="panel.v1">
+            ```rust
+            // Multiple CPI calls
+            let round = chainlink::latest_round_data(
+               ctx.accounts.chainlink_program.to_account_info(),
+               ctx.accounts.chainlink_feed.to_account_info(),
+            )?;
+            let description = chainlink::description(/* ... */)?;
+            let decimals = chainlink::decimals(/* ... */)?;
+            ```
+         </Fragment>
+         <Fragment slot="panel.v2">
+            ```rust
+            // Single read operation
+            let feed = &ctx.accounts.chainlink_feed;
+            let result = read_feed_v2(
+               feed.try_borrow_data()?,
+               feed.owner.to_bytes(),
+            ).map_err(|_| MyError::ReadError)?;
+
+               let round = result.latest_round_data()
+                  .ok_or(MyError::RoundDataMissing)?;
+               let description = result.description();
+               let decimals = result.decimals();
+               ```
+
+            </Fragment>
+
+      </Tabs>
+
+1.  Add error types (v2 requires explicit error handling):
+
+    ```rust
+    #[error_code]
+    pub enum MyError {
+        #[msg("read error")]
+        ReadError,
+        #[msg("no round data")]
+        RoundDataMissing,
+    }
+    ```
+
+1.  Update client code - remove `chainlinkProgram` from transaction accounts:
+    ```typescript
+    await program.methods
+      .execute()
+      .accounts({ chainlinkFeed: CHAINLINK_FEED }) // Remove chainlinkProgram
+      .rpc()
+    ```
+
+### Complete example
+
+<Tabs client:visible>
+  <Fragment slot="tab.v1">v1 (Deprecated)</Fragment>
+  <Fragment slot="tab.v2">v2 (Recommended)</Fragment>
+  <Fragment slot="panel.v1">
+    ```rust
+    use anchor_lang::prelude::*;
+    use chainlink_solana as chainlink;
+
+    #[program]
+    pub mod my_program {
+        use super::*;
+        pub fn execute(ctx: Context<Execute>) -> Result<()> {
+            let round = chainlink::latest_round_data(
+                ctx.accounts.chainlink_program.to_account_info(),
+                ctx.accounts.chainlink_feed.to_account_info(),
+            )?;
+            msg!("Price: {}", round.answer);
+            Ok(())
+        }
+    }
+
+    #[derive(Accounts)]
+    pub struct Execute<'info> {
+        pub chainlink_feed: AccountInfo<'info>,
+        pub chainlink_program: AccountInfo<'info>,
+    }
+    ```
+
+  </Fragment>
+  <Fragment slot="panel.v2">
+    ```rust
+    use anchor_lang::prelude::*;
+    use chainlink_solana::v2::read_feed_v2;
+
+    #[program]
+    pub mod my_program {
+        use super::*;
+        pub fn execute(ctx: Context<Execute>) -> Result<()> {
+            let feed = &ctx.accounts.chainlink_feed;
+            let result = read_feed_v2(
+                feed.try_borrow_data()?,
+                feed.owner.to_bytes(),
+            ).map_err(|_| MyError::ReadError)?;
+
+            let round = result.latest_round_data()
+                .ok_or(MyError::RoundDataMissing)?;
+            msg!("Price: {}", round.answer);
+            Ok(())
+        }
+    }
+
+    #[derive(Accounts)]
+    pub struct Execute<'info> {
+        pub chainlink_feed: AccountInfo<'info>,
+    }
+
+    #[error_code]
+    pub enum MyError {
+        #[msg("read error")]
+        ReadError,
+        #[msg("no round data")]
+        RoundDataMissing,
+    }
+    ```
+
+  </Fragment>
+</Tabs>

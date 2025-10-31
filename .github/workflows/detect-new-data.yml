@@ -37,7 +37,7 @@ jobs:
 
       # Step 2: Set up Node.js environment
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -73,7 +73,7 @@ jobs:
 
       # Step 2: Set up Node.js environment
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -123,7 +123,7 @@ jobs:
       # Step 9: Create an issue if any invalid URLs are detected
       - name: Create Issue for Broken URLs
         if: steps.validate_urls.outputs.url_validation_failed == 'true'
-        uses: peter-evans/create-issue-from-file@e8ef132d6df98ed982188e460ebb3b5d4ef3a9cd # v5.0.1
+        uses: peter-evans/create-issue-from-file@fca9117c27cdc29c6c4db3b86c48e4115a786710 # v6.0.0
         with:
           title: "GHA-data-validate-urls: Invalid URLs Detected"
           content-filepath: "temp/url_validation_report.md"
@@ -152,7 +152,7 @@ jobs:
       # Step 11: Upload artifacts for debugging and record-keeping
       - name: Capture output artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: data-detection-${{ github.run_id }}
           path: |

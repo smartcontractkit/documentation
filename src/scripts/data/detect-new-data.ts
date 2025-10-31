@@ -48,6 +48,7 @@ const NETWORK_ENDPOINTS: Record<string, string> = {
   polygonkatana: "https://reference-data-directory.vercel.app/feeds-polygon-mainnet-katana.json",
   bob: "https://reference-data-directory.vercel.app/feeds-bitcoin-mainnet-bob-1.json",
   plasma: "https://reference-data-directory.vercel.app/feeds-plasma-mainnet.json",
+  hyperevm: "https://reference-data-directory.vercel.app/feeds-hyperliquid-mainnet.json",
 }
 
 // Path to the baseline JSON file that contains known feed IDs

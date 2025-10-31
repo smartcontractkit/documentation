@@ -423,12 +423,13 @@ export const getAllNetworks = ({ filter }: { filter: Environment }): Network[] =
     const explorer = getExplorer(supportedChain)
     const router = chains[chain].router
     if (!explorer) throw Error(`Explorer not found for ${supportedChain}`)
-    const routerExplorerUrl = getExplorerAddressUrl(explorer)(router.address)
-    const nativeToken = getNativeCurrency(supportedChain)
-    if (!nativeToken) throw Error(`Native token not found for ${supportedChain}`)
 
     // Determine chain type based on chain name
     const { chainType } = getChainTypeAndFamily(supportedChain)
+
+    const routerExplorerUrl = getExplorerAddressUrl(explorer, chainType)(router.address)
+    const nativeToken = getNativeCurrency(supportedChain)
+    if (!nativeToken) throw Error(`Native token not found for ${supportedChain}`)
 
     allChains.push({
       name: title,

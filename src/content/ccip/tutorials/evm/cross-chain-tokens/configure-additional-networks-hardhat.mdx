@@ -1,0 +1,122 @@
+---
+section: ccip
+date: Last Modified
+title: "Add CCIP Networks for Cross-Chain Token Tutorials (Hardhat)"
+metadata:
+  description: "Add CCIP network support to test burn-mint and lock-mint token tutorials on additional blockchains. Configure network settings, RPC endpoints, and CCIP contract addresses in Hardhat."
+  excerpt: "burn-mint, lock-mint, token pools, CCIP networks, add network, Hardhat configuration, cross-chain tokens, testnet, mainnet, RPC endpoints, CCIP Directory, EVM chains, network setup"
+  image: "/images/ccip/CCIP_enabled_tokens_flowchart.jpg"
+  datePublished: "2025-10-30"
+  lastModified: "2025-10-30"
+  estimatedTime: "5 minutes"
+  difficulty: "beginner"
+---
+
+import { Aside, PageTabs } from "@components"
+
+<PageTabs
+  pages={[
+    {
+      name: "Hardhat",
+      url: "/ccip/tutorials/evm/cross-chain-tokens/configure-additional-networks-hardhat",
+      icon: "/images/tutorial-icons/hardhat-icn.png",
+    },
+    {
+      name: "Foundry",
+      url: "/ccip/tutorials/evm/cross-chain-tokens/configure-additional-networks-foundry",
+      icon: "/images/tutorial-icons/foundry-icn.png",
+    },
+  ]}
+/>
+
+The [smart-contract-examples](https://github.com/smartcontractkit/smart-contract-examples/tree/main/ccip/cct/hardhat) repository includes default configurations for common CCIP testnet networks. This guide shows how to add support for additional networks.
+
+## Add a Network
+
+Add the network configuration to [`config/networks.ts`](https://github.com/smartcontractkit/smart-contract-examples/blob/main/ccip/cct/hardhat/config/networks.ts):
+
+```typescript
+export const configData = {
+  // ... existing networks
+  optimismSepolia: {
+    chainFamily: "evm",
+    chainId: 11155420,
+    chainSelector: "5224473277236331295",
+    router: "0x114A20A10b43D4115e5aeef7345a1A71d2a60C57",
+    rmnProxy: "0xb40A3109075965cc09E93719e33E748abf680dAe",
+    tokenAdminRegistry: "0x1d702b1FA12F347f0921C722f9D9166F00DEB67A",
+    registryModuleOwnerCustom: "0x49c4ba01dc6F5090f9df43Ab8F79449Db91A0CBB",
+    link: "0xE4aB69C077896252FAFBD49EFD26B5D171A32410",
+    confirmations: 2,
+    nativeCurrencySymbol: "ETH",
+  },
+}
+```
+
+Set the RPC URL:
+
+```bash
+npx env-enc set OPTIMISM_SEPOLIA_RPC_URL
+```
+
+<Aside type="note" title="Note">
+  You can obtain RPC URLs from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node
+  provider.
+</Aside>
+
+The network is now available in all Hardhat tasks using `--network optimismSepolia`.
+
+**Environment variable naming**: The system converts network names from camelCase to SNAKE_CASE and adds `_RPC_URL`. Examples: `optimismSepolia` → `OPTIMISM_SEPOLIA_RPC_URL`, `avalancheFuji` → `AVALANCHE_FUJI_RPC_URL`.
+
+## Configuration Fields
+
+| Field                       | Required | Description                                                                    | Source                                                                                 |
+| --------------------------- | -------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| `chainFamily`               | Yes      | Blockchain VM type: `"evm"` for Ethereum-compatible chains, `"svm"` for Solana | `config/types.ts`                                                                      |
+| `chainId`                   | Yes      | EVM chain ID                                                                   | Blockchain's official documentation (preferred) or [ChainList](https://chainlist.org/) |
+| `chainSelector`             | Yes      | CCIP identifier for the network                                                | [CCIP Directory](/ccip/directory)                                                      |
+| `router`                    | Yes      | CCIP Router contract address                                                   | [CCIP Directory](/ccip/directory)                                                      |
+| `rmnProxy`                  | Yes      | RMN Proxy contract address                                                     | [CCIP Directory](/ccip/directory)                                                      |
+| `tokenAdminRegistry`        | Yes      | Token Admin Registry address                                                   | [CCIP Directory](/ccip/directory)                                                      |
+| `registryModuleOwnerCustom` | Yes      | Registry Module Owner address                                                  | [CCIP Directory](/ccip/directory)                                                      |
+| `link`                      | Yes      | LINK token contract address                                                    | [CCIP Directory](/ccip/directory)                                                      |
+| `confirmations`             | No       | Number of block confirmations before considering transaction final             | Blockchain's finality characteristics and your risk tolerance                          |
+| `nativeCurrencySymbol`      | No       | Native gas token symbol (e.g., `"ETH"`, `"AVAX"`, `"POL"`)                     | Blockchain's official documentation                                                    |
+
+Find all CCIP addresses in the [CCIP Directory - Testnet](/ccip/directory/testnet) or [CCIP Directory - Mainnet](/ccip/directory/mainnet).
+
+## Test
+
+Deploy a token to verify the configuration:
+
+```bash
+npx hardhat deployToken --name "Test Token" --symbol TEST --network optimismSepolia
+```
+
+## Contract Verification (Optional)
+
+Most networks are natively supported. Add `--verifycontract` when deploying:
+
+```bash
+npx hardhat deployToken --name "Test Token" --symbol TEST --network optimismSepolia --verifycontract
+```
+
+For networks not in [Hardhat's chain descriptors](https://github.com/NomicFoundation/hardhat/blob/main/v-next/hardhat/src/internal/builtin-plugins/network-manager/chain-descriptors.ts), add to `hardhat.config.ts`:
+
+```typescript
+chainDescriptors: {
+  12345: {
+    name: "New Network",
+    chainType: "generic",
+    blockExplorers: {
+      etherscan: {
+        name: "NewScan",
+        url: "https://newscan.io",
+        apiUrl: "https://api.newscan.io/api",
+      },
+    },
+  },
+}
+```
+
+With [Etherscan API V2](https://docs.etherscan.io/introduction), a single `ETHERSCAN_API_KEY` works across all Etherscan-compatible networks.
