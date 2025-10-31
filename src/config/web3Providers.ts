@@ -158,6 +158,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   MEMENTO_TESTNET: () => new JsonRpcProvider("https://testnet-rpc.mementoblockchain.com"),
   XDC_MAINNET: () => new JsonRpcProvider("https://erpc.xinfin.network"),
   XDC_TESTNET: () => new JsonRpcProvider("https://rpc.apothem.network/"),
+  BITTENSOR_MAINNET: () => new JsonRpcProvider("ttps://lite.chain.opentensor.ai"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {

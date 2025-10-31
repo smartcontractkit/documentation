@@ -505,6 +505,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "XDC_MAINNET"
     case "xdc-testnet":
       return "XDC_TESTNET"
+    case "bittensor-mainnet":
+      return "BITTENSOR_MAINNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -806,6 +808,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "xdc-mainnet"
     case "XDC_TESTNET":
       return "xdc-testnet"
+    case "BITTENSOR_MAINNET":
+      return "bittensor-mainnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
