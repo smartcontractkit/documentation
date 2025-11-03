@@ -1,8 +1,10 @@
 ---
 import ProductTabs from "../features/landing/sections/ProductTabs.astro"
+import JourneyCards from "~/components/JourneyCards/JourneyCards.astro"
 import BaseLayout from "~/layouts/BaseLayout.astro"
 
 import * as CONFIG from "../config"
+import { Typography } from "@chainlink/blocks"
 
 const formattedContentTitle = `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.title}`
 ---
@@ -17,18 +19,26 @@ const formattedContentTitle = `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.titl
         <ProductTabs />
       </div>
     </div>
-    <div class="recommended">
-      <h4>Recommended reading</h4>
-      <h2>We think you'd love to explore</h2>
-      <div>
-        <a href="/getting-started/conceptual-overview">General</a>
-        <a href="/resources/link-token-contracts">Link Token Contracts</a>
-        <a href="/ccip/getting-started">Getting Started with CCIP</a>
-        <a href="/ccip/directory">CCIP Directory</a>
-        <a href="/data-feeds/price-feeds/addresses">Data Feed Addresses</a>
-        <a href="/data-feeds/smartdata/addresses">SmartData Feed Addresses</a>
-        <a href="/data-streams/getting-started-hardhat">Getting Started with Data Streams</a>
-        <a href="/data-streams/crypto-streams">Data Streams Addresses</a>
+
+    <div class="wrapper">
+      <div class="section">
+        <Typography variant="h4" className="section-title">Start your Chainlink journey</Typography>
+        <JourneyCards />
+      </div>
+
+      <div class="recommended">
+        <h4>Recommended reading</h4>
+        <h2>We think you'd love to explore</h2>
+        <div>
+          <a href="/getting-started/conceptual-overview">General</a>
+          <a href="/resources/link-token-contracts">Link Token Contracts</a>
+          <a href="/ccip/getting-started">Getting Started with CCIP</a>
+          <a href="/ccip/directory">CCIP Directory</a>
+          <a href="/data-feeds/price-feeds/addresses">Data Feed Addresses</a>
+          <a href="/data-feeds/smartdata/addresses">SmartData Feed Addresses</a>
+          <a href="/data-streams/getting-started-hardhat">Getting Started with Data Streams</a>
+          <a href="/data-streams/crypto-streams">Data Streams Addresses</a>
+        </div>
       </div>
     </div>
   </main>
@@ -133,6 +143,23 @@ const formattedContentTitle = `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.titl
     background-color: var(--blue-100);
   }
 
+  .section-title {
+    font-size: 32px;
+    margin-bottom: var(--space-10x);
+  }
+
+  .section {
+    margin: 0 var(--space-6x);
+  }
+
+  .wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 82px;
+    max-width: var(--fullwidth-max-width);
+    margin: 0 auto;
+  }
+
   @media (min-width: 50em) {
     .hero {
       max-width: var(--fullwidth-max-width);
@@ -158,11 +185,6 @@ const formattedContentTitle = `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.titl
       font-weight: 600;
     }
 
-    .recommended {
-      margin: var(--space-16x) auto;
-      max-width: var(--fullwidth-max-width);
-    }
-
     .heroContainer {
       background: linear-gradient(180deg, #f1f5fe 0%, white 100%);
     }
@@ -177,14 +199,13 @@ const formattedContentTitle = `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.titl
       line-height: var(--space-6x);
       margin-bottom: var(--space-2x);
     }
+    .wrapper {
+      margin-top: 60px;
+    }
   }
   @media (min-width: 72em) {
-    .hero {
-      max-width: min(1200px, calc(100% - 2 * var(--space-16x)));
-      padding: 0;
-    }
-
-    .recommended {
+    .hero,
+    .wrapper {
       max-width: min(1200px, calc(100% - 2 * var(--space-16x)));
       padding: 0;
     }
