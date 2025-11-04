@@ -14,8 +14,6 @@ async function sendBackrunBundle(pendingTx: IPendingTransaction) {
 }
 
 async function buildDummyBackrunTx(pendingTx: IPendingTransaction) {
-  // Your liquidation transaction should send ETH to block.coinbase as the bid
-  // Example: Include a call that does payable(block.coinbase).transfer(tipAmount)
   const backrunTx = { data: {}, maxFeePerGas: 22000, maxPriorityFeePerGas: 22000 }
   const signedBackrunTx = await executorWallet.signTransaction(backrunTx)
   return signedBackrunTx
