@@ -93,6 +93,7 @@ export const productChainLinks: ProductChainLinks = {
       plasma: "/ccip/directory/mainnet/chain/plasma-mainnet",
       memento: "/ccip/directory/mainnet/chain/memento-mainnet",
       xdc: "/ccip/directory/mainnet/chain/xdc-mainnet",
+      bittensor: "/ccip/directory/mainnet/chain/bittensor-mainnet",
     },
   },
   "Data Feeds": {
@@ -308,6 +309,7 @@ export const productChainLinks: ProductChainLinks = {
     kaia: "/resources/link-token-contracts#kaia",
     tac: "/resources/link-token-contracts#tac",
     memento: "/resources/link-token-contracts#memento",
+    bittensor: "/resources/link-token-contracts#bittensor-evm",
   },
 }
 
@@ -393,4 +395,5 @@ export const chainNames: Record<string, string> = {
   jovay: "Jovay",
   memento: "Memento",
   xdc: "XDC",
+  bittensor: "Bittensor EVM",
 }
