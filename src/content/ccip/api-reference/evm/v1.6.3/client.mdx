@@ -1,25 +1,25 @@
 ---
 section: ccip
 date: Last Modified
-title: "CCIP v1.6.2 Client Library API Reference"
+title: "CCIP v1.6.3 Client Library API Reference"
 metadata:
-  description: "Complete API documentation for the Client library in Chainlink CCIP v1.6.2. Data structures and utilities for building and handling cross-chain messages."
-  excerpt: "ccip client library api reference v1.6.2 any2evmmessage evm2anymessage structs cross-chain message handling"
-  version: "1.6.2"
-  datePublished: "2025-10-06T15:38:00Z"
-  lastModified: "2025-10-06T15:38:00Z"
+  description: "Complete API documentation for the Client library in Chainlink CCIP v1.6.3. Data structures and utilities for building and handling cross-chain messages."
+  excerpt: "ccip client library api reference v1.6.3 any2evmmessage evm2anymessage structs cross-chain message handling"
+  version: "1.6.3"
+  datePublished: "2025-11-05T15:38:00Z"
+  lastModified: "2025-11-05T15:38:00Z"
 ---
 
 import { Aside } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-<CcipCommon callout="importCCIPPackage162" />
+<CcipCommon callout="importCCIPPackage163" />
 
 ## Client
 
 A library that provides core data structures and utilities for building and handling cross-chain messages in CCIP.
 
-[Git Source](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v1.6.2/chains/evm/contracts/libraries/Client.sol)
+[Git Source](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v1.6.3/chains/evm/contracts/libraries/Client.sol)
 
 ## Structs
 
@@ -176,6 +176,39 @@ Solana VM-specific arguments for cross-chain messages:
 | `tokenReceiver`            | `bytes32`   | Address of the token receiver                          |
 | `accounts`                 | `bytes32[]` | Additional accounts needed for CCIP receiver execution |
 
+### SuiExtraArgsV1
+
+Structure for V1 extra arguments specific to SUI chain:
+
+```solidity
+struct SuiExtraArgsV1 {
+  uint256 gasLimit;
+  bool allowOutOfOrderExecution;
+  bytes32 tokenReceiver;
+  bytes32[] receiverObjectIds;
+}
+```
+
+<Aside>
+
+SUI-specific arguments for cross-chain messages:
+
+- Configures gas limit
+- Controls message execution order
+- Defines token receiver details
+- Lists additional object IDs needed for CCIP receiver execution
+
+</Aside>
+
+**Properties**
+
+| Name                       | Type        | Description                                              |
+| -------------------------- | ----------- | -------------------------------------------------------- |
+| `gasLimit`                 | `uint256`   | Gas limit for execution on SUI                           |
+| `allowOutOfOrderExecution` | `bool`      | Whether messages can be executed in any order            |
+| `tokenReceiver`            | `bytes32`   | Address of the token receiver                            |
+| `receiverObjectIds`        | `bytes32[]` | Additional object IDs needed for CCIP receiver execution |
+
 ### EVMTokenAmount
 
 Structure representing token amounts in CCIP messages.
@@ -232,6 +265,14 @@ bytes4 public constant SVM_EXTRA_ARGS_V1_TAG = 0x1f3b3aba;
 
 <Aside>The identifier tag for Solana VM extra arguments.</Aside>
 
+### SUI_EXTRA_ARGS_V1_TAG
+
+```solidity
+bytes4 public constant SUI_EXTRA_ARGS_V1_TAG = 0x21ea4ca9;
+```
+
+<Aside>The identifier tag for SUI extra arguments.</Aside>
+
 ### SVM_EXTRA_ARGS_MAX_ACCOUNTS
 
 ```solidity
@@ -277,6 +318,46 @@ uint256 public constant SVM_ACCOUNT_BYTE_SIZE = 32;
 ```
 
 <Aside>The size of each SVM account address in bytes.</Aside>
+
+### SUI_TOKEN_TRANSFER_DATA_OVERHEAD
+
+```solidity
+uint256 public constant SUI_TOKEN_TRANSFER_DATA_OVERHEAD = (4 + 32) // source_pool, 4 bytes for length, 32 bytes for address
+  + 32 // dest_token_address
+  + 4 // dest_gas_amount
+  + 4 // extra_data length, the contents are calculated separately
+  + 32; // amount
+```
+
+<Aside>
+  The expected static payload size of a token transfer when BCS encoded and submitted to SUI. TokenPool extra data and
+  offchain data sizes are dynamic, and should be accounted for separately. Each component represents space required for
+  different parts of the token transfer operation on SUI.
+</Aside>
+
+### SUI_MESSAGING_ACCOUNTS_OVERHEAD
+
+```solidity
+uint256 public constant SUI_MESSAGING_ACCOUNTS_OVERHEAD = 1;
+```
+
+<Aside>Number of overhead accounts needed for message execution on SUI.</Aside>
+
+### SUI_EXTRA_ARGS_MAX_RECEIVER_OBJECT_IDS
+
+```solidity
+uint256 public constant SUI_EXTRA_ARGS_MAX_RECEIVER_OBJECT_IDS = 64;
+```
+
+<Aside>The maximum number of receiver object IDs that can be passed in SuiExtraArgs.</Aside>
+
+### SUI_ACCOUNT_BYTE_SIZE
+
+```solidity
+uint256 public constant SUI_ACCOUNT_BYTE_SIZE = 32;
+```
+
+<Aside>The size of each SUI account address in bytes.</Aside>
 
 ## Functions
 
@@ -345,3 +426,13 @@ function _svmArgsToBytes(SVMExtraArgsV1 memory extraArgs) internal pure returns 
 | Type    | Description                          |
 | ------- | ------------------------------------ |
 | `bytes` | The encoded extra arguments with tag |
+
+### \_suiArgsToBytes
+
+Encodes SuiExtraArgsV1 into bytes for message transmission.
+
+```solidity
+function _suiArgsToBytes(SuiExtraArgsV1 memory extraArgs) internal pure returns (bytes memory bts);
+```
+
+<Aside>Serializes SUI extra arguments with the SUI tag identifier for cross-chain message processing.</Aside>

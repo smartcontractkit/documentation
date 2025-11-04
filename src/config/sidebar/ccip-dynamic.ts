@@ -18,6 +18,7 @@ import evmCcipV151Contents from "./ccip/api-reference/evm/v1_5_1.json" with { ty
 import evmCcipV160Contents from "./ccip/api-reference/evm/v1_6_0.json" with { type: "json" }
 import evmCcipV161Contents from "./ccip/api-reference/evm/v1_6_1.json" with { type: "json" }
 import evmCcipV162Contents from "./ccip/api-reference/evm/v1_6_2.json" with { type: "json" }
+import evmCcipV163Contents from "./ccip/api-reference/evm/v1_6_3.json" with { type: "json" }
 import aptosCcipV160Contents from "./ccip/api-reference/aptos/v1_6_0.json" with { type: "json" }
 import svmCcipV160Contents from "./ccip/api-reference/svm/v1_6_0.json" with { type: "json" }
 
@@ -617,10 +618,15 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
         chainTypes: ["evm"],
         children: [
           {
-            title: "v1.6.2 (Latest)",
+            title: "v1.6.3 (Latest)",
+            url: "ccip/api-reference/evm/v1.6.3",
+            isCollapsible: true,
+            children: evmCcipV163Contents,
+          },
+          {
+            title: "v1.6.2",
             url: "ccip/api-reference/evm/v1.6.2",
             isCollapsible: true,
-            chainTypes: ["evm"],
             children: evmCcipV162Contents,
           },
           {
