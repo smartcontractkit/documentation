@@ -22,13 +22,13 @@ using SafeERC20 for IERC20;
 contract Acknowledger is CCIPReceiver, OwnerIsCreator {
   // Custom errors to provide more descriptive revert messages.
   error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough
-    // balance.
+  // balance.
   error NothingToWithdraw(); // Used when trying to withdraw Ether but there's nothing to withdraw.
   error DestinationChainNotAllowlisted(uint64 destinationChainSelector); // Used when the destination chain has not been
-    // allowlisted by the contract owner.
+  // allowlisted by the contract owner.
   error InvalidReceiverAddress(); // Used when the receiver address is 0.
   error SourceChainNotAllowlisted(uint64 sourceChainSelector); // Used when the source chain has not been allowlisted by
-    // the contract owner.
+  // the contract owner.
   error SenderNotAllowlisted(address sender); // Used when the sender has not been allowlisted by the contract owner.
 
   string private s_lastReceivedText; // Store the last received text.
@@ -154,8 +154,8 @@ contract Acknowledger is CCIPReceiver, OwnerIsCreator {
         Client.GenericExtraArgsV2({
           gasLimit: 200_000,
           allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages
-            // from
-            // the same sender.
+          // from
+          // the same sender.
         })
       ),
       // Set the feeToken to a feeTokenAddress, indicating specific asset will be used for fees
@@ -207,14 +207,14 @@ contract Acknowledger is CCIPReceiver, OwnerIsCreator {
     internal
     override
     onlyAllowlisted(any2EvmMessage.sourceChainSelector, abi.decode(any2EvmMessage.sender, (address))) // Make sure
-      // source chain and sender are allowlisted
+    // source chain and sender are allowlisted
 
   {
     bytes32 messageIdToAcknowledge = any2EvmMessage.messageId; // The message ID of the received message to acknowledge
     address messageTrackerAddress = abi.decode(any2EvmMessage.sender, (address)); // ABI-decoding of the message tracker
-      // address
+    // address
     uint64 messageTrackerChainSelector = any2EvmMessage.sourceChainSelector; // The chain selector of the received
-      // message
+    // message
     s_lastReceivedText = abi.decode(any2EvmMessage.data, (string)); // abi-decoding of the sent text
 
     _acknowledgePayLINK(messageIdToAcknowledge, messageTrackerAddress, messageTrackerChainSelector);

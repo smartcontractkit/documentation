@@ -78,14 +78,14 @@ contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
     uint32 validFromTimestamp; // Earliest timestamp for which price is applicable.
     uint32 observationsTimestamp; // Latest timestamp for which price is applicable.
     uint192 nativeFee; // Base cost to validate a transaction using the report, denominated in the chain’s native
-      // token (e.g., WETH/ETH).
+    // token (e.g., WETH/ETH).
     uint192 linkFee; // Base cost to validate a transaction using the report, denominated in LINK.
     uint32 expiresAt; // Latest timestamp where the report can be verified onchain.
     int192 price; // DON consensus median price (8 or 18 decimals).
     int192 bid; // Simulated price impact of a buy order up to the X% depth of liquidity utilisation (8 or 18 decimals).
-      // Note: not available for DEX State Price streams.
+    // Note: not available for DEX State Price streams.
     int192 ask; // Simulated price impact of a sell order up to the X% depth of liquidity utilisation (8 or 18
-      // decimals). Note: not available for DEX State Price streams.
+    // decimals). Note: not available for DEX State Price streams.
   }
 
   /**
@@ -101,7 +101,7 @@ contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
     uint32 validFromTimestamp; // Earliest timestamp for which price is applicable.
     uint32 observationsTimestamp; // Latest timestamp for which price is applicable.
     uint192 nativeFee; // Base cost to validate a transaction using the report, denominated in the chain’s native
-      // token (e.g., WETH/ETH).
+    // token (e.g., WETH/ETH).
     uint192 linkFee; // Base cost to validate a transaction using the report, denominated in LINK.
     uint32 expiresAt; // Latest timestamp where the report can be verified onchain.
     int192 price; // DON consensus median benchmark price (8 or 18 decimals).
