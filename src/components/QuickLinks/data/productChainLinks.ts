@@ -395,5 +395,5 @@ export const chainNames: Record<string, string> = {
   jovay: "Jovay",
   memento: "Memento",
   xdc: "XDC",
-  bittensor: "BITTENSOR",
+  bittensor: "Bittensor EVM",
 }
