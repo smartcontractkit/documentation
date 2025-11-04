@@ -1,7 +1,7 @@
 import "github.com/flashbots/mev-share-node/mevshare"
 
 // ... create and sign your transaction
-// Your transaction should send ETH to block.coinbase as the tip/bid
+// Your transaction should send ETH to block.coinbase as the bid
 // Example: Include a call that does payable(block.coinbase).transfer(msg.value)
 tx := types.NewTransaction(...)
 signedTx, err := types.SignTx(tx, ...)

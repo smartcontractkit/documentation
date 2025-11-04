@@ -375,16 +375,16 @@ Once you've detected an SVR update and identified a profitable liquidation oppor
 
 - **Bidding Strategy**: Block builders typically select the highest-paying bundle. Your bid must be competitive while leaving room for profit. The bundle's economic value comes from:
   - The gas price of your transaction
-  - Any explicit payment (tip) you include to the builder
+  - Any explicit payment you include to the builder
 
-  **How to submit the tip**: Within your backrun transaction itself, send ETH to `block.coinbase` (the block builder's address), which specifies your bid amount. The higher the tip sent to `block.coinbase`, the more competitive your bundle becomes. Example:
+  **How to submit your bid**: Within your backrun transaction itself, send ETH to `block.coinbase` (the block builder's address). The higher the payment sent to `block.coinbase`, the more competitive your bundle becomes. Example:
 
   ```solidity
-  // Within your liquidation transaction, send tip to block.coinbase
-  payable(block.coinbase).transfer(tipAmount);
+  // Within your liquidation transaction, send payment to block.coinbase
+  payable(block.coinbase).transfer(bidAmount);
   ```
 
-  You do not need to manually split the tip between Chainlink and the DeFi protocol (e.g., Aave). Simply pay your full bid amount to `block.coinbase`; the revenue split is handled automatically by the SVR infrastructure after the bundle is included.
+  You do not need to manually split the payment between Chainlink and the DeFi protocol (e.g., Aave). Simply pay your full bid amount to `block.coinbase`; the revenue split is handled automatically by the SVR infrastructure after the bundle is included.
 
 - **Inclusion Parameters**: Specify the target block range for your bundle to be considered
   - Typically target the next block plus a small range for redundancy
