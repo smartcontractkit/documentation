@@ -1,0 +1,178 @@
+---
+section: cre
+date: Last Modified
+title: "Activating & Pausing Workflows"
+metadata:
+  description: "Control when your workflows run: learn to activate workflows to start responding to triggers or pause them for maintenance."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+After deploying a workflow, you can control its operational state using the `cre workflow activate` and `cre workflow pause` commands. These commands modify the workflow's status in the Workflow Registry contract, determining whether it can respond to triggers.
+
+**Workflow states:**
+
+- **Active** — The workflow can respond to its configured triggers and execute
+- **Paused** — The workflow cannot respond to triggers and will not execute
+
+## Prerequisites
+
+Before activating or pausing workflows, ensure you have:
+
+- **A [deployed workflow](/cre/guides/operations/deploying-workflows)**: You must have a workflow that has been successfully deployed to the Workflow Registry.
+- **Workflow ownership**: You must be the owner of the workflow (the account that originally deployed it). Only the workflow owner can activate or pause it.
+- **Local workflow folder**: You must run these commands from your project directory. The CLI reads the workflow name and configuration from your `workflow.yaml` file to identify which workflow to activate or pause.
+- **[Logged in](/cre/reference/cli/authentication#cre-login)**: Authenticated with the platform by running `cre login`. To check your authentication status, run `cre whoami`.
+- **A funded wallet**: The account you are using must be funded with ETH on Ethereum Mainnet to pay the gas fees for the onchain transaction to the Workflow Registry contract.
+
+## Activating a workflow
+
+The `cre workflow activate` command changes a paused workflow's status to active, allowing its triggers to fire and the workflow to execute.
+
+### When to activate
+
+You typically use `activate` in these scenarios:
+
+- **After pausing a workflow**: To resume execution after maintenance or debugging
+- **Manual deployment**: When you deployed with `--auto-start=false`
+
+{/* prettier-ignore */}
+<Aside type="note" title="Auto-start by default">
+  Most workflows are automatically activated during deployment because `cre workflow deploy` uses `--auto-start=true` by default. You only need to manually activate workflows that were deployed with `--auto-start=false` or that have been paused.
+</Aside>
+
+### Usage
+
+Run the command from your project root:
+
+```bash
+cre workflow activate my-workflow --target production-settings
+```
+
+The CLI identifies which workflow to activate based on:
+
+- `workflow-name` from your `workflow.yaml` file
+- `workflow-owner-address` (either from `workflow.yaml` or derived from your private key in `.env`)
+
+### What happens during activation
+
+1. The CLI fetches the workflow matching your workflow name and owner address
+1. It validates that the workflow is currently paused
+1. If valid, it sends an onchain transaction to change the status to active
+
+### Example output
+
+```bash
+> cre workflow activate my-workflow --target production-settings
+
+Activating Workflow :    my-workflow
+Target :                 production-settings
+Owner Address :          <your-owner-address>
+
+Activating workflow: Name=my-workflow, Owner=<your-owner-address>, WorkflowID=<your-workflow-id>
+Transaction details:
+  Chain Name:   ethereum-testnet-sepolia
+  To:           0xF3f93fc4dc177748E7557568b5354cB009e3818a
+  Function:     ActivateWorkflow
+  Inputs:
+    [0]:        <your-workflow-id>
+    [1]:        zone-a
+  Data:         530979d6000000000000000000000000...
+Estimated Cost:
+  Gas Price:      0.00100000 gwei
+  Total Cost:     0.00000038 ETH
+? Do you want to execute this transaction?:
+  ▸ Yes
+    No
+
+Transaction confirmed: 0xd5b94bd...87498b
+View on explorer: https://sepolia.etherscan.io/tx/0xd5b94bd...87498b
+
+[OK] Workflow activated successfully
+   Contract address:    0xF3f93fc4dc177748E7557568b5354cB009e3818a
+   Transaction hash:    0xd5b94bd...87498b
+   Workflow Name:       my-workflow
+   Workflow ID:         <your-workflow-id>
+```
+
+## Pausing a workflow
+
+The `cre workflow pause` command changes an active workflow's status to paused, preventing its triggers from firing and stopping execution.
+
+### When to pause
+
+Pause workflows when you need to:
+
+- **Perform maintenance**: Temporarily stop execution while updating dependencies or configuration
+- **Debug issues**: Halt execution to investigate errors or unexpected behavior
+- **Temporarily halt operations**: Stop workflow execution without permanently deleting it
+
+### Usage
+
+Run the command from your project root:
+
+```bash
+cre workflow pause my-workflow --target production-settings
+```
+
+### What happens during pausing
+
+1. The CLI fetches the workflow matching your workflow name and owner address
+1. It validates that the workflow is currently active
+1. If valid, it sends an onchain transaction to change the status to paused
+
+### Example output
+
+```bash
+> cre workflow pause my-workflow --target production-settings
+
+Pausing Workflow :       my-workflow
+Target :                 production-settings
+Owner Address :          <your-owner-address>
+
+Fetching workflows to pause... Name=my-workflow, Owner=<your-owner-address>
+Processing batch pause... count=1
+Transaction details:
+  Chain Name:   ethereum-testnet-sepolia
+  To:           0xF3f93fc4dc177748E7557568b5354cB009e3818a
+  Function:     BatchPauseWorkflows
+  Inputs:
+    [0]:        [<your-workflow-id>]
+  Data:         d8b80738000000000000000000000000...
+Estimated Cost:
+  Gas Price:      0.00100000 gwei
+  Total Cost:     0.00000021 ETH
+? Do you want to execute this transaction?:
+  ▸ Yes
+    No
+
+Transaction confirmed
+View on explorer: https://sepolia.etherscan.io/tx/0x2e09a66...db66e
+[OK] Workflows paused successfully
+
+Details:
+   Contract address:    0xF3f93fc4dc177748E7557568b5354cB009e3818a
+   Transaction hash:    0x2e09a66...db66e
+   Workflow Name:       my-workflow
+   Workflow ID:         <your-workflow-id>
+```
+
+{/* prettier-ignore */}
+<Aside type="note" title="Missed triggers are not queued">
+  Triggers that would have fired while a workflow was paused are **not queued or retroactively executed**. When you activate the workflow again, it will only respond to new triggers that occur after activation.
+</Aside>
+
+## Using multi-sig wallets
+
+Both `activate` and `pause` commands support multi-sig wallets through the `--unsigned` flag. When using this flag, the CLI generates raw transaction data that you can submit through your multi-sig wallet interface instead of sending the transaction directly.
+
+For complete setup instructions, configuration requirements, and step-by-step guidance, see [Using Multi-sig Wallets](/cre/guides/operations/using-multisig-wallets).
+
+## Learn more
+
+- [Deploying Workflows](/cre/guides/operations/deploying-workflows) — Learn how to deploy workflows to the registry
+- [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows) — Update your workflow code and configuration
+- [Deleting Workflows](/cre/guides/operations/deleting-workflows) — Permanently remove workflows from the registry
+- [CLI Reference: Workflow Commands](/cre/reference/cli/workflow) — Complete command reference with all flags and options

@@ -1,0 +1,373 @@
+---
+section: cre
+title: "Generating Reports: Structs"
+sdkLang: "go"
+date: Last Modified
+metadata:
+  description: "Submit complex data onchain in Go: learn to generate reports with multiple fields and structs for your smart contracts."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+This guide shows how to generate a report containing a struct with multiple fields. There are two approaches depending on whether you have generated bindings for your contract.
+
+## Choosing your approach
+
+Use this table to determine which method applies to your situation:
+
+| Situation                                                                                        | <div style="width: 200px;">Binding Helper Available?</div> | Recommended Approach              | <div style="width: 100px;">Section</div>        |
+| ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- | --------------------------------- | ----------------------------------------------- |
+| Struct appears in a `public` or `external` function's signature (as a parameter or return value) | Yes, `Codec.Encode<StructName>Struct()` exists             | Use the binding's encoding helper | [Using Binding Helpers](#using-binding-helpers) |
+| Struct is NOT in the ABI                                                                         | No helper available                                        | Manual tuple encoding             | [Manual Encoding](#manual-encoding-advanced)    |
+
+**Don't meet these requirements?** If you're sending a single value instead of a struct, see [Generating Reports: Single Values](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values). For other approaches, see the [Onchain Write](/cre/guides/workflow/using-evm-client/onchain-write#choosing-your-approach-which-guide-should-you-follow) hub page.
+
+<Aside type="note" title="Going onchain? Use the all-in-one helper instead">
+  If you're sending your struct **onchain** (not via HTTP) and it's in your contract's ABI, use the `WriteReportFrom<StructName>()` helper instead. It handles encoding, report generation, AND submission in a single call—much simpler than this guide's multi-step approach. See [Using WriteReportFrom Helpers](/cre/guides/workflow/using-evm-client/onchain-write/using-write-report-helpers).
+
+This guide is for cases where you need fine-grained control, are sending via HTTP, or don't have the `WriteReportFrom` helper available.
+
+</Aside>
+
+## Using binding helpers
+
+If you have generated bindings for a contract that includes your struct in its ABI, the binding generator creates an `Encode<StructName>Struct()` method on the `Codec`. This is the simplest and recommended approach.
+
+### When this applies
+
+This method is available when your struct appears in a **public or external function's signature** (as a parameter or return value). These function types appear in the contract's ABI, which allows the binding generator to detect the struct and automatically create the encoding helper.
+
+**Example contract:**
+
+```solidity
+contract MyContract {
+  struct PaymentData {
+    address recipient;
+    uint256 amount;
+    uint256 nonce;
+  }
+
+  // Because this public function uses PaymentData,
+  // the binding generator creates an encoding helper
+  function processPayment(PaymentData memory data) public {}
+}
+```
+
+### Step 1: Identify the helper method
+
+After running `cre generate-bindings`, your binding will include:
+
+```go
+type MyContractCodec interface {
+    // ... other methods
+    EncodePaymentDataStruct(in PaymentData) ([]byte, error)
+    // ...
+}
+```
+
+### Step 2: Use the helper
+
+```go
+import "my-project/contracts/evm/src/generated/my_contract"
+
+// Create your struct
+paymentData := my_contract.PaymentData{
+    Recipient: common.HexToAddress("0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"),
+    Amount:    big.NewInt(1000000000000000000),
+    Nonce:     big.NewInt(42),
+}
+
+// Create contract instance to access the Codec
+contract, err := my_contract.NewMyContract(evmClient, contractAddress, nil)
+if err != nil {
+    return err
+}
+
+// Use the encoding helper
+encodedStruct, err := contract.Codec.EncodePaymentDataStruct(paymentData)
+if err != nil {
+    return fmt.Errorf("failed to encode struct: %w", err)
+}
+```
+
+### Step 3: Generate the report
+
+```go
+reportPromise := runtime.GenerateReport(&cre.ReportRequest{
+    EncodedPayload: encodedStruct,
+    EncoderName:    "evm",
+    SigningAlgo:    "ecdsa",
+    HashingAlgo:    "keccak256",
+})
+
+report, err := reportPromise.Await()
+if err != nil {
+    return fmt.Errorf("failed to generate report: %w", err)
+}
+```
+
+#### Understanding the report
+
+The `runtime.GenerateReport()` function returns a `*cre.Report` object. This report contains:
+
+- **Your ABI-encoded struct data** (the payload)
+- **Cryptographic signatures** from the DON nodes
+- **Metadata** about the workflow (ID, name, owner)
+- **Consensus proof** that the data was agreed upon by the network
+
+This report is designed to be passed directly to either:
+
+- `evm.Client.WriteReport()` for onchain delivery
+- `http.Client` for offchain delivery
+
+The report can now be [submitted onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain) or [sent via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http).
+
+## Manual encoding
+
+If your struct is **not** in the contract's ABI, you won't have a binding helper and must manually create the tuple type and encode it.
+
+### When to use this approach
+
+- You're working with a custom struct that doesn't appear in any `public` or `external` function's signature
+- You're encoding data for a third-party contract without bindings
+- You need full control over the encoding process
+
+### Step-by-step example
+
+Let's manually encode a `PaymentData` struct:
+
+```solidity
+struct PaymentData {
+  address recipient;
+  uint256 amount;
+  uint256 nonce;
+}
+```
+
+### 1. Define the Go struct
+
+Create a Go struct that matches your Solidity struct:
+
+```go
+import (
+    "math/big"
+    "github.com/ethereum/go-ethereum/common"
+)
+
+type PaymentData struct {
+    Recipient common.Address
+    Amount    *big.Int
+    Nonce     *big.Int
+}
+```
+
+### 2. Create your struct instance
+
+```go
+paymentData := PaymentData{
+    Recipient: common.HexToAddress("0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"),
+    Amount:    big.NewInt(1000000000000000000), // 1 ETH in wei
+    Nonce:     big.NewInt(42),
+}
+```
+
+### 3. Create the tuple type
+
+Define the struct's fields as a tuple using `abi.NewType()`:
+
+```go
+import "github.com/ethereum/go-ethereum/accounts/abi"
+
+tupleType, err := abi.NewType(
+    "tuple", "",
+    []abi.ArgumentMarshaling{
+        {Name: "recipient", Type: "address"},
+        {Name: "amount", Type: "uint256"},
+        {Name: "nonce", Type: "uint256"},
+    },
+)
+if err != nil {
+    return fmt.Errorf("failed to create tuple type: %w", err)
+}
+```
+
+**Important:** The field names and types must match your Solidity struct exactly.
+
+### 4. ABI-encode the struct
+
+```go
+args := abi.Arguments{
+    {Name: "paymentData", Type: tupleType},
+}
+
+encodedStruct, err := args.Pack(paymentData)
+if err != nil {
+    return fmt.Errorf("failed to encode struct: %w", err)
+}
+```
+
+### 5. Generate the report
+
+```go
+reportPromise := runtime.GenerateReport(&cre.ReportRequest{
+    EncodedPayload: encodedStruct,
+    EncoderName:    "evm",
+    SigningAlgo:    "ecdsa",
+    HashingAlgo:    "keccak256",
+})
+
+report, err := reportPromise.Await()
+if err != nil {
+    return fmt.Errorf("failed to generate report: %w", err)
+}
+logger.Info("Report generated successfully")
+```
+
+### Complete working example
+
+Here's a full workflow that generates a report from a struct:
+
+```go
+//go:build wasip1
+
+package main
+
+import (
+	"fmt"
+	"log/slog"
+	"math/big"
+
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
+	"github.com/smartcontractkit/cre-sdk-go/cre"
+	"github.com/smartcontractkit/cre-sdk-go/cre/wasm"
+)
+
+type Config struct {
+	Schedule string `json:"schedule"`
+}
+
+// Go struct matching Solidity struct
+type PaymentData struct {
+	Recipient common.Address
+	Amount    *big.Int
+	Nonce     *big.Int
+}
+
+type MyResult struct {
+	EncodedHex string
+}
+
+func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+	return cre.Workflow[*Config]{
+		cre.Handler(cron.Trigger(&cron.Config{Schedule: config.Schedule}), onCronTrigger),
+	}, nil
+}
+
+func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*MyResult, error) {
+	logger := runtime.Logger()
+
+	// Step 1: Create struct instance
+	paymentData := PaymentData{
+		Recipient: common.HexToAddress("0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"),
+		Amount:    big.NewInt(1000000000000000000), // 1 ETH
+		Nonce:     big.NewInt(42),
+	}
+	logger.Info("Created payment data", "recipient", paymentData.Recipient.Hex(), "amount", paymentData.Amount.String())
+
+	// Step 2: Create tuple type matching Solidity struct
+	tupleType, err := abi.NewType(
+		"tuple", "",
+		[]abi.ArgumentMarshaling{
+			{Name: "recipient", Type: "address"},
+			{Name: "amount", Type: "uint256"},
+			{Name: "nonce", Type: "uint256"},
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create tuple type: %w", err)
+	}
+
+	// Step 3: Encode the struct
+	args := abi.Arguments{{Name: "paymentData", Type: tupleType}}
+	encodedStruct, err := args.Pack(paymentData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode struct: %w", err)
+	}
+	logger.Info("Encoded struct", "hex", fmt.Sprintf("0x%x", encodedStruct))
+
+	// Step 4: Generate report
+	reportPromise := runtime.GenerateReport(&cre.ReportRequest{
+		EncodedPayload: encodedStruct,
+		EncoderName:    "evm",
+		SigningAlgo:    "ecdsa",
+		HashingAlgo:    "keccak256",
+	})
+
+	report, err := reportPromise.Await()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate report: %w", err)
+	}
+	logger.Info("Report generated successfully")
+
+	// At this point, you would typically submit the report:
+	// - To the blockchain: see "Submitting Reports Onchain" guide
+	// - Via HTTP: see "Submitting Reports via HTTP" guide
+	// For this example, we'll just return the encoded data for verification
+	_ = report // Report is ready to use
+
+	return &MyResult{
+		EncodedHex: fmt.Sprintf("0x%x", encodedStruct),
+	}, nil
+}
+
+func main() {
+	wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
+}
+```
+
+## Best practices
+
+1. **Always check errors**: Both encoding and report generation can fail—handle both error paths
+1. **Use binding helpers when available**: The `Codec.Encode<StructName>Struct()` helper is simpler and less error-prone than manual encoding
+1. **Match Solidity types exactly**: For manual encoding, ensure your tuple definition matches your Solidity struct field-by-field, including order and types
+1. **Log the encoded data**: For debugging, log the hex-encoded bytes to verify your struct is encoded correctly:
+   ```go
+   logger.Info("ABI-encoded struct", "hex", fmt.Sprintf("0x%x", encodedStruct))
+   ```
+
+## Troubleshooting
+
+**"failed to create tuple type" error**
+
+- Verify the field types in your `ArgumentMarshaling` match Solidity exactly (e.g., `uint256`, not `uint` or `int`)
+- Ensure field names match
+- Check that nested types are properly defined if you have complex structs
+
+**"failed to encode struct" error**
+
+- Verify your Go struct fields match the Solidity struct in order and type
+- Ensure you're using the correct Go types (e.g., `*big.Int` for `uint256`, `common.Address` for `address`). A list of mappings can be found [here](/cre/guides/workflow/using-evm-client/onchain-read#solidity-to-go-type-mappings).
+- Check that all fields are populated (Go's zero values might not match what you expect)
+
+**Binding helper not found**
+
+- Confirm your struct is used in a `public` or `external` function parameter in your contract
+- Verify you've run `cre generate-bindings` after updating your contract
+- Check the generated binding file—the method should be named `Encode<YourStructName>Struct()`
+
+**Report generation succeeds but onchain submission fails**
+
+- This guide only covers report generation. See [Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain) for troubleshooting submission issues
+
+## Learn more
+
+- **[Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write)**: Understand all onchain write approaches
+- **[Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain)**: Submit your generated report to the blockchain
+- **[Generating Reports: Single Values](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values)**: Generate reports for single primitive values
+- **[Using WriteReportFrom Helpers](/cre/guides/workflow/using-evm-client/onchain-write/using-write-report-helpers)**: Use the all-in-one helper that handles encoding, generation, and submission
+- **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)**: Create contracts that can receive your reports
+- **[EVM Client Reference](/cre/reference/sdk/evm-client)**: Complete API documentation

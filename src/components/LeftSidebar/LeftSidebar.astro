@@ -3,6 +3,7 @@ import { Sections } from "~/content.config"
 import { SIDEBAR } from "../../config"
 import type { SectionEntry, SectionContent } from "../../config"
 import RecursiveSidebar from "./RecursiveSidebar.astro"
+import { LanguageSwitcherDropdown } from "~/components/LanguageSwitcherDropdown"
 import styles from "./leftSidebar.module.css"
 
 type SectionEntryWithParent = SectionEntry & { parentSection?: string }
@@ -75,6 +76,13 @@ const sidebarSections = getSidebarSections(section)
 ---
 
 <nav aria-labelledby="grid-left" class={styles.nav}>
+  {
+    section === "cre" && (
+      <div class={styles.languageSwitcherTablet}>
+        <LanguageSwitcherDropdown client:only="react" />
+      </div>
+    )
+  }
   <ul class={styles.navGroups} data-sticky>
     {
       sidebarSections.map((group) => (
@@ -117,7 +125,7 @@ const sidebarSections = getSidebarSections(section)
     const parentSection = new URLSearchParams(window.location.search).get("parent") || "global"
     if (parentSection) {
       for (let elem of document.querySelectorAll(`.parent-${parentSection}`)) {
-        elem.style.display = "block"
+        ;(elem as HTMLElement).style.display = "block"
       }
     }
   }

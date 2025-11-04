@@ -1,6 +1,7 @@
 import { execSync, spawn, SpawnOptions } from "child_process"
-import { existsSync, readFileSync, writeFileSync, createWriteStream, statSync, mkdirSync } from "fs"
+import { existsSync, readFileSync, writeFileSync, createWriteStream, mkdirSync } from "fs"
 import { exit, cwd } from "process"
+import { extractCanonicalUrlsWithLanguageVariants } from "../../utils/sidebar.js"
 
 declare global {
   function fetch(input: RequestInfo, init?: RequestInit): Promise<Response>
@@ -32,11 +33,16 @@ function ensureTempSetup() {
  * Show log file content at the end, if any
  */
 function displayLogFile() {
-  if (existsSync(LOG_FILE) && statSync(LOG_FILE).size > 0) {
+  try {
+    // Use readFileSync directly - if file doesn't exist or is empty, catch will handle it
     const content = readFileSync(LOG_FILE, "utf8")
-    console.log("\n------ Log File Content ------")
-    console.log(content)
-    console.log("------------------------------")
+    if (content.trim().length > 0) {
+      console.log("\n------ Log File Content ------")
+      console.log(content)
+      console.log("------------------------------")
+    }
+  } catch {
+    // File doesn't exist or can't be read - that's fine, nothing to display
   }
 }
 
@@ -214,16 +220,48 @@ function checkChunkFile(linksFile: string, mode: "internal" | "external"): Promi
       logStream.end()
 
       // If exit code is 1 (warnings only), inspect the output.
-      // Warnings are blockers except for mime type warnings.
+      // Warnings are blockers except for certain acceptable cases
       if (code === 1) {
         const lines = outputData.split("\n")
         // Assuming warnings are indicated by lines containing "=>"
         const warningLines = lines.filter((line) => line.includes("=>"))
-        // Filter out warnings that mention "no mime type"
-        const nonMimeWarnings = warningLines.filter((line) => !line.toLowerCase().includes("no mime type"))
 
-        if (nonMimeWarnings.length === 0) {
-          console.log("Only mime type warnings encountered. Treating as success.")
+        // Get canonical URLs with language variants (these redirect correctly)
+        const canonicalUrls = extractCanonicalUrlsWithLanguageVariants()
+
+        // Filter out acceptable warnings:
+        // 1. Mime type warnings (files without mime type metadata)
+        // 2. Missing anchor warnings on canonical URLs with language variants
+        //    (these pages redirect based on user's language preference)
+        const blockingWarnings = warningLines.filter((line) => {
+          // Allow mime type warnings
+          if (line.toLowerCase().includes("no mime type")) {
+            return false
+          }
+
+          // Allow "missing anchor" warnings on canonical URLs with language variants
+          if (line.includes("missing anchor")) {
+            // Extract the URL from the warning line
+            // Format: "... => http://localhost:4321/path#anchor (HTTP 200 but missing anchor)"
+            const urlMatch = line.match(/http:\/\/localhost:4321([^\s(]+)/)
+            if (urlMatch) {
+              // Extract pathname, remove anchor and trailing slash
+              let path = urlMatch[1].split("#")[0] // Remove anchor
+              path = path.replace(/\/$/, "") // Remove trailing slash
+
+              if (canonicalUrls.has(path)) {
+                return false // Allow this warning (it's an expected redirect page)
+              }
+            }
+          }
+
+          return true // This is a blocking warning
+        })
+
+        if (blockingWarnings.length === 0) {
+          console.log(
+            "Only acceptable warnings encountered (mime types and canonical URL anchors). Treating as success."
+          )
           code = 0
         }
       }

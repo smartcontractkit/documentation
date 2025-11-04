@@ -7,6 +7,8 @@ type LinksConfig = {
 export type Page = {
   label: string
   href: string
+  sdkLang?: string
+  highlightAsCurrent?: string[]
   children?: Page[]
 }
 

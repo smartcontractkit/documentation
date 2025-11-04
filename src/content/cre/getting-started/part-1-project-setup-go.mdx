@@ -1,0 +1,288 @@
+---
+section: cre
+title: "Part 1: Project Setup & Simulation"
+date: Last Modified
+sdkLang: "go"
+pageId: "getting-started-part-1"
+metadata:
+  description: "Getting started Part 1 (Go): set up your first CRE project, explore the structure, and run a successful workflow simulation."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside, CopyText, CodeHighlightBlock } from "@components"
+import part1Code from "./snippets/part-1-main.go?raw"
+
+<Aside type="note" title="SDK Language: Go">
+  You're viewing the **Go** version of this guide. If you prefer TypeScript, use the language selector in the right
+  sidebar to switch to the TypeScript version.
+</Aside>
+
+In this first part, you'll go from an empty directory to a fully initialized CRE project and [simulate](/cre/guides/operations/simulating-workflows) your first, minimal workflow. The goal is to get a quick "win" and familiarize yourself with the core project structure and development loop.
+
+## What you'll do
+
+- Initialize a new project using `cre init`.
+- Explore the generated project structure and workflow code.
+- Configure your workflow for simulation.
+- Run your first local simulation with `cre workflow simulate`.
+
+## Prerequisites
+
+Before you begin, ensure you have the following:
+
+- **CRE CLI**: See the [Installation Guide](/cre/getting-started/cli-installation/macos-linux) for details.
+- **CRE account & authentication**: You must have a CRE account and be logged in with the CLI. See [Create your account](/cre/account/creating-account) and [Log in with the CLI](/cre/account/cli-login) for instructions.
+- **Go**: You must have Go version 1.24.4 or higher installed. Check your version with <CopyText text="go version" code />. See [Install Go](https://go.dev/doc/install) for instructions.
+- **Funded Sepolia Account**: An account with Sepolia ETH to pay for transaction gas fees. Go to <a href="https://faucets.chain.link" target="blank">faucets.chain.link</a> to get some Sepolia ETH.
+
+## Step 1: Verify your authentication
+
+Before initializing your project, verify that you're logged in to the CRE CLI:
+
+```bash
+cre whoami
+```
+
+**Expected output:**
+
+- If you're authenticated, you'll see your account details:
+
+  ```bash
+  Account details retrieved:
+
+  Email:           email@domain.com
+  Organization ID: org_AbCdEfGhIjKlMnOp
+  ```
+
+- If you're not logged in, you'll receive an error message prompting you to run `cre login`:
+
+  ```bash
+  Error: failed to attach credentials: failed to load credentials: you are not logged in, try running cre login
+  ```
+
+  Run the login command and follow the prompts:
+
+  ```bash
+  cre login
+  ```
+
+  See [Logging in with the CLI](/cre/account/cli-login) for detailed instructions if you need help.
+
+## Step 2: Initialize your project
+
+The CRE CLI provides an `init` command to scaffold a new project. It's an interactive process that will ask you for a project name, a workflow template, and a name for your first workflow.
+
+1. **In your terminal, navigate to a parent directory where you want your new CRE project to live.**
+
+1. **Run the `init` command.** The CLI will guide you through the setup process:
+
+   ```bash
+   cre init
+   ```
+
+1. **Provide the following details when prompted:**
+   - **Project name**: <CopyText text="onchain-calculator" code/>
+   - **Language**: Select `Golang` and press Enter.
+   - **Pick a workflow template**: Use the arrow keys to select `Helloworld: A Golang Hello World example` and press Enter. We are starting from scratch to learn all the configuration steps.
+   - **Workflow name**: <CopyText text="my-calculator-workflow" code/>
+
+The CLI will then create a new `onchain-calculator` directory and initialize your first workflow within it.
+
+## Step 3: Explore the generated files
+
+The `init` command creates a directory with a standard structure and generates your first workflow code. Let's explore what was created.
+
+### Project structure
+
+Your new project has the following structure:
+
+```
+onchain-calculator/
+├── contracts/
+│   └── evm/
+│       └── src/
+│           ├── abi/
+│           └── keystone/
+├── my-calculator-workflow/
+│   ├── config.production.json
+│   ├── config.staging.json
+│   ├── main.go
+│   ├── README.md
+│   └── workflow.yaml
+├── .env
+├── .gitignore
+├── go.mod
+├── go.sum
+├── project.yaml
+└── secrets.yaml
+```
+
+- **Project**: The top-level directory (e.g., `onchain-calculator/`).
+  - It contains project-wide files like `project.yaml`, which holds shared configurations for all workflows within the project.
+  - The entire project is a single <a href="https://go.dev/blog/using-go-modules" target="blank">Go module</a>.
+  - A project can contain multiple workflows.
+- **Workflow**: A subdirectory (e.g., `my-calculator-workflow/`) that contains source code and configuration. It functions as a Go package within the main project-level Go module.
+
+Here are the key files and their roles:
+
+| <div style="width: 250px;">File</div> | Role                                                                                                                                                                                                                                                                                            |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `project.yaml`                        | The global configuration file. Contains shared settings like RPC URLs for different environments (called `targets`).                                                                                                                                                                            |
+| `.env`                                | Stores secrets and environment variables, like your private key. Never commit this file to version control.                                                                                                                                                                                     |
+| `go.mod`/`go.sum`                     | Manages the dependencies for the entire project, including all workflows and contract bindings.                                                                                                                                                                                                 |
+| `contracts/evm/src/abi/`              | Directory where you place contract ABI files (`.abi`). These are used to generate bindings, which are type-safe Go packages that make it easy to interact with your smart contracts from your workflow. The generated bindings will be saved to a new `contracts/evm/src/generated/` directory. |
+| `contracts/evm/src/keystone/`         | Directory for Keystone-related contract files.                                                                                                                                                                                                                                                  |
+| `secrets.yaml`                        | An empty secrets configuration file created by the CLI. You'll learn how to use this for managing secrets in more advanced guides.                                                                                                                                                              |
+| `my-calculator-workflow/`             | A directory containing the source code and configuration for a single workflow. It is a package within the project's main Go module.                                                                                                                                                            |
+| `├── workflow.yaml`                   | Contains configurations specific to this workflow, such as its name and workflow artifacts (entry point path, config file path, secrets file path). The `workflow-artifacts` section tells the CLI where to find your workflow's files.                                                         |
+| `├── config.staging.json`             | Contains parameters for your workflow when using the `staging-settings` target, which can be accessed in your code via the `Config` object.                                                                                                                                                     |
+| `├── config.production.json`          | Contains parameters for your workflow when using the `production-settings` target, which can be accessed in your code via the `Config` object.                                                                                                                                                  |
+| `└── main.go`                         | The heart of your workflow where you'll write your Go logic.                                                                                                                                                                                                                                    |
+
+<Aside type="note" title="Learn More About Configuration">
+  For a comprehensive guide on how `project.yaml`, `workflow.yaml`, targets, and secrets work together, see [**Project
+  Configuration**](/cre/reference/project-configuration).
+</Aside>
+
+You don't need to understand every file and directory right now—this guide is designed to introduce each concept when
+you actually need it. For now, let's look at the workflow code.
+
+### The workflow code
+
+The `init` command created a `main.go` file with a minimal `main` function. Let's replace the contents of this file with the code for a basic "Hello World!" workflow.
+
+This code defines a `Config` struct to hold parameters from our config file. It then configures a [cron trigger](/cre/reference/sdk/triggers/cron-trigger) to run on the schedule provided in the config, and registers a simple handler that logs a message.
+
+Open `onchain-calculator/my-calculator-workflow/main.go` and replace its entire content with the following code:
+
+<CodeHighlightBlock lang="go" code={part1Code} title="onchain-calculator/my-calculator-workflow/main.go" />
+
+<Aside type="note" title="What is //go:build wasip1?">
+  This line is a Go build directive that tells the compiler this code is intended for a WebAssembly (WASM) environment.
+  CRE workflows are compiled to WASM to run securely in the Chainlink ecosystem, so you must include this line at the
+  top of your `main.go` file.
+</Aside>
+
+## Step 4: Configure your workflow
+
+Now that you've explored the generated files, let's configure your workflow for simulation. You'll need to adjust a few configuration files.
+
+### Update config files
+
+The CLI generates separate config files for each target environment. Your workflow code can access the parameters from whichever config file corresponds to the target you're using.
+
+Inside the `my-calculator-workflow` directory, open `config.staging.json` and add the `schedule` parameter that our `main.go` code expects:
+
+```json
+{
+  "schedule": "0 */1 * * * *"
+}
+```
+
+Since we'll be using the `staging-settings` target for this guide, you only need to update `config.staging.json` for now. The `config.production.json` file can remain empty.
+
+### Review `workflow.yaml`
+
+This file tells the CLI where to find your workflow files. The `cre init` command created this file with default values. Open `my-calculator-workflow/workflow.yaml` and you'll see:
+
+```yaml
+# ==========================================================================
+staging-settings:
+  user-workflow:
+    workflow-name: "my-calculator-workflow-staging"
+  workflow-artifacts:
+    workflow-path: "."
+    config-path: "./config.staging.json"
+    secrets-path: ""
+
+# ==========================================================================
+production-settings:
+  user-workflow:
+    workflow-name: "my-calculator-workflow-production"
+  workflow-artifacts:
+    workflow-path: "."
+    config-path: "./config.production.json"
+    secrets-path: ""
+```
+
+**Understanding the sections:**
+
+- **Target names** (`staging-settings`, `production-settings`): These are environment configuration sets. The `cre init` command pre-populates your `workflow.yaml` with these two common targets as a starting point, but you can name targets whatever you want (e.g., `dev`, `test`, `prod`). When running CLI commands, you specify which target to use with the `--target` flag.
+- **`workflow-name`**: Each target has its own workflow name with a suffix (e.g., `-staging`, `-production`). This allows you to deploy the same workflow to different environments with distinct identities.
+- **`workflow-path: "."`**: The entry point for your Go code (`.` means the current directory)
+- **`config-path`**: Each target points to its own config file (`config.staging.json` or `config.production.json`)
+- **`secrets-path: ""`**: The location of your secrets file (empty for now; you'll learn about secrets in more advanced guides)
+
+You don't need to modify this file for now.
+
+For this guide, we'll use `staging-settings` for local simulation. When you run `cre workflow simulate my-calculator-workflow --target staging-settings`, the CLI reads the configuration from the `staging-settings` section of this file.
+
+### Set up your private key
+
+The simulator requires a private key to initialize its environment, even for workflows that don't interact with the blockchain yet. This key will be used in later parts of this guide to read from and send transactions to the Sepolia testnet.
+
+1. Open the `.env` file located in your `onchain-calculator/` project root directory.
+1. Add your funded Sepolia account's private key:
+
+   ```bash
+   # Replace with your own private key for your funded Sepolia account
+   CRE_ETH_PRIVATE_KEY=YOUR_64_CHARACTER_PRIVATE_KEY_HERE
+   ```
+
+   <Aside type="caution" title="Use the Raw Key">
+     Your private key must be the 64-character hexadecimal string. Do **not** include the `0x` prefix.
+   </Aside>
+
+<Aside type="caution" title="Never Commit .env Files">
+  The `.gitignore` file included in the project already prevents `.env` files from being committed to version control.
+  **Never** share your private keys or commit them to Git.
+</Aside>
+
+<Aside type="note" title="Best Practice: Use a Secrets Manager">
+  While using a plaintext `.env` file is convenient for initial testing, the recommended best practice is to use a
+  dedicated secrets manager. See our guide on [Managing Secrets with 1Password
+  CLI](/cre/guides/workflow/secrets/managing-secrets-1password) to learn how to inject secrets securely at runtime.
+</Aside>
+
+## Step 5: Run your first simulation
+
+Now that your workflow is configured and dependencies are installed, you can run the simulation. [Workflow simulation](/cre/guides/operations/simulating-workflows) is a local execution environment that compiles your code to WebAssembly and runs it on your machine, allowing you to test and debug before deploying to a live network.
+
+Run the `simulate` command from your project root directory (the `onchain-calculator/` folder):
+
+```bash
+cre workflow simulate my-calculator-workflow --target staging-settings
+```
+
+This command compiles your Go code, uses the `staging-settings` target configuration from `workflow.yaml`, and spins up a local simulation environment.
+
+## Step 6: Review the output
+
+After the workflow compiles, the simulator detects the single trigger you defined in your code and immediately runs the workflow.
+
+```bash
+Workflow compiled
+2025-11-03T22:34:11Z [SIMULATION] Simulator Initialized
+
+2025-11-03T22:34:11Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+2025-11-03T22:34:11Z [USER LOG] msg="Hello, Calculator! Workflow triggered."
+
+Workflow Simulation Result:
+ {}
+
+2025-11-03T22:34:11Z [SIMULATION] Execution finished signal received
+2025-11-03T22:34:11Z [SIMULATION] Skipping WorkflowEngineV2
+```
+
+- **`[USER LOG]`**: This is the output from your own code—in this case, the `logger.Info()` call. This is where you will look for your custom log messages.
+- **`[SIMULATION]`**: These are system-level messages from the simulator showing its internal state (initialization, trigger execution, completion).
+- **`Workflow Simulation Result: {}`**: This is the final return value of your workflow. It's currently an empty object, but you will populate it in the next part of this guide.
+
+Congratulations! You've built and simulated your first CRE workflow from scratch.
+
+## Next steps
+
+In the next section, you'll build on this foundation by modifying the workflow to fetch real data from an external API.
+
+- **[Part 2: Fetching Offchain Data](/cre/getting-started/part-2-fetching-data)**

@@ -1,0 +1,133 @@
+---
+section: cre
+title: "SDK Reference: Cron Trigger"
+date: Last Modified
+sdkLang: "ts"
+pageId: "reference-sdk-cron-trigger"
+metadata:
+  description: "Reference for TypeScript Cron Trigger: Config interface, Payload fields, and cron expression syntax for time-based workflows."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+The Cron Trigger fires at a specified schedule using standard cron expressions. It is ideal for workflows that need to run at regular intervals.
+
+## Creating the trigger
+
+```typescript
+import { cre } from "@chainlink/cre-sdk"
+
+const cron = new cre.capabilities.CronCapability()
+const trigger = cron.trigger({ schedule: "0 */10 * * * *" }) // Every 10 minutes
+```
+
+## Configuration
+
+The `trigger()` method accepts a configuration object with the following field:
+
+| <div style="width: 80px;">Field</div> | <div style="width: 80px;">Type</div> | Description                                                                                                                                   |
+| ------------------------------------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `schedule`                            | string                               | A standard cron expression with 5 or 6 fields, where the optional 6th field represents seconds. **Note:** The minimum interval is 30 seconds. |
+
+**Examples:**
+
+```typescript
+// Every 30 seconds (minimum interval)
+cron.trigger({ schedule: "*/30 * * * * *" })
+
+// Every 10 minutes
+cron.trigger({ schedule: "0 */10 * * * *" })
+
+// Every day at midnight
+cron.trigger({ schedule: "0 0 * * *" })
+
+// Every Monday at 9 AM
+cron.trigger({ schedule: "0 9 * * 1" })
+```
+
+## Payload
+
+The payload passed to your callback function contains the scheduled execution time.
+
+| Field                    | Type        | Description                               |
+| ------------------------ | ----------- | ----------------------------------------- |
+| `scheduledExecutionTime` | `Timestamp` | The time the execution was scheduled for. |
+
+The `Timestamp` has the following structure:
+
+```typescript
+{
+  seconds: bigint // Seconds since Unix epoch
+  nanos: number // Nanoseconds component
+}
+```
+
+## Callback Function
+
+Your callback function for cron triggers must conform to this signature:
+
+```typescript
+import { type Runtime, type CronPayload } from "@chainlink/cre-sdk"
+
+const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): YourReturnType => {
+  // Your workflow logic here
+  return result
+}
+```
+
+**Parameters:**
+
+- `runtime`: The runtime object used to invoke capabilities and access configuration
+- `payload`: The cron payload containing the scheduled execution time
+
+**Example:**
+
+```typescript
+import { type Runtime, type CronPayload } from "@chainlink/cre-sdk"
+
+type Config = {
+  schedule: string
+  message: string
+}
+
+const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): string => {
+  if (!payload.scheduledExecutionTime) {
+    throw new Error("Scheduled execution time is required")
+  }
+
+  const executionTime = new Date(Number(payload.scheduledExecutionTime.seconds) * 1000)
+  runtime.log(`Workflow triggered at: ${executionTime.toISOString()}`)
+
+  return runtime.config.message
+}
+```
+
+## Complete Example
+
+```typescript
+import { cre, Runner, type Runtime, type CronPayload } from "@chainlink/cre-sdk"
+
+type Config = {
+  schedule: string
+}
+
+const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): string => {
+  runtime.log("Cron workflow triggered!")
+  return "Success"
+}
+
+const initWorkflow = (config: Config) => {
+  const cron = new cre.capabilities.CronCapability()
+
+  return [cre.handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+
+main()
+```
