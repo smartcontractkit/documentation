@@ -5,6 +5,7 @@ import TechnicalStandards from "~/components/TechnicalStandards/TechnicalStandar
 import BaseLayout from "~/layouts/BaseLayout.astro"
 
 import * as CONFIG from "../config"
+import Demos from "~/components/Demos.astro"
 import { Typography } from "@chainlink/blocks"
 
 const formattedContentTitle = `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.title}`
@@ -20,12 +21,10 @@ const formattedContentTitle = `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.titl
         <ProductTabs />
       </div>
     </div>
-
     <div class="wrapper">
-      <div class="section">
-        <Typography variant="h4" className="section-title">Start your Chainlink journey</Typography>
-        <JourneyCards />
-      </div>
+      <JourneyCards />
+
+      <Demos />
 
       <div class="section">
         <Typography variant="h4" className="section-title">Technical Standards</Typography>
@@ -149,15 +148,6 @@ const formattedContentTitle = `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.titl
     background-color: var(--blue-100);
   }
 
-  .section-title {
-    font-size: 32px;
-    margin-bottom: var(--space-10x);
-  }
-
-  .section {
-    margin: 0 var(--space-6x);
-  }
-
   .wrapper {
     display: flex;
     flex-direction: column;
@@ -210,8 +200,12 @@ const formattedContentTitle = `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.titl
     }
   }
   @media (min-width: 72em) {
-    .hero,
-    .wrapper {
+    .hero {
+      max-width: min(1200px, calc(100% - 2 * var(--space-16x)));
+      padding: 0;
+    }
+
+    .recommended {
       max-width: min(1200px, calc(100% - 2 * var(--space-16x)));
       padding: 0;
     }
