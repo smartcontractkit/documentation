@@ -1,0 +1,94 @@
+---
+section: cre
+date: Last Modified
+title: "Project Setup Commands"
+sdkLang: "ts"
+pageId: "cli-project-setup"
+metadata:
+  description: "Initialize TypeScript projects with CLI: complete reference for cre init command to start building workflows."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+The project setup command `cre init` initializes new CRE projects or adds workflows to existing projects.
+
+<Aside type="note" title="Global flags">
+  All `cre` commands support [global flags](/cre/reference/cli#global-flags) like `--env`, `--target`, `--project-root`,
+  and `--verbose`.
+</Aside>
+
+## `cre init`
+
+<Aside type="note" title="Authentication required">
+  Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
+  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
+  in with the CLI](/cre/account/cli-login) for further details.
+</Aside>
+
+Initializes a new CRE project or adds a workflow to an existing project. The behavior depends on your current directory:
+
+- **In a directory without a project**: Creates a new project with the first workflow
+- **In an existing project directory**: Adds a new workflow to the existing project
+
+**Usage:**
+
+```bash
+cre init [flags]
+```
+
+**Flags:**
+
+| Flag                  | Description                        |
+| --------------------- | ---------------------------------- |
+| `-p, --project-name`  | Name for the new project           |
+| `-t, --template-id`   | ID of the workflow template to use |
+| `-w, --workflow-name` | Name for the new workflow          |
+
+**Interactive mode (recommended):**
+
+Running `cre init` without flags starts an interactive setup that guides you through the process:
+
+1. **Project name** (only if creating a new project)
+1. **Language** (Go or TypeScript)
+1. **Workflow template** (example templates for the chosen language)
+1. **Workflow name**
+
+**Example:**
+
+```bash
+# Interactive setup
+cre init
+```
+
+**Non-interactive mode:**
+
+```bash
+# Create a new project with initial workflow
+cre init \
+  --project-name my-cre-project \
+  --workflow-name my-workflow \
+  --template-id 1
+```
+
+<Aside type="note" title="Interactive vs. non-interactive">
+  For most users, running `cre init` without flags (interactive mode) is the easiest way to set up a project. The CLI
+  will guide you through the setup process with clear prompts.
+</Aside>
+
+For a detailed walkthrough, see [Part 1 of the Getting Started guide](/cre/getting-started/part-1-project-setup).
+
+## Project initialization workflow
+
+The typical project setup flow for TypeScript workflows:
+
+1. **`cre init`** — Create a new project or add a workflow (interactive or with flags)
+1. **Navigate to workflow directory** — `cd your-project/your-workflow`
+1. **Install dependencies** — Run `bun install` to install the CRE SDK and dependencies
+1. **Start development** — Write your workflow code
+
+## Learn more
+
+- [Part 1: Project Setup](/cre/getting-started/part-1-project-setup) — Step-by-step tutorial for initializing projects
+- [Project Configuration](/cre/reference/project-configuration) — Understanding `project.yaml` and `workflow.yaml`

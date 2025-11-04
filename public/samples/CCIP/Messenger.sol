@@ -21,13 +21,13 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
 
   // Custom errors to provide more descriptive revert messages.
   error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough
-    // balance.
+  // balance.
   error NothingToWithdraw(); // Used when trying to withdraw Ether but there's nothing to withdraw.
   error FailedToWithdrawEth(address owner, address target, uint256 value); // Used when the withdrawal of Ether fails.
   error DestinationChainNotAllowlisted(uint64 destinationChainSelector); // Used when the destination chain has not been
-    // allowlisted by the contract owner.
+  // allowlisted by the contract owner.
   error SourceChainNotAllowlisted(uint64 sourceChainSelector); // Used when the source chain has not been allowlisted by
-    // the contract owner.
+  // the contract owner.
   error SenderNotAllowlisted(address sender); // Used when the sender has not been allowlisted by the contract owner.
   error InvalidReceiverAddress(); // Used when the receiver address is 0.
 
@@ -48,9 +48,9 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
 
   // Event emitted when a message is received from another chain.
   event MessageReceived( // The unique ID of the CCIP message.
-      // The chain selector of the source chain.
-      // The address of the sender from the source chain.
-      // The text that was received.
+    // The chain selector of the source chain.
+    // The address of the sender from the source chain.
+    // The text that was received.
     bytes32 indexed messageId,
     uint64 indexed sourceChainSelector,
     address sender,
@@ -232,7 +232,7 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
     internal
     override
     onlyAllowlisted(any2EvmMessage.sourceChainSelector, abi.decode(any2EvmMessage.sender, (address))) // Make sure
-      // source chain and sender are allowlisted
+    // source chain and sender are allowlisted
 
   {
     s_lastReceivedMessageId = any2EvmMessage.messageId; // fetch the messageId
@@ -272,8 +272,8 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
         Client.GenericExtraArgsV2({
           gasLimit: 200_000, // Gas limit for the callback on the destination chain
           allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages
-            // from
-            // the same sender
+          // from
+          // the same sender
         })
       ),
       // Set the feeToken to a feeTokenAddress, indicating specific asset will be used for fees

@@ -1,0 +1,377 @@
+---
+section: cre
+title: "SDK Reference: EVM Client"
+date: Last Modified
+sdkLang: "go"
+pageId: "reference-sdk-evm-client"
+metadata:
+  description: "Reference for Go EVM Client: complete API for smart contract interactions, reads, writes, report generation, and chain configuration."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside, CopyText } from "@components"
+
+This page provides a reference for the `evm.Client`, the low-level tool for all interactions with EVM-compatible blockchains. The client includes a comprehensive set of read, write, and utility methods for building chain-aware workflows.
+
+<Aside type="note" title="EVM Client and bindings">
+  The `evm.Client` provides the foundational methods for all onchain interactions. It is highly recommended to wrap its
+  usage in a type-safe "binding" for your specific smart contracts. Your binding will use this generic client internally
+  to handle ABI encoding and decoding, making your workflow code cleaner and safer. See the [Generating
+  Bindings](/cre/guides/workflow/using-evm-client/generating-bindings) guide for more details.
+</Aside>
+
+## Client instantiation
+
+To use the client, you must instantiate it with the `ChainSelector` ID for the blockchain you intend to interact with.
+
+```go
+import "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/evm"
+
+// Instantiate a client for Ethereum Sepolia
+sepoliaClient := &evm.Client{
+    ChainSelector: 16015286601757825753, // ethereum-testnet-sepolia
+}
+```
+
+<Aside type="note" title="What is a Chain Selector?">
+  A Chain Selector is a unique identifier for a blockchain network. It is used to select the correct blockchain client
+  for the workflow. See the [Chain Selectors](#chain-selectors) section below for a complete list of supported networks
+  and usage examples.
+</Aside>
+
+For chains that have a constant defined in the SDK, you can also use the `ChainSelectorFromName` helper for improved readability. See the [Chain Selectors](#chain-selectors) section for a full list of available constants.
+
+```go
+// Alternatively, use the ChainSelectorFromName helper for better readability
+sepoliaSelector, err := evm.ChainSelectorFromName("ethereum-testnet-sepolia")
+
+sepoliaClient := &evm.Client{
+    ChainSelector: sepoliaSelector,
+}
+```
+
+## Read & query methods
+
+These methods are used to read data from the blockchain without creating a transaction.
+
+### `CallContract`
+
+Executes a `view` or `pure` function on a smart contract. To use this function, you construct an `evm.CallContractRequest` object, which holds the details of your call. The function returns a promise that resolves to an `evm.CallContractReply` containing the data returned by the contract.
+
+**Signature:**
+
+```go
+func (c *Client) CallContract(runtime cre.Runtime, input *CallContractRequest) cre.Promise[*CallContractReply]
+```
+
+#### `evm.CallContractRequest`
+
+This is the main input object for the `CallContract` function. It acts as a wrapper for the call message and an optional block number.
+
+| <div style="width:100px">Field</div> | <div style="width:110px">Type</div> | Description                                                                                                                                                                                                                     |
+| ------------------------------------ | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Call`                               | `*evm.CallMsg`                      | Contains the actual details of the function call you want to make.                                                                                                                                                              |
+| `BlockNumber`                        | `*pb.BigInt`                        | Optional. The block number to query. Defaults to `latest`. Use `-2` for `latest` (the most recent block, which may be subject to re-orgs) or `-3` for `finalized` (a block that is considered immutable and safe from re-orgs). |
+
+#### `evm.CallMsg`
+
+This struct contains the core details of your onchain call.
+
+| <div style="width:70px">Field</div> | <div style="width:70px">Type</div> | Description                                                                                       |
+| ----------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `From`                              | `[]byte`                           | Optional. The 20-byte address of the sender.                                                      |
+| `To`                                | `[]byte`                           | The 20-byte address of the target contract.                                                       |
+| `Data`                              | `[]byte`                           | The ABI-encoded byte string for the function call, including the function selector and arguments. |
+
+#### `evm.CallContractReply`
+
+This is the object returned by the promise when the `CallContract` function successfully completes.
+
+| <div style="width:70px">Field</div> | <div style="width:70px">Type</div> | Description                                         |
+| ----------------------------------- | ---------------------------------- | --------------------------------------------------- |
+| `Data`                              | `[]byte`                           | The ABI-encoded data returned by the contract call. |
+
+### `BalanceAt`
+
+Retrieves the native token balance for a specific account. You provide the account address in an `evm.BalanceAtRequest`, and the function returns a promise that resolves to an `evm.BalanceAtReply` containing the balance.
+
+**Signature:**
+
+```go
+func (c *Client) BalanceAt(runtime cre.Runtime, input *BalanceAtRequest) cre.Promise[*BalanceAtReply]
+```
+
+#### `evm.BalanceAtRequest`
+
+| Field         | Type         | Description                                                |
+| ------------- | ------------ | ---------------------------------------------------------- |
+| `Account`     | `[]byte`     | The 20-byte address of the account to query.               |
+| `BlockNumber` | `*pb.BigInt` | Optional. The block number to query. Defaults to `latest`. |
+
+#### `evm.BalanceAtReply`
+
+| Field     | Type         | Description                        |
+| --------- | ------------ | ---------------------------------- |
+| `Balance` | `*pb.BigInt` | The balance of the account in Wei. |
+
+### `FilterLogs`
+
+Queries historical event logs that match a specific set of filter criteria defined in an `evm.FilterLogsRequest`. The function returns a promise that resolves to an `evm.FilterLogsReply` containing an array of matching logs.
+
+**Signature:**
+
+```go
+func (c *Client) FilterLogs(runtime cre.Runtime, input *FilterLogsRequest) cre.Promise[*FilterLogsReply]
+```
+
+#### `evm.FilterLogsRequest`
+
+| <div style="width: 100px;">Field</div> | <div style="width: 140px;">Type</div> | Description                                                                                  |
+| -------------------------------------- | ------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `FilterQuery`                          | `*evm.FilterQuery`                    | A struct defining the filters for the log query, such as block range, addresses, and topics. |
+
+#### `evm.FilterLogsReply`
+
+| Field  | Type         | Description                                          |
+| ------ | ------------ | ---------------------------------------------------- |
+| `Logs` | `[]*evm.Log` | An array of log objects that match the filter query. |
+
+### `GetTransactionByHash`
+
+Retrieves a transaction by its hash. You provide the hash in an `evm.GetTransactionByHashRequest`, and the function returns a promise that resolves to an `evm.GetTransactionByHashReply` containing the transaction object.
+
+**Signature:**
+
+```go
+func (c *Client) GetTransactionByHash(runtime cre.Runtime, input *GetTransactionByHashRequest) cre.Promise[*GetTransactionByHashReply]
+```
+
+#### `evm.GetTransactionByHashRequest`
+
+| Field  | Type     | Description                                     |
+| ------ | -------- | ----------------------------------------------- |
+| `Hash` | `[]byte` | The 32-byte hash of the transaction to look up. |
+
+#### `evm.GetTransactionByHashReply`
+
+| Field         | Type               | Description                       |
+| ------------- | ------------------ | --------------------------------- |
+| `Transaction` | `*evm.Transaction` | The transaction object, if found. |
+
+### `GetTransactionReceipt`
+
+Fetches the receipt for a transaction given its hash. You provide the hash in an `evm.GetTransactionReceiptRequest`, and the function returns a promise that resolves to an `evm.GetTransactionReceiptReply` containing the receipt.
+
+**Signature:**
+
+```go
+func (c *Client) GetTransactionReceipt(runtime cre.Runtime, input *GetTransactionReceiptRequest) cre.Promise[*GetTransactionReceiptReply]
+```
+
+#### `evm.GetTransactionReceiptRequest`
+
+| Field  | Type     | Description                          |
+| ------ | -------- | ------------------------------------ |
+| `Hash` | `[]byte` | The 32-byte hash of the transaction. |
+
+#### `evm.GetTransactionReceiptReply`
+
+| Field     | Type           | Description                               |
+| --------- | -------------- | ----------------------------------------- |
+| `Receipt` | `*evm.Receipt` | The transaction receipt object, if found. |
+
+### `HeaderByNumber`
+
+Retrieves a block header by its number. You provide the block number in an `evm.HeaderByNumberRequest`, and the function returns a promise that resolves to an `evm.HeaderByNumberReply` containing the header object.
+
+**Signature:**
+
+```go
+func (c *Client) HeaderByNumber(runtime cre.Runtime, input *HeaderByNumberRequest) cre.Promise[*HeaderByNumberReply]
+```
+
+#### `evm.HeaderByNumberRequest`
+
+| Field         | Type         | Description                                                                |
+| ------------- | ------------ | -------------------------------------------------------------------------- |
+| `BlockNumber` | `*pb.BigInt` | The number of the block to retrieve. If `nil`, retrieves the latest block. |
+
+#### `evm.HeaderByNumberReply`
+
+| Field    | Type          | Description                        |
+| -------- | ------------- | ---------------------------------- |
+| `Header` | `*evm.Header` | The block header object, if found. |
+
+### `EstimateGas`
+
+Estimates the gas required to execute a specific transaction. You provide the transaction details in an `evm.EstimateGasRequest`, and the function returns a promise that resolves to an `evm.EstimateGasReply` with the gas estimate.
+
+**Signature:**
+
+```go
+func (c *Client) EstimateGas(runtime cre.Runtime, input *EstimateGasRequest) cre.Promise[*EstimateGasReply]
+```
+
+#### `evm.EstimateGasRequest`
+
+| Field | Type           | Description                                             |
+| ----- | -------------- | ------------------------------------------------------- |
+| `Msg` | `*evm.CallMsg` | The transaction message to simulate for gas estimation. |
+
+#### `evm.EstimateGasReply`
+
+| Field | Type     | Description                               |
+| ----- | -------- | ----------------------------------------- |
+| `Gas` | `uint64` | The estimated amount of gas in gas units. |
+
+## Write methods
+
+### `WriteReport`
+
+Executes a state-changing transaction by submitting a report to a designated receiver contract. You provide the transaction details in an `evm.WriteCreReportRequest`, and the function returns a promise that resolves to an `evm.WriteReportReply` with the transaction status.
+
+**Signature:**
+
+```go
+func (c *Client) WriteReport(runtime cre.Runtime, input *WriteCreReportRequest) cre.Promise[*WriteReportReply]
+```
+
+#### `evm.WriteCreReportRequest`
+
+| Field       | Type             | Description                                            |
+| ----------- | ---------------- | ------------------------------------------------------ |
+| `Receiver`  | `[]byte`         | The 20-byte address of the receiver contract to call.  |
+| `Report`    | `*cre.Report`    | The report data generated by the DON to be submitted.  |
+| `GasConfig` | `*evm.GasConfig` | Optional. Gas limit configuration for the transaction. |
+
+#### `evm.WriteReportReply`
+
+| Field                             | Type                               | Description                                                                         |
+| --------------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------- |
+| `TxStatus`                        | `TxStatus`                         | The final status of the transaction: `SUCCESS`, `REVERTED`, or `FATAL`.             |
+| `ReceiverContractExecutionStatus` | `*ReceiverContractExecutionStatus` | Optional. The status of the receiver contract's execution: `SUCCESS` or `REVERTED`. |
+| `TxHash`                          | `[]byte`                           | Optional. The 32-byte transaction hash of the onchain submission.                   |
+| `TransactionFee`                  | `*pb.BigInt`                       | Optional. The total fee paid for the transaction in Wei.                            |
+| `ErrorMessage`                    | `*string`                          | Optional. An error message if the transaction failed.                               |
+
+## Chain Selectors
+
+A **chain selector** is a unique identifier for a blockchain network used throughout the CRE platform. The same chain can be referenced in three different ways depending on the context. All three formats are equivalent and refer to the same blockchain.
+
+<Aside type="note" title="Related resources">
+  - **Forwarder addresses**: For network-specific forwarder contract addresses, see [Supported
+  Networks](/cre/guides/workflow/using-evm-client/supported-networks) - **RPC configuration**: For configuring RPC
+  endpoints in `project.yaml`, see [Project Configuration](/cre/reference/project-configuration)
+</Aside>
+
+### Understanding the three formats
+
+| Format                       | Example                      | Used In                                                                                            |
+| ---------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------- |
+| **String Name** (kebab-case) | `"ethereum-testnet-sepolia"` | `project.yaml` configuration files, workflow `config.json` files, `ChainSelectorFromName()` helper |
+| **Go Constant** (PascalCase) | `evm.EthereumTestnetSepolia` | Directly in your workflow Go code when you need the numeric ID                                     |
+| **Numeric ID** (uint64)      | `16015286601757825753`       | `evm.Client` instantiation in Go code                                                              |
+
+{/* prettier-ignore */}
+<Aside type="note" title="Which format should I use?">
+  - **In configuration files** (`project.yaml`, `config.staging.json`, `config.production.json`, etc.): Use the **string name** format (e.g., `chain-name: ethereum-testnet-sepolia` in YAML, `"chainName": "ethereum-testnet-sepolia"` in JSON)
+  - **In Go code**: Use either the **Go constant** (e.g., `evm.EthereumTestnetSepolia`) or the **helper function** with the string name (e.g., `evm.ChainSelectorFromName("ethereum-testnet-sepolia")`)
+</Aside>
+
+### Complete chain selector reference
+
+This table shows all three equivalent formats for each supported chain:
+
+| <div style="width: 220px;">Chain</div> | String Name                                                  | <div style="width: 110px;">Go Constant</div>                 | <div style="width: 100px;">Numeric ID</div>   |
+| -------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | --------------------------------------------- |
+| Avalanche Mainnet                      | <CopyText text="avalanche-mainnet" code />                   | <CopyText text="evm.AvalancheMainnet" code />                | <CopyText text="6433500567565415381" code />  |
+| Avalanche Fuji Testnet                 | <CopyText text="avalanche-testnet-fuji" code />              | <CopyText text="evm.AvalancheTestnetFuji" code />            | <CopyText text="14767482510784806043" code /> |
+| BNB Smart Chain opBNB Mainnet          | <CopyText text="binance_smart_chain-mainnet-opbnb-1" code /> | <CopyText text="evm.BinanceSmartChainMainnetOpbnb1" code />  | <CopyText text="465944652040885897" code />   |
+| BNB Smart Chain opBNB Testnet          | <CopyText text="binance_smart_chain-testnet-opbnb-1" code /> | <CopyText text="evm.BinanceSmartChainTestnetOpbnb1" code />  | <CopyText text="13274425992935471758" code /> |
+| Ethereum Mainnet                       | <CopyText text="ethereum-mainnet" code />                    | <CopyText text="evm.EthereumMainnet" code />                 | <CopyText text="5009297550715157269" code />  |
+| Ethereum Mainnet (Arbitrum)            | <CopyText text="ethereum-mainnet-arbitrum-1" code />         | <CopyText text="evm.EthereumMainnetArbitrum1" code />        | <CopyText text="4949039107694359620" code />  |
+| Ethereum Mainnet (Optimism)            | <CopyText text="ethereum-mainnet-optimism-1" code />         | <CopyText text="evm.EthereumMainnetOptimism1" code />        | <CopyText text="3734403246176062136" code />  |
+| Ethereum Sepolia Testnet               | <CopyText text="ethereum-testnet-sepolia" code />            | <CopyText text="evm.EthereumTestnetSepolia" code />          | <CopyText text="16015286601757825753" code /> |
+| Ethereum Sepolia (Arbitrum)            | <CopyText text="ethereum-testnet-sepolia-arbitrum-1" code /> | <CopyText text="evm.EthereumTestnetSepoliaArbitrum1" code /> | <CopyText text="3478487238524512106" code />  |
+| Ethereum Sepolia (Base)                | <CopyText text="ethereum-testnet-sepolia-base-1" code />     | <CopyText text="evm.EthereumTestnetSepoliaBase1" code />     | <CopyText text="10344971235874465080" code /> |
+| Ethereum Sepolia (Optimism)            | <CopyText text="ethereum-testnet-sepolia-optimism-1" code /> | <CopyText text="evm.EthereumTestnetSepoliaOptimism1" code /> | <CopyText text="5224473277236331295" code />  |
+| Polygon Mainnet                        | <CopyText text="polygon-mainnet" code />                     | <CopyText text="evm.PolygonMainnet" code />                  | <CopyText text="4051577828743386545" code />  |
+| Polygon Amoy Testnet                   | <CopyText text="polygon-testnet-amoy" code />                | <CopyText text="evm.PolygonTestnetAmoy" code />              | <CopyText text="16281711391670634445" code /> |
+
+### Usage examples
+
+**In your `project.yaml` file (RPC configuration):**
+
+```yaml
+local-simulation:
+  rpcs:
+    - chain-name: ethereum-testnet-sepolia # String name for RPC endpoint
+      url: https://your-rpc-url.com
+```
+
+**In your workflow's `config.json` file (workflow-specific settings):**
+
+Your workflow configuration can include chain selector names as part of your custom config structure. For example:
+
+```json
+{
+  "schedule": "*/30 * * * * *",
+  "evms": [
+    {
+      "storageAddress": "0x1234...",
+      "chainName": "ethereum-testnet-sepolia" // Use string name in your config
+    }
+  ]
+}
+```
+
+**In your workflow Go code (Option 1 - Using the constant):**
+
+```go
+evmClient := &evm.Client{
+    ChainSelector: evm.EthereumTestnetSepolia,  // Direct constant
+}
+```
+
+**In your workflow Go code (Option 2 - Using the helper function with config):**
+
+```go
+// Read chain name from your config and convert to numeric selector
+sepoliaSelector, err := evm.ChainSelectorFromName(config.Evms[0].ChainName)
+if err != nil {
+    return err
+}
+evmClient := &evm.Client{
+    ChainSelector: sepoliaSelector,
+}
+```
+
+### `ChainSelectorFromName`
+
+A helper function to convert a string name to its numeric chain selector ID.
+
+**Signature:**
+
+```go
+func ChainSelectorFromName(name string) (uint64, error)
+```
+
+**Parameters:**
+
+- `name`: The kebab-case string identifier for the chain (e.g., `"ethereum-testnet-sepolia"`)
+
+**Returns:**
+
+- The numeric chain selector ID
+- An error if the chain name is not recognized
+
+**Example:**
+
+```go
+selector, err := evm.ChainSelectorFromName("ethereum-testnet-sepolia")
+if err != nil {
+    return fmt.Errorf("invalid chain name: %w", err)
+}
+// selector now holds 16015286601757825753
+```

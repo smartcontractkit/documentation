@@ -1,0 +1,784 @@
+---
+section: cre
+title: "SDK Reference: EVM Client"
+date: Last Modified
+sdkLang: "ts"
+pageId: "reference-sdk-evm-client"
+metadata:
+  description: "Reference for TypeScript EVM Client: complete API for smart contract interactions, reads, writes, and report generation with Viem."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside, CopyText } from "@components"
+
+This page provides a reference for the `EVMClient`, the low-level tool for all interactions with EVM-compatible blockchains. The client includes a comprehensive set of read, write, and utility methods for building chain-aware workflows.
+
+## Client instantiation
+
+To use the client, you must instantiate it with the numeric `ChainSelector` ID for the blockchain you intend to interact with.
+
+```typescript
+import { cre, getNetwork } from "@chainlink/cre-sdk"
+
+// Get network information by chain selector name
+const network = getNetwork({
+  chainFamily: "evm",
+  chainSelectorName: "ethereum-testnet-sepolia",
+  isTestnet: true,
+})
+
+if (!network) {
+  throw new Error("Network not found")
+}
+
+// Instantiate a client for Ethereum Sepolia
+const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+```
+
+<Aside type="note" title="What is a Chain Selector?">
+  A Chain Selector is a unique identifier for a blockchain network. It is used to select the correct blockchain client
+  for the workflow. See the [Chain Selectors](#chain-selectors) section below for a complete list of supported networks
+  and usage examples.
+</Aside>
+
+### Using `getNetwork()` helper
+
+The `getNetwork()` utility function allows you to look up network information by chain selector name or numeric ID. This is the recommended approach as it provides type-safe access to chain metadata and validates network configurations.
+
+```typescript
+import { getNetwork } from "@chainlink/cre-sdk"
+
+const network = getNetwork({
+  chainFamily: "evm",
+  chainSelectorName: "ethereum-testnet-sepolia",
+  isTestnet: true,
+})
+
+// Access network properties
+console.log(network.chainSelector.selector) // 16015286601757825753n (bigint)
+console.log(network.chainSelector.name) // "ethereum-testnet-sepolia"
+console.log(network.family) // "evm"
+```
+
+## Read & query methods
+
+These methods are used to read data from the blockchain without creating a transaction.
+
+### `callContract()`
+
+Executes a `view` or `pure` function on a smart contract. This method returns an object with a `.result()` method that blocks until the call completes.
+
+**Signature:**
+
+```typescript
+callContract(
+  runtime: Runtime<unknown>,
+  input: CallContractRequest | CallContractRequestJson
+): { result: () => CallContractReply }
+```
+
+#### `CallContractRequest` / `CallContractRequestJson`
+
+This is the main input object for the `callContract()` method.
+
+| <div style="width:110px">Field</div> | <div style="width:110px">Type</div> | Required | Description                                                                                                                                                   |
+| ------------------------------------ | ----------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `call`                               | `CallMsgJson`                       | Yes      | Contains the actual details of the function call you want to make.                                                                                            |
+| `blockNumber`                        | `string`                            | No       | The block number to query. Use `LAST_FINALIZED_BLOCK_NUMBER` for finalized blocks or `LATEST_BLOCK_NUMBER` for the most recent block. Defaults to `"latest"`. |
+
+#### `CallMsg` / `CallMsgJson`
+
+This struct contains the core details of your onchain call.
+
+| <div style="width:70px">Field</div> | <div style="width:80px">Type</div> | Required | Description                                                                                                                                      |
+| ----------------------------------- | ---------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `from`                              | `string`                           | Yes      | The 20-byte address of the sender (hex string). For `view`/`pure` functions, use `zeroAddress` from viem as the sender doesn't typically matter. |
+| `to`                                | `string`                           | Yes      | The 20-byte address of the target contract (hex string).                                                                                         |
+| `data`                              | `string`                           | Yes      | The ABI-encoded function call data (hex string), including the function selector and arguments.                                                  |
+
+#### `CallContractReply`
+
+This is the object returned by `.result()` when the `callContract()` method successfully completes.
+
+| <div style="width:30px">Field</div> | <div style="width:90px">Type</div> | Description                                         |
+| ----------------------------------- | ---------------------------------- | --------------------------------------------------- |
+| `data`                              | `Uint8Array`                       | The ABI-encoded data returned by the contract call. |
+
+#### Usage example
+
+```typescript
+import { cre, getNetwork, encodeCallMsg, bytesToHex, LAST_FINALIZED_BLOCK_NUMBER } from "@chainlink/cre-sdk"
+import { encodeFunctionData, decodeFunctionResult, zeroAddress } from "viem"
+import { Storage } from "../contracts/abi"
+
+// Get network and instantiate client
+const network = getNetwork({
+  chainFamily: "evm",
+  chainSelectorName: "ethereum-testnet-sepolia",
+  isTestnet: true,
+})
+const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+
+// Encode the contract call data
+const callData = encodeFunctionData({
+  abi: Storage,
+  functionName: "get",
+})
+
+// Call the contract
+const contractCall = evmClient
+  .callContract(runtime, {
+    call: encodeCallMsg({
+      from: zeroAddress, // Required by encodeCallMsg. For view/pure functions, the sender doesn't matter.
+      to: "0x1234567890123456789012345678901234567890",
+      data: callData,
+    }),
+    blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
+  })
+  .result()
+
+// Decode the result
+const value = decodeFunctionResult({
+  abi: Storage,
+  functionName: "get",
+  data: bytesToHex(contractCall.data),
+})
+```
+
+---
+
+### `filterLogs()`
+
+Queries historical event logs that match a specific set of filter criteria. This method returns an object with a `.result()` method that blocks until the query completes.
+
+**Signature:**
+
+```typescript
+filterLogs(
+  runtime: Runtime<unknown>,
+  input: FilterLogsRequest | FilterLogsRequestJson
+): { result: () => FilterLogsReply }
+```
+
+#### `FilterLogsRequest` / `FilterLogsRequestJson`
+
+| <div style="width:110px">Field</div> | <div style="width:130px">Type</div> | Required | Description                                                                                  |
+| ------------------------------------ | ----------------------------------- | -------- | -------------------------------------------------------------------------------------------- |
+| `filterQuery`                        | `FilterQueryJson`                   | Yes      | A struct defining the filters for the log query, such as block range, addresses, and topics. |
+
+#### `FilterLogsReply`
+
+| Field  | Type    | Description                                          |
+| ------ | ------- | ---------------------------------------------------- |
+| `logs` | `Log[]` | An array of log objects that match the filter query. |
+
+#### `Log` type
+
+| Field         | Type           | Description                                                  |
+| ------------- | -------------- | ------------------------------------------------------------ |
+| `address`     | `Uint8Array`   | The 20-byte address of the contract that emitted the log.    |
+| `topics`      | `Uint8Array[]` | An array of indexed log fields (32-byte arrays).             |
+| `data`        | `Uint8Array`   | Non-indexed log data.                                        |
+| `blockNumber` | `bigint`       | The block number where the log was emitted (optional).       |
+| `txHash`      | `Uint8Array`   | The 32-byte transaction hash.                                |
+| `txIndex`     | `number`       | The index of the transaction within the block.               |
+| `blockHash`   | `Uint8Array`   | The 32-byte block hash.                                      |
+| `index`       | `number`       | The index of the log within the transaction.                 |
+| `removed`     | `boolean`      | `true` if the log was removed due to a chain reorganization. |
+
+---
+
+### `balanceAt()`
+
+Retrieves the native token balance for a specific account. This method returns an object with a `.result()` method that blocks until the balance is retrieved.
+
+**Signature:**
+
+```typescript
+balanceAt(
+  runtime: Runtime<unknown>,
+  input: BalanceAtRequest | BalanceAtRequestJson
+): { result: () => BalanceAtReply }
+```
+
+#### `BalanceAtRequest` / `BalanceAtRequestJson`
+
+| Field         | Type     | Required | Description                                               |
+| ------------- | -------- | -------- | --------------------------------------------------------- |
+| `account`     | `string` | Yes      | The 20-byte address of the account to query (hex string). |
+| `blockNumber` | `string` | No       | The block number to query. Defaults to `"latest"`.        |
+
+#### `BalanceAtReply`
+
+| Field     | Type     | Description                        |
+| --------- | -------- | ---------------------------------- |
+| `balance` | `bigint` | The balance of the account in Wei. |
+
+---
+
+### `estimateGas()`
+
+Estimates the gas required to execute a specific transaction. This method returns an object with a `.result()` method that blocks until the estimation completes.
+
+**Signature:**
+
+```typescript
+estimateGas(
+  runtime: Runtime<unknown>,
+  input: EstimateGasRequest | EstimateGasRequestJson
+): { result: () => EstimateGasReply }
+```
+
+#### `EstimateGasRequest` / `EstimateGasRequestJson`
+
+| Field | Type          | Required | Description                                             |
+| ----- | ------------- | -------- | ------------------------------------------------------- |
+| `msg` | `CallMsgJson` | Yes      | The transaction message to simulate for gas estimation. |
+
+#### `EstimateGasReply`
+
+| Field | Type     | Description                               |
+| ----- | -------- | ----------------------------------------- |
+| `gas` | `bigint` | The estimated amount of gas in gas units. |
+
+---
+
+### `getTransactionByHash()`
+
+Retrieves a transaction by its hash. This method returns an object with a `.result()` method that blocks until the transaction is retrieved.
+
+**Signature:**
+
+```typescript
+getTransactionByHash(
+  runtime: Runtime<unknown>,
+  input: GetTransactionByHashRequest | GetTransactionByHashRequestJson
+): { result: () => GetTransactionByHashReply }
+```
+
+#### `GetTransactionByHashRequest` / `GetTransactionByHashRequestJson`
+
+| Field  | Type     | Required | Description                                                  |
+| ------ | -------- | -------- | ------------------------------------------------------------ |
+| `hash` | `string` | Yes      | The 32-byte hash of the transaction to look up (hex string). |
+
+#### `GetTransactionByHashReply`
+
+| Field         | Type          | Description                       |
+| ------------- | ------------- | --------------------------------- |
+| `transaction` | `Transaction` | The transaction object, if found. |
+
+#### `Transaction` type
+
+| Field      | Type         | Description                           |
+| ---------- | ------------ | ------------------------------------- |
+| `nonce`    | `bigint`     | The nonce of the transaction.         |
+| `gas`      | `bigint`     | The gas limit.                        |
+| `to`       | `Uint8Array` | The 20-byte address of the recipient. |
+| `data`     | `Uint8Array` | The transaction data payload.         |
+| `hash`     | `Uint8Array` | The 32-byte transaction hash.         |
+| `value`    | `bigint`     | The value transferred in Wei.         |
+| `gasPrice` | `bigint`     | The gas price in Wei.                 |
+
+---
+
+### `getTransactionReceipt()`
+
+Fetches the receipt for a transaction given its hash. This method returns an object with a `.result()` method that blocks until the receipt is retrieved.
+
+**Signature:**
+
+```typescript
+getTransactionReceipt(
+  runtime: Runtime<unknown>,
+  input: GetTransactionReceiptRequest | GetTransactionReceiptRequestJson
+): { result: () => GetTransactionReceiptReply }
+```
+
+#### `GetTransactionReceiptRequest` / `GetTransactionReceiptRequestJson`
+
+| Field  | Type     | Required | Description                                       |
+| ------ | -------- | -------- | ------------------------------------------------- |
+| `hash` | `string` | Yes      | The 32-byte hash of the transaction (hex string). |
+
+#### `GetTransactionReceiptReply`
+
+| Field     | Type      | Description                               |
+| --------- | --------- | ----------------------------------------- |
+| `receipt` | `Receipt` | The transaction receipt object, if found. |
+
+#### `Receipt` type
+
+| Field               | Type         | Description                                                     |
+| ------------------- | ------------ | --------------------------------------------------------------- |
+| `status`            | `bigint`     | Transaction status: `1` for success, `0` for failure.           |
+| `gasUsed`           | `bigint`     | The amount of gas used by the transaction.                      |
+| `txIndex`           | `bigint`     | The index of the transaction within the block.                  |
+| `blockHash`         | `Uint8Array` | The 32-byte block hash.                                         |
+| `logs`              | `Log[]`      | An array of log objects emitted by the transaction.             |
+| `txHash`            | `Uint8Array` | The 32-byte transaction hash.                                   |
+| `effectiveGasPrice` | `bigint`     | The actual gas price paid per gas unit (optional).              |
+| `blockNumber`       | `bigint`     | The block number where the transaction was included (optional). |
+| `contractAddress`   | `Uint8Array` | The address of the deployed contract (if applicable).           |
+
+---
+
+### `headerByNumber()`
+
+Retrieves a block header by its number. This method returns an object with a `.result()` method that blocks until the header is retrieved.
+
+**Signature:**
+
+```typescript
+headerByNumber(
+  runtime: Runtime<unknown>,
+  input: HeaderByNumberRequest | HeaderByNumberRequestJson
+): { result: () => HeaderByNumberReply }
+```
+
+#### `HeaderByNumberRequest` / `HeaderByNumberRequestJson`
+
+| <div style="width: 100px;">Field</div> | <div style="width: 100px;">Type</div> | Required | Description                                                                      |
+| -------------------------------------- | ------------------------------------- | -------- | -------------------------------------------------------------------------------- |
+| `blockNumber`                          | `string`                              | No       | The number of the block to retrieve. If `undefined`, retrieves the latest block. |
+
+#### `HeaderByNumberReply`
+
+| Field    | Type     | Description                        |
+| -------- | -------- | ---------------------------------- |
+| `header` | `Header` | The block header object, if found. |
+
+#### `Header` type
+
+| Field         | Type         | Description                           |
+| ------------- | ------------ | ------------------------------------- |
+| `timestamp`   | `bigint`     | The Unix timestamp of the block.      |
+| `blockNumber` | `bigint`     | The block number (optional).          |
+| `hash`        | `Uint8Array` | The 32-byte block hash.               |
+| `parentHash`  | `Uint8Array` | The 32-byte hash of the parent block. |
+
+---
+
+## Write methods
+
+### `writeReport()`
+
+Executes a state-changing transaction by submitting a cryptographically signed report to a designated receiver contract. This is the primary method for writing data onchain in CRE workflows.
+
+**Signature:**
+
+```typescript
+writeReport(
+  runtime: Runtime<unknown>,
+  input: WriteCreReportRequest | WriteCreReportRequestJson
+): { result: () => WriteReportReply }
+```
+
+#### `WriteCreReportRequest` / `WriteCreReportRequestJson`
+
+| Field       | Type            | Required | Description                                                        |
+| ----------- | --------------- | -------- | ------------------------------------------------------------------ |
+| `receiver`  | `string`        | Yes      | The 20-byte address of the receiver contract to call (hex string). |
+| `report`    | `Report`        | Yes      | The report object generated by `runtime.report()`.                 |
+| `gasConfig` | `GasConfigJson` | No       | Gas limit configuration for the transaction.                       |
+
+#### `GasConfig` / `GasConfigJson`
+
+| Field      | Type     | Required | Description                        |
+| ---------- | -------- | -------- | ---------------------------------- |
+| `gasLimit` | `string` | Yes      | The gas limit for the transaction. |
+
+#### `WriteReportReply`
+
+| Field                             | Type                              | Description                                                                                                                                                |
+| --------------------------------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `txStatus`                        | `TxStatus`                        | The final status of the transaction: `TX_STATUS_SUCCESS`, `TX_STATUS_REVERTED`, or `TX_STATUS_FATAL`.                                                      |
+| `receiverContractExecutionStatus` | `ReceiverContractExecutionStatus` | The status of the receiver contract's execution: `RECEIVER_CONTRACT_EXECUTION_STATUS_SUCCESS` or `RECEIVER_CONTRACT_EXECUTION_STATUS_REVERTED` (optional). |
+| `txHash`                          | `Uint8Array`                      | The 32-byte transaction hash of the onchain submission (optional).                                                                                         |
+| `transactionFee`                  | `bigint`                          | The total fee paid for the transaction in Wei (optional).                                                                                                  |
+| `errorMessage`                    | `string`                          | An error message if the transaction failed (optional).                                                                                                     |
+
+#### `TxStatus` enum
+
+- `TX_STATUS_SUCCESS`: The transaction was successful.
+- `TX_STATUS_REVERTED`: The transaction reverted.
+- `TX_STATUS_FATAL`: A fatal error occurred.
+
+#### Usage example
+
+```typescript
+import { cre, getNetwork, hexToBase64, bytesToHex } from "@chainlink/cre-sdk"
+import { encodeFunctionData } from "viem"
+import { ReserveManager } from "../contracts/abi"
+
+// Encode the contract call data
+const callData = encodeFunctionData({
+  abi: ReserveManager,
+  functionName: "updateReserves",
+  args: [
+    {
+      totalMinted: 100n,
+      totalReserve: 50n,
+    },
+  ],
+})
+
+// Generate a signed report
+const reportResponse = runtime
+  .report({
+    encodedPayload: hexToBase64(callData),
+    encoderName: "evm",
+    signingAlgo: "ecdsa",
+    hashingAlgo: "keccak256",
+  })
+  .result()
+
+// Submit the report onchain
+const writeResult = evmClient
+  .writeReport(runtime, {
+    receiver: "0x1234567890123456789012345678901234567890",
+    report: reportResponse,
+    gasConfig: {
+      gasLimit: "1000000",
+    },
+  })
+  .result()
+
+runtime.log(`Transaction hash: ${bytesToHex(writeResult.txHash || new Uint8Array(32))}`)
+```
+
+---
+
+## Log tracking methods
+
+These methods manage stateful log tracking subscriptions.
+
+### `registerLogTracking()`
+
+Creates a persistent filter to track specific logs over time. This is a "fire-and-forget" operation that returns an empty result.
+
+**Signature:**
+
+```typescript
+registerLogTracking(
+  runtime: Runtime<unknown>,
+  input: RegisterLogTrackingRequest | RegisterLogTrackingRequestJson
+): { result: () => Empty }
+```
+
+#### `RegisterLogTrackingRequest` / `RegisterLogTrackingRequestJson`
+
+| <div style="width: 100px;">Field</div> | <div style="width: 120px;">Type</div> | Required | Description                                                                                |
+| -------------------------------------- | ------------------------------------- | -------- | ------------------------------------------------------------------------------------------ |
+| `filter`                               | `LPFilterJson`                        | Yes      | A struct defining the persistent log filter, including rate limits and retention policies. |
+
+---
+
+### `unregisterLogTracking()`
+
+Removes a previously registered log tracking filter. This is a "fire-and-forget" operation that returns an empty result.
+
+**Signature:**
+
+```typescript
+unregisterLogTracking(
+  runtime: Runtime<unknown>,
+  input: UnregisterLogTrackingRequest | UnregisterLogTrackingRequestJson
+): { result: () => Empty }
+```
+
+#### `UnregisterLogTrackingRequest` / `UnregisterLogTrackingRequestJson`
+
+| Field        | Type     | Description                              |
+| ------------ | -------- | ---------------------------------------- |
+| `filterName` | `string` | The unique name of the filter to remove. |
+
+---
+
+## Helper functions
+
+The TypeScript SDK provides several helper functions for working with the EVM Client.
+
+### `encodeCallMsg()`
+
+Encodes a call message payload into a `CallMsgJson`, expected by the EVM capability.
+
+**Signature:**
+
+```typescript
+function encodeCallMsg(payload: EncodeCallMsgPayload): CallMsgJson
+```
+
+**Parameters:**
+
+```typescript
+interface EncodeCallMsgPayload {
+  from: Address // viem Address type (0x-prefixed hex string)
+  to: Address
+  data: Hex // viem Hex type (0x-prefixed hex string)
+}
+```
+
+**Usage:**
+
+```typescript
+import { encodeCallMsg } from "@chainlink/cre-sdk"
+import { zeroAddress } from "viem"
+
+const callMsg = encodeCallMsg({
+  from: zeroAddress,
+  to: "0x1234567890123456789012345678901234567890",
+  data: "0xabcdef",
+})
+```
+
+---
+
+### `bytesToHex()`
+
+Converts a `Uint8Array` to a `0x`-prefixed hex string.
+
+**Signature:**
+
+```typescript
+function bytesToHex(bytes: Uint8Array): Hex
+```
+
+---
+
+### `hexToBase64()`
+
+Converts a `0x`-prefixed hex string to a base64-encoded string. This is useful for preparing data for protobuf structures.
+
+**Signature:**
+
+```typescript
+function hexToBase64(hex: Hex): string
+```
+
+---
+
+### `prepareReportRequest()`
+
+Prepares a report request with default EVM encoding parameters for use with `runtime.report()`. This helper simplifies report generation by automatically setting the standard encoding configuration (`evm`, `ecdsa`, `keccak256`) required for EVM-based workflows.
+
+**Signature:**
+
+```typescript
+function prepareReportRequest(
+  hexEncodedPayload: Hex,
+  reportEncoder?: Exclude<ReportRequestJson, "encodedPayload">
+): ReportRequestJson
+```
+
+**Parameters:**
+
+- `hexEncodedPayload`: The hex-encoded payload (typically from `encodeFunctionData()`) to be signed by the DON
+- `reportEncoder`: Optional. Custom report encoder configuration. Defaults to `EVM_DEFAULT_REPORT_ENCODER` (`{ encoderName: 'evm', signingAlgo: 'ecdsa', hashingAlgo: 'keccak256' }`)
+
+**Returns:**
+
+A `ReportRequestJson` object ready to pass to `runtime.report()`.
+
+**Usage:**
+
+```typescript
+import { prepareReportRequest, type Runtime } from "@chainlink/cre-sdk"
+import { encodeFunctionData } from "viem"
+import { MyContractABI } from "./abi"
+
+// Encode the function call data
+const callData = encodeFunctionData({
+  abi: MyContractABI,
+  functionName: "updateValue",
+  args: [42n],
+})
+
+// Generate a signed report using the helper (simplest approach)
+const report = runtime.report(prepareReportRequest(callData)).result()
+
+// The helper automatically sets:
+// - encodedPayload: hexToBase64(callData)
+// - encoderName: "evm"
+// - signingAlgo: "ecdsa"
+// - hashingAlgo: "keccak256"
+```
+
+**Equivalent manual approach:**
+
+```typescript
+import { hexToBase64, type Runtime } from "@chainlink/cre-sdk"
+
+// Without the helper, you must specify all parameters manually
+const report = runtime
+  .report({
+    encodedPayload: hexToBase64(callData),
+    encoderName: "evm",
+    signingAlgo: "ecdsa",
+    hashingAlgo: "keccak256",
+  })
+  .result()
+```
+
+{/* prettier-ignore */}
+<Aside type="tip" title="When to use this helper">
+  Use `prepareReportRequest()` for all EVM write operations to reduce boilerplate and ensure consistent encoding parameters. It's particularly useful in workflows with multiple write operations, as it eliminates repetitive configuration.
+</Aside>
+
+---
+
+### `LAST_FINALIZED_BLOCK_NUMBER`
+
+A constant representing the last finalized block number for use in `callContract()` and similar methods.
+
+```typescript
+const LAST_FINALIZED_BLOCK_NUMBER = {
+  absVal: Buffer.from([3]).toString("base64"), // 3 for finalized block
+  sign: "-1",
+}
+```
+
+**Usage:**
+
+```typescript
+import { LAST_FINALIZED_BLOCK_NUMBER } from "@chainlink/cre-sdk"
+
+const contractCall = evmClient
+  .callContract(runtime, {
+    call: encodeCallMsg({ from: zeroAddress, to: contractAddress, data: callData }),
+    blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
+  })
+  .result()
+```
+
+---
+
+### `LATEST_BLOCK_NUMBER`
+
+A constant representing the latest mined block number.
+
+```typescript
+const LATEST_BLOCK_NUMBER = {
+  absVal: Buffer.from([2]).toString("base64"), // 2 for the latest block
+  sign: "-1",
+}
+```
+
+---
+
+## Chain Selectors
+
+A **chain selector** is a unique identifier for a blockchain network used throughout the CRE platform. In TypeScript, you work with chain selectors primarily through the `getNetwork()` helper function.
+
+<Aside type="note" title="Chain Selector lookup">
+  The `getNetwork()` function provides a type-safe way to look up network information by chain selector name. This
+  returns an object containing the numeric chain selector (as a `bigint`) along with other network metadata.
+</Aside>
+
+### Using `getNetwork()`
+
+The recommended way to work with chain selectors in TypeScript:
+
+```typescript
+import { getNetwork } from "@chainlink/cre-sdk"
+
+const network = getNetwork({
+  chainFamily: "evm",
+  chainSelectorName: "ethereum-testnet-sepolia",
+  isTestnet: true,
+})
+
+if (!network) {
+  throw new Error("Network not found")
+}
+
+// Access the numeric chain selector (bigint)
+const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+// network.chainSelector.selector is 16015286601757825753n (bigint)
+```
+
+### Supported networks
+
+The `EVMClient` class includes a static `SUPPORTED_CHAINS` constant with all available chain selectors:
+
+```typescript
+cre.capabilities.EVMClient.SUPPORTED_CHAINS
+// Returns:
+// {
+//   'avalanche-mainnet': 6433500567565415381n,
+//   'avalanche-testnet-fuji': 14767482510784806043n,
+//   'ethereum-testnet-sepolia': 16015286601757825753n,
+//   // ... and more
+// }
+```
+
+### Chain selector reference
+
+This table shows the chain selector names and their numeric IDs. In your configuration files (`project.yaml`, `config.staging.json`, `config.production.json`, etc.), you always use the **String Name**. The numeric ID is used internally by the SDK and is returned by the `getNetwork()` helper function.
+
+<Aside type="note" title="Related resources">
+  - **Forwarder addresses**: For network-specific forwarder contract addresses, see [Supported
+  Networks](/cre/guides/workflow/using-evm-client/supported-networks) - **RPC configuration**: For configuring RPC
+  endpoints in `project.yaml`, see [Project Configuration](/cre/reference/project-configuration)
+</Aside>
+
+| <div style="width: 220px;">Chain</div> | String Name                                                  | <div style="width: 100px;">Numeric ID</div>   |
+| -------------------------------------- | ------------------------------------------------------------ | --------------------------------------------- |
+| Arbitrum Mainnet                       | <CopyText text="ethereum-mainnet-arbitrum-1" code />         | <CopyText text="4949039107694359620" code />  |
+| Arbitrum Sepolia                       | <CopyText text="ethereum-testnet-sepolia-arbitrum-1" code /> | <CopyText text="3478487238524512106" code />  |
+| Avalanche Mainnet                      | <CopyText text="avalanche-mainnet" code />                   | <CopyText text="6433500567565415381" code />  |
+| Avalanche Fuji Testnet                 | <CopyText text="avalanche-testnet-fuji" code />              | <CopyText text="14767482510784806043" code /> |
+| BNB Smart Chain opBNB Mainnet          | <CopyText text="binance_smart_chain-mainnet-opbnb-1" code /> | <CopyText text="465944652040885897" code />   |
+| BNB Smart Chain opBNB Testnet          | <CopyText text="binance_smart_chain-testnet-opbnb-1" code /> | <CopyText text="13274425992935471758" code /> |
+| Ethereum Mainnet                       | <CopyText text="ethereum-mainnet" code />                    | <CopyText text="5009297550715157269" code />  |
+| Ethereum Sepolia Testnet               | <CopyText text="ethereum-testnet-sepolia" code />            | <CopyText text="16015286601757825753" code /> |
+| Ethereum Sepolia (Base)                | <CopyText text="ethereum-testnet-sepolia-base-1" code />     | <CopyText text="10344971235874465080" code /> |
+| Optimism Mainnet                       | <CopyText text="ethereum-mainnet-optimism-1" code />         | <CopyText text="3734403246176062136" code />  |
+| Optimism Sepolia                       | <CopyText text="ethereum-testnet-sepolia-optimism-1" code /> | <CopyText text="5224473277236331295" code />  |
+| Polygon Mainnet                        | <CopyText text="polygon-mainnet" code />                     | <CopyText text="4051577828743386545" code />  |
+| Polygon Amoy Testnet                   | <CopyText text="polygon-testnet-amoy" code />                | <CopyText text="16281711391670634445" code /> |
+
+### Usage in configuration files
+
+**In your `project.yaml` file (RPC configuration):**
+
+```yaml
+local-simulation:
+  rpcs:
+    - chain-name: ethereum-testnet-sepolia # String name for RPC endpoint
+      url: https://your-rpc-url.com
+```
+
+**In your workflow's `config.json` file (workflow-specific settings):**
+
+Your workflow configuration can include chain selector names as part of your custom config structure. For example:
+
+```json
+{
+  "schedule": "*/30 * * * * *",
+  "evms": [
+    {
+      "storageAddress": "0x1234...",
+      "chainName": "ethereum-testnet-sepolia" // Use string name in your config
+    }
+  ]
+}
+```
+
+**In your workflow TypeScript code:**
+
+```typescript
+// Recommended: Use getNetwork() with the string name from your config
+const network = getNetwork({
+  chainFamily: "evm",
+  chainSelectorName: config.evms[0].chainName, // Read from your config
+  isTestnet: true,
+})
+
+if (!network) {
+  throw new Error(`Network not found: ${config.evms[0].chainName}`)
+}
+
+const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+```

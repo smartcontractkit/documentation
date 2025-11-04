@@ -1,0 +1,2325 @@
+# Billing
+Source: https://docs.chain.link/datalink/billing
+
+For information about DataLink pricing and billing, please [contact us](https://chain.link/contact) to discuss your specific requirements and use case.
+
+---
+
+# Data Quality, Responsibility & Trust Model
+Source: https://docs.chain.link/datalink/data-quality-responsibility
+
+DataLink provides infrastructure for data providers to make their data available onchain. The majority of DataLink feeds use a single-source model where each feed provides data from one specific provider. This page explains the single-source model, the role of the Data Provider, and the resulting implications for integrating protocols.
+
+<Aside type="note" title="Scope of This Page">
+  This page specifically addresses **single-source DataLink feeds**. If you're integrating with a DataLink feed that
+  aggregates data from multiple providers, the data quality and responsibility model may differ from what's described
+  here.
+</Aside>
+
+## Single-Source Data vs. Aggregated Data
+
+A key distinction of DataLink compared to Chainlink Data Feeds or Data Streams is its single-source nature. While Data Feeds and Data Streams commonly aggregate data from multiple sources to create a robust market-wide price, DataLink feeds provide access to bespoke and proprietary data from one specific provider.
+
+This single-source model enables access to specialized and unique datasets but introduces different trust assumptions and risk considerations.
+
+## Key Differences Summarized
+
+While DataLink leverages the same underlying [Chainlink Data Streams](/data-streams/) infrastructure for secure data *transport* and report signing, the responsibility model differs for single-source feeds:
+
+| Aspect               | Chainlink Data Feeds / Streams (Aggregated)                                                                                          | Single-Source DataLink feeds                                                                                                                                                                        |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Data Quality**     | Chainlink contributes to quality via multi-source aggregation and monitoring.                                                        | **The Data Provider is solely responsible for ensuring data quality.**                                                                                                                              |
+| **Data Sources**     | Multiple vetted data sources aggregated by Chainlink DONs.                                                                           | A **single proprietary source** managed by the Data Provider. This means no inherent Data Provider redundancy; if the Data Provider experiences an outage, data flow for that specific feed ceases. |
+| **Chainlink's Role** | Data aggregation, quality monitoring, outlier detection, secure transport, report signing, infrastructure reliability, and delivery. | Secure transport, report signing, and infrastructure reliability. **No validation of source data quality**.                                                                                         |
+| **Trust Assumption** | Chainlink's data aggregation methodology and infrastructure security.                                                                | The **specific Data Provider's methodology and reliability**, plus Chainlink's infrastructure security.                                                                                             |
+| **Support**          | Chainlink Labs provides support for feed issues.                                                                                     | **Data Provider handles all data-related support.**                                                                                                                                                 |
+
+## Protocol Responsibilities & Risk Management
+
+Given the provider-centric responsibility model and single-source nature of most DataLink feeds, protocols integrating these feeds must take extra precautions:
+
+1. **Perform Due Diligence**: Thoroughly vet the specific Data Provider. Understand their data sourcing, calculation methodologies, historical performance, SLAs, and support processes before integration. Assess if their data quality meets your application's specific use case in terms of risk tolerance.
+2. **Implement Fallback Mechanisms**: Design robust contingency plans and fallback logic within your application to handle potential inaccuracies, delays, or outages from the single-source DataLink feed. Do not rely solely on one DataLink feed for critical functions without backups.
+3. **Monitor Data Quality**: Actively monitor the performance and quality of the integrated DataLink feeds. Compare against other sources if possible.
+4. **Understand Risks**: Acknowledge that using single-source data carries inherent risks compared to aggregated data. Ensure your users are aware of these risks if applicable.
+
+End users interact with protocols utilizing DataLink at their own risk regarding the quality and reliability of the underlying data provided by the third-party Data Provider. DataLink is offered "as is" and "as available" without conditions or warranties of any kind. Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs from DataLink due to issues in your code, an issue related to any of the issues described in the table set forth above, or downstream issues with API dependencies.
+
+By using DataLink, you gain access to valuable specialized data, but you must actively manage the associated risks and understand the trust assumptions involved.
+
+---
+
+# DataLink
+Source: https://docs.chain.link/datalink
+
+DataLink is an institutional-grade data publishing service that enables data providers to commercialize specialized market data onchain through Chainlink's secure infrastructure.
+
+DataLink connects data providers with blockchain applications without requiring blockchain development expertise. It serves both institutional capital markets and DeFi protocols by enabling data providers to deliver specialized datasets across public chains, private institutional chains, and capital markets infrastructure.
+
+Data providers can integrate through existing REST or WebSocket APIs, eliminating custom blockchain development while maintaining control over data distribution and access rights.
+
+## Key Features
+
+### Data Providers
+
+DataLink offers a robust and secure gateway for Data Providers to commercialize valuable data onchain without requiring blockchain expertise. This unlocks a range of benefits for data providers, including:
+
+- **New revenue streams**: Commercialize proprietary data across any supported blockchain using Chainlink's enterprise-grade infrastructure, transforming valuable market data into new revenue streams.
+- **Access Control**: Maintain control over data with configurable access rights, supporting commercializing models aligned with existing business practices.
+- **New Distribution Channels**: Reach 2,400+ dApps, RWA issuers, and tokenization platforms across public and private blockchains, along with Chainlink’s global network of [institutional partners](https://blog.chain.link/chainlink-banking-capital-markets-announcements/), including leading banks, tokenized asset platforms, and financial market infrastructures.
+- **Seamless integration**: Deliver data across any supported chain through a single integration that connects directly to existing REST or WebSocket APIs—no custom blockchain development or data re-architecture required.
+
+Interested in being a data provider for DataLink? [Contact Chainlink Labs](https://chain.link/datalink-data-provider) to learn more.
+
+### Web3 Protocols and dApps
+
+DataLink empowers Web3 protocols to access new data types and launch new markets faster than ever before. Key benefits for onchain applications include:
+
+- **Faster Market Launches**: Access specialized, high-quality data to quickly deploy new assets and markets, gaining a first-mover advantage.
+- **Proven Infrastructure**: DataLink is underpinned by Chainlink’s proven infrastructure, which has enabled tens of trillions in transaction value.
+- **Seamless Integration**: Access the full DataLink catalog with one integration and easily combine multiple data subscriptions.
+- **Institutional-Grade Data**: Leverage the same high-quality datasets trusted by global financial institutions, including equities, forex, bonds, commodities, derivatives, and more.
+
+Interested in integrating DataLink into your DeFi protocol or onchain workflow? [Reach out to learn more](https://chain.link/datalink-data-consumer).
+
+## How DataLink Works
+
+DataLink makes specialized data available to blockchain applications through a three-step process:
+
+1. **Data Connectivity:** Chainlink Labs curates and onboards data providers offering market-leading data, including specialized datasets such as sector indices, long-tail asset pricing, and volatility metrics.
+2. **Data Consensus and Delivery:** Multiple Chainlink nodes within a Decentralized Oracle Network (DON) fetch data from a provider and reach consensus:
+   - **Pull-based feeds:** Nodes reach consensus and create cryptographically signed oracle reports that are delivered to the Aggregation Layer for offchain retrieval
+   - **Push-based feeds:** Nodes reach consensus and directly transmit results onchain to aggregator contracts
+3. **Application Integration:** Developers integrate data through two delivery methods:
+   - **Pull-based feeds:** REST APIs, WebSocket connections, or SDKs to fetch signed oracle reports offchain and validate their integrity onchain via verifier contracts
+   - **Push-based feeds:** Direct smart contract calls to aggregator proxy contracts for onchain data access
+
+## Specialized Data Types
+
+DataLink enables access to a wide range of institutional and specialized market data types:
+
+- **Credit Ratings:** Independent assessments of issuers’ and instruments’ creditworthiness, default risk, and rating outlooks.
+- **Equities:** Comprehensive data on global equity markets.
+- **FX Rates:** Accurate and timely FX rate data across major, minor, and emerging market currency pairs.
+- **Bonds:** Detailed market data including bond yields, maturities, issuer information, and historical pricing.
+- **Commodities:** Extensive coverage of spot and futures prices for commodities such as metals, energy, and agriculture.
+- **Reference Data:** Foundational datasets including security identifiers, classifications, corporate hierarchies, and market conventions to ensure consistency across financial instruments.
+- **Perpetual Funding Rates:** Periodic payments exchanged between long and short traders in perpetual futures markets, designed to anchor perpetual contract prices closely to the underlying asset’s spot price.
+- **Corporate Actions Data:** Events such as dividends, stock splits, mergers, acquisitions, rights issues, and reorganizations, with detailed terms and effective dates.
+- **Derivatives:** Options, futures, swaps, and structured products, with data on pricing, implied volatility, and contract specifications.
+- **Long-Tail Crypto Assets:** Price data for long-tail crypto-native assets.
+- **Any Custom Dataset:** Tailored data solutions designed to meet unique specifications or requirements for specialized investment strategies or analytics.
+
+## Technical Integration
+
+DataLink leverages Chainlink's existing infrastructure to provide flexible data delivery options:
+
+### Pull Delivery
+
+- **Infrastructure:** Built on [Chainlink Data Streams](/data-streams) architecture
+- **Access methods:** REST API, WebSocket, [Go SDK](/data-streams/reference/streams-direct/streams-direct-go-sdk), and [Rust SDK](/data-streams/reference/streams-direct/streams-direct-rust-sdk)
+- **Use cases:** High-frequency trading applications, on-demand data retrieval, sub-second data resolution, and applications requiring commit-and-reveal mechanisms to prevent frontrunning
+- **Efficiency:** Retrieves data only when needed, reducing unnecessary onchain transactions
+
+Learn more about [pull-based DataLink feeds](/datalink/pull-delivery/overview).
+
+### Push Delivery
+
+- **Infrastructure:** Built on [Chainlink Data Feeds](/data-feeds/) architecture
+- **Access method:** Direct onchain smart contract calls to proxy aggregator contracts
+- **Use cases:** Applications requiring regular onchain data updates at fixed intervals, automated execution based on data thresholds, and continuous data availability for smart contract logic
+- **Pattern:** Data is automatically pushed onchain at set intervals or when predefined conditions are met
+
+Learn more about [push-based DataLink feeds](/datalink/push-delivery/overview).
+
+## Data Quality, Responsibility & Trust Assumptions
+
+<Aside type="caution" title="Provider Responsibility & Single-Source Data">
+  Some DataLink feeds rely on single-source data from individual providers. DataLink solely provides infrastructure for
+  data providers to make their data available onchain. None of Chainlink Labs, the Chainlink Foundation, or Chainlink
+  node operators verify, guarantee, or assume responsibility for the accuracy, reliability, availability, or quality of
+  the data provided. Such responsibilities lie solely with the respective data providers. Protocols utilizing DataLink
+  are strongly encouraged to independently validate that the quality and reliability of data received from data
+  providers meet their use case requirements and implement comprehensive risk mitigation strategies, fallback
+  mechanisms, and contingency plans to address potential inaccuracies or interruptions in data delivery from data
+  providers. Any use of DataLink, whether obtained directly from Chainlink or acquired independently, remains subject to
+  the [Terms of Service](https://chainlinklabs.com/terms).
+</Aside>
+
+DataLink connects protocols to data providers through Chainlink infrastructure. Key considerations for protocol integrators using single-source data include:
+
+- Single source: Consuming single-source data introduces unique trust assumptions that protocols must manage through risk mitigation and fallback mechanisms.
+- Provider responsibility: Data providers are solely responsible for managing data quality, accuracy, uptime, and support.
+- Protocol due diligence: Integrating protocols must validate that a provider's data meets their application's specific use case requirements around data quality and reliability.
+
+Review the [Data Quality and Responsibility](/datalink/data-quality-responsibility) page for detailed guidance on risk management and trust assumptions.
+
+---
+
+# DataLink Provider Catalog
+Source: https://docs.chain.link/datalink/provider-catalog
+
+DataLink offers a catalog of institutional and specialized market data providers. Explore the catalog to find the right data for your onchain applications.
+
+<Aside type="note" title="More data providers coming soon">
+  [Contact us](https://chain.link/datalink-data-consumer) to request new data types, or if you are interested in
+  becoming a data provider through DataLink.
+</Aside>
+
+## Data Providers
+
+### Deutsche Börse Group
+
+[**Deutsche Börse** Market Data + Services](https://deutsche-boerse.com/dbg-de/) has formed a strategic partnership with Chainlink to bring its multi-asset class market data to blockchains. For the first time, real-time data from the largest derivatives exchange in Europe, Deutsche Börse Group’s Eurex, along with Xetra, 360T, and Tradegate trading venues—spanning equities, derivatives, forex instruments, and more—is being made available onchain
+
+The real-time, multi-asset class data Deutsche Börse is bringing onchain includes:
+
+- [**Eurex**](https://www.eurex.com/)—Europe’s largest derivatives exchange, listing interest rate, equity/index, volatility, dividend, FX, and other futures and options. In 2024, Eurex recorded over [2.08 billion traded contracts](https://www.eurex.com/ex-en/find/news-center/news/Full-year-and-December-2024-figures-at-Eurex-4250318) in exchange-traded derivatives with a capital open interest of [€3.6 trillion](https://www.eurex.com/ex-en/find/news-center/news/Full-year-and-December-2024-figures-at-Eurex-4250318).
+- [**Xetra**](https://www.xetra.com/)—Europe’s leading venue for ETFs and ETPs by turnover and listings, with around [€230.8 billion](https://www.deutsche-boerse.com/dbg-en/media/news-stories/press-releases/Xetra-ETF-ETP-statistics-2024-assets-under-management-and-product-diversity-continue-to-grow-4272270) in trading volume last year alone.
+- [**360T**](https://www.360t.com/)—Deutsche Börse Group’s global foreign exchange unit operates one of the biggest FX trading venues in the world, predominantly used by some of the world’s largest corporations to hedge currency exposures. 360T serves more than [2,900 buy-side customers](https://www.deutsche-boerse.com/dbg-en/media/news-stories/press-releases/Deutsche-B-rse-provides-market-leading-360T-data-for-FX-swaps-via-Bloomberg-B-PIPE-4229192) and more than [200 liquidity providers](https://www.deutsche-boerse.com/dbg-en/media/news-stories/press-releases/Deutsche-B-rse-provides-market-leading-360T-data-for-FX-swaps-via-Bloomberg-B-PIPE-4229192) across [75 countries](https://www.deutsche-boerse.com/dbg-en/media/news-stories/press-releases/Deutsche-B-rse-provides-market-leading-360T-data-for-FX-swaps-via-Bloomberg-B-PIPE-4229192).
+- [**Tradegate**](https://www.mds.deutsche-boerse.com/mds-en/real-time-data/European-spot-markets/Tradegate-1341022)—a stock exchange specialising in executing private investors’ orders. Over 30 trading participants from Germany, Austria, and Ireland are currently connected and offer access to their customers from their own country and abroad. Deutsche Börse Group holds a [43 percent](https://www.mds.deutsche-boerse.com/mds-en/real-time-data/European-spot-markets/Tradegate-1341022) stake in Tradegate Exchange. Since January, Tradegate has recorded a turnover of [€247.8 billion](https://www.tradegate.de/docs/250710_PR_Tradegate_Exchange_record_turnover_half_year.pdf?) with over [34 million transactions](https://www.tradegate.de/docs/250710_PR_Tradegate_Exchange_record_turnover_half_year.pdf?).
+
+<Aside type="tip" title="Talk to an expert">
+  [Contact us](https://chain.link/datalink-data-consumer) to discuss integrating Deutsche Börse Market Data + Services
+  onchain data into your application via DataLink.
+</Aside>
+
+## S\&P Global
+
+[S\&P Global Ratings](https://www.spglobal.com/ratings/en/credit-ratings/about/understanding-credit-ratings), the world's leading provider of credit ratings, benchmarks and analytics, and Chainlink have partnered to deliver S\&P Global Ratings' [Stablecoin Stability Assessments (SSAs)](https://www.spglobal.com/ratings/en/products/stablecoin-stability-assessment) on-chain via DataLink to make deep, independent stablecoin risk analysis directly accessible within DeFi protocols and smart contracts for the first time.
+
+The on-chain SSAs provide real-time access to S\&P Global Ratings' comprehensive stablecoin stability assessments which evaluate stablecoins on a scale from 1 (very strong) to 5 (weak) based on their ability to maintain stable value relative to fiat currencies.
+
+<Aside type="tip" title="Talk to an expert">
+  [Contact us](https://chain.link/datalink-data-consumer) to discuss integrating S\&P Global Rating onchain data into
+  your application via DataLink.
+</Aside>
+
+---
+
+# DataLink Architecture (Pull Delivery)
+Source: https://docs.chain.link/datalink/pull-delivery/architecture
+
+DataLink (Pull Delivery) provides infrastructure for Data Providers to make their specialized data available onchain for consumption by blockchain applications through offchain retrieval with onchain verification capabilities.
+
+The process involves these core steps and components, mirroring the [Data Streams](/data-streams/architecture) architecture but adapted for DataLink feeds:
+
+1. **Data Provider Connection:**
+   - Chainlink Labs curates and onboards premium Data Providers.
+   - The provider makes their proprietary data available via a secure API endpoint.
+
+2. **Data Fetching & Consensus (Data DON):**
+   - Multiple nodes within a Chainlink Decentralized Oracle Network (DON) independently fetch data from the provider's API.
+   - Nodes reach consensus on the data received from the provider.
+   - The DON generates a cryptographically signed oracle report containing the provider's data.
+
+3. **Report Availability (Chainlink Aggregation Layer):**
+   - The signed report from the DON is sent to the Chainlink Aggregation Layer.
+   - This layer stores the reports and makes them available via low-latency REST and WebSocket APIs, leveraging an [active-active multi-site deployment](/data-streams/architecture#active-active-multi-site-deployment) for high availability.
+
+4. **Application Integration:**
+   - **dApp Integration:** Developers fetch the signed reports offchain using the standard Streams Direct [REST API](/data-streams/reference/streams-direct/streams-direct-interface-api), [WebSocket](/data-streams/reference/streams-direct/streams-direct-interface-ws), or [SDKs](/data-streams/reference/streams-direct/streams-direct-go-sdk).
+   - **Onchain Verification:** Developers can use the [Chainlink Verifier Contracts](/datalink/pull-delivery/verifier-proxy-addresses) (the same Verifier Contracts used by Data Streams) to [verify the report's integrity onchain](/datalink/pull-delivery/tutorials/onchain-verification-evm), ensuring it hasn't been tampered with since being signed by the DON.
+
+DataLink utilizes the robust transport (Aggregation Layer) and verification (Verifier Contract) components of the Streams Direct infrastructure, but focuses the DON's role on securely fetching and signing data from a *single provider*.
+
+---
+
+# DataLink (Pull Delivery)
+Source: https://docs.chain.link/datalink/pull-delivery/overview
+
+DataLink pull-based feeds provide access to specialized data from Data Providers through offchain retrieval with onchain verification capabilities.
+
+## Key Characteristics
+
+- **Specialized market data**: Access specialized datasets directly from individual Data Providers
+- **Pull-based delivery**: Fetch data on-demand via REST API or real-time via WebSocket
+- **Onchain verification**: Cryptographically verify report integrity using verifier contracts
+- **Proven infrastructure**: Built on the same battle-tested [Chainlink Data Streams](/data-streams) architecture
+
+<Aside type="note" title="Infrastructure Sharing">
+  Pull-based DataLink feeds use the **same underlying infrastructure** as [Chainlink Data Streams](/data-streams),
+  including APIs, SDKs, and verification contracts. This ensures reliability, security, and a familiar developer
+  experience.
+</Aside>
+
+## How It Works
+
+1. **Data Providers** submit specialized data to Chainlink Decentralized Oracle Networks (DONs)
+2. **DONs** create cryptographically signed reports and deliver them to the Chainlink Aggregation Layer
+3. **Applications** fetch reports offchain via API/WebSocket and verify their integrity onchain
+
+For detailed technical information, see the [Architecture](/datalink/pull-delivery/architecture) page.
+
+## Getting Started
+
+### 1. Check Network Support
+
+Verify that your target blockchain supports onchain verification by reviewing [Supported Networks](/datalink/pull-delivery/supported-networks).
+
+### 2. Choose Your Integration Method
+
+- **REST API**: Fetch reports on-demand for periodic updates
+- **WebSocket**: Stream real-time data for continuous applications
+- **Onchain Verification**: Add cryptographic validation
+
+### 3. Follow the Tutorials
+
+Start with our step-by-step [Tutorials](/datalink/pull-delivery/tutorials) covering:
+
+- Fetching and decoding reports via API (Go/Rust)
+- Streaming and decoding reports via WebSocket (Go/Rust)
+- Onchain verification for EVM chains
+
+### 4. Reference Documentation
+
+Consult the [Reference](/datalink/pull-delivery/reference) section for:
+
+- Complete API and SDK documentation
+- Report schema specifications
+
+---
+
+# API, SDKs, Onchain Verification Reference
+Source: https://docs.chain.link/datalink/pull-delivery/reference/api-sdk-onchain-verification
+
+DataLink uses the same APIs, SDKs, and verification infrastructure as Chainlink Data Streams. Applications can use existing Data Streams integration patterns and tooling.
+
+<Aside type="caution" title="Provider Responsibility & Single-Source Data">
+  Some DataLink feeds rely on single-source data from individual providers. In that case, DataLink solely provides
+  infrastructure for data providers to make their data available onchain. None of Chainlink Labs, the Chainlink
+  Foundation, or Chainlink node operators verify, guarantee, or assume responsibility for the accuracy, reliability,
+  availability, or quality of the data provided. Such responsibilities lie solely with the respective data providers.
+  Protocols utilizing DataLink are strongly encouraged to independently validate that the quality and reliability of
+  data received from data providers meet their use case requirements and implement comprehensive risk mitigation
+  strategies, fallback mechanisms, and contingency plans to address potential inaccuracies or interruptions in data
+  delivery from data providers. Any use of DataLink, whether obtained directly from Chainlink or acquired independently,
+  shall remain subject to the [Terms of Service](https://chainlinklabs.com/terms).
+</Aside>
+
+## API Interfaces
+
+Access DataLink feeds using the standard Data Streams Direct APIs:
+
+- [Data Streams REST API Reference](/data-streams/reference/streams-direct/streams-direct-interface-api): HTTP-based integrations and fetching reports on demand.
+- [Data Streams WebSocket Reference](/data-streams/reference/streams-direct/streams-direct-interface-ws): Real-time data streaming via a persistent WebSocket connection.
+
+## SDK Integration
+
+Integrate DataLink quickly into your applications using the existing Data Streams SDKs:
+
+- [Data Streams Go SDK Reference](/data-streams/reference/streams-direct/streams-direct-go-sdk): Native Go language integration.
+- [Data Streams Rust SDK Reference](/data-streams/reference/streams-direct/streams-direct-rust-sdk): Native Rust language integration.
+
+## Report Verification
+
+Verify the integrity of DataLink reports onchain using the same process and Verifier contracts as Data Streams:
+
+- [Data Streams Onchain Verification Reference](/data-streams/reference/streams-direct/streams-direct-onchain-verification): Learn how to verify report authenticity on EVM chains using the shared Verifier Proxy contracts.
+
+---
+
+# DataLink Reference (Pull Delivery)
+Source: https://docs.chain.link/datalink/pull-delivery/reference
+
+This section provides technical reference documentation for integrating with DataLink pull-delivery feeds. Use these resources to understand data structures, API specifications, and implementation details.
+
+## API, SDKs, and Onchain Verification
+
+Learn how to integrate DataLink into your applications using APIs, SDKs, and onchain verification methods.
+
+---
+
+# Supported Networks for Report Verification
+Source: https://docs.chain.link/datalink/pull-delivery/supported-networks
+
+While DataLink data is accessed offchain via API or WebSocket, **onchain verification** of report integrity relies on Verifier Proxy contracts deployed to blockchain networks.
+
+DataLink uses the **same infrastructure and Verifier Proxy contracts** as [Chainlink Data Streams](/data-streams/). Therefore, DataLink supports onchain report verification on all networks where Data Streams verifier contracts are available.
+
+## Verifier Proxy Contract Addresses
+
+To perform onchain verification, you need the address of the Verifier Proxy contract specific to the network you are operating on.
+
+Find the list of supported networks and their corresponding Verifier Proxy addresses on the [Verifier Proxy Addresses](/datalink/pull-delivery/verifier-proxy-addresses) page.
+
+## How Verification Works
+
+The verification process involves using the Verifier Proxy contract on the relevant chain to check the signature and integrity of the report fetched via the API/WebSocket.
+
+For a detailed explanation and code examples, see the [Onchain Verification guide](/datalink/pull-delivery/tutorials/onchain-verification-evm).
+
+---
+
+# Fetch and Decode reports using the Go SDK
+Source: https://docs.chain.link/datalink/pull-delivery/tutorials/fetch-decode/api-go
+
+<PageTabs
+  pages={[
+  {
+    name: "Fetch and decode reports using the Go SDK",
+    url: "/datalink/pull-delivery/tutorials/fetch-decode/api-go",
+    icon: "/images/tutorial-icons/go_logo_black.png",
+  },
+  {
+    name: "Fetch and decode reports using the Rust SDK",
+    url: "/datalink/pull-delivery/tutorials/fetch-decode/api-rust",
+    icon: "/images/tutorial-icons/rust_logo_blk.svg",
+  },
+]}
+/>
+
+In this guide, you'll learn how to use the [Data Streams SDK](/data-streams/reference/streams-direct/streams-direct-go-sdk) for Go to fetch and decode DataLink feeds from the Aggregation Network. You'll set up your Go project, retrieve a report, decode it, and log its attributes.
+
+## Requirements
+
+- **Git**: Make sure you have Git installed. You can check your current version by running git --version in your terminal and download the latest version from the official [Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if necessary.
+- **Go Version**: Make sure you have Go version 1.22.4 or higher. You can check your current version by running go version in your terminal and download the latest version from the official [Go website](https://go.dev/) if necessary.
+- **API Credentials**: Access to DataLink requires API credentials to connect to the Aggregation Network. If you haven't already, [contact us](https://chain.link/contact) to request access.
+
+## Guide
+
+You'll start with the set up of your Go project. Next, you'll fetch and decode a report and log its attributes to your terminal.
+
+### Set up your Go project
+
+1. Create a new directory for your project and navigate to it:
+
+   ```bash
+   mkdir my-datalink-project
+   cd my-datalink-project
+   ```
+
+2. Initialize a new Go module:
+
+   ```bash
+   go mod init my-datalink-project
+   ```
+
+3. Install the Data Streams SDK:
+
+   ```bash
+   go get github.com/smartcontractkit/data-streams-sdk/go
+   ```
+
+### Understanding Report Schema Versions
+
+Data Providers may use different report schema versions. The schema version determines the structure of the data returned by the feed and affects how you should decode the report.
+
+1. Import the appropriate schema version in your code (e.g., `v4`).
+2. Use that version when decoding the report with `report.Decode[v4.Data]()`.
+
+Different schema versions have different fields and structures.
+
+In this example, we're using report schema `v4` for the EUR/USD feed, but your implementation should match the schema version specified by your Data Provider.
+
+### Fetch and decode a report with a single feed
+
+1. Create a new Go file, `single-feed.go`, in your project directory:
+
+   ```bash
+   touch single-feed.go
+   ```
+
+2. Insert the following code example and save your `single-feed.go` file:
+
+   ```go
+   package main
+
+   import (
+      "context"
+      "fmt"
+      "os"
+      "time"
+
+      streams "github.com/smartcontractkit/data-streams-sdk/go"
+      feed "github.com/smartcontractkit/data-streams-sdk/go/feed"
+      report "github.com/smartcontractkit/data-streams-sdk/go/report"
+      v4 "github.com/smartcontractkit/data-streams-sdk/go/report/v4"
+      // Import the v4 report schema
+   )
+
+   func main() {
+      // Validate command-line arguments
+      if len(os.Args) < 2 {
+         fmt.Printf("Usage: go run main.go [FeedID]\nExample: go run main.go 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce\n")
+         os.Exit(1)
+      }
+      feedIDInput := os.Args[1]
+
+      // Get API credentials from environment variables
+      apiKey := os.Getenv("API_KEY")
+      apiSecret := os.Getenv("API_SECRET")
+      if apiKey == "" || apiSecret == "" {
+         fmt.Printf("API_KEY and API_SECRET environment variables must be set\n")
+         os.Exit(1)
+      }
+
+      // Define the configuration for the SDK client
+      cfg := streams.Config{
+         ApiKey:    apiKey,
+         ApiSecret: apiSecret,
+         RestURL:   "https://api.testnet-dataengine.chain.link",
+         Logger:    streams.LogPrintf,
+      }
+
+      // Initialize the SDK client
+      client, err := streams.New(cfg)
+      if err != nil {
+         cfg.Logger("Failed to create client: %v\n", err)
+         os.Exit(1)
+      }
+
+      // Create context with timeout
+      ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+      defer cancel()
+
+      // Parse the feed ID
+      var feedID feed.ID
+      if err := feedID.FromString(feedIDInput); err != nil {
+         cfg.Logger("Invalid feed ID format '%s': %v\n", feedIDInput, err)
+         os.Exit(1)
+      }
+
+      // Fetch the latest report
+      reportResponse, err := client.GetLatestReport(ctx, feedID)
+      if err != nil {
+         cfg.Logger("Failed to get latest report: %v\n", err)
+         os.Exit(1)
+      }
+
+      // Log the raw report data
+      cfg.Logger("Raw report data: %+v\n", reportResponse)
+
+      // Decode the report
+      decodedReport, err := report.Decode[v4.Data](reportResponse.FullReport)
+      if err != nil {
+         cfg.Logger("Failed to decode report: %v\n", err)
+         os.Exit(1)
+      }
+
+      // Format and display the decoded report
+      fmt.Printf("\nDecoded Report for Feed ID %s:\n"+
+            "------------------------------------------\n"+
+            "Observations Timestamp: %d\n"+
+            "Benchmark Price       : %s\n"+
+            "Valid From Timestamp  : %d\n"+
+            "Expires At            : %d\n"+
+            "Link Fee              : %s\n"+
+            "Native Fee            : %s\n"+
+            "Market Status         : %d\n"+
+            "------------------------------------------\n",
+            feedIDInput,
+            decodedReport.Data.ObservationsTimestamp,
+            decodedReport.Data.BenchmarkPrice.String(),
+            decodedReport.Data.ValidFromTimestamp,
+            decodedReport.Data.ExpiresAt,
+            decodedReport.Data.LinkFee.String(),
+            decodedReport.Data.NativeFee.String(),
+            decodedReport.Data.MarketStatus,
+      )
+   }
+   ```
+
+3. Download the required dependencies and update the `go.mod` and `go.sum` files:
+
+   ```bash
+   go mod tidy
+   ```
+
+4. Set up the SDK client configuration within `single-feed.go` with your API credentials and the REST endpoint:
+
+   ```go
+   cfg := streams.Config{
+       ApiKey:    os.Getenv("API_KEY"),
+       ApiSecret: os.Getenv("API_SECRET"),
+       RestURL:   "https://api.testnet-dataengine.chain.link",
+       Logger: streams.LogPrintf,
+   }
+   ```
+
+   - Set your API credentials as environment variables:
+
+     ```bash
+     export API_KEY="<YOUR_API_KEY>"
+     export API_SECRET="<YOUR_API_SECRET>"
+     ```
+
+     Replace `<YOUR_API_KEY>` and `<YOUR_API_SECRET>` with your API credentials.
+
+   - `RestURL` is the REST endpoint to poll for specific reports. See the [Data Streams API Interface](/data-streams/reference/data-streams-api/interface-api) page for more information.
+
+   See the [SDK Reference](/data-streams/reference/data-streams-api/go-sdk) page for more configuration options.
+
+5. For this example, you will read from the EUR/USD DataLink feed on testnet. This feed ID is 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce.
+
+   Execute your application:
+
+   ```bash
+   go run single-feed.go 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce
+   ```
+
+   Expect output similar to the following in your terminal:
+
+   ```bash
+   2025-06-03T10:25:18-05:00 Raw report data: {"fullReport":"0x00090d9e8d96765a0c49e03a6ae05c82e8f8de70cf179baa632f18313e54bd69000000000000000000000000000000000000000000000000000000000041438a000000000000000000000000000000000000000000000000000000030000000100000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000260000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce00000000000000000000000000000000000000000000000000000000683f13dd00000000000000000000000000000000000000000000000000000000683f13dd00000000000000000000000000000000000000000000000000006e0e3915bcc3000000000000000000000000000000000000000000000000004edc1454fb6ef0000000000000000000000000000000000000000000000000000000006866a0dd0000000000000000000000000000000000000000000000000fcaa20569eac064000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000027b160a6824ccce49dc0bd19f636c40de2f3033410c7d1a7400b9a3cb0073d19dde0f87cfd6d9ce03156464a49cacb07136d2e7d717efcf42bc2795fd5c513e4a00000000000000000000000000000000000000000000000000000000000000025e075a9d8a6223ce2b9e524a7b5a563c2924a67b544e6676a751f5374b2a42ee37684b560eb72546f87b7287cefc668705461b7f4ebe4dabd7babe397cc98b89","feedID":"0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce","validFromTimestamp":1748964317,"observationsTimestamp":1748964317}
+
+
+   Decoded Report for Feed ID 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce:
+   ------------------------------------------
+   Observations Timestamp: 1748964317
+   Benchmark Price       : 1137900000000000100
+   Valid From Timestamp  : 1748964317
+   Expires At            : 1751556317
+   Link Fee              : 22197028066651888
+   Native Fee            : 121007366323395
+   Market Status         : 2
+   ------------------------------------------
+   ```
+
+#### Decoded report details
+
+The decoded report details include:
+
+| Attribute                | Value                                                                | Description                                                                                                                                                                                                                                        |
+| ------------------------ | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Feed ID`                | `0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce` | The unique identifier for the feed. In this example, the feed is for EUR/USD.                                                                                                                                                                      |
+| `Observations Timestamp` | `1748964317`                                                         | The timestamp indicating when the data was captured.                                                                                                                                                                                               |
+| `Benchmark Price`        | `1137900000000000100`                                                | The observed price in the report, with 18 decimals. For readability: `1.1379` USD per EUR.                                                                                                                                                         |
+| `Valid From Timestamp`   | `1748964317`                                                         | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                                                                                            |
+| `Expires At`             | `1751556317`                                                         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                                                                                   |
+| `Link Fee`               | `22197028066651888`                                                  | The fee to pay in LINK tokens for the onchain verification of the report data. With 18 decimals. For readability: `0.022197028066651888` LINK. **Note:** This example fee is not indicative of actual fees.                                        |
+| `Native Fee`             | `121007366323395`                                                    | The fee to pay in the native blockchain token (e.g., ETH on Ethereum) for the onchain verification of the report data. With 18 decimals. For readability: `0.000121007366323395` ETH. **Note:** This example fee is not indicative of actual fees. |
+| `Market Status`          | `2`                                                                  | The current market status. `2` indicates the market is `Open`.                                                                                                                                                                                     |
+
+#### Payload for onchain verification
+
+In this guide, you log and decode the `full_report` payload to extract the report data. In a
+production environment, you should verify the data to ensure its integrity and authenticity. Refer to the
+[Verify report data onchain](/datalink/pull-delivery/tutorials/onchain-verification-evm) guide.
+
+## Adapting code for different report schema versions
+
+When working with different DataLink providers, you'll need to adapt your code to handle the specific report schema version they use:
+
+1. Import the correct schema version. Examples:
+   - For v4 schema (as used in this example):
+
+     ```go
+     v4 "github.com/smartcontractkit/data-streams-sdk/go/report/v4"
+     ```
+
+   - For v3 schema:
+
+     ```go
+     v3 "github.com/smartcontractkit/data-streams-sdk/go/report/v3"
+     ```
+
+2. Update the decode function to use the correct schema version. Examples:
+   - For v4 schema (as used in this example):
+
+     ```go
+     decodedReport, err := report.Decode[v4.Data](reportResponse.FullReport)
+     ```
+
+   - For v3 schema:
+
+     ```go
+     decodedReport, err := report.Decode[v3.Data](reportResponse.FullReport)
+     ```
+
+3. Access fields according to the schema version structure.
+
+## Explanation
+
+### Initializing the client and configuration
+
+The Data Streams client is initialized in two steps:
+
+1. Configure the client with [`streams.Config`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/config.go#L10):
+
+   ```go
+   cfg := streams.Config{
+       ApiKey:    os.Getenv("API_KEY"),
+       ApiSecret: os.Getenv("API_SECRET"),
+       RestURL:   "https://api.testnet-dataengine.chain.link",
+       Logger:    streams.LogPrintf,
+   }
+   ```
+
+   In the configuration, you need:
+
+   - `ApiKey` and `ApiSecret` for authentication (required)
+   - `RestURL` for the API endpoint (required)
+   - `Logger` for debugging and error tracking (optional, defaults to `streams.LogPrintf`)
+
+2. Create the client with [`streams.New`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/client.go#L56):
+   ```go
+   client, err := streams.New(cfg)
+   ```
+   The client handles:
+   - Authentication with HMAC signatures
+   - Connection management and timeouts
+   - Error handling and retries
+
+### Fetching reports
+
+The SDK provides two main methods to fetch reports:
+
+1. Latest report for a single feed with [`GetLatestReport`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/client.go#L130):
+
+   ```go
+   reportResponse, err := client.GetLatestReport(ctx, feedID)
+   ```
+
+   - Takes a context and feed ID
+   - Returns a single `ReportResponse` with the most recent data
+   - No timestamp parameter needed
+   - Useful for real-time price monitoring
+
+2. Latest reports for multiple feeds with [`GetReports`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/client.go#L208):
+
+   ```go
+   reportResponses, err := client.GetReports(ctx, ids, timestamp)
+   ```
+
+   - Takes context, feed IDs array, and Unix timestamp
+   - Returns array of `ReportResponse`, one per feed ID
+   - Timestamp determines the point in time for the reports
+   - Efficient for monitoring multiple assets simultaneously
+
+Each API request automatically:
+
+- Handles authentication with API credentials
+- Manages request timeouts via context
+- Processes responses into structured types
+
+### Decoding reports
+
+Reports are decoded in two steps:
+
+1. Report decoding with [`report.Decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/report/report.go#L30):
+
+   ```go
+   decodedReport, err := report.Decode[v4.Data](reportResponse.FullReport)
+   ```
+
+   This step:
+
+   - Takes the raw `FullReport` bytes from the response
+   - Uses `v4.Data` schema (for this example)
+   - Validates the format and decodes using Go generics
+   - Returns a structured report with typed data
+
+2. Data access:
+
+   ```go
+   data := decodedReport.Data
+   feedID := data.FeedID                    // Feed identifier
+   observationsTimestamp := data.ObservationsTimestamp  // Unix timestamp
+   price := data.BenchmarkPrice.String()    // Convert big number to string, 18 decimal places
+   validFrom := data.ValidFromTimestamp     // Unix timestamp
+   expiresAt := data.ExpiresAt             // Unix timestamp
+   linkFee := data.LinkFee.String()        // Convert big number to string, 18 decimal places
+   nativeFee := data.NativeFee.String()    // Convert big number to string, 18 decimal places
+   marketStatus := data.MarketStatus       // Market status (0=Unknown, 1=Closed, 2=Open, 3=Suspended)
+   ```
+
+   Provides access to:
+
+   - Feed ID (hex string identifier)
+   - Observations timestamp (when data was captured)
+   - Benchmark price (as big number with 18 decimals)
+   - Fee information (LINK and native token fees as big numbers with 18 decimals)
+   - Timestamp data (validity period)
+   - Market status (`0`=Unknown, `1`=Closed, `2`=Open)
+
+   **Note:** Price and fee values require `.String()` for display as they are big number types.
+
+### Error handling
+
+The SDK uses Go's standard error handling patterns with some enhancements:
+
+1. Context management:
+
+   ```go
+   ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+   defer cancel()
+   ```
+
+   - Sets request timeouts for API calls
+   - `defer cancel()` ensures cleanup of resources
+   - Same context pattern for both single and multiple reports
+
+2. Error checking:
+
+   ```go
+   if err != nil {
+       cfg.Logger("Failed to decode report: %v\n", err)
+       os.Exit(1)           // Fatal errors: exit the program
+       // or
+       continue            // Non-fatal errors: skip this report
+   }
+   ```
+
+   - Fatal errors (client creation, no valid feeds) use `os.Exit(1)`
+   - Non-fatal errors (single report decode) use `continue`
+   - All errors are logged before handling
+
+3. SDK logging:
+
+   ```go
+   cfg.Logger("Raw report data: %+v\n", reportResponse)
+   ```
+
+   - Uses configured logger for SDK operations
+   - `fmt.Printf` for user-facing output
+   - Debug information includes raw report data
+   - Structured error messages with context
+
+The decoded data can be used for further processing or display in your application. For production environments, you must verify the data onchain using the provided `fullReport` payload.
+
+---
+
+# Fetch and Decode reports using the Rust SDK
+Source: https://docs.chain.link/datalink/pull-delivery/tutorials/fetch-decode/api-rust
+
+<PageTabs
+  pages={[
+  {
+    name: "Fetch and decode reports using the Go SDK",
+    url: "/datalink/pull-delivery/tutorials/fetch-decode/api-go",
+    icon: "/images/tutorial-icons/go_logo_black.png",
+  },
+  {
+    name: "Fetch and decode reports using the Rust SDK",
+    url: "/datalink/pull-delivery/tutorials/fetch-decode/api-rust",
+    icon: "/images/tutorial-icons/rust_logo_blk.svg",
+  },
+]}
+/>
+
+In this guide, you'll learn how to use the [Data Streams SDK](/data-streams/reference/streams-direct/streams-direct-rust-sdk) for Rust to fetch and decode DataLink feeds from the Aggregation Network. You'll set up your Rust project, retrieve a report, decode it, and log its attributes.
+
+## Requirements
+
+- **Rust**: Make sure you have Rust installed. You can install Rust by following the instructions on the official [Rust website](https://www.rust-lang.org/tools/install).
+- **API Credentials**: Access to DataLink requires API credentials to connect to the Aggregation Network. If you haven't already, [contact us](https://chain.link/contact) to request access.
+
+## Guide
+
+You'll start with the set up of your Rust project. Next, you'll fetch and decode a report and log its attributes to your terminal.
+
+### Set up your Rust project
+
+1. Create a new directory for your project and navigate to it:
+
+   ```bash
+   mkdir my-datalink-project && cd my-datalink-project
+   ```
+
+2. Initialize a new Rust project:
+
+   ```bash
+   cargo init
+   ```
+
+3. Add the following dependencies to your `Cargo.toml` file:
+
+   ```toml
+   [dependencies]
+   chainlink-data-streams-sdk = "1.0.0"
+   chainlink-data-streams-report = "1.0.0"
+   tokio = { version = "1.4", features = ["full"] }
+   hex = "0.4"
+   ```
+
+### Understanding Report Schema Versions
+
+Data Providers may use different report schema versions. The schema version determines the structure of the data returned by the feed and affects how you should decode the report.
+
+1. Import the appropriate schema version in your code (e.g., `v4`).
+2. Use that version when decoding the report with `report.Decode[v4.Data]()`.
+
+Different schema versions have different fields and structures.
+
+In this example, we're using report schema `v4` for the EUR/USD feed, but your implementation should match the schema version specified by your Data Provider.
+
+### Fetch and decode a report with a single stream
+
+1. Replace the contents of `src/main.rs` with the following code:
+
+   ```rust
+   use chainlink_data_streams_report::feed_id::ID;
+   use chainlink_data_streams_report::report::{ decode_full_report, v4::ReportDataV4 };
+   use chainlink_data_streams_sdk::client::Client;
+   use chainlink_data_streams_sdk::config::Config;
+   use std::env;
+   use std::error::Error;
+
+   #[tokio::main]
+   async fn main() -> Result<(), Box<dyn Error>> {
+      // Get feed ID from command line arguments
+      let args: Vec<String> = env::args().collect();
+      if args.len() < 2 {
+         eprintln!("Usage: cargo run [FeedID]");
+         std::process::exit(1);
+      }
+      let feed_id_input = &args[1];
+
+      // Get API credentials from environment variables
+      let api_key = env::var("API_KEY").expect("API_KEY must be set");
+      let api_secret = env::var("API_SECRET").expect("API_SECRET must be set");
+
+      // Initialize the configuration
+      let config = Config::new(
+         api_key,
+         api_secret,
+         "https://api.testnet-dataengine.chain.link".to_string(),
+         "wss://api.testnet-dataengine.chain.link/ws".to_string()
+      ).build()?;
+
+      // Initialize the client
+      let client = Client::new(config)?;
+
+      // Parse the feed ID
+      let feed_id = ID::from_hex_str(feed_id_input)?;
+
+      // Fetch the latest report
+      let response = client.get_latest_report(feed_id).await?;
+      println!("\nRaw report data: {:?}\n", response.report);
+
+      // Decode the report
+      let full_report = hex::decode(&response.report.full_report[2..])?;
+      let (_report_context, report_blob) = decode_full_report(&full_report)?;
+      let report_data = ReportDataV4::decode(&report_blob)?;
+
+      // Print decoded report details
+      println!("\nDecoded Report for Stream ID {}:", feed_id_input);
+      println!("------------------------------------------");
+      println!("Observations Timestamp: {}", response.report.observations_timestamp);
+      println!("Benchmark Price       : {}", report_data.price);
+      println!("Valid From Timestamp  : {}", response.report.valid_from_timestamp);
+      println!("Expires At            : {}", report_data.expires_at);
+      println!("Link Fee              : {}", report_data.link_fee);
+      println!("Native Fee            : {}", report_data.native_fee);
+      println!("Market Status         : {}", report_data.market_status);
+      println!("------------------------------------------");
+
+      Ok(())
+   }
+   ```
+
+2. Set up your API credentials as environment variables:
+
+   ```bash
+   export API_KEY="<YOUR_API_KEY>"
+   export API_SECRET="<YOUR_API_SECRET>"
+   ```
+
+   Replace `<YOUR_API_KEY>` and `<YOUR_API_SECRET>` with your API credentials.
+
+3. For this example, you will read from the EUR/USD DataLink feed. This feed ID is 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce.
+
+   Build and run your application:
+
+   ```bash
+   cargo run -- 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce
+   ```
+
+   Expect output similar to the following in your terminal:
+
+   ```bash
+   Raw report data: Report { feed_id: 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce, valid_from_timestamp: 1748966929, observations_timestamp: 1748966929, full_report: "0x00090d9e8d96765a0c49e03a6ae05c82e8f8de70cf179baa632f18313e54bd690000000000000000000000000000000000000000000000000000000000415fd1000000000000000000000000000000000000000000000000000000030000000100000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000260010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce00000000000000000000000000000000000000000000000000000000683f1e1100000000000000000000000000000000000000000000000000000000683f1e1100000000000000000000000000000000000000000000000000006f281ec8c2c6000000000000000000000000000000000000000000000000004f6b0f877eab70000000000000000000000000000000000000000000000000000000006866ab110000000000000000000000000000000000000000000000000fcac666a3b54000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000026c31dc4316b41ab7561ea418b6f6ca693583479b4743c2578c5e30874059c326bba94e9aeeeba7689d16da5b0df2eb19a6d6b650440be0a4959e9ef32fca7c280000000000000000000000000000000000000000000000000000000000000002110cc59c55562602ae9212e71b25c5730286185fe0f8eb6537c5a267ce7a6f0c5f55b424ecdf617b38b0a1fdaffbc34b662b29a5054125c9b2be5d57724466ee" }
+
+
+   Decoded Report for Stream ID 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce:
+   ------------------------------------------
+   Observations Timestamp: 1748966929
+   Benchmark Price       : 1137940000000000000
+   Valid From Timestamp  : 1748966929
+   Expires At            : 1751558929
+   Link Fee              : 22354237602048880
+   Native Fee            : 122218105848518
+   Market Status         : 2
+   ------------------------------------------
+   ```
+
+#### Decoded report details
+
+The decoded report details include:
+
+| Attribute                | Value                                                                | Description                                                                                                                                                                                                                                        |
+| ------------------------ | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Feed ID`                | `0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce` | The unique identifier for the feed. In this example, the feed is for EUR/USD.                                                                                                                                                                      |
+| `Observations Timestamp` | `1748966929`                                                         | The timestamp indicating when the data was captured.                                                                                                                                                                                               |
+| `Benchmark Price`        | `1137940000000000000`                                                | The observed price in the report, with 18 decimals. For readability: `1.13794` USD per EUR.                                                                                                                                                        |
+| `Valid From Timestamp`   | `1748966929`                                                         | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                                                                                            |
+| `Expires At`             | `1751558929`                                                         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                                                                                   |
+| `Link Fee`               | `22354237602048880`                                                  | The fee to pay in LINK tokens for the onchain verification of the report data. With 18 decimals. For readability: `0.022354237602048880` LINK. **Note:** This example fee is not indicative of actual fees.                                        |
+| `Native Fee`             | `122218105848518`                                                    | The fee to pay in the native blockchain token (e.g., ETH on Ethereum) for the onchain verification of the report data. With 18 decimals. For readability: `0.000122218105848518` ETH. **Note:** This example fee is not indicative of actual fees. |
+| `Market Status`          | `2`                                                                  | The current market status. `2` indicates the market is `Open`.                                                                                                                                                                                     |
+
+#### Payload for onchain verification
+
+In this guide, you log and decode the `full_report` payload to extract the report data. In a
+production environment, you should verify the data to ensure its integrity and authenticity. Refer to the
+[Verify report data onchain](/datalink/pull-delivery/tutorials/onchain-verification-evm) guide.
+
+## Adapting code for different report schema versions
+
+When working with different DataLink providers, you'll need to adapt your code to handle the specific report schema version they use:
+
+1. Import the correct schema version module. Examples:
+   - For v4 schema (as used in this example):
+
+     ```rust
+      use chainlink_data_streams_report::report::{ decode_full_report, v4::ReportDataV4 };
+     ```
+
+   - For v3 schema:
+
+     ```rust
+     use chainlink_data_streams_report::report::{ decode_full_report, v3::ReportDataV3 };
+     ```
+
+2. Update the decode function to use the correct schema version. Examples:
+   - For v4 schema (as used in this example):
+
+     ```rust
+     let report_data = ReportDataV4::decode(&report_blob)?;
+     ```
+
+   - For v3 schema:
+
+     ```rust
+     let report_data = ReportDataV3::decode(&report_blob)?;
+     ```
+
+3. Access fields according to the schema version structure.
+
+## Explanation
+
+### Initializing the API client and configuration
+
+The API client is initialized in two steps:
+
+1. [`Config::new`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/sdk/src/config.rs#L131) creates a configuration with your API credentials and endpoints. This function:
+   - Validates your API key and secret
+   - Sets up the REST API endpoint for data retrieval
+   - Configures optional settings like TLS verification
+
+2. [`Client::new`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/sdk/src/client.rs#L131) creates the HTTP client with your configuration. This client:
+   - Handles authentication automatically
+   - Manages HTTP connections
+   - Implements retry logic for failed requests
+
+### Fetching reports
+
+The SDK provides several methods to fetch reports through the REST API:
+
+1. Latest report: [`get_latest_report`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/sdk/src/client.rs#L165) retrieves the most recent report for a feed:
+   - Takes a feed ID as input
+   - Returns a single report with the latest timestamp
+   - Useful for applications that need the most current data
+
+2. Historical report: [`get_report`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/sdk/src/client.rs#L242) fetches a report at a specific timestamp:
+   - Takes both feed ID and timestamp
+   - Returns the report closest to the requested timestamp
+   - Helpful for historical analysis or verification
+
+Each API request automatically:
+
+- Generates HMAC authentication headers
+- Includes proper timestamps
+- Handles HTTP response status codes
+- Deserializes the JSON response into Rust structures
+
+### Decoding reports
+
+Reports are decoded in three stages:
+
+1. Hex decoding: The `full_report` field comes as a hex string prefixed with "0x":
+
+   ```rust
+   let full_report = hex::decode(&response.report.full_report[2..])?;
+   ```
+
+2. Report separation: [`decode_full_report`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report.rs#L77) splits the binary data:
+   - Extracts the report context (metadata)
+   - Isolates the report blob (actual data)
+   - Validates the report format
+
+3. Data extraction: [`ReportDataV4::decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report/v4.rs#L57) parses the report blob into structured data:
+   - Feed ID (unique identifier for the feed)
+   - Observations timestamp (when the data was captured)
+   - Benchmark price (18 decimal places)
+   - Validity timestamps (valid from and expires at)
+   - Fee information for onchain verification (LINK and native token fees)
+   - Market status (0=Unknown, 1=Closed, 2=Open, 3=Suspended)
+
+### Error handling
+
+The example demonstrates Rust's robust error handling:
+
+1. Type-safe errors:
+   - Uses custom error types for different failure scenarios
+   - Implements the `Error` trait for proper error propagation
+   - Provides detailed error messages for debugging
+
+2. Error propagation:
+   - Uses the `?` operator for clean error handling
+   - Converts errors between types when needed
+   - Bubbles up errors to the main function
+
+3. Input validation:
+   - Checks command-line arguments
+   - Validates environment variables
+   - Verifies feed ID format
+
+The decoded data can be used for further processing, analysis, or display in your application. For production environments, you must verify the data onchain using the provided `full_report` payload.
+
+---
+
+# DataLink tutorials (Pull Delivery)
+Source: https://docs.chain.link/datalink/pull-delivery/tutorials
+
+These tutorials guide you through integrating with DataLink pull-delivery feeds, from basic data fetching to onchain verification. Choose the tutorial that matches your preferred programming language and integration method.
+
+<Aside type="caution" title="Disclaimer">
+  These guides represent examples of using a Chainlink product or service and is provided to help you understand how to
+  interact with Chainlink's systems and services so that you can integrate them into your own. This template is provided
+  "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key checks or
+  error handling to make the usage of the product more clear. Do not use the code in this example in a production
+  environment without completing your own audits and application of best practices. Neither Chainlink Labs, the
+  Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due to
+  errors in code
+</Aside>
+
+## Getting started
+
+Before starting any tutorial, ensure you have:
+
+1. **API Credentials**: Access to pull-based DataLink feeds requires API credentials to connect to the Aggregation Network. If you haven't already, [contact us](https://chain.link/contact) to request access.
+2. **Development Environment**: Set up your development environment for your chosen programming language (Go or Rust).
+3. **Basic Understanding**: Familiarity with report schemas and the [DataLink architecture](/datalink/pull-delivery/overview) for pull-based feeds.
+
+## Tutorials
+
+### Fetch and decode reports (API)
+
+Learn how to fetch and decode reports using REST API calls. This method is ideal for applications that need on-demand data retrieval.
+
+- [Fetch and decode reports using the Go SDK (API)](/datalink/pull-delivery/tutorials/fetch-decode/api-go)
+- [Fetch and decode reports using the Rust SDK (API)](/datalink/pull-delivery/tutorials/fetch-decode/api-rust)
+
+### Stream and decode reports (WebSocket)
+
+Learn how to establish real-time data streams using WebSocket connections. This method is ideal for applications that need continuous, low-latency data updates.
+
+- [Stream and decode reports using the Go SDK (WebSocket)](/datalink/pull-delivery/tutorials/stream-decode/ws-go)
+- [Stream and decode reports using the Rust SDK (WebSocket)](/datalink/pull-delivery/tutorials/stream-decode/ws-rust)
+
+### Onchain verification
+
+Learn how to verify the authenticity and integrity of report data onchain using the Verifier Proxy contracts.
+
+- [Verify Report Data Onchain (EVM)](/datalink/pull-delivery/tutorials/onchain-verification-evm)
+
+---
+
+# Verify Report Data Onchain (EVM)
+Source: https://docs.chain.link/datalink/pull-delivery/tutorials/onchain-verification-evm
+
+In this guide, you'll learn how to verify onchain the integrity of reports by confirming their authenticity as signed by the Decentralized Oracle Network (DON). You'll use a verifier contract to verify the data onchain and pay the verification fee in LINK tokens.
+
+## Before you begin
+
+Make sure you understand how to fetch reports via the REST API or WebSocket connection. Refer to the following guides for more information:
+
+- [Fetch and decode reports (API) using the Go or Rust SDK](/datalink/pull-delivery/tutorials/fetch-decode/api-go)
+- [Stream and decode reports (WebSocket) using the Go or Rust SDK](/datalink/pull-delivery/tutorials/stream-decode/ws-go)
+
+## Requirements
+
+- This guide requires testnet ETH and LINK on *Arbitrum Sepolia*. Both are available at [faucets.chain.link](https://faucets.chain.link/arbitrum-sepolia).
+- Learn how to [Fund your contract with LINK](/resources/fund-your-contract).
+
+## Tutorial
+
+### Deploy the verifier contract
+
+Deploy a `ClientReportsVerifier` contract on *Arbitrum Sepolia*. This contract is enabled to verify reports and pay the verification fee in LINK tokens.
+
+1. [Open the ClientReportsVerifier.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataLink/ClientReportsVerifier.sol) contract in Remix.
+
+2. Select the `ClientReportsVerifier.sol` contract in the **Solidity Compiler** tab.
+
+3. Compile the contract.
+
+4. Open MetaMask and set the network to *Arbitrum Sepolia*. If you need to add Arbitrum Sepolia to your wallet, you can find the chain ID and the LINK token contract address on the [LINK Token Contracts](/resources/link-token-contracts#arbitrum-sepolia-testnet) page.
+   -
+
+5. On the **Deploy & Run Transactions** tab in Remix, select *Injected Provider - MetaMask* in the **Environment** list. Remix will use the MetaMask wallet to communicate with *Arbitrum Sepolia*.
+
+6. In the **Contract** section, select the `ClientReportsVerifier` contract and fill in the Arbitrum Sepolia **verifier proxy address**: 0x2ff010DEbC1297f19579B4246cad07bd24F2488A. You can find the verifier proxy addresses on the [Verifier Proxy Addresses](/datalink/pull-delivery/verifier-proxy-addresses) page.
+
+7. Click the **Deploy** button to deploy the contract. MetaMask prompts you to confirm the transaction. Check the transaction details to ensure you deploy the contract to *Arbitrum Sepolia*.
+
+8. After you confirm the transaction, the contract address appears under the **Deployed Contracts** list in Remix. Save this contract address for the next step.
+
+### Fund the verifier contract
+
+In this example, the client contract pays for onchain verification of reports in LINK tokens when fees are required. The contract automatically detects whether the target network requires fees:
+
+- **Networks with `FeeManager` deployed**: Verification requires token payments. These networks include: Arbitrum, Avalanche, Base, Blast, Bob, Ink, Linea, OP, Scroll, Soneium, and ZKSync.
+
+- **Networks without `FeeManager`**: No funding is needed since you can verify reports without fees. The contract skips the fee calculation and approval steps.
+
+For this tutorial on *Arbitrum Sepolia*, fees are required, so you need to fund the contract with LINK tokens. Open MetaMask and send 1 testnet LINK on *Arbitrum Sepolia* to the verifier contract address you saved earlier.
+
+### Verify a report onchain
+
+1. In Remix, on the **Deploy & Run Transactions** tab, expand your verifier contract under the **Deployed Contracts** section.
+
+2. Fill in the `verifyReport` function input parameter with the report payload you want to verify. You can use the following full report payload obtained in the [Fetch and decode report via a REST API](/datalink/pull-delivery/tutorials/fetch-decode/api-go) guide (EUR/USD feed) as an example:
+
+   ```
+   0x00090d9e8d96765a0c49e03a6ae05c82e8f8de70cf179baa632f18313e54bd69000000000000000000000000000000000000000000000000000000000041438a000000000000000000000000000000000000000000000000000000030000000100000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000260000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce00000000000000000000000000000000000000000000000000000000683f13dd00000000000000000000000000000000000000000000000000000000683f13dd00000000000000000000000000000000000000000000000000006e0e3915bcc3000000000000000000000000000000000000000000000000004edc1454fb6ef0000000000000000000000000000000000000000000000000000000006866a0dd0000000000000000000000000000000000000000000000000fcaa20569eac064000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000027b160a6824ccce49dc0bd19f636c40de2f3033410c7d1a7400b9a3cb0073d19dde0f87cfd6d9ce03156464a49cacb07136d2e7d717efcf42bc2795fd5c513e4a00000000000000000000000000000000000000000000000000000000000000025e075a9d8a6223ce2b9e524a7b5a563c2924a67b544e6676a751f5374b2a42ee37684b560eb72546f87b7287cefc668705461b7f4ebe4dabd7babe397cc98b89
+   ```
+
+   {" "}
+
+3. Click the `verifyReport` button to call the function. MetaMask prompts you to accept the transaction.
+
+4. Click the `lastDecodedPrice` getter function to view the decoded price from the verified report. The answer on the EUR/USD stream uses 18 decimal places, so an answer of `1137900000000000100` indicates an EUR/USD price of 1.1379000000000001. **Note**: Each feed may use a different number of decimal places for answers.
+
+## Examine the code
+
+The example code you deployed has all the interfaces and functions required to verify DataLink reports onchain.
+
+### Initializing the contract
+
+When deploying the contract, you define the verifier proxy address for the feed you want to read from. You can find this address on the [Verifier Proxy Addresses](/datalink/pull-delivery/verifier-proxy-addresses) page. The verifier proxy address provides functions that are required for this example:
+
+- The `s_feeManager` function to estimate the verification fees.
+- The `verify` function to verify the report onchain.
+
+### Verifying a report
+
+The `verifyReport` function is the core function that handles onchain report verification. Here's how it works:
+
+- **Report data extraction**:
+  - The function decodes the `unverifiedReport` to extract the report data.
+  - It then extracts the report version by reading the first two bytes of the report data, which correspond to the schema version encoded in the feed ID.
+  - If the report version is unsupported, the function reverts with an InvalidReportVersion error.
+
+- **Fee calculation and handling**:
+  - The function first checks if a `FeeManager` contract exists by querying `s_feeManager()` on the verifier proxy.
+  - **If a `FeeManager` exists** (non-zero address):
+    - It calculates the fees required for verification using the `getFeeAndReward` function.
+    - It approves the `RewardManager` contract to spend the calculated amount of LINK tokens from the contract's balance.
+    - It encodes the fee token address into the `parameterPayload` for the verification call.
+    - `FeeManager` contracts are currently deployed on: Arbitrum, Avalanche, Base, Blast, Bob, Ink, Linea, OP, Scroll, Soneium, and ZKSync.
+  - **If no `FeeManager` exists** (zero address):
+    - The function skips the fee calculation and approval steps entirely.
+    - It passes an empty `parameterPayload` to the verification call.
+  - This automatic detection makes the contract compatible with any network, regardless of whether fee management is deployed.
+
+- **Report verification**:
+  - The `verify` function of the verifier proxy is called to perform the actual verification.
+  - It passes the `unverifiedReport` and the `parameterPayload` (which contains either the encoded fee token address or empty bytes) as parameters.
+
+- **Data decoding**:
+  - Depending on the report version, the function decodes the verified report data into the appropriate struct (`ReportV3` or `ReportV4`).
+  - It emits a `DecodedPrice` event with the price extracted from the verified report.
+  - The `lastDecodedPrice` state variable is updated with the new price.
+
+### Additional functionality
+
+The contract also includes:
+
+- **Owner-only token withdrawal**: The `withdrawToken` function allows the contract owner to withdraw any ERC-20 tokens (including LINK) from the contract.
+- **Enhanced error handling**: The contract includes specific error types (`InvalidReportVersion`, `NotOwner`, `NothingToWithdraw`) for better debugging and user experience.
+- **Cross-chain compatibility**: The automatic `FeeManager` detection makes the same contract code work on any supported network, whether fees are required or not.
+
+---
+
+# Stream and Decode reports using the Go SDK (WebSocket)
+Source: https://docs.chain.link/datalink/pull-delivery/tutorials/stream-decode/ws-go
+
+<PageTabs
+  pages={[
+  {
+    name: "Stream and decode reports using the Go SDK",
+    url: "/datalink/pull-delivery/tutorials/stream-decode/ws-go",
+    icon: "/images/tutorial-icons/go_logo_black.png",
+  },
+  {
+    name: "Stream and decode reports using the Rust SDK",
+    url: "/datalink/pull-delivery/tutorials/stream-decode/ws-rust",
+    icon: "/images/tutorial-icons/rust_logo_blk.svg",
+  },
+]}
+/>
+
+In this guide, you'll learn how to use the [Data Streams SDK](/data-streams/reference/streams-direct/streams-direct-go-sdk) for Go to stream and decode DataLink feeds from the Aggregation Network. You'll set up your Go project, listen for real-time reports, decode them, and log their attributes.
+
+## Requirements
+
+- **Git**: Make sure you have Git installed. You can check your current version by running git --version in your terminal and download the latest version from the official [Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if necessary.
+- **Go Version**: Make sure you have Go version 1.22.4 or higher. You can check your current version by running `go version` in your terminal and download the latest version from the official [Go website](https://go.dev/) if necessary.
+- **API Credentials**: Access to DataLink requires API credentials to connect to the Aggregation Network. If you haven't already, [contact us](https://chain.link/contact) to request access.
+
+## Guide
+
+### Set up your Go project
+
+1. Create a new directory for your project and navigate to it:
+
+   ```bash
+   mkdir my-datalink-project
+   cd my-datalink-project
+   ```
+
+2. Initialize a new Go module:
+
+   ```bash
+   go mod init my-datalink-project
+   ```
+
+3. Install the Data Streams SDK:
+
+   ```bash
+   go get github.com/smartcontractkit/data-streams-sdk/go
+   ```
+
+### Understanding Report Schema Versions
+
+Data Providers may use different report schema versions. The schema version determines the structure of the data returned by the feed and affects how you should decode the report.
+
+1. Import the appropriate schema version in your code (e.g., `v4`).
+2. Use that version when decoding the report with `report.Decode[v4.Data]()`.
+
+Different schema versions have different fields and structures.
+
+In this example, we're using report schema `v4` for the EUR/USD feed, but your implementation should match the schema version specified by your Data Provider.
+
+### Establish a WebSocket connection and listen for real-time reports
+
+1. Create a new Go file, `stream.go`, in your project directory:
+
+   ```bash
+   touch stream.go
+   ```
+
+2. Insert the following code example and save your `stream.go` file:
+
+   ```go
+   package main
+
+   import (
+     "context"
+     "fmt"
+     "os"
+     "time"
+
+     streams "github.com/smartcontractkit/data-streams-sdk/go"
+     feed "github.com/smartcontractkit/data-streams-sdk/go/feed"
+     report "github.com/smartcontractkit/data-streams-sdk/go/report"
+     v4 "github.com/smartcontractkit/data-streams-sdk/go/report/v4" // Import the v4 report schema.
+   )
+
+   func main() {
+     if len(os.Args) < 2 {
+     fmt.Println("Usage: go run stream.go [StreamID1] [StreamID2] ...")
+     os.Exit(1)
+     }
+
+     // Set up the SDK client configuration
+     cfg := streams.Config{
+     ApiKey:    os.Getenv("API_KEY"),
+     ApiSecret: os.Getenv("API_SECRET"),
+     WsURL: "wss://ws.testnet-dataengine.chain.link",
+     Logger: streams.LogPrintf,
+     }
+
+     // Create a new client
+     client, err := streams.New(cfg)
+     if err != nil {
+     cfg.Logger("Failed to create client: %v\n", err)
+     os.Exit(1)
+     }
+
+     // Parse the feed IDs from the command line arguments
+     var ids []feed.ID
+     for _, arg := range os.Args[1:] {
+     var fid feed.ID
+     if err := fid.FromString(arg); err != nil {
+       cfg.Logger("Invalid stream ID %s: %v\n", arg, err)
+       os.Exit(1)
+     }
+     ids = append(ids, fid)
+     }
+
+     ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+     defer cancel()
+
+     // Subscribe to the feed(s)
+     stream, err := client.Stream(ctx, ids)
+     if err != nil {
+     cfg.Logger("Failed to subscribe: %v\n", err)
+     os.Exit(1)
+     }
+
+     defer stream.Close()
+     for {
+       reportResponse, err := stream.Read(context.Background())
+       if err != nil {
+         cfg.Logger("Error reading from stream: %v\n", err)
+         continue
+       }
+
+       // Log the contents of the report before decoding
+       cfg.Logger("Raw report data: %+v\n", reportResponse)
+
+         // Decode each report as it comes in
+         decodedReport, decodeErr := report.Decode[v4.Data](reportResponse.FullReport)
+         if decodeErr != nil {
+           cfg.Logger("Failed to decode report: %v\n", decodeErr)
+           continue
+         }
+
+           // Log the decoded report
+           cfg.Logger("\n--- Report Stream ID: %s ---\n" +
+             "------------------------------------------\n" +
+             "Observations Timestamp : %d\n" +
+             "Benchmark Price        : %s\n" +
+             "Valid From Timestamp   : %d\n" +
+             "Expires At             : %d\n" +
+             "Link Fee               : %s\n" +
+             "Native Fee             : %s\n" +
+             "Market Status          : %d\n" +
+             "------------------------------------------\n",
+             reportResponse.FeedID.String(),
+             decodedReport.Data.ObservationsTimestamp,
+             decodedReport.Data.BenchmarkPrice.String(),
+             decodedReport.Data.ValidFromTimestamp,
+             decodedReport.Data.ExpiresAt,
+             decodedReport.Data.LinkFee.String(),
+             decodedReport.Data.NativeFee.String(),
+             decodedReport.Data.MarketStatus,
+           )
+
+           // Also, log the stream stats
+           cfg.Logger("\n--- Stream Stats ---\n" +
+           stream.Stats().String() + "\n" +
+           "--------------------------------------------------------------------------------------------------------------------------------------------\n",
+           )
+     }
+   }
+   ```
+
+3. Download the required dependencies and update the `go.mod` and `go.sum` files:
+
+   ```bash
+   go mod tidy
+   ```
+
+4. Set up the SDK client configuration within `stream.go` with your API credentials and the WebSocket URL:
+
+   ```go
+   cfg := streams.Config{
+       ApiKey:    os.Getenv("API_KEY"),
+       ApiSecret: os.Getenv("API_SECRET"),
+       WsURL: "wss://ws.testnet-dataengine.chain.link",
+       Logger: streams.LogPrintf,
+   }
+   ```
+
+   - Set your API credentials as environment variables:
+
+     ```bash
+     export API_KEY="<YOUR_API_KEY>"
+     export API_SECRET="<YOUR_API_SECRET>"
+     ```
+
+     Replace `<YOUR_API_KEY>` and `<YOUR_API_SECRET>` with your API credentials.
+
+   - `WsURL` is the [WebSocket URL](/data-streams/reference/data-streams-api/interface-ws) for the Data Streams Aggregation Network. Use wss\://ws.testnet-dataengine.chain.link for the testnet environment.
+
+   See the [SDK Reference](/data-streams/reference/data-streams-api/go-sdk) page for more configuration options.
+
+5. For this example, you'll subscribe to the EUR/USD DataLink feed on testnet. This feed ID is 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce.
+
+   Execute your application:
+
+   ```bash
+   go run stream.go 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce
+   ```
+
+   Expect output similar to the following in your terminal:
+
+   ```bash
+   2025-06-03T11:00:21-05:00 Raw report data: {"fullReport":"0x00090d9e8d96765a0c49e03a6ae05c82e8f8de70cf179baa632f18313e54bd690000000000000000000000000000000000000000000000000000000000415a52000000000000000000000000000000000000000000000000000000030000000100000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000260000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce00000000000000000000000000000000000000000000000000000000683f1c1500000000000000000000000000000000000000000000000000000000683f1c1500000000000000000000000000000000000000000000000000006ed14d655b7f000000000000000000000000000000000000000000000000004f3ee8709ff739000000000000000000000000000000000000000000000000000000006866a9150000000000000000000000000000000000000000000000000fc8b012a2e7080000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002ba6f4e2b770d818a554bd2b2a3c5bc1c0f15632af10e7b08c29d79fb0ad77fa16091843dd3ab39ece9274fb0c44f7fd8694b87724d9d4906e715672170bd8abb00000000000000000000000000000000000000000000000000000000000000026dc37bff09cd3673d53e60872b65ee6e566f11f2f1a308b38a6f0bdfa9f25ab15bd4599ab01c9d06c744b9f6d41e3f50e5cccc1a564e7e2c930c7af0b74f1f36","feedID":"0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce","validFromTimestamp":1748966421,"observationsTimestamp":1748966421}
+
+   2025-06-03T11:00:21-05:00
+   --- Report Stream ID: 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce ---
+   ------------------------------------------
+   Observations Timestamp : 1748966421
+   Benchmark Price        : 1137352500000000000
+   Valid From Timestamp   : 1748966421
+   Expires At             : 1751558421
+   Link Fee               : 22305691203008313
+   Native Fee             : 121845225708415
+   Market Status          : 2
+   ------------------------------------------
+
+   2025-06-03T11:00:21-05:00
+   --- Stream Stats ---
+   accepted: 1, deduplicated: 0, total_received 1, partial_reconnects: 0, full_reconnects: 0, configured_connections: 1, active_connections 1
+   --------------------------------------------------------------------------------------------------------------------------------------------
+
+   2025-06-03T11:00:22-05:00 Raw report data: {"fullReport":"0x00090d9e8d96765a0c49e03a6ae05c82e8f8de70cf179baa632f18313e54bd690000000000000000000000000000000000000000000000000000000000415a55000000000000000000000000000000000000000000000000000000030000000100000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000260010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce00000000000000000000000000000000000000000000000000000000683f1c1600000000000000000000000000000000000000000000000000000000683f1c1600000000000000000000000000000000000000000000000000006ed0247f9673000000000000000000000000000000000000000000000000004f3f25cd2ee9ee000000000000000000000000000000000000000000000000000000006866a9160000000000000000000000000000000000000000000000000fc8dd8c2b242800000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000024e36294fb0464d2d1fa23512a03ca207d3adc9a9eef0291fd541eefdc364085a208276cb25ceb18587a8bd7bc8de54a74e3040cfda1aca3591913b51fa8b9bda0000000000000000000000000000000000000000000000000000000000000002347dd491b33b8dbd78c1a0d4b4641beb9cee1d761c3e56e7181845ac73b4efca490e36c776ac856bbf89a68064fde4c3bed22c43e48a4c3c4fb7cbe470eaa544","feedID":"0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce","validFromTimestamp":1748966422,"observationsTimestamp":1748966422}
+
+   2025-06-03T11:00:22-05:00
+   --- Report Stream ID: 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce ---
+   ------------------------------------------
+   Observations Timestamp : 1748966422
+   Benchmark Price        : 1137402500000000000
+   Valid From Timestamp   : 1748966422
+   Expires At             : 1751558422
+   Link Fee               : 22305954748885486
+   Native Fee             : 121840244594291
+   Market Status          : 2
+   ------------------------------------------
+
+   2025-06-03T11:00:22-05:00
+   --- Stream Stats ---
+   accepted: 2, deduplicated: 0, total_received 2, partial_reconnects: 0, full_reconnects: 0, configured_connections: 1, active_connections 1
+   --------------------------------------------------------------------------------------------------------------------------------------------
+
+   2025-06-03T11:00:23-05:00 Raw report data: {"fullReport":"0x00090d9e8d96765a0c49e03a6ae05c82e8f8de70cf179baa632f18313e54bd690000000000000000000000000000000000000000000000000000000000415a58000000000000000000000000000000000000000000000000000000030000000100000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000260000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce00000000000000000000000000000000000000000000000000000000683f1c1700000000000000000000000000000000000000000000000000000000683f1c1700000000000000000000000000000000000000000000000000006ed11dd755d2000000000000000000000000000000000000000000000000004f3ee813f33a33000000000000000000000000000000000000000000000000000000006866a9170000000000000000000000000000000000000000000000000fc8dd8c2b24280000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002622edb20ce1b998661a29c9b45953e2d37aee73fd68305183bd00240b1b2c89f95df58e73235dd3b4872ad2c185605985cf952ce1837f6724af00aba74eb42b300000000000000000000000000000000000000000000000000000000000000024cec2d619f9e12c9caf22f675bc4df44a5930644be5562b8bb0fe3e3c859e7f34937b468c19f3c41c6bab8813311724897b1ab1c3aa1ffa783ad9aa5fcf258eb","feedID":"0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce","validFromTimestamp":1748966423,"observationsTimestamp":1748966423}
+
+   2025-06-03T11:00:23-05:00
+   --- Report Stream ID: 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce ---
+   ------------------------------------------
+   Observations Timestamp : 1748966423
+   Benchmark Price        : 1137402500000000000
+   Valid From Timestamp   : 1748966423
+   Expires At             : 1751558423
+   Link Fee               : 22305689648183859
+   Native Fee             : 121844427871698
+   Market Status          : 2
+   ------------------------------------------
+
+   2025-06-03T11:00:23-05:00
+   --- Stream Stats ---
+   accepted: 3, deduplicated: 0, total_received 3, partial_reconnects: 0, full_reconnects: 0, configured_connections: 1, active_connections 1
+   --------------------------------------------------------------------------------------------------------------------------------------------
+
+   [...]
+   ```
+
+#### Decoded report details
+
+The decoded report details include:
+
+| Attribute                | Value                                                                | Description                                                                                                                                                                                                                                        |
+| ------------------------ | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Feed ID`                | `0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce` | The unique identifier for the feed. In this example, the feed is for EUR/USD.                                                                                                                                                                      |
+| `Observations Timestamp` | `1748966423`                                                         | The timestamp indicating when the data was captured.                                                                                                                                                                                               |
+| `Benchmark Price`        | `1137402500000000000`                                                | The observed price in the report, with 18 decimals. For readability: `1.1374025` USD per EUR.                                                                                                                                                      |
+| `Valid From Timestamp`   | `1748966423`                                                         | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                                                                                            |
+| `Expires At`             | `1751558423`                                                         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                                                                                   |
+| `Link Fee`               | `22305689648183859`                                                  | The fee to pay in LINK tokens for the onchain verification of the report data. With 18 decimals. For readability: `0.022305689648183859` LINK. **Note:** This example fee is not indicative of actual fees.                                        |
+| `Native Fee`             | `121844427871698`                                                    | The fee to pay in the native blockchain token (e.g., ETH on Ethereum) for the onchain verification of the report data. With 18 decimals. For readability: `0.000121844427871698` ETH. **Note:** This example fee is not indicative of actual fees. |
+| `Market Status`          | `2`                                                                  | The current market status. `2` indicates the market is `Open`.                                                                                                                                                                                     |
+
+#### Payload for onchain verification
+
+In this guide, you log and decode the `full_report` payload to extract the report data. In a
+production environment, you should verify the data to ensure its integrity and authenticity. Refer to the
+[Verify report data onchain](/datalink/pull-delivery/tutorials/onchain-verification-evm) guide.
+
+## Adapting code for different report schema versions
+
+When working with different DataLink providers, you'll need to adapt your code to handle the specific report schema version they use:
+
+1. Import the correct schema version module. Examples:
+   - For v4 schema (as used in this example):
+
+     ```go
+     v4 "github.com/smartcontractkit/data-streams-sdk/go/report/v4"
+     ```
+
+   - For v3 schema:
+
+     ```go
+     v3 "github.com/smartcontractkit/data-streams-sdk/go/report/v3"
+     ```
+
+2. Update the decode function to use the correct schema version. Examples:
+   - For v4 schema (as used in this example):
+
+     ```go
+     decodedReport, decodeErr := report.Decode[v4.Data](reportResponse.FullReport)
+     ```
+
+   - For v3 schema:
+
+     ```go
+     decodedReport, decodeErr := report.Decode[v3.Data](reportResponse.FullReport)
+     ```
+
+3. Access fields according to the schema version structure.
+
+## Explanation
+
+### Establishing a WebSocket connection and listening for reports
+
+Your application uses the [Stream](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/client.go#L98) function in the [Data Streams SDK](/data-streams/reference/streams-direct/streams-direct-go-sdk)'s client package to establish a real-time WebSocket connection with the Data Streams Aggregation Network.
+
+Once the WebSocket connection is established, your application subscribes to one or more streams by passing an array of `feed.IDs` to the `Stream` function. This subscription lets the client receive real-time updates whenever new report data is available for the specified streams.
+
+### Decoding a report
+
+As data reports arrive via the established WebSocket connection, they are processed in real-time:
+
+- Reading streams: The [`Read`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/stream.go#L266) method on the returned Stream object is continuously called within a loop. This method blocks until new data is available, ensuring that all incoming reports are captured as soon as they are broadcasted.
+
+- Decoding reports: For each received report, the SDK's [`Decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/go/report/report.go#L30) function parses and transforms the raw data into a structured format (`v4.Data` for this example). This decoded data includes data such as the benchmark price.
+
+### Handling the decoded data
+
+In this example, the application logs the structured report data to the terminal. However, this data can be used for further processing, analysis, or display in your own application.
+
+---
+
+# Stream and Decode reports using the Rust SDK (WebSocket)
+Source: https://docs.chain.link/datalink/pull-delivery/tutorials/stream-decode/ws-rust
+
+<PageTabs
+  pages={[
+  {
+    name: "Stream and decode reports using the Go SDK",
+    url: "/datalink/pull-delivery/tutorials/stream-decode/ws-go",
+    icon: "/images/tutorial-icons/go_logo_black.png",
+  },
+  {
+    name: "Stream and decode reports using the Rust SDK",
+    url: "/datalink/pull-delivery/tutorials/stream-decode/ws-rust",
+    icon: "/images/tutorial-icons/rust_logo_blk.svg",
+  },
+]}
+/>
+
+In this guide, you'll learn how to use the [Data Streams SDK](/data-streams/reference/streams-direct/streams-direct-rust-sdk) for Rust to stream and decode DataLink feeds from the Aggregation Network. You'll set up your Rust project, listen for real-time reports, decode them, and log their attributes.
+
+## Requirements
+
+- **Rust**: Make sure you have Rust installed. You can install Rust by following the instructions on the official [Rust website](https://www.rust-lang.org/tools/install).
+- **API Credentials**: Access to DataLink requires API credentials to connect to the Aggregation Network. If you haven't already, [contact us](https://chain.link/contact) to request access.
+
+## Guide
+
+### Set up your Rust project
+
+1. Create a new directory for your project and navigate to it:
+
+   ```bash
+   mkdir my-datalink-project && cd my-datalink-project
+   ```
+
+2. Initialize a new Rust project:
+
+   ```bash
+   cargo init
+   ```
+
+3. Add the following dependencies to your `Cargo.toml` file:
+
+   ```toml
+   [dependencies]
+   chainlink-data-streams-sdk = "1.0.0"
+   chainlink-data-streams-report = "1.0.0"
+   tokio = { version = "1.4", features = ["full"] }
+   hex = "0.4"
+   tracing = "0.1"
+   tracing-subscriber = { version = "0.3", features = ["time"] }
+   ```
+
+   Note: The `tracing` feature is required for logging functionality.
+
+### Understanding Report Schema Versions
+
+Data Providers may use different report schema versions. The schema version determines the structure of the data returned by the feed and affects how you should decode the report.
+
+1. Import the appropriate schema version in your code (e.g., `v4`).
+2. Use that version when decoding the report with `report.Decode[v4.Data]()`.
+
+Different schema versions have different fields and structures.
+
+In this example, we're using report schema `v4` for the EUR/USD feed, but your implementation should match the schema version specified by your Data Provider.
+
+### Establish a WebSocket connection and listen for real-time reports
+
+1. Replace the contents of `src/main.rs` with the following code:
+
+   ```rust
+   use chainlink_data_streams_report::feed_id::ID;
+   use chainlink_data_streams_report::report::{ decode_full_report, v4::ReportDataV4 };
+   use chainlink_data_streams_sdk::config::Config;
+   use chainlink_data_streams_sdk::stream::Stream;
+   use std::env;
+   use std::error::Error;
+   use tracing::{ info, warn };
+   use tracing_subscriber::fmt::time::UtcTime;
+
+   #[tokio::main]
+   async fn main() -> Result<(), Box<dyn Error>> {
+      // Initialize logging with UTC timestamps
+      tracing_subscriber
+         ::fmt()
+         .with_timer(UtcTime::rfc_3339())
+         .with_max_level(tracing::Level::INFO)
+         .init();
+
+      // Get feed IDs from command line arguments
+      let args: Vec<String> = env::args().collect();
+      if args.len() < 2 {
+         eprintln!("Usage: cargo run [FeedID1] [FeedID2] ...");
+         std::process::exit(1);
+      }
+
+      // Get API credentials from environment variables
+      let api_key = env::var("API_KEY").expect("API_KEY must be set");
+      let api_secret = env::var("API_SECRET").expect("API_SECRET must be set");
+
+      // Parse feed IDs from command line arguments
+      let mut feed_ids = Vec::new();
+      for arg in args.iter().skip(1) {
+         let feed_id = ID::from_hex_str(arg)?;
+         feed_ids.push(feed_id);
+      }
+
+      // Initialize the configuration
+      let config = Config::new(
+         api_key,
+         api_secret,
+         "https://api.testnet-dataengine.chain.link".to_string(),
+         "wss://ws.testnet-dataengine.chain.link".to_string()
+      ).build()?;
+
+      // Create and initialize the stream
+      let mut stream = Stream::new(&config, feed_ids).await?;
+      stream.listen().await?;
+
+      info!("WebSocket connection established. Listening for reports...");
+
+      // Process incoming reports
+      loop {
+         match stream.read().await {
+               Ok(response) => {
+                  info!("\nRaw report data: {:?}\n", response.report);
+
+                  // Decode the report
+                  let full_report = hex::decode(&response.report.full_report[2..])?;
+                  let (_report_context, report_blob) = decode_full_report(&full_report)?;
+                  let report_data = ReportDataV4::decode(&report_blob)?;
+
+                  // Print decoded report details
+                  info!(
+                     "\n--- Report Feed ID: {} ---\n\
+                     ------------------------------------------\n\
+                     Observations Timestamp : {}\n\
+                     Benchmark Price       : {}\n\
+                     Valid From Timestamp  : {}\n\
+                     Expires At           : {}\n\
+                     Link Fee             : {}\n\
+                     Native Fee           : {}\n\
+                     Market Status        : {}\n\
+                     ------------------------------------------",
+                     response.report.feed_id.to_hex_string(),
+                     response.report.observations_timestamp,
+                     report_data.price,
+                     response.report.valid_from_timestamp,
+                     report_data.expires_at,
+                     report_data.link_fee,
+                     report_data.native_fee,
+                     report_data.market_status
+                  );
+
+                  // Print stream stats
+                  info!(
+                     "\n--- Stream Stats ---\n{:#?}\n\
+                        --------------------------------------------------------------------------------------------------------------------------------------------",
+                     stream.get_stats()
+                  );
+               }
+               Err(e) => {
+                  warn!("Error reading from stream: {:?}", e);
+               }
+         }
+      }
+
+      // Note: In a production environment, you should implement proper cleanup
+      // by calling stream.close() when the application is terminated.
+      // For example:
+      //
+      // tokio::select! {
+      //     _ = tokio::signal::ctrl_c() => {
+      //         info!("Received shutdown signal");
+      //         stream.close().await?;
+      //     }
+      //     result = stream.read() => {
+      //         // Process result
+      //     }
+      // }
+   }
+   ```
+
+2. Set up your API credentials as environment variables:
+
+   ```bash
+   export API_KEY="<YOUR_API_KEY>"
+   export API_SECRET="<YOUR_API_SECRET>"
+   ```
+
+   Replace `<YOUR_API_KEY>` and `<YOUR_API_SECRET>` with your API credentials.
+
+3. For this example, you'll subscribe to the EUR/USD DataLink feed on testnet. This feed ID is 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce.
+
+   Build and run your application:
+
+   ```bash
+   cargo run -- 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce
+   ```
+
+   Expect output similar to the following in your terminal:
+
+   ```bash
+   2025-06-03T16:18:20.232313Z  INFO my_data_link_project: WebSocket connection established. Listening for reports...
+   2025-06-03T16:18:20.232481Z  INFO chainlink_data_streams_sdk::stream::monitor_connection: Received ping: [49]
+   2025-06-03T16:18:20.232534Z  INFO chainlink_data_streams_sdk::stream::monitor_connection: Responding with pong: [49]
+   2025-06-03T16:18:20.550416Z  INFO chainlink_data_streams_sdk::stream::monitor_connection: Received new report from Data Streams Endpoint.
+   2025-06-03T16:18:20.550857Z  INFO my_data_link_project:
+   Raw report data: Report { feed_id: 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce, valid_from_timestamp: 1748967500, observations_timestamp: 1748967500, full_report: "0x00090d9e8d96765a0c49e03a6ae05c82e8f8de70cf179baa632f18313e54bd6900000000000000000000000000000000000000000000000000000000004165ff000000000000000000000000000000000000000000000000000000030000000100000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000260010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce00000000000000000000000000000000000000000000000000000000683f204c00000000000000000000000000000000000000000000000000000000683f204c00000000000000000000000000000000000000000000000000006f12bdac46c0000000000000000000000000000000000000000000000000004f29241147b58e000000000000000000000000000000000000000000000000000000006866ad4c0000000000000000000000000000000000000000000000000fcb2a7202a220000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000291e7ab37d47a051d06bf9a17e743a30305560fa1ed63eb1e94530b9ff8e00998f2dc9e4876e60bde9f43fbbeb3a1c98bca91b71c98f25a329aa4843a1cdf5acc00000000000000000000000000000000000000000000000000000000000000023d6c77dce452fedcb47942020c574f291fdb259c64e2a42cfce0fbe2f2df092a3703bb5e167b80f388c323ec1d3cf9d298bc077d903a4297671c395e6d34b550" }
+
+   2025-06-03T16:18:20.551775Z  INFO my_data_link_project:
+   --- Report Feed ID: 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce ---
+   ------------------------------------------
+   Observations Timestamp : 1748967500
+   Benchmark Price       : 1138050000000000000
+   Valid From Timestamp  : 1748967500
+   Expires At           : 1751559500
+   Link Fee             : 22281758045615502
+   Native Fee           : 122126282278592
+   Market Status        : 2
+   ------------------------------------------
+   2025-06-03T16:18:20.551946Z  INFO my_data_link_project:
+   --- Stream Stats ---
+   StatsSnapshot {
+      accepted: 1,
+      deduplicated: 0,
+      total_received: 1,
+      partial_reconnects: 0,
+      full_reconnects: 0,
+      configured_connections: 1,
+      active_connections: 1,
+   }
+   --------------------------------------------------------------------------------------------------------------------------------------------
+   2025-06-03T16:18:21.503569Z  INFO chainlink_data_streams_sdk::stream::monitor_connection: Received new report from Data Streams Endpoint.
+   2025-06-03T16:18:21.503786Z  INFO my_data_link_project:
+   Raw report data: Report { feed_id: 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce, valid_from_timestamp: 1748967501, observations_timestamp: 1748967501, full_report: "0x00090d9e8d96765a0c49e03a6ae05c82e8f8de70cf179baa632f18313e54bd690000000000000000000000000000000000000000000000000000000000416602000000000000000000000000000000000000000000000000000000030000000100000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000260010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce00000000000000000000000000000000000000000000000000000000683f204d00000000000000000000000000000000000000000000000000000000683f204d00000000000000000000000000000000000000000000000000006f120e9d6f70000000000000000000000000000000000000000000000000004f2899581124ed000000000000000000000000000000000000000000000000000000006866ad4d0000000000000000000000000000000000000000000000000fcb2a7202a2200000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002bfc1839b35307881f3bca8fb4d5f08dc3da6d60f8ed43e31b36bbccbdc8e1abb9f8bf045a6c3cb96fba8536e81b3e92a54b4762cd1a85ad552cf4c664715c0bd00000000000000000000000000000000000000000000000000000000000000023b0c7ad0fdfdb598d53fee4d7026957c1c30e8c9056a267dc40d8ee8000168a72d6a2349a71f41a200b8f600fbedfb5b4c4ebf69ac86a794748268a9b3972594" }
+
+   2025-06-03T16:18:21.504481Z  INFO my_data_link_project:
+   --- Report Feed ID: 0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce ---
+   ------------------------------------------
+   Observations Timestamp : 1748967501
+   Benchmark Price       : 1138050000000000000
+   Valid From Timestamp  : 1748967501
+   Expires At           : 1751559501
+   Link Fee             : 22281162232767725
+   Native Fee           : 122123345293168
+   Market Status        : 2
+   ------------------------------------------
+   2025-06-03T16:18:21.504537Z  INFO my_data_link_project:
+   --- Stream Stats ---
+   StatsSnapshot {
+      accepted: 2,
+      deduplicated: 0,
+      total_received: 2,
+      partial_reconnects: 0,
+      full_reconnects: 0,
+      configured_connections: 1,
+      active_connections: 1,
+   }
+   [...]
+   ```
+
+The example above demonstrates streaming data from a single crypto stream. For production environments, especially when subscribing to multiple streams, it's recommended to enable [High Availability (HA) mode](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/docs/examples/wss_multiple.md). This can be achieved by:
+
+1. Adding multiple WebSocket endpoints in the configuration:
+
+   ```rust
+   "wss://ws.testnet-dataengine.chain.link,wss://ws.testnet-dataengine.chain.link"
+   ```
+
+2. Enabling HA mode in the configuration:
+   ```rust
+   use chainlink_data_streams_sdk::config::WebSocketHighAvailability;
+   // ...
+   .with_ws_ha(WebSocketHighAvailability::Enabled)
+   ```
+
+When HA mode is enabled and multiple WebSocket origins are provided, the Stream will maintain concurrent connections to different instances. This ensures high availability, fault tolerance, and minimizes the risk of report gaps.
+
+#### Decoded report details
+
+The decoded report details include:
+
+| Attribute                | Value                                                                | Description                                                                                                                                                                                                 |
+| ------------------------ | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Feed ID`                | `0x0004b9905d8337c34e00f8dbe31619428bac5c3937e73e6af75c71780f1770ce` | The unique identifier for the feed. In this example, the feed is for EUR/USD.                                                                                                                               |
+| `Observations Timestamp` | `1748967501`                                                         | The timestamp indicating when the data was captured.                                                                                                                                                        |
+| `Benchmark Price`        | `1138050000000000000`                                                | The observed price in the report, with 18 decimals. For readability: `1.138050000000000000` USD per EUR.                                                                                                    |
+| `Valid From Timestamp`   | `1748967501`                                                         | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                                                     |
+| `Expires At`             | `1751559501`                                                         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                                            |
+| `Link Fee`               | `22281162232767725`                                                  | The fee to pay in LINK tokens for the onchain verification of the report data. With 18 decimals. For readability: `0.022281162232767725` LINK. **Note:** This example fee is not indicative of actual fees. |
+| `Native Fee`             | `122123345293168`                                                    | The fee to pay in the native blockchain token (e.g., ETH on Ethereum) for the onchain verification of the report data. With 18 decimals. **Note:** This example fee is not indicative of actual fees.       |
+| `Market Status`          | `2`                                                                  | The market status for the feed. In this example, `2` indicates the market is `Open`.                                                                                                                        |
+
+#### Payload for onchain verification
+
+In this guide, you log and decode the `full_report` payload to extract the report data. In a
+production environment, you should verify the data to ensure its integrity and authenticity. Refer to the
+[Verify report data onchain](/datalink/pull-delivery/tutorials/onchain-verification-evm) guide.
+
+## Adapting code for different report schema versions
+
+When working with different DataLink providers, you'll need to adapt your code to handle the specific report schema version they use:
+
+1. Import the correct schema version module. Examples:
+
+   - For v4 schema (as used in this example):
+
+   ```rust
+   use chainlink_data_streams_report::report::{ decode_full_report, v4::ReportDataV4 };
+   ```
+
+   - For v3 schema:
+
+   ```rust
+   use chainlink_data_streams_report::report::{ decode_full_report, v3::ReportDataV3 };
+   ```
+
+2. Update the decode function to use the correct schema version. Examples:
+
+   - For v4 schema (as used in this example):
+
+   ```rust
+   let report_data = ReportDataV4::decode(&report_blob)?;
+   ```
+
+   - For v3 schema:
+
+   ```rust
+   let report_data = ReportDataV3::decode(&report_blob)?;
+   ```
+
+3. Access fields according to the schema version structure.
+
+## Explanation
+
+### Establishing a WebSocket connection and listening for reports
+
+The WebSocket connection is established in two steps:
+
+1. [`Stream::new`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/sdk/src/stream.rs#L131) initializes a new stream instance with your configuration and feed IDs. This function prepares the connection parameters but doesn't establish the connection yet.
+
+2. [`stream.listen()`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/sdk/src/stream.rs#L162) establishes the actual WebSocket connection and starts the background tasks that maintain the connection. These tasks handle:
+   - Automatic reconnection if the connection is lost
+   - Ping/pong messages to keep the connection alive
+   - Message queueing and delivery
+
+### Decoding a report
+
+As data reports arrive via the WebSocket connection, they are processed in real-time through several steps:
+
+1. Reading streams: The [`read`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/sdk/src/stream.rs#L218) method on the Stream object is called within a loop. This asynchronous method:
+   - Awaits the next report from the WebSocket connection
+   - Handles backpressure automatically
+   - Returns a [`WebSocketReport`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/sdk/src/stream.rs#L43) containing the report data
+
+2. Decoding reports: Each report is decoded in two stages:
+   - [`decode_full_report`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report.rs#L77) parses the raw hexadecimal data, separating the report context (containing metadata) from the report blob
+   - [`ReportDataV4::decode`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/report/src/report/v4.rs#L57) transforms the report blob into a structured format containing:
+     - The benchmark price (with 18 decimal places)
+     - Fee information for onchain verification (LINK and native fees)
+     - Expiration timestamp
+     - Market status indicator
+
+### Handling the decoded data
+
+The example demonstrates several best practices for handling the decoded data:
+
+1. Logging:
+   - Uses the [`tracing`](https://github.com/tokio-rs/tracing) crate for structured logging
+   - Configures UTC timestamps for consistent time representation
+   - Includes both raw report data and decoded fields for debugging
+
+2. Error handling:
+   - Uses Rust's `Result` type for robust error handling
+   - Implements the `?` operator for clean error propagation
+   - Logs errors with appropriate context using `warn!` macro
+
+3. Stream monitoring:
+   - Tracks stream statistics through [`get_stats()`](https://github.com/smartcontractkit/data-streams-sdk/blob/main/rust/crates/sdk/src/stream.rs#L253)
+   - Monitors connection status and reconnection attempts
+   - Reports message acceptance and deduplication counts
+
+The decoded data can be used for further processing, analysis, or display in your application. For production environments, it's recommended to verify the data onchain using the provided `full_report` payload.
+
+---
+
+# Push-Based Feeds API Reference
+Source: https://docs.chain.link/datalink/push-delivery/api-reference
+
+When you use DataLink feeds, retrieve the feeds through the `AggregatorV3Interface` and the proxy address.
+
+## AggregatorV3Interface
+
+Import this interface to your contract and use it to run functions in the proxy contract. Create the interface object by pointing to the proxy address. For example, you could create the interface object in the constructor of your contract:
+
+
+```solidity
+constructor() {
+  dataLinkFeed = AggregatorV3Interface(<PROXY_CONTRACT_ADDRESS>);
+}
+```
+
+To see examples for how to use this interface, read the [Using DataLink Feeds](/datalink/push-delivery/tutorials/using-datalink-feeds) guide.
+
+You can see the code for the [`AggregatorV3Interface` contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol) on GitHub.
+
+### Functions in AggregatorV3Interface
+
+| Name                                | Description                                                          |
+| ----------------------------------- | -------------------------------------------------------------------- |
+| [decimals](#decimals)               | The number of decimals in the response.                              |
+| [description](#description)         | The description of the aggregator that the proxy points to.          |
+| [getRoundData](#getrounddata)       | Get data from a specific round.                                      |
+| [latestRoundData](#latestrounddata) | Get data from the latest round.                                      |
+| [version](#version)                 | The version representing the type of aggregator the proxy points to. |
+
+#### decimals
+
+Get the number of decimals present in the response value.
+
+
+```solidity
+function decimals() external view returns (uint8);
+```
+
+- `RETURN`: The number of decimals.
+
+#### description
+
+Get the description of the underlying aggregator that the proxy points to.
+
+
+```solidity
+function description() external view returns (string memory);
+```
+
+- `RETURN`: The description of the underlying aggregator.
+
+#### getRoundData
+
+Get data about a specific round, using the `roundId`.
+
+
+```solidity
+function getRoundData(
+  uint80 _roundId
+) external view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound);
+```
+
+**Parameters:**
+
+- `_roundId`: The round ID
+
+**Return values:**
+
+- `roundId`: The round ID
+- `answer`: The answer for this round
+- `startedAt`: Timestamp of when the round started
+- `updatedAt`: Timestamp of when the round was updated
+- `answeredInRound`: <Icon type="deprecated" /> Deprecated - Previously used when answers could take multiple rounds to be computed
+
+#### latestRoundData
+
+Get the data from the latest round.
+
+
+```solidity
+function latestRoundData() external view
+    returns (
+        uint80 roundId,
+        int256 answer,
+        uint256 startedAt,
+        uint256 updatedAt,
+        uint80 answeredInRound
+    )
+```
+
+**Return values:**
+
+- `roundId`: The round ID.
+- `answer`: The data that this specific feed provides. Depending on the feed you selected, this answer provides asset prices, reserves, and other types of data.
+- `startedAt`: Timestamp of when the round started.
+- `updatedAt`: Timestamp of when the round was updated.
+- `answeredInRound`: <Icon type="deprecated" /> Deprecated - Previously used when answers could take multiple rounds to be computed
+
+#### version
+
+The version representing the type of aggregator the proxy points to.
+
+
+```solidity
+function version() external view returns (uint256)
+```
+
+- `RETURN`: The version number.
+
+---
+
+# DataLink Architecture (Push Delivery)
+Source: https://docs.chain.link/datalink/push-delivery/architecture
+
+DataLink (Push Delivery) provides infrastructure for Data Providers to make their specialized data available onchain through direct delivery to smart contracts, leveraging the proven [Chainlink Data Feeds](/data-feeds) architecture.
+
+1. **Data Provider Connection**
+   - Chainlink Labs curates and onboards premium Data Providers who make their specialized data available via secure API endpoints
+   - The provider makes their proprietary data available via a secure API endpoint.
+
+2. **Data Fetching & Consensus (Data DON)**
+   - Multiple nodes within a Chainlink Decentralized Oracle Network (DON) independently fetch data from the provider's API.
+   - Nodes reach consensus on the data received from the provider.
+
+3. **Onchain Delivery**
+   - **Automatic Updates**: Aggregated data is automatically pushed onchain to aggregator contracts based on:
+     - **Deviation Threshold**: Updates trigger when offchain values deviate beyond a defined threshold from the onchain value
+     - **Heartbeat Threshold**: Updates occur after a specified time interval, regardless of price movement
+   - **Smart Contract Storage**: Data is stored onchain in aggregator contracts, making it immediately available for smart contract consumption
+
+4. **Consumer Access**
+   - **Proxy Architecture**: Consumer contracts access data through proxy contracts that point to the current aggregator
+   - **Standard Interface**: Integration uses the familiar [`AggregatorV3Interface`](/datalink/push-delivery/api-reference#aggregatorv3interface) for seamless compatibility
+
+---
+
+# DataLink (Push Delivery)
+Source: https://docs.chain.link/datalink/push-delivery/overview
+
+DataLink push-based feeds provide access to specialized data from Data Providers through direct onchain delivery, enabling smart contracts to read the latest data values without additional offchain infrastructure.
+
+## Key Characteristics
+
+- **Specialized market data**: Access specialized datasets directly from individual Data Providers
+- **Push Delivery**: Data is automatically updated onchain by Decentralized Oracle Networks (DONs)
+- **Smart contract integration**: Read data directly in your smart contracts using standard interfaces
+- **Proven architecture**: Built on Chainlink's battle-tested aggregation infrastructure with robust data quality mechanisms
+
+<Aside type="note" title="Familiar Integration Pattern">
+  Push-based DataLink feeds use the **same smart contract interfaces** as Chainlink Data Feeds, including
+  `AggregatorV3Interface`. This ensures a familiar developer experience and easy migration from existing integrations.
+</Aside>
+
+## How It Works
+
+1. **Data Providers** submit specialized data to Chainlink Decentralized Oracle Networks (DONs)
+2. **DONs** aggregate and validate the data using consensus mechanisms
+3. **Smart contracts** automatically receive updated values onchain through aggregator contracts
+4. **Applications** read the latest data directly from smart contracts using standard interfaces
+
+This push-based model eliminates the need for offchain data fetching while maintaining cryptographic security and data integrity.
+
+## Integration Methods
+
+### Smart Contract Integration
+
+Read data directly in your smart contracts using the [`AggregatorV3Interface`](/datalink/push-delivery/api-reference#aggregatorv3interface):
+
+- **Latest data**: Get the most recent price and timestamp
+- **Historical data**: Access previous rounds of data updates
+
+### Offchain Integration
+
+Access feed data from external applications using Web3 libraries:
+
+- **JavaScript/TypeScript**: Using web3.js or ethers.js
+- **Python**: Using Web3.py
+- **Other languages**: Any Web3-compatible library
+
+## Getting Started
+
+### 1. Choose Your Integration Method
+
+- **Smart Contract**: Integrate directly in Solidity contracts for automated onchain logic
+- **Offchain Application**: Read data from external applications using Web3 libraries
+
+### 2. Find Your Data Provider
+
+Browse the [Provider Catalog](/datalink/provider-catalog) to find Data Providers offering the specialized data you need.
+
+### 3. Follow the Tutorials
+
+Start with our step-by-step [Tutorials](/datalink/push-delivery/tutorials) covering:
+
+- Using DataLink feeds in smart contracts
+- Reading feeds from offchain applications
+- Best practices for data validation and error handling
+
+### 4. Reference Documentation
+
+Consult the [API Reference](/datalink/push-delivery/api-reference) for:
+
+- Complete smart contract interface documentation
+- Function specifications and return values
+
+---
+
+# DataLink tutorials (Push Delivery)
+Source: https://docs.chain.link/datalink/push-delivery/tutorials
+
+Learn how to integrate DataLink push-based feeds into your applications. DataLink feeds use the same interfaces as Chainlink Data Feeds, ensuring a familiar developer experience.
+
+<Aside type="caution" title="Disclaimer">
+  These guides represent examples of using a Chainlink product or service and is provided to help you understand how to
+  interact with Chainlink's systems and services so that you can integrate them into your own. This template is provided
+  "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key checks or
+  error handling to make the usage of the product more clear. Do not use the code in this example in a production
+  environment without completing your own audits and application of best practices. Neither Chainlink Labs, the
+  Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due to
+  errors in code
+</Aside>
+
+## Available tutorials
+
+### Using Push-Based DataLink Feeds on EVM Chains
+
+Learn how to read DataLink feeds in smart contracts and offchain applications. This [tutorial](/datalink/push-delivery/tutorials/using-datalink-feeds) covers:
+
+- **Smart contracts**: Read feed data using `AggregatorV3Interface` in Solidity
+- **Offchain applications**: Access feeds using JavaScript, Python, and Go
+- **Best practices**: Data validation, error handling, and production considerations
+
+---
+
+# Using Data Link Feeds on EVM Chains
+Source: https://docs.chain.link/datalink/push-delivery/tutorials/using-datalink-feeds
+
+The code for reading Data Link Feeds is the same across all EVM-compatible blockchains. This tutorial shows example code that reads feeds using the following languages:
+
+- Onchain consumer contracts:
+  - [Solidity](#solidity)
+- Offchain reads using Web3 packages:
+  - [Javascript](#javascript) with [web3.js](https://web3js.readthedocs.io/)
+  - [Python](#python) with [Web3.py](https://web3py.readthedocs.io/en/stable/)
+  - [Golang](#golang) with [go-ethereum](https://github.com/ethereum/go-ethereum)
+
+## Reading Data Link feeds onchain
+
+These code examples demonstrate how to deploy a consumer contract onchain that reads a feed and stores the value.
+
+### Solidity
+
+To consume data, your smart contract should reference [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol), which defines the external functions implemented by Data Link Feeds.
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.7;
+
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
+/**
+ * If you are reading data feeds on L2 networks, you must
+ * check the latest answer from the L2 Sequencer Uptime
+ * Feed to ensure that the data is accurate in the event
+ * of an L2 sequencer outage. See the
+ * https://docs.chain.link/data-feeds/l2-sequencer-feeds
+ * page for details.
+ */
+
+contract DataConsumerV3 {
+    AggregatorV3Interface internal dataLinkFeed;
+
+    constructor() {
+        dataLinkFeed = AggregatorV3Interface(
+            <PROXY_CONTRACT_ADDRESS>
+        );
+    }
+
+    /**
+     * Returns the latest answer.
+     */
+    function getChainlinkDataLinkFeedLatestAnswer() public view returns (int) {
+        // prettier-ignore
+        (
+            /* uint80 roundId */,
+            int256 answer,
+            /*uint256 startedAt*/,
+            /*uint256 updatedAt*/,
+            /*uint80 answeredInRound*/
+        ) = dataLinkFeed.latestRoundData();
+        return answer;
+    }
+}
+```
+
+The `latestRoundData` function returns five values representing information about the latest price data. See the [API Reference](/datalink/push-delivery/api-reference) for more details.
+
+## Reading data feeds offchain
+
+These code examples demonstrate how to read feeds directly offchain using Web3 packages for each language.
+
+### Javascript
+
+These examples use [web3.js](https://web3js.readthedocs.io/) and [ethers.js](https://docs.ethers.org/v5/) to retrieve feed data on the Sepolia testnet.
+
+### Python
+
+This example uses [Web3.py](https://web3py.readthedocs.io/en/stable/) to retrieve feed data on the Sepolia testnet.
+
+```python
+# THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
+# THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
+# DO NOT USE THIS CODE IN PRODUCTION.
+
+from web3 import Web3
+
+# Change this to use your own RPC URL
+web3 = Web3(Web3.HTTPProvider('https://rpc.ankr.com/eth_sepolia'))
+# AggregatorV3Interface ABI
+abi = '[{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"description","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint80","name":"_roundId","type":"uint80"}],"name":"getRoundData","outputs":[{"internalType":"uint80","name":"roundId","type":"uint80"},{"internalType":"int256","name":"answer","type":"int256"},{"internalType":"uint256","name":"startedAt","type":"uint256"},{"internalType":"uint256","name":"updatedAt","type":"uint256"},{"internalType":"uint80","name":"answeredInRound","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"latestRoundData","outputs":[{"internalType":"uint80","name":"roundId","type":"uint80"},{"internalType":"int256","name":"answer","type":"int256"},{"internalType":"uint256","name":"startedAt","type":"uint256"},{"internalType":"uint256","name":"updatedAt","type":"uint256"},{"internalType":"uint80","name":"answeredInRound","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"version","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]'
+# Data Link Feed address
+addr = '<PROXY_CONTRACT_ADDRESS>'
+
+# Set up contract instance
+contract = web3.eth.contract(address=addr, abi=abi)
+# Make call to latestRoundData()
+latestData = contract.functions.latestRoundData().call()
+print(latestData)
+```
+
+### Golang
+
+You can find an example with all the source files [here](https://github.com/smartcontractkit/smart-contract-examples/tree/main/pricefeed-golang). This example uses [go-ethereum](https://github.com/ethereum/go-ethereum) to retrieve feed data on the Sepolia testnet.
+To learn how to run the example, see the [README](https://github.com/smartcontractkit/smart-contract-examples/blob/main/pricefeed-golang/README.md).

@@ -1,0 +1,33 @@
+---
+section: cre
+title: "The HTTP Capability"
+date: Last Modified
+metadata:
+  description: "CRE HTTP capability: fetch offchain data with consensus validation for secure results in your workflows."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+The **HTTP** capability is a decentralized service that allows your workflow to securely interact with any external, offchain API. It can be used to both **fetch data from** and **send data to** other systems.
+
+## Why use a Capability for HTTP Requests?
+
+When your workflow needs to interact with an external API, the HTTP capability provides decentralized execution across multiple independent nodes.
+
+When you use the SDK's `http.Client` to make a request (like a `GET` or a `POST`), you are invoking this capability. CRE instructs each node in a dedicated DON to make the same API request. The nodes' individual responses are then **validated through a consensus protocol**, which ensures they agree on the result before returning it to your workflow.
+
+This provides cryptographically verified, tamper-proof execution for your offchain data operations.
+
+<Aside type="note" title="HTTP in simulation vs. deployed workflows">
+**In local simulation** (`cre workflow simulate`), HTTP requests are made from your local machine to test your API integrations. The simulator processes responses using single-node consensus.
+
+**In deployed workflows**, the HTTP capability DON executes your API requests across multiple nodes, and responses are validated through Byzantine Fault Tolerant (BFT) consensus before being returned to your workflow.
+
+</Aside>
+
+## Learn more
+
+- **[API Interactions Guide](/cre/guides/workflow/using-http-client)**: Learn how to use the SDK to invoke the HTTP capability.
+- **[HTTP Client SDK Reference](/cre/reference/sdk/http-client)**: See the detailed API reference for the `http.Client`.

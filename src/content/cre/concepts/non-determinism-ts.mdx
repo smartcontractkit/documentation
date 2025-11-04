@@ -1,0 +1,222 @@
+---
+section: cre
+title: "Avoiding Non-Determinism in Workflows"
+sdkLang: "ts"
+pageId: "non-determinism-workflows"
+date: Last Modified
+metadata:
+  description: "Learn how to avoid non-deterministic behaviors in CRE TypeScript workflows that prevent nodes from reaching consensus."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+<Aside type="note" title="TL;DR">
+  In DON mode, all nodes must execute identical code paths to reach consensus. Non-deterministic code causes nodes to
+  generate different request IDs, breaking consensus. This guide shows common pitfalls and how to avoid them.
+</Aside>
+
+## The problem: Why determinism matters
+
+When your workflow runs in DON mode, multiple nodes execute the same code independently. These nodes must reach consensus on the results before proceeding. **If nodes execute different code paths, they generate different request IDs for capability calls, and consensus fails.**
+
+The failure pattern: Code diverges → Different request IDs → No quorum → Workflow fails
+
+## Quick reference: Common pitfalls
+
+| Don't Use                    | Use Instead                                  |
+| ---------------------------- | -------------------------------------------- |
+| Unordered object iteration   | Sort keys first, then iterate                |
+| `Promise.race()`             | Call `.result()` in deterministic order      |
+| `Date.now()` or `new Date()` | `runtime.now()`                              |
+| LLM free-text responses      | Structured output with field-level consensus |
+
+## 1. Object and Map iteration
+
+JavaScript objects do not guarantee key order by specification. While modern engines preserve insertion order, relying on this behavior can cause subtle bugs, especially across different runtimes or JSON serialization.
+
+### Objects: Order is not guaranteed
+
+**Bad: Implicit iteration order**
+
+```typescript
+const obj = { b: 2, a: 1 }
+
+// Order may vary across runtimes or serialization
+for (const key in obj) {
+  console.log(key) // Could be "b", "a" or "a", "b"
+}
+```
+
+**Good: Explicit iteration with `Object.keys()`**
+
+```typescript
+const obj = { b: 2, a: 1 }
+
+// Preserves insertion order
+for (const key of Object.keys(obj)) {
+  console.log(key, obj[key]) // "b", "a" (insertion order)
+}
+```
+
+**Best: Deterministic sorted iteration**
+
+```typescript
+const obj = { b: 2, a: 1 }
+
+// Guaranteed alphabetical order
+for (const key of Object.keys(obj).sort()) {
+  console.log(key, obj[key]) // "a", "b" (alphabetically sorted)
+}
+```
+
+### Maps and Sets: Order is guaranteed
+
+Maps and Sets preserve insertion order by specification, making them safe for deterministic iteration.
+
+**Good: Map preserves insertion order**
+
+```typescript
+const map = new Map<string, number>()
+map.set("b", 2)
+map.set("a", 1)
+
+for (const [key, value] of map) {
+  console.log(key, value) // Always "b", then "a"
+}
+```
+
+**Good: Set preserves insertion order**
+
+```typescript
+const set = new Set(["b", "a"])
+
+for (const value of set) {
+  console.log(value) // Always "b", then "a"
+}
+```
+
+<Aside type="tip" title="When to use Maps vs Objects">
+  If iteration order matters for your workflow logic, use `Map` instead of plain objects. Maps guarantee insertion order
+  by specification.
+</Aside>
+
+## 2. Promise handling and the `.result()` pattern
+
+SDK capabilities use the [`.result()` pattern](/cre/reference/sdk/core-ts#understanding-the-result-pattern) instead of traditional `async/await`. When working with multiple operations, the order in which you call `.result()` must be deterministic.
+
+### Avoid non-deterministic Promise methods
+
+**Bad: Promise.race() introduces non-determinism**
+
+```typescript
+// Different nodes may "win" the race
+const fastest = await Promise.race([fetchFromAPI1(), fetchFromAPI2()])
+```
+
+**Bad: Promise.any() picks first success**
+
+```typescript
+// Different nodes may succeed with different sources
+const firstSuccess = await Promise.any([fetchFromAPI1(), fetchFromAPI2()])
+```
+
+**Good: Deterministic order with `.result()`**
+
+```typescript
+import { cre, type Runtime, type NodeRuntime, consensusMedianAggregation } from "@chainlink/cre-sdk"
+
+// Fetch from API 1, then API 2, in a fixed order
+const fetchPrice = (nodeRuntime: NodeRuntime<Config>): bigint => {
+  const httpClient = new cre.capabilities.HTTPClient()
+
+  // Try first API
+  const response1 = httpClient
+    .sendRequest(nodeRuntime, {
+      url: "https://api1.example.com/price",
+    })
+    .result()
+
+  // If first API succeeds, use it; otherwise try second API
+  if (response1.statusCode === 200) {
+    return parsePriceFromResponse(response1)
+  }
+
+  // Try second API as fallback (deterministic order)
+  const response2 = httpClient
+    .sendRequest(nodeRuntime, {
+      url: "https://api2.example.com/price",
+    })
+    .result()
+
+  return parsePriceFromResponse(response2)
+}
+
+// In your DON mode handler
+const onTrigger = (runtime: Runtime<Config>): MyResult => {
+  // Run the fetch logic in node mode with consensus
+  const price = runtime.runInNodeMode(fetchPrice, consensusMedianAggregation<bigint>())().result()
+
+  return { price }
+}
+```
+
+The key is to call `.result()` in a **fixed, deterministic order** (API 1, then API 2 if needed), not racing them.
+
+<Aside type="note" title="Custom code vs SDK capabilities">
+  You can use `async/await` and Promises in your own custom functions. However, all SDK capabilities (HTTP requests,
+  blockchain interactions, secrets) use the `.result()` pattern. See the [Core SDK
+  reference](/cre/reference/sdk/core-ts#understanding-the-result-pattern) for details.
+</Aside>
+
+## 3. Time and dates
+
+Never use JavaScript's built-in time functions in DON mode. Nodes may have slightly different system clocks, causing divergence.
+
+**Bad: Using JavaScript's time functions**
+
+```typescript
+const now = Date.now() // Different on each node
+const timestamp = new Date() // Different on each node
+```
+
+**Good: Use runtime.now()**
+
+```typescript
+const now = runtime.now() // Same timestamp across all nodes
+runtime.log(`Current time: ${now.toISOString()}`)
+```
+
+The `runtime.now()` method returns a `Date` object representing DON Time—a consensus-derived timestamp that all nodes agree on. See [Time in CRE](/cre/concepts/time-in-cre) for more details.
+
+## 4. Working with LLMs
+
+Large Language Models (LLMs) generate different responses for the same prompt, even with temperature set to 0. This inherent non-determinism breaks consensus in workflows.
+
+**The problem:** Free-text responses from LLMs will vary across nodes, making it impossible to reach agreement on the output.
+
+**The solution:** Request **structured output** from the LLM (such as JSON with specific fields) rather than free-form text. Then use consensus aggregation on the structured fields. This approach allows nodes to agree on the key data points even if the exact text varies slightly.
+
+## Best practices summary
+
+### Do:
+
+- Sort object keys before iteration
+- Use Maps and Sets when insertion order matters
+- Call `.result()` in a fixed, deterministic order
+- Use `runtime.now()` for all time operations
+- Request structured output from LLMs
+
+### Don't:
+
+- Iterate objects with `for...in` without sorting keys
+- Use `Promise.race()`, `Promise.any()`, or unpredictable `Promise.all()` patterns
+- Use `Date.now()` or `new Date()` for timestamps
+- Rely on free-text LLM responses
+
+## Related concepts
+
+- **[Time in CRE](/cre/concepts/time-in-cre)**: Learn about DON Time and why `runtime.now()` is required
+- **[Consensus Computing](/cre/concepts/consensus-computing)**: Deep dive into how nodes reach agreement
+- **[Core SDK Reference](/cre/reference/sdk/core-ts)**: Details on `Runtime`, `NodeRuntime`, and the `.result()` pattern

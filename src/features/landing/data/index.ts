@@ -14,6 +14,8 @@ import dtaLogo from "../../../assets/product-logos/dta-logo.svg"
 import dtaShape from "../../../assets/product-logos/dta-shape.svg"
 import datalinkLogo from "../../../assets/product-logos/datalink-logo.svg"
 import datalinkShape from "../../../assets/product-logos/datalink-shape.svg"
+import creLogo from "../../../assets/product-logos/cre-logo.svg"
+import creShape from "../../../assets/product-logos/cre-shape.svg"
 import { ProductCardProps } from "../components/ProductCard.tsx"
 
 const baseChains = [
@@ -25,6 +27,13 @@ const baseChains = [
 ]
 
 export const evmProducts = [
+  {
+    title: "CRE",
+    description: "All-in-one orchestration layer for your institutional-grade smart contracts.",
+    docsLandingLink: "/cre",
+    image: creLogo,
+    shape: creShape,
+  },
   {
     title: "CCIP",
     description: "Global standard for building secure cross-chain applications.",
