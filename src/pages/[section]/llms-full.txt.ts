@@ -1,25 +1,18 @@
 import fs from "fs/promises"
 import path from "path"
 import type { APIRoute } from "astro"
+import { SUPPORTED_LLM_SECTIONS, LLM_SECTIONS_CONFIG } from "../../config/llms.js"
+
+// Get sections that use single llms-full.txt (no language-specific files)
+const SINGLE_FILE_SECTIONS = SUPPORTED_LLM_SECTIONS.filter((section) => {
+  const cfg = LLM_SECTIONS_CONFIG[section as keyof typeof LLM_SECTIONS_CONFIG]
+  return !cfg?.languages || cfg.languages.length === 0
+})
 
 export const GET: APIRoute = async ({ params }) => {
   const { section } = params
 
-  const supportedSections = [
-    "vrf",
-    "ccip",
-    "data-feeds",
-    "data-streams",
-    "chainlink-functions",
-    "chainlink-automation",
-    "resources",
-    "architecture-overview",
-    "getting-started",
-    "chainlink-nodes",
-    "chainlink-local",
-  ]
-
-  if (!section || !supportedSections.includes(section)) {
+  if (!section || !(SINGLE_FILE_SECTIONS as readonly string[]).includes(section)) {
     return new Response("Section not found or not supported.", { status: 404 })
   }
 
@@ -30,7 +23,8 @@ export const GET: APIRoute = async ({ params }) => {
     return new Response(fileContents, {
       status: 200,
       headers: {
-        "Content-Type": "text/plain",
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "public, max-age=0, s-maxage=86400, stale-while-revalidate=604800",
       },
     })
   } catch (error) {
@@ -39,21 +33,7 @@ export const GET: APIRoute = async ({ params }) => {
 }
 
 export function getStaticPaths() {
-  const supportedSections = [
-    "vrf",
-    "ccip",
-    "data-feeds",
-    "data-streams",
-    "chainlink-functions",
-    "chainlink-automation",
-    "resources",
-    "architecture-overview",
-    "getting-started",
-    "chainlink-nodes",
-    "chainlink-local",
-  ]
-
-  return supportedSections.map((section) => ({
+  return SINGLE_FILE_SECTIONS.map((section) => ({
     params: { section },
   }))
 }

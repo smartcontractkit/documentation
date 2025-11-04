@@ -20,13 +20,13 @@ contract TokenTransferor is OwnerIsCreator {
 
   // Custom errors to provide more descriptive revert messages.
   error NotEnoughBalance(uint256 currentBalance, uint256 requiredBalance); // Used to make sure contract has enough
-    // token balance
+  // token balance
   error NothingToWithdraw(); // Used when trying to withdraw Ether but there's nothing to withdraw.
   error FailedToWithdrawEth(address owner, address target, uint256 value); // Used when the withdrawal of Ether fails.
   error DestinationChainNotAllowlisted(uint64 destinationChainSelector); // Used when the destination chain has not been
-    // allowlisted by the contract owner.
+  // allowlisted by the contract owner.
   error InvalidReceiverAddress(); // Used when the receiver address is 0.
-    // Event emitted when the tokens are transferred to an account on another chain.
+  // Event emitted when the tokens are transferred to an account on another chain.
 
   // The chain selector of the destination chain.
   // The address of the receiver on the destination chain.
@@ -237,8 +237,8 @@ contract TokenTransferor is OwnerIsCreator {
         Client.GenericExtraArgsV2({
           gasLimit: 0, // Gas limit for the callback on the destination chain
           allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages
-            // from
-            // the same sender
+          // from
+          // the same sender
         })
       ),
       // Set the feeToken to a feeTokenAddress, indicating specific asset will be used for fees

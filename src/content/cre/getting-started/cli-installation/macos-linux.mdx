@@ -1,0 +1,250 @@
+---
+section: cre
+date: Last Modified
+title: "Installing the CRE CLI on macOS and Linux"
+metadata:
+  description: "Install the CRE CLI on macOS or Linux: choose automatic script or manual setup, verify integrity, and get ready to build workflows."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside, CopyText, PageTabs } from "@components"
+import { DownloadButton } from "~/components/DownloadButton.tsx"
+
+This page explains how to install the CRE CLI on macOS or Linux. The recommended version at the time of writing is **v1.0.0**.
+
+<PageTabs
+  pages={[
+    [
+      {
+        name: "macOS",
+        url: "/cre/getting-started/cli-installation/macos-linux",
+        icon: "/images/icons/macos.png",
+      },
+      {
+        name: "Linux",
+        url: "/cre/getting-started/cli-installation/macos-linux",
+        icon: "/images/icons/linux.png",
+      },
+    ],
+    {
+      name: "Windows",
+      url: "/cre/getting-started/cli-installation/windows",
+      icon: "/images/icons/windows.png",
+    },
+  ]}
+  headerTitle="Select your operating system"
+  headerDescription=""
+/>
+
+## Installation
+
+Choose your installation method:
+
+- **[Automatic installation](#automatic-installation)** - Quick setup with a single command
+- **[Manual installation](#manual-installation)** - Download and install the binary yourself
+
+### Automatic installation
+
+The easiest way to install the CRE CLI is using the installation script:
+
+```bash
+curl -sSL https://cre.chain.link/install.sh | sh
+```
+
+This script will:
+
+- Detect your operating system and architecture automatically
+- Download the correct binary for your system
+- Verify the binary's integrity
+- Install it to `/usr/local/bin` (or prompt you for a custom location)
+- Make the binary executable
+
+After the script completes, verify the installation:
+
+```bash
+cre version
+```
+
+**Expected output:** `cre version v1.0.0`
+
+<Aside type="note" title="macOS Gatekeeper">
+  If you see warnings about "unrecognized developer/source" on macOS, run:{" "}
+  <CopyText text="xattr -c /usr/local/bin/cre" code />
+</Aside>
+
+### Manual installation
+
+If you prefer to install manually or the automatic installation doesn't work for your environment, follow these steps:
+
+The CRE CLI is publicly available on GitHub. Visit the releases page and download the appropriate binary archive for your operating system and architecture.
+
+<center>
+  <DownloadButton client:load />
+</center>
+
+<Aside title="Which file should I download?">
+The file you need depends on your operating system and CPU architecture:
+
+- On **macOS** (darwin), run <CopyText text="uname -m" code />:
+  - `arm64` (Apple Silicon) → Download `cre_darwin_arm64.zip`
+  - `x86_64` (Intel) → Download `cre_darwin_amd64.zip`
+- On **Linux**, run <CopyText text="uname -m" code />:
+  - `aarch64` (ARM) → Download `cre_linux_arm64.tar.gz`
+  - `x86_64` (AMD/Intel) → Download `cre_linux_amd64.tar.gz`
+
+</Aside>
+
+After downloading the correct file from the releases page, move on to the next step to verify its integrity.
+
+#### 1. Verify file integrity
+
+Before installing, verify the file integrity using a checksum to ensure the binary hasn't been tampered with:
+
+**Check the SHA-256 checksum**
+
+Run the following command in the directory where you downloaded the archive (replace the filename with your specific binary):
+
+```bash
+shasum -a 256 cre_darwin_arm64.zip
+```
+
+**Verify against official checksums**
+
+Compare the output with the official checksum below:
+
+| <div style="width: 200px;">File</div> | SHA-256 Checksum                                                                          |
+| ------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `cre_darwin_amd64.zip`                | <CopyText text="be7d595a87ae74ecbbde95a576d4117c88af9d6751191fa7098bd0fe1f75a226" code /> |
+| `cre_darwin_arm64.zip`                | <CopyText text="2b1ca0992d2c7a70ece60623a1490155b74e04041722caf0bcc2f4c795686ebf" code /> |
+| `cre_linux_amd64.tar.gz`              | <CopyText text="dab1e966fbbf67ec136d7f3ec1236028db93493a067cdc8a772fb105593b2773" code /> |
+| `cre_linux_arm64.tar.gz`              | <CopyText text="e1f6a51010f4b2c73825eba2f703a8164972a56643891f91bfeddbfeecc32e34" code /> |
+
+If the checksum doesn't match, do not proceed with installation. Contact your Chainlink point of contact for assistance.
+
+#### 2. Extract and install
+
+1. **Navigate** to the directory where you downloaded the archive.
+
+1. **Extract the archive**
+
+   For `.tar.gz` files:
+
+   ```bash
+   tar -xzf cre_linux_arm64.tar.gz
+   ```
+
+   For `.zip` files:
+
+   ```bash
+   unzip cre_darwin_arm64.zip
+   ```
+
+1. **Rename the extracted binary to `cre`**
+
+   ```bash
+   mv cre_v1.0.0_darwin_arm64 cre
+   ```
+
+1. **Make it executable**:
+   ```bash
+   chmod +x cre
+   ```
+   **Note (macOS Gatekeeper)**: If you see warnings about "unrecognized developer/source", remove extended attributes:
+   ```bash
+   xattr -c cre
+   ```
+
+#### 3. Add the CLI to your PATH
+
+Now that you have the `cre` binary, you need to make it accessible from anywhere on your system. This means you can run `cre` commands from any directory, not just where the binary is located.
+
+**Recommended approach: Move to a standard location**
+
+The easiest and most reliable method is to move the `cre` binary to a directory that's already in your system's PATH. For example:
+
+```bash
+sudo mv cre /usr/local/bin/
+```
+
+This command moves the `cre` binary to `/usr/local/bin/`, which is typically included in your PATH by default.
+
+**Alternative: Add current directory to PATH**
+
+If you prefer to keep the binary in its current location, you can add that directory to your PATH:
+
+1. **Find your current directory:**
+
+   ```bash
+   pwd
+   ```
+
+   Note the full path (e.g., `/Users/yourname/Downloads/cre`)
+
+1. **Add to your shell profile** (choose based on your shell):
+
+   For **zsh** (default on newer macOS):
+
+   ```bash
+   echo 'export PATH="/Users/yourname/Downloads/cre:$PATH"' >> ~/.zshrc
+   source ~/.zshrc
+   ```
+
+   For **bash**:
+
+   ```bash
+   echo 'export PATH="/Users/yourname/Downloads/cre:$PATH"' >> ~/.bash_profile
+   source ~/.bash_profile
+   ```
+
+   Replace `/Users/yourname/Downloads/cre` with your actual directory path from step 1.
+
+1. **For temporary access** (this session only):
+   ```bash
+   export PATH="$(pwd):$PATH"
+   ```
+
+#### 4. Verify the installation
+
+**Test that `cre` is accessible:**
+
+Open a **new terminal window** and run:
+
+```bash
+cre version
+```
+
+**Expected output:**
+
+You should see version information: `cre version v1.0.0`.
+
+**If it doesn't work:**
+
+- Make sure you opened a **new terminal window** after making PATH changes
+- Check the binary location: `which cre` should return `/usr/local/bin/cre` (or your custom path)
+- Check that the binary has execute permissions: `ls -la /usr/local/bin/cre`
+- Verify your PATH includes the correct directory: `echo $PATH`
+
+#### 5. Confirm your PATH (troubleshooting)
+
+If you're having issues, check what directories are in your PATH:
+
+```bash
+echo "$PATH" | tr ':' '\n'
+```
+
+You should see either:
+
+- `/usr/local/bin` (if you moved the binary there)
+- Your custom directory (if you added it to PATH)
+
+## Next steps
+
+Now that you have the `cre` CLI installed, you'll need to create a CRE account and authenticate before you can use it.
+
+- **[Creating Your Account](/cre/account/creating-account)**: Create your CRE account and set up two-factor authentication
+- **[Logging in with the CLI](/cre/account/cli-login)**: Authenticate the CLI with your account
+
+Once you're authenticated, you're ready to build your first workflow:
+
+- **[Getting Started — Part 1: Project Setup & Simulation](/cre/getting-started/part-1-project-setup)**: Initialize a new, blank CRE project and run your first "Hello World!" simulation.

@@ -28,10 +28,10 @@ contract Receiver is CCIPReceiver, OwnerIsCreator {
   error WrongSenderForSourceChain(uint64 sourceChainSelector); // Used when the sender contract is not the correct one
   error OnlySelf(); // Used when a function is called outside of the contract itself
   error WrongReceivedToken(address usdcToken, address receivedToken); // Used if the received token is different than
-    // usdc token
+  // usdc token
   error CallToStakerFailed(); // Used when the call to the stake function of the staker contract is not successful
   error NoReturnDataExpected(); // Used if the call to the stake function of the staker contract returns data. This is
-    // not expected
+  // not expected
   error MessageNotFailed(bytes32 messageId); // Used if you try to retry a message that has no failed
 
   // Event emitted when a message is received from another chain.
@@ -177,7 +177,7 @@ contract Receiver is CCIPReceiver, OwnerIsCreator {
     }
 
     (bool success, bytes memory returnData) = i_staker.call(any2EvmMessage.data); // low level call to the staker
-      // contract using the encoded function selector and arguments
+    // contract using the encoded function selector and arguments
     if (!success) revert CallToStakerFailed();
     if (returnData.length > 0) revert NoReturnDataExpected();
     emit MessageReceived(

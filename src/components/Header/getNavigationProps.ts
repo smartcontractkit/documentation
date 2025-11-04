@@ -1,3 +1,4 @@
+import creLogo from "../../assets/product-logos/cre-logo.svg"
 import ccipLogo from "../../assets/product-logos/ccip-logo.svg"
 import vrfLogo from "../../assets/product-logos/vrf-logo.svg"
 import functionsLogo from "../../assets/product-logos/functions-logo.svg"
@@ -15,42 +16,53 @@ import { SIDEBAR as sidebar } from "../../config/sidebar.ts"
 interface Page {
   label: string
   href: string
+  sdkLang?: string
   children?: Page[]
 }
 
 interface SidebarContent {
   title?: string
   url?: string
+  highlightAsCurrent?: string[]
   children?: SidebarContent[]
 }
 
-const mapContents = (contents: SidebarContent[]): Page[] => {
+const mapContents = (contents: SidebarContent[], pageSdkLangMap: Map<string, string>): Page[] => {
   return contents.map((page) => {
     const label = page.title || "No Label"
     const href = page.url || "#"
+    const sdkLang = page.url ? pageSdkLangMap.get(page.url) : undefined
 
     const pageWithChildren: Page = {
       label,
       href,
+      ...(sdkLang && { sdkLang }),
+      ...(page.highlightAsCurrent && { highlightAsCurrent: page.highlightAsCurrent }),
     }
 
     if (page.children && Array.isArray(page.children)) {
-      pageWithChildren.children = mapContents(page.children)
+      pageWithChildren.children = mapContents(page.children, pageSdkLangMap)
     }
 
     return pageWithChildren
   })
 }
 
-const getSubProducts = (sectionData) => {
+const getSubProducts = (sectionData, pageSdkLangMap: Map<string, string>) => {
   const structuredData = sectionData.map((item) => ({
     label: item.section,
-    items: mapContents(item.contents),
+    items: mapContents(item.contents, pageSdkLangMap),
   }))
   return structuredData
 }
 
 const desktopSubProductsNav = [
+  {
+    label: "CRE",
+    href: "/cre",
+    icon: creLogo.src,
+    col: 1,
+  },
   {
     label: "Data Feeds",
     href: "/data-feeds",
@@ -138,64 +150,70 @@ const desktopSubProductsNav = [
   },
 ]
 
-const docsSections = [
+const getDocsSections = (pageSdkLangMap: Map<string, string>) => [
   {
     label: "Documentation",
     items: [
       {
+        label: "CRE",
+        href: "/cre",
+        icon: creLogo.src,
+        subProducts: getSubProducts(sidebar.cre, pageSdkLangMap),
+      },
+      {
         label: "Data Feeds",
         href: "/data-feeds",
         icon: dataFeedsLogo.src,
-        subProducts: getSubProducts(sidebar.dataFeeds),
+        subProducts: getSubProducts(sidebar.dataFeeds, new Map()),
       },
       {
         label: "Data Streams",
         href: "/data-streams",
         icon: dataStreamsLogo.src,
-        subProducts: getSubProducts(sidebar.dataStreams),
+        subProducts: getSubProducts(sidebar.dataStreams, new Map()),
       },
       {
         label: "DataLink",
         href: "/datalink",
         icon: dataLinkLogo.src,
-        subProducts: getSubProducts(sidebar.dataLink),
+        subProducts: getSubProducts(sidebar.dataLink, new Map()),
       },
       {
         label: "CCIP",
         href: "/ccip",
         icon: ccipLogo.src,
-        subProducts: getSubProducts(sidebar.ccip),
+        subProducts: getSubProducts(sidebar.ccip, new Map()),
       },
       {
         label: "Functions",
         href: "/chainlink-functions",
         icon: functionsLogo.src,
-        subProducts: getSubProducts(sidebar.chainlinkFunctions),
+        subProducts: getSubProducts(sidebar.chainlinkFunctions, new Map()),
       },
       {
         label: "VRF",
         href: "/vrf",
         icon: vrfLogo.src,
-        subProducts: getSubProducts(sidebar.vrf),
+        subProducts: getSubProducts(sidebar.vrf, new Map()),
       },
       {
         label: "Automation",
         href: "/chainlink-automation",
         icon: automationLogo.src,
-        subProducts: getSubProducts(sidebar.automation),
+        subProducts: getSubProducts(sidebar.automation, new Map()),
         divider: true,
       },
       {
         label: "Chainlink Local",
         href: "/chainlink-local",
         icon: chainlinkLocal.src,
-        subProducts: getSubProducts(sidebar.chainlinkLocal),
+        subProducts: getSubProducts(sidebar.chainlinkLocal, new Map()),
       },
       {
         label: "Nodes",
         href: "/chainlink-nodes",
         icon: nodesLogo.src,
-        subProducts: getSubProducts(sidebar.nodeOperator),
+        subProducts: getSubProducts(sidebar.nodeOperator, new Map()),
       },
       {
         label: "Quickstarts",
@@ -206,7 +224,7 @@ const docsSections = [
         label: "General",
         href: "/resources",
         icon: generalLogo.src,
-        subProducts: getSubProducts(sidebar.global),
+        subProducts: getSubProducts(sidebar.global, new Map()),
       },
     ],
   },
@@ -226,13 +244,15 @@ const docsSections = [
   }
 */
 
-const desktopProductsNav = {
-  trigger: { label: "Docs", icon: "docs" },
-  categories: docsSections,
-}
+export const getNavigationProps = (pageSdkLangMap: Map<string, string> = new Map()) => {
+  const docsSections = getDocsSections(pageSdkLangMap)
 
-const docsProps = { productsNav: desktopProductsNav, subProductsNav: desktopSubProductsNav }
+  const desktopProductsNav = {
+    trigger: { label: "Docs", icon: "docs" },
+    categories: docsSections,
+  }
 
-export const getNavigationProps = () => {
+  const docsProps = { productsNav: desktopProductsNav, subProductsNav: desktopSubProductsNav }
+
   return docsProps
 }

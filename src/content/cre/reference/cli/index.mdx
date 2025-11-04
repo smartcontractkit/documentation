@@ -1,0 +1,121 @@
+---
+section: cre
+title: "CLI Reference"
+date: Last Modified
+isIndex: true
+metadata:
+  description: "Explore all CRE CLI commands: complete reference for project setup, workflow deployment, account management, and development tools."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+<Aside type="note" title="Required CLI Version: v1.0.0">
+  To ensure compatibility with the guides and examples in this documentation, please use version `v1.0.0` of the CRE
+  CLI. You can check your installed version by running `cre version`. Refer to the [CLI
+  Installation](/cre/getting-started/cli-installation/macos-linux) guide for more information.
+</Aside>
+
+The CRE Command Line Interface (CLI) is your primary tool for developing, testing, deploying, and managing workflows. It handles project setup, contract binding generation (Go workflows only), local simulation, and workflow lifecycle management.
+
+## Global flags
+
+These flags can be used with any `cre` command.
+
+| <div style="width: 150px;">Flag</div> | Description                                                                                                                                                                                |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `-h, --help`                          | Displays help information for any command                                                                                                                                                  |
+| `-e, --env`                           | Specifies the path to your `.env` file (default: `".env"`)                                                                                                                                 |
+| `-T, --target`                        | Sets the target environment from your configuration files                                                                                                                                  |
+| `-R, --project-root`                  | Specifies the path to the project root directory. By default, the CLI automatically finds the project root by searching for `project.yaml` in the current directory and parent directories |
+| `-v, --verbose`                       | Enables verbose logging to print `DEBUG` level logs                                                                                                                                        |
+
+## Commands overview
+
+### Authentication
+
+Manage your authentication and account credentials.
+
+- **`cre login`** — Authenticate with the CRE UI and save credentials locally
+- **`cre logout`** — Revoke authentication tokens and remove local credentials
+- **`cre whoami`** — Show your current account details
+
+[View authentication commands →](/cre/reference/cli/authentication)
+
+---
+
+### Project Setup
+
+Initialize projects and generate contract bindings (Go only).
+
+- **`cre init`** — Initialize a new CRE project with an interactive setup guide
+- **`cre generate-bindings`** (Go only) — Generate Go bindings from contract ABI files for type-safe contract interactions
+
+[View project setup commands →](/cre/reference/cli/project-setup)
+
+---
+
+### Account Management
+
+Manage your linked public key addresses for workflow operations.
+
+- **`cre account link-key`** — Link a public key address to your account
+- **`cre account list-key`** — List workflow owners linked to your organization
+- **`cre account unlink-key`** — Unlink a public key address from your account
+
+[View account management commands →](/cre/reference/cli/account)
+
+---
+
+### Workflow Commands
+
+Manage workflows throughout their entire lifecycle.
+
+- **`cre workflow simulate`** — Compile and execute workflows in a local simulation environment
+- **`cre workflow deploy`** — Deploy a workflow to the Workflow Registry contract
+- **`cre workflow activate`** — Activate a workflow on the Workflow Registry contract
+- **`cre workflow pause`** — Pause a workflow on the Workflow Registry contract
+- **`cre workflow delete`** — Delete all versions of a workflow from the Workflow Registry
+
+[View workflow commands →](/cre/reference/cli/workflow)
+
+---
+
+### Secrets Management
+
+Manage secrets stored in the Vault DON for use in your workflows.
+
+- **`cre secrets create`** — Create new secrets from a YAML file
+- **`cre secrets update`** — Update existing secrets
+- **`cre secrets delete`** — Delete secrets
+- **`cre secrets list`** — List secret identifiers in a namespace
+
+[View secrets management commands →](/cre/reference/cli/secrets)
+
+---
+
+### Utilities
+
+Additional utility commands.
+
+- **`cre update`** — Update the CRE CLI to the latest version
+- **`cre version`** — Print the current version of the CRE CLI
+
+[View utility commands →](/cre/reference/cli/utilities)
+
+## Typical development workflow
+
+The typical workflow development process uses these commands in sequence:
+
+1. **`cre init`** — Initialize your project
+1. **`cre generate-bindings`** — Generate contract bindings from ABIs (Go workflows only, if interacting with contracts)
+1. **`cre workflow simulate`** — Test your workflow locally
+1. **`cre workflow deploy`** — Deploy your workflow to the registry
+1. **`cre workflow activate`** / **`cre workflow pause`** — Control workflow execution
+
+## Learn more
+
+- **[CLI Installation](/cre/getting-started/cli-installation)** — How to install and set up the CRE CLI
+- **[Getting Started](/cre/getting-started)** — Step-by-step tutorials using the CLI
+- **[Project Configuration](/cre/reference/project-configuration)** — Understanding project structure and configuration files

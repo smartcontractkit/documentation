@@ -3,20 +3,30 @@ import MoreMenu from "./MoreMenu.astro"
 import { Feedback } from "../PageContent/Feedback"
 import { MarkdownHeading } from "astro"
 import TableOfContents from "~/components/TableOfContents/TableOfContents"
+import { LanguageSwitcherDropdown } from "~/components/LanguageSwitcherDropdown"
 
 export type Props = {
   githubEditUrl: string
   headings: MarkdownHeading[]
+  showLanguageSwitcher?: boolean
+  frontmatter?: Record<string, any>
 }
-const { githubEditUrl, headings } = Astro.props
+const { githubEditUrl, showLanguageSwitcher, headings, frontmatter } = Astro.props
 ---
 
 <section class="sidebar-nav" aria-labelledby="grid-right" data-sticky>
+  {
+    showLanguageSwitcher && (
+      <div class="language-switcher-wrapper">
+        <LanguageSwitcherDropdown client:only="react" />
+      </div>
+    )
+  }
   <h2 class="heading">On this page</h2>
   <div class="toc-wrapper">
     <TableOfContents client:media="(min-width: 50em)" initialHeadings={headings} />
   </div>
-  <MoreMenu editHref={githubEditUrl} />
+  <MoreMenu editHref={githubEditUrl} frontmatter={frontmatter} />
   <h2 class="heading feedback-title">Feedback</h2>
   <div class="feedback-wrapper">
     <Feedback client:idle />
@@ -28,7 +38,7 @@ const { githubEditUrl, headings } = Astro.props
     height: fit-content;
     padding: var(--doc-padding) 0;
     position: sticky;
-    top: 0;
+    top: 80px;
     min-width: calc(315px - var(--space-16x));
   }
 
@@ -37,7 +47,7 @@ const { githubEditUrl, headings } = Astro.props
     color: var(--gray-900, #141921);
     font-size: 10px;
     font-weight: 500;
-    line-height: 130%; /* 13px */
+    line-height: 130%;
     letter-spacing: 1px;
     text-transform: uppercase;
   }
@@ -48,6 +58,10 @@ const { githubEditUrl, headings } = Astro.props
 
   .feedback-wrapper {
     margin-top: var(--space-3x);
+  }
+
+  .language-switcher-wrapper {
+    margin-bottom: var(--space-6x);
   }
 
   .toc-wrapper {

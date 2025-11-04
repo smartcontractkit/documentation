@@ -1,0 +1,56 @@
+---
+section: cre
+title: "TypeScript Runtime Environment"
+date: Last Modified
+sdkLang: "ts"
+metadata:
+  description: "Understand how TypeScript workflows compile to WebAssembly, QuickJS compatibility, and library requirements for CRE workflows."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+Your TypeScript workflows are compiled to <a href="https://webassembly.org/" target="_blank" rel="noopener noreferrer">WebAssembly (WASM)</a> to run in the CRE execution environment. Understanding this compilation process helps you write compatible code and avoid common pitfalls.
+
+## How TypeScript becomes WASM
+
+CRE uses [Javy](https://github.com/bytecodealliance/javy) to compile your TypeScript workflows into WASM binaries. The compilation pipeline works as follows:
+
+1. **TypeScript → JavaScript**: Your `.ts` files are transpiled to JavaScript
+1. **JavaScript → WASM**: Javy bundles the JavaScript code with an embedded QuickJS engine into a WASM binary
+1. **Execution**: The WASM binary runs in the CRE runtime environment
+
+## QuickJS vs Node.js
+
+Javy uses [QuickJS](https://bellard.org/quickjs), a lightweight JavaScript engine embedded in the WASM binary. **QuickJS is not Node.js**—it provides core JavaScript (ECMAScript) functionality but does not include the full Node.js API surface.
+
+**What is supported:**
+
+- Standard JavaScript features like `Map`, `Set`, and most ES6+ syntax are fully supported
+- All CRE SDK capabilities, including EVM client, HTTP client, and consensus functions
+
+**Key limitation:**
+
+Not all Node.js built-in modules are available. For example, `node:crypto` is not supported. Before using third-party NPM packages, verify they don't rely on unsupported Node.js APIs.
+
+<Aside type="note" title="Note on async/await with SDK capabilities">
+  While JavaScript `Promise` and `async/await` are supported by QuickJS, **SDK capabilities do not use them**. The CRE
+  TypeScript SDK uses a custom `.result()` pattern instead. See the [Core SDK
+  reference](/cre/reference/sdk/core-ts#understanding-the-result-pattern) for details on why this pattern exists and how
+  to use it.
+</Aside>
+
+## Checking library compatibility
+
+Before using third-party NPM packages in your workflows, verify they don't rely on unsupported Node.js APIs. The [QuickJS Node.js compatibility documentation](https://sebastianwessel.github.io/quickjs/docs/module-resolution/node-compatibility.html) lists which Node.js modules are available.
+
+**The best way to verify compatibility** is to test with `cre workflow simulate`. Simulation runs your workflow in the same WASM environment as production, so any compatibility issues should surface during simulation.
+
+## Why WASM?
+
+WebAssembly provides several benefits for CRE workflows:
+
+- **Sandboxed execution**: WASM runs in an isolated environment, providing security boundaries between your workflow code and the CRE runtime
+- **Deterministic execution**: WASM ensures workflows produce consistent results across different nodes in the DON
+- **Performance**: WASM binaries are compact and execute efficiently

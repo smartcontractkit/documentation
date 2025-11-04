@@ -3,6 +3,7 @@ import { glob } from "astro/loaders"
 import { sectionValues } from "./config/sidebarSections.js"
 
 enum Products {
+  CRE = "cre",
   CCIP = "ccip",
   AUTOMATION = "automation",
   FUNCTIONS = "functions",
@@ -15,6 +16,7 @@ enum Products {
 }
 
 export const productsInfo: Record<Products, { name: string; slug: string }> = {
+  cre: { name: "CRE", slug: "cre" },
   ccip: { name: "CCIP", slug: "ccip" },
   automation: { name: "Automation", slug: "chainlink-automation" },
   functions: { name: "Functions", slug: "chainlink-functions" },
@@ -61,6 +63,8 @@ const baseFrontmatter = z
     metadata,
     datafeedtype: z.string().optional(),
     fileExtension: z.string().optional(),
+    sdkLang: z.enum(["go", "ts"]).optional(),
+    pageId: z.string().optional(),
   })
   .strict()
 
@@ -179,6 +183,14 @@ const datalinkCollection = defineCollection({
   schema: baseFrontmatter,
 })
 
+const creCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/cre",
+    pattern: "**/*.md?(x)",
+  }),
+  schema: baseFrontmatter,
+})
+
 /** Quickstarts collection uses a different schema */
 const quickstartsCollection = defineCollection({
   loader: glob({
@@ -233,6 +245,7 @@ export const collections = {
   "data-streams": dataStreamsCollection,
   "dta-technical-standard": dtaTechnicalStandardCollection,
   datalink: datalinkCollection,
+  cre: creCollection,
   resources: resourcesCollection,
   vrf: vrfCollection,
   "chainlink-local": chainlinkLocalCollection,

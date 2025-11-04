@@ -31,12 +31,12 @@ contract Sender is OwnerIsCreator {
   error InvalidLinkToken(); // Used when the link token address is 0
   error InvalidUsdcToken(); // Used when the usdc token address is 0
   error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough
-    // balance to cover the fees.
+  // balance to cover the fees.
   error NothingToWithdraw(); // Used when trying to withdraw Ether but there's nothing to withdraw.
   error InvalidDestinationChain(); // Used when the destination chain selector is 0.
   error InvalidReceiverAddress(); // Used when the receiver address is 0.
   error NoReceiverOnDestinationChain(uint64 destinationChainSelector); // Used when the receiver address is 0 for a
-    // given destination chain.
+  // given destination chain.
   error AmountIsZero(); // Used if the amount to transfer is 0.
   error InvalidGasLimit(); // Used if the gas limit is 0.
   error NoGasLimitOnDestinationChain(uint64 destinationChainSelector); // Used when the gas limit is 0.
@@ -158,7 +158,7 @@ contract Sender is OwnerIsCreator {
     Client.EVM2AnyMessage memory evm2AnyMessage = Client.EVM2AnyMessage({
       receiver: abi.encode(receiver), // ABI-encoded receiver address
       data: abi.encodeWithSelector(IStaker.stake.selector, _beneficiary, _amount), // Encode the function selector and
-        // the arguments of the stake function
+      // the arguments of the stake function
       tokenAmounts: tokenAmounts, // The amount and type of token being transferred
       extraArgs: Client._argsToBytes(
         // Additional arguments, setting gas limit and allowing out-of-order execution.
@@ -169,8 +169,8 @@ contract Sender is OwnerIsCreator {
         Client.GenericExtraArgsV2({
           gasLimit: gasLimit, // Gas limit for the callback on the destination chain
           allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages
-            // from
-            // the same sender
+          // from
+          // the same sender
         })
       ),
       // Set the feeToken to a feeTokenAddress, indicating specific asset will be used for fees

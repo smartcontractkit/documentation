@@ -68,6 +68,434 @@ export type SectionEntry = {
  * }
  */
 export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
+  [SIDEBAR_SECTIONS.CRE]: [
+    {
+      section: "Chainlink CRE",
+      contents: [
+        {
+          title: "About CRE",
+          url: "cre",
+        },
+        {
+          title: "Key Terms and Concepts",
+          url: "cre/key-terms",
+        },
+        {
+          title: "Service Quotas",
+          url: "cre/service-quotas",
+        },
+        {
+          title: "Support & Feedback",
+          url: "cre/support-feedback",
+        },
+        // {
+        //   title: "Release Notes",
+        //   url: "cre/release-notes",
+        // },
+      ],
+    },
+    {
+      section: "Getting Started",
+      contents: [
+        { title: "Overview", url: "cre/getting-started/overview" },
+        {
+          title: "CLI Installation",
+          url: "cre/getting-started/cli-installation",
+          children: [
+            { title: "macOS / Linux", url: "cre/getting-started/cli-installation/macos-linux" },
+            { title: "Windows", url: "cre/getting-started/cli-installation/windows" },
+          ],
+        },
+        {
+          title: "Part 1: Project Setup & Simulation",
+          url: "cre/getting-started/part-1-project-setup",
+          highlightAsCurrent: [
+            "cre/getting-started/part-1-project-setup-ts",
+            "cre/getting-started/part-1-project-setup-go",
+          ],
+        },
+        {
+          title: "Part 2: Fetching Offchain Data",
+          url: "cre/getting-started/part-2-fetching-data",
+          highlightAsCurrent: [
+            "cre/getting-started/part-2-fetching-data-ts",
+            "cre/getting-started/part-2-fetching-data-go",
+          ],
+        },
+        {
+          title: "Part 3: Reading Onchain",
+          url: "cre/getting-started/part-3-reading-onchain-value",
+          highlightAsCurrent: [
+            "cre/getting-started/part-3-reading-onchain-value-ts",
+            "cre/getting-started/part-3-reading-onchain-value-go",
+          ],
+        },
+        {
+          title: "Part 4: Writing Onchain",
+          url: "cre/getting-started/part-4-writing-onchain",
+          highlightAsCurrent: [
+            "cre/getting-started/part-4-writing-onchain-ts",
+            "cre/getting-started/part-4-writing-onchain-go",
+          ],
+        },
+        { title: "Conclusion & Next Steps", url: "cre/getting-started/conclusion" },
+      ],
+    },
+    {
+      section: "Workflow Guides",
+      contents: [
+        {
+          title: "Triggers",
+          url: "cre/guides/workflow/using-triggers/overview",
+          children: [
+            {
+              title: "Cron Trigger",
+              url: "cre/guides/workflow/using-triggers/cron-trigger",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-triggers/cron-trigger-ts",
+                "cre/guides/workflow/using-triggers/cron-trigger-go",
+              ],
+            },
+            {
+              title: "HTTP Trigger",
+              url: "cre/guides/workflow/using-triggers/http-trigger",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-triggers/http-trigger-ts",
+                "cre/guides/workflow/using-triggers/http-trigger-go",
+              ],
+            },
+            {
+              title: "EVM Log Trigger",
+              url: "cre/guides/workflow/using-triggers/evm-log-trigger",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-triggers/evm-log-trigger-ts",
+                "cre/guides/workflow/using-triggers/evm-log-trigger-go",
+              ],
+            },
+          ],
+        },
+        {
+          title: "EVM Chain Interactions",
+          url: "cre/guides/workflow/using-evm-client/overview",
+          highlightAsCurrent: [
+            "cre/guides/workflow/using-evm-client/overview-ts",
+            "cre/guides/workflow/using-evm-client/overview-go",
+          ],
+          children: [
+            {
+              title: "Generating Bindings",
+              url: "cre/guides/workflow/using-evm-client/generating-bindings",
+            },
+            {
+              title: "Onchain Read",
+              url: "cre/guides/workflow/using-evm-client/onchain-read",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-evm-client/onchain-read-ts",
+                "cre/guides/workflow/using-evm-client/onchain-read-go",
+              ],
+            },
+            {
+              title: "Onchain Write",
+              url: "cre/guides/workflow/using-evm-client/onchain-write/overview",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-evm-client/onchain-write/overview-ts",
+                "cre/guides/workflow/using-evm-client/onchain-write/overview-go",
+              ],
+              children: [
+                {
+                  title: "Building Consumer Contracts",
+                  url: "cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts",
+                },
+                {
+                  title: "Writing Data Onchain",
+                  url: "cre/guides/workflow/using-evm-client/onchain-write/writing-data-onchain",
+                },
+                {
+                  title: "Using WriteReportFrom Helpers",
+                  url: "cre/guides/workflow/using-evm-client/onchain-write/using-write-report-helpers",
+                },
+                {
+                  title: "Generating Reports: Single Values",
+                  url: "cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values",
+                },
+                {
+                  title: "Generating Reports: Structs",
+                  url: "cre/guides/workflow/using-evm-client/onchain-write/generating-reports-structs",
+                },
+                {
+                  title: "Submitting Reports Onchain",
+                  url: "cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain",
+                },
+              ],
+            },
+            {
+              title: "Supported Networks",
+              url: "cre/guides/workflow/using-evm-client/supported-networks",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-evm-client/supported-networks-ts",
+                "cre/guides/workflow/using-evm-client/supported-networks-go",
+              ],
+            },
+          ],
+        },
+        {
+          title: "API Interactions",
+          url: "cre/guides/workflow/using-http-client",
+          children: [
+            {
+              title: "Making GET Requests",
+              url: "cre/guides/workflow/using-http-client/get-request",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-http-client/get-request-ts",
+                "cre/guides/workflow/using-http-client/get-request-go",
+              ],
+            },
+            {
+              title: "Making POST Requests",
+              url: "cre/guides/workflow/using-http-client/post-request",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-http-client/post-request-ts",
+                "cre/guides/workflow/using-http-client/post-request-go",
+              ],
+            },
+            {
+              title: "Submitting Reports via HTTP",
+              url: "cre/guides/workflow/using-http-client/submitting-reports-http",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-http-client/submitting-reports-http-ts",
+                "cre/guides/workflow/using-http-client/submitting-reports-http-go",
+              ],
+            },
+          ],
+        },
+        {
+          title: "Secrets",
+          url: "cre/guides/workflow/secrets",
+          children: [
+            {
+              title: "Using Secrets in Simulation",
+              url: "cre/guides/workflow/secrets/using-secrets-simulation",
+              highlightAsCurrent: [
+                "cre/guides/workflow/secrets/using-secrets-simulation-ts",
+                "cre/guides/workflow/secrets/using-secrets-simulation-go",
+              ],
+            },
+            {
+              title: "Using Secrets with Deployed Workflows",
+              url: "cre/guides/workflow/secrets/using-secrets-deployed",
+            },
+            {
+              title: "Managing Secrets with 1Password",
+              url: "cre/guides/workflow/secrets/managing-secrets-1password",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      section: "Workflow Operations",
+      contents: [
+        {
+          title: "Simulating Workflows",
+          url: "cre/guides/operations/simulating-workflows",
+        },
+        {
+          title: "Deploying Workflows",
+          url: "cre/guides/operations/deploying-workflows",
+        },
+        {
+          title: "Activating & Pausing Workflows",
+          url: "cre/guides/operations/activating-pausing-workflows",
+        },
+        {
+          title: "Updating Deployed Workflows",
+          url: "cre/guides/operations/updating-deployed-workflows",
+        },
+        {
+          title: "Deleting Workflows",
+          url: "cre/guides/operations/deleting-workflows",
+        },
+        {
+          title: "Using Multi-sig Wallets",
+          url: "cre/guides/operations/using-multisig-wallets",
+        },
+        {
+          title: "Monitoring & Debugging Workflows",
+          url: "cre/guides/operations/monitoring-workflows",
+        },
+      ],
+    },
+    {
+      section: "Account & Organization",
+      contents: [
+        {
+          title: "Account",
+          url: "cre/account",
+          children: [
+            {
+              title: "Creating Your Account",
+              url: "cre/account/creating-account",
+            },
+            {
+              title: "Logging in with the CLI",
+              url: "cre/account/cli-login",
+            },
+            {
+              title: "Managing Authentication",
+              url: "cre/account/managing-auth",
+            },
+          ],
+        },
+        {
+          title: "Organization",
+          url: "cre/organization",
+          children: [
+            {
+              title: "Understanding Organizations",
+              url: "cre/organization/understanding-organizations",
+            },
+            {
+              title: "Linking Wallet Keys",
+              url: "cre/organization/linking-keys",
+            },
+            {
+              title: "Inviting Team Members",
+              url: "cre/organization/inviting-members",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      section: "Capabilities",
+      contents: [
+        { title: "Overview", url: "cre/capabilities" },
+        { title: "Triggers", url: "cre/capabilities/triggers" },
+        { title: "HTTP", url: "cre/capabilities/http" },
+        { title: "EVM Read & Write", url: "cre/capabilities/evm-read-write" },
+      ],
+    },
+    {
+      section: "Concepts",
+      contents: [
+        {
+          title: "Consensus Computing",
+          url: "cre/concepts/consensus-computing",
+        },
+        {
+          title: "Non-Determinism in Workflows",
+          url: "cre/concepts/non-determinism",
+          highlightAsCurrent: ["cre/concepts/non-determinism-go", "cre/concepts/non-determinism-ts"],
+        },
+        {
+          title: "Time in CRE",
+          url: "cre/concepts/time-in-cre",
+        },
+        {
+          title: "Random in CRE",
+          url: "cre/concepts/random-in-cre",
+        },
+        {
+          title: "TypeScript Runtime Environment",
+          url: "cre/concepts/typescript-wasm-runtime",
+        },
+      ],
+    },
+    {
+      section: "Templates",
+      contents: [
+        {
+          title: "Running a Demo Workflow",
+          url: "cre/templates/running-demo-workflow",
+          highlightAsCurrent: ["cre/templates/running-demo-workflow-ts", "cre/templates/running-demo-workflow-go"],
+        },
+      ],
+    },
+    {
+      section: "Reference",
+      contents: [
+        {
+          title: "Project Configuration",
+          url: "cre/reference/project-configuration",
+          highlightAsCurrent: ["cre/reference/project-configuration-ts", "cre/reference/project-configuration-go"],
+        },
+        {
+          title: "CLI Reference",
+          url: "cre/reference/cli",
+          children: [
+            { title: "Authentication", url: "cre/reference/cli/authentication" },
+            {
+              title: "Project Setup",
+              url: "cre/reference/cli/project-setup",
+              highlightAsCurrent: ["cre/reference/cli/project-setup-ts", "cre/reference/cli/project-setup-go"],
+            },
+            { title: "Account Management", url: "cre/reference/cli/account" },
+            { title: "Workflow Commands", url: "cre/reference/cli/workflow" },
+            { title: "Secrets Management", url: "cre/reference/cli/secrets" },
+            { title: "Utilities", url: "cre/reference/cli/utilities" },
+          ],
+        },
+        {
+          title: "SDK Reference",
+          url: "cre/reference/sdk/overview",
+          highlightAsCurrent: ["cre/reference/sdk/overview-ts", "cre/reference/sdk/overview-go"],
+          children: [
+            {
+              title: "Core SDK",
+              url: "cre/reference/sdk/core",
+              highlightAsCurrent: ["cre/reference/sdk/core-ts", "cre/reference/sdk/core-go"],
+            },
+            {
+              title: "Triggers",
+              url: "cre/reference/sdk/triggers/overview",
+              highlightAsCurrent: ["cre/reference/sdk/triggers/overview-ts", "cre/reference/sdk/triggers/overview-go"],
+              children: [
+                {
+                  title: "Cron Trigger",
+                  url: "cre/reference/sdk/triggers/cron-trigger",
+                  highlightAsCurrent: [
+                    "cre/reference/sdk/triggers/cron-trigger-ts",
+                    "cre/reference/sdk/triggers/cron-trigger-go",
+                  ],
+                },
+                {
+                  title: "HTTP Trigger",
+                  url: "cre/reference/sdk/triggers/http-trigger",
+                  highlightAsCurrent: [
+                    "cre/reference/sdk/triggers/http-trigger-ts",
+                    "cre/reference/sdk/triggers/http-trigger-go",
+                  ],
+                },
+                {
+                  title: "EVM Log Trigger",
+                  url: "cre/reference/sdk/triggers/evm-log-trigger",
+                  highlightAsCurrent: [
+                    "cre/reference/sdk/triggers/evm-log-trigger-ts",
+                    "cre/reference/sdk/triggers/evm-log-trigger-go",
+                  ],
+                },
+              ],
+            },
+            {
+              title: "EVM Client",
+              url: "cre/reference/sdk/evm-client",
+              highlightAsCurrent: ["cre/reference/sdk/evm-client-ts", "cre/reference/sdk/evm-client-go"],
+            },
+            {
+              title: "HTTP Client",
+              url: "cre/reference/sdk/http-client",
+              highlightAsCurrent: ["cre/reference/sdk/http-client-ts", "cre/reference/sdk/http-client-go"],
+            },
+            {
+              title: "Consensus & Aggregation",
+              url: "cre/reference/sdk/consensus",
+              highlightAsCurrent: ["cre/reference/sdk/consensus-ts", "cre/reference/sdk/consensus-go"],
+            },
+          ],
+        },
+      ],
+    },
+  ],
   [SIDEBAR_SECTIONS.DATA_FEEDS]: [
     {
       section: "Chainlink Data Feeds",

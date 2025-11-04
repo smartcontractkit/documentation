@@ -47,8 +47,8 @@ contract CustomAutomatedFunctionsConsumerExample is FunctionsClient, AutomationC
     bytes calldata /* checkData */
   ) external view override returns (bool upkeepNeeded, bytes memory performData) {
     upkeepNeeded = block.number - lastBlockNumber > 0; // Check if the current block number has incremented since the
-      // last recorded block number
-      // We don't use the checkData in this example. The checkData is defined when the Upkeep was registered.
+    // last recorded block number
+    // We don't use the checkData in this example. The checkData is defined when the Upkeep was registered.
     return (upkeepNeeded, ""); // Return an empty bytes value for performData
   }
 
