@@ -309,7 +309,6 @@ export const productChainLinks: ProductChainLinks = {
     kaia: "/resources/link-token-contracts#kaia",
     tac: "/resources/link-token-contracts#tac",
     memento: "/resources/link-token-contracts#memento",
-    xdc: "/resources/link-token-contracts#xdc",
     bittensor: "/resources/link-token-contracts#bittensor-evm",
   },
 }
