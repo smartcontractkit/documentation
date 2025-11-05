@@ -56,6 +56,51 @@ export function filterContentByChainType(contents: SectionContent[], selectedCha
 }
 
 /**
+ * Recursively propagates chainTypes from parent to children
+ *
+ * This ensures that children inherit their parent's chainTypes if they don't have their own.
+ * This is critical for mobile navigation where items are rendered as siblings rather than
+ * nested in DOM hierarchy, so CSS cascade doesn't provide implicit filtering.
+ *
+ * Rules:
+ * - If child has explicit chainTypes: Keep them (don't override)
+ * - If child has no chainTypes but parent does: Inherit from parent
+ * - If neither child nor parent has chainTypes: Remain universal (no chainTypes)
+ * - Recursively process all descendants
+ *
+ * Examples:
+ *   Parent: { title: "API Reference", chainTypes: ['evm'], children: [...] }
+ *   Child:  { title: "Messages" }  // No chainTypes
+ *   Result: { title: "Messages", chainTypes: ['evm'] }  // Inherited
+ *
+ *   Parent: { title: "API Reference", chainTypes: ['evm'], children: [...] }
+ *   Child:  { title: "Router", chainTypes: ['evm', 'solana'] }  // Has own
+ *   Result: { title: "Router", chainTypes: ['evm', 'solana'] }  // Preserved
+ *
+ * @param contents - Array of sidebar content items
+ * @param parentChainTypes - ChainTypes from parent (used in recursion)
+ * @returns Contents with propagated chainTypes
+ */
+export function propagateChainTypes(contents: SectionContent[], parentChainTypes?: ChainType[]): SectionContent[] {
+  return contents.map((item) => {
+    // Create new item to avoid mutation
+    const processed: SectionContent = { ...item }
+
+    // If item doesn't have chainTypes, inherit from parent
+    if (!processed.chainTypes && parentChainTypes) {
+      processed.chainTypes = parentChainTypes
+    }
+
+    // Recursively process children, passing this item's chainTypes as parent
+    if (processed.children) {
+      processed.children = propagateChainTypes(processed.children, processed.chainTypes)
+    }
+
+    return processed
+  })
+}
+
+/**
  * Filters sidebar DOM elements by chain type using show/hide approach
  *
  * This function is used by both desktop sidebar and mobile drawer to
