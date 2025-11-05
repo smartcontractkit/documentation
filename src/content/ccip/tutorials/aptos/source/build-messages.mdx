@@ -4,7 +4,7 @@ date: Last Modified
 title: "Building CCIP Messages from Aptos to EVM"
 isIndex: false
 metadata:
-  description: "Comprehensive guide for implementing Cross-Chain Interoperability Protocol (CCIP) messages from Aptos to EVM chains. Learn how to structure messages, manage parameters, and implement token transfers, arbitrary data messaging, and programmatic token transfers."
+  description: "Comprehensive guide for implementing Cross-Chain Interoperability Protocol (CCIP) messages from Aptos to EVM chains. Learn how to structure messages, manage parameters, and implement token transfers, arbitrary data messaging, and programmable token transfers."
   image: "/images/ccip/concepts/architecture/ccip-aptos-source-chain.jpg"
   excerpt: "Aptos→EVM, message build, address conversion, extraArgs, CCIP, Aptos FA, Fungible Asset"
   datePublished: "2025-09-03"
@@ -19,7 +19,7 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 ## Introduction
 
-This guide explains how to construct CCIP Messages from the Aptos blockchain to EVM chains (e.g., Ethereum, Arbitrum, Base, etc.). We'll cover the message structure by examining the [`ccip_send`](/ccip/api-reference/aptos/v1.6.0/router#ccip_send) entry function from the [`ccip_router::router` module](/ccip/api-reference/aptos/v1.6.0/router), its required parameters, and the implementation details for different message types including token transfers, arbitrary data messaging, and programmatic token transfers (data and tokens).
+This guide explains how to construct CCIP Messages from the Aptos blockchain to EVM chains (e.g., Ethereum, Arbitrum, Base, etc.). We'll cover the message structure by examining the [`ccip_send`](/ccip/api-reference/aptos/v1.6.0/router#ccip_send) entry function from the [`ccip_router::router` module](/ccip/api-reference/aptos/v1.6.0/router), its required parameters, and the implementation details for different message types including token transfers, arbitrary data messaging, and programmable token transfers (data and tokens).
 
 <Aside title="Note">
   The code snippets below use the [@aptos-labs/ts-sdk](https://www.npmjs.com/package/@aptos-labs/ts-sdk) and
@@ -88,7 +88,7 @@ function evmAddressToAptos(evmAddress: string) {
 - **Definition**: The payload that will be executed by the receiving contract on the destination chain.
 - **Usage**:
   - **For token-only transfers**: This must be an empty `vector<u8>`.
-  - **For arbitrary messaging** or **programmatic token transfers**: This contains the function selectors and arguments for the receiver contract, typically ABI-encoded.
+  - **For arbitrary messaging** or **programmable token transfers**: This contains the function selectors and arguments for the receiver contract, typically ABI-encoded.
 - **Encoding**: The receiver contract on the destination EVM chain must be able to decode this data. Standard EVM ABI-encoding is the recommended approach.
 
 <Aside title="Data Encoding for Cross-Chain Messages">
@@ -161,7 +161,7 @@ This format consists of a 4-byte tag (`0x181dcf10`) followed by the BCS-encoded 
 
 - **Gas limit**:
   - For token transfers only: Gas limit must be set to `0`
-  - For arbitrary messaging or programmatic token transfers: gas limit must be set **based on the receiving contract's complexity**.
+  - For arbitrary messaging or programmable token transfers: gas limit must be set **based on the receiving contract's complexity**.
 - **Allow out of order execution**:
   - Must always be set to `true`.
 
@@ -309,11 +309,11 @@ const transactionPayload = {
 }
 ```
 
-### Programmatic Token Transfer (Data and Tokens)
+### Programmable Token Transfer (Data and Tokens)
 
 Use this configuration when sending both tokens and data in a single message:
 
-<Aside title="Programmatic Token Transfer Example">
+<Aside title="Programmable Token Transfer Example">
   This example sends tokens along with a data payload to an EVM contract. The `data` vector contains the ABI-encoded
   data, while the `token_addresses`, `token_amounts`, and `token_store_addresses` vectors specify the tokens to be
   transferred. And, the `gas_limit` is set to a value that covers the execution cost of the receiving contract depending
