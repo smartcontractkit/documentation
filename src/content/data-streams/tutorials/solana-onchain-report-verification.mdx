@@ -150,8 +150,8 @@ In your program's manifest file (`programs/example_verify/Cargo.toml`), add the 
 
 ```toml
 [dependencies]
-chainlink_solana_data_streams = { git = "https://github.com/smartcontractkit/chainlink-solana", branch = "develop", subdir = "contracts/crates/chainlink-solana-data-streams" }
-data-streams-report = { git = "https://github.com/smartcontractkit/data-streams-sdk.git", subdir = "rust/crates/report" }
+chainlink_solana_data_streams = { git = "https://github.com/smartcontractkit/chainlink-solana", branch = "develop" }
+chainlink_data_streams_report = { git = "https://github.com/smartcontractkit/data-streams-sdk.git" }
 
 # Additional required dependencies
 anchor-lang = "0.29.0"
@@ -165,14 +165,13 @@ Navigate to your program main file (`programs/example_verify/src/lib.rs`). This 
 // Import required dependencies for Anchor, Solana, and Data Streams
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::{
+    instruction::Instruction,
     program::{get_return_data, invoke},
     pubkey::Pubkey,
-    instruction::Instruction,
 };
 // NOTE: Adjust for your report version
-use data_streams_report::report::v3::ReportDataV3;
+use chainlink_data_streams_report::report::v3::ReportDataV3;
 use chainlink_solana_data_streams::VerifierInstructions;
-
 
 declare_id!("<YOUR_PROGRAM_ID>");
 
@@ -456,13 +455,13 @@ In this section, you'll write a client script to interact with your deployed pro
 
    **Note**: The Program IDs and Access Controller Accounts are available on the [Stream Addresses](/data-streams/crypto-streams) page.
 
-1. Add the `snappy` dependency to your project:
+1. Install the required dependencies for your project. Make sure the client-side `@coral-xyz/anchor` version matches your program's `anchor-lang` version (0.29.0):
 
    ```bash
-   yarn add snappy
+   yarn add @coral-xyz/anchor@0.29.0 @solana/web3.js snappy
    ```
 
-   `snappy` is a compression library that is used to compress the report data.
+   **Important**: Using mismatched Anchor versions between your program and client can cause type incompatibilities and runtime errors.
 
 1. Execute the test script to interact with your program:
 
