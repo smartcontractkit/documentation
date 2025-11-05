@@ -88,10 +88,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Support & Feedback",
           url: "cre/support-feedback",
         },
-        // {
-        //   title: "Release Notes",
-        //   url: "cre/release-notes",
-        // },
+        {
+          title: "Release Notes",
+          url: "cre/release-notes",
+        },
       ],
     },
     {
