@@ -101,99 +101,93 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
     section: "Concepts",
     contents: [
       {
-        title: "Architecture",
-        url: "ccip/concepts/architecture",
+        title: "Overview",
+        url: "ccip/concepts/architecture/overview",
+        // Universal
+      },
+      {
+        title: "Key Concepts",
+        url: "ccip/concepts/architecture/key-concepts",
+        // Universal
+      },
+      {
+        title: "Onchain Architecture",
+        url: "ccip/concepts/architecture/onchain/evm",
+        chainTypes: ["evm"],
         children: [
           {
             title: "Overview",
-            url: "ccip/concepts/architecture/overview",
-            // Universal
-          },
-          {
-            title: "Key Concepts",
-            url: "ccip/concepts/architecture/key-concepts",
-            // Universal
-          },
-          {
-            title: "Onchain Architecture",
-            url: "ccip/concepts/architecture/onchain/evm",
+            url: "ccip/concepts/architecture/onchain/evm/overview",
             chainTypes: ["evm"],
-            children: [
-              {
-                title: "Overview",
-                url: "ccip/concepts/architecture/onchain/evm/overview",
-                chainTypes: ["evm"],
-              },
-              {
-                title: "Components",
-                url: "ccip/concepts/architecture/onchain/evm/components",
-                chainTypes: ["evm"],
-              },
-              {
-                title: "Upgradability",
-                url: "ccip/concepts/architecture/onchain/evm/upgradability",
-                chainTypes: ["evm"],
-              },
-            ],
           },
           {
-            title: "Onchain Architecture",
-            url: "ccip/concepts/architecture/onchain/svm",
+            title: "Components",
+            url: "ccip/concepts/architecture/onchain/evm/components",
+            chainTypes: ["evm"],
+          },
+          {
+            title: "Upgradability",
+            url: "ccip/concepts/architecture/onchain/evm/upgradability",
+            chainTypes: ["evm"],
+          },
+        ],
+      },
+      {
+        title: "Onchain Architecture",
+        url: "ccip/concepts/architecture/onchain/svm",
+        chainTypes: ["solana"],
+        children: [
+          {
+            title: "Overview",
+            url: "ccip/concepts/architecture/onchain/svm/overview",
             chainTypes: ["solana"],
-            children: [
-              {
-                title: "Overview",
-                url: "ccip/concepts/architecture/onchain/svm/overview",
-                chainTypes: ["solana"],
-              },
-              {
-                title: "Components",
-                url: "ccip/concepts/architecture/onchain/svm/components",
-                chainTypes: ["solana"],
-              },
-              {
-                title: "Upgradability",
-                url: "ccip/concepts/architecture/onchain/svm/upgradability",
-                chainTypes: ["solana"],
-              },
-            ],
           },
           {
-            title: "Onchain Architecture",
-            url: "ccip/concepts/architecture/onchain/aptos",
+            title: "Components",
+            url: "ccip/concepts/architecture/onchain/svm/components",
+            chainTypes: ["solana"],
+          },
+          {
+            title: "Upgradability",
+            url: "ccip/concepts/architecture/onchain/svm/upgradability",
+            chainTypes: ["solana"],
+          },
+        ],
+      },
+      {
+        title: "Onchain Architecture",
+        url: "ccip/concepts/architecture/onchain/aptos",
+        chainTypes: ["aptos"],
+        children: [
+          {
+            title: "Overview",
+            url: "ccip/concepts/architecture/onchain/aptos/overview",
             chainTypes: ["aptos"],
-            children: [
-              {
-                title: "Overview",
-                url: "ccip/concepts/architecture/onchain/aptos/overview",
-                chainTypes: ["aptos"],
-              },
-              {
-                title: "Components",
-                url: "ccip/concepts/architecture/onchain/aptos/components",
-                chainTypes: ["aptos"],
-              },
-              {
-                title: "Upgradability",
-                url: "ccip/concepts/architecture/onchain/aptos/upgradability",
-                chainTypes: ["aptos"],
-              },
-            ],
           },
           {
-            title: "Offchain Architecture",
-            url: "ccip/concepts/architecture/offchain",
-            // Universal
-            children: [
-              {
-                title: "Overview",
-                url: "ccip/concepts/architecture/offchain/overview",
-              },
-              {
-                title: "Risk Management Network",
-                url: "ccip/concepts/architecture/offchain/risk-management-network",
-              },
-            ],
+            title: "Components",
+            url: "ccip/concepts/architecture/onchain/aptos/components",
+            chainTypes: ["aptos"],
+          },
+          {
+            title: "Upgradability",
+            url: "ccip/concepts/architecture/onchain/aptos/upgradability",
+            chainTypes: ["aptos"],
+          },
+        ],
+      },
+      {
+        title: "Offchain Architecture",
+        url: "ccip/concepts/architecture/offchain",
+        // Universal
+        children: [
+          {
+            title: "Overview",
+            url: "ccip/concepts/architecture/offchain/overview",
+          },
+          {
+            title: "Risk Management Network",
+            url: "ccip/concepts/architecture/offchain/risk-management-network",
           },
         ],
       },

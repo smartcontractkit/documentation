@@ -1,6 +1,6 @@
 import { expect, test, describe } from "@jest/globals"
-import { propagateChainTypes } from "./chainType.js"
-import type { SectionContent } from "~/config/sidebar.js"
+import { propagateChainTypes } from "./chainType.ts"
+import type { SectionContent } from "~/config/sidebar.ts"
 
 describe("propagateChainTypes", () => {
   test("children without chainTypes inherit from parent", () => {
