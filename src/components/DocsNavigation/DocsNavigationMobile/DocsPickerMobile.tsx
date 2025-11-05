@@ -58,6 +58,7 @@ export function ProductNavigation({ path }: Props) {
     label: page.label,
     href: page.href,
     sdkLang: page.sdkLang,
+    chainTypes: page.chainTypes,
     highlightAsCurrent: page.highlightAsCurrent,
     children: page.children ? page.children.map(mapPageWithChildren) : [],
   })

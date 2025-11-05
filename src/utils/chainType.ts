@@ -54,3 +54,55 @@ export function filterContentByChainType(contents: SectionContent[], selectedCha
     })
     .filter((item): item is SectionContent => item !== null)
 }
+
+/**
+ * Filters sidebar DOM elements by chain type using show/hide approach
+ *
+ * This function is used by both desktop sidebar and mobile drawer to
+ * filter navigation items based on the selected chain type.
+ *
+ * Filtering rules:
+ * - data-chain-types="universal": Always visible (no chain restriction)
+ * - data-chain-types includes selected chain: Visible
+ * - data-chain-types doesn't include selected chain: Hidden (display: none)
+ * - No data-chain-types attribute: Always visible (legacy/universal content)
+ *
+ * Performance: Operates on DOM after initial render for instant switching
+ *
+ * @param currentChain - Currently selected chain type from store
+ *
+ * @example
+ * // In Astro script tag
+ * import { applyChainTypeFilter } from "~/utils/chainType.js"
+ * applyChainTypeFilter(selectedChainType.get())
+ *
+ * @example
+ * // In React component
+ * import { applyChainTypeFilter } from "~/utils/chainType.js"
+ * useEffect(() => {
+ *   applyChainTypeFilter(currentChain)
+ * }, [currentChain])
+ */
+export function applyChainTypeFilter(currentChain: ChainType): void {
+  const sidebarItems = document.querySelectorAll<HTMLElement>("[data-chain-types]")
+
+  sidebarItems.forEach((item) => {
+    const chainTypesAttr = item.getAttribute("data-chain-types")
+
+    if (chainTypesAttr === "universal") {
+      // Always show universal content
+      item.style.display = ""
+    } else if (chainTypesAttr) {
+      // Check if item's chains include the current selection
+      const itemChains = chainTypesAttr.split(",")
+      if (itemChains.includes(currentChain)) {
+        item.style.display = ""
+      } else {
+        item.style.display = "none"
+      }
+    } else {
+      // No chain types attribute means universal/legacy content
+      item.style.display = ""
+    }
+  })
+}

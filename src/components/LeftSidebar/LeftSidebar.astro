@@ -161,32 +161,14 @@ const sidebarSections = getSidebarSections(section)
 
 <script>
   import { selectedChainType } from "~/stores/chainType"
+  import { applyChainTypeFilter } from "~/utils/chainType.js"
 
   /**
    * Filters sidebar items based on selected chain type
-   * - Shows items with matching chainTypes or universal items
-   * - Hides items that don't match the selected chain
+   * Uses shared utility function for consistency with mobile drawer
    */
   function filterSidebarByChainType() {
-    const currentChain = selectedChainType.get()
-    const sidebarItems = document.querySelectorAll<HTMLElement>("[data-chain-types]")
-
-    sidebarItems.forEach((item) => {
-      const chainTypesAttr = item.getAttribute("data-chain-types")
-
-      if (chainTypesAttr === "universal") {
-        item.style.display = ""
-      } else if (chainTypesAttr) {
-        const itemChains = chainTypesAttr.split(",")
-        if (itemChains.includes(currentChain)) {
-          item.style.display = ""
-        } else {
-          item.style.display = "none"
-        }
-      } else {
-        item.style.display = ""
-      }
-    })
+    applyChainTypeFilter(selectedChainType.get())
   }
 
   // Run on initial load
