@@ -581,12 +581,12 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
   )
 }
 
-export const StreamsNetworkAddressesTable = ({ 
+export const StreamsNetworkAddressesTable = ({
   allowExpansion = false,
-  defaultExpanded = false 
-}: { 
-  allowExpansion?: boolean;
-  defaultExpanded?: boolean;
+  defaultExpanded = false,
+}: {
+  allowExpansion?: boolean
+  defaultExpanded?: boolean
 } = {}) => {
   const [searchValue, setSearchValue] = useState("")
   const [isExpanded, setIsExpanded] = useState(defaultExpanded)
@@ -612,13 +612,13 @@ export const StreamsNetworkAddressesTable = ({
   return (
     <div className={tableStyles.compactNetworksTable}>
       {allowExpansion && (
-        <div 
+        <div
           className={tableStyles.expandableHeader}
           onClick={() => setIsExpanded(!isExpanded)}
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
+            if (e.key === "Enter" || e.key === " ") {
               e.preventDefault()
               setIsExpanded(!isExpanded)
             }
@@ -635,7 +635,7 @@ export const StreamsNetworkAddressesTable = ({
           <div className={clsx(tableStyles.expandableArrow, isExpanded && tableStyles.expandableArrowExpanded)} />
         </div>
       )}
-      
+
       {(!allowExpansion || isExpanded) && (
         <div>
           <div className={feedList.filterDropdown_search} style={{ padding: "0.5rem" }}>
@@ -672,7 +672,9 @@ export const StreamsNetworkAddressesTable = ({
                       (!normalizedSearch ||
                         match(network.network) ||
                         match(network.mainnet.label) ||
-                        match(network.isSolana ? network.mainnet.verifierProgramId : network.mainnet.verifierProxy)) && (
+                        match(
+                          network.isSolana ? network.mainnet.verifierProgramId : network.mainnet.verifierProxy
+                        )) && (
                         <tr
                           key={`${network.network}-mainnet`}
                           className={index > 0 ? tableStyles.firstNetworkRow : undefined}
@@ -722,10 +724,14 @@ export const StreamsNetworkAddressesTable = ({
                       (!normalizedSearch ||
                         match(network.network) ||
                         match(network.testnet.label) ||
-                        match(network.isSolana ? network.testnet.verifierProgramId : network.testnet.verifierProxy)) && (
+                        match(
+                          network.isSolana ? network.testnet.verifierProgramId : network.testnet.verifierProxy
+                        )) && (
                         <tr
                           key={`${network.network}-testnet`}
-                          className={!network.mainnet && index > 0 ? tableStyles.firstNetworkRow : tableStyles.testnetRow}
+                          className={
+                            !network.mainnet && index > 0 ? tableStyles.firstNetworkRow : tableStyles.testnetRow
+                          }
                         >
                           <td className={tableStyles.networkColumn}>
                             {!network.mainnet && (

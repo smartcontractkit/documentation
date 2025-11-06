@@ -616,14 +616,14 @@ export const FeedList = ({
       <>
         {allowNetworkTableExpansion ? (
           <div style={{ marginBottom: "var(--space-2x)" }}>
-            <StreamsNetworkAddressesTable 
+            <StreamsNetworkAddressesTable
               allowExpansion={allowNetworkTableExpansion}
               defaultExpanded={defaultNetworkTableExpanded}
             />
           </div>
         ) : (
           <SectionWrapper title="Streams Verifier Network Addresses" depth={2}>
-            <StreamsNetworkAddressesTable 
+            <StreamsNetworkAddressesTable
               allowExpansion={allowNetworkTableExpansion}
               defaultExpanded={defaultNetworkTableExpanded}
             />
