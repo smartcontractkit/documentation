@@ -311,12 +311,12 @@ export const StreamsNetworksData: NetworkData[] = [
     logoUrl: "/assets/chains/jovay.svg",
     mainnet: {
       label: "Jovay Mainnet",
-      verifierProxy: "0x57a97148c1fa50f35f0639f380077017d8893b6b",
+      verifierProxy: "0xF1Ee15ecca3aD06edF9603a1ea6d19043804522A",
       explorerUrl: "https://explorer.jovay.io/l2/address/%s",
     },
     testnet: {
       label: "Jovay Sepolia Testnet",
-      verifierProxy: "0x60faa7fac949af392dfc858f5d97e3eefa07e9eb",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
       explorerUrl: "https://sepolia-explorer.jovay.io/l2/address/%s",
     },
   },
