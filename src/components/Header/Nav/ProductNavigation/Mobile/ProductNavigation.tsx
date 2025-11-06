@@ -6,7 +6,7 @@ import styles from "./productNavigation.module.css"
 import { MenuIcon } from "./MenuIcon.tsx"
 import { BackArrowIcon } from "./BackArrowIcon.tsx"
 import { CaretRightIcon } from "./CaretRightIcon.tsx"
-import MegaMenu from "./MegaMenu.tsx"
+import MegaMenu from "../Desktop/MegaMenu.tsx"
 
 const Trigger = extendRadixComponent(Dialog.Trigger)
 const Close = extendRadixComponent(Dialog.Close)
@@ -71,14 +71,12 @@ export function ProductNavigation() {
                       className={styles.productContentLink}
                       onClick={() => setProductsSlidePosition("submenu")}
                       data-testid="sub-product-navigation-trigger-mobile"
-                      aria-label="Open Resources submenu"
+                      aria-label="Open Docs submenu"
                     >
-                      Resources
+                      Docs
                       <CaretRightIcon />
                     </button>
-                    <a href="/" className={styles.productContentLink}>
-                      Docs
-                    </a>
+
                     <a href="https://dev.chain.link/demos" className={styles.productContentLink}>
                       Demos
                     </a>
@@ -103,11 +101,11 @@ export function ProductNavigation() {
                     >
                       <BackArrowIcon />
                     </button>
-                    <span className={styles.subProductContentTitle}>Resources</span>
+                    <span className={styles.subProductContentTitle}>Docs</span>
                     <span></span> {/* Spacer */}
                   </div>
                   <div className={styles.subProductContent}>
-                    <MegaMenu />
+                    <MegaMenu isMobile />
                   </div>
                 </div>
               </div>

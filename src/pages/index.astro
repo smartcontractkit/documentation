@@ -1,5 +1,4 @@
 ---
-import ProductTabs from "../features/landing/sections/ProductTabs.astro"
 import JourneyCards from "~/components/JourneyCards/JourneyCards.astro"
 import TechnicalStandards from "~/components/TechnicalStandards/TechnicalStandards.astro"
 import BaseLayout from "~/layouts/BaseLayout.astro"
@@ -7,29 +6,21 @@ import BaseLayout from "~/layouts/BaseLayout.astro"
 import * as CONFIG from "../config"
 import Demos from "~/components/Demos.astro"
 import { Typography } from "@chainlink/blocks"
+import LandingHero from "~/components/LandingHero/LandingHero.astro"
 
 const formattedContentTitle = `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.title}`
 ---
 
 <BaseLayout title={formattedContentTitle}>
   <main>
-    <div class="heroContainer">
-      <div class="hero">
-        <h1>Chainlink Developer Docs</h1>
-        <h2>What are you building?</h2>
+    <LandingHero />
 
-        <ProductTabs />
-      </div>
-    </div>
     <div class="wrapper">
       <JourneyCards />
 
       <Demos />
 
-      <div class="section">
-        <Typography variant="h4" className="section-title">Technical Standards</Typography>
-        <TechnicalStandards />
-      </div>
+      <TechnicalStandards />
 
       <div class="recommended">
         <h4>Recommended reading</h4>
@@ -153,7 +144,7 @@ const formattedContentTitle = `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.titl
     flex-direction: column;
     gap: 82px;
     max-width: var(--fullwidth-max-width);
-    margin: 0 auto;
+    padding: 0 var(--space-10x);
   }
 
   @media (min-width: 50em) {
@@ -195,11 +186,8 @@ const formattedContentTitle = `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.titl
       line-height: var(--space-6x);
       margin-bottom: var(--space-2x);
     }
-    .wrapper {
-      margin-top: 60px;
-    }
   }
-  @media (min-width: 72em) {
+  @media (min-width: 62em) {
     .hero {
       max-width: min(1200px, calc(100% - 2 * var(--space-16x)));
       padding: 0;
@@ -208,6 +196,11 @@ const formattedContentTitle = `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.titl
     .recommended {
       max-width: min(1200px, calc(100% - 2 * var(--space-16x)));
       padding: 0;
+    }
+
+    .wrapper {
+      margin: 0 auto;
+      margin-top: 60px;
     }
   }
 </style>

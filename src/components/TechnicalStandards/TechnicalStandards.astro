@@ -18,26 +18,34 @@ const cards = [
 ---
 
 <div class="technical-standards">
-  {
-    cards.map((card) => (
-      <a href={card.href} class="standard-card">
-        <div class="card-image" style={`background-image: url(${card.image})`} />
-        <div class="card-body">
-          <div class="card-text">
-            <Typography variant="h5">{card.title}</Typography>
-            <Typography variant="body-l" color="muted">
-              {card.description}
-            </Typography>
+  <Typography variant="h2">Technical Standards</Typography>
+
+  <div class="list">
+    {
+      cards.map((card) => (
+        <a href={card.href} class="standard-card">
+          <div class="card-image" style={`background-image: url(${card.image})`} />
+          <div class="card-body">
+            <div class="card-text">
+              <Typography variant="h5">{card.title}</Typography>
+              <Typography variant="body-l" color="muted">
+                {card.description}
+              </Typography>
+            </div>
           </div>
-        </div>
-        <img src="/assets/icons/upper-right-arrow.svg" class="card-arrow" />
-      </a>
-    ))
-  }
+          <img src="/assets/icons/upper-right-arrow.svg" class="card-arrow" />
+        </a>
+      ))
+    }
+  </div>
 </div>
 
 <style>
-  .technical-standards {
+  .technical-standards > h2 {
+    margin-bottom: var(--space-6x);
+    font-size: 28px;
+  }
+  .list {
     display: grid;
     grid-template-columns: 1fr;
     border: 1px solid var(--border);
@@ -60,8 +68,8 @@ const cards = [
   }
 
   .card-image {
-    width: 140px;
-    height: 140px;
+    width: 70px;
+    height: 70px;
     background-repeat: no-repeat;
   }
   .standard-card:first-child {
@@ -84,13 +92,28 @@ const cards = [
     width: 12px;
     opacity: 0;
     align-self: flex-end;
+    display: none;
+  }
+
+  @media screen and (min-width: 543px) {
+    .standard-card {
+      flex-direction: row;
+    }
+
+    .card-image {
+      width: 140px;
+      height: 140px;
+    }
+
+    .card-arrow {
+      display: block;
+    }
   }
 
   @media (min-width: 50em) {
-    .technical-standards {
+    .list {
       grid-template-columns: repeat(2, 1fr);
     }
-
     .standard-card {
       flex-direction: row;
     }
