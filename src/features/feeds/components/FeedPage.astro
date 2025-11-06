@@ -15,13 +15,15 @@ export type Props = {
     | "smartdata"
     | "default"
     | "rates"
+  allowNetworkTableExpansion?: boolean
+  defaultNetworkTableExpanded?: boolean
 }
 import { getServerSideChainMetadata } from "~/features/data/api/backend"
 import { CHAINS, ALL_CHAINS } from "~/features/data/chains"
 import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat"
 import { FeedDataItem, monitoredFeeds } from "~/features/data"
 
-const { initialNetwork, ecosystem, dataFeedType } = Astro.props
+const { initialNetwork, ecosystem, dataFeedType, allowNetworkTableExpansion, defaultNetworkTableExpanded } = Astro.props
 
 const initialCache = await getServerSideChainMetadata([...CHAINS, ...ALL_CHAINS])
 const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
@@ -90,6 +92,7 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
             For LINK token and Faucet details, see the{" "}
             <a href="/resources/link-token-contracts?parent=dataFeeds">LINK Token Contracts</a> page.
           </p>
+
           <Aside type="note" title="Talk to an expert">
             <p>
               <a href="https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs">Contact us</a> to talk to an
@@ -211,4 +214,6 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
   dataFeedType={dataFeedType ?? "default"}
   ecosystem={ecosystem ?? ""}
   initialCache={initialCache}
+  allowNetworkTableExpansion={allowNetworkTableExpansion}
+  defaultNetworkTableExpanded={defaultNetworkTableExpanded}
 />

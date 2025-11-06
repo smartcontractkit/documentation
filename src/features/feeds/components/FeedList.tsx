@@ -31,11 +31,15 @@ export const FeedList = ({
   dataFeedType = "default",
   ecosystem = "",
   initialCache,
+  allowNetworkTableExpansion = false,
+  defaultNetworkTableExpanded = false,
 }: {
   initialNetwork: string
   dataFeedType: DataFeedType
   ecosystem?: string
   initialCache?: Record<string, ChainMetadata>
+  allowNetworkTableExpansion?: boolean
+  defaultNetworkTableExpanded?: boolean
 }) => {
   const chains = ecosystem === "deprecating" ? ALL_CHAINS : CHAINS
   const isStreams =
@@ -610,9 +614,21 @@ export const FeedList = ({
 
     return (
       <>
-        <SectionWrapper title="Streams Verifier Network Addresses" depth={2}>
-          <StreamsNetworkAddressesTable />
-        </SectionWrapper>
+        {allowNetworkTableExpansion ? (
+          <div style={{ marginBottom: "var(--space-2x)" }}>
+            <StreamsNetworkAddressesTable 
+              allowExpansion={allowNetworkTableExpansion}
+              defaultExpanded={defaultNetworkTableExpanded}
+            />
+          </div>
+        ) : (
+          <SectionWrapper title="Streams Verifier Network Addresses" depth={2}>
+            <StreamsNetworkAddressesTable 
+              allowExpansion={allowNetworkTableExpansion}
+              defaultExpanded={defaultNetworkTableExpanded}
+            />
+          </SectionWrapper>
+        )}
 
         <SectionWrapper
           title={streamsMainnetSectionTitle}
