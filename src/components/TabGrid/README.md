@@ -76,11 +76,12 @@ Each grid item needs three pieces of information:
 
 ### `GridItem`
 
-| Property      | Type     | Required | Description                                  |
-| ------------- | -------- | -------- | -------------------------------------------- |
-| `title`       | `string` | Yes      | The item's heading                           |
-| `description` | `string` | Yes      | A brief explanation of what users will learn |
-| `link`        | `string` | Yes      | The URL path to the item page                |
+| Property      | Type     | Required | Description                                       |
+| ------------- | -------- | -------- | ------------------------------------------------- |
+| `title`       | `string` | Yes      | The item's heading                                |
+| `description` | `string` | Yes      | A brief explanation of what users will learn      |
+| `link`        | `string` | Yes      | The URL path to the item page                     |
+| `badge`       | `string` | No       | Optional badge label (e.g., "CCIP", "DATA FEEDS") |
 
 ## Components
 

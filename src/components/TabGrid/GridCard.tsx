@@ -5,9 +5,10 @@ export interface GridItem {
   title: string
   description: string
   link: string
+  badge?: string
 }
 
-export const GridCard = ({ title, description, link }: GridItem) => {
+export const GridCard = ({ title, description, link, badge }: GridItem) => {
   return (
     <a href={link} className={styles.card}>
       <div>
@@ -18,6 +19,7 @@ export const GridCard = ({ title, description, link }: GridItem) => {
       </div>
 
       <div className={styles.cardFooter}>
+        {badge && <span className={styles.badge}>{badge}</span>}
         <img src="/assets/icons/upper-right-arrow.svg" alt="arrow" />
       </div>
     </a>

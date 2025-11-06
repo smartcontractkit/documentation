@@ -1,5 +1,6 @@
 ---
 import { Tag, Typography } from "@chainlink/blocks"
+import { JourneyTabGrid } from "./JourneyTabGrid"
 
 const columns = [
   {
@@ -8,25 +9,25 @@ const columns = [
       {
         title: "Explore Cross-Chain Interoperability with CCIP",
         description: "Learn cross-chain concepts, workflows, and real-world use cases.",
-        badge: "CCIP",
+        badge: "ccip",
         href: "/",
       },
       {
         title: "Understand How Data Feeds Power dApps",
         description: "See how oracle data feeds deliver price feeds and reference data.",
-        badge: "DATA FEEDS",
+        badge: "data feeds",
         href: "/",
       },
       {
         title: "Learn How Data Streams Deliver Real-Time Data",
         description: "Understand how low-latency streams support time-sensitive applications.",
-        badge: "CCIP",
+        badge: "data streams",
         href: "/",
       },
       {
         title: "Discover Off-Chain Compute with Functions",
         description: "Learn how Functions connect smart contracts to APIs and custom logic.",
-        badge: "DATA FEEDS",
+        badge: "functions",
         href: "/",
       },
     ],
@@ -37,25 +38,25 @@ const columns = [
       {
         title: "Build Cross-Chain Apps with CCIP Tutorials",
         description: "Follow step-by-step guides with language switching (EVM, Rust, Move, etc.).",
-        badge: "CCIP",
+        badge: "ccip",
         href: "/",
       },
       {
         title: "Integrate Data Feeds into Smart Contracts",
         description: "Plug feeds into your apps with examples and addresses.",
-        badge: "DATA FEEDS",
+        badge: "data feeds",
         href: "/",
       },
       {
         title: "Implement Real-Time Use Cases with Data Streams",
         description: "Use low-latency data in trading, gaming, and other live applications.",
-        badge: "CCIP",
+        badge: "data streams",
         href: "/",
       },
       {
         title: "Connect Contracts to APIs with Functions",
         description: "Add external data and custom logic to your dApps.",
-        badge: "DATA FEEDS",
+        badge: "functions",
         href: "/",
       },
     ],
@@ -66,70 +67,94 @@ const columns = [
       {
         title: "Monitor CCIP Transactions in Real Time",
         description: "Track the progress and status of cross-chain transactions.",
-        badge: "CCIP",
+        badge: "ccip",
         href: "/",
       },
       {
         title: "Stay Up to Date with Data Feeds",
         description: "Rely on changelogs and schema updates for accuracy.",
-        badge: "DATA FEEDS",
+        badge: "data feeds",
         href: "/",
       },
       {
         title: "Deliver Reliable Low-Latency Data with Streams",
         description: "Operate Data Streams at scale for critical, time-sensitive use cases.",
-        badge: "CCIP",
+        badge: "data streams",
         href: "/",
       },
       {
         title: "Scale and Optimize Functions",
         description: "Debug, manage workloads, and grow your applications.",
-        badge: "DATA FEEDS",
+        badge: "functions",
         href: "/",
       },
     ],
   },
 ]
+
+// Transform columns to tabs format for JourneyTabGrid
+const tabs = columns.map((column) => ({
+  name: column.title,
+  items: column.items.map((item) => ({
+    title: item.title,
+    description: item.description,
+    link: item.href,
+    badge: item.badge,
+  })),
+}))
 ---
 
 <section>
-  <Typography variant="h4" className="section-title">Start your Chainlink journey</Typography>
-  <div class="journey-cards">
-    {
-      columns.map((column) => (
-        <div class="journey-column">
-          <header class="column-header">
-            <Typography variant="h5" className="column-title">
-              {column.title}
-            </Typography>
-          </header>
-          {column.items.map((item) => (
-            <a href={item.href} class="journey-card">
-              <div class="card-content">
-                <Typography variant="body-semi">{item.title}</Typography>
-                <Typography variant="body-s" color="muted">
-                  {item.description}
-                </Typography>
-              </div>
+  <section class="desktop">
+    <Typography variant="h4" className="section-title">Start your Chainlink journey</Typography>
+    <div class="journey-cards">
+      {
+        columns.map((column) => (
+          <div class="journey-column">
+            <header class="column-header">
+              <Typography variant="h5" className="column-title">
+                {column.title}
+              </Typography>
+            </header>
+            {column.items.map((item) => (
+              <a href={item.href} class="journey-card">
+                <div class="card-content">
+                  <Typography variant="body-semi">{item.title}</Typography>
+                  <Typography variant="body-s" color="muted">
+                    {item.description}
+                  </Typography>
+                </div>
 
-              <footer class="journey-footer">
-                <Tag size="sm" className="footer-tag">
-                  <Typography variant="code-s">{item.badge}</Typography>
-                </Tag>
-                <img src="/assets/icons/upper-right-arrow.svg" class="footer-icon" />
-              </footer>
-            </a>
-          ))}
-        </div>
-      ))
-    }
-  </div>
+                <footer class="journey-footer">
+                  <Tag size="sm" className="footer-tag">
+                    <Typography variant="code-s">{item.badge}</Typography>
+                  </Tag>
+                  <img src="/assets/icons/upper-right-arrow.svg" class="footer-icon" />
+                </footer>
+              </a>
+            ))}
+          </div>
+        ))
+      }
+    </div>
+  </section>
+  <section class="mobile">
+    <JourneyTabGrid header="Start your Chainlink journey" tabs={tabs} client:only="react" />
+  </section>
 </section>
 
 <style>
+  .desktop {
+    display: none;
+  }
+
+  .mobile {
+    display: block;
+  }
+
   .journey-cards {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .journey-column {
@@ -141,6 +166,10 @@ const columns = [
   .journey-card {
     gap: var(--space-6x);
     padding: var(--space-6x);
+  }
+
+  .footer-tag {
+    text-transform: uppercase;
   }
 
   .journey-card:hover {
@@ -201,9 +230,13 @@ const columns = [
     border-left: 3px solid var(--brand);
   }
 
-  @media (min-width: 50em) {
-    .journey-cards {
-      grid-template-columns: repeat(3, 1fr);
+  @media (min-width: 769px) {
+    .desktop {
+      display: block;
+    }
+
+    .mobile {
+      display: none;
     }
 
     .column-title {
