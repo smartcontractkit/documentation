@@ -86,11 +86,13 @@ Before you begin, you should have:
 
 To complete this tutorial, you'll need:
 
-- **Rust and Cargo**: Install the latest version using [rustup](https://rustup.rs/). Run <CopyText text="rustc --version" code/> to verify your installation.
+- **Rust and Cargo**: Install Rust 1.79.0 or later using [rustup](https://rustup.rs/). Run <CopyText text="rustc --version" code/> to verify your installation.
 
-- **Solana CLI tools**: Install the latest version following the [official guide](https://docs.solana.com/cli/install-solana-cli-tools). Run <CopyText text="solana --version" code/> to verify your installation.
+- **Solana CLI tools**: Install Solana CLI 2.0 or later following the [official guide](https://docs.solana.com/cli/install-solana-cli-tools). Run <CopyText text="solana --version" code/> to verify your installation.
 
-- **Anchor Framework**: Follow the [official installation guide](https://www.anchor-lang.com/docs/installation). Run <CopyText text="anchor --version" code /> to verify your installation.
+- **Anchor Framework**: Install Anchor 0.31.0 or later following the [official installation guide](https://www.anchor-lang.com/docs/installation). Run <CopyText text="anchor --version" code /> to verify your installation.
+
+  **Important**: Using mismatched Anchor versions between your program and client can cause type incompatibilities and runtime errors.
 
 - **Node.js and npm**: [Install Node.js 20 or later](https://nodejs.org/). Verify your installation with <CopyText text="node --version" code/>.
 
@@ -150,11 +152,9 @@ In your program's manifest file (`programs/example_verify/Cargo.toml`), add the 
 
 ```toml
 [dependencies]
-chainlink_solana_data_streams = { git = "https://github.com/smartcontractkit/chainlink-solana", branch = "develop", subdir = "contracts/crates/chainlink-solana-data-streams" }
-data-streams-report = { git = "https://github.com/smartcontractkit/data-streams-sdk.git", subdir = "rust/crates/report" }
-
-# Additional required dependencies
-anchor-lang = "0.29.0"
+anchor-lang = "0.31.0"
+chainlink_solana_data_streams = { git = "https://github.com/smartcontractkit/chainlink-data-streams-solana" }
+chainlink-data-streams-report = "1.0.3"
 ```
 
 #### 4. Write the program
@@ -170,7 +170,7 @@ use anchor_lang::solana_program::{
     instruction::Instruction,
 };
 // NOTE: Adjust for your report version
-use data_streams_report::report::v3::ReportDataV3;
+use chainlink_data_streams_report::report::v3::ReportDataV3;
 use chainlink_solana_data_streams::VerifierInstructions;
 
 
@@ -282,27 +282,13 @@ Note how the `VerifierInstructions::verify` helper method automatically handles 
 
 #### 5. Deploy your program
 
-1. Run the following command to build your program:
+1. Build your program:
 
    ```bash
    anchor build
    ```
 
-   **Note**: If you run into this error, set the `version` field at the top of your `cargo.lock` file to `3`.
-
-   ```bash
-   warning: virtual workspace defaulting to `resolver = "1"` despite one or more workspace members being on edition 2021 which implies `resolver = "2"`
-   note: to keep the current resolver, specify `workspace.resolver = "1"` in the workspace root's manifest
-   note: to use the edition 2021 resolver, specify `workspace.resolver = "2"` in the workspace root's manifest
-   note: for more details see https://doc.rust-lang.org/cargo/reference/resolver.html#resolver-versions
-   warning: .../example_verify/programs/example_verify/Cargo.toml: unused manifest key: dependencies.data-streams-report.subdir
-   error: failed to parse lock file at: .../example_verify/Cargo.lock
-
-   Caused by:
-   lock file version 4 requires `-Znext-lockfile-bump`
-   ```
-
-1. Deploy your program to a Solana cluster (devnet in this example) using:
+1. Deploy your program to devnet:
 
    ```bash
    anchor deploy
@@ -348,11 +334,7 @@ In this section, you'll write a client script to interact with your deployed pro
      anchor.setProvider(provider)
 
      // Initialize your program using the IDL and your program ID
-     const program = new Program<ExampleVerify>(
-       require("../target/idl/example_verify.json"),
-       "<YOUR_PROGRAM_ID>",
-       provider
-     )
+     const program = new Program<ExampleVerify>(require("../target/idl/example_verify.json"), provider)
 
      // Convert the hex string to a Uint8Array
      // This is an example report payload for a crypto stream
@@ -462,7 +444,14 @@ In this section, you'll write a client script to interact with your deployed pro
    yarn add snappy
    ```
 
-   `snappy` is a compression library that is used to compress the report data.
+   Also ensure you have the required TypeScript dependencies:
+
+   ```bash
+   yarn add @solana/web3.js
+   yarn add -D ts-node typescript @types/node
+   ```
+
+   **Note**: `snappy` is a compression library used to compress the report data before sending it to the verifier.
 
 1. Execute the test script to interact with your program:
 
@@ -502,7 +491,7 @@ In this section, you'll write a client script to interact with your deployed pro
 
 #### Program Derived Addresses (PDAs)
 
-The verification process relies on two important PDAs that are handled automatically by the [Chainlink Data Streams Solana SDK](https://github.com/smartcontractkit/chainlink-solana/tree/develop/contracts/crates/chainlink-solana-data-streams):
+The verification process relies on two important PDAs that are handled automatically by the [Chainlink Data Streams Solana SDK](https://github.com/smartcontractkit/chainlink-data-streams-solana):
 
 - **Verifier config account PDA**:
   - Derived using the verifier program ID as a seed
@@ -541,13 +530,13 @@ When working with different versions of [Data Stream reports](/data-streams/refe
    - For v3 schema (as used in this example):
 
      ```rust
-     use data_streams_report::report::v3::ReportDataV3;
+     use chainlink_data_streams_report::report::v3::ReportDataV3;
      ```
 
    - For v8 schema:
 
      ```rust
-     use data_streams_report::report::v8::ReportDataV8;
+     use chainlink_data_streams_report::report::v8::ReportDataV8;
      ```
 
 1. **Update the decode function to use the correct schema version.** Examples:
