@@ -53,15 +53,6 @@ export function ProductNavigation({ path }: Props) {
   const label = subProductTrigger?.label || "Resources"
   const icon = subProductTrigger?.label ? subProductTrigger.icon : defaultLogo.src
 
-  // Helper function to recursively map pages and preserve all metadata
-  const mapPageWithChildren = (page: any): any => ({
-    label: page.label,
-    href: page.href,
-    sdkLang: page.sdkLang,
-    highlightAsCurrent: page.highlightAsCurrent,
-    children: page.children ? page.children.map(mapPageWithChildren) : [],
-  })
-
   useEffect(() => {
     const foundSubProduct = productsNav.categories.find((category) =>
       category.items.some((item) => item.subProducts && isMatchedPath(path, item.href))
@@ -74,7 +65,7 @@ export function ProductNavigation({ path }: Props) {
         const items = subProduct.subProducts.map((subProductItem) => ({
           label: subProductItem.label,
           href: "#",
-          pages: subProductItem.items.map(mapPageWithChildren),
+          pages: subProductItem.items,
         }))
 
         const safeSubProducts: SubProducts = {

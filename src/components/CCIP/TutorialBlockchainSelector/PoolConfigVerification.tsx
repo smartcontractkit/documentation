@@ -6,7 +6,7 @@ import styles from "./PoolConfigVerification.module.css"
 import { TutorialCard, TutorialStep } from "../TutorialSetup/index.ts"
 import { NetworkCheck } from "../TutorialSetup/NetworkCheck.tsx"
 import { SolidityParam } from "../TutorialSetup/SolidityParam.tsx"
-import { Callout } from "../TutorialSetup/Callout.tsx"
+import { Callout } from "@components/Callout/Callout.tsx"
 import { StepCheckbox } from "../TutorialProgress/StepCheckbox.tsx"
 
 type ChainType = "source" | "destination"

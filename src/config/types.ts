@@ -74,7 +74,7 @@ export type SupportedTechnology =
   | "XDC"
   | "BITTENSOR"
 
-export type ChainType = "evm" | "solana" | "aptos" | "sui"
+export type ChainType = "evm" | "solana" | "aptos"
 
 export type ChainFamily = "evm" | "mvm" | "svm"
 
