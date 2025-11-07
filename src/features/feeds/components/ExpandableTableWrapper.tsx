@@ -2,9 +2,9 @@
 
 /**
  * ExpandableTableWrapper - Internal component for making tables collapsible
- * 
+ *
  * DEFAULT BEHAVIOR: Content is always visible with no header (allowExpansion=false)
- * 
+ *
  * INTERNAL USAGE:
  * <ExpandableTableWrapper
  *   allowExpansion={true}
