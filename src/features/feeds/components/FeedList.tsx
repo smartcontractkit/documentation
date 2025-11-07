@@ -184,14 +184,15 @@ export const FeedList = ({
   const [showOnlyDEXFeeds, setShowOnlyDEXFeeds] = useState(false)
   const [showOnlyDEXFeedsTestnet, setShowOnlyDEXFeedsTestnet] = useState(false)
   const paginate = (pageNumber) => setCurrentPage(String(pageNumber))
-  const addrPerPage = 8
+  // Disable pagination for deprecating feeds by using a very high page size
+  const addrPerPage = ecosystem === "deprecating" ? 10000 : 8
   const lastAddr = Number(currentPage) * addrPerPage
   const firstAddr = lastAddr - addrPerPage
 
   // Pagination for testnet table
   const [testnetCurrentPage, setTestnetCurrentPage] = useQueryString("testnetPage", "1")
   const testnetPaginate = (pageNumber) => setTestnetCurrentPage(String(pageNumber))
-  const testnetAddrPerPage = 8
+  const testnetAddrPerPage = ecosystem === "deprecating" ? 10000 : 8
   const testnetLastAddr = Number(testnetCurrentPage) * testnetAddrPerPage
   const testnetFirstAddr = testnetLastAddr - testnetAddrPerPage
 
