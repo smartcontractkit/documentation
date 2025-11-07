@@ -12,11 +12,14 @@ import generalLogo from "../../assets/product-logos/general-logo.svg"
 import nodesLogo from "../../assets/product-logos/node-logo.svg"
 import quickstartLogo from "../../assets/product-logos/quickstart-logo.svg"
 import { SIDEBAR as sidebar } from "../../config/sidebar.ts"
+import type { ChainType } from "../../config/types.js"
+import { propagateChainTypes } from "../../utils/chainType.js"
 
 interface Page {
   label: string
   href: string
   sdkLang?: string
+  chainTypes?: ChainType[]
   children?: Page[]
 }
 
@@ -24,6 +27,7 @@ interface SidebarContent {
   title?: string
   url?: string
   highlightAsCurrent?: string[]
+  chainTypes?: ChainType[]
   children?: SidebarContent[]
 }
 
@@ -37,6 +41,7 @@ const mapContents = (contents: SidebarContent[], pageSdkLangMap: Map<string, str
       label,
       href,
       ...(sdkLang && { sdkLang }),
+      ...(page.chainTypes && { chainTypes: page.chainTypes }),
       ...(page.highlightAsCurrent && { highlightAsCurrent: page.highlightAsCurrent }),
     }
 
@@ -49,10 +54,14 @@ const mapContents = (contents: SidebarContent[], pageSdkLangMap: Map<string, str
 }
 
 const getSubProducts = (sectionData, pageSdkLangMap: Map<string, string>) => {
-  const structuredData = sectionData.map((item) => ({
-    label: item.section,
-    items: mapContents(item.contents, pageSdkLangMap),
-  }))
+  const structuredData = sectionData.map((item) => {
+    // Propagate chainTypes from parent to children for consistent filtering
+    const contentsWithPropagatedChainTypes = propagateChainTypes(item.contents)
+    return {
+      label: item.section,
+      items: mapContents(contentsWithPropagatedChainTypes, pageSdkLangMap),
+    }
+  })
   return structuredData
 }
 

@@ -399,7 +399,7 @@ Last Updated: 2025-05-19
 
 | Item                           | Description                                                                                         | Limit         |
 | :----------------------------- | :-------------------------------------------------------------------------------------------------- | :------------ |
-| Maximum message data length    | data payload sent within the [CCIP message](/ccip/api-reference/svm/v0.1.1/messages#svm2anymessage) | 400 bytes     |
+| Maximum message data length    | data payload sent within the [CCIP message](/ccip/api-reference/svm/v1.6.0/messages#svm2anymessage) | 400 bytes     |
 | Message execution gas limit    | User specified gas limit. Mandatory to be set                                                       | 3,000,000 gas |
 | Maximum number of tokens       | Maximum number of distinct tokens a user can transfer in a single transaction.                      | 1             |
 | Smart Execution time window    | Maximum duration for the execution of a CCIP message                                                | 8 hours       |
@@ -1518,7 +1518,7 @@ This section provides more detail on the Onchain components.
 **Sender Responsibilities**:
 
 - Prepare a structured CCIP Message.
-- Include all required accounts in the transaction context, due to the SVM account model. To learn more, read the `ccip_send` [API reference](/ccip/api-reference/svm/v0.1.1/router).
+- Include all required accounts in the transaction context, due to the SVM account model. To learn more, read the `ccip_send` [API reference](/ccip/api-reference/svm/v1.6.0/router).
 - Retrieve a fee estimate from the Router.
 - Call the Router to send the message, as described in the Message Lifecycle section.
 - Authorization Mechanisms:
@@ -1533,12 +1533,12 @@ This section provides more detail on the Onchain components.
 
 **Receiver Considerations**:
 
-- **Data Processing**: If the CCIP Message contains a bytes payload or a programmable token transfer, the receiver must be a program implementing the `ccip_receive` function with a specific discriminator. To learn more, read the `ccip_receive` [API reference](/ccip/api-reference/svm/v0.1.1/messages).
+- **Data Processing**: If the CCIP Message contains a bytes payload or a programmable token transfer, the receiver must be a program implementing the `ccip_receive` function with a specific discriminator. To learn more, read the `ccip_receive` [API reference](/ccip/api-reference/svm/v1.6.0/messages).
 - **Security Validation**: The receiver program should validate that the caller is an authorized OffRamp by checking the `ALLOWED_OFFRAMP` PDA from the Router program.
 
 **Additional Resources**:
 
-- CCIP provides program examples for a Sender/Receiver in the [Programs folder](https://github.com/smartcontractkit/chainlink-ccip/tree/v0.1.1-solana/chains/solana/contracts/programs).
+- CCIP provides program examples for a Sender/Receiver in the [Programs folder](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs).
 
 ## Router
 
@@ -1668,7 +1668,7 @@ The FeeQuoter is a central component in Chainlink CCIP that maintains token and 
 
 - Token Pools are deployed by token developers and exist independently of the core CCIP programs.
 - Token Pools are programs that interact with SPL token programs.
-- Token pools follow standard models (Lock/Release and Burn/Mint), with audited code available in the [CCIP repository](https://github.com/smartcontractkit/chainlink-ccip/tree/v0.1.1-solana/chains/solana/contracts/programs).
+- Token pools follow standard models (Lock/Release and Burn/Mint), with audited code available in the [CCIP repository](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs).
 - For tokens requiring bespoke logic before burn/mint/lock/release, custom pools can be built on top of the base pools. More details are available in the CCT documentation.
 
 ## Risk Management Network
@@ -3040,13 +3040,13 @@ The CCIP Router program is central to cross-chain token management. It has two f
 1. **Token Administration**
    - **TokenAdminRegistry (one [PDA](https://solana.com/docs/core/pda) per mint):** Stores the designated CCIP [token administrator](/ccip/concepts/cross-chain-token/overview#token-administrator) public key for a specific token mint (distinct from the SPL token's own mint authority) and references the token's pool [address lookup table](https://docs.solana.com/developing/lookup-tables) (ALT). The PDA is derived using seeds `[seed::TOKEN_ADMIN_REGISTRY, mint.key().as_ref()]`. This registry is created during token registration (see [Token section](#token)) and governs all subsequent CCIP operations for that token.
 
-   - **Token Pool Address Lookup Table:** A Solana [address lookup table](https://docs.solana.com/developing/lookup-tables) that precisely defines the set of account addresses (including pool configuration [PDAs](https://solana.com/docs/core/pda), pool signer PDAs, and other required accounts) that are authorized for cross-chain operations with this token. For the complete list of required accounts and their exact order, see the [`set_pool` ALT requirements](/ccip/api-reference/svm/v0.1.1/router#address-lookup-table-requirements).
+   - **Token Pool Address Lookup Table:** A Solana [address lookup table](https://docs.solana.com/developing/lookup-tables) that precisely defines the set of account addresses (including pool configuration [PDAs](https://solana.com/docs/core/pda), pool signer PDAs, and other required accounts) that are authorized for cross-chain operations with this token. For the complete list of required accounts and their exact order, see the [`set_pool` ALT requirements](/ccip/api-reference/svm/v1.6.0/router#address-lookup-table-requirements).
 
    - **Administrator Methods:** The token administrator can register or update cross-chain support for their mint through a sequence of instructions:
 
-     1. [`owner_propose_administrator`](/ccip/api-reference/svm/v0.1.1/router#owner_propose_administrator): Initiated by the mint authority to designate a token administrator.
-     2. [`accept_admin_role_token_admin_registry`](/ccip/api-reference/svm/v0.1.1/router#accept_admin_role_token_admin_registry): Confirmation by the proposed administrator to accept the role.
-     3. [`set_pool`](/ccip/api-reference/svm/v0.1.1/router#set_pool): Links the token to a specific token pool configuration via an address lookup table, including writable account indexes for proper permission management.
+     1. [`owner_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_propose_administrator): Initiated by the mint authority to designate a token administrator.
+     2. [`accept_admin_role_token_admin_registry`](/ccip/api-reference/svm/v1.6.0/router#accept_admin_role_token_admin_registry): Confirmation by the proposed administrator to accept the role.
+     3. [`set_pool`](/ccip/api-reference/svm/v1.6.0/router#set_pool): Links the token to a specific token pool configuration via an address lookup table, including writable account indexes for proper permission management.
 
      For detailed step-by-step procedures, sequence diagrams, and complete registration workflows, see [Registration & Administration](/ccip/concepts/cross-chain-token/svm/registration-administration).
 
@@ -3058,7 +3058,7 @@ The CCIP Router program is central to cross-chain token management. It has two f
      - **Access Control:** Only the registry administrator can modify pool assignments, maintaining strict governance
 
 2. **Lock or Burn Flow (when sending tokens cross-chain)**
-   - [`ccip_send`](/ccip/api-reference/svm/v0.1.1/router#ccip_send) entrypoint: When a CCIP sender initiates a cross-chain token transfer, they invoke the [`ccip_send`](/ccip/api-reference/svm/v0.1.1/router#ccip_send) instruction on the Router, providing the token mint, amount, destination chain, receiver address, and other transaction parameters.
+   - [`ccip_send`](/ccip/api-reference/svm/v1.6.0/router#ccip_send) entrypoint: When a CCIP sender initiates a cross-chain token transfer, they invoke the [`ccip_send`](/ccip/api-reference/svm/v1.6.0/router#ccip_send) instruction on the Router, providing the token mint, amount, destination chain, receiver address, and other transaction parameters.
    - **Multi-step Validation:** The Router performs comprehensive validation:
      - Verifies the destination chain is not cursed (via RMN Remote CPI)
      - Checks sender authorization against allow-list if enabled
@@ -3066,7 +3066,7 @@ The CCIP Router program is central to cross-chain token management. It has two f
      - Ensures proper account relationships and permissions
    - **Registry Validation:** The sender must provide the token pool account addresses as part of the transaction. The Router validates these accounts by checking them against the addresses stored in the address lookup table (ALT) referenced by the mint's TokenAdminRegistry PDA, including proper writable permissions.
    - **Fee Processing:** Before token interaction, the Router handles fee collection either in native SOL (with wrapping to WSOL) or supported fee SPL tokens through the fee quoter program.
-   - **[CPI](https://docs.solana.com/developing/programming-model/calling-between-programs) to [`lock_or_burn_tokens`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#lock_or_burn_tokens):** After validation, the Router executes a CPI call to the token pool's [`lock_or_burn_tokens`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#lock_or_burn_tokens) instruction, passing the appropriate context including nonce information and destination chain details for the token pool to either lock tokens in its [Associated Token Account](https://spl.solana.com/associated-token-account) (ATA) or burn them from circulation, depending on the pool implementation (see [Token Pool section](#token-pool) for operation details).
+   - **[CPI](https://docs.solana.com/developing/programming-model/calling-between-programs) to [`lock_or_burn_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#lock_or_burn_tokens):** After validation, the Router executes a CPI call to the token pool's [`lock_or_burn_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#lock_or_burn_tokens) instruction, passing the appropriate context including nonce information and destination chain details for the token pool to either lock tokens in its [Associated Token Account](https://spl.solana.com/associated-token-account) (ATA) or burn them from circulation, depending on the pool implementation (see [Token Pool section](#token-pool) for operation details).
 
 ## OffRamp
 
@@ -3086,7 +3086,7 @@ During the execute phase, when processing messages containing token transfers, t
 
    Once authorization is confirmed, the OffRamp executes token operations:
 
-   - **[CPI](https://docs.solana.com/developing/programming-model/calling-between-programs) to [`release_or_mint_tokens`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#release_or_mint_tokens)**: Makes a cross-program invocation to the token pool's [`release_or_mint_tokens`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#release_or_mint_tokens) instruction, passing the validated cross-chain token transfer details.
+   - **[CPI](https://docs.solana.com/developing/programming-model/calling-between-programs) to [`release_or_mint_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#release_or_mint_tokens)**: Makes a cross-program invocation to the token pool's [`release_or_mint_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#release_or_mint_tokens) instruction, passing the validated cross-chain token transfer details.
    - **Authorization Signer**: Uses the `external_token_pools_signer` [PDA](https://solana.com/docs/core/pda) as the CPI signer, derived using seeds `[seed::EXTERNAL_TOKEN_POOLS_SIGNER, pool_program.key().as_ref()]` with the OffRamp as the program ID. Token pools recognize this as an authorized caller from the OffRamp.
    - **Token Balance Verification**: Validates that the recipient's [Associated Token Account](https://spl.solana.com/associated-token-account) receives the correct amount of tokens as specified by the pool's response.
 
@@ -3248,7 +3248,7 @@ Before diving into the technical details, it's important to understand your thre
    - `self_served_allowed: true` (enables user self-service)
    - Default router address for the network
    - Default RMN remote address for security
-2. **Users** can initialize pools for their tokens by calling the [`initialize`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#initialize) instruction, provided they control the token's mint authority
+2. **Users** can initialize pools for their tokens by calling the [`initialize`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#initialize) instruction, provided they control the token's mint authority
 3. New pools automatically inherit the default router and RMN addresses from the Global Config PDA
 
 ### Approach 2: Self-Deployed Standard Pools
@@ -3264,7 +3264,7 @@ Before diving into the technical details, it's important to understand your thre
 
 **Who should use this:** Projects that need control over upgrade timing or have specific governance requirements.
 
-**How it works:** You compile and deploy the Chainlink-provided [BurnMint](https://github.com/smartcontractkit/chainlink-ccip/tree/v0.1.1-solana/chains/solana/contracts/programs/burnmint-token-pool) or [LockRelease](https://github.com/smartcontractkit/chainlink-ccip/tree/v0.1.1-solana/chains/solana/contracts/programs/lockrelease-token-pool) programs to your chosen address, retaining upgrade authority.
+**How it works:** You compile and deploy the Chainlink-provided [BurnMint](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs/burnmint-token-pool) or [LockRelease](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs/lockrelease-token-pool) programs to your chosen address, retaining upgrade authority.
 
 ### Approach 3: Custom Token Pools
 
@@ -3284,7 +3284,7 @@ Before diving into the technical details, it's important to understand your thre
 
 Before implementing token pools, you need to choose the appropriate [token handling mechanism](/ccip/concepts/cross-chain-token/overview#token-handling-mechanisms) for your cross-chain token transfers. This strategic decision determines which combination of token pools you'll deploy on source and destination blockchains.
 
-The table below summarizes the different token handling mechanisms and the [recommended token pools](https://github.com/smartcontractkit/chainlink-ccip/tree/v0.1.1-solana/chains/solana/contracts/programs) to deploy for each scenario, ensuring a seamless token transfer process.
+The table below summarizes the different token handling mechanisms and the [recommended token pools](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs) to deploy for each scenario, ensuring a seamless token transfer process.
 
 | Token Handling Mechanism | Source Blockchain Token Pool Type | Destination Blockchain Token Pool Type | How it Works                                                                                                                                                                                                                                                                                                                      |
 | ------------------------ | --------------------------------- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -3411,7 +3411,7 @@ The mint authority follows this lifecycle for BurnMint pools:
 **Required First: Pool Initialization**
 
 - You must control the token's `mint_authority` to initialize the pool
-- The [`initialize`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#initialize) instruction requires the mint authority as the signer
+- The [`initialize`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#initialize) instruction requires the mint authority as the signer
 - **The pool automatically sets the initializer as the pool owner during initialization**
 - Pool owner must create the [Associated Token Account (ATA)](https://www.solana-program.com/docs/associated-token-account) for the Pool Signer PDA before pool operations can begin
 
@@ -3419,7 +3419,7 @@ The mint authority follows this lifecycle for BurnMint pools:
   **Important**: During initialization, the pool sets the initializer as the pool owner. However, once the token pool is
   initialized in the token pool program AND the token admin registry PDA is created in the router, **the pool owner can
   transfer pool ownership to any address** using
-  [`transfer_ownership`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#transfer_ownership). The new owner will
+  [`transfer_ownership`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#transfer_ownership). The new owner will
   have full control over pool configuration and management, regardless of who originally held the `mint_authority` or
   who currently holds it.
 </Aside>
@@ -3431,7 +3431,7 @@ The mint authority follows this lifecycle for BurnMint pools:
   - Configure or update rate limits for existing chains
   - Manage allowlists and other pool settings
   - Add or remove remote pool addresses
-  - **Transfer pool ownership to any address using [`transfer_ownership`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#transfer_ownership)**
+  - **Transfer pool ownership to any address using [`transfer_ownership`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#transfer_ownership)**
 
 **When Ready: Mint Authority Transfer**
 
@@ -3549,23 +3549,23 @@ Understanding who can call which instructions is critical for secure pool operat
 
 | Instruction Category | Instruction                                                                                                                      | Program Upgrade Authority | Pool Owner | Router Authority |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------- | :-----------------------: | :--------: | :--------------: |
-| **Global Config**    | [`init_global_config`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#init_global_config)                                   |             ✅             |      ❌     |         ❌        |
-|                      | [`update_self_served_allowed`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#update_self_served_allowed)                   |             ✅             |      ❌     |         ❌        |
-|                      | [`update_default_router`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#update_default_router)                             |             ✅             |      ❌     |         ❌        |
-|                      | [`update_default_rmn`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#update_default_rmn)                                   |             ✅             |      ❌     |         ❌        |
-| **Pool Lifecycle**   | [`initialize`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#initialize)                                                   |    ✅ OR Mint Authority    |      ❌     |         ❌        |
-| **Ownership**        | [`transfer_ownership`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#transfer_ownership)                                   |             ❌             |      ✅     |         ❌        |
-|                      | [`accept_ownership`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#accept_ownership)                                       |             ❌             |    ✅\*\*   |         ❌        |
-| **Security**         | [`transfer_mint_authority_to_multisig`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#transfer_mint_authority_to_multisig) |             ✅             |      ❌     |         ❌        |
-|                      | [`configure_allow_list`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#configure_allow_list)                               |             ❌             |      ✅     |         ❌        |
-|                      | [`remove_from_allow_list`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#remove_from_allow_list)                           |             ❌             |      ✅     |         ❌        |
-| **Chain Config**     | [`init_chain_remote_config`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#init_chain_remote_config)                       |             ❌             |      ✅     |         ❌        |
-|                      | [`edit_chain_remote_config`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#edit_chain_remote_config)                       |             ❌             |      ✅     |         ❌        |
-|                      | [`append_remote_pool_addresses`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#append_remote_pool_addresses)               |             ❌             |      ✅     |         ❌        |
-|                      | [`set_chain_rate_limit`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#set_chain_rate_limit)                               |             ❌             |      ✅     |         ❌        |
-|                      | [`delete_chain_config`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#delete_chain_config)                                 |             ❌             |      ✅     |         ❌        |
-| **Cross-Chain**      | [`lock_or_burn_tokens`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#lock_or_burn_tokens)                                 |             ❌             |      ❌     |         ✅        |
-|                      | [`release_or_mint_tokens`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#release_or_mint_tokens)                           |             ❌             |      ❌     |         ✅        |
+| **Global Config**    | [`init_global_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#init_global_config)                                   |             ✅             |      ❌     |         ❌        |
+|                      | [`update_self_served_allowed`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#update_self_served_allowed)                   |             ✅             |      ❌     |         ❌        |
+|                      | [`update_default_router`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#update_default_router)                             |             ✅             |      ❌     |         ❌        |
+|                      | [`update_default_rmn`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#update_default_rmn)                                   |             ✅             |      ❌     |         ❌        |
+| **Pool Lifecycle**   | [`initialize`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#initialize)                                                   |    ✅ OR Mint Authority    |      ❌     |         ❌        |
+| **Ownership**        | [`transfer_ownership`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#transfer_ownership)                                   |             ❌             |      ✅     |         ❌        |
+|                      | [`accept_ownership`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#accept_ownership)                                       |             ❌             |    ✅\*\*   |         ❌        |
+| **Security**         | [`transfer_mint_authority_to_multisig`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#transfer_mint_authority_to_multisig) |             ✅             |      ❌     |         ❌        |
+|                      | [`configure_allow_list`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#configure_allow_list)                               |             ❌             |      ✅     |         ❌        |
+|                      | [`remove_from_allow_list`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#remove_from_allow_list)                           |             ❌             |      ✅     |         ❌        |
+| **Chain Config**     | [`init_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#init_chain_remote_config)                       |             ❌             |      ✅     |         ❌        |
+|                      | [`edit_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#edit_chain_remote_config)                       |             ❌             |      ✅     |         ❌        |
+|                      | [`append_remote_pool_addresses`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#append_remote_pool_addresses)               |             ❌             |      ✅     |         ❌        |
+|                      | [`set_chain_rate_limit`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#set_chain_rate_limit)                               |             ❌             |      ✅     |         ❌        |
+|                      | [`delete_chain_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#delete_chain_config)                                 |             ❌             |      ✅     |         ❌        |
+| **Cross-Chain**      | [`lock_or_burn_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#lock_or_burn_tokens)                                 |             ❌             |      ❌     |         ✅        |
+|                      | [`release_or_mint_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#release_or_mint_tokens)                           |             ❌             |      ❌     |         ✅        |
 
 **Notes:**
 
@@ -3632,7 +3632,7 @@ The LockRelease token pool specializes in lock and release operations, requiring
 <Aside type="note" title="Ownership Flexibility After Initialization">
   **Important**: During initialization, the pool sets the initializer as the pool owner. However, once the token pool is
   initialized, **the pool owner can transfer pool ownership to any address** using
-  [`transfer_ownership`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#transfer_ownership). The new owner will
+  [`transfer_ownership`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#transfer_ownership). The new owner will
   have full control over pool configuration and management, regardless of who originally held the `mint_authority` or
   who currently holds it.
 </Aside>
@@ -3657,26 +3657,26 @@ Understanding who can call which instructions is critical for secure pool operat
 
 | Instruction Category | Instruction                                                                                                           | Program Upgrade Authority | Pool Owner | Router Authority | Rebalancer |
 | -------------------- | --------------------------------------------------------------------------------------------------------------------- | :-----------------------: | :--------: | :--------------: | :--------: |
-| **Global Config**    | [`init_global_config`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#init_global_config)                     |             ✅             |      ❌     |         ❌        |      ❌     |
-|                      | [`update_self_served_allowed`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#update_self_served_allowed)     |             ✅             |      ❌     |         ❌        |      ❌     |
-|                      | [`update_default_router`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#update_default_router)               |             ✅             |      ❌     |         ❌        |      ❌     |
-|                      | [`update_default_rmn`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#update_default_rmn)                     |             ✅             |      ❌     |         ❌        |      ❌     |
-| **Pool Lifecycle**   | [`initialize`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#initialize)                                     |    ✅ OR Mint Authority    |      ❌     |         ❌        |      ❌     |
-| **Ownership**        | [`transfer_ownership`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#transfer_ownership)                     |             ❌             |      ✅     |         ❌        |      ❌     |
-|                      | [`accept_ownership`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#accept_ownership)                         |             ❌             |    ✅\*\*   |         ❌        |      ❌     |
-| **Security**         | [`configure_allow_list`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#configure_allow_list)                 |             ❌             |      ✅     |         ❌        |      ❌     |
-|                      | [`remove_from_allow_list`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#remove_from_allow_list)             |             ❌             |      ✅     |         ❌        |      ❌     |
-| **Liquidity Mgmt**   | [`set_rebalancer`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#set_rebalancer)                             |             ❌             |      ✅     |         ❌        |      ❌     |
-|                      | [`set_can_accept_liquidity`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#set_can_accept_liquidity)         |             ❌             |      ✅     |         ❌        |      ❌     |
-|                      | [`provide_liquidity`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#provide_liquidity)                       |             ❌             |      ❌     |         ❌        |      ✅     |
-|                      | [`withdraw_liquidity`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#withdraw_liquidity)                     |             ❌             |      ❌     |         ❌        |      ✅     |
-| **Chain Config**     | [`init_chain_remote_config`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#init_chain_remote_config)         |             ❌             |      ✅     |         ❌        |      ❌     |
-|                      | [`edit_chain_remote_config`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#edit_chain_remote_config)         |             ❌             |      ✅     |         ❌        |      ❌     |
-|                      | [`append_remote_pool_addresses`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#append_remote_pool_addresses) |             ❌             |      ✅     |         ❌        |      ❌     |
-|                      | [`set_chain_rate_limit`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#set_chain_rate_limit)                 |             ❌             |      ✅     |         ❌        |      ❌     |
-|                      | [`delete_chain_config`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#delete_chain_config)                   |             ❌             |      ✅     |         ❌        |      ❌     |
-| **Cross-Chain**      | [`lock_or_burn_tokens`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#lock_or_burn_tokens)                   |             ❌             |      ❌     |         ✅        |      ❌     |
-|                      | [`release_or_mint_tokens`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#release_or_mint_tokens)             |             ❌             |      ❌     |         ✅        |      ❌     |
+| **Global Config**    | [`init_global_config`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#init_global_config)                     |             ✅             |      ❌     |         ❌        |      ❌     |
+|                      | [`update_self_served_allowed`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#update_self_served_allowed)     |             ✅             |      ❌     |         ❌        |      ❌     |
+|                      | [`update_default_router`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#update_default_router)               |             ✅             |      ❌     |         ❌        |      ❌     |
+|                      | [`update_default_rmn`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#update_default_rmn)                     |             ✅             |      ❌     |         ❌        |      ❌     |
+| **Pool Lifecycle**   | [`initialize`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#initialize)                                     |    ✅ OR Mint Authority    |      ❌     |         ❌        |      ❌     |
+| **Ownership**        | [`transfer_ownership`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#transfer_ownership)                     |             ❌             |      ✅     |         ❌        |      ❌     |
+|                      | [`accept_ownership`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#accept_ownership)                         |             ❌             |    ✅\*\*   |         ❌        |      ❌     |
+| **Security**         | [`configure_allow_list`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#configure_allow_list)                 |             ❌             |      ✅     |         ❌        |      ❌     |
+|                      | [`remove_from_allow_list`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#remove_from_allow_list)             |             ❌             |      ✅     |         ❌        |      ❌     |
+| **Liquidity Mgmt**   | [`set_rebalancer`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#set_rebalancer)                             |             ❌             |      ✅     |         ❌        |      ❌     |
+|                      | [`set_can_accept_liquidity`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#set_can_accept_liquidity)         |             ❌             |      ✅     |         ❌        |      ❌     |
+|                      | [`provide_liquidity`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#provide_liquidity)                       |             ❌             |      ❌     |         ❌        |      ✅     |
+|                      | [`withdraw_liquidity`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#withdraw_liquidity)                     |             ❌             |      ❌     |         ❌        |      ✅     |
+| **Chain Config**     | [`init_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#init_chain_remote_config)         |             ❌             |      ✅     |         ❌        |      ❌     |
+|                      | [`edit_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#edit_chain_remote_config)         |             ❌             |      ✅     |         ❌        |      ❌     |
+|                      | [`append_remote_pool_addresses`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#append_remote_pool_addresses) |             ❌             |      ✅     |         ❌        |      ❌     |
+|                      | [`set_chain_rate_limit`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#set_chain_rate_limit)                 |             ❌             |      ✅     |         ❌        |      ❌     |
+|                      | [`delete_chain_config`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#delete_chain_config)                   |             ❌             |      ✅     |         ❌        |      ❌     |
+| **Cross-Chain**      | [`lock_or_burn_tokens`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#lock_or_burn_tokens)                   |             ❌             |      ❌     |         ✅        |      ❌     |
+|                      | [`release_or_mint_tokens`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#release_or_mint_tokens)             |             ❌             |      ❌     |         ✅        |      ❌     |
 
 **Notes:**
 
@@ -3703,7 +3703,7 @@ Understanding who can call which instructions is critical for secure pool operat
 - You have operational capacity to monitor and maintain pool liquidity levels
 - Your token participates in [Lock and Mint/Burn and Unlock](/ccip/concepts/cross-chain-token/overview#burn-and-unlock) or [Lock and Unlock](/ccip/concepts/cross-chain-token/overview#lock-and-unlock) token handling mechanisms
 
-Both pool types are built on the shared [`base-token-pool`](https://github.com/smartcontractkit/chainlink-ccip/tree/v0.1.1-solana/chains/solana/contracts/programs/base-token-pool) foundation, which provides common functionality including [rate limiting](/ccip/concepts/cross-chain-token/overview#token-pool-rate-limits), allowlists, cross-chain configuration, and event handling.
+Both pool types are built on the shared [`base-token-pool`](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs/base-token-pool) foundation, which provides common functionality including [rate limiting](/ccip/concepts/cross-chain-token/overview#token-pool-rate-limits), allowlists, cross-chain configuration, and event handling.
 
 ## Next Steps: Pool Configuration
 
@@ -3774,18 +3774,18 @@ Your custom token pool **must** use these exact PDA seeds so the CCIP Router can
 When CCIP interacts with your custom token pools, it expects the presence of the following functions with exact signatures:
 
 1. **For source chain operations (locking or burning tokens):**
-   - [`lock_or_burn_tokens(ctx: Context<TokenOnramp>, lock_or_burn: LockOrBurnInV1,) -> Result<LockOrBurnOutV1>`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#lock_or_burn_tokens)
+   - [`lock_or_burn_tokens(ctx: Context<TokenOnramp>, lock_or_burn: LockOrBurnInV1,) -> Result<LockOrBurnOutV1>`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#lock_or_burn_tokens)
    - This function handles token operations when your chain is the source of a cross-chain transfer
-   - Read the [API reference](/ccip/api-reference/svm/v0.1.1/base-token-pool#lockorburnoutv1) to learn more about the parameters
+   - Read the [API reference](/ccip/api-reference/svm/v1.6.0/base-token-pool#lockorburnoutv1) to learn more about the parameters
 
 2. **For destination chain operations (releasing or minting tokens):**
-   - [`release_or_mint_tokens(ctx: Context<TokenOfframp>, release_or_mint: ReleaseOrMintInV1,) -> Result<ReleaseOrMintOutV1>`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#release_or_mint_tokens)
+   - [`release_or_mint_tokens(ctx: Context<TokenOfframp>, release_or_mint: ReleaseOrMintInV1,) -> Result<ReleaseOrMintOutV1>`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#release_or_mint_tokens)
    - This function handles token operations when your chain is the destination of a cross-chain transfer
-   - Read the [API reference](/ccip/api-reference/svm/v0.1.1/base-token-pool#releaseormintinv1) to learn more about the parameters
+   - Read the [API reference](/ccip/api-reference/svm/v1.6.0/base-token-pool#releaseormintinv1) to learn more about the parameters
 
 #### Integration with Base Token Pool
 
-All custom token pools should integrate the [`base-token-pool`](https://github.com/smartcontractkit/chainlink-ccip/tree/v0.1.1-solana/chains/solana/contracts/programs/base-token-pool) library for core functionality:
+All custom token pools should integrate the [`base-token-pool`](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs/base-token-pool) library for core functionality:
 
 - **Ownership management**: Pool ownership and proposed ownership transfers
 - **Rate limiting**: Inbound and outbound rate limit controls per destination chain
@@ -3800,9 +3800,9 @@ All custom token pools **must** implement proper decimal conversion to handle to
 
 **Required Implementation:**
 
-All standard token pools (BurnMint, LockRelease) automatically call [`to_svm_token_amount`](/ccip/api-reference/svm/v0.1.1/base-token-pool#to_svm_token_amount) during the [`release_or_mint_tokens`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#release_or_mint_tokens) flow. If you build a custom token pool, you **must** use [`to_svm_token_amount`](/ccip/api-reference/svm/v0.1.1/base-token-pool#to_svm_token_amount) from the base token pool library.
+All standard token pools (BurnMint, LockRelease) automatically call [`to_svm_token_amount`](/ccip/api-reference/svm/v1.6.0/base-token-pool#to_svm_token_amount) during the [`release_or_mint_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#release_or_mint_tokens) flow. If you build a custom token pool, you **must** use [`to_svm_token_amount`](/ccip/api-reference/svm/v1.6.0/base-token-pool#to_svm_token_amount) from the base token pool library.
 
-**How [`to_svm_token_amount`](/ccip/api-reference/svm/v0.1.1/base-token-pool#to_svm_token_amount) Works:**
+**How [`to_svm_token_amount`](/ccip/api-reference/svm/v1.6.0/base-token-pool#to_svm_token_amount) Works:**
 
 1. Reads the incoming amount from the source chain
 2. Converts it from the source token decimals to the local token decimals
@@ -3821,9 +3821,9 @@ All standard token pools (BurnMint, LockRelease) automatically call [`to_svm_tok
 
 **Implementation Approach**:
 
-- **Source Blockchain**: Instead of burning or locking a specific amount of tokens, track "underlying shares" that represent proportional ownership. In [`lock_or_burn_tokens`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#lock_or_burn_tokens), convert the user's tokens into an internal share count and store that in [`LockOrBurnOutV1.dest_pool_data`](/ccip/api-reference/svm/v0.1.1/base-token-pool#lockorburnoutv1) for the destination token pool.
+- **Source Blockchain**: Instead of burning or locking a specific amount of tokens, track "underlying shares" that represent proportional ownership. In [`lock_or_burn_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#lock_or_burn_tokens), convert the user's tokens into an internal share count and store that in [`LockOrBurnOutV1.dest_pool_data`](/ccip/api-reference/svm/v1.6.0/base-token-pool#lockorburnoutv1) for the destination token pool.
 
-- **Destination Blockchain**: In [`release_or_mint_tokens`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#release_or_mint_tokens), parse the share count from [`ReleaseOrMintInV1.source_pool_data`](/ccip/api-reference/svm/v0.1.1/base-token-pool#releaseormintinv1) and convert those shares back into the current token amount based on the latest rebase. If your token supply has been rebased upward/downward since the transfer initiated, recalculate the final amount before minting or transferring to the user's ATA.
+- **Destination Blockchain**: In [`release_or_mint_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#release_or_mint_tokens), parse the share count from [`ReleaseOrMintInV1.source_pool_data`](/ccip/api-reference/svm/v1.6.0/base-token-pool#releaseormintinv1) and convert those shares back into the current token amount based on the latest rebase. If your token supply has been rebased upward/downward since the transfer initiated, recalculate the final amount before minting or transferring to the user's ATA.
 
 #### Example 2: Fee-on-Transfer Token Pool
 
@@ -3831,17 +3831,17 @@ All standard token pools (BurnMint, LockRelease) automatically call [`to_svm_tok
 
 **Implementation Approach**:
 
-- **Source Blockchain**: In [`lock_or_burn_tokens`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#lock_or_burn_tokens), calculate the net amount after fees and ensure the correct amount is locked/burned. Store the original intended amount in `dest_pool_data`.
+- **Source Blockchain**: In [`lock_or_burn_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#lock_or_burn_tokens), calculate the net amount after fees and ensure the correct amount is locked/burned. Store the original intended amount in `dest_pool_data`.
 
-- **Destination Blockchain**: In [`release_or_mint_tokens`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#release_or_mint_tokens), use the original intended amount from `source_pool_data` to mint/release the correct amount, accounting for any destination-side fees.
+- **Destination Blockchain**: In [`release_or_mint_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#release_or_mint_tokens), use the original intended amount from `source_pool_data` to mint/release the correct amount, accounting for any destination-side fees.
 
 ### Development Resources
 
 **Implementation References:**
 
-- [BurnMint Token Pool](https://github.com/smartcontractkit/chainlink-ccip/tree/v0.1.1-solana/chains/solana/contracts/programs/burnmint-token-pool) - Standard burn/mint implementation
-- [LockRelease Token Pool](https://github.com/smartcontractkit/chainlink-ccip/tree/v0.1.1-solana/chains/solana/contracts/programs/lockrelease-token-pool) - Standard lock/release implementation
-- [Base Token Pool Library](https://github.com/smartcontractkit/chainlink-ccip/tree/v0.1.1-solana/chains/solana/contracts/programs/base-token-pool) - Shared functionality foundation
+- [BurnMint Token Pool](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs/burnmint-token-pool) - Standard burn/mint implementation
+- [LockRelease Token Pool](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs/lockrelease-token-pool) - Standard lock/release implementation
+- [Base Token Pool Library](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs/base-token-pool) - Shared functionality foundation
 
 **Testing and Validation:**
 
@@ -3894,7 +3894,7 @@ The following diagram visualizes the complete decision process based on your min
 
 The first critical decision point is understanding your mint authority control, as this determines your available options throughout the integration process.
 
-**Why mint authority control matters for token registration:** The Router's [`owner_propose_administrator`](/ccip/api-reference/svm/v0.1.1/router#owner_propose_administrator) instruction can only be called by the actual mint authority holder. The Router verifies onchain that the signer account matches the token's `mint_authority` field. If you cannot sign this instruction as the mint authority, the Router cannot verify your authorization onchain, requiring manual governance assistance.
+**Why mint authority control matters for token registration:** The Router's [`owner_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_propose_administrator) instruction can only be called by the actual mint authority holder. The Router verifies onchain that the signer account matches the token's `mint_authority` field. If you cannot sign this instruction as the mint authority, the Router cannot verify your authorization onchain, requiring manual governance assistance.
 
 **You have direct control when:**
 
@@ -3912,8 +3912,8 @@ The first critical decision point is understanding your mint authority control, 
 <Aside type="caution" title="SPL Token Multisig Limitation">
   **Critical:** While SPL token multisigs can mint tokens, they can only execute SPL token program instructions. They
   cannot call other program instructions required for CCIP registration
-  ([`owner_propose_administrator`](/ccip/api-reference/svm/v0.1.1/router#owner_propose_administrator)) or pool
-  initialization ([`initialize`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#initialize)). If your mint
+  ([`owner_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_propose_administrator)) or pool
+  initialization ([`initialize`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#initialize)). If your mint
   authority is an SPL token multisig, you will need Chainlink assistance for both registration and pool initialization.
 </Aside>
 
@@ -3927,7 +3927,7 @@ Based on your mint authority control, follow the appropriate integration path:
 
 **Registration Process:**
 
-- **Self-service registration**: Use [`owner_propose_administrator`](/ccip/api-reference/svm/v0.1.1/router#owner_propose_administrator) and [`accept_admin_role_token_admin_registry`](/ccip/api-reference/svm/v0.1.1/router#accept_admin_role_token_admin_registry) instructions (propose + accept)
+- **Self-service registration**: Use [`owner_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_propose_administrator) and [`accept_admin_role_token_admin_registry`](/ccip/api-reference/svm/v1.6.0/router#accept_admin_role_token_admin_registry) instructions (propose + accept)
 - **Immediate control**: Complete registration without external assistance
 - **Administrator flexibility**: Choose any address as the CCIP token administrator
 
@@ -3935,7 +3935,7 @@ Based on your mint authority control, follow the appropriate integration path:
 
 1. **[Self-Serve Mode](/ccip/concepts/cross-chain-token/svm/token-pools#approach-1-self-serve-mode-recommended) (Recommended)**
    - Use Chainlink-deployed standard pool programs
-   - Initialize your pool using [`initialize`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#initialize) instruction
+   - Initialize your pool using [`initialize`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#initialize) instruction
    - Automatic governance-controlled upgrades
    - Lowest operational overhead
 
@@ -3950,12 +3950,12 @@ Based on your mint authority control, follow the appropriate integration path:
 
 ### Path B: Assisted Registration + Self-Serve Pools (Mint Authority Not Controlled)
 
-**When to use:** You want to use self-serve mode pools, but you cannot call [`owner_propose_administrator`](/ccip/api-reference/svm/v0.1.1/router#owner_propose_administrator) as the mint authority
+**When to use:** You want to use self-serve mode pools, but you cannot call [`owner_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_propose_administrator) as the mint authority
 
 **Registration Process:**
 
 - **Manual registration required**: Submit [registration request](https://chain.link/ccip-contact?v=Tokens:%20Token%20admin%20registration)
-- **CCIP governance assistance**: Router upgrade authority will propose the administrator using [`ccip_admin_propose_administrator`](/ccip/api-reference/svm/v0.1.1/router#ccip_admin_propose_administrator)
+- **CCIP governance assistance**: Router upgrade authority will propose the administrator using [`ccip_admin_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#ccip_admin_propose_administrator)
 - **Choose administrator**: You specify who should be the CCIP token administrator
 
 **Pool Deployment:**
@@ -3966,7 +3966,7 @@ Based on your mint authority control, follow the appropriate integration path:
 
 ### Path C: Full Manual Process (Custom or Self-Deployed)
 
-**When to use:** You cannot call [`owner_propose_administrator`](/ccip/api-reference/svm/v0.1.1/router#owner_propose_administrator) as the mint authority and want self-deployed or custom pools
+**When to use:** You cannot call [`owner_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_propose_administrator) as the mint authority and want self-deployed or custom pools
 
 **Registration Process:**
 
@@ -3980,7 +3980,7 @@ Based on your mint authority control, follow the appropriate integration path:
 
 <Aside type="note" title="Why Manual Registration is Required">
   Paths B and C require manual registration because the Router's
-  [`owner_propose_administrator`](/ccip/api-reference/svm/v0.1.1/router#owner_propose_administrator) instruction can
+  [`owner_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_propose_administrator) instruction can
   only be called by the actual mint authority holder. The Router verifies onchain that the signer account matches the
   token's `mint_authority` field. If you cannot sign this instruction as the mint authority (because you don't control
   it, it's set to `None`, or it's an SPL token multisig), the Router cannot verify your authorization onchain, requiring
@@ -4001,7 +4001,7 @@ Once you've determined your path, follow these implementation steps:
 Choose your deployment approach:
 
 - **Self-serve mode**: Initialize pool from existing Chainlink-deployed programs
-  - **If you can sign as mint authority**: Use the [`initialize`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#initialize) instruction directly
+  - **If you can sign as mint authority**: Use the [`initialize`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#initialize) instruction directly
   - **If you cannot sign as mint authority** (mint authority is `None`, held by SPL token multisig, or controlled by another party): Submit [registration request](https://chain.link/ccip-contact?v=Tokens:%20Token%20admin%20registration) for assisted initialization
 
 - **Self-deployed**: Deploy standard pool programs yourself, then initialize pool from your deployed program
@@ -4026,12 +4026,12 @@ See [Mint Authority Management](/ccip/concepts/cross-chain-token/svm/token-pools
 ### Step 5: Create Address Lookup Table (ALT)
 
 - Create an ALT containing all required accounts for your pool operations
-- Must include required accounts in specific order as detailed in the [`set_pool` API reference](/ccip/api-reference/svm/v0.1.1/router#address-lookup-table-requirements)
-- See the complete [ALT requirements table](/ccip/api-reference/svm/v0.1.1/router#address-lookup-table-requirements) for exact account order and derivations
+- Must include required accounts in specific order as detailed in the [`set_pool` API reference](/ccip/api-reference/svm/v1.6.0/router#address-lookup-table-requirements)
+- See the complete [ALT requirements table](/ccip/api-reference/svm/v1.6.0/router#address-lookup-table-requirements) for exact account order and derivations
 
 ### Step 6: Link Pool to Token Registry
 
-- Call [`set_pool`](/ccip/api-reference/svm/v0.1.1/router#set_pool) instruction on the Router
+- Call [`set_pool`](/ccip/api-reference/svm/v1.6.0/router#set_pool) instruction on the Router
 - Links your pool's ALT to your token in the TokenAdminRegistry
 - Enables CCIP to route cross-chain transfers to your pool
 
@@ -4073,12 +4073,12 @@ Understanding who can call which Router instructions is critical for secure toke
 
 | Instruction                                                                                                                  | Mint Authority | Router Upgrade Authority | Current Token Admin | Pending Token Admin |
 | ---------------------------------------------------------------------------------------------------------------------------- | :------------: | :----------------------: | :-----------------: | :-----------------: |
-| [`owner_propose_administrator`](/ccip/api-reference/svm/v0.1.1/router#owner_propose_administrator)                           |        ✅       |             ❌            |          ❌          |          ❌          |
-| [`owner_override_pending_administrator`](/ccip/api-reference/svm/v0.1.1/router#owner_override_pending_administrator)         |        ✅       |             ❌            |          ❌          |          ❌          |
-| [`ccip_admin_propose_administrator`](/ccip/api-reference/svm/v0.1.1/router#ccip_admin_propose_administrator)                 |        ❌       |             ✅            |          ❌          |          ❌          |
-| [`accept_admin_role_token_admin_registry`](/ccip/api-reference/svm/v0.1.1/router#accept_admin_role_token_admin_registry)     |        ❌       |             ❌            |          ❌          |          ✅          |
-| [`transfer_admin_role_token_admin_registry`](/ccip/api-reference/svm/v0.1.1/router#transfer_admin_role_token_admin_registry) |        ❌       |             ❌            |          ✅          |          ❌          |
-| [`set_pool`](/ccip/api-reference/svm/v0.1.1/router#set_pool)                                                                 |        ❌       |             ❌            |          ✅          |          ❌          |
+| [`owner_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_propose_administrator)                           |        ✅       |             ❌            |          ❌          |          ❌          |
+| [`owner_override_pending_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_override_pending_administrator)         |        ✅       |             ❌            |          ❌          |          ❌          |
+| [`ccip_admin_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#ccip_admin_propose_administrator)                 |        ❌       |             ✅            |          ❌          |          ❌          |
+| [`accept_admin_role_token_admin_registry`](/ccip/api-reference/svm/v1.6.0/router#accept_admin_role_token_admin_registry)     |        ❌       |             ❌            |          ❌          |          ✅          |
+| [`transfer_admin_role_token_admin_registry`](/ccip/api-reference/svm/v1.6.0/router#transfer_admin_role_token_admin_registry) |        ❌       |             ❌            |          ✅          |          ❌          |
+| [`set_pool`](/ccip/api-reference/svm/v1.6.0/router#set_pool)                                                                 |        ❌       |             ❌            |          ✅          |          ❌          |
 
 **Notes:**
 
@@ -4091,9 +4091,9 @@ Understanding who can call which Router instructions is critical for secure toke
 
 ### Self-Service Registration Flow
 
-If your SPL token supports an automatic way to determine an admin using onchain verifiable data (e.g., you hold the mint authority), you can complete self-registration in a permissionless manner by calling the Router's [`owner_propose_administrator`](/ccip/api-reference/svm/v0.1.1/router#owner_propose_administrator) instruction:
+If your SPL token supports an automatic way to determine an admin using onchain verifiable data (e.g., you hold the mint authority), you can complete self-registration in a permissionless manner by calling the Router's [`owner_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_propose_administrator) instruction:
 
-1. **Admin Initiates Registration:** The token admin calls the Router's [`owner_propose_administrator`](/ccip/api-reference/svm/v0.1.1/router#owner_propose_administrator) instruction, passing in the mint and the proposed administrator's public key. This instruction initializes a `TokenAdminRegistry` PDA for this mint.
+1. **Admin Initiates Registration:** The token admin calls the Router's [`owner_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_propose_administrator) instruction, passing in the mint and the proposed administrator's public key. This instruction initializes a `TokenAdminRegistry` PDA for this mint.
 
 2. **Determine Administrator:** The Router ensures that the caller is the SPL token's mint authority, confirming they have the right to set a CCIP admin.
 
@@ -4101,7 +4101,7 @@ If your SPL token supports an automatic way to determine an admin using onchain 
 
 **Self-Service Registration Requirements:**
 
-- **Caller Authorization**: Only the SPL token's `mint_authority` can call [`owner_propose_administrator`](/ccip/api-reference/svm/v0.1.1/router#owner_propose_administrator)
+- **Caller Authorization**: Only the SPL token's `mint_authority` can call [`owner_propose_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_propose_administrator)
 - **Registry State**: TokenAdminRegistry PDA must not already exist for this mint
 - **Result**: Creates new TokenAdminRegistry PDA with proposed administrator in pending state
 
@@ -4123,9 +4123,9 @@ The following sequence diagram illustrates the process of proposing the administ
 
 #### Overriding Pending Administrator
 
-If you need to change the pending administrator before they accept the role, you can use the [`owner_override_pending_administrator`](/ccip/api-reference/svm/v0.1.1/router#owner_override_pending_administrator) instruction. This is useful when you initially proposed the wrong administrator or need to update the pending administrator for other reasons.
+If you need to change the pending administrator before they accept the role, you can use the [`owner_override_pending_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_override_pending_administrator) instruction. This is useful when you initially proposed the wrong administrator or need to update the pending administrator for other reasons.
 
-1. **Override Pending Administrator:** The mint authority calls the Router's [`owner_override_pending_administrator`](/ccip/api-reference/svm/v0.1.1/router#owner_override_pending_administrator) instruction, passing in the mint and the new proposed administrator's public key.
+1. **Override Pending Administrator:** The mint authority calls the Router's [`owner_override_pending_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_override_pending_administrator) instruction, passing in the mint and the new proposed administrator's public key.
 
 2. **Validate Authority:** The Router ensures that the caller is the SPL token's mint authority and that no administrator has been accepted yet (the `administrator` field must be zero).
 
@@ -4133,7 +4133,7 @@ If you need to change the pending administrator before they accept the role, you
 
 **Override Requirements:**
 
-- **Caller Authorization**: Only the SPL token's `mint_authority` can call [`owner_override_pending_administrator`](/ccip/api-reference/svm/v0.1.1/router#owner_override_pending_administrator)
+- **Caller Authorization**: Only the SPL token's `mint_authority` can call [`owner_override_pending_administrator`](/ccip/api-reference/svm/v1.6.0/router#owner_override_pending_administrator)
 - **Registry State**: TokenAdminRegistry PDA must exist but have no accepted administrator yet (`administrator` field is zero)
 - **Result**: Updates the `pending_administrator` field with the new proposed administrator
 
@@ -4141,9 +4141,9 @@ If you need to change the pending administrator before they accept the role, you
 
 Once the administrator has been proposed and is pending, they must accept the role to complete the registration process. This step finalizes the administrator's assignment.
 
-1. **Pending Administrator Calls [`accept_admin_role_token_admin_registry`](/ccip/api-reference/svm/v0.1.1/router#accept_admin_role_token_admin_registry)**
+1. **Pending Administrator Calls [`accept_admin_role_token_admin_registry`](/ccip/api-reference/svm/v1.6.0/router#accept_admin_role_token_admin_registry)**
 
-   The pending admin invokes [`accept_admin_role_token_admin_registry()`](/ccip/api-reference/svm/v0.1.1/router#accept_admin_role_token_admin_registry) on the Router program, specifying the mint account in the transaction context.
+   The pending admin invokes [`accept_admin_role_token_admin_registry()`](/ccip/api-reference/svm/v1.6.0/router#accept_admin_role_token_admin_registry) on the Router program, specifying the mint account in the transaction context.
 
 2. **Finalize Registration**
    - The Router checks that the caller's public key matches the `pending_administrator` field in the `TokenAdminRegistry` PDA.
@@ -4153,15 +4153,15 @@ Below is the sequence diagram illustrating how the pending administrator interac
 
 #### Transfer Administrator Role
 
-The [`transfer_admin_role_token_admin_registry`](/ccip/api-reference/svm/v0.1.1/router#transfer_admin_role_token_admin_registry) instruction allows the current token administrator to transfer their role to a new administrator. This transfer process is secure and involves two steps, requiring the new admin to accept it explicitly before finalization.
+The [`transfer_admin_role_token_admin_registry`](/ccip/api-reference/svm/v1.6.0/router#transfer_admin_role_token_admin_registry) instruction allows the current token administrator to transfer their role to a new administrator. This transfer process is secure and involves two steps, requiring the new admin to accept it explicitly before finalization.
 
 1. **Initiate Role Transfer**
-   - The current admin calls [`transfer_admin_role_token_admin_registry(new_admin)`](/ccip/api-reference/svm/v0.1.1/router#transfer_admin_role_token_admin_registry) on the Router, passing the new administrator's public key.
+   - The current admin calls [`transfer_admin_role_token_admin_registry(new_admin)`](/ccip/api-reference/svm/v1.6.0/router#transfer_admin_role_token_admin_registry) on the Router, passing the new administrator's public key.
    - The Router checks that the caller is the token's existing administrator. If so, it sets `pending_administrator = new_admin` in the `TokenAdminRegistry` (PDA).
 2. **Pending Administrator**
    - The registry is now pending. The existing admin will still be active until the new admin accepts.
 3. **Accept the Role**
-   - The new administrator must call [`accept_admin_role_token_admin_registry()`](/ccip/api-reference/svm/v0.1.1/router#accept_admin_role_token_admin_registry) to finalize the transfer.
+   - The new administrator must call [`accept_admin_role_token_admin_registry()`](/ccip/api-reference/svm/v1.6.0/router#accept_admin_role_token_admin_registry) to finalize the transfer.
    - If `authority.key()` matches `pending_administrator`, the Router updates `administrator = pending_administrator`. Otherwise, it will fail.
    - Once accepted, the new administrator can set or modify the token pool.
 
@@ -4169,9 +4169,9 @@ Below is a sequence diagram showing how the transfer is requested, followed by h
 
 ### Setting the Token Pool
 
-On SVM-based blockchains (e.g., Solana), the [`set_pool`](/ccip/api-reference/svm/v0.1.1/router#set_pool) instruction enables a token administrator to map a given mint to the pool lookup table that defines how that token is handled in cross-chain transfers. This instruction modifies the `TokenAdminRegistry` PDA so the Route program knows which token pool accounts can lock or burn tokens on the source chain (and release or mint them on the destination).
+On SVM-based blockchains (e.g., Solana), the [`set_pool`](/ccip/api-reference/svm/v1.6.0/router#set_pool) instruction enables a token administrator to map a given mint to the pool lookup table that defines how that token is handled in cross-chain transfers. This instruction modifies the `TokenAdminRegistry` PDA so the Route program knows which token pool accounts can lock or burn tokens on the source chain (and release or mint them on the destination).
 
-1. **Set Token Pool:** The current administrator calls the [`set_pool`](/ccip/api-reference/svm/v0.1.1/router#set_pool) instruction on the Router program, passing in:
+1. **Set Token Pool:** The current administrator calls the [`set_pool`](/ccip/api-reference/svm/v1.6.0/router#set_pool) instruction on the Router program, passing in:
    - The token mint (for which we are configuring cross-chain transfers).
    - The `pool_lookuptable` account (the Address Lookup Table containing the mandatory PDAs and program addresses for that token pool).
    - A list of "writable indexes" indicating which lookup table entries should be marked as writable during cross-chain transfers. These indexes specify positions in the ALT that require write permission for successful transaction execution.
@@ -4180,10 +4180,10 @@ On SVM-based blockchains (e.g., Solana), the [`set_pool`](/ccip/api-reference/sv
    - Resets the old permission bits, then enables the specified "writable indexes."
    - This ensures the new token pool has the correct set of PDAs with the correct writable permissions.
 3. **Validate or Delist:**
-   - If the new `pool_lookuptable` is not the zero address, the Router checks that this lookup table has at least the minimal set of addresses required for cross-chain transfers. For the complete list of required accounts and their exact order, see the [`set_pool` ALT requirements](/ccip/api-reference/svm/v0.1.1/router#address-lookup-table-requirements). If valid, the token becomes enabled for cross-chain transfers.
+   - If the new `pool_lookuptable` is not the zero address, the Router checks that this lookup table has at least the minimal set of addresses required for cross-chain transfers. For the complete list of required accounts and their exact order, see the [`set_pool` ALT requirements](/ccip/api-reference/svm/v1.6.0/router#address-lookup-table-requirements). If valid, the token becomes enabled for cross-chain transfers.
    - If the `pool_lookuptable` is the zero address, the token is effectively delisted from CCIP, meaning no new cross-chain transfers can occur.
 
-The sequence diagram below explains how the [`set_pool`](/ccip/api-reference/svm/v0.1.1/router#set_pool) instruction updates the `TokenAdminRegistry` PDA and either enables or delists the token for cross-chain transfers.
+The sequence diagram below explains how the [`set_pool`](/ccip/api-reference/svm/v1.6.0/router#set_pool) instruction updates the `TokenAdminRegistry` PDA and either enables or delists the token for cross-chain transfers.
 
 ## Token Pool Configuration (Pool Side)
 
@@ -4200,61 +4200,61 @@ Once you have registered your token and set the token pool via the Router, you n
 Before any other configuration can occur, you must initialize your token pool:
 
 1. **Initialize Token Pool**
-   - **Instruction:** [`initialize`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#initialize)
+   - **Instruction:** [`initialize`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#initialize)
    - **Use Case:** Create the pool state PDA for your specific mint. This is the first mandatory step that must be completed before any other pool configuration operations.
    - **Authorization:** Program upgrade authority can always initialize pools. When self-serve is enabled (`self_served_allowed: true`), the token's mint authority can also initialize pools.
    - **Requirements:** Pool owner must create the [Associated Token Account (ATA)](https://www.solana-program.com/docs/associated-token-account) for the Pool Signer PDA before pool operations can begin.
-   - Read the [API reference](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#initialize) to learn more.
+   - Read the [API reference](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#initialize) to learn more.
 
 ### Remote Chain Configuration
 
 Configure your token pool for specific destination blockchains:
 
 1. **Initialize a Remote Configuration**
-   - **Instruction:** [`init_chain_remote_config`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#init_chain_remote_config)
+   - **Instruction:** [`init_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#init_chain_remote_config)
    - **Use Case:** Create a new onchain account (PDA derived from the chain selector and token pool program ID) holding configuration details for a specific remote blockchain (e.g., remote token address).
    - **Authorization:** Pool Owner only
-   - Read the [API reference](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#init_chain_remote_config) to learn more.
+   - Read the [API reference](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#init_chain_remote_config) to learn more.
 
 2. **Edit an Existing Remote Configuration**
-   - **Instruction:** [`edit_chain_remote_config`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#edit_chain_remote_config)
+   - **Instruction:** [`edit_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#edit_chain_remote_config)
    - **Use Case:** Update the entire stored configuration for a remote chain (`RemoteConfig`), including the remote token address and decimals.
    - **Authorization:** Pool Owner only
-   - Read the [API reference](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#edit_chain_remote_config) to learn more.
+   - Read the [API reference](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#edit_chain_remote_config) to learn more.
 
 3. **Add Remote Pool Address**
-   - **Instruction:** [`append_remote_pool_addresses`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#append_remote_pool_addresses)
+   - **Instruction:** [`append_remote_pool_addresses`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#append_remote_pool_addresses)
    - **Use Case:** Register one or more remote pool addresses for the same remote chain. This can happen when you deploy a new pool version on that blockchain but keep the old address functional until all in-flight messages are processed.
    - **Authorization:** Pool Owner only
-   - Read the [API reference](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#append_remote_pool_addresses) to learn more.
+   - Read the [API reference](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#append_remote_pool_addresses) to learn more.
 
 4. **Remove Remote Pool Address**
-   - **Instruction:** [`edit_chain_remote_config`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#edit_chain_remote_config)
+   - **Instruction:** [`edit_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#edit_chain_remote_config)
    - **Use Case:** Remove one or more remote pool addresses from an existing remote chain configuration. Call this instruction with a new `RemoteConfig` that excludes the addresses you want to remove.
    - **Authorization:** Pool Owner only
-   - Read the [API reference](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#edit_chain_remote_config) to learn more.
+   - Read the [API reference](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#edit_chain_remote_config) to learn more.
 
 5. **Remove Chain Config**
-   - **Instruction:** [`delete_chain_config`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#delete_chain_config)
+   - **Instruction:** [`delete_chain_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#delete_chain_config)
    - **Use Case:** Remove the remote blockchain configuration PDA to stop supporting it permanently.
    - **Authorization:** Pool Owner only
-   - Read the [API reference](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#delete_chain_config) to learn more.
+   - Read the [API reference](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#delete_chain_config) to learn more.
 
 ### Rate Limits and Security
 
 Configure transfer limits and access controls for your token pool:
 
 1. **Configure Rate Limits**
-   - **Instruction:** [`set_chain_rate_limit`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#set_chain_rate_limit)
+   - **Instruction:** [`set_chain_rate_limit`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#set_chain_rate_limit)
    - **Use Case:** Apply or modify the remote blockchain's inbound/outbound rate-limit configuration. This uses a token bucket algorithm in which you can configure the capacity (maximum tokens) and rate (tokens per second refill rate) for both inbound and outbound transfers.
    - **Authorization:** Pool Owner only
-   - Read the [API reference](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#set_chain_rate_limit) to learn more.
+   - Read the [API reference](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#set_chain_rate_limit) to learn more.
 
 2. **Optional Allowlist**
-   - **Instructions:** [`configure_allow_list`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#configure_allow_list), [`remove_from_allow_list`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#remove_from_allow_list)
+   - **Instructions:** [`configure_allow_list`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#configure_allow_list), [`remove_from_allow_list`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#remove_from_allow_list)
    - **Use case:** You can add or remove addresses if the pool has an allowlist. When the allowlist is enabled, only addresses that appear on it can initiate cross‐chain transfers. This provides an additional layer of access control for who can initiate cross-chain token transfers.
    - **Authorization:** Pool Owner only
-   - Read the [API reference](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#configure_allow_list) to learn more.
+   - Read the [API reference](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#configure_allow_list) to learn more.
 
 For detailed authorization requirements, see the access control tables for [BurnMint pools](/ccip/concepts/cross-chain-token/svm/token-pools#access-control) and [LockRelease pools](/ccip/concepts/cross-chain-token/svm/token-pools#access-control-1).
 
@@ -4265,32 +4265,32 @@ Configure liquidity providers and settings for Lock/Release token pools:
 #### Liquidity Configuration
 
 1. **Set Rebalancer**
-   - **Instruction:** [`set_rebalancer`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#set_rebalancer)
+   - **Instruction:** [`set_rebalancer`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#set_rebalancer)
    - **Use Case:** Configure which public key is authorized to add or withdraw liquidity from the pool.
    - **Authorization:** Pool Owner only
-   - Read the [API reference](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#set_rebalancer) to learn more.
+   - Read the [API reference](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#set_rebalancer) to learn more.
 
 2. **Configure Liquidity Acceptance**
-   - **Instruction:** [`set_can_accept_liquidity`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#set_can_accept_liquidity)
-   - **Use Case:** Enable or disable whether the pool can accept incoming liquidity via the [`provide_liquidity`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#provide_liquidity) instruction.
+   - **Instruction:** [`set_can_accept_liquidity`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#set_can_accept_liquidity)
+   - **Use Case:** Enable or disable whether the pool can accept incoming liquidity via the [`provide_liquidity`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#provide_liquidity) instruction.
    - **Authorization:** Pool Owner only
-   - Read the [API reference](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#set_can_accept_liquidity) to learn more.
+   - Read the [API reference](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#set_can_accept_liquidity) to learn more.
 
 #### Liquidity Operations
 
 1. **Provide Liquidity**
-   - **Instruction:** [`provide_liquidity`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#provide_liquidity)
+   - **Instruction:** [`provide_liquidity`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#provide_liquidity)
    - **Use Case:** Add tokens to the pool's reserves to enable cross-chain releases. The rebalancer transfers tokens from their account to the pool's Associated Token Account.
    - **Authorization:** Rebalancer only
    - **Requirements:** Pool must have `can_accept_liquidity` enabled
-   - Read the [API reference](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#provide_liquidity) to learn more.
+   - Read the [API reference](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#provide_liquidity) to learn more.
 
 2. **Withdraw Liquidity**
-   - **Instruction:** [`withdraw_liquidity`](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#withdraw_liquidity)
+   - **Instruction:** [`withdraw_liquidity`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#withdraw_liquidity)
    - **Use Case:** Remove tokens from the pool's reserves. Can be used to transfer liquidity between pools by setting the destination as another pool's rebalancer.
    - **Authorization:** Rebalancer only
    - **Requirements:** Pool must have `can_accept_liquidity` enabled
-   - Read the [API reference](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool#withdraw_liquidity) to learn more.
+   - Read the [API reference](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#withdraw_liquidity) to learn more.
 
 **Note:** Lock/Release token pools require active liquidity management to ensure sufficient tokens are available for releases. Insufficient liquidity will cause cross-chain transfer failures. For complete authorization details, see the [LockRelease Access Control table](/ccip/concepts/cross-chain-token/svm/token-pools#access-control-1).
 
@@ -4810,7 +4810,7 @@ Before you deploy your cross-chain dApps to mainnet, make sure that your dApps f
 
 ## Verify destination chain
 
-Before calling the router's `ccip_send` [instruction](/ccip/api-reference/svm/v0.1.1/router#ccip_send), ensure your code verifies that the destination chain is supported by the CCIP Router. Sending messages to unsupported chains will fail and potentially waste transaction fees.
+Before calling the router's `ccip_send` [instruction](/ccip/api-reference/svm/v1.6.0/router#ccip_send), ensure your code verifies that the destination chain is supported by the CCIP Router. Sending messages to unsupported chains will fail and potentially waste transaction fees.
 
 You can programmatically verify destination chain support using Solana PDAs (Program Derived Addresses). Here below is a JavaScript example of how to verify destination chain support:
 
@@ -4845,17 +4845,17 @@ async function isDestinationChainSupported(connection, routerProgramId, destinat
 
 ## Verify source chain
 
-When implementing the `ccip_receive` [method](/ccip/api-reference/svm/v0.1.1/receiver#ccip_receive) in a program residing on the destination chain, ensure to verify the source chain of the incoming CCIP message. This verification ensures that CCIP messages can only be received from trusted source chains.
+When implementing the `ccip_receive` [method](/ccip/api-reference/svm/v1.6.0/receiver#ccip_receive) in a program residing on the destination chain, ensure to verify the source chain of the incoming CCIP message. This verification ensures that CCIP messages can only be received from trusted source chains.
 
 ## Verify sender
 
-When implementing the [`ccip_receive`](/ccip/api-reference/svm/v0.1.1/receiver#ccip_receive) instruction in a program residing on the destination chain, it's important to validate the sender of the incoming CCIP message. This check ensures that CCIP messages are received only from trusted sender addresses.
+When implementing the [`ccip_receive`](/ccip/api-reference/svm/v1.6.0/receiver#ccip_receive) instruction in a program residing on the destination chain, it's important to validate the sender of the incoming CCIP message. This check ensures that CCIP messages are received only from trusted sender addresses.
 
 **Note**: Depending on your use case, this verification might not always be necessary.
 
 ## Verify authority and allowed offramp
 
-When you implement the [`ccip_receive`](/ccip/api-reference/svm/v0.1.1/receiver#ccip_receive) instruction in the program residing on the destination chain, validate that the `authority` account is the correct Offramp CPI signer PDA and that `allowed_offramp` is the correct PDA owned by the router program. This verification ensures that only the authorized CCIP Offramp program can call the `ccip_receive` function.
+When you implement the [`ccip_receive`](/ccip/api-reference/svm/v1.6.0/receiver#ccip_receive) instruction in the program residing on the destination chain, validate that the `authority` account is the correct Offramp CPI signer PDA and that `allowed_offramp` is the correct PDA owned by the router program. This verification ensures that only the authorized CCIP Offramp program can call the `ccip_receive` function.
 
 **Example in Rust**:
 
@@ -4918,7 +4918,7 @@ When sending a CCIP message, you must select the appropriate `extra_args` struct
 - `SVMExtraArgsV1`: For Solana and other SVM-based destinations
 - `EVMExtraArgsV2`: For Ethereum and other EVM-based destinations
 
-For the full parameter specification, refer to the [CCIP API Reference](/ccip/api-reference/svm/v0.1.1/messages#extra-args).
+For the full parameter specification, refer to the [CCIP API Reference](/ccip/api-reference/svm/v1.6.0/messages#extra-args).
 
 ### Setting `compute_units` (SVM destinations)
 
@@ -12783,7 +12783,7 @@ This reference guide explains the key components and security patterns required 
 
 ## Introduction
 
-A CCIP Receiver is a Solana program that implements the [`ccip_receive`](/ccip/api-reference/svm/v0.1.1/receiver#ccip_receive) instruction, allowing it to process incoming cross-chain messages. It can handle both arbitrary data payloads and/or token transfers, serving as the destination endpoint for CCIP messages.
+A CCIP Receiver is a Solana program that implements the [`ccip_receive`](/ccip/api-reference/svm/v1.6.0/receiver#ccip_receive) instruction, allowing it to process incoming cross-chain messages. It can handle both arbitrary data payloads and/or token transfers, serving as the destination endpoint for CCIP messages.
 
 ## Security Architecture
 
@@ -13106,7 +13106,7 @@ When implementing CCIP Receivers, follow these best practices:
 
 ## Example Implementation
 
-For a complete, audited reference implementation of a CCIP Receiver, you can examine the [example-ccip-receiver](https://github.com/smartcontractkit/chainlink-ccip/tree/v0.1.1-solana/chains/solana/contracts/programs/example-ccip-receiver) in the Chainlink CCIP repository. This example demonstrates all the security patterns and best practices covered in this guide and can serve as a starting point for your own implementation.
+For a complete, audited reference implementation of a CCIP Receiver, you can examine the [example-ccip-receiver](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs/example-ccip-receiver) in the Chainlink CCIP repository. This example demonstrates all the security patterns and best practices covered in this guide and can serve as a starting point for your own implementation.
 
 <Aside type="caution" title="Educational Example Disclaimer">
   This page includes an educational example to use a Chainlink system, product, or service and is provided to
@@ -13151,7 +13151,7 @@ This guide explains how to construct CCIP Messages from SVM chains (e.g. Solana)
 
 ## CCIP Message Structure
 
-CCIP messages from SVM are built using the [`SVM2AnyMessage`](/ccip/api-reference/svm/v0.1.1/messages#svm2anymessage) struct from the CCIP Router program. See the [CCIP Router API Reference](/ccip/api-reference/svm/v0.1.1/router) for complete details. The `SVM2AnyMessage` struct is defined as follows:
+CCIP messages from SVM are built using the [`SVM2AnyMessage`](/ccip/api-reference/svm/v1.6.0/messages#svm2anymessage) struct from the CCIP Router program. See the [CCIP Router API Reference](/ccip/api-reference/svm/v1.6.0/router) for complete details. The `SVM2AnyMessage` struct is defined as follows:
 
 ```rust
 pub struct SVM2AnyMessage {
@@ -13418,7 +13418,7 @@ The core of sending CCIP messages from SVM is the `ccip_send` instruction in the
 1. **Destination Chain Selector**: A unique identifier for the target blockchain
 2. **Message Structure**: The `SVM2AnyMessage` containing receiver, data, tokens, etc.
 3. **Required Accounts**: All accounts needed for the instruction
-4. **Token Indices**: For token transfers, indices marking where each token's accounts begin. See [detailed explanation in the API Reference](/ccip/api-reference/svm/v0.1.1/router#how-remaining_accounts-and-token_indexes-work)
+4. **Token Indices**: For token transfers, indices marking where each token's accounts begin. See [detailed explanation in the API Reference](/ccip/api-reference/svm/v1.6.0/router#how-remaining_accounts-and-token_indexes-work)
 
 ### Data Encoding for Cross-Chain Compatibility
 
@@ -13426,10 +13426,10 @@ When sending data from SVM to EVM chains, proper encoding is crucial:
 
 ### Account Requirements
 
-Unlike EVM chains which use a simple mapping storage model, SVM account model requires explicit specification of all accounts needed for an operation. When sending CCIP messages, several account types are needed. For complete account specifications, see the [CCIP Router API Reference](/ccip/api-reference/svm/v0.1.1/router#context-accounts):
+Unlike EVM chains which use a simple mapping storage model, SVM account model requires explicit specification of all accounts needed for an operation. When sending CCIP messages, several account types are needed. For complete account specifications, see the [CCIP Router API Reference](/ccip/api-reference/svm/v1.6.0/router#context-accounts):
 
 <Aside title="Account Derivation">
-  For complete account derivation documentation, see the [CCIP Router API Reference](/ccip/api-reference/svm/v0.1.1/router#context-accounts).
+  For complete account derivation documentation, see the [CCIP Router API Reference](/ccip/api-reference/svm/v1.6.0/router#context-accounts).
 
   These accounts are Program Derived Addresses (PDAs) that must be derived with specific seeds:
 
@@ -13520,9 +13520,9 @@ Store this identifier in your application for transaction tracking and reconcili
 
 ## Further Resources
 
-- [CCIP Router API Reference](/ccip/api-reference/svm/v0.1.1/router): Complete technical details about message structure, account requirements, and token handling
-- [CCIP Messages API Reference](/ccip/api-reference/svm/v0.1.1/messages): Comprehensive documentation of all message structures
-- [How token_indexes and remaining_accounts Work](/ccip/api-reference/svm/v0.1.1/router#how-remaining_accounts-and-token_indexes-work): Step-by-step explanation with examples
+- [CCIP Router API Reference](/ccip/api-reference/svm/v1.6.0/router): Complete technical details about message structure, account requirements, and token handling
+- [CCIP Messages API Reference](/ccip/api-reference/svm/v1.6.0/messages): Comprehensive documentation of all message structures
+- [How token_indexes and remaining_accounts Work](/ccip/api-reference/svm/v1.6.0/router#how-remaining_accounts-and-token_indexes-work): Step-by-step explanation with examples
 
 <Aside type="caution" title="Educational Example Disclaimer">
   This page includes an educational example to use a Chainlink system, product, or service and is provided to
@@ -16798,8 +16798,8 @@ Load Phase 1 variables and set the Ethereum Sepolia chain selector for cross-cha
 
 Configure your token pool for cross-chain transfers to Ethereum Sepolia. This process involves two sequential operations:
 
-1. **Initialize Chain Remote Config**: Create the basic cross-chain configuration using [init_chain_remote_config](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#init_chain_remote_config)
-2. **Edit Chain Remote Config**: Add the remote pool address using [edit_chain_remote_config](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#edit_chain_remote_config)
+1. **Initialize Chain Remote Config**: Create the basic cross-chain configuration using [init_chain_remote_config](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#init_chain_remote_config)
+2. **Edit Chain Remote Config**: Add the remote pool address using [edit_chain_remote_config](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#edit_chain_remote_config)
 
 #### Step 2A: Initialize Chain Remote Config
 
@@ -16844,7 +16844,7 @@ This initializes the **cross-chain configuration** for your Solana token to enab
 
 #### Step 2B: Edit Chain Remote Config (Add Remote Pool Address)
 
-After initializing the chain remote config, add the remote pool address to enable bidirectional cross-chain transfers. This uses [`edit_chain_remote_config`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#edit_chain_remote_config) to specify the Ethereum pool address.
+After initializing the chain remote config, add the remote pool address to enable bidirectional cross-chain transfers. This uses [`edit_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#edit_chain_remote_config) to specify the Ethereum pool address.
 
 **Account Breakdown from the Transaction:**
 
@@ -16984,7 +16984,7 @@ Copy the ALT address from the transaction output and set the environment variabl
 
 ### Step 5: Register Pool with Router
 
-Register your token pool with the CCIP Router using [set_pool](/ccip/api-reference/svm/v0.1.1/router#set_pool). This enables the router to route cross-chain transfers through your token pool.
+Register your token pool with the CCIP Router using [set_pool](/ccip/api-reference/svm/v1.6.0/router#set_pool). This enables the router to route cross-chain transfers through your token pool.
 
 **What This Command Does:**
 
@@ -17959,8 +17959,8 @@ Load Phase 1 variables and set the Ethereum Sepolia chain selector for cross-cha
 
 Configure your token pool for cross-chain transfers to Ethereum Sepolia. This process involves two sequential operations:
 
-1. **Initialize Chain Remote Config**: Create the basic cross-chain configuration using [init_chain_remote_config](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#init_chain_remote_config)
-2. **Edit Chain Remote Config**: Add the remote pool address using [edit_chain_remote_config](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#edit_chain_remote_config)
+1. **Initialize Chain Remote Config**: Create the basic cross-chain configuration using [init_chain_remote_config](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#init_chain_remote_config)
+2. **Edit Chain Remote Config**: Add the remote pool address using [edit_chain_remote_config](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#edit_chain_remote_config)
 
 #### Step 2A: Initialize Chain Remote Config
 
@@ -18005,7 +18005,7 @@ This initializes the **cross-chain configuration** for your Solana token to enab
 
 #### Step 2B: Edit Chain Remote Config (Add Remote Pool Address)
 
-After initializing the chain remote config, add the remote pool address to enable bidirectional cross-chain transfers. This uses [`edit_chain_remote_config`](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool#edit_chain_remote_config) to specify the Ethereum pool address.
+After initializing the chain remote config, add the remote pool address to enable bidirectional cross-chain transfers. This uses [`edit_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#edit_chain_remote_config) to specify the Ethereum pool address.
 
 **Account Breakdown from the Transaction:**
 
@@ -18143,7 +18143,7 @@ Copy the ALT address from the transaction output and set the environment variabl
 
 ### Step 5: Register Pool with Router
 
-Register your token pool with the CCIP Router using [set_pool](/ccip/api-reference/svm/v0.1.1/router#set_pool). This enables the router to route cross-chain transfers through your token pool.
+Register your token pool with the CCIP Router using [set_pool](/ccip/api-reference/svm/v1.6.0/router#set_pool). This enables the router to route cross-chain transfers through your token pool.
 
 **What This Command Does:**
 
@@ -44693,11 +44693,11 @@ Each version includes detailed documentation for:
 
 ---
 
-# CCIP v0.1.1 SVM API Reference
-Source: https://docs.chain.link/ccip/api-reference/svm/v0.1.1
+# CCIP v1.6.0 SVM API Reference
+Source: https://docs.chain.link/ccip/api-reference/svm/v1.6.0
 
 <Aside type="note">
-  You are viewing API documentation for CCIP v0.1.1 on SVM-based blockchains, which is the latest version for Solana
+  You are viewing API documentation for CCIP v1.6.0 on SVM-based blockchains, which is the latest version for Solana
   integration.
 </Aside>
 
@@ -44705,25 +44705,25 @@ Source: https://docs.chain.link/ccip/api-reference/svm/v0.1.1
 
 ### Core Components
 
-- [Messages](/ccip/api-reference/svm/v0.1.1/messages) - Message structures and extra args for cross-chain messaging
-- [Router](/ccip/api-reference/svm/v0.1.1/router) - Instructions for sending messages and managing CCIP routing on Solana
-- [Receiver](/ccip/api-reference/svm/v0.1.1/receiver) - Implementation guide for CCIP message receivers on SVM blockchains
+- [Messages](/ccip/api-reference/svm/v1.6.0/messages) - Message structures and extra args for cross-chain messaging
+- [Router](/ccip/api-reference/svm/v1.6.0/router) - Instructions for sending messages and managing CCIP routing on Solana
+- [Receiver](/ccip/api-reference/svm/v1.6.0/receiver) - Implementation guide for CCIP message receivers on SVM blockchains
 
 ### Token Pool Components
 
-- [Base Token Pool Library](/ccip/api-reference/svm/v0.1.1/base-token-pool) - Shared library providing common functionality for all token pool implementations
-- [BurnMint Token Pool](/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool) - Token pool implementation using burn and mint strategy for cross-chain transfers
-- [Lock-Release Token Pool](/ccip/api-reference/svm/v0.1.1/lock-release-token-pool) - Token pool implementation using lock and release strategy with liquidity management
+- [Base Token Pool Library](/ccip/api-reference/svm/v1.6.0/base-token-pool) - Shared library providing common functionality for all token pool implementations
+- [BurnMint Token Pool](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool) - Token pool implementation using burn and mint strategy for cross-chain transfers
+- [Lock-Release Token Pool](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool) - Token pool implementation using lock and release strategy with liquidity management
 
 ### Reference Materials
 
-- [Events](/ccip/api-reference/svm/v0.1.1/events) - Event emissions for tracking cross-chain messages and token operations
-- [Errors](/ccip/api-reference/svm/v0.1.1/errors) - Comprehensive list of CCIP error codes and troubleshooting guidance
+- [Events](/ccip/api-reference/svm/v1.6.0/events) - Event emissions for tracking cross-chain messages and token operations
+- [Errors](/ccip/api-reference/svm/v1.6.0/errors) - Comprehensive list of CCIP error codes and troubleshooting guidance
 
 ---
 
-# CCIP v0.1.1 SVM Messages API Reference
-Source: https://docs.chain.link/ccip/api-reference/svm/v0.1.1/messages
+# CCIP v1.6.0 SVM Messages API Reference
+Source: https://docs.chain.link/ccip/api-reference/svm/v1.6.0/messages
 
 ## Messages
 
@@ -44953,12 +44953,12 @@ pub struct SVM2AnyRampMessage {
 
 ---
 
-# CCIP v0.1.1 SVM Router API Reference
-Source: https://docs.chain.link/ccip/api-reference/svm/v0.1.1/router
+# CCIP v1.6.0 SVM Router API Reference
+Source: https://docs.chain.link/ccip/api-reference/svm/v1.6.0/router
 
 ## Router
 
-[Git Source](https://github.com/smartcontractkit/chainlink-ccip/tree/v0.1.1-solana/chains/solana/contracts/programs/ccip-router)
+[Git Source](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs/ccip-router)
 
 Below is a complete API reference for the CCIP Router program instructions.
 
@@ -44982,7 +44982,7 @@ fn ccip_send(
 | Name                               | Type                          | Description                                                                                                            |
 | ---------------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | <nobr>`dest_chain_selector`</nobr> | <nobr>`u64`</nobr>            | The unique CCIP blockchain identifier of the destination blockchain.                                                   |
-| <nobr>`message`</nobr>             | <nobr>`SVM2AnyMessage`</nobr> | Read [Messages](/ccip/api-reference/svm/v0.1.1/messages#svm2anymessage) for more details.                              |
+| <nobr>`message`</nobr>             | <nobr>`SVM2AnyMessage`</nobr> | Read [Messages](/ccip/api-reference/svm/v1.6.0/messages#svm2anymessage) for more details.                              |
 | <nobr>`token_indexes`</nobr>       | <nobr>`Vec<u8>`</nobr>        | Index offsets slicing the remaining accounts so each token's subset can be grouped (see [Context](#context-accounts)). |
 
 ##### Context (Accounts)
@@ -45109,7 +45109,7 @@ fn get_fee(
 | Name                               | Type                          | Description                                                                                                                        |
 | ---------------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | <nobr>`dest_chain_selector`</nobr> | <nobr>`u64`</nobr>            | The unique CCIP blockchain identifier of the destination blockchain.                                                               |
-| <nobr>`message`</nobr>             | <nobr>`SVM2AnyMessage`</nobr> | The message for which to calculate fees. Read [Messages](/ccip/api-reference/svm/v0.1.1/messages#svm2anymessage) for more details. |
+| <nobr>`message`</nobr>             | <nobr>`SVM2AnyMessage`</nobr> | The message for which to calculate fees. Read [Messages](/ccip/api-reference/svm/v1.6.0/messages#svm2anymessage) for more details. |
 
 ##### Return Value
 
@@ -45397,12 +45397,12 @@ For PDA derivation examples and account validation details, see the [Token Pool 
 
 ---
 
-# CCIP v0.1.1 SVM Receiver API Reference
-Source: https://docs.chain.link/ccip/api-reference/svm/v0.1.1/receiver
+# CCIP v1.6.0 SVM Receiver API Reference
+Source: https://docs.chain.link/ccip/api-reference/svm/v1.6.0/receiver
 
 ## Receiver
 
-[Git Source](https://github.com/smartcontractkit/chainlink-ccip/tree/v0.1.1-solana/chains/solana/contracts/programs/example-ccip-receiver)
+[Git Source](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs/example-ccip-receiver)
 
 Below is a complete API reference for the `ccip_receive` instruction that must be implemented by any Solana program wishing to receive CCIP messages.
 
@@ -45421,7 +45421,7 @@ pub fn ccip_receive(
 
 | Name      | Type             | Description                                                                                                                           |
 | --------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `message` | `Any2SVMMessage` | The cross-chain message being delivered. See [Message Structure](/ccip/api-reference/svm/v0.1.1/messages#any2svmmessage) for details. |
+| `message` | `Any2SVMMessage` | The cross-chain message being delivered. See [Message Structure](/ccip/api-reference/svm/v1.6.0/messages#any2svmmessage) for details. |
 
 #### Context (Accounts)
 
@@ -45606,12 +45606,12 @@ pub fn handle_token_transfer(ctx: Context<CcipReceive>, message: Any2SVMMessage)
 
 ---
 
-# CCIP v0.1.1 SVM Base Token Pool Library Reference
-Source: https://docs.chain.link/ccip/api-reference/svm/v0.1.1/base-token-pool
+# CCIP v1.6.0 SVM Base Token Pool Library Reference
+Source: https://docs.chain.link/ccip/api-reference/svm/v1.6.0/base-token-pool
 
 ## Base Token Pool Library
 
-[Git Source](https://github.com/smartcontractkit/chainlink-ccip/tree/v0.1.1-solana/chains/solana/contracts/programs/base-token-pool)
+[Git Source](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs/base-token-pool)
 
 The Base Token Pool library provides foundational components and shared functionality for CCIP token pool implementations on SVM-based blockchains. This library is not deployable as a standalone program but serves as a dependency for concrete token pool implementations like BurnMint and Lock-Release pools.
 
@@ -45996,7 +45996,7 @@ pub enum CcipTokenPoolError {
 
 ### Events
 
-The library defines events that are emitted by pool implementations. See the [Events API Reference](/ccip/api-reference/svm/v0.1.1/events) for detailed documentation of all events including:
+The library defines events that are emitted by pool implementations. See the [Events API Reference](/ccip/api-reference/svm/v1.6.0/events) for detailed documentation of all events including:
 
 - Configuration events (`GlobalConfigUpdated`, `RemoteChainConfigured`, etc.)
 - Token operation events (`Burned`, `Minted`, `Locked`, `Released`)
@@ -46057,12 +46057,12 @@ This shared foundation ensures consistency, security, and maintainability across
 
 ---
 
-# CCIP v0.1.1 SVM BurnMint Token Pool API Reference
-Source: https://docs.chain.link/ccip/api-reference/svm/v0.1.1/burn-mint-token-pool
+# CCIP v1.6.0 SVM BurnMint Token Pool API Reference
+Source: https://docs.chain.link/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool
 
 ## BurnMint Token Pool
 
-[Git Source](https://github.com/smartcontractkit/chainlink-ccip/tree/v0.1.1-solana/chains/solana/contracts/programs/burnmint-token-pool)
+[Git Source](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs/burnmint-token-pool)
 
 Below is a complete API reference for the CCIP BurnMint Token Pool program instructions. This pool implementation burns tokens on the source chain and mints them on the destination chain.
 
@@ -46728,12 +46728,12 @@ fn initialize_state_version(
 
 ---
 
-# CCIP v0.1.1 SVM Lock-Release Token Pool API Reference
-Source: https://docs.chain.link/ccip/api-reference/svm/v0.1.1/lock-release-token-pool
+# CCIP v1.6.0 SVM Lock-Release Token Pool API Reference
+Source: https://docs.chain.link/ccip/api-reference/svm/v1.6.0/lock-release-token-pool
 
 ## Lock-Release Token Pool
 
-[Git Source](https://github.com/smartcontractkit/chainlink-ccip/tree/v0.1.1-solana/chains/solana/contracts/programs/lockrelease-token-pool)
+[Git Source](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs/lockrelease-token-pool)
 
 The Lock-Release Token Pool program implements a token pool that uses a lock/release strategy for cross-chain transfers. When tokens are sent cross-chain, they are locked in the pool on the source chain and released from the pool on the destination chain.
 
@@ -47408,8 +47408,8 @@ pub fn withdraw_liquidity(
 
 ---
 
-# CCIP v0.1.1 SVM Errors API Reference
-Source: https://docs.chain.link/ccip/api-reference/svm/v0.1.1/errors
+# CCIP v1.6.0 SVM Errors API Reference
+Source: https://docs.chain.link/ccip/api-reference/svm/v1.6.0/errors
 
 ## Errors
 
@@ -47523,8 +47523,8 @@ The Base Token Pool library defines shared errors (`CcipTokenPoolError`) that ar
 
 ---
 
-# CCIP v0.1.1 SVM Events API Reference
-Source: https://docs.chain.link/ccip/api-reference/svm/v0.1.1/events
+# CCIP v1.6.0 SVM Events API Reference
+Source: https://docs.chain.link/ccip/api-reference/svm/v1.6.0/events
 
 ## Events
 

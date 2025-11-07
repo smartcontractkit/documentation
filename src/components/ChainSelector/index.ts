@@ -1,1 +1,1 @@
-export { ChainSelector } from "./ChainSelector.tsx"
+export { ChainTypeSelector } from "./ChainTypeSelector.js"
