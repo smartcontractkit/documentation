@@ -637,7 +637,7 @@ export const StreamsNetworkAddressesTable = ({
       )}
 
       {(!allowExpansion || isExpanded) && (
-        <div>
+        <div className={tableStyles.tableContainer}>
           <div className={feedList.filterDropdown_search} style={{ padding: "0.5rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flex: 1 }}>
               <input
