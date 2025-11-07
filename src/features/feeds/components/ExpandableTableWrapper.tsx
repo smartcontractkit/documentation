@@ -36,13 +36,13 @@ export const ExpandableTableWrapper = ({
 }: ExpandableTableWrapperProps) => {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded)
 
-  // If expansion is not allowed, always show content without header
+  // If expansion is not allowed, still wrap content but without the header
   if (!allowExpansion) {
-    return <>{children}</>
+    return <div className={tableStyles.tableContainer}>{children}</div>
   }
 
   return (
-    <div>
+    <div className={tableStyles.expandableWrapper}>
       <div
         className={tableStyles.expandableHeader}
         onClick={() => setIsExpanded(!isExpanded)}
