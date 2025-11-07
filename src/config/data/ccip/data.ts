@@ -50,6 +50,10 @@ import * as errors_v1_5_1 from "./errors/v1_5_1/index.ts"
 import * as errors_v1_6_0 from "./errors/v1_6_0/index.ts"
 // eslint-disable-next-line camelcase
 import * as errors_v1_6_1 from "./errors/v1_6_1/index.ts"
+// eslint-disable-next-line camelcase
+import * as errors_v1_6_2 from "./errors/v1_6_2/index.ts"
+// eslint-disable-next-line camelcase
+import * as errors_v1_6_3 from "./errors/v1_6_3/index.ts"
 
 export const getAllEnvironments = () => [Environment.Mainnet, Environment.Testnet]
 export const getAllVersions = () => [Version.V1_2_0]
@@ -74,12 +78,16 @@ type ErrorTypesV160 = ErrorTypesV151 & {
 }
 
 type ErrorTypesV161 = ErrorTypesV160
+type ErrorTypesV162 = ErrorTypesV161
+type ErrorTypesV163 = ErrorTypesV162
 
 type VersionedErrors = {
   v1_5_0: ErrorTypesV150
   v1_5_1: ErrorTypesV151
   v1_6_0: ErrorTypesV160
   v1_6_1: ErrorTypesV161
+  v1_6_2: ErrorTypesV162
+  v1_6_3: ErrorTypesV163
 }
 
 // Export errors by version with type safety
@@ -92,6 +100,10 @@ export const errors: VersionedErrors = {
   v1_6_0: errors_v1_6_0 as ErrorTypesV160,
   // eslint-disable-next-line camelcase
   v1_6_1: errors_v1_6_1 as ErrorTypesV161,
+  // eslint-disable-next-line camelcase
+  v1_6_2: errors_v1_6_2 as ErrorTypesV162,
+  // eslint-disable-next-line camelcase
+  v1_6_3: errors_v1_6_3 as ErrorTypesV163,
 }
 
 export const networkFees: NetworkFees = {
