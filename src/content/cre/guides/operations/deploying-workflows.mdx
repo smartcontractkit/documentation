@@ -1,0 +1,163 @@
+---
+section: cre
+date: Last Modified
+title: "Deploying Workflows"
+metadata:
+  description: "Deploy your workflow: learn how to register your workflow and start running it across a Decentralized Oracle Network (DON)."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+{/* prettier-ignore */}
+<Aside type="note" title="Early Access required">
+  Workflow deployment is currently in Early Access. To <a href="https://cre.chain.link/request-access" target="_blank" rel="noopener noreferrer">request Early Access</a>, please share details about your project and use case—this helps us provide better support as you build with CRE.
+  
+  **While you wait:** Continue building and simulating workflows using [`cre workflow simulate`](/cre/guides/operations/simulating-workflows).
+</Aside>
+
+When you deploy a workflow, you take your locally tested code and register it with the onchain Workflow Registry contract. This makes your workflow "live" so it can activate and respond to triggers across a [Decentralized Oracle Network (DON)](/cre/key-terms#decentralized-oracle-network-don).
+
+## Prerequisites
+
+Before you can deploy a workflow, you must have:
+
+- **Early Access approval**: Workflow deployment is currently in Early Access. <a href="https://cre.chain.link/request-access" target="_blank" rel="noopener noreferrer">Request access here</a> if you haven't already.
+- **[Logged in](/cre/reference/cli/authentication#cre-login)**: Authenticated with the platform by running `cre login`. To check if you are logged in, run `cre whoami`.
+- **[Linked your key](/cre/reference/cli/account#cre-account-link-key)**: Linked your EOA or multi-sig wallet to your account by running `cre account link-key`.
+- **A funded wallet**: The account you are deploying from must be funded with ETH on Ethereum Mainnet to pay the gas fees for the onchain registration transaction to the Workflow Registry contract.
+
+## The deployment process
+
+The `cre workflow deploy` command handles the entire end-to-end process for you:
+
+1. **Compiles** your workflow to a WASM binary.
+1. **Uploads** the compiled binary and any associated configuration files (like your config file or `secrets.yaml`) to the CRE Storage Service.
+1. **Registers** the workflow onchain by submitting a transaction to the Workflow Registry contract. This transaction contains the metadata for your workflow, including its name, owner, and the URL of its artifacts in the storage service.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Early Access: Disclaimer">
+Chainlink Runtime Environment (CRE) deployment is in the "Early Access" stage of development, which means that CRE currently has functionality which is under development and may be changed in later versions. By using CRE, you expressly acknowledge and agree to accept the Chainlink <a href="https://chain.link/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>, which provides important information and disclosures.
+</Aside>
+
+### Step 1: Ensure your configuration is correct
+
+Before deploying, ensure your `workflow.yaml` file is correctly configured. The `workflow-name` is required under the `user-workflow` section for your target environment.
+
+If you are deploying from a multi-sig wallet, specify your multi-sig address in the `workflow-owner-address` field. If you are deploying from a standard EOA, you can leave this field unchanged—the owner will be automatically derived from the `CRE_ETH_PRIVATE_KEY` in your `.env` file.
+
+For more details on configuration, see the [Project Configuration](/cre/reference/project-configuration) reference.
+
+### Step 2: Run the deploy command
+
+**From your project root directory**, run the `deploy` command with the path to your workflow folder.
+
+```bash
+cre workflow deploy <workflow-folder-path> [flags]
+```
+
+Example command to target the `production-settings` environment:
+
+```bash
+cre workflow deploy my-workflow --target production-settings
+```
+
+**Available flags:**
+
+| Flag             | Description                                                                             |
+| ---------------- | --------------------------------------------------------------------------------------- |
+| `--target`       | Sets the target environment from your configuration files (e.g., `production-settings`) |
+| `--auto-start`   | Activate the workflow immediately after deployment (default: `true`)                    |
+| `--output`       | The output file for the compiled WASM binary (default: `"./binary.wasm.br.b64"`)        |
+| `--unsigned`     | Return the raw transaction instead of broadcasting it to the network                    |
+| `--yes`          | Skip confirmation prompts and proceed with the operation                                |
+| `--project-root` | Path to the project root directory                                                      |
+| `--env`          | Path to your `.env` file (default: `".env"`)                                            |
+| `--verbose`      | Enable verbose logging to print `DEBUG` level logs                                      |
+
+### Step 3: Monitor the output
+
+The CLI will provide detailed logs of the deployment process, including the compilation, upload to the CRE Storage Service, and the final onchain transaction.
+
+```bash
+> cre workflow deploy my-workflow --target production-settings
+
+Deploying Workflow :     my-workflow
+Target :                 production-settings
+Owner Address :          <your-owner-address>
+
+Compiling workflow...
+Workflow compiled successfully
+
+Verifying ownership...
+Workflow owner link status: owner=<your-owner-address>, linked=true
+Key ownership verified
+
+Uploading files...
+✔ Loaded binary from: ./binary.wasm.br.b64
+✔ Uploaded binary to: https://storage.cre.example.com/artifacts/<workflow-id>/binary.wasm
+✔ Loaded config from: ./config.json
+✔ Uploaded config to: https://storage.cre.example.com/artifacts/<workflow-id>/config
+
+Preparing deployment transaction...
+Preparing transaction for workflowID: <your-workflow-id>
+Transaction details:
+  Chain Name:   ethereum-testnet-sepolia
+  To:           0xF3f93fc4dc177748E7557568b5354cB009e3818a
+  Function:     UpsertWorkflow
+  Inputs:
+    [0]:        my-workflow
+    [1]:        my-workflow
+    [2]:        <your-workflow-id>
+    [3]:        0
+    [4]:        zone-a
+    [5]:        https://storage.cre.example.com/artifacts/<workflow-id>/binary.wasm
+    [6]:        https://storage.cre.example.com/artifacts/<workflow-id>/config
+    [7]:        0x
+    [8]:        false
+  Data:         b377bfc50000000000000000000000000000000000...
+Estimated Cost:
+  Gas Price:      0.00100001 gwei
+  Total Cost:     0.00000079 ETH
+? Do you want to execute this transaction?:
+  ▸ Yes
+    No
+
+Transaction confirmed
+View on explorer: https://sepolia.etherscan.io/tx/0x58599f6...d916b
+
+[OK] Workflow deployed successfully
+
+Details:
+   Contract address:    0xF3f93fc4dc177748E7557568b5354cB009e3818a
+   Transaction hash:    0x58599f6...d916b
+   Workflow Name:       my-workflow
+   Workflow ID:         <your-workflow-id>
+   Binary URL:          https://storage.cre.example.com/artifacts/<workflow-id>/binary.wasm
+   Config URL:          https://storage.cre.example.com/artifacts/<workflow-id>/config
+```
+
+<Aside type="note" title="What is auto-start?">
+  By default, the `cre workflow deploy` command uses the `--auto-start=true` flag. This means that as soon as your
+  workflow is successfully registered onchain, it will also be immediately activated and ready to be triggered. You can
+  disable this behavior by passing `--auto-start=false`.
+</Aside>
+
+## Verifying your deployment
+
+After a successful deployment, you can verify that your workflow was registered correctly by checking the Workflow Registry contract on a block explorer. The CLI output will provide the transaction hash for the registration.
+
+The `WorkflowRegistry` contract for the `production-settings` environment is deployed on **Ethereum Sepolia** at the address <a href="https://sepolia.etherscan.io/address/0xF3f93fc4dc177748E7557568b5354cB009e3818a" target="_blank" rel="noopener noreferrer">`0xF3f93fc4dc177748E7557568b5354cB009e3818a`</a>.
+
+## Using multi-sig wallets
+
+The `deploy` command supports multi-sig wallets through the `--unsigned` flag. When using this flag, the CLI generates raw transaction data that you can submit through your multi-sig wallet interface instead of sending the transaction directly.
+
+For complete setup instructions, configuration requirements, and step-by-step guidance, see [Using Multi-sig Wallets](/cre/guides/operations/using-multisig-wallets).
+
+## Next steps
+
+- [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows): Learn how to control workflow execution
+- [Monitoring Workflows](/cre/guides/operations/monitoring-workflows): Track your workflow's execution and performance
+- [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows): Deploy new versions of your workflow

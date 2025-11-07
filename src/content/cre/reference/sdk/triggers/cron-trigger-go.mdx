@@ -1,0 +1,57 @@
+---
+section: cre
+title: "SDK Reference: Cron Trigger"
+date: Last Modified
+sdkLang: "go"
+pageId: "reference-sdk-cron-trigger"
+metadata:
+  description: "Reference for Go Cron Trigger: Config structure, Payload fields, and cron expression syntax for time-based workflows."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+The Cron Trigger fires at a specified schedule using standard cron expressions. It is ideal for workflows that need to run at regular intervals.
+
+### `cron.Trigger`
+
+Creates the cron trigger instance.
+
+```go
+import "github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
+
+cronTrigger := cron.Trigger(&cron.Config{
+    Schedule: "0 */10 * * * *", // Every 10 minutes
+})
+```
+
+### `cron.Config`
+
+The configuration struct for the cron trigger.
+
+| <div style="width: 65px;">Field</div> | Type   | Description                                                                                                                                   |
+| ------------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Schedule`                            | string | A standard cron expression with 5 or 6 fields, where the optional 6th field represents seconds. **Note:** The minimum interval is 30 seconds. |
+
+### `cron.Payload`
+
+The payload passed to the callback function.
+
+| Field                    | Type                     | Description                               |
+| ------------------------ | ------------------------ | ----------------------------------------- |
+| `ScheduledExecutionTime` | `*timestamppb.Timestamp` | The time the execution was scheduled for. |
+
+### Callback Function
+
+Your callback function for cron triggers must conform to this signature:
+
+```go
+func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*YourReturnType, error)
+```
+
+**Parameters:**
+
+- `config`: Your workflow's static configuration struct.
+- `runtime`: The runtime object used to invoke capabilities.
+- `trigger`: The cron payload containing the scheduled execution time.

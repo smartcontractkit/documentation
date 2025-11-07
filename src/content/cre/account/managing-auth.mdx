@@ -1,0 +1,60 @@
+---
+section: cre
+date: Last Modified
+title: "Managing Authentication"
+metadata:
+  description: "Manage your CRE CLI sessions: check if you're logged in, handle expired sessions, and securely log out when needed."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+This guide covers how to manage your CLI authentication session, including logging in, checking your status, handling session expiration, and logging out.
+
+## Logging in
+
+To authenticate your CLI with your CRE account, use the `cre login` command. This opens a browser window where you'll enter your credentials and complete two-factor authentication.
+
+For detailed login instructions, see the [Logging in with the CLI](/cre/account/cli-login) guide.
+
+## Session expiration
+
+Your CLI session remains authenticated until you explicitly log out or until your session expires. When your session expires, you'll need to log in again.
+
+If you attempt to run a command with an expired session, you'll see an error:
+
+```bash
+Error: failed to attach credentials: failed to load credentials: you are not logged in, try running cre login
+```
+
+To resolve this, simply run `cre login` again to re-authenticate.
+
+## Checking authentication status
+
+To verify that you're logged in and view your account details, use the `cre whoami` command:
+
+```bash
+cre whoami
+```
+
+This command displays your account information:
+
+```bash
+Account details retrieved:
+
+Email:           email@domain.com
+Organization ID: org_mEMRknbVURM9DWsB
+```
+
+If you're not logged in, you'll receive an error message prompting you to run `cre login`.
+
+## Logging out
+
+To explicitly end your CLI session and remove your stored credentials, use the `cre logout` command:
+
+```bash
+cre logout
+```
+
+After logging out, you'll need to run `cre login` again to authenticate future CLI commands.

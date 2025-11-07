@@ -6,7 +6,7 @@ import { TutorialStep } from "../TutorialSetup/TutorialStep.tsx"
 import { NetworkAddress } from "./NetworkAddress.tsx"
 import { StepCheckbox } from "../TutorialProgress/StepCheckbox.tsx"
 import { SolidityParam } from "../TutorialSetup/SolidityParam.tsx"
-import { Callout } from "../TutorialSetup/Callout.tsx"
+import { Callout } from "@components/Callout/Callout.tsx"
 import styles from "./AdminSetupStep.module.css"
 
 interface AdminSetupStepProps {

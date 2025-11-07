@@ -1,0 +1,316 @@
+---
+section: cre
+date: Last Modified
+title: "Simulating Workflows"
+metadata:
+  description: "Simulate your workflows: learn to simulate CRE workflows with real API and testnet calls before deploying them."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside, CopyText } from "@components"
+
+Workflow simulation is a local execution environment that **compiles your workflow to <a href="https://webassembly.org" target="blank" ref="noopener noreferrer">WebAssembly (WASM)</a>** and runs it on **your machine**. It allows you to test and debug your workflow logic before deploying it. The simulator makes real calls to public testnets and live HTTP endpoints, giving you high confidence that your code will work as expected when deployed.
+
+## When to use simulation
+
+Use workflow simulation to:
+
+- **Test workflow logic during development**: Validate that your code behaves correctly before deploying.
+- **Debug errors in a controlled environment**: Catch and fix issues locally without deploying to a live network.
+- **Test different trigger types**: Manually select and test how your workflow responds to [cron](/cre/guides/workflow/using-triggers/cron-trigger), [HTTP](/cre/guides/workflow/using-triggers/http-trigger), or [EVM log](/cre/guides/workflow/using-triggers/evm-log-trigger) triggers.
+- **Verify onchain interactions**: Test [read](/cre/guides/workflow/using-evm-client/onchain-read) and [write](/cre/guides/workflow/using-evm-client/onchain-write/overview) operations against real testnets.
+
+## Basic usage
+
+The `cre workflow simulate` command compiles your workflow and executes it locally.
+
+**Basic syntax:**
+
+```bash
+cre workflow simulate <workflow-name-or-path> [flags]
+```
+
+**Example:**
+
+```bash
+cre workflow simulate my-workflow --target staging-settings
+```
+
+### What happens during simulation
+
+1. **Compilation**: The CLI compiles your workflow to WebAssembly (WASM).
+1. **Trigger selection**: You're prompted to select which trigger to test (cron, HTTP, or EVM log).
+1. **Execution**: The workflow runs locally, making real calls to configured RPCs and HTTP endpoints.
+1. **Output**: The simulator displays logs from your workflow and the final execution result.
+
+### Prerequisites
+
+Before running a simulation:
+
+- **CRE account & authentication**: You must have a CRE account and be logged in with the CLI. See [Create your account](/cre/account/creating-account) and [Log in with the CLI](/cre/account/cli-login) for instructions.
+- **CRE CLI installed**: You must have the CRE CLI installed on your machine. See [CLI Installation](/cre/getting-started/cli-installation) for instructions.
+- **Project configuration**: You must run the command from your project root directory.
+- **Valid `workflow.yaml`**: Your workflow directory must contain a `workflow.yaml` file with correct paths to your workflow code, config, and secrets (optional).
+- **RPC URLs configured**: If your workflow interacts with blockchains, configure RPC endpoints in your `project.yaml` for the target you're using. Without this, the simulator cannot register the EVM capability and your workflow will fail. See [Project Configuration](/cre/reference/project-configuration) for setup instructions.
+- **Private key**: Set `CRE_ETH_PRIVATE_KEY` in your `.env` file if your workflow performs onchain writes.
+
+<Aside type="tip" title="New to CRE?">
+  If these prerequisites seem overwhelming, we strongly recommend starting with the [Getting Started
+  guide](/cre/getting-started/overview). It walks you through setting up your first project, configuring your
+  environment, and running your first simulation step by step.
+</Aside>
+
+## Interactive vs non-interactive modes
+
+### Interactive mode (default)
+
+In interactive mode, the simulator prompts you to select a trigger and provide necessary inputs.
+
+**Example:**
+
+```bash
+cre workflow simulate my-workflow --target staging-settings
+```
+
+**What you'll see:**
+
+```
+Workflow compiled
+
+🚀 Workflow simulation ready. Please select a trigger:
+1. cron-trigger@1.0.0 Trigger
+2. http-trigger@1.0.0-alpha Trigger
+3. evm:ChainSelector:16015286601757825753@1.0.0 LogTrigger
+
+Enter your choice (1-3):
+```
+
+Select a trigger by entering its number, and follow any additional prompts for trigger-specific inputs.
+
+### Non-interactive mode
+
+Non-interactive mode allows you to run simulations without prompts, making it ideal for CI/CD pipelines or automated testing.
+
+**Requirements:**
+
+- Use the `--non-interactive` flag
+- Specify `--trigger-index` (0-based index of the trigger to run)
+- Provide trigger-specific flags as needed (see [Trigger-specific configuration](#trigger-specific-configuration))
+
+**Example:**
+
+```bash
+cre workflow simulate my-workflow --non-interactive --trigger-index 0 --target staging-settings
+```
+
+## The `--broadcast` flag
+
+By default, the simulator performs a **dry run** for onchain write operations. It prepares the transaction but does not broadcast it to the blockchain.
+
+To actually broadcast transactions during simulation, use the `--broadcast` flag:
+
+```bash
+cre workflow simulate my-workflow --broadcast --target staging-settings
+```
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Broadcast requires a funded wallet">
+  When using `--broadcast`, your wallet (specified by `CRE_ETH_PRIVATE_KEY` in `.env`) must be funded with the native
+  token of the chain you're writing to (e.g., Sepolia ETH for Ethereum Sepolia testnet). Visit
+  <a href="https://faucets.chain.link" target="blank">faucets.chain.link</a> to get your testnet tokens.
+</Aside>
+
+**Use case:** Use `--broadcast` when you want to test the complete end-to-end flow, including actual onchain state changes, on a testnet.
+
+## Trigger-specific configuration
+
+Different trigger types require different inputs for simulation.
+
+### Cron trigger
+
+[Cron triggers](/cre/guides/workflow/using-triggers/cron-trigger) do not require additional configuration. When selected, they execute immediately.
+
+<Aside type="note" title="Single trigger workflows">
+  If your workflow has only one trigger, the simulator will automatically run it without prompting you to select.
+</Aside>
+
+**Interactive example:**
+
+```bash
+cre workflow simulate my-workflow --target staging-settings
+```
+
+Select the cron trigger when prompted (if multiple triggers are defined)
+
+**Non-interactive example:**
+
+```bash
+# Assuming the cron trigger is the first trigger defined in your workflow (index 0)
+cre workflow simulate my-workflow --non-interactive --trigger-index 0 --target staging-settings
+```
+
+<Aside type="tip" title="Finding your trigger index">
+  The `--trigger-index` is 0-based and corresponds to the order in which triggers are defined in your workflow code. The
+  first trigger is index `0`, the second is `1`, and so on. If you're unsure which index to use, run the simulator in
+  interactive mode first to see the list of triggers.
+</Aside>
+
+### HTTP trigger
+
+[HTTP triggers](/cre/guides/workflow/using-triggers/http-trigger) require a JSON payload.
+
+**Interactive mode:**
+
+When you select an HTTP trigger, the simulator prompts you to provide JSON input. You can:
+
+- Enter the JSON directly
+- Provide a file path (e.g., `./payload.json`)
+
+**Non-interactive mode:**
+
+Use the `--http-payload` flag with:
+
+- A JSON string: `--http-payload '{"key":"value"}'`
+- A file path: `--http-payload @./payload.json` (with or without `@` prefix)
+
+**Example:**
+
+```bash
+cre workflow simulate my-workflow --non-interactive --trigger-index 1 --http-payload @./http_trigger_payload.json --target staging-settings
+```
+
+### EVM log trigger
+
+[EVM log triggers](/cre/guides/workflow/using-triggers/evm-log-trigger) require a transaction hash and event index to fetch a specific log event from the blockchain.
+
+**Interactive mode:**
+
+When you select an EVM log trigger, the simulator prompts you for:
+
+1. **Transaction hash** (e.g., `0x420721d7d00130a03c5b525b2dbfd42550906ddb3075e8377f9bb5d1a5992f8e`)
+1. **Event index** (0-based index of the log in the transaction, e.g., `0`)
+
+The simulator fetches the log from the configured RPC and passes it to your workflow.
+
+**Non-interactive mode:**
+
+Use the `--evm-tx-hash` and `--evm-event-index` flags:
+
+```bash
+cre workflow simulate my-workflow \
+  --non-interactive \
+  --trigger-index 2 \
+  --evm-tx-hash 0x420721d7d00130a03c5b525b2dbfd42550906ddb3075e8377f9bb5d1a5992f8e \
+  --evm-event-index 0 \
+  --target staging-settings
+```
+
+## Additional flags
+
+### `--engine-logs` (`-g`)
+
+Enables detailed engine logging for debugging purposes. This shows internal logs from the workflow execution engine.
+
+```bash
+cre workflow simulate my-workflow --engine-logs --target staging-settings
+```
+
+### `--target` (`-T`)
+
+Specifies which target environment to use from your configuration files. This determines which RPC URLs, settings, and secrets are loaded.
+
+```bash
+cre workflow simulate my-workflow --target staging-settings
+```
+
+### `--verbose` (`-v`)
+
+Enables debug-level logging for the CLI itself (not the workflow). Useful for troubleshooting CLI issues.
+
+```bash
+cre workflow simulate my-workflow --verbose --target staging-settings
+```
+
+## Understanding the output
+
+When you run a simulation, you'll see the following output:
+
+### 1. Compilation confirmation
+
+```
+Workflow compiled
+```
+
+This indicates your workflow was successfully compiled to WASM.
+
+### 2. Trigger selection menu (interactive mode only)
+
+If your workflow has multiple triggers, you'll see a menu:
+
+```
+🚀 Workflow simulation ready. Please select a trigger:
+1. cron-trigger@1.0.0 Trigger
+2. http-trigger@1.0.0-alpha Trigger
+3. evm:ChainSelector:16015286601757825753@1.0.0 LogTrigger
+
+Enter your choice (1-3):
+```
+
+If your workflow has only one trigger, it will run automatically without this prompt.
+
+### 3. User logs
+
+Logs from your workflow code (e.g., `logger.Info()` calls) appear with timestamps:
+
+```
+2025-10-24T19:07:27Z [USER LOG] Running CronTrigger
+2025-10-24T19:07:27Z [USER LOG] fetching por url https://api.example.com
+2025-10-24T19:07:27Z [USER LOG] ReserveInfo { "totalReserve": 494515082.75 }
+```
+
+### 4. Final execution result
+
+The simulator displays the value returned by your workflow:
+
+```
+Workflow Simulation Result:
+ {
+  "result": 47
+}
+```
+
+### 5. Transaction details (if your workflow writes onchain)
+
+If your workflow performs onchain writes, the simulator will show transaction information:
+
+**Without `--broadcast` (dry run):**
+
+The transaction is prepared but not sent. You'll see a zero address (`0x0000...`) as the transaction hash:
+
+```
+2025-10-24T23:01:50Z [USER LOG] Write report transaction succeeded: 0x0000000000000000000000000000000000000000000000000000000000000000
+```
+
+**With `--broadcast`:**
+
+The transaction is actually sent to the blockchain. You'll see a real transaction hash:
+
+```
+2025-10-24T17:55:48Z [USER LOG] Write report transaction succeeded: 0x1013abc0b6f345fad15b19a56cabbbaab2a2aa94f81eb3a709058adf18a4f23f
+```
+
+## Limitations
+
+While simulation provides high confidence in your workflow's behavior, it has some limitations:
+
+- **Single-node execution**: Simulation runs on a single node (your local machine) rather than across a DON. There is no actual consensus or quorum, it is simulated.
+- **Manual trigger execution**: Time-based triggers (cron) execute immediately when selected, not on a schedule. You must manually initiate each simulation run.
+- **Simplified environment**: The simulation environment mimics production but is not identical. Some edge cases or network conditions may only appear in a deployed environment.
+
+Despite these limitations, simulation is an essential tool for catching bugs, validating logic, and testing integrations before deploying to production.
+
+## Next steps
+
+- **Deploy your workflow**: Once you're confident your workflow works correctly, see [Deploying Workflows](/cre/guides/operations/deploying-workflows).
+- **CLI reference**: For a complete list of flags and options, see the [CLI Workflow Commands reference](/cre/reference/cli/workflow/).

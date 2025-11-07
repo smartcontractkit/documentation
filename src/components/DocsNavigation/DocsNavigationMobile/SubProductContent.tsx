@@ -1,6 +1,10 @@
 import React, { useEffect, useRef } from "react"
-import { BackArrowIcon } from "./BackArrowIcon.tsx"
-import { Page } from "../../Header/Nav/config.tsx"
+import { useStore } from "@nanostores/react"
+import { selectedLanguage } from "~/lib/languageStore.js"
+import { selectedChainType } from "~/stores/chainType.js"
+import { applyChainTypeFilter } from "~/utils/chainType.js"
+import { BackArrowIcon } from "./BackArrowIcon.js"
+import { Page } from "../../Header/Nav/config.js"
 import styles from "./subProductContent.module.css"
 
 type Props = {
@@ -12,42 +16,79 @@ type Props = {
   currentPath: string
 }
 
-const renderPages = (pages: Page[], currentPath: string, level = 0) => {
-  return pages.map(({ label, href, children }) => {
-    const adjustedHref = href.startsWith("http") ? href : `/${href}`
-    const isActive = currentPath.replace(/\/$/, "") === adjustedHref.replace(/\/$/, "")
+// Separate component for each page link to properly use React hooks
+const PageLink = ({ page, currentPath, level }: { page: Page; currentPath: string; level: number }) => {
+  const adjustedHref = page.href.startsWith("http") ? page.href : `/${page.href}`
 
-    const linkRef = useRef<HTMLAnchorElement>(null)
+  // Normalize paths for comparison (remove trailing slashes)
+  const normalizedCurrentPath = currentPath.replace(/\/$/, "")
+  const normalizedHref = adjustedHref.replace(/\/$/, "")
 
-    useEffect(() => {
-      if (isActive && linkRef.current) {
-        linkRef.current.scrollIntoView({ behavior: "smooth", block: "center" })
-      }
-    }, [isActive])
+  // Check if current path matches this page's href or any of its highlightAsCurrent variants
+  const isActive =
+    normalizedCurrentPath === normalizedHref ||
+    (page.highlightAsCurrent &&
+      page.highlightAsCurrent.some((variant) => normalizedCurrentPath === `/${variant.replace(/\/$/, "")}`))
 
-    const linkStyle = {
-      backgroundColor: isActive ? "var(--blue-100)" : "transparent",
-      color: isActive ? "var(--blue-600)" : "inherit",
-      fontWeight: isActive ? "500" : "normal",
+  const linkRef = useRef<HTMLAnchorElement>(null)
+
+  useEffect(() => {
+    if (isActive && linkRef.current) {
+      linkRef.current.scrollIntoView({ behavior: "smooth", block: "center" })
     }
+  }, [isActive])
 
-    return (
-      <React.Fragment key={label}>
-        <a
-          ref={linkRef}
-          style={linkStyle}
-          className={`${styles.link} subproduct-link level-${level}`}
-          href={adjustedHref}
-        >
-          {label}
-        </a>
-        {children && renderPages(children, currentPath, level + 1)}
-      </React.Fragment>
-    )
-  })
+  const linkStyle = {
+    backgroundColor: isActive ? "var(--blue-100)" : "transparent",
+    color: isActive ? "var(--blue-600)" : "inherit",
+    fontWeight: isActive ? "500" : "normal",
+  }
+
+  // Format chainTypes as data attribute (matching desktop sidebar)
+  const chainAttr = page.chainTypes ? page.chainTypes.join(",") : "universal"
+
+  return (
+    <a
+      ref={linkRef}
+      style={linkStyle}
+      className={`${styles.link} subproduct-link level-${level}`}
+      href={adjustedHref}
+      data-chain-types={chainAttr}
+    >
+      {page.label}
+    </a>
+  )
+}
+
+const renderPages = (pages: Page[], currentPath: string, currentLang: string, level = 0): React.ReactNode[] => {
+  return pages
+    .filter((page) => {
+      // Filter by sdkLang (for CRE language switching)
+      if (page.sdkLang) {
+        return page.sdkLang === currentLang
+      }
+      // If no sdkLang, always show (language-agnostic pages)
+      return true
+    })
+    .map((page) => {
+      return (
+        <React.Fragment key={`${page.label}-${page.href}`}>
+          <PageLink page={page} currentPath={currentPath} level={level} />
+          {page.children && renderPages(page.children, currentPath, currentLang, level + 1)}
+        </React.Fragment>
+      )
+    })
 }
 
 export const SubProductContent = ({ subProducts, onSubproductClick, currentPath }: Props) => {
+  const currentLang = useStore(selectedLanguage)
+  const currentChain = useStore(selectedChainType)
+
+  // Apply chain type filtering using shared utility (same as desktop sidebar)
+  useEffect(() => {
+    applyChainTypeFilter(currentChain)
+  }, [currentChain])
+
   if (!subProducts) {
     return null
   }
@@ -61,7 +102,7 @@ export const SubProductContent = ({ subProducts, onSubproductClick, currentPath 
       {subProducts.items.map(({ label, pages }) => (
         <div key={label}>
           <h3 className={styles.section}>{label}</h3>
-          {pages && renderPages(pages, currentPath, 1)}
+          {pages && renderPages(pages, currentPath, currentLang, 1)}
         </div>
       ))}
     </>

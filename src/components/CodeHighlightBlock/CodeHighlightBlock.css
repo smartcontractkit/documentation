@@ -1,0 +1,878 @@
+.code-block-container {
+  --code-bg: #2b2b2b;
+  --code-text: #f8faff;
+  --code-highlight: rgba(38, 166, 154, 0.15);
+  --code-highlight-border: #2ecc71;
+  --code-border: rgba(255, 255, 255, 0.1);
+  --code-header-bg: #3a3a3a;
+  --code-button-hover: rgba(255, 255, 255, 0.15);
+  --code-line-height: 20px;
+  --code-line-number-bg: #252525;
+  --code-indent: 20px;
+  --code-padding-x: 14px;
+
+  margin: 2.5rem 0 1.5rem 0;
+  border-radius: 6px;
+  overflow: hidden;
+  font-size: 13px !important;
+  font-family: "SF Mono", "Menlo", "Monaco", "Consolas", "Liberation Mono", "Courier New", monospace;
+  background-color: var(--code-bg);
+  color: var(--code-text);
+  box-shadow: none;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  border: none;
+  position: relative;
+}
+
+.code-block-content {
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  background-color: var(--code-bg);
+  position: relative;
+  border-radius: 0 0 6px 6px;
+  padding: 12px 0;
+  max-width: 100%;
+}
+
+.code-width-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  position: relative;
+  border-radius: 6px;
+  overflow: visible !important;
+}
+
+.code-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px var(--code-padding-x) 11px var(--code-padding-x);
+  background-color: var(--code-header-bg);
+  border-bottom: none !important;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  box-shadow: none !important;
+  border-image: none !important;
+  box-sizing: border-box;
+  width: 100%;
+  flex-shrink: 0;
+  margin-bottom: 0 !important;
+  border-radius: 6px 6px 0 0;
+}
+
+.code-block-header::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--code-bg);
+  z-index: 3;
+}
+
+.code-title {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  color: #e0e0e0;
+  gap: 6px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background-color: rgba(255, 255, 255, 0.05);
+  max-width: 70%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.code-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.language-label {
+  font-size: 0.75rem;
+  color: #8c93a8;
+  padding: 4px 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+/* Language Dropdown */
+.language-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.language-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: #e0e0e0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 80px;
+}
+
+.language-dropdown-trigger:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.language-dropdown-trigger[aria-expanded="true"] {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(79, 150, 255, 0.5);
+}
+
+.selected-language {
+  flex: 1;
+  text-align: left;
+}
+
+.chevron-dropdown {
+  flex-shrink: 0;
+  color: #8c93a8;
+  transition: transform 0.2s ease;
+}
+
+.language-dropdown-trigger[aria-expanded="true"] .chevron-dropdown {
+  transform: rotate(180deg);
+}
+
+.language-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 150px; /* Increased for "TypeScript" */
+  width: max-content;
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.3),
+    0 2px 4px -2px rgb(0 0 0 / 0.3);
+  z-index: 1000;
+  display: none;
+  padding: 4px;
+}
+
+.language-dropdown-menu[data-visible="true"] {
+  display: block;
+}
+
+.language-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 12px; /* Increased padding for better spacing */
+  background: none;
+  border: none;
+  color: #e0e0e0;
+  font-size: 0.75rem;
+  font-weight: 400;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  min-width: 130px; /* Ensure minimum space for "TypeScript" + icon */
+}
+
+.language-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.language-option.active {
+  color: #4f96ff;
+  background: rgba(79, 150, 255, 0.1);
+}
+
+.language-option.active:hover {
+  background: rgba(79, 150, 255, 0.15);
+}
+
+.language-name {
+  flex: 1;
+}
+
+.check-icon {
+  flex-shrink: 0;
+  color: #4f96ff;
+  margin-left: 12px; /* More space to ensure visibility */
+  width: 16px;
+  height: 16px;
+}
+
+.copy-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: #8c93a8;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 4px;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+  width: 28px;
+  height: 28px;
+  position: relative;
+}
+
+.copy-button::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: -30px;
+  right: -10px;
+  background-color: #1e1e1e;
+  color: #ffffff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.copy-button:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+.copy-button.copied::after {
+  content: "Copied!";
+}
+
+.copy-button:hover {
+  background-color: var(--code-button-hover);
+  opacity: 1;
+  color: #f0f0f0;
+}
+
+.copy-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+.copy-button.copied {
+  color: #4ade80;
+  opacity: 1;
+}
+
+.code-table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  background-color: var(--code-bg);
+  table-layout: auto;
+  border: none;
+  white-space: nowrap;
+}
+
+.code-table tr {
+  border: none !important;
+  background-color: var(--code-bg);
+  height: var(--code-line-height);
+  line-height: var(--code-line-height);
+  position: relative;
+  margin: 0 !important;
+  padding: 0 !important;
+  margin-top: -1px !important;
+  margin-bottom: -1px !important;
+  border-left: none;
+  border-right: none;
+}
+
+.code-table td {
+  padding: 0 !important;
+  border: none !important;
+  vertical-align: top;
+  background-color: var(--code-bg);
+  line-height: var(--code-line-height);
+  margin: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.code-table tbody {
+  display: table-row-group;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.code-table .line-number {
+  color: rgba(180, 180, 180, 0.8) !important;
+  text-align: center;
+  padding: 0;
+  min-width: 40px;
+  width: 40px;
+  user-select: none;
+  background-color: var(--code-bg) !important;
+  border-right: 1px solid rgba(50, 50, 50, 0.3);
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  box-sizing: border-box;
+}
+
+.code-table .line-number .number-text {
+  display: inline-block;
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  color: rgba(180, 180, 180, 0.8) !important;
+  box-sizing: border-box;
+  font-weight: normal;
+  position: relative;
+  z-index: 1;
+}
+
+.code-table td.line-content {
+  padding-left: 16px !important;
+  padding-right: var(--code-padding-x);
+  padding-top: 0;
+  padding-bottom: 0;
+  box-sizing: border-box;
+  background-color: var(--code-bg);
+  position: relative;
+  white-space: nowrap;
+  width: auto;
+  min-width: 0;
+  text-align: left !important;
+}
+
+.code-table .line {
+  display: inline;
+  white-space: pre;
+  word-break: normal;
+  position: relative;
+  text-align: left !important;
+}
+
+.code-table .line > span {
+  position: relative;
+  display: inline;
+}
+
+/* Highlighted line content only */
+.code-table tr.line-highlighted td.line-content {
+  background-color: var(--code-highlight) !important;
+  border-left: 3px solid var(--code-highlight-border) !important;
+  padding-left: 12px !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin: 0 !important;
+  position: relative !important;
+}
+
+/* Ensure dynamically created highlighted lines extend full width */
+.code-table tr.line-highlighted td.line-content::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: inherit;
+  z-index: -1;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Keep line numbers opaque and styled */
+.code-table tr.line-highlighted td.line-number {
+  background-color: var(--code-bg) !important;
+  /* Keeps sticky position from parent rule */
+}
+
+.code-table tr.line-highlighted td.line-number .number-text {
+  color: var(--code-highlight-border) !important;
+  font-weight: normal;
+}
+
+.code-table tr.line-highlighted + tr.line-highlighted td.line-content {
+  margin-top: -1px !important;
+}
+
+/* Syntax highlighting tokens - SCOPED to code blocks only */
+.code-block-container .token.comment,
+.code-block-container .token.prolog,
+.code-block-container .token.doctype,
+.code-block-container .token.cdata {
+  color: #a4b1c3 !important;
+}
+
+.code-block-container .token.keyword,
+.code-block-container .token.tag,
+.code-block-container .token.attr-name,
+.code-block-container .token.namespace,
+.code-block-container .token.deleted,
+.code-block-container .token.property,
+.code-block-container .token.selector,
+.code-block-container .token.important,
+.code-block-container .token.atrule {
+  color: #8aa6f9 !important;
+}
+
+.code-block-container .token.operator,
+.code-block-container .token.entity,
+.code-block-container .token.url,
+.code-block-container .token.punctuation {
+  color: #f8faff !important;
+}
+
+.code-block-container .token.string,
+.code-block-container .token.char,
+.code-block-container .token.attr-value,
+.code-block-container .token.regex,
+.code-block-container .token.variable {
+  color: #f7b808 !important;
+}
+
+.code-block-container .token.number,
+.code-block-container .token.boolean {
+  color: #e54918 !important;
+}
+
+.code-block-container .token.function,
+.code-block-container .token.function-name,
+.code-block-container .token.constant,
+.code-block-container .token.symbol {
+  color: #4f96ff !important;
+}
+
+.code-block-container .token.class-name,
+.code-block-container .token.type,
+.code-block-container .token.type-definition {
+  color: #25ac9e !important;
+}
+
+.code-block-container .token.variable,
+.code-block-container .token.parameter,
+.code-block-container .token.entity {
+  color: #b4c4ff !important;
+}
+
+/* Default text color - SCOPED */
+.code-block-container .code-table span:not([class]),
+.code-block-container .code-table span.identifier,
+.code-block-container .code-table *:not([class]) {
+  color: #f8faff !important;
+}
+
+/* CRITICAL: Hide tooltips initially but allow JavaScript to override */
+.line-comment-tooltip,
+.segment-tip {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* ====== SEGMENT TOOLTIP STYLING ====== */
+/* Special exception for JavaScript hover control on segment tooltips */
+.segment-highlight:hover ~ .segment-tip[style*="opacity: 1"],
+.segment-highlight:hover + .segment-tip[style*="opacity: 1"],
+.segment-highlight:hover ~ .segment-tip[style*="visibility: visible"],
+.segment-highlight:hover + .segment-tip[style*="visibility: visible"] {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Segment Tooltip Styling */
+.segment-tip {
+  position: absolute;
+  max-width: 300px;
+  min-width: 120px;
+  z-index: 9999999;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  top: -6px;
+  transform: translate(-50%, -100%);
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease;
+
+  /*  Ensure tooltips start hidden */
+  opacity: 0;
+  visibility: hidden;
+}
+
+.segment-tip-content {
+  background-color: white;
+  color: #333;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  position: relative;
+  word-break: normal;
+  white-space: normal;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+    sans-serif;
+}
+
+/* Add arrow to segment tooltip content - same as line tooltip */
+.segment-tip-content::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 10px;
+  height: 10px;
+  background-color: white;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  z-index: 1;
+}
+
+/* Segment highlight styling */
+.segment-highlight {
+  position: relative !important;
+  cursor: help;
+  display: inline-block;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 2px 4px;
+  border-radius: 4px;
+  border-bottom: none !important;
+  transition: background-color 0.2s ease;
+  z-index: 5;
+}
+
+.segment-highlight:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+
+/* ====== LINE TOOLTIP STYLING ====== */
+/* Allow line tooltips to be visible on hover */
+tr.has-comment .line:hover ~ .line-comment-tooltip,
+tr.has-comment .line:hover + .line-comment-tooltip {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Line comment tooltips */
+.line-comment-tooltip {
+  position: absolute;
+  z-index: 99999 !important;
+  pointer-events: none;
+  max-width: 300px;
+  min-width: 120px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  top: -6px;
+  transform: translate(-50%, -100%);
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease;
+}
+
+/* Lines with comments styling */
+tr.has-comment .line {
+  display: inline;
+  position: relative;
+  background: none;
+  cursor: help;
+  border-bottom: 1px dotted rgba(79, 150, 255, 0.4);
+  transition: border-bottom-color 0.2s ease;
+}
+
+tr.has-comment .line:hover {
+  border-bottom-color: rgba(79, 150, 255, 0.9);
+}
+
+/* Tooltip content styling */
+.line-comment-content {
+  background-color: white;
+  color: #333 !important;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  position: relative;
+  word-break: normal;
+  white-space: normal;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+    sans-serif;
+  text-align: left;
+}
+
+/* Tooltip arrow */
+.line-comment-content::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 10px;
+  height: 10px;
+  background-color: white;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  z-index: 1;
+}
+
+/* Hide other syntax highlighters' copy buttons */
+.code-block-container div[class*="toolbar"],
+.code-block-container [class*="toolbar"],
+.code-block-container button[data-copy-state],
+.code-block-container .copy-to-clipboard-button,
+.code-block-container [class*="copy-button"]:not(.copy-button),
+.code-block-container .prism-copy-button,
+.code-block-container [data-copy],
+div.code-toolbar > .toolbar,
+.code-block-container .btnIcon,
+.toolbar-item,
+button.copy-button-1,
+.code-block-container + button,
+.code-block-container ~ button,
+.astro-code button,
+button.code-copy-btn,
+div.code-block-container + button[aria-label*="Copy"],
+div.astro-code + button,
+pre + button,
+button[style*="position: absolute"][style*="top"],
+button[style*="position:absolute"][style*="top"],
+button[style*="position: absolute"][style*="right: 0"],
+button[style*="position:absolute"][style*="right:0"],
+button[style*="position: absolute"][style*="top: 0"],
+button[style*="position:absolute"][style*="top:0"],
+body .copy-btn-container,
+button.code-copy-button-0,
+button.code-copy-button-1,
+button.code-copy-button-2 {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Ensure code block container prevents external styles */
+.code-block-container::after {
+  display: none !important;
+}
+
+/* Ensure all parent elements allow tooltips to be visible */
+.code-width-wrapper,
+.code-table,
+tbody,
+tr,
+td {
+  outline: none !important;
+  border-right: none !important;
+}
+
+/* Keep content scrollable */
+.code-block-content {
+  outline: none !important;
+  border-right: none !important;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+  .code-table .line-number {
+    display: none;
+  }
+
+  .code-header {
+    padding: 8px;
+  }
+
+  .language-label {
+    display: none;
+  }
+
+  .code-table .line-content {
+    width: 100%;
+  }
+}
+
+.file-icon {
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+.code-block-container .code-table .line * {
+  font-size: 13px !important;
+}
+
+.code-table tbody {
+  padding-top: 0;
+  padding-bottom: 12px;
+  display: block;
+}
+
+.code-table tr:first-child td {
+  padding-top: 0;
+}
+
+.code-table tr:last-child td {
+  padding-bottom: 0;
+}
+
+.code-block-header,
+.code-block-content,
+.code-table {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Ensure tooltips position correctly relative to containers */
+.code-block-content {
+  position: relative;
+}
+
+/* Allow tooltips but keep scroll functionality */
+.code-width-wrapper,
+.code-table,
+tbody,
+tr,
+td {
+  /* No overflow rules - let natural behavior handle it */
+}
+
+/* ====== SMART TOOLTIP STYLING ====== */
+.code-block-container .smart-tooltip {
+  position: absolute;
+  max-width: 320px;
+  min-width: 150px;
+  z-index: 10000;
+  pointer-events: none; /* Initially non-interactive */
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, -100%);
+  top: -12px; /* Add some extra space */
+  transition:
+    opacity 0.15s ease,
+    visibility 0.15s ease;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
+}
+
+.code-block-container .smart-tooltip.is-interactive {
+  pointer-events: auto; /* Becomes interactive when shown */
+}
+
+.code-block-container .smart-tooltip-content {
+  background-color: white;
+  color: #333;
+  border-radius: 5px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  position: relative;
+  word-break: normal;
+  white-space: normal;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+    sans-serif;
+  text-align: left;
+}
+
+/* Tooltip arrow */
+.code-block-container .smart-tooltip-content::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 10px;
+  height: 10px;
+  background-color: white;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Links inside tooltips */
+.code-block-container .smart-tooltip-content a {
+  color: #007bff;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(0, 123, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+.code-block-container .smart-tooltip-content a:hover {
+  color: #0056b3;
+  border-bottom-color: rgba(0, 123, 255, 0.8);
+}
+
+/* Remove old tooltip styles to avoid conflicts */
+.segment-tip,
+.line-comment-tooltip {
+  display: none !important;
+}
+
+/* Language Toggle (for 2 languages) */
+.language-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 3px;
+}
+
+.language-toggle-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 12px;
+  background: transparent;
+  border: none;
+  color: #8c93a8;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: 60px;
+}
+
+.language-toggle-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e0e0e0;
+}
+
+.language-toggle-button.active {
+  background: rgba(79, 150, 255, 0.2);
+  color: #4f96ff;
+  font-weight: 600;
+}
+
+.language-toggle-button.active:hover {
+  background: rgba(79, 150, 255, 0.25);
+}

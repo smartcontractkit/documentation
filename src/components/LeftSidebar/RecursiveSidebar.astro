@@ -1,6 +1,7 @@
 ---
 import type { SectionContent } from "../../config"
 import styles from "./recursiveSidebar.module.css"
+import { getCollection } from "astro:content"
 
 /** Props for this recursive component */
 interface Props {
@@ -9,6 +10,14 @@ interface Props {
 }
 
 const { items, currentPage } = Astro.props
+
+const allPages = await getCollection("cre")
+const pageSdkLangMap = new Map<string, string>()
+allPages.forEach((page) => {
+  if (page.data.sdkLang) {
+    pageSdkLangMap.set(`cre/${page.id.replace(/\.mdx?$/, "")}`, page.data.sdkLang)
+  }
+})
 
 /** Removes leading/trailing slashes, plus anything after "?" */
 function removeSlashes(url: string): string {
@@ -82,6 +91,11 @@ function shouldExpandSection(item: SectionContent, currentPage: string): boolean
       return true
     }
 
+    // Check highlightAsCurrent array for this item
+    if (item.highlightAsCurrent?.some((url) => removeSlashes(url) === normalizedCurrentPage)) {
+      return true
+    }
+
     // Check if current page is a descendant
     if (normalizedCurrentPage.startsWith(normalizedItemUrl + "/")) {
       return true
@@ -99,43 +113,99 @@ function shouldExpandSection(item: SectionContent, currentPage: string): boolean
 
 <ul class={styles.list}>
   {
-    items.map((item) => (
-      <li>
-        {item.children ? (
-          <details open={shouldExpandSection(item, currentPage)}>
-            <summary
-              class={`${styles.navLink} ${isCurrentPageMatch(item.url || "", currentPage, item.highlightAsCurrent) ? styles.active : ""}`}
-            >
-              {item.url ? (
-                <a
-                  class={isCurrentPageMatch(item.url, currentPage, item.highlightAsCurrent) ? styles.active : ""}
-                  href={buildHref(item.url)}
-                  aria-current={isCurrentPageMatch(item.url, currentPage, item.highlightAsCurrent) ? "page" : undefined}
-                  target={isExternalUrl(item.url) ? "_blank" : undefined}
-                  rel={isExternalUrl(item.url) ? "noopener noreferrer" : undefined}
-                >
-                  {item.title}
-                </a>
-              ) : (
-                item.title
-              )}
-            </summary>
-            <ul class={`${styles.navGroupEntries} ${styles.nested}`}>
-              <Astro.self items={item.children} currentPage={currentPage} />
-            </ul>
-          </details>
-        ) : (
-          <a
-            class={`${styles.navLink} ${isCurrentPageMatch(item.url, currentPage, item.highlightAsCurrent) ? styles.active : ""}`}
-            href={buildHref(item.url)}
-            aria-current={isCurrentPageMatch(item.url, currentPage, item.highlightAsCurrent) ? "page" : undefined}
-            target={isExternalUrl(item.url) ? "_blank" : undefined}
-            rel={isExternalUrl(item.url) ? "noopener noreferrer" : undefined}
-          >
-            {item.title}
-          </a>
-        )}
-      </li>
-    ))
+    items.map((item) => {
+      const sdkLang = item.url ? pageSdkLangMap.get(item.url) : undefined
+      const chainTypes = item.chainTypes
+      const chainAttr = chainTypes ? chainTypes.join(",") : "universal"
+      return (
+        <li data-sdk-lang={sdkLang || "both"} data-chain-types={chainAttr}>
+          {item.children ? (
+            <details open={shouldExpandSection(item, currentPage)}>
+              <summary
+                class={`${styles.navLink} ${isCurrentPageMatch(item.url || "", currentPage, item.highlightAsCurrent) ? styles.active : ""}`}
+              >
+                {item.url ? (
+                  <a
+                    class={isCurrentPageMatch(item.url, currentPage, item.highlightAsCurrent) ? styles.active : ""}
+                    href={buildHref(item.url)}
+                    aria-current={
+                      isCurrentPageMatch(item.url, currentPage, item.highlightAsCurrent) ? "page" : undefined
+                    }
+                    target={isExternalUrl(item.url) ? "_blank" : undefined}
+                    rel={isExternalUrl(item.url) ? "noopener noreferrer" : undefined}
+                  >
+                    {item.title}
+                  </a>
+                ) : (
+                  item.title
+                )}
+              </summary>
+              <ul class={`${styles.navGroupEntries} ${styles.nested}`}>
+                <Astro.self items={item.children} currentPage={currentPage} />
+              </ul>
+            </details>
+          ) : (
+            item.url && (
+              <a
+                class={`${styles.navLink} ${isCurrentPageMatch(item.url, currentPage, item.highlightAsCurrent) ? styles.active : ""}`}
+                href={buildHref(item.url)}
+                aria-current={isCurrentPageMatch(item.url, currentPage, item.highlightAsCurrent) ? "page" : undefined}
+                target={isExternalUrl(item.url) ? "_blank" : undefined}
+                rel={isExternalUrl(item.url) ? "noopener noreferrer" : undefined}
+              >
+                {item.title}
+              </a>
+            )
+          )}
+        </li>
+      )
+    })
   }
 </ul>
+
+<script>
+  /**
+   * Filters sidebar items based on selected SDK language
+   * - Hides items with data-sdk-lang that don't match current selection
+   * - Runs on initial load and when language changes
+   */
+  function filterSidebarByLanguage() {
+    // Get current language from localStorage
+    let currentLang = "go" // default
+    try {
+      const stored = localStorage.getItem("docs-language-preference")
+      if (stored) {
+        currentLang = stored === "ts" || stored === '"ts"' ? "ts" : "go"
+      }
+    } catch {
+      // Fallback to default
+    }
+
+    // Find all sidebar items with data-sdk-lang attribute
+    const sidebarItems = document.querySelectorAll<HTMLElement>("[data-sdk-lang]")
+
+    sidebarItems.forEach((item) => {
+      const sdkLang = item.getAttribute("data-sdk-lang")
+
+      if (sdkLang === "both") {
+        // Always show items that are language-agnostic
+        item.style.display = ""
+      } else if (sdkLang !== currentLang) {
+        // Hide items that don't match current language
+        item.style.display = "none"
+      } else {
+        // Show items that match current language
+        item.style.display = ""
+      }
+    })
+  }
+
+  // Run on initial load
+  filterSidebarByLanguage()
+
+  // Run after view transitions
+  document.addEventListener("astro:after-swap", filterSidebarByLanguage)
+
+  // Listen for language changes
+  window.addEventListener("languageChanged", filterSidebarByLanguage)
+</script>

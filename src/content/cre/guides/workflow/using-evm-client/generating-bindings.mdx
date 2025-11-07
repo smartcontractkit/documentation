@@ -1,0 +1,406 @@
+---
+section: cre
+title: "Generating Contract Bindings"
+sdkLang: "go"
+date: Last Modified
+metadata:
+  description: "Create type-safe contract interfaces: learn to generate Go bindings from smart contract ABIs for safer, cleaner workflow code."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+To interact with a smart contract from your Go workflow, you first need to create **bindings**. Bindings are type-safe Go interfaces auto-generated from your contract's ABI. They provide a bridge between your Go code and the EVM.
+
+How they work depends on whether you are reading from or writing to the chain:
+
+- **For onchain reads**, bindings provide Go functions that directly mirror your contract's `view` and `pure` methods.
+- **For onchain writes**, bindings provide powerful helper methods to ABI-encode your data structures, preparing them to be sent in a report to a [consumer contract](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts/).
+
+This is a **one-time code generation step** performed using the CRE CLI.
+
+## The generation process
+
+The CRE CLI provides an automated binding generator that reads contract ABIs and creates corresponding Go packages.
+
+### Step 1: Add your contract ABI
+
+Place your contract's ABI JSON file into the `contracts/evm/src/abi/` directory. For example, to generate bindings for a `PriceUpdater` contract, you would create `contracts/evm/src/abi/PriceUpdater.abi` with your ABI content.
+
+### Step 2: Generate the bindings
+
+From your **project root**, run the binding generator:
+
+```bash
+cre generate-bindings evm
+```
+
+This command scans all `.abi` files in `contracts/evm/src/abi/` and generates corresponding Go packages in `contracts/evm/src/generated/`. For each contract, two files are generated:
+
+- `<ContractName>.go` — The main binding for interacting with the contract
+- `<ContractName>_mock.go` — A mock implementation for testing your workflows without deploying contracts
+
+## Using generated bindings
+
+### For onchain reads
+
+For `view` or `pure` functions, the generator creates a client with methods that you can call directly. These methods return a `Promise`, which you must `.Await()` to get the result after consensus.
+
+**Example: A simple `Storage` contract**
+
+If you have a `Storage.abi` for a contract with a `get()` view function, you can use the bindings like this:
+
+```go
+// Import the generated package for your contract, replacing "<project-name>" with your project's module name
+import "<project-name>/contracts/evm/src/generated/storage"
+import "github.com/ethereum/go-ethereum/common"
+
+// In your workflow function...
+evmClient := &evm.Client{ ChainSelector: config.ChainSelector }
+contractAddress := common.HexToAddress(config.ContractAddress)
+
+// Create a new contract instance
+storageContract, err := storage.NewStorage(evmClient, contractAddress, nil)
+if err != nil { /* ... */ }
+
+// Call a read-only method - note that it returns the decoded type directly
+value, err := storageContract.Get(runtime, big.NewInt(-3)).Await() // -3 = finalized block
+if err != nil { /* ... */ }
+// value is already a *big.Int, ready to use!
+```
+
+<Aside type="note" title="Block number options">
+  The `big.NewInt(-3)` parameter specifies reading from the finalized block. You can also use `big.NewInt(-2)` for the
+  latest block, or use constants from the `go-ethereum/rpc` package for better readability. See [Block number
+  options](/cre/guides/workflow/using-evm-client/onchain-read-go#block-number-options) for all available options.
+</Aside>
+
+### For onchain writes
+
+For onchain writes, your goal is to send an ABI-encoded report to your [consumer contract](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts/). The binding generator creates helper methods that handle the entire process: creating the report, sending it for consensus, and delivering it to the chain.
+
+#### Signaling the generator
+
+To generate the necessary Go types and write helpers, your ABI must include at least one **`public` or `external` function that uses the data `struct` you want to send as a parameter**.
+
+The generated helper method is named after the **input struct type**. For example, a struct named `PriceData` will generate a `WriteReportFromPriceData` helper.
+
+<Aside type="note" title="What about the proxy pattern?">
+  Even if you are using the [proxy
+  pattern](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts/#example-2-the-proxy-pattern)
+  and the actual logic is in a different contract, you should generate bindings from an ABI that exposes the data
+  structure you want to send. You can create a simple interface for this purpose if needed. The bindings will be used to
+  call your *Proxy Contract*, but they need to be generated from an ABI that contains the correct function and struct
+  definitions.
+</Aside>
+
+**Example: A `PriceUpdater` contract ABI**
+
+This ABI contains a `PriceData` struct and a public `updatePrices` function. This is all the generator needs.
+
+```solidity
+// contracts/evm/src/PriceUpdater.sol
+// This contract can be used purely to generate the bindings.
+// The actual onchain logic can live elsewhere.
+contract PriceUpdater {
+  struct PriceData {
+    uint256 ethPrice;
+    uint256 btcPrice;
+  }
+
+  // The struct type (`PriceData`) determines the generated helper name.
+  // The generator will create a `WriteReportFromPriceData` method.
+  function updatePrices(PriceData memory) public {}
+}
+```
+
+#### Using write bindings in a workflow
+
+After running `cre generate-bindings`, you can use the generated `PriceUpdater` client to send a report. The workflow code will look like this:
+
+```go
+// Import the generated package for your contract, replacing "<project-name>" with your project's module name
+import "<project-name>/contracts/evm/src/generated/price_updater"
+import "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/evm"
+import "github.com/ethereum/go-ethereum/common"
+import "math/big"
+import "fmt"
+
+// In your workflow function...
+
+// The address should be your PROXY contract's address.
+contractAddress := common.HexToAddress(config.ProxyAddress)
+evmClient := &evm.Client{ ChainSelector: config.ChainSelector }
+
+// 1. Create a new contract instance using the generated bindings.
+//    Even though it's called `price_updater`, it's configured with your proxy address.
+priceUpdater, err := price_updater.NewPriceUpdater(evmClient, contractAddress, nil)
+if err != nil { /* ... */ }
+
+// 2. Instantiate the generated Go struct with your data.
+reportData := price_updater.PriceData{
+    EthPrice: big.NewInt(4000_000000),
+    BtcPrice: big.NewInt(60000_000000),
+}
+
+// 3. Call the generated WriteReportFrom<StructName> method on the contract instance.
+//    This method name is derived from the input struct of your contract's function.
+writePromise := priceUpdater.WriteReportFromPriceData(runtime, reportData, nil)
+
+// 4. Await the promise to confirm the transaction has been mined.
+resp, err := writePromise.Await()
+if err != nil {
+    return nil, fmt.Errorf("WriteReport await failed: %w", err)
+}
+
+// 5. The response contains the transaction hash.
+logger := runtime.Logger()
+logger.Info("Write report transaction succeeded", "txHash", common.BytesToHash(resp.TxHash).Hex())
+```
+
+{/* prettier-ignore */}
+<Aside type="note" title="What does the WriteReport helper do?">
+    The `WriteReportFromPriceData` method automatically handles the entire onchain write process for you:
+
+    1. It ABI-encodes the `PriceData` struct into a `bytes` payload.
+    1. It calls `runtime.GenerateReport()` to create a secure, signed report from the DON.
+    1. It calls the EVM Client's `WriteReport` method to submit this report to your consumer contract.
+    1. It creates and returns a `Promise` that resolves with the final transaction details, including the transaction hash, once the transaction is confirmed.
+
+   </Aside>
+
+### For event logs
+
+The binding generator also creates powerful helpers for interacting with your contract's events. You can easily trigger a workflow when an event is emitted and decode the event data into a type-safe Go struct.
+
+**Example: A contract with a `UserAdded` event**
+
+```solidity
+contract UserDirectory {
+  event UserAdded(address indexed userAddress, string userName);
+
+  function addUser(string calldata userName) external {
+    emit UserAdded(msg.sender, userName);
+  }
+}
+```
+
+#### Triggering and Decoding Events
+
+After generating bindings for the `UserDirectory` ABI, you can use the helpers to create a trigger and decode the logs in your handler.
+
+```go
+import (
+    "log/slog"
+    "<project-name>/contracts/evm/src/generated/user_directory" // Replace "<project-name>" with your project's module name
+    "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/evm"
+    "github.com/smartcontractkit/cre-sdk-go/cre"
+)
+
+// In InitWorkflow, create an instance of the contract binding and use it
+// to generate a trigger for the "UserAdded" event.
+func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+    // ...
+    userDirectory, err := user_directory.NewUserDirectory(evmClient, contractAddress, nil)
+    if err != nil { /* ... */ }
+
+    // Use the generated helper to create a trigger for the UserAdded event.
+    // Set confidence to evm.ConfidenceLevel_CONFIDENCE_LEVEL_FINALIZED to only trigger on finalized blocks.
+    // The last argument (filters) is nil to listen for all UserAdded events.
+    userAddedTrigger, err := userDirectory.LogTriggerUserAddedLog(chainSelector, evm.ConfidenceLevel_CONFIDENCE_LEVEL_FINALIZED, nil)
+    if err != nil { /* ... */ }
+
+    return cre.Workflow[*Config]{
+        cre.Handler(
+            userAddedTrigger,
+            onUserAdded,
+        ),
+    }, nil
+}
+
+
+// The handler function receives the raw event log.
+func onUserAdded(config *Config, runtime cre.Runtime, log *evm.Log) (string, error) {
+    logger := runtime.Logger()
+    // You must re-create the contract instance to access the decoder.
+    userDirectory, err := user_directory.NewUserDirectory(evmClient, contractAddress, nil)
+    if err != nil { /* ... */ }
+
+    // Use the generated Codec to decode the raw log into a typed Go struct.
+    decodedLog, err := userDirectory.Codec.DecodeUserAdded(log)
+    if err != nil {
+        return "", fmt.Errorf("failed to decode log: %w", err)
+    }
+
+    logger.Info("New user added!", "address", decodedLog.UserAddress, "name", decodedLog.UserName)
+    return "ok", nil
+}
+```
+
+## What the CLI Generates
+
+The generator creates a Go package for each ABI file.
+
+- **For all contracts**:
+  - `Codec` interface for low-level encoding and decoding.
+- **For onchain reads**:
+  - A contract **client struct** (e.g., `Storage`) to interact with.
+  - A **constructor function** (e.g., `NewStorage(...)`) to instantiate the client.
+  - **Method wrappers** for each `view`/`pure` function (e.g., `storage.Get(...)`) that return a promise.
+- **For onchain writes**:
+  - A **Go type** for each `struct` exposed via a public function (e.g., `price_updater.PriceData`).
+  - A `WriteReportFrom<StructName>` method on the **contract client struct** (e.g., `priceUpdater.WriteReportFromPriceData(...)`). This method handles the full process of generating and sending a report and returns a promise that resolves with the transaction details.
+- **For events**:
+  - A **Go struct** for each `event` (e.g., `UserAdded`).
+  - A `Decode<EventName>` method on the `Codec` to parse raw log data into the corresponding Go struct.
+  - A `LogTrigger<EventName>Log` method on the contract client to easily create a workflow trigger.
+  - A `FilterLogs<EventName>` method to query historical logs for that event.
+
+## Using mock bindings for testing
+
+The `<ContractName>_mock.go` files allow you to test your workflows without deploying or interacting with real contracts. Each mock struct provides:
+
+- **Test-friendly constructor**: `New<ContractName>Mock(address, evmMockClient)` creates a mock instance
+- **Mockable methods**: Set custom function implementations for each contract `view`/`pure` function
+- **Type safety**: The same input/output types as the real binding
+
+### Complete example: Testing a workflow with mocks
+
+Let's say you have a workflow in `my-workflow/main.go` that reads from a `Storage` contract. Create a test file named `main_test.go` in the same directory.
+
+<Aside type="note" title="Adapt to Your Workflow">
+  This example demonstrates the mock setup pattern. The `Config` and `EvmConfig` types shown are examples - you'll need
+  to define types that match YOUR workflow's structure. The key concepts (creating mocks, setting behavior) remain the
+  same regardless of your specific config structure.
+</Aside>
+
+```go
+// File: my-workflow/main_test.go
+package main
+
+import (
+    "math/big"
+    "testing"
+
+    "github.com/ethereum/go-ethereum/common"
+    "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/evm"
+    evmmock "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/evm/mock"
+    "github.com/stretchr/testify/require"
+
+    "your-project/contracts/evm/src/generated/storage"
+)
+
+// Define your config types in the test file to match your workflow's structure
+// Note: Your main.go likely has //go:build wasip1 (for WASM compilation),
+// which means those types aren't available when running regular Go tests.
+// So you need to redefine them here in your test file.
+type EvmConfig struct {
+    StorageAddress string `json:"storageAddress"`
+    ChainName      string `json:"chainName"`
+}
+
+type Config struct {
+    Evms []EvmConfig `json:"evms"`
+}
+
+func TestStorageRead(t *testing.T) {
+    // 1. Set up your config
+    config := &Config{
+        Evms: []EvmConfig{
+            {
+                StorageAddress: "0xa17CF997C28FF154eDBae1422e6a50BeF23927F4",
+                ChainName:      "ethereum-testnet-sepolia",
+            },
+        },
+    }
+
+    // 2. Create a mock EVM client
+    chainSelector := uint64(evm.EthereumTestnetSepolia)
+    evmMock, err := evmmock.NewClientCapability(chainSelector, t)
+    require.NoError(t, err)
+
+    // 3. Create a mock Storage contract and set up mock behavior
+    storageAddress := common.HexToAddress(config.Evms[0].StorageAddress)
+    storageMock := storage.NewStorageMock(storageAddress, evmMock)
+
+    // 4. Mock the Get() function to return a controlled value
+    storageMock.Get = func() (*big.Int, error) {
+        return big.NewInt(42), nil
+    }
+
+    // 5. Now when your workflow code creates a Storage contract with this evmMock,
+    //    it will automatically use the mocked Get() function.
+    //    The mock is registered with the evmMock, so any contract at this address
+    //    will use the mock behavior you defined.
+
+    // In a real test, you would call your workflow function here and verify results.
+    // Example:
+    // result, err := onCronTrigger(config, runtime, &cron.Payload{})
+    // require.NoError(t, err)
+    // require.Equal(t, big.NewInt(42), result.StorageValue)
+
+    // For this demo, we just verify the mock was set up
+    require.NotNil(t, storageMock)
+    t.Logf("Mock set up successfully - Get() will return 42")
+}
+```
+
+### Running your tests
+
+From your project root, run:
+
+```bash
+# Test a specific workflow
+go test ./my-workflow
+
+# Test with verbose output (shows t.Logf messages)
+go test -v ./my-workflow
+
+# Test all workflows in your project
+go test ./...
+```
+
+**Expected output with `-v` flag:**
+
+```bash
+=== RUN   TestStorageRead
+    main_test.go:55: Mock Storage contract set up at 0xa17CF997C28FF154eDBae1422e6a50BeF23927F4
+    main_test.go:56: When Storage.Get() is called, it will return: 42
+--- PASS: TestStorageRead (0.00s)
+PASS
+ok      onchain-calculator/my-calculator-workflow       0.257s
+```
+
+The test passes, confirming your mock contract is set up correctly. In a real workflow test, you would call your workflow function and verify it produces the expected results using the mocked contract.
+
+### Best practices for workflow testing
+
+1. **Name test files correctly**: Use `<name>_test.go` (e.g., `main_test.go`) and place them in your workflow directory
+1. **Test function naming**: Start test functions with `Test` (e.g., `TestMyWorkflow`, `TestCronTrigger`)
+1. **Mock all external dependencies**: Use mock contracts for EVM calls and mock HTTP clients for API requests
+1. **Test different scenarios**: Create separate test functions for success cases, error cases, and edge cases
+
+### Complete reference example
+
+For a comprehensive example showing how to test workflows with multiple triggers (cron, HTTP, EVM log) and multiple mock contracts, see the Custom Data Feed demo workflow's `workflow_test.go` file.
+
+To generate this example:
+
+1. Run `cre init` from your project directory
+1. Select **Golang** as your language
+1. Choose the **"Custom data feed: Updating on-chain data periodically using offchain API data"** template
+1. After initialization completes, examine the generated `workflow_test.go` file in your workflow directory
+
+This generated test file demonstrates real-world patterns for testing complex workflows with multiple capabilities and mock contracts.
+
+## Best practices
+
+1. **Regenerate when needed**: Re-run the generator if you update your contract ABIs.
+1. **Handle errors**: Always check for errors at each step.
+1. **Organize ABIs**: Keep your ABI files clearly named in the `contracts/evm/src/abi/` directory.
+1. **Use mocks in tests**: Leverage the generated mock bindings to test your workflows in isolation without needing deployed contracts.
+
+## Where to go next
+
+Now that you know how to generate bindings, you can use them to [read data from](/cre/guides/workflow/using-evm-client/onchain-read) or [write data to](/cre/guides/workflow/using-evm-client/onchain-write) your contracts, or [trigger workflows from events](/cre/guides/workflow/using-triggers/evm-log-trigger).

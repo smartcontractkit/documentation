@@ -6,6 +6,7 @@
  * 3. Handle parent/child relationships between sections
  */
 export const SIDEBAR_SECTIONS = {
+  CRE: "cre",
   DATA_FEEDS: "dataFeeds",
   DTA_TECHNICAL_STANDARD: "dta-technical-standard",
   DATA_STREAMS: "dataStreams",

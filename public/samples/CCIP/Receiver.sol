@@ -14,9 +14,9 @@ import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
 contract Receiver is CCIPReceiver {
   // Event emitted when a message is received from another chain.
   event MessageReceived( // The unique ID of the message.
-      // The chain selector of the source chain.
-      // The address of the sender from the source chain.
-      // The text that was received.
+    // The chain selector of the source chain.
+    // The address of the sender from the source chain.
+    // The text that was received.
     bytes32 indexed messageId,
     uint64 indexed sourceChainSelector,
     address sender,

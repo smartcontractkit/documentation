@@ -72,8 +72,9 @@ export type SupportedTechnology =
   | "PLASMA"
   | "MEMENTO"
   | "XDC"
+  | "BITTENSOR"
 
-export type ChainType = "evm" | "solana" | "aptos" | "sui"
+export type ChainType = "evm" | "solana" | "aptos"
 
 export type ChainFamily = "evm" | "mvm" | "svm"
 
@@ -231,6 +232,7 @@ export type SupportedChain =
   | "MEMENTO_TESTNET"
   | "XDC_MAINNET"
   | "XDC_TESTNET"
+  | "BITTENSOR_MAINNET"
 export type ExplorerInfo = {
   baseUrl: string
   queryParameters?: {

@@ -1,0 +1,686 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.6.0 SVM Lock-Release Token Pool API Reference"
+metadata:
+  description: "Comprehensive API documentation for the Lock-Release Token Pool program on SVM-based blockchains like Solana. Complete guide covering lock and release operations, liquidity management, token pool configuration, cross-chain token transfers, and rebalancer functionality for seamless interoperability."
+  excerpt: "Lock-Release Token Pool, SVM lock release pool, Solana token pool, cross-chain token transfers, lock and release operations, liquidity management, token pool configuration, rebalancer, CCIP token pools"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## Lock-Release Token Pool
+
+[Git Source](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs/lockrelease-token-pool)
+
+The Lock-Release Token Pool program implements a token pool that uses a lock/release strategy for cross-chain transfers. When tokens are sent cross-chain, they are locked in the pool on the source chain and released from the pool on the destination chain.
+
+**Program ID**: `8eqh8wppT9c5rw4ERqNCffvU6cNFJWff9WmkcYtmGiqC`
+
+### Instructions
+
+The Lock-Release Token Pool program provides 24 instructions organized into 6 categories:
+
+#### Global Configuration
+
+These instructions manage program-wide settings that apply to all pools deployed from this program.
+
+##### `init_global_config`
+
+Initializes the global configuration for the Lock-Release Token Pool program. Only callable by the program's upgrade authority.
+
+```rust
+pub fn init_global_config(
+    ctx: Context<InitGlobalConfig>,
+    router_address: Pubkey,
+    rmn_address: Pubkey,
+) -> Result<()>
+```
+
+**Parameters:**
+
+- `router_address`: Default CCIP Router program address for new pools
+- `rmn_address`: Default RMN Remote program address for security validation
+
+**Context Accounts:**
+
+- `config`: Global Config PDA (`seeds: ["config"]`) - initialized by this instruction
+- `authority`: Program upgrade authority (signer, pays for account creation)
+- `system_program`: Solana System Program
+- `program`: Lock-Release Token Pool program account
+- `program_data`: Program data account for upgrade authority validation
+
+**Authorization:** Program upgrade authority only
+
+**PDA Derivation:**
+
+```
+Global Config PDA = find_program_address(["config"], program_id)
+```
+
+##### `update_self_served_allowed`
+
+Updates whether self-service pool initialization is allowed.
+
+```rust
+pub fn update_self_served_allowed(
+    ctx: Context<UpdateGlobalConfig>,
+    self_served_allowed: bool,
+) -> Result<()>
+```
+
+**Parameters:**
+
+- `self_served_allowed`: Whether to allow users to initialize pools for tokens they control
+
+**Context Accounts:**
+
+- `config`: Global Config PDA (mutable)
+- `authority`: Program upgrade authority (signer)
+- `program`: Lock-Release Token Pool program account
+- `program_data`: Program data account for upgrade authority validation
+
+**Authorization:** Program upgrade authority only
+
+##### `update_default_router`
+
+Updates the default router address for new pools.
+
+```rust
+pub fn update_default_router(
+    ctx: Context<UpdateGlobalConfig>,
+    router_address: Pubkey,
+) -> Result<()>
+```
+
+**Parameters:**
+
+- `router_address`: New default router program address
+
+**Context Accounts:** Same as `update_self_served_allowed`
+
+**Authorization:** Program upgrade authority only
+
+##### `update_default_rmn`
+
+Updates the default RMN remote address for new pools.
+
+```rust
+pub fn update_default_rmn(
+    ctx: Context<UpdateGlobalConfig>,
+    rmn_address: Pubkey,
+) -> Result<()>
+```
+
+**Parameters:**
+
+- `rmn_address`: New default RMN remote program address
+
+**Context Accounts:** Same as `update_self_served_allowed`
+
+**Authorization:** Program upgrade authority only
+
+#### Pool Initialization & Management
+
+These instructions handle individual pool lifecycle management and configuration.
+
+##### `initialize`
+
+Initializes a new Lock-Release Token Pool for a specific token.
+
+```rust
+pub fn initialize(ctx: Context<InitializeTokenPool>) -> Result<()>
+```
+
+**Context Accounts:**
+
+- `state`: Pool State PDA (`seeds: ["ccip_tokenpool_config", mint]`) - initialized by this instruction
+- `mint`: Token mint account that this pool will manage
+- `authority`: Pool initializer (signer, pays for account creation)
+- `system_program`: Solana System Program
+- `program`: Lock-Release Token Pool program account
+- `program_data`: Program data account for authorization validation
+- `config`: Global Config PDA for default settings
+
+**Authorization:**
+
+- Program upgrade authority, OR
+- Token mint authority (when `self_served_allowed` is true in global config)
+
+**PDA Derivation:**
+
+```
+Pool State PDA = find_program_address(["ccip_tokenpool_config", mint], program_id)
+Pool Signer PDA = find_program_address(["ccip_tokenpool_signer", mint], program_id)
+```
+
+<Aside>
+  After pool initialization, you must create an Associated Token Account (ATA) for the Pool Signer PDA to hold locked
+  tokens before the pool can operate.
+</Aside>
+
+##### `type_version`
+
+Returns the program type and version information.
+
+```rust
+pub fn type_version(_ctx: Context<Empty>) -> Result<String>
+```
+
+**Returns:** Program type and version string (e.g., "LockReleaseTokenPool 1.6.0")
+
+**Context Accounts:**
+
+- `clock`: Clock sysvar (unused but required by Anchor)
+
+**Authorization:** None (permissionless)
+
+##### `transfer_ownership`
+
+Proposes a new owner for the pool. The proposed owner must call `accept_ownership` to complete the transfer.
+
+```rust
+pub fn transfer_ownership(
+    ctx: Context<SetConfig>,
+    proposed_owner: Pubkey,
+) -> Result<()>
+```
+
+**Parameters:**
+
+- `proposed_owner`: Address of the proposed new pool owner
+
+**Context Accounts:**
+
+- `state`: Pool State PDA (mutable)
+- `mint`: Token mint account
+- `authority`: Current pool owner (signer)
+
+**Authorization:** Current pool owner only
+
+##### `accept_ownership`
+
+Accepts ownership of a pool that was proposed via `transfer_ownership`.
+
+```rust
+pub fn accept_ownership(ctx: Context<AcceptOwnership>) -> Result<()>
+```
+
+**Context Accounts:**
+
+- `state`: Pool State PDA (mutable)
+- `mint`: Token mint account
+- `authority`: Proposed owner (signer)
+
+**Authorization:** Proposed owner only
+
+##### `set_router`
+
+Updates the router address for this pool.
+
+```rust
+pub fn set_router(
+    ctx: Context<AdminUpdateTokenPool>,
+    new_router: Pubkey,
+) -> Result<()>
+```
+
+**Parameters:**
+
+- `new_router`: New router program address
+
+**Context Accounts:**
+
+- `state`: Pool State PDA (mutable)
+- `mint`: Token mint account
+- `authority`: Program upgrade authority (signer)
+- `program`: Lock-Release Token Pool program account
+- `program_data`: Program data account for authorization validation
+
+**Authorization:** Program upgrade authority only (and pool must be owned by upgrade authority)
+
+##### `set_rmn`
+
+Updates the RMN remote address for this pool.
+
+```rust
+pub fn set_rmn(
+    ctx: Context<AdminUpdateTokenPool>,
+    rmn_address: Pubkey,
+) -> Result<()>
+```
+
+**Parameters:**
+
+- `rmn_address`: New RMN remote program address
+
+**Context Accounts:** Same as `set_router`
+
+**Authorization:** Program upgrade authority only (and pool must be owned by upgrade authority)
+
+##### `initialize_state_version`
+
+Sets the pool's version field if it was not set during initialization. Permissionless utility instruction.
+
+```rust
+pub fn initialize_state_version(
+    ctx: Context<InitializeStateVersion>,
+    _mint: Pubkey,
+) -> Result<()>
+```
+
+**Parameters:**
+
+- `_mint`: Token mint address (used for PDA derivation)
+
+**Context Accounts:**
+
+- `state`: Pool State PDA (mutable) - must have uninitialized version
+
+**Authorization:** None (permissionless)
+
+#### Chain Configuration
+
+These instructions manage per-destination chain settings including rate limits and remote pool addresses.
+
+##### `init_chain_remote_config`
+
+Initializes configuration for a remote destination chain.
+
+```rust
+pub fn init_chain_remote_config(
+    ctx: Context<InitializeChainConfig>,
+    remote_chain_selector: u64,
+    mint: Pubkey,
+    cfg: RemoteConfig,
+) -> Result<()>
+```
+
+**Parameters:**
+
+- `remote_chain_selector`: Destination chain identifier
+- `mint`: Token mint address
+- `cfg`: Remote chain configuration (must have empty `pool_addresses`)
+
+**Context Accounts:**
+
+- `state`: Pool State PDA
+- `chain_config`: Chain Config PDA (`seeds: ["ccip_tokenpool_chainconfig", chain_selector, mint]`) - initialized by this instruction
+- `authority`: Pool owner (signer, pays for account creation)
+- `system_program`: Solana System Program
+
+**Authorization:** Pool owner only
+
+**PDA Derivation:**
+
+```
+Chain Config PDA = find_program_address(
+    ["ccip_tokenpool_chainconfig", remote_chain_selector.to_le_bytes(), mint],
+    program_id
+)
+```
+
+##### `edit_chain_remote_config`
+
+Updates the remote configuration for an existing chain.
+
+```rust
+pub fn edit_chain_remote_config(
+    ctx: Context<EditChainConfigDynamicSize>,
+    remote_chain_selector: u64,
+    mint: Pubkey,
+    cfg: RemoteConfig,
+) -> Result<()>
+```
+
+**Parameters:**
+
+- `remote_chain_selector`: Destination chain identifier
+- `mint`: Token mint address
+- `cfg`: Updated remote chain configuration
+
+**Context Accounts:**
+
+- `state`: Pool State PDA
+- `chain_config`: Chain Config PDA (mutable, resized as needed)
+- `authority`: Pool owner (signer, pays for resize)
+- `system_program`: Solana System Program
+
+**Authorization:** Pool owner only
+
+##### `append_remote_pool_addresses`
+
+Adds remote pool addresses to an existing chain configuration.
+
+```rust
+pub fn append_remote_pool_addresses(
+    ctx: Context<AppendRemotePoolAddresses>,
+    remote_chain_selector: u64,
+    _mint: Pubkey,
+    addresses: Vec<RemoteAddress>,
+) -> Result<()>
+```
+
+**Parameters:**
+
+- `remote_chain_selector`: Destination chain identifier
+- `_mint`: Token mint address (used for PDA derivation)
+- `addresses`: List of remote pool addresses to add
+
+**Context Accounts:**
+
+- `state`: Pool State PDA
+- `chain_config`: Chain Config PDA (mutable, resized as needed)
+- `authority`: Pool owner (signer, pays for resize)
+- `system_program`: Solana System Program
+
+**Authorization:** Pool owner only
+
+##### `set_chain_rate_limit`
+
+Configures rate limits for inbound and outbound transfers for a specific chain.
+
+```rust
+pub fn set_chain_rate_limit(
+    ctx: Context<SetChainRateLimit>,
+    remote_chain_selector: u64,
+    mint: Pubkey,
+    inbound: RateLimitConfig,
+    outbound: RateLimitConfig,
+) -> Result<()>
+```
+
+**Parameters:**
+
+- `remote_chain_selector`: Destination chain identifier
+- `mint`: Token mint address
+- `inbound`: Rate limiting configuration for incoming transfers
+- `outbound`: Rate limiting configuration for outgoing transfers
+
+**Context Accounts:**
+
+- `state`: Pool State PDA
+- `chain_config`: Chain Config PDA (mutable)
+- `authority`: Pool owner (signer)
+
+**Authorization:** Pool owner only
+
+##### `delete_chain_config`
+
+Deletes the configuration for a remote chain and closes the account.
+
+```rust
+pub fn delete_chain_config(
+    _ctx: Context<DeleteChainConfig>,
+    remote_chain_selector: u64,
+    mint: Pubkey,
+) -> Result<()>
+```
+
+**Parameters:**
+
+- `remote_chain_selector`: Destination chain identifier
+- `mint`: Token mint address
+
+**Context Accounts:**
+
+- `state`: Pool State PDA
+- `chain_config`: Chain Config PDA (closed, rent returned to authority)
+- `authority`: Pool owner (signer, receives rent)
+
+**Authorization:** Pool owner only
+
+#### Access Control
+
+These instructions manage the allowlist for senders authorized to use the pool.
+
+##### `configure_allow_list`
+
+Adds addresses to the allowlist and enables/disables allowlist enforcement.
+
+```rust
+pub fn configure_allow_list(
+    ctx: Context<AddToAllowList>,
+    add: Vec<Pubkey>,
+    enabled: bool,
+) -> Result<()>
+```
+
+**Parameters:**
+
+- `add`: List of addresses to add to allowlist
+- `enabled`: Whether to enable allowlist enforcement
+
+**Context Accounts:**
+
+- `state`: Pool State PDA (mutable, resized as needed)
+- `mint`: Token mint account
+- `authority`: Pool owner (signer, pays for resize)
+- `system_program`: Solana System Program
+
+**Authorization:** Pool owner only
+
+##### `remove_from_allow_list`
+
+Removes addresses from the allowlist.
+
+```rust
+pub fn remove_from_allow_list(
+    ctx: Context<RemoveFromAllowlist>,
+    remove: Vec<Pubkey>,
+) -> Result<()>
+```
+
+**Parameters:**
+
+- `remove`: List of addresses to remove from allowlist
+
+**Context Accounts:**
+
+- `state`: Pool State PDA (mutable, resized as needed)
+- `mint`: Token mint account
+- `authority`: Pool owner (signer, pays for resize)
+- `system_program`: Solana System Program
+
+**Authorization:** Pool owner only
+
+#### Cross-Chain Operations
+
+These instructions handle the core lock/release operations for cross-chain transfers.
+
+##### `release_or_mint_tokens`
+
+Releases tokens from the pool to a receiver (destination chain operation).
+
+```rust
+pub fn release_or_mint_tokens(
+    ctx: Context<TokenOfframp>,
+    release_or_mint: ReleaseOrMintInV1,
+) -> Result<ReleaseOrMintOutV1>
+```
+
+**Parameters:**
+
+- `release_or_mint`: Release parameters including receiver, amount, and source chain info
+
+**Context Accounts:**
+
+- `authority`: OffRamp authority PDA (signer) - derived from OffRamp program
+- `offramp_program`: OffRamp program account
+- `allowed_offramp`: Router's allowed OffRamp PDA for validation
+- `state`: Pool State PDA
+- `token_program`: SPL Token or Token-2022 program
+- `mint`: Token mint account (mutable)
+- `pool_signer`: Pool Signer PDA
+- `pool_token_account`: Pool's ATA holding locked tokens (mutable)
+- `chain_config`: Chain Config PDA for source chain (mutable for rate limiting)
+- `rmn_remote`: RMN Remote program
+- `rmn_remote_curses`: RMN Remote curses PDA
+- `rmn_remote_config`: RMN Remote config PDA
+- `receiver_token_account`: Receiver's ATA for tokens (mutable)
+
+**Authorization:** Valid OffRamp program (validated via Router's allowed OffRamp PDA)
+
+**Returns:**
+
+```rust
+ReleaseOrMintOutV1 {
+    destination_amount: u64, // Amount released in destination token decimals
+}
+```
+
+##### `lock_or_burn_tokens`
+
+Locks tokens in the pool (source chain operation).
+
+```rust
+pub fn lock_or_burn_tokens(
+    ctx: Context<TokenOnramp>,
+    lock_or_burn: LockOrBurnInV1,
+) -> Result<LockOrBurnOutV1>
+```
+
+**Parameters:**
+
+- `lock_or_burn`: Lock parameters including amount and destination chain info
+
+**Context Accounts:**
+
+- `authority`: Router OnRamp authority (signer)
+- `state`: Pool State PDA
+- `token_program`: SPL Token or Token-2022 program
+- `mint`: Token mint account (mutable)
+- `pool_signer`: Pool Signer PDA
+- `pool_token_account`: Pool's ATA for locked tokens (mutable)
+- `rmn_remote`: RMN Remote program
+- `rmn_remote_curses`: RMN Remote curses PDA
+- `rmn_remote_config`: RMN Remote config PDA
+- `chain_config`: Chain Config PDA for destination chain (mutable for rate limiting)
+
+**Authorization:** Router OnRamp authority only
+
+**Returns:**
+
+```rust
+LockOrBurnOutV1 {
+    dest_token_address: Vec<u8>,     // Remote token address
+    dest_pool_data: Vec<u8>,         // ABI-encoded token decimals
+}
+```
+
+<Aside>
+  Unlike BurnMint pools, Lock-Release pools require pre-existing token liquidity. Tokens are transferred to the pool
+  before locking operations and transferred from the pool during release operations.
+</Aside>
+
+#### Liquidity Management
+
+These instructions manage token liquidity within the pool for cross-chain operations.
+
+##### `set_rebalancer`
+
+Sets the address authorized to provide and withdraw liquidity.
+
+```rust
+pub fn set_rebalancer(
+    ctx: Context<SetConfig>,
+    rebalancer: Pubkey,
+) -> Result<()>
+```
+
+**Parameters:**
+
+- `rebalancer`: Address authorized for liquidity operations
+
+**Context Accounts:**
+
+- `state`: Pool State PDA (mutable)
+- `mint`: Token mint account
+- `authority`: Pool owner (signer)
+
+**Authorization:** Pool owner only
+
+##### `set_can_accept_liquidity`
+
+Enables or disables liquidity operations for the pool.
+
+```rust
+pub fn set_can_accept_liquidity(
+    ctx: Context<SetConfig>,
+    allow: bool,
+) -> Result<()>
+```
+
+**Parameters:**
+
+- `allow`: Whether to allow liquidity operations
+
+**Context Accounts:** Same as `set_rebalancer`
+
+**Authorization:** Pool owner only
+
+##### `provide_liquidity`
+
+Transfers tokens from the rebalancer to the pool to increase available liquidity.
+
+```rust
+pub fn provide_liquidity(
+    ctx: Context<RebalancerTokenTransfer>,
+    amount: u64,
+) -> Result<()>
+```
+
+**Parameters:**
+
+- `amount`: Amount of tokens to provide (must be > 0)
+
+**Context Accounts:**
+
+- `state`: Pool State PDA
+- `token_program`: SPL Token or Token-2022 program
+- `mint`: Token mint account (mutable)
+- `pool_signer`: Pool Signer PDA
+- `pool_token_account`: Pool's ATA for tokens (mutable, receives tokens)
+- `remote_token_account`: Rebalancer's token account (mutable, sends tokens)
+- `authority`: Rebalancer (signer)
+
+**Authorization:** Rebalancer only
+
+**Requirements:**
+
+- Pool must allow liquidity operations (`can_accept_liquidity` = true)
+- Amount must be greater than zero
+
+##### `withdraw_liquidity`
+
+Transfers tokens from the pool to the rebalancer to decrease available liquidity.
+
+```rust
+pub fn withdraw_liquidity(
+    ctx: Context<RebalancerTokenTransfer>,
+    amount: u64,
+) -> Result<()>
+```
+
+**Parameters:**
+
+- `amount`: Amount of tokens to withdraw (must be > 0)
+
+**Context Accounts:**
+
+- `state`: Pool State PDA
+- `token_program`: SPL Token or Token-2022 program
+- `mint`: Token mint account (mutable)
+- `pool_signer`: Pool Signer PDA
+- `pool_token_account`: Pool's ATA for tokens (mutable, sends tokens)
+- `remote_token_account`: Rebalancer's token account (mutable, receives tokens)
+- `authority`: Rebalancer (signer)
+
+**Authorization:** Rebalancer only
+
+**Requirements:**
+
+- Pool must allow liquidity operations (`can_accept_liquidity` = true)
+- Amount must be greater than zero
+- Pool must have sufficient token balance

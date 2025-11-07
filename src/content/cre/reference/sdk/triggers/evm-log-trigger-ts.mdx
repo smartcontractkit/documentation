@@ -1,0 +1,283 @@
+---
+section: cre
+title: "SDK Reference: EVM Log Trigger"
+date: Last Modified
+sdkLang: "ts"
+pageId: "reference-sdk-evm-log-trigger"
+metadata:
+  description: "Reference for TypeScript EVM Log Trigger: Config interface, Payload fields, and topic filtering for event-driven workflows."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+The EVM Log Trigger fires when a specific log (event) is emitted by an onchain smart contract.
+
+## Creating the trigger
+
+```typescript
+import { cre } from "@chainlink/cre-sdk"
+
+// Create an EVMClient instance with a chain selector
+const network = getNetwork({
+  chainFamily: "evm",
+  chainSelectorName: "ethereum-testnet-sepolia",
+  isTestnet: true,
+})
+
+const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+
+// Basic log trigger for a contract address
+const trigger = evmClient.logTrigger({
+  addresses: ["0x123...abc"],
+})
+
+// With topics for event filtering
+const trigger = evmClient.logTrigger({
+  addresses: ["0x123...abc"],
+  topics: [
+    {
+      values: [
+        // Keccak256 hash of "Transfer(address,address,uint256)"
+        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+      ],
+    },
+  ],
+})
+```
+
+## Configuration
+
+The `logTrigger()` method accepts a configuration object with the following fields:
+
+| <div style="width: 100px;">Field</div> | <div style="width: 140px;">Type</div> | Description                                                                                                                                                                                                                                                                                                                                                                                               |
+| -------------------------------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `addresses`                            | `string[]`                            | A list of contract addresses to monitor (as hex strings, e.g., `"0x..."`). At least one address is required.                                                                                                                                                                                                                                                                                              |
+| `topics`                               | `TopicValues[]`                       | Optional. A fixed 4-element array to filter event topics. The first element contains event signatures, and the next three elements contain indexed argument values. An empty array element acts as a wildcard.                                                                                                                                                                                            |
+| `confidence`                           | `string`                              | Optional. The block confirmation level to monitor. Can be: <ul><li>**`"CONFIDENCE_LEVEL_LATEST"`**: The most recent block (fastest but least secure).</li><li>**`"CONFIDENCE_LEVEL_SAFE"` (default)**: A block unlikely to be reorged but not yet irreversible.</li><li>**`"CONFIDENCE_LEVEL_FINALIZED"`**: A block considered irreversible (safest, but requires waiting longer for finality).</li></ul> |
+
+{/* prettier-ignore */}
+<Aside type="caution" title="SAFE block tag fallback">
+  **Some chains do not support the SAFE block tag** (e.g., Shibarium). When you specify `"CONFIDENCE_LEVEL_SAFE"` on chains that don't support it, CRE automatically falls back to `"CONFIDENCE_LEVEL_FINALIZED"` for safety. Users are responsible for knowing which chains support the SAFE tag. If you need consistent behavior across all chains, explicitly use `"CONFIDENCE_LEVEL_FINALIZED"` or `"CONFIDENCE_LEVEL_LATEST"`.
+</Aside>
+
+### `TopicValues`
+
+The `topics` array uses a special format for filtering events:
+
+| Field    | Type       | Description                                         |
+| -------- | ---------- | --------------------------------------------------- |
+| `values` | `string[]` | Array of possible values for a topic (hex strings). |
+
+**Topic array structure:**
+
+- **`topics[0]`**: Event signatures (keccak256 hash of the event name and indexed arg types). Must have at least one value.
+- **`topics[1]`**: Optional. Values for the first indexed argument. Can be empty (wildcard).
+- **`topics[2]`**: Optional. Values for the second indexed argument. Can be empty (wildcard).
+- **`topics[3]`**: Optional. Values for the third indexed argument. Can be empty (wildcard).
+
+**Example:**
+
+```typescript
+const trigger = evmClient.logTrigger({
+  addresses: ["0x1234567890abcdef..."],
+  topics: [
+    // Topic 0: Event signature (Transfer event)
+    {
+      values: ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"],
+    },
+    // Topic 1: From address (indexed parameter 1)
+    {
+      values: ["0x000000000000000000000000abcdef..."],
+    },
+    // Topic 2: Empty (wildcard for any "to" address)
+    {
+      values: [],
+    },
+  ],
+  confidence: "CONFIDENCE_LEVEL_FINALIZED",
+})
+```
+
+<Aside type="note" title="Simplified configuration">
+  In the demo workflow and for simple use cases, you can omit `topics` and `confidence`. The trigger will fire for any
+  event from the specified addresses using the default "SAFE" confirmation level.
+</Aside>
+
+## Payload
+
+The payload passed to your callback function is an `EVMLog` object containing the log data.
+
+| Field         | Type           | Description                                                    |
+| ------------- | -------------- | -------------------------------------------------------------- |
+| `address`     | `Uint8Array`   | Address of the contract that emitted the log (20 bytes).       |
+| `topics`      | `Uint8Array[]` | Indexed log fields, including event signature (32 bytes each). |
+| `data`        | `Uint8Array`   | ABI-encoded non-indexed log data.                              |
+| `txHash`      | `Uint8Array`   | Hash of the transaction (32 bytes).                            |
+| `blockHash`   | `Uint8Array`   | Hash of the block (32 bytes).                                  |
+| `blockNumber` | `bigint`       | The block number containing the log (optional).                |
+| `txIndex`     | `number`       | Index of the transaction within the block.                     |
+| `index`       | `number`       | Index of the log within the block.                             |
+| `eventSig`    | `Uint8Array`   | Keccak256 hash of the event signature (32 bytes).              |
+| `removed`     | `boolean`      | True if the log was removed during a reorg.                    |
+
+**Working with log data:**
+
+```typescript
+import { bytesToHex } from "@chainlink/cre-sdk"
+
+const onLogTrigger = (runtime: Runtime<Config>, log: EVMLog): string => {
+  // Convert addresses and hashes to hex
+  const contractAddress = bytesToHex(log.address)
+  const txHash = bytesToHex(log.txHash)
+
+  // Access topics (first topic is typically the event signature)
+  const eventSignature = bytesToHex(log.topics[0])
+  const firstIndexedParam = bytesToHex(log.topics[1])
+
+  runtime.log(`Event from ${contractAddress}`)
+  runtime.log(`Transaction: ${txHash}`)
+
+  return "Success"
+}
+```
+
+## Callback Function
+
+Your callback function for EVM log triggers must conform to this signature:
+
+```typescript
+import { type Runtime, type EVMLog } from "@chainlink/cre-sdk"
+
+const onLogTrigger = (runtime: Runtime<Config>, log: EVMLog): YourReturnType => {
+  // Your workflow logic here
+  return result
+}
+```
+
+**Parameters:**
+
+- `runtime`: The runtime object used to invoke capabilities and access configuration
+- `log`: The EVM log payload containing all event data
+
+**Example:**
+
+```typescript
+import { bytesToHex, type Runtime, type EVMLog } from "@chainlink/cre-sdk"
+
+type Config = {
+  contractAddress: string
+}
+
+const onLogTrigger = (runtime: Runtime<Config>, log: EVMLog): string => {
+  const topics = log.topics
+
+  if (topics.length < 3) {
+    runtime.log(`Log payload does not contain enough topics: ${topics.length}`)
+    throw new Error("Insufficient topics in log")
+  }
+
+  // Extract indexed parameters from topics
+  // topics[0] is the event signature
+  // topics[1], topics[2], etc. are indexed event parameters
+
+  const eventSig = bytesToHex(topics[0])
+  runtime.log(`Event signature: ${eventSig}`)
+
+  // Access block information
+  runtime.log(`Block number: ${log.blockNumber}`)
+  runtime.log(`Transaction index: ${log.txIndex}`)
+
+  return "Event processed successfully"
+}
+```
+
+## Complete Example
+
+```typescript
+import { cre, bytesToHex, getNetwork, Runner, type Runtime, type EVMLog } from "@chainlink/cre-sdk"
+
+type Config = {
+  chainSelectorName: string
+  contractAddress: string
+}
+
+const onLogTrigger = (runtime: Runtime<Config>, log: EVMLog): string => {
+  const topics = log.topics
+
+  if (topics.length < 2) {
+    throw new Error("Log missing required topics")
+  }
+
+  runtime.log(`Processing log from ${bytesToHex(log.address)}`)
+  runtime.log(`Event signature: ${bytesToHex(topics[0])}`)
+
+  // Decode the log data based on your event ABI
+  // For this example, we just log the raw data
+  runtime.log(`Data length: ${log.data.length} bytes`)
+
+  return "Log processed"
+}
+
+const initWorkflow = (config: Config) => {
+  const network = getNetwork({
+    chainFamily: "evm",
+    chainSelectorName: config.chainSelectorName,
+    isTestnet: true,
+  })
+
+  if (!network) {
+    throw new Error(`Network not found: ${config.chainSelectorName}`)
+  }
+
+  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+
+  return [
+    cre.handler(
+      evmClient.logTrigger({
+        addresses: [config.contractAddress],
+      }),
+      onLogTrigger
+    ),
+  ]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+
+main()
+```
+
+## Decoding Log Data
+
+For production workflows, you'll typically want to decode the log data based on the event's ABI. The TypeScript SDK uses [viem](https://viem.sh/) for ABI encoding/decoding:
+
+```typescript
+import { bytesToHex, type Runtime, type EVMLog } from "@chainlink/cre-sdk"
+
+const onLogTrigger = (runtime: Runtime<Config>, log: EVMLog): string => {
+  const topics = log.topics
+
+  // topics[0] is the event signature
+  // topics[1], topics[2], topics[3] are indexed event parameters
+
+  // Example: Extract an address from topic 1 (last 20 bytes of 32-byte topic)
+  const addressFromTopic = bytesToHex(topics[1].slice(12))
+  runtime.log(`Address parameter: ${addressFromTopic}`)
+
+  // For non-indexed parameters, you would decode log.data according to the ABI
+  // The demo workflow uses viem for contract interactions and ABI handling
+
+  return "Log decoded"
+}
+```
+
+<Aside type="note" title="Using contract ABIs">
+  For type-safe event handling, organize your contract ABIs in separate TypeScript files (e.g.,
+  `contracts/abi/MyContract.ts`) as demonstrated in the [demo
+  workflow](https://github.com/smartcontractkit/cre-cli/tree/main/examples/proof-of-reserve). Define ABIs as `const`
+  arrays with full JSON ABI structures for optimal TypeScript type inference with viem.
+</Aside>

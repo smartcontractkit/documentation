@@ -17,7 +17,7 @@ import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interface
 contract Sender is OwnerIsCreator {
   // Custom errors to provide more descriptive revert messages.
   error NotEnoughBalance(uint256 currentBalance, uint256 calculatedFees); // Used to make sure contract has enough
-    // balance.
+  // balance.
 
   // Event emitted when a message is sent to another chain.
   // The chain selector of the destination chain.
@@ -74,8 +74,8 @@ contract Sender is OwnerIsCreator {
         Client.GenericExtraArgsV2({
           gasLimit: 200_000, // Gas limit for the callback on the destination chain
           allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages
-            // from
-            // the same sender
+          // from
+          // the same sender
         })
       ),
       // Set the feeToken  address, indicating LINK will be used for fees

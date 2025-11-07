@@ -24,13 +24,13 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
 
   // Custom errors to provide more descriptive revert messages.
   error NotEnoughBalance(uint256 currentBalance, uint256 requiredBalance); // Used to make sure contract has enough
-    // token balance
+  // token balance
   error NothingToWithdraw(); // Used when trying to withdraw Ether but there's nothing to withdraw.
   error FailedToWithdrawEth(address owner, address target, uint256 value); // Used when the withdrawal of Ether fails.
   error DestinationChainNotAllowlisted(uint64 destinationChainSelector); // Used when the destination chain has not been
-    // allowlisted by the contract owner.
+  // allowlisted by the contract owner.
   error SourceChainNotAllowed(uint64 sourceChainSelector); // Used when the source chain has not been allowlisted by the
-    // contract owner.
+  // contract owner.
   error SenderNotAllowed(address sender); // Used when the sender has not been allowlisted by the contract owner.
   error InvalidReceiverAddress(); // Used when the receiver address is 0.
   error OnlySelf(); // Used when a function is called outside of the contract itself.
@@ -374,7 +374,7 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
     override
     onlyRouter
     onlyAllowlisted(any2EvmMessage.sourceChainSelector, abi.decode(any2EvmMessage.sender, (address))) // Make sure the
-      // source chain and sender are allowlisted
+    // source chain and sender are allowlisted
 
   {
     /* solhint-disable no-empty-blocks */
@@ -404,7 +404,7 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
     external
     onlySelf
     onlyAllowlisted(any2EvmMessage.sourceChainSelector, abi.decode(any2EvmMessage.sender, (address))) // Make sure the
-      // source chain and sender are allowlisted
+    // source chain and sender are allowlisted
 
   {
     // Simulate a revert for testing purposes
@@ -455,7 +455,7 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
   ) internal override {
     s_lastReceivedMessageId = any2EvmMessage.messageId; // fetch the messageId
     s_lastReceivedText = abi.decode(any2EvmMessage.data, (string)); // abi-decoding of the sent text
-      // Expect one token to be transferred at once, but you can transfer several tokens.
+    // Expect one token to be transferred at once, but you can transfer several tokens.
     s_lastReceivedTokenAddress = any2EvmMessage.destTokenAmounts[0].token;
     s_lastReceivedTokenAmount = any2EvmMessage.destTokenAmounts[0].amount;
     emit MessageReceived(
@@ -503,8 +503,8 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
         Client.GenericExtraArgsV2({
           gasLimit: 400_000, // Gas limit for the callback on the destination chain
           allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages
-            // from
-            // the same sender
+          // from
+          // the same sender
         })
       ),
       // Set the feeToken to a feeTokenAddress, indicating specific asset will be used for fees

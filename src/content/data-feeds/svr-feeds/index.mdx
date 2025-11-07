@@ -377,6 +377,15 @@ Once you've detected an SVR update and identified a profitable liquidation oppor
   - The gas price of your transaction
   - Any explicit payment you include to the builder
 
+  **How to submit your bid**: Within your backrun transaction itself, send ETH to `block.coinbase` (the block builder's address). The higher the payment sent to `block.coinbase`, the more competitive your bundle becomes. Example:
+
+  ```solidity
+  // Within your liquidation transaction, send payment to block.coinbase
+  payable(block.coinbase).transfer(bidAmount);
+  ```
+
+  You pay your full bid amount to `block.coinbase`. The revenue split between Chainlink and the DeFi protocol occurs as part of the SVR system.
+
 - **Inclusion Parameters**: Specify the target block range for your bundle to be considered
   - Typically target the next block plus a small range for redundancy
   - A narrow block range can increase chances of inclusion but risks missing execution

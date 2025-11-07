@@ -5,13 +5,8 @@
 
 import { Sections } from "../content.config.ts"
 import { SIDEBAR_SECTIONS } from "./sidebarSections.ts"
-import evmCcipV150Contents from "./sidebar/ccip/api-reference/evm/v1_5_0.json" with { type: "json" }
-import evmCcipV151Contents from "./sidebar/ccip/api-reference/evm/v1_5_1.json" with { type: "json" }
-import evmCcipV160Contents from "./sidebar/ccip/api-reference/evm/v1_6_0.json" with { type: "json" }
-import evmCcipV161Contents from "./sidebar/ccip/api-reference/evm/v1_6_1.json" with { type: "json" }
-import evmCcipV162Contents from "./sidebar/ccip/api-reference/evm/v1_6_2.json" with { type: "json" }
-import aptosCcipV160Contents from "./sidebar/ccip/api-reference/aptos/v1_6_0.json" with { type: "json" }
-import svmCcipV011Contents from "./sidebar/ccip/api-reference/svm/v0_1_1.json" with { type: "json" }
+import { CCIP_SIDEBAR_CONTENT } from "./sidebar/ccip-dynamic.ts"
+import type { ChainType } from "./types.js"
 import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" with { type: "json" }
 import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" with { type: "json" }
 import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/v0_2_3.json" with { type: "json" }
@@ -25,6 +20,7 @@ import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/
  * @property highlightAsCurrent - Optional array of URLs that should highlight this item as current
  * @property children - Optional array of nested navigation items
  * @property isCollapsible - Optional flag to control if a section can be collapsed
+ * @property chainTypes - Optional array of chain types this item belongs to (for chain-aware sections like CCIP)
  */
 export type SectionContent = {
   title: string
@@ -32,6 +28,7 @@ export type SectionContent = {
   highlightAsCurrent?: string[]
   children?: SectionContent[]
   isCollapsible?: boolean
+  chainTypes?: ChainType[]
 }
 
 /**
@@ -68,6 +65,434 @@ export type SectionEntry = {
  * }
  */
 export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
+  [SIDEBAR_SECTIONS.CRE]: [
+    {
+      section: "Chainlink CRE",
+      contents: [
+        {
+          title: "About CRE",
+          url: "cre",
+        },
+        {
+          title: "Key Terms and Concepts",
+          url: "cre/key-terms",
+        },
+        {
+          title: "Service Quotas",
+          url: "cre/service-quotas",
+        },
+        {
+          title: "Support & Feedback",
+          url: "cre/support-feedback",
+        },
+        {
+          title: "Release Notes",
+          url: "cre/release-notes",
+        },
+      ],
+    },
+    {
+      section: "Getting Started",
+      contents: [
+        { title: "Overview", url: "cre/getting-started/overview" },
+        {
+          title: "CLI Installation",
+          url: "cre/getting-started/cli-installation",
+          children: [
+            { title: "macOS / Linux", url: "cre/getting-started/cli-installation/macos-linux" },
+            { title: "Windows", url: "cre/getting-started/cli-installation/windows" },
+          ],
+        },
+        {
+          title: "Part 1: Project Setup & Simulation",
+          url: "cre/getting-started/part-1-project-setup",
+          highlightAsCurrent: [
+            "cre/getting-started/part-1-project-setup-ts",
+            "cre/getting-started/part-1-project-setup-go",
+          ],
+        },
+        {
+          title: "Part 2: Fetching Offchain Data",
+          url: "cre/getting-started/part-2-fetching-data",
+          highlightAsCurrent: [
+            "cre/getting-started/part-2-fetching-data-ts",
+            "cre/getting-started/part-2-fetching-data-go",
+          ],
+        },
+        {
+          title: "Part 3: Reading Onchain",
+          url: "cre/getting-started/part-3-reading-onchain-value",
+          highlightAsCurrent: [
+            "cre/getting-started/part-3-reading-onchain-value-ts",
+            "cre/getting-started/part-3-reading-onchain-value-go",
+          ],
+        },
+        {
+          title: "Part 4: Writing Onchain",
+          url: "cre/getting-started/part-4-writing-onchain",
+          highlightAsCurrent: [
+            "cre/getting-started/part-4-writing-onchain-ts",
+            "cre/getting-started/part-4-writing-onchain-go",
+          ],
+        },
+        { title: "Conclusion & Next Steps", url: "cre/getting-started/conclusion" },
+      ],
+    },
+    {
+      section: "Workflow Guides",
+      contents: [
+        {
+          title: "Triggers",
+          url: "cre/guides/workflow/using-triggers/overview",
+          children: [
+            {
+              title: "Cron Trigger",
+              url: "cre/guides/workflow/using-triggers/cron-trigger",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-triggers/cron-trigger-ts",
+                "cre/guides/workflow/using-triggers/cron-trigger-go",
+              ],
+            },
+            {
+              title: "HTTP Trigger",
+              url: "cre/guides/workflow/using-triggers/http-trigger",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-triggers/http-trigger-ts",
+                "cre/guides/workflow/using-triggers/http-trigger-go",
+              ],
+            },
+            {
+              title: "EVM Log Trigger",
+              url: "cre/guides/workflow/using-triggers/evm-log-trigger",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-triggers/evm-log-trigger-ts",
+                "cre/guides/workflow/using-triggers/evm-log-trigger-go",
+              ],
+            },
+          ],
+        },
+        {
+          title: "EVM Chain Interactions",
+          url: "cre/guides/workflow/using-evm-client/overview",
+          highlightAsCurrent: [
+            "cre/guides/workflow/using-evm-client/overview-ts",
+            "cre/guides/workflow/using-evm-client/overview-go",
+          ],
+          children: [
+            {
+              title: "Generating Bindings",
+              url: "cre/guides/workflow/using-evm-client/generating-bindings",
+            },
+            {
+              title: "Onchain Read",
+              url: "cre/guides/workflow/using-evm-client/onchain-read",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-evm-client/onchain-read-ts",
+                "cre/guides/workflow/using-evm-client/onchain-read-go",
+              ],
+            },
+            {
+              title: "Onchain Write",
+              url: "cre/guides/workflow/using-evm-client/onchain-write/overview",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-evm-client/onchain-write/overview-ts",
+                "cre/guides/workflow/using-evm-client/onchain-write/overview-go",
+              ],
+              children: [
+                {
+                  title: "Building Consumer Contracts",
+                  url: "cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts",
+                },
+                {
+                  title: "Writing Data Onchain",
+                  url: "cre/guides/workflow/using-evm-client/onchain-write/writing-data-onchain",
+                },
+                {
+                  title: "Using WriteReportFrom Helpers",
+                  url: "cre/guides/workflow/using-evm-client/onchain-write/using-write-report-helpers",
+                },
+                {
+                  title: "Generating Reports: Single Values",
+                  url: "cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values",
+                },
+                {
+                  title: "Generating Reports: Structs",
+                  url: "cre/guides/workflow/using-evm-client/onchain-write/generating-reports-structs",
+                },
+                {
+                  title: "Submitting Reports Onchain",
+                  url: "cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain",
+                },
+              ],
+            },
+            {
+              title: "Supported Networks",
+              url: "cre/guides/workflow/using-evm-client/supported-networks",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-evm-client/supported-networks-ts",
+                "cre/guides/workflow/using-evm-client/supported-networks-go",
+              ],
+            },
+          ],
+        },
+        {
+          title: "API Interactions",
+          url: "cre/guides/workflow/using-http-client",
+          children: [
+            {
+              title: "Making GET Requests",
+              url: "cre/guides/workflow/using-http-client/get-request",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-http-client/get-request-ts",
+                "cre/guides/workflow/using-http-client/get-request-go",
+              ],
+            },
+            {
+              title: "Making POST Requests",
+              url: "cre/guides/workflow/using-http-client/post-request",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-http-client/post-request-ts",
+                "cre/guides/workflow/using-http-client/post-request-go",
+              ],
+            },
+            {
+              title: "Submitting Reports via HTTP",
+              url: "cre/guides/workflow/using-http-client/submitting-reports-http",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-http-client/submitting-reports-http-ts",
+                "cre/guides/workflow/using-http-client/submitting-reports-http-go",
+              ],
+            },
+          ],
+        },
+        {
+          title: "Secrets",
+          url: "cre/guides/workflow/secrets",
+          children: [
+            {
+              title: "Using Secrets in Simulation",
+              url: "cre/guides/workflow/secrets/using-secrets-simulation",
+              highlightAsCurrent: [
+                "cre/guides/workflow/secrets/using-secrets-simulation-ts",
+                "cre/guides/workflow/secrets/using-secrets-simulation-go",
+              ],
+            },
+            {
+              title: "Using Secrets with Deployed Workflows",
+              url: "cre/guides/workflow/secrets/using-secrets-deployed",
+            },
+            {
+              title: "Managing Secrets with 1Password",
+              url: "cre/guides/workflow/secrets/managing-secrets-1password",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      section: "Workflow Operations",
+      contents: [
+        {
+          title: "Simulating Workflows",
+          url: "cre/guides/operations/simulating-workflows",
+        },
+        {
+          title: "Deploying Workflows",
+          url: "cre/guides/operations/deploying-workflows",
+        },
+        {
+          title: "Activating & Pausing Workflows",
+          url: "cre/guides/operations/activating-pausing-workflows",
+        },
+        {
+          title: "Updating Deployed Workflows",
+          url: "cre/guides/operations/updating-deployed-workflows",
+        },
+        {
+          title: "Deleting Workflows",
+          url: "cre/guides/operations/deleting-workflows",
+        },
+        {
+          title: "Using Multi-sig Wallets",
+          url: "cre/guides/operations/using-multisig-wallets",
+        },
+        {
+          title: "Monitoring & Debugging Workflows",
+          url: "cre/guides/operations/monitoring-workflows",
+        },
+      ],
+    },
+    {
+      section: "Account & Organization",
+      contents: [
+        {
+          title: "Account",
+          url: "cre/account",
+          children: [
+            {
+              title: "Creating Your Account",
+              url: "cre/account/creating-account",
+            },
+            {
+              title: "Logging in with the CLI",
+              url: "cre/account/cli-login",
+            },
+            {
+              title: "Managing Authentication",
+              url: "cre/account/managing-auth",
+            },
+          ],
+        },
+        {
+          title: "Organization",
+          url: "cre/organization",
+          children: [
+            {
+              title: "Understanding Organizations",
+              url: "cre/organization/understanding-organizations",
+            },
+            {
+              title: "Linking Wallet Keys",
+              url: "cre/organization/linking-keys",
+            },
+            {
+              title: "Inviting Team Members",
+              url: "cre/organization/inviting-members",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      section: "Capabilities",
+      contents: [
+        { title: "Overview", url: "cre/capabilities" },
+        { title: "Triggers", url: "cre/capabilities/triggers" },
+        { title: "HTTP", url: "cre/capabilities/http" },
+        { title: "EVM Read & Write", url: "cre/capabilities/evm-read-write" },
+      ],
+    },
+    {
+      section: "Concepts",
+      contents: [
+        {
+          title: "Consensus Computing",
+          url: "cre/concepts/consensus-computing",
+        },
+        {
+          title: "Non-Determinism in Workflows",
+          url: "cre/concepts/non-determinism",
+          highlightAsCurrent: ["cre/concepts/non-determinism-go", "cre/concepts/non-determinism-ts"],
+        },
+        {
+          title: "Time in CRE",
+          url: "cre/concepts/time-in-cre",
+        },
+        {
+          title: "Random in CRE",
+          url: "cre/concepts/random-in-cre",
+        },
+        {
+          title: "TypeScript Runtime Environment",
+          url: "cre/concepts/typescript-wasm-runtime",
+        },
+      ],
+    },
+    {
+      section: "Templates",
+      contents: [
+        {
+          title: "Running a Demo Workflow",
+          url: "cre/templates/running-demo-workflow",
+          highlightAsCurrent: ["cre/templates/running-demo-workflow-ts", "cre/templates/running-demo-workflow-go"],
+        },
+      ],
+    },
+    {
+      section: "Reference",
+      contents: [
+        {
+          title: "Project Configuration",
+          url: "cre/reference/project-configuration",
+          highlightAsCurrent: ["cre/reference/project-configuration-ts", "cre/reference/project-configuration-go"],
+        },
+        {
+          title: "CLI Reference",
+          url: "cre/reference/cli",
+          children: [
+            { title: "Authentication", url: "cre/reference/cli/authentication" },
+            {
+              title: "Project Setup",
+              url: "cre/reference/cli/project-setup",
+              highlightAsCurrent: ["cre/reference/cli/project-setup-ts", "cre/reference/cli/project-setup-go"],
+            },
+            { title: "Account Management", url: "cre/reference/cli/account" },
+            { title: "Workflow Commands", url: "cre/reference/cli/workflow" },
+            { title: "Secrets Management", url: "cre/reference/cli/secrets" },
+            { title: "Utilities", url: "cre/reference/cli/utilities" },
+          ],
+        },
+        {
+          title: "SDK Reference",
+          url: "cre/reference/sdk/overview",
+          highlightAsCurrent: ["cre/reference/sdk/overview-ts", "cre/reference/sdk/overview-go"],
+          children: [
+            {
+              title: "Core SDK",
+              url: "cre/reference/sdk/core",
+              highlightAsCurrent: ["cre/reference/sdk/core-ts", "cre/reference/sdk/core-go"],
+            },
+            {
+              title: "Triggers",
+              url: "cre/reference/sdk/triggers/overview",
+              highlightAsCurrent: ["cre/reference/sdk/triggers/overview-ts", "cre/reference/sdk/triggers/overview-go"],
+              children: [
+                {
+                  title: "Cron Trigger",
+                  url: "cre/reference/sdk/triggers/cron-trigger",
+                  highlightAsCurrent: [
+                    "cre/reference/sdk/triggers/cron-trigger-ts",
+                    "cre/reference/sdk/triggers/cron-trigger-go",
+                  ],
+                },
+                {
+                  title: "HTTP Trigger",
+                  url: "cre/reference/sdk/triggers/http-trigger",
+                  highlightAsCurrent: [
+                    "cre/reference/sdk/triggers/http-trigger-ts",
+                    "cre/reference/sdk/triggers/http-trigger-go",
+                  ],
+                },
+                {
+                  title: "EVM Log Trigger",
+                  url: "cre/reference/sdk/triggers/evm-log-trigger",
+                  highlightAsCurrent: [
+                    "cre/reference/sdk/triggers/evm-log-trigger-ts",
+                    "cre/reference/sdk/triggers/evm-log-trigger-go",
+                  ],
+                },
+              ],
+            },
+            {
+              title: "EVM Client",
+              url: "cre/reference/sdk/evm-client",
+              highlightAsCurrent: ["cre/reference/sdk/evm-client-ts", "cre/reference/sdk/evm-client-go"],
+            },
+            {
+              title: "HTTP Client",
+              url: "cre/reference/sdk/http-client",
+              highlightAsCurrent: ["cre/reference/sdk/http-client-ts", "cre/reference/sdk/http-client-go"],
+            },
+            {
+              title: "Consensus & Aggregation",
+              url: "cre/reference/sdk/consensus",
+              highlightAsCurrent: ["cre/reference/sdk/consensus-ts", "cre/reference/sdk/consensus-go"],
+            },
+          ],
+        },
+      ],
+    },
+  ],
   [SIDEBAR_SECTIONS.DATA_FEEDS]: [
     {
       section: "Chainlink Data Feeds",
@@ -1261,632 +1686,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  [SIDEBAR_SECTIONS.CCIP]: [
-    {
-      section: "Chainlink CCIP",
-      contents: [
-        {
-          title: "About CCIP",
-          url: "ccip",
-        },
-        {
-          title: "Getting Started",
-          url: "ccip/getting-started",
-          children: [
-            {
-              title: "EVM",
-              url: "ccip/getting-started/evm",
-            },
-            {
-              title: "Solana",
-              url: "ccip/getting-started/svm",
-            },
-          ],
-        },
-        {
-          title: "CCIP Directory",
-          url: "ccip/directory",
-          children: [
-            {
-              title: "Mainnet",
-              url: "ccip/directory/mainnet",
-            },
-            {
-              title: "Testnet",
-              url: "ccip/directory/testnet",
-            },
-          ],
-        },
-        {
-          title: "Service Limits",
-          url: "ccip/service-limits",
-          children: [
-            {
-              title: "EVM",
-              url: "ccip/service-limits/evm",
-            },
-            {
-              title: "Solana",
-              url: "ccip/service-limits/svm",
-            },
-            {
-              title: "Aptos",
-              url: "ccip/service-limits/aptos",
-            },
-            {
-              title: "Network Specific",
-              url: "ccip/service-limits/network-specific-limits",
-            },
-          ],
-        },
-        {
-          title: "Service Responsibility",
-          url: "ccip/service-responsibility",
-        },
-        {
-          title: "Execution Latency",
-          url: "ccip/ccip-execution-latency",
-        },
-        {
-          title: "Billing",
-          url: "ccip/billing",
-        },
-        {
-          title: "Release Notes",
-          url: "https://dev.chain.link/changelog?product=CCIP",
-        },
-      ],
-    },
-    {
-      section: "Concepts",
-      contents: [
-        {
-          title: "Architecture",
-          url: "ccip/concepts/architecture",
-          children: [
-            {
-              title: "Overview",
-              url: "ccip/concepts/architecture/overview",
-            },
-            {
-              title: "Key Concepts",
-              url: "ccip/concepts/architecture/key-concepts",
-            },
-            {
-              title: "Onchain Architecture",
-              url: "ccip/concepts/architecture/onchain",
-              children: [
-                {
-                  title: "EVM",
-                  url: "ccip/concepts/architecture/onchain/evm",
-                  children: [
-                    {
-                      title: "Overview",
-                      url: "ccip/concepts/architecture/onchain/evm/overview",
-                    },
-                    {
-                      title: "Components",
-                      url: "ccip/concepts/architecture/onchain/evm/components",
-                    },
-                    {
-                      title: "Upgradability",
-                      url: "ccip/concepts/architecture/onchain/evm/upgradability",
-                    },
-                  ],
-                },
-                {
-                  title: "Solana",
-                  url: "ccip/concepts/architecture/onchain/svm",
-                  children: [
-                    {
-                      title: "Overview",
-                      url: "ccip/concepts/architecture/onchain/svm/overview",
-                    },
-                    {
-                      title: "Components",
-                      url: "ccip/concepts/architecture/onchain/svm/components",
-                    },
-                    {
-                      title: "Upgradability",
-                      url: "ccip/concepts/architecture/onchain/svm/upgradability",
-                    },
-                  ],
-                },
-                {
-                  title: "Aptos",
-                  url: "ccip/concepts/architecture/onchain/aptos",
-                  children: [
-                    {
-                      title: "Overview",
-                      url: "ccip/concepts/architecture/onchain/aptos/overview",
-                    },
-                    {
-                      title: "Components",
-                      url: "ccip/concepts/architecture/onchain/aptos/components",
-                    },
-                    {
-                      title: "Upgradability",
-                      url: "ccip/concepts/architecture/onchain/aptos/upgradability",
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              title: "Offchain Architecture",
-              url: "ccip/concepts/architecture/offchain",
-              children: [
-                {
-                  title: "Overview",
-                  url: "ccip/concepts/architecture/offchain/overview",
-                },
-                {
-                  title: "Risk Management Network",
-                  url: "ccip/concepts/architecture/offchain/risk-management-network",
-                },
-              ],
-            },
-          ],
-        },
-        {
-          title: "Cross-Chain Token (CCT) Standard",
-          url: "ccip/concepts/cross-chain-token",
-          children: [
-            {
-              title: "Overview",
-              url: "ccip/concepts/cross-chain-token/overview",
-            },
-            {
-              title: "EVM",
-              url: "ccip/concepts/cross-chain-token/evm",
-              children: [
-                {
-                  title: "Tokens",
-                  url: "ccip/concepts/cross-chain-token/evm/tokens",
-                },
-                {
-                  title: "Token Pools",
-                  url: "ccip/concepts/cross-chain-token/evm/token-pools",
-                },
-                {
-                  title: "Architecture",
-                  url: "ccip/concepts/cross-chain-token/evm/architecture",
-                },
-                {
-                  title: "Registration and Administration",
-                  url: "ccip/concepts/cross-chain-token/evm/registration-administration",
-                },
-                {
-                  title: "Upgradability",
-                  url: "ccip/concepts/cross-chain-token/evm/upgradability",
-                },
-              ],
-            },
-            {
-              title: "Solana",
-              url: "ccip/concepts/cross-chain-token/svm",
-              children: [
-                {
-                  title: "Architecture",
-                  url: "ccip/concepts/cross-chain-token/svm/architecture",
-                },
-                {
-                  title: "Tokens",
-                  url: "ccip/concepts/cross-chain-token/svm/tokens",
-                },
-                {
-                  title: "Token Pools",
-                  url: "ccip/concepts/cross-chain-token/svm/token-pools",
-                },
-                {
-                  title: "Integration Guide",
-                  url: "ccip/concepts/cross-chain-token/svm/integration-guide",
-                },
-                {
-                  title: "Registration and Administration",
-                  url: "ccip/concepts/cross-chain-token/svm/registration-administration",
-                },
-                {
-                  title: "Upgradability",
-                  url: "ccip/concepts/cross-chain-token/svm/upgradability",
-                },
-              ],
-            },
-          ],
-        },
-        {
-          title: "Manual execution",
-          url: "ccip/concepts/manual-execution",
-        },
-        {
-          title: "Best Practices",
-          url: "ccip/concepts/best-practices",
-          children: [
-            {
-              title: "EVM",
-              url: "ccip/concepts/best-practices/evm",
-            },
-            {
-              title: "Solana",
-              url: "ccip/concepts/best-practices/svm",
-            },
-            {
-              title: "Aptos",
-              url: "ccip/concepts/best-practices/aptos",
-            },
-          ],
-        },
-      ],
-    },
-    {
-      section: "Tutorials",
-      contents: [
-        {
-          title: "Acquire Test Tokens",
-          url: "ccip/test-tokens",
-        },
-        {
-          title: "EVM",
-          url: "ccip/tutorials/evm",
-          children: [
-            {
-              title: "Transfer Tokens",
-              url: "ccip/tutorials/evm/transfer-tokens-from-contract",
-            },
-            {
-              title: "Transfer Tokens with Data",
-              url: "ccip/tutorials/evm/programmable-token-transfers",
-            },
-            {
-              title: "Transfer Tokens with Data - Defensive Example",
-              url: "ccip/tutorials/evm/programmable-token-transfers-defensive",
-            },
-            {
-              title: "Using the Token Manager",
-              url: "ccip/tutorials/evm/token-manager",
-            },
-            {
-              title: "Using the CCIP JavaScript SDK",
-              url: "ccip/ccip-javascript-sdk",
-            },
-            {
-              title: "Offchain",
-              url: "ccip/tutorials/evm/offchain",
-              children: [
-                {
-                  title: "Transfer Tokens between EOAs",
-                  url: "ccip/tutorials/evm/offchain/transfer-tokens-from-eoa",
-                },
-                {
-                  title: "Checking CCIP Message Status",
-                  url: "ccip/tutorials/evm/offchain/get-status-offchain",
-                },
-                {
-                  title: "Using CCIP CLI",
-                  url: "ccip/tutorials/evm/offchain/ccip-tools",
-                  children: [
-                    {
-                      title: "Transfer Tokens between EOAs",
-                      url: "ccip/tutorials/evm/offchain/ccip-tools/transfer-tokens-from-eoa",
-                    },
-                    {
-                      title: "Checking CCIP Message Status",
-                      url: "ccip/tutorials/evm/offchain/ccip-tools/get-status-offchain",
-                    },
-                    {
-                      title: "Get Supported Tokens",
-                      url: "ccip/tutorials/evm/offchain/ccip-tools/get-supported-tokens",
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              title: "Cross-Chain Token (CCT) standard",
-              url: "ccip/tutorials/evm/cross-chain-tokens",
-              children: [
-                {
-                  title: "Using Remix IDE",
-                  children: [
-                    {
-                      title: "Deploy and Register from an EOA",
-                      url: "ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-remix",
-                    },
-                  ],
-                },
-                {
-                  title: "Using Hardhat / Foundry",
-                  children: [
-                    {
-                      title: "Register from an EOA (Burn & Mint)",
-                      url: "ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-hardhat",
-                      highlightAsCurrent: ["ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-foundry"],
-                    },
-                    {
-                      title: "Register from an EOA (Lock & Mint)",
-                      url: "ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-lock-mint-hardhat",
-                      highlightAsCurrent: ["ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-lock-mint-foundry"],
-                    },
-                    {
-                      title: "Set Token Pool rate limits",
-                      url: "ccip/tutorials/evm/cross-chain-tokens/update-rate-limiters-hardhat",
-                      highlightAsCurrent: ["ccip/tutorials/evm/cross-chain-tokens/update-rate-limiters-foundry"],
-                    },
-                    {
-                      title: "Register from a Safe Smart Account (Burn & Mint)",
-                      url: "ccip/tutorials/evm/cross-chain-tokens/register-from-safe-burn-mint-hardhat",
-                    },
-                    {
-                      title: "Configure Additional Networks",
-                      url: "ccip/tutorials/evm/cross-chain-tokens/configure-additional-networks-hardhat",
-                      highlightAsCurrent: [
-                        "ccip/tutorials/evm/cross-chain-tokens/configure-additional-networks-foundry",
-                      ],
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              title: "Test CCIP Locally",
-              url: "ccip/tutorials/evm/test-ccip-locally",
-            },
-            {
-              title: "Transfer USDC with Data",
-              url: "ccip/tutorials/evm/usdc",
-            },
-            {
-              title: "Send Arbitrary Data",
-              url: "ccip/tutorials/evm/send-arbitrary-data",
-            },
-            {
-              title: "Send Arbitrary Data and Receive Transfer Confirmation: A -> B -> A",
-              url: "ccip/tutorials/evm/send-arbitrary-data-receipt-acknowledgment",
-            },
-            {
-              title: "Manual Execution",
-              url: "ccip/tutorials/evm/manual-execution",
-            },
-            {
-              title: "Optimizing Gas Limit Settings in CCIP Messages",
-              url: "ccip/tutorials/evm/ccipreceive-gaslimit",
-            },
-          ],
-        },
-        {
-          title: "Solana",
-          url: "ccip/tutorials/svm",
-          children: [
-            {
-              title: "Implement CCIP Receiver",
-              url: "ccip/tutorials/svm/receivers",
-            },
-            {
-              title: "Solana as Source",
-              url: "ccip/tutorials/svm/source",
-              children: [
-                {
-                  title: "Build CCIP Messages",
-                  url: "ccip/tutorials/svm/source/build-messages",
-                },
-                {
-                  title: "Prerequisites",
-                  url: "ccip/tutorials/svm/source/prerequisites",
-                },
-                {
-                  title: "Token Transfers",
-                  url: "ccip/tutorials/svm/source/token-transfers",
-                },
-              ],
-            },
-            {
-              title: "Solana as Destination",
-              url: "ccip/tutorials/svm/destination",
-              children: [
-                {
-                  title: "Build CCIP Messages",
-                  url: "ccip/tutorials/svm/destination/build-messages",
-                },
-                {
-                  title: "Token Transfers",
-                  url: "ccip/tutorials/svm/destination/token-transfers",
-                },
-                {
-                  title: "Arbitrary Messaging",
-                  url: "ccip/tutorials/svm/destination/arbitrary-messaging",
-                },
-              ],
-            },
-            {
-              title: "Cross-Chain Token (CCT) standard",
-              url: "ccip/tutorials/svm/cross-chain-tokens",
-              children: [
-                {
-                  title: "BurnMint: Direct Mint Authority Transfer",
-                  url: "ccip/tutorials/svm/cross-chain-tokens/direct-mint-authority",
-                },
-                {
-                  title: "BurnMint: SPL Token Multisig Tutorial",
-                  url: "ccip/tutorials/svm/cross-chain-tokens/spl-token-multisig-tutorial",
-                },
-                {
-                  title: "BurnMint: Production Multisig Governance",
-                  url: "ccip/tutorials/svm/cross-chain-tokens/production-multisig-tutorial",
-                },
-                {
-                  title: "LockRelease: Production Governance",
-                  url: "ccip/tutorials/svm/cross-chain-tokens/lock-release-multisig",
-                },
-              ],
-            },
-          ],
-        },
-        {
-          title: "Aptos",
-          url: "ccip/tutorials/aptos",
-          children: [
-            {
-              title: "Implement CCIP Receiver",
-              url: "ccip/tutorials/aptos/receivers",
-            },
-            {
-              title: "Aptos as Source",
-              url: "ccip/tutorials/aptos/source",
-              children: [
-                {
-                  title: "Build CCIP Messages",
-                  url: "ccip/tutorials/aptos/source/build-messages",
-                },
-                {
-                  title: "Prerequisites",
-                  url: "ccip/tutorials/aptos/source/prerequisites",
-                },
-                {
-                  title: "Token Transfers",
-                  url: "ccip/tutorials/aptos/source/token-transfers",
-                },
-              ],
-            },
-            {
-              title: "Aptos as Destination",
-              url: "ccip/tutorials/aptos/destination",
-              children: [
-                {
-                  title: "Build CCIP Messages",
-                  url: "ccip/tutorials/aptos/destination/build-messages",
-                },
-                {
-                  title: "Prerequisites",
-                  url: "ccip/tutorials/aptos/destination/prerequisites",
-                },
-                {
-                  title: "Token Transfers",
-                  url: "ccip/tutorials/aptos/destination/token-transfers",
-                },
-                {
-                  title: "Arbitrary Messaging",
-                  url: "ccip/tutorials/aptos/destination/arbitrary-messaging",
-                },
-                {
-                  title: "Programmatic Token Transfers",
-                  url: "ccip/tutorials/aptos/destination/programmatic-token-transfers",
-                },
-              ],
-            },
-            {
-              title: "Cross-Chain Token (CCT) standard",
-              url: "ccip/tutorials/aptos/cross-chain-tokens",
-            },
-          ],
-        },
-      ],
-    },
-    {
-      section: "Tools and Resources",
-      contents: [
-        {
-          title: "CCIP Explorer",
-          url: "ccip/tools-resources/ccip-explorer",
-        },
-        {
-          title: "Token Manager",
-          url: "ccip/tools-resources/token-manager",
-        },
-        {
-          title: "Network Specific",
-          url: "ccip/tools-resources/network-specific",
-          children: [
-            {
-              title: "Hyperliquid Integration Guide",
-              url: "ccip/tools-resources/network-specific/hyperliquid-integration-guide",
-            },
-            {
-              title: "HyperEVM Testnet RPC Guide",
-              url: "ccip/tools-resources/network-specific/hyperevm-testnet-rpc",
-            },
-          ],
-        },
-        {
-          title: "API Reference",
-          url: "ccip/api-reference",
-          children: [
-            {
-              title: "EVM",
-              url: "ccip/api-reference/evm",
-              children: [
-                {
-                  title: "v1.6.2 (Latest)",
-                  url: "ccip/api-reference/evm/v1.6.2",
-                  isCollapsible: true,
-                  children: evmCcipV162Contents,
-                },
-                {
-                  title: "v1.6.1",
-                  url: "ccip/api-reference/evm/v1.6.1",
-                  isCollapsible: true,
-                  children: evmCcipV161Contents,
-                },
-                {
-                  title: "v1.6.0",
-                  url: "ccip/api-reference/evm/v1.6.0",
-                  isCollapsible: true,
-                  children: evmCcipV160Contents,
-                },
-                {
-                  title: "v1.5.1",
-                  url: "ccip/api-reference/evm/v1.5.1",
-                  isCollapsible: true,
-                  children: evmCcipV151Contents,
-                },
-                {
-                  title: "v1.5.0",
-                  url: "ccip/api-reference/evm/v1.5.0",
-                  isCollapsible: true,
-                  children: evmCcipV150Contents,
-                },
-              ],
-            },
-            {
-              title: "Solana",
-              url: "ccip/api-reference/svm",
-              children: [
-                {
-                  title: "v0.1.1 (Latest)",
-                  url: "ccip/api-reference/svm/v0.1.1",
-                  isCollapsible: true,
-                  children: svmCcipV011Contents,
-                },
-              ],
-            },
-            {
-              title: "Aptos",
-              url: "ccip/api-reference/aptos",
-              children: [
-                {
-                  title: "v1.6.0 (Latest)",
-                  url: "ccip/api-reference/aptos/v1.6.0",
-                  isCollapsible: true,
-                  children: aptosCcipV160Contents,
-                },
-              ],
-            },
-          ],
-        },
-        {
-          title: "SDK",
-          url: "ccip/tools-resources/sdk",
-        },
-        {
-          title: "Tools",
-          url: "ccip/tools-resources/tools",
-        },
-        {
-          title: "Cross-chain Examples",
-          url: "ccip/examples",
-        },
-      ],
-    },
-  ],
+  [SIDEBAR_SECTIONS.CCIP]: CCIP_SIDEBAR_CONTENT,
   [SIDEBAR_SECTIONS.CHAINLINK_LOCAL]: [
     {
       section: "Chainlink Local",
