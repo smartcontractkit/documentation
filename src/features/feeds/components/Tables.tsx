@@ -12,6 +12,7 @@ import { StreamsNetworksData, type NetworkData } from "../data/StreamsNetworksDa
 import { FEED_CATEGORY_CONFIG } from "../../../db/feedCategories.js"
 import { useBatchedFeedCategories, getFeedCategoryFromBatch, getNetworkIdentifier } from "./useBatchedFeedCategories.ts"
 import { isSharedSVR, isAaveSVR } from "~/features/feeds/utils/svrDetection.ts"
+import { ExpandableTableWrapper } from "./ExpandableTableWrapper.tsx"
 
 const feedItems = monitoredFeeds.mainnet
 
@@ -589,7 +590,6 @@ export const StreamsNetworkAddressesTable = ({
   defaultExpanded?: boolean
 } = {}) => {
   const [searchValue, setSearchValue] = useState("")
-  const [isExpanded, setIsExpanded] = useState(defaultExpanded)
 
   const normalizedSearch = searchValue.toLowerCase().replaceAll(" ", "")
 
@@ -609,53 +609,26 @@ export const StreamsNetworkAddressesTable = ({
     return networkMatch || match(mainnetLabel) || match(testnetLabel) || match(mainnetAddr) || match(testnetAddr)
   })
 
-  return (
-    <div className={tableStyles.compactNetworksTable}>
-      {allowExpansion && (
-        <div
-          className={tableStyles.expandableHeader}
-          onClick={() => setIsExpanded(!isExpanded)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault()
-              setIsExpanded(!isExpanded)
-            }
-          }}
-        >
-          <div className={tableStyles.expandableHeaderContent}>
-            <h2>Streams Verifier Network Addresses</h2>
-            {!isExpanded && (
-              <p className={tableStyles.expandableDescription}>
-                <em>Expand to view verifier proxy addresses required for onchain report verification</em>
-              </p>
-            )}
-          </div>
-          <div className={clsx(tableStyles.expandableArrow, isExpanded && tableStyles.expandableArrowExpanded)} />
+  const tableContent = (
+    <>
+      <div className={feedList.filterDropdown_search} style={{ padding: "0.5rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flex: 1 }}>
+          <input
+            type="text"
+            placeholder="Search"
+            className={feedList.filterDropdown_searchInput}
+            value={searchValue}
+            onInput={(e) => setSearchValue((e.target as HTMLInputElement).value)}
+          />
+          {searchValue && (
+            <button className={clsx(button.secondary, feedList.clearFilterBtn)} onClick={() => setSearchValue("")}>
+              Clear filter
+            </button>
+          )}
         </div>
-      )}
+      </div>
 
-      {(!allowExpansion || isExpanded) && (
-        <div className={tableStyles.tableContainer}>
-          <div className={feedList.filterDropdown_search} style={{ padding: "0.5rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flex: 1 }}>
-              <input
-                type="text"
-                placeholder="Search"
-                className={feedList.filterDropdown_searchInput}
-                value={searchValue}
-                onInput={(e) => setSearchValue((e.target as HTMLInputElement).value)}
-              />
-              {searchValue && (
-                <button className={clsx(button.secondary, feedList.clearFilterBtn)} onClick={() => setSearchValue("")}>
-                  Clear filter
-                </button>
-              )}
-            </div>
-          </div>
-
-          <table className={tableStyles.networksTable}>
+      <table className={tableStyles.networksTable}>
             <thead>
               <tr>
                 <th className={tableStyles.networkColumn}>Network</th>
@@ -796,8 +769,19 @@ export const StreamsNetworkAddressesTable = ({
               })}
             </tbody>
           </table>
-        </div>
-      )}
+    </>
+  )
+
+  return (
+    <div className={tableStyles.compactNetworksTable}>
+      <ExpandableTableWrapper
+        title="Streams Verifier Network Addresses"
+        description="Expand to view verifier proxy addresses required for onchain report verification"
+        allowExpansion={allowExpansion}
+        defaultExpanded={defaultExpanded}
+      >
+        {tableContent}
+      </ExpandableTableWrapper>
     </div>
   )
 }
