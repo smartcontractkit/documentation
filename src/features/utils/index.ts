@@ -122,9 +122,6 @@ export const getChainTypeAndFamily = (supportedChain: SupportedChain): ChainType
     case "solana":
       chainFamily = "svm"
       break
-    case "sui":
-      chainFamily = "svm"
-      break
     default:
       throw new Error(`Unknown chain type: ${chainType}`)
   }

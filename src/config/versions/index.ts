@@ -34,10 +34,10 @@ export const VERSIONS = {
       },
     },
     svm: {
-      LATEST: "v0.1.1",
-      ALL: ["v0.1.1"] as const,
+      LATEST: "v1.6.0",
+      ALL: ["v1.6.0"] as const,
       RELEASE_DATES: {
-        "v0.1.1": "2023-10-04T00:00:00Z", // Placeholder release date – update when known
+        "v1.6.0": "2025-05-19T00:00:00Z", // 19 May 2025
       },
     },
     aptos: {

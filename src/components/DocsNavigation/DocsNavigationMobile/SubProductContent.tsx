@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from "react"
 import { useStore } from "@nanostores/react"
 import { selectedLanguage } from "~/lib/languageStore.js"
+import { selectedChainType } from "~/stores/chainType.js"
+import { applyChainTypeFilter } from "~/utils/chainType.js"
 import { BackArrowIcon } from "./BackArrowIcon.js"
 import { Page } from "../../Header/Nav/config.js"
 import styles from "./subProductContent.module.css"
@@ -42,8 +44,17 @@ const PageLink = ({ page, currentPath, level }: { page: Page; currentPath: strin
     fontWeight: isActive ? "500" : "normal",
   }
 
+  // Format chainTypes as data attribute (matching desktop sidebar)
+  const chainAttr = page.chainTypes ? page.chainTypes.join(",") : "universal"
+
   return (
-    <a ref={linkRef} style={linkStyle} className={`${styles.link} subproduct-link level-${level}`} href={adjustedHref}>
+    <a
+      ref={linkRef}
+      style={linkStyle}
+      className={`${styles.link} subproduct-link level-${level}`}
+      href={adjustedHref}
+      data-chain-types={chainAttr}
+    >
       {page.label}
     </a>
   )
@@ -52,7 +63,7 @@ const PageLink = ({ page, currentPath, level }: { page: Page; currentPath: strin
 const renderPages = (pages: Page[], currentPath: string, currentLang: string, level = 0): React.ReactNode[] => {
   return pages
     .filter((page) => {
-      // If page has sdkLang, only show if it matches current language
+      // Filter by sdkLang (for CRE language switching)
       if (page.sdkLang) {
         return page.sdkLang === currentLang
       }
@@ -71,6 +82,12 @@ const renderPages = (pages: Page[], currentPath: string, currentLang: string, le
 
 export const SubProductContent = ({ subProducts, onSubproductClick, currentPath }: Props) => {
   const currentLang = useStore(selectedLanguage)
+  const currentChain = useStore(selectedChainType)
+
+  // Apply chain type filtering using shared utility (same as desktop sidebar)
+  useEffect(() => {
+    applyChainTypeFilter(currentChain)
+  }, [currentChain])
 
   if (!subProducts) {
     return null

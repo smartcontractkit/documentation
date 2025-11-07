@@ -115,8 +115,10 @@ function shouldExpandSection(item: SectionContent, currentPage: string): boolean
   {
     items.map((item) => {
       const sdkLang = item.url ? pageSdkLangMap.get(item.url) : undefined
+      const chainTypes = item.chainTypes
+      const chainAttr = chainTypes ? chainTypes.join(",") : "universal"
       return (
-        <li data-sdk-lang={sdkLang || "both"}>
+        <li data-sdk-lang={sdkLang || "both"} data-chain-types={chainAttr}>
           {item.children ? (
             <details open={shouldExpandSection(item, currentPage)}>
               <summary
