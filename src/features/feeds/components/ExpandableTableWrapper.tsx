@@ -24,6 +24,7 @@ interface ExpandableTableWrapperProps {
   description?: string
   allowExpansion?: boolean
   defaultExpanded?: boolean
+  scrollable?: boolean
   children: preact.ComponentChildren
 }
 
@@ -32,20 +33,33 @@ export const ExpandableTableWrapper = ({
   description,
   allowExpansion = false,
   defaultExpanded = true,
+  scrollable = false,
   children,
 }: ExpandableTableWrapperProps) => {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded)
 
   // If expansion is not allowed, still wrap content but without the header
   if (!allowExpansion) {
-    return <div className={tableStyles.tableContainer}>{children}</div>
+    return <div className={clsx(tableStyles.tableContainer, scrollable && tableStyles.scrollableTable)}>{children}</div>
+  }
+
+  const handleToggle = () => {
+    setIsExpanded(!isExpanded)
   }
 
   return (
-    <div className={tableStyles.expandableWrapper}>
+    <div
+      className={clsx(tableStyles.expandableWrapper, !isExpanded && tableStyles.expandableWrapperCollapsed)}
+      onClick={(e) => {
+        // If expanded and clicking anywhere in the wrapper (not inside interactive elements)
+        if (isExpanded && e.target === e.currentTarget) {
+          handleToggle()
+        }
+      }}
+    >
       <div
         className={tableStyles.expandableHeader}
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={handleToggle}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
@@ -69,7 +83,9 @@ export const ExpandableTableWrapper = ({
         <div className={clsx(tableStyles.expandableArrow, isExpanded && tableStyles.expandableArrowExpanded)} />
       </div>
 
-      {isExpanded && <div className={tableStyles.tableContainer}>{children}</div>}
+      {isExpanded && (
+        <div className={clsx(tableStyles.tableContainer, scrollable && tableStyles.scrollableTable)}>{children}</div>
+      )}
     </div>
   )
 }

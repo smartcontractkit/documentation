@@ -637,15 +637,33 @@ export const StreamsNetworkAddressesTable = ({
           </tr>
         </thead>
         <tbody>
-          {filteredNetworks.map((network: NetworkData, index: number) => {
-            const statusUrl = getNetworkStatusUrl(network)
-            return (
-              <Fragment key={network.network}>
-                {network.mainnet &&
-                  (!normalizedSearch ||
-                    match(network.network) ||
-                    match(network.mainnet.label) ||
-                    match(network.isSolana ? network.mainnet.verifierProgramId : network.mainnet.verifierProxy)) && (
+          {filteredNetworks.length === 0 ? (
+            <tr>
+              <td colSpan={3} style={{ textAlign: "center", padding: "2rem", fontStyle: "italic" }}>
+                No results found
+              </td>
+            </tr>
+          ) : (
+            filteredNetworks.map((network: NetworkData, index: number) => {
+              const statusUrl = getNetworkStatusUrl(network)
+
+              const showMainnet =
+                network.mainnet &&
+                (!normalizedSearch ||
+                  match(network.network) ||
+                  match(network.mainnet.label) ||
+                  match(network.isSolana ? network.mainnet.verifierProgramId : network.mainnet.verifierProxy))
+
+              const showTestnet =
+                network.testnet &&
+                (!normalizedSearch ||
+                  match(network.network) ||
+                  match(network.testnet.label) ||
+                  match(network.isSolana ? network.testnet.verifierProgramId : network.testnet.verifierProxy))
+
+              return (
+                <Fragment key={network.network}>
+                  {showMainnet && (
                     <tr
                       key={`${network.network}-mainnet`}
                       className={index > 0 ? tableStyles.firstNetworkRow : undefined}
@@ -691,17 +709,13 @@ export const StreamsNetworkAddressesTable = ({
                     </tr>
                   )}
 
-                {network.testnet &&
-                  (!normalizedSearch ||
-                    match(network.network) ||
-                    match(network.testnet.label) ||
-                    match(network.isSolana ? network.testnet.verifierProgramId : network.testnet.verifierProxy)) && (
+                  {showTestnet && (
                     <tr
                       key={`${network.network}-testnet`}
-                      className={!network.mainnet && index > 0 ? tableStyles.firstNetworkRow : tableStyles.testnetRow}
+                      className={!showMainnet && index > 0 ? tableStyles.firstNetworkRow : tableStyles.testnetRow}
                     >
                       <td className={tableStyles.networkColumn}>
-                        {!network.mainnet && (
+                        {!showMainnet && (
                           <div className={tableStyles.networkInfo}>
                             <img src={network.logoUrl} alt={`${network.network} logo`} />
                             <span>{network.network}</span>
@@ -742,25 +756,26 @@ export const StreamsNetworkAddressesTable = ({
                       </td>
                     </tr>
                   )}
-                {statusUrl && (
-                  <tr key={`${network.network}-status-explorer`} className={tableStyles.statusRow}>
-                    <td colSpan={3} className={tableStyles.statusCell}>
-                      <div style={{ display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
-                        <a
-                          href={statusUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={tableStyles.statusLink}
-                        >
-                          View {network.network} Network Status →
-                        </a>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </Fragment>
-            )
-          })}
+                  {statusUrl && (
+                    <tr key={`${network.network}-status-explorer`} className={tableStyles.statusRow}>
+                      <td colSpan={3} className={tableStyles.statusCell}>
+                        <div style={{ display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
+                          <a
+                            href={statusUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={tableStyles.statusLink}
+                          >
+                            View {network.network} Network Status →
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
+              )
+            })
+          )}
         </tbody>
       </table>
     </>
@@ -773,6 +788,7 @@ export const StreamsNetworkAddressesTable = ({
         description="Expand to view verifier proxy addresses required for onchain report verification"
         allowExpansion={allowExpansion}
         defaultExpanded={defaultExpanded}
+        scrollable={allowExpansion}
       >
         {tableContent}
       </ExpandableTableWrapper>
