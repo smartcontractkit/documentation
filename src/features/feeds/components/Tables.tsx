@@ -12,6 +12,7 @@ import { StreamsNetworksData, type NetworkData } from "../data/StreamsNetworksDa
 import { FEED_CATEGORY_CONFIG } from "../../../db/feedCategories.js"
 import { useBatchedFeedCategories, getFeedCategoryFromBatch, getNetworkIdentifier } from "./useBatchedFeedCategories.ts"
 import { isSharedSVR, isAaveSVR } from "~/features/feeds/utils/svrDetection.ts"
+import { ExpandableTableWrapper } from "./ExpandableTableWrapper.tsx"
 
 const feedItems = monitoredFeeds.mainnet
 
@@ -581,7 +582,13 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
   )
 }
 
-export const StreamsNetworkAddressesTable = () => {
+export const StreamsNetworkAddressesTable = ({
+  allowExpansion = false,
+  defaultExpanded = false,
+}: {
+  allowExpansion?: boolean
+  defaultExpanded?: boolean
+} = {}) => {
   const [searchValue, setSearchValue] = useState("")
 
   const normalizedSearch = searchValue.toLowerCase().replaceAll(" ", "")
@@ -602,21 +609,23 @@ export const StreamsNetworkAddressesTable = () => {
     return networkMatch || match(mainnetLabel) || match(testnetLabel) || match(mainnetAddr) || match(testnetAddr)
   })
 
-  return (
-    <div className={tableStyles.compactNetworksTable}>
+  const tableContent = (
+    <>
       <div className={feedList.filterDropdown_search} style={{ padding: "0.5rem" }}>
-        <input
-          type="text"
-          placeholder="Search"
-          className={feedList.filterDropdown_searchInput}
-          value={searchValue}
-          onInput={(e) => setSearchValue((e.target as HTMLInputElement).value)}
-        />
-        {searchValue && (
-          <button className={clsx(button.secondary, feedList.clearFilterBtn)} onClick={() => setSearchValue("")}>
-            Clear filter
-          </button>
-        )}
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flex: 1 }}>
+          <input
+            type="text"
+            placeholder="Search"
+            className={feedList.filterDropdown_searchInput}
+            value={searchValue}
+            onInput={(e) => setSearchValue((e.target as HTMLInputElement).value)}
+          />
+          {searchValue && (
+            <button className={clsx(button.secondary, feedList.clearFilterBtn)} onClick={() => setSearchValue("")}>
+              Clear filter
+            </button>
+          )}
+        </div>
       </div>
 
       <table className={tableStyles.networksTable}>
@@ -628,15 +637,33 @@ export const StreamsNetworkAddressesTable = () => {
           </tr>
         </thead>
         <tbody>
-          {filteredNetworks.map((network: NetworkData, index: number) => {
-            const statusUrl = getNetworkStatusUrl(network)
-            return (
-              <Fragment key={network.network}>
-                {network.mainnet &&
-                  (!normalizedSearch ||
-                    match(network.network) ||
-                    match(network.mainnet.label) ||
-                    match(network.isSolana ? network.mainnet.verifierProgramId : network.mainnet.verifierProxy)) && (
+          {filteredNetworks.length === 0 ? (
+            <tr>
+              <td colSpan={3} style={{ textAlign: "center", padding: "2rem", fontStyle: "italic" }}>
+                No results found
+              </td>
+            </tr>
+          ) : (
+            filteredNetworks.map((network: NetworkData, index: number) => {
+              const statusUrl = getNetworkStatusUrl(network)
+
+              const showMainnet =
+                network.mainnet &&
+                (!normalizedSearch ||
+                  match(network.network) ||
+                  match(network.mainnet.label) ||
+                  match(network.isSolana ? network.mainnet.verifierProgramId : network.mainnet.verifierProxy))
+
+              const showTestnet =
+                network.testnet &&
+                (!normalizedSearch ||
+                  match(network.network) ||
+                  match(network.testnet.label) ||
+                  match(network.isSolana ? network.testnet.verifierProgramId : network.testnet.verifierProxy))
+
+              return (
+                <Fragment key={network.network}>
+                  {showMainnet && (
                     <tr
                       key={`${network.network}-mainnet`}
                       className={index > 0 ? tableStyles.firstNetworkRow : undefined}
@@ -647,15 +674,15 @@ export const StreamsNetworkAddressesTable = () => {
                           <span>{network.network}</span>
                         </div>
                       </td>
-                      <td>{network.mainnet.label}</td>
+                      <td>{network.mainnet?.label}</td>
                       <td className={tableStyles.addressColumn}>
                         {network.isSolana ? (
                           <>
                             <div>
                               <small className={tableStyles.addressLabel}>Verifier Program ID:</small>
                               <CopyableAddress
-                                address={network?.mainnet?.verifierProgramId}
-                                explorerUrl={network?.mainnet?.explorerUrl}
+                                address={network.mainnet?.verifierProgramId || ""}
+                                explorerUrl={network.mainnet?.explorerUrl || ""}
                                 network={network}
                                 environment="Mainnet"
                               />
@@ -663,8 +690,8 @@ export const StreamsNetworkAddressesTable = () => {
                             <div className={tableStyles.mt1}>
                               <small className={tableStyles.addressLabel}>Access Controller:</small>
                               <CopyableAddress
-                                address={network?.mainnet?.accessController}
-                                explorerUrl={network?.mainnet?.explorerUrl}
+                                address={network.mainnet?.accessController || ""}
+                                explorerUrl={network.mainnet?.explorerUrl || ""}
                                 network={network}
                                 environment="Mainnet"
                               />
@@ -672,8 +699,8 @@ export const StreamsNetworkAddressesTable = () => {
                           </>
                         ) : (
                           <CopyableAddress
-                            address={network.mainnet.verifierProxy}
-                            explorerUrl={network.mainnet.explorerUrl}
+                            address={network.mainnet?.verifierProxy || ""}
+                            explorerUrl={network.mainnet?.explorerUrl || ""}
                             network={network}
                             environment="Mainnet"
                           />
@@ -682,32 +709,28 @@ export const StreamsNetworkAddressesTable = () => {
                     </tr>
                   )}
 
-                {network.testnet &&
-                  (!normalizedSearch ||
-                    match(network.network) ||
-                    match(network.testnet.label) ||
-                    match(network.isSolana ? network.testnet.verifierProgramId : network.testnet.verifierProxy)) && (
+                  {showTestnet && (
                     <tr
                       key={`${network.network}-testnet`}
-                      className={!network.mainnet && index > 0 ? tableStyles.firstNetworkRow : tableStyles.testnetRow}
+                      className={!showMainnet && index > 0 ? tableStyles.firstNetworkRow : tableStyles.testnetRow}
                     >
                       <td className={tableStyles.networkColumn}>
-                        {!network.mainnet && (
+                        {!showMainnet && (
                           <div className={tableStyles.networkInfo}>
                             <img src={network.logoUrl} alt={`${network.network} logo`} />
                             <span>{network.network}</span>
                           </div>
                         )}
                       </td>
-                      <td>{network.testnet.label}</td>
+                      <td>{network.testnet?.label}</td>
                       <td className={tableStyles.addressColumn}>
                         {network.isSolana ? (
                           <>
                             <div>
                               <small className={tableStyles.addressLabel}>Verifier Program ID:</small>
                               <CopyableAddress
-                                address={network?.testnet?.verifierProgramId}
-                                explorerUrl={network?.testnet?.explorerUrl}
+                                address={network.testnet?.verifierProgramId || ""}
+                                explorerUrl={network.testnet?.explorerUrl || ""}
                                 network={network}
                                 environment="Testnet"
                               />
@@ -715,8 +738,8 @@ export const StreamsNetworkAddressesTable = () => {
                             <div className={tableStyles.mt1}>
                               <small className={tableStyles.addressLabel}>Access Controller:</small>
                               <CopyableAddress
-                                address={network?.testnet?.accessController}
-                                explorerUrl={network?.testnet?.explorerUrl}
+                                address={network.testnet?.accessController || ""}
+                                explorerUrl={network.testnet?.explorerUrl || ""}
                                 network={network}
                                 environment="Testnet"
                               />
@@ -724,8 +747,8 @@ export const StreamsNetworkAddressesTable = () => {
                           </>
                         ) : (
                           <CopyableAddress
-                            address={network.testnet.verifierProxy}
-                            explorerUrl={network.testnet.explorerUrl}
+                            address={network.testnet?.verifierProxy || ""}
+                            explorerUrl={network.testnet?.explorerUrl || ""}
                             network={network}
                             environment="Testnet"
                           />
@@ -733,27 +756,42 @@ export const StreamsNetworkAddressesTable = () => {
                       </td>
                     </tr>
                   )}
-                {statusUrl && (
-                  <tr key={`${network.network}-status-explorer`} className={tableStyles.statusRow}>
-                    <td colSpan={3} className={tableStyles.statusCell}>
-                      <div style={{ display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
-                        <a
-                          href={statusUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={tableStyles.statusLink}
-                        >
-                          View {network.network} Network Status →
-                        </a>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </Fragment>
-            )
-          })}
+                  {statusUrl && (
+                    <tr key={`${network.network}-status-explorer`} className={tableStyles.statusRow}>
+                      <td colSpan={3} className={tableStyles.statusCell}>
+                        <div style={{ display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
+                          <a
+                            href={statusUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={tableStyles.statusLink}
+                          >
+                            View {network.network} Network Status →
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
+              )
+            })
+          )}
         </tbody>
       </table>
+    </>
+  )
+
+  return (
+    <div className={tableStyles.compactNetworksTable}>
+      <ExpandableTableWrapper
+        title="Streams Verifier Network Addresses"
+        description="Expand to view supported networks and addresses required for onchain report verification"
+        allowExpansion={allowExpansion}
+        defaultExpanded={defaultExpanded}
+        scrollable={allowExpansion}
+      >
+        {tableContent}
+      </ExpandableTableWrapper>
     </div>
   )
 }

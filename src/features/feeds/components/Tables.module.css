@@ -49,6 +49,82 @@
   margin-right: var(--space-1x);
 }
 
+/* Expandable wrapper and header */
+.expandableWrapper {
+  background-color: var(--gray-50);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--border-radius, 0.375rem);
+  padding: var(--space-3x);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.expandableWrapper:hover {
+  background-color: var(--gray-100);
+}
+
+.expandableWrapper:has(.tableContainer:hover) {
+  background-color: var(--gray-50);
+}
+
+.expandableHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2x);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.expandableHeader:focus-visible {
+  outline: 2px solid var(--blue-500);
+  outline-offset: 2px;
+}
+
+.expandableHeader:active {
+  transform: translateY(1px);
+}
+
+.expandableHeaderContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.expandableHeaderContent h2 {
+  margin: 0 0 var(--space-1x) 0;
+}
+
+.expandableDescription {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--gray-600);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.expandableArrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-6x);
+  height: var(--space-6x);
+  flex-shrink: 0;
+  background-image: url("/images/quickstarts/arrow-down.svg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 20px 20px;
+  filter: brightness(0);
+  transition: transform 0.2s ease;
+}
+
+.expandableArrow span {
+  display: none;
+}
+
+.expandableArrowExpanded {
+  transform: rotate(180deg);
+}
+
 .assetPair {
   color: var(--color-text-heading);
   width: 100%;
@@ -228,10 +304,70 @@
 /* Compact & full networks table */
 .compactNetworksTable {
   width: 100%;
-  margin: 0 auto 2rem;
+  margin: var(--space-4x) auto 2rem;
   overflow-x: auto;
+}
+
+.staticHeader {
+  font-size: var(--font-size-h3);
+  margin: 0 0 var(--space-2x) 0;
+}
+
+.tableContainer {
   border: 1px solid var(--border-color, #e5e7eb);
-  border-radius: 4px;
+  border-radius: var(--border-radius, 0.375rem);
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  cursor: default;
+}
+
+/* When inside expandable wrapper, add margin */
+.expandableWrapper .tableContainer {
+  margin-top: var(--space-3x);
+  margin-left: var(--space-4x);
+}
+
+/* Search bar at top */
+.tableContainer > div:first-child {
+  padding: var(--space-2x);
+  background-color: white;
+}
+
+.scrollableTable .networksTable {
+  position: relative;
+}
+
+.scrollableTable .networksTable::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.15), transparent);
+  pointer-events: none;
+  border-radius: 0 0 var(--border-radius, 0.375rem) var(--border-radius, 0.375rem);
+}
+
+.scrollableTable .networksTable thead,
+.scrollableTable .networksTable tbody,
+.scrollableTable .networksTable tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.scrollableTable .networksTable tbody {
+  display: block;
+  overflow-y: auto;
+  max-height: calc(50vh - 120px);
+  scrollbar-width: thin;
+}
+
+.scrollableTable .networksTable tbody::-webkit-scrollbar {
+  width: 8px;
 }
 
 .networksTable {
@@ -240,13 +376,12 @@
   font-size: 0.875rem;
   margin-bottom: 0;
   table-layout: fixed !important;
+  border: none !important;
 }
 
-.networksTable,
 .networksTable tr,
 .networksTable td {
   border: none;
-  border-collapse: collapse;
 }
 
 .networksTable th {
