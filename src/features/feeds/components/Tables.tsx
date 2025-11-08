@@ -785,7 +785,7 @@ export const StreamsNetworkAddressesTable = ({
     <div className={tableStyles.compactNetworksTable}>
       <ExpandableTableWrapper
         title="Streams Verifier Network Addresses"
-        description="Expand to view verifier proxy addresses required for onchain report verification"
+        description="Expand to view supported networks and addresses required for onchain report verification"
         allowExpansion={allowExpansion}
         defaultExpanded={defaultExpanded}
         scrollable={allowExpansion}
