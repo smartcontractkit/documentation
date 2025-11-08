@@ -674,15 +674,15 @@ export const StreamsNetworkAddressesTable = ({
                           <span>{network.network}</span>
                         </div>
                       </td>
-                      <td>{network.mainnet.label}</td>
+                      <td>{network.mainnet?.label}</td>
                       <td className={tableStyles.addressColumn}>
                         {network.isSolana ? (
                           <>
                             <div>
                               <small className={tableStyles.addressLabel}>Verifier Program ID:</small>
                               <CopyableAddress
-                                address={network?.mainnet?.verifierProgramId}
-                                explorerUrl={network?.mainnet?.explorerUrl}
+                                address={network.mainnet?.verifierProgramId || ""}
+                                explorerUrl={network.mainnet?.explorerUrl || ""}
                                 network={network}
                                 environment="Mainnet"
                               />
@@ -690,8 +690,8 @@ export const StreamsNetworkAddressesTable = ({
                             <div className={tableStyles.mt1}>
                               <small className={tableStyles.addressLabel}>Access Controller:</small>
                               <CopyableAddress
-                                address={network?.mainnet?.accessController}
-                                explorerUrl={network?.mainnet?.explorerUrl}
+                                address={network.mainnet?.accessController || ""}
+                                explorerUrl={network.mainnet?.explorerUrl || ""}
                                 network={network}
                                 environment="Mainnet"
                               />
@@ -699,8 +699,8 @@ export const StreamsNetworkAddressesTable = ({
                           </>
                         ) : (
                           <CopyableAddress
-                            address={network.mainnet.verifierProxy}
-                            explorerUrl={network.mainnet.explorerUrl}
+                            address={network.mainnet?.verifierProxy || ""}
+                            explorerUrl={network.mainnet?.explorerUrl || ""}
                             network={network}
                             environment="Mainnet"
                           />
@@ -722,15 +722,15 @@ export const StreamsNetworkAddressesTable = ({
                           </div>
                         )}
                       </td>
-                      <td>{network.testnet.label}</td>
+                      <td>{network.testnet?.label}</td>
                       <td className={tableStyles.addressColumn}>
                         {network.isSolana ? (
                           <>
                             <div>
                               <small className={tableStyles.addressLabel}>Verifier Program ID:</small>
                               <CopyableAddress
-                                address={network?.testnet?.verifierProgramId}
-                                explorerUrl={network?.testnet?.explorerUrl}
+                                address={network.testnet?.verifierProgramId || ""}
+                                explorerUrl={network.testnet?.explorerUrl || ""}
                                 network={network}
                                 environment="Testnet"
                               />
@@ -738,8 +738,8 @@ export const StreamsNetworkAddressesTable = ({
                             <div className={tableStyles.mt1}>
                               <small className={tableStyles.addressLabel}>Access Controller:</small>
                               <CopyableAddress
-                                address={network?.testnet?.accessController}
-                                explorerUrl={network?.testnet?.explorerUrl}
+                                address={network.testnet?.accessController || ""}
+                                explorerUrl={network.testnet?.explorerUrl || ""}
                                 network={network}
                                 environment="Testnet"
                               />
@@ -747,8 +747,8 @@ export const StreamsNetworkAddressesTable = ({
                           </>
                         ) : (
                           <CopyableAddress
-                            address={network.testnet.verifierProxy}
-                            explorerUrl={network.testnet.explorerUrl}
+                            address={network.testnet?.verifierProxy || ""}
+                            explorerUrl={network.testnet?.explorerUrl || ""}
                             network={network}
                             environment="Testnet"
                           />
