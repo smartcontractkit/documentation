@@ -161,14 +161,14 @@ const sidebarSections = getSidebarSections(section)
 
 <script>
   import { selectedChainType } from "~/stores/chainType"
-  import { applyChainTypeFilter } from "~/utils/chainType.js"
 
   /**
    * Filters sidebar items based on selected chain type
-   * Uses shared utility function for consistency with mobile drawer
+   * Triggers the unified filter in RecursiveSidebar that respects BOTH chain type AND language
    */
   function filterSidebarByChainType() {
-    applyChainTypeFilter(selectedChainType.get())
+    // trigger a languageChanged event to run the unified filter
+    window.dispatchEvent(new CustomEvent("languageChanged"))
   }
 
   // Run on initial load
