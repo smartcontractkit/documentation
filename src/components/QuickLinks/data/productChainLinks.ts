@@ -160,6 +160,7 @@ export const productChainLinks: ProductChainLinks = {
       hedera: "/data-streams/crypto-streams",
       hyperevm: "/data-streams/crypto-streams",
       ink: "/data-streams/crypto-streams",
+      injective: "/data-streams/crypto-streams",
       jovay: "/data-streams/crypto-streams",
       lens: "/data-streams/crypto-streams",
       linea: "/data-streams/crypto-streams",
