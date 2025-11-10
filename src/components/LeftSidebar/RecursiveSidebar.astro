@@ -193,6 +193,17 @@ function shouldExpandSection(item: SectionContent, currentPage: string): boolean
   }
 
   /**
+   * Detects chain type from URL path
+   * This ensures consistent behavior even before the store initializes
+   */
+  function detectChainFromPath(pathname: string): string | null {
+    if (/\/(evm|ethereum)(\/|$)/i.test(pathname)) return "evm"
+    if (/\/(svm|solana)(\/|$)/i.test(pathname)) return "solana"
+    if (/\/aptos(\/|$)/i.test(pathname)) return "aptos"
+    return null
+  }
+
+  /**
    * Filters sidebar items based on selected SDK language
    * - Hides items with data-sdk-lang that don't match current selection
    * - Respects chain type filtering if active
@@ -211,11 +222,26 @@ function shouldExpandSection(item: SectionContent, currentPage: string): boolean
     }
 
     // Get current chain type if chain filtering is active (for CCIP section)
+    // Priority: URL path detection → localStorage → default (EVM)
     let currentChain: string | undefined
     try {
-      const chainStore = localStorage.getItem("chainlink-docs-chain-type")
-      if (chainStore) {
-        currentChain = chainStore
+      // Priority 1: Detect from URL (e.g., /ccip/getting-started/svm → "solana")
+      const detectedChain = detectChainFromPath(window.location.pathname)
+      if (detectedChain) {
+        currentChain = detectedChain
+      } else {
+        // Priority 2: Read from localStorage
+        const chainStore = localStorage.getItem("chainlink-docs-chain-type")
+        if (chainStore) {
+          currentChain = chainStore
+        } else {
+          // Priority 3: Default to EVM if we're in a section that uses chain filtering
+          // Check if any items in the sidebar have chain type attributes
+          const hasChainTypes = document.querySelector("[data-chain-types]:not([data-chain-types='universal'])")
+          if (hasChainTypes) {
+            currentChain = "evm" // Default chain type
+          }
+        }
       }
     } catch {
       // Chain filtering not active in this section
