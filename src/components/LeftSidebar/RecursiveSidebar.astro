@@ -165,8 +165,48 @@ function shouldExpandSection(item: SectionContent, currentPage: string): boolean
 
 <script>
   /**
+   * Unified filter that checks BOTH language AND chain type criteria
+   * This prevents one filter from overwriting the other's display property
+   */
+  function shouldShowSidebarItem(item: HTMLElement, currentLang: string, currentChain?: string): boolean {
+    // Check language filter
+    const sdkLang = item.getAttribute("data-sdk-lang")
+    const langVisible =
+      sdkLang === "both" || // Always show language-agnostic items
+      !sdkLang || // Items without sdkLang attribute
+      sdkLang === currentLang // Matches current language
+
+    // Check chain type filter (only if chain filtering is active)
+    let chainVisible = true
+    if (currentChain) {
+      const chainTypesAttr = item.getAttribute("data-chain-types")
+      if (chainTypesAttr === "universal" || !chainTypesAttr) {
+        chainVisible = true // Always show universal/legacy content
+      } else {
+        const itemChains = chainTypesAttr.split(",")
+        chainVisible = itemChains.includes(currentChain)
+      }
+    }
+
+    // Item is visible only if BOTH filters pass
+    return langVisible && chainVisible
+  }
+
+  /**
+   * Detects chain type from URL path
+   * This ensures consistent behavior even before the store initializes
+   */
+  function detectChainFromPath(pathname: string): string | null {
+    if (/\/(evm|ethereum)(\/|$)/i.test(pathname)) return "evm"
+    if (/\/(svm|solana)(\/|$)/i.test(pathname)) return "solana"
+    if (/\/aptos(\/|$)/i.test(pathname)) return "aptos"
+    return null
+  }
+
+  /**
    * Filters sidebar items based on selected SDK language
    * - Hides items with data-sdk-lang that don't match current selection
+   * - Respects chain type filtering if active
    * - Runs on initial load and when language changes
    */
   function filterSidebarByLanguage() {
@@ -181,22 +221,38 @@ function shouldExpandSection(item: SectionContent, currentPage: string): boolean
       // Fallback to default
     }
 
+    // Get current chain type if chain filtering is active (for CCIP section)
+    // Priority: URL path detection → localStorage → default (EVM)
+    let currentChain: string | undefined
+    try {
+      // Priority 1: Detect from URL (e.g., /ccip/getting-started/svm → "solana")
+      const detectedChain = detectChainFromPath(window.location.pathname)
+      if (detectedChain) {
+        currentChain = detectedChain
+      } else {
+        // Priority 2: Read from localStorage
+        const chainStore = localStorage.getItem("chainlink-docs-chain-type")
+        if (chainStore) {
+          currentChain = chainStore
+        } else {
+          // Priority 3: Default to EVM if we're in a section that uses chain filtering
+          // Check if any items in the sidebar have chain type attributes
+          const hasChainTypes = document.querySelector("[data-chain-types]:not([data-chain-types='universal'])")
+          if (hasChainTypes) {
+            currentChain = "evm" // Default chain type
+          }
+        }
+      }
+    } catch {
+      // Chain filtering not active in this section
+    }
+
     // Find all sidebar items with data-sdk-lang attribute
     const sidebarItems = document.querySelectorAll<HTMLElement>("[data-sdk-lang]")
 
     sidebarItems.forEach((item) => {
-      const sdkLang = item.getAttribute("data-sdk-lang")
-
-      if (sdkLang === "both") {
-        // Always show items that are language-agnostic
-        item.style.display = ""
-      } else if (sdkLang !== currentLang) {
-        // Hide items that don't match current language
-        item.style.display = "none"
-      } else {
-        // Show items that match current language
-        item.style.display = ""
-      }
+      const visible = shouldShowSidebarItem(item, currentLang, currentChain)
+      item.style.display = visible ? "" : "none"
     })
   }
 

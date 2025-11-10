@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from "react"
 import { useStore } from "@nanostores/react"
 import { selectedLanguage } from "~/lib/languageStore.js"
 import { selectedChainType } from "~/stores/chainType.js"
-import { applyChainTypeFilter } from "~/utils/chainType.js"
 import { BackArrowIcon } from "./BackArrowIcon.js"
 import { Page } from "../../Header/Nav/config.js"
 import styles from "./subProductContent.module.css"
@@ -84,9 +83,25 @@ export const SubProductContent = ({ subProducts, onSubproductClick, currentPath 
   const currentLang = useStore(selectedLanguage)
   const currentChain = useStore(selectedChainType)
 
-  // Apply chain type filtering using shared utility (same as desktop sidebar)
+  // Apply unified chain type filtering that respects both language AND chain filters
   useEffect(() => {
-    applyChainTypeFilter(currentChain)
+    const sidebarItems = document.querySelectorAll<HTMLElement>("[data-chain-types]")
+
+    sidebarItems.forEach((item) => {
+      const chainTypesAttr = item.getAttribute("data-chain-types")
+
+      let chainVisible = true
+      if (chainTypesAttr === "universal" || !chainTypesAttr) {
+        chainVisible = true // Always show universal/legacy content
+      } else {
+        const itemChains = chainTypesAttr.split(",")
+        chainVisible = itemChains.includes(currentChain)
+      }
+
+      // Don't overwrite language filtering - only hide if chain doesn't match
+      // Language filtering is already handled in renderPages function above
+      item.style.display = chainVisible ? "" : "none"
+    })
   }, [currentChain])
 
   if (!subProducts) {
