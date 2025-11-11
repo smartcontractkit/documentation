@@ -468,7 +468,6 @@ export const getAllNetworks = ({ filter }: { filter: Environment }): Network[] =
       })),
       armProxy: chains[chain].armProxy,
       feeQuoter: chainType === "solana" ? chains[chain]?.feeQuoter : undefined,
-      rmnPermeable: chains[chain]?.rmnPermeable,
       mcms: chainType === "aptos" ? chains[chain]?.mcms?.address : undefined,
       poolPrograms: chainType === "solana" ? chains[chain]?.poolPrograms : undefined,
     })
@@ -501,7 +500,6 @@ export const getNetwork = ({ chain, filter }: { chain: string; filter: Environme
         logo: network.logo,
         explorer: network.explorer,
         chainType: network.chainType,
-        rmnPermeable: chainDetails?.rmnPermeable,
         ...chainDetails,
       }
     }
