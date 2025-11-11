@@ -1,0 +1,250 @@
+---
+section: cre
+title: "Testing HTTP Triggers in Simulation"
+date: Last Modified
+metadata:
+  description: "Test HTTP triggers locally with the CRE simulator: provide JSON payloads interactively or via command-line flags for rapid development."
+  datePublished: "2025-11-10"
+  lastModified: "2025-11-10"
+---
+
+import { Aside, CodeHighlightBlockMulti } from "@components"
+import simulationExampleGo from "./code-snippets/simulation-example.go?raw"
+import simulationExampleTs from "./code-snippets/simulation-example.ts?raw"
+
+During development, you can test your HTTP trigger workflows locally using the `cre workflow simulate` command. The simulator allows you to provide test payloads without setting up authorization keys or JWT authentication.
+
+This guide focuses specifically on HTTP trigger simulation with detailed examples and scenarios. For a general overview of workflow simulation covering all trigger types, see [Simulating Workflows](/cre/guides/operations/simulating-workflows).
+
+## Prerequisites
+
+Before running a simulation:
+
+- **CRE CLI installed**: You need the CRE CLI to run simulations. See [CLI Installation](/cre/getting-started/cli-installation) if you haven't installed it yet.
+- **CRE account & authentication**: You must have a CRE account and be logged in with the CLI. See [Create your account](/cre/account/creating-account) and [Log in with the CLI](/cre/account/cli-login) for instructions.
+- **HTTP trigger configured**: Your workflow must have an HTTP trigger handler registered. See [Configuration & Handler](/cre/guides/workflow/using-triggers/http-trigger/configuration) for setup instructions.
+
+<Aside type="note" title="No authorization required for simulation">
+  During simulation, you can use an empty authorization configuration (e.g., `&http.Config{}` in Go or `trigger({})` in
+  TypeScript). This simplifies local testing—just remember to add `authorizedKeys` before deploying.
+</Aside>
+
+## Basic simulation
+
+To simulate a workflow with an HTTP trigger, run the `simulate` command from your project root:
+
+```bash
+cre workflow simulate <workflow-folder> --target <target-name>
+```
+
+**Example:**
+
+```bash
+cre workflow simulate my-http-workflow --target staging-settings
+```
+
+The simulator will detect your HTTP trigger and prompt you to select it from available triggers.
+
+## Providing input data
+
+You have three ways to provide JSON input to your HTTP trigger during simulation:
+
+### 1. Interactive mode (default)
+
+When you run the simulation without input flags, the CLI prompts you to enter JSON data:
+
+```bash
+$ cre workflow simulate my-http-workflow --target staging-settings
+
+# Select the HTTP trigger when prompted
+? Select a trigger to simulate: HTTP Trigger
+
+# Enter your JSON input:
+? Enter JSON input for the HTTP trigger:
+{"userId": "123", "action": "purchase", "amount": 50}
+```
+
+The simulator converts your JSON into a payload and passes it to your callback function.
+
+### 2. Inline JSON string
+
+For non-interactive execution (useful for CI/CD or scripting), pass JSON directly using the `--http-payload` flag along with `--non-interactive` and `--trigger-index`:
+
+```bash
+cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --http-payload '{"userId":"123","action":"purchase","amount":50}' --target staging-settings
+```
+
+<Aside type="note" title="Non-interactive requirements">
+  The `--http-payload` flag requires `--non-interactive` mode. You must also specify `--trigger-index` (0-based index of
+  your HTTP trigger). If your HTTP trigger is the only trigger or the first one defined, use `--trigger-index 0`.
+</Aside>
+
+<Aside type="note" title="Escaping quotes">
+  When passing JSON inline, use single quotes around the entire JSON string and double quotes for JSON keys and string
+  values. On Windows, you may need to escape double quotes differently: `"{\"userId\":\"123\"}"`
+</Aside>
+
+### 3. Input from file
+
+For complex payloads or reusable test data, store your JSON in a file and reference it in non-interactive mode.
+
+**Create a payload file** in your project root (the directory where you run `cre workflow simulate`):
+
+**`test-payload.json`:**
+
+```json
+{
+  "userId": "123",
+  "action": "purchase",
+  "amount": 50,
+  "metadata": {
+    "timestamp": "2025-11-10T10:00:00Z",
+    "source": "mobile-app"
+  }
+}
+```
+
+**Simulate with file input:**
+
+```bash
+cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --http-payload test-payload.json --target staging-settings
+```
+
+You can also use the `@` prefix:
+
+```bash
+cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --http-payload @test-payload.json --target staging-settings
+```
+
+## Example workflow simulation
+
+Let's simulate a complete workflow that processes HTTP requests.
+
+**Setup your config file:**
+
+For this example, create a `config.staging.json` file with:
+
+```json
+{
+  "minimumAmount": 10
+}
+```
+
+This configuration sets the minimum purchase amount to 10, which we'll test with different scenarios.
+
+**Workflow code:**
+
+<CodeHighlightBlockMulti
+  languages={{
+    go: {
+      code: simulationExampleGo,
+      title: "HTTP Trigger Simulation Example",
+    },
+    ts: {
+      code: simulationExampleTs,
+      title: "HTTP Trigger Simulation Example",
+    },
+  }}
+/>
+
+**Run the simulation:**
+
+```bash
+cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --http-payload '{"userId":"user_123","action":"purchase","amount":100}' --target staging-settings
+```
+
+**Expected output:**
+
+```
+Workflow compiled
+2025-11-10T11:28:25Z [SIMULATION] Simulator Initialized
+
+2025-11-10T11:28:25Z [SIMULATION] Running trigger trigger=http-trigger@1.0.0-alpha
+2025-11-10T11:28:25Z [USER LOG] Processing purchase for user user_123
+2025-11-10T11:28:25Z [USER LOG] Processing amount: 100
+
+Workflow Simulation Result:
+ "Successfully processed purchase"
+
+2025-11-10T11:28:25Z [SIMULATION] Execution finished signal received
+2025-11-10T11:28:25Z [SIMULATION] Skipping WorkflowEngineV2
+```
+
+## Testing different scenarios
+
+Use simulation to test various input scenarios:
+
+### Valid request
+
+```bash
+cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --http-payload '{"userId":"123","action":"purchase","amount":100}' --target staging-settings
+```
+
+### Invalid input (below minimum)
+
+```bash
+cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --http-payload '{"userId":"123","action":"purchase","amount":5}' --target staging-settings
+```
+
+**Expected output:**
+
+```
+Workflow compiled
+2025-11-10T11:34:38Z [SIMULATION] Simulator Initialized
+
+2025-11-10T11:34:38Z [SIMULATION] Running trigger trigger=http-trigger@1.0.0-alpha
+2025-11-10T11:34:38Z [USER LOG] Processing purchase for user 123
+2025-11-10T11:34:38Z [USER LOG] Amount 5 below minimum 10
+
+Workflow Simulation Result:
+ "Amount too low"
+
+2025-11-10T11:34:38Z [SIMULATION] Execution finished signal received
+2025-11-10T11:34:38Z [SIMULATION] Skipping WorkflowEngineV2
+```
+
+### Missing fields
+
+```bash
+cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --http-payload '{"userId":"123","action":"purchase"}' --target staging-settings
+```
+
+**Expected output:**
+
+```
+Workflow compiled
+2025-11-10T11:37:57Z [SIMULATION] Simulator Initialized
+
+2025-11-10T11:37:57Z [SIMULATION] Running trigger trigger=http-trigger@1.0.0-alpha
+2025-11-10T11:37:57Z [USER LOG] Missing required fields
+
+Workflow Simulation Result:
+ "Error: Missing required fields (userId, action, amount)"
+
+2025-11-10T11:37:57Z [SIMULATION] Execution finished signal received
+2025-11-10T11:37:57Z [SIMULATION] Skipping WorkflowEngineV2
+```
+
+This helps you verify error handling and edge cases before deployment.
+
+## Simulation vs production behavior
+
+| Aspect                     | Simulation                          | Production                              |
+| -------------------------- | ----------------------------------- | --------------------------------------- |
+| **Authorization**          | Not required (empty config allowed) | Required (`authorizedKeys` must be set) |
+| **Signature verification** | Skipped                             | Strictly enforced                       |
+| **Execution**              | Immediate, synchronous              | Asynchronous via DON                    |
+| **Logs**                   | Printed to terminal                 | Available in CRE UI                     |
+
+<Aside type="caution" title="Add authorization before deploying">
+  Simulation allows empty authorization configs for convenience, but **deployed workflows require `authorizedKeys`**.
+  The CLI will reject deployments with HTTP triggers that lack authorization configuration.
+</Aside>
+
+## Next steps
+
+Once you've tested your workflow locally:
+
+1. **Add authorization**: Configure `authorizedKeys` in your HTTP trigger for production
+1. **Deploy your workflow**: Use [`cre workflow deploy`](/cre/guides/operations/deploying-workflows) to register it
+1. **Trigger it in production**: Follow the [Triggering Deployed Workflows](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows) guide

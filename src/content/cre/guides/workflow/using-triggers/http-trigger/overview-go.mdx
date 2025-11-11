@@ -1,0 +1,98 @@
+---
+section: cre
+title: "HTTP Trigger Overview"
+date: Last Modified
+sdkLang: "go"
+pageId: "guides-workflow-http-trigger-overview"
+metadata:
+  description: "Learn how HTTP triggers work in CRE workflows: start workflows via HTTP requests from external systems with cryptographic authorization."
+  datePublished: "2025-11-10"
+  lastModified: "2025-11-10"
+---
+
+import { Aside } from "@components"
+
+The HTTP trigger allows external systems to initiate your workflow execution by making HTTP requests to a designated endpoint. This enables on-demand workflow execution, webhook integration, and API-driven automation.
+
+## How HTTP triggers work
+
+When you deploy a workflow with an HTTP trigger:
+
+1. **Your workflow receives a unique endpoint** managed by the CRE gateway
+1. **External systems send HTTP requests** with JSON payloads to this endpoint
+1. **Requests must be cryptographically signed** using a private key corresponding to an authorized EVM address
+1. **CRE validates the signature** against your configured `authorizedKeys`
+1. **If authorized**, your workflow callback executes with the request payload
+1. **Your callback's return value** becomes the HTTP response sent back to the requester
+
+<Aside type="note" title="Security by design">
+  For **deployed workflows**, HTTP triggers use cryptographic signatures to ensure only authorized addresses can execute
+  your workflow. During **local simulation**, you can use empty authorization configs to simplify testing—just remember
+  to add `authorizedKeys` before deploying.
+</Aside>
+
+## When to use HTTP triggers
+
+HTTP triggers are ideal for:
+
+- **Webhook integration**: Receive events from external services (GitHub, payment processors, etc.)
+- **On-demand execution**: Allow users or systems to trigger specific workflow logic when needed
+- **API gateway patterns**: Create authenticated endpoints that execute blockchain operations
+- **Event bridging**: Connect web2 events to web3 workflows
+
+## The complete HTTP trigger journey
+
+This section provides everything you need to work with HTTP triggers:
+
+1. **[Configuration & Handler](/cre/guides/workflow/using-triggers/http-trigger/configuration)** - Learn how to configure HTTP triggers in your workflow code and write handler functions to process incoming requests
+
+1. **[Testing in Simulation](/cre/guides/workflow/using-triggers/http-trigger/testing-in-simulation)** - Test your HTTP trigger locally using the `cre workflow simulate` command before deploying
+
+1. **[Triggering Deployed Workflows](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows)** - Understand the JSON-RPC format and JWT authentication required to trigger your deployed workflows
+
+1. **[Testing with Local JWT Server](/cre/guides/workflow/using-triggers/http-trigger/local-testing-tool)** - Run a local proxy server that automatically generates JWT tokens and sends authenticated requests to the CRE gateway for testing your deployed workflows
+
+## Quick comparison: Simulation vs Production
+
+| Aspect             | Simulation                      | Production                                               |
+| ------------------ | ------------------------------- | -------------------------------------------------------- |
+| **Authorization**  | Optional (can use empty config) | Required (`authorizedKeys` must be configured)           |
+| **Trigger method** | CLI with `--input` flag         | HTTP POST to gateway endpoint with JWT                   |
+| **Endpoint**       | Local simulator                 | CRE gateway (`https://01.gateway.zone-a.cre.chain.link`) |
+| **Use case**       | Development, testing, debugging | Live integrations, webhooks, production APIs             |
+
+## Key concepts
+
+### Authorization keys
+
+Authorization keys are EVM addresses that are permitted to trigger your workflow. When you configure an HTTP trigger, you specify one or more `AuthorizedKeys`:
+
+```go
+AuthorizedKeys: []http.Key{
+	{
+		Type:      http.KeyTypeECDSAEVM,
+		PublicKey: "0xYourEVMAddress",
+	},
+}
+```
+
+Only requests signed by the corresponding private keys will be accepted by the CRE gateway.
+
+### Payload
+
+The [HTTP trigger payload](/cre/reference/sdk/triggers/http-trigger-go#httppayload) contains:
+
+- **`input`**: The JSON data from the HTTP request body
+- **`key`**: The authorized key that signed the request
+
+Your callback function receives this payload and can process the input data to perform workflow logic.
+
+## Next steps
+
+Start by learning how to configure HTTP triggers and write handler functions:
+
+- **[Configuration & Handler](/cre/guides/workflow/using-triggers/http-trigger/configuration)** - Set up your first HTTP trigger
+
+Or explore the SDK reference for detailed API documentation:
+
+- **[HTTP Trigger SDK Reference](/cre/reference/sdk/triggers/http-trigger)** - Complete API documentation
