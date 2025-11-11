@@ -1,13 +1,13 @@
 ---
 section: cre
-title: "HTTP Trigger"
+title: "HTTP Trigger: Configuration & Handler"
 sdkLang: "ts"
-pageId: "guides-workflow-http-trigger"
+pageId: "guides-workflow-http-trigger-configuration"
 date: Last Modified
 metadata:
-  description: "Trigger workflows with HTTP requests in TypeScript: learn to start your workflow when external systems send data to your endpoint."
+  description: "Configure HTTP triggers in TypeScript: learn to set up authorization, write handler functions, and process HTTP request payloads."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2025-11-10"
 ---
 
 import { Aside } from "@components"
@@ -75,7 +75,7 @@ main()
 - **`type`**: Must be `"KEY_TYPE_ECDSA_EVM"` (currently the only supported authentication method)
 - **Multiple keys**: You can include multiple authorized addresses in the array
 
-When an HTTP request is made to your workflow's endpoint, CRE verifies that the request was signed by a private key corresponding to one of the authorized addresses.
+When an HTTP request is made to trigger your workflow, CRE verifies that the request was signed by a private key corresponding to one of the authorized addresses.
 
 ## Callback and payload
 
@@ -104,11 +104,6 @@ const onHttpTrigger = (runtime: Runtime<Config>, payload: HTTPPayload): string =
 <Aside type="note" title="For local simulation only">
   During local simulation with `cre workflow simulate`, you can use an empty configuration `trigger({})` to test your
   workflow without setting up authorization keys. This is convenient for rapid development, but remember to add
-  `authorizedKeys` before deploying.
+  `authorizedKeys` before deploying. See [Testing in
+  Simulation](/cre/guides/workflow/using-triggers/http-trigger/testing-in-simulation) for details.
 </Aside>
-
-## Testing HTTP triggers in simulation
-
-To test your HTTP trigger during development, you can use the workflow simulator with a JSON payload. The simulator allows you to provide test data either directly as a JSON string or from a file.
-
-For detailed instructions on simulating HTTP triggers, including interactive and non-interactive modes, see the [HTTP Trigger section in the Simulating Workflows guide](/cre/guides/operations/simulating-workflows#http-trigger).
