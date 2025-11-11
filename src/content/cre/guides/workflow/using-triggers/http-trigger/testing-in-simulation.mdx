@@ -88,9 +88,11 @@ cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --htt
 
 For complex payloads or reusable test data, store your JSON in a file and reference it in non-interactive mode.
 
-**Create a payload file** in your project root (the directory where you run `cre workflow simulate`):
+**Option 1: File in workflow folder**
 
-**`test-payload.json`:**
+Create the payload file in your workflow directory:
+
+**`my-http-workflow/test-payload.json`:**
 
 ```json
 {
@@ -104,17 +106,24 @@ For complex payloads or reusable test data, store your JSON in a file and refere
 }
 ```
 
-**Simulate with file input:**
+**Simulate:**
 
 ```bash
 cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --http-payload test-payload.json --target staging-settings
 ```
 
-You can also use the `@` prefix:
+**Option 2: File at project root**
+
+Create the payload file at your project root. Simulate (using `../` to reference the parent directory):
 
 ```bash
-cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --http-payload @test-payload.json --target staging-settings
+cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --http-payload ../test-payload.json --target staging-settings
 ```
+
+<Aside type="note" title="File paths are relative to the workflow folder">
+  The CLI resolves file paths relative to the **workflow folder** you're simulating. Use just the filename for files in
+  the workflow folder, or `../filename.json` for files at the project root.
+</Aside>
 
 ## Example workflow simulation
 

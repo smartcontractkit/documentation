@@ -1049,9 +1049,11 @@ cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --htt
 
 For complex payloads or reusable test data, store your JSON in a file and reference it in non-interactive mode.
 
-**Create a payload file** in your project root (the directory where you run `cre workflow simulate`):
+**Option 1: File in workflow folder**
 
-**`test-payload.json`:**
+Create the payload file in your workflow directory:
+
+**`my-http-workflow/test-payload.json`:**
 
 ```json
 {
@@ -1065,17 +1067,24 @@ For complex payloads or reusable test data, store your JSON in a file and refere
 }
 ```
 
-**Simulate with file input:**
+**Simulate:**
 
 ```bash
 cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --http-payload test-payload.json --target staging-settings
 ```
 
-You can also use the `@` prefix:
+**Option 2: File at project root**
+
+Create the payload file at your project root. Simulate (using `../` to reference the parent directory):
 
 ```bash
-cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --http-payload @test-payload.json --target staging-settings
+cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --http-payload ../test-payload.json --target staging-settings
 ```
+
+<Aside type="note" title="File paths are relative to the workflow folder">
+  The CLI resolves file paths relative to the **workflow folder** you're simulating. Use just the filename for files in
+  the workflow folder, or `../filename.json` for files at the project root.
+</Aside>
 
 ## Example workflow simulation
 
@@ -1328,8 +1337,8 @@ Content-Type: application/json
 Authorization: Bearer <JWT_TOKEN>
 
 {
-  "jsonrpc": "2.0",
   "id": "unique-request-id",
+  "jsonrpc": "2.0",
   "method": "workflows.execute",
   "params": {
     "input": {
@@ -12108,7 +12117,7 @@ func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.Secre
 - **`Type`**: Must be `http.KeyType_KEY_TYPE_ECDSA_EVM` (currently the only supported authentication method)
 - **Multiple keys**: You can include multiple authorized addresses in the slice
 
-When an HTTP request is made to your workflow's endpoint, CRE verifies that the request was signed by a private key corresponding to one of the authorized addresses.
+When an HTTP request is made to trigger your workflow, CRE verifies that the request was signed by a private key corresponding to one of the authorized addresses.
 
 ## Callback and payload
 
@@ -12154,12 +12163,11 @@ The HTTP trigger allows external systems to initiate your workflow execution by 
 
 When you deploy a workflow with an HTTP trigger:
 
-1. **Your workflow receives a unique endpoint** managed by the CRE gateway
-2. **External systems send HTTP requests** with JSON payloads to this endpoint
-3. **Requests must be cryptographically signed** using a private key corresponding to an authorized EVM address
+1. **External systems send HTTP POST requests** to a CRE gateway
+2. **The request specifies your workflow ID** in the JSON-RPC body along with the input payload
+3. **Requests must be cryptographically signed** using a private key corresponding to an authorized EVM address in the target workflow
 4. **CRE validates the signature** against your configured `authorizedKeys`
 5. **If authorized**, your workflow callback executes with the request payload
-6. **Your callback's return value** becomes the HTTP response sent back to the requester
 
 <Aside type="note" title="Security by design">
   For **deployed workflows**, HTTP triggers use cryptographic signatures to ensure only authorized addresses can execute
@@ -12174,7 +12182,7 @@ HTTP triggers are ideal for:
 - **Webhook integration**: Receive events from external services (GitHub, payment processors, etc.)
 - **On-demand execution**: Allow users or systems to trigger specific workflow logic when needed
 - **API gateway patterns**: Create authenticated endpoints that execute blockchain operations
-- **Event bridging**: Connect web2 events to web3 workflows
+- **Event bridging**: Connect offchain systems events to workflows
 
 ## The complete HTTP trigger journey
 
