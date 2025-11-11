@@ -18,8 +18,9 @@ describe("propagateChainTypes", () => {
 
     const result = propagateChainTypes(input)
 
-    expect(result[0].children![0].chainTypes).toEqual(["evm"])
-    expect(result[0].children![1].chainTypes).toEqual(["evm"])
+    expect(result[0].children).toBeDefined()
+    expect(result[0].children?.[0].chainTypes).toEqual(["evm"])
+    expect(result[0].children?.[1].chainTypes).toEqual(["evm"])
   })
 
   test("children with explicit chainTypes are not overridden", () => {
@@ -37,8 +38,9 @@ describe("propagateChainTypes", () => {
 
     const result = propagateChainTypes(input)
 
-    expect(result[0].children![0].chainTypes).toEqual(["evm"])
-    expect(result[0].children![1].chainTypes).toEqual(["solana", "aptos"])
+    expect(result[0].children).toBeDefined()
+    expect(result[0].children?.[0].chainTypes).toEqual(["evm"])
+    expect(result[0].children?.[1].chainTypes).toEqual(["solana", "aptos"])
   })
 
   test("nested children (grandchildren) inherit correctly", () => {
@@ -63,10 +65,12 @@ describe("propagateChainTypes", () => {
     const result = propagateChainTypes(input)
 
     // Parent inherits from grandparent
-    expect(result[0].children![0].chainTypes).toEqual(["evm"])
+    expect(result[0].children).toBeDefined()
+    expect(result[0].children?.[0].chainTypes).toEqual(["evm"])
     // Children inherit from parent (which inherited from grandparent)
-    expect(result[0].children![0].children![0].chainTypes).toEqual(["evm"])
-    expect(result[0].children![0].children![1].chainTypes).toEqual(["evm"])
+    expect(result[0].children?.[0].children).toBeDefined()
+    expect(result[0].children?.[0].children?.[0].chainTypes).toEqual(["evm"])
+    expect(result[0].children?.[0].children?.[1].chainTypes).toEqual(["evm"])
   })
 
   test("parent with chainTypes, intermediate child without, grandchild should inherit from parent", () => {
@@ -90,8 +94,10 @@ describe("propagateChainTypes", () => {
 
     const result = propagateChainTypes(input)
 
-    expect(result[0].children![0].chainTypes).toEqual(["solana"])
-    expect(result[0].children![0].children![0].chainTypes).toEqual(["solana"])
+    expect(result[0].children).toBeDefined()
+    expect(result[0].children?.[0].chainTypes).toEqual(["solana"])
+    expect(result[0].children?.[0].children).toBeDefined()
+    expect(result[0].children?.[0].children?.[0].chainTypes).toEqual(["solana"])
   })
 
   test("universal items (no chainTypes) remain universal", () => {
@@ -126,8 +132,9 @@ describe("propagateChainTypes", () => {
     // Parent remains universal
     expect(result[0].chainTypes).toBeUndefined()
     // Children keep their explicit chainTypes
-    expect(result[0].children![0].chainTypes).toEqual(["evm"])
-    expect(result[0].children![1].chainTypes).toEqual(["solana"])
+    expect(result[0].children).toBeDefined()
+    expect(result[0].children?.[0].chainTypes).toEqual(["evm"])
+    expect(result[0].children?.[1].chainTypes).toEqual(["solana"])
   })
 
   test("empty array of contents returns empty array", () => {
@@ -160,7 +167,8 @@ describe("propagateChainTypes", () => {
 
     const result = propagateChainTypes(input)
 
-    expect(result[0].children![0].chainTypes).toEqual(["evm", "solana", "aptos"])
+    expect(result[0].children).toBeDefined()
+    expect(result[0].children?.[0].chainTypes).toEqual(["evm", "solana", "aptos"])
   })
 
   test("does not mutate original input", () => {
@@ -173,12 +181,13 @@ describe("propagateChainTypes", () => {
       },
     ]
 
-    const originalChildChainTypes = input[0].children![0].chainTypes
+    expect(input[0].children).toBeDefined()
+    const originalChildChainTypes = input[0].children?.[0].chainTypes
 
     propagateChainTypes(input)
 
     // Original should not have been mutated
-    expect(input[0].children![0].chainTypes).toBe(originalChildChainTypes)
+    expect(input[0].children?.[0].chainTypes).toBe(originalChildChainTypes)
   })
 
   test("real-world scenario: CCIP API Reference structure", () => {
@@ -215,15 +224,18 @@ describe("propagateChainTypes", () => {
     expect(result[0].chainTypes).toBeUndefined()
 
     // API Reference has solana
-    expect(result[0].children![0].chainTypes).toEqual(["solana"])
+    expect(result[0].children).toBeDefined()
+    expect(result[0].children?.[0].chainTypes).toEqual(["solana"])
 
     // v1.6.0 inherits solana
-    expect(result[0].children![0].children![0].chainTypes).toEqual(["solana"])
+    expect(result[0].children?.[0].children).toBeDefined()
+    expect(result[0].children?.[0].children?.[0].chainTypes).toEqual(["solana"])
 
     // All API endpoints inherit solana
-    const endpoints = result[0].children![0].children![0].children!
-    expect(endpoints[0].chainTypes).toEqual(["solana"]) // Messages
-    expect(endpoints[1].chainTypes).toEqual(["solana"]) // Router
-    expect(endpoints[2].chainTypes).toEqual(["solana"]) // Receiver
+    expect(result[0].children?.[0].children?.[0].children).toBeDefined()
+    const endpoints = result[0].children?.[0].children?.[0].children
+    expect(endpoints?.[0].chainTypes).toEqual(["solana"]) // Messages
+    expect(endpoints?.[1].chainTypes).toEqual(["solana"]) // Router
+    expect(endpoints?.[2].chainTypes).toEqual(["solana"]) // Receiver
   })
 })

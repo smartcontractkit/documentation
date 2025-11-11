@@ -74,15 +74,16 @@ function detectChainFromPath(pathname: string): ChainType | null {
 }
 
 /**
- * Google Analytics tracking helper
+ * Google Analytics tracking helper via Google Tag Manager dataLayer
  * Sends events when chain type changes
  *
  * @param eventName - GA event name
  * @param chainType - Selected chain type
  */
 function trackEvent(eventName: string, chainType: ChainType): void {
-  if (typeof window !== "undefined" && (window as any).gtag) {
-    ;(window as any).gtag("event", eventName, {
+  if (typeof window !== "undefined" && window.dataLayer) {
+    window.dataLayer.push({
+      event: eventName,
       chain_type: chainType,
       section: "ccip",
     })
