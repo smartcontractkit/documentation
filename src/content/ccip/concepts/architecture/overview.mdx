@@ -19,7 +19,7 @@ CCIP is a cross-chain messaging protocol built on Chainlink and secured by its d
 - **Data Transmission**: Send arbitrary data (i.e., bytes) to a receiving contract.
 - **Programmable Token Transfers**: Transfer tokens along with instructions for handling them to a receiving contract (referred to as a programmable token transfer or PTT).
 
-CCIP supports several token transfer mechanisms—including Burn-and-Mint, Lock-and-Mint, and Lock-and-Unlock—using a common interface. Token developers can enable permissionless cross-chain transfers of their tokens via the Chainlink CCT (Cross-Chain Token) standard (detailed documentation is available here). Additionally, CCIP includes an independent Risk Management Network (RMN) that provides layered security through a defense-in-depth approach.
+CCIP supports several token transfer mechanisms—including Burn-and-Mint, Lock-and-Mint, and Lock-and-Unlock—using a common interface. Token developers can enable permissionless cross-chain transfers of their tokens via the Chainlink CCT (Cross-Chain Token) standard (detailed documentation is available here).
 
 <Aside title="Terminology">
 
@@ -39,8 +39,6 @@ CCIP delivers cross-chain messages from a source chain to a destination chain by
    - Decentralized Oracle Network (DON) with nodes that perform distinct roles:
      - Commit: Observes and validates source-chain events to build a consensus-based report.
      - Execution: Validates pending messages and optimizes them for execution on the destination chain.
-   - Risk Management Network:
-     - Operating independently from the main DON, the Risk Management Network "blesses" the committed messages offchain by generating independent attestations. This additional step enhances overall security with a defense-in-depth design.
 
 1. **Onchain Architecture**
    - Router:
@@ -51,14 +49,13 @@ CCIP delivers cross-chain messages from a source chain to a destination chain by
      - Dispatching the message (data and/or tokens).
    - On the destination blockchain, offramping functionality consists of:
      - Accepting and verifying commit reports from the Committing DON.
-     - Validating Risk Management Network nodes signatures when receiving messages from the Executing DON.
      - Releasing or minting tokens to the receiver.
      - Routing the processed message to the designated receiver.
 
 **Note:** These high-level descriptions outline the core principles of CCIP. The detailed architectures for offchain and onchain architecture—and variations across implementations (e.g., on Solana, the Router incorporates OnRamp functionalities)—can be found in the relevant documentation.
 
 <ClickToZoom
-  src="/images/ccip/ccip-hl-v1.6.gif"
+  src="/images/ccip/ccip-hl-v1.7.png"
   alt="CCIP High-Level Architecture"
   style="display: block; margin: 2rem auto; max-height: 60vh; width: auto;"
 />

@@ -186,10 +186,6 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
             title: "Overview",
             url: "ccip/concepts/architecture/offchain/overview",
           },
-          {
-            title: "Risk Management Network",
-            url: "ccip/concepts/architecture/offchain/risk-management-network",
-          },
         ],
       },
       {

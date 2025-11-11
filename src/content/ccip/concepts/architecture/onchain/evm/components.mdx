@@ -102,9 +102,6 @@ During the **Commit Phase**, the following steps occur:
 
 1. **Commit Report Submission**
    - The Committing DON calls the `commit()` function on the OffRamp with a Commit Report that includes messages and/or price reports.
-1. **Validation of RMN Blessing**
-   - If the Commit Report includes blessed merkle roots from RMN-enabled source chains, the OffRamp verifies the RMN node signatures onchain via the `RMNRemote` contract.
-   - If the Commit Report does not include RMN signatures, the OffRamp validates that all unblessed merkle roots originate from source chains where RMN is disabled.
 1. **Price Report Staleness Check**
    - The OffRamp validates the staleness of price reports before forwarding the price to the FeeQuoter.
 1. **Cursed Source Chain Check**
@@ -191,11 +188,8 @@ The `setPool()` method can be invoked by a registered CCIP token administrator v
 
 Risk management in CCIP is performed by a separate, independent network that continuously monitors and validates cross-chain operations for anomalous activity, thereby providing an additional layer of security.
 
-With the latest CCIP release, the Risk Management Network (RMN) blessing occurs offchain. In this process, the Committing DON interacts offchain with RMN nodes to obtain a blessing, and the resulting RMN node signatures are included in the Commit Report posted on the OffRamp at the destination chain.
 The RMN Contract is deployed on every chain where CCIP is integrated, even on chains where RMN is not enabled. Its key functions include:
 
-1. **Blessing Verification**
-   - **Verify function**: The RMNRemote contract's `verify()` function is used by the OffRamp to verify RMN signatures for messages originating from RMN-enabled source chains.
 1. **Cursing Mechanism**
    - **Curse Initiation**: When the CCIP Owner manually initiates a curse, the `curse()` function is invoked to mark the appropriate subjects as cursed.
    - **Curse Detection**: Onchain components (such as the Router, OnRamp, OffRamp, and TokenPool) call the `isCursed()` function on the RMNRemote contract to detect global curses or curses targeting a remote chain.
