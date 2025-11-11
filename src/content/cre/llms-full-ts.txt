@@ -10966,7 +10966,7 @@ You create an HTTP trigger by calling the `HTTPCapability.trigger()` method. Its
 import { cre, type Runtime, type HTTPPayload, Runner } from "@chainlink/cre-sdk"
 
 type Config = {
-  httpPublicKey: string
+  authorizedEVMAddress: string
 }
 
 // Callback function that runs when an HTTP request is received
@@ -10985,7 +10985,7 @@ const initWorkflow = (config: Config) => {
         authorizedKeys: [
           {
             type: "KEY_TYPE_ECDSA_EVM",
-            publicKey: config.httpPublicKey,
+            publicKey: config.authorizedEVMAddress,
           },
         ],
       }),
@@ -11059,10 +11059,11 @@ When you deploy a workflow with an HTTP trigger:
 4. **CRE validates the signature** against your configured `authorizedKeys`
 5. **If authorized**, your workflow callback executes with the request payload
 
-<Aside type="note" title="Security by design">
+<Aside type="caution" title="Authorization required for deployed workflows">
   For **deployed workflows**, HTTP triggers use cryptographic signatures to ensure only authorized addresses can execute
   your workflow. During **local simulation**, you can use empty authorization configs to simplify testing—just remember
-  to add `authorizedKeys` before deploying.
+  to add `authorizedKeys` before deploying. Learn more: [Configuration &
+  Handler](/cre/guides/workflow/using-triggers/http-trigger/configuration-ts#configuration-and-handler).
 </Aside>
 
 ## When to use HTTP triggers
