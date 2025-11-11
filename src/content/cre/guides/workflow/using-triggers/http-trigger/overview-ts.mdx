@@ -18,12 +18,11 @@ The HTTP trigger allows external systems to initiate your workflow execution by 
 
 When you deploy a workflow with an HTTP trigger:
 
-1. **Your workflow receives a unique endpoint** managed by the CRE gateway
-1. **External systems send HTTP requests** with JSON payloads to this endpoint
+1. **External systems send HTTP POST requests** to a CRE gateway
+1. **The request specifies your workflow ID** in the JSON-RPC body along with the input payload
 1. **Requests must be cryptographically signed** using a private key corresponding to an authorized EVM address
 1. **CRE validates the signature** against your configured `authorizedKeys`
 1. **If authorized**, your workflow callback executes with the request payload
-1. **Your callback's return value** becomes the HTTP response sent back to the requester
 
 <Aside type="note" title="Security by design">
   For **deployed workflows**, HTTP triggers use cryptographic signatures to ensure only authorized addresses can execute
