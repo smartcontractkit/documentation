@@ -894,7 +894,7 @@ You used a **Cron trigger** (time-based). **Most production workflows react to r
 
 **Try these next:**
 
-- **[HTTP Trigger](/cre/guides/workflow/using-triggers/http-trigger)** - Let external systems trigger your workflow via API calls
+- **[HTTP Trigger](/cre/guides/workflow/using-triggers/http-trigger/overview)** - Let external systems trigger your workflow via API calls
 - **[EVM Log Trigger](/cre/guides/workflow/using-triggers/evm-log-trigger)** - React to onchain events (e.g., token transfers, contract events)
 
 **Why this matters:** Event-driven workflows are more powerful than scheduled ones. They respond instantly to real-world changes.
@@ -964,8 +964,963 @@ A single workflow can contain multiple handlers, allowing you to react to differ
 This section provides detailed guides for each available trigger type:
 
 - **[Cron Trigger](/cre/guides/workflow/using-triggers/cron-trigger)**: Run workflows on a time-based schedule.
-- **[HTTP Trigger](/cre/guides/workflow/using-triggers/http-trigger)**: Start workflows in response to an HTTP request from an external system.
+- **[HTTP Trigger](/cre/guides/workflow/using-triggers/http-trigger/overview)**: Start workflows in response to an HTTP request from an external system.
 - **[EVM Log Trigger](/cre/guides/workflow/using-triggers/evm-log-trigger)**: Initiate workflows in response to a specific event being emitted by a smart contract.
+
+---
+
+# Testing HTTP Triggers in Simulation
+Source: https://docs.chain.link/cre/guides/workflow/using-triggers/http-trigger/testing-in-simulation
+Last Updated: 2025-11-10
+
+During development, you can test your HTTP trigger workflows locally using the `cre workflow simulate` command. The simulator allows you to provide test payloads without setting up authorization keys or JWT authentication.
+
+This guide focuses specifically on HTTP trigger simulation with detailed examples and scenarios. For a general overview of workflow simulation covering all trigger types, see [Simulating Workflows](/cre/guides/operations/simulating-workflows).
+
+## Prerequisites
+
+Before running a simulation:
+
+- **CRE CLI installed**: You need the CRE CLI to run simulations. See [CLI Installation](/cre/getting-started/cli-installation) if you haven't installed it yet.
+- **CRE account & authentication**: You must have a CRE account and be logged in with the CLI. See [Create your account](/cre/account/creating-account) and [Log in with the CLI](/cre/account/cli-login) for instructions.
+- **HTTP trigger configured**: Your workflow must have an HTTP trigger handler registered. See [Configuration & Handler](/cre/guides/workflow/using-triggers/http-trigger/configuration) for setup instructions.
+
+<Aside type="note" title="No authorization required for simulation">
+  During simulation, you can use an empty authorization configuration (e.g., `&http.Config{}` in Go or `trigger({})` in
+  TypeScript). This simplifies local testing—just remember to add `authorizedKeys` before deploying.
+</Aside>
+
+## Basic simulation
+
+To simulate a workflow with an HTTP trigger, run the `simulate` command from your project root:
+
+```bash
+cre workflow simulate <workflow-folder> --target <target-name>
+```
+
+**Example:**
+
+```bash
+cre workflow simulate my-http-workflow --target staging-settings
+```
+
+The simulator will detect your HTTP trigger and prompt you to select it from available triggers.
+
+## Providing input data
+
+You have three ways to provide JSON input to your HTTP trigger during simulation:
+
+### 1. Interactive mode (default)
+
+When you run the simulation without input flags, the CLI prompts you to enter JSON data:
+
+```bash
+$ cre workflow simulate my-http-workflow --target staging-settings
+
+# Select the HTTP trigger when prompted
+? Select a trigger to simulate: HTTP Trigger
+
+# Enter your JSON input:
+? Enter JSON input for the HTTP trigger:
+{"userId": "123", "action": "purchase", "amount": 50}
+```
+
+The simulator converts your JSON into a payload and passes it to your callback function.
+
+### 2. Inline JSON string
+
+For non-interactive execution (useful for CI/CD or scripting), pass JSON directly using the `--http-payload` flag along with `--non-interactive` and `--trigger-index`:
+
+```bash
+cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --http-payload '{"userId":"123","action":"purchase","amount":50}' --target staging-settings
+```
+
+<Aside type="note" title="Non-interactive requirements">
+  The `--http-payload` flag requires `--non-interactive` mode. You must also specify `--trigger-index` (0-based index of
+  your HTTP trigger). If your HTTP trigger is the only trigger or the first one defined, use `--trigger-index 0`.
+</Aside>
+
+<Aside type="note" title="Escaping quotes">
+  When passing JSON inline, use single quotes around the entire JSON string and double quotes for JSON keys and string
+  values. On Windows, you may need to escape double quotes differently: `"{\"userId\":\"123\"}"`
+</Aside>
+
+### 3. Input from file
+
+For complex payloads or reusable test data, store your JSON in a file and reference it in non-interactive mode.
+
+**Option 1: File in workflow folder**
+
+Create the payload file in your workflow directory:
+
+**`my-http-workflow/test-payload.json`:**
+
+```json
+{
+  "userId": "123",
+  "action": "purchase",
+  "amount": 50,
+  "metadata": {
+    "timestamp": "2025-11-10T10:00:00Z",
+    "source": "mobile-app"
+  }
+}
+```
+
+**Simulate:**
+
+```bash
+cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --http-payload test-payload.json --target staging-settings
+```
+
+**Option 2: File at project root**
+
+Create the payload file at your project root. Simulate (using `../` to reference the parent directory):
+
+```bash
+cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --http-payload ../test-payload.json --target staging-settings
+```
+
+<Aside type="note" title="File paths are relative to the workflow folder">
+  The CLI resolves file paths relative to the **workflow folder** you're simulating. Use just the filename for files in
+  the workflow folder, or `../filename.json` for files at the project root.
+</Aside>
+
+## Example workflow simulation
+
+Let's simulate a complete workflow that processes HTTP requests.
+
+**Setup your config file:**
+
+For this example, create a `config.staging.json` file with:
+
+```json
+{
+  "minimumAmount": 10
+}
+```
+
+This configuration sets the minimum purchase amount to 10, which we'll test with different scenarios.
+
+**Workflow code:**
+
+```go
+//go:build wasip1
+
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"log/slog"
+
+	"github.com/smartcontractkit/cre-sdk-go/capabilities/networking/http"
+	"github.com/smartcontractkit/cre-sdk-go/cre"
+	"github.com/smartcontractkit/cre-sdk-go/cre/wasm"
+)
+
+type Config struct {
+	MinimumAmount int `json:"minimumAmount"`
+}
+
+type RequestData struct {
+	UserID string `json:"userId"`
+	Action string `json:"action"`
+	Amount *int   `json:"amount"` // Pointer to detect missing field
+}
+
+func onHttpTrigger(config *Config, runtime cre.Runtime, payload *http.Payload) (string, error) {
+	var data RequestData
+	if err := json.Unmarshal(payload.Input, &data); err != nil {
+		return "", fmt.Errorf("failed to parse input: %w", err)
+	}
+
+	// Validate required fields
+	if data.UserID == "" || data.Action == "" || data.Amount == nil {
+		runtime.Logger().Info("Missing required fields")
+		return "Error: Missing required fields (userId, action, amount)", nil
+	}
+
+	runtime.Logger().Info("Processing request", "action", data.Action, "userId", data.UserID)
+
+	if *data.Amount < config.MinimumAmount {
+		runtime.Logger().Info("Amount below minimum", "amount", *data.Amount, "minimum", config.MinimumAmount)
+		return "Amount too low", nil
+	}
+
+	runtime.Logger().Info("Processing amount", "amount", *data.Amount)
+	return fmt.Sprintf("Successfully processed %s", data.Action), nil
+}
+
+func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+	httpTrigger := http.Trigger(&http.Config{}) // Empty config OK for simulation
+
+	return cre.Workflow[*Config]{
+		cre.Handler(httpTrigger, onHttpTrigger),
+	}, nil
+}
+
+func main() {
+	wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
+}
+```
+
+**Run the simulation:**
+
+```bash
+cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --http-payload '{"userId":"user_123","action":"purchase","amount":100}' --target staging-settings
+```
+
+**Expected output:**
+
+```
+Workflow compiled
+2025-11-10T11:28:25Z [SIMULATION] Simulator Initialized
+
+2025-11-10T11:28:25Z [SIMULATION] Running trigger trigger=http-trigger@1.0.0-alpha
+2025-11-10T11:28:25Z [USER LOG] Processing purchase for user user_123
+2025-11-10T11:28:25Z [USER LOG] Processing amount: 100
+
+Workflow Simulation Result:
+ "Successfully processed purchase"
+
+2025-11-10T11:28:25Z [SIMULATION] Execution finished signal received
+2025-11-10T11:28:25Z [SIMULATION] Skipping WorkflowEngineV2
+```
+
+## Testing different scenarios
+
+Use simulation to test various input scenarios:
+
+### Valid request
+
+```bash
+cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --http-payload '{"userId":"123","action":"purchase","amount":100}' --target staging-settings
+```
+
+### Invalid input (below minimum)
+
+```bash
+cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --http-payload '{"userId":"123","action":"purchase","amount":5}' --target staging-settings
+```
+
+**Expected output:**
+
+```
+Workflow compiled
+2025-11-10T11:34:38Z [SIMULATION] Simulator Initialized
+
+2025-11-10T11:34:38Z [SIMULATION] Running trigger trigger=http-trigger@1.0.0-alpha
+2025-11-10T11:34:38Z [USER LOG] Processing purchase for user 123
+2025-11-10T11:34:38Z [USER LOG] Amount 5 below minimum 10
+
+Workflow Simulation Result:
+ "Amount too low"
+
+2025-11-10T11:34:38Z [SIMULATION] Execution finished signal received
+2025-11-10T11:34:38Z [SIMULATION] Skipping WorkflowEngineV2
+```
+
+### Missing fields
+
+```bash
+cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --http-payload '{"userId":"123","action":"purchase"}' --target staging-settings
+```
+
+**Expected output:**
+
+```
+Workflow compiled
+2025-11-10T11:37:57Z [SIMULATION] Simulator Initialized
+
+2025-11-10T11:37:57Z [SIMULATION] Running trigger trigger=http-trigger@1.0.0-alpha
+2025-11-10T11:37:57Z [USER LOG] Missing required fields
+
+Workflow Simulation Result:
+ "Error: Missing required fields (userId, action, amount)"
+
+2025-11-10T11:37:57Z [SIMULATION] Execution finished signal received
+2025-11-10T11:37:57Z [SIMULATION] Skipping WorkflowEngineV2
+```
+
+This helps you verify error handling and edge cases before deployment.
+
+## Simulation vs production behavior
+
+| Aspect                     | Simulation                          | Production                              |
+| -------------------------- | ----------------------------------- | --------------------------------------- |
+| **Authorization**          | Not required (empty config allowed) | Required (`authorizedKeys` must be set) |
+| **Signature verification** | Skipped                             | Strictly enforced                       |
+| **Execution**              | Immediate, synchronous              | Asynchronous via DON                    |
+| **Logs**                   | Printed to terminal                 | Available in CRE UI                     |
+
+<Aside type="caution" title="Add authorization before deploying">
+  Simulation allows empty authorization configs for convenience, but **deployed workflows require `authorizedKeys`**.
+  The CLI will reject deployments with HTTP triggers that lack authorization configuration.
+</Aside>
+
+## Next steps
+
+Once you've tested your workflow locally:
+
+1. **Add authorization**: Configure `authorizedKeys` in your HTTP trigger for production
+2. **Deploy your workflow**: Use [`cre workflow deploy`](/cre/guides/operations/deploying-workflows) to register it
+3. **Trigger it in production**: Follow the [Triggering Deployed Workflows](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows) guide
+
+---
+
+# Triggering Deployed Workflows
+Source: https://docs.chain.link/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows
+Last Updated: 2025-11-10
+
+Once you've [deployed a workflow](/cre/guides/operations/deploying-workflows) with an HTTP trigger, you can execute it by sending authenticated HTTP requests to the CRE gateway. This guide explains how to trigger deployed workflows in production.
+
+## What you'll learn
+
+This guide covers the complete technical specification for triggering deployed workflows:
+
+- **Request format** - The JSON-RPC structure for workflow execution requests
+- **JWT authentication** - How to generate cryptographically signed tokens
+- **Signature process** - The ECDSA signing steps for Ethereum-compatible authentication
+- **Reference implementations** - Code examples in Go and TypeScript
+
+<Aside type="note" title="Just testing?">
+  If you're testing deployed workflows during development, the [Local Testing
+  Tool](/cre/guides/workflow/using-triggers/http-trigger/local-testing-tool) is much simpler—it handles all JWT
+  generation automatically. This guide is for production implementations where you need full control over the HTTP
+  requests.
+</Aside>
+
+## Prerequisites
+
+- **Deployed workflow**: Your workflow must be deployed with an HTTP trigger. See [Deploying Workflows](/cre/guides/operations/deploying-workflows).
+- **Workflow ID**: Available from deployment output or the [CRE UI](/cre/guides/operations/monitoring-workflows).
+- **Private key**: The private key corresponding to one of the `authorizedKeys` configured in your HTTP trigger.
+
+<Aside type="note" title="For easier testing">
+  If you're testing your deployed workflow during development, consider using the [Local Testing
+  Tool](/cre/guides/workflow/using-triggers/http-trigger/local-testing-tool) instead. It handles JWT generation
+  automatically and triggers the workflow for you.
+</Aside>
+
+## Finding your workflow ID
+
+Your workflow ID is a 64-character hexadecimal string (without `0x` prefix) that uniquely identifies your deployed workflow.
+
+### From deployment output
+
+When you deploy a workflow, the CLI displays the workflow ID:
+
+```bash
+$ cre workflow deploy my-workflow --target production-settings
+
+...
+Details:
+   Workflow ID:    a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890
+...
+```
+
+### From the CRE UI
+
+1. Log in to <a href="https://cre.chain.link/workflows" target="_blank" rel="noopener noreferrer">cre.chain.link/workflows</a>
+2. Click on your workflow name
+3. In the **Overview** section, find the **Workflow ID** field
+4. Click the copy button to copy it to your clipboard
+
+## Request format
+
+All workflow executions use JSON-RPC 2.0 format:
+
+```http
+POST https://01.gateway.zone-a.cre.chain.link
+Content-Type: application/json
+Authorization: Bearer <JWT_TOKEN>
+
+{
+  "id": "unique-request-id",
+  "jsonrpc": "2.0",
+  "method": "workflows.execute",
+  "params": {
+    "input": {
+      "key1": "value1",
+      "key2": "value2"
+    },
+    "workflow": {
+      "workflowID": "your-64-character-workflow-id"
+    }
+  }
+}
+```
+
+### Request components
+
+| Field                        | Description                                                        |
+| ---------------------------- | ------------------------------------------------------------------ |
+| `jsonrpc`                    | Always `"2.0"` (JSON-RPC version)                                  |
+| `id`                         | Unique identifier for this request (any string, used for tracking) |
+| `method`                     | Always `"workflows.execute"`                                       |
+| `params.input`               | Your custom JSON payload (passed to your workflow callback)        |
+| `params.workflow.workflowID` | Your 64-character workflow ID (no `0x` prefix)                     |
+
+<Aside type="tip" title="Request ID for tracking">
+  The `id` field helps you correlate requests with responses. Use a UUID or timestamp-based identifier for easier
+  debugging and request tracking.
+</Aside>
+
+## JWT authentication
+
+The `Authorization` header must contain a Bearer JWT (JSON Web Token) that proves the request was signed by an authorized key. The JWT has three parts: `header.payload.signature`.
+
+### JWT structure
+
+The JWT is a base64url-encoded string consisting of three parts separated by dots:
+
+```
+<base64url(header)>.<base64url(payload)>.<base64url(signature)>
+```
+
+### 1. Header
+
+The JWT header specifies the signing algorithm:
+
+```json
+{
+  "alg": "ETH",
+  "typ": "JWT"
+}
+```
+
+Base64url-encode this JSON to create the header part.
+
+### 2. Payload
+
+The JWT payload contains request metadata and a digest of the request body:
+
+```json
+{
+  "digest": "0x<sha256_hash_of_request_body>",
+  "iss": "0xYourEVMAddress",
+  "iat": 1762807282,
+  "exp": 1762807582,
+  "jti": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+**Payload fields:**
+
+| Field    | Description                                                                  |
+| -------- | ---------------------------------------------------------------------------- |
+| `digest` | SHA256 hash of the JSON-RPC request body (with `0x` prefix)                  |
+| `iss`    | Issuer - your EVM address (the public key corresponding to your private key) |
+| `iat`    | Issued at time (Unix timestamp in seconds)                                   |
+| `exp`    | Expiration time (Unix timestamp, **max 5 minutes** after `iat`)              |
+| `jti`    | JWT ID (UUID v4 for replay protection)                                       |
+
+#### Computing the digest
+
+The `digest` is a SHA256 hash of your JSON-RPC request body **serialized as UTF-8 encoded JSON in ascending lexicographic order** (sorted by key names):
+
+**Original request:**
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "req-123",
+  "method": "workflows.execute",
+  "params": {
+    "input": { "key1": "value1", "key2": "value2" },
+    "workflow": { "workflowID": "a1b2c3..." }
+  }
+}
+```
+
+**Keys must be sorted alphabetically at every level:**
+
+```json
+{
+  "id": "req-123",
+  "jsonrpc": "2.0",
+  "method": "workflows.execute",
+  "params": { "input": { "key1": "value1", "key2": "value2" }, "workflow": { "workflowID": "a1b2c3..." } }
+}
+```
+
+Then compute: `digest = "0x" + sha256(sorted_json_string)`
+
+<Aside type="caution" title="Key ordering is critical">
+  The digest **must** be computed from a JSON string with keys sorted in ascending lexicographic order at all nesting
+  levels. Incorrect ordering will cause signature verification to fail.
+</Aside>
+
+### 3. Signature
+
+The signature is an ECDSA signature of the message `<base64url(header)>.<base64url(payload)>` using your private key.
+
+**Signing process:**
+
+1. Concatenate the encoded header and payload: `message = base64url(header) + "." + base64url(payload)`
+2. Sign the message using ECDSA with your private key:
+   - Prepend the Ethereum signed message prefix: `"\x19Ethereum Signed Message:\n" + len(message) + message`
+   - Hash the prefixed message with Keccak256
+   - Sign the hash using your private key
+3. Extract the signature components: `r` (32 bytes), `s` (32 bytes), `v` (1 byte, recovery ID)
+4. Concatenate: `signature_bytes = r || s || v`
+5. Base64url-encode the signature bytes
+
+## Reference implementations
+
+Manual JWT generation requires careful cryptographic operations. Use these reference implementations as guidance:
+
+### For Go
+
+Production-grade utilities:
+
+- **JWT creation**: <a href="https://github.com/smartcontractkit/chainlink/blob/develop/core/utils/jwt.go" target="_blank" rel="noopener noreferrer">jwt.go</a> - See the `CreateRequestJWT` method for complete JWT generation
+- **ECDSA signatures**: <a href="https://github.com/smartcontractkit/chainlink/blob/develop/core/utils/eth_signatures.go" target="_blank" rel="noopener noreferrer">eth_signatures.go</a> - See the `GenerateEthSignature` method for Ethereum-compatible signing
+
+### For TypeScript/JavaScript
+
+The CRE SDK includes a reference implementation using `viem`:
+
+- **Complete implementation**: <a href="https://github.com/smartcontractkit/cre-sdk-typescript/tree/main/packages/cre-http-trigger/src" target="_blank" rel="noopener noreferrer">cre-http-trigger source code</a>
+- Key files:
+  - `create-jwt.ts` - JWT header, payload, and signing logic
+  - `utils.ts` - SHA256 hashing and base64url encoding helpers
+
+### For testing
+
+If you're testing deployed workflows during development, use the [Local Testing Tool](/cre/guides/workflow/using-triggers/http-trigger/local-testing-tool) which runs a local proxy server that handles the entire JWT generation and request flow automatically.
+
+## Example request (conceptual)
+
+Here's what a complete curl request looks like:
+
+```bash
+curl -X POST https://01.gateway.zone-a.cre.chain.link \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJFVEgiLCJ0eXAiOiJKV1QifQ.eyJkaWdlc3QiOiIweDRhMWYyYjNjNGQ1ZTZmN2E4YjljMGQxZTJmM2E0YjVjNmQ3ZThmOWEwYjFjMmQzZTRmNWE2YjdjOGQ5ZTBmMWEiLCJpc3MiOiIweGIwOEUwMDRiZDJiNWFGZjFGNUY5NTBkMTQxZjQ0OUIxYzA1ODAwZWIiLCJpYXQiOjE3MzM4MzIwMDAsImV4cCI6MTczMzgzMjMwMCwianRpIjoiNTUwZTg0MDAtZTI5Yi00MWQ0LWE3MTYtNDQ2NjU1NDQwMDAwIn0.r7s8v9recoveryId..." \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": "req-123",
+    "method": "workflows.execute",
+    "params": {
+      "input": {
+        "userId": "user_123",
+        "action": "purchase",
+        "amount": 100
+      },
+      "workflow": {
+        "workflowID": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890"
+      }
+    }
+  }'
+```
+
+## Response format
+
+### Success response
+
+When your request is successfully accepted, the gateway returns a JSON-RPC response:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "req-123",
+  "method": "workflows.execute",
+  "result": {
+    "workflow_id": "<your-workflow-id>",
+    "workflow_execution_id": "<your-workflow-execution-id>",
+    "status": "ACCEPTED"
+  }
+}
+```
+
+**Response fields:**
+
+| Field                          | Description                                                                                                 |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| `jsonrpc`                      | JSON-RPC version (always `"2.0"`)                                                                           |
+| `id`                           | The request ID you provided in the request                                                                  |
+| `method`                       | The method called (always `"workflows.execute"`)                                                            |
+| `result.workflow_id`           | Your workflow ID (with `0x` prefix)                                                                         |
+| `result.workflow_execution_id` | Unique execution ID for this workflow run (use this to track execution in the CRE UI)                       |
+| `result.status`                | Execution status (typically `"ACCEPTED"` when the workflow trigger is successfully accepted by the gateway) |
+
+<Aside type="tip" title="Track your execution">
+  Copy the `workflow_execution_id` to track this specific execution in the [CRE UI](https://cre.chain.link/workflows).
+  You can view logs, events, and execution details using this ID.
+</Aside>
+
+### Error response
+
+If the request fails (e.g., invalid JWT, unauthorized key, workflow not found), the gateway returns an error response. Example:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "req-123",
+  "method": "",
+  "error": {
+    "code": -32600,
+    "message": "Auth failure: signer '0x...' is not authorized for workflow '0x...'. Ensure that the signer is registered in the workflow definition"
+  }
+}
+```
+
+<Aside type="note" title="HTTP status codes">
+  Error responses typically return HTTP status `400 Bad Request`. The JSON-RPC error object provides detailed
+  information about what went wrong.
+</Aside>
+
+## Verifying execution
+
+After triggering your workflow, verify execution in the CRE UI:
+
+1. Go to <a href="https://cre.chain.link/workflows" target="_blank" rel="noopener noreferrer">cre.chain.link/workflows</a>
+2. Click on your workflow
+3. Check the **Execution** tab for recent runs
+4. Click on an **Execution ID** to view detailed logs and events
+
+See [Monitoring & Debugging Workflows](/cre/guides/operations/monitoring-workflows) for complete monitoring guidance.
+
+## Security considerations
+
+### Private key protection
+
+- **Never commit private keys** to version control
+- **Use environment variables** or secret management tools (e.g., AWS Secrets Manager, HashiCorp Vault)
+- **Rotate keys periodically** and update your workflow's `authorizedKeys` if compromised
+
+### Request expiration
+
+- JWT tokens expire after the `exp` timestamp (max 5 minutes after `iat`)
+- This prevents replay attacks with captured requests
+- Generate new JWTs for each request
+
+### Replay protection
+
+- The `jti` (JWT ID) field provides replay protection
+- Use a unique UUID for every request
+- The gateway may reject duplicate `jti` values within the expiration window
+
+## Next steps
+
+### For easier testing
+
+Manual JWT generation is complex and error-prone. For development and testing:
+
+- **[Local Testing Tool](/cre/guides/workflow/using-triggers/http-trigger/local-testing-tool)** - Automatically generates JWTs and sends requests
+
+### Additional resources
+
+- **[HTTP Trigger SDK Reference](/cre/reference/sdk/triggers/http-trigger)** - Complete API documentation
+- **[Monitoring Workflows](/cre/guides/operations/monitoring-workflows)** - Track execution history and debug issues
+
+---
+
+# Testing with Local JWT Server
+Source: https://docs.chain.link/cre/guides/workflow/using-triggers/http-trigger/local-testing-tool
+Last Updated: 2025-11-04
+
+The <a href="https://github.com/smartcontractkit/cre-sdk-typescript/tree/main/packages/cre-http-trigger" target="_blank" rel="noopener noreferrer">`cre-http-trigger` TypeScript package</a> simplifies testing deployed workflows with HTTP triggers by handling JWT generation, signing, and request formatting automatically. It provides a local HTTP server that acts as a proxy between your test requests and the CRE gateway.
+
+Manually creating JWT tokens for HTTP trigger requests involves complex steps: computing SHA256 digests with sorted JSON keys, generating ECDSA signatures, and encoding everything correctly (see [Triggering Deployed Workflows](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows)).
+
+The `cre-http-trigger` tool eliminates this complexity by:
+
+1. **Managing JWT generation** - Automatically creates properly signed JWT tokens
+2. **Handling request formatting** - Constructs valid JSON-RPC requests
+3. **Providing a simple API** - Send test requests with plain JSON payloads
+4. **Enabling local testing** - Run a local server that forwards requests to the gateway
+
+<Aside type="note" title="For testing only">
+  This tool is designed for **development and testing** of deployed workflows. For production integrations, implement
+  JWT generation directly in your backend service for better security and control.
+</Aside>
+
+
+<Aside type="caution" title="Educational Example Disclaimer">
+  This page includes an educational example to use a Chainlink system, product, or service and is provided to
+  demonstrate how to interact with Chainlink's systems, products, and services to integrate them into your own. This
+  template is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, it has not been audited, and it may be
+  missing key checks or error handling to make the usage of the system, product or service more clear. Do not use the
+  code in this example in a production environment without completing your own audits and application of best practices.
+  Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs
+  that are generated due to errors in code.
+</Aside>
+
+## Prerequisites
+
+- **Bun runtime**: The tool requires <a href="https://bun.sh" target="_blank" rel="noopener noreferrer">Bun</a> version 1.2.21 or higher
+- **Deployed workflow**: Your workflow must be deployed with an HTTP trigger
+- **Workflow ID**: Available from deployment output or the CRE UI
+- **Private key**: The private key corresponding to one of the `authorizedKeys` in your HTTP trigger configuration
+
+## Installation
+
+Clone the CRE SDK TypeScript repository and navigate to the HTTP trigger package:
+
+```bash
+git clone https://github.com/smartcontractkit/cre-sdk-typescript.git
+cd cre-sdk-typescript/packages/cre-http-trigger
+```
+
+## Setup
+
+### 1. Install dependencies
+
+```bash
+bun install
+```
+
+### 2. Configure environment variables
+
+Create a `.env` file in the package root:
+
+```bash
+PRIVATE_KEY=0xYourPrivateKeyHere
+GATEWAY_URL=https://01.gateway.zone-a.cre.chain.link
+```
+
+Replace `0xYourPrivateKeyHere` with your EVM private key.
+
+<Aside type="caution" title="Keep your .env file secure">
+  Never commit `.env` files to version control. Add `.env` to your `.gitignore` file. The package repository already
+  includes `.env` in `.gitignore` by default.
+</Aside>
+
+### 3. Start the server
+
+Run the local proxy server:
+
+```bash
+bun start
+```
+
+The server starts on **port 2000** by default. You should see:
+
+```
+🚀 HTTP Trigger Server running at http://localhost:2000
+```
+
+## Usage
+
+With the server running, you can trigger workflows by sending HTTP POST requests to `http://localhost:2000/trigger`.
+
+### Basic request
+
+Send a POST request with your workflow ID as a query parameter and input data in the body:
+
+```bash
+curl -X POST "http://localhost:2000/trigger?workflowID=<your-workflow-id>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input": {
+      "userId": "user_123",
+      "action": "purchase",
+      "amount": 100
+    }
+  }'
+```
+
+### Request format
+
+**Query parameter:**
+
+| Field        | Type   | Description                                    |
+| ------------ | ------ | ---------------------------------------------- |
+| `workflowID` | string | Your 64-character workflow ID (no `0x` prefix) |
+
+**Request body:**
+
+| Field   | Type   | Description                                   |
+| ------- | ------ | --------------------------------------------- |
+| `input` | object | JSON payload passed to your workflow callback |
+
+### Example
+
+```bash
+curl -X POST "http://localhost:2000/trigger?workflowID=<your-workflow-id>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input": {
+      "userId": "user_456",
+      "action": "purchase",
+      "amount": 250
+    }
+  }'
+```
+
+**Server logs:**
+
+When the server processes your request, you'll see logs in the terminal where the server is running:
+
+```
+🚀 Triggering workflow...
+
+   Workflow: {
+  workflowID: "<your-workflow-id>",
+}
+
+   Input: {
+  "userId": "user_456",
+  "action": "purchase",
+  "amount": 250
+}
+
+   Signed by: <your-public-address>
+
+   Response: Response (297 bytes) {
+  ok: true,
+  url: "https://01.gateway.zone-a.cre.chain.link/",
+  status: 200,
+  statusText: "OK",
+  ...
+}
+```
+
+**Client response:**
+
+Your curl command receives a JSON response:
+
+```json
+{
+  "success": true,
+  "response": {
+    "jsonrpc": "2.0",
+    "id": "<your-request-id>",
+    "method": "workflows.execute",
+    "result": {
+      "workflow_id": "<your-workflow-id>",
+      "workflow_execution_id": "<your-workflow-execution-id>",
+      "status": "ACCEPTED"
+    }
+  }
+}
+```
+
+**Response fields:**
+
+| Field                          | Description                                                                           |
+| ------------------------------ | ------------------------------------------------------------------------------------- |
+| `success`                      | Always `true` for successful proxy requests                                           |
+| `response.jsonrpc`             | JSON-RPC version (always `"2.0"`)                                                     |
+| `response.id`                  | Unique request ID generated by the tool                                               |
+| `response.method`              | Always `"workflows.execute"`                                                          |
+| `result.workflow_id`           | Your workflow ID (with `0x` prefix)                                                   |
+| `result.workflow_execution_id` | Unique execution ID for this workflow run (use this to track execution in the CRE UI) |
+| `result.status`                | Execution status (typically `"ACCEPTED"` for valid requests)                          |
+
+<Aside type="tip" title="Track your execution">
+  Copy the `workflow_execution_id` to track this specific execution in the [CRE UI](https://cre.chain.link/workflows).
+  You can view logs, events, and execution details using this ID.
+</Aside>
+
+### Health check endpoint
+
+Verify the server is running:
+
+```bash
+curl http://localhost:2000/health
+```
+
+**Response:**
+
+```
+OK
+```
+
+## How it works
+
+The tool performs the following steps automatically:
+
+1. **Receives your request** at `/trigger` with `workflowID` as a query parameter and `input` in the request body
+2. **Loads configuration** from environment variables (`PRIVATE_KEY`, `GATEWAY_URL`)
+3. **Constructs JSON-RPC payload**:
+   ```json
+   {
+     "jsonrpc": "2.0",
+     "id": "generated-uuid",
+     "method": "workflows.execute",
+     "params": {
+       "input": { ... },
+       "workflow": { "workflowID": "..." }
+     }
+   }
+   ```
+4. **Computes digest** of the request body (SHA256 with sorted keys)
+5. **Creates JWT payload** with `digest`, `iss`, `iat`, `exp`, `jti`
+6. **Signs JWT** using your private key with ECDSA
+7. **Sends authenticated request** to the CRE gateway with the JWT in the `Authorization` header
+8. **Returns the response** to your test client
+
+This eliminates the need to manually handle cryptographic operations and request formatting.
+
+## Code structure
+
+If you're curious about the implementation or need to customize the tool:
+
+| File                      | Purpose                                                                |
+| ------------------------- | ---------------------------------------------------------------------- |
+| `src/index.ts`            | HTTP server setup (Bun server with `/health` and `/trigger` endpoints) |
+| `src/trigger-workflow.ts` | Main orchestration: calls config, JWT generation, and sends request    |
+| `src/create-jwt.ts`       | JWT creation: header, payload, signing with ECDSA                      |
+| `src/get-config.ts`       | Loads `PRIVATE_KEY` and `GATEWAY_URL` from environment                 |
+| `src/schemas.ts`          | Zod schemas for input validation                                       |
+| `src/utils.ts`            | Helper functions (SHA256 hashing, base64url encoding)                  |
+
+All code is available in the <a href="https://github.com/smartcontractkit/cre-sdk-typescript/tree/main/packages/cre-http-trigger" target="_blank" rel="noopener noreferrer">cre-http-trigger package</a>.
+
+## Monitoring execution
+
+After triggering workflows with the tool, verify execution in the CRE UI:
+
+1. Go to <a href="https://cre.chain.link/workflows" target="_blank" rel="noopener noreferrer">cre.chain.link/workflows</a>
+2. Click on your workflow
+3. Navigate to the **Execution** tab
+4. Find recent executions and click **Execution ID** to view Events and Logs
+
+See [Monitoring & Debugging Workflows](/cre/guides/operations/monitoring-workflows) for complete guidance.
+
+## Troubleshooting
+
+### "Invalid private key" error
+
+**Cause:** The `PRIVATE_KEY` environment variable is missing or malformed.
+
+**Solution:** Ensure your `.env` file contains a valid EVM private key (with or without `0x` prefix).
+
+### "Unauthorized" error
+
+**Cause:** The private key doesn't correspond to any of the `authorizedKeys` in your workflow's HTTP trigger configuration.
+
+**Solution:** Verify that the public address derived from your private key matches an entry in your workflow's `authorizedKeys`.
+
+### "Workflow not found" error
+
+**Cause:** Incorrect `workflowID` or the workflow isn't deployed.
+
+**Solution:** Double-check the workflow ID from the CRE UI or deployment output.
+
+### Server won't start
+
+**Cause:** Port 2000 is already in use.
+
+**Solution:** Stop any other services using port 2000, or modify `src/index.ts` to use a different port.
+
+## Production considerations
+
+This tool is **not intended for production use**. For production integrations:
+
+1. **Implement JWT generation in your backend** - Use your backend service's language and crypto libraries
+2. **Secure private key storage** - Use a secrets manager
+3. **Add retry logic** - Handle transient network errors and gateway timeouts
+4. **Monitor and log** - Track requests, responses, and execution outcomes
+5. **Rate limiting** - Implement appropriate request throttling
+
+## Next steps
+
+- **[Monitoring Workflows](/cre/guides/operations/monitoring-workflows)** - View execution logs and debug issues
 
 ---
 
@@ -3545,7 +4500,7 @@ Use workflow simulation to:
 
 - **Test workflow logic during development**: Validate that your code behaves correctly before deploying.
 - **Debug errors in a controlled environment**: Catch and fix issues locally without deploying to a live network.
-- **Test different trigger types**: Manually select and test how your workflow responds to [cron](/cre/guides/workflow/using-triggers/cron-trigger), [HTTP](/cre/guides/workflow/using-triggers/http-trigger), or [EVM log](/cre/guides/workflow/using-triggers/evm-log-trigger) triggers.
+- **Test different trigger types**: Manually select and test how your workflow responds to [cron](/cre/guides/workflow/using-triggers/cron-trigger), [HTTP](/cre/guides/workflow/using-triggers/http-trigger/overview), or [EVM log](/cre/guides/workflow/using-triggers/evm-log-trigger) triggers.
 - **Verify onchain interactions**: Test [read](/cre/guides/workflow/using-evm-client/onchain-read) and [write](/cre/guides/workflow/using-evm-client/onchain-write/overview) operations against real testnets.
 
 ## Basic usage
@@ -3685,7 +4640,7 @@ cre workflow simulate my-workflow --non-interactive --trigger-index 0 --target s
 
 ### HTTP trigger
 
-[HTTP triggers](/cre/guides/workflow/using-triggers/http-trigger) require a JSON payload.
+[HTTP triggers](/cre/guides/workflow/using-triggers/http-trigger/configuration) require a JSON payload.
 
 **Interactive mode:**
 
@@ -3706,6 +4661,11 @@ Use the `--http-payload` flag with:
 ```bash
 cre workflow simulate my-workflow --non-interactive --trigger-index 1 --http-payload @./http_trigger_payload.json --target staging-settings
 ```
+
+<Aside type="tip" title="Detailed HTTP trigger testing guide">
+  For a complete guide with workflow examples, test scenarios, and expected output, see [Testing HTTP Triggers in
+  Simulation](/cre/guides/workflow/using-triggers/http-trigger/testing-in-simulation).
+</Aside>
 
 ### EVM log trigger
 
@@ -3871,7 +4831,7 @@ The `cre workflow deploy` command handles the entire end-to-end process for you:
 
 1. **Compiles** your workflow to a WASM binary.
 2. **Uploads** the compiled binary and any associated configuration files (like your config file or `secrets.yaml`) to the CRE Storage Service.
-3. **Registers** the workflow onchain by submitting a transaction to the Workflow Registry contract. This transaction contains the metadata for your workflow, including its name, owner, and the URL of its artifacts in the storage service.
+3. **Registers** the workflow onchain by submitting a transaction to the Workflow Registry contract on **Ethereum Mainnet**. Your wallet must have ETH for gas fees, and your `project.yaml` must include an RPC configuration for `ethereum-mainnet` (e.g., `https://ethereum-rpc.publicnode.com`). This transaction contains the metadata for your workflow, including its name, owner, and the URL of its artifacts in the storage service.
 
 
 <Aside type="caution" title="Early Access: Disclaimer">
@@ -3905,7 +4865,6 @@ cre workflow deploy my-workflow --target production-settings
 | Flag             | Description                                                                             |
 | ---------------- | --------------------------------------------------------------------------------------- |
 | `--target`       | Sets the target environment from your configuration files (e.g., `production-settings`) |
-| `--auto-start`   | Activate the workflow immediately after deployment (default: `true`)                    |
 | `--output`       | The output file for the compiled WASM binary (default: `"./binary.wasm.br.b64"`)        |
 | `--unsigned`     | Return the raw transaction instead of broadcasting it to the network                    |
 | `--yes`          | Skip confirmation prompts and proceed with the operation                                |
@@ -3940,8 +4899,8 @@ Uploading files...
 Preparing deployment transaction...
 Preparing transaction for workflowID: <your-workflow-id>
 Transaction details:
-  Chain Name:   ethereum-testnet-sepolia
-  To:           0xF3f93fc4dc177748E7557568b5354cB009e3818a
+  Chain Name:   ethereum-mainnet
+  To:           0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5
   Function:     UpsertWorkflow
   Inputs:
     [0]:        my-workflow
@@ -3962,12 +4921,12 @@ Estimated Cost:
     No
 
 Transaction confirmed
-View on explorer: https://sepolia.etherscan.io/tx/0x58599f6...d916b
+View on explorer: https://etherscan.io/tx/0x58599f6...d916b
 
 [OK] Workflow deployed successfully
 
 Details:
-   Contract address:    0xF3f93fc4dc177748E7557568b5354cB009e3818a
+   Contract address:    0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5
    Transaction hash:    0x58599f6...d916b
    Workflow Name:       my-workflow
    Workflow ID:         <your-workflow-id>
@@ -3975,17 +4934,13 @@ Details:
    Config URL:          https://storage.cre.example.com/artifacts/<workflow-id>/config
 ```
 
-<Aside type="note" title="What is auto-start?">
-  By default, the `cre workflow deploy` command uses the `--auto-start=true` flag. This means that as soon as your
-  workflow is successfully registered onchain, it will also be immediately activated and ready to be triggered. You can
-  disable this behavior by passing `--auto-start=false`.
-</Aside>
-
 ## Verifying your deployment
 
-After a successful deployment, you can verify that your workflow was registered correctly by checking the Workflow Registry contract on a block explorer. The CLI output will provide the transaction hash for the registration.
+After a successful deployment, you can verify that your workflow was registered correctly in two ways:
 
-The `WorkflowRegistry` contract for the `production-settings` environment is deployed on **Ethereum Sepolia** at the address <a href="https://sepolia.etherscan.io/address/0xF3f93fc4dc177748E7557568b5354cB009e3818a" target="_blank" rel="noopener noreferrer">`0xF3f93fc4dc177748E7557568b5354cB009e3818a`</a>.
+1. **CRE UI**: View your deployed workflow in the [CRE platform](https://cre.chain.link). Navigate to the **Workflows** section to see your workflow's status, ID, and execution history.
+
+2. **Block Explorer**: Check the Workflow Registry contract on a block explorer. The CLI output will provide the transaction hash for the registration. The `WorkflowRegistry` contract is deployed on **Ethereum Mainnet** at the address <a href="https://etherscan.io/address/0x4ac54353fa4fa961afcc5ec4b118596d3305e7e5#code" target="_blank" rel="noopener noreferrer">`0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5`</a>.
 
 ## Using multi-sig wallets
 
@@ -4028,15 +4983,7 @@ The `cre workflow activate` command changes a paused workflow's status to active
 
 ### When to activate
 
-You typically use `activate` in these scenarios:
-
-- **After pausing a workflow**: To resume execution after maintenance or debugging
-- **Manual deployment**: When you deployed with `--auto-start=false`
-
-
-<Aside type="note" title="Auto-start by default">
-  Most workflows are automatically activated during deployment because `cre workflow deploy` uses `--auto-start=true` by default. You only need to manually activate workflows that were deployed with `--auto-start=false` or that have been paused.
-</Aside>
+You typically use `activate` after pausing a workflow to resume execution after maintenance or debugging.
 
 ### Usage
 
@@ -4209,14 +5156,6 @@ cre workflow deploy my-workflow --target production-settings
 <Aside type="caution" title="No version history">
   CRE does not currently maintain workflow version history. When you redeploy a workflow with the same name, it completely replaces the previous deployment. You cannot roll back to a previous version through the CLI.
 </Aside>
-
-### Auto-start behavior
-
-By default, `cre workflow deploy` uses `--auto-start=true`, which means the updated workflow is automatically activated after deployment. If your workflow was previously paused and you want it to remain paused after the update, use `--auto-start=false`:
-
-```bash
-cre workflow deploy my-workflow --auto-start=false --target production-settings
-```
 
 ## Best practices for updates
 
@@ -5135,9 +6074,10 @@ Key linking is the process of connecting a blockchain wallet address to your CRE
 - Addresses are labeled for easy identification (e.g., "Production Wallet", "Dev Wallet")
 - All linked addresses are visible to organization members via cre account list-key
 
-**Important constraint:**
+**Important constraints:**
 
 - **One organization per address**: Each wallet address can only be linked to one CRE organization at a time. If you need to use the same address with a different organization, you must first [unlink it](#unlinking-a-key) from the current organization.
+- **Maximum 2 keys per organization**: Each organization can link a maximum of 2 web3 keys. If you need to link a third key, you must first [unlink](#unlinking-a-key) one of the existing keys.
 
 However, an organization can have multiple wallet addresses linked to it, allowing team members to use their own addresses or enabling separation between development, staging, and production environments.
 
@@ -5294,7 +6234,7 @@ Linked Owners:
 
 ## Linking multiple addresses
 
-Your organization can have multiple wallet addresses linked to it simultaneously, but remember that each individual address can only be linked to one organization at a time.
+Your organization can link **up to 2 wallet addresses**. Each individual address can only be linked to one organization at a time.
 
 This is useful for:
 
@@ -6290,7 +7230,19 @@ For a complete step-by-step guide with examples, see [Linking Wallet Keys](/cre/
   - **Must run from a project directory** with a `project.yaml` file
   - **`.env` must contain `CRE_ETH_PRIVATE_KEY`** — Your wallet's private key
   - **Wallet must be funded** with ETH on Ethereum Mainnet to pay gas fees
+  - **RPC endpoint configured** — Add an `ethereum-mainnet` RPC URL in your `project.yaml` under the `rpcs` section for your target (e.g., `https://ethereum-rpc.publicnode.com` or your preferred provider)
   - **For multi-sig wallets**: Also specify `workflow-owner-address` in your `project.yaml` under the `account` section. See [Linking Wallet Keys](/cre/organization/linking-keys#using-multi-sig-wallets) for details.
+</Aside>
+
+
+<Aside type="note" title="Transaction is sent to Ethereum Mainnet">
+  This command always submits a transaction to **Ethereum Mainnet**, regardless of your workflow deployment environment. Ensure your wallet has sufficient ETH for gas fees and your `project.yaml` includes an RPC configuration for `ethereum-mainnet`:
+
+  ```yaml
+  rpcs:
+    - chain-name: ethereum-mainnet
+      url: https://ethereum-rpc.publicnode.com # Or your preferred RPC provider
+  ```
 </Aside>
 
 **Usage:**
@@ -6501,25 +7453,18 @@ cre workflow deploy <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| Flag               | Description                                                                                    |
-| ------------------ | ---------------------------------------------------------------------------------------------- |
-| `-r, --auto-start` | Activate the workflow immediately after deployment (default: `true`)                           |
-| `-o, --output`     | Output file for the compiled WASM binary encoded in base64 (default: `"./binary.wasm.br.b64"`) |
-| `--unsigned`       | Return the raw transaction instead of sending it to the network                                |
-| `--yes`            | Skip the confirmation prompt and proceed with the operation                                    |
+| Flag           | Description                                                                                    |
+| -------------- | ---------------------------------------------------------------------------------------------- |
+| `-o, --output` | Output file for the compiled WASM binary encoded in base64 (default: `"./binary.wasm.br.b64"`) |
+| `--unsigned`   | Return the raw transaction instead of sending it to the network                                |
+| `--yes`        | Skip the confirmation prompt and proceed with the operation                                    |
 
 **Examples:**
 
-- Deploy workflow with auto-start (default behavior)
+- Deploy workflow
 
   ```bash
   cre workflow deploy my-workflow --target production-settings
-  ```
-
-- Deploy without auto-starting
-
-  ```bash
-  cre workflow deploy my-workflow --auto-start=false --target production-settings
   ```
 
 - Deploy and save the compiled binary to a custom location
@@ -6527,11 +7472,6 @@ cre workflow deploy <workflow-name-or-path> [flags]
   ```bash
   cre workflow deploy my-workflow --output ./dist/workflow.wasm.br.b64
   ```
-
-
-<Aside type="note" title="Auto-start behavior">
-  By default, workflows are automatically activated after deployment (`--auto-start=true`). This means they're ready to respond to triggers immediately. Use `--auto-start=false` if you need to deploy without activating.
-</Aside>
 
 For more details, see [Deploying Workflows](/cre/guides/operations/deploying-workflows).
 
@@ -6567,11 +7507,6 @@ cre workflow activate <workflow-name-or-path> [flags]
 ```bash
 cre workflow activate ./my-workflow --target production-settings
 ```
-
-
-<Aside type="note" title="When to use activate">
-  You typically use `activate` after deploying with `--auto-start=false` or after pausing a workflow. Most workflows are automatically activated during deployment.
-</Aside>
 
 For more details, see [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows).
 
@@ -6661,7 +7596,7 @@ The typical workflow lifecycle uses these commands in sequence:
 
 1. **Develop locally** — Write and iterate on your workflow code
 2. **`cre workflow simulate`** — Test your workflow in a local simulation environment
-3. **`cre workflow deploy`** — Deploy your workflow to the registry (auto-starts by default)
+3. **`cre workflow deploy`** — Deploy your workflow to the registry
 4. **`cre workflow pause`** / **`cre workflow activate`** — Control workflow execution as needed
 5. **`cre workflow deploy`** (again) — Deploy updates (replaces the existing workflow)
 6. **`cre workflow delete`** — Remove the workflow when no longer needed
@@ -7128,7 +8063,7 @@ Before you begin, ensure you have the following:
 
 - **CRE CLI**: See the [Installation Guide](/cre/getting-started/cli-installation/macos-linux) for details.
 - **CRE account & authentication**: You must have a CRE account and be logged in with the CLI. See [Create your account](/cre/account/creating-account) and [Log in with the CLI](/cre/account/cli-login) for instructions.
-- **Go**: You must have Go version 1.24.4 or higher installed. Check your version with go version. See [Install Go](https://go.dev/doc/install) for instructions.
+- **Go**: You must have Go version 1.25.3 or higher installed. Check your version with go version. See [Install Go](https://go.dev/doc/install) for instructions.
 - **Funded Sepolia Account**: An account with Sepolia ETH to pay for transaction gas fees. Go to <a href="https://faucets.chain.link" target="blank">faucets.chain.link</a> to get some Sepolia ETH.
 
 ## Step 1: Verify your authentication
@@ -9187,7 +10122,7 @@ CRE workflows support EVM read and write operations on the following blockchain 
 | Arbitrum One     | ethereum-mainnet-arbitrum-1   | <a href="https://arbiscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">0xF8344CFd5c43616a4366C34E3EEE75af79a74482</a>             |
 | Avalanche        | avalanche-mainnet             | <a href="https://snowscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">0x76c9cf548b4179F8901cda1f8623568b58215E62</a>            |
 | Base             | ethereum-mainnet-base-1       | <a href="https://basescan.org/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">0xF8344CFd5c43616a4366C34E3EEE75af79a74482</a>            |
-| BNB Smart Chain  | binance_smart_chain-mainnet | <a href="https://bscscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">0x76c9cf548b4179F8901cda1f8623568b58215E62</a>             |
+| BNB Chain        | binance_smart_chain-mainnet | <a href="https://bscscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">0x76c9cf548b4179F8901cda1f8623568b58215E62</a>             |
 | Ethereum Mainnet | ethereum-mainnet              | <a href="https://etherscan.io/address/0x0b93082D9b3C7C97fAcd250082899BAcf3af3885" target="_blank" rel="noopener noreferrer">0x0b93082D9b3C7C97fAcd250082899BAcf3af3885</a>            |
 | OP Mainnet       | ethereum-mainnet-optimism-1   | <a href="https://optimistic.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">0xF8344CFd5c43616a4366C34E3EEE75af79a74482</a> |
 | Polygon          | polygon-mainnet               | <a href="https://polygonscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">0x76c9cf548b4179F8901cda1f8623568b58215E62</a>         |
@@ -9204,15 +10139,15 @@ CRE workflows support EVM read and write operations on the following blockchain 
 
 ## Testnets
 
-| Network          | Chain Name                          | Forwarder Address                                                                                                                                                                           |
-| ---------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Arbitrum Sepolia | ethereum-testnet-sepolia-arbitrum-1 | <a href="https://sepolia.arbiscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">0x76c9cf548b4179F8901cda1f8623568b58215E62</a>           |
-| Avalanche Fuji   | avalanche-testnet-fuji              | <a href="https://testnet.snowscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">0x76c9cf548b4179F8901cda1f8623568b58215E62</a>          |
-| Base Sepolia     | ethereum-testnet-sepolia-base-1     | <a href="https://sepolia.basescan.org/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">0xF8344CFd5c43616a4366C34E3EEE75af79a74482</a>          |
-| BSC Testnet      | binance_smart_chain-testnet       | <a href="https://testnet.bscscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">0x76c9cf548b4179F8901cda1f8623568b58215E62</a>           |
-| Ethereum Sepolia | ethereum-testnet-sepolia            | <a href="https://sepolia.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">0xF8344CFd5c43616a4366C34E3EEE75af79a74482</a>          |
-| OP Sepolia       | ethereum-testnet-sepolia-optimism-1 | <a href="https://sepolia-optimism.etherscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">0x76c9cf548b4179F8901cda1f8623568b58215E62</a> |
-| Polygon Amoy     | polygon-testnet-amoy                | <a href="https://amoy.polygonscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">0x76c9cf548b4179F8901cda1f8623568b58215E62</a>          |
+| Network           | Chain Name                          | Forwarder Address                                                                                                                                                                           |
+| ----------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Arbitrum Sepolia  | ethereum-testnet-sepolia-arbitrum-1 | <a href="https://sepolia.arbiscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">0x76c9cf548b4179F8901cda1f8623568b58215E62</a>           |
+| Avalanche Fuji    | avalanche-testnet-fuji              | <a href="https://testnet.snowscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">0x76c9cf548b4179F8901cda1f8623568b58215E62</a>          |
+| Base Sepolia      | ethereum-testnet-sepolia-base-1     | <a href="https://sepolia.basescan.org/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">0xF8344CFd5c43616a4366C34E3EEE75af79a74482</a>          |
+| BNB Chain Testnet | binance_smart_chain-testnet       | <a href="https://testnet.bscscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">0x76c9cf548b4179F8901cda1f8623568b58215E62</a>           |
+| Ethereum Sepolia  | ethereum-testnet-sepolia            | <a href="https://sepolia.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">0xF8344CFd5c43616a4366C34E3EEE75af79a74482</a>          |
+| OP Sepolia        | ethereum-testnet-sepolia-optimism-1 | <a href="https://sepolia-optimism.etherscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">0x76c9cf548b4179F8901cda1f8623568b58215E62</a> |
+| Polygon Amoy      | polygon-testnet-amoy                | <a href="https://amoy.polygonscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">0x76c9cf548b4179F8901cda1f8623568b58215E62</a>          |
 
 ## Using these networks in your workflows
 
@@ -11086,9 +12021,9 @@ For detailed instructions on simulating EVM log triggers, including interactive 
 
 ---
 
-# HTTP Trigger
-Source: https://docs.chain.link/cre/guides/workflow/using-triggers/http-trigger-go
-Last Updated: 2025-11-04
+# HTTP Trigger: Configuration & Handler
+Source: https://docs.chain.link/cre/guides/workflow/using-triggers/http-trigger/configuration-go
+Last Updated: 2025-11-10
 
 The HTTP trigger fires when an external system makes an HTTP request to the trigger endpoint.
 
@@ -11156,7 +12091,7 @@ func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.Secre
 - **`Type`**: Must be `http.KeyType_KEY_TYPE_ECDSA_EVM` (currently the only supported authentication method)
 - **Multiple keys**: You can include multiple authorized addresses in the slice
 
-When an HTTP request is made to your workflow's endpoint, CRE verifies that the request was signed by a private key corresponding to one of the authorized addresses.
+When an HTTP request is made to trigger your workflow, CRE verifies that the request was signed by a private key corresponding to one of the authorized addresses.
 
 ## Callback and payload
 
@@ -11186,14 +12121,99 @@ func onHttpTrigger(config *Config, runtime cre.Runtime, payload *http.Payload) (
 <Aside type="note" title="For local simulation only">
   During local simulation with `cre workflow simulate`, you can use an empty configuration `&http.Config{}` to test your
   workflow without setting up authorization keys. This is convenient for rapid development, but remember to add
-  `AuthorizedKeys` before deploying.
+  `AuthorizedKeys` before deploying. See [Testing in
+  Simulation](/cre/guides/workflow/using-triggers/http-trigger/testing-in-simulation) for details.
 </Aside>
 
-## Testing HTTP triggers in simulation
+---
 
-To test your HTTP trigger during development, you can use the workflow simulator with a JSON payload. The simulator allows you to provide test data either directly as a JSON string or from a file.
+# HTTP Trigger Overview
+Source: https://docs.chain.link/cre/guides/workflow/using-triggers/http-trigger/overview-go
+Last Updated: 2025-11-10
 
-For detailed instructions on simulating HTTP triggers, including interactive and non-interactive modes, see the [HTTP Trigger section in the Simulating Workflows guide](/cre/guides/operations/simulating-workflows#http-trigger).
+The HTTP trigger allows external systems to initiate your workflow execution by making HTTP requests to a designated endpoint. This enables on-demand workflow execution, webhook integration, and API-driven automation.
+
+## How HTTP triggers work
+
+When you deploy a workflow with an HTTP trigger:
+
+1. **External systems send HTTP POST requests** to a CRE gateway
+2. **The request specifies your workflow ID** in the JSON-RPC body along with the input payload
+3. **Requests must be cryptographically signed** using a private key corresponding to an authorized EVM address in the target workflow
+4. **CRE validates the signature** against your configured `authorizedKeys`
+5. **If authorized**, your workflow callback executes with the request payload
+
+<Aside type="note" title="Security by design">
+  For **deployed workflows**, HTTP triggers use cryptographic signatures to ensure only authorized addresses can execute
+  your workflow. During **local simulation**, you can use empty authorization configs to simplify testing—just remember
+  to add `authorizedKeys` before deploying.
+</Aside>
+
+## When to use HTTP triggers
+
+HTTP triggers are ideal for:
+
+- **Webhook integration**: Receive events from external services (GitHub, payment processors, etc.)
+- **On-demand execution**: Allow users or systems to trigger specific workflow logic when needed
+- **API gateway patterns**: Create authenticated endpoints that execute blockchain operations
+- **Event bridging**: Connect offchain systems events to workflows
+
+## The complete HTTP trigger journey
+
+This section provides everything you need to work with HTTP triggers:
+
+1. **[Configuration & Handler](/cre/guides/workflow/using-triggers/http-trigger/configuration)** - Learn how to configure HTTP triggers in your workflow code and write handler functions to process incoming requests
+
+2. **[Testing in Simulation](/cre/guides/workflow/using-triggers/http-trigger/testing-in-simulation)** - Test your HTTP trigger locally using the `cre workflow simulate` command before deploying
+
+3. **[Triggering Deployed Workflows](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows)** - Understand the JSON-RPC format and JWT authentication required to trigger your deployed workflows
+
+4. **[Testing with Local JWT Server](/cre/guides/workflow/using-triggers/http-trigger/local-testing-tool)** - Run a local proxy server that automatically generates JWT tokens and sends authenticated requests to the CRE gateway for testing your deployed workflows
+
+## Quick comparison: Simulation vs Production
+
+| Aspect             | Simulation                      | Production                                               |
+| ------------------ | ------------------------------- | -------------------------------------------------------- |
+| **Authorization**  | Optional (can use empty config) | Required (`authorizedKeys` must be configured)           |
+| **Trigger method** | CLI with `--input` flag         | HTTP POST to gateway endpoint with JWT                   |
+| **Endpoint**       | Local simulator                 | CRE gateway (`https://01.gateway.zone-a.cre.chain.link`) |
+| **Use case**       | Development, testing, debugging | Live integrations, webhooks, production APIs             |
+
+## Key concepts
+
+### Authorization keys
+
+Authorization keys are EVM addresses that are permitted to trigger your workflow. When you configure an HTTP trigger, you specify one or more `AuthorizedKeys`:
+
+```go
+AuthorizedKeys: []http.Key{
+	{
+		Type:      http.KeyTypeECDSAEVM,
+		PublicKey: "0xYourEVMAddress",
+	},
+}
+```
+
+Only requests signed by the corresponding private keys will be accepted by the CRE gateway.
+
+### Payload
+
+The [HTTP trigger payload](/cre/reference/sdk/triggers/http-trigger-go#httppayload) contains:
+
+- **`input`**: The JSON data from the HTTP request body
+- **`key`**: The authorized key that signed the request
+
+Your callback function receives this payload and can process the input data to perform workflow logic.
+
+## Next steps
+
+Start by learning how to configure HTTP triggers and write handler functions:
+
+- **[Configuration & Handler](/cre/guides/workflow/using-triggers/http-trigger/configuration)** - Set up your first HTTP trigger
+
+Or explore the SDK reference for detailed API documentation:
+
+- **[HTTP Trigger SDK Reference](/cre/reference/sdk/triggers/http-trigger)** - Complete API documentation
 
 ---
 
@@ -12253,21 +13273,22 @@ A **chain selector** is a unique identifier for a blockchain network used throug
 
 This table shows all three equivalent formats for each supported chain:
 
-| Chain                         | String Name                           | Go Constant                         | Numeric ID           |
-| ----------------------------- | ------------------------------------- | ----------------------------------- | -------------------- |
-| Avalanche Mainnet             | avalanche-mainnet                     | evm.AvalancheMainnet                | 6433500567565415381  |
-| Avalanche Fuji Testnet        | avalanche-testnet-fuji                | evm.AvalancheTestnetFuji            | 14767482510784806043 |
-| BNB Smart Chain opBNB Mainnet | binance_smart_chain-mainnet-opbnb-1 | evm.BinanceSmartChainMainnetOpbnb1  | 465944652040885897   |
-| BNB Smart Chain opBNB Testnet | binance_smart_chain-testnet-opbnb-1 | evm.BinanceSmartChainTestnetOpbnb1  | 13274425992935471758 |
-| Ethereum Mainnet              | ethereum-mainnet                      | evm.EthereumMainnet                 | 5009297550715157269  |
-| Ethereum Mainnet (Arbitrum)   | ethereum-mainnet-arbitrum-1           | evm.EthereumMainnetArbitrum1        | 4949039107694359620  |
-| Ethereum Mainnet (Optimism)   | ethereum-mainnet-optimism-1           | evm.EthereumMainnetOptimism1        | 3734403246176062136  |
-| Ethereum Sepolia Testnet      | ethereum-testnet-sepolia              | evm.EthereumTestnetSepolia          | 16015286601757825753 |
-| Ethereum Sepolia (Arbitrum)   | ethereum-testnet-sepolia-arbitrum-1   | evm.EthereumTestnetSepoliaArbitrum1 | 3478487238524512106  |
-| Ethereum Sepolia (Base)       | ethereum-testnet-sepolia-base-1       | evm.EthereumTestnetSepoliaBase1     | 10344971235874465080 |
-| Ethereum Sepolia (Optimism)   | ethereum-testnet-sepolia-optimism-1   | evm.EthereumTestnetSepoliaOptimism1 | 5224473277236331295  |
-| Polygon Mainnet               | polygon-mainnet                       | evm.PolygonMainnet                  | 4051577828743386545  |
-| Polygon Amoy Testnet          | polygon-testnet-amoy                  | evm.PolygonTestnetAmoy              | 16281711391670634445 |
+| Chain             | String Name                         | Go Constant                         | Numeric ID           |
+| ----------------- | ----------------------------------- | ----------------------------------- | -------------------- |
+| Arbitrum One      | ethereum-mainnet-arbitrum-1         | evm.EthereumMainnetArbitrum1        | 4949039107694359620  |
+| Arbitrum Sepolia  | ethereum-testnet-sepolia-arbitrum-1 | evm.EthereumTestnetSepoliaArbitrum1 | 3478487238524512106  |
+| Avalanche Mainnet | avalanche-mainnet                   | evm.AvalancheMainnet                | 6433500567565415381  |
+| Avalanche Fuji    | avalanche-testnet-fuji              | evm.AvalancheTestnetFuji            | 14767482510784806043 |
+| Base Mainnet      | ethereum-mainnet-base-1             | evm.EthereumMainnetBase1            | 15971525489660198786 |
+| Base Sepolia      | ethereum-testnet-sepolia-base-1     | evm.EthereumTestnetSepoliaBase1     | 10344971235874465080 |
+| BNB Chain Mainnet | binance_smart_chain-mainnet       | evm.BinanceSmartChainMainnet        | 11344663589394136015 |
+| BNB Chain Testnet | binance_smart_chain-testnet       | evm.BinanceSmartChainTestnet        | 5142893604156789321  |
+| Ethereum Mainnet  | ethereum-mainnet                    | evm.EthereumMainnet                 | 5009297550715157269  |
+| Ethereum Sepolia  | ethereum-testnet-sepolia            | evm.EthereumTestnetSepolia          | 16015286601757825753 |
+| OP Mainnet        | ethereum-mainnet-optimism-1         | evm.EthereumMainnetOptimism1        | 3734403246176062136  |
+| OP Sepolia        | ethereum-testnet-sepolia-optimism-1 | evm.EthereumTestnetSepoliaOptimism1 | 5224473277236331295  |
+| Polygon Mainnet   | polygon-mainnet                     | evm.PolygonMainnet                  | 4051577828743386545  |
+| Polygon Amoy      | polygon-testnet-amoy                | evm.PolygonTestnetAmoy              | 16281711391670634445 |
 
 ### Usage examples
 
@@ -12933,7 +13954,7 @@ Before you begin, ensure you have the necessary tools installed:
 
 - **CRE CLI**: You must have the CRE CLI installed. See [Install the CLI](/cre/getting-started/cli-installation) for instructions.
 - **CRE account & authentication**: You must have a CRE account and be logged in with the CLI. Run cre whoami in your terminal to verify you're logged in, or run cre login to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging in with the CLI](/cre/account/cli-login) for instructions.
-- **Go**: You must have Go version 1.24.5 or higher installed. Check your version with go version. See [Install Go](https://go.dev/doc/install) for instructions.
+- **Go**: You must have Go version 1.25.3 or higher installed. Check your version with go version. See [Install Go](https://go.dev/doc/install) for instructions.
 - **Sepolia Testnet Account**: You need a private key for an account funded with Sepolia ETH. This is required because the demo workflow performs a write transaction. Go to <a href="https://faucets.chain.link" target="blank">faucets.chain.link</a> to get some Sepolia ETH.
 
 ## 2. Initialize the demo project

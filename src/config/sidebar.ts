@@ -154,19 +154,41 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               ],
             },
             {
-              title: "HTTP Trigger",
-              url: "cre/guides/workflow/using-triggers/http-trigger",
-              highlightAsCurrent: [
-                "cre/guides/workflow/using-triggers/http-trigger-ts",
-                "cre/guides/workflow/using-triggers/http-trigger-go",
-              ],
-            },
-            {
               title: "EVM Log Trigger",
               url: "cre/guides/workflow/using-triggers/evm-log-trigger",
               highlightAsCurrent: [
                 "cre/guides/workflow/using-triggers/evm-log-trigger-ts",
                 "cre/guides/workflow/using-triggers/evm-log-trigger-go",
+              ],
+            },
+            {
+              title: "HTTP Trigger",
+              url: "cre/guides/workflow/using-triggers/http-trigger/overview",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-triggers/http-trigger/overview-ts",
+                "cre/guides/workflow/using-triggers/http-trigger/overview-go",
+              ],
+              children: [
+                {
+                  title: "Configuration & Handler",
+                  url: "cre/guides/workflow/using-triggers/http-trigger/configuration",
+                  highlightAsCurrent: [
+                    "cre/guides/workflow/using-triggers/http-trigger/configuration-ts",
+                    "cre/guides/workflow/using-triggers/http-trigger/configuration-go",
+                  ],
+                },
+                {
+                  title: "Testing in Simulation",
+                  url: "cre/guides/workflow/using-triggers/http-trigger/testing-in-simulation",
+                },
+                {
+                  title: "Triggering Deployed Workflows",
+                  url: "cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows",
+                },
+                {
+                  title: "Testing deployed workflows with Local JWT Server",
+                  url: "cre/guides/workflow/using-triggers/http-trigger/local-testing-tool",
+                },
               ],
             },
           ],
