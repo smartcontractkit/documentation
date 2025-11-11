@@ -3782,7 +3782,6 @@ cre workflow deploy my-workflow --target production-settings
 | Flag             | Description                                                                             |
 | ---------------- | --------------------------------------------------------------------------------------- |
 | `--target`       | Sets the target environment from your configuration files (e.g., `production-settings`) |
-| `--auto-start`   | Activate the workflow immediately after deployment (default: `true`)                    |
 | `--output`       | The output file for the compiled WASM binary (default: `"./binary.wasm.br.b64"`)        |
 | `--unsigned`     | Return the raw transaction instead of broadcasting it to the network                    |
 | `--yes`          | Skip confirmation prompts and proceed with the operation                                |
@@ -3852,12 +3851,6 @@ Details:
    Config URL:          https://storage.cre.example.com/artifacts/<workflow-id>/config
 ```
 
-<Aside type="note" title="What is auto-start?">
-  By default, the `cre workflow deploy` command uses the `--auto-start=true` flag. This means that as soon as your
-  workflow is successfully registered onchain, it will also be immediately activated and ready to be triggered. You can
-  disable this behavior by passing `--auto-start=false`.
-</Aside>
-
 ## Verifying your deployment
 
 After a successful deployment, you can verify that your workflow was registered correctly in two ways:
@@ -3907,15 +3900,7 @@ The `cre workflow activate` command changes a paused workflow's status to active
 
 ### When to activate
 
-You typically use `activate` in these scenarios:
-
-- **After pausing a workflow**: To resume execution after maintenance or debugging
-- **Manual deployment**: When you deployed with `--auto-start=false`
-
-
-<Aside type="note" title="Auto-start by default">
-  Most workflows are automatically activated during deployment because `cre workflow deploy` uses `--auto-start=true` by default. You only need to manually activate workflows that were deployed with `--auto-start=false` or that have been paused.
-</Aside>
+You typically use `activate` after pausing a workflow to resume execution after maintenance or debugging.
 
 ### Usage
 
@@ -4088,14 +4073,6 @@ cre workflow deploy my-workflow --target production-settings
 <Aside type="caution" title="No version history">
   CRE does not currently maintain workflow version history. When you redeploy a workflow with the same name, it completely replaces the previous deployment. You cannot roll back to a previous version through the CLI.
 </Aside>
-
-### Auto-start behavior
-
-By default, `cre workflow deploy` uses `--auto-start=true`, which means the updated workflow is automatically activated after deployment. If your workflow was previously paused and you want it to remain paused after the update, use `--auto-start=false`:
-
-```bash
-cre workflow deploy my-workflow --auto-start=false --target production-settings
-```
 
 ## Best practices for updates
 
@@ -6118,25 +6095,18 @@ cre workflow deploy <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| Flag               | Description                                                                                    |
-| ------------------ | ---------------------------------------------------------------------------------------------- |
-| `-r, --auto-start` | Activate the workflow immediately after deployment (default: `true`)                           |
-| `-o, --output`     | Output file for the compiled WASM binary encoded in base64 (default: `"./binary.wasm.br.b64"`) |
-| `--unsigned`       | Return the raw transaction instead of sending it to the network                                |
-| `--yes`            | Skip the confirmation prompt and proceed with the operation                                    |
+| Flag           | Description                                                                                    |
+| -------------- | ---------------------------------------------------------------------------------------------- |
+| `-o, --output` | Output file for the compiled WASM binary encoded in base64 (default: `"./binary.wasm.br.b64"`) |
+| `--unsigned`   | Return the raw transaction instead of sending it to the network                                |
+| `--yes`        | Skip the confirmation prompt and proceed with the operation                                    |
 
 **Examples:**
 
-- Deploy workflow with auto-start (default behavior)
+- Deploy workflow
 
   ```bash
   cre workflow deploy my-workflow --target production-settings
-  ```
-
-- Deploy without auto-starting
-
-  ```bash
-  cre workflow deploy my-workflow --auto-start=false --target production-settings
   ```
 
 - Deploy and save the compiled binary to a custom location
@@ -6144,11 +6114,6 @@ cre workflow deploy <workflow-name-or-path> [flags]
   ```bash
   cre workflow deploy my-workflow --output ./dist/workflow.wasm.br.b64
   ```
-
-
-<Aside type="note" title="Auto-start behavior">
-  By default, workflows are automatically activated after deployment (`--auto-start=true`). This means they're ready to respond to triggers immediately. Use `--auto-start=false` if you need to deploy without activating.
-</Aside>
 
 For more details, see [Deploying Workflows](/cre/guides/operations/deploying-workflows).
 
@@ -6184,11 +6149,6 @@ cre workflow activate <workflow-name-or-path> [flags]
 ```bash
 cre workflow activate ./my-workflow --target production-settings
 ```
-
-
-<Aside type="note" title="When to use activate">
-  You typically use `activate` after deploying with `--auto-start=false` or after pausing a workflow. Most workflows are automatically activated during deployment.
-</Aside>
 
 For more details, see [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows).
 
@@ -6278,7 +6238,7 @@ The typical workflow lifecycle uses these commands in sequence:
 
 1. **Develop locally** — Write and iterate on your workflow code
 2. **`cre workflow simulate`** — Test your workflow in a local simulation environment
-3. **`cre workflow deploy`** — Deploy your workflow to the registry (auto-starts by default)
+3. **`cre workflow deploy`** — Deploy your workflow to the registry
 4. **`cre workflow pause`** / **`cre workflow activate`** — Control workflow execution as needed
 5. **`cre workflow deploy`** (again) — Deploy updates (replaces the existing workflow)
 6. **`cre workflow delete`** — Remove the workflow when no longer needed
