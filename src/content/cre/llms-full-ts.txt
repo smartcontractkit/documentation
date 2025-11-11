@@ -3748,7 +3748,7 @@ The `cre workflow deploy` command handles the entire end-to-end process for you:
 
 1. **Compiles** your workflow to a WASM binary.
 2. **Uploads** the compiled binary and any associated configuration files (like your config file or `secrets.yaml`) to the CRE Storage Service.
-3. **Registers** the workflow onchain by submitting a transaction to the Workflow Registry contract. This transaction contains the metadata for your workflow, including its name, owner, and the URL of its artifacts in the storage service.
+3. **Registers** the workflow onchain by submitting a transaction to the Workflow Registry contract on **Ethereum Mainnet**. Your wallet must have ETH for gas fees, and your `project.yaml` must include an RPC configuration for `ethereum-mainnet` (e.g., `https://ethereum-rpc.publicnode.com`). This transaction contains the metadata for your workflow, including its name, owner, and the URL of its artifacts in the storage service.
 
 
 <Aside type="caution" title="Early Access: Disclaimer">
@@ -3817,8 +3817,8 @@ Uploading files...
 Preparing deployment transaction...
 Preparing transaction for workflowID: <your-workflow-id>
 Transaction details:
-  Chain Name:   ethereum-testnet-sepolia
-  To:           0xF3f93fc4dc177748E7557568b5354cB009e3818a
+  Chain Name:   ethereum-mainnet
+  To:           0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5
   Function:     UpsertWorkflow
   Inputs:
     [0]:        my-workflow
@@ -3839,12 +3839,12 @@ Estimated Cost:
     No
 
 Transaction confirmed
-View on explorer: https://sepolia.etherscan.io/tx/0x58599f6...d916b
+View on explorer: https://etherscan.io/tx/0x58599f6...d916b
 
 [OK] Workflow deployed successfully
 
 Details:
-   Contract address:    0xF3f93fc4dc177748E7557568b5354cB009e3818a
+   Contract address:    0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5
    Transaction hash:    0x58599f6...d916b
    Workflow Name:       my-workflow
    Workflow ID:         <your-workflow-id>
@@ -3860,9 +3860,11 @@ Details:
 
 ## Verifying your deployment
 
-After a successful deployment, you can verify that your workflow was registered correctly by checking the Workflow Registry contract on a block explorer. The CLI output will provide the transaction hash for the registration.
+After a successful deployment, you can verify that your workflow was registered correctly in two ways:
 
-The `WorkflowRegistry` contract for the `production-settings` environment is deployed on **Ethereum Sepolia** at the address <a href="https://sepolia.etherscan.io/address/0xF3f93fc4dc177748E7557568b5354cB009e3818a" target="_blank" rel="noopener noreferrer">`0xF3f93fc4dc177748E7557568b5354cB009e3818a`</a>.
+1. **CRE UI**: View your deployed workflow in the [CRE platform](https://cre.chain.link). Navigate to the **Workflows** section to see your workflow's status, ID, and execution history.
+
+2. **Block Explorer**: Check the Workflow Registry contract on a block explorer. The CLI output will provide the transaction hash for the registration. The `WorkflowRegistry` contract is deployed on **Ethereum Mainnet** at the address <a href="https://etherscan.io/address/0x4ac54353fa4fa961afcc5ec4b118596d3305e7e5#code" target="_blank" rel="noopener noreferrer">`0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5`</a>.
 
 ## Using multi-sig wallets
 
@@ -5893,7 +5895,19 @@ For a complete step-by-step guide with examples, see [Linking Wallet Keys](/cre/
   - **Must run from a project directory** with a `project.yaml` file
   - **`.env` must contain `CRE_ETH_PRIVATE_KEY`** — Your wallet's private key
   - **Wallet must be funded** with ETH on Ethereum Mainnet to pay gas fees
+  - **RPC endpoint configured** — Add an `ethereum-mainnet` RPC URL in your `project.yaml` under the `rpcs` section for your target (e.g., `https://ethereum-rpc.publicnode.com` or your preferred provider)
   - **For multi-sig wallets**: Also specify `workflow-owner-address` in your `project.yaml` under the `account` section. See [Linking Wallet Keys](/cre/organization/linking-keys#using-multi-sig-wallets) for details.
+</Aside>
+
+
+<Aside type="note" title="Transaction is sent to Ethereum Mainnet">
+  This command always submits a transaction to **Ethereum Mainnet**, regardless of your workflow deployment environment. Ensure your wallet has sufficient ETH for gas fees and your `project.yaml` includes an RPC configuration for `ethereum-mainnet`:
+
+  ```yaml
+  rpcs:
+    - chain-name: ethereum-mainnet
+      url: https://ethereum-rpc.publicnode.com # Or your preferred RPC provider
+  ```
 </Aside>
 
 **Usage:**
