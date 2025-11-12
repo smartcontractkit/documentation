@@ -19,7 +19,6 @@ export type SupportedTokensConfig = {
 export type LaneConfig = {
   supportedTokens?: SupportedTokensConfig
   rateLimiterConfig?: RateLimiterConfig
-  rmnPermeable: boolean
   onRamp: {
     address: string
     version: string
@@ -71,7 +70,6 @@ export type ChainConfig = {
     version: string
   }
   feeQuoter?: string
-  rmnPermeable?: boolean
   nativeToken?: {
     name: string
     symbol: string
@@ -201,7 +199,6 @@ export interface Network {
   }
   routerExplorerUrl: string
   feeQuoter?: string
-  rmnPermeable: boolean
   mcms?: string
   poolPrograms?: {
     BurnMintTokenPool?: string

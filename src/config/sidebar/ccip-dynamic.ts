@@ -179,18 +179,8 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
       },
       {
         title: "Offchain Architecture",
-        url: "ccip/concepts/architecture/offchain",
+        url: "ccip/concepts/architecture/offchain/overview",
         // Universal
-        children: [
-          {
-            title: "Overview",
-            url: "ccip/concepts/architecture/offchain/overview",
-          },
-          {
-            title: "Risk Management Network",
-            url: "ccip/concepts/architecture/offchain/risk-management-network",
-          },
-        ],
       },
       {
         title: "Cross-Chain Token (CCT)",
