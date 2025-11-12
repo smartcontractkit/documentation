@@ -62,6 +62,25 @@ const { title } = Astro.props
 <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
 <link rel="preconnect" href="https://www.google-analytics.com" crossorigin />
 
+<!-- Set CRE SDK Language in dataLayer -->
+<script is:inline type="text/javascript">
+  ;(function () {
+    if (!window.location.pathname.startsWith("/cre")) return
+
+    try {
+      var savedLang = localStorage.getItem("docs-language-preference")
+      var language = savedLang === "ts" || savedLang === '"ts"' ? "ts" : "go"
+
+      window.dataLayer = window.dataLayer || []
+      window.dataLayer.push({
+        cre_sdk_language: language,
+      })
+    } catch (e) {
+      // localStorage unavailable, skip tracking
+    }
+  })()
+</script>
+
 <!-- Google Tag Manager (lazy init on first interaction or idle) -->
 <script type="text/javascript">
   ;(function (w, d, s, l, i) {
@@ -92,24 +111,6 @@ const { title } = Astro.props
       setTimeout(loadGTM, 3000)
     }
   })(window, document, "script", "dataLayer", "GTM-N6DQ47T")
-</script>
-
-<script is:inline type="text/javascript">
-  ;(function () {
-    if (!window.location.pathname.startsWith("/cre")) return
-
-    try {
-      var savedLang = localStorage.getItem("docs-language-preference")
-      var language = savedLang === "ts" || savedLang === '"ts"' ? "ts" : "go"
-
-      window.dataLayer = window.dataLayer || []
-      window.dataLayer.push({
-        cre_sdk_language: language,
-      })
-    } catch (e) {
-      //skip tracking
-    }
-  })()
 </script>
 
 <meta name="algolia-site-verification" content="5C6E2FAC077D2F49" />
