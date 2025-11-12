@@ -36,21 +36,6 @@ With the CCIP v1.6 architecture, there is a single DON called the Role DON that 
 
 **Note**: For simplicity, we sometimes refer to the nodes running the Commit OCR Plugin as the Committing DON and those running the Executing OCR Plugin as the Executing DON. However, these are not separate oracle networks; they are subsets of the same Role DON, distinguished solely by their assigned roles.
 
-### Risk Management Network
-
-The Risk Management Network (RMN) is a unique architectural feature of CCIP that reinforces system security through a defense-in-depth approach. Key aspects include:
-
-- **Separate Implementation**: RMN runs a minimal, separate implementation of the Chainlink node software, which uses a different programming language than the primary CCIP system. This design provides an extra layer of independent attestation, enhancing overall security.
-- **Distinct Node Operators**: A dedicated set of node operators—separate from those managing the core CCIP DONs—participates in RMN functions.
-- **Blessing Mechanism**: On blockchains where RMN blessing is enabled, RMN nodes "bless" CCIP messages by providing independent attestations of the source chain observation.
-
-### Interaction
-
-- **Commit OCR and RMN Blessings**: The Commit OCR plugin interacts directly with RMN nodes to query for observations and receive independent RMN blessings. These blessings serve as attestations of the validity of source chain observations and are used to form a consolidated set of merkle roots.
-- **Configuration and Role Validation**: The roles of nodes are defined and managed on the "Home Chain" (i.e., Ethereum) through specific contracts. Each node software reads from these contracts to verify that nodes are authorized for their roles.
-  - The **CCIP Home** contract contains the configuration required to bootstrap the CCIP network (Role DON) and includes both chain-level and Role DON-level details.
-  - The **RMN Home** contract maintains the configuration for RMN nodes.
-
 ## Role DON: Diagram and Explanation
 
 <ClickToZoom
