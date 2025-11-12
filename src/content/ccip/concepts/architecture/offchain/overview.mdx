@@ -17,7 +17,7 @@ import { ClickToZoom } from "@components"
 CCIP's offchain architecture includes the following:
 
 - **Decentralized Oracle Networks (DONs)**: Running offchain consensus using the Offchain Reporting Protocol (OCR).
-- **Interaction Components**: Managing communication between the CCIP DONs and the RMN.
+- **Interaction Components**: Managing communication between the CCIP DONs.
 
 ## Components
 
@@ -34,30 +34,6 @@ With the CCIP v1.6 architecture, there is a single DON called the Role DON that 
    - Verifies events on the source chain and executes messages accordingly.
 
 **Note**: For simplicity, we sometimes refer to the nodes running the Commit OCR Plugin as the Committing DON and those running the Executing OCR Plugin as the Executing DON. However, these are not separate oracle networks; they are subsets of the same Role DON, distinguished solely by their assigned roles.
-
-## Role DON: Diagram and Explanation
-
-<ClickToZoom
-  src="/images/ccip/ccip-hl-v1.7.png"
-  alt="CCIP Offchain Architecture"
-  style="display: block; margin: 2rem auto; max-height: 60vh; width: auto;"
-/>
-
-Let's take an example from the diagram above to understand the key components. The diagram shows a Commit OCR instance configured for a destination chain (Chain C). Key details include:
-
-- **Commit Role DON**
-  - Represents all participating nodes.
-  - Within the Role DON, a specific group of nodes—sometimes called a "sub-committee"—may be assigned chain-specific roles.
-
-- **Chain-Specific Roles** (as illustrated)
-  - **Green Rectangle**: Nodes observe Chain A (i.e., they read from Chain A).
-  - **Orange Rectangle**: Nodes observe Chain B.
-  - **Blue Rectangle**: Nodes write commit reports to Chain C.
-  - **Overlap**: Note that groups may overlap. For example, the four nodes in the bottom-left corner of the Role DON might not connect to Chain A or Chain C, demonstrating flexibility in node participation.
-  - **Interaction with RMN**: The Commit OCR interacts with RMN nodes to receive RMN blessings. These blessings act as independent attestations of the validity of source chain observations and are used to form a consolidated set of merkle roots.
-- **Configuration and Role Validation**:
-  - Node roles are configured on the Home Chain (i.e., Ethereum) through specific contracts.
-  - The node software reads from the **CCIP Home** and **RMN Home** contracts to verify that each node is authorized for its role—whether for making observations or providing RMN blessings.
 
 ## High Level Flow
 

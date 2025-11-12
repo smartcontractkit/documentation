@@ -38,8 +38,10 @@ Given the [inherent risks of cross-chain interoperability](/resources/bridge-ris
 
 CCIP provides several key security benefits:
 
-- Multiple independent nodes run by independent key holders.
-- Two decentralized networks all executing and verifying every cross-chain transaction.
+- **Proven Decentralized Architecture**: CCIP uses multiple decentralized oracle networks (DONs) to validate each cross-chain transaction, leveraging the same time-tested infrastructure powering Chainlink Data Feeds which have been used by hundreds of DeFi applications to enable $26T in transaction value over a period of nearly 6 years of in-production operation.
+- **Rate Limiting**: CCIP offers a rate limiting feature that enables owners to establish and configure rate limiting policies for Cross-Chain Tokens, which are enforced at both the source and destination chains. This provides an enterprise-grade security feature to ensure operational continuity and limit blast radius in failure scenarios.
+- **Timelocked Upgrades**: All onchain security-critical configuration changes and upgrades to core CCIP infrastructure must pass through a Role-based Access Control Timelock contract, where CCIP node operators can veto the upgrade during the review period or explicitly approve the upgrade during time-sensitive circumstances.
+- **High-Quality, Sybil-Resistant Node Operators**: CCIP uses the same globally distributed, security-reviewed, public node operators that secure other services on the Chainlink platform, as well as validate leading blockchain networks and operate traditional Web2 telecommunication infrastructure. Each independent node in CCIP is run by an independent organization who have extensive DevOps expertise and robust security practices around private key management.
 
 <ClickToZoom
   src="/images/ccip/ccip-hl-v1.7.png"
@@ -73,11 +75,11 @@ For example, a user could transfer tokens to a lending protocol with instruction
 
 With CCIP, you send transactions with data (arbitrary messaging), tokens, or both data and tokens (programmable token transfer). The receiver of a CCIP transaction varies by blockchain family:
 
-| CCIP capability             | What is sent    | Receiving account types                                                                 |
-| --------------------------- | --------------- | --------------------------------------------------------------------------------------- |
-| Arbitrary Messaging         | Data            | EVM: Smart contracts only<br />SVM: Programs only                                       |
-| Token Transfer              | Tokens          | EVM: Smart contracts and EOAs<br />SVM: User wallets or program-controlled PDAs         |
-| Programmable Token Transfer | Data and tokens | EVM: Smart contracts only<br />SVM: Data to programs, tokens to program-controlled PDAs |
+| CCIP capability             | What is sent    | Receiving account types                                                                                                                            |
+| --------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Arbitrary Messaging         | Data            | EVM: Smart contracts only<br />SVM: Programs only<br />Aptos: Modules only                                                                         |
+| Token Transfer              | Tokens          | EVM: Smart contracts and EOAs<br />SVM: User wallets or program-controlled PDAs<br />Aptos: User accounts or modules deployed to resource accounts |
+| Programmable Token Transfer | Data and tokens | EVM: Smart contracts only<br />SVM: Data to programs, tokens to program-controlled PDAs<br />Aptos: Modules deployed to resource accounts          |
 
 **Note**: On EVM chains, EOAs cannot receive messages. On Solana (SVM), programs work with Program Derived Addresses (PDAs) to manage token reception.
 
