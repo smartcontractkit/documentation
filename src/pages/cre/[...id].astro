@@ -122,7 +122,7 @@ if (isCanonical) {
           is:inline
           slot="head-scripts"
           define:vars={{ goUrl: `/cre/${goEntry.id}`, tsUrl: `/cre/${tsEntry.id}`, currentLang: entry!.data.sdkLang }}
-          set:html={`(function(){try{var s=localStorage.getItem("docs-language-preference"),l=s==="ts"||s==='"ts"'?"ts":"go";if(l!==currentLang){var u=l==="ts"?tsUrl:goUrl;u&&window.location.replace(u)}}catch(e){}})();`}
+          set:html={`(function(){try{var s=localStorage.getItem("docs-language-preference");if(s){var l=s==="ts"||s==='"ts"'?"ts":"go";if(l!==currentLang){var u=l==="ts"?tsUrl:goUrl;u&&window.location.replace(u)}}else{try{localStorage.setItem("docs-language-preference",currentLang)}catch(e){}}}catch(e){}})();`}
         />
       )
     )
