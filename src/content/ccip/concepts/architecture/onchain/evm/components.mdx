@@ -186,18 +186,8 @@ The `setPool()` method can be invoked by a registered CCIP token administrator v
 
 ## RMN Contract
 
-Risk management in CCIP is performed by a separate, independent network that continuously monitors and validates cross-chain operations for anomalous activity, thereby providing an additional layer of security.
-
-The RMN Contract is deployed on every chain where CCIP is integrated, even on chains where RMN is not enabled. Its key functions include:
+The RMN Contract is deployed on every chain where CCIP is integrated. Its key functions include:
 
 1. **Cursing Mechanism**
    - **Curse Initiation**: When the CCIP Owner manually initiates a curse, the `curse()` function is invoked to mark the appropriate subjects as cursed.
    - **Curse Detection**: Onchain components (such as the Router, OnRamp, OffRamp, and TokenPool) call the `isCursed()` function on the RMNRemote contract to detect global curses or curses targeting a remote chain.
-
-<Aside type="caution" title="Phased Deployments">
-  Certain blockchains may be integrated with CCIP in a phased approach, with the Committing and Executing DONs deployed
-  first and the Risk Management Network (RMN) added in a later update. In cases of a phased deployment, merkle roots in
-  relevant Commit Stores are always considered blessed until the Risk Management Network has been deployed for that
-  blockchain. Please see the [CCIP Directory](/ccip/directory) for which integrations utilize a phased approach. Please
-  review [CCIP Service Responsibility](/ccip/service-responsibility) for more information.
-</Aside>
