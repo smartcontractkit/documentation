@@ -163,6 +163,16 @@ export interface CCIPSendErrorEntry {
   description: string
 }
 
+export interface CCIPEventEntry {
+  event: string
+  parameters?: Array<{
+    type: string
+    name: string
+    indexed: boolean
+  }>
+  description: string
+}
+
 export enum LaneStatus {
   OPERATIONAL = "OPERATIONAL",
   MAINTENANCE = "MAINTENANCE",

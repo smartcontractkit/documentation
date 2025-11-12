@@ -1,0 +1,106 @@
+---
+import type { CCIPEventEntry } from "@config/data/ccip/types"
+import { events } from "@config/data/ccip/data"
+import { CopyText } from "@components"
+import { marked } from "marked"
+
+// Define event parameter type
+interface EventParameter {
+  type: string
+  name: string
+  indexed?: boolean
+}
+
+// Props with literal types - use the same keys as in data.ts
+interface Props {
+  type: "onramp-send" | "pool-send" | "offramp-receive" | "router-receive" | "pool-receive"
+  version: "v1_5_0" | "v1_5_1" | "v1_6_0" | "v1_6_1" | "v1_6_2" | "v1_6_3"
+}
+
+const { type, version } = Astro.props
+
+// Simple mapping to event keys
+const typeToEventKey = {
+  "onramp-send": "onrampCCIPSendEvents",
+  "pool-send": "poolCCIPSendEvents",
+  "offramp-receive": "offrampCCIPReceiveEvents",
+  "router-receive": "routerCCIPReceiveEvents",
+  "pool-receive": "poolCCIPReceiveEvents",
+} as const
+
+const selectedEvents = events[version]?.[typeToEventKey[type]] || []
+
+if (!selectedEvents.length) {
+  throw new Error(`Invalid event type: ${type} or version: ${version}`)
+}
+
+// Check if any event has parameters or event signature
+const hasParameters = selectedEvents.some(
+  (event: CCIPEventEntry) => Array.isArray(event.parameters) && event.parameters.length > 0
+)
+
+// Fix for marked.parse return type
+const renderMarkdown = (text: string): string => {
+  const result = marked.parse(text)
+  // Handle potential Promise return
+  return typeof result === "string" ? result : ""
+}
+---
+
+<div class="events-table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Event</th>
+        {hasParameters && <th>Parameters</th>}
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        selectedEvents.map((event: CCIPEventEntry) => (
+          <tr>
+            <td>{event.event}</td>
+            {hasParameters && (
+              <td>
+                {Array.isArray(event.parameters) && event.parameters.length > 0
+                  ? event.parameters.map((param: EventParameter, i: number) => (
+                      <>
+                        <span>
+                          {param.indexed && <strong>indexed </strong>}
+                          {param.type} {param.name}
+                        </span>
+                        {i < event.parameters!.length - 1 && <br />}
+                      </>
+                    ))
+                  : "-"}
+              </td>
+            )}
+            <td class="description" set:html={renderMarkdown(event.description)} />
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .events-table-container {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th,
+  td {
+    text-align: center;
+    border: 1px solid #ddd;
+    padding: 1em;
+    white-space: nowrap;
+  }
+  td.description {
+    text-align: left;
+    white-space: normal;
+  }
+</style>
