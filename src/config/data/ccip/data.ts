@@ -124,13 +124,12 @@ type EventTypesV150 = {
   onrampCCIPSendEvents: CCIPEventEntry[]
   offrampCCIPReceiveEvents: CCIPEventEntry[]
   routerCCIPReceiveEvents: CCIPEventEntry[]
-}
-
-// Type for v1.5.1 events
-type EventTypesV151 = EventTypesV150 & {
   poolCCIPSendEvents: CCIPEventEntry[]
   poolCCIPReceiveEvents: CCIPEventEntry[]
 }
+
+// Type for v1.5.1 events
+type EventTypesV151 = EventTypesV150
 
 // Type for v1.6.0 events
 type EventTypesV160 = EventTypesV151
