@@ -162,7 +162,6 @@ abstract class BaseChainStrategy implements IChainProcessingStrategy {
         rmn: chainConfig.armProxy.address,
         chainType,
         chainFamily,
-        rmnPermeable: chainConfig.rmnPermeable,
       },
     }
   }

@@ -49,7 +49,6 @@ export interface ChainDetails {
   tokenAdminRegistry?: string
   tokenPoolFactory?: string
   feeQuoter?: string
-  rmnPermeable?: boolean
   mcms?: string
 }
 
