@@ -19,8 +19,9 @@ This guide explains how to build a consumer contract that can securely receive a
 - [Core Concepts: The Onchain Data Flow](#1-core-concepts-the-onchain-data-flow)
 - [The IReceiver Standard](#2-the-ireceiver-standard)
 - [Using IReceiverTemplate](#3-using-ireceivertemplate)
-- [Advanced Usage](#4-advanced-usage-optional)
-- [Complete Examples](#5-complete-examples)
+- [Working with Simulation](#4-working-with-simulation)
+- [Advanced Usage](#5-advanced-usage-optional)
+- [Complete Examples](#6-complete-examples)
 
 ## 1. Core Concepts: The Onchain Data Flow
 
@@ -181,8 +182,6 @@ abstract contract IReceiverTemplate is IReceiver, Ownable {
 
 ### 3.3 Quick Start
 
-**Step 1: Inherit and implement your business logic**
-
 The simplest way to use `IReceiverTemplate` is to inherit from it and implement the `_processReport` function:
 
 ```solidity
@@ -206,11 +205,14 @@ contract MyConsumer is IReceiverTemplate {
 }
 ```
 
-### 3.4 Configuring Security
-
-**Step 2: Configure permissions (optional)**
+### 3.4 Configuring Permissions
 
 After deploying your contract, the owner can enable any combination of security checks using the setter functions.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="For simulation">
+  When using `cre workflow simulate`, **do not configure metadata-based validation checks** (`setExpectedWorkflowId`, `setExpectedAuthor`, `setExpectedWorkflowName`). The simulation uses a `MockForwarder` that doesn't provide this metadata. See [Working with Simulation](#4-working-with-simulation) for details.
+</Aside>
 
 {/* prettier-ignore */}
 <Aside type="tip" title="Finding forwarder addresses">
@@ -254,9 +256,58 @@ myConsumer.setExpectedWorkflowName(bytes10(0));
 - Your business logic in `_processReport`
 - (Optional) Configure permissions after deployment using setter functions
 
-## 4. Advanced Usage (Optional)
+## 4. Working with Simulation
 
-### 4.1 Custom Validation Logic
+When you run `cre workflow simulate`, your workflow interacts with a **`MockKeystoneForwarder`** contract that does not provide workflow metadata (`workflow_name`, `workflow_owner`).
+
+<Aside type="caution" title="Temporary limitation">
+  This is a **temporary limitation** until the `MockKeystoneForwarder` is updated to provide full metadata.
+</Aside>
+
+### Forwarder address validation
+
+You **can** configure the forwarder address check during simulation:
+
+```solidity
+// Optional: Validate the MockKeystoneForwarder address during simulation
+myConsumer.setForwarderAddress(0xMockForwarderAddress);
+```
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Important: Different addresses for simulation vs production">
+  The `MockKeystoneForwarder` address used during simulation is **different** from the `KeystoneForwarder` address used by deployed workflows. If you configure the forwarder address for simulation, remember to update it to the production `KeystoneForwarder` address after deploying. See [Supported Networks](/cre/guides/workflow/using-evm-client/supported-networks) for forwarder addresses.
+</Aside>
+
+### Metadata-based validation
+
+**Do not configure these validation checks** during simulation - they require metadata that `MockKeystoneForwarder` doesn't provide:
+
+- `setExpectedWorkflowId()`
+- `setExpectedAuthor()`
+- `setExpectedWorkflowName()`
+
+Setting any of these will cause your simulation to fail.
+
+### After deployment
+
+Once you deploy your workflow:
+
+1. Update the forwarder address to the real `KeystoneForwarder` (if you configured it for simulation)
+1. Configure additional metadata-based validation as needed
+
+```solidity
+// Update to production KeystoneForwarder address
+myConsumer.setForwarderAddress(0xF8344CFd5c43616a4366C34E3EEE75af79a74482); // Example: Ethereum Sepolia
+
+// Now you can enable metadata-based validation
+myConsumer.setExpectedWorkflowId(0xYourWorkflowId);
+```
+
+See [Configuring Permissions](#34-configuring-permissions) for complete details.
+
+## 5. Advanced Usage (Optional)
+
+### 5.1 Custom Validation Logic
 
 You can override `onReport` to add your own validation logic before or after the standard checks:
 
@@ -295,7 +346,7 @@ contract AdvancedConsumer is IReceiverTemplate {
 }
 ```
 
-### 4.2 Using Metadata Fields in Your Logic
+### 5.2 Using Metadata Fields in Your Logic
 
 The `_decodeMetadata` helper function is available for use in your `_processReport` implementation. This allows you to access workflow metadata for custom business logic:
 
@@ -323,25 +374,7 @@ contract MetadataAwareConsumer is IReceiverTemplate {
   For production systems requiring even more sophisticated access control (such as role-based permissions or two-step ownership transfer), consider extending the template to use OpenZeppelin's `AccessControl` instead of `Ownable`, or implementing a custom ownership transfer pattern.
 </Aside>
 
-### 4.3 Working with Simulation
-
-When you run `cre workflow simulate`, your workflow interacts with a **`MockForwarder`** contract that does not provide the `workflow_name` or `workflow_owner` metadata. This means consumer contracts with `IReceiverTemplate`'s default validation **will fail during simulation**.
-
-**To test your consumer contract with simulation:**
-
-Override the `onReport` function to bypass validation checks:
-
-```solidity
-function onReport(bytes calldata, bytes calldata report) external override {
-  _processReport(report); // Skips validation checks
-}
-```
-
-**For deployed workflows:**
-
-Deployed workflows use the real **`KeystoneForwarder`** contract, which provides full metadata. You can enable all permission checks (forwarder address, workflow ID, owner, name) for production deployments.
-
-## 5. Complete Examples
+## 6. Complete Examples
 
 ### Example 1: Simple Consumer Contract
 
