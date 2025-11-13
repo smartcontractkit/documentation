@@ -9,6 +9,7 @@ interface EventParameter {
   type: string
   name: string
   indexed?: boolean
+  typeLink?: string
 }
 
 // Props with literal types - use the same keys as in data.ts
@@ -67,8 +68,8 @@ const renderMarkdown = (text: string): string => {
                   ? event.parameters.map((param: EventParameter, i: number) => (
                       <>
                         <span>
-                          {param.indexed && <strong>indexed </strong>}
-                          {param.type} {param.name}
+                          - {param.indexed && <strong>indexed </strong>}
+                          {param.typeLink ? <a href={param.typeLink}>{param.type}</a> : param.type} {param.name}
                         </span>
                         {i < event.parameters!.length - 1 && <br />}
                       </>

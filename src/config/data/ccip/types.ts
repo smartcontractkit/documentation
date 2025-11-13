@@ -169,6 +169,7 @@ export interface CCIPEventEntry {
     type: string
     name: string
     indexed: boolean
+    typeLink?: string
   }>
   description: string
 }
