@@ -109,6 +109,7 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
                   "OffRamp address"
                 )}
               </th>
+              <th>Version</th>
             </tr>
           </thead>
           <tbody>
@@ -165,6 +166,7 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
                       )}
                     />
                   </td>
+                  <td>{inOutbound === LaneFilter.Outbound ? network.onRamp?.version : network.offRamp?.version}</td>
                 </tr>
               ))}
           </tbody>
