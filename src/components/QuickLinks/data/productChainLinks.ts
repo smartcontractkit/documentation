@@ -311,6 +311,8 @@ export const productChainLinks: ProductChainLinks = {
     tac: "/resources/link-token-contracts#tac",
     memento: "/resources/link-token-contracts#memento",
     bittensor: "/resources/link-token-contracts#bittensor-evm",
+    everclear: "/resources/link-token-contracts#everclear",
+    abchain: "/resources/link-token-contracts#ab-chain",
   },
 }
 
@@ -397,4 +399,6 @@ export const chainNames: Record<string, string> = {
   memento: "Memento",
   xdc: "XDC",
   bittensor: "Bittensor EVM",
+  everclear: "Everclear",
+  abchain: "AB Chain",
 }
