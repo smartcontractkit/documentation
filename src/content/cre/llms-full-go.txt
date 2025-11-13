@@ -2382,6 +2382,11 @@ While you can implement these standards manually, we provide an abstract contrac
 - **ERC165 Support**: Includes the necessary `supportsInterface` function
 - **Metadata Access**: Helper function to decode workflow ID, name, and owner for custom validation logic
 
+
+<Aside type="caution" title="Important for simulation">
+  If you're using `cre workflow simulate`, you'll need to temporarily disable validation checks in your consumer contract. The simulation uses a `MockForwarder` that doesn't provide full metadata. See [Working with Simulation](#43-working-with-simulation) for the required code change.
+</Aside>
+
 ### 3.2 Contract Source Code
 
 ```solidity
@@ -2642,6 +2647,11 @@ contract MetadataAwareConsumer is IReceiverTemplate {
 
 ### 4.3 Working with Simulation
 
+
+<Aside type="caution" title="Temporary workaround">
+  This is a **temporary workaround** until the `MockForwarder` is updated. For deployed workflows, you should enable validation checks as described in [Configuring Security](#34-configuring-security).
+</Aside>
+
 When you run `cre workflow simulate`, your workflow interacts with a **`MockForwarder`** contract that does not provide the `workflow_name` or `workflow_owner` metadata. This means consumer contracts with `IReceiverTemplate`'s default validation **will fail during simulation**.
 
 **To test your consumer contract with simulation:**
@@ -2649,6 +2659,8 @@ When you run `cre workflow simulate`, your workflow interacts with a **`MockForw
 Override the `onReport` function to bypass validation checks:
 
 ```solidity
+// Temporary: For simulation only
+// Re-enable validation for production deployment
 function onReport(bytes calldata, bytes calldata report) external override {
   _processReport(report); // Skips validation checks
 }
@@ -2656,7 +2668,7 @@ function onReport(bytes calldata, bytes calldata report) external override {
 
 **For deployed workflows:**
 
-Deployed workflows use the real **`KeystoneForwarder`** contract, which provides full metadata. You can enable all permission checks (forwarder address, workflow ID, owner, name) for production deployments.
+Deployed workflows use the real **`KeystoneForwarder`** contract, which provides full metadata. Remove this override and enable permission checks for production deployments. See [Configuring Security](#34-configuring-security) for details.
 
 ## 5. Complete Examples
 
