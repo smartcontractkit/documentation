@@ -506,7 +506,7 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "BITTENSOR_MAINNET"
     case "everclear-mainnet":
       return "EVERCLEAR_MAINNET"
-    case "ab-chain-mainnet":
+    case "ab-mainnet":
       return "AB_CHAIN_MAINNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
@@ -814,7 +814,7 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
     case "EVERCLEAR_MAINNET":
       return "everclear-mainnet"
     case "AB_CHAIN_MAINNET":
-      return "ab-chain-mainnet"
+      return "ab-mainnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
