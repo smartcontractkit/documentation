@@ -73,6 +73,8 @@ export type SupportedTechnology =
   | "MEMENTO"
   | "XDC"
   | "BITTENSOR"
+  | "EVERCLEAR"
+  | "AB_CHAIN"
 
 export type ChainType = "evm" | "solana" | "aptos"
 
@@ -233,6 +235,8 @@ export type SupportedChain =
   | "XDC_MAINNET"
   | "XDC_TESTNET"
   | "BITTENSOR_MAINNET"
+  | "EVERCLEAR_MAINNET"
+  | "AB_CHAIN_MAINNET"
 export type ExplorerInfo = {
   baseUrl: string
   queryParameters?: {
