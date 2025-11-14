@@ -95,6 +95,8 @@ export const productChainLinks: ProductChainLinks = {
       memento: "/ccip/directory/mainnet/chain/memento-mainnet",
       xdc: "/ccip/directory/mainnet/chain/xdc-mainnet",
       bittensor: "/ccip/directory/mainnet/chain/bittensor-mainnet",
+      everclear: "/ccip/directory/mainnet/chain/everclear-mainnet",
+      abchain: "/ccip/directory/mainnet/chain/ab-mainnet",
     },
   },
   CRE: {
@@ -325,6 +327,8 @@ export const productChainLinks: ProductChainLinks = {
     tac: "/resources/link-token-contracts#tac",
     memento: "/resources/link-token-contracts#memento",
     bittensor: "/resources/link-token-contracts#bittensor-evm",
+    everclear: "/resources/link-token-contracts#everclear",
+    abchain: "/resources/link-token-contracts#ab-chain",
   },
 }
 
@@ -411,4 +415,6 @@ export const chainNames: Record<string, string> = {
   memento: "Memento",
   xdc: "XDC",
   bittensor: "Bittensor EVM",
+  everclear: "Everclear",
+  abchain: "AB Chain",
 }
