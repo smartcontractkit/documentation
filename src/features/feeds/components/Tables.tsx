@@ -520,7 +520,7 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
                 </span>
               </dt>
               <dd>
-                {/* For Stablecoin Stability Assessment feeds, valueSuffix contains the stablecoin ticker being assessed*/}
+                {/* For Stablecoin Stability Assessment feeds, valueSuffix contains the stablecoin ticker being assessed */}
                 {metadata.docs.assetClass === "Stablecoin Stability Assessment"
                   ? metadata.valueSuffix || metadata.assetName
                   : metadata.assetName}
