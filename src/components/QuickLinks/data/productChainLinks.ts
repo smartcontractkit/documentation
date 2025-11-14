@@ -1,9 +1,10 @@
-import ccipLogo from "../assets/products/ccip-logo.svg"
-import vrfLogo from "../assets/products/vrf-logo.svg"
-import functionsLogo from "../assets/products/functions-logo.svg"
-import automationLogo from "../assets/products/automation-logo.svg"
-import dataFeedsLogo from "../assets/products/data-feeds-logo.svg"
-import dataStreamsLogo from "../assets/products/data-streams-logo.svg"
+import ccipLogo from "../../../assets/product-logos/ccip-logo.svg"
+import vrfLogo from "../../../assets/product-logos/vrf-logo.svg"
+import functionsLogo from "../../../assets/product-logos/functions-logo.svg"
+import automationLogo from "../../../assets/product-logos/automation-logo.svg"
+import dataFeedsLogo from "../../../assets/product-logos/data-feeds-logo.svg"
+import dataStreamsLogo from "../../../assets/product-logos/data-streams-logo.svg"
+import creLogo from "../../../assets/product-logos/cre-logo.svg"
 
 export interface ProductData {
   learnMoreLink: string
@@ -94,6 +95,19 @@ export const productChainLinks: ProductChainLinks = {
       memento: "/ccip/directory/mainnet/chain/memento-mainnet",
       xdc: "/ccip/directory/mainnet/chain/xdc-mainnet",
       bittensor: "/ccip/directory/mainnet/chain/bittensor-mainnet",
+    },
+  },
+  CRE: {
+    learnMoreLink: "cre",
+    logo: creLogo,
+    chains: {
+      arbitrum: "/cre/guides/workflow/using-evm-client/supported-networks",
+      avalanche: "/cre/guides/workflow/using-evm-client/supported-networks",
+      base: "/cre/guides/workflow/using-evm-client/supported-networks",
+      "bnb-chain": "/cre/guides/workflow/using-evm-client/supported-networks",
+      ethereum: "/cre/guides/workflow/using-evm-client/supported-networks",
+      optimism: "/cre/guides/workflow/using-evm-client/supported-networks",
+      polygon: "/cre/guides/workflow/using-evm-client/supported-networks",
     },
   },
   "Data Feeds": {
