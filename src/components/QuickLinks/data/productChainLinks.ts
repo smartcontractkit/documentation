@@ -94,6 +94,8 @@ export const productChainLinks: ProductChainLinks = {
       memento: "/ccip/directory/mainnet/chain/memento-mainnet",
       xdc: "/ccip/directory/mainnet/chain/xdc-mainnet",
       bittensor: "/ccip/directory/mainnet/chain/bittensor-mainnet",
+      everclear: "/ccip/directory/mainnet/chain/everclear-mainnet",
+      abchain: "/ccip/directory/mainnet/chain/ab-mainnet",
     },
   },
   "Data Feeds": {
