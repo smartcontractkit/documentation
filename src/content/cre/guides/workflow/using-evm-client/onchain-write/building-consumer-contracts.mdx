@@ -134,16 +134,45 @@ abstract contract IReceiverTemplate is IReceiver, Ownable {
         expectedAuthor = _author;
     }
 
-    /// @notice Updates the expected workflow name
-    /// @param _name The new expected workflow name (use bytes10(0) to disable this check)
-    function setExpectedWorkflowName(bytes10 _name) external onlyOwner {
-        expectedWorkflowName = _name;
+    /// @notice Updates the expected workflow name from a plaintext string
+    /// @param _name The workflow name as a string (use empty string "" to disable this check)
+    /// @dev The name is hashed using SHA256 and truncated
+    function setExpectedWorkflowName(string calldata _name) external onlyOwner {
+        if (bytes(_name).length == 0) {
+            expectedWorkflowName = bytes10(0);
+            return;
+        }
+
+        // Convert workflow name to bytes10:
+        // SHA256 hash → hex encode → take first 10 chars → hex encode those chars
+        bytes32 hash = sha256(bytes(_name));
+        bytes memory hexString = _bytesToHexString(abi.encodePacked(hash));
+        bytes memory first10 = new bytes(10);
+        for (uint i = 0; i < 10; i++) {
+            first10[i] = hexString[i];
+        }
+        expectedWorkflowName = bytes10(first10);
     }
 
     /// @notice Updates the expected workflow ID
     /// @param _id The new expected workflow ID (use bytes32(0) to disable this check)
     function setExpectedWorkflowId(bytes32 _id) external onlyOwner {
         expectedWorkflowId = _id;
+    }
+
+    /// @notice Helper function to convert bytes to hex string
+    /// @param data The bytes to convert
+    /// @return The hex string representation
+    function _bytesToHexString(bytes memory data) private pure returns (bytes memory) {
+        bytes memory hexChars = "0123456789abcdef";
+        bytes memory hexString = new bytes(data.length * 2);
+
+        for (uint256 i = 0; i < data.length; i++) {
+            hexString[i * 2] = hexChars[uint8(data[i] >> 4)];
+            hexString[i * 2 + 1] = hexChars[uint8(data[i] & 0x0f)];
+        }
+
+        return hexString;
     }
 
     /// @notice Extracts all metadata fields from the onReport metadata parameter
@@ -230,10 +259,10 @@ myConsumer.setExpectedWorkflowId(0x1234...); // Your specific workflow ID
 
 // Example: Enable workflow owner and name checks
 myConsumer.setExpectedAuthor(0xYourAddress...);
-myConsumer.setExpectedWorkflowName(0x6d795f776f726b666c6f); // bytes10 value (see "Converting Workflow Names" section below)
+myConsumer.setExpectedWorkflowName("my_workflow"); // The plaintext workflow name
 
-// Example: Disable a check later (set to zero)
-myConsumer.setExpectedWorkflowName(bytes10(0));
+// Example: Disable a check later
+myConsumer.setExpectedWorkflowName(""); // Empty string disables the check
 ```
 
 {/* prettier-ignore */}
@@ -256,109 +285,28 @@ myConsumer.setExpectedWorkflowName(bytes10(0));
 - Your business logic in `_processReport`
 - (Optional) Configure permissions after deployment using setter functions
 
-#### Converting workflow names to `bytes10`
+#### How workflow names are encoded
 
-The `workflowName` parameter uses the **`bytes10`** type, which stores exactly **10 bytes** rather than plaintext strings. This is important to understand when configuring the `expectedWorkflowName` validation.
+The `workflowName` field in the metadata uses the **`bytes10`** type rather than plaintext strings. When you call `setExpectedWorkflowName("my_workflow")`, the `IReceiverTemplate` automatically encodes it using the same algorithm as the CRE engine:
 
-{/* prettier-ignore */}
-<Aside type="note" title="Understanding bytes10">
-  - **bytes10** is a fixed-size type that holds exactly 10 bytes
-  - If your workflow name is `"my_workflow"` (11 characters), only the first 10 bytes are stored: `"my_workflo"`
-  - You must convert your plaintext workflow name to its `bytes10` representation before calling `setExpectedWorkflowName`
-</Aside>
+1. Compute SHA256 hash of the workflow name
+1. Convert hash to hex string (64 characters)
+1. Take the first 10 hex characters (e.g., `"b76f3ae1de"`)
+1. Hex-encode those 10 ASCII characters to get `bytes10` (20 hex characters / 10 bytes)
 
-**Option 1: Convert in Solidity (onchain)**
+**Example:** `"my_workflow"` → SHA256 → `"b76f3ae1de..."` → hex-encode → `0x62373666336165316465`
 
-If you want to handle the conversion programmatically in Solidity, you can use this helper function:
+This encoding ensures consistent, fixed-size representation regardless of the original workflow name length.
 
-```solidity
-// Helper function to convert a string to bytes10
-function stringToBytes10(string memory source) public pure returns (bytes10 result) {
-    bytes memory tempBytes = bytes(source);
-
-    // If the string is empty, return empty bytes10
-    if (tempBytes.length == 0) {
-        return 0x0;
-    }
-
-    // Copy up to 10 bytes from the string
-    assembly {
-        result := mload(add(tempBytes, 32))
-    }
-}
-```
-
-**Usage example:**
+**Usage:**
 
 ```solidity
-bytes10 workflowNameBytes = stringToBytes10("my_workflow"); // Returns first 10 bytes
-myConsumer.setExpectedWorkflowName(workflowNameBytes);
+// Just use the plaintext workflow name - the interface handles the encoding automatically
+myConsumer.setExpectedWorkflowName("my_workflow");
+
+// To disable the check later
+myConsumer.setExpectedWorkflowName(""); // Empty string disables the check
 ```
-
-**Option 2: Convert offchain**
-
-For most scenarios, you'll configure permissions from a deployment or configuration script. Convert the workflow name to `bytes10` offchain before calling `setExpectedWorkflowName`:
-
-**Example using Ethers.js v6:**
-
-```javascript
-import { hexlify, toUtf8Bytes } from "ethers"
-
-const workflowName = "my_workflow"
-const bytes10Value = hexlify(toUtf8Bytes(workflowName).slice(0, 10))
-// Result: "0x6d795f776f726b666c6f" (first 10 bytes of "my_workflo")
-
-await myConsumer.setExpectedWorkflowName(bytes10Value)
-```
-
-#### Decoding `bytes10` back to string
-
-You might need to convert the `bytes10` workflow name back to a human-readable string in your consumer contract. Common use cases include:
-
-- **Emitting events** - Include the workflow name in events for offchain indexing and monitoring
-- **View functions** - Return the workflow name as a string for external queries
-
-**Helper function to decode `bytes10`:**
-
-```solidity
-// Helper function to convert bytes10 back to a string
-function bytes10ToString(bytes10 source) public pure returns (string memory) {
-    // Create a bytes array to hold the result
-    bytes memory bytesArray = new bytes(10);
-
-    // Copy the bytes10 data
-    for (uint256 i = 0; i < 10; i++) {
-        bytesArray[i] = source[i];
-    }
-
-    // Find the actual length (stop at first null byte)
-    uint256 length = 0;
-    for (uint256 i = 0; i < 10; i++) {
-        if (bytesArray[i] == 0) {
-            break;
-        }
-        length++;
-    }
-
-    // Create a properly sized bytes array
-    bytes memory result = new bytes(length);
-    for (uint256 i = 0; i < length; i++) {
-        result[i] = bytesArray[i];
-    }
-
-    return string(result);
-}
-```
-
-{/* prettier-ignore */}
-<Aside type="tip" title="Gas optimization">
-  If you only need to compare workflow names (not display them), it's more gas-efficient to compare the `bytes10` values directly rather than converting to strings:
-  ```solidity
-  if (workflowName == bytes10("price_feed")) {
-      // Handle price feed workflow
-  }
-  ```
-</Aside>
 
 ## 4. Working with Simulation
 
