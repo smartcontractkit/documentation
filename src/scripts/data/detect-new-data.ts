@@ -107,6 +107,7 @@ function buildFeedUrl(item: DataItem): string {
     "gnosis-chain": "xdai",
     polygonzkevm: "polygon-zkevm",
     polygonkatana: "katana",
+    hyperevm: "hyperliquid",
     // Add more mappings as needed
   }
 
@@ -122,6 +123,7 @@ function buildFeedUrl(item: DataItem): string {
     soneium: "soneium",
     xlayer: "xlayer",
     zksync: "zksync",
+    hyperevm: "hyperliquid",
     // Add more exceptions as they're discovered
   }
 
