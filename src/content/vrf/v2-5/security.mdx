@@ -6,14 +6,6 @@ title: "VRF Security Considerations"
 
 Gaining access to high quality randomness onchain requires a solution like Chainlink's VRF, but it also requires you to understand some of the ways that miners or validators can potentially manipulate randomness generation. Here are some of the top security considerations you should review in your project.
 
-## Avoid ERC-4337 account-abstracted (smart-account) wallets for subscription management
-
-Pre-signed ERC-4337 UserOperations can be executed by any bundler until they expire. If executed inside a fulfillment transaction callback, the subscription management call can no-op, delaying or preventing the change.
-
-## Keep your subscription funded well above the minimum balance
-
-Fulfillments require sufficient subscription balance at processing time. If the balance sits near the minimum and multiple consumers make concurrent requests, fulfillments can be delayed. After adding funds, it can take some time for previous requests to be processed again.
-
 ## Use `requestId` to match randomness requests with their fulfillment in order
 
 If your contract could have multiple VRF requests in flight simultaneously, you must ensure that the order in which the VRF fulfillments arrive cannot be used to manipulate your contract's user-significant behavior.
@@ -55,3 +47,11 @@ If your `fulfillRandomWords()` implementation reverts, the VRF service will not 
 ## Use `VRFConsumerBaseV2Plus` in your contract, to interact with the VRF service
 
 If you implement the [subscription method](/vrf/v2-5/overview/subscription), use `VRFConsumerBaseV2Plus`. It includes a check to ensure the randomness is fulfilled by `VRFCoordinatorV2_5`. For this reason, it is a best practice to inherit from `VRFConsumerBaseV2Plus`. Similarly, don't override `rawFulfillRandomness`.
+
+## Avoid ERC-4337 account-abstracted (smart-account) wallets for subscription management
+
+Pre-signed ERC-4337 UserOperations can be executed by any bundler until they expire. If executed inside a fulfillment transaction callback, the subscription management call can no-op, delaying or preventing the change.
+
+## Keep your subscription funded well above the minimum balance
+
+Fulfillments require sufficient subscription balance at processing time. If the balance sits near the minimum and multiple consumers make concurrent requests, fulfillments can be delayed. After adding funds, it can take some time for previous requests to be processed again.
