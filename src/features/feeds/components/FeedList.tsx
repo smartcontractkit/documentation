@@ -15,6 +15,7 @@ import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/TableOfContents/tocStore.ts"
 import alertIcon from "../../../components/Alert/Assets/alert-icon.svg"
 import { ChainSelector } from "~/components/ChainSelector/ChainSelector.tsx"
+import { isFeedVisible } from "../utils/feedVisibility.ts"
 
 export type DataFeedType =
   | "default"
@@ -499,49 +500,9 @@ export const FeedList = ({
         return true
       })
       .filter((network) => {
-        // After tag-level filtering, ensure the network still has at least one visible feed for the current dataFeedType
+        // Ensure the network has at least one visible feed for the current dataFeedType
         const feeds = network.metadata || []
-        const hasVisibleFeed = feeds.some((feed: any) => {
-          // Universal hidden exclusions
-          if (feed.feedCategory === "hidden" || feed.docs?.hidden) return false
-          if (isDeprecating && feed.feedCategory !== "deprecating") return false
-
-          if (isStreams) {
-            if (dataFeedType === "streamsCrypto")
-              return feed.contractType === "verifier" && ["Crypto", "Crypto-DEX"].includes(feed.docs?.feedType)
-            if (dataFeedType === "streamsRwa")
-              return feed.contractType === "verifier" && ["Equities", "Forex"].includes(feed.docs?.feedType)
-            if (dataFeedType === "streamsNav")
-              return feed.contractType === "verifier" && feed.docs?.feedType === "Net Asset Value"
-            if (dataFeedType === "streamsExRate")
-              return feed.contractType === "verifier" && feed.docs?.productTypeCode === "ExRate"
-            if (dataFeedType === "streamsBacked")
-              return feed.contractType === "verifier" && feed.docs?.feedType === "Tokenized Equities"
-            return false
-          }
-          if (isSmartData) {
-            if (feed.docs?.deliveryChannelCode === "DS") return false
-            return (
-              feed.docs?.isMVR === true ||
-              feed.docs?.productType === "Proof of Reserve" ||
-              feed.docs?.productType === "NAVLink" ||
-              feed.docs?.productType === "SmartAUM"
-            )
-          }
-          if (isUSGovernmentMacroeconomicData) return feed.docs?.productTypeCode === "RefMacro"
-          if (isRates) return feed.docs?.productType === "Rates"
-          // Default set
-          return (
-            !feed.docs?.porType &&
-            feed.contractType !== "verifier" &&
-            feed.docs?.productType !== "Proof of Reserve" &&
-            feed.docs?.productType !== "NAVLink" &&
-            feed.docs?.productType !== "SmartAUM" &&
-            feed.docs?.productTypeCode !== "RefMacro" &&
-            !feed.docs?.isMVR
-          )
-        })
-        return hasVisibleFeed
+        return feeds.some((feed: any) => isFeedVisible(feed, dataFeedType, ecosystem))
       })
 
     // Check available network types
