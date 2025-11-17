@@ -474,24 +474,75 @@ export const FeedList = ({
     const networkTypes = { mainnet: false, testnet: false }
 
     // Filter networks by feed type
-    const filteredNetworks = chainMetadata.processedData.networks.filter((network) => {
-      if (isDeprecating) {
-        let foundDeprecated = false
-        network.metadata?.forEach((feed: any) => {
-          if (feed.feedCategory === "deprecating") {
-            foundDeprecated = true
+    const filteredNetworks = chainMetadata.processedData.networks
+      .filter((network) => {
+        if (isDeprecating) {
+          let foundDeprecated = false
+          network.metadata?.forEach((feed: any) => {
+            if (feed.feedCategory === "deprecating") {
+              foundDeprecated = true
+            }
+          })
+          // A deprecating network is relevant only if it still has at least one non-hidden deprecating feed
+          if (!foundDeprecated) return false
+          const hasVisible = network.metadata?.some(
+            (feed: any) => feed.feedCategory === "deprecating" && feed.feedCategory !== "hidden" && !feed.docs?.hidden
+          )
+          return !!hasVisible
+        }
+
+        if (isStreams) return network.tags?.includes("streams")
+        if (isSmartData) return network.tags?.includes("smartData")
+        if (isRates) return network.tags?.includes("rates")
+        if (isUSGovernmentMacroeconomicData) return network.tags?.includes("usGovernmentMacroeconomicData")
+
+        return true
+      })
+      .filter((network) => {
+        // After tag-level filtering, ensure the network still has at least one visible feed for the current dataFeedType
+        const feeds = network.metadata || []
+        const hasVisibleFeed = feeds.some((feed: any) => {
+          // Universal hidden exclusions
+          if (feed.feedCategory === "hidden" || feed.docs?.hidden) return false
+          if (isDeprecating && feed.feedCategory !== "deprecating") return false
+
+          if (isStreams) {
+            if (dataFeedType === "streamsCrypto")
+              return feed.contractType === "verifier" && ["Crypto", "Crypto-DEX"].includes(feed.docs?.feedType)
+            if (dataFeedType === "streamsRwa")
+              return feed.contractType === "verifier" && ["Equities", "Forex"].includes(feed.docs?.feedType)
+            if (dataFeedType === "streamsNav")
+              return feed.contractType === "verifier" && feed.docs?.feedType === "Net Asset Value"
+            if (dataFeedType === "streamsExRate")
+              return feed.contractType === "verifier" && feed.docs?.productTypeCode === "ExRate"
+            if (dataFeedType === "streamsBacked")
+              return feed.contractType === "verifier" && feed.docs?.feedType === "Tokenized Equities"
+            return false
           }
+          if (isSmartData) {
+            if (feed.docs?.deliveryChannelCode === "DS") return false
+            return (
+              feed.docs?.isMVR === true ||
+              feed.docs?.productType === "Proof of Reserve" ||
+              feed.docs?.productType === "NAVLink" ||
+              feed.docs?.productType === "SmartAUM"
+            )
+          }
+          if (isUSGovernmentMacroeconomicData) return feed.docs?.productTypeCode === "RefMacro"
+          if (isRates) return feed.docs?.productType === "Rates"
+          // Default set
+          return (
+            !feed.docs?.porType &&
+            feed.contractType !== "verifier" &&
+            feed.docs?.productType !== "Proof of Reserve" &&
+            feed.docs?.productType !== "NAVLink" &&
+            feed.docs?.productType !== "SmartAUM" &&
+            feed.docs?.productTypeCode !== "RefMacro" &&
+            !feed.docs?.isMVR
+          )
         })
-        return foundDeprecated
-      }
-
-      if (isStreams) return network.tags?.includes("streams")
-      if (isSmartData) return network.tags?.includes("smartData")
-      if (isRates) return network.tags?.includes("rates")
-      if (isUSGovernmentMacroeconomicData) return network.tags?.includes("usGovernmentMacroeconomicData")
-
-      return true
-    })
+        return hasVisibleFeed
+      })
 
     // Check available network types
     filteredNetworks.forEach((network) => {
