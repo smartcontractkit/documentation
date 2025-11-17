@@ -16,6 +16,36 @@ import { ExpandableTableWrapper } from "./ExpandableTableWrapper.tsx"
 
 const feedItems = monitoredFeeds.mainnet
 
+// Helper function to parse markdown links and render them
+const parseMarkdownLink = (text: string) => {
+  // Match markdown link format: [text](url)
+  const markdownLinkRegex = /\[([^\]]+)\]\(([^)]+)\)/g
+  const parts: any[] = []
+  let lastIndex = 0
+  let match
+
+  while ((match = markdownLinkRegex.exec(text)) !== null) {
+    // Add text before the link
+    if (match.index > lastIndex) {
+      parts.push(text.substring(lastIndex, match.index))
+    }
+    // Add the link
+    parts.push(
+      <a href={match[2]} target="_blank" rel="noopener noreferrer" key={match.index}>
+        {match[1]}
+      </a>
+    )
+    lastIndex = match.index + match[0].length
+  }
+
+  // Add remaining text after the last link
+  if (lastIndex < text.length) {
+    parts.push(text.substring(lastIndex))
+  }
+
+  return parts.length > 0 ? parts : text
+}
+
 // Render a category icon/link from the config
 const getFeedCategoryElement = (riskTier: string | undefined) => {
   if (!riskTier) return ""
@@ -421,13 +451,18 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
             {metadata.docs.shutdownDate}
           </div>
         )}
-        {metadata.docs.productType && (
-          <div>
-            <dd style={{ marginTop: "5px" }}>{metadata.docs.productType}</dd>
+        {(metadata.docs.assetClass === "Stablecoin Stability Assessment" ||
+          (metadata.docs.productType && metadata.docs.assetClass !== "Stablecoin Stability Assessment")) && (
+          <div style={{ marginTop: "5px", textAlign: "center" }}>
+            <dd>
+              {metadata.docs.assetClass === "Stablecoin Stability Assessment"
+                ? metadata.docs.assetClass
+                : metadata.docs.productType}
+            </dd>
           </div>
         )}
         {finalIsMVRFeed && (
-          <div style={{ marginTop: "5px" }}>
+          <div style={{ marginTop: "5px", textAlign: "center" }}>
             <a
               href="/data-feeds/mvr-feeds"
               className={tableStyles.feedVariantBadge}
@@ -478,11 +513,21 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
           <dl className={tableStyles.listContainer}>
             <div className={tableStyles.definitionGroup}>
               <dt>
-                <span className="label">Asset name:</span>
+                <span className="label">
+                  {metadata.docs.assetClass === "Stablecoin Stability Assessment"
+                    ? "Stablecoin assessed:"
+                    : "Asset name:"}
+                </span>
               </dt>
-              <dd>{metadata.assetName}</dd>
+              <dd>
+                {/* For Stablecoin Stability Assessment feeds, valueSuffix contains the stablecoin ticker being assessed */}
+                {metadata.docs.assetClass === "Stablecoin Stability Assessment"
+                  ? metadata.valueSuffix || metadata.assetName
+                  : metadata.assetName}
+              </dd>
             </div>
-            {metadata.docs.porType && (
+            {/* Hide Reserve type for Stablecoin Stability Assessment feeds */}
+            {metadata.docs.porType && metadata.docs.assetClass !== "Stablecoin Stability Assessment" && (
               <div className={tableStyles.definitionGroup}>
                 <dt>
                   <span className="label">Reserve type:</span>
@@ -505,7 +550,7 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
                     {metadata.docs.porSource === "Third-party" ? "Auditor verification:" : "Reporting:"}
                   </span>
                 </dt>
-                <dd>{metadata.docs.porSource}</dd>
+                <dd>{parseMarkdownLink(metadata.docs.porSource)}</dd>
               </div>
             )}
             {metadata.docs.issuer ? (
@@ -1153,7 +1198,8 @@ export const MainnetTable = ({
 
         const included =
           selectedFeedCategories.length === 0 ||
-          (metadata.docs.productType && selectedFeedCategories.includes(metadata.docs.productType))
+          (metadata.docs.productType && selectedFeedCategories.includes(metadata.docs.productType)) ||
+          (metadata.docs.assetClass && selectedFeedCategories.includes(metadata.docs.assetClass))
 
         return included
       }
@@ -1412,7 +1458,8 @@ export const TestnetTable = ({
 
         const included =
           selectedFeedCategories.length === 0 ||
-          (metadata.docs.productType && selectedFeedCategories.includes(metadata.docs.productType))
+          (metadata.docs.productType && selectedFeedCategories.includes(metadata.docs.productType)) ||
+          (metadata.docs.assetClass && selectedFeedCategories.includes(metadata.docs.assetClass))
 
         return included
       }
