@@ -222,6 +222,7 @@ export const FeedList = ({
     { key: "Proof of Reserve", name: "Proof of Reserve" },
     { key: "NAVLink", name: "NAVLink" },
     { key: "SmartAUM", name: "SmartAUM" },
+    { key: "Stablecoin Stability Assessment", name: "Stablecoin Stability Assessment" },
   ]
   const [streamsChain] = useState(initialNetwork)
   const activeChain = isStreams ? streamsChain : currentNetwork
