@@ -1608,7 +1608,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "VRF V2 [Legacy]",
+      section: "VRF V2 [DEPRECATED]",
       contents: [
         {
           title: "VRF V2 Subscription Method",
@@ -2106,7 +2106,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   ],
   [SIDEBAR_SECTIONS.LEGACY]: [
     {
-      section: "VRF V2 Subscription Method [Legacy]",
+      section: "VRF V2 Subscription Method [DEPRECATED]",
       contents: [
         {
           title: "Migrate to VRF V2.5",
@@ -2143,7 +2143,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "VRF V2 Direct Funding Method [Legacy]",
+      section: "VRF V2 Direct Funding Method [DEPRECATED]",
       contents: [
         {
           title: "Migrate to VRF V2.5",
