@@ -12,14 +12,14 @@ const languageConfig = {
 
 // Initialize language from localStorage immediately to prevent flash of wrong language
 function getInitialLanguage(): SupportedLanguage {
-  if (typeof window === "undefined") return "go"
+  if (typeof window === "undefined") return "ts"
 
   try {
     const stored = localStorage.getItem("docs-language-preference")
-    if (!stored) return "go"
-    return stored === "ts" || stored === '"ts"' ? "ts" : "go"
+    if (!stored) return "ts"
+    return stored === "go" || stored === '"go"' ? "go" : "ts"
   } catch {
-    return "go"
+    return "ts"
   }
 }
 
