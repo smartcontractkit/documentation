@@ -2451,16 +2451,45 @@ abstract contract IReceiverTemplate is IReceiver, Ownable {
         expectedAuthor = _author;
     }
 
-    /// @notice Updates the expected workflow name
-    /// @param _name The new expected workflow name (use bytes10(0) to disable this check)
-    function setExpectedWorkflowName(bytes10 _name) external onlyOwner {
-        expectedWorkflowName = _name;
+    /// @notice Updates the expected workflow name from a plaintext string
+    /// @param _name The workflow name as a string (use empty string "" to disable this check)
+    /// @dev The name is hashed using SHA256 and truncated
+    function setExpectedWorkflowName(string calldata _name) external onlyOwner {
+        if (bytes(_name).length == 0) {
+            expectedWorkflowName = bytes10(0);
+            return;
+        }
+
+        // Convert workflow name to bytes10:
+        // SHA256 hash → hex encode → take first 10 chars → hex encode those chars
+        bytes32 hash = sha256(bytes(_name));
+        bytes memory hexString = _bytesToHexString(abi.encodePacked(hash));
+        bytes memory first10 = new bytes(10);
+        for (uint i = 0; i < 10; i++) {
+            first10[i] = hexString[i];
+        }
+        expectedWorkflowName = bytes10(first10);
     }
 
     /// @notice Updates the expected workflow ID
     /// @param _id The new expected workflow ID (use bytes32(0) to disable this check)
     function setExpectedWorkflowId(bytes32 _id) external onlyOwner {
         expectedWorkflowId = _id;
+    }
+
+    /// @notice Helper function to convert bytes to hex string
+    /// @param data The bytes to convert
+    /// @return The hex string representation
+    function _bytesToHexString(bytes memory data) private pure returns (bytes memory) {
+        bytes memory hexChars = "0123456789abcdef";
+        bytes memory hexString = new bytes(data.length * 2);
+
+        for (uint256 i = 0; i < data.length; i++) {
+            hexString[i * 2] = hexChars[uint8(data[i] >> 4)];
+            hexString[i * 2 + 1] = hexChars[uint8(data[i] & 0x0f)];
+        }
+
+        return hexString;
     }
 
     /// @notice Extracts all metadata fields from the onReport metadata parameter
@@ -2547,10 +2576,10 @@ myConsumer.setExpectedWorkflowId(0x1234...); // Your specific workflow ID
 
 // Example: Enable workflow owner and name checks
 myConsumer.setExpectedAuthor(0xYourAddress...);
-myConsumer.setExpectedWorkflowName(0x6d795f776f726b666c6f77); // "my_workflo" in hex (bytes10 = 10 chars max)
+myConsumer.setExpectedWorkflowName("my_workflow"); // The plaintext workflow name
 
-// Example: Disable a check later (set to zero)
-myConsumer.setExpectedWorkflowName(bytes10(0));
+// Example: Disable a check later
+myConsumer.setExpectedWorkflowName(""); // Empty string disables the check
 ```
 
 
@@ -2572,6 +2601,29 @@ myConsumer.setExpectedWorkflowName(bytes10(0));
 
 - Your business logic in `_processReport`
 - (Optional) Configure permissions after deployment using setter functions
+
+#### How workflow names are encoded
+
+The `workflowName` field in the metadata uses the **`bytes10`** type rather than plaintext strings. When you call `setExpectedWorkflowName("my_workflow")`, the `IReceiverTemplate` automatically encodes it using the same algorithm as the CRE engine:
+
+1. Compute SHA256 hash of the workflow name
+2. Convert hash to hex string (64 characters)
+3. Take the first 10 hex characters (e.g., `"b76f3ae1de"`)
+4. Hex-encode those 10 ASCII characters to get `bytes10` (20 hex characters / 10 bytes)
+
+**Example:** `"my_workflow"` → SHA256 → `"b76f3ae1de..."` → hex-encode → `0x62373666336165316465`
+
+This encoding ensures consistent, fixed-size representation regardless of the original workflow name length.
+
+**Usage:**
+
+```solidity
+// Just use the plaintext workflow name - the interface handles the encoding automatically
+myConsumer.setExpectedWorkflowName("my_workflow");
+
+// To disable the check later
+myConsumer.setExpectedWorkflowName(""); // Empty string disables the check
+```
 
 ## 4. Working with Simulation
 
