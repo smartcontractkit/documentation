@@ -1,0 +1,67 @@
+---
+section: dataStreams
+date: Last Modified
+title: "24/5 US Equities Report Schema (v11)"
+metadata:
+  title: "24/5 US Equities Report Schema (v11) | Chainlink Data Streams"
+  description: "Learn about Chainlink 24/5 US Equities report schema (v11), including fields, encoding, and examples for integrating extended-hours equity data in your applications."
+  keywords:
+    [
+      "Report Schema",
+      "US Equities",
+      "24/5 Trading",
+      "v11 Schema",
+      "Data Format",
+      "Report Structure",
+      "Extended Hours",
+      "Pre-market",
+      "Post-market",
+    ]
+---
+
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+import ReportSchemaTabs from "@features/data-streams/common/ReportSchemaTabs.astro"
+
+<DataStreams section="dsNotes" />
+
+<ReportSchemaTabs />
+
+Chainlink 24/5 US Equities Data Streams adhere to the report schema outlined below.
+
+### Schema Fields
+
+| Field                   | Type      | Description                                                                                                                                                                                                                                                                 |
+| ----------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                                                                                                                                                                                                                                 |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                                                                                                                                                                                                                        |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                                                                                                                                                                                                                          |
+| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)                                                                                                                                                                                                                                |
+| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                                                                                                                                                                                                                                        |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                                                                                                                                                                                                                     |
+| `mid`                   | `int192`  | Liquidity-weighted mid price                                                                                                                                                                                                                                                |
+| `lastSeenTimestampNs`   | `uint64`  | Staleness indicator based on mid price (nanoseconds)                                                                                                                                                                                                                        |
+| `bid`                   | `int192`  | Median bid price                                                                                                                                                                                                                                                            |
+| `bidVolume`             | `int192`  | Volume at bid price                                                                                                                                                                                                                                                         |
+| `ask`                   | `int192`  | Median ask price                                                                                                                                                                                                                                                            |
+| `askVolume`             | `int192`  | Volume at ask price                                                                                                                                                                                                                                                         |
+| `lastTradedPrice`       | `int192`  | Last traded price                                                                                                                                                                                                                                                           |
+| `marketStatus`          | `uint32`  | Status of the real-world equity market. <br/> Possible values: <br/> `0` (Unknown), <br/> `1` (Pre-market extended hours), <br/> `2` (Regular hours), <br/> `3` (Post-market hours), <br/> `4` (Overnight), <br/> `5` (Weekend) <br/> [More details](#market-status-values) |
+
+**Notes:**
+
+- Future 24/5 US Equities streams may use different report schemas.
+- `lastSeenTimestampNs` helps applications detect stale data, especially important during market transitions and holidays.
+- Market status cannot detect public holidays. See [Market Hours](/data-streams/market-hours) for major holiday periods.
+
+##### Market Status Values
+
+The `marketStatus` field reflects the current state of the equity market:
+
+- **`0` (Unknown)** - Market status cannot be determined
+- **`1` (Pre-market extended hours)** - Market is in pre-market trading session
+- **`2` (Regular hours)** - Market is in regular trading session
+- **`3` (Post-market hours)** - Market is in post-market trading session
+- **`4` (Overnight)** - Market is closed overnight (between post-market close and next day's pre-market open)
+- **`5` (Weekend)** - Weekend period (Friday 20:00 ET to Sunday 20:00 ET)
+
+Users should implement appropriate safeguards based on market status, such as pausing trading, adjusting risk parameters, or implementing staleness checks during non-regular hours.

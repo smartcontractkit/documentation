@@ -878,6 +878,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "24/5 US Equities Streams",
+          url: "data-streams/us-equities-streams",
+          children: [
+            {
+              title: "Report Schema v11",
+              url: "data-streams/reference/report-schema-v11",
+            },
+          ],
+        },
+        {
           title: "Market Hours",
           url: "data-streams/market-hours",
         },

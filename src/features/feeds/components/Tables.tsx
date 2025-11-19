@@ -994,7 +994,7 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               </dd>
             </div>
           )}
-          {(metadata.feedType === "Equities" || metadata.feedType === "Forex") && (
+          {(metadata.feedType === "Equities" || metadata.feedType === "Forex") && metadata.docs?.schema !== "v11" && (
             <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Report Schema:</span>
@@ -1038,6 +1038,18 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               <dd>
                 <a href="/data-streams/reference/report-schema-v10" rel="noreferrer" target="_blank">
                   Backed xStock Schema (v10)
+                </a>
+              </dd>
+            </div>
+          )}
+          {metadata.docs?.schema === "v11" && (
+            <div className={tableStyles.definitionGroup}>
+              <dt>
+                <span className="label">Report Schema:</span>
+              </dt>
+              <dd>
+                <a href="/data-streams/reference/report-schema-v11" rel="noreferrer" target="_blank">
+                  24/5 US Equities Schema (v11)
                 </a>
               </dd>
             </div>
@@ -1088,7 +1100,8 @@ export const MainnetTable = ({
     dataFeedType === "streamsRwa" ||
     dataFeedType === "streamsNav" ||
     dataFeedType === "streamsExRate" ||
-    dataFeedType === "streamsBacked"
+    dataFeedType === "streamsBacked" ||
+    dataFeedType === "streams245"
   const isSmartData = dataFeedType === "smartdata"
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
   const isDefault = !isStreams && !isSmartData && !isUSGovernmentMacroeconomicData
@@ -1143,7 +1156,8 @@ export const MainnetTable = ({
       if (dataFeedType === "streamsRwa") {
         return (
           metadata.contractType === "verifier" &&
-          (metadata.docs.feedType === "Equities" || metadata.docs.feedType === "Forex")
+          (metadata.docs.feedType === "Equities" || metadata.docs.feedType === "Forex") &&
+          metadata.docs?.schema !== "v11"
         )
       }
 
@@ -1157,6 +1171,10 @@ export const MainnetTable = ({
 
       if (dataFeedType === "streamsBacked") {
         return metadata.contractType === "verifier" && metadata.docs.feedType === "Tokenized Equities"
+      }
+
+      if (dataFeedType === "streams245") {
+        return metadata.contractType === "verifier" && metadata.docs.schema === "v11"
       }
 
       if (isSmartData) {
@@ -1347,7 +1365,8 @@ export const TestnetTable = ({
     dataFeedType === "streamsRwa" ||
     dataFeedType === "streamsNav" ||
     dataFeedType === "streamsExRate" ||
-    dataFeedType === "streamsBacked"
+    dataFeedType === "streamsBacked" ||
+    dataFeedType === "streams245"
   const isSmartData = dataFeedType === "smartdata"
   const isRates = dataFeedType === "rates"
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
@@ -1398,7 +1417,8 @@ export const TestnetTable = ({
         if (dataFeedType === "streamsRwa") {
           return (
             metadata.contractType === "verifier" &&
-            (metadata.docs.feedType === "Equities" || metadata.docs.feedType === "Forex")
+            (metadata.docs.feedType === "Equities" || metadata.docs.feedType === "Forex") &&
+            metadata.docs?.schema !== "v11"
           )
         }
 
@@ -1413,6 +1433,13 @@ export const TestnetTable = ({
         if (dataFeedType === "streamsBacked") {
           return metadata.contractType === "verifier" && metadata.docs.feedType === "Tokenized Equities"
         }
+
+        if (dataFeedType === "streams245") {
+          return metadata.contractType === "verifier" && metadata.docs.schema === "v11"
+        }
+
+        // If we're in streams mode but didn't match any specific stream type, exclude this feed
+        return false
       }
 
       if (isSmartData) {
