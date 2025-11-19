@@ -25,6 +25,7 @@ npm install && npm run dev
 
 - All docs are markdown and stored in `/src/content`.
 - Navigation is JSON in `/src/config/sidebar.ts`
+- SEO metadata implementation: See [SEO Metadata Guide](SEO_METADATA_GUIDE.md) for technical writers
 
 ## Deploy Preview
 

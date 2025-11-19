@@ -1,0 +1,181 @@
+---
+section: cre
+date: Last Modified
+title: "Using Multi-sig Wallets"
+metadata:
+  description: "Deploy with multi-sig security: learn to use Safe or other multi-sig wallets to manage your CRE workflows with multiple signers."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+This guide explains how to use multi-sig wallets with CRE CLI commands for deploying, activating, pausing, updating, and deleting workflows.
+
+## How multi-sig works with CRE CLI
+
+When managing workflows with a multi-sig wallet, the CRE CLI can generate raw transaction data that you submit through your multi-sig wallet interface. Instead of the CLI signing and sending the transaction directly, it prepares the transaction data for you to sign offline through your multi-sig wallet.
+
+**The workflow:**
+
+1. Run a CRE CLI command with the `--unsigned` flag
+1. The CLI generates the raw transaction data
+1. You submit this data to your multi-sig wallet interface
+1. Signers approve the transaction
+1. Once enough signatures are collected, execute the transaction onchain
+
+## Prerequisites
+
+Before using multi-sig wallets with CRE CLI commands, ensure you have:
+
+### 1. Authenticated with the CLI
+
+You must be logged in to use any CRE CLI commands. Run `cre whoami` in your terminal to verify you're logged in, or run `cre login` to authenticate.
+
+See [Logging in with the CLI](/cre/account/cli-login) for detailed instructions.
+
+### 2. Configure your multi-sig address
+
+Add your multi-sig wallet address to your `project.yaml` or `workflow.yaml` under the target you're using:
+
+```yaml
+production-settings:
+  user-workflow:
+    workflow-owner-address: "<your-multi-sig-address>"
+    workflow-name: "my-workflow"
+```
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Configuration priority">
+  If you have both `project.yaml` and `workflow.yaml`, the CLI uses the value from `workflow.yaml` for that specific workflow. However, if `project.yaml` contains a placeholder value like `"(optional) Multi-signature contract address"`, you must replace it with your actual multi-sig address in `project.yaml` as well.
+</Aside>
+
+### 3. Keep your private key in `.env`
+
+Even when using `--unsigned`, the CLI still requires `CRE_ETH_PRIVATE_KEY` in your `.env` file:
+
+```bash
+CRE_ETH_PRIVATE_KEY=your-private-key-here
+```
+
+{/* prettier-ignore */}
+<Aside type="note" title="Why a private key is still needed">
+  The `--unsigned` flag tells the CLI to **prepare** the transaction without **signing or sending** it. However, the CLI still needs to connect to the blockchain to read the current state (e.g., fetch workflow IDs, validate workflow status, prepare transaction data). This connection requires a private key for initialization, but the key is never used to sign the multi-sig transaction.
+</Aside>
+
+## Using the `--unsigned` flag
+
+Add the `--unsigned` flag to any workflow management command:
+
+- **Deploy**:
+
+  ```bash
+  cre workflow deploy my-workflow --unsigned --target production-settings
+  ```
+
+- **Activate**:
+
+  ```bash
+  cre workflow activate my-workflow --unsigned --target production-settings
+  ```
+
+- **Pause**:
+
+  ```bash
+  cre workflow pause my-workflow --unsigned --target production-settings
+  ```
+
+- **Delete**:
+
+  ```bash
+  cre workflow delete my-workflow --unsigned --target production-settings
+  ```
+
+## Example output
+
+When you run a command with `--unsigned`, the CLI generates transaction data instead of sending the transaction:
+
+```bash
+> cre workflow activate my-workflow --unsigned --target production-settings
+
+Activating Workflow :    my-workflow
+Target :                 production-settings
+Owner Address :          <your-multi-sig-address>
+
+Activating workflow: Name=my-workflow, Owner=<your-multi-sig-address>, WorkflowID=<your-workflow-id>
+--unsigned flag detected: transaction not sent on-chain.
+Generating call data for offline signing and submission in your preferred tool:
+
+MSIG workflow activation transaction prepared!
+To Activate my-workflow with workflowID: <your-workflow-id>
+
+Next steps:
+
+   1. Submit the following transaction on the target chain:
+      Chain:   ethereum-testnet-sepolia
+      Contract Address: 0xF3f93fc4dc177748E7557568b5354cB009e3818a
+
+   2. Use the following transaction data:
+
+      530979d600f0379a2df46ad2c5af070f5871da89f589f8bff8af76ff6a44bb59bec88bf4000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000067a6f6e652d610000000000000000000000000000000000000000000000000000
+```
+
+## Submitting the transaction to your multi-sig wallet
+
+Once you have the transaction data, follow these steps:
+
+### 1. Open your multi-sig wallet interface
+
+Access your multi-sig wallet (e.g., Gnosis Safe) and navigate to the transaction creation page.
+
+### 2. Create a new transaction
+
+Enter the transaction details from the CLI output:
+
+- **To address**: Use the contract address from the output (e.g., `0xF3f93fc4dc177748E7557568b5354cB009e3818a`)
+- **Value**: `0` (no ETH is being sent)
+- **Data**: Paste the full transaction data from the CLI output
+
+### 3. Submit for signatures
+
+Submit the transaction for approval. The transaction will require the configured number of signatures from your multi-sig signers.
+
+### 4. Execute the transaction
+
+Once enough signatures are collected, execute the transaction onchain. The multi-sig wallet will broadcast the signed transaction to the blockchain.
+
+## Troubleshooting
+
+### Error: "WorkflowOwner must be a valid Ethereum address"
+
+This error occurs when:
+
+- The `workflow-owner-address` is not set in your configuration
+- The `workflow-owner-address` contains a placeholder value like `"(optional) Multi-signature contract address"`
+
+**Solution:** Update your `project.yaml` or `workflow.yaml` with your actual multi-sig address:
+
+```yaml
+production-settings:
+  user-workflow:
+    workflow-owner-address: "0x123..." # Your actual multi-sig address
+```
+
+### Error: "failed to read keys: invalid length, need 256 bits"
+
+This error occurs when `CRE_ETH_PRIVATE_KEY` is missing or empty in your `.env` file.
+
+**Solution:** Ensure your `.env` file contains a valid private key:
+
+```bash
+CRE_ETH_PRIVATE_KEY=0x1234567890abcdef...
+```
+
+Remember, this key is only used for blockchain client initialization, not for signing the multi-sig transaction.
+
+## Learn more
+
+- [Deploying Workflows](/cre/guides/operations/deploying-workflows) — Deploy workflows to the registry
+- [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows) — Control workflow execution state
+- [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows) — Update workflow code and configuration
+- [Deleting Workflows](/cre/guides/operations/deleting-workflows) — Remove workflows from the registry

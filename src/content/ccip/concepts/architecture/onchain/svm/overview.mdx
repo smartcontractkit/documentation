@@ -4,6 +4,12 @@ date: Last Modified
 title: "Onchain Architecture - Overview (SVM)"
 metadata:
   description: "Get an overview of Chainlink CCIP's SVM onchain architecture. Learn key components, roles, and the typical lifecycle of a cross-chain message on Solana."
+  image: "/images/ccip/concepts/architecture/ccip-svm-source-chain.jpg"
+  excerpt: "ccip svm overview solana architecture program lifecycle router program offramp program cpi calls token accounts message execution merkle proofs associated token accounts"
+  datePublished: "2025-05-19T11:22:47Z"
+  lastModified: "2025-05-19T11:22:47Z"
+  difficulty: "intermediate"
+  estimatedTime: "20 minutes"
 ---
 
 import { Aside, ClickToZoom } from "@components"
@@ -49,9 +55,7 @@ On an SVM-based destination blockchain, an onchain program called the OffRamp re
 When initiating a CCIP transaction from a SVM-based source chain.
 
 1. **Preparation**
-
    - The Sender prepares a CCIP Message on a SVM-based chain to a destination blockchain of choice. A CCIP message includes the following information:
-
      - **Receiver**: A byte array representing the destination address (e.g., Ethereum account).
      - **Data payload**: Arbitrary bytes to be delivered to the receiver.
      - **Tokens and amounts** (if applicable)
@@ -61,13 +65,11 @@ When initiating a CCIP transaction from a SVM-based source chain.
    - The Sender calls the Router `get_fee` to receive the total fees for paying CCIP. Internally, the Router calls the Fee Quoter program to determine the fees.
 
    - If the fee token is not the native gas token (e.g., LINK):
-
      - **For wallet senders**: The sender must include their Associated Token Account (ATA) as a writable account in the transaction and sign it, granting the Router one-time permission to transfer the fee tokens to the fee receiver ATA.
      - **For program senders**: The sender program must call the SPL token `approve` instruction to authorize the Router's fee billing signer PDA to transfer tokens from the program's token account to the fee receiver ATA.
      - **Note**: The fee receiver ATA is a token account owned by the Router's fee billing signer PDA that accumulates CCIP fees. There is a separate fee receiver ATA for each supported fee token.
 
    - The Sender calls the Router `ccip_send`, with:
-
      - The destination chain selector.
      - The CCIP message (as detailed above).
      - For token transfers: An ordered list of indexes that tell the Router which accounts in the transaction correspond to which tokens being transferred.
@@ -81,25 +83,20 @@ When initiating a CCIP transaction from a SVM-based source chain.
      - **Note**: SVM's architecture requires explicitly specifying all accounts a transaction will interact with. Developers should consult the [API reference](/ccip/api-reference/svm) for complete details on required accounts and recommended patterns for constructing `ccip_send` transactions.
 
 1. **Sending**
-
    - Verifications
-
      - The Router verifies with the RMN program that the destination chain is not cursed and that the system-wide emergency (global curse) is not activated. If either check fails, the transaction reverts.
      - The Router verifies that all token-related accounts in the transaction are legitimate, correctly structured, and properly connected to each other (e.g., user token accounts are proper ATAs, pool accounts are derived from the correct seeds, etc.).
 
    - Fee Collection
-
      - The Router makes a CPI call to the Fee Quoter program to calculate the exact fee amount based on message size, token transfers, and destination chain gas cost.
      - For native gas fee token: The Router transfers native gas tokens from the sender's account to the fee receiver's wrapped native token ATA, then issues a synchronize instruction to update the token account balance.
      - For non-native fee tokens: The Router transfers tokens from the sender's Associated Token Account (ATA) to the fee receiver's ATA using the Router's fee billing signer PDA as the authority for the transfer.
 
    - Sequence Management
-
      - The Router increments and records the destination chain's message sequence number.
      - It updates the sender's nonce value, which is used to maintain message ordering within a specific lane (source + destination chain pair) for this sender.
 
    - Token Handling (if applicable) for each token being transferred
-
      - The Router transfers tokens from the user's ATA to the corresponding token pool ATA.
      - The Router makes a CPI call to the token pool `lock_or_burn_tokens` function to lock or burn tokens, which also verifies token pool rate limits for the specific destination chain.
 
@@ -108,7 +105,6 @@ When initiating a CCIP transaction from a SVM-based source chain.
    - The message is returned to the Sender.
 
 1. **Initial Offchain Processing**
-
    - The CCIP Commit DON monitors for the `CCIPMessageSent` event to process the message offchain. More details about the offchain processing are available here.
 
 ### Destination Blockchain (SVM)
@@ -116,7 +112,6 @@ When initiating a CCIP transaction from a SVM-based source chain.
 When processing a CCIP transaction on a SVM-based destination chain:
 
 1. **Commit Phase**
-
    - The final OCR report from the Committing DON is recorded onchain in the OffRamp program via the `commit` function. This report contains information from a single source chain and includes a merkle root of messages along with optional token and gas price updates.
    - The OffRamp first validates the report's signatures and consensus requirements, ensuring that sufficient CCIP nodes have signed and that sequence numbers are valid and in order.
    - The OffRamp makes a CPI call to the RMN program, checking that the source chain is not cursed and that the system-wide emergency (global curse) is not activated.
@@ -125,11 +120,9 @@ When processing a CCIP transaction on a SVM-based destination chain:
    - Upon successful processing, the OffRamp emits a `CommitReportAccepted` event containing the merkle root and any price updates, confirming that the messages are now committed and available for execution.
 
 1. **Secondary Offchain Processing**
-
    - The CCIP Executing DON monitors for the `CommitReportAccepted` event to identify commit reports with pending executions. Each message associated with these commit reports is processed individually. For each message ready for execution, the Executing DON computes its specific merkle proof against the committed merkle root. Each message is then submitted in a separate transaction to the SVM chain, with the message's merkle proof included in the Execute Plugin Report. The execution plugin implementation for SVM chains executes one message per transaction.
 
 1. **Execution Phase**
-
    - When the execution plugin submits a report, it calls the Offramp program's `execute` function, which verifies the merkle proof against the stored merkle root. **Note**: Unlike EVM implementations, the SVM Offramp verifies a single message execution at a time, with each execution report containing proof specifically for that message.
    - The OffRamp performs several validations:
      - Verifying the message sequence number is correct.

@@ -39,6 +39,8 @@ function AlgoliaSearch({ algoliaVars }) {
       algoliaPublicApiKey={algoliaVars.algoliaPublicApiKey}
       categoryOrder={["Documentation"]}
       popularCards={popularCards}
+      ariaLabel="Open AI search"
+      spotlight={["Documentation"]}
     />
   )
 }

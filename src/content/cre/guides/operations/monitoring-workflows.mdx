@@ -1,0 +1,226 @@
+---
+section: cre
+date: Last Modified
+title: "Monitoring & Debugging Workflows"
+metadata:
+  description: "Monitor your deployed workflows: track execution history, view detailed logs, debug failures, and analyze performance trends."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside, ClickToZoom } from "@components"
+
+After deploying a workflow, you can monitor its execution history, performance metrics, and logs through the CRE web interface. This guide walks you through the monitoring dashboard and debugging tools available for your deployed workflows.
+
+## Prerequisites
+
+- **Deployed workflow**: You must have at least one workflow deployed to your organization. See [Deploying Workflows](/cre/guides/operations/deploying-workflows) for instructions.
+
+## Accessing the workflows dashboard
+
+1. **Log in to the CRE UI** at <a href="https://cre.chain.link/login" target="_blank" rel="noopener noreferrer">cre.chain.link</a>
+
+1. **Navigate to the Workflows section** by clicking **Workflows** in the left sidebar, or visit <a href="https://cre.chain.link/workflows" target="_blank" rel="noopener noreferrer">cre.chain.link/workflows</a> directly
+
+The Workflows dashboard displays three main sections:
+
+- **Recent executions**: Shows the most recent workflow runs across all your workflows
+- **Activity chart**: Visualizes successful and unsuccessful executions over the selected time period
+- **All workflows table**: Lists all deployed workflows with their status and execution history
+
+## Understanding the workflows dashboard
+
+### Recent executions
+
+The top section displays the most recent workflow executions across your organization:
+
+- **Execution ID**: A unique identifier for each workflow run (shortened for display)
+- **Workflow name**: The name of the workflow that executed
+- **Status**: Success or Failure indicator
+- **Timestamp**: When the execution occurred
+
+Click on any execution ID to view detailed logs and events for that specific run.
+
+### Activity chart
+
+The performance chart shows execution trends over the selected time period:
+
+- **Green bars**: Successful executions
+- **Red bars**: Unsuccessful executions
+- **Height**: Total number of executions for that day
+
+Use the dropdown menu to adjust the time range.
+
+### All workflows table
+
+The main table displays all workflows in your organization:
+
+| <div style={{ width: "200px" }}>Column</div> | Description                                                                                         |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| **Name**                                     | The workflow name as defined in your `workflow.yaml`                                                |
+| **Status**                                   | Current workflow state: `Pending` (active and ready to execute)                                     |
+| **Last Execution**                           | Timestamp of the most recent execution, or `N/A` if not yet triggered                               |
+| **Execution Results (last 24h)**             | Visual bar showing successful (green) vs. failed (red) executions in the past 24 hours, with counts |
+
+Click on any workflow row to view its detailed performance and execution history.
+
+## Viewing workflow details
+
+When you click on a workflow, you'll see a dedicated page with comprehensive monitoring data.
+
+### Performance section
+
+The Performance chart shows execution trends for this specific workflow over the selected time period. This helps you identify patterns, track reliability, and spot anomalies.
+
+### Overview section
+
+The Overview panel displays key workflow metadata:
+
+| Field                    | Description                                                                                     |
+| ------------------------ | ----------------------------------------------------------------------------------------------- |
+| **Status**               | Current workflow state (e.g., `PENDING`, `PAUSED`)                                              |
+| **Workflow ID**          | Unique identifier in the Workflow Registry (truncated, click to copy full ID)                   |
+| **Workflow Owner**       | The wallet address that deployed and owns this workflow (truncated, click to copy full address) |
+| **Total Runs**           | Cumulative number of executions since deployment                                                |
+| **Registered On**        | Timestamp when the workflow was first deployed                                                  |
+| **Total Workflow Spend** | Cumulative credits consumed by all executions                                                   |
+
+### Execution history
+
+The **Execution** tab shows a detailed table of all workflow runs:
+
+| Column             | Description                                                                         |
+| ------------------ | ----------------------------------------------------------------------------------- |
+| **Execution ID**   | Unique identifier for this specific run (click to view details)                     |
+| **Workflow ID**    | The workflow that executed (useful if viewing executions across multiple workflows) |
+| **Status**         | Execution result: Success, Failure, or In Progress                                  |
+| **Time Triggered** | When the workflow execution started                                                 |
+| **Credits Used**   | Cost of this execution in CRE credits                                               |
+
+Use the **ALL** dropdown filter to view all executions, only successful ones, or only failures.
+
+<Aside type="tip" title="Filtering executions">
+  To quickly identify failures, use the filter dropdown to show only failed executions. This helps you focus on
+  debugging problematic runs.
+</Aside>
+
+### Deployments tab
+
+The **Deployments** tab shows the history of workflow deployments and updates.
+
+## Debugging individual executions
+
+Click on any **Execution ID** to view detailed debugging information for that specific run.
+
+### Events tab
+
+The **Events** tab displays the events triggered by this execution in sequential order:
+
+- **Event**: The type of event (e.g., `trigger`, `evm:ChainSelector`, `consensus`, etc.)
+- **Status**: Whether the event succeeded, failed, or is in progress (`Success`, `Failure`, `In progress`)
+- **Time Triggered**: When the event occurred
+
+**What you'll see:**
+
+- Trigger activation
+- Capability execution steps (HTTP requests, EVM calls, etc.)
+- Consensus operations
+
+<Aside type="note" title="User logs are separate">
+  The Events tab shows system-level events only. To see your custom log messages (e.g., `runtime.log()` in TypeScript or
+  `logger.Info()` in Go), switch to the **Logs** tab.
+</Aside>
+
+### Logs tab
+
+The **Logs** tab shows only user-emitted logs from your workflow code:
+
+- Each log entry displays a timestamp, log level (e.g., `INFO`), and your custom message
+- This is where you'll see output from `runtime.log()` (TypeScript) or `logger.Info()` (Go)
+- System messages and internal events are excluded for clarity
+- Logs appear in chronological order, showing the complete execution flow of your workflow
+
+**Example log output:**
+
+```
+time=2025-10-26T13:19:57.055Z level=INFO msg="Successfully fetched offchain value" result=4
+time=2025-10-26T13:19:57.055Z level=INFO msg="Successfully read onchain value" result=22
+time=2025-10-26T13:19:57.055Z level=INFO msg="Final calculated result" result=26
+time=2025-10-26T13:19:57.055Z level=INFO msg="Updating calculator result" consumerAddress=0x00307d6d1f88...
+time=2025-10-26T13:19:57.055Z level=INFO msg="Writing report to consumer contract" offchainValue=4 onchainValue=22
+time=2025-10-26T13:19:57.055Z level=INFO msg="Waiting for write report response"
+```
+
+<Aside type="tip" title="Debugging workflow logic">
+  Use `runtime.log()` (TypeScript) or `logger.Info()` (Go) liberally in your workflow code during development. These
+  logs appear in the Logs tab and are invaluable for debugging execution flow and inspecting variable values.
+</Aside>
+
+## Monitoring best practices
+
+1. **Check the dashboard regularly**: Review the Activity chart to spot trends in failures or performance degradation
+
+1. **Investigate failures immediately**: When you see red bars in the chart or failed executions, click through to view logs and identify the root cause
+
+1. **Use descriptive log messages**: Include context in your log statements to make debugging easier:
+
+   ```typescript
+   // TypeScript
+   runtime.log(`Successfully fetched offchain value: ${offchainValue}`)
+   runtime.log(`Final calculated result: ${finalResult}`)
+   ```
+
+   ```go
+   // Go
+   logger.Info("Successfully fetched offchain value", "result", offchainValue)
+   logger.Info("Final calculated result", "result", finalResult)
+   ```
+
+1. **Monitor execution frequency**: If a cron-triggered workflow shows fewer executions than expected, verify your cron schedule and workflow status
+
+1. **Track credit usage**: Monitor the Total Workflow Spend to understand your workflow's cost over time
+
+## Common debugging scenarios
+
+### Workflow not executing
+
+**Symptoms:** No recent executions in the dashboard
+
+**Possible causes:**
+
+- Workflow is paused (check the Status field)
+- Trigger is not firing (e.g., invalid cron schedule, no matching onchain events)
+- Workflow was recently deployed and hasn't been triggered yet
+
+**Resolution:**
+
+- Verify the workflow Status is `PENDING` (active)
+- Check your trigger configuration in the code
+- Use [Workflow Simulation](/cre/guides/operations/simulating-workflows) to test locally
+
+---
+
+### Execution failures
+
+**Symptoms:** Red bars in Activity chart, failed executions in table
+
+**Possible causes:**
+
+- API request failures (HTTP errors, timeouts)
+- Onchain reverts (contract calls failing)
+- Invalid configuration or missing secrets
+- Logic errors in workflow code
+
+**Resolution:**
+
+1. Click on the failed Execution ID
+1. Check the **Events** tab to see which step failed
+1. Review the **Logs** tab for error messages from your code
+1. Fix the issue in your code and [update the workflow](/cre/guides/operations/updating-deployed-workflows)
+
+## Related guides
+
+- **[Deploying Workflows](/cre/guides/operations/deploying-workflows)** - Deploy your first workflow
+- **[Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows)** - Control workflow execution
+- **[Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows)** - Fix issues and deploy updates
+- **[Simulating Workflows](/cre/guides/operations/simulating-workflows)** - Test workflows locally before deploying

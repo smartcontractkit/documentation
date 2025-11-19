@@ -3,6 +3,11 @@ import { Sections } from "~/content.config"
 import { SIDEBAR } from "../../config"
 import type { SectionEntry, SectionContent } from "../../config"
 import RecursiveSidebar from "./RecursiveSidebar.astro"
+import { LanguageSwitcherDropdown } from "~/components/LanguageSwitcherDropdown"
+import { ChainTypeSelector } from "~/components/ChainSelector"
+import { isChainAwareSection } from "~/config/chainTypes"
+import { filterContentByChainType } from "~/utils/chainType"
+import type { ChainType } from "~/config/types"
 import styles from "./leftSidebar.module.css"
 
 type SectionEntryWithParent = SectionEntry & { parentSection?: string }
@@ -13,6 +18,9 @@ export type Props = {
 }
 
 const { currentPage, section } = Astro.props
+
+// Check if this section supports chain type filtering
+const showChainSelector = isChainAwareSection(section)
 
 // Return whichever sections we need
 function getSidebarSections(section?: Sections): SectionEntryWithParent[] {
@@ -75,10 +83,21 @@ const sidebarSections = getSidebarSections(section)
 ---
 
 <nav aria-labelledby="grid-left" class={styles.nav}>
+  {
+    section === "cre" && (
+      <div class={styles.languageSwitcherTablet}>
+        <LanguageSwitcherDropdown client:only="react" />
+      </div>
+    )
+  }
+  {showChainSelector && <ChainTypeSelector client:only="react" />}
   <ul class={styles.navGroups} data-sticky>
     {
       sidebarSections.map((group) => (
-        <li aria-hidden={section === "global"} class={group.parentSection ? `parent-${group.parentSection}` : ""}>
+        <li
+          style={section === "global" ? { display: "none" } : {}}
+          class={group.parentSection ? `parent-${group.parentSection}` : ""}
+        >
           <details open={shouldExpandTopSection(group.contents, currentPage)}>
             <summary class={styles.navGroupTitle}>{group.section}</summary>
             <ul class={styles.navGroupEntries}>
@@ -105,6 +124,21 @@ const sidebarSections = getSidebarSections(section)
 </style>
 
 <script>
+  import { initializeChainType } from "~/stores/chainType"
+
+  /**
+   * Initialize chain type selection from URL on page load
+   * This detects the chain from the URL path (e.g., /ccip/tutorials/svm/... → solana)
+   */
+  initializeChainType()
+
+  /**
+   * Re-initialize on client-side navigation (Astro view transitions)
+   */
+  document.addEventListener("astro:after-swap", () => {
+    initializeChainType()
+  })
+
   /**
    * Handles section visibility based on URL parameters
    * - Shows/hides sections based on the 'parent' query parameter
@@ -114,7 +148,7 @@ const sidebarSections = getSidebarSections(section)
     const parentSection = new URLSearchParams(window.location.search).get("parent") || "global"
     if (parentSection) {
       for (let elem of document.querySelectorAll(`.parent-${parentSection}`)) {
-        elem.setAttribute("aria-hidden", "false")
+        ;(elem as HTMLElement).style.display = "block"
       }
     }
   }
@@ -123,4 +157,28 @@ const sidebarSections = getSidebarSections(section)
   attachContentScripts()
   // Runs on view transitions navigation
   document.addEventListener("astro:after-swap", attachContentScripts)
+</script>
+
+<script>
+  import { selectedChainType } from "~/stores/chainType"
+
+  /**
+   * Filters sidebar items based on selected chain type
+   * Triggers the unified filter in RecursiveSidebar that respects BOTH chain type AND language
+   */
+  function filterSidebarByChainType() {
+    // trigger a languageChanged event to run the unified filter
+    window.dispatchEvent(new CustomEvent("languageChanged"))
+  }
+
+  // Run on initial load
+  filterSidebarByChainType()
+
+  // Run after view transitions
+  document.addEventListener("astro:after-swap", filterSidebarByChainType)
+
+  // Subscribe to chain type changes
+  selectedChainType.subscribe(() => {
+    filterSidebarByChainType()
+  })
 </script>

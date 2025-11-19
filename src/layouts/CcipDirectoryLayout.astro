@@ -1,0 +1,134 @@
+---
+import { SITE } from "~/config/site"
+import type { BaseFrontmatter, Metadata } from "~/content.config.ts"
+import type { MarkdownHeading } from "astro"
+import StickyHeader from "~/components/StickyHeader/StickyHeader"
+import BaseLayout from "./BaseLayout.astro"
+import DocsNavigation from "~/components/DocsNavigation"
+import Segments from "~/components/Segment/Segments"
+import { Environment } from "~/config/data/ccip/types"
+import Drawer from "~/components/CCIP/Drawer/Drawer"
+import "../styles/tooltip-override.css"
+
+interface Props {
+  frontmatter: BaseFrontmatter
+  headings?: MarkdownHeading[]
+  environment: Environment
+  structuredData?: object | object[]
+  pageTitleOverride?: string
+  metadataOverride?: Metadata
+  suppressDefaultStructuredData?: boolean
+}
+const {
+  frontmatter,
+  headings,
+  environment,
+  structuredData,
+  pageTitleOverride,
+  metadataOverride,
+  suppressDefaultStructuredData,
+} = Astro.props
+
+const titleHeading: MarkdownHeading = {
+  text: frontmatter.title,
+  slug: "overview",
+  depth: 1,
+}
+
+const filteredHeadings = headings?.filter((h) => h.depth < 5)
+const initialHeadings = [titleHeading].concat(filteredHeadings ?? [])
+
+const currentPage = new URL(Astro.request.url).pathname
+
+const effectiveTitle = pageTitleOverride ?? frontmatter.title
+const formattedContentTitle = `${effectiveTitle} | ${SITE.title}`
+
+const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWallet
+
+// Select metadata without mutating the original frontmatter
+const layoutMetadata: Metadata | undefined = metadataOverride ?? frontmatter.metadata
+---
+
+<BaseLayout
+  title={formattedContentTitle}
+  metadata={layoutMetadata}
+  pageTitle={effectiveTitle}
+  structuredData={structuredData}
+  suppressDefaultStructuredData={suppressDefaultStructuredData}
+>
+  <Drawer client:only="react" />
+  <StickyHeader client:media="(max-width: 50em)" {initialHeadings} />
+  <DocsNavigation client:load pathname={currentPage} isCcipDirectory={true}>
+    <Segments
+      tabs={[
+        {
+          name: "Mainnet",
+          id: "mainnet",
+          active: environment === Environment.Mainnet,
+        },
+        {
+          name: "Testnet",
+          id: "testnet",
+          active: environment === Environment.Testnet,
+        },
+      ]}
+    />
+  </DocsNavigation>
+  <main>
+    <slot />
+  </main>
+
+  <style is:inline>
+    /* Critical CSS for initial render - inlined to prevent render blocking */
+    main {
+      margin-bottom: 0 !important;
+    }
+
+    /* Hero section - above the fold */
+    .ccip-hero {
+      background-color: var(--gray-100);
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .ccip-hero__content {
+      padding: var(--space-16x) var(--space-4x);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: var(--space-4x);
+    }
+
+    .ccip-hero__heading {
+      color: var(--gray-900);
+    }
+
+    /* Basic layout structure */
+    .layout {
+      margin: var(--space-8x) auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-10x);
+      padding: var(--space-6x);
+    }
+
+    .ccip-heading {
+      display: flex;
+      padding-bottom: var(--space-4x);
+      border-bottom: 1px solid var(--gray-200);
+      margin-bottom: var(--space-6x);
+      justify-content: space-between;
+    }
+  </style>
+
+  <script define:vars={{ includeLinkToWalletScript }}>
+    window["includeLinkToWalletScript"] = includeLinkToWalletScript
+  </script>
+
+  <script>
+    import "~/scripts"
+    if (window["includeLinkToWalletScript"]) {
+      import("~/scripts/link-to-wallet.ts")
+    }
+  </script>
+</BaseLayout>

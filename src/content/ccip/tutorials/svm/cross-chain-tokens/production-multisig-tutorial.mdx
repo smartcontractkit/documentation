@@ -1,0 +1,3005 @@
+---
+section: ccip
+date: Last Modified
+title: "Cross-Chain Token Setup: BurnMint with Production Multisig Governance"
+isIndex: false
+metadata:
+  description: "Build enterprise-grade cross-chain SPL, Token-2022 tokens with dual-layer multisig governance. Production-ready Chainlink CCIP implementation using Squads + SPL multisig."
+  excerpt: "ccip cross-chain token tutorial solana ethereum burnmint pools path-a multisig production squads governance spl token token-2022 multisig architecture mainnet-ready enterprise dual-layer security operational autonomy pool signer pda token admin registry governance multisig base58 transactions production deployment svm evm"
+  datePublished: "2025-08-13T00:53:46Z"
+  lastModified: "2025-08-13T00:53:46Z"
+  estimatedTime: "60 minutes"
+  difficulty: "advanced"
+---
+
+import { Aside, ClickToZoom } from "@components"
+import { Tabs } from "@components/Tabs"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+This tutorial implements **production-grade cross-chain tokens** using Chainlink CCIP with **dual-layer multisig governance** between Solana Devnet and Ethereum Sepolia. You'll build a **production-ready governance architecture** following **Path A** from the [CCIP Cross-Chain Token Integration Guide](/ccip/concepts/cross-chain-token/svm/integration-guide#path-a-full-self-service-mint-authority-controlled).
+
+## What You Will Build
+
+This tutorial implements the **production multisig governance** variant of **Path A** from the [CCIP Cross-Chain Token Integration Guide](/ccip/concepts/cross-chain-token/svm/integration-guide). This approach is designed for **production environments** with enterprise-grade dual-layer governance.
+
+### Cross-Chain Token Architecture
+
+This tutorial implements the **[Burn and Mint](/ccip/concepts/cross-chain-token/overview#burn-and-mint)** token handling mechanism between Solana Devnet and Ethereum Sepolia with **dual-layer multisig governance**. You'll deploy **two BurnMint pools** (one on each chain) that work together to maintain consistent token supply across chains while providing enterprise-grade security controls.
+
+**How Burn and Mint Works:**
+
+1. **Source Chain**: Burns tokens from sender's account
+1. **CCIP Protocol**: Transmits message cross-chain
+1. **Destination Chain**: Mints equivalent tokens to the receiver
+
+For complete details on token handling mechanisms, see [Token Handling Mechanisms](/ccip/concepts/cross-chain-token/overview#token-handling-mechanisms).
+
+### Component Overview
+
+| Component                | Implementation                       | Authority Model           |
+| ------------------------ | ------------------------------------ | ------------------------- |
+| **Ethereum Sepolia**     | ERC20 token with CCIP BurnMint pool  | EOA-controlled (tutorial) |
+| **Solana Devnet**        | SPL token with dual-layer governance | Squads + SPL multisig     |
+| **Cross-Chain Transfer** | Bidirectional token transfers        | Autonomous operations     |
+
+### Dual-Layer Governance Architecture
+
+This tutorial implements **dual-layer multisig governance** that separates concerns:
+
+- **Layer 1 (Squads)**: Controls CCIP administration, pool ownership, protocol configuration
+- **Layer 2 (SPL Multisig)**: Controls mint authority with Pool Signer PDA for autonomous operations
+
+**Production Benefits:**
+
+- **Comprehensive Security**: Two independent governance layers
+- **Operational Autonomy**: Pool Signer PDA enables autonomous cross-chain transfers
+- **Administrative Control**: Squads provides enterprise-grade governance
+
+<Aside type="caution" title="SPL Token Multisig Limitations">
+  **Critical Understanding**: The SPL token multisig demonstrated in this tutorial can **ONLY execute SPL token
+  instructions** (mint, burn, transfer, etc.). It **cannot execute arbitrary transactions** or general governance
+  operations like transferring CCIP admin roles or pool ownership. This is why we implement dual-layer governance:
+  Squads handles arbitrary governance operations while SPL multisig handles only token-specific operations.
+</Aside>
+
+<CcipCommon callout="svmCrossChainTokenProductionPrerequisites" />
+
+## Phase 1: EVM Chain Setup (Ethereum Sepolia)
+
+In this phase, you will deploy ERC20 tokens and configure CCIP BurnMint pools on Ethereum Sepolia. This setup is identical across all Path A variants and provides the foundation for cross-chain operations.
+
+<Aside type="note" title="Terminal Context Check">
+  **Current Focus: Terminal 2 (EVM Hardhat)** You'll be working exclusively in the Hardhat repository for this phase.
+  Other terminals remain idle. Note: This tutorial uses EOA for simplicity; production deployments should use multisig
+  wallets.
+</Aside>
+
+### Step 1: Prepare EVM Environment
+
+First, set up your terminal and verify your environment:
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Terminal Setup</Fragment>
+<Fragment slot="tab.2">Verification</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Terminal 2: Navigate to EVM repository
+
+# Verify location and project structure
+
+# Should output: smart-contract-examples/ccip/cct/hardhat
+
+pwd
+
+# Verify private key variables are set:
+
+npx env-enc view
+
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+# Expected verification output
+$ npx env-enc view
+The following variables are encrypted and stored in /../smart-contract-examples/ccip/cct/hardhat/.env.enc
+PRIVATE_KEY = c8376...
+ETHEREUM_SEPOLIA_RPC_URL = https://sepolia.gateway.tenderly.co/...
+ETHERSCAN_API_KEY = 9AVYS...
+```
+
+</Fragment>
+</Tabs>
+
+### Step 2: Deploy ERC20 Token
+
+Deploy your cross-chain token on Ethereum Sepolia:
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Deploy ERC20 token
+npx hardhat deployToken \
+  --name "AEM Token" \
+  --symbol "BnmAEM" \
+  --decimals 18 \
+  --verifycontract true \
+  --network sepolia
+
+# Copy the token address from the output above
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+2025-08-19T08:27:05.937Z info: Deploying BurnMintERC20 contract to sepolia
+2025-08-19T08:27:05.938Z info: Waiting 3 blocks for transaction 0xf12c79fde1e0a82fb9d1f543be270f0c114597f04a391144b82da90873f32dd9 to be confirmed...
+2025-08-19T08:27:36.850Z info: Token deployed to: 0x7c57A9d966c3E6e344621C512d510f76575640ED
+2025-08-19T08:27:36.931Z info: Granting mint and burn roles to 0x9d087fC03ae39b088326b67fA3C788236645b717
+2025-08-19T08:28:12.846Z info: Verifying contract...
+The contract 0x7c57A9d966c3E6e344621C512d510f76575640ED has already been verified on the block explorer. If you're trying to verify a partially verified contract, please use the --force flag.
+https://sepolia.etherscan.io/address/0x7c57A9d966c3E6e344621C512d510f76575640ED#code
+
+2025-08-19T08:28:13.485Z info: Token contract deployed and verified
+```
+
+</Fragment>
+</Tabs>
+
+Set the token address variable:
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Set Variable</Fragment>
+<Fragment slot="tab.2">Verification</Fragment>
+
+<Fragment slot="panel.1">
+```bash
+# REPLACE with actual address from deployment output
+export ETH_TOKEN_ADDRESS="<INSERT_YOUR_ACTUAL_TOKEN_ADDRESS>"
+```
+
+Verify the address is set correctly:
+
+```bash
+echo "✅ Ethereum Token Address: $ETH_TOKEN_ADDRESS"
+
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+$ echo "✅ Ethereum Token Address: $ETH_TOKEN_ADDRESS"
+
+✅ Ethereum Token Address: 0x7c57A9d966c3E6e344621C512d510f76575640ED
+
+```
+
+</Fragment>
+</Tabs>
+
+### Step 3: Deploy and Configure CCIP BurnMint Pool
+
+Deploy the BurnMint token pool:
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Deploy BurnMint pool
+npx hardhat deployTokenPool \
+  --tokenaddress $ETH_TOKEN_ADDRESS \
+  --localtokendecimals 18 \
+  --pooltype burnMint \
+  --verifycontract true \
+  --network sepolia
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+2025-08-19T08:29:39.462Z info: Waiting 3 blocks for transaction 0xb0e4210ff5af4bbb095011ab6a514835f3954df286342e0ce3e197490d6618d0 to be confirmed...
+2025-08-19T08:30:13.223Z info: Token pool deployed to: 0x88965fF139bbA53D6e02a49a80c29d8c65645bA7
+2025-08-19T08:30:13.224Z info: Granting mint and burn roles to 0x88965fF139bbA53D6e02a49a80c29d8c65645bA7 on token 0x7c57A9d966c3E6e344621C512d510f76575640ED
+2025-08-19T08:30:48.914Z info: Verifying contract...
+The contract 0x88965fF139bbA53D6e02a49a80c29d8c65645bA7 has already been verified on the block explorer. If you're trying to verify a partially verified contract, please use the --force flag.
+https://sepolia.etherscan.io/address/0x88965fF139bbA53D6e02a49a80c29d8c65645bA7#code
+
+2025-08-19T08:30:49.738Z info: Token pool contract deployed and verified
+```
+
+</Fragment>
+</Tabs>
+
+Set the pool address and configure:
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Setup & Configure</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# REPLACE with actual address from deployment output
+export ETH_POOL_ADDRESS="<INSERT_YOUR_ACTUAL_POOL_ADDRESS>"
+```
+
+Verify configuration
+
+```
+echo "✅ Ethereum Pool Address: $ETH_POOL_ADDRESS"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+$ echo "✅ Ethereum Pool Address: $ETH_POOL_ADDRESS"
+✅ Ethereum Pool Address: 0x88965fF139bbA53D6e02a49a80c29d8c65645bA7
+```
+
+</Fragment>
+</Tabs>
+
+### Step 4: Mint Initial Token Supply
+
+Mint tokens for testing:
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Mint 1000 tokens for testing
+npx hardhat mintTokens \
+  --tokenaddress $ETH_TOKEN_ADDRESS \
+  --amount 1000000000000000000000 \
+  --network sepolia
+
+# Note: Balance can be checked in your wallet or through block explorer
+
+echo "✅ Tokens minted successfully"
+
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+$ # Mint 1000 tokens for testing
+npx hardhat mintTokens \
+  --tokenaddress $ETH_TOKEN_ADDRESS \
+  --amount 1000000000000000000000 \
+  --network sepolia
+
+# Note: Balance can be checked in your wallet or through block explorer
+
+echo "✅ Tokens minted successfully"
+
+
+2025-08-19T08:32:48.373Z info: Minting 1000000000000000000000 of BnmAEM tokens to 0x9d087fC03ae39b088326b67fA3C788236645b717
+2025-08-19T08:33:26.184Z info: Minted 1000000000000000000000 of BnmAEM tokens to 0x9d087fC03ae39b088326b67fA3C788236645b717 - transaction hash: 0x5705fa74b30e89edbee7e37ffd7ef07181efe1d6f47f46d6b1ab3ee32e13147f
+2025-08-19T08:33:26.309Z info: Current balance of 0x9d087fC03ae39b088326b67fA3C788236645b717 is 1000000000000000000000 BnmAEM
+✅ Tokens minted successfully
+```
+
+</Fragment>
+</Tabs>
+
+### Step 5: Claim CCIP Admin Role
+
+In this step, you will use the `claimAdmin` task to register your EOA as the administrator for the deployed token on Ethereum Sepolia. This process involves calling the `RegistryModuleOwnerCustom` contract, which will fetch the CCIP admin of the token and set it up as the admin in the registry.
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Claim Admin</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Claim admin role for CCIP token registry
+npx hardhat claimAdmin \
+  --tokenaddress $ETH_TOKEN_ADDRESS \
+  --network sepolia
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+2025-08-19T08:33:54.466Z info: 🎯 Attempting to claim admin for token 0x7c57A9d966c3E6e344621C512d510f76575640ED using getCCIPAdmin mode
+2025-08-19T08:33:55.360Z info: Current token CCIP admin: 0x9d087fC03ae39b088326b67fA3C788236645b717
+2025-08-19T08:33:55.360Z info: Claiming admin of 0x7c57A9d966c3E6e344621C512d510f76575640ED via getCCIPAdmin() for CCIP admin 0x9d087fC03ae39b088326b67fA3C788236645b717
+2025-08-19T08:34:24.566Z info: ✅ Successfully claimed admin of 0x7c57A9d966c3E6e344621C512d510f76575640ED using getCCIPAdmin mode. Transaction: 0xa9559185000c9be2f5d23cca1a7ab5357935c7810dad7674a09193178c2551f6
+```
+
+</Fragment>
+</Tabs>
+
+### Step 6: Accept CCIP Admin Role
+
+In this step, you will use the `acceptAdminRole` task to accept the admin role for the deployed token on Ethereum Sepolia. Once you have claimed the role, accepting the role finalizes your control over the token administration.
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Accept Admin Role</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Accept admin role to complete CCIP registration
+npx hardhat acceptAdminRole \
+--tokenaddress $ETH_TOKEN_ADDRESS \
+--network sepolia
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+2025-08-19T08:35:25.061Z info: Accepted admin role for token 0x7c57A9d966c3E6e344621C512d510f76575640ED tx: 0x1fc8625eb46b32bce986a9b7a151c9d21a46b90a5480c043b09be5dc603eb428
+```
+
+</Fragment>
+</Tabs>
+
+### Step 7: Register Pool with Token
+
+In this step, you will use the `setPool` task to register the BurnMint token pool with the token in Ethereum's TokenAdminRegistry contract. This function sets the pool contract address for the token, enabling it for CCIP cross-chain transfers. Only the token administrator can call this function.
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Set Pool</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Register token pool with TokenAdminRegistry contract
+npx hardhat setPool \
+--tokenaddress $ETH_TOKEN_ADDRESS \
+--pooladdress $ETH_POOL_ADDRESS \
+--network sepolia
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+2025-08-19T08:35:53.810Z info: Setting pool for token 0x7c57A9d966c3E6e344621C512d510f76575640ED to 0x88965fF139bbA53D6e02a49a80c29d8c65645bA7 by 0x9d087fC03ae39b088326b67fA3C788236645b717
+2025-08-19T08:36:25.922Z info: Pool set for token 0x7c57A9d966c3E6e344621C512d510f76575640ED to 0x88965fF139bbA53D6e02a49a80c29d8c65645bA7
+```
+
+</Fragment>
+</Tabs>
+
+**Phase 1 Complete**: Save your variables:
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Save Configuration</Fragment>
+<Fragment slot="tab.2">Verification</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Save Phase 1 variables for later use
+echo "export ETH_TOKEN_ADDRESS=\"$ETH_TOKEN_ADDRESS\"" > ~/.phase1_vars
+echo "export ETH_POOL_ADDRESS=\"$ETH_POOL_ADDRESS\"" >> ~/.phase1_vars
+
+echo "=== Phase 1 Complete - EVM Setup ==="
+echo "✅ ETH Token: $ETH_TOKEN_ADDRESS"
+echo "✅ ETH Pool: $ETH_POOL_ADDRESS"
+
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+$ # Save Phase 1 variables for later use
+echo "export ETH_TOKEN_ADDRESS=\"$ETH_TOKEN_ADDRESS\"" > ~/.phase1_vars
+echo "export ETH_POOL_ADDRESS=\"$ETH_POOL_ADDRESS\"" >> ~/.phase1_vars
+
+echo "=== Phase 1 Complete - EVM Setup ==="
+echo "✅ ETH Token: $ETH_TOKEN_ADDRESS"
+echo "✅ ETH Pool: $ETH_POOL_ADDRESS"
+
+
+=== Phase 1 Complete - EVM Setup ===
+✅ ETH Token: 0x7c57A9d966c3E6e344621C512d510f76575640ED
+✅ ETH Pool: 0x88965fF139bbA53D6e02a49a80c29d8c65645bA7
+```
+
+</Fragment>
+</Tabs>
+
+<Aside type="note" title="Phase 1 Complete">
+  **EVM Setup Complete**: You have successfully deployed and configured the EVM side. Next, you'll implement the
+  production-grade Solana side with dual-layer multisig governance.
+</Aside>
+
+## Phase 2: Solana Setup with Production Dual Multisig Governance
+
+In this phase, you will implement the **production-grade dual-layer multisig governance** architecture on Solana Devnet.
+
+<Aside type="note" title="Terminal Context Check">
+  **Current Focus: Terminal 1 (base58 Generator)** Switch to the base58 generator repository for transaction generation.
+  This tool creates Base58-encoded transactions that will be executed through Squads UI.
+</Aside>
+
+### Step 1: Prepare base58 Environment
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Terminal Setup</Fragment>
+<Fragment slot="tab.2">Verification</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Terminal 1: Verify location
+# Should output: ccip-solana-bs58-generator
+pwd
+```
+
+Set up CCIP constants on Solana Devnet (DO NOT CHANGE THESE)
+
+<Aside type="note" title="CCIP BurnMint Pool Program">
+  The CCIP BurnMint pool program is a self-service pool program that allows you to create a pool for your token.
+  You can find the program ID in the CCIP Directory for:
+
+     - [Solana Devnet](/ccip/directory/testnet/chain/solana-devnet)
+     - [Solana Mainnet](/ccip/directory/mainnet/chain/solana-mainnet)
+
+</Aside>
+
+```bash
+export CCIP_POOL_PROGRAM="41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB"
+export CCIP_ROUTER_PROGRAM="Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C"
+export CCIP_FEE_QUOTER_PROGRAM="FeeQPGkKDeRV1MgoYfMH6L8o3KeuYjwUZrgn4LRKfjHi"
+```
+
+**Note**: You can find the Router, Fee Quoter, and self-serve pool programs addresses in the [CCIP Directory](/ccip/directory/testnet/chain/solana-devnet).
+
+Get your Solana wallet address for token recipient:
+
+```bash
+export SOL_WALLET_ADDRESS=$(solana address)
+```
+
+Verify all required variables are set:
+
+```bash
+echo "✅ Pool Program: $CCIP_POOL_PROGRAM"
+echo "✅ Router Program: $CCIP_ROUTER_PROGRAM"
+echo "✅ Squad Vault (from Prerequisites): $SOL_SQUAD_VAULT_MULTISIG"
+echo "✅ Recipient Wallet: $SOL_WALLET_ADDRESS"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+$ # Terminal 1: Verify location
+# Should output: ccip-solana-bs58-generator
+pwd
+
+/.../ccip-solana-bs58-generator
+
+$ export CCIP_POOL_PROGRAM="41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB"
+export CCIP_ROUTER_PROGRAM="Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C"
+export CCIP_FEE_QUOTER_PROGRAM="FeeQPGkKDeRV1MgoYfMH6L8o3KeuYjwUZrgn4LRKfjHi"
+
+$ export SOL_WALLET_ADDRESS=$(solana address)
+
+$ echo "✅ Pool Program: $CCIP_POOL_PROGRAM"
+echo "✅ Router Program: $CCIP_ROUTER_PROGRAM"
+echo "✅ Squad Vault (from Prerequisites): $SOL_SQUAD_VAULT_MULTISIG"
+echo "✅ Recipient Wallet: $SOL_WALLET_ADDRESS"
+
+✅ Pool Program: 41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB
+✅ Router Program: Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C
+✅ Squad Vault (from Prerequisites): 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY
+✅ Recipient Wallet: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+```
+
+</Fragment>
+</Tabs>
+
+### Step 2: Create SPL Token (Layer 2 Foundation)
+
+This command generates a transaction that creates a new SPL token mint with the following features:
+
+- **Mint Authority**: Set to your Squad vault multisig for governance control
+- **Metaplex Metadata**: Includes token name, symbol, and URI for cross-platform compatibility
+- **Initial Supply**: Automatically mints 5,000 tokens (5,000,000,000,000 smallest units) to your wallet
+- **Deterministic Address**: Uses a seed-based approach for predictable mint addresses
+
+<Aside type="tip" title="Customize Your Token">
+
+**Recommended**: Create your own token metadata! Upload your token's JSON metadata to IPFS (using services like Pinata, NFT.Storage, or Arweave), then update the command parameters:
+
+- `--name "Your Token Name"` (max 32 characters)
+- `--symbol "YOUR-SYMBOL"` (max 10 characters)
+- `--uri "https://your-ipfs-gateway/ipfs/your-hash"`
+- `--initial-supply "your-amount"` (in smallest units)
+
+This ensures your token has unique branding and proper metadata for cross-platform compatibility.
+
+</Aside>
+
+Generate the SPL token creation transaction (customize parameters or reuse the example):
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Generate SPL token creation transaction with initial supply
+pnpm bs58 spl-token \
+  --env devnet \
+  --instruction create-mint \
+  --authority $SOL_SQUAD_VAULT_MULTISIG \
+  --decimals 9 \
+  --with-metaplex true \
+  --name "AEM" \
+  --symbol "CCIP-AEM" \
+  --uri "https://cyan-pleasant-anteater-613.mypinata.cloud/ipfs/bafkreieirlwjqbtzniqsgcjebzexlcspcmvd4woh3ajvf2p4fuivkenw6i" \
+  --initial-supply 5000000000000 \
+  --recipient $SOL_WALLET_ADDRESS
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+INFO [2025-08-19 10:41:03.504 +0200]: 📋 Recipient: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+INFO [2025-08-19 10:41:03.504 +0200]: ✅ Parameter validation completed
+INFO [2025-08-19 10:41:03.504 +0200]: 🎨 Creating mint with Metaplex metadata...
+INFO [2025-08-19 10:41:03.509 +0200]: 📋 Generated mint address: 3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci
+INFO [2025-08-19 10:41:03.509 +0200]: 📋 Mint seed: mint_1755592863504_4jeion
+INFO [2025-08-19 10:41:03.509 +0200]: 📋 Using token program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+INFO [2025-08-19 10:41:04.364 +0200]: 📋 Generated 3 instructions for mint + metadata creation
+INFO [2025-08-19 10:41:04.364 +0200]: 💰 Adding initial supply mint instructions...
+INFO [2025-08-19 10:41:04.364 +0200]: 📋 Creating ATA for recipient: 84FvKxAQpHtSaFLguFygoPPEaRorZpTjs8rmMCxuwqUF
+INFO [2025-08-19 10:41:04.364 +0200]: 📋 Will mint 5000000000000 smallest units to 84FvKxAQpHtSaFLguFygoPPEaRorZpTjs8rmMCxuwqUF
+INFO [2025-08-19 10:41:04.364 +0200]: 🔄 Building and simulating transaction...
+🎯 COPY TRANSACTION DATA BELOW:
+
+Ued1nAAbK74eW6wNw6sSEWG7KgZbhDN8SiitDSsbj4nsgqMC5EysX1bBSHm99DmH3ivSZi1kUUuM5CpsZut6Rxw7vvUrNFe7ENG3W6xwkc9Ua9GSbGUrq8YgFkkeYgAVmDgGoULFw3cSKsisNwKuaiLKAYrKkxEn6Mv7NXutQFgsec7GqTBQak4xd1VkmJL6PkYU2F8neRa3mRwSTRZCgfb97DBJk88bVoo7CmR1mnerVD9yxNbDWz9TvZzNXTDMxn6uSwjFbis38qBwpbf93P5AshL7ybhMQW9kvZUTYoWg7SAc25Vq9y5kvToyfk4f9KqyzvfgcbM4KyXSvzeEjHHjBM3t7ipacWgUmLr8HWE5QikmTf21PvaqG36nwZMxxJSD5wBHcrtBjNVJz7xEp3YLL5kHe7bJxwpCB8M3CAHko4o5oKMVdU6V1SLy3FTY27732jitvPL7ZmzprwdKTpmjsmr6p3hD1xwVTJsPzk9opKyntiso8pExxruwyrmJTZDwyc75jWwDCKYtPhrZyRicj9tdS4ZYw9NBBwXDtB7d8xQH1mcsSxdmHEV6kzG7u7Jed77jUUGaJRk2DdvPfKkY7rxYUgaH2vgrPN1JXz3mHrr6muEU4btVbtFtLTV1Re22zJjF3rU2SNTJ6ghk3rC1PerB4JCZn3cmqcxbht4JDhNcVNHx5NbGeGjPeACp2mBDqtVeVD7NGS1ryjahsiMKg34MntFhe9nUKnargM2v7tWRhDHxetzRrEo6Zrs4rzFBXGiDJVnMGbwqcRX6rLBXpmLDC524pDGkPyiJ5WtuL82SF3133XXrA71q2c1JM1qget53Jg4FUZYLnVLSSECZLeMd7k1HoHSyzAAjnR69JStsbhaAFusLUfqpNbCNEK2iCkVjWhhZxewYk7VwkenLZridbxzJy1S53mVnF23G4ZrzgpVofiy9fFWufWxLCZwdteWzqb5aXpQV7stKBhm8eHPyVsTVVKDhiZ9atrpdtRvX5MBU4Zow5vYXiHmZLmS7qdhPqRUgMzhxoBUb1HQ6EoaE69NjC8UZHHtVYBHM4f2BM2HKnogwts5ogBvDiNR7UteFoNqsiiTou
+
+────────────────────────────────────────────────────────────────────────────────
+INFO [2025-08-19 10:41:04.919 +0200]: Transaction built successfully
+    instructionName: "spl-token.create_mint_with_metaplex"
+    transactionSize: "810 bytes"
+    base58Length: "1105 characters"
+    hexLength: "1620 characters"
+    accountCount: 2
+    signerCount: 1
+    computeUnits: 73632
+INFO [2025-08-19 10:41:04.919 +0200]: Completed buildTransaction (spl-token.create_mint_with_metaplex)
+    durationMs: 554
+INFO [2025-08-19 10:41:04.919 +0200]: ✅ Transaction simulation completed
+INFO [2025-08-19 10:41:04.919 +0200]: 📋 Metadata PDA: KTc5wu4SR6q3u2AMeWNSVVyYAPUp4WqFbcFqfFSXq8o
+INFO [2025-08-19 10:41:04.919 +0200]:
+INFO [2025-08-19 10:41:04.919 +0200]: 🎉 Transaction generated successfully!
+INFO [2025-08-19 10:41:04.919 +0200]:
+INFO [2025-08-19 10:41:04.919 +0200]: 📋 Transaction Details:
+INFO [2025-08-19 10:41:04.919 +0200]:    Instruction: spl-token.create_mint_with_metaplex
+INFO [2025-08-19 10:41:04.919 +0200]:    Size: 810 bytes
+INFO [2025-08-19 10:41:04.919 +0200]:    Base58 length: 1105 characters
+INFO [2025-08-19 10:41:04.977 +0200]:    Compute units: 73 632
+INFO [2025-08-19 10:41:04.977 +0200]:    Generated: 2025-08-19T08:41:04.918Z
+INFO [2025-08-19 10:41:04.977 +0200]:
+INFO [2025-08-19 10:41:04.977 +0200]: 🔗 Transaction Data (Base58):
+INFO [2025-08-19 10:41:04.977 +0200]:
+INFO [2025-08-19 10:41:04.977 +0200]: 💡 Triple-click the line above to select the entire transaction data
+INFO [2025-08-19 10:41:04.977 +0200]:
+INFO [2025-08-19 10:41:04.977 +0200]: 📊 Account Information:
+INFO [2025-08-19 10:41:04.977 +0200]:    Total accounts: 2
+INFO [2025-08-19 10:41:04.977 +0200]:     1. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer, writable)
+INFO [2025-08-19 10:41:04.977 +0200]:     2. 3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci (writable)
+```
+
+</Fragment>
+</Tabs>
+
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add
+  instruction" → "Import base58 encoded tx"
+
+- **Review**: Verify transaction details, check authority and mint
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
+
+After execution, set the token mint:
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Set Variable</Fragment>
+<Fragment slot="tab.2">Verification</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Copy the mint address from the base58 generator output above
+export SOL_TOKEN_MINT="<YOUR_ACTUAL_MINT_ADDRESS>"
+```
+
+Verify the token mint:
+
+```bash
+echo "✅ Token Mint: $SOL_TOKEN_MINT"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+export SOL_TOKEN_MINT="3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci"
+
+✅ Token Mint: 3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci
+```
+
+</Fragment>
+</Tabs>
+
+### Step 3: Initialize BurnMint Token Pool (Before Multisig Setup)
+
+<Aside type="caution" title="Why Initialize Pool Before Mint Authority Transfer">
+  **Critical**: Since your Squad multisig currently holds the mint authority, you can follow [**PATH A**
+  (self-service)](/ccip/concepts/cross-chain-token/svm/integration-guide#path-a-full-self-service-mint-authority-controlled)
+  and initialize the pool without Chainlink Labs intervention. However, once you transfer mint authority to an SPL token
+  multisig, you would lose this capability - SPL token multisigs can only execute SPL token instructions, not CCIP pool
+  initialization instructions. Initialize the pool now while you still have direct control.
+
+**Alternative Options**: If you have an existing token where the mint authority is held by a wallet or another multisig under your control, you can transfer the mint authority to your Squad vault first to follow the self-service path. Otherwise, if you cannot control the mint authority, you can submit a [registration request](https://chain.link/ccip-contact?v=Tokens:%20Token%20admin%20registration) to have Chainlink Labs initialize the pool for you.
+
+</Aside>
+
+This command creates only one new account and establishes references to existing infrastructure:
+
+**What Gets Created:**
+
+- **Pool State PDA**: Creates the onchain Pool State account that stores your token's CCIP configuration
+
+**What Gets Referenced (Not Created):**
+
+- **Authority Assignment**: Sets your Squad vault as the pool owner with full configuration control
+- **Router Integration**: References the existing global CCIP router and RMN (Risk Management Network)
+- **Pool Signer PDA**: The Pool Signer PDA is mathematically derived but not created - it will be used on-demand during cross-chain operations
+
+The `initialize-pool` instruction creates only the Pool State account for your SPL token mint, establishing you as the pool owner while referencing existing global infrastructure.
+
+Generate the pool initialization transaction:
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+```bash
+# Generate pool initialization transaction
+pnpm bs58 burnmint-token-pool --env devnet --instruction initialize-pool \
+  --program-id $CCIP_POOL_PROGRAM \
+  --mint $SOL_TOKEN_MINT \
+  --authority $SOL_SQUAD_VAULT_MULTISIG
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+   ✅ Transaction simulation completed
+🎯 COPY TRANSACTION DATA BELOW:
+
+FBAuxuhVLrvnXFVrZZ818eWSCdJFif8x7mkKK5X6RBW7AUvzjUyee1dLHdns8dzaxgXeKWbQxzJDaFVVNnrGRDkY1ikrnGtrryGaF7dSoNJy9hvLajf4CAw1arFj2EmDn3BQDZAdiMucRWY8vJu1PJpZpDkAqdGdd2mzEuQsC6v3Xrbnuxpim1JvTEEX6sLawAuuodvzK4MVYQpjACG7hzadt6dbNTd7HFugFRfNWzakVmgWiiwCM559wP4UZ9ic7TVtyJFuarDtWgsqqyT7Rk4GfiHbLmQhLWttYFng8TQbuw1zQFG98SHgzTfy9LzuFagqztGLREu2kSARUCaQ1TQda1SYiVmWcQFm6dvr8ZC6ZiaizDKqwRKhaQSY
+
+────────────────────────────────────────────────────────────────────────────────
+INFO [2025-08-19 10:45:58.745 +0200]: Transaction built successfully
+    instructionName: "burnmint.initialize"
+    transactionSize: "279 bytes"
+    base58Length: "380 characters"
+    hexLength: "558 characters"
+    accountCount: 7
+    signerCount: 1
+    computeUnits: 27373
+INFO [2025-08-19 10:45:58.745 +0200]: Completed buildTransaction (burnmint.initialize)
+    durationMs: 393
+INFO [2025-08-19 10:45:58.745 +0200]:
+INFO [2025-08-19 10:45:58.745 +0200]: 🎉 Transaction generated successfully!
+INFO [2025-08-19 10:45:58.745 +0200]:
+INFO [2025-08-19 10:45:58.745 +0200]: 📋 Transaction Details:
+INFO [2025-08-19 10:45:58.745 +0200]:    Instruction: burnmint.initialize
+INFO [2025-08-19 10:45:58.745 +0200]:    Size: 279 bytes
+INFO [2025-08-19 10:45:58.745 +0200]:    Base58 length: 380 characters
+INFO [2025-08-19 10:45:58.757 +0200]:    Compute units: 27 373
+INFO [2025-08-19 10:45:58.757 +0200]:    Generated: 2025-08-19T08:45:58.744Z
+INFO [2025-08-19 10:45:58.757 +0200]:
+INFO [2025-08-19 10:45:58.757 +0200]: 🔗 Transaction Data (Base58):
+INFO [2025-08-19 10:45:58.757 +0200]:
+INFO [2025-08-19 10:45:58.758 +0200]: 💡 Triple-click the line above to select the entire transaction data
+INFO [2025-08-19 10:45:58.758 +0200]:
+INFO [2025-08-19 10:45:58.758 +0200]: 📊 Account Information:
+INFO [2025-08-19 10:45:58.758 +0200]:    Total accounts: 7
+INFO [2025-08-19 10:45:58.758 +0200]:     1. 2pGY9WAjanpR3RnY5hQ1a23uDNomzFCAD5HMBgo8nH6M (writable)
+INFO [2025-08-19 10:45:58.758 +0200]:     2. 3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci (read-only)
+INFO [2025-08-19 10:45:58.758 +0200]:     3. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer, writable)
+INFO [2025-08-19 10:45:58.758 +0200]:     4. 11111111111111111111111111111111 (read-only)
+INFO [2025-08-19 10:45:58.758 +0200]:     5. 41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB (read-only)
+INFO [2025-08-19 10:45:58.758 +0200]:     6. 4sVSCJqG9ZKEvnpN38qTzb7Kc8QdHakBgB87HN3FYRaz (read-only)
+INFO [2025-08-19 10:45:58.758 +0200]:     7. E4Bsi43kX3iwXAFia2ebm1mS5Xkmmdv3minZDnfo7Zzf (read-only)
+INFO [2025-08-19 10:45:58.758 +0200]:
+```
+
+</Fragment>
+</Tabs>
+
+**Account Breakdown from the Transaction (Example):**
+
+| Account | Address                                        | Purpose                                                     |
+| ------- | ---------------------------------------------- | ----------------------------------------------------------- |
+| **#1**  | `2pGY9WAjanpR3RnY5hQ1a23uDNomzFCAD5HMBgo8nH6M` | **Pool State PDA** - Your main pool configuration           |
+| **#2**  | `3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci` | Token Mint (your token)                                     |
+| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | Authority (your Squad vault)                                |
+| **#4**  | `11111111111111111111111111111111`             | System Program                                              |
+| **#5**  | `41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB` | CCIP Pool Program                                           |
+| **#6**  | `4sVSCJqG9ZKEvnpN38qTzb7Kc8QdHakBgB87HN3FYRaz` | Program Data PDA                                            |
+| **#7**  | `E4Bsi43kX3iwXAFia2ebm1mS5Xkmmdv3minZDnfo7Zzf` | **Global Config PDA** - Program-wide configuration settings |
+
+**Key Addresses You Need:**
+
+- **Account #1** → `SOL_POOL_ADDRESS` (writable account = pool state)
+- **Pool Signer PDA** → Must be derived separately (NOT in transaction accounts)
+
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add
+  instruction" → "Import base58 encoded tx"
+
+- **Review**: Verify pool initialization parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
+
+After execution, set the pool state address from the transaction:
+
+```bash
+# Set the pool state address from Account #1 in the transaction above
+export SOL_POOL_ADDRESS="2pGY9WAjanpR3RnY5hQ1a23uDNomzFCAD5HMBgo8nH6M"
+```
+
+### Step 4: Derive Pool Signer PDA
+
+The Pool Signer PDA is the critical address that will serve as the autonomous signing authority for cross-chain mint and burn operations.
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Derive Pool Signer</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Derive all pool-related accounts including the Pool Signer PDA
+pnpm bs58 utils \
+  --env devnet \
+  --instruction derive-accounts \
+  --program-type burnmint-token-pool \
+  --program-id "$CCIP_POOL_PROGRAM" \
+  --mint "$SOL_TOKEN_MINT"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+📊 Derived Accounts:
+
+1. Pool State PDA
+   Address: 2pGY9WAjanpR3RnY5hQ1a23uDNomzFCAD5HMBgo8nH6M
+   Seeds: ["ccip_tokenpool_config", mint]
+   Bump: 253
+   Description: Main pool configuration account (created by initialize-pool)
+
+2. Pool Signer PDA
+   Address: 8NTqDH8dFj7aU5FBWeNMJwjsR1gZMR7criaEaDMEE24r
+   Seeds: ["ccip_tokenpool_signer", mint]
+   Bump: 255
+   Description: 🎯 CRITICAL: Autonomous mint/burn authority for cross-chain operations
+
+3. Global Config PDA
+   Address: E4Bsi43kX3iwXAFia2ebm1mS5Xkmmdv3minZDnfo7Zzf
+   Seeds: ["config"]
+   Bump: 255
+   Description: Program-wide configuration settings
+
+4. Pool Token ATA
+   Address: BKkeydRQWKDc5dR7euwhYi47TDLV99o8pD83ncGA2LdZ
+   Seeds: [mint, pool_signer_pda, token_program]
+   Description: Pool's token account (owned by Pool Signer PDA)
+
+🎯 CRITICAL ADDRESS FOR CROSS-CHAIN OPERATIONS:
+   Pool Signer PDA: 8NTqDH8dFj7aU5FBWeNMJwjsR1gZMR7criaEaDMEE24r
+   ↳ This address signs all mint/burn transactions autonomously
+
+INFO [2025-08-19 10:49:35.438 +0200]: Detected SPL Token v1
+    mint: "3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci"
+    programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+INFO [2025-08-19 10:49:35.439 +0200]: ✅ Account derivation completed successfully
+    command: "derive-accounts"
+```
+
+</Fragment>
+</Tabs>
+
+Set the Pool Signer PDA address for use in subsequent steps:
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Set Variables</Fragment>
+<Fragment slot="tab.2">Verification</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Set the Pool Signer PDA from the derivation output above
+export SOL_POOL_SIGNER_PDA="<YOUR_ACTUAL_POOL_SIGNER_PDA>"
+```
+
+Verify both addresses are set correctly:
+
+```bash
+echo "Pool Address: $SOL_POOL_ADDRESS"
+echo "Pool Signer PDA: $SOL_POOL_SIGNER_PDA"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+Pool Address: 2pGY9WAjanpR3RnY5hQ1a23uDNomzFCAD5HMBgo8nH6M
+Pool Signer PDA: 8NTqDH8dFj7aU5FBWeNMJwjsR1gZMR7criaEaDMEE24r
+```
+
+</Fragment>
+</Tabs>
+
+### Step 5: Register CCIP Administrator
+
+This two-step process establishes your Squad vault as the CCIP token administrator, enabling you to enable your token in CCIP. Since your Squad vault currently holds the mint authority, you can complete this registration using the [self-service registration flow](/ccip/concepts/cross-chain-token/svm/registration-administration#self-service-registration-flow) without external assistance.
+
+**Why This Works**: The Router's [owner_propose_administrator](/ccip/concepts/cross-chain-token/svm/registration-administration#self-service-registration-flow) instruction verifies onchain that the caller matches the token's `mint_authority` field. Your Squad vault has this authority, enabling [PATH A self-service registration](/ccip/concepts/cross-chain-token/svm/integration-guide#path-a-full-self-service-mint-authority-controlled).
+
+#### Sub-step 5a: Propose Administrator
+
+The [owner_propose_administrator](/ccip/concepts/cross-chain-token/svm/registration-administration#self-service-registration-flow) instruction creates a TokenAdminRegistry PDA for your token and sets your Squad vault as the [pending administrator](/ccip/concepts/cross-chain-token/svm/registration-administration#self-service-registration-flow):
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Generate administrator registration transaction
+pnpm bs58 router --env devnet --instruction owner-propose-administrator \
+  --program-id $CCIP_ROUTER_PROGRAM \
+  --mint $SOL_TOKEN_MINT \
+  --authority $SOL_SQUAD_VAULT_MULTISIG \
+  --token-admin-registry-admin $SOL_SQUAD_VAULT_MULTISIG
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+   ✅ Transaction simulation completed
+🎯 COPY TRANSACTION DATA BELOW:
+
+jCi2q3RM6PzJZRhgUPyQh5bBo2juVuAMP2tXHnkmWowRbPHPaxUKNzaBipQdvpWSJSWKcMF1WENep5oSQyXVgrRfymPuGdu3ZcGKKS1Pi6VzMhTJxd77XXWhwcm2E8992W2PyoqwWcL6HfqD4UdAehr3UboTVM8yBAZg55mGRpmy7gQrNnsTJYZRgtNB4FcA9dU7248M5HUadVTZNJsyXsq1jRnVhpFUp8uUDqiqE5enQFiVV9RVsHvNYzhNppXuQhgfcJqouVPKFK76EHH721Caa3mATF2m2BHmgUDLWTswoukxtypzB8arzeK6aa6d1EYqTkf648cT3Q96GKad7jKnseHubT6Nq8e8RNo3SVfZZYgLxbbCJExBW
+
+────────────────────────────────────────────────────────────────────────────────
+INFO [2025-08-19 10:51:42.775 +0200]: Transaction built successfully
+    instructionName: "router.owner_propose_administrator"
+    transactionSize: "277 bytes"
+    base58Length: "377 characters"
+    hexLength: "554 characters"
+    accountCount: 5
+    signerCount: 1
+    computeUnits: 25785
+INFO [2025-08-19 10:51:42.776 +0200]: Completed buildTransaction (router.owner_propose_administrator)
+    durationMs: 920
+INFO [2025-08-19 10:51:42.776 +0200]:
+INFO [2025-08-19 10:51:42.776 +0200]: 🎉 Transaction generated successfully!
+INFO [2025-08-19 10:51:42.776 +0200]:
+INFO [2025-08-19 10:51:42.776 +0200]: 📋 Transaction Details:
+INFO [2025-08-19 10:51:42.776 +0200]:    Instruction: router.owner_propose_administrator
+INFO [2025-08-19 10:51:42.776 +0200]:    Size: 277 bytes
+INFO [2025-08-19 10:51:42.776 +0200]:    Base58 length: 377 characters
+INFO [2025-08-19 10:51:42.788 +0200]:    Compute units: 25 785
+INFO [2025-08-19 10:51:42.788 +0200]:    Generated: 2025-08-19T08:51:42.775Z
+INFO [2025-08-19 10:51:42.788 +0200]:
+INFO [2025-08-19 10:51:42.788 +0200]: 🔗 Transaction Data (Base58):
+INFO [2025-08-19 10:51:42.788 +0200]:
+INFO [2025-08-19 10:51:42.788 +0200]: 💡 Triple-click the line above to select the entire transaction data
+INFO [2025-08-19 10:51:42.788 +0200]:
+INFO [2025-08-19 10:51:42.788 +0200]: 📊 Account Information:
+INFO [2025-08-19 10:51:42.788 +0200]:    Total accounts: 5
+INFO [2025-08-19 10:51:42.788 +0200]:     1. 3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3 (read-only)
+INFO [2025-08-19 10:51:42.789 +0200]:     2. 4maPuX2fcDmCkQv1Qa6RmQa2yGpeZLxiqKy9ybwazGft (writable)
+INFO [2025-08-19 10:51:42.789 +0200]:     3. 3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci (read-only)
+INFO [2025-08-19 10:51:42.789 +0200]:     4. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer, writable)
+INFO [2025-08-19 10:51:42.789 +0200]:     5. 11111111111111111111111111111111 (read-only)
+INFO [2025-08-19 10:51:42.789 +0200]:
+```
+
+</Fragment>
+</Tabs>
+
+**Account Breakdown from the Transaction (Example):**
+
+| Account | Address                                        | Description                                                           |
+| ------- | ---------------------------------------------- | --------------------------------------------------------------------- |
+| **#1**  | `3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3` | Router Config PDA (read-only)                                         |
+| **#2**  | `4maPuX2fcDmCkQv1Qa6RmQa2yGpeZLxiqKy9ybwazGft` | **🎯 Token Admin Registry PDA** - Gets created/updated for your token |
+| **#3**  | `3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci` | Token Mint (your token)                                               |
+| **#4**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | Authority/Payer (your Squad vault)                                    |
+| **#5**  | `11111111111111111111111111111111`             | System Program                                                        |
+
+**What This Transaction Does:**
+This transaction proposes your Squad vault as the administrator for your token in the Router's Token Admin Registry. **Account #2** is the Token Admin Registry PDA that stores who has administrative control over your token's cross-chain operations.
+
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add
+  instruction" → "Import base58 encoded tx"
+
+- **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
+
+#### Sub-step 5b: Accept Administrator Role
+
+The [accept_admin_role](/ccip/concepts/cross-chain-token/svm/registration-administration#self-service-registration-flow) instruction completes the [registration process](/ccip/concepts/cross-chain-token/svm/registration-administration#self-service-registration-flow) by having the pending administrator (your Squad vault) explicitly accept the CCIP token administrator role:
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Accept Admin Role</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Generate administrator role acceptance transaction
+pnpm bs58 router --env devnet --instruction accept-admin-role \
+  --program-id $CCIP_ROUTER_PROGRAM \
+  --mint $SOL_TOKEN_MINT \
+  --authority $SOL_SQUAD_VAULT_MULTISIG
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+   ✅ Transaction simulation completed
+🎯 COPY TRANSACTION DATA BELOW:
+
+2sM9hLJFuca8kadhK5vj9XrhMwgVdMHbbADrgprG7i6MGad9ffvR3CzUGpR6kVfkb8S5xg29JHkdB838KZYEhH6r1uLVVEYyhpeoMZMkP4aT51PVc1MqqSWfU9TDRoy3oqBtEe5y1WefUEYCMknDR93F7qkYgWGHTyTeqVg7G5ADTcXV8563psXRdJ52ERNyU6gAxphpBpnetmDAsseMQRgojGL3U8e4ZbWYzA3jULcukB3yYJ2MFQQiAphZvv1utGifPzc8suH9WT7oFPGGXktpLu5tn6EHB
+
+────────────────────────────────────────────────────────────────────────────────
+INFO [2025-08-19 10:54:24.134 +0200]: Transaction built successfully
+    instructionName: "router.accept_admin_role_token_admin_registry"
+    transactionSize: "212 bytes"
+    base58Length: "289 characters"
+    hexLength: "424 characters"
+    accountCount: 4
+    signerCount: 1
+    computeUnits: 21454
+INFO [2025-08-19 10:54:24.134 +0200]: Completed buildTransaction (router.accept_admin_role_token_admin_registry)
+    durationMs: 423
+INFO [2025-08-19 10:54:24.135 +0200]:
+INFO [2025-08-19 10:54:24.135 +0200]: 🎉 Transaction generated successfully!
+INFO [2025-08-19 10:54:24.135 +0200]:
+INFO [2025-08-19 10:54:24.135 +0200]: 📋 Transaction Details:
+INFO [2025-08-19 10:54:24.135 +0200]:    Instruction: router.accept_admin_role_token_admin_registry
+INFO [2025-08-19 10:54:24.135 +0200]:    Size: 212 bytes
+INFO [2025-08-19 10:54:24.135 +0200]:    Base58 length: 289 characters
+INFO [2025-08-19 10:54:24.155 +0200]:    Compute units: 21 454
+INFO [2025-08-19 10:54:24.155 +0200]:    Generated: 2025-08-19T08:54:24.133Z
+INFO [2025-08-19 10:54:24.155 +0200]:
+INFO [2025-08-19 10:54:24.155 +0200]: 🔗 Transaction Data (Base58):
+INFO [2025-08-19 10:54:24.155 +0200]:
+INFO [2025-08-19 10:54:24.155 +0200]: 💡 Triple-click the line above to select the entire transaction data
+INFO [2025-08-19 10:54:24.155 +0200]:
+INFO [2025-08-19 10:54:24.155 +0200]: 📊 Account Information:
+INFO [2025-08-19 10:54:24.155 +0200]:    Total accounts: 4
+INFO [2025-08-19 10:54:24.155 +0200]:     1. 3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3 (read-only)
+INFO [2025-08-19 10:54:24.155 +0200]:     2. 4maPuX2fcDmCkQv1Qa6RmQa2yGpeZLxiqKy9ybwazGft (writable)
+INFO [2025-08-19 10:54:24.155 +0200]:     3. 3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci (read-only)
+INFO [2025-08-19 10:54:24.155 +0200]:     4. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer, writable)
+INFO [2025-08-19 10:54:24.155 +0200]:
+```
+
+</Fragment>
+</Tabs>
+
+**Account Breakdown from the Transaction (Example):**
+
+| Account | Address                                        | Description                                                  |
+| ------- | ---------------------------------------------- | ------------------------------------------------------------ |
+| **#1**  | `3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3` | Router Config PDA (read-only)                                |
+| **#2**  | `4maPuX2fcDmCkQv1Qa6RmQa2yGpeZLxiqKy9ybwazGft` | **🎯 Token Admin Registry PDA** - Updates status to "active" |
+| **#3**  | `3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci` | Token Mint (your token)                                      |
+| **#4**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | Authority (your Squad vault - must be pending admin)         |
+
+**What This Transaction Does:**
+This is the **acceptance step** of the two-phase administrator registration. It updates the Token Admin Registry PDA (Account #2) from "pending administrator" to "active administrator" status. Your Squad vault explicitly accepts the administrator role, completing the secure registration process.
+
+**Key Difference**: Only 4 accounts (vs. 5 in the propose step) because we're updating an existing registry entry, not creating a new one.
+
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add
+  instruction" → "Import base58 encoded tx"
+
+- **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
+
+After both transactions are executed, your Squad vault will be the CCIP token administrator. See [Registration & Administration](/ccip/concepts/cross-chain-token/svm/registration-administration) for more details.
+
+### Step 6: Create SPL Token Multisig (Layer 2 Mint Authority)
+
+This command creates the second layer of your dual-multisig architecture by establishing an SPL token multisig that will control mint authority. The `create-multisig` instruction creates a deterministic multisig account that includes both your Pool Signer PDA and Squad vault as authorized signers.
+
+**What This Accomplishes**:
+
+- **SPL Token Multisig Creation**: Establishes a new multisig account
+- **Dual Authority Setup**: Includes both Pool Signer PDA (for autonomous CCIP operations) and Squad vault (for governance control)
+- **Threshold Configuration**: Sets threshold to 1, allowing either signer to authorize mint operations
+- **Layer 2 Foundation**: Creates the mint authority that will be transferred from your Squad vault in the next step
+
+**Token Program Detection**: The CLI automatically detects whether your mint uses SPL Token v1 or Token-2022 and creates the appropriate multisig type.
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Generate SPL token multisig creation transaction
+pnpm bs58 spl-token --env devnet --instruction create-multisig \
+  --authority "$SOL_SQUAD_VAULT_MULTISIG" \
+  --seed "production-multisig" \
+  --mint "$SOL_TOKEN_MINT" \
+  --signers "[\"$SOL_POOL_SIGNER_PDA\", \"$SOL_SQUAD_VAULT_MULTISIG\"]" \
+  --threshold 1
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+INFO [2025-08-19 11:24:27.533 +0200]: Detected SPL Token v1
+    mint: "3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci"
+    programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+INFO [2025-08-19 11:24:27.768 +0200]: 🔄 Building and simulating transaction...
+📮 Derived SPL Token Multisig Address: 6c5UGRRQzPvZY4ZJZJiPGRYMw5e32uX8GfFzvm35k3jK
+💡 Address derived from: authority + sha256("production-multisig" + mint).hex().slice(0,32) + tokenProgram
+🎯 COPY TRANSACTION DATA BELOW:
+
+WCDiJTnTwq6VYymu17E2pTDSNLf6YU2MHxD4ADPmNY9wBbPPwZSUsvkwx9CXeWN7qwzDZBL7c6X6U4CuWmEu7RVajVku8nrVynK7xHKkZNgjfYvSgH7e5Uu4ucZ4W4Sgenosw3Sy6p14ZBoMXnkgqkpaeTmbxUgkDx9By5LMSgpAfmPSiDzMGNque5sv7m3V4V26Sdf4mCufEWjaX2sf49xwWxAGgjqU8yZ7evz4HkMBuKcmbxPRm2M1UCbefjXo2ZqTq873T69Mv72jYKDTWPnCfPaz7xgrpswCNcLEDsFaQRdmuw3uCe8PDdV3xnEM695PJtMrdbMUwpEoR7MmHywSssE6KAJZ4xMxWCaaNamyK2XaEFpVGQQGvU56NPPT3vfQkHLF2ipJ6whnzo1EDwJtxXu77MhTxYSCQeN7suq8Z1NjRbPsWk8bFPptfQFceiuicaUcJstW2p7zY7jxXhpPa2GpGduf5T41pSYrkt58BasrRVpU
+
+────────────────────────────────────────────────────────────────────────────────
+INFO [2025-08-19 11:24:28.324 +0200]: Transaction built successfully
+    instructionName: "spl.create_multisig"
+    transactionSize: "367 bytes"
+    base58Length: "500 characters"
+    hexLength: "734 characters"
+    accountCount: 2
+    signerCount: 1
+    computeUnits: 2931
+INFO [2025-08-19 11:24:28.324 +0200]: Completed buildTransaction (spl.create_multisig)
+    durationMs: 556
+INFO [2025-08-19 11:24:28.324 +0200]: ✅ Transaction simulation completed
+INFO [2025-08-19 11:24:28.325 +0200]:
+INFO [2025-08-19 11:24:28.325 +0200]: 🎉 Transaction generated successfully!
+INFO [2025-08-19 11:24:28.325 +0200]:
+INFO [2025-08-19 11:24:28.325 +0200]: 📋 Transaction Details:
+INFO [2025-08-19 11:24:28.325 +0200]:    Instruction: spl.create_multisig
+INFO [2025-08-19 11:24:28.325 +0200]:    Size: 367 bytes
+INFO [2025-08-19 11:24:28.325 +0200]:    Base58 length: 500 characters
+INFO [2025-08-19 11:24:28.353 +0200]:    Compute units: 2 931
+INFO [2025-08-19 11:24:28.353 +0200]:    Generated: 2025-08-19T09:24:28.323Z
+INFO [2025-08-19 11:24:28.353 +0200]:
+INFO [2025-08-19 11:24:28.353 +0200]: 🔗 Transaction Data (Base58):
+INFO [2025-08-19 11:24:28.353 +0200]:
+INFO [2025-08-19 11:24:28.353 +0200]: 💡 Triple-click the line above to select the entire transaction data
+INFO [2025-08-19 11:24:28.353 +0200]:
+INFO [2025-08-19 11:24:28.354 +0200]: 📊 Account Information:
+INFO [2025-08-19 11:24:28.354 +0200]:    Total accounts: 2
+INFO [2025-08-19 11:24:28.354 +0200]:     1. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer, writable)
+INFO [2025-08-19 11:24:28.354 +0200]:     2. 6c5UGRRQzPvZY4ZJZJiPGRYMw5e32uX8GfFzvm35k3jK (writable)
+INFO [2025-08-19 11:24:28.354 +0200]:
+```
+
+</Fragment>
+</Tabs>
+
+**Account Breakdown from the Transaction (Example):**
+
+| Account | Address                                        | Description                               |
+| ------- | ---------------------------------------------- | ----------------------------------------- |
+| **#1**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Payer/Authority** (your Squad vault)    |
+| **#2**  | `6c5UGRRQzPvZY4ZJZJiPGRYMw5e32uX8GfFzvm35k3jK` | **🎯 SPL Token Multisig** (newly created) |
+
+**What This Transaction Does:**
+This creates an **SPL Token Multisig** account that will control your token's mint authority. The CLI automatically detected SPL Token v1 and created the appropriate multisig type.
+
+**Key Details:**
+
+- **Generated Multisig Address**: `6c5UGRRQzPvZY4ZJZJiPGRYMw5e32uX8GfFzvm35k3jK`
+- **Multisig Signers**: Pool Signer PDA + Squad vault
+- **Threshold**: 1 (either signer can authorize mint operations)
+- **Hybrid Control**: Enables both automated CCIP operations and human governance
+
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+- **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
+
+**After execution, set the variable for the next step:**
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Set Variable</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+export SOL_SPL_MULTISIG="<INSERT_ACTUAL_SPL_MULTISIG_ADDRESS>"
+```
+
+Verify the variable:
+
+```bash
+echo "✅ SPL Multisig: $SOL_SPL_MULTISIG"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+✅ SPL Multisig: 6c5UGRRQzPvZY4ZJZJiPGRYMw5e32uX8GfFzvm35k3jK
+```
+
+</Fragment>
+</Tabs>
+
+### Step 7: Transfer Mint Authority (Layer 2 Mint Authority)
+
+Transfer mint authority from your Squad vault to the SPL Token Multisig, completing the dual-layer governance architecture. This enables both automated CCIP operations and human governance control.
+
+**What This Command Does:**
+
+- **Authority Transfer**: Moves mint control from Squad vault to SPL Token Multisig
+- **SPL Token Operation**: Uses the native `SetAuthority` instruction for mint authority
+- **Governance Architecture**: Establishes the final production-ready control structure
+- **Dual Control Setup**: Enables both Pool Signer PDA (autonomous) and Squad vault (governance) control
+- **Irreversible Change**: Once executed, only the SPL Token Multisig can mint tokens
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Generate mint authority transfer transaction
+pnpm bs58 spl-token --env devnet --instruction transfer-mint-authority \
+  --mint $SOL_TOKEN_MINT \
+  --authority $SOL_SQUAD_VAULT_MULTISIG \
+  --new-mint-authority $SOL_SPL_MULTISIG
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+🎯 COPY TRANSACTION DATA BELOW:
+
+ebWdNECFDo2Uj45BAmovEt5J6YEvDjvLxqcRfWy6uDBmd3XUoviCTAsTXTkoqhQr8w1ZtYqqojwJHSK15QSZ4NrCBKSpb26R2xnC9FdjUpqz2i8VRhYekXjuEAkmDCDKgKnVxg9QhSHDhCofwrBKob8NJuq5eahgMHqPPziQEnz4AJNVkL1ZdG52HchNxvc9PeDVGyy7dwxvcGHiAAsApvq7Lxd31pVBU87kfwShT73
+
+────────────────────────────────────────────────────────────────────────────────
+INFO [2025-08-19 11:27:51.659 +0200]: Detected SPL Token v1
+    mint: "3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci"
+    programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+INFO [2025-08-19 11:27:51.660 +0200]: 🔄 Building and simulating transaction...
+INFO [2025-08-19 11:27:52.013 +0200]: Transaction built successfully
+    instructionName: "spl.transfer_mint_authority"
+    transactionSize: "173 bytes"
+    base58Length: "235 characters"
+    hexLength: "346 characters"
+    accountCount: 2
+    signerCount: 1
+    computeUnits: 3006
+INFO [2025-08-19 11:27:52.013 +0200]: Completed buildTransaction (spl.transfer_mint_authority)
+    durationMs: 353
+INFO [2025-08-19 11:27:52.013 +0200]: ✅ Transaction simulation completed
+INFO [2025-08-19 11:27:52.014 +0200]:
+INFO [2025-08-19 11:27:52.014 +0200]: 🎉 Transaction generated successfully!
+INFO [2025-08-19 11:27:52.014 +0200]:
+INFO [2025-08-19 11:27:52.014 +0200]: 📋 Transaction Details:
+INFO [2025-08-19 11:27:52.014 +0200]:    Instruction: spl.transfer_mint_authority
+INFO [2025-08-19 11:27:52.014 +0200]:    Size: 173 bytes
+INFO [2025-08-19 11:27:52.014 +0200]:    Base58 length: 235 characters
+INFO [2025-08-19 11:27:52.031 +0200]:    Compute units: 3 006
+INFO [2025-08-19 11:27:52.031 +0200]:    Generated: 2025-08-19T09:27:52.012Z
+INFO [2025-08-19 11:27:52.031 +0200]:
+INFO [2025-08-19 11:27:52.031 +0200]: 🔗 Transaction Data (Base58):
+INFO [2025-08-19 11:27:52.031 +0200]:
+INFO [2025-08-19 11:27:52.031 +0200]: 💡 Triple-click the line above to select the entire transaction data
+INFO [2025-08-19 11:27:52.031 +0200]:
+INFO [2025-08-19 11:27:52.031 +0200]: 📊 Account Information:
+INFO [2025-08-19 11:27:52.031 +0200]:    Total accounts: 2
+INFO [2025-08-19 11:27:52.031 +0200]:     1. 3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci (writable)
+INFO [2025-08-19 11:27:52.031 +0200]:     2. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer)
+INFO [2025-08-19 11:27:52.031 +0200]:
+```
+
+</Fragment>
+</Tabs>
+
+**Account Breakdown from the Transaction (Example):**
+
+| Account | Address                                        | Description                                   |
+| ------- | ---------------------------------------------- | --------------------------------------------- |
+| **#1**  | `3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci` | **Token Mint** (writable - authority updated) |
+| **#2**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Current Authority** (signer - Squad vault)  |
+
+**Key Details:**
+
+- **Current Authority**: `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` (Squad vault)
+- **New Authority**: `6c5UGRRQzPvZY4ZJZJiPGRYMw5e32uX8GfFzvm35k3jK` (SPL Token Multisig)
+- **Token Mint**: `3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci` (authority field updated)
+
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add
+  instruction" → "Import base58 encoded tx"
+
+- **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
+
+### Step 8: Test Token Minting (Verify Dual-Layer Control)
+
+Verify that your Squad vault can still mint tokens after the authority transfer. This proves the dual-layer governance is working correctly: Squad vault → SPL Token Multisig → Token minting.
+
+**Purpose of This Test:**
+
+- **Verify Authority Transfer**: Confirm the SPL Token Multisig now controls mint authority
+- **Prove Squad Control**: Demonstrate that Squad vault can still mint through the multisig
+- **Validate Architecture**: Test the dual-layer governance model works as designed
+
+<Aside type="note" title="Multisig Minting Process">
+  **Important**: Since mint authority now belongs to the SPL Token Multisig, you must use multisig mode. The Squad vault
+  acts as one of the multisig signers, proving it retains operational control through the new governance structure.
+</Aside>
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Generate token minting transaction using SPL multisig
+
+pnpm bs58 spl-token --env devnet --instruction mint \
+  --authority "$SOL_SQUAD_VAULT_MULTISIG" \
+  --mint "$SOL_TOKEN_MINT" \
+  --amount 1000000000 \
+  --recipient "$SOL_WALLET_ADDRESS" \
+  --multisig "$SOL_SPL_MULTISIG" \
+  --multisig-signers "[\"$SOL_SQUAD_VAULT_MULTISIG\"]"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+INFO [2025-08-19 11:31:39.221 +0200]: Detected SPL Token v1
+    mint: "3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci"
+    programId: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+INFO [2025-08-19 11:31:39.330 +0200]: 🔄 Building and simulating transaction...
+🎯 COPY TRANSACTION DATA BELOW:
+
+9FDWqLKmG2btBeVbENTJckgTiiKUamXHwp2Dpy79xXu7jHWsVBPJWNMUseUfhgBtajbtJGGdTxvommWDSV6W55NcxkL8AYboXxZg5auKS5YiwmDMmZMCMHeQGzizsBhrzrM3TWrETt1jty34wt5DDGYAR2nCAoprQ94tw1ucLvxwf8JhBBN4PVspbiuR4z7Eb4NVJ3XbV2Q8jNJRS68ujcYZTm62iDQtdtN7Mrx7Xyukmvdtufgeqw2GDr5kBTUVtoe33S6PQ7YTicNJ47spFdDfcYRSALoVNF
+
+────────────────────────────────────────────────────────────────────────────────
+INFO [2025-08-19 11:31:39.544 +0200]: Transaction built successfully
+    instructionName: "spl.mint"
+    transactionSize: "213 bytes"
+    base58Length: "290 characters"
+    hexLength: "426 characters"
+    accountCount: 4
+    signerCount: 1
+    computeUnits: 5365
+INFO [2025-08-19 11:31:39.544 +0200]: Completed buildTransaction (spl.mint)
+    durationMs: 214
+INFO [2025-08-19 11:31:39.544 +0200]: ✅ Transaction simulation completed
+INFO [2025-08-19 11:31:39.544 +0200]:
+INFO [2025-08-19 11:31:39.544 +0200]: 🎉 Transaction generated successfully!
+INFO [2025-08-19 11:31:39.544 +0200]:
+INFO [2025-08-19 11:31:39.544 +0200]: 📋 Transaction Details:
+INFO [2025-08-19 11:31:39.544 +0200]:    Instruction: spl.mint
+INFO [2025-08-19 11:31:39.544 +0200]:    Size: 213 bytes
+INFO [2025-08-19 11:31:39.544 +0200]:    Base58 length: 290 characters
+INFO [2025-08-19 11:31:39.562 +0200]:    Compute units: 5 365
+INFO [2025-08-19 11:31:39.562 +0200]:    Generated: 2025-08-19T09:31:39.544Z
+INFO [2025-08-19 11:31:39.562 +0200]:
+INFO [2025-08-19 11:31:39.562 +0200]: 🔗 Transaction Data (Base58):
+INFO [2025-08-19 11:31:39.562 +0200]:
+INFO [2025-08-19 11:31:39.562 +0200]: 💡 Triple-click the line above to select the entire transaction data
+INFO [2025-08-19 11:31:39.562 +0200]:
+INFO [2025-08-19 11:31:39.562 +0200]: 📊 Account Information:
+INFO [2025-08-19 11:31:39.562 +0200]:    Total accounts: 4
+INFO [2025-08-19 11:31:39.562 +0200]:     1. 3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci (writable)
+INFO [2025-08-19 11:31:39.562 +0200]:     2. 84FvKxAQpHtSaFLguFygoPPEaRorZpTjs8rmMCxuwqUF (writable)
+INFO [2025-08-19 11:31:39.562 +0200]:     3. 6c5UGRRQzPvZY4ZJZJiPGRYMw5e32uX8GfFzvm35k3jK (read-only)
+INFO [2025-08-19 11:31:39.562 +0200]:     4. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer)
+INFO [2025-08-19 11:31:39.562 +0200]:
+```
+
+</Fragment>
+</Tabs>
+
+**Account Breakdown from the Transaction (Example):**
+
+| Account | Address                                        | Description                                         |
+| ------- | ---------------------------------------------- | --------------------------------------------------- |
+| **#1**  | `3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci` | **Token Mint** (writable - supply updated)          |
+| **#2**  | `84FvKxAQpHtSaFLguFygoPPEaRorZpTjs8rmMCxuwqUF` | **Recipient's ATA** (writable - receives tokens)    |
+| **#3**  | `6c5UGRRQzPvZY4ZJZJiPGRYMw5e32uX8GfFzvm35k3jK` | **SPL Token Multisig** (read-only - mint authority) |
+| **#4**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault** (signer - multisig member)          |
+
+**What This Transaction Does:**
+This is an **SPL Token Multisig Mint** operation that proves your dual-layer governance is working correctly. The Squad vault acts as a signer for the SPL Token Multisig that now controls mint authority.
+
+**Key Details:**
+
+- **Amount**: 1,000,000,000 smallest units = 1 token (with 9 decimals)
+- **Recipient**: Your wallet address (`EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB`)
+- **Mint Authority**: SPL Token Multisig (`6c5UGRRQzPvZY4ZJZJiPGRYMw5e32uX8GfFzvm35k3jK`)
+- **Multisig Signer**: Squad vault (`59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY`)
+- **Token Program**: SPL Token v1 (`TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`)
+
+**Transaction Flow:**
+
+1. **Authority Verification**: SPL Token program verifies the multisig has mint authority
+1. **Signature Validation**: Program confirms Squad vault is an authorized multisig signer
+1. **Token Creation**: 1 token is minted and added to total supply
+1. **Token Transfer**: New tokens are deposited into your wallet's ATA
+
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+- **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
+
+**Phase 2 Complete**: Save your variables:
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Save Configuration</Fragment>
+<Fragment slot="tab.2">Verification Summary</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Save all Solana variables
+cat > ~/.phase2_vars << EOF
+export CCIP_POOL_PROGRAM="$CCIP_POOL_PROGRAM"
+export CCIP_ROUTER_PROGRAM="$CCIP_ROUTER_PROGRAM"
+export CCIP_FEE_QUOTER_PROGRAM="$CCIP_FEE_QUOTER_PROGRAM"
+export SOL_SQUAD_VAULT_MULTISIG="$SOL_SQUAD_VAULT_MULTISIG"
+export SOL_TOKEN_MINT="$SOL_TOKEN_MINT"
+export SOL_POOL_ADDRESS="$SOL_POOL_ADDRESS"
+export SOL_POOL_SIGNER_PDA="$SOL_POOL_SIGNER_PDA"
+export SOL_SPL_MULTISIG="$SOL_SPL_MULTISIG"
+export SOL_WALLET_ADDRESS="$SOL_WALLET_ADDRESS"
+EOF
+
+echo "=== Phase 2 Complete - Dual Multisig Setup ==="
+echo "✅ Token Mint: $SOL_TOKEN_MINT"
+echo "✅ Pool Address: $SOL_POOL_ADDRESS"
+echo "✅ Pool Signer PDA: $SOL_POOL_SIGNER_PDA"
+echo "✅ Squads Multisig: $SOL_SQUAD_VAULT_MULTISIG"
+echo "✅ SPL Multisig: $SOL_SPL_MULTISIG"
+echo "✅ Wallet Address: $SOL_WALLET_ADDRESS"
+
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+=== Phase 2 Complete - Dual Multisig Setup ===
+✅ Token Mint: 3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci
+✅ Pool Address: 2pGY9WAjanpR3RnY5hQ1a23uDNomzFCAD5HMBgo8nH6M
+✅ Pool Signer PDA: 8NTqDH8dFj7aU5FBWeNMJwjsR1gZMR7criaEaDMEE24r
+✅ Squads Multisig: 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY
+✅ SPL Multisig: 6c5UGRRQzPvZY4ZJZJiPGRYMw5e32uX8GfFzvm35k3jK
+✅ Wallet Address: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+```
+
+</Fragment>
+</Tabs>
+
+<Aside type="note" title="Dual-Layer Architecture Established">
+
+**Production Governance Complete**: You have successfully established dual-layer multisig governance:
+
+    - **Layer 1**: Squads multisig controls CCIP administration
+    - **Layer 2**: SPL token multisig (Pool Signer PDA + Squads Vault) controls mint authority This provides comprehensive governance while maintaining autonomous CCIP operations.
+
+</Aside>
+
+## Phase 3: Solana Cross-Chain Setup
+
+In this phase, you will configure the cross-chain connection and complete the CCIP setup.
+
+<Aside type="note" title="Terminal Context Check">
+  **Current Focus: Terminal 1 (base58 Generator)** Continue using the base58 generator repository for cross-chain
+  configuration.
+</Aside>
+
+### Step 1: Load Phase 1 Variables
+
+Load Phase 1 variables and set the Ethereum Sepolia chain selector for cross-chain configuration.
+
+**What This Step Does:**
+
+- **Terminal Verification**: Confirms you're in the correct base58 generator repository
+- **Variable Loading**: Imports EVM token and pool addresses from Phase 1
+- **Chain Selector Setup**: Establishes Ethereum Sepolia chain selector for cross-chain configuration
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Load Variables</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Verify you are in the correct terminal (terminal 1)
+# Should output: /Users/.../ccip-solana-bs58-generator
+pwd
+
+# Load Phase 1 EVM variables
+
+source ~/.phase1_vars
+
+# Set chain selector for Ethereum Sepolia
+
+export ETHEREUM_SEPOLIA_CHAIN_SELECTOR="16015286601757825753"
+
+# Verify variables are loaded
+
+echo "✅ ETH Token: $ETH_TOKEN_ADDRESS"
+echo "✅ ETH Pool: $ETH_POOL_ADDRESS"
+echo "✅ Chain Selector: $ETHEREUM_SEPOLIA_CHAIN_SELECTOR"
+
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+$ pwd
+/Users/.../ccip-solana-bs58-generator
+
+$ source ~/.phase1_vars
+
+$ export ETHEREUM_SEPOLIA_CHAIN_SELECTOR="16015286601757825753"
+
+$ echo "✅ ETH Token: $ETH_TOKEN_ADDRESS"
+✅ ETH Token: 0x7c57A9d966c3E6e344621C512d510f76575640ED
+
+$ echo "✅ ETH Pool: $ETH_POOL_ADDRESS"
+✅ ETH Pool: 0x88965fF139bbA53D6e02a49a80c29d8c65645bA7
+
+$ echo "✅ Chain Selector: $ETHEREUM_SEPOLIA_CHAIN_SELECTOR"
+✅ Chain Selector: 16015286601757825753
+```
+
+</Fragment>
+</Tabs>
+
+### Step 2: Configure Cross-Chain Pool Settings
+
+Configure your token pool for cross-chain transfers to Ethereum Sepolia. This process involves two sequential operations:
+
+1. **Initialize Chain Remote Config**: Create the basic cross-chain configuration using [init_chain_remote_config](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#init_chain_remote_config)
+1. **Edit Chain Remote Config**: Add the remote pool address using [edit_chain_remote_config](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#edit_chain_remote_config)
+
+#### Step 2A: Initialize Chain Remote Config
+
+Initialize the basic remote chain configuration for Ethereum Sepolia. Pool addresses must be empty at initialization and rate limits are not configured at this stage.
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Initialize basic cross-chain configuration (no rate limits, no pool addresses)
+pnpm bs58 burnmint-token-pool --env devnet --instruction init-chain-remote-config \
+  --program-id $CCIP_POOL_PROGRAM \
+  --mint $SOL_TOKEN_MINT \
+  --authority $SOL_SQUAD_VAULT_MULTISIG \
+  --remote-chain-selector $ETHEREUM_SEPOLIA_CHAIN_SELECTOR \
+  --token-address $ETH_TOKEN_ADDRESS \
+  --decimals "18"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+   ✅ Transaction simulation completed
+🎯 COPY TRANSACTION DATA BELOW:
+
+Q14fzko7Rj4xtdvdxXYm7mVfqp8TtR6cCGwrWbEbohtoj9wCMCAi9QxmiC4AQ4K8sGMJi16oCcLDJcj4cv9iz7XjSeojPFBTWgBGwYyBNx4eyLv7k4MUuTkK9bjAd5QzRFDavgwwx2bed7LjkwZSnZdeiJaTBgbHxh8bEDmCpvPR8hhcKM7uAsniNFuhGqfSfmYduiHkxd8zUL29tC634x6W3tDmq7WXBawuoUUpwQxFevaWJcPUqui2QrDM2yXiBXRwGksTxSPn1tr2ZL97A4GZ6zTv9JWaDtkKci9MBNp5pWsRvr97TF79zpuprDRh4ZFSnutm9XV1zmSRXxL8rcYo3jR9hQgq4AfEknV7JmNsuHB3h7s4QzfwVY1oK8PC1wSL6a6MJ4EjFey
+
+────────────────────────────────────────────────────────────────────────────────
+INFO [2025-08-19 11:37:00.167 +0200]: Transaction built successfully
+    instructionName: "initChainRemoteConfig"
+    transactionSize: "293 bytes"
+    base58Length: "399 characters"
+    hexLength: "586 characters"
+    accountCount: 4
+    signerCount: 1
+    computeUnits: 17935
+INFO [2025-08-19 11:37:00.167 +0200]: Completed buildTransaction (initChainRemoteConfig)
+    durationMs: 431
+INFO [2025-08-19 11:37:00.167 +0200]:
+INFO [2025-08-19 11:37:00.167 +0200]: 🎉 Transaction generated successfully!
+INFO [2025-08-19 11:37:00.167 +0200]:
+INFO [2025-08-19 11:37:00.167 +0200]: 📋 Transaction Details:
+INFO [2025-08-19 11:37:00.167 +0200]:    Instruction: initChainRemoteConfig
+INFO [2025-08-19 11:37:00.167 +0200]:    Size: 293 bytes
+INFO [2025-08-19 11:37:00.167 +0200]:    Base58 length: 399 characters
+INFO [2025-08-19 11:37:00.185 +0200]:    Compute units: 17 935
+INFO [2025-08-19 11:37:00.185 +0200]:    Generated: 2025-08-19T09:37:00.166Z
+INFO [2025-08-19 11:37:00.185 +0200]:
+INFO [2025-08-19 11:37:00.185 +0200]: 🔗 Transaction Data (Base58):
+INFO [2025-08-19 11:37:00.185 +0200]:
+INFO [2025-08-19 11:37:00.185 +0200]: 💡 Triple-click the line above to select the entire transaction data
+INFO [2025-08-19 11:37:00.185 +0200]:
+INFO [2025-08-19 11:37:00.185 +0200]: 📊 Account Information:
+INFO [2025-08-19 11:37:00.185 +0200]:    Total accounts: 4
+INFO [2025-08-19 11:37:00.186 +0200]:     1. 2pGY9WAjanpR3RnY5hQ1a23uDNomzFCAD5HMBgo8nH6M (read-only)
+INFO [2025-08-19 11:37:00.186 +0200]:     2. 8zdWLvsAgLQkRmBDATR3j8xVQzcdwrRNZtPZH5kU37jg (writable)
+INFO [2025-08-19 11:37:00.186 +0200]:     3. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer, writable)
+INFO [2025-08-19 11:37:00.186 +0200]:     4. 11111111111111111111111111111111 (read-only)
+INFO [2025-08-19 11:37:00.186 +0200]:
+```
+
+</Fragment>
+</Tabs>
+
+**Account Breakdown from the Transaction (Example):**
+
+| Account | Address                                        | Description                                         |
+| ------- | ---------------------------------------------- | --------------------------------------------------- |
+| **#1**  | `2pGY9WAjanpR3RnY5hQ1a23uDNomzFCAD5HMBgo8nH6M` | **Pool State PDA** (read-only - validation)         |
+| **#2**  | `8zdWLvsAgLQkRmBDATR3j8xVQzcdwrRNZtPZH5kU37jg` | **Chain Remote Config PDA** (writable - created)    |
+| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault** (signer, writable - pool authority) |
+| **#4**  | `11111111111111111111111111111111`             | **System Program** (read-only - account creation)   |
+
+**What This Command Does:**
+This initializes the **cross-chain configuration** for your Solana token to enable CCIP bridging to Ethereum Sepolia. This creates the foundational connection without rate limits or pool addresses.
+
+**Key Details:**
+
+- **Remote Chain**: Ethereum Sepolia (chain selector: `16015286601757825753`)
+- **Token Mapping**: Links to ERC20 token `0x7c57A9d966c3E6e344621C512d510f76575640ED`
+- **Decimal Precision**: 18 decimals (standard EVM token format)
+- **Basic Setup**: No rate limits or pool addresses configured at this stage
+- **Account Creation**: Creates a new Chain Remote Config PDA for this cross-chain relationship
+
+**Transaction Flow:**
+
+1. **Authority Verification**: Confirms Squad vault owns the pool state
+1. **PDA Derivation**: Calculates Chain Remote Config PDA using pool state + chain selector
+1. **Account Creation**: Creates new account with rent-exempt balance
+1. **Basic Configuration**: Stores minimal cross-chain parameters (no rate limits, no pool addresses)
+
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+- **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
+
+#### Step 2B: Edit Chain Remote Config (Add Remote Pool Address)
+
+After initializing the chain remote config, add the remote pool address to enable bidirectional cross-chain transfers. This uses [`edit_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#edit_chain_remote_config) to specify the Ethereum pool address.
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Configure chain connection and remote pool address
+pnpm bs58 burnmint-token-pool --env devnet --instruction edit-chain-remote-config \
+  --program-id $CCIP_POOL_PROGRAM \
+  --mint $SOL_TOKEN_MINT \
+  --authority $SOL_SQUAD_VAULT_MULTISIG \
+  --remote-chain-selector $ETHEREUM_SEPOLIA_CHAIN_SELECTOR \
+  --pool-addresses "[\"$ETH_POOL_ADDRESS\"]" \
+  --token-address $ETH_TOKEN_ADDRESS \
+  --decimals "18"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+   ✅ Transaction simulation completed
+🎯 COPY TRANSACTION DATA BELOW:
+
+AFoMMPcqYbM5kCTDs346jiU3HGiWW1moQm7vwGoWZ1eBtxTpoTvzsCFwMC3soXz1EoHHX6RqQL3WuZiMWxkpnS4ZquERERu4KFTvTtJiThcUDUUzaSWva652hWqxFnY3PoeUnJqQTaY9BQ2BhcLWW25XbKwUF5jYT7pfEjc4y22pestM3GCmuukaHyDUPr1xoJmEUqRtEFLRbYkG16fxUi8EzxS1iAqeziVEiF5M6fUeJTsmcdLM8hA7W3s5eHMfGTv6t3Phpds6BoUuzeFH5wu4U1dtcmDveMWS1uDkHvfxkYweXHgLXUVhudkquXgNBLr2CJ6Y6MtqoQokRUZaToBTCyDVGrZJYKPD8Saig2QSSQQ2qtLzEg9GywjzcaPcG9EuDshVsGP5KuqbCWVPEt4nwZe7FFbs1jvWRD1uBeaaA3o7
+
+────────────────────────────────────────────────────────────────────────────────
+INFO [2025-08-19 11:38:44.662 +0200]: Transaction built successfully
+    instructionName: "editChainRemoteConfig"
+    transactionSize: "317 bytes"
+    base58Length: "432 characters"
+    hexLength: "634 characters"
+    accountCount: 4
+    signerCount: 1
+    computeUnits: 19063
+INFO [2025-08-19 11:38:44.662 +0200]: Completed buildTransaction (editChainRemoteConfig)
+    durationMs: 1056
+INFO [2025-08-19 11:38:44.662 +0200]:
+INFO [2025-08-19 11:38:44.662 +0200]: 🎉 Transaction generated successfully!
+INFO [2025-08-19 11:38:44.662 +0200]:
+INFO [2025-08-19 11:38:44.662 +0200]: 📋 Transaction Details:
+INFO [2025-08-19 11:38:44.662 +0200]:    Instruction: editChainRemoteConfig
+INFO [2025-08-19 11:38:44.662 +0200]:    Size: 317 bytes
+INFO [2025-08-19 11:38:44.662 +0200]:    Base58 length: 432 characters
+INFO [2025-08-19 11:38:44.675 +0200]:    Compute units: 19 063
+INFO [2025-08-19 11:38:44.675 +0200]:    Generated: 2025-08-19T09:38:44.662Z
+INFO [2025-08-19 11:38:44.675 +0200]:
+INFO [2025-08-19 11:38:44.675 +0200]: 🔗 Transaction Data (Base58):
+INFO [2025-08-19 11:38:44.675 +0200]:
+INFO [2025-08-19 11:38:44.675 +0200]: 💡 Triple-click the line above to select the entire transaction data
+INFO [2025-08-19 11:38:44.675 +0200]:
+INFO [2025-08-19 11:38:44.676 +0200]: 📊 Account Information:
+INFO [2025-08-19 11:38:44.676 +0200]:    Total accounts: 4
+INFO [2025-08-19 11:38:44.676 +0200]:     1. 2pGY9WAjanpR3RnY5hQ1a23uDNomzFCAD5HMBgo8nH6M (read-only)
+INFO [2025-08-19 11:38:44.676 +0200]:     2. 8zdWLvsAgLQkRmBDATR3j8xVQzcdwrRNZtPZH5kU37jg (writable)
+INFO [2025-08-19 11:38:44.676 +0200]:     3. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer, writable)
+INFO [2025-08-19 11:38:44.676 +0200]:     4. 11111111111111111111111111111111 (read-only)
+```
+
+</Fragment>
+
+</Tabs>
+
+**Account Breakdown from the Transaction:**
+
+| Account | Address                                        | Description                                                    |
+| ------- | ---------------------------------------------- | -------------------------------------------------------------- |
+| **#1**  | `2pGY9WAjanpR3RnY5hQ1a23uDNomzFCAD5HMBgo8nH6M` | **Pool State PDA** (read-only - authority validation)          |
+| **#2**  | `8zdWLvsAgLQkRmBDATR3j8xVQzcdwrRNZtPZH5kU37jg` | **Chain Remote Config PDA** (writable - configuration updated) |
+| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault Authority** (signer, writable - fee payer)       |
+| **#4**  | `11111111111111111111111111111111`             | **System Program** (read-only - account operations)            |
+
+**Transaction Flow:**
+
+1. **Authority Verification**: Confirms Squad vault owns the pool state
+1. **PDA Access**: Updates the existing Chain Remote Config PDA
+1. **Pool Address Addition**: Adds the remote pool to the the remote pool list for Ethereum Sepolia
+
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+- **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
+
+### Step 3: Configure Rate Limits (Optional)
+
+This command configures inbound and outbound rate limiting for token transfers between your Solana token and Ethereum Sepolia. Rate limits act as "token buckets" that control the flow of tokens across chains.
+
+<Aside type="note" title="CCIP Rate Limit Best Practices">
+
+**Recommendations for rate limits:**
+
+- **Outbound = 90% of Inbound**: Prevents in-flight congestion during high-volume periods
+- **Conservative Values**: The example uses 20 tokens inbound capacity with 0.1 tokens/second refill rate
+- **9-Decimal Tokens**: All values are in smallest token units (Solana uses 9 decimals)
+
+**Configuration Controls:**
+
+- **Pause lane**: Set `capacity=1`, `rate=1` for both directions
+- **Remove limits**: Set `enabled=false`, `capacity=0`, `rate=0` for both directions
+
+**Value Calculations:**
+
+- 20 tokens = `20000000000` (20 × 10^9)
+- 18 tokens = `18000000000` (18 × 10^9)
+- 0.1 tokens/sec = `100000000` (0.1 × 10^9)
+
+</Aside>
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Configure rate limits for cross-chain token transfers
+pnpm bs58 burnmint-token-pool \
+  --env devnet \
+  --instruction set-chain-rate-limit \
+  --program-id $CCIP_POOL_PROGRAM \
+  --mint $SOL_TOKEN_MINT \
+  --authority $SOL_SQUAD_VAULT_MULTISIG \
+  --remote-chain-selector $ETHEREUM_SEPOLIA_CHAIN_SELECTOR \
+  --inbound-enabled "true" \
+  --inbound-capacity "20000000000" \
+  --inbound-rate "100000000" \
+  --outbound-enabled "true" \
+  --outbound-capacity "18000000000" \
+  --outbound-rate "100000000"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+   ✅ Transaction simulation completed
+🎯 COPY TRANSACTION DATA BELOW:
+
+2osuKVgAa7jk8Ahvr7KPjeNDY7RAx29vFbgbkrKwtnGKbSjEBDZbyrk8Svt46YPLxMkn7AKWi4WYm6oTDYsffKExgZgJRjxvWLgjePpC8UdLhWJZaELXK6wtr3QDSXRgjn9fnW9LGBjSVyo7a7iZLeRQFgygicqXm9FegoDqP6EVHrweoFTcQRUZo4LgMMQnLps9K55APbvesDGXH9yPTUSFTnNrjFGSqqxsNZq8aptDiq4G3CMUBSX9vycyk34qNj9uvWoSmKGkHnypMd7M5Ao5Ws4WuZgCwFYMdfzqJSrRV49umK7FtC4zJ4653fHYMqkQGNh47Ld2qnjjtSgaaUFuR
+
+────────────────────────────────────────────────────────────────────────────────
+INFO [2025-08-19 11:40:52.986 +0200]: Transaction built successfully
+    instructionName: "setChainRateLimit"
+    transactionSize: "253 bytes"
+    base58Length: "345 characters"
+    hexLength: "506 characters"
+    accountCount: 3
+    signerCount: 1
+    computeUnits: 15592
+INFO [2025-08-19 11:40:52.986 +0200]: Completed buildTransaction (setChainRateLimit)
+    durationMs: 1272
+INFO [2025-08-19 11:40:52.987 +0200]:
+INFO [2025-08-19 11:40:52.987 +0200]: 🎉 Transaction generated successfully!
+INFO [2025-08-19 11:40:52.987 +0200]:
+INFO [2025-08-19 11:40:52.987 +0200]: 📋 Transaction Details:
+INFO [2025-08-19 11:40:52.987 +0200]:    Instruction: setChainRateLimit
+INFO [2025-08-19 11:40:52.987 +0200]:    Size: 253 bytes
+INFO [2025-08-19 11:40:52.987 +0200]:    Base58 length: 345 characters
+INFO [2025-08-19 11:40:53.001 +0200]:    Compute units: 15 592
+INFO [2025-08-19 11:40:53.001 +0200]:    Generated: 2025-08-19T09:40:52.986Z
+INFO [2025-08-19 11:40:53.001 +0200]:
+INFO [2025-08-19 11:40:53.001 +0200]: 🔗 Transaction Data (Base58):
+INFO [2025-08-19 11:40:53.001 +0200]:
+INFO [2025-08-19 11:40:53.001 +0200]: 💡 Triple-click the line above to select the entire transaction data
+INFO [2025-08-19 11:40:53.001 +0200]:
+INFO [2025-08-19 11:40:53.001 +0200]: 📊 Account Information:
+INFO [2025-08-19 11:40:53.001 +0200]:    Total accounts: 3
+INFO [2025-08-19 11:40:53.001 +0200]:     1. 2pGY9WAjanpR3RnY5hQ1a23uDNomzFCAD5HMBgo8nH6M (read-only)
+INFO [2025-08-19 11:40:53.001 +0200]:     2. 8zdWLvsAgLQkRmBDATR3j8xVQzcdwrRNZtPZH5kU37jg (writable)
+INFO [2025-08-19 11:40:53.001 +0200]:     3. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer, writable)
+INFO [2025-08-19 11:40:53.001 +0200]:
+```
+
+</Fragment>
+</Tabs>
+
+**Transaction Accounts (3 total):**
+
+| Account | Address                                        | Type                 | Purpose                                                           |
+| ------- | ---------------------------------------------- | -------------------- | ----------------------------------------------------------------- |
+| **#1**  | `2pGY9WAjanpR3RnY5hQ1a23uDNomzFCAD5HMBgo8nH6M` | **Read-only**        | **Pool State PDA** - Main pool configuration account              |
+| **#2**  | `8zdWLvsAgLQkRmBDATR3j8xVQzcdwrRNZtPZH5kU37jg` | **Writable**         | **Chain Config PDA** - Chain-specific config (stores rate limits) |
+| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Signer, Writable** | **Authority** - Your Squad vault that can modify rate limits      |
+
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+- **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
+
+### Step 4: Create Address Lookup Table
+
+Create an Address Lookup Table (ALT) containing all accounts needed for CCIP router operations.
+
+**What This Command Does:**
+
+This command creates an **Address Lookup Table (ALT)** that stores frequently used accounts for CCIP operations. ALTs are a Solana optimization that reduces transaction size and costs by replacing full 32-byte addresses with small 1-byte indices.
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Generate address lookup table creation transaction
+pnpm bs58 router --env devnet --instruction create-lookup-table \
+  --program-id $CCIP_ROUTER_PROGRAM \
+  --fee-quoter-program-id $CCIP_FEE_QUOTER_PROGRAM \
+  --pool-program-id $CCIP_POOL_PROGRAM \
+  --mint $SOL_TOKEN_MINT \
+  --authority $SOL_SQUAD_VAULT_MULTISIG \
+  --additional-addresses "[\"$SOL_SPL_MULTISIG\"]"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+📮 Derived Lookup Table Address: 2s6yx6xCBgEQBrv5h4dF7TQvvKUWTJBEsueqTnZZHLwY
+   ✅ Transaction simulation completed
+🎯 COPY TRANSACTION DATA BELOW:
+
+4Tv96e4E7ESPWQLmUo496tqU5fHzEJ11Baqk6FSZ4caP6KGA2zsYbdEXanTSaqUG8anjbxD9zHH6cV7BHePqwX5Nvgan4ZrFjqo1Vk9yYDaw5HhKmVgaB4JiGaJEtpe7aMvt9U9rUSfTBcAtXSaW2oPWphKHwqFD7ANH8eW2ybF9KMVEoXi2RJQDgtribNpMZvsh7pkVkWifYiTB4N6gFc4kXqxsSMqV3y9FtvsDFFnhvhSvDxLiRgCH5cp5puhsLFAxF87yCWsJiN5GA1iuHC1CYh3nDMVwcbowdZWQgbMJyyzijnzmXmczv1TWRF7g7VTDv9kULaNTTQDuswN9pUzTJeGPxDbnWwe31SKRjT3HiSCzPCQG67tcPzMnG14S3J2W2foUaMwcK7UHJaw7B1Wgd6dX4VduaJtFd2rELY6hXkfvdApy9dweL6UpuC1pkww3JETimnUCGdmcNGqpCSdrtbd4gpNfk4QNSit4uSiqRruv1ggaEKDTPoKA5GSFgYf14Aj9dpcwGTeAqcw3oXYAHmCRHEB5AGk6BqRCPe7FJkHjBBKq9mANGjf15G21dxAwpZx3FhnGXX7RB7UoQmDHNYorYRKNuHZpCuUmdQKyLDnkRPdvGCVPqpwnREZmMCpqC7gSMRs7wzy1Ed8AorCjTqWExc2ijrNbWfDEfGVHsoLfe6CmgEmfEZB3Ccr34hy8hhfUvCFiJwDHZKkmUPG1kv5Xu7AKbDkDpWafv4ngyQBGT3oRtRC1
+
+────────────────────────────────────────────────────────────────────────────────
+INFO [2025-08-19 11:42:31.495 +0200]: Transaction built successfully
+    instructionName: "router.create_lookup_table"
+    transactionSize: "557 bytes"
+    base58Length: "760 characters"
+    hexLength: "1114 characters"
+    accountCount: 4
+    signerCount: 2
+    computeUnits: 19728
+INFO [2025-08-19 11:42:31.496 +0200]: Completed buildTransaction (router.create_lookup_table)
+    durationMs: 481
+INFO [2025-08-19 11:42:31.496 +0200]:
+INFO [2025-08-19 11:42:31.496 +0200]: 🎉 Transaction generated successfully!
+INFO [2025-08-19 11:42:31.496 +0200]:
+INFO [2025-08-19 11:42:31.496 +0200]: 📋 Transaction Details:
+INFO [2025-08-19 11:42:31.496 +0200]:    Instruction: router.create_lookup_table
+INFO [2025-08-19 11:42:31.496 +0200]:    Size: 557 bytes
+INFO [2025-08-19 11:42:31.496 +0200]:    Base58 length: 760 characters
+INFO [2025-08-19 11:42:31.515 +0200]:    Compute units: 19 728
+INFO [2025-08-19 11:42:31.515 +0200]:    Generated: 2025-08-19T09:42:31.495Z
+INFO [2025-08-19 11:42:31.515 +0200]:
+INFO [2025-08-19 11:42:31.515 +0200]: 🔗 Transaction Data (Base58):
+INFO [2025-08-19 11:42:31.515 +0200]:
+INFO [2025-08-19 11:42:31.516 +0200]: 💡 Triple-click the line above to select the entire transaction data
+INFO [2025-08-19 11:42:31.516 +0200]:
+INFO [2025-08-19 11:42:31.516 +0200]: 📊 Account Information:
+INFO [2025-08-19 11:42:31.516 +0200]:    Total accounts: 4
+INFO [2025-08-19 11:42:31.516 +0200]:     1. 2s6yx6xCBgEQBrv5h4dF7TQvvKUWTJBEsueqTnZZHLwY (writable)
+INFO [2025-08-19 11:42:31.516 +0200]:     2. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer)
+INFO [2025-08-19 11:42:31.516 +0200]:     3. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer, writable)
+INFO [2025-08-19 11:42:31.516 +0200]:     4. 11111111111111111111111111111111 (read-only)
+INFO [2025-08-19 11:42:31.516 +0200]:
+```
+
+</Fragment>
+</Tabs>
+
+**Account Breakdown from the Transaction:**
+
+| Account | Address                                        | Description                                               |
+| ------- | ---------------------------------------------- | --------------------------------------------------------- |
+| **#1**  | `2s6yx6xCBgEQBrv5h4dF7TQvvKUWTJBEsueqTnZZHLwY` | **ALT Account** (writable - being created)                |
+| **#2**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **ALT Authority** (signer - will own the table)           |
+| **#3**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Fee Payer** (signer, writable - pays creation costs)    |
+| **#4**  | `11111111111111111111111111111111`             | **System Program** (read-only - handles account creation) |
+
+**What This Command Does:**
+
+This command creates the ALT infrastructure needed for efficient CCIP operations by storing frequently used account addresses in a lookup table.
+
+**Transaction Flow:**
+
+1. **ALT Creation**: Creates lookup table account `2s6yx6x...` with Squad Vault as authority
+1. **Core Address Addition**: Adds essential CCIP accounts (programs, PDAs) to the table
+1. **SPL Multisig Addition**: Adds your SPL multisig `$SOL_SPL_MULTISIG` via `--additional-addresses`
+1. **Index Assignment**: Each address gets a unique 1-byte index for future reference
+
+**ALT Contents (What Gets Stored):**
+The created lookup table will contain indices for these accounts in this exact order:
+
+<Aside type="note" title="Example-Specific Values">
+  The addresses shown below are from our specific tutorial example. Your actual addresses will be different based on
+  your token mint, multisig addresses, and derived PDAs.
+</Aside>
+
+| Index  | Account Address                                | Purpose                                               |
+| ------ | ---------------------------------------------- | ----------------------------------------------------- |
+| **0**  | `2s6yx6xCBgEQBrv5h4dF7TQvvKUWTJBEsueqTnZZHLwY` | **ALT Address (Self-Reference)**                      |
+| **1**  | `4maPuX2fcDmCkQv1Qa6RmQa2yGpeZLxiqKy9ybwazGft` | **Token Admin Registry PDA**                          |
+| **2**  | `41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB` | **Pool Program ID**                                   |
+| **3**  | `2pGY9WAjanpR3RnY5hQ1a23uDNomzFCAD5HMBgo8nH6M` | **Pool State PDA**                                    |
+| **4**  | `BKkeydRQWKDc5dR7euwhYi47TDLV99o8pD83ncGA2LdZ` | **Pool Signer's Associated Token Account**            |
+| **5**  | `8NTqDH8dFj7aU5FBWeNMJwjsR1gZMR7criaEaDMEE24r` | **Pool Signer PDA**                                   |
+| **6**  | `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`  | **Token Program ID (SPL Token v1)**                   |
+| **7**  | `3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci` | **Token Mint**                                        |
+| **8**  | `GTz54AfhMRkKzFVse8jX8rjAx21fA86ZmVBF1v5VUC3u` | **Fee Quoter Token Config PDA**                       |
+| **9**  | `H6ZviaabTYZqUPgiSoMDbeVthcNW9ULcAuUu3zRLFqDR` | **Router External Token Pools Signer PDA**            |
+| **10** | `6c5UGRRQzPvZY4ZJZJiPGRYMw5e32uX8GfFzvm35k3jK` | **SPL Token Multisig** ← **Your Additional Address!** |
+
+**Transaction Efficiency Impact:**
+
+- **Before ALT**: Each account = 32 bytes (10 accounts = 320 bytes)
+- **After ALT**: Each account = 1 byte index (10 accounts = 10 bytes)
+- **Savings**: ~310 bytes per future CCIP transaction!
+
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+- **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
+
+**Set Variables:**
+
+Copy the ALT address from the transaction output and set the environment variable:
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Set Variable</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+export SOL_ADDRESS_LOOKUP_TABLE="<YOUR_ALT_ADDRESS>"
+```
+
+Verify the variable is set:
+
+```bash
+echo "✅ Address Lookup Table: $SOL_ADDRESS_LOOKUP_TABLE"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+✅ Address Lookup Table: 2s6yx6xCBgEQBrv5h4dF7TQvvKUWTJBEsueqTnZZHLwY
+```
+
+</Fragment>
+</Tabs>
+
+### Step 5: Register Pool with Router
+
+Register your token pool with the CCIP Router using [set_pool](/ccip/api-reference/svm/v1.6.0/router#set_pool). This enables the router to route cross-chain transfers through your token pool.
+
+**What This Command Does:**
+
+- **Pool Registration**: Connects your token pool to the CCIP Router for cross-chain operations
+- **Lookup Table Integration**: Uses the ALT created in the previous step for efficient account management
+- **Router Configuration**: Enables the router to call your pool's token operations
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Generate pool registration transaction
+pnpm bs58 router --env devnet --instruction set-pool \
+  --program-id $CCIP_ROUTER_PROGRAM \
+  --mint $SOL_TOKEN_MINT \
+  --authority $SOL_SQUAD_VAULT_MULTISIG \
+  --pool-lookup-table $SOL_ADDRESS_LOOKUP_TABLE \
+  --writable-indexes "[3,4,7]"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+   ✅ Transaction simulation completed
+🎯 COPY TRANSACTION DATA BELOW:
+
+QmCar77mNEqzAzGvMRsXQY9UpezF7qcPt7iURnmpvC88c6KwfUn7EV6zzYacufykzKm9Tix1Pgf8mR7fbMQMuzqRHRkcqTYE5qFvjEBZ3WeWgdr3wJHrRt4AXLT7B4PNUDV8jhPMNNahL3NJMQmz6VjA9dRxJ2qLGQEFvGaN4qgTbstuwniy93gJvzjhZzTpa7qi8CedKWb4wni5xX9MjKGbQV4pxdXHuFiuYv9uxXJWFTJjFMvH1jrnsAnUJEqu6V5SZjSCYGGrnXm4PoifNadCwnCBYLhX1p9GtrA3S6zUG2YcsLDMCbKzM2Ge5FLfn4mDMp2QQn2UrDFtstRq4pN
+
+────────────────────────────────────────────────────────────────────────────────
+INFO [2025-08-19 11:47:34.577 +0200]: Transaction built successfully
+    instructionName: "router.set_pool"
+    transactionSize: "252 bytes"
+    base58Length: "343 characters"
+    hexLength: "504 characters"
+    accountCount: 5
+    signerCount: 1
+    computeUnits: 40367
+INFO [2025-08-19 11:47:34.578 +0200]: Completed buildTransaction (router.set_pool)
+    durationMs: 732
+INFO [2025-08-19 11:47:34.578 +0200]:
+INFO [2025-08-19 11:47:34.578 +0200]: 🎉 Transaction generated successfully!
+INFO [2025-08-19 11:47:34.578 +0200]:
+INFO [2025-08-19 11:47:34.579 +0200]: 📋 Transaction Details:
+INFO [2025-08-19 11:47:34.579 +0200]:    Instruction: router.set_pool
+INFO [2025-08-19 11:47:34.579 +0200]:    Size: 252 bytes
+INFO [2025-08-19 11:47:34.579 +0200]:    Base58 length: 343 characters
+INFO [2025-08-19 11:47:34.593 +0200]:    Compute units: 40 367
+INFO [2025-08-19 11:47:34.593 +0200]:    Generated: 2025-08-19T09:47:34.576Z
+INFO [2025-08-19 11:47:34.593 +0200]:
+INFO [2025-08-19 11:47:34.593 +0200]: 🔗 Transaction Data (Base58):
+INFO [2025-08-19 11:47:34.593 +0200]:
+INFO [2025-08-19 11:47:34.594 +0200]: 💡 Triple-click the line above to select the entire transaction data
+INFO [2025-08-19 11:47:34.594 +0200]:
+INFO [2025-08-19 11:47:34.594 +0200]: 📊 Account Information:
+INFO [2025-08-19 11:47:34.594 +0200]:    Total accounts: 5
+INFO [2025-08-19 11:47:34.594 +0200]:     1. 3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3 (read-only)
+INFO [2025-08-19 11:47:34.594 +0200]:     2. 4maPuX2fcDmCkQv1Qa6RmQa2yGpeZLxiqKy9ybwazGft (writable)
+INFO [2025-08-19 11:47:34.594 +0200]:     3. 3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci (read-only)
+INFO [2025-08-19 11:47:34.594 +0200]:     4. 2s6yx6xCBgEQBrv5h4dF7TQvvKUWTJBEsueqTnZZHLwY (read-only)
+INFO [2025-08-19 11:47:34.594 +0200]:     5. 59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY (signer, writable)
+INFO [2025-08-19 11:47:34.594 +0200]:
+```
+
+</Fragment>
+</Tabs>
+
+**Account Breakdown from the Transaction:**
+
+| Account | Address                                        | Description                                                 |
+| ------- | ---------------------------------------------- | ----------------------------------------------------------- |
+| **#1**  | `3Yrg9E4ySAeRezgQY99NNarAmFLtixapga9MZb6y2dt3` | **Router Config PDA** (read-only - configuration reference) |
+| **#2**  | `4maPuX2fcDmCkQv1Qa6RmQa2yGpeZLxiqKy9ybwazGft` | **Token Admin Registry PDA** (writable - pool registration) |
+| **#3**  | `3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci` | **Token Mint** (read-only - token identification)           |
+| **#4**  | `2s6yx6xCBgEQBrv5h4dF7TQvvKUWTJBEsueqTnZZHLwY` | **Address Lookup Table** (read-only - ALT registration)     |
+| **#5**  | `59eNrRrxrZMdqJxS7J3WGaV4MLLog2er14kePiWVjXtY` | **Squad Vault Authority** (signer, writable - admin & fees) |
+
+**What This Command Does:**
+
+This command **registers your token pool** with the CCIP Router. It configures the router to use your Address Lookup Table and specifies which accounts need write access during CCIP operations.
+
+**Key Configuration:**
+
+- **ALT Integration**: Uses the lookup table `2s6yx6x...` you just created
+- **Writable Indexes**: `[3,4,7]` - Specific accounts from the ALTthat need write access during CCIP operations
+
+**Transaction Flow:**
+
+1. **Authority Verification**: Confirms Squad Vault has CCIP token admin permissions
+1. **Pool Registration**: Updates Token Admin Registry with pool configuration
+1. **ALT Association**: Links your token with the specific lookup table
+1. **Permission Setup**: Defines which accounts can be modified during cross-chain operations
+
+**Writable Indexes Analysis: `[3,4,7]`**
+
+Based on the ALT order established earlier:
+
+| **Index** | **ALT Account** | **Why Writable**                                 |
+| --------- | --------------- | ------------------------------------------------ |
+| **3**     | Pool State PDA  | Gets updated during cross-chain operations       |
+| **4**     | Pool Token ATA  | Tokens get minted/burned during transfers        |
+| **7**     | Token Mint      | Supply gets modified during mint/burn operations |
+
+<Aside type="note" title="Squads Execution Required">
+
+**Execute this base58 transaction in Squads UI:**
+
+- **Import**: Copy the base58 output → Squads UI → "Add instruction" → "Import base58 encoded tx"
+- **Review**: Verify transaction details and parameters
+- **Simulate**: Simulate the transaction to ensure it will succeed
+- **Approve**: Obtain required threshold signatures
+- **Execute**: Complete the transaction execution
+
+</Aside>
+
+**Phase 3 Complete**: Save all variables:
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Save Configuration</Fragment>
+<Fragment slot="tab.2">Summary</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Save all variables for testing phase
+cat > ~/.all_vars << EOF
+# Phase 1 - EVM
+export ETH_TOKEN_ADDRESS="$ETH_TOKEN_ADDRESS"
+export ETH_POOL_ADDRESS="$ETH_POOL_ADDRESS"
+
+# Phase 2 - Solana
+
+export CCIP_POOL_PROGRAM="$CCIP_POOL_PROGRAM"
+export CCIP_ROUTER_PROGRAM="$CCIP_ROUTER_PROGRAM"
+export SOL_SQUAD_VAULT_MULTISIG="$SOL_SQUAD_VAULT_MULTISIG"
+export SOL_WALLET_ADDRESS="$SOL_WALLET_ADDRESS"
+export SOL_TOKEN_MINT="$SOL_TOKEN_MINT"
+export SOL_POOL_ADDRESS="$SOL_POOL_ADDRESS"
+export SOL_POOL_SIGNER_PDA="$SOL_POOL_SIGNER_PDA"
+export SOL_SPL_MULTISIG="$SOL_SPL_MULTISIG"
+export SOL_ADDRESS_LOOKUP_TABLE="$SOL_ADDRESS_LOOKUP_TABLE"
+
+# Chain Selectors
+
+export ETHEREUM_SEPOLIA_CHAIN_SELECTOR="$ETHEREUM_SEPOLIA_CHAIN_SELECTOR"
+EOF
+
+echo "=== Phase 3 Complete - Cross-Chain Configuration ==="
+echo "✅ Address Lookup Table: $SOL_ADDRESS_LOOKUP_TABLE"
+echo "✅ Cross-chain connection configured"
+echo "✅ All variables saved to ~/.all_vars"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+=== Phase 3 Complete - Cross-Chain Configuration ===
+✅ Address Lookup Table: 2s6yx6xCBgEQBrv5h4dF7TQvvKUWTJBEsueqTnZZHLwY
+✅ Cross-chain connection configured
+✅ All variables saved to ~/.all_vars
+```
+
+</Fragment>
+</Tabs>
+
+## Phase 4: EVM Cross-Chain Setup
+
+Configure the Ethereum pool to recognize the Solana chain and set production rate limits.
+
+<Aside type="note" title="Terminal Context Check">
+  **Current Focus: Terminal 2 (EVM Hardhat)** - Ensure you're in the Hardhat repository for EVM configuration.
+</Aside>
+
+### Step 1: Load Phase 3 Variables
+
+Ensure you're in Terminal 2 (Hardhat) and load all the variables from Phase 3.
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Verify you are in the Hardhat directory (Terminal 2)
+# Should be: /.../smart-contract-examples/ccip/cct/hardhat
+pwd
+
+# Load all environment variables from Phase 3
+source ~/.all_vars
+
+# Verify key variables are loaded
+echo "✅ ETH Token: $ETH_TOKEN_ADDRESS"
+echo "✅ ETH Pool: $ETH_POOL_ADDRESS"
+echo "✅ SOL Token: $SOL_TOKEN_MINT"
+echo "✅ SOL Pool: $SOL_POOL_ADDRESS"
+echo "✅ SOL ALT: $SOL_ADDRESS_LOOKUP_TABLE"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+/.../smart-contract-examples/ccip/cct/hardhat
+✅ ETH Token: 0x7c57A9d966c3E6e344621C512d510f76575640ED
+✅ ETH Pool: 0x88965fF139bbA53D6e02a49a80c29d8c65645bA7
+✅ SOL Token: 3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci
+✅ SOL Pool: 2pGY9WAjanpR3RnY5hQ1a23uDNomzFCAD5HMBgo8nH6M
+✅ SOL ALT: 2s6yx6xCBgEQBrv5h4dF7TQvvKUWTJBEsueqTnZZHLwY
+```
+
+</Fragment>
+</Tabs>
+
+### Step 2: Configure Cross-Chain Settings
+
+Configure the Ethereum pool to recognize the Solana chain and set production rate limits using [`applyChainUpdates`](/ccip/api-reference/evm/v1.6.2/token-pool#applychainupdates).
+
+<Aside type="tip" title="CCIP Rate Limit Best Practices">
+
+**Recommendations for rate limits**:
+
+- **Outbound = 90% of Inbound**: Prevents in-flight congestion during high-volume periods
+- **Conservative Values**: The example uses 20 tokens inbound capacity with 0.1 tokens/second refill rate
+- **18-Decimal Tokens**: All values are in wei (smallest token unit)
+- **Configuration Controls**:
+  - **Pause lane**: Set capacity=1, rate=1 for both directions
+  - **Remove limits**: Set enabled=false, capacity=0, rate=0 for both directions
+- **Value Calculations**:
+  - 20 tokens = `20000000000000000000` wei (20 × 10^18)
+  - 18 tokens = `18000000000000000000` wei (18 × 10^18)
+  - 0.1 tokens/sec = `100000000000000000` wei (0.1 × 10^18)
+
+</Aside>
+
+<Tabs client:visible>
+<Fragment slot="tab.1">With Rate Limits</Fragment>
+<Fragment slot="tab.2">Without Rate Limits</Fragment>
+<Fragment slot="tab.3">Expected Output (With Limits)</Fragment>
+<Fragment slot="tab.4">Expected Output (Without Limits)</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Configure cross-chain settings WITH rate limits
+npx hardhat applyChainUpdates \
+ --pooladdress $ETH_POOL_ADDRESS \
+ --remotechain solanaDevnet \
+ --remotepooladdresses $SOL_POOL_ADDRESS \
+  --remotetokenaddress $SOL_TOKEN_MINT \
+  --outboundratelimitenabled true \
+  --outboundratelimitcapacity 18000000000000000000 \
+  --outboundratelimitrate 100000000000000000 \
+  --inboundratelimitenabled true \
+  --inboundratelimitcapacity 20000000000000000000 \
+  --inboundratelimitrate 100000000000000000 \
+ --network sepolia
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+# Configure cross-chain settings WITHOUT rate limits
+npx hardhat applyChainUpdates \
+  --pooladdress $ETH_POOL_ADDRESS \
+  --remotechain solanaDevnet \
+  --remotepooladdresses $SOL_POOL_ADDRESS \
+  --remotetokenaddress $SOL_TOKEN_MINT \
+  --network sepolia
+```
+
+</Fragment>
+
+<Fragment slot="panel.3">
+
+```bash
+2025-08-19T09:50:51.952Z info: === Starting Chain Update Configuration ===
+2025-08-19T09:50:51.952Z info: 🔹 Local network: sepolia
+2025-08-19T09:50:51.953Z info: 🔹 Pool address: 0x88965fF139bbA53D6e02a49a80c29d8c65645bA7
+2025-08-19T09:50:51.953Z info: 🔹 Remote chain: solanaDevnet
+2025-08-19T09:50:51.953Z info: 🔹 Remote chain type detected: svm
+2025-08-19T09:50:51.953Z info: 🔹 Remote chain selector: 16423721717087811551
+2025-08-19T09:50:51.953Z info: 🔹 Parsed 1 remote pool addresses
+2025-08-19T09:50:51.972Z info: ✅ All addresses validated successfully
+2025-08-19T09:50:52.333Z info: 🔹 Using signer: 0x9d087fC03ae39b088326b67fA3C788236645b717
+2025-08-19T09:50:52.735Z info: ✅ Connected to pool contract
+2025-08-19T09:50:52.735Z info: 🔹 Remote pool address 1: 2pGY9WAjanpR3RnY5hQ1a23uDNomzFCAD5HMBgo8nH6M → 0x1af78d7e2c946d8b44252005f2fa4051109b366b8b86e3d9dd718fbd76e1bb6e
+2025-08-19T09:50:52.736Z info: 🔹 Remote token address: 3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci → 0x246189812d1a095f17334822baca43823b37b7e372c96ffd0864a03e10d2afaf
+2025-08-19T09:50:52.736Z info: === Rate Limiter Configuration ===
+2025-08-19T09:50:52.736Z info: 🔹 Outbound enabled: true
+2025-08-19T09:50:52.736Z info: 🔹 Outbound capacity: 18000000000000000000
+2025-08-19T09:50:52.736Z info: 🔹 Outbound rate: 100000000000000000
+2025-08-19T09:50:52.736Z info: 🔹 Inbound enabled: true
+2025-08-19T09:50:52.736Z info: 🔹 Inbound capacity: 20000000000000000000
+2025-08-19T09:50:52.736Z info: 🔹 Inbound rate: 100000000000000000
+2025-08-19T09:50:52.736Z info: === Executing Transaction ===
+2025-08-19T09:50:52.736Z info: 🔹 Sending applyChainUpdates transaction...
+2025-08-19T09:50:53.839Z info: 🔹 Transaction sent: 0xd5a86cad37e489ef1557ef75ba046087b1b9ad647934ec48e3cb5d3b3f38da08
+2025-08-19T09:50:53.839Z info: 🔹 Waiting for 3 confirmations...
+2025-08-19T09:51:25.094Z info: ✅ Chain update applied successfully!
+```
+
+</Fragment>
+
+<Fragment slot="panel.4">
+
+```bash
+2025-08-19T09:51:25.322Z info: === Starting Chain Update Configuration ===
+2025-08-19T09:51:25.323Z info: 🔹 Local network: sepolia
+2025-08-19T09:51:25.323Z info: 🔹 Pool address: 0x88965fF139bbA53D6e02a49a80c29d8c65645bA7
+2025-08-19T09:51:25.323Z info: 🔹 Remote chain: solanaDevnet
+2025-08-19T09:51:25.324Z info: 🔹 Remote chain type detected: svm
+2025-08-19T09:51:25.324Z info: 🔹 Remote chain selector: 16423721717087811551
+2025-08-19T09:51:25.324Z info: 🔹 Parsed 1 remote pool addresses
+2025-08-19T09:51:25.381Z info: ✅ All addresses validated successfully
+2025-08-19T09:51:25.836Z info: 🔹 Using signer: 0x9d087fC03ae39b088326b67fA3C788236645b717
+2025-08-19T09:51:26.249Z info: ✅ Connected to pool contract
+2025-08-19T09:51:26.250Z info: 🔹 Remote pool address 1: 2pGY9WAjanpR3RnY5hQ1a23uDNomzFCAD5HMBgo8nH6M → 0x0a2515d8f6ec3b58297031a08a2736defe792239608d920214c91a0474705854
+2025-08-19T09:51:26.250Z info: 🔹 Remote token address: 3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci → 0xca1558e396f86b9fbd3a5219af4207e2624d5acd0bcf272fb8713bf1f7c32a2e
+2025-08-19T09:51:26.250Z info: === Rate Limiter Configuration ===
+2025-08-19T09:51:26.250Z info: 🔹 No rate limits configured (unlimited transfers)
+2025-08-19T09:51:26.250Z info: === Executing Transaction ===
+2025-08-19T09:51:26.250Z info: 🔹 Sending applyChainUpdates transaction...
+2025-08-19T09:51:26.762Z info: 🔹 Transaction sent: 0x7f89ab2c3d4e5f6789abc123def4567890abcdef1234567890abcdef12345678
+2025-08-19T09:51:26.762Z info: 🔹 Waiting for 3 confirmations...
+2025-08-19T09:51:27.168Z info: ✅ Chain update applied successfully!
+```
+
+</Fragment>
+</Tabs>
+
+## Phase 5: Testing and Validation
+
+<Aside type="note" title="Terminal Context Check">
+  **Current Focus: Terminal 3 (Solana Testing)** Switch to the Solana Starter Kit repository for comprehensive testing.
+</Aside>
+
+### Step 1: Load Phase 4 Variables
+
+Before testing cross-chain transfers, ensure your terminal environment is properly configured:
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Check current directory
+# This should be the solana-starter-kit directory (Terminal 3)
+pwd
+```
+
+Load all environment variables
+
+```bash
+source ~/.all_vars
+```
+
+Set Ethereum receiver for testing
+
+```bash
+export ETH_RECEIVER_ADDRESS="<YOUR_ETH_RECEIVER_ADDRESS>"
+```
+
+Verify critical variables for Solana Starter Kit
+
+```bash
+echo "SOL_TOKEN_MINT: $SOL_TOKEN_MINT"
+echo "ETH_TOKEN_ADDRESS: $ETH_TOKEN_ADDRESS"
+echo "ETH_RECEIVER_ADDRESS: $ETH_RECEIVER_ADDRESS"
+echo "SOL_WALLET_ADDRESS: $SOL_WALLET_ADDRESS"
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+/.../solana-starter-kit
+SOL_TOKEN_MINT: 3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci
+ETH_TOKEN_ADDRESS: 0x7c57A9d966c3E6e344621C512d510f76575640ED
+ETH_RECEIVER_ADDRESS: 0x9d087fC03ae39b088326b67fA3C788236645b717
+SOL_WALLET_ADDRESS: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+```
+
+</Fragment>
+</Tabs>
+
+### Transfer Direction 1: Solana → Ethereum
+
+Test the production multisig setup with a cross-chain transfer from Solana Devnet to Ethereum Sepolia:
+
+#### Prepare for Testing
+
+Before testing cross-chain transfers, you need to create the pool's Associated Token Account (ATA) and prepare your tokens:
+
+##### Check Token Balance
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Check your current token balance
+spl-token balance $SOL_TOKEN_MINT
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+```bash
+5001
+```
+</Fragment>
+</Tabs>
+
+##### Create Pool Associated Token Account
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Create Associated Token Account for the Pool Signer PDA
+
+yarn svm:pool:create-token-account \
+  --token-mint $SOL_TOKEN_MINT \
+  --burn-mint-pool-program $CCIP_POOL_PROGRAM
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+[2025-08-19T09:55:22.737Z] 🏊 CCIP Pool Token Account Creation
+[2025-08-19T09:55:22.740Z] ==========================================
+[2025-08-19T09:55:22.783Z] Network: solana-devnet
+[2025-08-19T09:55:22.784Z] Wallet: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[2025-08-19T09:55:22.784Z]
+[2025-08-19T09:55:22.784Z] 💰 WALLET BALANCE
+[2025-08-19T09:55:22.784Z] ==========================================
+[2025-08-19T09:55:23.399Z] SOL Balance: 58365718274 lamports (58.365718274 SOL)
+[2025-08-19T09:55:23.399Z]
+[2025-08-19T09:55:23.399Z] 📋 ACCOUNT CREATION CONFIGURATION
+[2025-08-19T09:55:23.399Z] ==========================================
+[2025-08-19T09:55:23.400Z] Token Mint: 3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci
+[2025-08-19T09:55:23.400Z] Burn-Mint Pool Program: 41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB
+[2025-08-19T09:55:23.401Z]
+[2025-08-19T09:55:23.401Z] 🔍 VERIFYING POOL EXISTENCE
+[2025-08-19T09:55:23.401Z] ==========================================
+[2025-08-19T09:55:23.405Z] 📍 Pool Config PDA: 2pGY9WAjanpR3RnY5hQ1a23uDNomzFCAD5HMBgo8nH6M
+[2025-08-19T09:55:23.506Z] ✅ Pool exists
+[2025-08-19T09:55:23.506Z] Current pool token account: BKkeydRQWKDc5dR7euwhYi47TDLV99o8pD83ncGA2LdZ
+[2025-08-19T09:55:23.506Z] Getting mint account info for 3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci to determine token program ID...
+[2025-08-19T09:55:23.619Z] Detected Standard Token Program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+[2025-08-19T09:55:23.620Z] Pool signer PDA: 8NTqDH8dFj7aU5FBWeNMJwjsR1gZMR7criaEaDMEE24r
+[2025-08-19T09:55:23.620Z] Expected pool token account (ATA): BKkeydRQWKDc5dR7euwhYi47TDLV99o8pD83ncGA2LdZ
+[2025-08-19T09:55:23.620Z]
+[2025-08-19T09:55:23.620Z] 🔍 CHECKING EXISTING ACCOUNT
+[2025-08-19T09:55:23.620Z] ==========================================
+[2025-08-19T09:55:23.717Z]
+[2025-08-19T09:55:23.718Z] 🔧 CREATING POOL TOKEN ACCOUNT
+[2025-08-19T09:55:23.718Z] ==========================================
+[2025-08-19T09:55:23.718Z] Creating pool token account (ATA)...
+[2025-08-19T09:55:25.993Z]
+[2025-08-19T09:55:25.994Z] ✅ POOL TOKEN ACCOUNT CREATED SUCCESSFULLY
+[2025-08-19T09:55:25.994Z] ==========================================
+[2025-08-19T09:55:25.994Z] Transaction Signature: ngm3gZxYpgR5qsncrZRWrS1ypYBpyYHvqCweVK7Q9DdpwJQNoyEZRHMMmr4s7mMYzAZAe8DmKqASe86yPaAjK25
+[2025-08-19T09:55:25.994Z] Pool Token Account Address: BKkeydRQWKDc5dR7euwhYi47TDLV99o8pD83ncGA2LdZ
+[2025-08-19T09:55:25.994Z]
+[2025-08-19T09:55:25.994Z] 🔍 EXPLORER URLS
+[2025-08-19T09:55:25.995Z] ==========================================
+[2025-08-19T09:55:25.995Z] Transaction: https://explorer.solana.com/tx/ngm3gZxYpgR5qsncrZRWrS1ypYBpyYHvqCweVK7Q9DdpwJQNoyEZRHMMmr4s7mMYzAZAe8DmKqASe86yPaAjK25?cluster=devnet
+[2025-08-19T09:55:25.995Z]
+[2025-08-19T09:55:25.995Z] 🔍 VERIFYING ACCOUNT CREATION
+[2025-08-19T09:55:25.995Z] ==========================================
+[2025-08-19T09:55:26.305Z] ✅ Account creation verified!
+[2025-08-19T09:55:26.305Z]
+[2025-08-19T09:55:26.305Z] 🎉 Pool Token Account Setup Complete!
+[2025-08-19T09:55:26.306Z] ✅ ATA Address: BKkeydRQWKDc5dR7euwhYi47TDLV99o8pD83ncGA2LdZ
+[2025-08-19T09:55:26.306Z] ✅ Owner: 8NTqDH8dFj7aU5FBWeNMJwjsR1gZMR7criaEaDMEE24r (Pool Signer PDA)
+[2025-08-19T09:55:26.306Z] ✅ Ready for cross-chain token operations
+```
+
+</Fragment>
+</Tabs>
+
+##### Delegate Token Authority
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Delegate tokens for CCIP transfers
+yarn svm:token:delegate --token-mint $SOL_TOKEN_MINT
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+[2025-08-19T09:56:28.990Z] CCIP Token Authority Delegator
+[2025-08-19T09:56:28.992Z] =============================================
+[2025-08-19T09:56:29.020Z] Network: solana-devnet
+[2025-08-19T09:56:29.021Z] Router Program: Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C
+[2025-08-19T09:56:29.021Z] Wallet: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[2025-08-19T09:56:29.021Z]
+[2025-08-19T09:56:29.021Z] 💰 WALLET BALANCE
+[2025-08-19T09:56:29.021Z] =============================================
+[2025-08-19T09:56:29.659Z] SOL Balance: 58.363673994 SOL (58363673994 lamports)
+[2025-08-19T09:56:29.660Z]
+[2025-08-19T09:56:29.660Z] 🔐 PROCESSING TOKEN DELEGATIONS
+[2025-08-19T09:56:29.660Z] =============================================
+[2025-08-19T09:56:29.660Z] Custom token mints provided: 3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci
+[2025-08-19T09:56:29.660Z] Using 'fee-billing' delegation type for ccip_send compatibility
+[2025-08-19T09:56:29.660Z] Added custom token delegation for: 3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci
+[2025-08-19T09:56:29.660Z]
+[1/1] Processing delegation for mint: 3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci
+[2025-08-19T09:56:29.661Z] Getting mint account info for 3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci to determine token program ID...
+[2025-08-19T09:56:29.765Z] Detected Standard Token Program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+[2025-08-19T09:56:29.767Z] Token Program ID: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+[2025-08-19T09:56:29.767Z] Delegation Type: fee-billing
+[2025-08-19T09:56:29.767Z] Delegate Address: 2AjuzTy6z2webxEUu7eZ1DkAyLagZaqH2dgzhbBYjJiG
+[2025-08-19T09:56:29.767Z] Amount to delegate: 18446744073709551615
+[2025-08-19T09:56:29.768Z] User Token Account: 84FvKxAQpHtSaFLguFygoPPEaRorZpTjs8rmMCxuwqUF
+[2025-08-19T09:56:29.876Z] Token account 84FvKxAQpHtSaFLguFygoPPEaRorZpTjs8rmMCxuwqUF exists.
+[2025-08-19T09:56:29.976Z] Sending transaction to delegate token authority...
+[2025-08-19T09:56:31.352Z] ✅ Token delegation successful!
+[2025-08-19T09:56:31.352Z] Transaction signature: 2mWGmy1S722SShBX1Qg2raKNWF5Rfhue91vcJ3fpqm5qnq9v2Aa7geQQYd1nnWdBwLSoHosj9zifU5RTNwEnyKbY
+[2025-08-19T09:56:31.352Z] Explorer URL: https://explorer.solana.com/tx/2mWGmy1S722SShBX1Qg2raKNWF5Rfhue91vcJ3fpqm5qnq9v2Aa7geQQYd1nnWdBwLSoHosj9zifU5RTNwEnyKbY?cluster=devnet
+[2025-08-19T09:56:31.352Z]
+[2025-08-19T09:56:31.352Z] ✅ All delegations processed successfully
+```
+
+</Fragment>
+</Tabs>
+
+#### Transfer tokens from Solana Devnet to Ethereum Sepolia
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Transfer Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Execute cross-chain transfer from Solana to Ethereum
+yarn svm:token-transfer --token-mint $SOL_TOKEN_MINT --token-amount 1000000 --receiver $ETH_RECEIVER_ADDRESS
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+[2025-08-19T09:58:06.935Z] 🚀 CCIP Token Transfer
+[2025-08-19T09:58:06.937Z] =======================================
+[2025-08-19T09:58:06.969Z] Network: devnet
+[2025-08-19T09:58:06.969Z] Wallet: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[2025-08-19T09:58:06.969Z]
+[2025-08-19T09:58:06.969Z] 💰 WALLET BALANCE
+[2025-08-19T09:58:06.969Z] =======================================
+[2025-08-19T09:58:07.509Z] SOL Balance: 58363668994 lamports (58.363668994 SOL)
+[2025-08-19T09:58:07.509Z]
+[2025-08-19T09:58:07.510Z] 🌉 CCIP ROUTER INFORMATION
+[2025-08-19T09:58:07.510Z] =======================================
+[2025-08-19T09:58:07.510Z] CCIP Router Program ID: Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C
+[2025-08-19T09:58:07.510Z] Fee Quoter Program ID: FeeQPGkKDeRV1MgoYfMH6L8o3KeuYjwUZrgn4LRKfjHi
+[2025-08-19T09:58:07.510Z] RMN Remote Program ID: RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7
+[2025-08-19T09:58:07.510Z] Using native SOL as fee token
+[2025-08-19T09:58:07.510Z]
+[2025-08-19T09:58:07.510Z] 📋 TOKEN TRANSFER PARAMETERS
+[2025-08-19T09:58:07.510Z] ===========================================
+[2025-08-19T09:58:07.510Z] Destination Chain: ethereum-sepolia
+[2025-08-19T09:58:07.510Z] Destination Chain Selector: 16015286601757825753
+[2025-08-19T09:58:07.510Z] EVM Receiver Address: 0x9d087fC03ae39b088326b67fA3C788236645b717
+[2025-08-19T09:58:07.511Z] Token Mint: 3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci
+[2025-08-19T09:58:07.511Z] Token Amount: 1000000
+[2025-08-19T09:58:07.511Z] Fee Token: 11111111111111111111111111111111
+[2025-08-19T09:58:07.511Z] Gas Limit: 0
+[2025-08-19T09:58:07.511Z] Allow Out Of Order Execution: true
+[2025-08-19T09:58:07.513Z]
+[2025-08-19T09:58:07.513Z] 🔄 SENDING TOKEN TRANSFER
+[2025-08-19T09:58:07.513Z] =======================================
+[2025-08-19T09:58:07.513Z] Preparing CCIP message...
+[2025-08-19T09:58:07.514Z] Sending CCIP message to destination chain 16015286601757825753
+[2025-08-19T09:58:07.514Z] Building accounts for CCIP send to chain 16015286601757825753
+[2025-08-19T09:58:07.520Z] Getting mint account info for 3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci to determine token program ID...
+[2025-08-19T09:58:07.633Z] Detected Standard Token Program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+[2025-08-19T09:58:21.295Z] CCIP message sent successfully: 4T6coWNspJ7TDhsUFVZ7S1huzVxy6dSjbPfrFw4THGRBEt8X9UYfFggrxYLD4Hnm11Hqdnzg9vJTbrNSjp7ycRvf
+[2025-08-19T09:58:21.295Z] Parsing CCIP message sent event for transaction: 4T6coWNspJ7TDhsUFVZ7S1huzVxy6dSjbPfrFw4THGRBEt8X9UYfFggrxYLD4Hnm11Hqdnzg9vJTbrNSjp7ycRvf
+[2025-08-19T09:58:21.431Z] Successfully extracted messageId: 0x21d6ca53d5ab59caa9d5a1d58a5f8040f9695043dcad5ddc0059710dff0113c3
+[2025-08-19T09:58:21.431Z]
+[2025-08-19T09:58:21.431Z] ✅ TOKEN TRANSFER SENT SUCCESSFULLY
+[2025-08-19T09:58:21.431Z] =======================================
+[2025-08-19T09:58:21.431Z] Transaction Signature: 4T6coWNspJ7TDhsUFVZ7S1huzVxy6dSjbPfrFw4THGRBEt8X9UYfFggrxYLD4Hnm11Hqdnzg9vJTbrNSjp7ycRvf
+[2025-08-19T09:58:21.431Z] CCIP Message ID: 0x21d6ca53d5ab59caa9d5a1d58a5f8040f9695043dcad5ddc0059710dff0113c3
+[2025-08-19T09:58:21.431Z]
+[2025-08-19T09:58:21.431Z] 🔍 EXPLORER URLS
+[2025-08-19T09:58:21.431Z] =======================================
+[2025-08-19T09:58:21.432Z] Solana Transaction: https://explorer.solana.com/tx/4T6coWNspJ7TDhsUFVZ7S1huzVxy6dSjbPfrFw4THGRBEt8X9UYfFggrxYLD4Hnm11Hqdnzg9vJTbrNSjp7ycRvf?cluster=devnet
+[2025-08-19T09:58:21.432Z] CCIP Explorer: https://ccip.chain.link/msg/0x21d6ca53d5ab59caa9d5a1d58a5f8040f9695043dcad5ddc0059710dff0113c3
+[2025-08-19T09:58:21.432Z]
+[2025-08-19T09:58:21.432Z] 🎉 Transfer Complete!
+[2025-08-19T09:58:21.432Z] ✅ Sent 1000000 tokens to 0x9d087fC03ae39b088326b67fA3C788236645b717
+[2025-08-19T09:58:21.432Z] ✅ Message ID: 0x21d6ca53d5ab59caa9d5a1d58a5f8040f9695043dcad5ddc0059710dff0113c3
+[2025-08-19T09:58:21.432Z] ✅ Monitor progress on CCIP Explorer: https://ccip.chain.link/msg/0x21d6ca53d5ab59caa9d5a1d58a5f8040f9695043dcad5ddc0059710dff0113c3
+```
+
+</Fragment>
+</Tabs>
+
+#### Monitor and Verify Transaction
+
+Upon successful execution, the system generates critical tracking identifiers for transaction monitoring and verification.
+
+**Transaction Identifiers:**
+
+- **Transaction Signature**: `4T6coWNspJ7TDhsUFVZ7S1huzVxy6dSjbPfrFw4THGRBEt8X9UYfFggrxYLD4Hnm11Hqdnzg9vJTbrNSjp7ycRvf`
+- **CCIP Message ID**: `0x21d6ca53d5ab59caa9d5a1d58a5f8040f9695043dcad5ddc0059710dff0113c3`
+
+**CCIP Explorer** (Primary monitoring interface):
+
+```
+https://ccip.chain.link/msg/0x21d6ca53d5ab59caa9d5a1d58a5f8040f9695043dcad5ddc0059710dff0113c3
+```
+
+The CCIP Explorer provides comprehensive transaction visibility:
+
+- Source chain (Solana) transaction confirmation
+- CCIP message processing and routing
+- Destination chain (Ethereum) message delivery
+- Token minting completion on Ethereum
+
+**Solana Explorer** (Source chain verification):
+
+```
+https://explorer.solana.com/tx/4T6coWNspJ7TDhsUFVZ7S1huzVxy6dSjbPfrFw4THGRBEt8X9UYfFggrxYLD4Hnm11Hqdnzg9vJTbrNSjp7ycRvf?cluster=devnet
+```
+
+### Transfer Direction 2: Ethereum → Solana
+
+<Aside type="note" title="Terminal Environment">
+  **Continue in Terminal 3** (Solana Starter Kit directory). No need to switch terminals - the Solana Starter Kit
+  handles Ethereum → Solana transfers as well.
+</Aside>
+
+#### Transfer tokens from Ethereum Sepolia to Solana Devnet
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Transfer Command</Fragment>
+<Fragment slot="tab.2">Expected Output</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Execute cross-chain transfer from Ethereum to Solana
+yarn evm:transfer --token $ETH_TOKEN_ADDRESS --amount 1000000000000000000 --token-receiver $SOL_WALLET_ADDRESS
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+[token-transfer] [INFO] 🚀 EVM to Solana CCIP Token Transfer
+[token-transfer] [INFO] =========================================
+chainId ethereum-sepolia
+[token-transfer] [INFO] Source Chain: ethereum-sepolia
+[token-transfer] [INFO] Fee Token: link
+[token-transfer] [INFO] Token Receiver: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[token-transfer] [INFO] Compute Units: 0
+[token-transfer] [INFO]
+==== Environment Information ====
+chainId ethereum-sepolia
+[token-transfer] [INFO] Router Address: 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+[ccip-messenger] [INFO] Creating client for chain: Ethereum Sepolia (ethereum-sepolia)
+[token-transfer] [INFO] Wallet Address: 0x9d087fC03ae39b088326b67fA3C788236645b717
+[token-transfer] [INFO] Native Balance: 592.730131579314728831 ETH
+[token-transfer] [INFO]
+🔍 Validating Token Transfer
+[token-transfer] [INFO] =========================================
+[token-transfer] [INFO] Token: BnmAEM (0x7c57A9d966c3E6e344621C512d510f76575640ED)
+[token-transfer] [INFO] Token Balance: 1000.0 BnmAEM
+[token-transfer] [INFO] Token: BnmAEM (0x7c57A9d966c3E6e344621C512d510f76575640ED)
+[token-transfer] [INFO] Token Balance: 1000.0 BnmAEM
+[token-transfer] [INFO] Transfer Amount: 1.0 BnmAEM
+[token-transfer] [INFO] ✅ Token validation successful
+[token-transfer] [INFO] Using fee token: 0x779877A7B0D9E8603169DdbD7836e478b4624789
+[token-transfer] [INFO] Creating CCIP message request
+[token-transfer] [INFO]
+📋 Transfer Summary
+[token-transfer] [INFO] =========================================
+[token-transfer] [INFO]
+==== Transfer Summary ====
+[token-transfer] [INFO] Source Chain: Ethereum Sepolia
+[token-transfer] [INFO] Destination Chain: Solana Devnet (16423721717087811551)
+[token-transfer] [INFO] Sender: 0x9d087fC03ae39b088326b67fA3C788236645b717
+[token-transfer] [INFO] Receiver: 11111111111111111111111111111111
+[token-transfer] [INFO] Token Receiver: EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB
+[token-transfer] [INFO] Fee Token: 0x779877A7B0D9E8603169DdbD7836e478b4624789
+[token-transfer] [INFO]
+Token Transfers:
+[token-transfer] [INFO]   1. 1000000000000000000 raw units (0x7c57A9d966c3E6e344621C512d510f76575640ED)
+[token-transfer] [INFO]
+Extra Args: Solana-specific, 228 bytes
+[token-transfer] [INFO]
+🚀 Executing Token Transfer
+[token-transfer] [INFO] =========================================
+[token-transfer] [INFO] Sending CCIP message...
+[ccip-messenger] [INFO] Estimated fee: 13079906629732765
+[ccip-messenger] [INFO] LINK already has sufficient allowance: 0.016317549010854859 (needed: 0.015695887955679318, surplus: 0.000621661055175541)
+[ccip-messenger] [INFO] Using existing allowance for fee token
+[ccip-messenger] [INFO] Approving 1.0 BnmAEM for CCIP Router
+[ccip-messenger] [INFO] Approving 1.0 tokens for 0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+[ccip-messenger] [INFO] BnmAEM approved for CCIP Router
+[ccip-messenger] [INFO] ✅ Verified on-chain allowance for BnmAEM: 1.0 (required: 1.0)
+[ccip-messenger] [INFO] Sending CCIP message...
+[ccip-messenger] [INFO] Sending CCIP message...
+[ccip-messenger] [INFO] Transaction sent: 0x55e6e9c295c7d32bc0d708f3363e42aad37298f9f30b4db0889e06bfac761157
+[ccip-messenger] [INFO] Transaction sent: 0x55e6e9c295c7d32bc0d708f3363e42aad37298f9f30b4db0889e06bfac761157
+[ccip-messenger] [INFO] Message ID: 0x11ef3640d8030bae75c2e4ca863a122bbf28fbbcd1dc83be0f77a25091442c72
+[token-transfer] [INFO]
+🎉 Transfer Results
+[token-transfer] [INFO] =========================================
+[token-transfer] [INFO]
+==== Transfer Results ====
+[token-transfer] [INFO] Transaction Hash: 0x55e6e9c295c7d32bc0d708f3363e42aad37298f9f30b4db0889e06bfac761157
+[token-transfer] [INFO] Transaction URL: https://sepolia.etherscan.io/tx/0x55e6e9c295c7d32bc0d708f3363e42aad37298f9f30b4db0889e06bfac761157
+[token-transfer] [INFO] Message ID: 0x11ef3640d8030bae75c2e4ca863a122bbf28fbbcd1dc83be0f77a25091442c72
+[token-transfer] [INFO] 👉 CCIP Explorer: https://ccip.chain.link/msg/0x11ef3640d8030bae75c2e4ca863a122bbf28fbbcd1dc83be0f77a25091442c72
+[token-transfer] [INFO] Destination Chain Selector: 16423721717087811551
+[token-transfer] [INFO] Sequence Number: 669
+[token-transfer] [INFO]
+Message tracking for Solana destinations:
+[token-transfer] [INFO] Please check the CCIP Explorer link to monitor your message status.
+[token-transfer] [INFO]
+✅ Transaction completed on the source chain
+[token-transfer] [INFO]
+✅ Token Transfer Complete!
+[token-transfer] [INFO] 🔗 Your tokens are being bridged to Solana
+```
+
+</Fragment>
+</Tabs>
+
+#### Monitor and Verify Transaction
+
+Upon successful execution, the system generates distinct tracking identifiers for comprehensive monitoring across both blockchain networks.
+
+**Transaction Identifiers:**
+
+- **Ethereum Transaction Hash**: `0x55e6e9c295c7d32bc0d708f3363e42aad37298f9f30b4db0889e06bfac761157`
+- **CCIP Message ID**: `0x11ef3640d8030bae75c2e4ca863a122bbf28fbbcd1dc83be0f77a25091442c72`
+
+**CCIP Explorer** (Primary monitoring interface):
+
+```
+https://ccip.chain.link/msg/0x11ef3640d8030bae75c2e4ca863a122bbf28fbbcd1dc83be0f77a25091442c72
+```
+
+The CCIP Explorer provides comprehensive transaction visibility:
+
+- Source chain (Ethereum) transaction confirmation
+- CCIP message processing and routing
+- Destination chain (Solana) message delivery
+- Token minting completion on Solana network
+
+**Ethereum Sepolia Explorer** (Source chain verification):
+
+```
+https://sepolia.etherscan.io/tx/0x55e6e9c295c7d32bc0d708f3363e42aad37298f9f30b4db0889e06bfac761157
+```
+
+### Test Solana Rate Limit Enforcement (Optional)
+
+<Aside type="note" title="Rate Limit Configuration Reminder">
+
+**Current Rate Limits**: If you followed Phase 3 with rate limits enabled:
+
+- **Solana Outbound**: 18 tokens capacity, 0.1 tokens/second rate
+- **Solana Inbound**: 20 tokens capacity, 0.1 tokens/second rate
+- **Ethereum**: Similar limits (18-decimal equivalent: 18/20 ETH tokens)
+
+**Testing Strategy**: Attempt to transfer 25 tokens (exceeds 20-token inbound capacity).
+
+</Aside>
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Test Command</Fragment>
+<Fragment slot="tab.2">Expected Failure</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Attempt to transfer 25 tokens (exceeds rate limit capacity of 20)
+yarn svm:token-transfer \
+  --token-mint $SOL_TOKEN_MINT \
+  --token-amount 25000000000 \
+  --receiver $ETH_RECEIVER_ADDRESS
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+[2025-08-19T10:02:56.319Z] 🔄 SENDING TOKEN TRANSFER
+[2025-08-19T10:02:56.319Z] =======================================
+[2025-08-19T10:02:56.319Z] Preparing CCIP message...
+[2025-08-19T10:02:56.333Z] Sending CCIP message to destination chain 16015286601757825753
+[2025-08-19T10:02:56.410Z] Building accounts for CCIP send to chain 16015286601757825753
+[2025-08-19T10:02:56.488Z] Getting mint account info for 3T1wVJporm2JpGojRV831TTQ1nexkBqFWhKnE5Lwedci to determine token program ID...
+[2025-08-19T10:02:56.807Z] Detected Standard Token Program: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+[2025-08-19T10:02:57.848Z] ❌ Failed to send token transfer: Simulation failed.
+Message: Transaction simulation failed: Error processing Instruction 1: custom program error: 0x177f.
+Logs:
+[
+  "Program log: Instruction: LockOrBurnTokens",
+  "Program RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7 invoke [3]",
+  "Program log: Instruction: VerifyNotCursed",
+  "Program RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7 consumed 6856 of 1185613 compute units",
+  "Program RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7 success",
+  "Program log: AnchorError thrown in programs/base-token-pool/src/rate_limiter.rs:48. Error Code: RLMaxCapacityExceeded. Error Number: 6015. Error Message: RateLimit: max capacity exceeded.",
+  "Program 41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB consumed 38998 of 1214906 compute units",
+  "Program 41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB failed: custom program error: 0x177f",
+  "Program Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C consumed 223942 of 1399850 compute units",
+  "Program Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C failed: custom program error: 0x177f"
+].
+Catch the `SendTransactionError` and call `getLogs()` on it for full details.
+[2025-08-19T10:02:57.881Z]
+❌ Command failed:
+[2025-08-19T10:02:57.881Z] Simulation failed.
+Message: Transaction simulation failed: Error processing Instruction 1: custom program error: 0x177f.
+Logs:
+[
+  "Program log: Instruction: LockOrBurnTokens",
+  "Program RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7 invoke [3]",
+  "Program log: Instruction: VerifyNotCursed",
+  "Program RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7 consumed 6856 of 1185613 compute units",
+  "Program RmnXLft1mSEwDgMKu2okYuHkiazxntFFcZFrrcXxYg7 success",
+  "Program log: AnchorError thrown in programs/base-token-pool/src/rate_limiter.rs:48. Error Code: RLMaxCapacityExceeded. Error Number: 6015. Error Message: RateLimit: max capacity exceeded.",
+  "Program 41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB consumed 38998 of 1214906 compute units",
+  "Program 41FGToCmdaWa1dgZLKFAjvmx6e6AjVTX7SVRibvsMGVB failed: custom program error: 0x177f",
+  "Program Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C consumed 223942 of 1399850 compute units",
+  "Program Ccip842gzYHhvdDkSyi2YVCoAWPbYJoApMFzSxQroE9C failed: custom program error: 0x177f"
+].
+```
+
+</Fragment>
+</Tabs>
+
+The transaction correctly failed with `RLMaxCapacityExceeded` error because:
+
+- **Attempted**: 25 tokens (`25000000000` in smallest units)
+- **Limit**: 20 tokens maximum capacity (`20000000000`)
+- **Result**: Rate limiter blocked the excessive transfer
+
+**Key Error Details:**
+
+- **Error Code**: `RLMaxCapacityExceeded` (Error Number: 6015)
+- **Source**: `programs/base-token-pool/src/rate_limiter.rs:48`
+- **Meaning**: The token bucket capacity was exceeded
+
+This demonstrates that your rate limits are properly configured and actively protecting against transfers that exceed the configured limits.
+
+### Test EVM Rate Limit Enforcement (Optional)
+
+Test rate limits from the EVM side (Ethereum to Solana) using the same 25-token limit.
+
+<Tabs client:visible>
+<Fragment slot="tab.1">Test Command</Fragment>
+<Fragment slot="tab.2">Expected Failure</Fragment>
+
+<Fragment slot="panel.1">
+
+```bash
+# Attempt to transfer 25 tokens from Ethereum (exceeds rate limit capacity of 20)
+yarn evm:transfer \
+  --token $ETH_TOKEN_ADDRESS \
+  --amount 25000000000000000000 \
+  --token-receiver $SOL_WALLET_ADDRESS
+```
+
+</Fragment>
+
+<Fragment slot="panel.2">
+
+```bash
+[ccip-messenger] [INFO] Sending CCIP message...
+[ccip-messenger] [ERROR] Error sending CCIP message: Error: execution reverted (unknown custom error) (action="estimateGas", data="0x1a76572a000000000000000000000000000000000000000000000000f9ccd8a1c50800000000000000000000000000000000000000000000000000015af1d78b58c400000000000000000000000000007c57a9d966c3e6e344621c512d510f76575640ed", reason=null, transaction={ "data": "0x96f4e9f9000000000000000000000000000000000000000000000000e3ecc7e294e337df000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000100000000000000000000000000779877a7b0d9e8603169ddbd7836e478b4624789000000000000000000000000000000000000000000000000000000000000016000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000007c57a9d966c3e6e344621c512d510f76575640ed0000000000000000000000000000000000000000000000015af1d78b58c4000000000000000000000000000000000000000000000000000000000000000000e41f3b3aba0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001c6ea0f22160ac820ce7cd983587acd07557c7d9c79cc15dd818f50d2c554e84800000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", "from": "0x9d087fC03ae39b088326b67fA3C788236645b717", "to": "0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59" }, invocation=null, revert=null, code=CALL_EXCEPTION, version=6.13.5)
+```
+
+</Fragment>
+</Tabs>
+
+The transaction correctly failed because:
+
+- **Attempted**: 25 tokens (`25000000000000000000` wei - 18 decimals)
+- **Limit**: 18 tokens maximum capacity
+- **Error Selector**: [`0x1a76572a` (TokenMaxCapacityExceeded)](/ccip/api-reference/evm/v1.6.2/errors#rate-limiter-errors)
+- **Decoded Values**: Capacity: `18000000000000000000`, Attempted: `25000000000000000000`, Token: `0x9cE471d0a7bE21ee32276dde49104fe02c812906`
+
+This demonstrates that rate limits are enforced on both chains, protecting the cross-chain bridge from excessive transfers. The EVM error selector corresponds to the `TokenMaxCapacityExceeded` error in the [CCIP EVM v1.6.0 errors reference](/ccip/api-reference/evm/v1.6.2/errors).

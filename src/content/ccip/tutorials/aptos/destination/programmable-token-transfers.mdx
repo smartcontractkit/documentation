@@ -1,0 +1,211 @@
+---
+section: ccip
+date: Last Modified
+title: "Programmable Token Transfers: EVM to Aptos"
+isIndex: false
+metadata:
+  description: "Learn how to send tokens and data together from an EVM chain to an Aptos module using Chainlink CCIP. This step-by-step tutorial guides you through a programmable token transfer where a receiver module forwards tokens based on a data payload."
+  image: "/images/ccip/concepts/architecture/ccip-aptos-destination-chain.jpg"
+  excerpt: "programmable token transfer, EVM→Aptos, messaging, LINK fees, logs"
+  datePublished: "2025-09-03"
+  lastModified: "2025-09-03"
+  estimatedTime: "25 minutes"
+  difficulty: "advanced"
+---
+
+import { Aside, ClickToZoom } from "@components"
+import { Tabs } from "@components/Tabs"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+This tutorial demonstrates how to send a programmable token transfer—a message containing both tokens and arbitrary data—from an Ethereum Virtual Machine (EVM) chain to a Move module on the Aptos blockchain using Chainlink CCIP.
+
+<Aside title="Prerequisites">
+  Make sure you've completed the [prerequisites for EVM to Aptos
+  tutorials](/ccip/tutorials/aptos/destination/prerequisites) and understand how to [build CCIP messages from EVM to
+  Aptos](/ccip/tutorials/aptos/destination/build-messages) before beginning this tutorial.
+</Aside>
+
+## Introduction
+
+This tutorial shows you how to send CCIP-BnM tokens from the Ethereum Sepolia testnet to a receiver module on the Aptos testnet. The message will also include a data payload containing a final recipient address. The receiver module will then execute logic to forward the received tokens to that final address.
+
+## What You will Build
+
+In this tutorial, you will:
+
+- Publish a CCIP receiver module to the Aptos Testnet.
+- Configure a CCIP message containing both a token transfer and a data payload.
+- Send the message from Ethereum Sepolia to your Aptos module.
+- Pay for CCIP transaction fees using LINK or native ETH.
+- Verify that the receiver module executed its logic and forwarded the tokens to the final destination.
+
+## Understanding Programmable Token Transfers
+
+A programmable token transfer combines the features of a token transfer and an arbitrary message. It allows you to send assets and instructions in a single, atomic cross-chain transaction.
+
+- **Module Execution**: The message and tokens are sent to a specific module on Aptos, triggering the execution of its `ccip_receive` function.
+- **Combined Payload**:
+  - The `receiver` is the address of your custom Aptos module.
+  - The `tokenAmounts` array is populated with the tokens to transfer.
+  - The `data` field contains the instructions for the module.
+- The `extraArgs` field should be encoded with a `gasLimit` and a `allowOutOfOrderExecution` flag.
+  - The `gasLimit` must be a tested value and sufficient for the execution of the `ccip_receive` function of the receiver module (i.e., the destination Aptos module). This includes performing a token transfer in this case, but may also include other logic depending on the module's implementation and the exact use case.
+  - The `allowOutOfOrderExecution` flag must be set to `true` when Aptos is the destination chain.
+
+### The `ccip_message_receiver` Module
+
+<Aside title="Disclaimer" type="caution">
+  The `ccip_message_receiver` module used in this tutorial **should only be used with non-dispatchable tokens**, as it
+  is currently incompatible with [dispatchable
+  tokens](https://aptosfoundation.org/currents/dispatchable-fungible-assets-101).
+</Aside>
+
+This tutorial uses the `ccip_message_receiver` module from the `aptos-starter-kit`. Its `ccip_receive` function contains dispatcher logic. For this tutorial, we will trigger the part of its logic that handles a message containing both tokens and data.
+
+- **Logic**: When the module receives both tokens and data, it interprets the `data` payload as the 32-byte address of a final recipient. It then uses its on-chain `signer` capability (derived from being deployed on a Resource Account) to transfer the tokens it just received to that final recipient address. Finally, it emits a `ForwardedTokens` event.
+
+<Aside title="Scope Clarification">
+  This guide focuses on sending messages to an existing, pre-written module. To learn how to write your own receiver
+  from scratch, please refer to the **[Implementing CCIP Receivers on Aptos](/ccip/tutorials/aptos/receivers)** guide.
+</Aside>
+
+## Implementing the Programmable Transfer
+
+### Publish the Receiver Module
+
+<Aside type="note">
+  If you have already published the `ccip_message_receiver` module while following the [Arbitrary Messaging
+  Tutorial](/ccip/tutorials/aptos/destination/arbitrary-messaging), you can reuse the same module address for this
+  tutorial and skip this deployment step.
+</Aside>
+
+First, the destination module must be deployed on the Aptos Testnet. Because this module will handle and transfer tokens, it must be deployed to a **Resource Account**.
+
+Run the following command from the starter kit:
+
+```bash
+npx ts-node scripts/deploy/aptos/createResourceAccountAndPublishReceiver.ts
+```
+
+**Copy the address** of the new resource account from the output. This is your receiver module's address.
+
+### Configure and Send the Message
+
+The `evm2aptos/ccipTokenForwarder.ts` script handles the configuration and sending of the message. The core of the script builds the message payload:
+
+```typescript
+// From scripts/evm2aptos/ccipTokenForwarder.ts
+const ccipMessage = buildCCIPMessage(
+  recipient, // The address of your deployed Aptos receiver module
+  aptosAccountAddress, // The final recipient's Aptos address, sent as data
+  tokenAddress, // The address of the CCIP-BnM token on Sepolia
+  tokenAmount, // The amount of tokens to send
+  feeTokenAddress, // The address of the fee token (e.g., LINK)
+  encodeExtraArgsV2(100000n, true) // A gasLimit for the receiver's logic
+)
+```
+
+## Running the Script
+
+### Execute the Script
+
+Run the script from your terminal. You will need to provide three key arguments:
+
+- `--aptosReceiver`: The address of the module you just deployed.
+- `--aptosAccount`: The final destination address where the tokens should be forwarded.
+- `--amount`: The number of tokens to send.
+
+This example sends from **Ethereum Sepolia** and pays fees in LINK:
+
+```bash
+npx ts-node scripts/evm2aptos/ccipTokenForwarder.ts --sourceChain sepolia --feeToken link --amount 0.001 --aptosReceiver <YOUR_RECEIVER_MODULE_ADDRESS> --aptosAccount <FINAL_RECIPIENT_APTOS_ADDRESS>
+```
+
+### Expected Output
+
+The script will output the progress of the transaction and finish by providing the transaction hash and the CCIP Message ID.
+
+```text
+Base Fee (in LINK JUELS): ...
+Fee with 20% buffer (in LINK JUELS): ...
+Current Allowance of CCIP-BnM token: 0
+Approval tx sent: 0x...
+Approval transaction confirmed in block 8803748 after 3 confirmations.
+Router contract approved to spend 1000000000000000 of CCIP-BnM token from your account.
+Current Allowance of LINK token: 0
+Approval tx sent: 0x...
+Approval transaction confirmed in block ... after 3 confirmations.
+Router contract approved to spend ... of LINK token from your account.
+Proceeding with the token transfer...
+Transaction sent: 0x...
+Waiting for transaction confirmation...
+Transaction confirmed in block 8803754 after 3 confirmations.
+✅ Transaction successful: https://sepolia.etherscan.io/tx/0x...
+🆔 CCIP Message ID: 0x...
+🔗 CCIP Explorer URL: https://ccip.chain.link/#/side-drawer/msg/0x...
+```
+
+## Verification
+
+Verification is a multi-step process: you must confirm the message was executed and then confirm that your module's logic produced the correct outcome.
+
+### Check Message Execution
+
+#### Use the CCIP Explorer to check the message status
+
+Use the CCIP Explorer link provided in the transaction output to track your message status across chains. The explorer gives an overview of the entire cross-chain transaction life cycle.
+
+```text
+🔗 CCIP Explorer URL: https://ccip.chain.link/#/side-drawer/msg/<YOUR_CCIP_MESSAGE_ID>
+```
+
+#### Programmatically check the message status
+
+After you receive a CCIP Message ID, you can programmatically check if the CCIP message has been successfully executed on the Aptos network. This is done by querying the [`ExecutionStateChanged`](/ccip/api-reference/aptos/v1.6.0/events#execute_single_report) event emitted by the CCIP OffRamp module. The `evm2aptos/checkMsgExecutionStateOnAptos.ts` script is designed for this purpose.
+
+After 15-20 minutes, run the script using the CCIP Message ID you received from the previous step.
+
+<Aside type="note" title="Note">
+  Since end-to-end transaction time depends primarily on the time to finality on the source blockchain (Ethereum Sepolia
+  in this case), it's recommended to wait 15-20 minutes before running the script. For more details, refer to the
+  [Finality by Blockchain](/ccip/ccip-execution-latency#finality-by-blockchain).
+</Aside>
+
+**Command**:
+
+```bash
+npx ts-node scripts/evm2aptos/checkMsgExecutionStateOnAptos.ts --msgId <YOUR_CCIP_MESSAGE_ID>
+```
+
+_Replace `<YOUR_CCIP_MESSAGE_ID>` with the actual CCIP Message ID from the log output._
+
+**Output**:
+When the message has been successfully delivered, you will see the following output:
+
+```text
+Execution state for CCIP message <YOUR_CCIP_MESSAGE_ID> is SUCCESS
+```
+
+### Verify the Outcome
+
+Once execution is successful, you need to verify that your module correctly forwarded the tokens.
+
+- **Check the Event**: You can manually verify that your module emitted the correct `ForwardedTokens` event by using the [Aptos Explorer](https://explorer.aptoslabs.com/?network=testnet).
+  1.  Search for your receiver module's address (the one you provided with `--aptosReceiver`).
+  1.  In the `Transactions` tab, find the latest transaction that calls the `offramp::execute` function.
+  1.  Click on the transaction and navigate to the `Events` tab.
+  1.  You should find an event with the following structure, confirming that your module's logic was executed:
+
+      ```text
+      Account Address: <YOUR_RECEIVER_MODULE_ADDRESS>
+      Creation Number: 3
+      Sequence Number: 0
+      Type: <YOUR_RECEIVER_MODULE_ADDRESS>::ccip_message_receiver::ForwardedTokens
+      Data: {
+      final_recipient: "<FINAL_RECIPIENT_APTOS_ADDRESS>"
+      }
+      ```
+
+- **Check the Final Balance**: The ultimate verification is checking the token balance of the final recipient. Search for the address you provided in the `--aptosAccount` argument on the Aptos Explorer. Under the "Tokens" tab, you should see the new balance of the CCIP-BnM token.
+
+<CcipCommon callout="educationalDisclaimer" />

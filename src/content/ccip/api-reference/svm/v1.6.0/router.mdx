@@ -3,7 +3,8 @@ section: ccip
 date: Last Modified
 title: "CCIP v1.6.0 SVM Router API Reference"
 metadata:
-  description: "API documentation for CCIP router on SVM-based blockchains like Solana."
+  description: "Comprehensive API documentation for the CCIP Router program on SVM-based blockchains like Solana. Complete guide covering message sending, token administration, fee calculation, destination chain configuration, and router management for cross-chain interoperability."
+  excerpt: "CCIP Router, SVM router program, Solana router, cross-chain routing, message sending, token administration, fee calculation, destination chains, router configuration, ccip_send"
 ---
 
 import { Aside, ClickToZoom } from "@components"
@@ -11,9 +12,13 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 ## Router
 
-Below is a complete API reference for the `ccip_send` instruction from the CCIP Router program.
+[Git Source](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs/ccip-router)
 
-### `ccip_send`
+Below is a complete API reference for the CCIP Router program instructions.
+
+### Message Sending
+
+#### `ccip_send`
 
 This instruction is the entry point for sending a cross-chain message from an SVM-based blockchain to a specified destination blockchain.
 
@@ -26,7 +31,7 @@ fn ccip_send(
 ) -> Result<[u8; 32]>;
 ```
 
-#### Parameters
+##### Parameters
 
 | Name                               | Type                          | Description                                                                                                            |
 | ---------------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
@@ -34,7 +39,7 @@ fn ccip_send(
 | <nobr>`message`</nobr>             | <nobr>`SVM2AnyMessage`</nobr> | Read [Messages](/ccip/api-reference/svm/v1.6.0/messages#svm2anymessage) for more details.                              |
 | <nobr>`token_indexes`</nobr>       | <nobr>`Vec<u8>`</nobr>        | Index offsets slicing the remaining accounts so each token's subset can be grouped (see [Context](#context-accounts)). |
 
-#### Context (Accounts)
+##### Context (Accounts)
 
 These are the required accounts passed alongside the instructions. For relevant PDAs, the instructions on how to derive seeds are given below.
 
@@ -61,7 +66,7 @@ These are the required accounts passed alongside the instructions. For relevant 
 | `token_pools_signer`                             | <nobr>`UncheckedAccount<'info>`</nobr>               | Yes       | PDA with the authority to **CPI** into token pool logic (mint/burn, lock/release). <br/>**Derivation**: `["external_token_pools_signer"]` under the `ccip_router` program.                                                                                                                                                                                                                                          |
 | `remaining_accounts`                             | <nobr>`&[AccountInfo]`</nobr> (slice)                | Yes       | You pass extra accounts for each token you wish to transfer (does not include fee tokens). Typically includes the sender ATA, the token pool config, token admin registry PDAs… etc.                                                                                                                                                                                                                                |
 
-#### How `remaining_accounts` and `token_indexes` Work
+##### How `remaining_accounts` and `token_indexes` Work
 
 When you call the Router's `ccip_send` instruction, you pass:
 
@@ -69,11 +74,11 @@ When you call the Router's `ccip_send` instruction, you pass:
 1. A slice of `remaining_accounts` containing the per-token PDAs (e.g., user token ATA, pool config, token admin registry PDA, etc.).
 1. A `token_indexes` array tells the Router where in `remaining_accounts` each token's sub-slice begins.
 
-##### Reason for `remaining_accounts`
+###### Reason for `remaining_accounts`
 
 On Solana, each Anchor instruction has a fixed set of named accounts. However, CCIP must handle any number of tokens, each requiring many accounts. Rather than define a massive static context, the Router uses Anchor's dynamic `ctx.remaining_accounts`: All token-specific accounts are packed into one slice.
 
-##### Reason for `token_indexes`
+###### Reason for `token_indexes`
 
 The Router must figure out which segment of that slice corresponds to token #0, token #1, etc. So you provide an integer offset in `token_indexes[i]` indicating where the `i`th token's accounts begin inside `remaining_accounts`.
 
@@ -83,7 +88,7 @@ The Router:
 - Validates each account.
 - Calls the appropriate token pool to the lock-or-burn operation on them.
 
-##### Structure of Each Token's Sub-slice
+###### Structure of Each Token's Sub-slice
 
 Inside each token's sub-slice, the Router expects:
 
@@ -109,9 +114,9 @@ In total, it is typically **12 or more** accounts per token. Repeat that "per-to
 | 11    | <nobr>`fee_token_config`</nobr>     | A token billing configuration account under the Fee Quoter program. It contains settings such as whether there is a specific pricing for the token, its pricing in USD, and any premium multipliers. <br/>**Note**: In most cases, tokens do not have a custom billing fee structure. In these cases, CCIP uses the fallback default fee configuration. <br/>PDA `["fee_billing_token_config", mint]` under the fee_quoter program. |
 | 12    | <nobr>`…`</nobr>                    | Additional accounts are passed if required by the token pool.                                                                                                                                                                                                                                                                                                                                                                       |
 
-##### Examples
+###### Examples
 
-###### One Token Transfer
+**One Token Transfer**
 
 Suppose you want to send **one token** (`myMint`) cross-chain:
 
@@ -129,7 +134,7 @@ Suppose you want to send **one token** (`myMint`) cross-chain:
   alt="Example of remaining accounts for one token"
 />
 
-###### Two Token Transfers
+**Two Token Transfers**
 
 Suppose you want to send **two tokens** (`mintA` and `mintB`) cross-chain:
 
@@ -138,7 +143,7 @@ Suppose you want to send **two tokens** (`mintA` and `mintB`) cross-chain:
    - After we skip the user ATAs at indices [0..2), we want the next 12 accounts for the first token to lie in `[2..14)`, and then the next 12 for the second token to lie in `[14..end)`.
    - The Router program will use token_indexes:
      1. For the first token: The sub slice is [2..14).
-     2. For the second token: The sub slice is [14…endOfArray).
+     1. For the second token: The sub slice is [14…endOfArray).
 1. Your `remaining_accounts` must have:
    - **2** user ATAs (one for `mintA`, one for `mintB`).
    - **12** pool accounts for `mintA`.
@@ -150,3 +155,306 @@ Thus `2 + 12 + 12 = 26` accounts in `remaining_accounts`.
   src="/images/ccip/concepts/architecture/svm-tokens/remaining-accounts-two.svg"
   alt="Example of remaining accounts for two tokens"
 />
+
+#### `get_fee`
+
+Queries the Router for the fee required to send a cross-chain message. This is a permissionless call that calculates fees without verifying curse status to avoid RMN CPI overhead.
+
+```rust
+fn get_fee(
+    ctx: Context<GetFee>,
+    dest_chain_selector: u64,
+    message: SVM2AnyMessage,
+) -> Result<GetFeeResult>;
+```
+
+##### Parameters
+
+| Name                               | Type                          | Description                                                                                                                        |
+| ---------------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| <nobr>`dest_chain_selector`</nobr> | <nobr>`u64`</nobr>            | The unique CCIP blockchain identifier of the destination blockchain.                                                               |
+| <nobr>`message`</nobr>             | <nobr>`SVM2AnyMessage`</nobr> | The message for which to calculate fees. Read [Messages](/ccip/api-reference/svm/v1.6.0/messages#svm2anymessage) for more details. |
+
+##### Return Value
+
+| Type                        | Description                                                          |
+| --------------------------- | -------------------------------------------------------------------- |
+| <nobr>`GetFeeResult`</nobr> | Contains fee amount, fee in juels (LINK), and the fee token address. |
+
+```rust
+struct GetFeeResult {
+    pub amount: u64,    // Fee amount in the specified fee token
+    pub juels: u128,    // Fee value converted to LINK juels
+    pub token: Pubkey,  // The fee token address
+}
+```
+
+##### Context (Accounts)
+
+| Field                             | Type                                   | Writable? | Description                                                                                                                                                                                |
+| --------------------------------- | -------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `config`                          | <nobr>`Account<Config>`</nobr>         | No        | Router config PDA. <br/>**Derivation**: `["config"]` under the `ccip_router` program.                                                                                                      |
+| <nobr>`dest_chain_state`</nobr>   | <nobr>`Account<DestChain>`</nobr>      | No        | Per-destination blockchain PDA for retrieving lane version. <br/>**Derivation**: `["dest_chain_state", dest_chain_selector]` under the `ccip_router` program.                              |
+| `fee_quoter`                      | <nobr>`UncheckedAccount<'info>`</nobr> | No        | The **Fee Quoter** program ID.                                                                                                                                                             |
+| `fee_quoter_config`               | <nobr>`UncheckedAccount<'info>`</nobr> | No        | The global Fee Quoter config PDA. <br/>**Derivation**: `["config"]` under the `fee_quoter` program.                                                                                        |
+| `fee_quoter_dest_chain`           | <nobr>`UncheckedAccount<'info>`</nobr> | No        | Per-destination blockchain PDA in the Fee Quoter program. <br/>**Derivation**: `["dest_chain", dest_chain_selector]` under the `fee_quoter` program.                                       |
+| `fee_quoter_billing_token_config` | <nobr>`UncheckedAccount<'info>`</nobr> | No        | Fee token billing configuration PDA. <br/>**Derivation**: `["fee_billing_token_config", fee_token_mint]` under the `fee_quoter` program. Uses `native_mint::ID` if paying with native SOL. |
+| `fee_quoter_link_token_config`    | <nobr>`UncheckedAccount<'info>`</nobr> | No        | LINK token billing configuration PDA for fee conversion. <br/>**Derivation**: `["fee_billing_token_config", link_token_mint]` under the `fee_quoter` program.                              |
+| `remaining_accounts`              | <nobr>`&[AccountInfo]`</nobr> (slice)  | No        | Per-token billing configurations. See [Remaining Accounts Structure](#remaining-accounts-structure-for-get_fee) below.                                                                     |
+
+##### Remaining Accounts Structure for `get_fee`
+
+The `remaining_accounts` must be provided in this specific order for each token being transferred:
+
+1. **Billing Token Config**: Token-specific billing configuration under the Fee Quoter program
+   - **Derivation**: `["fee_billing_token_config", token_mint]` under the `fee_quoter` program
+2. **Per-Chain Per-Token Config**: Chain and token specific fee overrides under the Fee Quoter program
+   - **Derivation**: `["per_chain_per_token_config", dest_chain_selector, token_mint]` under the `fee_quoter` program
+
+**Example for 2 tokens:**
+
+```
+remaining_accounts = [
+    billing_config_token_A,       // Token A billing config
+    per_chain_config_token_A,     // Token A per-chain config
+    billing_config_token_B,       // Token B billing config
+    per_chain_config_token_B,     // Token B per-chain config
+]
+```
+
+##### Usage Notes
+
+- **Permissionless**: Anyone can call this instruction to query fees
+- **No Curse Check**: Does not verify RMN curse status for performance
+- **Fee Calculation**: Returns both the fee amount in the specified token and the equivalent value in LINK juels
+- **Token Support**: Supports both native SOL and SPL token fee payments
+
+### Token Administration
+
+These instructions manage token administrator roles and token registration with CCIP.
+
+#### `owner_propose_administrator`
+
+Proposes a token administrator for a given SPL token. This is used for self-service registration when you control the token's mint authority.
+
+```rust
+fn owner_propose_administrator(
+    ctx: Context<RegisterTokenAdminRegistryByOwner>,
+    token_admin_registry_admin: Pubkey,
+) -> Result<()>;
+```
+
+##### Parameters
+
+| Name                                      | Type                  | Description                                         |
+| ----------------------------------------- | --------------------- | --------------------------------------------------- |
+| <nobr>`token_admin_registry_admin`</nobr> | <nobr>`Pubkey`</nobr> | The public key of the proposed token administrator. |
+
+##### Context (Accounts)
+
+| Field                  | Type                                         | Writable? | Description                                                                                                                    |
+| ---------------------- | -------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `config`               | <nobr>`Account<Config>`</nobr>               | No        | Router config PDA. <br/>**Derivation**: `["config"]` under the `ccip_router` program.                                          |
+| `token_admin_registry` | <nobr>`Account<TokenAdminRegistry>`</nobr>   | Yes       | Token admin registry PDA to initialize. <br/>**Derivation**: `["token_admin_registry", mint]` under the `ccip_router` program. |
+| `mint`                 | <nobr>`InterfaceAccount<'info, Mint>`</nobr> | No        | The SPL token mint for which to propose an administrator.                                                                      |
+| `authority`            | <nobr>`Signer<'info>`</nobr>                 | Yes       | Must be the mint authority of the SPL token.                                                                                   |
+| `system_program`       | <nobr>`Program<'info, System>`</nobr>        | No        | Standard System Program.                                                                                                       |
+
+##### Authorization
+
+- **Caller**: Must be the SPL token's `mint_authority`
+- **Registry State**: TokenAdminRegistry PDA must not already exist for this mint
+
+#### `owner_override_pending_administrator`
+
+Overrides the pending administrator before they accept the role. Can only be called by the token's mint authority.
+
+```rust
+fn owner_override_pending_administrator(
+    ctx: Context<OverridePendingTokenAdminRegistryByOwner>,
+    token_admin_registry_admin: Pubkey,
+) -> Result<()>;
+```
+
+##### Parameters
+
+| Name                                      | Type                  | Description                                       |
+| ----------------------------------------- | --------------------- | ------------------------------------------------- |
+| <nobr>`token_admin_registry_admin`</nobr> | <nobr>`Pubkey`</nobr> | The public key of the new proposed administrator. |
+
+##### Context (Accounts)
+
+| Field                  | Type                                         | Writable? | Description                                                                                                               |
+| ---------------------- | -------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `config`               | <nobr>`Account<Config>`</nobr>               | No        | Router config PDA. <br/>**Derivation**: `["config"]` under the `ccip_router` program.                                     |
+| `token_admin_registry` | <nobr>`Account<TokenAdminRegistry>`</nobr>   | Yes       | Existing token admin registry PDA. <br/>**Derivation**: `["token_admin_registry", mint]` under the `ccip_router` program. |
+| `mint`                 | <nobr>`InterfaceAccount<'info, Mint>`</nobr> | No        | The SPL token mint.                                                                                                       |
+| `authority`            | <nobr>`Signer<'info>`</nobr>                 | Yes       | Must be the mint authority of the SPL token.                                                                              |
+| `system_program`       | <nobr>`Program<'info, System>`</nobr>        | No        | Standard System Program.                                                                                                  |
+
+##### Authorization
+
+- **Caller**: Must be the SPL token's `mint_authority`
+- **Registry State**: TokenAdminRegistry PDA must exist but have no accepted administrator yet
+
+#### `ccip_admin_propose_administrator`
+
+Proposes a token administrator via CCIP governance. Used when the caller cannot access the mint authority.
+
+```rust
+fn ccip_admin_propose_administrator(
+    ctx: Context<RegisterTokenAdminRegistryByCCIPAdmin>,
+    token_admin_registry_admin: Pubkey,
+) -> Result<()>;
+```
+
+##### Parameters
+
+| Name                                      | Type                  | Description                                         |
+| ----------------------------------------- | --------------------- | --------------------------------------------------- |
+| <nobr>`token_admin_registry_admin`</nobr> | <nobr>`Pubkey`</nobr> | The public key of the proposed token administrator. |
+
+##### Context (Accounts)
+
+| Field                  | Type                                         | Writable? | Description                                                                                                                    |
+| ---------------------- | -------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `config`               | <nobr>`Account<Config>`</nobr>               | No        | Router config PDA. <br/>**Derivation**: `["config"]` under the `ccip_router` program.                                          |
+| `token_admin_registry` | <nobr>`Account<TokenAdminRegistry>`</nobr>   | Yes       | Token admin registry PDA to initialize. <br/>**Derivation**: `["token_admin_registry", mint]` under the `ccip_router` program. |
+| `mint`                 | <nobr>`InterfaceAccount<'info, Mint>`</nobr> | No        | The SPL token mint for which to propose an administrator.                                                                      |
+| `authority`            | <nobr>`Signer<'info>`</nobr>                 | Yes       | Must be the Router program's upgrade authority.                                                                                |
+| `system_program`       | <nobr>`Program<'info, System>`</nobr>        | No        | Standard System Program.                                                                                                       |
+
+##### Authorization
+
+- **Caller**: Must be the Router program's upgrade authority
+- **Registry State**: TokenAdminRegistry PDA must not already exist for this mint
+
+#### `accept_admin_role_token_admin_registry`
+
+Accepts the administrator role for a token. Must be called by the pending administrator to finalize registration.
+
+```rust
+fn accept_admin_role_token_admin_registry(
+    ctx: Context<AcceptAdminRoleTokenAdminRegistry>,
+) -> Result<()>;
+```
+
+##### Parameters
+
+This instruction takes no additional parameters.
+
+##### Context (Accounts)
+
+| Field                  | Type                                         | Writable? | Description                                                                                                               |
+| ---------------------- | -------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `config`               | <nobr>`Account<Config>`</nobr>               | No        | Router config PDA. <br/>**Derivation**: `["config"]` under the `ccip_router` program.                                     |
+| `token_admin_registry` | <nobr>`Account<TokenAdminRegistry>`</nobr>   | Yes       | Existing token admin registry PDA. <br/>**Derivation**: `["token_admin_registry", mint]` under the `ccip_router` program. |
+| `mint`                 | <nobr>`InterfaceAccount<'info, Mint>`</nobr> | No        | The SPL token mint.                                                                                                       |
+| `authority`            | <nobr>`Signer<'info>`</nobr>                 | Yes       | Must be the pending administrator listed in the token admin registry.                                                     |
+
+##### Authorization
+
+- **Caller**: Must match the `pending_administrator` field in the TokenAdminRegistry PDA
+- **Registry State**: TokenAdminRegistry PDA must exist with a pending administrator
+
+#### `transfer_admin_role_token_admin_registry`
+
+Transfers the administrator role to a new administrator. This is a two-step process requiring the new admin to accept.
+
+```rust
+fn transfer_admin_role_token_admin_registry(
+    ctx: Context<ModifyTokenAdminRegistry>,
+    new_admin: Pubkey,
+) -> Result<()>;
+```
+
+##### Parameters
+
+| Name                     | Type                  | Description                              |
+| ------------------------ | --------------------- | ---------------------------------------- |
+| <nobr>`new_admin`</nobr> | <nobr>`Pubkey`</nobr> | The public key of the new administrator. |
+
+##### Context (Accounts)
+
+| Field                  | Type                                         | Writable? | Description                                                                                                               |
+| ---------------------- | -------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `config`               | <nobr>`Account<Config>`</nobr>               | No        | Router config PDA. <br/>**Derivation**: `["config"]` under the `ccip_router` program.                                     |
+| `token_admin_registry` | <nobr>`Account<TokenAdminRegistry>`</nobr>   | Yes       | Existing token admin registry PDA. <br/>**Derivation**: `["token_admin_registry", mint]` under the `ccip_router` program. |
+| `mint`                 | <nobr>`InterfaceAccount<'info, Mint>`</nobr> | No        | The SPL token mint.                                                                                                       |
+| `authority`            | <nobr>`Signer<'info>`</nobr>                 | Yes       | Must be the current administrator of the token admin registry.                                                            |
+
+##### Authorization
+
+- **Caller**: Must be the current `administrator` listed in the TokenAdminRegistry PDA
+- **Registry State**: TokenAdminRegistry PDA must exist with an active administrator
+
+#### `set_pool`
+
+Sets the Address Lookup Table that defines the token pool for cross-chain transfers. This enables or disables a token for CCIP.
+
+```rust
+fn set_pool(
+    ctx: Context<SetPoolTokenAdminRegistry>,
+    writable_indexes: Vec<u8>,
+) -> Result<()>;
+```
+
+##### Parameters
+
+| Name                            | Type                   | Description                                                                                  |
+| ------------------------------- | ---------------------- | -------------------------------------------------------------------------------------------- |
+| <nobr>`writable_indexes`</nobr> | <nobr>`Vec<u8>`</nobr> | Bitmap of indexes in the lookup table that should be marked as writable during transactions. |
+
+##### Context (Accounts)
+
+| Field                  | Type                                         | Writable? | Description                                                                                                               |
+| ---------------------- | -------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `config`               | <nobr>`Account<Config>`</nobr>               | No        | Router config PDA. <br/>**Derivation**: `["config"]` under the `ccip_router` program.                                     |
+| `token_admin_registry` | <nobr>`Account<TokenAdminRegistry>`</nobr>   | Yes       | Existing token admin registry PDA. <br/>**Derivation**: `["token_admin_registry", mint]` under the `ccip_router` program. |
+| `mint`                 | <nobr>`InterfaceAccount<'info, Mint>`</nobr> | No        | The SPL token mint.                                                                                                       |
+| `pool_lookuptable`     | <nobr>`UncheckedAccount<'info>`</nobr>       | No        | Address Lookup Table containing the token pool accounts. Pass zero address to delist token from CCIP.                     |
+| `authority`            | <nobr>`Signer<'info>`</nobr>                 | Yes       | Must be the current administrator of the token admin registry.                                                            |
+
+##### Authorization
+
+- **Caller**: Must be the current `administrator` listed in the TokenAdminRegistry PDA
+- **Pool Validation**: If not zero address, the lookup table must contain at least the minimum required accounts
+
+##### Pool Status
+
+- **Enable Token**: Set `pool_lookuptable` to a valid Address Lookup Table with required pool accounts
+- **Disable Token**: Set `pool_lookuptable` to zero address (`Pubkey::default()`) to delist from CCIP
+
+##### Address Lookup Table Requirements
+
+The `pool_lookuptable` must contain exactly these accounts in the specified order for proper CCIP token pool operations:
+
+| Index | Account                     | Derivation                                                   | Description                                                                                                                             |
+| ----- | --------------------------- | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| 0     | **Lookup Table Address**    | N/A                                                          | The Address Lookup Table itself                                                                                                         |
+| 1     | **Token Admin Registry**    | `["token_admin_registry", mint]` under Router program        | Registry PDA for this token                                                                                                             |
+| 2     | **Pool Program**            | N/A                                                          | The token pool program ID (e.g., BurnMint or LockRelease Token Pool program)                                                            |
+| 3     | **Pool Config**             | `["ccip_tokenpool_config", mint]` under pool program         | Token-specific pool configuration and settings                                                                                          |
+| 4     | **Pool Token Account**      | ATA of (pool_signer, mint, token_program)                    | Associated Token Account holding pool's tokens                                                                                          |
+| 5     | **Pool Signer**             | `["ccip_tokenpool_signer", mint]` under pool program         | PDA with authority for token operations                                                                                                 |
+| 6     | **Token Program**           | N/A                                                          | SPL Token program (`TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`) or Token-2022 program (`TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb`) |
+| 7     | **Token Mint**              | N/A                                                          | The SPL token mint address                                                                                                              |
+| 8     | **Fee Token Config**        | `["fee_billing_token_config", mint]` under Fee Quoter        | Fee token billing configuration PDA                                                                                                     |
+| 9     | **CCIP Router Pool Signer** | `["external_token_pools_signer", pool_program]` under Router | Router's signer PDA for the pool                                                                                                        |
+
+**Notes:**
+
+- The ALT contains exactly 10 accounts as shown above
+- Custom token pools may require additional accounts beyond these core 10
+- All PDA derivations must use the correct program IDs
+- Pool Token Account must be the proper Associated Token Account for the Pool Signer
+- Writable permissions are specified via the `writable_indexes` parameter
+
+**Creating the ALT:**
+
+1. Create a new Address Lookup Table
+1. Add accounts in the exact order specified above
+1. Ensure all PDA derivations are correct for your specific token and pool program
+1. Call `set_pool` with the ALT address and appropriate `writable_indexes`
+
+For PDA derivation examples and account validation details, see the [Token Pool documentation](/ccip/concepts/cross-chain-token/svm/token-pools).

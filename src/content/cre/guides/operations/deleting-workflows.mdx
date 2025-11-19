@@ -1,0 +1,116 @@
+---
+section: cre
+date: Last Modified
+title: "Deleting Workflows"
+metadata:
+  description: "Remove workflows permanently: learn how to safely delete deployed workflows from the Workflow Registry when no longer needed."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+Deleting a workflow permanently removes it from the Workflow Registry contract. This action cannot be undone, and the workflow will no longer be able to respond to triggers.
+
+## Prerequisites
+
+Before deleting a workflow, ensure you have:
+
+- **A [deployed workflow](/cre/guides/operations/deploying-workflows)**: The workflow must exist in the Workflow Registry.
+- **Workflow ownership**: You must be the owner of the workflow (the account that originally deployed it). Only the workflow owner can delete it.
+- **Local workflow folder**: You must run this command from your project directory. The CLI reads the workflow name and configuration from your `workflow.yaml` file to identify which workflow to delete.
+- **[Logged in](/cre/reference/cli/authentication#cre-login)**: Authenticated with the platform by running `cre login`. To check if you are logged in, run `cre whoami`.
+- **A funded wallet**: The account must be funded with ETH on Ethereum Mainnet to pay the gas fees for the onchain transaction to the Workflow Registry contract.
+
+## Deleting a workflow
+
+To delete a workflow, run the `cre workflow delete` command from your project root:
+
+```bash
+cre workflow delete my-workflow --target production-settings
+```
+
+The CLI identifies which workflow to delete based on:
+
+- `workflow-name` from your `workflow.yaml` file
+- `workflow-owner-address` (either from `workflow.yaml` or derived from your private key in `.env`)
+
+### What happens during deletion
+
+1. The CLI fetches all workflows matching your workflow name and owner address
+1. It displays details about the workflow(s) to be deleted
+1. It prompts you to confirm by typing the workflow name
+1. Once confirmed, it sends an onchain transaction to delete the workflow from the Workflow Registry
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Destructive operation">
+  **This action cannot be undone.** Once a workflow is deleted from the Workflow Registry, it is permanently removed and can no longer respond to triggers. The CLI requires you to type the workflow name to confirm this destructive operation.
+</Aside>
+
+### Example output
+
+```bash
+> cre workflow delete my-workflow --target production-settings
+
+Deleting Workflow :      my-workflow
+Target :                 production-settings
+Owner Address :          <your-owner-address>
+
+Found 1 workflow(s) to delete for name: my-workflow
+   1. Workflow
+      ID:              00f0379a2df46ad2c5af070f5871da89f589f8bff8af76ff6a44bb59bec88bf4
+      Owner:           <your-owner-address>
+      DON Family:      zone-a
+      Tag:             my-workflow
+      Binary URL:      https://storage.cre.example.com/artifacts/00f0379a.../binary.wasm
+      Workflow Status: PAUSED
+
+Are you sure you want to delete the workflow 'my-workflow'?
+This action cannot be undone.
+
+To confirm, type the workflow name: my-workflow: my-workflow
+Deleting 1 workflow(s)...
+Transaction details:
+  Chain Name:   ethereum-testnet-sepolia
+  To:           0xF3f93fc4dc177748E7557568b5354cB009e3818a
+  Function:     DeleteWorkflow
+  Inputs:
+    [0]:        0x00f0379a2df46ad2c5af070f5871da89f589f8bff8af76ff6a44bb59bec88bf4
+  Data:         695e134000f0379a2df46ad2c5af070f5871da89f589f8bff8af76ff6a44bb59bec88bf4
+Estimated Cost:
+  Gas Price:      0.00100001 gwei
+  Total Cost:     0.00000015 ETH
+? Do you want to execute this transaction?:
+  ▸ Yes
+    No
+
+Transaction confirmed
+View on explorer: https://sepolia.etherscan.io/tx/0xf059c32...fec7d
+[OK] Deleted workflow ID: 00f0379a2df46ad2c5af070f5871da89f589f8bff8af76ff6a44bb59bec88bf4
+Workflows deleted successfully.
+```
+
+### Skipping the confirmation prompt
+
+If you want to skip the interactive confirmation prompt (e.g., in automated scripts), use the `--yes` flag:
+
+```bash
+cre workflow delete my-workflow --yes --target production-settings
+```
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Use --yes with caution">
+  The `--yes` flag bypasses the confirmation prompt and immediately deletes the workflow. Only use this flag in automated workflows or when you are absolutely certain you want to delete the workflow.
+</Aside>
+
+## Using multi-sig wallets
+
+The `delete` command supports multi-sig wallets through the `--unsigned` flag. When using this flag, the CLI generates raw transaction data that you can submit through your multi-sig wallet interface instead of sending the transaction directly.
+
+For complete setup instructions, configuration requirements, and step-by-step guidance, see [Using Multi-sig Wallets](/cre/guides/operations/using-multisig-wallets).
+
+## Learn more
+
+- [Deploying Workflows](/cre/guides/operations/deploying-workflows) — Deploy new workflows to the registry
+- [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows) — Control workflow execution state
+- [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows) — Update existing workflows

@@ -72,9 +72,9 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                 return (
                   <tr key={index} className={allLanesPaused ? "ccip-table__row--paused" : ""}>
                     <td>
-                      <div
+                      <button
+                        type="button"
                         className={`ccip-table__network-name ${allLanesPaused ? "ccip-table__network-name--paused" : ""}`}
-                        role="button"
                         onClick={() => {
                           drawerContentStore.set(() => (
                             <TokenDrawer
@@ -85,11 +85,12 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                             />
                           ))
                         }}
+                        aria-label={`View ${network.name} token details`}
                       >
                         <span className="ccip-table__logoContainer">
                           <img
                             src={network.logo}
-                            alt={network.name}
+                            alt={`${network.name} blockchain logo`}
                             className="ccip-table__logo"
                             onError={({ currentTarget }) => {
                               currentTarget.onerror = null // prevents looping
@@ -115,14 +116,14 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                             ⏸️
                           </span>
                         )}
-                      </div>
+                      </button>
                     </td>
                     <td>{network.tokenName}</td>
                     <td>{network.tokenSymbol}</td>
                     <td>{network.tokenDecimals}</td>
                     <td data-clipboard-type="token">
                       <Address
-                        contractUrl={getExplorerAddressUrl(network.explorer)(network.tokenAddress)}
+                        contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.tokenAddress)}
                         address={network.tokenAddress}
                         endLength={6}
                       />
@@ -130,7 +131,10 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                     <td>{tokenPoolDisplay(network.tokenPoolType)}</td>
                     <td data-clipboard-type="token-pool">
                       <Address
-                        contractUrl={getExplorerAddressUrl(network.explorer)(network.tokenPoolAddress)}
+                        contractUrl={getExplorerAddressUrl(
+                          network.explorer,
+                          network.chainType
+                        )(network.tokenPoolAddress)}
                         address={network.tokenPoolAddress}
                         endLength={6}
                       />

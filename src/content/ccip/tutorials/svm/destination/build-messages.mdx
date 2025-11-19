@@ -4,8 +4,13 @@ date: Last Modified
 title: "Building CCIP Messages from EVM to SVM"
 isIndex: false
 metadata:
-  description: "Implement CCIP messages from EVM chains to Solana. Guide covers message structure, parameters, and implementation for token transfers, arbitrary data, and programmable token transfers (data+tokens)."
-  excerpt: "ccip messages evm to solana cross-chain messaging token transfers solana integration blockchain interoperability programmable token transfers"
+  description: "Build CCIP messages from EVM to Solana. Understand fields, SVM account model, extraArgs, and implement token/data patterns using SPL Token Program and Token‑2022 extensions."
+  image: "/images/ccip/concepts/architecture/ccip-svm-destination-chain.jpg"
+  excerpt: "message structure, SVM accounts, extraArgs, tokens, data, CCIP, SPL Token Program, Token‑2022"
+  datePublished: "2025-05-19"
+  lastModified: "2025-07-25"
+  estimatedTime: "25 minutes"
+  difficulty: "advanced"
 ---
 
 import { Aside, ClickToZoom } from "@components"
@@ -18,7 +23,7 @@ This guide explains how to construct CCIP Messages from Ethereum Virtual Machine
 
 ## CCIP Message Structure
 
-CCIP messages are built using the [`EVM2AnyMessage`](/ccip/api-reference/evm/v1.6.0/client#evm2anymessage) struct from the [`Client.sol`](/ccip/api-reference/evm/v1.6.0/client) library. The `EVM2AnyMessage` struct is defined as follows:
+CCIP messages are built using the [`EVM2AnyMessage`](/ccip/api-reference/evm/v1.6.2/client#evm2anymessage) struct from the [`Client.sol`](/ccip/api-reference/evm/v1.6.2/client) library. The `EVM2AnyMessage` struct is defined as follows:
 
 ```solidity
 struct EVM2AnyMessage {
@@ -91,7 +96,7 @@ const messageData = `0x${Buffer.from("Hello World").toString("hex")}`
 ## extraArgs
 
 The most critical component for SVM-bound messages is the [`SVMExtraArgsV1`
-](/ccip/api-reference/evm/v1.6.0/client#svmextraargsv1) structure:
+](/ccip/api-reference/evm/v1.6.2/client#svmextraargsv1) structure:
 
 ```solidity
 struct SVMExtraArgsV1 {
@@ -391,6 +396,12 @@ Use this configuration when sending only data messages to SVM:
 </Aside>
 
 ### Programmable Token Transfer (Data and Tokens)
+
+<Aside type="caution" title="USDC from EVM to Solana Not Available">
+
+Programmable token transfers are not currently available for USDC from EVM to Solana. Due to limitations on Solana, transaction heap allocation limits (32KB) will be hit when attempting to invoke a receiver with the USDC transfer, which could lead to stuck transactions.
+
+</Aside>
 
 Use this configuration when sending both tokens and data in a single message:
 

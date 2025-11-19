@@ -3,18 +3,19 @@ import {
   validateEnvironment,
   validateFilters,
   validateOutputKey,
+  validateEnrichFeeTokens,
+  generateChainKey,
   createMetadata,
   handleApiError,
   successHeaders,
   commonHeaders,
   loadChainConfiguration,
   FilterType,
-  LogLevel,
-  structuredLog,
   APIErrorType,
   createErrorResponse,
   CCIPError,
 } from "../utils.ts"
+import { logger } from "@lib/logging/index.js"
 
 import type { ChainDetails, ChainApiResponse } from "../types/index.ts"
 import { ChainDataService } from "../../services/chain-data.ts"
@@ -25,7 +26,7 @@ export const GET: APIRoute = async ({ request }) => {
   const requestId = crypto.randomUUID()
 
   try {
-    structuredLog(LogLevel.INFO, {
+    logger.info({
       message: "Processing CCIP chains request",
       requestId,
       url: request.url,
@@ -36,7 +37,7 @@ export const GET: APIRoute = async ({ request }) => {
 
     // Validate environment
     const environment = validateEnvironment(params.get("environment") || undefined)
-    structuredLog(LogLevel.DEBUG, {
+    logger.debug({
       message: "Environment validated",
       requestId,
       environment,
@@ -49,7 +50,7 @@ export const GET: APIRoute = async ({ request }) => {
       internalId: params.get("internalId") || undefined,
     }
     validateFilters(filters)
-    structuredLog(LogLevel.DEBUG, {
+    logger.debug({
       message: "Filters validated",
       requestId,
       filters,
@@ -57,14 +58,22 @@ export const GET: APIRoute = async ({ request }) => {
 
     // Validate output key
     const outputKey = validateOutputKey(params.get("outputKey") || undefined)
-    structuredLog(LogLevel.DEBUG, {
+    logger.debug({
       message: "Output key validated",
       requestId,
       outputKey,
     })
 
+    // Validate enrichFeeTokens parameter
+    const enrichFeeTokens = validateEnrichFeeTokens(params.get("enrichFeeTokens") || undefined)
+    logger.debug({
+      message: "EnrichFeeTokens parameter validated",
+      requestId,
+      enrichFeeTokens,
+    })
+
     const config = await loadChainConfiguration(environment)
-    structuredLog(LogLevel.DEBUG, {
+    logger.debug({
       message: "Chain configuration loaded",
       requestId,
       environment,
@@ -72,9 +81,13 @@ export const GET: APIRoute = async ({ request }) => {
     })
 
     const chainDataService = new ChainDataService(config.chainsConfig)
-    const { data, errors, metadata: serviceMetadata } = await chainDataService.getFilteredChains(environment, filters)
+    const {
+      data,
+      errors,
+      metadata: serviceMetadata,
+    } = await chainDataService.getFilteredChains(environment, filters, enrichFeeTokens)
 
-    structuredLog(LogLevel.INFO, {
+    logger.info({
       message: "Chain data retrieved successfully",
       requestId,
       validChainCount: serviceMetadata.validChainCount,
@@ -91,7 +104,12 @@ export const GET: APIRoute = async ({ request }) => {
       (acc, [family, chainList]) => {
         acc[family] = chainList.reduce(
           (familyAcc, chain) => {
-            const key = outputKey ? chain[outputKey].toString() : chain.internalId
+            const key =
+              outputKey === "chainId"
+                ? generateChainKey(chain.chainId, chain.chainType, outputKey)
+                : outputKey
+                  ? chain[outputKey].toString()
+                  : chain.internalId
             familyAcc[key] = chain
             return familyAcc
           },
@@ -108,7 +126,7 @@ export const GET: APIRoute = async ({ request }) => {
       ignored: errors,
     }
 
-    structuredLog(LogLevel.INFO, {
+    logger.info({
       message: "Sending successful response",
       requestId,
       metadata,
@@ -118,7 +136,7 @@ export const GET: APIRoute = async ({ request }) => {
       headers: { ...commonHeaders, ...successHeaders },
     })
   } catch (error) {
-    structuredLog(LogLevel.ERROR, {
+    logger.error({
       message: "Error processing chains request",
       requestId,
       error: error instanceof Error ? error.message : "Unknown error",

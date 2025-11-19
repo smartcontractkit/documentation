@@ -3,7 +3,13 @@ section: ccip
 date: Last Modified
 title: "Set Token Pool rate limits using Foundry"
 metadata:
-  description: "Learn to update Chainlink CCIP token pool rate limiters using Foundry. Review existing settings and configure outbound/inbound limits for cross-chain token transfers."
+  description: "Update CCIP token pool rate limiters with Foundry. Inspect settings, adjust limits, and verify secure operation across supported routes."
+  image: "/images/ccip/basic-architecture.png"
+  excerpt: "rate limiter, Foundry, ERC-20, ERC20, token pool, limits, secure, CCIP"
+  datePublished: "2024-10-29"
+  lastModified: "2025-10-22"
+  estimatedTime: "20 minutes"
+  difficulty: "intermediate"
 ---
 
 import { Aside, PageTabs, CopyText } from "@components"
@@ -29,19 +35,19 @@ This tutorial will guide you through the process of updating the rate limiter se
 ## Prerequisites
 
 - **Tokens and pools deployed**: Ensure that you have tokens and token pools already deployed on both networks you plan to use. If not, refer to one of the following tutorials:
-
   - [Register from an EOA (Burn & Mint)](/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-hardhat)
   - [Register from an EOA (Lock & Mint)](/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-lock-mint-hardhat)
 
-- **Admin access**: Ensure you have the necessary privileges to call the [setChainRateLimiterConfig](/ccip/api-reference/evm/v1.6.0/token-pool#setchainratelimiterconfig) function for your token pools.
+- **Admin access**: Ensure you have the necessary privileges to call the [setChainRateLimiterConfig](/ccip/api-reference/evm/v1.6.2/token-pool#setchainratelimiterconfig) function for your token pools.
 
 ## Before You Begin
 
-1.  Make sure you have Node.js v18 or above installed. If not, **install Node.js v18**:  
-    [Download Node.js 18](https://nodejs.org/en/download/) if you don't have it installed. Optionally, you can use the [nvm package](https://www.npmjs.com/package/nvm) to switch between Node.js versions:
+1.  Make sure you have Node.js v22.10.0 or above installed. If not, **install Node.js v22.10.0**:
+
+    [Download Node.js v22.10.0](https://nodejs.org/en/download/) if you don't have it installed. Optionally, you can use the [nvm package](https://www.npmjs.com/package/nvm) to switch between Node.js versions:
 
     ```bash
-    nvm use 18
+    nvm use 22
     ```
 
     Verify that the correct version of Node.js is installed:
@@ -54,7 +60,7 @@ This tutorial will guide you through the process of updating the rate limiter se
 
     ```bash
     $ node -v
-    v18.7.0
+    v22.15.0
     ```
 
 1.  **Install Foundry**:
@@ -82,7 +88,6 @@ This tutorial will guide you through the process of updating the rate limiter se
     ```
 
     Variables to configure:
-
     - <CopyText text="PRIVATE_KEY" code />: The private key for your testnet wallet, **must** begin with `0x`. If you
       use MetaMask, you can follow this
       [guide](https://support.metamask.io/managing-my-wallet/secret-recovery-phrase-and-private-keys/how-to-export-an-accounts-private-key/)
@@ -114,6 +119,12 @@ This tutorial will guide you through the process of updating the rate limiter se
 
 1.  **Fund your EOA with native gas tokens**:  
     Make sure your EOA has enough native gas tokens on Avalanche Fuji to cover transaction fees. You can use the [Chainlink faucets](https://faucets.chain.link/) to get testnet tokens.
+
+<Aside type="note" title="Using Different Networks">
+  This tutorial uses Avalanche Fuji and Arbitrum Sepolia by default. To test with other CCIP-supported networks, see
+  [Add CCIP Networks for Cross-Chain Token
+  Tutorials](/ccip/tutorials/evm/cross-chain-tokens/configure-additional-networks-foundry).
+</Aside>
 
 ## Tutorial
 
@@ -217,7 +228,7 @@ This means there are currently no restrictions on token transfers. In the next s
 
 ### Update rate limiter settings
 
-Use the `UpdateRateLimiters` script to update the rate limiter configurations for an existing chain connection in your token pool. This script interacts with the [`setChainRateLimiterConfig`](/ccip/api-reference/evm/v1.6.0/token-pool#setchainratelimiterconfig) function of the `TokenPool` contract, allowing you to adjust the rate limits without altering other configurations like remote pool addresses.
+Use the `UpdateRateLimiters` script to update the rate limiter configurations for an existing chain connection in your token pool. This script interacts with the [`setChainRateLimiterConfig`](/ccip/api-reference/evm/v1.6.2/token-pool#setchainratelimiterconfig) function of the `TokenPool` contract, allowing you to adjust the rate limits without altering other configurations like remote pool addresses.
 
 The `UpdateRateLimiters` task allows you to:
 
@@ -402,7 +413,6 @@ In the example below, we use a token pool at address `0xeB841acbc25549D4deB6Ed94
 1. In your `script/output/` directory, make sure the `deployedToken_avalancheFuji.json` and `deployedTokenPool_avalancheFuji.json` files contain the correct token and token pool addresses.
 
 1. **Test Capacity**: Because the outbound capacity set is `10000000000000000000` , let's transfer `10000000000000000001` tokens from Avalanche Fuji to Arbitrum Sepolia. This transfer should fail because the capacity is less than the number of tokens being transferred.
-
    - In your `script/` directory, open your `config.json` file, and set `tokenAmountToTransfer` to `10000000000000000001`.
 
    - Run the following command:
@@ -422,7 +432,6 @@ In the example below, we use a token pool at address `0xeB841acbc25549D4deB6Ed94
    Notice in the logs that the transfer failed because the capacity was exceeded: `TokenMaxCapacityExceeded`.
 
 1. **Test Rate**: Now, let's transfer `10000000000000000000` tokens from Avalanche Fuji to Arbitrum Sepolia, which will empty the bucket. After this transfer, we will attempt to transfer another `10000000000000000000` tokens. This transfer will fail because it takes 100 seconds to replenish the bucket.
-
    1. In your `script/` directory, open your `config.json` file, and set `tokenAmountToTransfer` to `10000000000000000000`.
 
    1. **First transfer** (Successful):

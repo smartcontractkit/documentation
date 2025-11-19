@@ -3,13 +3,16 @@ section: ccip
 date: Last Modified
 title: "CCIP v1.6.0 SVM Receiver API Reference"
 metadata:
-  description: "API documentation for implementing CCIP receivers on SVM-based blockchains like Solana."
+  description: "Complete API documentation for implementing CCIP receivers on SVM-based blockchains like Solana. Detailed guide covering receiver trait implementation, message handling, cross-chain message processing, and receiver program development for blockchain interoperability."
+  excerpt: "CCIP receiver, SVM receiver implementation, Solana receiver, cross-chain receiver, message handling, receiver trait, ccip receive, blockchain interoperability, message processing"
 ---
 
 import { Aside } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 ## Receiver
+
+[Git Source](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs/example-ccip-receiver)
 
 Below is a complete API reference for the `ccip_receive` instruction that must be implemented by any Solana program wishing to receive CCIP messages.
 
@@ -44,17 +47,14 @@ These are the required accounts that must be passed to implement a secure CCIP R
 #### Implementation Requirements
 
 1. **Instruction Name and Discriminator**:
-
    - If using Anchor, the instruction name must be exactly `ccip_receive`.
    - If not using Anchor, the instruction discriminator must be `[0x0b, 0xf4, 0x09, 0xf9, 0x2c, 0x53, 0x2f, 0xf5]`.
 
 1. **Security Pattern**:
-
    - The first three accounts in the `CcipReceive` context must follow the exact pattern shown above.
    - Your program must store the Router address (typically in a state account) to verify the `allowed_offramp` PDA.
 
 1. **Account Validation**:
-
    - The `authority` must be validated as a PDA derived from the offramp program.
    - The `allowed_offramp` must be validated as a PDA owned by the router program with the correct seeds.
 

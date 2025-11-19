@@ -1,0 +1,304 @@
+---
+section: ccip
+date: Last Modified
+title: "Building CCIP Messages from EVM to Aptos"
+isIndex: false
+metadata:
+  description: "Implement CCIP messages from EVM chains to Aptos. Guide covers message structure, parameters, and implementation for token transfers, arbitrary data, and programmable token transfers (data+tokens)."
+  image: "/images/ccip/concepts/architecture/ccip-aptos-destination-chain.jpg"
+  excerpt: "message structure, Aptos accounts, object, resource account, extraArgs, tokens, data, CCIP, Aptos FA, Fungible Asset"
+  datePublished: "2025-09-03"
+  lastModified: "2025-09-03"
+  estimatedTime: "25 minutes"
+  difficulty: "advanced"
+---
+
+import { Aside, ClickToZoom } from "@components"
+import { Tabs } from "@components/Tabs"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## Introduction
+
+This guide explains how to construct CCIP Messages from Ethereum Virtual Machine (EVM) chains (e.g., Ethereum, Arbitrum, Base, etc.) to the Aptos blockchain. We'll cover the message structure, required parameters, and implementation details for different message types including token transfers, arbitrary data messaging, and programmable token transfers (data and tokens).
+
+<Aside title="Note">
+  The code snippets below use the [ethers.js](https://www.npmjs.com/package/ethers) package for formatting and encoding
+  data. Ensure it is installed in your project if you are following along with the code examples.
+</Aside>
+
+## CCIP Message Structure
+
+CCIP messages from EVM are built using the [`EVM2AnyMessage`](/ccip/api-reference/evm/v1.6.2/client#evm2anymessage) struct from the [`Client.sol`](/ccip/api-reference/evm/v1.6.2/client) library. The `EVM2AnyMessage` struct is defined as follows:
+
+```solidity
+struct EVM2AnyMessage {
+    bytes receiver;
+    bytes data;
+    EVMTokenAmount[] tokenAmounts;
+    address feeToken;
+    bytes extraArgs;
+}
+```
+
+### receiver
+
+- **Definition**: The 32-byte account address of the receiver on Aptos.
+- **For token-only transfers**: This is the **end user's wallet address** on Aptos.
+- **For arbitrary messaging** or **programmable token transfers**: This must be the account address of your custom Aptos module that is intended to receive and process the message.
+
+<Aside title="Formatting Aptos Addresses">
+  When providing an Aptos account address as the `receiver`, it must be represented as a 32-byte hex string (`bytes32`). Standard Aptos addresses are already 32 bytes and represented in hex, so you just need to ensure it includes the `0x` prefix.
+
+```javascript
+// An Aptos address is already in the correct format.
+const aptosReceiverAddress = "0xca843279e3427144cead5e4d5999a3d0abf820035b3b4104284b792e2a936c86"
+
+// Use the hex string directly in the message.
+const message = {
+  // ...
+  receiver: aptosReceiverAddress,
+  // ...
+}
+```
+
+</Aside>
+
+### data
+
+- **Definition**: Contains the payload to be delivered to the destination chain.
+- **For token-only transfers**: Must be empty (`0x`).
+- **For arbitrary messaging** or **programmable token transfers**: Contains the custom data the receiver module will process.
+- **Encoding requirement**: Must be encoded as a hex string with a `0x` prefix.
+
+<Aside type="tip" title="Data Encoding">
+
+```javascript
+import { toUtf8Bytes, hexlify } from "ethers"
+
+// For token-only transfers, data is empty.
+const tokenTransferData = "0x"
+
+// For arbitrary data, convert your payload to a hex string.
+const arbitraryMessageData = hexlify(toUtf8Bytes("Hello Aptos"))
+```
+
+</Aside>
+
+### tokenAmounts
+
+- **Definition**: An array of token addresses and amounts to transfer.
+- **For data-only messages**: Must be an empty array (`[]`).
+- **For token transfers** or **programmable token transfers**: Each entry specifies a token address and amount. **Note**: Check the [CCIP Directory](/ccip/directory) for the list of supported tokens on each lane.
+
+### feeToken
+
+- **Definition**: Specifies which token to use for paying CCIP fees.
+- **For native gas token**: Use `address(0)` (`ethers.ZeroAddress`) to specify the source chain's native gas token (e.g., ETH on Ethereum).
+- **For ERC-20 tokens**: Specify the ERC-20 token address for fee payment. **Note**: Check the [CCIP Directory](/ccip/directory) for the list of supported fee tokens on your source chain.
+
+## extraArgs
+
+For Aptos-bound messages, the `extraArgs` parameter is a byte string composed of a 4-byte tag (`0x181dcf10`) prepended to the ABI-encoded tuple `(uint256 gasLimit, bool allowOutOfOrderExecution)`. This format is specified in the [`GenericExtraArgsV2`](/ccip/api-reference/evm/v1.6.2/client#genericextraargsv2) reference.
+
+### gasLimit
+
+- **Definition**: Specifies the amount of gas units to allocate for execution on Aptos.
+- **Usage**: For simple token and data transfers as shown in the examples, `0` is a sufficient value. For complex programmable token transfers involving significant computation in your receiving module, this value must be determined through testing.
+
+### allowOutOfOrderExecution
+
+- **Definition**: A boolean flag required for the message.
+- **Usage**: The provided example scripts consistently use `true` for this value. It must be set to `true` when Aptos is the destination chain.
+
+<Aside title="Encoding extraArgs for Aptos">
+You must ABI-encode a tuple containing the `gasLimit` and `allowOutOfOrderExecution` parameters, and then prepend the `0x181dcf10` tag. You can use the [`Client.encodeExtraArgsV2`](/ccip/api-reference/aptos/v1.6.0/client#encode_generic_extra_args_v2) helper function for this.
+
+```javascript
+import { ethers } from "ethers";
+
+function encodeExtraArgsV2(gasLimit: bigint, allowOutOfOrderExecution: boolean): string {
+    const abiCoder = ethers.AbiCoder.defaultAbiCoder();
+
+    // Encode the arguments as a tuple
+    const encodedArgs = abiCoder.encode(
+        ["tuple(uint256 gasLimit, bool allowOutOfOrderExecution)"],
+        [[gasLimit, allowOutOfOrderExecution]]
+    );
+
+    const GENERIC_EXTRA_ARGS_V2_TAG = "0x181dcf10";
+
+    // Concatenate the tag and the encoded arguments
+    return ethers.concat([GENERIC_EXTRA_ARGS_V2_TAG, encodedArgs]);
+}
+
+// Example for a simple transfer
+const extraArgs = encodeExtraArgsV2(0n, true);
+```
+
+</Aside>
+
+## Implementation by Message Type
+
+### Token Transfer
+
+Use this configuration when sending only tokens from an EVM chain to a user's wallet on Aptos.
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">Configuration</Fragment>
+  <Fragment slot="tab.2">Example</Fragment>
+  <Fragment slot="panel.1">
+    ```
+    {
+      destinationChainSelector: APTOS_CHAIN_SELECTOR,
+      receiver: userAptosAddress, // The end user's 32-byte Aptos address
+      tokenAmounts: [{ token: tokenAddress, amount: tokenAmount }],
+      feeToken: feeTokenAddress, // or address(0) for native
+      data: "0x", // Data must be empty
+      extraArgs: {
+        gasLimit: 0, // Gas limit is 0 for token-only transfers
+        allowOutOfOrderExecution: true
+      }
+    }
+    ```
+  </Fragment>
+  <Fragment slot="panel.2">
+    ```javascript
+    const aptosRecipient = "0xabf820035b3b4104284b792e2a936c86ca843279e3427144cead5e4d5999a3d0";
+    const tokenAmount = ethers.parseUnits("0.001", 18); // 0.001 CCIP-BnM
+
+    const message = {
+      receiver: aptosRecipient,
+      data: "0x", // No data for a simple token transfer
+      tokenAmounts: [{
+        token: "0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05", // CCIP-BnM on Sepolia
+        amount: tokenAmount
+      }],
+      feeToken: ethers.ZeroAddress, // Pay fee in native ETH
+      extraArgs: encodeExtraArgsV2(0n, true)
+    };
+    ```
+
+  </Fragment>
+</Tabs>
+
+<Aside type="note" title="Key Requirements">
+
+- `receiver` is the final user's wallet address on Aptos.
+- `data` **MUST** be `0x`.
+- `extraArgs` should use `gasLimit: 0n` and `allowOutOfOrderExecution: true`.
+
+</Aside>
+
+### Arbitrary Messaging
+
+Use this configuration when sending only a data payload to a custom module on Aptos.
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">Configuration</Fragment>
+  <Fragment slot="tab.2">Example</Fragment>
+  <Fragment slot="panel.1">
+    ```
+    {
+      destinationChainSelector: APTOS_CHAIN_SELECTOR,
+      receiver: yourAptosModuleAddress,
+      tokenAmounts: [], // Empty for data-only
+      feeToken: feeTokenAddress, // or address(0) for native
+      data: customHexData,
+      extraArgs: {
+        gasLimit: determinedGasLimit, // Must be tested
+        allowOutOfOrderExecution: true
+      }
+    }
+    ```
+  </Fragment>
+  <Fragment slot="panel.2">
+    ```javascript
+    const yourAptosModule = "0xca843279e3427144cead5e4d5999a3d0abf820035b3b4104284b792e2a936c86";
+    const messageData = ethers.hexlify(ethers.toUtf8Bytes("Hello Aptos!"));
+
+    const message = {
+      receiver: yourAptosModule,
+      data: messageData,
+      tokenAmounts: [],  // No tokens
+      feeToken: "0x779877A7B0D9E8603169DdbD7836e478b4624789", // Pay fee in LINK
+      extraArgs: encodeExtraArgsV2(0n, true)
+    };
+    ```
+
+  </Fragment>
+</Tabs>
+
+<Aside type="note" title="Key Requirements">
+
+- `receiver` must be the address of your custom Aptos module.
+- `tokenAmounts` **MUST** be an empty array.
+- `gasLimit` must be sufficient for all operations within your `ccip_receive` function and requires testing
+
+</Aside>
+
+### Programmable Token Transfer (Data and Tokens)
+
+Use this configuration when sending both tokens and a data payload to a custom module on Aptos.
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">Configuration</Fragment>
+  <Fragment slot="tab.2">Example</Fragment>
+  <Fragment slot="panel.1">
+    ```
+    {
+      destinationChainSelector: APTOS_CHAIN_SELECTOR,
+      receiver: yourAptosModuleAddress,
+      tokenAmounts: [{ token: tokenAddress, amount: tokenAmount }],
+      feeToken: feeTokenAddress,
+      data: customHexData,
+      extraArgs: {
+        gasLimit: determinedGasLimit, // Must be tested
+        allowOutOfOrderExecution: true
+      }
+    }
+    ```
+  </Fragment>
+  <Fragment slot="panel.2">
+    ```javascript
+    const yourAptosModule = "0xca843279e3427144cead5e4d5999a3d0abf820035b3b4104284b792e2a936c86";
+    const messageData = ethers.hexlify(ethers.toUtf8Bytes("Deposit for user X"));
+
+    const message = {
+      receiver: yourAptosModule,
+      data: messageData,
+      tokenAmounts: [{
+        token: "0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05", // CCIP-BnM on Sepolia
+        amount: ethers.parseUnits("1.5", 18)
+      }],
+      feeToken: "0x779877A7B0D9E8603169DdbD7836e478b4624789", // Pay fee in LINK
+      extraArgs: encodeExtraArgsV2(200000n, true) // Gas determined from testing
+    };
+    ```
+
+  </Fragment>
+</Tabs>
+
+<Aside type="note" title="Key Requirements">
+
+- `receiver` must be the address of your custom Aptos module.
+- Your receiver module must implement logic to handle both the data payload and the incoming tokens.
+- `gasLimit` must be sufficient for all operations within your `ccip_receive` function and requires testing.
+
+</Aside>
+
+## Related Tutorials
+
+To see these concepts in action with step-by-step implementation guides, check out the following tutorials:
+
+- [Token Transfers: EVM to Aptos](/ccip/tutorials/aptos/destination/token-transfers) - Learn how to implement token-only transfers from EVM chains to Aptos wallets.
+- [Arbitrary Messaging: EVM to Aptos](/ccip/tutorials/aptos/destination/arbitrary-messaging) - Learn how to send data messages from EVM chains to Aptos modules.
+- [Programmable Token Transfers: EVM to Aptos](/ccip/tutorials/aptos/destination/programmable-token-transfers) - Learn how to send both tokens and data in a single message to trigger module execution with token transfers on Aptos.
+
+These tutorials provide complete, working examples using the concepts covered in this guide.
+
+## Further Resources
+
+- [**CCIP EVM Client API Reference**](/ccip/api-reference/evm/v1.6.2/client): Complete technical details about the `EVM2AnyMessage` struct, helper functions, and message construction on EVM chains.
+- **Aptos TS-SDK Docs**: For more information on building the receiving Aptos module, refer to the [official Aptos TS-SDK docs](https://aptos.dev/en/build/sdks/ts-sdk).
+
+<CcipCommon callout="educationalDisclaimer" />

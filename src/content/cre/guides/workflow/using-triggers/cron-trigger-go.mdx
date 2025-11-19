@@ -1,0 +1,107 @@
+---
+section: cre
+title: "Cron Trigger"
+sdkLang: "go"
+pageId: "guides-workflow-cron-trigger"
+date: Last Modified
+metadata:
+  description: "Schedule workflows with Cron in Go: learn to run your workflow at specific times or intervals using cron expressions."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+The Cron trigger fires based on a time-based schedule, defined by a standard cron expression.
+
+**Use case examples:**
+
+- Periodically fetching data from an API.
+- Regularly checking an onchain state.
+- Regularly writing data to an onchain contract.
+
+## Configuration and handler
+
+You create a Cron trigger by calling the [`cron.Trigger`](/cre/reference/sdk/triggers#crontrigger) function and register it with a handler inside your `InitWorkflow` function.
+
+When you configure a Cron trigger, you must provide a `Schedule` using a standard cron expression. The expression can contain 5 or 6 fields, where the optional 6th field represents seconds.
+
+For help understanding or creating cron expressions, see <a href="https://crontab.guru/" target="_blank" rel="noopener noreferrer">crontab.guru</a> (note: this tool supports 5-field expressions; add a seconds field at the beginning for 6-field expressions).
+
+**Examples:**
+
+- Every 30 seconds (6 fields): `*/30 * * * * *`
+- Every minute, at second 0 (6 fields): `0 * * * * *`
+- Every hour, at the top of the hour (6 fields): `0 0 * * * *`
+- Every 5 minutes from 08:00 to 08:59, Monday to Friday (5 fields): `*/5 8 * * 1-5`
+
+### Timezone support
+
+By default, cron expressions use UTC. To specify a different timezone, prefix your cron expression with `TZ=<timezone>`, where `<timezone>` is an <a href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones" target="_blank" rel="noopener noreferrer">IANA timezone identifier</a> (e.g., `America/New_York`, `Europe/London`, `Asia/Tokyo`).
+
+**Examples with timezones:**
+
+- Daily at midnight in New York: `TZ=America/New_York 0 0 * * *`
+- Every Sunday at 8 PM in Tokyo: `TZ=Asia/Tokyo 0 20 * * 0`
+- Every weekday at 9 AM in London: `TZ=Europe/London 0 9 * * 1-5`
+
+The timezone-aware scheduler automatically handles daylight saving time transitions, ensuring your workflows run at the correct local time throughout the year.
+
+<Aside type="note" title="Minimum Interval">
+  You cannot schedule a trigger to fire more frequently than once every 30 seconds.
+</Aside>
+
+```go
+import (
+	"log/slog"
+
+	"github.com/smartcontractkit/cre-sdk-go/cre"
+	"github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
+)
+
+// Callback function that runs when the cron trigger fires
+func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*MyResult, error) {
+    logger := runtime.Logger()
+    scheduledTime := trigger.ScheduledExecutionTime.AsTime()
+    logger.Info("Cron trigger fired", "scheduledTime", scheduledTime)
+    // Your logic here...
+    return &MyResult{}, nil
+}
+
+func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+    // Create the trigger - fires every 30 seconds in UTC
+    cronTrigger := cron.Trigger(&cron.Config{Schedule: "*/30 * * * * *"})
+
+    // Or use a timezone-aware schedule - fires daily at 9 AM Eastern Time
+    // cronTrigger := cron.Trigger(&cron.Config{Schedule: "TZ=America/New_York 0 9 * * *"})
+
+    // Register a handler with the trigger and a callback function
+    return cre.Workflow[*Config]{
+        cre.Handler(cronTrigger, onCronTrigger),
+    }, nil
+}
+```
+
+## Callback and payload
+
+When a Cron trigger fires, it passes a [`*cron.Payload`](/cre/reference/sdk/triggers/cron-trigger) object to your callback function. This payload contains the scheduled execution time.
+
+For the full type definition and all available fields, see the [Cron Trigger SDK Reference](/cre/reference/sdk/triggers/cron-trigger).
+
+The `trigger` parameter is always included in the callback function signature. You can access the scheduled execution time using the `AsTime()` method:
+
+```go
+func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*MyResult, error) {
+    logger := runtime.Logger()
+    scheduledTime := trigger.ScheduledExecutionTime.AsTime()
+    logger.Info("Cron trigger fired", "scheduledTime", scheduledTime)
+    // Your logic here...
+    return &MyResult{}, nil
+}
+```
+
+## Testing cron triggers in simulation
+
+To test your cron trigger during development, you can use the workflow simulator. The simulator executes cron triggers immediately when selected, allowing you to test your logic without waiting for the scheduled time.
+
+For detailed instructions on simulating cron triggers, including interactive and non-interactive modes, see the [Cron Trigger section in the Simulating Workflows guide](/cre/guides/operations/simulating-workflows#cron-trigger).

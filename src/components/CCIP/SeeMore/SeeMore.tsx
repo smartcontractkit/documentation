@@ -6,7 +6,7 @@ interface SeeMoreProps {
 function SeeMore({ onClick }: SeeMoreProps) {
   return (
     <div className="seeMore__container">
-      <button className="seeMore" onClick={onClick}>
+      <button className="seeMore" onClick={onClick} aria-label="See more items">
         See more
       </button>
     </div>

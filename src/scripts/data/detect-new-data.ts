@@ -47,6 +47,8 @@ const NETWORK_ENDPOINTS: Record<string, string> = {
   monad: "https://reference-data-directory.vercel.app/feeds-monad-testnet.json",
   polygonkatana: "https://reference-data-directory.vercel.app/feeds-polygon-mainnet-katana.json",
   bob: "https://reference-data-directory.vercel.app/feeds-bitcoin-mainnet-bob-1.json",
+  plasma: "https://reference-data-directory.vercel.app/feeds-plasma-mainnet.json",
+  hyperevm: "https://reference-data-directory.vercel.app/feeds-hyperliquid-mainnet.json",
 }
 
 // Path to the baseline JSON file that contains known feed IDs
@@ -105,6 +107,7 @@ function buildFeedUrl(item: DataItem): string {
     "gnosis-chain": "xdai",
     polygonzkevm: "polygon-zkevm",
     polygonkatana: "katana",
+    hyperevm: "hyperliquid",
     // Add more mappings as needed
   }
 
@@ -120,6 +123,7 @@ function buildFeedUrl(item: DataItem): string {
     soneium: "soneium",
     xlayer: "xlayer",
     zksync: "zksync",
+    hyperevm: "hyperliquid",
     // Add more exceptions as they're discovered
   }
 
@@ -166,7 +170,7 @@ async function detectNewData(): Promise<void> {
       const rawJson = await fetchNetworkJson(url)
       // rawJson is presumably an array of feed definitions
       // Convert them into our DataItem structure
-      for (const obj of rawJson) {
+      for (const obj of Object.values(rawJson)) {
         const item = convertToDataItem(obj, networkSlug)
         if (item && !item.hidden) {
           allItems.push(item)
@@ -279,59 +283,59 @@ async function fetchNetworkJson(url: string): Promise<any[]> {
  * @returns Standardized DataItem or null if validation fails
  */
 function convertToDataItem(obj: any, network: string): DataItem | null {
+  // Get product type code to check for special cases
+  const productTypeCode = obj.docs?.productTypeCode || ""
+  const isRefMacro = productTypeCode.toUpperCase().trim() === "REFMACRO"
+
   // 1) Must have a `path`
-  if (!obj?.path) {
+  const path = obj.path
+  if (!path) {
     return null
   }
 
-  // 2) Must have a top-level assetName
-  const topLevelAssetName = obj.assetName
+  // 2) Must have a top-level assetName (source field differs for RefMacro)
+  const topLevelAssetName = isRefMacro ? obj.name : obj.assetName
 
-  // 3) Must have baseAsset in docs for all products
+  // 3) Must have baseAsset in docs for all products (except RefMacro)
   const baseAsset = obj.docs?.baseAsset
 
   // 4) Check hidden
   const hidden = obj.docs?.hidden === true
-
-  // 5) We'll get productTypeCode and deliveryChannel
-  const productTypeCode = obj.docs?.productTypeCode || ""
-  const deliveryChannel = obj.docs?.deliveryChannelCode || ""
-
-  // 6) If missing assetName or baseAsset, skip
-  if (!topLevelAssetName || !baseAsset) {
-    return null
-  }
-
   if (hidden) {
     return null
   }
 
+  // 5) We'll get deliveryChannel
+  const deliveryChannel = obj.docs?.deliveryChannelCode || ""
+
+  // 6) If missing assetName, skip. For non-RefMacro, also require baseAsset.
+  if (!topLevelAssetName || (!isRefMacro && !baseAsset)) {
+    return null
+  }
+
   // 7) Now handle quoteAsset logic:
-  //    For streams or normal feeds, we require quoteAsset
-  //    For SmartData feeds (PoR, NAV, AUM), we do NOT require it
   const codeUpper = productTypeCode.toUpperCase().trim()
   const quoteAsset = obj.docs?.quoteAsset || ""
 
-  // If it's not one of the SmartData codes, we require a quoteAsset
-  // (i.e. data-feeds or data-streams)
-  if (!["POR", "NAV", "AUM"].includes(codeUpper)) {
-    // If quoteAsset is missing, skip
+  if (!["POR", "NAV", "AUM", "REFMACRO"].includes(codeUpper)) {
     if (!quoteAsset) {
       return null
     }
   }
 
   // 8) Build and return the item
-  return {
-    feedID: `${network}-${obj.path}`, // combine for uniqueness across networks
+  const result = {
+    feedID: `${network}-${path}`,
     hidden: false,
     productTypeCode,
     deliveryChannelCode: deliveryChannel,
     network,
     assetName: topLevelAssetName,
-    baseAsset,
+    baseAsset: baseAsset || (isRefMacro ? topLevelAssetName : undefined),
     quoteAsset,
   }
+
+  return result
 }
 
 /**

@@ -5,6 +5,7 @@ import {
   Environment,
   Version,
   CCIPSendErrorEntry,
+  CCIPEventEntry,
   SupportedTokenConfig,
   TokenMechanism,
   NetworkFees,
@@ -48,6 +49,24 @@ import * as errors_v1_5_0 from "./errors/v1_5_0/index.ts"
 import * as errors_v1_5_1 from "./errors/v1_5_1/index.ts"
 // eslint-disable-next-line camelcase
 import * as errors_v1_6_0 from "./errors/v1_6_0/index.ts"
+// eslint-disable-next-line camelcase
+import * as errors_v1_6_1 from "./errors/v1_6_1/index.ts"
+// eslint-disable-next-line camelcase
+import * as errors_v1_6_2 from "./errors/v1_6_2/index.ts"
+// eslint-disable-next-line camelcase
+import * as errors_v1_6_3 from "./errors/v1_6_3/index.ts"
+// eslint-disable-next-line camelcase
+import * as events_v1_5_0 from "./events/v1_5_0/index.ts"
+// eslint-disable-next-line camelcase
+import * as events_v1_5_1 from "./events/v1_5_1/index.ts"
+// eslint-disable-next-line camelcase
+import * as events_v1_6_0 from "./events/v1_6_0/index.ts"
+// eslint-disable-next-line camelcase
+import * as events_v1_6_1 from "./events/v1_6_1/index.ts"
+// eslint-disable-next-line camelcase
+import * as events_v1_6_2 from "./events/v1_6_2/index.ts"
+// eslint-disable-next-line camelcase
+import * as events_v1_6_3 from "./events/v1_6_3/index.ts"
 
 export const getAllEnvironments = () => [Environment.Mainnet, Environment.Testnet]
 export const getAllVersions = () => [Version.V1_2_0]
@@ -71,10 +90,17 @@ type ErrorTypesV160 = ErrorTypesV151 & {
   feequoterCCIPSendErrors: CCIPSendErrorEntry[]
 }
 
+type ErrorTypesV161 = ErrorTypesV160
+type ErrorTypesV162 = ErrorTypesV161
+type ErrorTypesV163 = ErrorTypesV162
+
 type VersionedErrors = {
   v1_5_0: ErrorTypesV150
   v1_5_1: ErrorTypesV151
   v1_6_0: ErrorTypesV160
+  v1_6_1: ErrorTypesV161
+  v1_6_2: ErrorTypesV162
+  v1_6_3: ErrorTypesV163
 }
 
 // Export errors by version with type safety
@@ -85,6 +111,61 @@ export const errors: VersionedErrors = {
   v1_5_1: errors_v1_5_1 as ErrorTypesV151,
   // eslint-disable-next-line camelcase
   v1_6_0: errors_v1_6_0 as ErrorTypesV160,
+  // eslint-disable-next-line camelcase
+  v1_6_1: errors_v1_6_1 as ErrorTypesV161,
+  // eslint-disable-next-line camelcase
+  v1_6_2: errors_v1_6_2 as ErrorTypesV162,
+  // eslint-disable-next-line camelcase
+  v1_6_3: errors_v1_6_3 as ErrorTypesV163,
+}
+
+// Type for v1.5.0 events
+type EventTypesV150 = {
+  onrampCCIPSendEvents: CCIPEventEntry[]
+  offrampCCIPReceiveEvents: CCIPEventEntry[]
+  routerCCIPReceiveEvents: CCIPEventEntry[]
+  poolCCIPSendEvents: CCIPEventEntry[]
+  poolCCIPReceiveEvents: CCIPEventEntry[]
+}
+
+// Type for v1.5.1 events
+type EventTypesV151 = EventTypesV150
+
+// Type for v1.6.0 events
+type EventTypesV160 = EventTypesV151
+
+// Type for v1.6.1 events
+type EventTypesV161 = EventTypesV160
+
+// Type for v1.6.2 events
+type EventTypesV162 = EventTypesV161
+
+// Type for v1.6.3 events
+type EventTypesV163 = EventTypesV162
+
+type VersionedEvents = {
+  v1_5_0: EventTypesV150
+  v1_5_1: EventTypesV151
+  v1_6_0: EventTypesV160
+  v1_6_1: EventTypesV161
+  v1_6_2: EventTypesV162
+  v1_6_3: EventTypesV163
+}
+
+// Export events by version with type safety
+export const events: VersionedEvents = {
+  // eslint-disable-next-line camelcase
+  v1_5_0: events_v1_5_0 as EventTypesV150,
+  // eslint-disable-next-line camelcase
+  v1_5_1: events_v1_5_1 as EventTypesV151,
+  // eslint-disable-next-line camelcase
+  v1_6_0: events_v1_6_0 as EventTypesV160,
+  // eslint-disable-next-line camelcase
+  v1_6_1: events_v1_6_1 as EventTypesV161,
+  // eslint-disable-next-line camelcase
+  v1_6_2: events_v1_6_2 as EventTypesV162,
+  // eslint-disable-next-line camelcase
+  v1_6_3: events_v1_6_3 as EventTypesV163,
 }
 
 export const networkFees: NetworkFees = {
@@ -416,12 +497,13 @@ export const getAllNetworks = ({ filter }: { filter: Environment }): Network[] =
     const explorer = getExplorer(supportedChain)
     const router = chains[chain].router
     if (!explorer) throw Error(`Explorer not found for ${supportedChain}`)
-    const routerExplorerUrl = getExplorerAddressUrl(explorer)(router.address)
-    const nativeToken = getNativeCurrency(supportedChain)
-    if (!nativeToken) throw Error(`Native token not found for ${supportedChain}`)
 
     // Determine chain type based on chain name
     const { chainType } = getChainTypeAndFamily(supportedChain)
+
+    const routerExplorerUrl = getExplorerAddressUrl(explorer, chainType)(router.address)
+    const nativeToken = getNativeCurrency(supportedChain)
+    if (!nativeToken) throw Error(`Native token not found for ${supportedChain}`)
 
     allChains.push({
       name: title,
@@ -448,7 +530,8 @@ export const getAllNetworks = ({ filter }: { filter: Environment }): Network[] =
       })),
       armProxy: chains[chain].armProxy,
       feeQuoter: chainType === "solana" ? chains[chain]?.feeQuoter : undefined,
-      rmnPermeable: chains[chain]?.rmnPermeable,
+      mcms: chainType === "aptos" ? chains[chain]?.mcms?.address : undefined,
+      poolPrograms: chainType === "solana" ? chains[chain]?.poolPrograms : undefined,
     })
   }
 
@@ -479,7 +562,6 @@ export const getNetwork = ({ chain, filter }: { chain: string; filter: Environme
         logo: network.logo,
         explorer: network.explorer,
         chainType: network.chainType,
-        rmnPermeable: chainDetails?.rmnPermeable,
         ...chainDetails,
       }
     }

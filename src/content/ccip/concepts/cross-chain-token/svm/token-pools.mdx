@@ -3,202 +3,652 @@ section: ccip
 date: Last Modified
 title: "Cross-Chain Token Standard - Token Pools (SVM)"
 metadata:
-  description: "Learn about CCIP Token Pools for SVM chains like Solana. Covers requirements (instructions, PDAs, decimals), standard pools, and custom pool use cases."
+  description: "Complete guide to CCIP Token Pools for SVM chains like Solana. Covers deployment approaches (self-serve, self-deployed, custom), decimal compatibility decisions, standard pool implementation (BurnMint, LockRelease), and custom pool development requirements."
+  excerpt: "Token pools, SVM, Solana, deployment approaches, self-serve mode, BurnMint, LockRelease, decimal compatibility, decimal precision, mint authority, liquidity management, PDAs, custom pools, Token-2022, SPL tokens, cross-chain transfers, CCIP Router, rate limiting, instructions"
+  datePublished: "2025-05-19"
+  lastModified: "2025-05-19"
 ---
 
-import { Aside } from "@components"
+import { Aside, ClickToZoom } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-<CcipCommon callout="calloutCCTSVM" />
+On SVM-based blockchains (e.g., Solana), a [token pool](/ccip/concepts/cross-chain-token/overview#token-pool) program mediates the cross-chain transfer of [cross-chain tokens](/ccip/concepts/cross-chain-token/overview) by coordinating with the SPL Token Program. This guide describes all the requirements that your token pools must meet.
 
-On SVM-based blockchains (e.g., Solana), a token pool program mediates the cross-chain transfer of Cross-Chain Tokens (CCTs) by coordinating with the SPL Token Program. This guide describes all the requirements that your token pools must meet.
+For architectural context and how token pools fit into the complete CCIP system, see [Architecture Overview](/ccip/concepts/cross-chain-token/svm/architecture). For token-specific requirements and pool type selection guidance, see [Tokens documentation](/ccip/concepts/cross-chain-token/svm/tokens).
 
-## Common Requirements
+## Deployment Approaches
 
-All token pools, whether standard or custom, must adhere to the following guidelines:
+Before diving into the technical details, it's important to understand your three deployment options. Each approach offers different levels of control and responsibility based on your operational preferences and infrastructure requirements.
 
-### Mandatory Instructions
+### Approach 1: Self-Serve Mode (Recommended)
 
-When CCIP interacts with your token pools, it expects the presence of the following functions:
+**What it is:** Chainlink Labs deploys and maintains the standard token pool programs (BurnMint and LockRelease) on Solana Devnet and Mainnet. You simply initialize your token pool from these existing deployed programs.
 
-1. For locking or burning tokens:
+**Key Benefits:**
 
-   - `lock_or_burn_tokens(ctx: Context<TokenOnramp>, lock_or_burn: LockOrBurnInV1,) -> Result<LockOrBurnOutV1>`: This locks or burns tokens on the source blockchain.
-   - Read the [API reference](/ccip/api-reference/svm) to learn more about the parameters.
+- No need to build, audit, or deploy pool programs yourself
+- Automatic access to upgrades and security fixes
+- Fastest time to deployment
+- Lower operational overhead
 
-1. For releasing or minting tokens:
+**Who should use this:** [Token developers](/ccip/concepts/cross-chain-token/overview#token-developer) that want to integrate with CCIP quickly without managing infrastructure.
 
-   - `release_or_mint_tokens(ctx: Context<TokenOfframp>, release_or_mint: ReleaseOrMintInV1,) -> Result<ReleaseOrMintOutV1>`: This releases or mints tokens on the destination blockchain.
-   - Read the [API reference](/ccip/api-reference/svm) to learn more about the parameters.
+**How it works:**
 
-### Seeds and PDAs
+1. **Program Admin** (Chainlink's upgrade authority) deploys the program and initializes the Global Config PDA with:
+   - `self_served_allowed: true` (enables user self-service)
+   - Default router address for the network
+   - Default RMN remote address for security
+1. **Users** can initialize pools for their tokens by calling the [`initialize`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#initialize) instruction, provided they control the token's mint authority
+1. New pools automatically inherit the default router and RMN addresses from the Global Config PDA
 
-Reuse the base-token-pool Seeds and PDAs:
+### Approach 2: Self-Deployed Standard Pools
 
-1. Your token pool program should use the same seeds ([`ccip_tokenpool_config`](https://github.com/smartcontractkit/chainlink-ccip/blob/4c416d75ac2f5178bdb2c77527eb96822c999a92/chains/solana/contracts/programs/base-token-pool/src/common.rs#L13), [`ccip_tokenpool_chainconfig`](https://github.com/smartcontractkit/chainlink-ccip/blob/4c416d75ac2f5178bdb2c77527eb96822c999a92/chains/solana/contracts/programs/base-token-pool/src/common.rs#L12), and [`ccip_tokenpool_signer`](https://github.com/smartcontractkit/chainlink-ccip/blob/contracts-ccip-release/1.6.0/chains/solana/contracts/programs/base-token-pool/src/common.rs#L14)) so that the CCIP Router can correctly derive your program's program-derived addresses (PDAs). The built-in instructions in the CCIP Router rely on these well-known seeds to locate your pool's onchain configuration and signer accounts.
+**What it is:** You build and deploy the standard Chainlink token pool programs yourself, giving you control over the upgrade authority.
 
-   <Aside>
-     The pool signer PDA is derived using the `ccip_tokenpool_signer` seed, pool program ID, and the token mint address.
-     This PDA will be used for token operations including burns, mints, and transfers.
-   </Aside>
+**Key Benefits:**
 
-1. Refer to the standard implementation of [BurnMint](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-release/1.6.0/chains/solana/contracts/programs/burnmint-token-pool) or [LockRelease](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-release/1.6.0/chains/solana/contracts/programs/lockrelease-token-pool) token pools for more information.
+- Full control over when to apply upgrades
+- Can customize deployment timing and parameters
+- Maintain upgrade authority for your pools
+- Use proven, audited standard implementations
 
-### Mint Authority for BurnMint Token Pools
+**Who should use this:** Projects that need control over upgrade timing or have specific governance requirements.
 
-On Solana, the `mint_authority` for an SPL token is stored as a single `COption<Pubkey>` in the Mint account. This means only one address can be set as the minter at any given time. It is possible to configure the mint authority (using [mechanisms](/ccip/concepts/cross-chain-token/svm/tokens#mint-authority-for-burnmint) such as a multisig solution) so that you retain governance control even after it is reassigned to a BurnMint token pool program.
+**How it works:** You compile and deploy the Chainlink-provided [BurnMint](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs/burnmint-token-pool) or [LockRelease](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs/lockrelease-token-pool) programs to your chosen address, retaining upgrade authority.
 
-### Token Decimal Handling
+### Approach 3: Custom Token Pools
 
-Transferring tokens cross-chain when the token has different decimal configurations on source and destination can introduce rounding errors or unexpected balance changes if not appropriately handled. Below, we demonstrate a concrete scenario illustrating how these errors manifest and how you can mitigate them in your token pools.
+**What it is:** You build your own token pool program with custom logic while ensuring CCIP compatibility.
 
-#### Example of Precision Loss
+**Key Benefits:**
 
-Consider a token developer who deployed their token on two blockchains with different decimal configurations and without any proper decimals conversation in the token pools:
+- Complete customization for unique token mechanics
+- Support for specialized features (rebasing, fee-on-transfer, etc.)
+- Full control over program logic
 
-- Blockchain A: Token with 12 decimals
-- Blockchain B: Token with 6 decimals
+**Who should use this:** Projects with unique token mechanics that standard pools cannot accommodate.
 
-| Transfer Path  | Example                                                             | Explanation             | Impact                          |
-| -------------- | ------------------------------------------------------------------- | ----------------------- | ------------------------------- |
-| A → B (12 → 6) | - Send 1 from A (= 10^12 base units) <br/>- Receive on B: 1,000,000 | 10^12 / 10^6= 1,000,000 | Gain of 999,999 (1,000,000 -1)  |
-| B → A (6 → 12) | - Send 1 from B (= 10^6 base units) <br/>- Receive on A: 0.000001   | 10^6 / 10^12= 0.000001  | Loss of 0.999999 (1 - 0.000001) |
+**Requirements:** Must implement all [technical requirements](#technical-requirements) and follow the specifications detailed in the [Custom Token Pools](#custom-token-pools) section. Pay special attention to [decimal compatibility considerations](#decimal-compatibility-considerations) as custom pools require manual decimal conversion implementation.
 
-Without proper decimal conversion, the user's final balance can differ dramatically from their intended transfer amount.
+## Token Handling Mechanisms
 
-#### How to Handle Token Decimals
+Before implementing token pools, you need to choose the appropriate [token handling mechanism](/ccip/concepts/cross-chain-token/overview#token-handling-mechanisms) for your cross-chain token transfers. This strategic decision determines which combination of token pools you'll deploy on source and destination blockchains.
 
-All standard token pools (BurnMint, LockRelease) in the base token pool library automatically call `to_svm_token_amount` during the `release_or_mint_tokens` flow. This instruction:
+The table below summarizes the different token handling mechanisms and the [recommended token pools](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs) to deploy for each scenario, ensuring a seamless token transfer process.
 
-1. Reads the incoming amount.
-1. Converts it from the source token decimals (incoming) to the local token decimals.
-1. Returns a u64 or an error if the conversion exceeds u64::Max (maximum token supply on SVM-based blockchains).
+| Token Handling Mechanism | Source Blockchain Token Pool Type | Destination Blockchain Token Pool Type | How it Works                                                                                                                                                                                                                                                                                                                      |
+| ------------------------ | --------------------------------- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Burn & Mint              | BurnMint                          | BurnMint                               | - Standard burn and mint mechanism for CCT transfers.                                                                                                                                                                                                                                                                             |
+| Lock & Mint              | LockRelease                       | BurnMint                               | - The source blockchain is the issuing blockchain. <br />- The LockRelease token pool must be deployed on the issuing blockchain.                                                                                                                                                                                                 |
+| Burn & Unlock            | BurnMint                          | LockRelease                            | - The destination blockchain is the issuing blockchain. <br />- The BurnMint token pool burns tokens on the source blockchain, and the LockRelease token pool unlocks tokens on the issuing blockchain.                                                                                                                           |
+| Lock & Unlock            | LockRelease                       | LockRelease                            | - Tokens are locked on the source blockchain and unlocked on the destination blockchain. <br />- Can result in fragmented liquidity and requires careful management of liquidity across multiple blockchains to avoid stuck token transfers due to insufficient liquidity locked in the token pool on the destination blockchain. |
 
-If you build a custom token pool, be sure to use [`to_svm_token_amount`](https://github.com/smartcontractkit/chainlink-ccip/blob/contracts-ccip-release/1.6.0/chains/solana/contracts/programs/base-token-pool/src/common.rs#L536) from the base token pool library to handle decimal differences correctly.
+## Decimal Compatibility Considerations
 
-It is important to note that CCTs with different decimal precision can impact the total number of tokens in circulation. Tokens locked/burned on the source chain might result in a smaller number of tokens minted/released on the destination chain due to decimal rounding.
+Before implementing token pools, it's critical to understand how decimal differences across blockchains can impact your cross-chain token transfers. This section provides strategic guidance for making informed decisions about token deployment and decimal configuration. For initial decimal planning considerations when deploying your token, see [Decimal Planning](/ccip/concepts/cross-chain-token/svm/tokens#decimal-planning).
 
-<Aside type="caution" title="Impact on Token Supply">
-  When tokens move between blockchains with different decimal places, rounding can occur. This rounding can affect small
-  amounts of tokens during cross-chain transfers.
-</Aside>
+### The Decimal Challenge
 
-**Understanding Token Decimals**
+When deploying a token across multiple blockchains, [token developers](/ccip/concepts/cross-chain-token/overview#token-developer) can configure different decimal places for each blockchain. However, this flexibility comes with important trade-offs:
 
-When deploying a token, token developers can configure different decimal places for each blockchain. For example:
+**Example Configuration:**
 
-- **On Ethereum**: The developer sets 18 decimals (0.123456789123456789)
-- **On Solana**: The developer sets 9 decimals (0.123456789)
+- **Ethereum**: 18 decimals (0.123456789123456789)
+- **Solana**: 9 decimals (0.123456789)
 
-When transferring tokens between these blockchains, CCIP handles decimal conversion automatically, but must round numbers to match the destination's configured precision.
+**What Happens During Transfers:**
+When transferring between blockchains with different decimal precision, CCIP automatically handles conversion but **must round numbers** to match the destination's configured precision.
 
-**Impact Scenarios**
+### Impact on Token Supply
 
-Consider a token developer who deployed their token across three blockchains with different decimal configurations:
+Different decimal configurations can affect your token's total supply across chains:
 
-- **Blockchain A**: High precision (18 decimals)
-- **Blockchain B**: Low precision (9 decimals)
-- **Blockchain C**: High precision (18 decimals)
+| Transfer Direction       | Result                                                          | Supply Impact                                                   |
+| ------------------------ | --------------------------------------------------------------- | --------------------------------------------------------------- |
+| **High → Low Precision** | Precision loss due to rounding (e.g., 18 decimals → 9 decimals) | **Permanent loss**: Tokens burned/locked exceed tokens released |
+| **Low → High Precision** | No precision loss (e.g., 9 decimals → 18 decimals)              | **No impact**: Perfect conversion possible                      |
+| **Equal Precision**      | No precision loss (e.g., 18 decimals → 18 decimals)             | **No impact**: Perfect 1:1 transfers                            |
 
-| Scenario                     | Transfer Path | Example                                                                                                          | Impact                                                                                                                       |
-| ---------------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| **High to Low Precision ❌** | A → B         | • **Send from A**: 1.123456789123456789<br/>• **Receive on B**: 1.123456789 <br/> **Lost**: 0.000000000123456789 | • **BurnMint**: Tokens permanently burned on Blockchain A<br/>• **LockRelease**: Tokens locked in token pool on Blockchain A |
-| **Low to High Precision ✅** | B → A         | • **Send from B**: 1.123456789<br/>• **Receive on A**: 1.123456789000000000                                      | • No precision loss                                                                                                          |
-| **Equal Precision ✅**       | A → C         | • **Send from A**: 1.123456789123456789<br/>• **Receive on C**: 1.123456789123456789                             | • No precision loss                                                                                                          |
+**Critical Considerations:**
 
-#### Recommended Practices
+- **BurnMint Pools**: Lost precision results in **permanently burned tokens** on the source chain
+- **LockRelease Pools**: Lost precision results in **tokens permanently locked** in the source pool
+- Small amounts are most affected by rounding; large transfers typically see minimal percentage impact
 
-<Aside>
-  You bear responsibility for any manner in which you use the Chainlink Network, its software, and documentation.
-  Chainlink Labs does not take responsibility for the use of Chainlink software. Neither Chainlink Labs, the Chainlink
-  Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due to errors in
-  code.
-</Aside>
+### Strategic Recommendations
 
-- Deploy tokens with the same number of decimals across all blockchains whenever possible.
-  - This prevents loss of precision during cross-chain transfers.
-  - Different decimals should only be used when required by blockchain limitations (e.g., non-EVM chains with decimal constraints).
-- Verify decimal configurations on both source and destination blockchains before transfers.
-- Consider implementing UI warnings for transfers that might be affected by rounding.
-- When using high-to-low precision transfers, be aware that:
-  - In BurnMint pools, lost precision results in permanently burned tokens.
-  - In LockRelease pools, lost precision results in tokens accumulating in the source pool.
+**Primary Recommendation:**
+Deploy tokens with the **same number of decimals across all blockchains** whenever possible. This completely eliminates precision loss during cross-chain transfers.
 
-## Standard Token Pools
+**When Different Decimals Are Necessary:**
 
-Depending on your use case (i.e., token handling mechanism), you must deploy the appropriate token pool type for each blockchain you want to support. Chainlink provides a set of [token pool programs](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-release/1.6.0/chains/solana/contracts/programs) that you can use to deploy your token pools in minutes. These token pool programs are fully audited and ready for deployment on your blockchains, but should be validated that they meet your use case requirements. Each program inherits the same underlying [`base-token-pool`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-release/1.6.0/chains/solana/contracts/programs/base-token-pool), which provides shared data structures, rate-limiting logic, and other core functionality.
+- Only use different decimals when required by blockchain limitations
+- Clearly communicate rounding risks to users in your UI
+- Consider implementing transfer warnings for high-to-low precision transfers
+- Plan for locked/burned token accumulation in your tokenomics
 
-### Base Token Pool
+**Development Considerations:**
 
-The base-token-pool library serves as the foundation for SVM-based token pools. It provides:
+- Verify decimal configurations on both source and destination before going live
+- Test small-amount transfers to understand rounding behavior
+- Consider implementing minimum transfer amounts to minimize relative precision loss
 
-- **Core Data Structures**
-  - `BaseConfig` stores information such as the token's mint, the router program ID, and other essentials.
-  - `BaseChain` and `RemoteConfig` track cross-chain configuration data, including remote token pool, token addresses, and rate-limit settings.
-- **Rate Limiter**
-  - A token bucket implementation that throttles outbound or inbound token transfers.
-- **Allowlist (optional)**
-  - An optional sender validation that restricts which addresses can initiate cross-chain transfers. Token administrators can enable/disable the allowlist with `configure_allow_list` instruction and add authorized senders to it, or remove addresses with the `remove_from_allow_list` instruction.
-- **Shared Instruction Definitions**
-  - Common instructions like `transfer_ownership`, `accept_ownership`, `init_chain_remote_config`, and others.
-- **Events and Errors**
-  - Reusable Solana events (e.g., `Burned`, `Minted`, `Locked`, `Released`) and error definitions (e.g., `InvalidToken`, `RateLimitReached`).
+**Standard token pools** (BurnMint, LockRelease) handle decimal conversion automatically - no additional implementation required.
 
-You typically do not deploy the `base-token-pool` by itself. Instead, you use one of the standard programs—`BurnMint` or `LockRelease`—that extend this library with specialized token-transfer logic.
+**Custom token pools** must implement decimal conversion manually - see [Decimal Implementation Requirements](#decimal-implementation-requirements) for technical details.
+
+## Standard Token Pools: An Overview
+
+Chainlink provides two standard token pool types that implement the token handling mechanisms described above. Each pool type implements specific logic for how tokens are managed during cross-chain transfers.
+
+### SVM Program Architecture Overview
+
+On SVM-based blockchains like Solana, applications consist of **programs** (executable code) and **accounts** (data storage). Programs are stateless and store their data in separate accounts.
+
+**Program-Derived Addresses (PDAs)** are special accounts with addresses [deterministically derived](https://solana.com/docs/core/pda) from seeds and a program ID. PDAs have no private keys, allowing programs to "sign" for them. This enables secure, predictable account management.
+
+### CCIP Token Pool Architecture
+
+Both BurnMint and LockRelease token pool programs use PDAs to organize data into two categories:
+
+- **Global PDAs**: Shared configuration for all pools deployed from this program
+- **Pool-Specific PDAs**: Individual configuration for each token's pool
+
+Each token has its own independent pool (one pool per mint), with pool-specific PDAs derived using the mint address as a seed.
+
+### Program-Derived Addresses (PDAs)
+
+**Global Configuration:**
+
+- **Global Config PDA** (`seeds: ["config"]`): Program-wide settings including `self_served_allowed`, default router, and RMN remote addresses
+
+**Pool-Specific Configuration (per mint):**
+
+- **Pool State PDA** (`seeds: ["ccip_tokenpool_config", mint]`): Token-specific pool configuration, ownership, and operational settings
+- **Pool Signer PDA** (`seeds: ["ccip_tokenpool_signer", mint]`): Signing authority for token operations (burns, mints, transfers)
+- **Chain Config PDAs** (`seeds: ["ccip_tokenpool_chainconfig", chain_selector, mint]`): Per-destination chain configuration including rate limits and remote pool addresses
+
+The detailed sections below will help you understand the specific requirements and implementation details for each pool type.
 
 ### BurnMint Token Pool
 
-The [`burnmint-token-pool`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-release/1.6.0/chains/solana/contracts/programs/burnmint-token-pool) implements a program that:
+<ClickToZoom
+  src="/images/ccip/cct/cct-svm-diagrams/burnmint-pool-anatomy.svg"
+  alt="Cross-Chain Token Standard - BurnMint Token Pool Anatomy"
+  style="display: block; margin: 2rem auto; max-height: 60vh; width: auto;"
+/>
 
-1. **Burns tokens**:
-   - When users initiate a cross-chain transfer from an SVM-based blockchain, they transfer tokens into the pool's Associated Token Account (ATA).
-   - The pool program then calls the standard SPL burn instruction, removing those tokens from circulation.
-1. **Mints tokens**:
-   - On the destination blockchain, the pool program must hold the `mint_authority` (Read the [Mint Authority for BurnMint](/ccip/concepts/cross-chain-token/svm/tokens#mint-authority-for-burnmint) section for more information).
-   - It invokes the SPL `mint_to` instruction via CPI, creating new tokens for the user's ATA.
+The BurnMint token pool provides burn and mint operations for cross-chain token transfers:
 
-For many cross-chain use cases—especially when transferring a token from an SVM-based blockchain to another blockchain—BurnMint is the most straightforward approach if your token supply is meant to expand (mint) or contract (burn) on different blockchains.
+#### How It Works
 
-**When to Use:**
+**Outbound token transfer (when the SVM chain is the source chain):**
 
-- You can configure the `mint_authority`.
-- Use it as part of the Burn and Mint or Lock and Mint/Burn and Unlock token handling mechanisms. Read the [Token Handling Mechanism section](/ccip/concepts/cross-chain-token/svm/tokens#token-handling-mechanisms) for more information.
+- User transfers tokens to the pool's Associated Token Account (ATA)
+- Pool program burns the tokens using the standard SPL burn instruction
+- Tokens are permanently removed from circulation on the source chain
+
+**Inbound token transfer (when the SVM chain is the destination chain):**
+
+- Pool program mints new tokens using the SPL `mint_to` instruction
+- New tokens are created in the user's associated token account (ATA)
+- Pool program must control the `mint_authority` for the token
+
+#### BurnMint Pool Specifics
+
+The BurnMint token pool specializes in burn and mint operations, requiring specific mint authority management for minting operations.
+
+#### Mint Authority Management
+
+**Mint Authority Control:**
+
+The mint authority follows this lifecycle for BurnMint pools:
+
+**Required First: Pool Initialization**
+
+- You must control the token's `mint_authority` to initialize the pool
+- The [`initialize`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#initialize) instruction requires the mint authority as the signer
+- **The pool automatically sets the initializer as the pool owner during initialization**
+- Pool owner must create the [Associated Token Account (ATA)](https://www.solana-program.com/docs/associated-token-account) for the Pool Signer PDA before pool operations can begin
+
+<Aside type="note" title="Ownership Flexibility After Initialization">
+  **Important**: During initialization, the pool sets the initializer as the pool owner. However, once the token pool is
+  initialized in the token pool program AND the token admin registry PDA is created in the router, **the pool owner can
+  transfer pool ownership to any address** using
+  [`transfer_ownership`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#transfer_ownership). The new owner will
+  have full control over pool configuration and management, regardless of who originally held the `mint_authority` or
+  who currently holds it.
+</Aside>
+
+**Ongoing: Pool Management**
+
+- As the pool owner, you can configure CCIP settings throughout the pool's lifetime:
+  - Set up chain configurations for new remote chains
+  - Configure or update rate limits for existing chains
+  - Manage allowlists and other pool settings
+  - Add or remove remote pool addresses
+  - **Transfer pool ownership to any address using [`transfer_ownership`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#transfer_ownership)**
+
+**When Ready: Mint Authority Transfer**
+
+- Transfer the `mint_authority` when you're ready to enable the pool for minting operations
+- This enables the pool to mint tokens on inbound flows when the SVM chain is the destination
+- Choose one of two transfer mechanisms (multisig approach strongly recommended for production):
+
+**Option 1: Direct Transfer (Simple)**
+
+**Configuration:**
+
+- Transfer the `mint_authority` directly to the Pool Signer PDA
+
+**Best suited for:**
+
+- Development environments
+- Simple production deployments where the token exclusively integrates with CCIP
+- Scenarios with a single trusted actor interacting with the token
+
+**Limitations:**
+
+- Only the token pool can mint tokens
+- Reduced flexibility for future integrations
+
+**Option 2: Multisig Configuration (Recommended for Production)**
+
+**Configuration:**
+
+- Set up an M-of-N [SPL token multisig account](https://spl.solana.com/token#multisig-usage) as the mint authority
+- Include the Pool Signer PDA as a required signer **exactly M times** (where M is your threshold)
+- Include additional signers under your exclusive control as needed
+
+**SPL Token Multisig Requirements:**
+
+- **Threshold (M)**: Any value from 1 to N (your choice based on security needs)
+- **Total Signers (N)**: At least 2 signers total
+- **Pool Signer Repetition**: The Pool Signer PDA must appear **at least M times** in the signer list (typically exactly M times for optimal configuration)
+- **Additional Signers**: Remaining (N-M) signer slots for your governance control
+
+**Valid Configuration Examples:**
+
+| Threshold (M) | Total Signers (N) | Pool Signer PDA Occurrences | Your Signers |
+| ------------- | ----------------- | --------------------------- | ------------ |
+| 1             | 3                 | 1                           | 2            |
+| 2             | 4                 | 2                           | 2            |
+| 2             | 5                 | 2                           | 3            |
+| 3             | 6                 | 3                           | 3            |
+
+**Key benefits:**
+
+- Enables multiple authorized parties to mint tokens
+- Maintains governance control through other multisig signers
+- Provides extensibility for future integrations
+- Enhanced security through distributed control
+- Flexible threshold configuration for different security requirements
+
+**Technical Requirements:**
+
+- Must use [SPL token multisig](https://spl.solana.com/token#multisignatures) - other multisig implementations are not supported
+- The Pool Signer PDA must be included at least M times as a multisig signer
+- Pool must be able to mint tokens for cross-chain transfers without requiring additional manual signatures
+
+**Why Pool Signer Must Appear At Least M Times:**
+
+This design ensures the pool can always mint tokens for cross-chain transfers without requiring your manual intervention, while still maintaining your governance control:
+
+- **Autonomous Operation**: Pool operations always have sufficient signatures (≥M occurrences of Pool Signer)
+- **Governance Control**: Your additional signers can still initiate mint operations independent of the pool (≤N-M pool signer occurrences ensures ≥M governance signer slots remain)
+- **Flexible Security**: You choose the threshold (M) based on your security requirements, constrained by M ≤ N/2
+- **Optimal Configuration**: Most deployments use exactly M pool signer occurrences for optimal balance
+
+**Multisig Configuration Validation:**
+
+The system validates your multisig configuration with these rules:
+
+- `total_signers >= 2` (must have at least 2 signers)
+- `threshold >= 1` (must require at least 1 signature)
+- `threshold <= total_signers` (can't require more signatures than available signers)
+- `pool_signer_occurrences >= threshold` (Pool Signer PDA must appear at least M times for autonomous operation)
+- `pool_signer_occurrences <= (total_signers - threshold)` (Pool Signer PDA cannot occupy all governance signer slots)
+
+**Constraint Implications:**
+
+- **Minimum Pool Signer Occurrences**: M times (enables autonomous pool operation)
+- **Maximum Pool Signer Occurrences**: N-M times (preserves governance control capability)
+- **Threshold Limit**: M ≤ N/2 (ensures both pool autonomy and governance control are possible)
+
+**Common Misconceptions:**
+
+To ensure proper implementation, avoid these common misconceptions about SPL token multisig configurations:
+
+**Incorrect**: "Only 1-of-N multisig is supported"  
+**Correct**: "Any M-of-N multisig is supported with proper Pool Signer repetition"
+
+**Incorrect**: "Pool Signer appears once in the multisig"  
+**Correct**: "Pool Signer appears at least M times (typically exactly M times) in the multisig"
+
+**Incorrect**: "Pool can operate with any multisig configuration"  
+**Correct**: "Pool Signer must appear ≥M and ≤(N-M) times to ensure both autonomous operation and governance control capability"
+
+**Incorrect**: "Any threshold M is valid for any total signers N"  
+**Correct**: "Threshold M must satisfy M ≤ N/2 to allow both pool autonomy and governance control"
+
+After this transfer, the pool can mint tokens when the SVM chain is the destination chain for cross-chain transfers.
+
+<Aside type="note" title="Advanced Multisig Scenarios">
+  If your token already uses an [SPL token multisig](https://spl.solana.com/token#multisignatures) mint authority, you
+  can still integrate with CCIP by ensuring the Pool Signer PDA appears exactly M times (where M is your threshold) in
+  the signer list and the pool program can validate the signing logic during operations.
+</Aside>
+
+#### Access Control
+
+Understanding who can call which instructions is critical for secure pool operation and proper integration. This table shows the authorization model for all BurnMint token pool instructions, helping you understand the security boundaries and operational responsibilities.
+
+| Instruction Category | Instruction                                                                                                                      | Program Upgrade Authority | Pool Owner | Router Authority |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------- | :-----------------------: | :--------: | :--------------: |
+| **Global Config**    | [`init_global_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#init_global_config)                                   |            ✅             |     ❌     |        ❌        |
+|                      | [`update_self_served_allowed`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#update_self_served_allowed)                   |            ✅             |     ❌     |        ❌        |
+|                      | [`update_default_router`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#update_default_router)                             |            ✅             |     ❌     |        ❌        |
+|                      | [`update_default_rmn`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#update_default_rmn)                                   |            ✅             |     ❌     |        ❌        |
+| **Pool Lifecycle**   | [`initialize`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#initialize)                                                   |   ✅ OR Mint Authority    |     ❌     |        ❌        |
+| **Ownership**        | [`transfer_ownership`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#transfer_ownership)                                   |            ❌             |     ✅     |        ❌        |
+|                      | [`accept_ownership`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#accept_ownership)                                       |            ❌             |   ✅\*\*   |        ❌        |
+| **Security**         | [`transfer_mint_authority_to_multisig`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#transfer_mint_authority_to_multisig) |            ✅             |     ❌     |        ❌        |
+|                      | [`configure_allow_list`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#configure_allow_list)                               |            ❌             |     ✅     |        ❌        |
+|                      | [`remove_from_allow_list`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#remove_from_allow_list)                           |            ❌             |     ✅     |        ❌        |
+| **Chain Config**     | [`init_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#init_chain_remote_config)                       |            ❌             |     ✅     |        ❌        |
+|                      | [`edit_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#edit_chain_remote_config)                       |            ❌             |     ✅     |        ❌        |
+|                      | [`append_remote_pool_addresses`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#append_remote_pool_addresses)               |            ❌             |     ✅     |        ❌        |
+|                      | [`set_chain_rate_limit`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#set_chain_rate_limit)                               |            ❌             |     ✅     |        ❌        |
+|                      | [`delete_chain_config`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#delete_chain_config)                                 |            ❌             |     ✅     |        ❌        |
+| **Cross-Chain**      | [`lock_or_burn_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#lock_or_burn_tokens)                                 |            ❌             |     ❌     |        ✅        |
+|                      | [`release_or_mint_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#release_or_mint_tokens)                           |            ❌             |     ❌     |        ✅        |
+
+**Notes:**
+
+- \* **accept_ownership**: Must be the `proposed_owner` from `transfer_ownership`
+- **Critical**: Pool Signer PDA MUST have mint capability (direct or via multisig) for minting operations
+- **Critical**: Pool owner must create the [Associated Token Account (ATA)](https://www.solana-program.com/docs/associated-token-account) for the Pool Signer PDA before pool operations can begin
+
+#### When to Use
+
+**Key Characteristics:**
+
+- Requires mint authority control for initialization, then transfer to pool for operations
+- Total supply can vary across chains during transfers
+- No liquidity management needed
+- Suitable for tokens designed to expand/contract supply
+
+**Choose BurnMint When:**
+
+- You control the `mint_authority` for your token (required for initialization)
+- You are willing to transfer mint authority to the pool after CCIP registration
+- Your token is designed to have variable supply across chains
+- You want to avoid liquidity management complexity
+- Your token participates in [Burn and Mint](/ccip/concepts/cross-chain-token/overview#burn-and-mint) or [Lock and Mint/Burn and Unlock](/ccip/concepts/cross-chain-token/overview#lock-and-mint) token handling mechanisms
+
+For detailed mint authority configuration options, see [Mint Authority Management](#mint-authority-management).
 
 ### LockRelease Token Pool
 
-The [`lockrelease-token-pool`](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-release/1.6.0/chains/solana/contracts/programs/lockrelease-token-pool) token pool implements a program that:
+<ClickToZoom
+  src="/images/ccip/cct/cct-svm-diagrams/lockrelease-pool-anatomy.svg"
+  alt="Cross-Chain Token Standard - LockRelease Token Pool Anatomy"
+  style="display: block; margin: 2rem auto; max-height: 60vh; width: auto;"
+/>
 
-1. **Locks Tokens**:
+The LockRelease token pool implements a lock-and-release strategy for cross-chain token transfers:
 
-   - Users send tokens to the pool's ATA.
-   - The pool program "locks" these tokens (i.e., holds them in its account).
+#### How It Works
 
-1. **Releases Tokens**:
+**Outbound token transfer (when the SVM chain is the source chain):**
 
-   - The pool program transfers tokens from its ATA to the user's ATA, effectively "unlocking" them on the destination side.
+- User transfers tokens to the pool's Associated Token Account (ATA)
+- Pool program "locks" tokens by holding them in its account
+- Tokens remain in circulation but are held by the pool as escrow
+- No tokens are destroyed - total supply remains constant
 
-In this scenario, **no mint authority** is needed.
+**Inbound token transfer (when the SVM chain is the destination chain):**
 
-The Lock & Release token pool includes additional functionality for managing liquidity:
+- Pool program transfers tokens from its ATA to the user's ATA
+- Pool must have sufficient token balance (liquidity) to fulfill transfers
+- No minting occurs - only transfers of existing tokens from the pool's reserves
 
-- **Rebalancer Role**: A designed public key that can move tokens in and out of the pool.
-- **Liquidity Acceptance**: Controls whether the pool can receive additional liquidity.
-- **Liquidity Operations**: Functions to add or withdraw liquidity from the pool.
+#### LockRelease Pool Specifics
 
-**When to Use:**
+The LockRelease token pool specializes in lock and release operations, requiring liquidity management rather than mint authority control. Unlike BurnMint pools, LockRelease pools:
 
-- Your token's mint authority is disabled or inaccessible.
-- You want a fixed total supply on the blockchain where the token pool is deployed.
-- Use it as part of the Lock and Mint/Burn and Unlock or Lock and Unlock token handling mechanisms. Read the [Token Handling Mechanism section](/ccip/concepts/cross-chain-token/svm/tokens#token-handling-mechanisms) for more information.
+- **Do not require mint authority transfer** - the original mint authority remains unchanged
+- **Rely on token reserves** - manage liquidity through the pool's token holdings
+- **Use rebalancer role** - designated address manages liquidity operations
+
+#### Liquidity Management
+
+**Pool Initialization:**
+
+- Program upgrade authority can always initialize pools
+- When self-serve is enabled (`self_served_allowed: true`), the token's mint authority can also initialize pools
+- **The pool automatically sets the initializer as the pool owner during initialization**
+- Pool is configured with liquidity acceptance settings during initialization
+- Pool owner must create the [Associated Token Account (ATA)](https://www.solana-program.com/docs/associated-token-account) for the Pool Signer PDA before pool operations can begin
+
+<Aside type="note" title="Ownership Flexibility After Initialization">
+  **Important**: During initialization, the pool sets the initializer as the pool owner. However, once the token pool is
+  initialized, **the pool owner can transfer pool ownership to any address** using
+  [`transfer_ownership`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#transfer_ownership). The new owner will
+  have full control over pool configuration and management, regardless of who originally held the `mint_authority` or
+  who currently holds it.
+</Aside>
+
+**Ongoing Liquidity Operations:**
+
+- **Rebalancer Role**: Designated address that can provide or withdraw pool liquidity
+- **Liquidity Acceptance**: Configurable setting (`can_accept_liquidity`) controls whether the pool accepts new liquidity
+- **Liquidity Operations**:
+  - `provide_liquidity`: Rebalancer adds tokens to pool reserves
+  - `withdraw_liquidity`: Rebalancer removes tokens from pool reserves (can transfer to other pools)
+
+**Liquidity Requirements:**
+
+- Pool must maintain sufficient token balance to fulfill cross-chain transfers
+- Insufficient liquidity will cause transfer failures
+- Rebalancer responsible for maintaining adequate liquidity across all supported chains
+
+#### Access Control
+
+Understanding who can call which instructions is critical for secure pool operation and proper integration. This table shows the authorization model for all LockRelease token pool instructions, helping you understand the security boundaries and operational responsibilities.
+
+| Instruction Category | Instruction                                                                                                           | Program Upgrade Authority | Pool Owner | Router Authority | Rebalancer |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------- | :-----------------------: | :--------: | :--------------: | :--------: |
+| **Global Config**    | [`init_global_config`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#init_global_config)                     |            ✅             |     ❌     |        ❌        |     ❌     |
+|                      | [`update_self_served_allowed`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#update_self_served_allowed)     |            ✅             |     ❌     |        ❌        |     ❌     |
+|                      | [`update_default_router`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#update_default_router)               |            ✅             |     ❌     |        ❌        |     ❌     |
+|                      | [`update_default_rmn`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#update_default_rmn)                     |            ✅             |     ❌     |        ❌        |     ❌     |
+| **Pool Lifecycle**   | [`initialize`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#initialize)                                     |   ✅ OR Mint Authority    |     ❌     |        ❌        |     ❌     |
+| **Ownership**        | [`transfer_ownership`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#transfer_ownership)                     |            ❌             |     ✅     |        ❌        |     ❌     |
+|                      | [`accept_ownership`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#accept_ownership)                         |            ❌             |   ✅\*\*   |        ❌        |     ❌     |
+| **Security**         | [`configure_allow_list`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#configure_allow_list)                 |            ❌             |     ✅     |        ❌        |     ❌     |
+|                      | [`remove_from_allow_list`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#remove_from_allow_list)             |            ❌             |     ✅     |        ❌        |     ❌     |
+| **Liquidity Mgmt**   | [`set_rebalancer`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#set_rebalancer)                             |            ❌             |     ✅     |        ❌        |     ❌     |
+|                      | [`set_can_accept_liquidity`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#set_can_accept_liquidity)         |            ❌             |     ✅     |        ❌        |     ❌     |
+|                      | [`provide_liquidity`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#provide_liquidity)                       |            ❌             |     ❌     |        ❌        |     ✅     |
+|                      | [`withdraw_liquidity`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#withdraw_liquidity)                     |            ❌             |     ❌     |        ❌        |     ✅     |
+| **Chain Config**     | [`init_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#init_chain_remote_config)         |            ❌             |     ✅     |        ❌        |     ❌     |
+|                      | [`edit_chain_remote_config`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#edit_chain_remote_config)         |            ❌             |     ✅     |        ❌        |     ❌     |
+|                      | [`append_remote_pool_addresses`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#append_remote_pool_addresses) |            ❌             |     ✅     |        ❌        |     ❌     |
+|                      | [`set_chain_rate_limit`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#set_chain_rate_limit)                 |            ❌             |     ✅     |        ❌        |     ❌     |
+|                      | [`delete_chain_config`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#delete_chain_config)                   |            ❌             |     ✅     |        ❌        |     ❌     |
+| **Cross-Chain**      | [`lock_or_burn_tokens`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#lock_or_burn_tokens)                   |            ❌             |     ❌     |        ✅        |     ❌     |
+|                      | [`release_or_mint_tokens`](/ccip/api-reference/svm/v1.6.0/lock-release-token-pool#release_or_mint_tokens)             |            ❌             |     ❌     |        ✅        |     ❌     |
+
+**Notes:**
+
+- \* **accept_ownership**: Must be the `proposed_owner` from `transfer_ownership`
+- **Critical**: Pool owner must create the [Associated Token Account (ATA)](https://www.solana-program.com/docs/associated-token-account) for the Pool Signer PDA before pool operations can begin
+
+#### When to Use
+
+**Key Characteristics:**
+
+- Program upgrade authority can always initialize pools; mint authority can self-initialize when accessible
+- No mint authority required for ongoing operations (unlike BurnMint)
+- Fixed total supply per chain - tokens are only transferred, never created or destroyed
+- Requires active liquidity management and funding
+- Suitable for tokens where you want to retain mint authority control OR where mint authority is no longer accessible
+
+**Choose LockRelease When:**
+
+- You want to retain control of the token's mint authority (not transfer it to the pool)
+- Your token's mint authority is disabled/revoked (e.g., to cap token supply) or otherwise inaccessible
+- You prefer not to delegate minting capabilities to the token pool
+- You want to maintain fixed total supply on each blockchain
+- You can manage liquidity requirements and rebalancing across chains
+- You have operational capacity to monitor and maintain pool liquidity levels
+- Your token participates in [Lock and Mint/Burn and Unlock](/ccip/concepts/cross-chain-token/overview#burn-and-unlock) or [Lock and Unlock](/ccip/concepts/cross-chain-token/overview#lock-and-unlock) token handling mechanisms
+
+Both pool types are built on the shared [`base-token-pool`](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs/base-token-pool) foundation, which provides common functionality including [rate limiting](/ccip/concepts/cross-chain-token/overview#token-pool-rate-limits), allowlists, cross-chain configuration, and event handling.
+
+## Next Steps: Pool Configuration
+
+After deploying your token pool using any of the approaches above, you'll need to configure it for cross-chain operations. This includes:
+
+- Setting up remote chain configurations
+- Configuring rate limits for cross-chain transfers
+- Managing allowlists and access controls
+- Setting up liquidity management (for LockRelease pools)
+
+For detailed instructions on configuring your token pool parameters, see [Token Pool Configuration](/ccip/concepts/cross-chain-token/svm/registration-administration#token-pool-configuration-pool-side).
 
 ## Custom Token Pools
 
-If the standard BurnMint and LockRelease token pool programs don't meet your requirements, you can create a custom token pool program that is compatible with CCIP. This typically involves integrating the `base-token-pool` library for core functionality (ownership, rate-limiting, cross-chain instructions) and extending it with your custom logic (e.g., handling rebasing tokens).
+If the standard BurnMint and LockRelease token pool programs don't meet your requirements, you can create a custom token pool program that is compatible with CCIP. This advanced approach gives you complete control over token handling logic while maintaining CCIP compatibility.
 
-Below is an example of a token rebasing use case that requires building your own custom token pool:
+### When to Build Custom Token Pools
 
-- **Use Case**:
-  - Rebasing tokens are a unique type of token that adjusts their supply in response to specific parameters (e.g., price or yield distribution). These tokens require custom logic to handle rebasing events during cross-chain transfers.
-- **Solution**:
-  - **Source Blockchain**: Instead of burning or locking a specific amount of tokens, you might track "underlying shares" that map to a rebase or a fee adjustment. In `lock_or_burn_tokens`, convert the user's tokens into an internal share count and store that in `LockOrBurnOutV1.dest_pool_data` for the destination token pool.
-  - **Destination Blockchain**: In `release_or_mint_tokens`, parse the share count from `ReleaseOrMintInV1.source_pool_data` and then convert those shares back into the appropriate number of tokens. If your token supply has been rebased upward/downward, recalculate before minting or transferring to the user's ATA.
+**Consider building a custom token pool when:**
+
+- **Complex Token Mechanics**: Your token has unique behavior like rebasing, fee-on-transfer, or complex reward mechanisms
+- **Specialized Business Logic**: You need custom validation, compliance checks, or integration with other protocols
+- **Governance Requirements**: You need custom access control patterns
+
+**Standard pools are sufficient for:**
+
+- Basic SPL tokens with standard mint/burn/transfer functionality
+- Tokens that don't require custom logic during cross-chain transfers
+- SPL tokens and Token-2022 tokens
+
+### Technical Requirements
+
+All custom token pools must implement the following requirements to be CCIP-compatible:
+
+#### Required Program-Derived Addresses (PDAs)
+
+Your custom token pool **must** use these exact PDA seeds so the CCIP Router can correctly derive and interact with your pool accounts:
+
+**Required PDAs and Their Seeds:**
+
+1. **Global Config PDA**
+   - Seeds: `["config"]`
+   - Purpose: Program-wide settings including `self_served_allowed`, default router, and RMN addresses
+   - Used by: Program admin for deployment configuration
+
+1. **Pool State PDA**
+   - Seeds: `["ccip_tokenpool_config", mint_address]`
+   - Purpose: Token-specific pool configuration, ownership, and operational settings
+   - Used by: Pool management and cross-chain operations
+
+1. **Pool Signer PDA**
+   - Seeds: `["ccip_tokenpool_signer", mint_address]`
+   - Purpose: Signing authority for token operations (burns, mints, transfers)
+   - Used by: Token transfer operations and mint authority control
+
+1. **Chain Config PDAs**
+   - Seeds: `["ccip_tokenpool_chainconfig", chain_selector, mint_address]`
+   - Purpose: Per-destination chain configuration including rate limits and remote pool addresses
+   - Used by: Cross-chain transfer validation and routing
+
+<Aside>
+  Your token pool program must use these exact seeds so that the CCIP Router can correctly derive your program's PDAs.
+  The CCIP Router's built-in instructions rely on these well-known seeds to locate your pool's accounts.
+</Aside>
+
+#### Mandatory Instructions
+
+When CCIP interacts with your custom token pools, it expects the presence of the following functions with exact signatures:
+
+1. **For source chain operations (locking or burning tokens):**
+   - [`lock_or_burn_tokens(ctx: Context<TokenOnramp>, lock_or_burn: LockOrBurnInV1,) -> Result<LockOrBurnOutV1>`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#lock_or_burn_tokens)
+   - This function handles token operations when your chain is the source of a cross-chain transfer
+   - Read the [API reference](/ccip/api-reference/svm/v1.6.0/base-token-pool#lockorburnoutv1) to learn more about the parameters
+
+1. **For destination chain operations (releasing or minting tokens):**
+   - [`release_or_mint_tokens(ctx: Context<TokenOfframp>, release_or_mint: ReleaseOrMintInV1,) -> Result<ReleaseOrMintOutV1>`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#release_or_mint_tokens)
+   - This function handles token operations when your chain is the destination of a cross-chain transfer
+   - Read the [API reference](/ccip/api-reference/svm/v1.6.0/base-token-pool#releaseormintinv1) to learn more about the parameters
+
+#### Integration with Base Token Pool
+
+All custom token pools should integrate the [`base-token-pool`](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs/base-token-pool) library for core functionality:
+
+- **Ownership management**: Pool ownership and proposed ownership transfers
+- **Rate limiting**: Inbound and outbound rate limit controls per destination chain
+- **Cross-chain configuration**: Remote pool addresses and chain-specific settings
+- **Access control**: Allowlists and permission management
+- **Event handling**: Standardized event emissions for monitoring
+- **Decimal conversion**: Use `to_svm_token_amount` for proper decimal handling between chains
+
+#### Decimal Implementation Requirements
+
+All custom token pools **must** implement proper decimal conversion to handle tokens with different decimal configurations across blockchains. For strategic guidance on decimal compatibility decisions, see [Decimal Compatibility Considerations](#decimal-compatibility-considerations).
+
+**Required Implementation:**
+
+All standard token pools (BurnMint, LockRelease) automatically call [`to_svm_token_amount`](/ccip/api-reference/svm/v1.6.0/base-token-pool#to_svm_token_amount) during the [`release_or_mint_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#release_or_mint_tokens) flow. If you build a custom token pool, you **must** use [`to_svm_token_amount`](/ccip/api-reference/svm/v1.6.0/base-token-pool#to_svm_token_amount) from the base token pool library.
+
+**How [`to_svm_token_amount`](/ccip/api-reference/svm/v1.6.0/base-token-pool#to_svm_token_amount) Works:**
+
+1. Reads the incoming amount from the source chain
+1. Converts it from the source token decimals to the local token decimals
+1. Returns a u64 amount or an error if the conversion exceeds u64::Max (maximum token supply on SVM-based blockchains)
+
+<Aside type="caution" title="Decimal Conversion Required">
+  Failure to implement proper decimal conversion can result in incorrect token amounts, precision loss, or transaction
+  failures during cross-chain transfers.
+</Aside>
+
+### Implementation Examples
+
+#### Example 1: Rebasing Token Pool
+
+**Use Case**: Rebasing tokens adjust their supply periodically based on external parameters (e.g., price, yield). These tokens require custom logic to handle rebasing events during cross-chain transfers.
+
+**Implementation Approach**:
+
+- **Source Blockchain**: Instead of burning or locking a specific amount of tokens, track "underlying shares" that represent proportional ownership. In [`lock_or_burn_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#lock_or_burn_tokens), convert the user's tokens into an internal share count and store that in [`LockOrBurnOutV1.dest_pool_data`](/ccip/api-reference/svm/v1.6.0/base-token-pool#lockorburnoutv1) for the destination token pool.
+
+- **Destination Blockchain**: In [`release_or_mint_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#release_or_mint_tokens), parse the share count from [`ReleaseOrMintInV1.source_pool_data`](/ccip/api-reference/svm/v1.6.0/base-token-pool#releaseormintinv1) and convert those shares back into the current token amount based on the latest rebase. If your token supply has been rebased upward/downward since the transfer initiated, recalculate the final amount before minting or transferring to the user's ATA.
+
+#### Example 2: Fee-on-Transfer Token Pool
+
+**Use Case**: Tokens that deduct fees during transfers need custom logic to ensure cross-chain transfer amounts are accurate.
+
+**Implementation Approach**:
+
+- **Source Blockchain**: In [`lock_or_burn_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#lock_or_burn_tokens), calculate the net amount after fees and ensure the correct amount is locked/burned. Store the original intended amount in `dest_pool_data`.
+
+- **Destination Blockchain**: In [`release_or_mint_tokens`](/ccip/api-reference/svm/v1.6.0/burn-mint-token-pool#release_or_mint_tokens), use the original intended amount from `source_pool_data` to mint/release the correct amount, accounting for any destination-side fees.
+
+### Development Resources
+
+**Implementation References:**
+
+- [BurnMint Token Pool](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs/burnmint-token-pool) - Standard burn/mint implementation
+- [LockRelease Token Pool](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs/lockrelease-token-pool) - Standard lock/release implementation
+- [Base Token Pool Library](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs/base-token-pool) - Shared functionality foundation
+
+**Testing and Validation:**
+
+- Test with CCIP Router integration to ensure proper PDA derivation
+- Validate decimal conversion handling for cross-chain transfers
+- Ensure rate limiting and access control functions work correctly
+- Test both source and destination chain operations thoroughly

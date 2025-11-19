@@ -45,7 +45,6 @@ function LaneDrawer({
           logo: sourceNetwork.logo,
           name: sourceNetwork.name,
           chainType: sourceNetwork.chainType,
-          rmnPermeable: sourceNetworkDetails?.rmnPermeable,
         }}
         destinationNetwork={{
           logo: destinationNetwork.logo,
@@ -58,7 +57,6 @@ function LaneDrawer({
         explorer={explorer}
         destinationAddress={destinationNetworkDetails?.chainSelector || ""}
         inOutbound={inOutbound}
-        laneRmnPermeable={lane.rmnPermeable}
       />
 
       <div className="ccip-table__drawer-container">
@@ -96,7 +94,7 @@ function LaneDrawer({
                   Rate limit capacity
                   <Tooltip
                     label=""
-                    tip="Rate limit data is currently unavailable. You can find this Token Pool rate limit by reading the Token Pool contract directly on the relevant blockchain."
+                    tip="Maximum amount per transaction"
                     labelStyle={{
                       marginRight: "5px",
                     }}

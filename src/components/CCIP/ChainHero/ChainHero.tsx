@@ -14,6 +14,7 @@ import {
 } from "~/features/utils/index.ts"
 import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
 import { getChainTooltip } from "../Tooltip/index.ts"
+import { PoolProgramTooltip } from "../Tooltip/PoolProgramTooltip.tsx"
 import { ExplorerInfo, ChainType } from "@config/types.ts"
 
 interface ChainHeroProps {
@@ -69,7 +70,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
       })
       const explorer = network.explorer || {}
       const address = token[network.chain]?.tokenAddress
-      const contractUrl = address ? getExplorerAddressUrl(explorer)(address) : ""
+      const contractUrl = address ? getExplorerAddressUrl(explorer, network.chainType)(address) : ""
 
       return {
         logo,
@@ -152,7 +153,15 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
             <div className="ccip-chain-hero__details__item">
               <div className="ccip-chain-hero__details__label">Router</div>
               <div className="ccip-chain-hero__details__value" data-clipboard-type="router">
-                <Address endLength={4} contractUrl={network.routerExplorerUrl} address={network.router?.address} />
+                <Address
+                  endLength={4}
+                  contractUrl={
+                    network.router?.address
+                      ? getExplorerAddressUrl(network.explorer, network.chainType)(network.router.address)
+                      : ""
+                  }
+                  address={network.router?.address}
+                />
               </div>
             </div>
             <div className="ccip-chain-hero__details__item">
@@ -195,7 +204,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 {network.armProxy ? (
                   <Address
                     endLength={4}
-                    contractUrl={getExplorerAddressUrl(network.explorer)(network.armProxy.address)}
+                    contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.armProxy.address)}
                     address={network.armProxy.address}
                   />
                 ) : (
@@ -203,28 +212,6 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 )}
               </div>
             </div>
-            {/*
-            <div className="ccip-chain-hero__details__item">
-              <div className="ccip-chain-hero__details__label">
-                RMN Blessing
-                <Tooltip
-                  label=""
-                  tip="Indicates if messages from this chain are blessed by RMN."
-                  labelStyle={{
-                    marginRight: "8px",
-                  }}
-                  style={{
-                    display: "inline-block",
-                    verticalAlign: "middle",
-                    marginBottom: "2px",
-                  }}
-                />
-              </div>
-              <div className="ccip-chain-hero__details__value" data-clipboard-type="rmn-blessing">
-                {network?.rmnPermeable === false ? "Enabled" : "Disabled"}
-              </div>
-            </div>
-            */}
 
             {/* Conditional rendering based on chain type */}
             {network.chainType === "evm" && (
@@ -249,7 +236,10 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                     {network.tokenAdminRegistry ? (
                       <Address
                         endLength={4}
-                        contractUrl={getExplorerAddressUrl(network.explorer)(network.tokenAdminRegistry)}
+                        contractUrl={getExplorerAddressUrl(
+                          network.explorer,
+                          network.chainType
+                        )(network.tokenAdminRegistry)}
                         address={network.tokenAdminRegistry}
                       />
                     ) : (
@@ -277,7 +267,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                     {network.registryModule ? (
                       <Address
                         endLength={4}
-                        contractUrl={getExplorerAddressUrl(network.explorer)(network.registryModule)}
+                        contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.registryModule)}
                         address={network.registryModule}
                       />
                     ) : (
@@ -285,6 +275,69 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                     )}
                   </div>
                 </div>
+              </>
+            )}
+
+            {network.chainType === "aptos" && (
+              <>
+                <div className="ccip-chain-hero__details__item">
+                  <div className="ccip-chain-hero__details__label">
+                    Token admin registry
+                    <Tooltip
+                      label=""
+                      tip="The TokenAdminRegistry module is responsible for managing the configuration of token pools for all cross chain tokens."
+                      labelStyle={{
+                        marginRight: "8px",
+                      }}
+                      style={{
+                        display: "inline-block",
+                        verticalAlign: "middle",
+                        marginBottom: "2px",
+                      }}
+                    />
+                  </div>
+                  <div className="ccip-chain-hero__details__value" data-clipboard-type="token-registry">
+                    {network.tokenAdminRegistry ? (
+                      <Address
+                        endLength={4}
+                        contractUrl={getExplorerAddressUrl(
+                          network.explorer,
+                          network.chainType
+                        )(network.tokenAdminRegistry)}
+                        address={network.tokenAdminRegistry}
+                      />
+                    ) : (
+                      "n/a"
+                    )}
+                  </div>
+                </div>
+
+                {network.mcms && (
+                  <div className="ccip-chain-hero__details__item">
+                    <div className="ccip-chain-hero__details__label">
+                      MCMS
+                      <Tooltip
+                        label=""
+                        tip="The MCMS address must be added as a dependency in your Move.toml file when building modules that interact with CCIP on Aptos chains."
+                        labelStyle={{
+                          marginRight: "8px",
+                        }}
+                        style={{
+                          display: "inline-block",
+                          verticalAlign: "middle",
+                          marginBottom: "2px",
+                        }}
+                      />
+                    </div>
+                    <div className="ccip-chain-hero__details__value" data-clipboard-type="mcms">
+                      <Address
+                        endLength={4}
+                        contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.mcms)}
+                        address={network.mcms}
+                      />
+                    </div>
+                  </div>
+                )}
               </>
             )}
 
@@ -309,11 +362,42 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                   {network.feeQuoter ? (
                     <Address
                       endLength={4}
-                      contractUrl={getExplorerAddressUrl(network.explorer)(network.feeQuoter)}
+                      contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.feeQuoter)}
                       address={network.feeQuoter}
                     />
                   ) : (
                     "n/a"
+                  )}
+                </div>
+              </div>
+            )}
+
+            {network.chainType === "solana" && network.poolPrograms && (
+              <div className="ccip-chain-hero__details__item">
+                <div className="ccip-chain-hero__details__label">
+                  Self-service pool programs
+                  <PoolProgramTooltip />
+                </div>
+                <div className="ccip-chain-hero__details__value ccip-chain-hero__pool-programs-container">
+                  {network.poolPrograms.BurnMintTokenPool && (
+                    <div className="ccip-chain-hero__pool-program-entry">
+                      <span className="ccip-chain-hero__pool-program-type">BurnMint:</span>
+                      <Address
+                        endLength={4}
+                        contractUrl={getExplorerAddressUrl(network.explorer)(network.poolPrograms.BurnMintTokenPool)}
+                        address={network.poolPrograms.BurnMintTokenPool}
+                      />
+                    </div>
+                  )}
+                  {network.poolPrograms.LockReleaseTokenPool && (
+                    <div className="ccip-chain-hero__pool-program-entry">
+                      <span className="ccip-chain-hero__pool-program-type">LockRelease:</span>
+                      <Address
+                        endLength={4}
+                        contractUrl={getExplorerAddressUrl(network.explorer)(network.poolPrograms.LockReleaseTokenPool)}
+                        address={network.poolPrograms.LockReleaseTokenPool}
+                      />
+                    </div>
                   )}
                 </div>
               </div>
@@ -339,7 +423,12 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                               height="20px"
                               className="ccip-chain-hero__feeTokens__item__logo"
                             >
-                              <img src={fallbackTokenIconUrl} alt={token.name} width="20px" height="20px" />
+                              <img
+                                src={fallbackTokenIconUrl}
+                                alt={`${token.name} token logo`}
+                                width="20px"
+                                height="20px"
+                              />
                             </object>
                             <div>{token.name}</div>
                             <Address endLength={4} contractUrl={contractUrl} address={address} />
@@ -356,7 +445,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                           >
                             <img
                               src={fallbackTokenIconUrl}
-                              alt={`${nativeCurrency.symbol} icon`}
+                              alt={`${nativeCurrency.symbol} token logo`}
                               width="20px"
                               height="20px"
                             />

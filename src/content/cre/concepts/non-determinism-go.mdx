@@ -1,0 +1,118 @@
+---
+section: cre
+title: "Avoiding Non-Determinism in Workflows"
+sdkLang: "go"
+pageId: "non-determinism-workflows"
+date: Last Modified
+metadata:
+  description: "Learn how to avoid non-deterministic behaviors in CRE Go workflows that prevent nodes from reaching consensus."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+<Aside type="note" title="TL;DR">
+  In DON mode, all nodes must execute identical code paths to reach consensus. Non-deterministic code causes nodes to
+  generate different request IDs, breaking consensus. This guide shows common pitfalls in Go and how to avoid them.
+</Aside>
+
+## The problem: Why determinism matters
+
+When your workflow runs in DON mode, multiple nodes execute the same code independently. These nodes must reach consensus on the results before proceeding. **If nodes execute different code paths, they generate different request IDs for capability calls, and consensus fails.**
+
+The failure pattern: Code diverges → Different request IDs → No quorum → Workflow fails
+
+## Quick reference: Common pitfalls
+
+| Don't Use                        | Use Instead                                  |
+| -------------------------------- | -------------------------------------------- |
+| Direct map iteration             | Sort keys first, then iterate                |
+| `encoding/json` v2               | `encoding/json` v1                           |
+| Protocol Buffers `proto.Marshal` | `proto.MarshalOptions{Deterministic: true}`  |
+| `select` with multiple channels  | Process channels in deterministic order      |
+| `time.Now()` or `time` package   | `runtime.Now()`                              |
+| Go's `rand` package              | `runtime.Rand()`                             |
+| LLM free-text responses          | Structured output with field-level consensus |
+
+## 1. Map iteration
+
+Go maps are **designed to iterate in random order** for security reasons. Each time you iterate over a map, the order may be different. This means different nodes will process items in different sequences, leading to divergent capability calls and consensus failure.
+
+**The problem:** Direct map iteration produces unpredictable order across nodes.
+
+**The solution:** Extract map keys, sort them, then iterate in the sorted order. This ensures all nodes process items in the same sequence.
+
+## 2. JSON and data serialization
+
+### JSON v2 non-determinism
+
+The `encoding/json` v2 library uses random hashing for field order in hashmaps, making serialization non-deterministic. The same data structure can serialize to different JSON strings on different nodes.
+
+**The solution:** Use `encoding/json` v1, which provides deterministic field ordering.
+
+### Protocol Buffers serialization
+
+The default `proto.Marshal` function does not guarantee deterministic output. Fields may be serialized in different orders across nodes.
+
+**The solution:** Use `proto.MarshalOptions{Deterministic: true}.Marshal()` to ensure consistent serialization order across all nodes.
+
+## 3. Concurrency and channel selection
+
+Go's `select` statement with multiple channels introduces non-determinism. When multiple channels are ready, `select` picks one at random. Different nodes may select different channels, causing code paths to diverge.
+
+**The problem:** `select` with multiple ready channels picks randomly, breaking consensus.
+
+**The solution:** Process channels in a **fixed, deterministic order** instead of using `select`. Check channels sequentially in a consistent order across all nodes.
+
+## 4. Time and dates
+
+Never use Go's `time` package functions in DON mode. Nodes have different system clocks, causing divergence when calling `time.Now()` or similar functions.
+
+**The problem:** Using `time.Now()` returns different values on each node.
+
+**The solution:** Use `runtime.Now()` from the CRE SDK, which provides DON Time—a consensus-derived timestamp that all nodes agree on. See [Time in CRE](/cre/concepts/time-in-cre) for details.
+
+## 5. Random number generation
+
+Go's built-in `rand` package generates different random sequences on each node, making it impossible to reach consensus on values that depend on randomness.
+
+**The problem:** Each node generates different random values, breaking consensus.
+
+**The solution:** Use `runtime.Rand()` from the CRE SDK, which provides consensus-safe random number generation. All nodes generate the same sequence of random values, enabling consensus. See [Random in CRE](/cre/concepts/random-in-cre) for details.
+
+## 6. Working with LLMs
+
+Large Language Models (LLMs) generate different responses for the same prompt, even with temperature set to 0. This inherent non-determinism breaks consensus in workflows.
+
+**The problem:** Free-text responses from LLMs will vary across nodes, making it impossible to reach agreement on the output.
+
+**The solution:** Request **structured output** from the LLM (such as JSON with specific fields) rather than free-form text. Then use consensus aggregation on the structured fields. This approach allows nodes to agree on the key data points even if the exact text varies slightly.
+
+## Best practices summary
+
+### Do:
+
+- Sort map keys before iteration
+- Use `encoding/json` v1 for deterministic JSON serialization
+- Use `proto.MarshalOptions{Deterministic: true}` for Protocol Buffers
+- Process channels in a fixed, deterministic order
+- Use `runtime.Now()` for all time operations
+- Use `runtime.Rand()` for random number generation
+- Request structured output from LLMs
+
+### Don't:
+
+- Iterate over maps directly without sorting keys
+- Use `encoding/json` v2 (uses random hashing)
+- Use `proto.Marshal` without deterministic options
+- Use `select` with multiple channels for decision-making
+- Use `time.Now()` or other `time` package functions
+- Use Go's `rand` package directly
+- Rely on free-text LLM responses
+
+## Related concepts
+
+- **[Time in CRE](/cre/concepts/time-in-cre)**: Learn about DON Time and why `runtime.Now()` is required
+- **[Random in CRE](/cre/concepts/random-in-cre)**: Understand consensus-safe random number generation
+- **[Consensus Computing](/cre/concepts/consensus-computing)**: Deep dive into how nodes reach agreement

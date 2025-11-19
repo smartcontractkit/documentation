@@ -3,8 +3,15 @@ section: ccip
 date: Last Modified
 title: "Transfer Tokens between EOAs"
 metadata:
-  description: "Transfer tokens between EOAs across EVM chains with Chainlink CCIP. JavaScript tutorial covers sending CCIP-BnM and paying fees in LINK or native gas."
-whatsnext: { "Checking CCIP Message Status Off-Chain": "/ccip/tutorials/evm/offchain/get-status-offchain" }
+  description: "Transfer ERC-20 tokens between EOAs across EVM chains using CCIP. Pay fees in LINK or native gas and verify cross‑chain delivery with explorer links."
+  image: "/images/ccip/basic-architecture.png"
+  excerpt: "EOA, ERC-20, ERC20, token transfer, CCIP, LINK, native gas, CLI, explorer"
+  datePublished: "2024-03-25"
+  lastModified: "2025-05-19"
+  estimatedTime: "20 minutes"
+  difficulty: "intermediate"
+whatsnext:
+  "Checking CCIP Message Status Off-Chain": "/ccip/tutorials/evm/offchain/get-status-offchain"
 ---
 
 import { CodeSample, ClickToZoom, CopyText, Aside } from "@components"
@@ -33,13 +40,12 @@ In this tutorial, you will use Chainlink CCIP to transfer tokens directly from y
     ```
 
 1.  Your [EOA (Externally Owned Account)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) must have both AVAX and LINK tokens on _Avalanche Fuji_ to pay for the gas fees and CCIP fees.
-
     - [Configure MetaMask to use LINK tokens](/resources/acquire-link#configure-metamask-to-use-link-tokens)
     - Acquire testnet AVAX and LINK from [faucets.chain.link/fuji](https://faucets.chain.link/fuji)
 
 1.  Check the [CCIP Directory](/ccip/directory) to confirm that the tokens you will transfer are supported for your lane. In this example, you will transfer tokens from _Avalanche Fuji_ to _Ethereum Sepolia_ so check the list of supported tokens [here](/ccip/directory/testnet/chain/avalanche-fuji-testnet).
 
-1.  Learn how to [acquire CCIP test tokens](/ccip/test-tokens#mint-test-tokens). After following this guide, your [EOA (Externally Owned Account)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) should have CCIP-BnM tokens, and CCIP-BnM should appear in the list of your tokens in MetaMask.
+1.  Learn how to [acquire CCIP test tokens](/ccip/test-tokens#evm-chains). After following this guide, your [EOA (Externally Owned Account)](https://ethereum.org/en/developers/docs/accounts/#types-of-account) should have CCIP-BnM tokens, and CCIP-BnM should appear in the list of your tokens in MetaMask.
 
 1.  In a terminal, clone the [smart-contract-examples repository](https://github.com/smartcontractkit/smart-contract-examples) and change to the `smart-contract-examples/ccip/offchain/javascript` directory.
 
@@ -55,7 +61,6 @@ In this tutorial, you will use Chainlink CCIP to transfer tokens directly from y
     ```
 
 1.  For higher security, the examples repository imports [@chainlink/env-enc](https://www.npmjs.com/package/@chainlink/env-enc). Use this tool to encrypt your environment variables at rest.
-
     1.  Set an encryption password for your environment variables.
 
         ```shell
@@ -63,7 +68,6 @@ In this tutorial, you will use Chainlink CCIP to transfer tokens directly from y
         ```
 
     1.  Run `npx env-enc set` to configure a `.env.enc` file with the basic variables that you need to send your requests to _Ethereum Sepolia_.
-
         - `AVALANCHE_FUJI_RPC_URL`: Set a URL for the _Avalanche Fuji_ testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
 
         - `ETHEREUM_SEPOLIA_RPC_URL`: Set a URL for the _Ethereum Sepolia_ testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
@@ -134,7 +138,6 @@ Complete the following steps in your terminal:
         ```
 
 1.  Analyze the logs:
-
     - The script communicates with the router to calculate the transaction fees required to transfer tokens, which amounts to 20,020,889,739,492,000 Juels (equivalent to 0.02 LINK).
     - The script engages with the Link token contract, authorizing the router contract to spend 20,020,889,739,492,000 Juels for the fees and 1000000000000000 (0.001 CCIP-BnM) from your Externally Owned Account (EOA) balance.
     - The script initiates a transaction through the router to transfer 1000000000000000 (0.001 CCIP-BnM) to your account on _Ethereum Sepolia_. It also returns the CCIP message ID.
@@ -210,7 +213,6 @@ Complete the following steps in your terminal:
         ```
 
 1.  Analyze the logs:
-
     - The script communicates with the router to calculate the transaction fees required to transfer tokens, which amounts to 80,139,264,929,946,666 wei (equivalent to 0.08 AVAX).
     - The script interacts with the CCIP-BnM token contract, authorizing the router contract to deduct 0.001 CCIP-BnM from your Externally Owned Account (EOA) balance.
     - The script initiates a transaction through the router to transfer 0.001 CCIP-BnM tokens to your destination account on _Ethereum Sepolia_. It also returns the CCIP message ID.

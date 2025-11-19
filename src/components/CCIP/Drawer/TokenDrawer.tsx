@@ -131,6 +131,7 @@ function TokenDrawer({
           name: network.name,
           logo: network.logo,
           explorer: network.explorer,
+          chainType: network.chainType,
         }}
       />
       <div className="ccip-table__drawer-container">
@@ -162,7 +163,7 @@ function TokenDrawer({
                   Rate limit capacity
                   <Tooltip
                     label=""
-                    tip="Rate limit data is currently unavailable. You can find this Token Pool rate limit by reading the Token Pool contract directly on the relevant blockchain."
+                    tip="Maximum amount per transaction"
                     labelStyle={{
                       marginRight: "5px",
                     }}
@@ -226,9 +227,9 @@ function TokenDrawer({
                   return (
                     <tr key={networkDetails.name} className={tokenPaused ? "ccip-table__row--paused" : ""}>
                       <td>
-                        <div
+                        <button
+                          type="button"
                           className={`ccip-table__network-name ${tokenPaused ? "ccip-table__network-name--paused" : ""}`}
-                          role="button"
                           onClick={() => {
                             drawerContentStore.set(() => (
                               <LaneDrawer
@@ -245,15 +246,20 @@ function TokenDrawer({
                               />
                             ))
                           }}
+                          aria-label={`View lane details for ${networkDetails?.name}`}
                         >
-                          <img src={networkDetails?.logo} alt={networkDetails?.name} className="ccip-table__logo" />
+                          <img
+                            src={networkDetails?.logo}
+                            alt={`${networkDetails?.name} blockchain logo`}
+                            className="ccip-table__logo"
+                          />
                           {networkDetails?.name}
                           {tokenPaused && (
                             <span className="ccip-table__paused-badge" title="Transfers are currently paused">
                               ⏸️
                             </span>
                           )}
-                        </div>
+                        </button>
                       </td>
                       <td>
                         {displayCapacity(

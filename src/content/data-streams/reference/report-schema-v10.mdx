@@ -1,0 +1,45 @@
+---
+section: dataStreams
+date: Last Modified
+title: "Backed xStock Report Schema (v10)"
+metadata:
+  title: "Backed xStock Report Schema (v10) | Chainlink Data Streams"
+  description: "Learn about Chainlink Backed xStock report schema (v10), including fields, encoding, and examples for integrating tokenized asset data in your applications."
+  keywords: ["Report Schema", "Tokenized Assets", "Backed xStock", "v10 Schema", "Data Format", "Report Structure"]
+---
+
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+import ReportSchemaTabs from "@features/data-streams/common/ReportSchemaTabs.astro"
+
+<DataStreams section="dsNotes" />
+
+<ReportSchemaTabs />
+
+Chainlink Backed xStock Data Streams adhere to the report schema outlined below.
+
+### Schema Fields
+
+| Field                   | Type      | Description                                                                                                 |
+| ----------------------- | --------- | ----------------------------------------------------------------------------------------------------------- |
+| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                                                                 |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                                                        |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                                                          |
+| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)                                                                |
+| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                                                                        |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                                                     |
+| `lastUpdateTimestamp`   | `uint64`  | Timestamp of the last valid price update (nanoseconds)                                                      |
+| `price`                 | `int192`  | Last traded price from the real-world equity market                                                         |
+| `marketStatus`          | `uint32`  | Status of the real-world equity market. <br/> Possible values: `0` (Unknown), `1` (Closed), `2` (Open)      |
+| `currentMultiplier`     | `int192`  | Currently applied multiplier accounting for past corporate actions                                          |
+| `newMultiplier`         | `int192`  | Multiplier to be applied at the activationDateTime <br/> (set to `0` if none is scheduled)                  |
+| `activationDateTime`    | `uint32`  | When the next corporate action takes effect <br/> (set to `0` if none is scheduled) (seconds)               |
+| `tokenizedPrice`        | `int192`  | 24/7 tokenized equity price as traded on supported exchanges <br/> (In development; currently returns `0`). |
+
+**Notes:**
+
+- Future Backed xStock streams may use different report schemas.
+- `price` updates in real time during market open, but may become stale during market closed periods.
+- `tokenizedPrice` will be available in an upcoming release of Backed xStock Data Streams. Currently, it will always return `0`.
+- `currentMultiplier` reflects all past corporate actions and is updated only when a new action is activated.
+- `activationDateTime` and `newMultiplier` provide advance notice of upcoming corporate actions, allowing protocols to prepare.
+- See more detailed guidance for handling stock splits in the [Best Practices](/data-streams/concepts/best-practices#handling-stock-splits-for-tokenized-assets) documentation.

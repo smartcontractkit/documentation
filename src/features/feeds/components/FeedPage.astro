@@ -5,14 +5,25 @@ import { Aside } from "@components"
 export type Props = {
   initialNetwork?: string
   ecosystem: string
-  dataFeedType?: DataFeedType
+  dataFeedType?:
+    | DataFeedType
+    | "streamsBacked"
+    | "streamsCrypto"
+    | "streamsRwa"
+    | "streamsNav"
+    | "streamsExRate"
+    | "smartdata"
+    | "default"
+    | "rates"
+  allowNetworkTableExpansion?: boolean
+  defaultNetworkTableExpanded?: boolean
 }
 import { getServerSideChainMetadata } from "~/features/data/api/backend"
 import { CHAINS, ALL_CHAINS } from "~/features/data/chains"
 import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat"
 import { FeedDataItem, monitoredFeeds } from "~/features/data"
 
-const { initialNetwork, ecosystem, dataFeedType } = Astro.props
+const { initialNetwork, ecosystem, dataFeedType, allowNetworkTableExpansion, defaultNetworkTableExpanded } = Astro.props
 
 const initialCache = await getServerSideChainMetadata([...CHAINS, ...ALL_CHAINS])
 const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
@@ -61,20 +72,27 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
       </p>
       <p>
         A list of data feeds designated for deprecation along with their corresponding shutdown date can be found below.
+        Please be advised that we will cease data quality monitoring for feeds designated for deprecation two weeks
+        prior to the date of deprecation.
       </p>
     </>
   ) : (
     <>
-      {dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa" ? (
+      {dataFeedType === "streamsCrypto" ||
+      dataFeedType === "streamsRwa" ||
+      dataFeedType === "streamsNav" ||
+      dataFeedType === "streamsExRate" ||
+      dataFeedType === "streamsBacked" ? (
         <>
           <p>
             To learn how to use Data Streams, see the{" "}
-            <a href="/data-streams/getting-started">Data Streams Getting Started</a> page.
+            <a href="/data-streams/tutorials/go-sdk-fetch">Fetch and decode reports</a> tutorial.
           </p>
           <p>
             For LINK token and Faucet details, see the{" "}
             <a href="/resources/link-token-contracts?parent=dataFeeds">LINK Token Contracts</a> page.
           </p>
+
           <Aside type="note" title="Talk to an expert">
             <p>
               <a href="https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs">Contact us</a> to talk to an
@@ -108,6 +126,28 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
             For LINK token and Faucet details, see the{" "}
             <a href="/resources/link-token-contracts?parent=dataFeeds">LINK Token Contracts</a> page.
           </p>
+        </>
+      ) : dataFeedType === "usGovernmentMacroeconomicData" ? (
+        <>
+          <p>
+            To learn more about the U.S. Government Macroeconomic data feeds, see the{" "}
+            <a href="https://blog.chain.link/united-states-department-of-commerce-macroeconomic-data">blog article.</a>
+          </p>
+          <p>
+            To learn how to use these feeds, see the <a href="/data-feeds/using-data-feeds">Using Data Feeds</a> guide.
+          </p>
+          <p>
+            For LINK token and Faucet details, see the{" "}
+            <a href="/resources/link-token-contracts?parent=dataFeeds">LINK Token Contracts</a> page.
+          </p>
+          <Aside type="note" title="Talk to an expert">
+            <p>
+              <a href="https://chain.link/contact?ref_id=DataFeed">Contact us</a> to talk to an expert about integrating
+              Chainlink Data Feeds with your applications.
+            </p>
+          </Aside>
+
+          <FeedsCommonCallout callout="quality" />
         </>
       ) : (
         <>
@@ -147,7 +187,12 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
         </p>
       </Aside>
     </>
-  ) : dataFeedType === "streamsCrypto" || dataFeedType === "streamsRwa" ? (
+  ) : dataFeedType === "streamsCrypto" ||
+    dataFeedType === "streamsRwa" ||
+    dataFeedType === "streamsNav" ||
+    dataFeedType === "streamsExRate" ||
+    dataFeedType === "streamsBacked" ||
+    dataFeedType === "usGovernmentMacroeconomicData" ? (
     <> </>
   ) : (
     <>
@@ -169,4 +214,6 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
   dataFeedType={dataFeedType ?? "default"}
   ecosystem={ecosystem ?? ""}
   initialCache={initialCache}
+  allowNetworkTableExpansion={allowNetworkTableExpansion}
+  defaultNetworkTableExpanded={defaultNetworkTableExpanded}
 />

@@ -11,7 +11,6 @@ interface LaneDetailsHeroProps {
     logo: string
     name: string
     chainType?: ChainType
-    rmnPermeable?: boolean
   }
   destinationNetwork: {
     logo: string
@@ -24,7 +23,6 @@ interface LaneDetailsHeroProps {
   enforceOutOfOrder?: boolean
   explorer: ExplorerInfo
   inOutbound: LaneFilter
-  laneRmnPermeable?: boolean
 }
 
 // Arrow component to avoid duplication
@@ -89,27 +87,12 @@ function LaneDetailsHero({
   enforceOutOfOrder,
   explorer,
   inOutbound,
-  laneRmnPermeable,
 }: LaneDetailsHeroProps) {
   // Map boolean values to display strings
   const getOutOfOrderText = (value?: boolean) => {
     if (value === true) return "Required"
     if (value === false) return "Optional"
     return "N/A"
-  }
-
-  /**
-   * Determines if RMN verification is enabled for this lane. Logic:
-   * 1. If the destination chain is Solana (SVM), RMN verification is always disabled
-   * 2. If a lane-specific rmnPermeable value exists, it takes precedence
-   * 3. Otherwise, fallback to the source network's rmnPermeable setting
-   */
-  const isRmnVerificationEnabled = () => {
-    if (laneRmnPermeable !== undefined) {
-      return laneRmnPermeable === false
-    }
-
-    return sourceNetwork.rmnPermeable === false
   }
 
   return (
@@ -135,7 +118,11 @@ function LaneDetailsHero({
         {/* Display address information based on lane type */}
         {inOutbound === LaneFilter.Inbound ? (
           <DetailItem label="OffRamp address" clipboardType="offramp">
-            <AddressComponent address={offRamp} endLength={6} contractUrl={getExplorerAddressUrl(explorer)(offRamp)} />
+            <AddressComponent
+              address={offRamp}
+              endLength={6}
+              contractUrl={getExplorerAddressUrl(explorer, destinationNetwork.chainType)(offRamp)}
+            />
           </DetailItem>
         ) : (
           <DetailItem
@@ -143,19 +130,16 @@ function LaneDetailsHero({
             clipboardType="onramp"
             tooltip={sourceNetwork.chainType === "solana" ? <StyledTooltip tip="Same as Router." /> : undefined}
           >
-            <AddressComponent address={onRamp} endLength={6} contractUrl={getExplorerAddressUrl(explorer)(onRamp)} />
+            <AddressComponent
+              address={onRamp}
+              endLength={6}
+              contractUrl={getExplorerAddressUrl(explorer, sourceNetwork.chainType)(onRamp)}
+            />
           </DetailItem>
         )}
 
         <DetailItem label="Destination chain selector" clipboardType="destination-chain-selector">
           {destinationAddress ? <CopyValue value={destinationAddress} /> : "n/a"}{" "}
-        </DetailItem>
-
-        <DetailItem
-          label="RMN Verification"
-          tooltip={<StyledTooltip tip={"Indicates if RMN blessings are verified on the destination chain."} />}
-        >
-          {isRmnVerificationEnabled() ? "Enabled" : "Disabled"}
         </DetailItem>
 
         {inOutbound === LaneFilter.Outbound && (

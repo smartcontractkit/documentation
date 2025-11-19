@@ -19,7 +19,6 @@ export type SupportedTokensConfig = {
 export type LaneConfig = {
   supportedTokens?: SupportedTokensConfig
   rateLimiterConfig?: RateLimiterConfig
-  rmnPermeable: boolean
   onRamp: {
     address: string
     version: string
@@ -71,11 +70,18 @@ export type ChainConfig = {
     version: string
   }
   feeQuoter?: string
-  rmnPermeable?: boolean
   nativeToken?: {
     name: string
     symbol: string
     logo: string
+  }
+  mcms?: {
+    address: string
+  }
+  poolPrograms?: {
+    BurnMintTokenPool?: string
+    LockReleaseTokenPool?: string
+    CCTPTokenPool?: string
   }
 }
 
@@ -155,6 +161,17 @@ export interface CCIPSendErrorEntry {
   description: string
 }
 
+export interface CCIPEventEntry {
+  event: string
+  parameters?: Array<{
+    type: string
+    name: string
+    indexed: boolean
+    typeLink?: string
+  }>
+  description: string
+}
+
 export enum LaneStatus {
   OPERATIONAL = "OPERATIONAL",
   MAINTENANCE = "MAINTENANCE",
@@ -193,7 +210,12 @@ export interface Network {
   }
   routerExplorerUrl: string
   feeQuoter?: string
-  rmnPermeable: boolean
+  mcms?: string
+  poolPrograms?: {
+    BurnMintTokenPool?: string
+    LockReleaseTokenPool?: string
+    CCTPTokenPool?: string
+  }
 }
 
 export type DecomConfig = {

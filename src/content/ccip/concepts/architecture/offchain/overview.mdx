@@ -4,6 +4,12 @@ date: Last Modified
 title: "Offchain Architecture - Overview"
 metadata:
   description: "Overview of Chainlink CCIP's offchain architecture. Learn about the Role DON (Commit & Executing OCR plugins) and the Risk Management Network (RMN)."
+  image: "/images/ccip/concepts/architecture/ccip-offchain-architecture.jpg"
+  excerpt: "ccip offchain overview role don commit ocr plugin executing ocr plugin risk management network offchain reporting consensus mechanism node coordination merkle roots blessing mechanism"
+  datePublished: "2025-05-19T11:22:47Z"
+  lastModified: "2025-05-19T11:22:47Z"
+  difficulty: "advanced"
+  estimatedTime: "25 minutes"
 ---
 
 import { ClickToZoom } from "@components"
@@ -11,8 +17,7 @@ import { ClickToZoom } from "@components"
 CCIP's offchain architecture includes the following:
 
 - **Decentralized Oracle Networks (DONs)**: Running offchain consensus using the Offchain Reporting Protocol (OCR).
-- **Risk Management Network (RMN)**: Enhancing security through a defense-in-depth design.
-- **Interaction Components**: Managing communication between the CCIP DONs and the RMN.
+- **Interaction Components**: Managing communication between the CCIP DONs.
 
 ## Components
 
@@ -21,56 +26,14 @@ CCIP's offchain architecture includes the following:
 With the CCIP v1.6 architecture, there is a single DON called the Role DON that includes all participating nodes. Two OCR plugins run on these nodes:
 
 1. **Commit OCR Plugin**
-
    - Coordinates observations from multiple source chains.
    - Requests blessings from the RMN (when applicable) and posts a Commit Report on the destination chain.
 
 1. **Executing OCR Plugin**
-
    - Monitors pending executions on the destination chain.
    - Verifies events on the source chain and executes messages accordingly.
 
 **Note**: For simplicity, we sometimes refer to the nodes running the Commit OCR Plugin as the Committing DON and those running the Executing OCR Plugin as the Executing DON. However, these are not separate oracle networks; they are subsets of the same Role DON, distinguished solely by their assigned roles.
-
-### Risk Management Network
-
-The Risk Management Network (RMN) is a unique architectural feature of CCIP that reinforces system security through a defense-in-depth approach. Key aspects include:
-
-- **Separate Implementation**: RMN runs a minimal, separate implementation of the Chainlink node software, which uses a different programming language than the primary CCIP system. This design provides an extra layer of independent attestation, enhancing overall security.
-- **Distinct Node Operators**: A dedicated set of node operators—separate from those managing the core CCIP DONs—participates in RMN functions.
-- **Blessing Mechanism**: On blockchains where RMN blessing is enabled, RMN nodes "bless" CCIP messages by providing independent attestations of the source chain observation.
-
-### Interaction
-
-- **Commit OCR and RMN Blessings**: The Commit OCR plugin interacts directly with RMN nodes to query for observations and receive independent RMN blessings. These blessings serve as attestations of the validity of source chain observations and are used to form a consolidated set of merkle roots.
-- **Configuration and Role Validation**: The roles of nodes are defined and managed on the "Home Chain" (i.e., Ethereum) through specific contracts. Each node software reads from these contracts to verify that nodes are authorized for their roles.
-  - The **CCIP Home** contract contains the configuration required to bootstrap the CCIP network (Role DON) and includes both chain-level and Role DON-level details.
-  - The **RMN Home** contract maintains the configuration for RMN nodes.
-
-## Role DON: Diagram and Explanation
-
-<ClickToZoom
-  src="/images/ccip/concepts/architecture/ccip-offchain-architecture.jpg"
-  alt="CCIP Offchain Architecture"
-  style="display: block; margin: 2rem auto; max-height: 60vh; width: auto;"
-/>
-
-Let's take an example from the diagram above to understand the key components. The diagram shows a Commit OCR instance configured for a destination chain (Chain C). Key details include:
-
-- **Commit Role DON**
-
-  - Represents all participating nodes.
-  - Within the Role DON, a specific group of nodes—sometimes called a "sub-committee"—may be assigned chain-specific roles.
-
-- **Chain-Specific Roles** (as illustrated)
-  - **Green Rectangle**: Nodes observe Chain A (i.e., they read from Chain A).
-  - **Orange Rectangle**: Nodes observe Chain B.
-  - **Blue Rectangle**: Nodes write commit reports to Chain C.
-  - **Overlap**: Note that groups may overlap. For example, the four nodes in the bottom-left corner of the Role DON might not connect to Chain A or Chain C, demonstrating flexibility in node participation.
-  - **Interaction with RMN**: The Commit OCR interacts with RMN nodes to receive RMN blessings. These blessings act as independent attestations of the validity of source chain observations and are used to form a consolidated set of merkle roots.
-- **Configuration and Role Validation**:
-  - Node roles are configured on the Home Chain (i.e., Ethereum) through specific contracts.
-  - The node software reads from the **CCIP Home** and **RMN Home** contracts to verify that each node is authorized for its role—whether for making observations or providing RMN blessings.
 
 ## High Level Flow
 
@@ -79,31 +42,21 @@ Below are the high-level steps for the Commit OCR process and the Executing OCR 
 ### Commit OCR Process
 
 - **Observation Phase**
-
   - Each subcommittee reading from a source chain reaches consensus on the range of messages to build a merkle root.
   - A minimum threshold of valid observations is required for consensus.
 
-- **Report Building Phase**
-
-  - For source chains where RMN blessing is enabled, the leader of the OCR round queries the RMN nodes for the defined message ranges.
-  - RMN nodes return independently constructed merkle roots for these ranges.
-  - After validating the returned merkle roots, the leader sends the consolidated set of merkle roots to the RMN for signatures (a single signature may cover multiple merkle roots).
-
 - **Query Phase**
-
-  - The leader shares the Commit Report (which may include RMN signatures) with the rest of the nodes in the Role DON for validation.
+  - The leader shares the Commit Report with the rest of the nodes in the Role DON for validation.
   - Invalid observations are dropped and the remaining valid ones must meet the threshold to achieve consensus among the nodes.
 
 - **Reporting Phase**
-
   - A subcommittee of nodes writing to the destination chain submits the final Commit Report onchain.
-  - The report may include merkle roots from multiple sources—some of which have RMN signatures.
+  - The report may include merkle roots from multiple sources.
   - Additionally, the Commit plugin posts price reports for fee tokens, so the Commit Report can contain a combination of merkle roots and price reports.
 
 ### Executing OCR Process
 
 - **Pending Execution Check**
-
   - The subcommittee connected to the destination chain checks for pending executions that have been committed via a Commit Report.
 
 - **Validation and Optimization**:
