@@ -579,7 +579,7 @@ export const FeedList = ({
             ? "Testnet Backed xStock Streams"
             : dataFeedType === "streams245"
               ? "Testnet 24/5 US Equities Streams"
-            : "Testnet RWA Streams"
+              : "Testnet RWA Streams"
 
   // Initialize search input fields with URL parameter values
   useEffect(() => {

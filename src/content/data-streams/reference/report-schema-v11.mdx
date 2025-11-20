@@ -28,7 +28,7 @@ import ReportSchemaTabs from "@features/data-streams/common/ReportSchemaTabs.ast
 
 Chainlink 24/5 US Equities Data Streams adhere to the report schema outlined below.
 
-### Schema Fields
+## Schema Fields
 
 | Field                   | Type      | Description                                                                                                                                                                                                                                                                 |
 | ----------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -47,21 +47,24 @@ Chainlink 24/5 US Equities Data Streams adhere to the report schema outlined bel
 | `lastTradedPrice`       | `int192`  | Last traded price                                                                                                                                                                                                                                                           |
 | `marketStatus`          | `uint32`  | Status of the real-world equity market. <br/> Possible values: <br/> `0` (Unknown), <br/> `1` (Pre-market extended hours), <br/> `2` (Regular hours), <br/> `3` (Post-market hours), <br/> `4` (Overnight), <br/> `5` (Weekend) <br/> [More details](#market-status-values) |
 
-**Notes:**
+### Market Status Values
+
+The `marketStatus` field reflects the current state of the equity market:
+
+| Value | Status            | Hours (ET)                            | Description                                    |
+| ----- | ----------------- | ------------------------------------- | ---------------------------------------------- |
+| `0`   | **Unknown**       | —                                     | Market status cannot be determined             |
+| `1`   | **Pre-market**    | 4:00am–9:30am Mon–Fri                 | Extended hours before regular trading session  |
+| `2`   | **Regular hours** | 9:30am–4:00pm Mon–Fri                 | Primary trading session with highest liquidity |
+| `3`   | **Post-market**   | 4:00pm–8:00pm Mon–Fri                 | Extended hours after regular trading session   |
+| `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning | Overnight session with limited liquidity       |
+| `5`   | **Weekend**       | 8:00pm Fri–8:00pm Sun                 | Weekend period when primary markets are closed |
+
+Users should implement appropriate safeguards based on market status, such as pausing trading, adjusting risk parameters, or implementing staleness checks during non-regular hours.
+
+### Notes
 
 - Future 24/5 US Equities streams may use different report schemas.
 - `lastSeenTimestampNs` helps applications detect stale data, especially important during market transitions and holidays.
 - Market status cannot detect public holidays. See [Market Hours](/data-streams/market-hours) for major holiday periods.
-
-##### Market Status Values
-
-The `marketStatus` field reflects the current state of the equity market:
-
-- **`0` (Unknown)** - Market status cannot be determined
-- **`1` (Pre-market extended hours)** - Market is in pre-market trading session
-- **`2` (Regular hours)** - Market is in regular trading session
-- **`3` (Post-market hours)** - Market is in post-market trading session
-- **`4` (Overnight)** - Market is closed overnight (between post-market close and next day's pre-market open)
-- **`5` (Weekend)** - Weekend period (Friday 20:00 ET to Sunday 20:00 ET)
-
-Users should implement appropriate safeguards based on market status, such as pausing trading, adjusting risk parameters, or implementing staleness checks during non-regular hours.
+- Data availability and sourcing vary by session. Liquidity is typically highest during regular hours and lower during extended and overnight sessions.
