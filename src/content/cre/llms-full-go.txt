@@ -7114,10 +7114,9 @@ Yes. Once you call `runtime.Rand()` and get a `*rand.Rand` object, you can reuse
 
 # CRE Templates
 Source: https://docs.chain.link/cre/templates
-Last Updated: 2025-11-20
+Last Updated: 2025-11-21
 
-CRE <a href="https://github.com/smartcontractkit/cre-templates" target="_blank" rel="noopener noreferrer">Templates</a> are workflow examples that help you learn CRE concepts and accelerate your development. They are curated and maintained
-by Chainlink Labs, offering patterns you can use as references or starting points for your own workflows.
+Templates are workflow examples you can copy and customize for your own projects. They are curated and maintained by Chainlink, offering patterns you can use as references or starting points for your own workflows.
 
 
 <Aside type="caution" title="Educational Example Disclaimer">
@@ -7130,13 +7129,13 @@ by Chainlink Labs, offering patterns you can use as references or starting point
   that are generated due to errors in code.
 </Aside>
 
-## Template types
+## Building Blocks and Starter Templates
 
-CRE Templates come in two flavors, each designed for different learning and development needs:
+Templates are organized into two categories:
 
 ### 1. Building Blocks
 
-Small, focused examples that teach **one concept at a time**. Each Building Block is self-contained and demonstrates a specific CRE capability or pattern. They feature minimal code, clear configuration, and are runnable locally with `cre workflow simulate`.
+[Building Blocks](https://github.com/smartcontractkit/cre-templates/tree/main/building-blocks) are small, focused examples that teach **one concept at a time**. Each Building Block is self-contained and demonstrates a specific CRE capability or pattern. They feature minimal code, clear configuration, and are runnable locally with `cre workflow simulate`.
 
 **Available Building Blocks:**
 
@@ -7158,7 +7157,7 @@ Small, focused examples that teach **one concept at a time**. Each Building Bloc
 
 ### 2. Starter Templates
 
-Complete, end-to-end workflows that combine multiple capabilities and mirror real-world use cases. These templates are more comprehensive than Building Blocks and include production-like configuration, optional precompiled smart contracts, and generated bindings. They can be adapted directly into your own projects.
+[Starter Templates](https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates) are complete, end-to-end workflows that combine multiple capabilities and mirror real-world use cases. These templates are more comprehensive than Building Blocks and include production-like configuration, optional precompiled smart contracts, and generated bindings. They can be adapted directly into your own projects.
 
 **Available Starter Templates:**
 
@@ -7183,11 +7182,9 @@ Complete, end-to-end workflows that combine multiple capabilities and mirror rea
 - You're starting a new project and need a solid foundation
 - You want to see how multiple CRE capabilities integrate in a real workflow
 
-## How to access Templates
+### How to access templates
 
-**CRE Templates Repository**
-
-All templates are available on GitHub at <a href="https://github.com/smartcontractkit/cre-templates" target="_blank" rel="noopener noreferrer">github.com/smartcontractkit/cre-templates</a>
+All templates are available on GitHub at [github.com/smartcontractkit/cre-templates](https://github.com/smartcontractkit/cre-templates)
 
 - Browse all Building Blocks and Starter Templates
 - Clone or fork templates to customize them for your use case
@@ -7204,7 +7201,7 @@ Choose the right template based on where you are in your CRE journey:
 
 | Your Situation                                                           | Recommended Action                                                               |
 | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
-| Just finished the [Getting Started guide](/cre/getting-started/overview) | Run the **Custom Data Feed** demo to see a more complex, real-world example      |
+| Just finished the [Getting Started guide](/cre/getting-started/overview) | Run the **Custom Data Feed** template to see a more complex, real-world example  |
 | Want to learn offchain writes with secrets and consensus                 | Clone the **`kv-store`** Building Block (AWS S3 example)                         |
 | Need to read Chainlink Data Feeds in your workflow                       | Clone the **`read-data-feeds`** Building Block (onchain reads with ABIs)         |
 | Building a custom data feed for your protocol                            | Fork the **`custom-data-feed`** Starter Template and customize it                |
@@ -7213,9 +7210,9 @@ Choose the right template based on where you are in your CRE journey:
 
 ## Next steps
 
-Ready to explore templates? Here's where to go next:
+Ready to explore templates?
 
-- **[Run the Custom Data Feed Demo](/cre/templates/running-demo-workflow)** - Walk through this template with our step-by-step guide (available in Go and TypeScript)
+- **[Run the Custom Data Feed Template](/cre/templates/running-demo-workflow)** - Walk through this template with our step-by-step guide (available in Go and TypeScript)
 
 - **[Browse all templates on GitHub](https://github.com/smartcontractkit/cre-templates)** - Explore the full collection of Building Blocks and Starter Templates
 
@@ -7223,6 +7220,103 @@ Ready to explore templates? Here's where to go next:
   The CRE Templates repository is open source under the MIT license. If you've built a useful workflow pattern and want
   to share it with the community, consider contributing.
 </Aside>
+
+---
+
+# AI-Powered Prediction Market
+Source: https://docs.chain.link/cre/demos/prediction-market
+Last Updated: 2025-11-21
+
+This demo showcases a complete, end-to-end prediction market application that integrates CRE with external services. Unlike [templates](/cre/templates) that are meant to be copied and customized, this demo is designed to be explored and studied to understand what's possible with CRE.
+
+
+<Aside type="caution" title="Educational Example Disclaimer">
+  This page includes educational examples to use a Chainlink system, product, or service and is provided to
+  demonstrate how to interact with Chainlink's systems, products, and services to integrate them into your own. This
+  template is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, it has not been audited, and it may be
+  missing key checks or error handling to make the usage of the system, product or service more clear. Do not use the
+  code in this example in a production environment without completing your own audits and application of best practices.
+  Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs
+  that are generated due to errors in code.
+</Aside>
+
+## GitHub Repository
+
+The [repository](https://github.com/smartcontractkit/cre-gcp-prediction-market-demo) contains complete setup instructions, including quick start guides and full end-to-end deployment steps.
+
+## What this demo does
+
+This demo showcases a fully automated prediction market where:
+
+1. **Users create markets** by asking binary (Yes/No) questions onchain
+2. **Users stake ERC-20 tokens** (USDC) to make predictions
+3. **After the market closes**, anyone can request settlement
+4. **CRE automatically triggers** when it detects the settlement request event
+5. **Gemini AI determines the outcome** using Google search grounding for factual verification
+6. **CRE submits a cryptographically signed settlement** report back onchain
+7. **Settlement data is stored in Firestore** for audit trails and frontend display
+8. **Winners claim their proportional share** of the total pool
+
+## Key integrations
+
+This demo demonstrates several important CRE integration patterns:
+
+### Event-driven workflows
+
+The CRE workflow listens for `SettlementRequested` events onchain using CRE's [EVM log trigger capability](/cre/guides/workflow/using-triggers/evm-log-trigger). When a settlement is requested, the workflow automatically triggers and begins the settlement process.
+
+### External AI service integration
+
+The workflow sends the market question to Google's Gemini AI with search grounding enabled. Gemini searches the web to determine the factual outcome and returns a result with a confidence score.
+
+### Data persistence
+
+Settlement results, including the AI's response and confidence level, are stored in [Firebase Firestore](https://firebase.google.com/docs/firestore). This creates a trail and enables the frontend to display settlement history.
+
+### Cryptographic signing
+
+The workflow generates cryptographically signed settlement reports that the smart contract can verify. This ensures only authorized, consensus-approved data reaches the contract.
+
+### Full-stack architecture
+
+The demo includes:
+
+- **Smart contracts** (Solidity + Foundry): `SimpleMarket.sol` for managing prediction markets
+- **CRE workflow** (TypeScript): Event-driven settlement logic with AI integration
+- **Database** (Firebase/Firestore): Audit trail and data persistence
+- **Frontend** (Next.js): User interface for viewing settlement history
+
+## What you'll learn
+
+Exploring this demo will teach you:
+
+1. **Event-driven workflow patterns**: How to use CRE's log trigger to react to onchain events in real-time
+2. **External service integration**: Best practices for integrating AI services like Gemini with your workflows
+3. **Error handling and validation**: How to validate external API responses before using them onchain
+4. **Data persistence patterns**: Techniques for storing workflow results in external databases
+5. **Full-stack dApp architecture**: How CRE fits into a complete application with smart contracts, workflows, and frontends
+6. **Cryptographic signing**: How CRE generates and submits cryptographically signed reports
+
+## Getting started
+
+The repository includes two quick start options:
+
+### Option 1: Test CRE Workflow Only (Fastest)
+
+Test the workflow using a pre-deployed contract and transaction. This lets you see the workflow in action without deploying anything yourself.
+
+### Option 2: Full End-to-End Test
+
+Deploy your own contracts, create markets, request settlements, and run the workflow end-to-end. This gives you complete hands-on experience with all components.
+
+See the [repository README](https://github.com/smartcontractkit/cre-gcp-prediction-market-demo) for detailed prerequisites and setup instructions.
+
+## Next steps
+
+- **[Explore the repository](https://github.com/smartcontractkit/cre-gcp-prediction-market-demo)** - Clone the demo and follow the setup instructions
+- **[Learn about log triggers](/cre/guides/workflow/using-triggers/evm-log-trigger)** - Understand how to build event-driven workflows
+- **[Explore HTTP capabilities](/cre/guides/workflow/using-http-client)** - Learn more about integrating external APIs
+- **[Browse templates](/cre/templates)** - Check out workflow templates you can copy and customize
 
 ---
 
