@@ -75,6 +75,8 @@ export type SupportedTechnology =
   | "BITTENSOR"
   | "EVERCLEAR"
   | "AB_CHAIN"
+  | "PHAROS"
+  | "NEXON"
 
 export type ChainType = "evm" | "solana" | "aptos"
 
@@ -237,6 +239,9 @@ export type SupportedChain =
   | "BITTENSOR_MAINNET"
   | "EVERCLEAR_MAINNET"
   | "AB_CHAIN_MAINNET"
+  | "MONAD_MAINNET"
+  | "NEXON_HENESYS"
+  | "PHAROS_ATLANTIC_TESTNET"
 export type ExplorerInfo = {
   baseUrl: string
   queryParameters?: {
