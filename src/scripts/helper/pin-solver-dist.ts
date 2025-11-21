@@ -170,7 +170,10 @@ const pinVersionsInSolidityFiles = async (globPatterns: string[], defaultVersion
         const usesOverrides = overridesMap.has(file.replace(/\\/g, "/").replace(/^.*?\/(samples\/.+\.sol)$/, "$1"))
 
         Object.entries(versionsToUse).forEach(([packageName, version]) => {
-          const regex = new RegExp(`(import.*${packageName})(/)(?!@${version.replace(".", "\\.")})(.*?\\.sol)`, "g")
+          const regex = new RegExp(
+            `(import[\\s\\S]*?${packageName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})(/)(?!@${version.replace(/\./g, "\\.")})(.*?\\.sol)`,
+            "g"
+          )
           const newContent = content.replace(regex, `$1@${version}/$3`)
 
           if (newContent !== content) {
