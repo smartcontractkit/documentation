@@ -240,7 +240,7 @@ export type SupportedChain =
   | "EVERCLEAR_MAINNET"
   | "AB_CHAIN_MAINNET"
   | "MONAD_MAINNET"
-  | "NEXON_HENESYS"
+  | "NEXON_HENESYS_MAINNET"
   | "PHAROS_ATLANTIC_TESTNET"
 export type ExplorerInfo = {
   baseUrl: string
