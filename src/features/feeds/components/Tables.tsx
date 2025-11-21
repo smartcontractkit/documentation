@@ -977,7 +977,7 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v3-dex" rel="noreferrer" target="_blank">
-                  Crypto Schema - DEX (v3)
+                  Report Schema v3 (Crypto DEX)
                 </a>
               </dd>
             </div>
@@ -989,19 +989,19 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v3" rel="noreferrer" target="_blank">
-                  Crypto Schema (v3)
+                  Report Schema v3 (Crypto)
                 </a>
               </dd>
             </div>
           )}
-          {(metadata.feedType === "Equities" || metadata.feedType === "Forex") && (
+          {(metadata.feedType === "Equities" || metadata.feedType === "Forex") && metadata.docs?.schema !== "v11" && (
             <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Report Schema:</span>
               </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v8" rel="noreferrer" target="_blank">
-                  RWA Schema (v8)
+                  Report Schema v8 (RWA)
                 </a>
               </dd>
             </div>
@@ -1013,7 +1013,7 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v7" rel="noreferrer" target="_blank">
-                  Exchange Rate Schema (v7)
+                  Report Schema v7 (Redemption Rates)
                 </a>
               </dd>
             </div>
@@ -1025,7 +1025,7 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v9" rel="noreferrer" target="_blank">
-                  NAV Schema (v9)
+                  Report Schema v9 (NAV)
                 </a>
               </dd>
             </div>
@@ -1037,7 +1037,19 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v10" rel="noreferrer" target="_blank">
-                  Backed xStock Schema (v10)
+                  Report Schema v10 (Tokenized Assets)
+                </a>
+              </dd>
+            </div>
+          )}
+          {metadata.docs?.schema === "v11" && (
+            <div className={tableStyles.definitionGroup}>
+              <dt>
+                <span className="label">Report Schema:</span>
+              </dt>
+              <dd>
+                <a href="/data-streams/reference/report-schema-v11" rel="noreferrer" target="_blank">
+                  RWA Advanced (v11)
                 </a>
               </dd>
             </div>
@@ -1054,6 +1066,8 @@ export const MainnetTable = ({
   showOnlySVR,
   showOnlyMVRFeeds,
   showOnlyDEXFeeds,
+  rwaSchemaFilter,
+  streamCategoryFilter,
   dataFeedType,
   ecosystem,
   selectedFeedCategories,
@@ -1069,6 +1083,8 @@ export const MainnetTable = ({
   showOnlySVR: boolean
   showOnlyMVRFeeds: boolean
   showOnlyDEXFeeds: boolean
+  rwaSchemaFilter?: "all" | "v8" | "v11"
+  streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
   dataFeedType: string
   ecosystem: string
   selectedFeedCategories: string[]
@@ -1141,10 +1157,32 @@ export const MainnetTable = ({
         return isValidStreamsFeed
       }
       if (dataFeedType === "streamsRwa") {
-        return (
+        const isRwaFeed =
           metadata.contractType === "verifier" &&
-          (metadata.docs.feedType === "Equities" || metadata.docs.feedType === "Forex")
-        )
+          (metadata.docs.feedType === "Equities" ||
+            metadata.docs.feedType === "Forex" ||
+            metadata.docs.feedType === "Datalink")
+
+        if (!isRwaFeed) return false
+
+        // Apply feed type filter
+        if (streamCategoryFilter === "datalink") {
+          if (metadata.docs.feedType !== "Datalink") return false
+        } else if (streamCategoryFilter === "equities") {
+          if (metadata.docs.feedType !== "Equities") return false
+        } else if (streamCategoryFilter === "forex") {
+          if (metadata.docs.feedType !== "Forex") return false
+        }
+
+        // Apply schema filter
+        if (rwaSchemaFilter === "v8") {
+          return metadata.docs?.schema === "v8" || !metadata.docs?.schema
+        }
+        if (rwaSchemaFilter === "v11") {
+          return metadata.docs?.schema === "v11"
+        }
+
+        return true
       }
 
       if (dataFeedType === "streamsNav") {
@@ -1238,9 +1276,13 @@ export const MainnetTable = ({
 
   const slicedFilteredMetadata = filteredMetadata.slice(firstAddr, lastAddr)
 
+  // For non-streams tables, wait for batch categories to load to prevent icon flashing
+  if (!isStreams && isBatchLoading) {
+    return <p style="font-style: italic;">Loading...</p>
+  }
+
   return (
     <>
-      {isBatchLoading && <p>Loading...</p>}
       <div className={tableStyles.tableWrapper}>
         <table className={tableStyles.table} data-show-details={showExtraDetails}>
           {slicedFilteredMetadata.length === 0 ? (
@@ -1324,6 +1366,8 @@ export const TestnetTable = ({
   searchValue = "",
   showOnlyMVRFeeds,
   showOnlyDEXFeeds,
+  rwaSchemaFilter,
+  streamCategoryFilter,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
@@ -1337,6 +1381,8 @@ export const TestnetTable = ({
   searchValue?: string
   showOnlyMVRFeeds?: boolean
   showOnlyDEXFeeds?: boolean
+  rwaSchemaFilter?: "all" | "v8" | "v11"
+  streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
 }) => {
   if (!network.metadata) return null
 
@@ -1396,10 +1442,32 @@ export const TestnetTable = ({
         }
 
         if (dataFeedType === "streamsRwa") {
-          return (
+          const isRwaFeed =
             metadata.contractType === "verifier" &&
-            (metadata.docs.feedType === "Equities" || metadata.docs.feedType === "Forex")
-          )
+            (metadata.docs.feedType === "Equities" ||
+              metadata.docs.feedType === "Forex" ||
+              metadata.docs.feedType === "Datalink")
+
+          if (!isRwaFeed) return false
+
+          // Apply feed type filter
+          if (streamCategoryFilter === "datalink") {
+            if (metadata.docs.feedType !== "Datalink") return false
+          } else if (streamCategoryFilter === "equities") {
+            if (metadata.docs.feedType !== "Equities") return false
+          } else if (streamCategoryFilter === "forex") {
+            if (metadata.docs.feedType !== "Forex") return false
+          }
+
+          // Apply schema filter
+          if (rwaSchemaFilter === "v8") {
+            return metadata.docs?.schema === "v8" || !metadata.docs?.schema
+          }
+          if (rwaSchemaFilter === "v11") {
+            return metadata.docs?.schema === "v11"
+          }
+
+          return true
         }
 
         if (dataFeedType === "streamsExRate") {
@@ -1413,6 +1481,9 @@ export const TestnetTable = ({
         if (dataFeedType === "streamsBacked") {
           return metadata.contractType === "verifier" && metadata.docs.feedType === "Tokenized Equities"
         }
+
+        // If we're in streams mode but didn't match any specific stream type, exclude this feed
+        return false
       }
 
       if (isSmartData) {
@@ -1480,9 +1551,13 @@ export const TestnetTable = ({
 
   const slicedFilteredMetadata = filteredMetadata.slice(firstAddr, lastAddr)
 
+  // For non-streams tables, wait for batch categories to load to prevent icon flashing
+  if (!isStreams && isBatchLoading) {
+    return <p style="font-style: italic;">Loading...</p>
+  }
+
   return (
     <>
-      {isBatchLoading && <p>Loading...</p>}
       <div className={tableStyles.tableWrapper}>
         <table className={tableStyles.table}>
           {slicedFilteredMetadata.length === 0 ? (
