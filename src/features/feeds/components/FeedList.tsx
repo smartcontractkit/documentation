@@ -26,7 +26,6 @@ export type DataFeedType =
   | "streamsNav"
   | "streamsExRate"
   | "streamsBacked"
-  | "streams245"
 
 type SchemaFilterValue = "all" | "v8" | "v11"
 type StreamsRwaFeedTypeValue = "all" | "datalink" | "equities" | "forex"
@@ -137,8 +136,7 @@ export const FeedList = ({
     dataFeedType === "streamsRwa" ||
     dataFeedType === "streamsNav" ||
     dataFeedType === "streamsExRate" ||
-    dataFeedType === "streamsBacked" ||
-    dataFeedType === "streams245"
+    dataFeedType === "streamsBacked"
   const isSmartData = dataFeedType === "smartdata"
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
 
@@ -696,9 +694,7 @@ export const FeedList = ({
           ? "Mainnet Exchange Rate Streams"
           : dataFeedType === "streamsBacked"
             ? "Mainnet Backed xStock Streams"
-            : dataFeedType === "streams245"
-              ? "Mainnet 24/5 US Equities Streams"
-              : "Mainnet RWA Streams"
+            : "Mainnet RWA Streams"
   const streamsTestnetSectionTitle =
     dataFeedType === "streamsCrypto"
       ? "Testnet Crypto Streams"
@@ -708,9 +704,7 @@ export const FeedList = ({
           ? "Testnet Exchange Rate Streams"
           : dataFeedType === "streamsBacked"
             ? "Testnet Backed xStock Streams"
-            : dataFeedType === "streams245"
-              ? "Testnet 24/5 US Equities Streams"
-              : "Testnet RWA Streams"
+            : "Testnet RWA Streams"
 
   // Initialize search input fields with URL parameter values
   useEffect(() => {
@@ -736,8 +730,7 @@ export const FeedList = ({
     dataFeedType === "streamsRwa" ||
     dataFeedType === "streamsNav" ||
     dataFeedType === "streamsExRate" ||
-    dataFeedType === "streamsBacked" ||
-    dataFeedType === "streams245"
+    dataFeedType === "streamsBacked"
   ) {
     const mainnetFeeds: ChainNetwork[] = []
     const testnetFeeds: ChainNetwork[] = []
