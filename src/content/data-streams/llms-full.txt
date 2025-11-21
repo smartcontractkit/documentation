@@ -5084,18 +5084,20 @@ While the Data Streams architecture is designed to deliver updates at least once
 
 [Chainlink RWA streams](/data-streams/rwa-streams) deliver real-world asset pricing through two report schemas:
 
-- **Standard RWA** uses [Report Schema v8](/data-streams/reference/report-schema-v8) for consolidated mid prices, market status, and freshness signals during traditional market sessions.
-- **RWA+** uses [Report Schema v11](/data-streams/reference/report-schema-v11) to extend coverage into pre-market, post-market, overnight, and weekend sessions with additional liquidity and trade context.
+- **RWA (v8)** uses [Report Schema v8](/data-streams/reference/report-schema-v8) — standard RWA format with consolidated mid price, market status, and freshness indicators. Used by the majority of RWA streams.
+- **RWA+ (v11)** uses [Report Schema v11](/data-streams/reference/report-schema-v11) — adds bid/ask prices, volume depth, last traded price, nanosecond-precision timestamps, and expanded market status values. Supports extended trading sessions where applicable.
 
 ### RWA (v8)
 
-[Chainlink RWA streams](/data-streams/rwa-streams?schema=v8) provide fresh, reliable, and accurate financial market data for real-world assets, enabling DeFi users to gain onchain exposure to physical assets. Each report includes a staleness measure (`lastUpdateTimestamp`), consensus median price (`midPrice`) and market status (`marketStatus`).
+[Report Schema v8](/data-streams/reference/report-schema-v8) provides real-world asset pricing with essential fields: consensus median price (`midPrice`), market status (`marketStatus`), and staleness measure (`lastUpdateTimestamp`).
 
-RWA assets trade on traditional exchanges during [market hours](/data-streams/market-hours). These market hours vary by asset class and can be subject to unexpected halts, pauses and other behaviors affecting traditional markets. For this reason, this class of Data Streams contains a market hours flag and a staleness measure to equip our users to handle these events correctly. It is critical that users implement correct safeguards on their end to pause markets, add more conservative risk caps, or do whatever else is appropriate for their application.
+RWA assets trade on traditional exchanges during [market hours](/data-streams/market-hours). These market hours vary by asset class and can be subject to unexpected halts, pauses and other behaviors affecting traditional markets. For this reason, this schema includes a market hours flag and a staleness measure to equip users to handle these events correctly. It is critical that users implement correct safeguards on their end to pause markets, add more conservative risk caps, or do whatever else is appropriate for their application.
 
 ### RWA+ (v11)
 
-[Chainlink RWA streams](/data-streams/rwa-streams?schema=v11) extend standard RWA coverage by tracking liquidity and trading activity across pre-market, post-market, overnight, and weekend sessions. Report Schema v11 adds liquidity-weighted `mid`, consensus `bid` and `ask`, resting book depth (`bidVolume`, `askVolume`), the most recent execution (`lastTradedPrice`), and nanosecond precision freshness (`lastSeenTimestampNs`) while retaining the `marketStatus` field. These additions enable protocols to adjust risk and settlement logic dynamically during non-regular trading hours.
+[Report Schema v11](/data-streams/reference/report-schema-v11) offers enhanced market data capabilities with additional fields: liquidity-weighted mid (`mid`), consensus bid and ask prices (`bid`, `ask`), resting book depth (`bidVolume`, `askVolume`), most recent execution (`lastTradedPrice`), nanosecond precision freshness (`lastSeenTimestampNs`), and expanded market status (`marketStatus`) that distinguishes between pre-market, regular hours, post-market, overnight, and weekend periods.
+
+These advanced fields enable protocols to implement more sophisticated risk management and settlement logic. Where applicable, streams using this schema can provide coverage across extended trading sessions including pre-market, post-market, and overnight hours — though extended hours availability varies by stream. See individual [RWA stream details](/data-streams/rwa-streams?schema=v11) for specific coverage and the [Report Schema v11 reference](/data-streams/reference/report-schema-v11) for complete field specifications.
 
 ## NAV Streams
 
