@@ -842,7 +842,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/exchange-rate-streams",
           children: [
             {
-              title: "Report Schema v7",
+              title: "Report Schema v7 (Exchange Rate)",
               url: "data-streams/reference/report-schema-v7",
             },
           ],
@@ -852,8 +852,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/rwa-streams",
           children: [
             {
-              title: "Report Schema v8",
+              title: "Report Schema v8 (RWA)",
               url: "data-streams/reference/report-schema-v8",
+            },
+            {
+              title: "Report Schema v11 (RWA+)",
+              url: "data-streams/reference/report-schema-v11",
             },
           ],
         },
@@ -862,7 +866,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/nav-streams",
           children: [
             {
-              title: "Report Schema v9",
+              title: "Report Schema v9 (NAV)",
               url: "data-streams/reference/report-schema-v9",
             },
           ],
@@ -872,18 +876,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/backed-streams",
           children: [
             {
-              title: "Report Schema v10",
+              title: "Report Schema v10 (Backed xStock)",
               url: "data-streams/reference/report-schema-v10",
-            },
-          ],
-        },
-        {
-          title: "24/5 US Equities Streams",
-          url: "data-streams/us-equities-streams",
-          children: [
-            {
-              title: "Report Schema v11",
-              url: "data-streams/reference/report-schema-v11",
             },
           ],
         },

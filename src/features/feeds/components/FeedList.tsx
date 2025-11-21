@@ -27,6 +27,95 @@ export type DataFeedType =
   | "streamsExRate"
   | "streamsBacked"
   | "streams245"
+
+type SchemaFilterValue = "all" | "v8" | "v11"
+type StreamsRwaFeedTypeValue = "all" | "datalink" | "equities" | "forex"
+
+type FilterOption<T extends string> = {
+  label: string
+  value: T
+}
+
+interface FilterDropdownProps<T extends string> {
+  label: string
+  options: FilterOption<T>[]
+  value: T
+  onSelect: (value: T) => void
+  isOpen: boolean
+  onToggle: (isOpen: boolean) => void
+  onClose: () => void
+  groupId: string
+}
+
+const schemaFilterOptions: FilterOption<SchemaFilterValue>[] = [
+  { label: "All", value: "all" },
+  { label: "Schema v8 (RWA)", value: "v8" },
+  { label: "Schema v11 (RWA+)", value: "v11" },
+]
+
+const feedTypeFilterOptions: FilterOption<StreamsRwaFeedTypeValue>[] = [
+  { label: "All", value: "all" },
+  { label: "Datalink Streams", value: "datalink" },
+  { label: "Equity Streams", value: "equities" },
+  { label: "Forex Streams", value: "forex" },
+]
+
+const isSchemaFilterValue = (value: unknown): value is SchemaFilterValue =>
+  value === "all" || value === "v8" || value === "v11"
+const isStreamsRwaFeedTypeValue = (value: unknown): value is StreamsRwaFeedTypeValue =>
+  value === "all" || value === "datalink" || value === "equities" || value === "forex"
+
+const FilterDropdown = <T extends string>({
+  label,
+  options,
+  value,
+  onSelect,
+  isOpen,
+  onToggle,
+  onClose,
+  groupId,
+}: FilterDropdownProps<T>) => {
+  const selectedOption = options.find((option) => option.value === value)
+  const isDefault = value === options[0]?.value
+  const summaryLabel = isDefault ? label : (selectedOption?.label ?? label)
+
+  return (
+    <details
+      class={feedList.filterDropdown_details}
+      data-hasvalue={isDefault ? "false" : "true"}
+      open={isOpen}
+      onToggle={(event) => onToggle(event.currentTarget.open)}
+    >
+      <summary class="text-200" title={summaryLabel}>
+        {summaryLabel}
+      </summary>
+      {isOpen && (
+        <nav>
+          <ul>
+            {options.map((option) => {
+              const isSelected = value === option.value
+              return (
+                <li key={option.value}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelect(option.value)
+                      onClose()
+                    }}
+                    style="user-select: none;"
+                  >
+                    <input type="radio" name={groupId} checked={isSelected} readOnly style="cursor:pointer;" />
+                    <span style="user-select: none;">{option.label}</span>
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        </nav>
+      )}
+    </details>
+  )
+}
 export const FeedList = ({
   initialNetwork,
   dataFeedType = "default",
@@ -179,12 +268,52 @@ export const FeedList = ({
 
   // Initialize all other states
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState<boolean>(false)
+  const [streamCategoryFilterParam, setStreamCategoryFilterParam] = useQueryString("feedType")
+  const streamCategoryFilter =
+    typeof streamCategoryFilterParam === "string" && isStreamsRwaFeedTypeValue(streamCategoryFilterParam)
+      ? streamCategoryFilterParam
+      : "all"
+  const setStreamCategoryFilter = (next: StreamsRwaFeedTypeValue) => {
+    setStreamCategoryFilterParam(next === "all" ? [] : next)
+  }
+  const [testnetStreamCategoryFilterParam, setTestnetStreamCategoryFilterParam] = useQueryString("testnetFeedType")
+  const testnetStreamCategoryFilter =
+    typeof testnetStreamCategoryFilterParam === "string" && isStreamsRwaFeedTypeValue(testnetStreamCategoryFilterParam)
+      ? testnetStreamCategoryFilterParam
+      : "all"
+  const setTestnetStreamCategoryFilter = (next: StreamsRwaFeedTypeValue) => {
+    setTestnetStreamCategoryFilterParam(next === "all" ? [] : next)
+  }
   const [showExtraDetails, setShowExtraDetails] = useState(false)
   const [showOnlyMVRFeeds, setShowOnlyMVRFeeds] = useState(false)
   const [showOnlyMVRFeedsTestnet, setShowOnlyMVRFeedsTestnet] = useState(false)
   const [showOnlySVR, setShowOnlySVR] = useState(false)
   const [showOnlyDEXFeeds, setShowOnlyDEXFeeds] = useState(false)
   const [showOnlyDEXFeedsTestnet, setShowOnlyDEXFeedsTestnet] = useState(false)
+  const [rwaSchemaFilterParam, setRwaSchemaFilterParam] = useQueryString("schema")
+  const rwaSchemaFilter =
+    typeof rwaSchemaFilterParam === "string" && isSchemaFilterValue(rwaSchemaFilterParam) ? rwaSchemaFilterParam : "all"
+  const setRwaSchemaFilter = (next: SchemaFilterValue) => {
+    setRwaSchemaFilterParam(next === "all" ? [] : next)
+  }
+  const [testnetRwaSchemaFilterParam, setTestnetRwaSchemaFilterParam] = useQueryString("testnetSchema")
+  const testnetRwaSchemaFilter =
+    typeof testnetRwaSchemaFilterParam === "string" && isSchemaFilterValue(testnetRwaSchemaFilterParam)
+      ? testnetRwaSchemaFilterParam
+      : "all"
+  const setTestnetRwaSchemaFilter = (next: SchemaFilterValue) => {
+    setTestnetRwaSchemaFilterParam(next === "all" ? [] : next)
+  }
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null)
+  const handleDropdownToggle = (dropdownId: string, isOpen: boolean) => {
+    setOpenDropdownId((current) => {
+      if (isOpen) {
+        return dropdownId
+      }
+      return current === dropdownId ? null : current
+    })
+  }
+  const closeAllDropdowns = () => setOpenDropdownId(null)
   const paginate = (pageNumber) => setCurrentPage(String(pageNumber))
   // Disable pagination for deprecating feeds by using a very high page size
   const addrPerPage = ecosystem === "deprecating" ? 10000 : 8
@@ -371,6 +500,7 @@ export const FeedList = ({
 
   // Network selection handler
   function handleNetworkSelect(chain: Chain) {
+    closeAllDropdowns()
     if (!isStreams) {
       const params = new URLSearchParams(window.location.search)
       params.set("network", chain.page)
@@ -388,6 +518,7 @@ export const FeedList = ({
 
   // Network type change handler for testnet/mainnet switching
   function handleNetworkTypeChange(networkType: "mainnet" | "testnet") {
+    closeAllDropdowns()
     // Update the selected network type
     setSelectedNetworkType(networkType)
 
@@ -650,28 +781,13 @@ export const FeedList = ({
                 id="search"
                 class={feedList.filterDropdown_searchInput}
                 placeholder="Search"
+                onFocus={closeAllDropdowns}
                 onInput={(event) => {
+                  closeAllDropdowns()
                   setSearchValue((event.target as HTMLInputElement).value)
                   setCurrentPage("1")
                 }}
               />
-              {searchValue && (
-                <button
-                  type="button"
-                  className={clsx(button.secondary, feedList.clearFilterBtn)}
-                  onClick={() => {
-                    setSearchValue("")
-                    setCurrentPage("1")
-                    const inputElement = document.getElementById("search") as HTMLInputElement
-                    if (inputElement) {
-                      inputElement.value = ""
-                    }
-                  }}
-                  aria-label="Clear search filter"
-                >
-                  Clear filter
-                </button>
-              )}
             </form>
             {dataFeedType === "streamsCrypto" && (
               <div className={feedList.checkboxContainer}>
@@ -681,6 +797,7 @@ export const FeedList = ({
                     style="width:15px;height:15px;display:inline;margin-right:8px;"
                     checked={showOnlyDEXFeeds}
                     onChange={() => {
+                      closeAllDropdowns()
                       setShowOnlyDEXFeeds((old) => !old)
                       setCurrentPage("1") // Reset to first page when filter changes
                     }}
@@ -689,8 +806,60 @@ export const FeedList = ({
                 </label>
               </div>
             )}
+            {dataFeedType === "streamsRwa" && (
+              <>
+                <FilterDropdown
+                  isOpen={openDropdownId === "main-schema"}
+                  onToggle={(isOpen) => handleDropdownToggle("main-schema", isOpen)}
+                  onClose={closeAllDropdowns}
+                  label="Filter schema"
+                  options={schemaFilterOptions}
+                  value={rwaSchemaFilter}
+                  groupId="schema-main"
+                  onSelect={(next) => {
+                    setRwaSchemaFilter(next)
+                    setCurrentPage("1")
+                  }}
+                />
+                <FilterDropdown
+                  isOpen={openDropdownId === "main-feed-type"}
+                  onToggle={(isOpen) => handleDropdownToggle("main-feed-type", isOpen)}
+                  onClose={closeAllDropdowns}
+                  label="Filter category"
+                  options={feedTypeFilterOptions}
+                  value={streamCategoryFilter}
+                  groupId="feed-type-main"
+                  onSelect={(next) => {
+                    setStreamCategoryFilter(next)
+                    setCurrentPage("1")
+                  }}
+                />
+                {(searchValue || rwaSchemaFilter !== "all" || streamCategoryFilter !== "all") && (
+                  <button
+                    type="button"
+                    className={clsx(button.secondary, feedList.clearFilterBtn)}
+                    onClick={() => {
+                      closeAllDropdowns()
+                      setSearchValue("")
+                      setRwaSchemaFilter("all")
+                      setStreamCategoryFilter("all")
+                      setCurrentPage("1")
+                      const inputElement = document.getElementById("search") as HTMLInputElement
+                      if (inputElement) {
+                        inputElement.value = ""
+                      }
+                    }}
+                    aria-label="Clear all filters"
+                  >
+                    Clear filter
+                  </button>
+                )}
+              </>
+            )}
           </div>
-          {mainnetFeeds.length ? (
+          {chainMetadata.loading || !chainMetadata.processedData ? (
+            <p style="font-style: italic;">Loading...</p>
+          ) : mainnetFeeds.length > 0 ? (
             mainnetFeeds.map((network) => (
               <MainnetTable
                 selectedFeedCategories={
@@ -705,6 +874,8 @@ export const FeedList = ({
                 showOnlySVR={showOnlySVR}
                 showOnlyMVRFeeds={showOnlyMVRFeeds}
                 showOnlyDEXFeeds={showOnlyDEXFeeds}
+                rwaSchemaFilter={rwaSchemaFilter}
+                streamCategoryFilter={streamCategoryFilter}
                 dataFeedType={dataFeedType}
                 ecosystem={ecosystem}
                 lastAddr={lastAddr}
@@ -731,28 +902,13 @@ export const FeedList = ({
                 id="testnetSearch"
                 class={feedList.filterDropdown_searchInput}
                 placeholder="Search"
+                onFocus={closeAllDropdowns}
                 onInput={(event) => {
+                  closeAllDropdowns()
                   setTestnetSearchValue((event.target as HTMLInputElement).value)
                   setTestnetCurrentPage("1")
                 }}
               />
-              {testnetSearchValue && (
-                <button
-                  type="button"
-                  className={clsx(button.secondary, feedList.clearFilterBtn)}
-                  onClick={() => {
-                    setTestnetSearchValue("")
-                    setTestnetCurrentPage("1")
-                    const inputElement = document.getElementById("testnetSearch") as HTMLInputElement
-                    if (inputElement) {
-                      inputElement.value = ""
-                    }
-                  }}
-                  aria-label="Clear search filter"
-                >
-                  Clear filter
-                </button>
-              )}
             </form>
             {dataFeedType === "streamsCrypto" && (
               <div className={feedList.checkboxContainer}>
@@ -770,8 +926,60 @@ export const FeedList = ({
                 </label>
               </div>
             )}
+            {dataFeedType === "streamsRwa" && (
+              <>
+                <FilterDropdown
+                  isOpen={openDropdownId === "test-schema"}
+                  onToggle={(isOpen) => handleDropdownToggle("test-schema", isOpen)}
+                  onClose={closeAllDropdowns}
+                  label="Filter schema"
+                  options={schemaFilterOptions}
+                  value={testnetRwaSchemaFilter}
+                  groupId="schema-testnet"
+                  onSelect={(next) => {
+                    setTestnetRwaSchemaFilter(next)
+                    setTestnetCurrentPage("1")
+                  }}
+                />
+                <FilterDropdown
+                  isOpen={openDropdownId === "test-feed-type"}
+                  onToggle={(isOpen) => handleDropdownToggle("test-feed-type", isOpen)}
+                  onClose={closeAllDropdowns}
+                  label="Filter category"
+                  options={feedTypeFilterOptions}
+                  value={testnetStreamCategoryFilter}
+                  groupId="feed-type-testnet"
+                  onSelect={(next) => {
+                    setTestnetStreamCategoryFilter(next)
+                    setTestnetCurrentPage("1")
+                  }}
+                />
+                {(testnetSearchValue || testnetRwaSchemaFilter !== "all" || testnetStreamCategoryFilter !== "all") && (
+                  <button
+                    type="button"
+                    className={clsx(button.secondary, feedList.clearFilterBtn)}
+                    onClick={() => {
+                      closeAllDropdowns()
+                      setTestnetSearchValue("")
+                      setTestnetRwaSchemaFilter("all")
+                      setTestnetStreamCategoryFilter("all")
+                      setTestnetCurrentPage("1")
+                      const inputElement = document.getElementById("testnetSearch") as HTMLInputElement
+                      if (inputElement) {
+                        inputElement.value = ""
+                      }
+                    }}
+                    aria-label="Clear all filters"
+                  >
+                    Clear filter
+                  </button>
+                )}
+              </>
+            )}
           </div>
-          {testnetFeeds.length ? (
+          {chainMetadata.loading || !chainMetadata.processedData ? (
+            <p style="font-style: italic;">Loading...</p>
+          ) : testnetFeeds.length > 0 ? (
             testnetFeeds.map((network) => (
               <TestnetTable
                 key={network.name}
@@ -787,6 +995,8 @@ export const FeedList = ({
                 }
                 showOnlyMVRFeeds={showOnlyMVRFeedsTestnet}
                 showOnlyDEXFeeds={showOnlyDEXFeedsTestnet}
+                rwaSchemaFilter={testnetRwaSchemaFilter}
+                streamCategoryFilter={testnetStreamCategoryFilter}
                 firstAddr={testnetFirstAddr}
                 lastAddr={testnetLastAddr}
                 addrPerPage={testnetAddrPerPage}
@@ -1037,7 +1247,9 @@ export const FeedList = ({
                               id="search"
                               class={feedList.filterDropdown_searchInput}
                               placeholder="Search"
+                              onFocus={closeAllDropdowns}
                               onInput={(event) => {
+                                closeAllDropdowns()
                                 setSearchValue((event.target as HTMLInputElement).value)
                                 setCurrentPage("1")
                               }}
@@ -1047,6 +1259,7 @@ export const FeedList = ({
                                 type="button"
                                 className={clsx(button.secondary, feedList.clearFilterBtn)}
                                 onClick={() => {
+                                  closeAllDropdowns()
                                   setSearchValue("")
                                   setCurrentPage("1")
                                   const inputElement = document.getElementById("search") as HTMLInputElement
