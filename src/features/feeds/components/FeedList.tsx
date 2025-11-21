@@ -48,8 +48,8 @@ interface FilterDropdownProps<T extends string> {
 
 const schemaFilterOptions: FilterOption<SchemaFilterValue>[] = [
   { label: "All", value: "all" },
-  { label: "Schema v8 (RWA)", value: "v8" },
-  { label: "Schema v11 (RWA+)", value: "v11" },
+  { label: "RWA Standard (v8)", value: "v8" },
+  { label: "RWA Advanced (v11)", value: "v11" },
 ]
 
 const feedTypeFilterOptions: FilterOption<StreamsRwaFeedTypeValue>[] = [
@@ -693,7 +693,7 @@ export const FeedList = ({
         : dataFeedType === "streamsExRate"
           ? "Mainnet Exchange Rate Streams"
           : dataFeedType === "streamsBacked"
-            ? "Mainnet Backed xStock Streams"
+            ? "Mainnet Tokenized Asset Streams"
             : "Mainnet RWA Streams"
   const streamsTestnetSectionTitle =
     dataFeedType === "streamsCrypto"
@@ -703,7 +703,7 @@ export const FeedList = ({
         : dataFeedType === "streamsExRate"
           ? "Testnet Exchange Rate Streams"
           : dataFeedType === "streamsBacked"
-            ? "Testnet Backed xStock Streams"
+            ? "Testnet Tokenized Asset Streams"
             : "Testnet RWA Streams"
 
   // Initialize search input fields with URL parameter values

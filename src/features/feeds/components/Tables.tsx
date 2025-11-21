@@ -1013,7 +1013,7 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v7" rel="noreferrer" target="_blank">
-                  Report Schema v7 (Exchange Rate)
+                  Report Schema v7 (Redemption Rates)
                 </a>
               </dd>
             </div>
@@ -1037,7 +1037,7 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v10" rel="noreferrer" target="_blank">
-                  Report Schema v10 (Backed xStock)
+                  Report Schema v10 (Tokenized Assets)
                 </a>
               </dd>
             </div>
@@ -1049,7 +1049,7 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v11" rel="noreferrer" target="_blank">
-                  Report Schema v11 (RWA+)
+                  RWA Advanced (v11)
                 </a>
               </dd>
             </div>
