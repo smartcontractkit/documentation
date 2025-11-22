@@ -414,10 +414,15 @@ export const StreamsNetworksData: NetworkData[] = [
   {
     network: "Monad",
     logoUrl: "/assets/chains/monad.svg",
+    mainnet: {
+      label: "Monad Mainnet",
+      verifierProxy: "0xEd813D895457907399E41D36Ec0bE103E32148c8",
+      explorerUrl: "https://monadvision.com/address/%s",
+    },
     testnet: {
       label: "Monad Testnet",
       verifierProxy: "0xC539169910DE08D237Df0d73BcDa9074c787A4a1",
-      explorerUrl: "https://testnet.monadexplorer.com/address/%s",
+      explorerUrl: "https://testnet.monadvision.com/address/%s",
     },
   },
   {
