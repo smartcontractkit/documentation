@@ -35,6 +35,86 @@ Note: This contract is designed as a customer-facing interface and stores substa
 
 </Aside>
 
+## Events
+
+### AdministratorTransferred
+
+```solidity
+event AdministratorTransferred(address indexed token, address indexed newAdmin);
+```
+
+<Aside>Emitted when an administrator role transfer is completed via [`acceptAdminRole`](#acceptadminrole).</Aside>
+
+**Parameters**
+
+| Name       | Type      | Indexed | Description                           |
+| ---------- | --------- | ------- | ------------------------------------- |
+| `token`    | `address` | Yes     | The token whose administrator changed |
+| `newAdmin` | `address` | Yes     | The address of the new administrator  |
+
+### AdministratorTransferRequested
+
+```solidity
+event AdministratorTransferRequested(address indexed token, address indexed currentAdmin, address indexed newAdmin);
+```
+
+<Aside>
+  Emitted when an administrator transfer is initiated via [`proposeAdministrator`](#proposeadministrator) or
+  [`transferAdminRole`](#transferadminrole).
+</Aside>
+
+**Parameters**
+
+| Name           | Type      | Indexed | Description                       |
+| -------------- | --------- | ------- | --------------------------------- |
+| `token`        | `address` | Yes     | The token for the transfer        |
+| `currentAdmin` | `address` | Yes     | The current administrator address |
+| `newAdmin`     | `address` | Yes     | The proposed new administrator    |
+
+### PoolSet
+
+```solidity
+event PoolSet(address indexed token, address indexed previousPool, address indexed newPool);
+```
+
+<Aside>Emitted when a token pool address is updated via [`setPool`](#setpool).</Aside>
+
+**Parameters**
+
+| Name           | Type      | Indexed | Description                  |
+| -------------- | --------- | ------- | ---------------------------- |
+| `token`        | `address` | Yes     | The token whose pool changed |
+| `previousPool` | `address` | Yes     | The previous pool address    |
+| `newPool`      | `address` | Yes     | The new pool address         |
+
+### RegistryModuleAdded
+
+```solidity
+event RegistryModuleAdded(address module);
+```
+
+<Aside>Emitted when a registry module is added via [`addRegistryModule`](#addregistrymodule).</Aside>
+
+**Parameters**
+
+| Name     | Type      | Indexed | Description               |
+| -------- | --------- | ------- | ------------------------- |
+| `module` | `address` | No      | The address of the module |
+
+### RegistryModuleRemoved
+
+```solidity
+event RegistryModuleRemoved(address indexed module);
+```
+
+<Aside>Emitted when a registry module is removed via [`removeRegistryModule`](#removeregistrymodule).</Aside>
+
+**Parameters**
+
+| Name     | Type      | Indexed | Description               |
+| -------- | --------- | ------- | ------------------------- |
+| `module` | `address` | Yes     | The address of the module |
+
 ## Functions
 
 ### acceptAdminRole
@@ -582,7 +662,7 @@ EnumerableSet.AddressSet internal s_tokens;
 ### typeAndVersion
 
 ```solidity
-string public constant override typeAndVersion = "TokenAdminRegistry 1.6.1";
+string public constant override typeAndVersion = "TokenAdminRegistry 1.5.0";
 ```
 
 <Aside>Contract identifier that specifies the implementation version.</Aside>

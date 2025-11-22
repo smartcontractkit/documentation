@@ -124,15 +124,17 @@ event ChainRemoved(uint64 remoteChainSelector);
 Emitted when tokens are locked or burned by the pool as part of an outbound cross-chain transfer.
 
 ```solidity
-event LockedOrBurned(address indexed sender, uint256 amount);
+event LockedOrBurned(uint64 indexed remoteChainSelector, address token, address sender, uint256 amount);
 ```
 
 **Parameters**
 
-| Name     | Type      | Indexed | Description                                    |
-| -------- | --------- | ------- | ---------------------------------------------- |
-| `sender` | `address` | Yes     | The address initiating the lock/burn operation |
-| `amount` | `uint256` | No      | The amount of tokens locked or burned          |
+| Name                  | Type      | Indexed | Description                                     |
+| --------------------- | --------- | ------- | ----------------------------------------------- |
+| `remoteChainSelector` | `uint64`  | Yes     | The destination chain selector                  |
+| `token`               | `address` | No      | The address of the token being locked or burned |
+| `sender`              | `address` | No      | The address initiating the lock/burn operation  |
+| `amount`              | `uint256` | No      | The amount of tokens locked or burned           |
 
 ### RemotePoolAdded
 
@@ -154,16 +156,18 @@ event RemotePoolAdded(uint64 indexed remoteChainSelector, bytes remotePoolAddres
 Emitted when tokens are released or minted by the pool as part of an inbound cross-chain transfer.
 
 ```solidity
-event ReleasedOrMinted(address indexed sender, address indexed recipient, uint256 amount);
+event ReleasedOrMinted(uint64 indexed remoteChainSelector, address token, address sender, address recipient, uint256 amount);
 ```
 
 **Parameters**
 
-| Name        | Type      | Indexed | Description                                         |
-| ----------- | --------- | ------- | --------------------------------------------------- |
-| `sender`    | `address` | Yes     | The address initiating the release/mint operation   |
-| `recipient` | `address` | Yes     | The address receiving the released or minted tokens |
-| `amount`    | `uint256` | No      | The amount of tokens released or minted             |
+| Name                  | Type      | Indexed | Description                                         |
+| --------------------- | --------- | ------- | --------------------------------------------------- |
+| `remoteChainSelector` | `uint64`  | Yes     | The source chain selector                           |
+| `token`               | `address` | No      | The address of the token being released or minted   |
+| `sender`              | `address` | No      | The address initiating the release/mint operation   |
+| `recipient`           | `address` | No      | The address receiving the released or minted tokens |
+| `amount`              | `uint256` | No      | The amount of tokens released or minted             |
 
 ### RemotePoolRemoved
 
@@ -223,7 +227,7 @@ event OutboundRateLimitConsumed(uint64 indexed remoteChainSelector, address toke
 | --------------------- | --------- | ------- | --------------------------------------------- |
 | `remoteChainSelector` | `uint64`  | Yes     | The destination chain selector                |
 | `token`               | `address` | No      | The address of the token being sent           |
-| `amount`              | `uint64`  | No      | The amount of tokens consuming the rate limit |
+| `amount`              | `uint256` | No      | The amount of tokens consuming the rate limit |
 
 ### InboundRateLimitConsumed
 

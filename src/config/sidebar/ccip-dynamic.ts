@@ -607,20 +607,20 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
         url: "ccip/api-reference/evm",
         chainTypes: ["evm"],
         children: [
+          // {
+          //   title: "v1.6.3 (Latest)",
+          //   url: "ccip/api-reference/evm/v1.6.3",
+          //   isCollapsible: true,
+          //   children: evmCcipV163Contents,
+          // },
+          // {
+          //   title: "v1.6.2",
+          //   url: "ccip/api-reference/evm/v1.6.2",
+          //   isCollapsible: true,
+          //   children: evmCcipV162Contents,
+          // },
           {
-            title: "v1.6.3 (Latest)",
-            url: "ccip/api-reference/evm/v1.6.3",
-            isCollapsible: true,
-            children: evmCcipV163Contents,
-          },
-          {
-            title: "v1.6.2",
-            url: "ccip/api-reference/evm/v1.6.2",
-            isCollapsible: true,
-            children: evmCcipV162Contents,
-          },
-          {
-            title: "v1.6.1",
+            title: "v1.6.1 (Latest)",
             url: "ccip/api-reference/evm/v1.6.1",
             isCollapsible: true,
             chainTypes: ["evm"],
