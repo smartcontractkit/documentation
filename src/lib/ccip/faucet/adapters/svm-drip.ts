@@ -2,9 +2,9 @@ import { randomUUID } from "node:crypto"
 import { createSolanaLogger } from "@lib/logging/index.js"
 import type { Logger } from "@lib/logging/index.js"
 import { ensureSolAddress } from "@lib/solana/index.js"
-import { ChainConfigurationService } from "@api/ccip/services/chain-config.ts"
-import { DripOrchestrator, type DripParams, type DripResult } from "@api/ccip/services/faucet/drip-orchestrator.ts"
-import type { FaucetChainConfig } from "@api/ccip/types/faucet.ts"
+import { ChainConfigurationService } from "~/lib/ccip/services-api/chain-config.ts"
+import { DripOrchestrator, type DripParams, type DripResult } from "~/lib/ccip/services-api/faucet/drip-orchestrator.ts"
+import type { FaucetChainConfig } from "~/lib/ccip/types/faucet.ts"
 
 export const prerender = false
 

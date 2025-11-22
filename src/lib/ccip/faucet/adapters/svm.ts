@@ -1,4 +1,4 @@
-import { FamilyAdapter, VerifySignatureArgs, FaucetChainConfig } from "@api/ccip/types/faucet.ts"
+import { FamilyAdapter, VerifySignatureArgs, FaucetChainConfig } from "~/lib/ccip/types/faucet.ts"
 import { ensureSolAddress } from "@lib/solana/core/address/validator.ts"
 import { SolanaSignatureService } from "@lib/solana/domain/services/signature-verification.ts"
 import { logger } from "@lib/logging/index.js"

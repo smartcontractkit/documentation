@@ -4,7 +4,7 @@
  * to appropriate HTTP status codes following RESTful principles
  */
 
-import { APIErrorType, createErrorResponse } from "@api/ccip/utils.ts"
+import { APIErrorType, createErrorResponse } from "~/lib/ccip/utils.ts"
 import { FaucetStateService } from "@lib/solana/domain/services/faucet-state.ts"
 import { address } from "@lib/solana/index.js"
 import { logger } from "@lib/logging/index.js"

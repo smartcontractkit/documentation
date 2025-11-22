@@ -1,38 +1,14 @@
 ---
 import * as CONFIG from "../../config"
-import { SUPPORTED_LLM_SECTIONS, LLM_SECTIONS_CONFIG } from "../../config/llms"
-import { LlmsLink } from "./LlmsLink"
+import { CopyPageLink } from "./CopyPageLink"
 
-const { editHref, frontmatter } = Astro.props
-const pathname = Astro.url.pathname
-const section = pathname.split("/").filter(Boolean)[0]
-
-// Determine language from frontmatter or filename
-const sdkLang = frontmatter?.sdkLang
-const filename = pathname.split("/").pop() || ""
-const filenameLang = filename.match(/-(go|ts)(?:\/|$)/) ? filename.match(/-(go|ts)(?:\/|$)/)?.[1] : null
-const currentPageLang = sdkLang || filenameLang
+const { editHref } = Astro.props
 
 const showMoreSection = CONFIG.COMMUNITY_INVITE_URL || editHref
-
-// Check if section supports LLMs
-const llmsExists = (SUPPORTED_LLM_SECTIONS as readonly string[]).includes(section)
-const cfg = LLM_SECTIONS_CONFIG[section as keyof typeof LLM_SECTIONS_CONFIG]
-const supportedLanguages = cfg?.languages || []
 ---
 
 {showMoreSection && <h2 class="heading">More</h2>}
 <ul>
-  {
-    llmsExists && (
-      <LlmsLink
-        client:load
-        section={section}
-        supportedLanguages={supportedLanguages}
-        currentPageLanguage={currentPageLang}
-      />
-    )
-  }
   {
     editHref && (
       <li class="header-link">
@@ -64,6 +40,9 @@ const supportedLanguages = cfg?.languages || []
       </li>
     )
   }
+  <li class="header-link">
+    <CopyPageLink client:load />
+  </li>
   <li class="header-link">
     <a href="/builders-quick-links" target="_blank" id="quick-links-sidebar-link">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">

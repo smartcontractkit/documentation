@@ -14,11 +14,11 @@ import {
   APIErrorType,
   createErrorResponse,
   CCIPError,
-} from "../utils.ts"
+} from "~/lib/ccip/utils.ts"
 import { logger } from "@lib/logging/index.js"
 
-import type { ChainDetails, ChainApiResponse } from "../types/index.ts"
-import { ChainDataService } from "../../services/chain-data.ts"
+import type { ChainDetails, ChainApiResponse } from "~/lib/ccip/types/index.ts"
+import { ChainDataService } from "~/lib/ccip/services/chain-data.ts"
 
 export const prerender = false
 

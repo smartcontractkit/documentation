@@ -1,0 +1,219 @@
+/**
+ * Styles for CopyPageLink component
+ * Matches MoreMenu styling pattern
+ */
+
+.container {
+  position: relative;
+  width: 100%;
+}
+
+.trigger {
+  /* Match MoreMenu header-link styling */
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2x);
+  padding: 0.15em 0;
+  font-size: 14px;
+  color: var(--blue-600, #375bd2);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.trigger:hover {
+  color: var(--theme-accent, var(--blue-700));
+}
+
+.trigger:focus-visible {
+  outline: 2px solid var(--blue-600);
+  outline-offset: 2px;
+  border-radius: var(--border-radius-primary, 4px);
+}
+
+.trigger svg {
+  flex-shrink: 0;
+}
+
+.trigger span {
+  flex: 1;
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + var(--space-1x));
+  left: 0;
+  min-width: 200px;
+  background: var(--color-background-primary, #ffffff);
+  border: 1px solid var(--theme-divider, var(--gray-200));
+  border-radius: var(--border-radius-primary, 8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: var(--space-1x);
+  z-index: 1000;
+  animation: dropdownSlide 0.15s ease-out;
+}
+
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2x);
+  width: 100%;
+  padding: var(--space-2x) var(--space-3x);
+  background: none;
+  border: none;
+  border-radius: var(--border-radius-primary, 4px);
+  font-size: 14px;
+  color: var(--gray-900, #111827);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.dropdownItem:hover {
+  background-color: var(--theme-bg-hover, var(--gray-100));
+  color: var(--blue-700);
+}
+
+.dropdownItem:focus-visible {
+  outline: 2px solid var(--blue-600);
+  outline-offset: -2px;
+}
+
+.dropdownItem:active {
+  background-color: var(--gray-200);
+}
+
+.dropdownItem svg {
+  flex-shrink: 0;
+  opacity: 1;
+}
+
+.dropdownItem:hover svg {
+  opacity: 1;
+  color: var(--blue-700);
+}
+
+/* Separator between action groups */
+.dropdownSeparator {
+  height: 1px;
+  background-color: var(--gray-300, #d1d5db);
+  margin: var(--space-2x) 0;
+  border: none;
+}
+
+/* Primary action styling */
+.dropdownItemPrimary {
+  font-weight: 600;
+  color: #000000;
+}
+
+.dropdownItemPrimary svg {
+  opacity: 1;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .dropdown {
+    left: auto;
+    right: 0;
+    min-width: 180px;
+  }
+
+  .dropdownItem {
+    padding: var(--space-3x);
+    font-size: 15px;
+    /* Larger tap targets on mobile */
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 768px) and (max-width: 992px) {
+  .dropdown {
+    min-width: 220px;
+  }
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+  .trigger {
+    color: var(--blue-400, #5b8dff);
+  }
+
+  .trigger:hover {
+    color: var(--blue-300, #7aa3ff);
+  }
+
+  .dropdown {
+    background: var(--color-background-primary, #1a1a1a);
+    border-color: var(--gray-700);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .dropdownItem {
+    color: var(--gray-300);
+  }
+
+  .dropdownItem:hover {
+    background-color: var(--gray-800);
+    color: var(--gray-100);
+  }
+
+  .dropdownItem:active {
+    background-color: var(--gray-700);
+  }
+
+  .dropdownSeparator {
+    background-color: var(--gray-700);
+  }
+
+  .dropdownItemPrimary {
+    color: var(--gray-100);
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .trigger {
+    outline: 1px solid currentColor;
+    padding: 0.25em 0.5em;
+  }
+
+  .dropdown {
+    border-width: 2px;
+  }
+
+  .dropdownItem {
+    border: 1px solid transparent;
+  }
+
+  .dropdownItem:hover {
+    border-color: currentColor;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .dropdown {
+    animation: none;
+  }
+
+  .trigger,
+  .dropdownItem {
+    transition: none;
+  }
+}
