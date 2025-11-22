@@ -121,13 +121,7 @@ Please ask me to paste it now. After I paste, please:
 
           const chatgptUrl = `https://chatgpt.com/?prompt=${encodeURIComponent(instructionPrompt)}`
 
-          if (
-            confirm(
-              "✓ Page content copied to clipboard!\n\nChatGPT will open and ask you to paste it. Just press Ctrl+V (or Cmd+V on Mac).\n\nContinue?"
-            )
-          ) {
-            window.open(chatgptUrl, "_blank", "noopener,noreferrer")
-          }
+          window.open(chatgptUrl, "_blank", "noopener,noreferrer")
           break
         }
 
@@ -149,13 +143,7 @@ Please ask me to paste it now. After I paste, please:
 
           const claudeUrl = `https://claude.ai/new?q=${encodeURIComponent(instructionPrompt)}`
 
-          if (
-            confirm(
-              "✓ Page content copied to clipboard!\n\nClaude will open and ask you to paste it. Just press Ctrl+V (or Cmd+V on Mac).\n\nContinue?"
-            )
-          ) {
-            window.open(claudeUrl, "_blank", "noopener,noreferrer")
-          }
+          window.open(claudeUrl, "_blank", "noopener,noreferrer")
           break
         }
       }
