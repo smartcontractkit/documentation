@@ -10,7 +10,7 @@ import {
 } from "@config/index.ts"
 import { CCIP_TOKEN_ICON_MAPPINGS } from "@config/data/ccip/tokenIconMappings.ts"
 import { toQuantity } from "ethers"
-import referenceChains from "src/scripts/reference/chains.json" with { type: "json" }
+import referenceChains from "~/scripts/reference/chains.json" with { type: "json" }
 
 interface AddEthereumChainParameter {
   chainId: string
