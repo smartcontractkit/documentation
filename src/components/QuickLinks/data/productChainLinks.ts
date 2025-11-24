@@ -58,7 +58,7 @@ export const productChainLinks: ProductChainLinks = {
       hashkey: "/ccip/directory/mainnet/chain/ethereum-mainnet-hashkey-1",
       botanix: "/ccip/directory/mainnet/chain/bitcoin-mainnet-botanix",
       sei: "/ccip/directory/mainnet/chain/sei-mainnet",
-      monad: "/ccip/directory/testnet/chain/monad-testnet",
+      monad: "/ccip/directory/mainnet/chain/monad-mainnet",
       treasure: "/ccip/directory/mainnet/chain/treasure-mainnet",
       merlin: "/ccip/directory/mainnet/chain/bitcoin-merlin-mainnet",
       fraxtal: "/ccip/directory/mainnet/chain/fraxtal-mainnet",
@@ -97,6 +97,7 @@ export const productChainLinks: ProductChainLinks = {
       bittensor: "/ccip/directory/mainnet/chain/bittensor-mainnet",
       everclear: "/ccip/directory/mainnet/chain/everclear-mainnet",
       abchain: "/ccip/directory/mainnet/chain/ab-mainnet",
+      nexon: "/ccip/directory/mainnet/chain/nexon-mainnet-henesys",
     },
   },
   CRE: {

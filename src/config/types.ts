@@ -241,7 +241,7 @@ export type SupportedChain =
   | "AB_CHAIN_MAINNET"
   | "MONAD_MAINNET"
   | "NEXON_HENESYS_MAINNET"
-  | "PHAROS_ATLANTIC_TESTNET"
+  | "PHAROS_TESTNET"
 export type ExplorerInfo = {
   baseUrl: string
   queryParameters?: {
