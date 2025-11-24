@@ -103,4 +103,4 @@ Both approaches work! Use imported images for better optimization, or use path s
 ## Resource types
 
 - **article**: Displays "Read the full article" footer with an arrow icon
-- **video**: No special footer (just the card with title and description)
+- **video**: No special footer (just the card with title and description). For video resources, the `image` prop can be a YouTube video thumbnail URL, and the `link` prop can be the YouTube video URL
