@@ -7,7 +7,7 @@ metadata:
   image: "/images/ccip/basic-architecture.png"
   excerpt: "rate limiter, Hardhat, ERC-20, ERC20, token pool, outbound, inbound, configuration"
   datePublished: "2024-10-29"
-  lastModified: "2025-05-19"
+  lastModified: "2025-10-22"
   estimatedTime: "20 minutes"
   difficulty: "intermediate"
 ---
@@ -38,15 +38,16 @@ This tutorial will guide you through the process of updating the rate limiter se
   - [Register from an EOA (Burn & Mint)](/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-hardhat)
   - [Register from an EOA (Lock & Mint)](/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-lock-mint-hardhat)
 
-- **Admin access**: Ensure you have the necessary privileges to call the [setChainRateLimiterConfig](/ccip/api-reference/evm/v1.6.0/token-pool#setchainratelimiterconfig) function for your token pools.
+- **Admin access**: Ensure you have the necessary privileges to call the [setChainRateLimiterConfig](/ccip/api-reference/evm/v1.6.2/token-pool#setchainratelimiterconfig) function for your token pools.
 
 ## Before You Begin
 
-1.  Make sure you have Node.js v18 or above installed. If not, **install Node.js v18**:  
-    [Download Node.js 18](https://nodejs.org/en/download/) if you don't have it installed. Optionally, you can use the [nvm package](https://www.npmjs.com/package/nvm) to switch between Node.js versions:
+1.  Make sure you have Node.js v22.10.0 or above installed. If not, **install Node.js v22.10.0**:
+
+    [Download Node.js v22.10.0](https://nodejs.org/en/download/) if you don't have it installed. Optionally, you can use the [nvm package](https://www.npmjs.com/package/nvm) to switch between Node.js versions:
 
     ```bash
-    nvm use 18
+    nvm use 22
     ```
 
     Verify that the correct version of Node.js is installed:
@@ -59,8 +60,14 @@ This tutorial will guide you through the process of updating the rate limiter se
 
     ```bash
     $ node -v
-    v18.7.0
+    v22.15.0
     ```
+
+    <Aside type="caution" title="Why Node.js v22?">
+      Since the [migration](https://hardhat.org/migrate-from-hardhat2) to Hardhat 3.x, Node.js v22.10.0 or above is
+      [required for compatibility](https://hardhat.org/migrate-from-hardhat2#before-starting-the-migration). Using an
+      older version may lead to unexpected issues during development.
+    </Aside>
 
 1.  **Clone the repository and navigate to the project directory:**
 
@@ -89,7 +96,7 @@ This tutorial will guide you through the process of updating the rate limiter se
        npx env-enc set-pw
        ```
 
-    1. Set up a `.env.enc` file with the necessary variables for Avalanche Fuji and Arbitrum Sepolia testnets. Use the following command to add the variables:
+    1. Set up a `.env.enc` file with the necessary variables for Avalanche Fuji and Ethereum Sepolia testnets. Use the following command to add the variables:
 
        ```bash
        npx env-enc set
@@ -98,7 +105,7 @@ This tutorial will guide you through the process of updating the rate limiter se
        Variables to configure:
        - <CopyText text="AVALANCHE_FUJI_RPC_URL" code />: A URL for the _Avalanche Fuji_ testnet. You can get a personal
          endpoint from services like [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/).
-       - <CopyText text="ARBITRUM_SEPOLIA_RPC_URL" code />: A URL for the _Arbitrum Sepolia_ testnet. You can get a
+       - <CopyText text="ETHEREUM_SEPOLIA_RPC_URL" code />: A URL for the _Ethereum Sepolia_ testnet. You can get a
          personal endpoint from services like [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/).
        - <CopyText text="PRIVATE_KEY" code />: The private key for your testnet wallet. If you use MetaMask, you can
          follow this
@@ -107,6 +114,12 @@ This tutorial will guide you through the process of updating the rate limiter se
 
 1.  **Fund your EOA with native gas tokens**:  
     Make sure your EOA has enough native gas tokens on Avalanche Fuji to cover transaction fees. You can use the [Chainlink faucets](https://faucets.chain.link/) to get testnet tokens.
+
+<Aside type="note" title="Using Different Networks">
+  This tutorial uses Avalanche Fuji and Ethereum Sepolia by default. To test with other CCIP-supported networks, see
+  [Add CCIP Networks for Cross-Chain Token
+  Tutorials](/ccip/tutorials/evm/cross-chain-tokens/configure-additional-networks-hardhat).
+</Aside>
 
 ## Tutorial
 
@@ -131,71 +144,83 @@ Below is an explanation of the parameters used:
 | Parameter     | Description                                                                              | Default | Required |
 | ------------- | ---------------------------------------------------------------------------------------- | ------- | -------- |
 | `pooladdress` | The address of the token pool to query.                                                  | N/A     | Yes      |
-| `remotechain` | The remote blockchain to check rate limits for (e.g., `arbitrumSepolia` for Fuji pool).  | N/A     | Yes      |
-| `network`     | The blockchain on which to execute the query (e.g., `avalancheFuji`, `arbitrumSepolia`). | N/A     | Yes      |
+| `remotechain` | The remote blockchain to check rate limits for (e.g., `ethereumSepolia` for Fuji pool).  | N/A     | Yes      |
+| `network`     | The blockchain on which to execute the query (e.g., `avalancheFuji`, `ethereumSepolia`). | N/A     | Yes      |
 
 1. **Get rate limiter settings for the token pool on Avalanche Fuji**:
 
    ```bash
    npx hardhat getCurrentRateLimits \
-     --pooladdress 0xcC8bb3E03c59603522732B17487D2Cd5a5a3e047 \
-     --remotechain arbitrumSepolia \
+     --pooladdress 0x5e8b0e5EAC57d73E7b93d85b8eA3fcaDa282868A \
+     --remotechain ethereumSepolia \
      --network avalancheFuji
    ```
 
    Example output:
 
    ```bash
-   2025-05-15T09:03:41.140Z info:
-   Rate Limiter States for Chain: arbitrumSepolia
-   2025-05-15T09:03:41.142Z info: Pool Address: 0xcC8bb3E03c59603522732B17487D2Cd5a5a3e047
-   2025-05-15T09:03:41.142Z info: Chain Selector: 3478487238524512106
-   2025-05-15T09:03:41.142Z info:
-   Outbound Rate Limiter:
-   2025-05-15T09:03:41.142Z info:   Enabled: false
-   2025-05-15T09:03:41.143Z info:   Capacity: 0
-   2025-05-15T09:03:41.143Z info:   Rate: 0
-   2025-05-15T09:03:41.143Z info:   Tokens: 0
-   2025-05-15T09:03:41.143Z info:   Last Updated: 1747299820
-   2025-05-15T09:03:41.144Z info:
-   Inbound Rate Limiter:
-   2025-05-15T09:03:41.144Z info:   Enabled: false
-   2025-05-15T09:03:41.144Z info:   Capacity: 0
-   2025-05-15T09:03:41.144Z info:   Rate: 0
-   2025-05-15T09:03:41.144Z info:   Tokens: 0
-   2025-05-15T09:03:41.144Z info:   Last Updated: 1747299820
+   ✅ Tasks loaded from /tasks/index.ts
+   2025-10-22T01:18:02.669Z info: 📊 Fetching rate limiter states for pool 0x5e8b0e5EAC57d73E7b93d85b8eA3fcaDa282868A on avalancheFuji...
+   2025-10-22T01:18:02.670Z info:    Remote chain: ethereumSepolia
+   2025-10-22T01:18:02.670Z info:    Remote chain selector: 16015286601757825753
+   2025-10-22T01:18:04.702Z info:
+   === Rate Limiter States for ethereumSepolia ===
+   2025-10-22T01:18:04.702Z info: Pool Address: 0x5e8b0e5EAC57d73E7b93d85b8eA3fcaDa282868A
+   2025-10-22T01:18:04.702Z info: Chain Selector: 16015286601757825753
+   2025-10-22T01:18:04.702Z info:
+   📤 Outbound Rate Limiter:
+   2025-10-22T01:18:04.702Z info:   Enabled:       false
+   2025-10-22T01:18:04.702Z info:   Capacity:      0
+   2025-10-22T01:18:04.702Z info:   Rate:          0
+   2025-10-22T01:18:04.702Z info:   Tokens:        0
+   2025-10-22T01:18:04.702Z info:   Last Updated:  1761095882
+   2025-10-22T01:18:04.702Z info:
+   📥 Inbound Rate Limiter:
+   2025-10-22T01:18:04.702Z info:   Enabled:       false
+   2025-10-22T01:18:04.702Z info:   Capacity:      0
+   2025-10-22T01:18:04.703Z info:   Rate:          0
+   2025-10-22T01:18:04.703Z info:   Tokens:        0
+   2025-10-22T01:18:04.703Z info:   Last Updated:  1761095882
+   2025-10-22T01:18:04.703Z info:
+   ✅ Rate limiters fetched successfully
    ```
 
-1. **Get rate limiter settings for the token pool on Arbitrum Sepolia**:
+1. **Get rate limiter settings for the token pool on Ethereum Sepolia**:
 
    ```bash
    npx hardhat getCurrentRateLimits \
-     --pooladdress 0x74F0842a9A55575e8e36692c356292a812640F67 \
+     --pooladdress 0xA29878301cA30a4639C33cD7EC8061E4265E1a5D \
      --remotechain avalancheFuji \
-     --network arbitrumSepolia
+     --network ethereumSepolia
    ```
 
    Example output:
 
    ```bash
-   2025-05-15T09:07:22.079Z info:
-   Rate Limiter States for Chain: avalancheFuji
-   2025-05-15T09:07:22.080Z info: Pool Address: 0x74F0842a9A55575e8e36692c356292a812640F67
-   2025-05-15T09:07:22.080Z info: Chain Selector: 14767482510784806043
-   2025-05-15T09:07:22.080Z info:
-   Outbound Rate Limiter:
-   2025-05-15T09:07:22.080Z info:   Enabled: false
-   2025-05-15T09:07:22.081Z info:   Capacity: 0
-   2025-05-15T09:07:22.081Z info:   Rate: 0
-   2025-05-15T09:07:22.081Z info:   Tokens: 0
-   2025-05-15T09:07:22.081Z info:   Last Updated: 1747300041
-   2025-05-15T09:07:22.081Z info:
-   Inbound Rate Limiter:
-   2025-05-15T09:07:22.081Z info:   Enabled: false
-   2025-05-15T09:07:22.081Z info:   Capacity: 0
-   2025-05-15T09:07:22.081Z info:   Rate: 0
-   2025-05-15T09:07:22.081Z info:   Tokens: 0
-   2025-05-15T09:07:22.081Z info:   Last Updated: 1747300041
+   ✅ Tasks loaded from /tasks/index.ts
+   2025-10-22T01:21:05.698Z info: 📊 Fetching rate limiter states for pool 0xA29878301cA30a4639C33cD7EC8061E4265E1a5D on ethereumSepolia...
+   2025-10-22T01:21:05.699Z info:    Remote chain: avalancheFuji
+   2025-10-22T01:21:05.699Z info:    Remote chain selector: 14767482510784806043
+   2025-10-22T01:21:08.160Z info:
+   === Rate Limiter States for avalancheFuji ===
+   2025-10-22T01:21:08.161Z info: Pool Address: 0xA29878301cA30a4639C33cD7EC8061E4265E1a5D
+   2025-10-22T01:21:08.161Z info: Chain Selector: 14767482510784806043
+   2025-10-22T01:21:08.161Z info:
+   📤 Outbound Rate Limiter:
+   2025-10-22T01:21:08.161Z info:   Enabled:       false
+   2025-10-22T01:21:08.161Z info:   Capacity:      0
+   2025-10-22T01:21:08.161Z info:   Rate:          0
+   2025-10-22T01:21:08.161Z info:   Tokens:        0
+   2025-10-22T01:21:08.161Z info:   Last Updated:  1761096060
+   2025-10-22T01:21:08.161Z info:
+   📥 Inbound Rate Limiter:
+   2025-10-22T01:21:08.161Z info:   Enabled:       false
+   2025-10-22T01:21:08.161Z info:   Capacity:      0
+   2025-10-22T01:21:08.161Z info:   Rate:          0
+   2025-10-22T01:21:08.161Z info:   Tokens:        0
+   2025-10-22T01:21:08.161Z info:   Last Updated:  1761096060
+   2025-10-22T01:21:08.161Z info:
+   ✅ Rate limiters fetched successfully
    ```
 
 <Aside type="note" title="Rate Limiters Disabled">
@@ -206,7 +231,7 @@ Below is an explanation of the parameters used:
 
 ### Update rate limiter settings
 
-Use the `updateRateLimiters` task to update the rate limiter configurations for an existing chain connection in your token pool. This task specifically interacts with the [`setChainRateLimiterConfig`](/ccip/api-reference/evm/v1.6.0/token-pool#setchainratelimiterconfig) function of the `TokenPool` contract, allowing you to adjust the rate limits without altering other configurations like remote pool addresses.
+Use the `updateRateLimiters` task to update the rate limiter configurations for an existing chain connection in your token pool. This task specifically interacts with the [`setChainRateLimiterConfig`](/ccip/api-reference/evm/v1.6.2/token-pool#setchainratelimiterconfig) function of the `TokenPool` contract, allowing you to adjust the rate limits without altering other configurations like remote pool addresses.
 
 The `updateRateLimiters` task allows you to:
 
@@ -216,18 +241,18 @@ The `updateRateLimiters` task allows you to:
 
 Below is an explanation of the parameters used during the rate limiter update process:
 
-| Parameter                   | Description                                                                                                                                            | Default | Required |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- | -------- |
-| `pooladdress`               | The address of the token pool being configured.                                                                                                        | N/A     | Yes      |
-| `remotechain`               | The remote blockchain to which this pool is linked. Examples include `avalancheFuji`, `arbitrumSepolia`, `baseSepolia`, and `sepolia`.                 | N/A     | Yes      |
-| `ratelimiter`               | Specifies which rate limiters to update: `inbound`, `outbound`, or `both`.                                                                             | `both`  | No       |
-| `outboundratelimitenabled`  | A flag indicating whether to enable outbound rate limits for cross-chain transfers (`true` or `false`).                                                | `false` | No       |
-| `outboundratelimitcapacity` | The maximum number of tokens allowed in the bucket for outbound transfers (in wei). **Note:** Applicable if outbound rate limits are enabled.          | `0`     | No       |
-| `outboundratelimitrate`     | The number of tokens per second that the bucket is refilled for outbound transfers (in wei). **Note:** Applicable if outbound rate limits are enabled. | `0`     | No       |
-| `inboundratelimitenabled`   | A flag indicating whether to enable inbound rate limits for cross-chain transfers (`true` or `false`).                                                 | `false` | No       |
-| `inboundratelimitcapacity`  | The maximum number of tokens allowed in the bucket for inbound transfers (in wei). **Note:** Applicable if inbound rate limits are enabled.            | `0`     | No       |
-| `inboundratelimitrate`      | The number of tokens per second that the bucket is refilled for inbound transfers (in wei). **Note:** Applicable if inbound rate limits are enabled.   | `0`     | No       |
-| `network`                   | The blockchain network where the local token pool is deployed. Examples include `avalancheFuji`, `arbitrumSepolia`, `baseSepolia`, and `sepolia`.      | N/A     | Yes      |
+| Parameter                   | Description                                                                                                                                               | Default | Required |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
+| `pooladdress`               | The address of the token pool being configured.                                                                                                           | N/A     | Yes      |
+| `remotechain`               | The remote blockchain to which this pool is linked. Examples include `avalancheFuji`, `ethereumSepolia`, `baseSepolia`, and `arbitrumSepolia`.            | N/A     | Yes      |
+| `ratelimiter`               | Specifies which rate limiters to update: `inbound`, `outbound`, or `both`.                                                                                | `both`  | No       |
+| `outboundratelimitenabled`  | Flag to enable outbound rate limits for cross-chain transfers. Pass this flag to enable, omit to disable.                                                 | `false` | No       |
+| `outboundratelimitcapacity` | The maximum number of tokens allowed in the bucket for outbound transfers (in wei). **Note:** Applicable if outbound rate limits are enabled.             | `0`     | No       |
+| `outboundratelimitrate`     | The number of tokens per second that the bucket is refilled for outbound transfers (in wei). **Note:** Applicable if outbound rate limits are enabled.    | `0`     | No       |
+| `inboundratelimitenabled`   | Flag to enable inbound rate limits for cross-chain transfers. Pass this flag to enable, omit to disable.                                                  | `false` | No       |
+| `inboundratelimitcapacity`  | The maximum number of tokens allowed in the bucket for inbound transfers (in wei). **Note:** Applicable if inbound rate limits are enabled.               | `0`     | No       |
+| `inboundratelimitrate`      | The number of tokens per second that the bucket is refilled for inbound transfers (in wei). **Note:** Applicable if inbound rate limits are enabled.      | `0`     | No       |
+| `network`                   | The blockchain network where the local token pool is deployed. Examples include `avalancheFuji`, `ethereumSepolia`, `baseSepolia`, and `arbitrumSepolia`. | N/A     | Yes      |
 
 **Command syntax**:
 
@@ -236,10 +261,10 @@ npx hardhat updateRateLimiters \
   --pooladdress <POOL_ADDRESS> \
   --remotechain <REMOTE_CHAIN> \
   --ratelimiter <inbound/outbound/both> \
-  --outboundratelimitenabled <true/false> \
+  --outboundratelimitenabled \
   --outboundratelimitcapacity <OUTBOUND_CAPACITY> \
   --outboundratelimitrate <OUTBOUND_RATE> \
-  --inboundratelimitenabled <true/false> \
+  --inboundratelimitenabled \
   --inboundratelimitcapacity <INBOUND_CAPACITY> \
   --inboundratelimitrate <INBOUND_RATE> \
   --network <NETWORK_NAME>
@@ -247,7 +272,7 @@ npx hardhat updateRateLimiters \
 
 **Example command**:
 
-Suppose you want to enable inbound and outbound rate limits for your token pool on Avalanche Fuji to control the number of tokens received or sent from/to Arbitrum Sepolia. We will use an existing token pool that interacts with an ERC20 token with 18 decimals:
+Suppose you want to enable inbound and outbound rate limits for your token pool on Avalanche Fuji to control the number of tokens received or sent from/to Ethereum Sepolia. We will use an existing token pool that interacts with an ERC20 token with 18 decimals:
 
 - **Token Pool on Avalanche Fuji**:
   - **Outbound Rate Limiter**:
@@ -266,7 +291,7 @@ Suppose you want to enable inbound and outbound rate limits for your token pool 
       - `Capacity / Rate = 20 / 0.1 = 200 seconds`
       - It takes **200 seconds** to replenish the bucket from 0 to full capacity.
 
-- **Token Pool on Arbitrum Sepolia**: Rate limits are the same as the Avalanche Fuji pool, but the inbound and outbound settings are swapped.
+- **Token Pool on Ethereum Sepolia**: Rate limits are the same as the Avalanche Fuji pool, but the inbound and outbound settings are swapped.
   - **Outbound Rate Limiter**:
     - **Enabled**: `true`
     - **Capacity**: `20000000000000000000` wei
@@ -281,7 +306,7 @@ Suppose you want to enable inbound and outbound rate limits for your token pool 
    ```bash
    npx hardhat updateRateLimiters \
      --pooladdress <POOL_ADDRESS> \
-     --remotechain arbitrumSepolia \
+     --remotechain ethereumSepolia \
      --ratelimiter both \
      --outboundratelimitenabled true \
      --outboundratelimitcapacity 10000000000000000000 \
@@ -296,8 +321,8 @@ Suppose you want to enable inbound and outbound rate limits for your token pool 
 
    ```bash
    $ npx hardhat updateRateLimiters \
-     --pooladdress 0xcC8bb3E03c59603522732B17487D2Cd5a5a3e047 \
-     --remotechain arbitrumSepolia \
+     --pooladdress 0x5e8b0e5EAC57d73E7b93d85b8eA3fcaDa282868A \
+     --remotechain ethereumSepolia \
      --ratelimiter both \
      --outboundratelimitenabled true \
      --outboundratelimitcapacity 10000000000000000000 \
@@ -307,31 +332,30 @@ Suppose you want to enable inbound and outbound rate limits for your token pool 
      --inboundratelimitrate 100000000000000000 \
      --network avalancheFuji
 
-   2025-05-15T09:16:58.330Z info: Current Rate Limiters for token pool: 0xcC8bb3E03c59603522732B17487D2Cd5a5a3e047
-   2025-05-15T09:16:58.331Z info:   Outbound Rate Limiter:
-   2025-05-15T09:16:58.332Z info:     Enabled: false
-   2025-05-15T09:16:58.332Z info:     Capacity: 0
-   2025-05-15T09:16:58.332Z info:     Rate: 0
-   2025-05-15T09:16:58.332Z info:   Inbound Rate Limiter:
-   2025-05-15T09:16:58.333Z info:     Enabled: false
-   2025-05-15T09:16:58.333Z info:     Capacity: 0
-   2025-05-15T09:16:58.333Z info:     Rate: 0
-   2025-05-15T09:16:58.333Z info:
-   2025-05-15T09:16:58.333Z info: ========== Updating Rate Limiters ==========
-   2025-05-15T09:16:58.333Z info: New Outbound Rate Limiter:
-   2025-05-15T09:16:58.333Z info:   Enabled: true
-   2025-05-15T09:16:58.334Z info:   Capacity: 10000000000000000000
-   2025-05-15T09:16:58.334Z info:   Rate: 100000000000000000
-   2025-05-15T09:16:58.334Z info: New Inbound Rate Limiter:
-   2025-05-15T09:16:58.334Z info:   Enabled: true
-   2025-05-15T09:16:58.334Z info:   Capacity: 20000000000000000000
-   2025-05-15T09:16:58.334Z info:   Rate: 100000000000000000
-   2025-05-15T09:16:58.334Z info: Updating both rate limiters...
-   2025-05-15T09:17:07.851Z info: Transaction hash: 0x8c387a84daf095bb5ecc5faea8324b582ae580e053d082fc43c7c2d9fc539402
-   2025-05-15T09:17:07.851Z info: Rate limiters updated successfully
+   ✅ Tasks loaded from /tasks/index.ts
+   2025-10-22T01:43:31.678Z info: ⚙️  Updating rate limiters for pool 0x5e8b0e5EAC57d73E7b93d85b8eA3fcaDa282868A on avalancheFuji...
+   2025-10-22T01:43:31.680Z info:    Remote chain: ethereumSepolia
+   2025-10-22T01:43:31.680Z info:    Remote chain selector: 16015286601757825753
+   2025-10-22T01:43:31.680Z info:    Updating: both limiters
+   2025-10-22T01:43:32.354Z info:    ✅ Remote chain is supported by the pool
+   2025-10-22T01:43:32.630Z info:    ✅ Caller is the pool owner
+   2025-10-22T01:43:32.901Z info:
+   📊 Current Rate Limiters for pool 0x5e8b0e5EAC57d73E7b93d85b8eA3fcaDa282868A
+   2025-10-22T01:43:32.901Z info:    Outbound → enabled=false, cap=0, rate=0
+   2025-10-22T01:43:32.901Z info:    Inbound  → enabled=false, cap=0, rate=0
+   2025-10-22T01:43:32.901Z info:
+   ========== Preparing Update ==========
+   2025-10-22T01:43:32.902Z info:    New Outbound → enabled=true, cap=10000000000000000000, rate=100000000000000000
+   2025-10-22T01:43:32.902Z info:    New Inbound  → enabled=true, cap=20000000000000000000, rate=100000000000000000
+   2025-10-22T01:43:32.902Z info:
+   ⚡ Updating both limiters...
+   2025-10-22T01:43:34.982Z info: ⏳ Rate limiter update tx: 0x2489f68073c72d96a7801bd046a23a23fad40f15d27c9d052a18697f2092336d
+   2025-10-22T01:43:34.982Z info:    Waiting for 2 confirmation(s)...
+   2025-10-22T01:43:44.017Z info: ✅ Rate limiters updated successfully
+   2025-10-22T01:43:44.017Z info:    Transaction: 0x2489f68073c72d96a7801bd046a23a23fad40f15d27c9d052a18697f2092336d
    ```
 
-1. **Update rate limiter settings for the token pool on Arbitrum Sepolia**: Replace `<POOL_ADDRESS>` with your token pool address.
+1. **Update rate limiter settings for the token pool on Ethereum Sepolia**: Replace `<POOL_ADDRESS>` with your token pool address.
 
    ```bash
    npx hardhat updateRateLimiters \
@@ -344,14 +368,14 @@ Suppose you want to enable inbound and outbound rate limits for your token pool 
      --inboundratelimitenabled true \
      --inboundratelimitcapacity 10000000000000000000 \
      --inboundratelimitrate 100000000000000000 \
-     --network arbitrumSepolia
+     --network ethereumSepolia
    ```
 
    Expected output:
 
    ```bash
    $ npx hardhat updateRateLimiters \
-     --pooladdress 0x74F0842a9A55575e8e36692c356292a812640F67 \
+     --pooladdress 0xA29878301cA30a4639C33cD7EC8061E4265E1a5D \
      --remotechain avalancheFuji \
      --ratelimiter both \
      --outboundratelimitenabled true \
@@ -360,30 +384,29 @@ Suppose you want to enable inbound and outbound rate limits for your token pool 
      --inboundratelimitenabled true \
      --inboundratelimitcapacity 10000000000000000000 \
      --inboundratelimitrate 100000000000000000 \
-     --network arbitrumSepolia
+     --network ethereumSepolia
 
-   2025-05-15T09:18:30.217Z info: Current Rate Limiters for token pool: 0x74F0842a9A55575e8e36692c356292a812640F67
-   2025-05-15T09:18:30.218Z info:   Outbound Rate Limiter:
-   2025-05-15T09:18:30.218Z info:     Enabled: false
-   2025-05-15T09:18:30.218Z info:     Capacity: 0
-   2025-05-15T09:18:30.219Z info:     Rate: 0
-   2025-05-15T09:18:30.219Z info:   Inbound Rate Limiter:
-   2025-05-15T09:18:30.219Z info:     Enabled: false
-   2025-05-15T09:18:30.219Z info:     Capacity: 0
-   2025-05-15T09:18:30.219Z info:     Rate: 0
-   2025-05-15T09:18:30.220Z info:
-   2025-05-15T09:18:30.220Z info: ========== Updating Rate Limiters ==========
-   2025-05-15T09:18:30.220Z info: New Outbound Rate Limiter:
-   2025-05-15T09:18:30.220Z info:   Enabled: true
-   2025-05-15T09:18:30.220Z info:   Capacity: 20000000000000000000
-   2025-05-15T09:18:30.220Z info:   Rate: 100000000000000000
-   2025-05-15T09:18:30.221Z info: New Inbound Rate Limiter:
-   2025-05-15T09:18:30.221Z info:   Enabled: true
-   2025-05-15T09:18:30.221Z info:   Capacity: 10000000000000000000
-   2025-05-15T09:18:30.221Z info:   Rate: 100000000000000000
-   2025-05-15T09:18:30.221Z info: Updating both rate limiters...
-   2025-05-15T09:18:33.969Z info: Transaction hash: 0x31ccb66252ccc3247c0eb8bbe1198c2dda5c5222aceeafd4ae418b1abec84998
-   2025-05-15T09:18:33.969Z info: Rate limiters updated successfully
+   ✅ Tasks loaded from /tasks/index.ts
+   2025-10-22T01:45:28.727Z info: ⚙️  Updating rate limiters for pool 0xA29878301cA30a4639C33cD7EC8061E4265E1a5D on ethereumSepolia...
+   2025-10-22T01:45:28.730Z info:    Remote chain: avalancheFuji
+   2025-10-22T01:45:28.731Z info:    Remote chain selector: 14767482510784806043
+   2025-10-22T01:45:28.731Z info:    Updating: both limiters
+   2025-10-22T01:45:29.327Z info:    ✅ Remote chain is supported by the pool
+   2025-10-22T01:45:29.624Z info:    ✅ Caller is the pool owner
+   2025-10-22T01:45:29.903Z info:
+   📊 Current Rate Limiters for pool 0xA29878301cA30a4639C33cD7EC8061E4265E1a5D
+   2025-10-22T01:45:29.903Z info:    Outbound → enabled=false, cap=0, rate=0
+   2025-10-22T01:45:29.904Z info:    Inbound  → enabled=false, cap=0, rate=0
+   2025-10-22T01:45:29.905Z info:
+   ========== Preparing Update ==========
+   2025-10-22T01:45:29.905Z info:    New Outbound → enabled=true, cap=20000000000000000000, rate=100000000000000000
+   2025-10-22T01:45:29.905Z info:    New Inbound  → enabled=true, cap=10000000000000000000, rate=100000000000000000
+   2025-10-22T01:45:29.905Z info:
+   ⚡ Updating both limiters...
+   2025-10-22T01:45:31.847Z info: ⏳ Rate limiter update tx: 0x1e3862484d4bcb7ca4aba6a8723ec6c90ad9fe223e337363c14ed99822842bb5
+   2025-10-22T01:45:31.847Z info:    Waiting for 3 confirmation(s)...
+   2025-10-22T01:46:03.375Z info: ✅ Rate limiters updated successfully
+   2025-10-22T01:46:03.376Z info:    Transaction: 0x1e3862484d4bcb7ca4aba6a8723ec6c90ad9fe223e337363c14ed99822842bb5
    ```
 
 ### Verify the new rate limiter settings
@@ -397,7 +420,7 @@ After applying the new rate limiter settings, verify that they have been updated
    ```bash
    npx hardhat getCurrentRateLimits \
      --pooladdress <POOL_ADDRESS> \
-     --remotechain arbitrumSepolia \
+     --remotechain ethereumSepolia \
      --network avalancheFuji
    ```
 
@@ -405,123 +428,161 @@ After applying the new rate limiter settings, verify that they have been updated
 
    ```bash
    $ npx hardhat getCurrentRateLimits \
-     --pooladdress 0xcC8bb3E03c59603522732B17487D2Cd5a5a3e047 \
-     --remotechain arbitrumSepolia \
+     --pooladdress 0x5e8b0e5EAC57d73E7b93d85b8eA3fcaDa282868A \
+     --remotechain ethereumSepolia \
      --network avalancheFuji
 
-   2025-05-15T09:21:29.694Z info:
-   Rate Limiter States for Chain: arbitrumSepolia
-   2025-05-15T09:21:29.695Z info: Pool Address: 0xcC8bb3E03c59603522732B17487D2Cd5a5a3e047
-   2025-05-15T09:21:29.695Z info: Chain Selector: 3478487238524512106
-   2025-05-15T09:21:29.696Z info:
-   Outbound Rate Limiter:
-   2025-05-15T09:21:29.696Z info:   Enabled: true
-   2025-05-15T09:21:29.696Z info:   Capacity: 10000000000000000000
-   2025-05-15T09:21:29.696Z info:   Rate: 100000000000000000
-   2025-05-15T09:21:29.696Z info:   Tokens: 10000000000000000000
-   2025-05-15T09:21:29.696Z info:   Last Updated: 1747300882
-   2025-05-15T09:21:29.697Z info:
-   Inbound Rate Limiter:
-   2025-05-15T09:21:29.697Z info:   Enabled: true
-   2025-05-15T09:21:29.697Z info:   Capacity: 20000000000000000000
-   2025-05-15T09:21:29.697Z info:   Rate: 100000000000000000
-   2025-05-15T09:21:29.697Z info:   Tokens: 20000000000000000000
-   2025-05-15T09:21:29.697Z info:   Last Updated: 1747300882
+   ✅ Tasks loaded from /tasks/index.ts
+   2025-10-22T02:22:43.555Z info: 📊 Fetching rate limiter states for pool 0x5e8b0e5EAC57d73E7b93d85b8eA3fcaDa282868A on avalancheFuji...
+   2025-10-22T02:22:43.556Z info:    Remote chain: ethereumSepolia
+   2025-10-22T02:22:43.556Z info:    Remote chain selector: 16015286601757825753
+   2025-10-22T02:22:45.445Z info:
+   === Rate Limiter States for ethereumSepolia ===
+   2025-10-22T02:22:45.445Z info: Pool Address: 0x5e8b0e5EAC57d73E7b93d85b8eA3fcaDa282868A
+   2025-10-22T02:22:45.445Z info: Chain Selector: 16015286601757825753
+   2025-10-22T02:22:45.445Z info:
+   📤 Outbound Rate Limiter:
+   2025-10-22T02:22:45.445Z info:   Enabled:       true
+   2025-10-22T02:22:45.445Z info:   Capacity:      10000000000000000000
+   2025-10-22T02:22:45.446Z info:   Rate:          100000000000000000
+   2025-10-22T02:22:45.446Z info:   Tokens:        10000000000000000000
+   2025-10-22T02:22:45.447Z info:   Last Updated:  1761099755
+   2025-10-22T02:22:45.447Z info:
+   📥 Inbound Rate Limiter:
+   2025-10-22T02:22:45.447Z info:   Enabled:       true
+   2025-10-22T02:22:45.447Z info:   Capacity:      20000000000000000000
+   2025-10-22T02:22:45.447Z info:   Rate:          100000000000000000
+   2025-10-22T02:22:45.447Z info:   Tokens:        20000000000000000000
+   2025-10-22T02:22:45.447Z info:   Last Updated:  1761099755
+   2025-10-22T02:22:45.447Z info:
+   ✅ Rate limiters fetched successfully
    ```
 
-1. **Verify the updated rate limiter settings for the token pool on Arbitrum Sepolia**:
+1. **Verify the updated rate limiter settings for the token pool on Ethereum Sepolia**:
 
    ```bash
    npx hardhat getCurrentRateLimits \
      --pooladdress <POOL_ADDRESS> \
      --remotechain avalancheFuji \
-     --network arbitrumSepolia
+     --network ethereumSepolia
    ```
 
    Example output:
 
    ```bash
    $ npx hardhat getCurrentRateLimits \
-     --pooladdress 0x74F0842a9A55575e8e36692c356292a812640F67 \
+     --pooladdress 0xA29878301cA30a4639C33cD7EC8061E4265E1a5D \
      --remotechain avalancheFuji \
-     --network arbitrumSepolia
+     --network ethereumSepolia
 
-   2025-05-15T09:22:34.408Z info:
-   Rate Limiter States for Chain: avalancheFuji
-   2025-05-15T09:22:34.410Z info: Pool Address: 0x74F0842a9A55575e8e36692c356292a812640F67
-   2025-05-15T09:22:34.410Z info: Chain Selector: 14767482510784806043
-   2025-05-15T09:22:34.410Z info:
-   Outbound Rate Limiter:
-   2025-05-15T09:22:34.410Z info:   Enabled: true
-   2025-05-15T09:22:34.410Z info:   Capacity: 20000000000000000000
-   2025-05-15T09:22:34.410Z info:   Rate: 100000000000000000
-   2025-05-15T09:22:34.410Z info:   Tokens: 20000000000000000000
-   2025-05-15T09:22:34.410Z info:   Last Updated: 1747300954
-   2025-05-15T09:22:34.411Z info:
-   Inbound Rate Limiter:
-   2025-05-15T09:22:34.411Z info:   Enabled: true
-   2025-05-15T09:22:34.411Z info:   Capacity: 10000000000000000000
-   2025-05-15T09:22:34.411Z info:   Rate: 100000000000000000
-   2025-05-15T09:22:34.411Z info:   Tokens: 10000000000000000000
-   2025-05-15T09:22:34.412Z info:   Last Updated: 1747300953
+   ✅ Tasks loaded from /tasks/index.ts
+   2025-10-22T02:23:57.094Z info: 📊 Fetching rate limiter states for pool 0xA29878301cA30a4639C33cD7EC8061E4265E1a5D on ethereumSepolia...
+   2025-10-22T02:23:57.095Z info:    Remote chain: avalancheFuji
+   2025-10-22T02:23:57.095Z info:    Remote chain selector: 14767482510784806043
+   2025-10-22T02:23:59.253Z info:
+   === Rate Limiter States for avalancheFuji ===
+   2025-10-22T02:23:59.253Z info: Pool Address: 0xA29878301cA30a4639C33cD7EC8061E4265E1a5D
+   2025-10-22T02:23:59.253Z info: Chain Selector: 14767482510784806043
+   2025-10-22T02:23:59.254Z info:
+   📤 Outbound Rate Limiter:
+   2025-10-22T02:23:59.254Z info:   Enabled:       true
+   2025-10-22T02:23:59.254Z info:   Capacity:      20000000000000000000
+   2025-10-22T02:23:59.254Z info:   Rate:          100000000000000000
+   2025-10-22T02:23:59.255Z info:   Tokens:        20000000000000000000
+   2025-10-22T02:23:59.255Z info:   Last Updated:  1761099828
+   2025-10-22T02:23:59.255Z info:
+   📥 Inbound Rate Limiter:
+   2025-10-22T02:23:59.255Z info:   Enabled:       true
+   2025-10-22T02:23:59.255Z info:   Capacity:      10000000000000000000
+   2025-10-22T02:23:59.255Z info:   Rate:          100000000000000000
+   2025-10-22T02:23:59.255Z info:   Tokens:        10000000000000000000
+   2025-10-22T02:23:59.255Z info:   Last Updated:  1761099828
+   2025-10-22T02:23:59.255Z info:
+   ✅ Rate limiters fetched successfully
    ```
 
 ### Test the rate limiter settings
 
-To verify the rate limiter settings, initiate a cross-chain transfer between the token pools on Avalanche Fuji and Arbitrum Sepolia. The rate limiter configuration will control the flow of tokens between these pools.
+To verify the rate limiter settings, initiate a cross-chain transfer between the token pools on Avalanche Fuji and Ethereum Sepolia. The rate limiter configuration will control the flow of tokens between these pools.
 
 **Note**: Ensure that your externally owned account (EOA) has a sufficient balance of ERC20 tokens on Avalanche Fuji to complete the transfer.
 
-In the example below, we use a token pool at address `0xcC8bb3E03c59603522732B17487D2Cd5a5a3e047` on Avalanche Fuji, which has burn and mint privileges for the token at address `0xE21b1AA00C6202b606C4F5B9E05B6f475823B8Ef`. We will transfer this token from Avalanche Fuji to Arbitrum Sepolia. For your own test, substitute these addresses with the token pool and token addresses that you have deployed.
+In the example below, we use a token pool at address `0x5e8b0e5EAC57d73E7b93d85b8eA3fcaDa282868A` on Avalanche Fuji, which has burn and mint privileges for the token at address `0xb613B55897F07eAF430bF9a509498e55487305Ea`. We will transfer this token from Avalanche Fuji to Ethereum Sepolia. For your own test, substitute these addresses with the token pool and token addresses that you have deployed.
 
-1. **Test Capacity**: Because the outbound capacity set is `1000000000000000000000` , let's transfer `1000000000000000000001` tokens from Avalanche Fuji to Arbitrum Sepolia. This transfer should fail because the capacity is less than the number of tokens being transferred.
+1. **Test Capacity**: Because the outbound capacity set is `1000000000000000000000` , let's transfer `1000000000000000000001` tokens from Avalanche Fuji to Ethereum Sepolia. This transfer should fail because the capacity is less than the number of tokens being transferred.
 
    Command:
 
    ```bash
-   npx hardhat transferTokens --tokenaddress <TOKEN_ADDRESS> --amount 1000000000000000000001 --destinationchain arbitrumSepolia --receiveraddress <RECEIVER_ADDRESS> --network avalancheFuji
+   npx hardhat transferTokens --tokenaddress <TOKEN_ADDRESS> --amount 1000000000000000000001 --destinationchain ethereumSepolia --receiveraddress <RECEIVER_ADDRESS> --network avalancheFuji
    ```
 
    Expected output:
 
    ```bash
-   $ npx hardhat transferTokens --tokenaddress 0xE21b1AA00C6202b606C4F5B9E05B6f475823B8Ef --amount 1000000000000000000001 --destinationchain arbitrumSepolia --receiveraddress 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf --network avalancheFuji
+   $ npx hardhat transferTokens --tokenaddress 0xb613B55897F07eAF430bF9a509498e55487305Ea --amount 1000000000000000000001 --destinationchain ethereumSepolia --receiveraddress 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf --network avalancheFuji
 
-   2025-05-15T09:34:18.464Z info: Estimated fees: 22167517387804854
-   2025-05-15T09:34:18.466Z info: Approving 1000000000000000000001 0xE21b1AA00C6202b606C4F5B9E05B6f475823B8Ef to 0xF694E193200268f9a4868e4Aa017A0118C9a8177
-   2025-05-15T09:34:25.055Z info: Approving 22167517387804854 LINK to 0xF694E193200268f9a4868e4Aa017A0118C9a8177
-   2025-05-15T09:34:35.023Z info: Transferring 1000000000000000000001 of 0xE21b1AA00C6202b606C4F5B9E05B6f475823B8Ef to 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf on chain arbitrumSepolia with 22167517387804854 of LINK as fees
-   Simulation failed
-   Decoded error from factory RateLimiter__factory: TokenMaxCapacityExceeded Result(3) [
-     10000000000000000000n,
-     1000000000000000000001n,
-     '0xE21b1AA00C6202b606C4F5B9E05B6f475823B8Ef'
-   ]
+   ✅ Tasks loaded from /tasks/index.ts
+   2025-10-22T03:53:06.293Z info: 🚀 Transferring 1000000000000000000001 tokens via CCIP from avalancheFuji to ethereumSepolia...
+   2025-10-22T03:53:06.297Z info:    Token: 0xb613B55897F07eAF430bF9a509498e55487305Ea
+   2025-10-22T03:53:06.297Z info:    Receiver: 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf
+   2025-10-22T03:53:06.297Z info:    Fee token: LINK
+   2025-10-22T03:53:07.247Z info: 💰 Estimated fees: 12758132149667117
+   2025-10-22T03:53:07.502Z info: Approving 1000000000000000000001 tokens for router 0xF694E193200268f9a4868e4Aa017A0118C9a8177
+   2025-10-22T03:53:09.453Z info:    Waiting for 2 confirmation(s)...
+   2025-10-22T03:53:23.404Z info: Approving 12758132149667117 LINK to router
+   2025-10-22T03:53:24.672Z info:    Waiting for 2 confirmation(s)...
+   2025-10-22T03:53:33.834Z info: 💰 Estimated CCIP fees: 12758132149667117
+   2025-10-22T03:53:33.834Z info: Simulating CCIP message...
+   2025-10-22T03:53:35.890Z error: ❌ Simulation failed
+   2025-10-22T03:53:35.893Z error: ❌ TokenMaxCapacityExceeded (from RateLimiter)
+   2025-10-22T03:53:35.893Z error:    Args:
+   2025-10-22T03:53:35.893Z error:      [0]: 10000000000000000000
+   2025-10-22T03:53:35.893Z error:      [1]: 1000000000000000000001
+   2025-10-22T03:53:35.893Z error:      [2]: "0xb613B55897F07eAF430bF9a509498e55487305Ea"
    ```
 
    Notice in the logs that the transfer failed because the capacity was exceeded: `TokenMaxCapacityExceeded`.
 
-1. **Test Rate**: Now, let's transfer `10000000000000000000` tokens from Avalanche Fuji to Arbitrum Sepolia, which will empty the bucket. After this transfer, we will attempt to transfer another `10000000000000000000` tokens. This transfer will fail because it takes 100 seconds to replenish the bucket.
+1. **Test Rate**: Now, let's transfer `10000000000000000000` tokens from Avalanche Fuji to Ethereum Sepolia, which will empty the bucket. After this transfer, we will attempt to transfer another `10000000000000000000` tokens. This transfer will fail because it takes 100 seconds to replenish the bucket.
    1. **First transfer** (Successful):
 
       Command:
 
       ```bash
-      npx hardhat transferTokens --tokenaddress <TOKEN_ADDRESS> --amount 10000000000000000000 --destinationchain arbitrumSepolia --receiveraddress <RECEIVER_ADDRESS> --network avalancheFuji
+      npx hardhat transferTokens --tokenaddress <TOKEN_ADDRESS> --amount 10000000000000000000 --destinationchain ethereumSepolia --receiveraddress <RECEIVER_ADDRESS> --network avalancheFuji
       ```
 
       Expected output:
 
       ```bash
-      $ npx hardhat transferTokens --tokenaddress 0xE21b1AA00C6202b606C4F5B9E05B6f475823B8Ef --amount 10000000000000000000 --destinationchain arbitrumSepolia --receiveraddress 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf --network avalancheFuji
+      $ npx hardhat transferTokens --tokenaddress 0xb613B55897F07eAF430bF9a509498e55487305Ea --amount 10000000000000000000 --destinationchain ethereumSepolia --receiveraddress 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf --network avalancheFuji
 
-      2025-05-15T09:37:09.380Z info: Estimated fees: 22167517387804854
-      2025-05-15T09:37:09.383Z info: Approving 10000000000000000000 0xE21b1AA00C6202b606C4F5B9E05B6f475823B8Ef to 0xF694E193200268f9a4868e4Aa017A0118C9a8177
-      2025-05-15T09:37:18.455Z info: Approving 22167517387804854 LINK to 0xF694E193200268f9a4868e4Aa017A0118C9a8177
-      2025-05-15T09:37:25.883Z info: Transferring 10000000000000000000 of 0xE21b1AA00C6202b606C4F5B9E05B6f475823B8Ef to 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf on chain arbitrumSepolia with 22167517387804854 of LINK as fees
-      2025-05-15T09:37:31.178Z info: Transaction hash: 0x8490f683383f02e6111ee6ac13072c724b2e3a67114fa765083620cce4c0e255
-      2025-05-15T09:37:31.188Z warn: Unable to parse the event logs corresponding to the transaction 0x8490f683383f02e6111ee6ac13072c724b2e3a67114fa765083620cce4c0e255
-      2025-05-15T09:37:31.188Z info: Check status of message on https://ccip.chain.link/tx/0x8490f683383f02e6111ee6ac13072c724b2e3a67114fa765083620cce4c0e255
+      ✅ Tasks loaded from /tasks/index.ts
+      2025-10-22T04:01:11.893Z info: 🚀 Transferring 10000000000000000000 tokens via CCIP from avalancheFuji to ethereumSepolia...
+      2025-10-22T04:01:11.894Z info:    Token: 0xb613B55897F07eAF430bF9a509498e55487305Ea
+      2025-10-22T04:01:11.895Z info:    Receiver: 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf
+      2025-10-22T04:01:11.895Z info:    Fee token: LINK
+      2025-10-22T04:01:12.809Z info: 💰 Estimated fees: 12757807740510307
+      2025-10-22T04:01:13.059Z info: Approving 10000000000000000000 tokens for router 0xF694E193200268f9a4868e4Aa017A0118C9a8177
+      2025-10-22T04:01:15.068Z info:    Waiting for 2 confirmation(s)...
+      2025-10-22T04:01:20.458Z info: Approving 12757807740510307 LINK to router
+      2025-10-22T04:01:21.705Z info:    Waiting for 2 confirmation(s)...
+      2025-10-22T04:01:26.687Z info: 💰 Estimated CCIP fees: 12757807740510307
+      2025-10-22T04:01:26.687Z info: Simulating CCIP message...
+      2025-10-22T04:01:26.936Z info: Sending CCIP message...
+      2025-10-22T04:01:28.186Z info: ⏳ CCIP message tx: 0xb52fbc15e2aa90e35bd0d56073ce60c6b92626ac66ba219e1403927dfd31cfab
+      2025-10-22T04:01:28.186Z info:    Waiting for 2 confirmation(s)...
+      2025-10-22T04:01:32.924Z info: ✅ CCIP message sent successfully
+      2025-10-22T04:01:32.924Z info:    Transaction: 0xb52fbc15e2aa90e35bd0d56073ce60c6b92626ac66ba219e1403927dfd31cfab
+      2025-10-22T04:01:32.924Z info:    Check status: https://ccip.chain.link/tx/0xb52fbc15e2aa90e35bd0d56073ce60c6b92626ac66ba219e1403927dfd31cfab
+      2025-10-22T04:01:32.924Z info: 📋 Transfer Summary:
+      2025-10-22T04:01:32.924Z info:    Token: 0xb613B55897F07eAF430bF9a509498e55487305Ea
+      2025-10-22T04:01:32.925Z info:    Amount: 10000000000000000000
+      2025-10-22T04:01:32.925Z info:    From: avalancheFuji
+      2025-10-22T04:01:32.925Z info:    To: ethereumSepolia
+      2025-10-22T04:01:32.925Z info:    Receiver: 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf
+      2025-10-22T04:01:32.925Z info:    Fee paid in: LINK
       ```
 
    1. **Second transfer** (Failed):
@@ -529,24 +590,32 @@ In the example below, we use a token pool at address `0xcC8bb3E03c59603522732B17
       Command:
 
       ```bash
-      npx hardhat transferTokens --tokenaddress <TOKEN_ADDRESS> --amount 10000000000000000000 --destinationchain arbitrumSepolia --receiveraddress <RECEIVER_ADDRESS> --network avalancheFuji
+      npx hardhat transferTokens --tokenaddress <TOKEN_ADDRESS> --amount 10000000000000000000 --destinationchain ethereumSepolia --receiveraddress <RECEIVER_ADDRESS> --network avalancheFuji
       ```
 
       Expected output:
 
       ```bash
-      $ npx hardhat transferTokens --tokenaddress 0xE21b1AA00C6202b606C4F5B9E05B6f475823B8Ef --amount 10000000000000000000 --destinationchain arbitrumSepolia --receiveraddress 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf --network avalancheFuji
+      $ npx hardhat transferTokens --tokenaddress 0xb613B55897F07eAF430bF9a509498e55487305Ea --amount 10000000000000000000 --destinationchain ethereumSepolia --receiveraddress 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf --network avalancheFuji
 
-      2025-05-15T09:37:55.351Z info: Estimated fees: 22167517387804854
-      2025-05-15T09:37:55.355Z info: Approving 10000000000000000000 0xE21b1AA00C6202b606C4F5B9E05B6f475823B8Ef to 0xF694E193200268f9a4868e4Aa017A0118C9a8177
-      2025-05-15T09:38:02.306Z info: Approving 22167517387804854 LINK to 0xF694E193200268f9a4868e4Aa017A0118C9a8177
-      2025-05-15T09:38:10.812Z info: Transferring 10000000000000000000 of 0xE21b1AA00C6202b606C4F5B9E05B6f475823B8Ef to 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf on chain arbitrumSepolia with 22167517387804854 of LINK as fees
-      Simulation failed
-      Decoded error from factory RateLimiter__factory: TokenRateLimitReached Result(3) [
-        58n,
-        4200000000000000000n,
-        '0xE21b1AA00C6202b606C4F5B9E05B6f475823B8Ef'
-      ]
+      ✅ Tasks loaded from /tasks/index.ts
+      2025-10-22T04:02:15.242Z info: 🚀 Transferring 10000000000000000000 tokens via CCIP from avalancheFuji to ethereumSepolia...
+      2025-10-22T04:02:15.244Z info:    Token: 0xb613B55897F07eAF430bF9a509498e55487305Ea
+      2025-10-22T04:02:15.245Z info:    Receiver: 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf
+      2025-10-22T04:02:15.245Z info:    Fee token: LINK
+      2025-10-22T04:02:16.183Z info: 💰 Estimated fees: 12757807740510307
+      2025-10-22T04:02:16.436Z info: Approving 10000000000000000000 tokens for router 0xF694E193200268f9a4868e4Aa017A0118C9a8177
+      2025-10-22T04:02:18.432Z info:    Waiting for 2 confirmation(s)...
+      2025-10-22T04:02:32.919Z info: Approving 12757807740510307 LINK to router
+      2025-10-22T04:02:34.144Z info:    Waiting for 2 confirmation(s)...
+      2025-10-22T04:02:43.114Z info: 💰 Estimated CCIP fees: 12757807740510307
+      2025-10-22T04:02:43.114Z info: Simulating CCIP message...
+      2025-10-22T04:02:45.169Z error: ❌ Simulation failed
+      2025-10-22T04:02:45.175Z error: ❌ TokenRateLimitReached (from RateLimiter)
+      2025-10-22T04:02:45.175Z error:    Args:
+      2025-10-22T04:02:45.175Z error:      [0]: 30
+      2025-10-22T04:02:45.176Z error:      [1]: 7000000000000000000
+      2025-10-22T04:02:45.176Z error:      [2]: "0xb613B55897F07eAF430bF9a509498e55487305Ea"
       ```
 
       Notice in the logs that the transfer failed because the rate limit was exceeded: `TokenRateLimitReached`.

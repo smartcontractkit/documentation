@@ -14,8 +14,10 @@ import { ccipRedirects } from "./src/config/redirects/ccip"
 import trailingSlashMiddleware from "./src/integrations/trailing-slash-middleware"
 import redirectsJson from "./src/features/redirects/redirects.json"
 import tailwind from "@astrojs/tailwind"
+import { extractCanonicalUrlsWithLanguageVariants } from "./src/utils/sidebar"
 
 config() // Load .env file
+
 // Prepare set of redirect source URLs to exclude from sitemap
 // This prevents duplicate entries and ensures only canonical URLs are indexed
 const redirectSources = new Set(
@@ -27,6 +29,11 @@ const redirectSources = new Set(
       return normalized.endsWith("/") ? normalized.slice(0, -1) : normalized
     })
 )
+
+// Extract canonical URLs that have language-specific variants from sidebar config
+// These redirect pages should NOT be in the sitemap
+// Only the actual content pages (-go, -ts) are indexed
+const canonicalUrlsWithLanguageVariants = extractCanonicalUrlsWithLanguageVariants()
 
 // https://astro.build/config
 export default defineConfig({
@@ -52,10 +59,14 @@ export default defineConfig({
       changefreq: "daily",
       customPages: [
         "https://docs.chain.link/llms.txt",
+        "https://docs.chain.link/cre/llms-full-go.txt",
+        "https://docs.chain.link/cre/llms-full-ts.txt",
         "https://docs.chain.link/vrf/llms-full.txt",
         "https://docs.chain.link/ccip/llms-full.txt",
         "https://docs.chain.link/data-feeds/llms-full.txt",
         "https://docs.chain.link/data-streams/llms-full.txt",
+        "https://docs.chain.link/dta-technical-standard/llms-full.txt",
+        "https://docs.chain.link/datalink/llms-full.txt",
         "https://docs.chain.link/chainlink-functions/llms-full.txt",
         "https://docs.chain.link/chainlink-automation/llms-full.txt",
         "https://docs.chain.link/resources/llms-full.txt",
@@ -73,6 +84,11 @@ export default defineConfig({
         // These are aliases for versioned content - we keep only the canonical long format URLs
         const shortVersionPattern = /\/api-reference\/(?:.*\/)?v\d{3,4}(?:\/|$)/
         if (shortVersionPattern.test(cleanPath)) {
+          return false
+        }
+
+        // Exclude canonical URLs that have language-specific variants (from sidebar config)
+        if (canonicalUrlsWithLanguageVariants.has(cleanPath)) {
           return false
         }
 

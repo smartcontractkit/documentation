@@ -1,0 +1,677 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.6.0 SVM BurnMint Token Pool API Reference"
+metadata:
+  description: "Comprehensive API documentation for the CCIP BurnMint Token Pool program on SVM-based blockchains like Solana. Complete guide covering burn and mint operations, token pool configuration, cross-chain token transfers, multisig management, and access control for seamless interoperability."
+  excerpt: "BurnMint Token Pool, SVM burn mint pool, Solana token pool, cross-chain token transfers, burn and mint operations, token pool configuration, multisig management, access control, CCIP token pools"
+---
+
+import { Aside, ClickToZoom } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## BurnMint Token Pool
+
+[Git Source](https://github.com/smartcontractkit/chainlink-ccip/tree/v1.6.0-solana/chains/solana/contracts/programs/burnmint-token-pool)
+
+Below is a complete API reference for the CCIP BurnMint Token Pool program instructions. This pool implementation burns tokens on the source chain and mints them on the destination chain.
+
+### Global Configuration
+
+These instructions manage the global configuration of the BurnMint Token Pool program.
+
+#### `init_global_config`
+
+Initializes the global configuration for the BurnMint Token Pool program. This must be called once during initial setup.
+
+```rust
+fn init_global_config(
+    ctx: Context<InitGlobalConfig>,
+    router_address: Pubkey,
+    rmn_address: Pubkey,
+) -> Result<()>;
+```
+
+##### Parameters
+
+| Name             | Type     | Description                             |
+| ---------------- | -------- | --------------------------------------- |
+| `router_address` | `Pubkey` | The default CCIP Router program address |
+| `rmn_address`    | `Pubkey` | The default RMN Remote program address  |
+
+##### Context (Accounts)
+
+| Field            | Type                                | Writable? | Description                                                                                 |
+| ---------------- | ----------------------------------- | --------- | ------------------------------------------------------------------------------------------- |
+| `config`         | `Account<PoolConfig>`               | Yes       | Global pool config PDA to initialize. <br/>**Derivation**: `["config"]` under this program. |
+| `authority`      | `Signer<'info>`                     | Yes       | Must be the program upgrade authority.                                                      |
+| `system_program` | `Program<'info, System>`            | No        | Standard System Program.                                                                    |
+| `program`        | `Program<'info, BurnmintTokenPool>` | No        | The BurnMint Token Pool program.                                                            |
+| `program_data`   | `Account<'info, ProgramData>`       | No        | Program data account for upgrade authority verification.                                    |
+
+##### Authorization
+
+- **Caller**: Must be the program upgrade authority
+
+#### `update_self_served_allowed`
+
+Updates whether self-service pool initialization is allowed.
+
+```rust
+fn update_self_served_allowed(
+    ctx: Context<UpdateGlobalConfig>,
+    self_served_allowed: bool,
+) -> Result<()>;
+```
+
+##### Parameters
+
+| Name                  | Type   | Description                                             |
+| --------------------- | ------ | ------------------------------------------------------- |
+| `self_served_allowed` | `bool` | Whether mint authorities can initialize their own pools |
+
+##### Context (Accounts)
+
+| Field          | Type                                | Writable? | Description                                                                   |
+| -------------- | ----------------------------------- | --------- | ----------------------------------------------------------------------------- |
+| `config`       | `Account<PoolConfig>`               | Yes       | Global pool config PDA. <br/>**Derivation**: `["config"]` under this program. |
+| `authority`    | `Signer<'info>`                     | No        | Must be the program upgrade authority.                                        |
+| `program`      | `Program<'info, BurnmintTokenPool>` | No        | The BurnMint Token Pool program.                                              |
+| `program_data` | `Account<'info, ProgramData>`       | No        | Program data account for upgrade authority verification.                      |
+
+##### Authorization
+
+- **Caller**: Must be the program upgrade authority
+
+#### `update_default_router`
+
+Updates the default router address used for new token pools.
+
+```rust
+fn update_default_router(
+    ctx: Context<UpdateGlobalConfig>,
+    router_address: Pubkey,
+) -> Result<()>;
+```
+
+##### Parameters
+
+| Name             | Type     | Description                                 |
+| ---------------- | -------- | ------------------------------------------- |
+| `router_address` | `Pubkey` | The new default CCIP Router program address |
+
+##### Context (Accounts)
+
+Same as `update_self_served_allowed`.
+
+##### Authorization
+
+- **Caller**: Must be the program upgrade authority
+
+#### `update_default_rmn`
+
+Updates the default RMN Remote address used for new token pools.
+
+```rust
+fn update_default_rmn(
+    ctx: Context<UpdateGlobalConfig>,
+    rmn_address: Pubkey,
+) -> Result<()>;
+```
+
+##### Parameters
+
+| Name          | Type     | Description                                |
+| ------------- | -------- | ------------------------------------------ |
+| `rmn_address` | `Pubkey` | The new default RMN Remote program address |
+
+##### Context (Accounts)
+
+Same as `update_self_served_allowed`.
+
+##### Authorization
+
+- **Caller**: Must be the program upgrade authority
+
+### Pool Initialization & Management
+
+These instructions handle individual token pool lifecycle management.
+
+#### `initialize`
+
+Initializes a new token pool for a specific SPL token mint.
+
+```rust
+fn initialize(ctx: Context<InitializeTokenPool>) -> Result<()>;
+```
+
+##### Parameters
+
+This instruction takes no additional parameters.
+
+##### Context (Accounts)
+
+| Field            | Type                                | Writable? | Description                                                                                              |
+| ---------------- | ----------------------------------- | --------- | -------------------------------------------------------------------------------------------------------- |
+| `state`          | `Account<State>`                    | Yes       | Pool state PDA to initialize. <br/>**Derivation**: `["ccip_tokenpool_config", mint]` under this program. |
+| `mint`           | `InterfaceAccount<'info, Mint>`     | No        | The SPL token mint to create a pool for.                                                                 |
+| `authority`      | `Signer<'info>`                     | Yes       | Pool initializer (see Authorization below).                                                              |
+| `system_program` | `Program<'info, System>`            | No        | Standard System Program.                                                                                 |
+| `program`        | `Program<'info, BurnmintTokenPool>` | No        | The BurnMint Token Pool program.                                                                         |
+| `program_data`   | `Account<'info, ProgramData>`       | No        | Program data account for upgrade authority verification.                                                 |
+| `config`         | `Account<PoolConfig>`               | No        | Global pool config PDA. <br/>**Derivation**: `["config"]` under this program.                            |
+
+##### Authorization
+
+- **Program Upgrade Authority**: Can always initialize pools
+- **Mint Authority**: Can initialize pools when `self_served_allowed` is true
+
+#### `transfer_mint_authority_to_multisig`
+
+Transfers the mint authority of the token to a multisig account that includes the pool signer as a required signer.
+
+```rust
+fn transfer_mint_authority_to_multisig(
+    ctx: Context<TransferMintAuthority>,
+) -> Result<()>;
+```
+
+##### Parameters
+
+This instruction takes no additional parameters.
+
+##### Context (Accounts)
+
+| Field                         | Type                                | Writable? | Description                                                                                 |
+| ----------------------------- | ----------------------------------- | --------- | ------------------------------------------------------------------------------------------- |
+| `state`                       | `Account<State>`                    | Yes       | Pool state PDA. <br/>**Derivation**: `["ccip_tokenpool_config", mint]` under this program.  |
+| `mint`                        | `InterfaceAccount<'info, Mint>`     | Yes       | The SPL token mint.                                                                         |
+| `token_program`               | `Interface<'info, TokenInterface>`  | No        | Token program (SPL Token or Token-2022).                                                    |
+| `pool_signer`                 | `UncheckedAccount<'info>`           | No        | Pool signer PDA. <br/>**Derivation**: `["ccip_tokenpool_signer", mint]` under this program. |
+| `authority`                   | `Signer<'info>`                     | No        | Must be the program upgrade authority.                                                      |
+| `new_multisig_mint_authority` | `UncheckedAccount<'info>`           | No        | The new multisig account that will become the mint authority.                               |
+| `program`                     | `Program<'info, BurnmintTokenPool>` | No        | The BurnMint Token Pool program.                                                            |
+| `program_data`                | `Account<'info, ProgramData>`       | No        | Program data account for upgrade authority verification.                                    |
+
+##### Authorization
+
+- **Caller**: Must be the program upgrade authority
+
+##### Multisig Requirements
+
+Must use SPL Token Multisig with Pool Signer PDA configured as a required signer. For detailed configuration requirements, validation rules, and examples, see [Mint Authority Management](/ccip/concepts/cross-chain-token/svm/token-pools#mint-authority-management).
+
+#### `transfer_ownership`
+
+Initiates transfer of pool ownership to a new owner.
+
+```rust
+fn transfer_ownership(
+    ctx: Context<SetConfig>,
+    proposed_owner: Pubkey,
+) -> Result<()>;
+```
+
+##### Parameters
+
+| Name             | Type     | Description                              |
+| ---------------- | -------- | ---------------------------------------- |
+| `proposed_owner` | `Pubkey` | The public key of the proposed new owner |
+
+##### Context (Accounts)
+
+| Field       | Type                            | Writable? | Description                                                                                |
+| ----------- | ------------------------------- | --------- | ------------------------------------------------------------------------------------------ |
+| `state`     | `Account<State>`                | Yes       | Pool state PDA. <br/>**Derivation**: `["ccip_tokenpool_config", mint]` under this program. |
+| `mint`      | `InterfaceAccount<'info, Mint>` | No        | The SPL token mint.                                                                        |
+| `authority` | `Signer<'info>`                 | No        | Must be the current pool owner.                                                            |
+
+##### Authorization
+
+- **Caller**: Must be the current pool owner
+
+#### `accept_ownership`
+
+Accepts pool ownership by the proposed owner.
+
+```rust
+fn accept_ownership(ctx: Context<AcceptOwnership>) -> Result<()>;
+```
+
+##### Parameters
+
+This instruction takes no additional parameters.
+
+##### Context (Accounts)
+
+| Field       | Type                            | Writable? | Description                                                                                |
+| ----------- | ------------------------------- | --------- | ------------------------------------------------------------------------------------------ |
+| `state`     | `Account<State>`                | Yes       | Pool state PDA. <br/>**Derivation**: `["ccip_tokenpool_config", mint]` under this program. |
+| `mint`      | `InterfaceAccount<'info, Mint>` | No        | The SPL token mint.                                                                        |
+| `authority` | `Signer<'info>`                 | No        | Must be the proposed owner.                                                                |
+
+##### Authorization
+
+- **Caller**: Must be the proposed owner stored in the pool state
+
+#### `set_router`
+
+Updates the router address for an existing pool.
+
+```rust
+fn set_router(
+    ctx: Context<AdminUpdateTokenPool>,
+    new_router: Pubkey,
+) -> Result<()>;
+```
+
+##### Parameters
+
+| Name         | Type     | Description                         |
+| ------------ | -------- | ----------------------------------- |
+| `new_router` | `Pubkey` | The new CCIP Router program address |
+
+##### Context (Accounts)
+
+| Field          | Type                                | Writable? | Description                                                                                |
+| -------------- | ----------------------------------- | --------- | ------------------------------------------------------------------------------------------ |
+| `state`        | `Account<State>`                    | No        | Pool state PDA. <br/>**Derivation**: `["ccip_tokenpool_config", mint]` under this program. |
+| `mint`         | `InterfaceAccount<'info, Mint>`     | No        | The SPL token mint.                                                                        |
+| `authority`    | `Signer<'info>`                     | Yes       | Must be program upgrade authority and pool owner.                                          |
+| `program`      | `Program<'info, BurnmintTokenPool>` | No        | The BurnMint Token Pool program.                                                           |
+| `program_data` | `Account<'info, ProgramData>`       | No        | Program data account for upgrade authority verification.                                   |
+
+##### Authorization
+
+- **Caller**: Must be the program upgrade authority AND the pool owner
+
+#### `set_rmn`
+
+Updates the RMN Remote address for an existing pool.
+
+```rust
+fn set_rmn(
+    ctx: Context<AdminUpdateTokenPool>,
+    rmn_address: Pubkey,
+) -> Result<()>;
+```
+
+##### Parameters
+
+| Name          | Type     | Description                        |
+| ------------- | -------- | ---------------------------------- |
+| `rmn_address` | `Pubkey` | The new RMN Remote program address |
+
+##### Context (Accounts)
+
+Same as `set_router`.
+
+##### Authorization
+
+- **Caller**: Must be the program upgrade authority AND the pool owner
+
+### Chain Configuration
+
+These instructions manage per-destination-chain configuration for token pools.
+
+#### `init_chain_remote_config`
+
+Initializes configuration for a specific remote destination chain.
+
+```rust
+fn init_chain_remote_config(
+    ctx: Context<InitializeChainConfig>,
+    remote_chain_selector: u64,
+    mint: Pubkey,
+    cfg: RemoteConfig,
+) -> Result<()>;
+```
+
+##### Parameters
+
+| Name                    | Type           | Description                                                 |
+| ----------------------- | -------------- | ----------------------------------------------------------- |
+| `remote_chain_selector` | `u64`          | The destination chain selector                              |
+| `mint`                  | `Pubkey`       | The SPL token mint                                          |
+| `cfg`                   | `RemoteConfig` | Remote chain configuration (must have empty pool addresses) |
+
+##### Context (Accounts)
+
+| Field            | Type                     | Writable? | Description                                                                                                                            |
+| ---------------- | ------------------------ | --------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `state`          | `Account<State>`         | No        | Pool state PDA. <br/>**Derivation**: `["ccip_tokenpool_config", mint]` under this program.                                             |
+| `chain_config`   | `Account<ChainConfig>`   | Yes       | Chain config PDA to initialize. <br/>**Derivation**: `["ccip_tokenpool_chainconfig", remote_chain_selector, mint]` under this program. |
+| `authority`      | `Signer<'info>`          | Yes       | Must be the pool owner.                                                                                                                |
+| `system_program` | `Program<'info, System>` | No        | Standard System Program.                                                                                                               |
+
+##### Authorization
+
+- **Caller**: Must be the pool owner
+
+#### `edit_chain_remote_config`
+
+Updates configuration for an existing remote destination chain.
+
+```rust
+fn edit_chain_remote_config(
+    ctx: Context<EditChainConfigDynamicSize>,
+    remote_chain_selector: u64,
+    mint: Pubkey,
+    cfg: RemoteConfig,
+) -> Result<()>;
+```
+
+##### Parameters
+
+| Name                    | Type           | Description                        |
+| ----------------------- | -------------- | ---------------------------------- |
+| `remote_chain_selector` | `u64`          | The destination chain selector     |
+| `mint`                  | `Pubkey`       | The SPL token mint                 |
+| `cfg`                   | `RemoteConfig` | Updated remote chain configuration |
+
+##### Context (Accounts)
+
+| Field            | Type                     | Writable? | Description                                                                                                                       |
+| ---------------- | ------------------------ | --------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `state`          | `Account<State>`         | No        | Pool state PDA. <br/>**Derivation**: `["ccip_tokenpool_config", mint]` under this program.                                        |
+| `chain_config`   | `Account<ChainConfig>`   | Yes       | Existing chain config PDA. <br/>**Derivation**: `["ccip_tokenpool_chainconfig", remote_chain_selector, mint]` under this program. |
+| `authority`      | `Signer<'info>`          | Yes       | Must be the pool owner.                                                                                                           |
+| `system_program` | `Program<'info, System>` | No        | Standard System Program.                                                                                                          |
+
+##### Authorization
+
+- **Caller**: Must be the pool owner
+
+#### `append_remote_pool_addresses`
+
+Adds additional remote pool addresses to an existing chain configuration.
+
+```rust
+fn append_remote_pool_addresses(
+    ctx: Context<AppendRemotePoolAddresses>,
+    remote_chain_selector: u64,
+    mint: Pubkey,
+    addresses: Vec<RemoteAddress>,
+) -> Result<()>;
+```
+
+##### Parameters
+
+| Name                    | Type                 | Description                    |
+| ----------------------- | -------------------- | ------------------------------ |
+| `remote_chain_selector` | `u64`                | The destination chain selector |
+| `mint`                  | `Pubkey`             | The SPL token mint             |
+| `addresses`             | `Vec<RemoteAddress>` | Remote pool addresses to add   |
+
+##### Context (Accounts)
+
+Same as `edit_chain_remote_config`.
+
+##### Authorization
+
+- **Caller**: Must be the pool owner
+
+#### `set_chain_rate_limit`
+
+Configures rate limits for inbound and outbound transfers to/from a specific chain.
+
+```rust
+fn set_chain_rate_limit(
+    ctx: Context<SetChainRateLimit>,
+    remote_chain_selector: u64,
+    mint: Pubkey,
+    inbound: RateLimitConfig,
+    outbound: RateLimitConfig,
+) -> Result<()>;
+```
+
+##### Parameters
+
+| Name                    | Type              | Description                                     |
+| ----------------------- | ----------------- | ----------------------------------------------- |
+| `remote_chain_selector` | `u64`             | The destination chain selector                  |
+| `mint`                  | `Pubkey`          | The SPL token mint                              |
+| `inbound`               | `RateLimitConfig` | Rate limit configuration for inbound transfers  |
+| `outbound`              | `RateLimitConfig` | Rate limit configuration for outbound transfers |
+
+##### Context (Accounts)
+
+| Field          | Type                   | Writable? | Description                                                                                                              |
+| -------------- | ---------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `state`        | `Account<State>`       | No        | Pool state PDA. <br/>**Derivation**: `["ccip_tokenpool_config", mint]` under this program.                               |
+| `chain_config` | `Account<ChainConfig>` | Yes       | Chain config PDA. <br/>**Derivation**: `["ccip_tokenpool_chainconfig", remote_chain_selector, mint]` under this program. |
+| `authority`    | `Signer<'info>`        | Yes       | Must be the pool owner.                                                                                                  |
+
+##### Authorization
+
+- **Caller**: Must be the pool owner
+
+#### `delete_chain_config`
+
+Removes configuration for a specific remote destination chain.
+
+```rust
+fn delete_chain_config(
+    ctx: Context<DeleteChainConfig>,
+    remote_chain_selector: u64,
+    mint: Pubkey,
+) -> Result<()>;
+```
+
+##### Parameters
+
+| Name                    | Type     | Description                    |
+| ----------------------- | -------- | ------------------------------ |
+| `remote_chain_selector` | `u64`    | The destination chain selector |
+| `mint`                  | `Pubkey` | The SPL token mint             |
+
+##### Context (Accounts)
+
+| Field          | Type                   | Writable? | Description                                                                                                                        |
+| -------------- | ---------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `state`        | `Account<State>`       | No        | Pool state PDA. <br/>**Derivation**: `["ccip_tokenpool_config", mint]` under this program.                                         |
+| `chain_config` | `Account<ChainConfig>` | Yes       | Chain config PDA to delete. <br/>**Derivation**: `["ccip_tokenpool_chainconfig", remote_chain_selector, mint]` under this program. |
+| `authority`    | `Signer<'info>`        | Yes       | Must be the pool owner.                                                                                                            |
+
+##### Authorization
+
+- **Caller**: Must be the pool owner
+
+### Access Control
+
+These instructions manage allowlists for token transfers.
+
+#### `configure_allow_list`
+
+Configures the allowlist for the token pool, adding addresses and enabling/disabling the allowlist.
+
+```rust
+fn configure_allow_list(
+    ctx: Context<AddToAllowList>,
+    add: Vec<Pubkey>,
+    enabled: bool,
+) -> Result<()>;
+```
+
+##### Parameters
+
+| Name      | Type          | Description                       |
+| --------- | ------------- | --------------------------------- |
+| `add`     | `Vec<Pubkey>` | Addresses to add to the allowlist |
+| `enabled` | `bool`        | Whether to enable the allowlist   |
+
+##### Context (Accounts)
+
+| Field            | Type                            | Writable? | Description                                                                                |
+| ---------------- | ------------------------------- | --------- | ------------------------------------------------------------------------------------------ |
+| `state`          | `Account<State>`                | Yes       | Pool state PDA. <br/>**Derivation**: `["ccip_tokenpool_config", mint]` under this program. |
+| `mint`           | `InterfaceAccount<'info, Mint>` | No        | The SPL token mint.                                                                        |
+| `authority`      | `Signer<'info>`                 | Yes       | Must be the pool owner.                                                                    |
+| `system_program` | `Program<'info, System>`        | No        | Standard System Program.                                                                   |
+
+##### Authorization
+
+- **Caller**: Must be the pool owner
+
+#### `remove_from_allow_list`
+
+Removes addresses from the allowlist.
+
+```rust
+fn remove_from_allow_list(
+    ctx: Context<RemoveFromAllowlist>,
+    remove: Vec<Pubkey>,
+) -> Result<()>;
+```
+
+##### Parameters
+
+| Name     | Type          | Description                            |
+| -------- | ------------- | -------------------------------------- |
+| `remove` | `Vec<Pubkey>` | Addresses to remove from the allowlist |
+
+##### Context (Accounts)
+
+Same as `configure_allow_list`.
+
+##### Authorization
+
+- **Caller**: Must be the pool owner
+
+### Cross-Chain Operations
+
+These instructions handle the core cross-chain token transfer operations.
+
+#### `lock_or_burn_tokens`
+
+Burns tokens on the source chain as part of a cross-chain transfer (OnRamp operation).
+
+```rust
+fn lock_or_burn_tokens(
+    ctx: Context<TokenOnramp>,
+    lock_or_burn: LockOrBurnInV1,
+) -> Result<LockOrBurnOutV1>;
+```
+
+##### Parameters
+
+| Name           | Type             | Description                       |
+| -------------- | ---------------- | --------------------------------- |
+| `lock_or_burn` | `LockOrBurnInV1` | Cross-chain transfer request data |
+
+##### Return Value
+
+| Type              | Description                                      |
+| ----------------- | ------------------------------------------------ |
+| `LockOrBurnOutV1` | Contains destination token address and pool data |
+
+##### Context (Accounts)
+
+| Field                | Type                                    | Writable? | Description                                                                                                              |
+| -------------------- | --------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `authority`          | `Signer<'info>`                         | No        | Must be the Router's onramp authority.                                                                                   |
+| `state`              | `Account<State>`                        | No        | Pool state PDA. <br/>**Derivation**: `["ccip_tokenpool_config", mint]` under this program.                               |
+| `token_program`      | `Interface<'info, TokenInterface>`      | No        | Token program (SPL Token or Token-2022).                                                                                 |
+| `mint`               | `InterfaceAccount<'info, Mint>`         | Yes       | The SPL token mint.                                                                                                      |
+| `pool_signer`        | `UncheckedAccount<'info>`               | No        | Pool signer PDA. <br/>**Derivation**: `["ccip_tokenpool_signer", mint]` under this program.                              |
+| `pool_token_account` | `InterfaceAccount<'info, TokenAccount>` | Yes       | Pool's token account (ATA for pool_signer).                                                                              |
+| `rmn_remote`         | `UncheckedAccount<'info>`               | No        | RMN Remote program address.                                                                                              |
+| `rmn_remote_curses`  | `UncheckedAccount<'info>`               | No        | RMN curses PDA.                                                                                                          |
+| `rmn_remote_config`  | `UncheckedAccount<'info>`               | No        | RMN config PDA.                                                                                                          |
+| `chain_config`       | `Account<ChainConfig>`                  | Yes       | Chain config PDA. <br/>**Derivation**: `["ccip_tokenpool_chainconfig", remote_chain_selector, mint]` under this program. |
+
+##### Authorization
+
+- **Caller**: Must be the Router's designated onramp authority
+
+#### `release_or_mint_tokens`
+
+Mints tokens on the destination chain as part of a cross-chain transfer (OffRamp operation).
+
+```rust
+fn release_or_mint_tokens(
+    ctx: Context<TokenOfframp>,
+    release_or_mint: ReleaseOrMintInV1,
+) -> Result<ReleaseOrMintOutV1>;
+```
+
+##### Parameters
+
+| Name              | Type                | Description                          |
+| ----------------- | ------------------- | ------------------------------------ |
+| `release_or_mint` | `ReleaseOrMintInV1` | Cross-chain transfer completion data |
+
+##### Return Value
+
+| Type                 | Description                            |
+| -------------------- | -------------------------------------- |
+| `ReleaseOrMintOutV1` | Contains the destination amount minted |
+
+##### Context (Accounts)
+
+| Field                    | Type                                    | Writable? | Description                                                                                                              |
+| ------------------------ | --------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `authority`              | `Signer<'info>`                         | No        | Offramp authority derived from external token pools signer.                                                              |
+| `offramp_program`        | `UncheckedAccount<'info>`               | No        | The offramp program for PDA derivation.                                                                                  |
+| `allowed_offramp`        | `UncheckedAccount<'info>`               | No        | Router's allowed offramp PDA.                                                                                            |
+| `state`                  | `Account<State>`                        | No        | Pool state PDA. <br/>**Derivation**: `["ccip_tokenpool_config", mint]` under this program.                               |
+| `token_program`          | `Interface<'info, TokenInterface>`      | No        | Token program (SPL Token or Token-2022).                                                                                 |
+| `mint`                   | `InterfaceAccount<'info, Mint>`         | Yes       | The SPL token mint.                                                                                                      |
+| `pool_signer`            | `UncheckedAccount<'info>`               | No        | Pool signer PDA. <br/>**Derivation**: `["ccip_tokenpool_signer", mint]` under this program.                              |
+| `pool_token_account`     | `InterfaceAccount<'info, TokenAccount>` | Yes       | Pool's token account (ATA for pool_signer).                                                                              |
+| `chain_config`           | `Account<ChainConfig>`                  | Yes       | Chain config PDA. <br/>**Derivation**: `["ccip_tokenpool_chainconfig", remote_chain_selector, mint]` under this program. |
+| `rmn_remote`             | `UncheckedAccount<'info>`               | No        | RMN Remote program address.                                                                                              |
+| `rmn_remote_curses`      | `UncheckedAccount<'info>`               | No        | RMN curses PDA.                                                                                                          |
+| `rmn_remote_config`      | `UncheckedAccount<'info>`               | No        | RMN config PDA.                                                                                                          |
+| `receiver_token_account` | `InterfaceAccount<'info, TokenAccount>` | Yes       | Receiver's token account (ATA for the recipient).                                                                        |
+
+##### Authorization
+
+- **Caller**: Must be an authorized offramp with valid Router approval
+
+### Utility Instructions
+
+#### `type_version`
+
+Returns the program type and version information.
+
+```rust
+fn type_version(ctx: Context<Empty>) -> Result<String>;
+```
+
+##### Parameters
+
+This instruction takes no additional parameters.
+
+##### Return Value
+
+| Type     | Description                          |
+| -------- | ------------------------------------ |
+| `String` | Program type and version information |
+
+#### `initialize_state_version`
+
+Permissionless instruction to initialize the state version for pools that were created before versioning was implemented.
+
+```rust
+fn initialize_state_version(
+    ctx: Context<InitializeStateVersion>,
+    mint: Pubkey,
+) -> Result<()>;
+```
+
+##### Parameters
+
+| Name   | Type     | Description        |
+| ------ | -------- | ------------------ |
+| `mint` | `Pubkey` | The SPL token mint |
+
+##### Context (Accounts)
+
+| Field   | Type             | Writable? | Description                                                                                                           |
+| ------- | ---------------- | --------- | --------------------------------------------------------------------------------------------------------------------- |
+| `state` | `Account<State>` | Yes       | Pool state PDA with uninitialized version. <br/>**Derivation**: `["ccip_tokenpool_config", mint]` under this program. |
+
+##### Authorization
+
+- **Permissionless**: Anyone can call this instruction

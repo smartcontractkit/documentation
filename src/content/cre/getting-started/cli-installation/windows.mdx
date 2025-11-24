@@ -1,0 +1,145 @@
+---
+section: cre
+date: Last Modified
+title: "Installing the CRE CLI on Windows"
+metadata:
+  description: "Install the CRE CLI on Windows: use PowerShell for quick setup or manual installation, verify integrity, and start building workflows."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-20"
+---
+
+import { Aside, CopyText, PageTabs } from "@components"
+import { DownloadButton } from "~/components/DownloadButton.tsx"
+
+This page explains how to install the Chainlink Developer Platform CLI (also referred to as the CRE CLI) on Windows. The recommended version at the time of writing is **v1.0.2**.
+
+<PageTabs
+  pages={[
+    [
+      {
+        name: "macOS",
+        url: "/cre/getting-started/cli-installation/macos-linux",
+        icon: "/images/icons/macos.png",
+      },
+      {
+        name: "Linux",
+        url: "/cre/getting-started/cli-installation/macos-linux",
+        icon: "/images/icons/linux.png",
+      },
+    ],
+    {
+      name: "Windows",
+      url: "/cre/getting-started/cli-installation/windows",
+      icon: "/images/icons/windows.png",
+    },
+  ]}
+  headerTitle="Select your operating system"
+  headerDescription=""
+/>
+
+## Installation
+
+Choose your installation method:
+
+- **[Automatic installation](#automatic-installation)** - Quick setup with a PowerShell script
+- **[Manual installation](#manual-installation)** - Download and install the binary yourself
+
+### Automatic installation
+
+The easiest way to install the CRE CLI is using the installation script. Open **PowerShell** and run:
+
+```powershell
+irm https://cre.chain.link/install.ps1 | iex
+```
+
+This script will:
+
+- Download the correct binary for Windows
+- Verify the binary's integrity
+- Install it to a location in your PATH
+- Make the binary executable
+
+After the script completes, **open a new PowerShell window** and verify the installation:
+
+```powershell
+cre version
+```
+
+**Expected output:** `cre version v1.0.2`
+
+### Manual installation
+
+If you prefer to install manually or the automatic installation doesn't work for your environment, follow these steps:
+
+The CRE CLI is publicly available on GitHub. Click the button below to access the releases page and download `cre_windows_amd64.zip`.
+
+<center>
+  <DownloadButton client:load />
+</center>
+
+After downloading the file from the releases page, move on to the next step to verify its integrity.
+
+#### 1. Verify file integrity
+
+Before installing, verify the file integrity using a checksum to ensure the binary hasn't been tampered with.
+
+**Check the SHA-256 checksum**
+
+Open a PowerShell terminal and run the following command in the directory where you downloaded the archive:
+
+```powershell
+Get-FileHash cre_windows_amd64.zip -Algorithm SHA256
+```
+
+**Verify against the official checksum**
+
+Compare the `Hash` value in the output with the official checksum below:
+
+| <div style="width: 200px;">File</div> | SHA-256 Checksum                                                                          |
+| ------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `cre_windows_amd64.zip`               | <CopyText text="60fe65b74619c4164c0a9d6442611bf8537a04a6daf1ed3ecefc608cbbffdb01" code /> |
+
+If the checksum doesn't match, do not proceed with installation. Contact your Chainlink point of contact for assistance.
+
+#### 2. Extract and install
+
+1. Navigate to the directory where you downloaded the archive.
+1. Right-click the `.zip` file and select **Extract All...**.
+1. Choose a permanent location for the extracted folder (e.g., `C:\Program Files\cre-cli`).
+1. Inside the extracted folder, rename the file `cre_v1.0.2_windows_amd64.exe` to `cre.exe`.
+
+#### 3. Add the CLI to your PATH
+
+To run `cre` commands from any directory, you need to add the folder where you saved `cre.exe` to your system's PATH environment variable.
+
+1. Open the **Start Menu** and search for "environment variables".
+1. Select **Edit the system environment variables**.
+1. In the System Properties window, click the **Environment Variables...** button.
+1. In the **System variables** section, find and select the `Path` variable, then click **Edit...**.
+1. Click **New** and add the full path to the folder where you saved `cre.exe` (e.g., `C:\Program Files\cre-cli`).
+1. Click **OK** on all windows to save your changes.
+
+<Aside type="note" title="Note">
+  You must open a **new** terminal window for the PATH changes to take effect.
+</Aside>
+
+#### 4. Verify the installation
+
+Open a new **PowerShell** or **Command Prompt** window and run:
+
+```bash
+cre version
+```
+
+You should see version information: `cre version v1.0.2`.
+
+## Next steps
+
+Now that you have the `cre` CLI installed, you'll need to create a CRE account and authenticate before you can use it.
+
+- **[Creating Your Account](/cre/account/creating-account)**: Create your CRE account and set up two-factor authentication
+- **[Logging in with the CLI](/cre/account/cli-login)**: Authenticate the CLI with your account
+
+Once you're authenticated, you're ready to build your first workflow:
+
+- **[Getting Started — Part 1: Project Setup & Simulation](/cre/getting-started/part-1-project-setup)**: Initialize a new, blank CRE project and run your first "Hello World!" simulation.

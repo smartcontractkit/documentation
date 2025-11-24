@@ -1,0 +1,539 @@
+---
+section: cre
+title: "EVM Log Trigger"
+sdkLang: "ts"
+pageId: "guides-workflow-evm-log-trigger"
+date: Last Modified
+metadata:
+  description: "React to blockchain events in TypeScript: learn to trigger your workflow when smart contracts emit specific events on EVM chain."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+The EVM Log trigger fires when a specific log (event) is emitted by a smart contract on an EVM-compatible blockchain. This capability allows you to build powerful, event-driven workflows that react to onchain activity.
+
+This guide explains the two key parts of working with log triggers:
+
+- **[How to configure your workflow to listen for specific events](#configuring-your-trigger)**
+- **[How to decode the event data your workflow receives](#decoding-the-event-payload)**
+
+## Configuring your trigger
+
+You create an EVM Log trigger by calling the `EVMClient.logTrigger()` method with a `FilterLogTriggerRequest` configuration. This configuration specifies which contract addresses and event topics to listen for.
+
+### Basic configuration
+
+The simplest configuration listens for **all events** from specific contract addresses:
+
+```typescript
+import { cre, getNetwork, type Runtime, type EVMLog, Runner, bytesToHex } from "@chainlink/cre-sdk"
+
+type Config = {
+  chainSelectorName: string
+  contractAddress: string
+}
+
+// Callback function that runs when an event log is detected
+const onLogTrigger = (runtime: Runtime<Config>, log: EVMLog): string => {
+  runtime.log(`Log detected from ${bytesToHex(log.address)}`)
+  // Your logic here...
+  return "Log processed"
+}
+
+const initWorkflow = (config: Config) => {
+  const network = getNetwork({
+    chainFamily: "evm",
+    chainSelectorName: config.chainSelectorName,
+    isTestnet: true,
+  })
+
+  if (!network) {
+    throw new Error(`Network not found: ${config.chainSelectorName}`)
+  }
+
+  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+
+  return [
+    cre.handler(
+      evmClient.logTrigger({
+        addresses: [config.contractAddress],
+      }),
+      onLogTrigger
+    ),
+  ]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+
+main()
+```
+
+### Filtering by event type
+
+To listen for **specific event types**, you need to provide the event's signature hash as the first topic (`Topics[0]`). You can compute this using viem's `keccak256` and `toHex` functions:
+
+```typescript
+import { keccak256, toHex } from "viem"
+
+const initWorkflow = (config: Config) => {
+  const network = getNetwork({
+    chainFamily: "evm",
+    chainSelectorName: config.chainSelectorName,
+    isTestnet: true,
+  })
+
+  if (!network) {
+    throw new Error(`Network not found: ${config.chainSelectorName}`)
+  }
+
+  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+
+  // Compute the event signature hash for Transfer(address,address,uint256)
+  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
+
+  return [
+    cre.handler(
+      evmClient.logTrigger({
+        addresses: [config.contractAddress],
+        topics: [
+          { values: [transferEventHash] }, // Listen only for Transfer events
+        ],
+      }),
+      onLogTrigger
+    ),
+  ]
+}
+```
+
+### Filtering by indexed parameters
+
+EVM events can have up to 3 `indexed` parameters (in addition to the event signature). You can filter on these indexed parameters by providing their values in the `topics` array.
+
+**Understanding topic filtering:**
+
+- **`addresses`**: The trigger fires if the event is emitted from **any** contract in this list (**OR** logic).
+- **`topics`**: An event must match the conditions for **all** defined topic slots (**AND** logic between topics). Within a single topic, you can provide multiple values, and it will match if the event's topic is **any** of those values (**OR** logic within a topic).
+
+#### Example 1: Filtering on a single indexed parameter
+
+To trigger only on `Transfer` events where the `from` address is a specific value:
+
+```typescript
+import { keccak256, toHex, pad } from "viem"
+
+const initWorkflow = (config: Config) => {
+  const network = getNetwork({
+    chainFamily: "evm",
+    chainSelectorName: config.chainSelectorName,
+    isTestnet: true,
+  })
+
+  if (!network) {
+    throw new Error(`Network not found: ${config.chainSelectorName}`)
+  }
+
+  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+
+  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
+  const aliceAddress = "0xAlice..."
+
+  return [
+    cre.handler(
+      evmClient.logTrigger({
+        addresses: [config.contractAddress],
+        topics: [
+          { values: [transferEventHash] }, // Topic 0: Event signature (Transfer)
+          { values: [pad(aliceAddress)] }, // Topic 1: from = Alice
+        ],
+      }),
+      onLogTrigger
+    ),
+  ]
+}
+```
+
+<Aside type="note" title="Indexed Parameters and Topics">
+  Only parameters marked as `indexed` in the Solidity event definition can be filtered using topics. The event signature
+  is always `Topics[0]`. Subsequent indexed parameters are `Topics[1]`, `Topics[2]`, and `Topics[3]`. Address values
+  must be padded to 32 bytes using viem's `pad()` function.
+</Aside>
+
+#### Example 2: "AND" filtering
+
+To trigger on `Transfer` events where `from` is Alice **AND** `to` is Bob:
+
+```typescript
+import { keccak256, toHex, pad } from "viem"
+
+const initWorkflow = (config: Config) => {
+  const network = getNetwork({
+    chainFamily: "evm",
+    chainSelectorName: config.chainSelectorName,
+    isTestnet: true,
+  })
+
+  if (!network) {
+    throw new Error(`Network not found: ${config.chainSelectorName}`)
+  }
+
+  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+
+  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
+  const aliceAddress = "0xAlice..."
+  const bobAddress = "0xBob..."
+
+  return [
+    cre.handler(
+      evmClient.logTrigger({
+        addresses: [config.contractAddress],
+        topics: [
+          { values: [transferEventHash] }, // Topic 0: Event signature (Transfer)
+          { values: [pad(aliceAddress)] }, // Topic 1: from = Alice
+          { values: [pad(bobAddress)] }, // Topic 2: to = Bob
+        ],
+      }),
+      onLogTrigger
+    ),
+  ]
+}
+```
+
+#### Example 3: "OR" filtering
+
+To trigger on `Transfer` events where `from` is **either** Alice **OR** Charlie:
+
+```typescript
+import { keccak256, toHex, pad } from "viem"
+
+const initWorkflow = (config: Config) => {
+  const network = getNetwork({
+    chainFamily: "evm",
+    chainSelectorName: config.chainSelectorName,
+    isTestnet: true,
+  })
+
+  if (!network) {
+    throw new Error(`Network not found: ${config.chainSelectorName}`)
+  }
+
+  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+
+  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
+  const aliceAddress = "0xAlice..."
+  const charlieAddress = "0xCharlie..."
+
+  return [
+    cre.handler(
+      evmClient.logTrigger({
+        addresses: [config.contractAddress],
+        topics: [
+          { values: [transferEventHash] }, // Topic 0: Event signature (Transfer)
+          { values: [pad(aliceAddress), pad(charlieAddress)] }, // Topic 1: from = Alice OR Charlie
+        ],
+      }),
+      onLogTrigger
+    ),
+  ]
+}
+```
+
+#### Example 4: Multiple event types
+
+To listen for **multiple event types** from a single contract, provide multiple event signature hashes in `Topics[0]`:
+
+```typescript
+import { keccak256, toHex } from "viem"
+
+const initWorkflow = (config: Config) => {
+  const network = getNetwork({
+    chainFamily: "evm",
+    chainSelectorName: config.chainSelectorName,
+    isTestnet: true,
+  })
+
+  if (!network) {
+    throw new Error(`Network not found: ${config.chainSelectorName}`)
+  }
+
+  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+
+  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
+  const approvalEventHash = keccak256(toHex("Approval(address,address,uint256)"))
+
+  return [
+    cre.handler(
+      evmClient.logTrigger({
+        addresses: [config.contractAddress],
+        topics: [
+          { values: [transferEventHash, approvalEventHash] }, // Listen for Transfer OR Approval
+        ],
+      }),
+      onLogTrigger
+    ),
+  ]
+}
+```
+
+#### Example 5: Multiple contracts
+
+To listen for the **same event from multiple contracts**, provide multiple addresses:
+
+```typescript
+const initWorkflow = (config: Config) => {
+  const network = getNetwork({
+    chainFamily: "evm",
+    chainSelectorName: config.chainSelectorName,
+    isTestnet: true,
+  })
+
+  if (!network) {
+    throw new Error(`Network not found: ${config.chainSelectorName}`)
+  }
+
+  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+
+  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
+
+  return [
+    cre.handler(
+      evmClient.logTrigger({
+        addresses: ["0xTokenA...", "0xTokenB...", "0xTokenC..."],
+        topics: [
+          { values: [transferEventHash] }, // Listen for Transfer events from any of these contracts
+        ],
+      }),
+      onLogTrigger
+    ),
+  ]
+}
+```
+
+### Confidence level
+
+You can set the block confirmation level by adding the `confidence` field to the trigger configuration:
+
+```typescript
+evmClient.logTrigger({
+  addresses: [config.contractAddress],
+  confidence: "CONFIDENCE_LEVEL_FINALIZED", // Wait for finalized blocks
+})
+```
+
+See the [EVM Log Trigger reference](/cre/reference/sdk/triggers/evm-log-trigger-ts#configuration) for details on the available confidence levels.
+
+## Decoding the event payload
+
+Once your trigger is configured, your handler function receives an `EVMLog` object. For the full type definition and all available fields, see the [EVM Log Trigger SDK Reference](/cre/reference/sdk/triggers/evm-log-trigger-ts#payload).
+
+This object contains:
+
+| Field         | Description                                           |
+| ------------- | ----------------------------------------------------- |
+| `address`     | The contract address that emitted the event           |
+| `topics`      | An array of indexed event parameters                  |
+| `data`        | The non-indexed event parameters                      |
+| `eventSig`    | The keccak256 hash of the event signature             |
+| `blockNumber` | The block number where the event was emitted          |
+| `blockHash`   | The block hash                                        |
+| `txHash`      | The transaction hash                                  |
+| `txIndex`     | The transaction index within the block                |
+| `index`       | The log index within the block                        |
+| `removed`     | Flag indicating if the log was removed during a reorg |
+
+### Method 1: Manual topic extraction
+
+The simplest approach is to manually extract values from the `topics` array. This is useful when you only need a few indexed parameters.
+
+For example, to decode a `Transfer(address indexed from, address indexed to, uint256 value)` event:
+
+```typescript
+import { bytesToHex } from "@chainlink/cre-sdk"
+import type { EVMLog, Runtime } from "@chainlink/cre-sdk"
+
+const onLogTrigger = (runtime: Runtime<Config>, log: EVMLog): string => {
+  const topics = log.topics
+
+  if (topics.length < 3) {
+    throw new Error("Log missing required topics")
+  }
+
+  // topics[0] is the event signature
+  runtime.log(`Event signature: ${bytesToHex(topics[0])}`)
+
+  // topics[1] is the first indexed parameter (from address for Transfer)
+  // Addresses are 32 bytes, but the actual address is the last 20 bytes
+  const fromAddress = bytesToHex(topics[1].slice(12))
+  runtime.log(`From address: ${fromAddress}`)
+
+  // topics[2] is the second indexed parameter (to address for Transfer)
+  const toAddress = bytesToHex(topics[2].slice(12))
+  runtime.log(`To address: ${toAddress}`)
+
+  // For non-indexed parameters, you'll need to decode log.data using viem
+  runtime.log(`Data length: ${log.data.length} bytes`)
+
+  return "Log processed"
+}
+```
+
+### Method 2: Using viem's `decodeEventLog`
+
+For more complex events or when you need to decode non-indexed parameters, you can use viem's `decodeEventLog` function. First, define your event ABI:
+
+```typescript
+import { decodeEventLog, parseAbi } from "viem"
+import { bytesToHex } from "@chainlink/cre-sdk"
+import type { EVMLog, Runtime } from "@chainlink/cre-sdk"
+
+// Define your event ABI
+const eventAbi = parseAbi([
+  "event Transfer(address indexed from, address indexed to, uint256 value)",
+  "event Approval(address indexed owner, address indexed spender, uint256 value)",
+])
+
+const onLogTrigger = (runtime: Runtime<Config>, log: EVMLog): string => {
+  // Convert topics and data to hex format for viem
+  const topics = log.topics.map((topic) => bytesToHex(topic)) as [`0x${string}`, ...`0x${string}`[]]
+  const data = bytesToHex(log.data)
+
+  // Decode the event
+  const decodedLog = decodeEventLog({
+    abi: eventAbi,
+    data,
+    topics,
+  })
+
+  runtime.log(`Event name: ${decodedLog.eventName}`)
+
+  if (decodedLog.eventName === "Transfer") {
+    const { from, to, value } = decodedLog.args
+    runtime.log(`Transfer from ${from} to ${to}, value: ${value.toString()}`)
+  } else if (decodedLog.eventName === "Approval") {
+    const { owner, spender, value } = decodedLog.args
+    runtime.log(`Approval by ${owner} to ${spender}, value: ${value.toString()}`)
+  }
+
+  return "Log decoded"
+}
+```
+
+<Aside type="note" title="Using Contract ABI Files">
+  For complex workflows, consider defining your contract ABIs in separate TypeScript files (e.g.,
+  `contracts/abi/MyContract.ts`) and importing them. This approach provides better type safety and reusability. See the
+  [Reading an Onchain Value guide](/cre/getting-started/part-3-reading-onchain-value) for an example of this pattern.
+</Aside>
+
+{/* prettier-ignore */}
+<Aside type="note" title="Type Assertion for Topics">
+  The type assertion 
+  ```
+  as [\`0x${string}\`, ...\`0x${string}\`[]]
+  ```
+
+tells TypeScript that `topics` is a non-empty array of
+hex strings (required by viem's `decodeEventLog`). This ensures the event signature is always present as the first
+element.
+
+</Aside>
+
+### Method 3: Manual decoding with viem utilities
+
+If you need fine-grained control, you can manually decode specific fields using viem's utilities:
+
+```typescript
+import { bytesToHex } from "@chainlink/cre-sdk"
+import { decodeAbiParameters, parseAbiParameters } from "viem"
+import type { EVMLog, Runtime } from "@chainlink/cre-sdk"
+
+const onLogTrigger = (runtime: Runtime<Config>, log: EVMLog): string => {
+  const topics = log.topics
+
+  // Manually extract indexed parameters
+  const fromAddress = bytesToHex(topics[1].slice(12))
+  const toAddress = bytesToHex(topics[2].slice(12))
+
+  // Decode non-indexed parameters from log.data
+  const decodedData = decodeAbiParameters(parseAbiParameters("uint256 value"), bytesToHex(log.data))
+  const value = decodedData[0]
+
+  runtime.log(`Transfer: ${fromAddress} -> ${toAddress}, value: ${value.toString()}`)
+
+  return "Log decoded"
+}
+```
+
+## Complete example
+
+Here's a complete example that listens for ERC20 `Transfer` events and decodes them:
+
+```typescript
+import { cre, getNetwork, type Runtime, type EVMLog, Runner, bytesToHex } from "@chainlink/cre-sdk"
+import { keccak256, toHex, decodeEventLog, parseAbi } from "viem"
+
+type Config = {
+  chainSelectorName: string
+  tokenAddress: string
+}
+
+const eventAbi = parseAbi(["event Transfer(address indexed from, address indexed to, uint256 value)"])
+
+const onLogTrigger = (runtime: Runtime<Config>, log: EVMLog): string => {
+  const topics = log.topics.map((topic) => bytesToHex(topic)) as [`0x${string}`, ...`0x${string}`[]]
+  const data = bytesToHex(log.data)
+
+  const decodedLog = decodeEventLog({
+    abi: eventAbi,
+    data,
+    topics,
+  })
+
+  const { from, to, value } = decodedLog.args
+  runtime.log(`Transfer detected: ${from} -> ${to}, amount: ${value.toString()}`)
+
+  return `Processed transfer of ${value.toString()}`
+}
+
+const initWorkflow = (config: Config) => {
+  const network = getNetwork({
+    chainFamily: "evm",
+    chainSelectorName: config.chainSelectorName,
+    isTestnet: true,
+  })
+
+  if (!network) {
+    throw new Error(`Network not found: ${config.chainSelectorName}`)
+  }
+
+  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
+
+  return [
+    cre.handler(
+      evmClient.logTrigger({
+        addresses: [config.tokenAddress],
+        topics: [{ values: [transferEventHash] }],
+        confidence: "CONFIDENCE_LEVEL_FINALIZED",
+      }),
+      onLogTrigger
+    ),
+  ]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+
+main()
+```
+
+## Testing log triggers in simulation
+
+To test your EVM log trigger during development, you can use the workflow simulator with a transaction hash and event index. The simulator fetches the log from your configured RPC and passes it to your callback function.
+
+For detailed instructions on simulating EVM log triggers, including interactive and non-interactive modes, see the [EVM Log Trigger section in the Simulating Workflows guide](/cre/guides/operations/simulating-workflows#evm-log-trigger).

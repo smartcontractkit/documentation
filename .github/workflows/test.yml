@@ -6,6 +6,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  FOUNDRY_PROFILE: ci
+
 # Set default permissions as restrictive as possible
 permissions:
   actions: write    # Required for upload-artifact
@@ -18,23 +21,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      # Only cache node_modules, let setup-node handle npm cache
       - name: Cache node_modules
         uses: actions/cache@v4
         id: cache-node-modules
         continue-on-error: true
         with:
-          path: |
-            node_modules
+          path: node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install Dependencies
@@ -49,25 +50,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v5
-      
+        uses: actions/checkout@v6
+
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      # Restore node_modules from setup job
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@50d5a8956f2e319df19e6b57539d7e2acb9f8c1e # v1.5
+        with:
+          version: stable
+          cache: false
+
+      - name: Show Forge version
+        run: forge --version
+
       - name: Restore node_modules
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         continue-on-error: true
         with:
-          path: |
-            node_modules
+          path: node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-modules-
 
       - name: Ensure Dependencies
         run: |
@@ -76,56 +82,36 @@ jobs:
             npm ci --prefer-offline --no-audit
           fi
 
-      # Cache Solidity compilation artifacts
-      - name: Restore compilation caches
-        id: cache-solidity
-        uses: actions/cache@v4
-        continue-on-error: true
-        with:
-          path: |
-            .test/artifacts
-            .test/cache
-            ~/.cache/hardhat
-            typechain-types
-          key: ${{ runner.os }}-solidity-${{ hashFiles('public/samples/**/*.sol', 'hardhat.config.cts') }}
-          restore-keys: |
-            ${{ runner.os }}-solidity-
+      - name: Check Solidity Formatting
+        run: npm run sol:fmt:check
 
       - name: Check Solidity Compilation
-        run: |
-          echo "Running Solidity compilation with cache..."
-          npm run sol:compile
+        run: forge build --sizes
 
-      - name: Check Solidity Solhint
-        run: |
-          echo "Running Solhint..."
-          npm run lint-solc
-
+      - name: Check Solidity Linting
+        run: npm run lint-solc
+          
   # Job 2: Check ESLint
   eslint:
     needs: setup
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      # Restore node_modules from setup job
       - name: Restore node_modules
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         continue-on-error: true
         with:
-          path: |
-            node_modules
+          path: node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-modules-
 
       - name: Ensure Dependencies
         run: |
@@ -150,25 +136,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      # Restore node_modules from setup job
       - name: Restore node_modules
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         continue-on-error: true
         with:
-          path: |
-            node_modules
+          path: node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-modules-
 
       - name: Ensure Dependencies
         run: |
@@ -186,25 +168,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      # Restore node_modules from setup job
       - name: Restore node_modules
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         continue-on-error: true
         with:
-          path: |
-            node_modules
+          path: node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-modules-
 
       - name: Ensure Dependencies
         run: |
@@ -234,25 +212,21 @@ jobs:
     
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       
       - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      # Restore node_modules from setup job
       - name: Restore node_modules
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         continue-on-error: true
         with:
-          path: |
-            node_modules
+          path: node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-modules-
 
       - name: Ensure Dependencies
         run: |
@@ -266,7 +240,7 @@ jobs:
       
       - name: Upload Test Coverage
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: coverage-report-node-${{ matrix.node-version }}
           path: coverage/

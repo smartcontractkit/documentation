@@ -1,0 +1,243 @@
+---
+title: "Project Configuration"
+section: cre
+sdkLang: "ts"
+pageId: "project-configuration"
+date: Last Modified
+metadata:
+  description: "Configure your TypeScript project: learn to manage project.yaml, workflow.yaml, and targets for different environments."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { ClickToZoom, Aside } from "@components"
+
+This page explains how to manage configuration within Chainlink Runtime Environment (CRE) projects. It covers the standard project structure, the roles and usage of the configuration files (`project.yaml` and `workflow.yaml`), and the concept of **targets** for handling environment-specific settings.
+
+You will understand:
+
+- The recommended directory structure for CRE projects and the significance of key files.
+- How to define global settings in `project.yaml` and override them with workflow-specific settings in `workflow.yaml`.
+- The purpose of targets and how they enable seamless switching between different operational environments.
+- The process by which the CRE CLI resolves and merges target configurations.
+
+## 1. Glossary
+
+| <div style="width: 120px;">Term</div> | Definition                                                                                                                                                                                         |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Project**                           | A folder that groups one or more workflows plus shared files such as `project.yaml`, `.env`, and `.gitignore`.                                                                                     |
+| **Workflow**                          | A sub-folder that contains everything needed to run _one_ workflow (code, dependencies, build artifacts, and the optional `workflow.yaml`).                                                        |
+| **Config**                            | Any YAML file that lets you adjust how a workflow behaves (timeouts, trigger frequency, etc.).                                                                                                     |
+| **Settings**                          | Values that describe the runtime environment. Project settings live in `project.yaml`; workflow settings live in `workflow.yaml`. If both define the same key, the workflow value wins.            |
+| **Target**                            | A named set of settings (e.g. `staging-settings`, `production-settings`). Switching the target switches networks, RPC URLs, contract addresses, and other environment-specific values in one step. |
+| `secrets.yaml`                        | A project-level file that defines logical names for secrets and maps them to environment variables.                                                                                                |
+| **ABI**                               | Application Binary Interface - describes a smart contract's functions, events, and data structures. In TypeScript, ABIs are defined directly as TypeScript files using viem.                       |
+
+## 2. Project structure
+
+A typical CRE TypeScript project is organized as follows:
+
+```text
+myProject/
+├── .env                    # Secret values (never commit to a Version Control System like Git)
+├── .gitignore
+├── project.yaml            # Global configuration
+├── secrets.yaml            # Secret name declarations
+├── contracts/              # Contract-related files
+│   └── abi/                # TypeScript ABI definitions (.ts files)
+│       ├── MessageEmitter.ts
+│       ├── index.ts
+│       └── …
+├── workflow1/
+│   ├── package.json        # NPM dependencies for this workflow
+│   ├── tsconfig.json       # TypeScript configuration
+│   ├── bun.lock            # Dependency lock file
+│   ├── node_modules/       # Installed dependencies
+│   ├── workflow.yaml       # Workflow-specific configuration (optional)
+│   ├── main.ts             # Your workflow code
+│   └── …
+├── workflow2/
+│   ├── package.json        # NPM dependencies for this workflow
+│   ├── tsconfig.json       # TypeScript configuration
+│   ├── bun.lock            # Dependency lock file
+│   ├── node_modules/       # Installed dependencies
+│   ├── workflow.yaml       # Workflow-specific configuration (optional)
+│   ├── main.ts             # Your workflow code
+│   └── …
+└── …
+```
+
+- `project.yaml`: **Global settings**, shared by every workflow in the project.
+- `workflow.yaml`: **Local settings** for a single workflow. Add this file only when the workflow needs overrides.
+- `secrets.yaml`: **Secret declarations**, a manifest of logical secret names used across the project.
+- `contracts/abi/`: **TypeScript ABI definitions**, where you place `.ts` files that export contract ABIs using viem's type system. Unlike Go, TypeScript doesn't require generating bindings—ABIs are used directly with viem.
+- `package.json` / `tsconfig.json`: **Workflow-specific dependencies and TypeScript configuration**. Each workflow manages its own dependencies independently.
+- `node_modules/`: **Installed dependencies** for the workflow (generated by `npm install` or similar).
+
+## 3. Configuration files
+
+### 3.1. Global configuration (`project.yaml`)
+
+`project.yaml` holds everything that rarely changes across workflows, such as RPC endpoints.
+
+```yaml
+# project.yaml
+staging-settings:
+  rpcs:
+    - chain-name: ethereum-testnet-sepolia
+      url: https://ethereum-sepolia-rpc.publicnode.com
+
+# You can define other targets for future use
+production-settings:
+  account:
+    workflow-owner-address: "0x..." # Optional: For multi-sig wallets
+  rpcs:
+    - chain-name: ethereum-testnet-sepolia
+      url: https://ethereum-sepolia-rpc.publicnode.com
+    - chain-name: ethereum-mainnet
+      url: https://mainnet.infura.io/v3/<YOUR-PROJECT-ID>
+```
+
+<Aside type="note" title="Available chain names">
+  For a complete list of supported networks and their chain names, see [Supported
+  Networks](/cre/guides/workflow/using-evm-client/supported-networks). For details on using chain selectors in your
+  workflow code, see [Chain Selectors](/cre/reference/sdk/evm-client-ts#chain-selectors).
+</Aside>
+
+#### Configuration fields
+
+| <div style="width: 150px;">Field</div> | Required | <div style="width: 150px;">When to use</div> | Description                                                                                                                                                                                                                                                                                                                |
+| -------------------------------------- | -------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `account.workflow-owner-address`       | No       | Multi-sig only                               | Multi-sig wallet address that owns the workflow. Required when using the `--unsigned` flag to generate unsigned transactions. For standard (non-multi-sig) deployments, omit this field—the CLI uses the address from `CRE_ETH_PRIVATE_KEY`. See [Using Multi-sig Wallets](/cre/guides/operations/using-multisig-wallets). |
+| `rpcs`                                 | Yes      | Always (if using EVM)                        | Array of RPC endpoints for chains your workflow interacts with. Each entry requires `chain-name` (e.g., `ethereum-mainnet`) and `url` (the RPC endpoint). **Required for both simulation and deployed workflows** that use EVM capabilities. The CLI pre-populates a public Sepolia RPC URL by default.                    |
+
+<Aside type="caution" title="Missing RPC causes simulation failure">
+  If your workflow uses EVM capabilities, you must configure RPC endpoints. Without them, the simulator cannot register
+  the EVM capability and your workflow will fail.
+</Aside>
+
+### 3.2. Workflow configuration (`workflow.yaml`)
+
+`workflow.yaml` captures details **unique to one workflow instance**, like its name and entry point file.
+
+```yaml
+# workflow.yaml
+staging-settings:
+  user-workflow:
+    workflow-name: "my-por-workflow-staging"
+  workflow-artifacts:
+    workflow-path: "./main.ts" # Points to the TypeScript entry file
+    config-path: "./config.staging.json"
+    secrets-path: "" # Empty if not using secrets
+
+production-settings:
+  user-workflow:
+    workflow-owner-address: "<address>" # Optional: For multi-sig wallets
+    workflow-name: "my-por-workflow-production"
+  workflow-artifacts:
+    workflow-path: "./main.ts" # Points to the TypeScript entry file
+    config-path: "./config.production.json"
+    secrets-path: "" # e.g. "../secrets.yaml" if using secrets
+```
+
+#### Configuration fields
+
+| <div style="width: 220px;">Field</div> | Required | Description                                                                                                                                                                                                     |
+| -------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `user-workflow.workflow-name`          | Yes      | The name of your workflow. This name is used to identify the workflow when deploying, activating, or managing it via CLI commands. Best practice: include environment suffix (e.g., `-staging`, `-production`). |
+| `user-workflow.workflow-owner-address` | No       | Multi-sig wallet address (if applicable). Overrides the value from `project.yaml` for this specific workflow. See the `project.yaml` configuration table above for details.                                     |
+| `workflow-artifacts.workflow-path`     | Yes      | Path to your workflow entry point. For TypeScript: `"./main.ts"` (or your entry file name). For Go: `"."` (current directory).                                                                                  |
+| `workflow-artifacts.config-path`       | Yes      | Path to your workflow configuration JSON file (e.g., `"./config.staging.json"` or `"./config.production.json"`).                                                                                                |
+| `workflow-artifacts.secrets-path`      | No       | Path to your secrets YAML file (e.g., `"../secrets.yaml"`). Use `""` (empty string) if not using secrets. See [Secrets Management](/cre/guides/workflow/secrets) for details.                                   |
+
+<Aside type="note" title="When is workflow.yaml required?">
+  Every workflow directory must have a `workflow.yaml` file that defines `workflow-name` and `workflow-artifacts`. You
+  can optionally override project-level settings (like `workflow-owner-address`) for specific workflows.
+</Aside>
+
+<Aside type="note" title="TypeScript workflow-path">
+  For TypeScript workflows, `workflow-path` must point to the specific TypeScript entry file (e.g., `"./main.ts"`),
+  whereas Go workflows use `"."` to point to the workflow directory.
+</Aside>
+
+### 3.3. Secrets configuration (`secrets.yaml`)
+
+`secrets.yaml` is an optional project-level file that maps logical secret names to environment variables. This allows you to decouple the secret names used in your code from the actual environment variable names.
+
+```yaml
+# secrets.yaml (at project root)
+secretsNames:
+  DATA_SOURCE_API_KEY:
+    - DATA_SOURCE_API_KEY_ENV
+```
+
+To use secrets in your workflow, reference this file in your `workflow.yaml`:
+
+```yaml
+workflow-artifacts:
+  secrets-path: "../secrets.yaml"
+```
+
+For simulation, secret values are loaded from your `.env` file or environment variables. For deployed workflows, secrets are managed through the Vault DON using `cre secrets` commands.
+
+For complete details on using secrets in your workflows, see [Secrets Management](/cre/guides/workflow/secrets).
+
+## 4. Targets
+
+A target is a top-level key inside both `project.yaml` and `workflow.yaml`. It bundles all settings for a single environment or variant.
+
+<ClickToZoom
+  src="/images/cre/configuration-management.webp"
+  alt="Visual overview of CRE project structure and configuration file roles."
+  caption="How global (project.yaml) and local (workflow.yaml) settings define targets."
+/>
+
+The CLI selects the active target using the `--target` flag. Example:
+
+```sh
+# Simulate using the 'staging-settings' target
+cre workflow simulate my-workflow --target staging-settings
+```
+
+Alternatively, the `CRE_TARGET` environment variable can be used to specify the target. The CLI picks the active target in this order:
+
+1. `--target <name>` flag
+1. `CRE_TARGET=<name>` environment variable
+
+### 4.1. Defining Multiple Targets
+
+You can store many targets in one file. This is useful for managing different environments (like simulation vs. production) or for testing variations of a workflow.
+
+```yaml
+# In project.yaml
+
+# Target for simulation and testing
+staging-settings:
+  rpcs:
+    - chain-name: ethereum-testnet-sepolia
+      url: https://ethereum-sepolia-rpc.publicnode.com
+
+# Target for production deployment
+production-settings:
+  account:
+    workflow-owner-address: "0x123..." # Optional: For multi-sig wallets
+  rpcs:
+    - chain-name: ethereum-mainnet
+      url: https://mainnet.infura.io/v3/<YOUR-PROJECT-ID>
+```
+
+### 4.2. How Target Resolution Works
+
+When you run a CLI command with a target, e.g., `--target staging-settings`:
+
+1. Load the `staging-settings` target from `project.yaml`.
+1. Load the same target from `workflow.yaml` (if the file exists and contains a matching target definition).
+1. Merge the two objects.
+   - Keys present in both files → value from `workflow.yaml` wins.
+   - Keys present in only one file → that value is used.
+1. Validate the final object before execution.
+
+<Aside type="caution" title="Matching target names">
+  If your workflow directory contains a `workflow.yaml`, the target you specify must exist in both `project.yaml` and
+  `workflow.yaml`. A mismatch causes the CLI to abort with a clear error message.
+</Aside>

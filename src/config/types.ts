@@ -69,8 +69,16 @@ export type SupportedTechnology =
   | "POLYGON_KATANA"
   | "KAIA"
   | "TAC"
+  | "PLASMA"
+  | "MEMENTO"
+  | "XDC"
+  | "BITTENSOR"
+  | "EVERCLEAR"
+  | "AB_CHAIN"
+  | "PHAROS"
+  | "NEXON"
 
-export type ChainType = "evm" | "solana" | "aptos" | "sui"
+export type ChainType = "evm" | "solana" | "aptos"
 
 export type ChainFamily = "evm" | "mvm" | "svm"
 
@@ -224,6 +232,17 @@ export type SupportedChain =
   | "TAC_TESTNET"
   | "PLASMA_MAINNET"
   | "PLASMA_TESTNET"
+  | "MEMENTO_MAINNET"
+  | "MEMENTO_TESTNET"
+  | "XDC_MAINNET"
+  | "XDC_TESTNET"
+  | "BITTENSOR_MAINNET"
+  | "EVERCLEAR_MAINNET"
+  | "AB_CHAIN_MAINNET"
+  | "MONAD_MAINNET"
+  | "NEXON_HENESYS_MAINNET"
+  | "PHAROS_ATLANTIC_TESTNET"
+  | "PHAROS_TESTNET"
 
 export type ExplorerInfo = {
   baseUrl: string

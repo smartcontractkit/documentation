@@ -168,7 +168,7 @@ export async function getFeedRiskTiersBatch(
     })
 
     return out
-  } catch {
+  } catch (error) {
     feedRequests.forEach(({ contractAddress, network, fallbackCategory }) =>
       out.set(keyFor(contractAddress, network), { final: chooseTier(null, fallbackCategory) })
     )

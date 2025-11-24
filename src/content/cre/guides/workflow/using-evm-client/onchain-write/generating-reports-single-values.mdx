@@ -1,0 +1,257 @@
+---
+section: cre
+title: "Generating Reports: Single Values"
+sdkLang: "go"
+date: Last Modified
+metadata:
+  description: "Submit simple values onchain in Go: learn to generate reports for single values like uint256 and send them to your onchain contracts."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+This guide shows how to manually generate a report containing a single value (like `uint256`, `address`, or `bool`). This is useful when you need to send a simple value onchain but don't have a struct or binding helper available.
+
+**Use this approach when:**
+
+- You're sending a **single primitive value** (like `uint256`, `address`, `bool`, `bytes32`) to your consumer contract
+- You don't have (or need) binding helpers for your contract
+
+**Don't meet these requirements?** See the [Onchain Write](/cre/guides/workflow/using-evm-client/onchain-write/overview-go#choosing-your-approach-which-guide-should-you-follow) page to find the right approach for your scenario.
+
+## Prerequisites
+
+- Familiarity with [Working with Solidity input types](/cre/guides/workflow/using-evm-client/onchain-write#working-with-solidity-input-types)
+
+## What this guide covers
+
+Manually generating a report for a single value involves two main steps:
+
+1. **ABI-encode the value** into bytes using the `go-ethereum/accounts/abi` package
+1. **Generate a cryptographically signed report** using `runtime.GenerateReport()`
+
+The resulting report can then be:
+
+- Submitted to the blockchain via `evm.Client.WriteReport()` (see [Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain))
+- Sent to an HTTP endpoint via `http.Client` (see [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http))
+
+<Aside type="note" title="Have a struct in your contract's ABI?">
+  If your struct appears in a public/external function's signature, you can use the simpler `WriteReportFrom<StructName>()` helper instead. See [Using WriteReportFrom Helpers](/cre/guides/workflow/using-evm-client/onchain-write/using-write-report-helpers).
+</Aside>
+
+## Step-by-step example
+
+### 1. Create your value
+
+Start with a Go value that you want to send. For example, a `*big.Int` for a Solidity `uint256`:
+
+```go
+import "math/big"
+
+myValue := big.NewInt(123456789)
+logger.Info("Value to send", "value", myValue.String())
+```
+
+### 2. ABI-encode the value
+
+Use the `ethereum/go-ethereum/accounts/abi` package to encode your value as a Solidity type:
+
+```go
+import "github.com/ethereum/go-ethereum/accounts/abi"
+
+// Create the Solidity type definition
+uint256Type, err := abi.NewType("uint256", "", nil)
+if err != nil {
+    return fmt.Errorf("failed to create type: %w", err)
+}
+
+// Create an arguments array with your type
+args := abi.Arguments{{Type: uint256Type}}
+
+// Pack (encode) your value
+encodedValue, err := args.Pack(myValue)
+if err != nil {
+    return fmt.Errorf("failed to encode value: %w", err)
+}
+```
+
+{/* prettier-ignore */}
+<Aside type="note" title="Other Solidity types">
+  You can use the same pattern for other types by changing the type string:
+  - `address` → `abi.NewType("address", "", nil)`
+  - `bool` → `abi.NewType("bool", "", nil)`
+  - `bytes32` → `abi.NewType("bytes32", "", nil)`
+  <br />
+  The full list of supported types can be found in the [go-ethereum documentation](https://pkg.go.dev/github.com/ethereum/go-ethereum/accounts/abi).
+</Aside>
+
+### 3. Generate the report
+
+Use `runtime.GenerateReport()` to create a signed, consensus-verified report from the encoded bytes:
+
+```go
+reportPromise := runtime.GenerateReport(&cre.ReportRequest{
+    EncodedPayload: encodedValue,
+    EncoderName:    "evm",
+    SigningAlgo:    "ecdsa",
+    HashingAlgo:    "keccak256",
+})
+
+report, err := reportPromise.Await()
+if err != nil {
+    return fmt.Errorf("failed to generate report: %w", err)
+}
+logger.Info("Successfully generated report")
+```
+
+**Field explanations:**
+
+- `EncodedPayload`: The ABI-encoded bytes from step 2
+- `EncoderName`: Always `"evm"` for Ethereum reports
+- `SigningAlgo`: Always `"ecdsa"` for Ethereum
+- `HashingAlgo`: Always `"keccak256"` for Ethereum
+
+#### Understanding the report
+
+The `runtime.GenerateReport()` function returns a `*cre.Report` object. This report contains:
+
+- **Your ABI-encoded data** (the payload)
+- **Cryptographic signatures** from the DON nodes
+- **Metadata** about the workflow (ID, name, owner)
+- **Consensus proof** that the data was agreed upon by the network
+
+This report is designed to be passed directly to either:
+
+- `evm.Client.WriteReport()` for onchain delivery
+- `http.Client` for offchain delivery
+
+### 4. Submit the report
+
+Now that you have a generated report, choose where to send it:
+
+- **[Submit it to the blockchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain)** via `evm.Client.WriteReport()`
+- **[Send it via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http)** via `http.Client` for offchain delivery
+
+## Complete working example
+
+Here's a workflow that generates a report from a single `uint256` value:
+
+```go
+//go:build wasip1
+
+package main
+
+import (
+	"fmt"
+	"log/slog"
+	"math/big"
+
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
+	"github.com/smartcontractkit/cre-sdk-go/cre"
+	"github.com/smartcontractkit/cre-sdk-go/cre/wasm"
+)
+
+type Config struct {
+	Schedule string `json:"schedule"`
+}
+
+type MyResult struct {
+	OriginalValue string
+	EncodedHex    string
+}
+
+func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+	return cre.Workflow[*Config]{
+		cre.Handler(cron.Trigger(&cron.Config{Schedule: config.Schedule}), onCronTrigger),
+	}, nil
+}
+
+func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*MyResult, error) {
+	logger := runtime.Logger()
+
+	// Step 1: Create a value
+	myValue := big.NewInt(123456789)
+	logger.Info("Generated value", "value", myValue.String())
+
+	// Step 2: ABI-encode the value as uint256
+	uint256Type, err := abi.NewType("uint256", "", nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create type: %w", err)
+	}
+
+	args := abi.Arguments{{Type: uint256Type}}
+	encodedValue, err := args.Pack(myValue)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode value: %w", err)
+	}
+	logger.Info("ABI-encoded value", "hex", fmt.Sprintf("0x%x", encodedValue))
+
+	// Step 3: Generate report
+	reportPromise := runtime.GenerateReport(&cre.ReportRequest{
+		EncodedPayload: encodedValue,
+		EncoderName:    "evm",
+		SigningAlgo:    "ecdsa",
+		HashingAlgo:    "keccak256",
+	})
+
+	report, err := reportPromise.Await()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate report: %w", err)
+	}
+	logger.Info("Report generated successfully")
+
+	// At this point, you would typically submit the report:
+	// - To the blockchain: see "Submitting Reports Onchain" guide
+	// - Via HTTP: see "Submitting Reports via HTTP" guide
+	// For this example, we'll just return the encoded data for verification
+	_ = report // Report is ready to use
+
+	// Return results
+	return &MyResult{
+		OriginalValue: myValue.String(),
+		EncodedHex:    fmt.Sprintf("0x%x", encodedValue),
+	}, nil
+}
+
+func main() {
+	wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
+}
+```
+
+## Best practices
+
+1. **Always check errors**: Both encoding and report generation can fail—handle both error paths
+1. **Use the correct Solidity type string**: Type mismatches will cause ABI encoding failures. Verify your type strings match your contract exactly
+1. **Log the encoded data**: For debugging, log the hex-encoded bytes to verify your data is encoded correctly:
+   ```go
+   logger.Info("ABI-encoded value", "hex", fmt.Sprintf("0x%x", encodedValue))
+   ```
+1. **Refer to go-ethereum documentation**: For complex types, consult the [go-ethereum ABI package documentation](https://pkg.go.dev/github.com/ethereum/go-ethereum/accounts/abi)
+
+## Troubleshooting
+
+**"failed to create type" error**
+
+- Verify the type string exactly matches Solidity syntax.
+- For arrays, use `uint256[]` for dynamic arrays or `uint256[3]` for fixed-size arrays.
+- Check the [go-ethereum type documentation](https://pkg.go.dev/github.com/ethereum/go-ethereum/accounts/abi) for supported types.
+
+**"failed to encode value" error**
+
+- Ensure your Go value matches the Solidity type (e.g., `*big.Int` for `uint256`, `common.Address` for `address`). Find a list of mappings [here](/cre/guides/workflow/using-evm-client/onchain-read#solidity-to-go-type-mappings).
+- For integers, use `big.NewInt()` for values that fit in `int64`, or `new(big.Int).SetString()` for larger values.
+- Verify you're packing the value with `args.Pack(myValue)`, not passing it directly.
+
+**Report generation succeeds but onchain submission fails**
+
+- This guide only covers report generation. See [Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain) for troubleshooting submission issues.
+
+## Learn more
+
+- **[Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write)**: Understand all onchain write approaches
+- **[Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain)**: Submit your generated report to the blockchain
+- **[Generating Reports: Structs](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-structs)**: Manually encode and generate reports for struct data
+- **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)**: Create contracts that can receive your reports
+- **[EVM Client Reference](/cre/reference/sdk/evm-client)**: Complete API documentation

@@ -1,0 +1,382 @@
+---
+section: cre
+title: "Onchain Read"
+sdkLang: "ts"
+pageId: "guides-workflow-evm-onchain-read"
+date: Last Modified
+metadata:
+  description: "Read data from smart contracts in TypeScript: learn to call view functions and fetch verified blockchain state in your workflows."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+This guide explains how to read data from a smart contract from within your CRE workflow. The TypeScript SDK uses [viem](https://viem.sh/) for ABI handling and the SDK's [`EVMClient`](/cre/reference/sdk/evm-client-ts) to create a type-safe developer experience.
+
+## The read pattern
+
+Reading from a contract follows this pattern:
+
+1. **Define your contract ABI**: Create a TypeScript file with your contract's ABI using <a href="https://viem.sh/docs/abi/parseAbi" target="_blank">viem's `parseAbi`</a> (inline) or store it in `contracts/abi/` for complex workflows
+1. **Get network information**: Use the SDK's `getNetwork()` helper to look up chain selector and other network details
+1. **Instantiate the EVM Client**: Create an `EVMClient` instance with the chain selector
+1. **Encode the function call**: Use <a href="https://viem.sh/docs/contract/encodeFunctionData#encodefunctiondata" target="_blank">viem's `encodeFunctionData()`</a> to ABI-encode your function call
+1. **Encode the call message**: Use `encodeCallMsg()` to create a properly formatted call message with `from`, `to`, and `data`
+1. **Call the contract**: Use `callContract(runtime, {...})` to execute the read operation
+1. **Decode the result**: Use <a href="https://viem.sh/docs/contract/decodeFunctionResult#decodefunctionresult" target="_blank">viem's `decodeFunctionResult()`</a> to decode the returned data
+1. **Await the result**: Call `.result()` on the returned object to get the consensus-verified result
+
+## Step-by-step example
+
+Let's read a value from a simple `Storage` contract with a `get() view returns (uint256)` function.
+
+### 1. Define the contract ABI
+
+For simple contracts, you can define the ABI inline using viem's `parseAbi`:
+
+```typescript
+import { parseAbi } from "viem"
+
+const storageAbi = parseAbi(["function get() view returns (uint256)"])
+```
+
+For complex workflows with multiple contracts, it's recommended to create separate ABI files in a `contracts/abi/` directory. See [Part 3 of the Getting Started guide](/cre/getting-started/part-3-reading-onchain-value-ts#step-3-create-the-contract-abi-file) for an example of this pattern.
+
+### 2. The workflow logic
+
+Here's a complete example of reading from a Storage contract:
+
+```typescript
+import {
+  cre,
+  getNetwork,
+  encodeCallMsg,
+  bytesToHex,
+  LAST_FINALIZED_BLOCK_NUMBER,
+  type Runtime,
+  Runner,
+} from "@chainlink/cre-sdk"
+import { type Address, encodeFunctionData, decodeFunctionResult, parseAbi, zeroAddress } from "viem"
+import { z } from "zod"
+
+// Define config schema with Zod
+const configSchema = z.object({
+  contractAddress: z.string(),
+  chainSelectorName: z.string(),
+})
+
+type Config = z.infer<typeof configSchema>
+
+// Define the Storage contract ABI
+const storageAbi = parseAbi(["function get() view returns (uint256)"])
+
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  // Get network information
+  const network = getNetwork({
+    chainFamily: "evm",
+    chainSelectorName: runtime.config.chainName,
+    isTestnet: true,
+  })
+
+  if (!network) {
+    throw new Error(`Network not found: ${runtime.config.chainSelectorName}`)
+  }
+
+  // Create EVM client with chain selector
+  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+
+  // Encode the function call
+  const callData = encodeFunctionData({
+    abi: storageAbi,
+    functionName: "get",
+    args: [], // No arguments for this function
+  })
+
+  // Call the contract
+  const contractCall = evmClient
+    .callContract(runtime, {
+      call: encodeCallMsg({
+        from: zeroAddress,
+        to: runtime.config.contractAddress as Address,
+        data: callData,
+      }),
+      blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
+    })
+    .result()
+
+  // Decode the result (convert Uint8Array to hex string for viem)
+  const storedValue = decodeFunctionResult({
+    abi: storageAbi,
+    functionName: "get",
+    data: bytesToHex(contractCall.data),
+  })
+
+  runtime.log(`Successfully read storage value: ${storedValue.toString()}`)
+  return storedValue.toString()
+}
+
+const initWorkflow = (config: Config) => {
+  return [
+    cre.handler(
+      new cre.capabilities.CronCapability().trigger({
+        schedule: "*/10 * * * * *", // Every 10 seconds
+      }),
+      onCronTrigger
+    ),
+  ]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+
+main()
+```
+
+## Understanding the components
+
+<Aside type="note" title="Type-safe addresses">
+  Notice the `as Address` type assertion when passing `contractAddress` to `encodeCallMsg`. This tells TypeScript the
+  string is a valid Ethereum address, which is required by viem's `encodeCallMsg` function. The `Address` type is
+  imported from `viem`.
+</Aside>
+
+### Network lookup with `getNetwork()`
+
+The SDK provides a `getNetwork()` helper that looks up network information by name:
+
+```typescript
+const network = getNetwork({
+  chainFamily: "evm",
+  chainSelectorName: "ethereum-testnet-sepolia",
+  isTestnet: true,
+})
+
+// Returns network info including:
+// - chainSelector.selector (numeric ID)
+// - name
+// - chainType
+```
+
+See the [EVM Client SDK Reference](/cre/reference/sdk/evm-client-ts#chain-selectors) for all available networks.
+
+### Block number options
+
+When calling `callContract()`, you can specify which block to read from:
+
+- **`LAST_FINALIZED_BLOCK_NUMBER`**: Read from the last finalized block (recommended for production)
+- **`LATEST_BLOCK_NUMBER`**: Read from the latest block
+- **Specific block**: Use an object with `{ absVal: "base64EncodedNumber", sign: "1" }` format
+
+```typescript
+import { LAST_FINALIZED_BLOCK_NUMBER, LATEST_BLOCK_NUMBER } from "@chainlink/cre-sdk"
+
+// Read from finalized block (most common)
+const contractCall = evmClient.callContract(runtime, {
+  call: encodeCallMsg({...}),
+  blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
+}).result()
+
+// Or read from latest block
+const contractCall = evmClient.callContract(runtime, {
+  call: encodeCallMsg({...}),
+  blockNumber: LATEST_BLOCK_NUMBER,
+}).result()
+```
+
+### Encoding call messages with `encodeCallMsg()`
+
+The `encodeCallMsg()` helper converts your hex-formatted call data into the base64 format required by the EVM capability:
+
+```typescript
+import { encodeCallMsg } from "@chainlink/cre-sdk"
+import { zeroAddress } from "viem"
+
+const callMsg = encodeCallMsg({
+  from: zeroAddress, // Caller address (typically zeroAddress for view functions)
+  to: "0xYourContractAddress", // Contract address
+  data: callData, // ABI-encoded function call from encodeFunctionData()
+})
+```
+
+This helper is required because the underlying EVM capability expects addresses and data in base64 format, not hex.
+
+### ABI encoding/decoding with viem
+
+The TypeScript SDK relies on viem for all ABI operations:
+
+- **`encodeFunctionData()`**: Encodes a function call into bytes
+- **`decodeFunctionResult()`**: Decodes the returned bytes into TypeScript types
+- **`parseAbi()`**: Parses human-readable ABI strings into typed ABI objects
+
+### The `.result()` pattern
+
+All CRE capability calls return objects with a `.result()` method. Calling `.result()` blocks execution synchronously (within the WASM environment) and waits for the consensus-verified result.
+
+```typescript
+// This returns an object with a .result() method
+const callObject = evmClient.callContract(runtime, {
+  call: encodeCallMsg({...}),
+  blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
+})
+
+// This blocks and returns the actual result
+const contractCall = callObject.result()
+```
+
+This pattern is consistent across all SDK capabilities (EVM, HTTP, etc.).
+
+## Solidity-to-TypeScript type mappings
+
+Viem automatically handles type conversions:
+
+| Solidity Type            | TypeScript Type |
+| ------------------------ | --------------- |
+| `uint8`, `uint256`, etc. | `bigint`        |
+| `int8`, `int256`, etc.   | `bigint`        |
+| `address`                | `string`        |
+| `bool`                   | `boolean`       |
+| `string`                 | `string`        |
+| `bytes`, `bytes32`, etc. | `Uint8Array`    |
+
+## Complete example with configuration
+
+Here's a full runnable workflow with external configuration:
+
+### Main workflow file (`main.ts`)
+
+```typescript
+import {
+  cre,
+  getNetwork,
+  encodeCallMsg,
+  bytesToHex,
+  LAST_FINALIZED_BLOCK_NUMBER,
+  type Runtime,
+  Runner,
+} from "@chainlink/cre-sdk"
+import { type Address, encodeFunctionData, decodeFunctionResult, parseAbi, zeroAddress } from "viem"
+import { z } from "zod"
+
+const configSchema = z.object({
+  contractAddress: z.string(),
+  chainSelectorName: z.string(),
+})
+
+type Config = z.infer<typeof configSchema>
+
+const storageAbi = parseAbi(["function get() view returns (uint256)"])
+
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  const network = getNetwork({
+    chainFamily: "evm",
+    chainSelectorName: runtime.config.chainSelectorName,
+    isTestnet: true,
+  })
+
+  if (!network) {
+    throw new Error(`Network not found: ${runtime.config.chainSelectorName}`)
+  }
+
+  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+
+  const callData = encodeFunctionData({
+    abi: storageAbi,
+    functionName: "get",
+    args: [],
+  })
+
+  const contractCall = evmClient
+    .callContract(runtime, {
+      call: encodeCallMsg({
+        from: zeroAddress,
+        to: runtime.config.contractAddress as Address,
+        data: callData,
+      }),
+      blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
+    })
+    .result()
+
+  const storedValue = decodeFunctionResult({
+    abi: storageAbi,
+    functionName: "get",
+    data: bytesToHex(contractCall.data),
+  })
+
+  runtime.log(`Storage value: ${storedValue.toString()}`)
+  return storedValue.toString()
+}
+
+const initWorkflow = (config: Config) => {
+  return [
+    cre.handler(
+      new cre.capabilities.CronCapability().trigger({
+        schedule: "*/10 * * * * *",
+      }),
+      onCronTrigger
+    ),
+  ]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+
+main()
+```
+
+### Configuration file (`config.json`)
+
+```json
+{
+  "contractAddress": "0xa17CF997C28FF154eDBae1422e6a50BeF23927F4",
+  "chainSelectorName": "ethereum-testnet-sepolia"
+}
+```
+
+<Aside type="note" title="Chain Names">
+  The `chainSelectorName` should match one of the supported networks in the SDK. Use the chain selector name format like
+  `"ethereum-testnet-sepolia"`. See the [EVM Client SDK Reference](/cre/reference/sdk/evm-client-ts#chain-selectors) for
+  all available networks.
+</Aside>
+
+## Working with complex ABIs
+
+For workflows with multiple contracts or complex ABIs, organize them in separate files:
+
+### Contract ABI file (`contracts/abi/Storage.ts`)
+
+```typescript
+import { parseAbi } from "viem"
+
+export const Storage = parseAbi(["function get() view returns (uint256)", "function set(uint256 value) external"])
+```
+
+### Export file (`contracts/abi/index.ts`)
+
+```typescript
+export { Storage } from "./Storage"
+```
+
+### Import in workflow
+
+```typescript
+import { Storage } from "../contracts/abi"
+
+const callData = encodeFunctionData({
+  abi: Storage,
+  functionName: "get",
+  args: [],
+})
+```
+
+This pattern provides better organization, reusability, and type safety across your workflow.
+
+## Next steps
+
+- Learn how to [write data to contracts](/cre/guides/workflow/using-evm-client/onchain-write)
+- Explore the [EVM Client SDK Reference](/cre/reference/sdk/evm-client-ts) for all available methods
+- See [Part 3](/cre/getting-started/part-3-reading-onchain-value) and [Part 4](/cre/getting-started/part-4-writing-onchain) of the Getting Started guide for more examples

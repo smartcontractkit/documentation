@@ -11,6 +11,9 @@ import BaseLayout from "./BaseLayout.astro"
 import { VersionSelector } from "~/components/VersionSelector/index.js"
 import { detectApiReference } from "@components/VersionSelector/utils/versions"
 import CardsWrapper from "~/components/Cards/CardsWrapper.astro"
+import { LanguageSwitcherDropdown } from "~/components/LanguageSwitcherDropdown"
+import { ChainTypeSelector } from "~/components/ChainSelector"
+import { isChainAwareSection } from "~/config/chainTypes"
 
 interface Props {
   frontmatter: BaseFrontmatter
@@ -47,6 +50,9 @@ const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWall
 // Detect if this is an API reference page and get the product
 const { isApiReference, product, isVersioned } = detectApiReference(currentPage)
 
+// Check if this section supports chain type filtering
+const showChainSelector = isChainAwareSection(frontmatter.section)
+
 // Derive HowTo steps from headings (H2/H3)
 const howToSteps = initialHeadings
   .filter((h) => h.depth === 2 || h.depth === 3)
@@ -59,6 +65,7 @@ const howToSteps = initialHeadings
   pageTitle={frontmatter.title}
   howToSteps={howToSteps}
 >
+  <slot name="head-scripts" slot="head-scripts" />
   <StickyHeader client:media="(max-width: 50em)" {initialHeadings} />
   <main>
     <div id="left-bg"></div>
@@ -67,6 +74,20 @@ const howToSteps = initialHeadings
         <LeftSidebar currentPage={currentPage} section={frontmatter.section} />
       </aside>
       <div id="grid-main">
+        {
+          frontmatter.section === "cre" && (
+            <div class="language-switcher-mobile">
+              <LanguageSwitcherDropdown client:only="react" />
+            </div>
+          )
+        }
+        {
+          showChainSelector && (
+            <div class="chain-selector-mobile">
+              <ChainTypeSelector client:only="react" />
+            </div>
+          )
+        }
         {isApiReference && product && isVersioned && <VersionSelector product={product} currentPath={currentPage} />}
         <PageContent {titleHeading}>
           <slot />
@@ -74,7 +95,12 @@ const howToSteps = initialHeadings
         {whatsNext && <WhatsNext content={whatsNext} />}
       </div>
       <aside id="grid-right">
-        <RightSidebar {githubEditUrl} headings={initialHeadings} />
+        <RightSidebar
+          {githubEditUrl}
+          headings={initialHeadings}
+          showLanguageSwitcher={frontmatter.section === "cre"}
+          frontmatter={frontmatter}
+        />
       </aside>
     </div>
   </main>
@@ -155,6 +181,32 @@ const howToSteps = initialHeadings
       #grid-right {
         width: 315px;
         padding-right: var(--space-16x);
+      }
+    }
+
+    /* Language Switcher - Mobile (< 800px) */
+    .language-switcher-mobile {
+      display: block;
+      margin-bottom: var(--space-6x);
+    }
+
+    /* Hide mobile switcher on tablet+ (left sidebar visible) */
+    @media (min-width: 50em) {
+      .language-switcher-mobile {
+        display: none;
+      }
+    }
+
+    /* Chain Selector - Mobile (< 800px) */
+    .chain-selector-mobile {
+      display: block;
+      margin-bottom: var(--space-6x);
+    }
+
+    /* Hide mobile chain selector on tablet+ (left sidebar version visible) */
+    @media (min-width: 50em) {
+      .chain-selector-mobile {
+        display: none;
       }
     }
   </style>

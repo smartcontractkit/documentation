@@ -8,6 +8,7 @@ import {
   sendAndConfirmTransactionFactory,
   getBase64EncodedWireTransaction,
   isSolanaError,
+  assertIsTransactionWithBlockhashLifetime,
   type TransactionSigner,
   type Signature,
   type Instruction,
@@ -102,6 +103,7 @@ export class TransactionManager {
         try {
           assertIsTransactionWithinSizeLimit(signedTransaction)
           assertIsSendableTransaction(signedTransaction)
+          assertIsTransactionWithBlockhashLifetime(signedTransaction)
           await sendAndConfirm(signedTransaction, {
             commitment: this.rpcContext.commitment,
             minContextSlot: context.slot, // Race-free confirmation
@@ -139,6 +141,7 @@ export class TransactionManager {
 
             assertIsTransactionWithinSizeLimit(retrySignedTransaction)
             assertIsSendableTransaction(retrySignedTransaction)
+            assertIsTransactionWithBlockhashLifetime(retrySignedTransaction)
             await sendAndConfirm(retrySignedTransaction, {
               commitment: this.rpcContext.commitment,
               minContextSlot: freshContext.slot,
@@ -694,7 +697,6 @@ export class TransactionManager {
               owner: accountValue.owner.toString(),
               lamports: Number(accountValue.lamports),
               data: [accountValue.data.toString(), "base64"] as [string, string],
-              rentEpoch: Number(accountValue.rentEpoch),
             }
           } else {
             this.logger?.debug({
@@ -785,7 +787,6 @@ export class TransactionManager {
           owner: accountData.owner.toString(),
           lamports: Number(accountData.lamports), // Convert Lamports (bigint) to number
           data: accountData.data as [string, string], // RPC always returns [data, encoding] tuple
-          rentEpoch: accountData.rentEpoch ? Number(accountData.rentEpoch) : undefined,
         },
       }
     })

@@ -1,0 +1,466 @@
+---
+section: cre
+title: "Making POST Requests"
+date: Last Modified
+sdkLang: "ts"
+pageId: "guides-workflow-http-post-request"
+metadata:
+  description: "Send data to external APIs in TypeScript: learn to make POST requests from your workflow with authentication and custom headers."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+This guide explains how to use the HTTP Client to send data to an external API using a `POST` request. Because POST requests typically create resources or trigger actions, this guide shows you how to ensure your request executes only once, even though multiple nodes in the DON run your workflow.
+
+{/* prettier-ignore */}
+<Aside type="note" title="Single-Execution Pattern">
+  By default, **all nodes in the DON execute HTTP requests**. For POST, PUT, PATCH, and DELETE operations, this would cause duplicate actions (like creating multiple resources or sending multiple emails).
+  
+  This guide shows you the **recommended pattern** using `cacheSettings` to ensure only one node makes the actual HTTP call. This is the standard approach for non-idempotent operations.
+</Aside>
+
+All HTTP requests are wrapped in a consensus mechanism. The SDK provides two ways to do this:
+
+- **[High-level `sendRequest`](#1-the-high-level-sendrequest-pattern-recommended):** A high-level helper method that simplifies making requests. This is the recommended approach for most use cases.
+- **[Low-level `runInNodeMode`](#2-the-low-level-runinnodemode-pattern):** The lower-level pattern for more complex scenarios.
+
+## Choosing your approach
+
+### Use High-Level `sendRequest` (Section 1) when:
+
+- Making a **single HTTP POST request**
+- Your logic is straightforward: make request → parse response → return result
+- You want **simple, clean code** with minimal boilerplate
+
+This is the recommended approach for most use cases.
+
+### Use Low-Level `runInNodeMode` (Section 2) when:
+
+- You need **to access secrets** (e.g., API keys, authentication tokens)
+- You need **multiple HTTP requests** with logic between them
+- You need **conditional execution** (if/else based on runtime conditions)
+- You're **combining HTTP with other node-level operations**
+- You need **custom retry logic** or complex error handling
+
+If you're unsure, start with Section 1. You can always migrate to Section 2 later if your requirements become more complex.
+
+For this example, we will use <a href="https://webhook.site/" target="_blank">**webhook.site**</a>, a free service that provides a unique URL to which you can send requests and see the results in real-time.
+
+## Prerequisites
+
+This guide assumes you have a basic understanding of CRE. If you are new, we strongly recommend completing the [Getting Started tutorial](/cre/getting-started/overview) first.
+
+## 1. The High-Level `sendRequest` Pattern (recommended)
+
+The high-level `sendRequest()` method is the simplest and recommended way to make `POST` requests. It automatically handles the `runInNodeMode` pattern for you.
+
+### Step 1: Generate your unique webhook URL
+
+1. Go to <a href="https://webhook.site/" target="_blank">**webhook.site**</a>.
+1. Copy the unique URL provided for use in your configuration.
+
+### Step 2: Configure your workflow
+
+In your `config.json` file, add the webhook URL:
+
+```json
+{
+  "webhookUrl": "https://webhook.site/<your-unique-id>",
+  "schedule": "*/30 * * * * *"
+}
+```
+
+### Step 3: Implement the POST request logic
+
+#### 1. Understanding single-execution with `cacheSettings`
+
+Before writing code, it's important to understand how to prevent duplicate POST requests. When your workflow runs, **all nodes in the DON execute your code**. For POST requests that create resources or trigger actions, this would cause duplicates.
+
+**The solution**: Use `cacheSettings` in your HTTP request. This enables a shared cache across nodes:
+
+1. The first node makes the HTTP request and stores the response in the cache
+1. Other nodes check the cache first and reuse the cached response
+1. Result: Only one actual HTTP call is made, while all nodes participate in consensus
+
+{/* prettier-ignore */}
+<Aside type="note" title="When to use cacheSettings">
+  Use `cacheSettings` for **all POST, PUT, PATCH, and DELETE requests** unless your API is explicitly designed to be idempotent (safe to call multiple times). This is the standard pattern.
+</Aside>
+
+**Key configuration:**
+
+- `readFromCache: true` — Enables reading cached responses
+- `maxAgeMs` — How long to accept cached responses (in milliseconds)
+
+Now let's implement this pattern.
+
+#### 2. Define your data types
+
+In your `main.ts`, define the TypeScript types for your configuration and the data structures.
+
+```typescript
+import {
+  cre,
+  ok,
+  consensusIdenticalAggregation,
+  type Runtime,
+  type HTTPSendRequester,
+  Runner,
+} from "@chainlink/cre-sdk"
+import { z } from "zod"
+
+// Config schema
+const configSchema = z.object({
+  webhookUrl: z.string(),
+  schedule: z.string(),
+})
+
+type Config = z.infer<typeof configSchema>
+
+// Data to be sent
+type MyData = {
+  message: string
+  value: number
+}
+
+// Response for consensus
+type PostResponse = {
+  statusCode: number
+}
+```
+
+#### 3. Create the data posting function
+
+Create the function that will be passed to `sendRequest()`. It prepares the data, serializes it to JSON, and uses the `sendRequester` to send the `POST` request **with `cacheSettings`** to ensure single execution.
+
+```typescript
+const postData = (sendRequester: HTTPSendRequester, config: Config): PostResponse => {
+  // 1. Prepare the data to be sent
+  const dataToSend: MyData = {
+    message: "Hello there!",
+    value: 77,
+  }
+
+  // 2. Serialize the data to JSON and encode as bytes
+  const bodyBytes = new TextEncoder().encode(JSON.stringify(dataToSend))
+
+  // 3. Convert to base64 for the request
+  const body = Buffer.from(bodyBytes).toString("base64")
+
+  // 4. Construct the POST request with cacheSettings
+  const req = {
+    url: config.webhookUrl,
+    method: "POST" as const,
+    body,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    cacheSettings: {
+      readFromCache: true, // Enable reading from cache
+      maxAgeMs: 60000, // Accept cached responses up to 60 seconds old
+    },
+  }
+
+  // 5. Send the request and wait for the response
+  const resp = sendRequester.sendRequest(req).result()
+
+  if (!ok(resp)) {
+    throw new Error(`HTTP request failed with status: ${resp.statusCode}`)
+  }
+
+  return { statusCode: resp.statusCode }
+}
+```
+
+#### 4. Call `sendRequest()` from your handler
+
+In your main `onCronTrigger` handler, call `httpClient.sendRequest()`, which returns a function that you call with `runtime.config`.
+
+```typescript
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  const httpClient = new cre.capabilities.HTTPClient()
+
+  const result = httpClient
+    .sendRequest(
+      runtime,
+      postData,
+      consensusIdenticalAggregation<PostResponse>()
+    )(runtime.config) // Call with config
+    .result()
+
+  runtime.log(`Successfully sent data to webhook. Status: ${result.statusCode}`)
+  return "Success"
+}
+```
+
+#### 5. Assemble the full workflow
+
+Finally, add the `initWorkflow` and `main` functions.
+
+```typescript
+const initWorkflow = (config: Config) => {
+  return [
+    cre.handler(
+      new cre.capabilities.CronCapability().trigger({
+        schedule: config.schedule,
+      }),
+      onCronTrigger
+    ),
+  ]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>({
+    configSchema,
+  })
+  await runner.run(initWorkflow)
+}
+
+main()
+```
+
+#### The complete workflow file
+
+```typescript
+import {
+  cre,
+  ok,
+  consensusIdenticalAggregation,
+  type Runtime,
+  type HTTPSendRequester,
+  Runner,
+} from "@chainlink/cre-sdk"
+import { z } from "zod"
+
+// Config schema
+const configSchema = z.object({
+  webhookUrl: z.string(),
+  schedule: z.string(),
+})
+
+type Config = z.infer<typeof configSchema>
+
+// Data to be sent
+type MyData = {
+  message: string
+  value: number
+}
+
+// Response for consensus
+type PostResponse = {
+  statusCode: number
+}
+
+const postData = (sendRequester: HTTPSendRequester, config: Config): PostResponse => {
+  // 1. Prepare the data to be sent
+  const dataToSend: MyData = {
+    message: "Hello there!",
+    value: 77,
+  }
+
+  // 2. Serialize the data to JSON and encode as bytes
+  const bodyBytes = new TextEncoder().encode(JSON.stringify(dataToSend))
+
+  // 3. Convert to base64 for the request
+  const body = Buffer.from(bodyBytes).toString("base64")
+
+  // 4. Construct the POST request with cacheSettings
+  const req = {
+    url: config.webhookUrl,
+    method: "POST" as const,
+    body,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    cacheSettings: {
+      readFromCache: true, // Enable reading from cache
+      maxAgeMs: 60000, // Accept cached responses up to 60 seconds old
+    },
+  }
+
+  // 5. Send the request and wait for the response
+  const resp = sendRequester.sendRequest(req).result()
+
+  if (!ok(resp)) {
+    throw new Error(`HTTP request failed with status: ${resp.statusCode}`)
+  }
+
+  return { statusCode: resp.statusCode }
+}
+
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  const httpClient = new cre.capabilities.HTTPClient()
+
+  const result = httpClient
+    .sendRequest(
+      runtime,
+      postData,
+      consensusIdenticalAggregation<PostResponse>()
+    )(runtime.config) // Call with config
+    .result()
+
+  runtime.log(`Successfully sent data to webhook. Status: ${result.statusCode}`)
+  return "Success"
+}
+
+const initWorkflow = (config: Config) => {
+  return [
+    cre.handler(
+      new cre.capabilities.CronCapability().trigger({
+        schedule: config.schedule,
+      }),
+      onCronTrigger
+    ),
+  ]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>({
+    configSchema,
+  })
+  await runner.run(initWorkflow)
+}
+
+main()
+```
+
+### Step 4: Run the simulation and verify
+
+1. **Run the simulation**:
+
+   ```bash
+   cre workflow simulate my-workflow --target staging-settings
+   ```
+
+1. **Check webhook.site**:
+
+   Open the webhook.site page with your unique URL. You should see a new request appear. Click on it to inspect the details, and you will see the JSON payload you sent.
+
+   ```json
+   {
+     "message": "Hello there!",
+     "value": 77
+   }
+   ```
+
+{/* prettier-ignore */}
+<Aside type="note" title="Understanding the Caching Mechanism">
+  The `cacheSettings` approach is a **best-effort mechanism** that works reliably in most scenarios. In rare cases, multiple requests may still occur. For more technical details, see the [HTTP Client reference](/cre/reference/sdk/http-client-ts#understanding-cachesettings-behavior).
+</Aside>
+
+## 2. The Low-Level `runInNodeMode` Pattern
+
+For more complex scenarios, you can use the lower-level `runtime.runInNodeMode()` method directly. This pattern gives you access to the full `NodeRuntime`, which is essential when you need to use secrets.
+
+<Aside type="note" title="Secrets require this pattern">
+  The high-level `sendRequest()` method does **not** provide access to secrets. If you need to use API keys,
+  authentication tokens, or any other secrets in your HTTP requests, you must use the `runInNodeMode` pattern.
+</Aside>
+
+### Example with secrets
+
+Here's how to make a POST request with an API key from secrets:
+
+```typescript
+import { cre, ok, consensusIdenticalAggregation, type Runtime, type NodeRuntime, Runner } from "@chainlink/cre-sdk"
+import { z } from "zod"
+
+// Config and types
+const configSchema = z.object({
+  webhookUrl: z.string(),
+  schedule: z.string(),
+})
+
+type Config = z.infer<typeof configSchema>
+
+type MyData = {
+  message: string
+  value: number
+}
+
+type PostResponse = {
+  statusCode: number
+}
+
+// Node-level function that runs on each node
+const postData = (nodeRuntime: NodeRuntime<Config>): PostResponse => {
+  // 1. Get the API key from secrets
+  const secret = nodeRuntime.getSecret({ id: "API_KEY" }).result() // The secret name from your secrets.yaml
+
+  // Use the secret value
+  const apiKey = secret.value
+
+  const httpClient = new cre.capabilities.HTTPClient()
+
+  // 2. Prepare the data
+  const dataToSend: MyData = {
+    message: "Hello there!",
+    value: 77,
+  }
+
+  // 3. Serialize to JSON and encode as bytes
+  const bodyBytes = new TextEncoder().encode(JSON.stringify(dataToSend))
+
+  // 4. Convert to base64 for the request
+  const body = Buffer.from(bodyBytes).toString("base64")
+
+  // 5. Construct the POST request with API key in header
+  const req = {
+    url: nodeRuntime.config.webhookUrl,
+    method: "POST" as const,
+    body,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`, // Use the secret
+    },
+    cacheSettings: {
+      readFromCache: true,
+      maxAgeMs: 60000,
+    },
+  }
+
+  // 6. Send the request
+  const resp = httpClient.sendRequest(nodeRuntime, req).result()
+
+  if (!ok(resp)) {
+    throw new Error(`HTTP request failed with status: ${resp.statusCode}`)
+  }
+
+  return { statusCode: resp.statusCode }
+}
+
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  const result = runtime.runInNodeMode(postData, consensusIdenticalAggregation<PostResponse>())().result()
+
+  runtime.log(`Successfully sent data to webhook. Status: ${result.statusCode}`)
+  return "Success"
+}
+
+const initWorkflow = (config: Config) => {
+  return [
+    cre.handler(
+      new cre.capabilities.CronCapability().trigger({
+        schedule: config.schedule,
+      }),
+      onCronTrigger
+    ),
+  ]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>({
+    configSchema,
+  })
+  await runner.run(initWorkflow)
+}
+
+main()
+```
+
+## Learn more
+
+- **[HTTP Client SDK Reference](/cre/reference/sdk/http-client-ts)** — Complete API reference with all request options
+- **[Secrets](/cre/guides/workflow/secrets)** — Learn how to securely use API keys and sensitive data
+- **[GET Requests](/cre/guides/workflow/using-http-client/get-request-ts)** — Learn how to fetch data from APIs

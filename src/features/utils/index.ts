@@ -122,9 +122,6 @@ export const getChainTypeAndFamily = (supportedChain: SupportedChain): ChainType
     case "solana":
       chainFamily = "svm"
       break
-    case "sui":
-      chainFamily = "svm"
-      break
     default:
       throw new Error(`Unknown chain type: ${chainType}`)
   }
@@ -497,6 +494,26 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "PLASMA_MAINNET"
     case "plasma-testnet":
       return "PLASMA_TESTNET"
+    case "memento-mainnet":
+      return "MEMENTO_MAINNET"
+    case "memento-testnet":
+      return "MEMENTO_TESTNET"
+    case "xdc-mainnet":
+      return "XDC_MAINNET"
+    case "xdc-testnet":
+      return "XDC_TESTNET"
+    case "bittensor-mainnet":
+      return "BITTENSOR_MAINNET"
+    case "everclear-mainnet":
+      return "EVERCLEAR_MAINNET"
+    case "ab-mainnet":
+      return "AB_CHAIN_MAINNET"
+    case "monad-mainnet":
+      return "MONAD_MAINNET"
+    case "nexon-mainnet-henesys":
+      return "NEXON_HENESYS_MAINNET"
+    case "pharos-testnet":
+      return "PHAROS_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -790,6 +807,26 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "plasma-mainnet"
     case "PLASMA_TESTNET":
       return "plasma-testnet"
+    case "MEMENTO_MAINNET":
+      return "memento-mainnet"
+    case "MEMENTO_TESTNET":
+      return "memento-testnet"
+    case "XDC_MAINNET":
+      return "xdc-mainnet"
+    case "XDC_TESTNET":
+      return "xdc-testnet"
+    case "BITTENSOR_MAINNET":
+      return "bittensor-mainnet"
+    case "EVERCLEAR_MAINNET":
+      return "everclear-mainnet"
+    case "AB_CHAIN_MAINNET":
+      return "ab-mainnet"
+    case "MONAD_MAINNET":
+      return "monad-mainnet"
+    case "NEXON_HENESYS_MAINNET":
+      return "nexon-mainnet-henesys"
+    case "PHAROS_TESTNET":
+      return "pharos-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

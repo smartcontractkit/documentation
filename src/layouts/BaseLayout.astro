@@ -42,6 +42,21 @@ const canonicalURL = new URL(canonicalURLStr)
         scroll-behavior: smooth;
       }
     </style>
+    <script is:inline>
+      try {
+        const savedLang = localStorage.getItem("docs-language-preference")
+        if (savedLang === "ts") {
+          document.documentElement.classList.remove("lang-go")
+          document.documentElement.classList.add("lang-ts")
+        } else {
+          document.documentElement.classList.remove("lang-ts")
+          document.documentElement.classList.add("lang-go")
+        }
+      } catch (e) {
+        document.documentElement.classList.add("lang-go")
+      }
+    </script>
+    <slot name="head-scripts" />
   </head>
   <body>
     <Header />

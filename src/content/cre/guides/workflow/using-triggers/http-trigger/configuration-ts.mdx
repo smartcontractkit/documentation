@@ -1,0 +1,109 @@
+---
+section: cre
+title: "HTTP Trigger: Configuration & Handler"
+sdkLang: "ts"
+pageId: "guides-workflow-http-trigger-configuration"
+date: Last Modified
+metadata:
+  description: "Configure HTTP triggers in TypeScript: learn to set up authorization, write handler functions, and process HTTP request payloads."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-10"
+---
+
+import { Aside } from "@components"
+
+The HTTP trigger fires when an external system makes an HTTP request to the trigger endpoint.
+
+**Use case examples:**
+
+- Integrating with existing web services or webhooks.
+- Allowing an external system to initiate a workflow on demand.
+- Creating a user-facing endpoint to run a specific piece of logic.
+
+## Configuration and handler
+
+You create an HTTP trigger by calling the `HTTPCapability.trigger()` method. Its configuration requires a set of authorized public keys to validate incoming request signatures.
+
+{/* prettier-ignore */}
+<Aside type="note" title="Authorization required for deployment">
+  When you deploy your workflow, HTTP triggers **must** include `authorizedKeys`. An empty configuration object `{}` is only valid for simulation and testing—deployed workflows will reject HTTP triggers without authorization keys.
+</Aside>
+
+```typescript
+import { cre, type Runtime, type HTTPPayload, Runner } from "@chainlink/cre-sdk"
+
+type Config = {
+  authorizedEVMAddress: string
+}
+
+// Callback function that runs when an HTTP request is received
+const onHttpTrigger = (runtime: Runtime<Config>, payload: HTTPPayload): string => {
+  runtime.log(`HTTP trigger received: ${payload.input.length} bytes`)
+  // Your logic here...
+  return "Request processed"
+}
+
+const initWorkflow = (config: Config) => {
+  const httpTrigger = new cre.capabilities.HTTPCapability()
+
+  return [
+    cre.handler(
+      httpTrigger.trigger({
+        authorizedKeys: [
+          {
+            type: "KEY_TYPE_ECDSA_EVM",
+            publicKey: config.authorizedEVMAddress,
+          },
+        ],
+      }),
+      onHttpTrigger
+    ),
+  ]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+
+main()
+```
+
+**About authorized keys:**
+
+- **`publicKey`**: An EVM address (e.g., `"0xb08E004bd2b5aFf1F5F950d141f449B1c05800eb"`) that is authorized to trigger the workflow
+- **`type`**: Must be `"KEY_TYPE_ECDSA_EVM"` (currently the only supported authentication method)
+- **Multiple keys**: You can include multiple authorized addresses in the array
+
+When an HTTP request is made to trigger your workflow, CRE verifies that the request was signed by a private key corresponding to one of the authorized addresses.
+
+## Callback and payload
+
+The HTTP trigger passes an `HTTPPayload` to your callback. This object contains the request body (`input`) and the signing key (`key`) from the incoming HTTP request.
+
+For the full type definition and all available fields, see the [HTTP Trigger SDK Reference](/cre/reference/sdk/triggers/http-trigger).
+
+```typescript
+type RequestData = {
+  message: string
+  value: number
+}
+
+const onHttpTrigger = (runtime: Runtime<Config>, payload: HTTPPayload): string => {
+  // The payload.input is a Uint8Array.
+  // You can decode it to a JSON object using the decodeJson helper.
+  const requestData = decodeJson<RequestData>(payload.input)
+  runtime.log(`Received HTTP request: ${JSON.stringify(requestData)}`)
+
+  // Your logic here...
+  // The value returned from your callback will be sent back as the HTTP response.
+  return `Request processed: ${requestData.message}`
+}
+```
+
+<Aside type="note" title="For local simulation only">
+  During local simulation with `cre workflow simulate`, you can use an empty configuration `trigger({})` to test your
+  workflow without setting up authorization keys. This is convenient for rapid development, but remember to add
+  `authorizedKeys` before deploying. See [Testing in
+  Simulation](/cre/guides/workflow/using-triggers/http-trigger/testing-in-simulation) for details.
+</Aside>

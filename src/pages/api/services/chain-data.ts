@@ -1,10 +1,12 @@
-import { Environment, ChainDetails, FilterType, ChainConfigError } from "../ccip/types/index.ts"
+import { Environment, ChainDetails, FilterType, ChainConfigError, FeeTokenEnriched } from "../ccip/types/index.ts"
 import { ChainsConfig } from "@config/data/ccip/index.ts"
 import { getSelectorEntry } from "@config/data/ccip/selectors.ts"
 import { resolveChainOrThrow } from "@api/ccip/utils.ts"
 import { logger } from "@lib/logging/index.js"
 import { getChainId, getNativeCurrency, getTitle, getChainTypeAndFamily } from "../../../features/utils/index.ts"
 import { SupportedChain, ChainType, ChainFamily } from "~/config/index.ts"
+import { getTokenData } from "@config/data/ccip/data.ts"
+import { Version } from "@config/data/ccip/types.ts"
 
 export const prerender = false
 
@@ -160,7 +162,6 @@ abstract class BaseChainStrategy implements IChainProcessingStrategy {
         rmn: chainConfig.armProxy.address,
         chainType,
         chainFamily,
-        rmnPermeable: chainConfig.rmnPermeable,
       },
     }
   }
@@ -411,10 +412,69 @@ export class ChainDataService {
   }
 
   /**
+   * Enriches fee token symbols with addresses and additional metadata
+   *
+   * @param feeTokenSymbols - Array of fee token symbols
+   * @param chainKey - Chain identifier
+   * @param environment - Network environment
+   * @returns Enriched fee token objects with addresses
+   *
+   * @remarks
+   * This method looks up each fee token in the token data to retrieve
+   * its address, name, and decimals on the specified chain.
+   * Tokens not found are logged and filtered out.
+   */
+  private enrichFeeTokens(feeTokenSymbols: string[], chainKey: string, environment: Environment): FeeTokenEnriched[] {
+    return feeTokenSymbols
+      .map((tokenSymbol) => {
+        try {
+          // Fetch token data for this token across all chains
+          const tokenData = getTokenData({
+            environment,
+            version: Version.V1_2_0,
+            tokenId: tokenSymbol,
+          })
+
+          // Get token info for this specific chain
+          const chainTokenData = tokenData[chainKey]
+
+          if (!chainTokenData) {
+            logger.warn({
+              message: "Fee token not found on chain",
+              requestId: this.requestId,
+              tokenSymbol,
+              chainKey,
+            })
+            return null
+          }
+
+          return {
+            symbol: chainTokenData.symbol,
+            name: chainTokenData.name || tokenSymbol,
+            address: chainTokenData.tokenAddress,
+            decimals: chainTokenData.decimals,
+          }
+        } catch (error) {
+          logger.error({
+            message: "Failed to enrich fee token",
+            requestId: this.requestId,
+            tokenSymbol,
+            chainKey,
+            error: error instanceof Error ? error.message : "Unknown error",
+          })
+          return null
+        }
+      })
+      .filter((token): token is FeeTokenEnriched => token !== null)
+  }
+
+  /**
    * Retrieves chain details for a specific chain configuration
    *
    * @param chainConfig - Chain configuration object
    * @param chainKey - Chain identifier key
+   * @param environment - Network environment
+   * @param enrichFeeTokens - Whether to enrich fee tokens with addresses
    * @returns Chain details or null if validation fails
    *
    * @remarks
@@ -422,9 +482,15 @@ export class ChainDataService {
    * 1. Resolves the chain identifier
    * 2. Gets the chain ID and selector
    * 3. Validates the chain configuration using appropriate strategy
-   * 4. Returns formatted chain details
+   * 4. Optionally enriches fee tokens with additional metadata
+   * 5. Returns formatted chain details
    */
-  private async getChainDetails(chainConfig: ChainsConfig[string], chainKey: string): Promise<ChainDetails | null> {
+  private async getChainDetails(
+    chainConfig: ChainsConfig[string],
+    chainKey: string,
+    environment: Environment,
+    enrichFeeTokensFlag: boolean
+  ): Promise<ChainDetails | null> {
     const networkId = chainKey
 
     logger.debug({
@@ -483,6 +549,20 @@ export class ChainDataService {
       return null
     }
 
+    // Enrich fee tokens if requested
+    if (enrichFeeTokensFlag && Array.isArray(validation.validatedData.feeTokens)) {
+      const feeTokenSymbols = validation.validatedData.feeTokens as string[]
+      validation.validatedData.feeTokens = this.enrichFeeTokens(feeTokenSymbols, chainKey, environment)
+
+      logger.debug({
+        message: "Fee tokens enriched",
+        requestId: this.requestId,
+        networkId,
+        originalCount: feeTokenSymbols.length,
+        enrichedCount: validation.validatedData.feeTokens.length,
+      })
+    }
+
     logger.debug({
       message: "Chain details retrieved successfully",
       requestId: this.requestId,
@@ -499,6 +579,7 @@ export class ChainDataService {
    *
    * @param environment - Network environment (mainnet/testnet)
    * @param filters - Chain filters (chainId, selector, internalId)
+   * @param enrichFeeTokens - Whether to enrich fee tokens with addresses and metadata
    * @returns Filtered chain information grouped by chain family with metadata
    *
    * @remarks
@@ -506,12 +587,14 @@ export class ChainDataService {
    * 1. Processes all chain configurations
    * 2. Applies specified filters
    * 3. Groups results by chain family
-   * 4. Returns filtered results with metadata
-   * 5. Tracks any errors encountered during processing
+   * 4. Optionally enriches fee tokens with additional data
+   * 5. Returns filtered results with metadata
+   * 6. Tracks any errors encountered during processing
    */
   public async getFilteredChains(
     environment: Environment,
-    filters: FilterType
+    filters: FilterType,
+    enrichFeeTokens = false
   ): Promise<{
     data: Record<ChainFamily, ChainDetails[]>
     errors: ChainConfigError[]
@@ -522,6 +605,7 @@ export class ChainDataService {
       requestId: this.requestId,
       environment,
       filters,
+      enrichFeeTokens,
       totalChains: Object.keys(this.chainConfig).length,
     })
 
@@ -530,7 +614,7 @@ export class ChainDataService {
 
     // Process each chain configuration
     for (const [familyKey, familyConfig] of Object.entries(this.chainConfig)) {
-      const chainDetails = await this.getChainDetails(familyConfig, familyKey)
+      const chainDetails = await this.getChainDetails(familyConfig, familyKey, environment, enrichFeeTokens)
       if (chainDetails) chains.push(chainDetails)
     }
 

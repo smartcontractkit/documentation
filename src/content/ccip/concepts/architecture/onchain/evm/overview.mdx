@@ -30,7 +30,7 @@ The interface for senders is the Router contract, which interacts with other int
 The following diagram illustrates the key onchain components:
 
 <ClickToZoom
-  src="/images/ccip/concepts/architecture/onchain-evm-architecture.jpg"
+  src="/images/ccip/concepts/architecture/onchain-evm-architecture-registry.jpg"
   alt="CCIP Onchain EVM Architecture"
 />
 
@@ -45,7 +45,7 @@ The following diagram illustrates the key onchain components:
 | Token Admin Registry     | CCIP                       | A contract that contains the mapping of tokens to their token pools.                                                                                                                                                                                     |
 | Token Pool               | External (Token Developer) | A contract that implements token handling mechanisms, such as Lock/Burn/Release, typically set up by the token Developer. There is one token pool per token on a given chain.                                                                            |
 | Token Contract           | External (Token Developer) | An ERC20 token contract owned by the token Developer                                                                                                                                                                                                     |
-| RMN Contract (RMNRemote) | CCIP                       | Verifies Risk Management Network (RMN) signatures and handles cursing.                                                                                                                                                                                   |
+| RMN Contract (RMNRemote) | CCIP                       | Handles cursing.                                                                                                                                                                                                                                         |
 
 ## Typical Lifecycle of a Message
 
@@ -79,9 +79,7 @@ The following diagram illustrates the key onchain components:
 ### Destination Blockchain
 
 1. **Commit Phase**
-   - The final OCR report from the Committing DON is recorded onchain in the OffRamp contract via the `commit` function. This OCR report may include a mix of blessed and non-blessed roots and price updates from multiple source chains.
-   - If the OCR report includes **blessed** merkle roots from RMN-enabled source chains, the OffRamp verifies the RMN node signatures onchain via the `RMNRemote` contract.
-   - The OffRamp also validates that all **unblessed** merkle roots originate from the source chains where RMN is disabled.
+   - The final OCR report from the Committing DON is recorded onchain in the OffRamp contract via the `commit` function. This OCR report may include a mix of merkle roots and price updates from multiple source chains.
    - The OffRamp emits a `CommitReportAccepted` event, confirming that a valid commit has been accepted.
 
 1. **Secondary Offchain Processing**

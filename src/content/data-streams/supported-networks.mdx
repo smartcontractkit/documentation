@@ -8,19 +8,22 @@ metadata:
 ---
 
 import DataStreams from "@features/data-streams/common/DataStreams.astro"
+import { StreamsNetworkAddressesTable } from "@features/feeds/components/Tables"
+import SectionWrapper from "~/components/SectionWrapper/SectionWrapper.tsx"
 
 <DataStreams section="dsNotes" />
 
 Chainlink Data Streams provides data access directly via API or WebSocket for offchain use cases. It involves [verifying report integrity](/data-streams/tutorials/evm-onchain-report-verification) against onchain verifier proxy contracts.
 
-Data Streams is available on any network listed on the following pages, where you can find the necessary Verifier Proxy addresses:
+The table below lists all networks supported by Data Streams, each with verifier proxy contracts deployed for onchain report verification. All [Data Streams report types](/data-streams/reference/report-schema-overview) share these verifier addresses across supported networks. Click any verifier proxy address to view the contract in the block explorer.
 
-- [Cryptocurrency Streams](/data-streams/crypto-streams)
-- [Real World Asset (RWA) Streams](/data-streams/rwa-streams)
+<SectionWrapper title="Streams Verifier Network Addresses" depth={2} client:idle>
+  <StreamsNetworkAddressesTable client:idle allowExpansion={false} />
+</SectionWrapper>
 
 ## Streams Trade implementation (Onchain Lookup)
 
-Streams Trade, the alternative implementation, allows smart contracts to access Data Streams onchain using the [`StreamsLookup`](/data-streams/getting-started) capability integrated with [Chainlink Automation](/chainlink-automation).
+[Streams Trade](streams-trade), the alternative implementation, allows smart contracts to access Data Streams onchain using the [`StreamsLookup`](/data-streams/getting-started) capability integrated with [Chainlink Automation](/chainlink-automation).
 
 Streams Trade is currently available on the following networks:
 

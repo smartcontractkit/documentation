@@ -10,10 +10,41 @@ import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat.tsx"
 import { monitoredFeeds, FeedDataItem } from "~/features/data/index.ts"
 import { StreamsNetworksData, type NetworkData } from "../data/StreamsNetworksData.ts"
 import { FEED_CATEGORY_CONFIG } from "../../../db/feedCategories.js"
-import { useBatchedFeedCategories, getFeedCategoryFromBatch } from "./useBatchedFeedCategories.ts"
+import { useBatchedFeedCategories, getFeedCategoryFromBatch, getNetworkIdentifier } from "./useBatchedFeedCategories.ts"
 import { isSharedSVR, isAaveSVR } from "~/features/feeds/utils/svrDetection.ts"
+import { ExpandableTableWrapper } from "./ExpandableTableWrapper.tsx"
 
 const feedItems = monitoredFeeds.mainnet
+
+// Helper function to parse markdown links and render them
+const parseMarkdownLink = (text: string) => {
+  // Match markdown link format: [text](url)
+  const markdownLinkRegex = /\[([^\]]+)\]\(([^)]+)\)/g
+  const parts: any[] = []
+  let lastIndex = 0
+  let match
+
+  while ((match = markdownLinkRegex.exec(text)) !== null) {
+    // Add text before the link
+    if (match.index > lastIndex) {
+      parts.push(text.substring(lastIndex, match.index))
+    }
+    // Add the link
+    parts.push(
+      <a href={match[2]} target="_blank" rel="noopener noreferrer" key={match.index}>
+        {match[1]}
+      </a>
+    )
+    lastIndex = match.index + match[0].length
+  }
+
+  // Add remaining text after the last link
+  if (lastIndex < text.length) {
+    parts.push(text.substring(lastIndex))
+  }
+
+  return parts.length > 0 ? parts : text
+}
 
 // Render a category icon/link from the config
 const getFeedCategoryElement = (riskTier: string | undefined) => {
@@ -163,12 +194,17 @@ const DefaultTHead = ({
 const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, dataFeedType }) => {
   // Risk categorization logic
   const contractAddress = metadata.contractAddress || metadata.proxyAddress
-  const networkIdentifier = network?.networkType || "unknown"
-  const finalTier =
+  const networkIdentifier = getNetworkIdentifier(network)
+  let finalTier =
     contractAddress && batchedCategoryData?.size
       ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)
           ?.final ?? metadata.feedCategory)
       : metadata.feedCategory
+
+  // Override with deprecating category if feed has shutdown date
+  if (metadata.docs?.shutdownDate) {
+    finalTier = "deprecating"
+  }
 
   // US Government Macroeconomic Data logic
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
@@ -374,12 +410,17 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
 
   // Resolve final category from batch (fallback to metadata)
   const contractAddress = metadata.contractAddress || metadata.proxyAddress
-  const networkIdentifier = network?.networkType || "unknown"
-  const finalTier =
+  const networkIdentifier = getNetworkIdentifier(network)
+  let finalTier =
     contractAddress && batchedCategoryData?.size
       ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)
           ?.final ?? metadata.feedCategory)
       : metadata.feedCategory
+
+  // Override with deprecating category if feed has shutdown date
+  if (metadata.docs?.shutdownDate) {
+    finalTier = "deprecating"
+  }
 
   return (
     <tr>
@@ -410,13 +451,18 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
             {metadata.docs.shutdownDate}
           </div>
         )}
-        {metadata.docs.productType && (
-          <div>
-            <dd style={{ marginTop: "5px" }}>{metadata.docs.productType}</dd>
+        {(metadata.docs.assetClass === "Stablecoin Stability Assessment" ||
+          (metadata.docs.productType && metadata.docs.assetClass !== "Stablecoin Stability Assessment")) && (
+          <div style={{ marginTop: "5px", textAlign: "center" }}>
+            <dd>
+              {metadata.docs.assetClass === "Stablecoin Stability Assessment"
+                ? metadata.docs.assetClass
+                : metadata.docs.productType}
+            </dd>
           </div>
         )}
         {finalIsMVRFeed && (
-          <div style={{ marginTop: "5px" }}>
+          <div style={{ marginTop: "5px", textAlign: "center" }}>
             <a
               href="/data-feeds/mvr-feeds"
               className={tableStyles.feedVariantBadge}
@@ -467,11 +513,21 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
           <dl className={tableStyles.listContainer}>
             <div className={tableStyles.definitionGroup}>
               <dt>
-                <span className="label">Asset name:</span>
+                <span className="label">
+                  {metadata.docs.assetClass === "Stablecoin Stability Assessment"
+                    ? "Stablecoin assessed:"
+                    : "Asset name:"}
+                </span>
               </dt>
-              <dd>{metadata.assetName}</dd>
+              <dd>
+                {/* For Stablecoin Stability Assessment feeds, valueSuffix contains the stablecoin ticker being assessed */}
+                {metadata.docs.assetClass === "Stablecoin Stability Assessment"
+                  ? metadata.valueSuffix || metadata.assetName
+                  : metadata.assetName}
+              </dd>
             </div>
-            {metadata.docs.porType && (
+            {/* Hide Reserve type for Stablecoin Stability Assessment feeds */}
+            {metadata.docs.porType && metadata.docs.assetClass !== "Stablecoin Stability Assessment" && (
               <div className={tableStyles.definitionGroup}>
                 <dt>
                   <span className="label">Reserve type:</span>
@@ -494,7 +550,7 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
                     {metadata.docs.porSource === "Third-party" ? "Auditor verification:" : "Reporting:"}
                   </span>
                 </dt>
-                <dd>{metadata.docs.porSource}</dd>
+                <dd>{parseMarkdownLink(metadata.docs.porSource)}</dd>
               </div>
             )}
             {metadata.docs.issuer ? (
@@ -571,7 +627,13 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
   )
 }
 
-export const StreamsNetworkAddressesTable = () => {
+export const StreamsNetworkAddressesTable = ({
+  allowExpansion = false,
+  defaultExpanded = false,
+}: {
+  allowExpansion?: boolean
+  defaultExpanded?: boolean
+} = {}) => {
   const [searchValue, setSearchValue] = useState("")
 
   const normalizedSearch = searchValue.toLowerCase().replaceAll(" ", "")
@@ -592,21 +654,23 @@ export const StreamsNetworkAddressesTable = () => {
     return networkMatch || match(mainnetLabel) || match(testnetLabel) || match(mainnetAddr) || match(testnetAddr)
   })
 
-  return (
-    <div className={tableStyles.compactNetworksTable}>
+  const tableContent = (
+    <>
       <div className={feedList.filterDropdown_search} style={{ padding: "0.5rem" }}>
-        <input
-          type="text"
-          placeholder="Search"
-          className={feedList.filterDropdown_searchInput}
-          value={searchValue}
-          onInput={(e) => setSearchValue((e.target as HTMLInputElement).value)}
-        />
-        {searchValue && (
-          <button className={clsx(button.secondary, feedList.clearFilterBtn)} onClick={() => setSearchValue("")}>
-            Clear filter
-          </button>
-        )}
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flex: 1 }}>
+          <input
+            type="text"
+            placeholder="Search"
+            className={feedList.filterDropdown_searchInput}
+            value={searchValue}
+            onInput={(e) => setSearchValue((e.target as HTMLInputElement).value)}
+          />
+          {searchValue && (
+            <button className={clsx(button.secondary, feedList.clearFilterBtn)} onClick={() => setSearchValue("")}>
+              Clear filter
+            </button>
+          )}
+        </div>
       </div>
 
       <table className={tableStyles.networksTable}>
@@ -618,15 +682,33 @@ export const StreamsNetworkAddressesTable = () => {
           </tr>
         </thead>
         <tbody>
-          {filteredNetworks.map((network: NetworkData, index: number) => {
-            const statusUrl = getNetworkStatusUrl(network)
-            return (
-              <Fragment key={network.network}>
-                {network.mainnet &&
-                  (!normalizedSearch ||
-                    match(network.network) ||
-                    match(network.mainnet.label) ||
-                    match(network.isSolana ? network.mainnet.verifierProgramId : network.mainnet.verifierProxy)) && (
+          {filteredNetworks.length === 0 ? (
+            <tr>
+              <td colSpan={3} style={{ textAlign: "center", padding: "2rem", fontStyle: "italic" }}>
+                No results found
+              </td>
+            </tr>
+          ) : (
+            filteredNetworks.map((network: NetworkData, index: number) => {
+              const statusUrl = getNetworkStatusUrl(network)
+
+              const showMainnet =
+                network.mainnet &&
+                (!normalizedSearch ||
+                  match(network.network) ||
+                  match(network.mainnet.label) ||
+                  match(network.isSolana ? network.mainnet.verifierProgramId : network.mainnet.verifierProxy))
+
+              const showTestnet =
+                network.testnet &&
+                (!normalizedSearch ||
+                  match(network.network) ||
+                  match(network.testnet.label) ||
+                  match(network.isSolana ? network.testnet.verifierProgramId : network.testnet.verifierProxy))
+
+              return (
+                <Fragment key={network.network}>
+                  {showMainnet && (
                     <tr
                       key={`${network.network}-mainnet`}
                       className={index > 0 ? tableStyles.firstNetworkRow : undefined}
@@ -637,15 +719,15 @@ export const StreamsNetworkAddressesTable = () => {
                           <span>{network.network}</span>
                         </div>
                       </td>
-                      <td>{network.mainnet.label}</td>
+                      <td>{network.mainnet?.label}</td>
                       <td className={tableStyles.addressColumn}>
                         {network.isSolana ? (
                           <>
                             <div>
                               <small className={tableStyles.addressLabel}>Verifier Program ID:</small>
                               <CopyableAddress
-                                address={network?.mainnet?.verifierProgramId}
-                                explorerUrl={network?.mainnet?.explorerUrl}
+                                address={network.mainnet?.verifierProgramId || ""}
+                                explorerUrl={network.mainnet?.explorerUrl || ""}
                                 network={network}
                                 environment="Mainnet"
                               />
@@ -653,8 +735,8 @@ export const StreamsNetworkAddressesTable = () => {
                             <div className={tableStyles.mt1}>
                               <small className={tableStyles.addressLabel}>Access Controller:</small>
                               <CopyableAddress
-                                address={network?.mainnet?.accessController}
-                                explorerUrl={network?.mainnet?.explorerUrl}
+                                address={network.mainnet?.accessController || ""}
+                                explorerUrl={network.mainnet?.explorerUrl || ""}
                                 network={network}
                                 environment="Mainnet"
                               />
@@ -662,8 +744,8 @@ export const StreamsNetworkAddressesTable = () => {
                           </>
                         ) : (
                           <CopyableAddress
-                            address={network.mainnet.verifierProxy}
-                            explorerUrl={network.mainnet.explorerUrl}
+                            address={network.mainnet?.verifierProxy || ""}
+                            explorerUrl={network.mainnet?.explorerUrl || ""}
                             network={network}
                             environment="Mainnet"
                           />
@@ -672,32 +754,28 @@ export const StreamsNetworkAddressesTable = () => {
                     </tr>
                   )}
 
-                {network.testnet &&
-                  (!normalizedSearch ||
-                    match(network.network) ||
-                    match(network.testnet.label) ||
-                    match(network.isSolana ? network.testnet.verifierProgramId : network.testnet.verifierProxy)) && (
+                  {showTestnet && (
                     <tr
                       key={`${network.network}-testnet`}
-                      className={!network.mainnet && index > 0 ? tableStyles.firstNetworkRow : tableStyles.testnetRow}
+                      className={!showMainnet && index > 0 ? tableStyles.firstNetworkRow : tableStyles.testnetRow}
                     >
                       <td className={tableStyles.networkColumn}>
-                        {!network.mainnet && (
+                        {!showMainnet && (
                           <div className={tableStyles.networkInfo}>
                             <img src={network.logoUrl} alt={`${network.network} logo`} />
                             <span>{network.network}</span>
                           </div>
                         )}
                       </td>
-                      <td>{network.testnet.label}</td>
+                      <td>{network.testnet?.label}</td>
                       <td className={tableStyles.addressColumn}>
                         {network.isSolana ? (
                           <>
                             <div>
                               <small className={tableStyles.addressLabel}>Verifier Program ID:</small>
                               <CopyableAddress
-                                address={network?.testnet?.verifierProgramId}
-                                explorerUrl={network?.testnet?.explorerUrl}
+                                address={network.testnet?.verifierProgramId || ""}
+                                explorerUrl={network.testnet?.explorerUrl || ""}
                                 network={network}
                                 environment="Testnet"
                               />
@@ -705,8 +783,8 @@ export const StreamsNetworkAddressesTable = () => {
                             <div className={tableStyles.mt1}>
                               <small className={tableStyles.addressLabel}>Access Controller:</small>
                               <CopyableAddress
-                                address={network?.testnet?.accessController}
-                                explorerUrl={network?.testnet?.explorerUrl}
+                                address={network.testnet?.accessController || ""}
+                                explorerUrl={network.testnet?.explorerUrl || ""}
                                 network={network}
                                 environment="Testnet"
                               />
@@ -714,8 +792,8 @@ export const StreamsNetworkAddressesTable = () => {
                           </>
                         ) : (
                           <CopyableAddress
-                            address={network.testnet.verifierProxy}
-                            explorerUrl={network.testnet.explorerUrl}
+                            address={network.testnet?.verifierProxy || ""}
+                            explorerUrl={network.testnet?.explorerUrl || ""}
                             network={network}
                             environment="Testnet"
                           />
@@ -723,27 +801,42 @@ export const StreamsNetworkAddressesTable = () => {
                       </td>
                     </tr>
                   )}
-                {statusUrl && (
-                  <tr key={`${network.network}-status-explorer`} className={tableStyles.statusRow}>
-                    <td colSpan={3} className={tableStyles.statusCell}>
-                      <div style={{ display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
-                        <a
-                          href={statusUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={tableStyles.statusLink}
-                        >
-                          View {network.network} Network Status →
-                        </a>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </Fragment>
-            )
-          })}
+                  {statusUrl && (
+                    <tr key={`${network.network}-status-explorer`} className={tableStyles.statusRow}>
+                      <td colSpan={3} className={tableStyles.statusCell}>
+                        <div style={{ display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
+                          <a
+                            href={statusUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={tableStyles.statusLink}
+                          >
+                            View {network.network} Network Status →
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
+              )
+            })
+          )}
         </tbody>
       </table>
+    </>
+  )
+
+  return (
+    <div className={tableStyles.compactNetworksTable}>
+      <ExpandableTableWrapper
+        title="Streams Verifier Network Addresses"
+        description="Expand to view supported networks and addresses required for onchain report verification"
+        allowExpansion={allowExpansion}
+        defaultExpanded={defaultExpanded}
+        scrollable={allowExpansion}
+      >
+        {tableContent}
+      </ExpandableTableWrapper>
     </div>
   )
 }
@@ -884,7 +977,7 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v3-dex" rel="noreferrer" target="_blank">
-                  Crypto Schema - DEX (v3)
+                  Report Schema v3 (Crypto DEX)
                 </a>
               </dd>
             </div>
@@ -896,19 +989,19 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v3" rel="noreferrer" target="_blank">
-                  Crypto Schema (v3)
+                  Report Schema v3 (Crypto)
                 </a>
               </dd>
             </div>
           )}
-          {metadata.feedType === "Equities" && (
+          {(metadata.feedType === "Equities" || metadata.feedType === "Forex") && metadata.docs?.schema !== "v11" && (
             <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Report Schema:</span>
               </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v8" rel="noreferrer" target="_blank">
-                  RWA Schema (v8)
+                  Report Schema v8 (RWA)
                 </a>
               </dd>
             </div>
@@ -920,7 +1013,7 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v7" rel="noreferrer" target="_blank">
-                  Exchange Rate Schema (v7)
+                  Report Schema v7 (Redemption Rates)
                 </a>
               </dd>
             </div>
@@ -932,7 +1025,7 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v9" rel="noreferrer" target="_blank">
-                  NAV Schema (v9)
+                  Report Schema v9 (NAV)
                 </a>
               </dd>
             </div>
@@ -944,7 +1037,19 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v10" rel="noreferrer" target="_blank">
-                  Backed xStock Schema (v10)
+                  Report Schema v10 (Tokenized Assets)
+                </a>
+              </dd>
+            </div>
+          )}
+          {metadata.docs?.schema === "v11" && (
+            <div className={tableStyles.definitionGroup}>
+              <dt>
+                <span className="label">Report Schema:</span>
+              </dt>
+              <dd>
+                <a href="/data-streams/reference/report-schema-v11" rel="noreferrer" target="_blank">
+                  RWA Advanced (v11)
                 </a>
               </dd>
             </div>
@@ -961,6 +1066,8 @@ export const MainnetTable = ({
   showOnlySVR,
   showOnlyMVRFeeds,
   showOnlyDEXFeeds,
+  rwaSchemaFilter,
+  streamCategoryFilter,
   dataFeedType,
   ecosystem,
   selectedFeedCategories,
@@ -976,6 +1083,8 @@ export const MainnetTable = ({
   showOnlySVR: boolean
   showOnlyMVRFeeds: boolean
   showOnlyDEXFeeds: boolean
+  rwaSchemaFilter?: "all" | "v8" | "v11"
+  streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
   dataFeedType: string
   ecosystem: string
   selectedFeedCategories: string[]
@@ -1012,12 +1121,23 @@ export const MainnetTable = ({
       // 2. If the risk category is 'hidden', exclude this feed from the docs.
       // ---
       const contractAddress = metadata.contractAddress || metadata.proxyAddress
-      const networkIdentifier = network?.networkType || "unknown"
-      const batchCategory =
-        contractAddress && batchedCategoryData?.size
-          ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)
-              ?.final ?? metadata.feedCategory)
-          : metadata.feedCategory
+      const networkIdentifier = getNetworkIdentifier(network)
+      let batchCategory = metadata.feedCategory
+
+      if (contractAddress && batchedCategoryData?.size) {
+        const categoryResult = getFeedCategoryFromBatch(
+          batchedCategoryData,
+          contractAddress,
+          networkIdentifier,
+          metadata.feedCategory
+        )
+        const finalCategory = categoryResult?.final ?? null
+
+        if (finalCategory) {
+          batchCategory = finalCategory
+        }
+      }
+
       if (batchCategory === "hidden") return false
       if (showOnlySVR && !metadata.secondaryProxyAddress) {
         return false
@@ -1037,7 +1157,32 @@ export const MainnetTable = ({
         return isValidStreamsFeed
       }
       if (dataFeedType === "streamsRwa") {
-        return metadata.contractType === "verifier" && metadata.docs.feedType === "Equities"
+        const isRwaFeed =
+          metadata.contractType === "verifier" &&
+          (metadata.docs.feedType === "Equities" ||
+            metadata.docs.feedType === "Forex" ||
+            metadata.docs.feedType === "Datalink")
+
+        if (!isRwaFeed) return false
+
+        // Apply feed type filter
+        if (streamCategoryFilter === "datalink") {
+          if (metadata.docs.feedType !== "Datalink") return false
+        } else if (streamCategoryFilter === "equities") {
+          if (metadata.docs.feedType !== "Equities") return false
+        } else if (streamCategoryFilter === "forex") {
+          if (metadata.docs.feedType !== "Forex") return false
+        }
+
+        // Apply schema filter
+        if (rwaSchemaFilter === "v8") {
+          return metadata.docs?.schema === "v8" || !metadata.docs?.schema
+        }
+        if (rwaSchemaFilter === "v11") {
+          return metadata.docs?.schema === "v11"
+        }
+
+        return true
       }
 
       if (dataFeedType === "streamsNav") {
@@ -1091,7 +1236,8 @@ export const MainnetTable = ({
 
         const included =
           selectedFeedCategories.length === 0 ||
-          (metadata.docs.productType && selectedFeedCategories.includes(metadata.docs.productType))
+          (metadata.docs.productType && selectedFeedCategories.includes(metadata.docs.productType)) ||
+          (metadata.docs.assetClass && selectedFeedCategories.includes(metadata.docs.assetClass))
 
         return included
       }
@@ -1130,9 +1276,13 @@ export const MainnetTable = ({
 
   const slicedFilteredMetadata = filteredMetadata.slice(firstAddr, lastAddr)
 
+  // For non-streams tables, wait for batch categories to load to prevent icon flashing
+  if (!isStreams && isBatchLoading) {
+    return <p style="font-style: italic;">Loading...</p>
+  }
+
   return (
     <>
-      {isBatchLoading && <p>Loading...</p>}
       <div className={tableStyles.tableWrapper}>
         <table className={tableStyles.table} data-show-details={showExtraDetails}>
           {slicedFilteredMetadata.length === 0 ? (
@@ -1216,6 +1366,8 @@ export const TestnetTable = ({
   searchValue = "",
   showOnlyMVRFeeds,
   showOnlyDEXFeeds,
+  rwaSchemaFilter,
+  streamCategoryFilter,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
@@ -1229,6 +1381,8 @@ export const TestnetTable = ({
   searchValue?: string
   showOnlyMVRFeeds?: boolean
   showOnlyDEXFeeds?: boolean
+  rwaSchemaFilter?: "all" | "v8" | "v11"
+  streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
 }) => {
   if (!network.metadata) return null
 
@@ -1256,12 +1410,23 @@ export const TestnetTable = ({
       // 2. If the risk category is 'hidden', exclude this feed from the docs.
       // ---
       const contractAddress = metadata.contractAddress || metadata.proxyAddress
-      const networkIdentifier = network?.networkType || "unknown"
-      const batchCategory =
-        contractAddress && batchedCategoryData?.size
-          ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)
-              ?.final ?? metadata.feedCategory)
-          : metadata.feedCategory
+      const networkIdentifier = getNetworkIdentifier(network)
+      let batchCategory = metadata.feedCategory
+
+      if (contractAddress && batchedCategoryData?.size) {
+        const categoryResult = getFeedCategoryFromBatch(
+          batchedCategoryData,
+          contractAddress,
+          networkIdentifier,
+          metadata.feedCategory
+        )
+        const finalCategory = categoryResult?.final ?? null
+
+        if (finalCategory) {
+          batchCategory = finalCategory
+        }
+      }
+
       if (batchCategory === "hidden") return false
       if (isStreams) {
         if (dataFeedType === "streamsCrypto") {
@@ -1277,7 +1442,32 @@ export const TestnetTable = ({
         }
 
         if (dataFeedType === "streamsRwa") {
-          return metadata.contractType === "verifier" && metadata.docs.feedType === "Equities"
+          const isRwaFeed =
+            metadata.contractType === "verifier" &&
+            (metadata.docs.feedType === "Equities" ||
+              metadata.docs.feedType === "Forex" ||
+              metadata.docs.feedType === "Datalink")
+
+          if (!isRwaFeed) return false
+
+          // Apply feed type filter
+          if (streamCategoryFilter === "datalink") {
+            if (metadata.docs.feedType !== "Datalink") return false
+          } else if (streamCategoryFilter === "equities") {
+            if (metadata.docs.feedType !== "Equities") return false
+          } else if (streamCategoryFilter === "forex") {
+            if (metadata.docs.feedType !== "Forex") return false
+          }
+
+          // Apply schema filter
+          if (rwaSchemaFilter === "v8") {
+            return metadata.docs?.schema === "v8" || !metadata.docs?.schema
+          }
+          if (rwaSchemaFilter === "v11") {
+            return metadata.docs?.schema === "v11"
+          }
+
+          return true
         }
 
         if (dataFeedType === "streamsExRate") {
@@ -1291,6 +1481,9 @@ export const TestnetTable = ({
         if (dataFeedType === "streamsBacked") {
           return metadata.contractType === "verifier" && metadata.docs.feedType === "Tokenized Equities"
         }
+
+        // If we're in streams mode but didn't match any specific stream type, exclude this feed
+        return false
       }
 
       if (isSmartData) {
@@ -1336,7 +1529,8 @@ export const TestnetTable = ({
 
         const included =
           selectedFeedCategories.length === 0 ||
-          (metadata.docs.productType && selectedFeedCategories.includes(metadata.docs.productType))
+          (metadata.docs.productType && selectedFeedCategories.includes(metadata.docs.productType)) ||
+          (metadata.docs.assetClass && selectedFeedCategories.includes(metadata.docs.assetClass))
 
         return included
       }
@@ -1357,9 +1551,13 @@ export const TestnetTable = ({
 
   const slicedFilteredMetadata = filteredMetadata.slice(firstAddr, lastAddr)
 
+  // For non-streams tables, wait for batch categories to load to prevent icon flashing
+  if (!isStreams && isBatchLoading) {
+    return <p style="font-style: italic;">Loading...</p>
+  }
+
   return (
     <>
-      {isBatchLoading && <p>Loading...</p>}
       <div className={tableStyles.tableWrapper}>
         <table className={tableStyles.table}>
           {slicedFilteredMetadata.length === 0 ? (

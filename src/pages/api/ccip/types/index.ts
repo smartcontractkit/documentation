@@ -10,6 +10,17 @@ export type ChainFamily = "evm" | "mvm" | "svm"
 
 export const prerender = false
 
+/**
+ * Enriched fee token information with address and metadata
+ * Used when enrichFeeTokens=true query parameter is set
+ */
+export type FeeTokenEnriched = {
+  symbol: string
+  name: string
+  address: string
+  decimals: number
+}
+
 export type ChainConfigError = {
   chainId: number
   networkId: string
@@ -29,7 +40,7 @@ export interface ChainDetails {
   displayName: string
   selector: string
   internalId: string
-  feeTokens: string[]
+  feeTokens: string[] | FeeTokenEnriched[]
   router: string
   rmn: string
   chainType: ChainType
@@ -38,7 +49,6 @@ export interface ChainDetails {
   tokenAdminRegistry?: string
   tokenPoolFactory?: string
   feeQuoter?: string
-  rmnPermeable?: boolean
   mcms?: string
 }
 

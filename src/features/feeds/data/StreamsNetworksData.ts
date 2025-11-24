@@ -23,12 +23,12 @@ export const StreamsNetworksData: NetworkData[] = [
     networkStatus: "https://status.0g.ai/",
     mainnet: {
       label: "0G Aristotle (Mainnet)",
-      verifierProxy: "0x2e6621e5e3F916d5e512124dD79e06b55E258054",
+      verifierProxy: "0x673Dd1aA4Dafe735135d00058042D6ee3e85eF81",
       explorerUrl: "https://chainscan.0g.ai/address/%s",
     },
     testnet: {
       label: "0G Galileo (Testnet)",
-      verifierProxy: "0x7C8bf15e7d4d44AB1b29F0aC047600295111de4c",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
       explorerUrl: "https://chainscan-galileo.0g.ai/address/%s",
     },
   },
@@ -44,6 +44,21 @@ export const StreamsNetworksData: NetworkData[] = [
       label: "Apechain Curtis (Testnet)",
       verifierProxy: "0x9D93c410AfDb41E8aEb1BA88B5Ff6DEAa09FF537",
       explorerUrl: "https://explorer.curtis.apechain.com/address/%s",
+    },
+  },
+  {
+    network: "Aptos",
+    logoUrl: "/assets/chains/aptos.svg",
+    networkStatus: "https://explorer.aptoslabs.com/?network=mainnet",
+    mainnet: {
+      label: "Aptos Mainnet",
+      verifierProxy: "0x5e6ee502816abcbe49b5bb670da4a1d5af520db11732e93f19ddd15b4608d01d",
+      explorerUrl: "https://explorer.aptoslabs.com/account/%s?network=mainnet",
+    },
+    testnet: {
+      label: "Aptos Testnet",
+      verifierProxy: "0x0c68769ae9efe2d02f10bc5baed793cfe0fe780c41e428d087d5d61286448090",
+      explorerUrl: "https://explorer.aptoslabs.com/account/%s?network=testnet",
     },
   },
   {
@@ -249,6 +264,20 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "Hedera",
+    logoUrl: "/assets/chains/hedera.svg",
+    mainnet: {
+      label: "Hedera Mainnet",
+      verifierProxy: "0x38818Ba0e01E7743F5c001e8Aae095dE56a137db",
+      explorerUrl: "https://hashscan.io/mainnet/contract/%s",
+    },
+    testnet: {
+      label: "Hedera Testnet",
+      verifierProxy: "0x57A97148C1fa50f35F0639f380077017D8893b6b",
+      explorerUrl: "https://hashscan.io/testnet/contract/%s",
+    },
+  },
+  {
     network: "HyperEVM",
     logoUrl: "/assets/chains/hyperliquid.svg",
     mainnet: {
@@ -278,16 +307,25 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "Injective",
+    logoUrl: "/assets/chains/injective.svg",
+    mainnet: {
+      label: "Injective EVM Mainnet",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://injscan.com/account/inj1vra207kffxhnjt0usk84m9lramaq060t75latq/", // Note: Injective uses Bech32 address format, hardcoding here to avoid confusion
+    },
+  },
+  {
     network: "Jovay",
     logoUrl: "/assets/chains/jovay.svg",
     mainnet: {
       label: "Jovay Mainnet",
-      verifierProxy: "0x57a97148c1fa50f35f0639f380077017d8893b6b",
+      verifierProxy: "0xF1Ee15ecca3aD06edF9603a1ea6d19043804522A",
       explorerUrl: "https://explorer.jovay.io/l2/address/%s",
     },
     testnet: {
       label: "Jovay Sepolia Testnet",
-      verifierProxy: "0x60faa7fac949af392dfc858f5d97e3eefa07e9eb",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
       explorerUrl: "https://sepolia-explorer.jovay.io/l2/address/%s",
     },
   },
@@ -376,10 +414,15 @@ export const StreamsNetworksData: NetworkData[] = [
   {
     network: "Monad",
     logoUrl: "/assets/chains/monad.svg",
+    mainnet: {
+      label: "Monad Mainnet",
+      verifierProxy: "0xEd813D895457907399E41D36Ec0bE103E32148c8",
+      explorerUrl: "https://monadvision.com/address/%s",
+    },
     testnet: {
       label: "Monad Testnet",
       verifierProxy: "0xC539169910DE08D237Df0d73BcDa9074c787A4a1",
-      explorerUrl: "https://testnet.monadexplorer.com/address/%s",
+      explorerUrl: "https://testnet.monadvision.com/address/%s",
     },
   },
   {
