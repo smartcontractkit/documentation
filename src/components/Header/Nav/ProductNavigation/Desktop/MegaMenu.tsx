@@ -138,7 +138,7 @@ export const megaMenuSections = {
         icon: creLogo,
         title: "Chainlink Runtime Environment (CRE)",
         description: "The global orchestration layer",
-        link: "/",
+        link: "/cre",
       },
     ],
   },
