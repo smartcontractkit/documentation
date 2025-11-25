@@ -81,10 +81,10 @@ contract MessageTracker is CCIPReceiver, OwnerIsCreator {
 
   // Event emitted when the sender contract receives an acknowledgment
   // that the receiver contract has successfully received and processed the message.
-  // The unique ID of the message acknowledged by the receiver.
-  // The chain selector of the source chain.
-  // The address of the sender from the source chain.
   event MessageProcessedOnDestination( // The unique ID of the CCIP acknowledgment message.
+    // The unique ID of the message acknowledged by the receiver.
+    // The chain selector of the source chain.
+    // The address of the sender from the source chain.
     bytes32 indexed messageId,
     bytes32 indexed acknowledgedMsgId,
     uint64 indexed sourceChainSelector,
