@@ -76,7 +76,7 @@ export type SupportedTechnology =
   | "EVERCLEAR"
   | "AB_CHAIN"
   | "PHAROS"
-  | "NEXON"
+  | "HENESYS"
 
 export type ChainType = "evm" | "solana" | "aptos"
 
