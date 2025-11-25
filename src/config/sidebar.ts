@@ -824,6 +824,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/billing",
         },
         {
+          title: "Data Sources",
+          url: "data-streams/data-sources",
+        },
+        {
           title: "Release Notes",
           url: "https://dev.chain.link/changelog?product=Data+Streams",
         },
@@ -1007,10 +1011,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Candlestick API",
           url: "data-streams/reference/candlestick-api",
-        },
-        {
-          title: "Data Sources",
-          url: "data-streams/reference/data-sources",
         },
       ],
     },
