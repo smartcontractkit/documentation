@@ -75,10 +75,7 @@ contract APIConsumer is ChainlinkClient, ConfirmedOwner {
   /**
    * Receive the response in the form of uint256
    */
-  function fulfill(
-    bytes32 _requestId,
-    uint256 _volume
-  ) public recordChainlinkFulfillment(_requestId) {
+  function fulfill(bytes32 _requestId, uint256 _volume) public recordChainlinkFulfillment(_requestId) {
     emit RequestVolume(_requestId, _volume);
     volume = _volume;
   }

@@ -2,9 +2,8 @@
 pragma solidity ^0.8.20;
 
 import {ILogAutomation, Log} from "@chainlink/contracts/src/v0.8/automation/interfaces/ILogAutomation.sol";
-import {
-  StreamsLookupCompatibleInterface
-} from "@chainlink/contracts/src/v0.8/automation/interfaces/StreamsLookupCompatibleInterface.sol";
+import {StreamsLookupCompatibleInterface} from
+  "@chainlink/contracts/src/v0.8/automation/interfaces/StreamsLookupCompatibleInterface.sol";
 import {Common} from "@chainlink/contracts/src/v0.8/llo-feeds/libraries/Common.sol";
 
 import {IRewardManager} from "@chainlink/contracts/src/v0.8/llo-feeds/v0.3.0/interfaces/IRewardManager.sol";
@@ -85,7 +84,7 @@ contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
     int192 bid; // Simulated price impact of a buy order up to the X% depth of liquidity utilisation (8 or 18 decimals).
     // Note: not available for DEX State Price streams.
     int192 ask; // Simulated price impact of a sell order up to the X% depth of liquidity utilisation (8 or 18
-    // decimals). Note: not available for DEX State Price streams.
+      // decimals). Note: not available for DEX State Price streams.
   }
 
   /**
@@ -131,10 +130,7 @@ contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
 
   // This function uses revert to convey call information.
   // See https://eips.ethereum.org/EIPS/eip-3668#rationale for details.
-  function checkLog(
-    Log calldata log,
-    bytes memory
-  ) external returns (bool upkeepNeeded, bytes memory performData) {
+  function checkLog(Log calldata log, bytes memory) external returns (bool upkeepNeeded, bytes memory performData) {
     revert StreamsLookup(DATASTREAMS_FEEDLABEL, feedIds, DATASTREAMS_QUERYLABEL, log.timestamp, "");
   }
 
@@ -159,10 +155,7 @@ contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
   // Your contract may include logic to further process this data.
   // This method is intended only to be simulated offchain by Automation.
   // The data returned will then be passed by Automation into performUpkeep
-  function checkCallback(
-    bytes[] calldata values,
-    bytes calldata extraData
-  ) external pure returns (bool, bytes memory) {
+  function checkCallback(bytes[] calldata values, bytes calldata extraData) external pure returns (bool, bytes memory) {
     return (true, abi.encode(values, extraData));
   }
 

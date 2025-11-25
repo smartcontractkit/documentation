@@ -39,15 +39,7 @@ contract Counter is AutomationCompatibleInterface {
 
   function checkUpkeep(
     bytes calldata /* checkData */
-  )
-    external
-    view
-    override
-    returns (
-      bool upkeepNeeded,
-      bytes memory /* performData */
-    )
-  {
+  ) external view override returns (bool upkeepNeeded, bytes memory /* performData */ ) {
     upkeepNeeded = (block.timestamp - lastTimeStamp) > interval;
     // We don't use the checkData in this example. The checkData is defined when the Upkeep was registered.
   }

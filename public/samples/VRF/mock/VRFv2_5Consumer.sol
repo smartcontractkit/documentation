@@ -51,11 +51,7 @@ contract RandomNumberConsumerV2_5 is VRFConsumerBaseV2Plus {
    * @param vrfCoordinator - coordinator, check https://docs.chain.link/vrf/v2-5/supported-networks
    * @param keyHash - the gas lane to use, which specifies the maximum gas price to bump to
    */
-  constructor(
-    uint256 subscriptionId,
-    address vrfCoordinator,
-    bytes32 keyHash
-  ) VRFConsumerBaseV2Plus(vrfCoordinator) {
+  constructor(uint256 subscriptionId, address vrfCoordinator, bytes32 keyHash) VRFConsumerBaseV2Plus(vrfCoordinator) {
     s_keyHash = keyHash;
     s_subscriptionId = subscriptionId;
   }

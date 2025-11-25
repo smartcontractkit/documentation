@@ -63,10 +63,7 @@ contract UpkeepIDlogTriggerExample {
   LinkTokenInterface public immutable i_link;
   AutomationRegistrarInterface public immutable i_registrar;
 
-  constructor(
-    LinkTokenInterface link,
-    AutomationRegistrarInterface registrar
-  ) {
+  constructor(LinkTokenInterface link, AutomationRegistrarInterface registrar) {
     i_link = link;
     i_registrar = registrar;
   }

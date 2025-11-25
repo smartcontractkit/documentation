@@ -110,10 +110,7 @@ contract VRFD20 is VRFConsumerBaseV2 {
    * @param requestId uint256
    * @param randomWords  uint256[] The random result returned by the oracle.
    */
-  function fulfillRandomWords(
-    uint256 requestId,
-    uint256[] memory randomWords
-  ) internal override {
+  function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
     uint256 d20Value = (randomWords[0] % 20) + 1;
     s_results[s_rollers[requestId]] = d20Value;
     emit DiceLanded(requestId, d20Value);

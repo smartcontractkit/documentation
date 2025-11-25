@@ -30,10 +30,7 @@ contract CountWithLog is ILogAutomation {
 
   constructor() {}
 
-  function checkLog(
-    Log calldata log,
-    bytes memory
-  ) external pure returns (bool upkeepNeeded, bytes memory performData) {
+  function checkLog(Log calldata log, bytes memory) external pure returns (bool upkeepNeeded, bytes memory performData) {
     upkeepNeeded = true;
     address logSender = bytes32ToAddress(log.topics[1]);
     performData = abi.encode(logSender);

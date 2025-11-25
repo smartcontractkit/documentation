@@ -60,10 +60,7 @@ contract RandomNumberDirectFundingConsumerV2 is VRFV2WrapperConsumerBase, Confir
     return requestId;
   }
 
-  function fulfillRandomWords(
-    uint256 _requestId,
-    uint256[] memory _randomWords
-  ) internal override {
+  function fulfillRandomWords(uint256 _requestId, uint256[] memory _randomWords) internal override {
     RequestStatus storage request = s_requests[_requestId];
     if (request.paid == 0) revert RequestNotFound(_requestId);
     request.fulfilled = true;

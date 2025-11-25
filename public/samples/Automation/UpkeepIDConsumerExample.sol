@@ -32,10 +32,7 @@ contract UpkeepIDConsumerExample {
   LinkTokenInterface public immutable i_link;
   KeeperRegistrarInterface public immutable i_registrar;
 
-  constructor(
-    LinkTokenInterface link,
-    KeeperRegistrarInterface registrar
-  ) {
+  constructor(LinkTokenInterface link, KeeperRegistrarInterface registrar) {
     i_link = link;
     i_registrar = registrar;
   }

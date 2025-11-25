@@ -208,10 +208,7 @@ contract ClientReportsVerifier {
    * @param _beneficiary Address that receives the tokens.
    * @param _token       ERC-20 token address.
    */
-  function withdrawToken(
-    address _beneficiary,
-    address _token
-  ) external onlyOwner {
+  function withdrawToken(address _beneficiary, address _token) external onlyOwner {
     uint256 amount = IERC20(_token).balanceOf(address(this));
     if (amount == 0) revert NothingToWithdraw();
     IERC20(_token).safeTransfer(_beneficiary, amount);

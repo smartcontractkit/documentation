@@ -13,15 +13,11 @@ import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
 /// @title - A simple contract for receiving string data across chains.
 contract Receiver is CCIPReceiver {
   // Event emitted when a message is received from another chain.
+  // The chain selector of the source chain.
+  // The address of the sender from the source chain.
+  // The text that was received.
   event MessageReceived( // The unique ID of the message.
-    // The chain selector of the source chain.
-    // The address of the sender from the source chain.
-    // The text that was received.
-    bytes32 indexed messageId,
-    uint64 indexed sourceChainSelector,
-    address sender,
-    string text
-  );
+  bytes32 indexed messageId, uint64 indexed sourceChainSelector, address sender, string text);
 
   bytes32 private s_lastReceivedMessageId; // Store the last received messageId.
   string private s_lastReceivedText; // Store the last received text.

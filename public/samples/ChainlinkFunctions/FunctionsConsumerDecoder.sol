@@ -109,11 +109,7 @@ contract FunctionsConsumerDecoder is FunctionsClient, ConfirmedOwner {
    * sent.
    * - Only one of `response` or `err` should contain data for a given call; the other should be empty.
    */
-  function fulfillRequest(
-    bytes32 requestId,
-    bytes memory response,
-    bytes memory err
-  ) internal override {
+  function fulfillRequest(bytes32 requestId, bytes memory response, bytes memory err) internal override {
     if (s_lastRequestId != requestId) {
       revert UnexpectedRequestID(requestId);
     }

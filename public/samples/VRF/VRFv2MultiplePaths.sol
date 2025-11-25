@@ -74,10 +74,7 @@ contract VRFv2MultiplePaths is VRFConsumerBaseV2 {
     }
   }
 
-  function fulfillRandomWords(
-    uint256 requestId,
-    uint256[] memory randomWords
-  ) internal override {
+  function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
     Variable variable = requests[requestId];
     if (variable == Variable.A) {
       fulfillA(requestId, randomWords[0]);
@@ -88,28 +85,19 @@ contract VRFv2MultiplePaths is VRFConsumerBaseV2 {
     }
   }
 
-  function fulfillA(
-    uint256 requestId,
-    uint256 randomWord
-  ) private {
+  function fulfillA(uint256 requestId, uint256 randomWord) private {
     // execution path A
     variableA = randomWord;
     emit FulfilledA(requestId, randomWord);
   }
 
-  function fulfillB(
-    uint256 requestId,
-    uint256 randomWord
-  ) private {
+  function fulfillB(uint256 requestId, uint256 randomWord) private {
     // execution path B
     variableB = randomWord;
     emit FulfilledB(requestId, randomWord);
   }
 
-  function fulfillC(
-    uint256 requestId,
-    uint256 randomWord
-  ) private {
+  function fulfillC(uint256 requestId, uint256 randomWord) private {
     // execution path C
     variableC = randomWord;
     emit FulfilledC(requestId, randomWord);

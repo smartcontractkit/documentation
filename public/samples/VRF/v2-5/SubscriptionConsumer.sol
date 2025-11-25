@@ -89,10 +89,7 @@ contract SubscriptionConsumer is VRFConsumerBaseV2Plus {
     return requestId;
   }
 
-  function fulfillRandomWords(
-    uint256 _requestId,
-    uint256[] calldata _randomWords
-  ) internal override {
+  function fulfillRandomWords(uint256 _requestId, uint256[] calldata _randomWords) internal override {
     require(s_requests[_requestId].exists, "request not found");
     s_requests[_requestId].fulfilled = true;
     s_requests[_requestId].randomWords = _randomWords;

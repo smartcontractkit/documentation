@@ -120,10 +120,7 @@ contract VRFv2PlusSubscriptionManager is VRFConsumerBaseV2Plus {
 
   // Transfer this contract's funds to an address.
   // 1000000000000000000 = 1 LINK
-  function withdraw(
-    uint256 amount,
-    address to
-  ) external onlyOwner {
+  function withdraw(uint256 amount, address to) external onlyOwner {
     LINKTOKEN.transfer(to, amount);
   }
 }

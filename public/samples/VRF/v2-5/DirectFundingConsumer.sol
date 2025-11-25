@@ -75,10 +75,7 @@ contract DirectFundingConsumer is VRFV2PlusWrapperConsumerBase, ConfirmedOwner {
     return requestId;
   }
 
-  function fulfillRandomWords(
-    uint256 _requestId,
-    uint256[] memory _randomWords
-  ) internal override {
+  function fulfillRandomWords(uint256 _requestId, uint256[] memory _randomWords) internal override {
     require(s_requests[_requestId].paid > 0, "request not found");
     s_requests[_requestId].fulfilled = true;
     s_requests[_requestId].randomWords = _randomWords;

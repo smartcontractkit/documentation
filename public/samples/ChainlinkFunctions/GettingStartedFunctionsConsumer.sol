@@ -64,10 +64,7 @@ contract GettingStartedFunctionsConsumer is FunctionsClient, ConfirmedOwner {
    * @param args The arguments to pass to the HTTP request
    * @return requestId The ID of the request
    */
-  function sendRequest(
-    uint64 subscriptionId,
-    string[] calldata args
-  ) external onlyOwner returns (bytes32 requestId) {
+  function sendRequest(uint64 subscriptionId, string[] calldata args) external onlyOwner returns (bytes32 requestId) {
     FunctionsRequest.Request memory req;
     req.initializeRequestForInlineJavaScript(source); // Initialize the request with JS code
     if (args.length > 0) req.setArgs(args); // Set the arguments for the request
@@ -84,11 +81,7 @@ contract GettingStartedFunctionsConsumer is FunctionsClient, ConfirmedOwner {
    * @param response The HTTP response data
    * @param err Any errors from the Functions request
    */
-  function fulfillRequest(
-    bytes32 requestId,
-    bytes memory response,
-    bytes memory err
-  ) internal override {
+  function fulfillRequest(bytes32 requestId, bytes memory response, bytes memory err) internal override {
     if (s_lastRequestId != requestId) {
       revert UnexpectedRequestID(requestId); // Check if request IDs match
     }

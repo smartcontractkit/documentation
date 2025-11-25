@@ -12,9 +12,8 @@ pragma solidity ^0.8.20;
  * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
-import {
-  AutomationCompatibleInterface
-} from "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol";
+import {AutomationCompatibleInterface} from
+  "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol";
 import {OwnerIsCreator} from "@chainlink/contracts/src/v0.8/shared/access/OwnerIsCreator.sol";
 
 contract CounterwForwarder is AutomationCompatibleInterface, OwnerIsCreator {

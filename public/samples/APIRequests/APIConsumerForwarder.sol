@@ -28,10 +28,7 @@ contract APIConsumerForwarder is ChainlinkClient, ConfirmedOwner {
     _setChainlinkToken(0x779877A7B0D9E8603169DdbD7836e478b4624789);
   }
 
-  function requestEthereumPrice(
-    address _oracle,
-    string memory _jobId
-  ) public onlyOwner {
+  function requestEthereumPrice(address _oracle, string memory _jobId) public onlyOwner {
     Chainlink.Request memory req =
       _buildChainlinkRequest(stringToBytes32(_jobId), address(this), this.fulfillEthereumPrice.selector);
     req._add("get", "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD");
@@ -44,10 +41,7 @@ contract APIConsumerForwarder is ChainlinkClient, ConfirmedOwner {
    * Create a Chainlink request to retrieve API response, find the target
    * data which is located in a list
    */
-  function requestFirstId(
-    address _oracle,
-    string memory _jobId
-  ) public onlyOwner {
+  function requestFirstId(address _oracle, string memory _jobId) public onlyOwner {
     Chainlink.Request memory req =
       _buildChainlinkRequest(stringToBytes32(_jobId), address(this), this.fulfillFirstId.selector);
 
@@ -70,10 +64,7 @@ contract APIConsumerForwarder is ChainlinkClient, ConfirmedOwner {
     _sendChainlinkRequestTo(_oracle, req, ORACLE_PAYMENT);
   }
 
-  function fulfillEthereumPrice(
-    bytes32 _requestId,
-    uint256 _price
-  ) public recordChainlinkFulfillment(_requestId) {
+  function fulfillEthereumPrice(bytes32 _requestId, uint256 _price) public recordChainlinkFulfillment(_requestId) {
     emit RequestEthereumPriceFulfilled(_requestId, _price);
     currentPrice = _price;
   }
@@ -81,10 +72,7 @@ contract APIConsumerForwarder is ChainlinkClient, ConfirmedOwner {
   /**
    * Receive the response in the form of string
    */
-  function fulfillFirstId(
-    bytes32 _requestId,
-    string memory _id
-  ) public recordChainlinkFulfillment(_requestId) {
+  function fulfillFirstId(bytes32 _requestId, string memory _id) public recordChainlinkFulfillment(_requestId) {
     emit RequestFirstId(_requestId, _id);
     id = _id;
   }

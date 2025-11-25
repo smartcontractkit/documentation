@@ -59,7 +59,9 @@ contract VRFv2DirectFundingConsumer is VRFV2WrapperConsumerBase, ConfirmedOwner 
   function requestRandomWords() external onlyOwner returns (uint256 requestId) {
     requestId = requestRandomness(callbackGasLimit, requestConfirmations, numWords);
     s_requests[requestId] = RequestStatus({
-      paid: VRF_V2_WRAPPER.calculateRequestPrice(callbackGasLimit), randomWords: new uint256[](0), fulfilled: false
+      paid: VRF_V2_WRAPPER.calculateRequestPrice(callbackGasLimit),
+      randomWords: new uint256[](0),
+      fulfilled: false
     });
     requestIds.push(requestId);
     lastRequestId = requestId;
@@ -67,10 +69,7 @@ contract VRFv2DirectFundingConsumer is VRFV2WrapperConsumerBase, ConfirmedOwner 
     return requestId;
   }
 
-  function fulfillRandomWords(
-    uint256 _requestId,
-    uint256[] memory _randomWords
-  ) internal override {
+  function fulfillRandomWords(uint256 _requestId, uint256[] memory _randomWords) internal override {
     require(s_requests[_requestId].paid > 0, "request not found");
     s_requests[_requestId].fulfilled = true;
     s_requests[_requestId].randomWords = _randomWords;
