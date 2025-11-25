@@ -3,7 +3,7 @@ pragma solidity 0.8.24;
 
 import {CCIPReceiver} from "@chainlink/contracts-ccip/contracts/applications/CCIPReceiver.sol";
 import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
-import {OwnerIsCreator} from "@chainlink/contracts/src/v0.8/shared/access/OwnerIsCreator.sol";
+import {OwnerIsCreator} from "@chainlink/contracts@1.4.0/src/v0.8/shared/access/OwnerIsCreator.sol";
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -95,11 +95,7 @@ contract Receiver is CCIPReceiver, OwnerIsCreator {
   /// @param _router The address of the router contract.
   /// @param _usdcToken The address of the usdc contract.
   /// @param _staker The address of the staker contract.
-  constructor(
-    address _router,
-    address _usdcToken,
-    address _staker
-  ) CCIPReceiver(_router) {
+  constructor(address _router, address _usdcToken, address _staker) CCIPReceiver(_router) {
     if (_usdcToken == address(0)) revert InvalidUsdcToken();
     if (_staker == address(0)) revert InvalidStaker();
     i_usdcToken = IERC20(_usdcToken);
@@ -144,9 +140,8 @@ contract Receiver is CCIPReceiver, OwnerIsCreator {
     }
     /* solhint-disable no-empty-blocks */
     try this.processMessage(any2EvmMessage) {
-    // Intentionally empty in this example; no action needed if processMessage succeeds
-    }
-    catch (bytes memory err) {
+      // Intentionally empty in this example; no action needed if processMessage succeeds
+    } catch (bytes memory err) {
       // Could set different error codes based on the caught error. Each could be
       // handled differently.
       s_failedMessages.set(any2EvmMessage.messageId, uint256(ErrorCode.FAILED));
@@ -195,10 +190,7 @@ contract Receiver is CCIPReceiver, OwnerIsCreator {
   /// @param beneficiary The address to which the tokens will be sent.
   /// @dev This function is only callable by the contract owner. It changes the status of the message
   /// from 'failed' to 'resolved' to prevent reentry and multiple retries of the same message.
-  function retryFailedMessage(
-    bytes32 messageId,
-    address beneficiary
-  ) external onlyOwner {
+  function retryFailedMessage(bytes32 messageId, address beneficiary) external onlyOwner {
     // Check if the message has failed; if not, revert the transaction.
     if (s_failedMessages.get(messageId) != uint256(ErrorCode.FAILED)) {
       revert MessageNotFailed(messageId);
@@ -227,10 +219,7 @@ contract Receiver is CCIPReceiver, OwnerIsCreator {
   /// @return failedMessages An array of `FailedMessage` struct, each containing a `messageId` and an `errorCode`
   /// (RESOLVED or FAILED), representing the requested subset of failed messages. The length of the returned array is
   /// determined by the `limit` and the total number of failed messages.
-  function getFailedMessages(
-    uint256 offset,
-    uint256 limit
-  ) external view returns (FailedMessage[] memory) {
+  function getFailedMessages(uint256 offset, uint256 limit) external view returns (FailedMessage[] memory) {
     uint256 length = s_failedMessages.length();
 
     // Calculate the actual number of items to return (can't exceed total length or requested limit)

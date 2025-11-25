@@ -4,7 +4,7 @@ pragma solidity 0.8.24;
 import {CCIPReceiver} from "@chainlink/contracts-ccip/contracts/applications/CCIPReceiver.sol";
 import {IRouterClient} from "@chainlink/contracts-ccip/contracts/interfaces/IRouterClient.sol";
 import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
-import {OwnerIsCreator} from "@chainlink/contracts/src/v0.8/shared/access/OwnerIsCreator.sol";
+import {OwnerIsCreator} from "@chainlink/contracts@1.4.0/src/v0.8/shared/access/OwnerIsCreator.sol";
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -47,15 +47,11 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
   );
 
   // Event emitted when a message is received from another chain.
+  // The chain selector of the source chain.
+  // The address of the sender from the source chain.
+  // The text that was received.
   event MessageReceived( // The unique ID of the CCIP message.
-    // The chain selector of the source chain.
-    // The address of the sender from the source chain.
-    // The text that was received.
-    bytes32 indexed messageId,
-    uint64 indexed sourceChainSelector,
-    address sender,
-    string text
-  );
+  bytes32 indexed messageId, uint64 indexed sourceChainSelector, address sender, string text);
 
   bytes32 private s_lastReceivedMessageId; // Store the last received messageId.
   string private s_lastReceivedText; // Store the last received text.
@@ -74,10 +70,7 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
   /// @notice Constructor initializes the contract with the router address.
   /// @param _router The address of the router contract.
   /// @param _link The address of the link contract.
-  constructor(
-    address _router,
-    address _link
-  ) CCIPReceiver(_router) {
+  constructor(address _router, address _link) CCIPReceiver(_router) {
     s_linkToken = IERC20(_link);
   }
 
@@ -96,10 +89,7 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
   /// allowlisted.
   /// @param _sourceChainSelector The selector of the destination chain.
   /// @param _sender The address of the sender.
-  modifier onlyAllowlisted(
-    uint64 _sourceChainSelector,
-    address _sender
-  ) {
+  modifier onlyAllowlisted(uint64 _sourceChainSelector, address _sender) {
     if (!allowlistedSourceChains[_sourceChainSelector]) {
       revert SourceChainNotAllowlisted(_sourceChainSelector);
     }
@@ -117,26 +107,17 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
   }
 
   /// @dev Updates the allowlist status of a destination chain for transactions.
-  function allowlistDestinationChain(
-    uint64 _destinationChainSelector,
-    bool allowed
-  ) external onlyOwner {
+  function allowlistDestinationChain(uint64 _destinationChainSelector, bool allowed) external onlyOwner {
     allowlistedDestinationChains[_destinationChainSelector] = allowed;
   }
 
   /// @dev Updates the allowlist status of a source chain for transactions.
-  function allowlistSourceChain(
-    uint64 _sourceChainSelector,
-    bool allowed
-  ) external onlyOwner {
+  function allowlistSourceChain(uint64 _sourceChainSelector, bool allowed) external onlyOwner {
     allowlistedSourceChains[_sourceChainSelector] = allowed;
   }
 
   /// @dev Updates the allowlist status of a sender for transactions.
-  function allowlistSender(
-    address _sender,
-    bool allowed
-  ) external onlyOwner {
+  function allowlistSender(address _sender, bool allowed) external onlyOwner {
     allowlistedSenders[_sender] = allowed;
   }
 
@@ -232,8 +213,7 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
     internal
     override
     onlyAllowlisted(any2EvmMessage.sourceChainSelector, abi.decode(any2EvmMessage.sender, (address))) // Make sure
-    // source chain and sender are allowlisted
-
+      // source chain and sender are allowlisted
   {
     s_lastReceivedMessageId = any2EvmMessage.messageId; // fetch the messageId
     s_lastReceivedText = abi.decode(any2EvmMessage.data, (string)); // abi-decoding of the sent text
@@ -272,8 +252,8 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
         Client.GenericExtraArgsV2({
           gasLimit: 200_000, // Gas limit for the callback on the destination chain
           allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages
-          // from
-          // the same sender
+            // from
+            // the same sender
         })
       ),
       // Set the feeToken to a feeTokenAddress, indicating specific asset will be used for fees
@@ -317,10 +297,7 @@ contract Messenger is CCIPReceiver, OwnerIsCreator {
   /// @dev This function reverts with a 'NothingToWithdraw' error if there are no tokens to withdraw.
   /// @param _beneficiary The address to which the tokens will be sent.
   /// @param _token The contract address of the ERC20 token to be withdrawn.
-  function withdrawToken(
-    address _beneficiary,
-    address _token
-  ) public onlyOwner {
+  function withdrawToken(address _beneficiary, address _token) public onlyOwner {
     // Retrieve the balance of this contract
     uint256 amount = IERC20(_token).balanceOf(address(this));
 

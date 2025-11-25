@@ -4,7 +4,7 @@ pragma solidity 0.8.24;
 import {IRouterClient} from "@chainlink/contracts-ccip/contracts/interfaces/IRouterClient.sol";
 
 import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
-import {OwnerIsCreator} from "@chainlink/contracts/src/v0.8/shared/access/OwnerIsCreator.sol";
+import {OwnerIsCreator} from "@chainlink/contracts@1.4.0/src/v0.8/shared/access/OwnerIsCreator.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
@@ -14,10 +14,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
 interface IStaker {
-  function stake(
-    address beneficiary,
-    uint256 amount
-  ) external;
+  function stake(address beneficiary, uint256 amount) external;
 
   function redeem() external;
 }
@@ -80,11 +77,7 @@ contract Sender is OwnerIsCreator {
   /// @param _router The address of the router contract.
   /// @param _link The address of the link contract.
   /// @param _usdcToken The address of the usdc contract.
-  constructor(
-    address _router,
-    address _link,
-    address _usdcToken
-  ) {
+  constructor(address _router, address _link, address _usdcToken) {
     if (_router == address(0)) revert InvalidRouter();
     if (_link == address(0)) revert InvalidLinkToken();
     if (_usdcToken == address(0)) revert InvalidUsdcToken();
@@ -169,8 +162,8 @@ contract Sender is OwnerIsCreator {
         Client.GenericExtraArgsV2({
           gasLimit: gasLimit, // Gas limit for the callback on the destination chain
           allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages
-          // from
-          // the same sender
+            // from
+            // the same sender
         })
       ),
       // Set the feeToken to a feeTokenAddress, indicating specific asset will be used for fees
