@@ -1008,6 +1008,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Candlestick API",
           url: "data-streams/reference/candlestick-api",
         },
+        {
+          title: "Data Sources",
+          url: "data-streams/reference/data-sources",
+        },
       ],
     },
     {
