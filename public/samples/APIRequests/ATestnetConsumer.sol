@@ -26,7 +26,10 @@ contract ATestnetConsumer is ChainlinkClient, ConfirmedOwner {
     _setChainlinkToken(0x779877A7B0D9E8603169DdbD7836e478b4624789);
   }
 
-  function requestEthereumPrice(address _oracle, string memory _jobId) public onlyOwner {
+  function requestEthereumPrice(
+    address _oracle,
+    string memory _jobId
+  ) public onlyOwner {
     Chainlink.Request memory req =
       _buildChainlinkRequest(stringToBytes32(_jobId), address(this), this.fulfillEthereumPrice.selector);
     req._add("get", "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD");
@@ -35,7 +38,10 @@ contract ATestnetConsumer is ChainlinkClient, ConfirmedOwner {
     _sendChainlinkRequestTo(_oracle, req, ORACLE_PAYMENT);
   }
 
-  function fulfillEthereumPrice(bytes32 _requestId, uint256 _price) public recordChainlinkFulfillment(_requestId) {
+  function fulfillEthereumPrice(
+    bytes32 _requestId,
+    uint256 _price
+  ) public recordChainlinkFulfillment(_requestId) {
     emit RequestEthereumPriceFulfilled(_requestId, _price);
     currentPrice = _price;
   }

@@ -54,7 +54,10 @@ contract TokenTransferor is OwnerIsCreator {
   /// @notice Constructor initializes the contract with the router address.
   /// @param _router The address of the router contract.
   /// @param _link The address of the link contract.
-  constructor(address _router, address _link) {
+  constructor(
+    address _router,
+    address _link
+  ) {
     s_router = IRouterClient(_router);
     s_linkToken = IERC20(_link);
   }
@@ -83,7 +86,10 @@ contract TokenTransferor is OwnerIsCreator {
   /// @notice This function can only be called by the owner.
   /// @param _destinationChainSelector The selector of the destination chain to be updated.
   /// @param allowed The allowlist status to be set for the destination chain.
-  function allowlistDestinationChain(uint64 _destinationChainSelector, bool allowed) external onlyOwner {
+  function allowlistDestinationChain(
+    uint64 _destinationChainSelector,
+    bool allowed
+  ) external onlyOwner {
     allowlistedChains[_destinationChainSelector] = allowed;
   }
 
@@ -231,8 +237,8 @@ contract TokenTransferor is OwnerIsCreator {
         Client.GenericExtraArgsV2({
           gasLimit: 0, // Gas limit for the callback on the destination chain
           allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages
-            // from
-            // the same sender
+          // from
+          // the same sender
         })
       ),
       // Set the feeToken to a feeTokenAddress, indicating specific asset will be used for fees
@@ -269,7 +275,10 @@ contract TokenTransferor is OwnerIsCreator {
   /// @dev This function reverts with a 'NothingToWithdraw' error if there are no tokens to withdraw.
   /// @param _beneficiary The address to which the tokens will be sent.
   /// @param _token The contract address of the ERC20 token to be withdrawn.
-  function withdrawToken(address _beneficiary, address _token) public onlyOwner {
+  function withdrawToken(
+    address _beneficiary,
+    address _token
+  ) public onlyOwner {
     // Retrieve the balance of this contract
     uint256 amount = IERC20(_token).balanceOf(address(this));
 

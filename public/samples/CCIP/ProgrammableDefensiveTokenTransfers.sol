@@ -115,7 +115,10 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
   /// @notice Constructor initializes the contract with the router address.
   /// @param _router The address of the router contract.
   /// @param _link The address of the link contract.
-  constructor(address _router, address _link) CCIPReceiver(_router) {
+  constructor(
+    address _router,
+    address _link
+  ) CCIPReceiver(_router) {
     s_linkToken = IERC20(_link);
   }
 
@@ -134,7 +137,10 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
   /// allowlisted.
   /// @param _sourceChainSelector The selector of the destination chain.
   /// @param _sender The address of the sender.
-  modifier onlyAllowlisted(uint64 _sourceChainSelector, address _sender) {
+  modifier onlyAllowlisted(
+    uint64 _sourceChainSelector,
+    address _sender
+  ) {
     if (!allowlistedSourceChains[_sourceChainSelector]) {
       revert SourceChainNotAllowed(_sourceChainSelector);
     }
@@ -162,7 +168,10 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
   /// @notice This function can only be called by the owner.
   /// @param _destinationChainSelector The selector of the destination chain to be updated.
   /// @param allowed The allowlist status to be set for the destination chain.
-  function allowlistDestinationChain(uint64 _destinationChainSelector, bool allowed) external onlyOwner {
+  function allowlistDestinationChain(
+    uint64 _destinationChainSelector,
+    bool allowed
+  ) external onlyOwner {
     allowlistedDestinationChains[_destinationChainSelector] = allowed;
   }
 
@@ -170,7 +179,10 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
   /// @notice This function can only be called by the owner.
   /// @param _sourceChainSelector The selector of the source chain to be updated.
   /// @param allowed The allowlist status to be set for the source chain.
-  function allowlistSourceChain(uint64 _sourceChainSelector, bool allowed) external onlyOwner {
+  function allowlistSourceChain(
+    uint64 _sourceChainSelector,
+    bool allowed
+  ) external onlyOwner {
     allowlistedSourceChains[_sourceChainSelector] = allowed;
   }
 
@@ -178,7 +190,10 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
   /// @notice This function can only be called by the owner.
   /// @param _sender The address of the sender to be updated.
   /// @param allowed The allowlist status to be set for the sender.
-  function allowlistSender(address _sender, bool allowed) external onlyOwner {
+  function allowlistSender(
+    address _sender,
+    bool allowed
+  ) external onlyOwner {
     allowlistedSenders[_sender] = allowed;
   }
 
@@ -330,7 +345,10 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
    * (RESOLVED or FAILED), representing the requested subset of failed messages. The length of the returned array is
    * determined by the `limit` and the total number of failed messages.
    */
-  function getFailedMessages(uint256 offset, uint256 limit) external view returns (FailedMessage[] memory) {
+  function getFailedMessages(
+    uint256 offset,
+    uint256 limit
+  ) external view returns (FailedMessage[] memory) {
     uint256 length = s_failedMessages.length();
 
     // Calculate the actual number of items to return (can't exceed total length or requested limit)
@@ -356,12 +374,14 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
     override
     onlyRouter
     onlyAllowlisted(any2EvmMessage.sourceChainSelector, abi.decode(any2EvmMessage.sender, (address))) // Make sure the
-      // source chain and sender are allowlisted
+    // source chain and sender are allowlisted
+
   {
     /* solhint-disable no-empty-blocks */
     try this.processMessage(any2EvmMessage) {
-      // Intentionally empty in this example; no action needed if processMessage succeeds
-    } catch (bytes memory err) {
+    // Intentionally empty in this example; no action needed if processMessage succeeds
+    }
+    catch (bytes memory err) {
       // Could set different error codes based on the caught error. Each could be
       // handled differently.
       s_failedMessages.set(any2EvmMessage.messageId, uint256(ErrorCode.FAILED));
@@ -384,7 +404,8 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
     external
     onlySelf
     onlyAllowlisted(any2EvmMessage.sourceChainSelector, abi.decode(any2EvmMessage.sender, (address))) // Make sure the
-      // source chain and sender are allowlisted
+    // source chain and sender are allowlisted
+
   {
     // Simulate a revert for testing purposes
     if (s_simRevert) revert ErrorCase();
@@ -397,7 +418,10 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
   /// @param tokenReceiver The address to which the tokens will be sent.
   /// @dev This function is only callable by the contract owner. It changes the status of the message
   /// from 'failed' to 'resolved' to prevent reentry and multiple retries of the same message.
-  function retryFailedMessage(bytes32 messageId, address tokenReceiver) external onlyOwner {
+  function retryFailedMessage(
+    bytes32 messageId,
+    address tokenReceiver
+  ) external onlyOwner {
     // Check if the message has failed; if not, revert the transaction.
     if (s_failedMessages.get(messageId) != uint256(ErrorCode.FAILED)) {
       revert MessageNotFailed(messageId);
@@ -479,8 +503,8 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
         Client.GenericExtraArgsV2({
           gasLimit: 400_000, // Gas limit for the callback on the destination chain
           allowOutOfOrderExecution: true // Allows the message to be executed out of order relative to other messages
-            // from
-            // the same sender
+          // from
+          // the same sender
         })
       ),
       // Set the feeToken to a feeTokenAddress, indicating specific asset will be used for fees
@@ -518,7 +542,10 @@ contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
   /// @dev This function reverts with a 'NothingToWithdraw' error if there are no tokens to withdraw.
   /// @param _beneficiary The address to which the tokens will be sent.
   /// @param _token The contract address of the ERC20 token to be withdrawn.
-  function withdrawToken(address _beneficiary, address _token) public onlyOwner {
+  function withdrawToken(
+    address _beneficiary,
+    address _token
+  ) public onlyOwner {
     // Retrieve the balance of this contract
     uint256 amount = IERC20(_token).balanceOf(address(this));
 

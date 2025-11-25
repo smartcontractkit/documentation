@@ -71,7 +71,10 @@ contract FetchFromArray is ChainlinkClient, ConfirmedOwner {
   /**
    * Receive the response in the form of string
    */
-  function fulfill(bytes32 _requestId, string memory _id) public recordChainlinkFulfillment(_requestId) {
+  function fulfill(
+    bytes32 _requestId,
+    string memory _id
+  ) public recordChainlinkFulfillment(_requestId) {
     emit RequestFirstId(_requestId, _id);
     id = _id;
   }
