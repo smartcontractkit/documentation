@@ -512,8 +512,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "MONAD_MAINNET"
     case "nexon-mainnet-henesys":
       return "NEXON_HENESYS_MAINNET"
-    case "pharos-testnet":
-      return "PHAROS_TESTNET"
+    case "pharos-atlantic-testnet":
+      return "PHAROS_ATLANTIC_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -825,8 +825,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "monad-mainnet"
     case "NEXON_HENESYS_MAINNET":
       return "nexon-mainnet-henesys"
-    case "PHAROS_TESTNET":
-      return "pharos-testnet"
+    case "PHAROS_ATLANTIC_TESTNET":
+      return "pharos-atlantic-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
