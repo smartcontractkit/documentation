@@ -564,6 +564,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/contract-registry",
         },
         {
+          title: "Data Sources",
+          url: "data-feeds/data-sources",
+        },
+        {
           title: "Release Notes",
           url: "https://dev.chain.link/changelog?product=Data+Feeds",
         },
