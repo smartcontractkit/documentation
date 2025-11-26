@@ -10,6 +10,7 @@ metadata:
 
 import DataStreams from "@features/data-streams/common/DataStreams.astro"
 import ReportSchemaTabs from "@features/data-streams/common/ReportSchemaTabs.astro"
+import Aside from "@components/Aside.astro"
 
 <DataStreams section="dsNotes" />
 
@@ -35,11 +36,17 @@ Chainlink Backed xStock Data Streams adhere to the report schema outlined below.
 | `activationDateTime`    | `uint32`  | When the next corporate action takes effect <br/> (set to `0` if none is scheduled) (seconds)          |
 | `tokenizedPrice`        | `int192`  | The aggregated price across the centralized exchanges where the tokenized asset trades                 |
 
+{/* prettier-ignore */}
+<Aside type="danger" title="Weekend Usage Disclaimer">
+  **Users should not use these streams during weekends** due to limited exchange activity.
+  
+  If usage is necessary, increase fees to mitigate risks. Developers are solely responsible for monitoring and mitigating market integrity risks, as outlined in the [Developer Responsibilities](/data-streams/developer-responsibilities) documentation.
+</Aside>
+
 **Notes:**
 
 - Future Backed xStock streams may use different report schemas.
 - `price` updates in real time during market open, but may become stale during market closed periods.
-- `tokenizedPrice` will be available in an upcoming release of Backed xStock Data Streams. Currently, it will always return `0`.
 - `currentMultiplier` reflects all past corporate actions and is updated only when a new action is activated.
 - `activationDateTime` and `newMultiplier` provide advance notice of upcoming corporate actions, allowing protocols to prepare.
 - See more detailed guidance for handling stock splits in the [Best Practices](/data-streams/concepts/best-practices#handling-stock-splits-for-tokenized-assets) documentation.

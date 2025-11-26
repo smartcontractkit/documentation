@@ -76,7 +76,7 @@ export type SupportedTechnology =
   | "EVERCLEAR"
   | "AB_CHAIN"
   | "PHAROS"
-  | "NEXON"
+  | "HENESYS"
 
 export type ChainType = "evm" | "solana" | "aptos"
 
@@ -242,7 +242,6 @@ export type SupportedChain =
   | "MONAD_MAINNET"
   | "NEXON_HENESYS_MAINNET"
   | "PHAROS_ATLANTIC_TESTNET"
-  | "PHAROS_TESTNET"
 
 export type ExplorerInfo = {
   baseUrl: string

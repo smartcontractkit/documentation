@@ -97,7 +97,8 @@ export const productChainLinks: ProductChainLinks = {
       bittensor: "/ccip/directory/mainnet/chain/bittensor-mainnet",
       everclear: "/ccip/directory/mainnet/chain/everclear-mainnet",
       abchain: "/ccip/directory/mainnet/chain/ab-mainnet",
-      nexon: "/ccip/directory/mainnet/chain/nexon-mainnet-henesys",
+      henesys: "/ccip/directory/mainnet/chain/nexon-mainnet-henesys",
+      pharos: "/ccip/directory/testnet/chain/pharos-atlantic-testnet",
     },
   },
   CRE: {
@@ -273,7 +274,7 @@ export const productChainLinks: ProductChainLinks = {
     moonbeam: "/resources/link-token-contracts#moonbeam",
     moonriver: "/resources/link-token-contracts#moonriver",
     neox: "/resources/link-token-contracts#neo-x",
-    nexon: "/resources/link-token-contracts#nexon",
+    henesys: "/resources/link-token-contracts#henesys",
     optimism: "/resources/link-token-contracts#op",
     pharos: "/resources/link-token-contracts#pharos",
     plasma: "/resources/link-token-contracts#plasma",
@@ -420,6 +421,6 @@ export const chainNames: Record<string, string> = {
   bittensor: "Bittensor EVM",
   everclear: "Everclear",
   abchain: "AB Chain",
-  nexon: "Nexon",
+  henesys: "Henesys",
   pharos: "Pharos",
 }
