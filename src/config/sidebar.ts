@@ -869,6 +869,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Report Schema v11 (RWA Advanced)",
               url: "data-streams/reference/report-schema-v11",
             },
+            {
+              title: "Handling Market Events",
+              url: "data-streams/rwa-streams/handling-market-events",
+              highlightAsCurrent: ["data-streams/rwa-streams/handling-market-events-v11"],
+            },
+            {
+              title: "24/5 US Equities User Guide",
+              url: "data-streams/rwa-streams/24-5-us-equities-user-guide",
+            },
           ],
         },
         {
@@ -888,6 +897,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Report Schema v10 (Tokenized Asset)",
               url: "data-streams/reference/report-schema-v10",
+            },
+            {
+              title: "Handling Stock Splits",
+              url: "data-streams/backed-streams/handling-stock-splits",
             },
           ],
         },
