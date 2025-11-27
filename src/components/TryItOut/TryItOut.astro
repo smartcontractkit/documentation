@@ -1,0 +1,106 @@
+---
+import { buttonVariants, Typography } from "@chainlink/blocks"
+import styles from "./styles.module.css"
+import CodeSample from "../CodeSample/CodeSample.astro"
+import { TryItOutAccordion } from "./TryItOutAccordion"
+import { clsx } from "~/lib/clsx/clsx"
+
+interface CTA {
+  text: string
+  href: string
+  variant?: "primary" | "secondary"
+}
+
+interface Props {
+  accordionTabs: Array<{ title: string; text: string; codeSampleSrc: string }>
+  ctas: CTA[]
+}
+
+const { accordionTabs, ctas } = Astro.props
+---
+
+<div class={styles.container}>
+  <section class={styles.body}>
+    <Typography variant="h2" className={styles.title}> Try it out </Typography>
+
+    <section class={styles.content}>
+      <div class={styles.contentLeft}>
+        <TryItOutAccordion client:load tabs={accordionTabs} />
+
+        <footer class={styles.contentFooter}>
+          {
+            ctas.map((cta) => (
+              <a
+                href={cta.href}
+                class={clsx(
+                  buttonVariants({
+                    variant: cta.variant === "secondary" ? "tertiary" : "primary",
+                    size: "default",
+                  }),
+                  cta.variant === "secondary" && styles.secondaryBtn
+                )}
+              >
+                {cta.text}
+              </a>
+            ))
+          }
+        </footer>
+      </div>
+
+      <section class={styles.image}>
+        {
+          accordionTabs.map((tab, index) => (
+            <div
+              class="code-sample-item"
+              data-code-index={index}
+              style={index === 0 ? "" : "display: none;"}
+              aria-hidden={index === 0 ? "false" : "true"}
+            >
+              <CodeSample showButtons={false} src={tab.codeSampleSrc} />
+            </div>
+          ))
+        }
+      </section>
+
+      <footer class={styles.contentFooterMobile}>
+        {
+          ctas.map((cta) => (
+            <a
+              href={cta.href}
+              class={clsx(
+                buttonVariants({
+                  variant: cta.variant === "secondary" ? "tertiary" : "primary",
+                  size: "default",
+                }),
+                cta.variant === "secondary" && styles.secondaryBtn
+              )}
+            >
+              {cta.text}
+            </a>
+          ))
+        }
+      </footer>
+    </section>
+  </section>
+</div>
+
+<script>
+  import { activeAccordionIndex } from "~/stores/tryItOutStore.ts"
+
+  // Subscribe to nano store changes
+  activeAccordionIndex.subscribe((newIndex) => {
+    // Hide all code samples and mark as hidden for screen readers
+    const allCodeSamples = document.querySelectorAll(".code-sample-item")
+    allCodeSamples.forEach((el) => {
+      ;(el as HTMLElement).style.display = "none"
+      ;(el as HTMLElement).setAttribute("aria-hidden", "true")
+    })
+
+    // Show the active one and mark as visible for screen readers
+    const activeCodeSample = document.querySelector(`[data-code-index="${newIndex}"]`)
+    if (activeCodeSample) {
+      ;(activeCodeSample as HTMLElement).style.display = "block"
+      ;(activeCodeSample as HTMLElement).setAttribute("aria-hidden", "false")
+    }
+  })
+</script>

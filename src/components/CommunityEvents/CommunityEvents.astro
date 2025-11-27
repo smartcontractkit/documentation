@@ -1,0 +1,110 @@
+---
+import { SvgArrowRight2, Typography } from "@chainlink/blocks"
+import EventCard from "./EventCard.astro"
+import ImageGallery from "./ImageGallery.astro"
+import type { GalleryImage } from "./types"
+import { fetchEventsFromRSS } from "./fetchEvents"
+import styles from "./CommunityEvents.module.css"
+
+// Community event gallery images
+const galleryImages: GalleryImage[] = [
+  // Top row - scrolls left
+  {
+    id: "1",
+    imageUrl:
+      "https://cdn.prod.website-files.com/64cc2c23d8dbd707cdb556d8/677d1da974d919ae98a3bd59_home-community-5.webp",
+    alt: "Chainlink community event",
+  },
+  {
+    id: "2",
+    imageUrl:
+      "https://cdn.prod.website-files.com/64cc2c23d8dbd707cdb556d8/677d1da974d919ae98a3bd55_home-community-2.webp",
+    alt: "Chainlink community event",
+  },
+  {
+    id: "3",
+    imageUrl:
+      "https://cdn.prod.website-files.com/64cc2c23d8dbd707cdb556d8/677d1da974d919ae98a3bd30_home-community-4.webp",
+    alt: "Chainlink community event",
+  },
+  {
+    id: "4",
+    imageUrl:
+      "https://cdn.prod.website-files.com/64cc2c23d8dbd707cdb556d8/677d1da974d919ae98a3bd46_home-community-11.webp",
+    alt: "Chainlink community event",
+  },
+  {
+    id: "5",
+    imageUrl:
+      "https://cdn.prod.website-files.com/64cc2c23d8dbd707cdb556d8/677d1da974d919ae98a3bd51_home-community-3.webp",
+    alt: "Chainlink community event",
+  },
+  {
+    id: "6",
+    imageUrl:
+      "https://cdn.prod.website-files.com/64cc2c23d8dbd707cdb556d8/677d1da974d919ae98a3bd42_home-community-10.webp",
+    alt: "Chainlink community event",
+  },
+  // Bottom row - scrolls right
+  {
+    id: "7",
+    imageUrl:
+      "https://cdn.prod.website-files.com/64cc2c23d8dbd707cdb556d8/677d1da974d919ae98a3bd24_community-photo-12.webp",
+    alt: "Chainlink community event",
+  },
+  {
+    id: "8",
+    imageUrl:
+      "https://cdn.prod.website-files.com/64cc2c23d8dbd707cdb556d8/677d1da974d919ae98a3bd2b_community-photo-10.webp",
+    alt: "Chainlink community event",
+  },
+  {
+    id: "9",
+    imageUrl:
+      "https://cdn.prod.website-files.com/64cc2c23d8dbd707cdb556d8/677d1da974d919ae98a3bd4c_community-photo-24.webp",
+    alt: "Chainlink community event",
+  },
+  {
+    id: "10",
+    imageUrl:
+      "https://cdn.prod.website-files.com/64cc2c23d8dbd707cdb556d8/677d1da974d919ae98a3bd3d_community-photo-22.webp",
+    alt: "Chainlink community event",
+  },
+  {
+    id: "11",
+    imageUrl:
+      "https://cdn.prod.website-files.com/64cc2c23d8dbd707cdb556d8/677d1da974d919ae98a3bd36_community-photo-30.webp",
+    alt: "Chainlink community event",
+  },
+]
+
+const events = await fetchEventsFromRSS()
+---
+
+<section class={styles.wrapper}>
+  <header class={styles.sectionHeader}>
+    <Typography
+      variant="h2"
+      style={{
+        fontSize: "32px",
+      }}
+    >
+      Community Events
+    </Typography>
+
+    <a href="https://chain.link/community/events" class={styles.arrow}>
+      <SvgArrowRight2 height={12} width={12} />
+    </a>
+  </header>
+  <section class={styles.component}>
+    <div class={styles.contentLeft}>
+      <div role="list" class={styles.eventList}>
+        {events.map((event) => <EventCard event={event} />)}
+      </div>
+    </div>
+
+    <div class={styles.contentRight}>
+      <ImageGallery images={galleryImages} />
+    </div>
+  </section>
+</section>
