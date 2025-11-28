@@ -8,6 +8,20 @@ interface LlmsLinkProps {
   currentPageLanguage?: string | null
 }
 
+// Map section slugs to display names
+const SECTION_DISPLAY_NAMES: Record<string, string> = {
+  vrf: "VRF",
+  ccip: "CCIP",
+  "data-feeds": "Data Feeds",
+  "data-streams": "Data Streams",
+  "dta-technical-standard": "DTA",
+  automation: "Automation",
+  "chainlink-functions": "Functions",
+  quickstarts: "Quickstarts",
+  resources: "Resources",
+  // Add more as needed
+}
+
 export function LlmsLink({ section, supportedLanguages, currentPageLanguage }: LlmsLinkProps) {
   // Subscribe to the language store for reactive updates
   const storeLanguage = useStore(selectedLanguage)
@@ -18,17 +32,27 @@ export function LlmsLink({ section, supportedLanguages, currentPageLanguage }: L
   // Generate the appropriate link
   const hasLanguages = supportedLanguages.length > 0
   let llmsHref = ""
-  let llmsLabel = "View as plain text for LLMs"
+  let llmsLabel = "Complete docs (TXT)"
 
   if (hasLanguages) {
     // Language-specific section (like CRE)
     const langToUse =
       effectiveLanguage && supportedLanguages.includes(effectiveLanguage) ? effectiveLanguage : supportedLanguages[0]
     llmsHref = `/${section}/llms-full-${langToUse}.txt`
-    llmsLabel = `View ${langToUse.toUpperCase()} docs for LLMs`
+
+    // For CRE: just show language, no product name
+    if (section === "cre") {
+      llmsLabel = `Complete ${langToUse.toUpperCase()} docs (TXT)`
+    } else {
+      // For other language-specific sections (if any in future)
+      const productName = SECTION_DISPLAY_NAMES[section] || section.toUpperCase()
+      llmsLabel = `Complete ${productName} ${langToUse.toUpperCase()} docs (TXT)`
+    }
   } else {
-    // Single file section
+    // Single file section - include product name
     llmsHref = `/${section}/llms-full.txt`
+    const productName = SECTION_DISPLAY_NAMES[section] || section.toUpperCase()
+    llmsLabel = `Complete ${productName} docs (TXT)`
   }
 
   return (
