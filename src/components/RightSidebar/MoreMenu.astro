@@ -1,14 +1,38 @@
 ---
 import * as CONFIG from "../../config"
+import { SUPPORTED_LLM_SECTIONS, LLM_SECTIONS_CONFIG } from "../../config/llms"
+import { LlmsLink } from "./LlmsLink"
 import { CopyPageLink } from "./CopyPageLink"
 
-const { editHref } = Astro.props
+const { editHref, frontmatter } = Astro.props
+const pathname = Astro.url.pathname
+const section = pathname.split("/").filter(Boolean)[0]
+// Determine language from frontmatter or filename
+const sdkLang = frontmatter?.sdkLang
+const filename = pathname.split("/").pop() || ""
+const filenameLang = filename.match(/-(go|ts)(?:\/|$)/) ? filename.match(/-(go|ts)(?:\/|$)/)?.[1] : null
+const currentPageLang = sdkLang || filenameLang
 
 const showMoreSection = CONFIG.COMMUNITY_INVITE_URL || editHref
+
+// Check if section supports LLMs
+const llmsExists = (SUPPORTED_LLM_SECTIONS as readonly string[]).includes(section)
+const cfg = LLM_SECTIONS_CONFIG[section as keyof typeof LLM_SECTIONS_CONFIG]
+const supportedLanguages = cfg?.languages || []
 ---
 
 {showMoreSection && <h2 class="heading">More</h2>}
 <ul>
+  {
+    llmsExists && (
+      <LlmsLink
+        client:load
+        section={section}
+        supportedLanguages={supportedLanguages}
+        currentPageLanguage={currentPageLang}
+      />
+    )
+  }
   {
     editHref && (
       <li class="header-link">
