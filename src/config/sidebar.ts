@@ -545,34 +545,27 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/developer-responsibilities",
         },
         {
-          title: "Price Feeds",
-          url: "data-feeds/price-feeds",
-        },
-        {
-          title: "SmartData",
-          url: "data-feeds/smartdata",
+          title: "Feed Types",
+          url: "data-feeds/feed-types",
           children: [
+            { title: "Price Feeds", url: "data-feeds/price-feeds" },
             {
-              title: "Multiple-Variable Response (MVR) Feeds",
-              url: "data-feeds/mvr-feeds",
+              title: "SmartData",
+              url: "data-feeds/smartdata",
+              children: [{ title: "Multiple-Variable Response (MVR) Feeds", url: "data-feeds/mvr-feeds" }],
             },
+            { title: "Smart Value Recapture (SVR) Feeds", url: "data-feeds/svr-feeds" },
+            { title: "Rate and Volatility Feeds", url: "data-feeds/rates-feeds" },
+            { title: "L2 Sequencer Uptime Feeds", url: "data-feeds/l2-sequencer-feeds" },
           ],
-        },
-        {
-          title: "Smart Value Recapture (SVR) Feeds",
-          url: "data-feeds/svr-feeds",
-        },
-        {
-          title: "Rate and Volatility Feeds",
-          url: "data-feeds/rates-feeds",
-        },
-        {
-          title: "L2 Sequencer Uptime Feeds",
-          url: "data-feeds/l2-sequencer-feeds",
         },
         {
           title: "Flags Contract Registry",
           url: "data-feeds/contract-registry",
+        },
+        {
+          title: "Data Sources",
+          url: "data-feeds/data-sources",
         },
         {
           title: "Release Notes",
@@ -822,6 +815,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Billing",
           url: "data-streams/billing",
+        },
+        {
+          title: "Data Sources",
+          url: "data-streams/data-sources",
         },
         {
           title: "Release Notes",
