@@ -25,6 +25,7 @@ export const GET: APIRoute = async ({ request }) => {
   try {
     const url = new URL(request.url)
     const requestedPath = url.searchParams.get("path")
+    const targetLanguage = url.searchParams.get("lang") || undefined
 
     if (!requestedPath) {
       return new Response(JSON.stringify({ error: "Missing 'path' parameter" }), {
@@ -33,8 +34,9 @@ export const GET: APIRoute = async ({ request }) => {
       })
     }
 
-    // Check in-memory cache first
-    const cached = markdownCache.get(requestedPath)
+    // Check in-memory cache first (cache key includes language for multi-lang pages)
+    const cacheKey = targetLanguage ? `${requestedPath}:${targetLanguage}` : requestedPath
+    const cached = markdownCache.get(cacheKey)
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
       const processingTime = Date.now() - startTime
       return new Response(cached.markdown, {
@@ -85,6 +87,7 @@ export const GET: APIRoute = async ({ request }) => {
     // Transform to markdown
     const transformed = await transformPageToMarkdown(body, mdxAbsPath, {
       siteBase: SITE_BASE,
+      targetLanguage,
     })
 
     // Generate metadata
@@ -104,8 +107,8 @@ export const GET: APIRoute = async ({ request }) => {
 
     const finalMarkdown = [...headerLines, transformed.trim()].join("\n")
 
-    // Store in cache
-    markdownCache.set(requestedPath, {
+    // Store in cache (cache key includes language for multi-lang pages)
+    markdownCache.set(cacheKey, {
       markdown: finalMarkdown,
       timestamp: Date.now(),
     })

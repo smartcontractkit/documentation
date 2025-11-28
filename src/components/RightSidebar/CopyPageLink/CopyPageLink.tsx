@@ -66,7 +66,10 @@ export function CopyPageLink({ className }: CopyPageLinkProps) {
 
       try {
         const currentPath = window.location.pathname
-        const response = await fetch(`/api/page-markdown?path=${encodeURIComponent(currentPath)}`)
+        // Get current language from localStorage (same as left sidebar)
+        const storedLang = localStorage.getItem("docs-language-preference")
+        const currentLang = storedLang ? storedLang.replace(/"/g, "") : "go"
+        const response = await fetch(`/api/page-markdown?path=${encodeURIComponent(currentPath)}&lang=${currentLang}`)
 
         if (response.ok) {
           markdown = await response.text()

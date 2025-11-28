@@ -230,6 +230,16 @@ export async function transformMarkdown(
           return
         }
 
+        // Handle JSX comments - drop them
+        if (
+          (node.type === "mdxFlowExpression" || node.type === "mdxTextExpression") &&
+          typeof (node as { value?: string }).value === "string" &&
+          (node as { value?: string }).value?.trim().match(/^\/\*[\s\S]*?\*\/$/)
+        ) {
+          parent.children.splice(index, 1)
+          return
+        }
+
         // Replace images with their alt text
         if (node.type === "image") {
           const alt = (node as { alt?: string }).alt ? String((node as { alt?: string }).alt) : "Image"
@@ -245,7 +255,15 @@ export async function transformMarkdown(
     })
 
   const file = await processor.process(preprocessedMarkdown)
-  return String(file)
+  let result = String(file)
+
+  // Remove any JSX comments that might have slipped through as text
+  result = result
+    .split("\n")
+    .filter((line) => !line.trim().match(/^{\/\*.*?\*\/}$/))
+    .join("\n")
+
+  return result
 }
 
 /**

@@ -17,6 +17,7 @@ import {
   formatFrontmatter,
   cleanText,
   resolveUrl,
+  stripHighlightComments,
 } from "~/lib/markdown/index.js"
 
 /**
@@ -58,6 +59,11 @@ const DEFAULT_CONFIG: ExtractionConfig = {
     // Chainlink-specific elements
     ".header-link",
     ".anchor-link",
+
+    // Astro-specific elements (hydration scripts, etc.)
+    "script",
+    "style",
+    "astro-island",
   ],
   contentSelector: "article, main, .content, [role='main']",
   includeFrontmatter: true,
@@ -167,6 +173,11 @@ function convertToMarkdown(element: HTMLElement): string {
  * @returns The markdown representation
  */
 function convertElementToMarkdown(el: HTMLElement): string {
+  // Check for CodeHighlightBlockMulti FIRST before processing by tag
+  if (el.classList.contains("code-block-container")) {
+    return convertCodeBlockMultiToMarkdown(el)
+  }
+
   const tag = el.tagName.toLowerCase()
 
   switch (tag) {
@@ -290,6 +301,54 @@ function convertTableToMarkdown(table: HTMLElement): string {
   if (rows.length === 0) return ""
 
   return formatTable(rows)
+}
+
+/**
+ * Converts CodeHighlightBlockMulti component to Markdown
+ * @param container - The code block container element (cloned)
+ * @returns The markdown code block
+ */
+function convertCodeBlockMultiToMarkdown(container: HTMLElement): string {
+  // Get the current language from the container
+  const currentLang = container.getAttribute("data-lang") || ""
+  const blockId = container.getAttribute("id") || ""
+
+  // The container is a CLONE, so it doesn't have the JavaScript properties.
+  // We need to find the ORIGINAL element in the page to get _languagesData
+  interface LanguageData {
+    code: string
+    title?: string
+  }
+
+  let languagesData: Record<string, LanguageData> | undefined
+
+  if (blockId) {
+    const originalContainer = document.getElementById(blockId) as HTMLElement & {
+      _languagesData?: Record<string, LanguageData>
+    }
+    if (originalContainer) {
+      languagesData = originalContainer._languagesData
+    }
+  }
+
+  // If we found the original data, use it
+  if (languagesData && languagesData[currentLang]) {
+    const codeContent = languagesData[currentLang].code || ""
+    // Strip highlight comments using the shared formatter
+    const cleanCode = stripHighlightComments(codeContent)
+    return formatCodeBlock(cleanCode, currentLang)
+  }
+
+  // Fallback: Extract code from the visible DOM table in the clone
+  const codeLines: string[] = []
+  const lineElements = container.querySelectorAll(".line")
+  lineElements.forEach((lineElement) => {
+    const lineText = lineElement.textContent || ""
+    codeLines.push(lineText)
+  })
+
+  const codeContent = codeLines.join("\n")
+  return formatCodeBlock(codeContent, currentLang)
 }
 
 /**
