@@ -51,6 +51,36 @@ event LiquidityTransferred(address indexed from, uint256 amount);
 | `from`   | `address` | Yes     | The source pool address             |
 | `amount` | `uint256` | No      | The amount of liquidity transferred |
 
+### LiquidityAdded
+
+```solidity
+event LiquidityAdded(address indexed provider, uint256 indexed amount);
+```
+
+<Aside>Emitted when liquidity is added to the pool via [`provideLiquidity`](#provideliquidity).</Aside>
+
+**Parameters**
+
+| Name       | Type      | Indexed | Description                           |
+| ---------- | --------- | ------- | ------------------------------------- |
+| `provider` | `address` | Yes     | The address providing the liquidity   |
+| `amount`   | `uint256` | Yes     | The amount of liquidity added to pool |
+
+### LiquidityRemoved
+
+```solidity
+event LiquidityRemoved(address indexed provider, uint256 indexed amount);
+```
+
+<Aside>Emitted when liquidity is removed from the pool via [`withdrawLiquidity`](#withdrawliquidity).</Aside>
+
+**Parameters**
+
+| Name       | Type      | Indexed | Description                               |
+| ---------- | --------- | ------- | ----------------------------------------- |
+| `provider` | `address` | Yes     | The address withdrawing the liquidity     |
+| `amount`   | `uint256` | Yes     | The amount of liquidity removed from pool |
+
 ### RebalancerSet
 
 ```solidity
@@ -76,26 +106,7 @@ error InsufficientLiquidity();
 
 <Aside>Thrown when attempting to withdraw more liquidity than available in the pool.</Aside>
 
-### LiquidityNotAccepted
-
-```solidity
-error LiquidityNotAccepted();
-```
-
-<Aside>Thrown when attempting to provide liquidity to a pool that doesn't accept external liquidity.</Aside>
-
 ## State Variables
-
-### i_acceptLiquidity
-
-```solidity
-bool internal immutable i_acceptLiquidity;
-```
-
-<Aside>
-  Immutable flag indicating whether the pool accepts external liquidity. This setting cannot be changed after
-  deployment.
-</Aside>
 
 ### s_rebalancer
 
@@ -115,30 +126,6 @@ string public constant override typeAndVersion = "LockReleaseTokenPool 1.6.1";
 
 ## Functions
 
-### canAcceptLiquidity
-
-Determines whether the pool can accept external liquidity.
-
-```solidity
-function canAcceptLiquidity() external view returns (bool);
-```
-
-<Aside>
-
-Returns the immutable configuration indicating if the pool accepts external liquidity. External liquidity might not be required when:
-
-- There is one canonical token on the chain
-- CCIP handles mint/burn operations on other chains
-- The invariant `balanceOf(pool) on home chain >= sum(totalSupply(mint/burn "wrapped" token) on all remote chains)` is maintained
-
-</Aside>
-
-**Returns**
-
-| Type   | Description                                 |
-| ------ | ------------------------------------------- |
-| `bool` | True if the pool accepts external liquidity |
-
 ### constructor
 
 ```solidity
@@ -147,7 +134,6 @@ constructor(
   uint8 localTokenDecimals,
   address[] memory allowlist,
   address rmnProxy,
-  bool acceptLiquidity,
   address router
 ) TokenPool(token, localTokenDecimals, allowlist, rmnProxy, router);
 ```
@@ -160,20 +146,18 @@ Initializes the token pool with its configuration parameters:
 - Configures decimal precision for local tokens
 - Establishes the initial whitelist
 - Links to the RMN proxy and router
-- Sets the liquidity acceptance policy
 
 </Aside>
 
 **Parameters**
 
-| Name                 | Type        | Description                                 |
-| -------------------- | ----------- | ------------------------------------------- |
-| `token`              | `IERC20`    | The token contract to manage                |
-| `localTokenDecimals` | `uint8`     | The decimal precision for the local token   |
-| `allowlist`          | `address[]` | Initial list of authorized addresses        |
-| `rmnProxy`           | `address`   | Address of the RMN proxy contract           |
-| `acceptLiquidity`    | `bool`      | Whether the pool accepts external liquidity |
-| `router`             | `address`   | Address of the router contract              |
+| Name                 | Type        | Description                               |
+| -------------------- | ----------- | ----------------------------------------- |
+| `token`              | `IERC20`    | The token contract to manage              |
+| `localTokenDecimals` | `uint8`     | The decimal precision for the local token |
+| `allowlist`          | `address[]` | Initial list of authorized addresses      |
+| `rmnProxy`           | `address`   | Address of the RMN proxy contract         |
+| `router`             | `address`   | Address of the router contract            |
 
 ### getRebalancer
 

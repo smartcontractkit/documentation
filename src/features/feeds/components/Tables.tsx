@@ -16,6 +16,36 @@ import { ExpandableTableWrapper } from "./ExpandableTableWrapper.tsx"
 
 const feedItems = monitoredFeeds.mainnet
 
+// Helper function to parse markdown links and render them
+const parseMarkdownLink = (text: string) => {
+  // Match markdown link format: [text](url)
+  const markdownLinkRegex = /\[([^\]]+)\]\(([^)]+)\)/g
+  const parts: any[] = []
+  let lastIndex = 0
+  let match
+
+  while ((match = markdownLinkRegex.exec(text)) !== null) {
+    // Add text before the link
+    if (match.index > lastIndex) {
+      parts.push(text.substring(lastIndex, match.index))
+    }
+    // Add the link
+    parts.push(
+      <a href={match[2]} target="_blank" rel="noopener noreferrer" key={match.index}>
+        {match[1]}
+      </a>
+    )
+    lastIndex = match.index + match[0].length
+  }
+
+  // Add remaining text after the last link
+  if (lastIndex < text.length) {
+    parts.push(text.substring(lastIndex))
+  }
+
+  return parts.length > 0 ? parts : text
+}
+
 // Render a category icon/link from the config
 const getFeedCategoryElement = (riskTier: string | undefined) => {
   if (!riskTier) return ""
@@ -421,13 +451,18 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
             {metadata.docs.shutdownDate}
           </div>
         )}
-        {metadata.docs.productType && (
-          <div>
-            <dd style={{ marginTop: "5px" }}>{metadata.docs.productType}</dd>
+        {(metadata.docs.assetClass === "Stablecoin Stability Assessment" ||
+          (metadata.docs.productType && metadata.docs.assetClass !== "Stablecoin Stability Assessment")) && (
+          <div style={{ marginTop: "5px", textAlign: "center" }}>
+            <dd>
+              {metadata.docs.assetClass === "Stablecoin Stability Assessment"
+                ? metadata.docs.assetClass
+                : metadata.docs.productType}
+            </dd>
           </div>
         )}
         {finalIsMVRFeed && (
-          <div style={{ marginTop: "5px" }}>
+          <div style={{ marginTop: "5px", textAlign: "center" }}>
             <a
               href="/data-feeds/mvr-feeds"
               className={tableStyles.feedVariantBadge}
@@ -478,11 +513,21 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
           <dl className={tableStyles.listContainer}>
             <div className={tableStyles.definitionGroup}>
               <dt>
-                <span className="label">Asset name:</span>
+                <span className="label">
+                  {metadata.docs.assetClass === "Stablecoin Stability Assessment"
+                    ? "Stablecoin assessed:"
+                    : "Asset name:"}
+                </span>
               </dt>
-              <dd>{metadata.assetName}</dd>
+              <dd>
+                {/* For Stablecoin Stability Assessment feeds, valueSuffix contains the stablecoin ticker being assessed */}
+                {metadata.docs.assetClass === "Stablecoin Stability Assessment"
+                  ? metadata.valueSuffix || metadata.assetName
+                  : metadata.assetName}
+              </dd>
             </div>
-            {metadata.docs.porType && (
+            {/* Hide Reserve type for Stablecoin Stability Assessment feeds */}
+            {metadata.docs.porType && metadata.docs.assetClass !== "Stablecoin Stability Assessment" && (
               <div className={tableStyles.definitionGroup}>
                 <dt>
                   <span className="label">Reserve type:</span>
@@ -505,7 +550,7 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
                     {metadata.docs.porSource === "Third-party" ? "Auditor verification:" : "Reporting:"}
                   </span>
                 </dt>
-                <dd>{metadata.docs.porSource}</dd>
+                <dd>{parseMarkdownLink(metadata.docs.porSource)}</dd>
               </div>
             )}
             {metadata.docs.issuer ? (
@@ -932,7 +977,7 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v3-dex" rel="noreferrer" target="_blank">
-                  Crypto Schema - DEX (v3)
+                  Report Schema v3 (Crypto DEX)
                 </a>
               </dd>
             </div>
@@ -944,19 +989,19 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v3" rel="noreferrer" target="_blank">
-                  Crypto Schema (v3)
+                  Report Schema v3 (Crypto)
                 </a>
               </dd>
             </div>
           )}
-          {(metadata.feedType === "Equities" || metadata.feedType === "Forex") && (
+          {(metadata.feedType === "Equities" || metadata.feedType === "Forex") && metadata.docs?.schema !== "v11" && (
             <div className={tableStyles.definitionGroup}>
               <dt>
                 <span className="label">Report Schema:</span>
               </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v8" rel="noreferrer" target="_blank">
-                  RWA Schema (v8)
+                  Report Schema v8 (RWA)
                 </a>
               </dd>
             </div>
@@ -968,7 +1013,7 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v7" rel="noreferrer" target="_blank">
-                  Exchange Rate Schema (v7)
+                  Report Schema v7 (Redemption Rates)
                 </a>
               </dd>
             </div>
@@ -980,7 +1025,7 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v9" rel="noreferrer" target="_blank">
-                  NAV Schema (v9)
+                  Report Schema v9 (NAV)
                 </a>
               </dd>
             </div>
@@ -992,7 +1037,19 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               </dt>
               <dd>
                 <a href="/data-streams/reference/report-schema-v10" rel="noreferrer" target="_blank">
-                  Backed xStock Schema (v10)
+                  Report Schema v10 (Tokenized Assets)
+                </a>
+              </dd>
+            </div>
+          )}
+          {metadata.docs?.schema === "v11" && (
+            <div className={tableStyles.definitionGroup}>
+              <dt>
+                <span className="label">Report Schema:</span>
+              </dt>
+              <dd>
+                <a href="/data-streams/reference/report-schema-v11" rel="noreferrer" target="_blank">
+                  RWA Advanced (v11)
                 </a>
               </dd>
             </div>
@@ -1009,6 +1066,8 @@ export const MainnetTable = ({
   showOnlySVR,
   showOnlyMVRFeeds,
   showOnlyDEXFeeds,
+  rwaSchemaFilter,
+  streamCategoryFilter,
   dataFeedType,
   ecosystem,
   selectedFeedCategories,
@@ -1024,6 +1083,8 @@ export const MainnetTable = ({
   showOnlySVR: boolean
   showOnlyMVRFeeds: boolean
   showOnlyDEXFeeds: boolean
+  rwaSchemaFilter?: "all" | "v8" | "v11"
+  streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
   dataFeedType: string
   ecosystem: string
   selectedFeedCategories: string[]
@@ -1096,10 +1157,32 @@ export const MainnetTable = ({
         return isValidStreamsFeed
       }
       if (dataFeedType === "streamsRwa") {
-        return (
+        const isRwaFeed =
           metadata.contractType === "verifier" &&
-          (metadata.docs.feedType === "Equities" || metadata.docs.feedType === "Forex")
-        )
+          (metadata.docs.feedType === "Equities" ||
+            metadata.docs.feedType === "Forex" ||
+            metadata.docs.feedType === "Datalink")
+
+        if (!isRwaFeed) return false
+
+        // Apply feed type filter
+        if (streamCategoryFilter === "datalink") {
+          if (metadata.docs.feedType !== "Datalink") return false
+        } else if (streamCategoryFilter === "equities") {
+          if (metadata.docs.feedType !== "Equities") return false
+        } else if (streamCategoryFilter === "forex") {
+          if (metadata.docs.feedType !== "Forex") return false
+        }
+
+        // Apply schema filter
+        if (rwaSchemaFilter === "v8") {
+          return metadata.docs?.schema === "v8" || !metadata.docs?.schema
+        }
+        if (rwaSchemaFilter === "v11") {
+          return metadata.docs?.schema === "v11"
+        }
+
+        return true
       }
 
       if (dataFeedType === "streamsNav") {
@@ -1153,7 +1236,8 @@ export const MainnetTable = ({
 
         const included =
           selectedFeedCategories.length === 0 ||
-          (metadata.docs.productType && selectedFeedCategories.includes(metadata.docs.productType))
+          (metadata.docs.productType && selectedFeedCategories.includes(metadata.docs.productType)) ||
+          (metadata.docs.assetClass && selectedFeedCategories.includes(metadata.docs.assetClass))
 
         return included
       }
@@ -1192,9 +1276,13 @@ export const MainnetTable = ({
 
   const slicedFilteredMetadata = filteredMetadata.slice(firstAddr, lastAddr)
 
+  // For non-streams tables, wait for batch categories to load to prevent icon flashing
+  if (!isStreams && isBatchLoading) {
+    return <p style="font-style: italic;">Loading...</p>
+  }
+
   return (
     <>
-      {isBatchLoading && <p>Loading...</p>}
       <div className={tableStyles.tableWrapper}>
         <table className={tableStyles.table} data-show-details={showExtraDetails}>
           {slicedFilteredMetadata.length === 0 ? (
@@ -1278,6 +1366,8 @@ export const TestnetTable = ({
   searchValue = "",
   showOnlyMVRFeeds,
   showOnlyDEXFeeds,
+  rwaSchemaFilter,
+  streamCategoryFilter,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
@@ -1291,6 +1381,8 @@ export const TestnetTable = ({
   searchValue?: string
   showOnlyMVRFeeds?: boolean
   showOnlyDEXFeeds?: boolean
+  rwaSchemaFilter?: "all" | "v8" | "v11"
+  streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
 }) => {
   if (!network.metadata) return null
 
@@ -1350,10 +1442,32 @@ export const TestnetTable = ({
         }
 
         if (dataFeedType === "streamsRwa") {
-          return (
+          const isRwaFeed =
             metadata.contractType === "verifier" &&
-            (metadata.docs.feedType === "Equities" || metadata.docs.feedType === "Forex")
-          )
+            (metadata.docs.feedType === "Equities" ||
+              metadata.docs.feedType === "Forex" ||
+              metadata.docs.feedType === "Datalink")
+
+          if (!isRwaFeed) return false
+
+          // Apply feed type filter
+          if (streamCategoryFilter === "datalink") {
+            if (metadata.docs.feedType !== "Datalink") return false
+          } else if (streamCategoryFilter === "equities") {
+            if (metadata.docs.feedType !== "Equities") return false
+          } else if (streamCategoryFilter === "forex") {
+            if (metadata.docs.feedType !== "Forex") return false
+          }
+
+          // Apply schema filter
+          if (rwaSchemaFilter === "v8") {
+            return metadata.docs?.schema === "v8" || !metadata.docs?.schema
+          }
+          if (rwaSchemaFilter === "v11") {
+            return metadata.docs?.schema === "v11"
+          }
+
+          return true
         }
 
         if (dataFeedType === "streamsExRate") {
@@ -1367,6 +1481,9 @@ export const TestnetTable = ({
         if (dataFeedType === "streamsBacked") {
           return metadata.contractType === "verifier" && metadata.docs.feedType === "Tokenized Equities"
         }
+
+        // If we're in streams mode but didn't match any specific stream type, exclude this feed
+        return false
       }
 
       if (isSmartData) {
@@ -1412,7 +1529,8 @@ export const TestnetTable = ({
 
         const included =
           selectedFeedCategories.length === 0 ||
-          (metadata.docs.productType && selectedFeedCategories.includes(metadata.docs.productType))
+          (metadata.docs.productType && selectedFeedCategories.includes(metadata.docs.productType)) ||
+          (metadata.docs.assetClass && selectedFeedCategories.includes(metadata.docs.assetClass))
 
         return included
       }
@@ -1433,9 +1551,13 @@ export const TestnetTable = ({
 
   const slicedFilteredMetadata = filteredMetadata.slice(firstAddr, lastAddr)
 
+  // For non-streams tables, wait for batch categories to load to prevent icon flashing
+  if (!isStreams && isBatchLoading) {
+    return <p style="font-style: italic;">Loading...</p>
+  }
+
   return (
     <>
-      {isBatchLoading && <p>Loading...</p>}
       <div className={tableStyles.tableWrapper}>
         <table className={tableStyles.table}>
           {slicedFilteredMetadata.length === 0 ? (

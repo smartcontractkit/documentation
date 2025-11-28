@@ -9,6 +9,7 @@ export interface DecodingVariable {
 
 export interface Docs {
   assetName?: string
+  assetClass?: string
   feedCategory?: string
   feedType?: string
   hidden?: boolean
@@ -24,6 +25,7 @@ export interface Docs {
   decoding?: DecodingVariable[]
   issuer?: string
   deliveryChannelCode?: string
+  schema?: string
 }
 
 export interface ChainMetadata {
@@ -46,6 +48,7 @@ export interface ChainMetadata {
   secondaryProxyAddress?: string
   threshold: number
   valuePrefix: string
+  valueSuffix?: string
   assetName: string
   feedCategory: string
   feedType: string
@@ -233,6 +236,7 @@ export const mergeWithMVRFeeds = async (
         "ethereum-testnet-sepolia-arbitrum-1": ["arbitrum-sepolia"],
         "ethereum-testnet-sepolia": ["ethereum-sepolia"],
         "avalanche-mainnet": ["avalanche-mainnet"],
+        "ethereum-mainnet-base-1": ["base-mainnet"],
         "ethereum-testnet-sepolia-base-1": ["base-sepolia"],
       }
 
@@ -292,11 +296,13 @@ export const mergeWithMVRFeeds = async (
                     secondaryProxyAddress: contractAddress || undefined,
                     threshold: feed.threshold || 0,
                     valuePrefix: feed.valuePrefix || "",
+                    valueSuffix: feed.valueSuffix,
                     assetName: feed.docs.assetName,
                     feedCategory: feed.docs.feedCategory || "Custom",
                     feedType: feed.docs.feedType || feed.docs.assetClass,
                     docs: {
                       assetName: feed.docs.assetName,
+                      assetClass: feed.docs.assetClass,
                       feedCategory: feed.docs.feedCategory || "Custom",
                       feedType: feed.docs.feedType || feed.docs.assetClass,
                       productType: feed.docs.productType || "Proof of Reserve",
