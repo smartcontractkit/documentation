@@ -3,6 +3,7 @@ import MoreMenu from "./MoreMenu.astro"
 import { Feedback } from "../PageContent/Feedback"
 import { MarkdownHeading } from "astro"
 import TableOfContents from "~/components/TableOfContents/TableOfContents"
+import { CopyPageLink } from "./CopyPageLink"
 
 export type Props = {
   githubEditUrl: string
@@ -13,6 +14,9 @@ const { githubEditUrl, headings, frontmatter } = Astro.props
 ---
 
 <section class="sidebar-nav" aria-labelledby="grid-right" data-sticky>
+  <div class="copy-page-wrapper">
+    <CopyPageLink client:only="react" />
+  </div>
   <h2 class="heading">On this page</h2>
   <div class="toc-wrapper">
     <TableOfContents client:media="(min-width: 50em)" initialHeadings={headings} />
@@ -49,6 +53,10 @@ const { githubEditUrl, headings, frontmatter } = Astro.props
 
   .feedback-wrapper {
     margin-top: var(--space-3x);
+  }
+
+  .copy-page-wrapper {
+    margin-bottom: var(--space-6x);
   }
 
   .toc-wrapper {
