@@ -1,9 +1,6 @@
 /**
- * Markdown transformation library
- * Shared code for generating LLM-friendly markdown from MDX content
+ * Markdown utilities for Chainlink documentation
+ * Shared between build-time and runtime markdown generation
  */
 
-export * from "./types.js"
-export * from "./utils.js"
-export * from "./transformMarkdown.js"
-export * from "./componentHandlers.js"
+export * from "./formatters.js"

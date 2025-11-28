@@ -3,6 +3,21 @@
  */
 
 import type { ExtractedContent, ExtractionConfig } from "./types.js"
+import {
+  formatHeading,
+  formatLink,
+  formatBold,
+  formatItalic,
+  formatInlineCode,
+  formatCodeBlock,
+  formatBlockquote,
+  formatTable,
+  formatImage,
+  formatHorizontalRule,
+  formatFrontmatter,
+  cleanText,
+  resolveUrl,
+} from "~/lib/markdown/index.js"
 
 /**
  * Default configuration for content extraction
@@ -156,17 +171,17 @@ function convertElementToMarkdown(el: HTMLElement): string {
 
   switch (tag) {
     case "h1":
-      return `# ${cleanText(el.textContent || "")}\n\n`
+      return formatHeading(1, cleanText(el.textContent || ""))
     case "h2":
-      return `## ${cleanText(el.textContent || "")}\n\n`
+      return formatHeading(2, cleanText(el.textContent || ""))
     case "h3":
-      return `### ${cleanText(el.textContent || "")}\n\n`
+      return formatHeading(3, cleanText(el.textContent || ""))
     case "h4":
-      return `#### ${cleanText(el.textContent || "")}\n\n`
+      return formatHeading(4, cleanText(el.textContent || ""))
     case "h5":
-      return `##### ${cleanText(el.textContent || "")}\n\n`
+      return formatHeading(5, cleanText(el.textContent || ""))
     case "h6":
-      return `###### ${cleanText(el.textContent || "")}\n\n`
+      return formatHeading(6, cleanText(el.textContent || ""))
 
     case "p":
       return `${convertToMarkdown(el)}\n\n`
@@ -174,22 +189,22 @@ function convertElementToMarkdown(el: HTMLElement): string {
     case "a": {
       const href = el.getAttribute("href") || ""
       const text = cleanText(el.textContent || "")
-      const fullUrl = href.startsWith("http") ? href : new URL(href, window.location.origin).href
-      return `[${text}](${fullUrl})`
+      const fullUrl = resolveUrl(href)
+      return formatLink(text, fullUrl)
     }
 
     case "strong":
     case "b":
-      return `**${cleanText(el.textContent || "")}**`
+      return formatBold(cleanText(el.textContent || ""))
 
     case "em":
     case "i":
-      return `*${cleanText(el.textContent || "")}*`
+      return formatItalic(cleanText(el.textContent || ""))
 
     case "code":
       // Inline code
       if (el.parentElement?.tagName !== "PRE") {
-        return `\`${el.textContent || ""}\``
+        return formatInlineCode(el.textContent || "")
       }
       // Block code - handled by pre tag
       return el.textContent || ""
@@ -198,7 +213,7 @@ function convertElementToMarkdown(el: HTMLElement): string {
       const code = el.querySelector("code")
       const language = code?.className?.match(/language-(\w+)/)?.[1] || ""
       const codeText = code?.textContent || el.textContent || ""
-      return `\`\`\`${language}\n${codeText}\n\`\`\`\n\n`
+      return formatCodeBlock(codeText, language)
     }
 
     case "ul":
@@ -218,7 +233,7 @@ function convertElementToMarkdown(el: HTMLElement): string {
       return convertToMarkdown(el)
 
     case "blockquote":
-      return `> ${convertToMarkdown(el)}\n\n`
+      return formatBlockquote(convertToMarkdown(el))
 
     case "table":
       return convertTableToMarkdown(el)
@@ -226,12 +241,12 @@ function convertElementToMarkdown(el: HTMLElement): string {
     case "img": {
       const src = el.getAttribute("src") || ""
       const alt = el.getAttribute("alt") || ""
-      const fullSrc = src.startsWith("http") ? src : new URL(src, window.location.origin).href
-      return `![${alt}](${fullSrc})`
+      const fullSrc = resolveUrl(src)
+      return formatImage(alt, fullSrc)
     }
 
     case "hr":
-      return "---\n\n"
+      return formatHorizontalRule()
 
     case "br":
       return "\n"
@@ -274,21 +289,7 @@ function convertTableToMarkdown(table: HTMLElement): string {
 
   if (rows.length === 0) return ""
 
-  let markdown = ""
-
-  // Header row
-  const headerRow = rows[0]
-  markdown += `| ${headerRow.join(" | ")} |\n`
-
-  // Separator row
-  markdown += `| ${headerRow.map(() => "---").join(" | ")} |\n`
-
-  // Data rows
-  rows.slice(1).forEach((row) => {
-    markdown += `| ${row.join(" | ")} |\n`
-  })
-
-  return `${markdown}\n`
+  return formatTable(rows)
 }
 
 /**
@@ -303,44 +304,16 @@ function convertCalloutToMarkdown(el: HTMLElement): string {
 }
 
 /**
- * Cleans and normalizes text content
- * @param text - The text to clean
- * @returns The cleaned text
- */
-function cleanText(text: string): string {
-  return (
-    text
-      // Fix common encoding issues
-      .replace(/â/g, "'")
-      .replace(/â/g, '"')
-      .replace(/â/g, '"')
-      .replace(/â¦/g, "...")
-      .replace(/â/g, "—")
-      .replace(/â/g, "–")
-      // Normalize whitespace
-      .replace(/\s+/g, " ")
-      .replace(/\n\s+\n/g, "\n\n")
-      // Remove zero-width characters
-      .replace(/[\u200B-\u200D\uFEFF]/g, "")
-      .trim()
-  )
-}
-
-/**
  * Adds frontmatter to the markdown content
  * @param content - The content object
  * @returns The markdown with frontmatter
  */
 function addFrontmatter(content: { markdown: string; title: string; url: string }): string {
-  const frontmatter = [
-    "---",
-    `title: "${content.title}"`,
-    `url: ${content.url}`,
-    `extracted: ${new Date().toISOString()}`,
-    "---",
-    "",
-    "",
-  ].join("\n")
+  const frontmatter = formatFrontmatter({
+    title: content.title,
+    url: content.url,
+    extracted: new Date().toISOString(),
+  })
 
   return frontmatter + content.markdown
 }
