@@ -238,7 +238,7 @@ Please ask me to paste it now. After I paste, please:
                 </svg>
                 <div className={styles.itemContent}>
                   <div className={styles.itemTitle}>Copy page</div>
-                  <div className={styles.itemDescription}>Copy the page as MarkDown for LLMs</div>
+                  <div className={styles.itemDescription}>Copy the page as MarkDown</div>
                 </div>
               </button>
 
