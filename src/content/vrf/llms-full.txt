@@ -3,7 +3,9 @@ Source: https://docs.chain.link/vrf
 
 <Vrf2_5Common callout="security" />
 
-**Chainlink VRF (Verifiable Random Function)** is a provably fair and verifiable random number generator (RNG) that enables smart contracts to access random values without compromising security or usability. For each request, Chainlink VRF generates one or more random values and cryptographic proof of how those values were determined. The proof is published and verified onchain before any consuming applications can use it. This process ensures that results cannot be tampered with or manipulated by any single entity including oracle operators, miners, users, or smart contract developers.
+**Chainlink VRF (Verifiable Random Function)** is a provably fair and verifiable random number generator (RNG) that enables smart contracts to access random values without compromising security or usability. For each request, Chainlink VRF generates one or more random values and cryptographic proof of how those values were determined. The proof is published and verified onchain before any consuming applications can use it. This process helps ensure that results cannot be tampered with or manipulated by any single entity including oracle operators, smart contract developers, users, miners, or block builders\*.
+
+\*In the unlikely event that an adversary compromises VRF's randomness-generating secret key and obtains the ability to construct blocks on the target chain, they could strongly bias the result.
 
 <Aside type="note" title="Migrate to V2.5">
   Follow the [migration guide](/vrf/v2-5/migration-from-v2) to learn how VRF has changed in V2.5 and to get example
@@ -674,13 +676,6 @@ Source: https://docs.chain.link/vrf/v2-5/security
 
 Gaining access to high quality randomness onchain requires a solution like Chainlink's VRF, but it also requires you to understand some of the ways that miners or validators can potentially manipulate randomness generation. Here are some of the top security considerations you should review in your project.
 
-- [Use `requestId` to match randomness requests with their fulfillment in order](#use-requestid-to-match-randomness-requests-with-their-fulfillment-in-order)
-- [Choose a safe block confirmation time, which will vary between blockchains](#choose-a-safe-block-confirmation-time-which-will-vary-between-blockchains)
-- [Do not allow re-requesting or cancellation of randomness](#do-not-allow-re-requesting-or-cancellation-of-randomness)
-- [Don't accept bids/bets/inputs after you have made a randomness request](#dont-accept-bidsbetsinputs-after-you-have-made-a-randomness-request)
-- [The `fulfillRandomWords` function must not revert](#fulfillrandomwords-must-not-revert)
-- [Use `VRFConsumerBaseV2Plus` in your contract to interact with the VRF service](#use-vrfconsumerbasev2plus-in-your-contract-to-interact-with-the-vrf-service)
-
 ## Use `requestId` to match randomness requests with their fulfillment in order
 
 If your contract could have multiple VRF requests in flight simultaneously, you must ensure that the order in which the VRF fulfillments arrive cannot be used to manipulate your contract's user-significant behavior.
@@ -722,6 +717,14 @@ If your `fulfillRandomWords()` implementation reverts, the VRF service will not 
 ## Use `VRFConsumerBaseV2Plus` in your contract, to interact with the VRF service
 
 If you implement the [subscription method](/vrf/v2-5/overview/subscription), use `VRFConsumerBaseV2Plus`. It includes a check to ensure the randomness is fulfilled by `VRFCoordinatorV2_5`. For this reason, it is a best practice to inherit from `VRFConsumerBaseV2Plus`. Similarly, don't override `rawFulfillRandomness`.
+
+## Avoid ERC-4337 account-abstracted (smart-account) wallets for subscription management
+
+Pre-signed ERC-4337 UserOperations can be executed by any bundler until they expire. If executed inside a fulfillment transaction callback, the subscription management call can no-op, delaying or preventing the change.
+
+## Keep your subscription funded well above the minimum balance
+
+Fulfillments require sufficient subscription balance at processing time. If the balance sits near the minimum and multiple consumers make concurrent requests, fulfillments can be delayed. After adding funds, it can take some time for previous requests to be processed again.
 
 ---
 
@@ -1701,10 +1704,8 @@ After you are done with this contract, you can retrieve the remaining testnet to
 # Subscription Method
 Source: https://docs.chain.link/vrf/v2/subscription
 
-<Aside type="tip" title="VRF V2.5 Subscription Method">
-  Refer to the [VRF V2.5 Subscription Method Introduction page](/vrf/v2-5/overview/subscription) to learn how the
-  subscription method works in VRF V2.5. To compare V2.5 and V2, refer to the [migration
-  guide](/vrf/v2-5/migration-from-v2).
+<Aside type="caution" title="Migrate to VRF V2.5">
+  VRF V2.5 replaces both VRF V1 and VRF V2 on November 29, 2024. [Migrate to VRF V2.5](/vrf/v2-5/migration-from-v1).
 </Aside>
 
 This section explains how to generate random numbers using the subscription method.
@@ -1821,10 +1822,8 @@ You can see the configuration for each network on the [Supported networks](/vrf/
 # Direct Funding Method
 Source: https://docs.chain.link/vrf/v2/direct-funding
 
-<Aside type="tip" title="VRF V2.5 Direct Funding Method">
-  Refer to the [VRF V2.5 Direct Funding Method Introduction page](/vrf/v2-5/overview/direct-funding) to learn how the
-  direct funding method works in VRF V2.5. To compare V2.5 and V2, refer to the [migration
-  guide](/vrf/v2-5/migration-from-v2).
+<Aside type="caution" title="Migrate to VRF V2.5">
+  VRF V2.5 replaces both VRF V1 and VRF V2 on November 29, 2024. [Migrate to VRF V2.5](/vrf/v2-5/migration-from-v1).
 </Aside>
 
 This guide explains how to generate random numbers using the *direct funding* method. This method doesn't require a subscription and is optimal for one-off requests for randomness. This method also works best for applications where your end-users must pay the fees for VRF because the cost of the request is determined at request time.

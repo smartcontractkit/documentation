@@ -424,9 +424,22 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Templates",
       contents: [
         {
-          title: "Running a Demo Workflow",
+          title: "Overview",
+          url: "cre/templates",
+        },
+        {
+          title: "Custom Data Feed Template",
           url: "cre/templates/running-demo-workflow",
           highlightAsCurrent: ["cre/templates/running-demo-workflow-ts", "cre/templates/running-demo-workflow-go"],
+        },
+      ],
+    },
+    {
+      section: "Demos",
+      contents: [
+        {
+          title: "AI-Powered Prediction Market",
+          url: "cre/demos/prediction-market",
         },
       ],
     },
@@ -532,34 +545,27 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/developer-responsibilities",
         },
         {
-          title: "Price Feeds",
-          url: "data-feeds/price-feeds",
-        },
-        {
-          title: "SmartData",
-          url: "data-feeds/smartdata",
+          title: "Feed Types",
+          url: "data-feeds/feed-types",
           children: [
+            { title: "Price Feeds", url: "data-feeds/price-feeds" },
             {
-              title: "Multiple-Variable Response (MVR) Feeds",
-              url: "data-feeds/mvr-feeds",
+              title: "SmartData",
+              url: "data-feeds/smartdata",
+              children: [{ title: "Multiple-Variable Response (MVR) Feeds", url: "data-feeds/mvr-feeds" }],
             },
+            { title: "Smart Value Recapture (SVR) Feeds", url: "data-feeds/svr-feeds" },
+            { title: "Rate and Volatility Feeds", url: "data-feeds/rates-feeds" },
+            { title: "L2 Sequencer Uptime Feeds", url: "data-feeds/l2-sequencer-feeds" },
           ],
-        },
-        {
-          title: "Smart Value Recapture (SVR) Feeds",
-          url: "data-feeds/svr-feeds",
-        },
-        {
-          title: "Rate and Volatility Feeds",
-          url: "data-feeds/rates-feeds",
-        },
-        {
-          title: "L2 Sequencer Uptime Feeds",
-          url: "data-feeds/l2-sequencer-feeds",
         },
         {
           title: "Flags Contract Registry",
           url: "data-feeds/contract-registry",
+        },
+        {
+          title: "Data Sources",
+          url: "data-feeds/data-sources",
         },
         {
           title: "Release Notes",
@@ -811,6 +817,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/billing",
         },
         {
+          title: "Data Sources",
+          url: "data-streams/data-sources",
+        },
+        {
           title: "Release Notes",
           url: "https://dev.chain.link/changelog?product=Data+Streams",
         },
@@ -824,11 +834,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/reference/report-schema-overview",
         },
         {
-          title: "Cryptocurrency Streams",
+          title: "Cryptocurrency",
           url: "data-streams/crypto-streams",
           children: [
             {
-              title: "Report Schema v3 (Crypto)",
+              title: "Report Schema v3 (Crypto Advanced)",
               url: "data-streams/reference/report-schema-v3",
             },
             {
@@ -838,41 +848,45 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
-          title: "Exchange Rate Streams",
+          title: "Exchange Rate",
           url: "data-streams/exchange-rate-streams",
           children: [
             {
-              title: "Report Schema v7",
+              title: "Report Schema v7 (Redemption Rates)",
               url: "data-streams/reference/report-schema-v7",
             },
           ],
         },
         {
-          title: "Real World Asset (RWA) Streams",
+          title: "Real World Asset (RWA)",
           url: "data-streams/rwa-streams",
           children: [
             {
-              title: "Report Schema v8",
+              title: "Report Schema v8 (RWA Standard)",
               url: "data-streams/reference/report-schema-v8",
+            },
+            {
+              title: "Report Schema v11 (RWA Advanced)",
+              url: "data-streams/reference/report-schema-v11",
             },
           ],
         },
         {
-          title: "Net Asset Value (NAV) Streams",
+          title: "Net Asset Value (NAV)",
           url: "data-streams/nav-streams",
           children: [
             {
-              title: "Report Schema v9",
+              title: "Report Schema v9 (NAV)",
               url: "data-streams/reference/report-schema-v9",
             },
           ],
         },
         {
-          title: "Backed xStock Streams",
+          title: "Tokenized Asset",
           url: "data-streams/backed-streams",
           children: [
             {
-              title: "Report Schema v10",
+              title: "Report Schema v10 (Tokenized Asset)",
               url: "data-streams/reference/report-schema-v10",
             },
           ],

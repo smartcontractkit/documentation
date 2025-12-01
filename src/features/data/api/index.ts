@@ -25,6 +25,7 @@ export interface Docs {
   decoding?: DecodingVariable[]
   issuer?: string
   deliveryChannelCode?: string
+  schema?: string
 }
 
 export interface ChainMetadata {
