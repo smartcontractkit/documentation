@@ -215,7 +215,7 @@ export function unescapeMarkdown(text: string): string {
 export function stripHighlightComments(code: string): string {
   return code
     .split("\n")
-    .map((line) => line.replace(/\s+\/\/\s*highlight-(line|start|end)/, ""))
+    .map((line) => line.replace(/ *\/\/\s*highlight-(line|start|end)/, ""))
     .join("\n")
 }
 
