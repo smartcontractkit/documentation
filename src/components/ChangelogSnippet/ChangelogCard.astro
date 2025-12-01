@@ -2,12 +2,26 @@
 import { SvgTaillessArrowDownSmall, Typography } from "@chainlink/blocks"
 import styles from "./ChangelogCard.module.css"
 import type { ChangelogItem } from "./types"
+import { clsx } from "~/lib/clsx/clsx"
+import CopyButton from "./CopyButton.tsx"
 
 interface Props {
   item: ChangelogItem
+  showBorder?: boolean
+  autoExpand?: boolean
+  showCopyButton?: boolean
+  disableHover?: boolean
+  showNetworksAndTopic?: boolean
 }
 
-const { item } = Astro.props
+const {
+  item,
+  showBorder = true,
+  autoExpand = false,
+  showCopyButton = true,
+  disableHover = false,
+  showNetworksAndTopic = false,
+} = Astro.props
 
 // Format the date
 const formatDate = (dateString: string) => {
@@ -22,20 +36,34 @@ const formatDate = (dateString: string) => {
 const formattedDate = formatDate(item["date-of-release"])
 ---
 
-<div class={styles.cardWrapper} data-expandable="wrapper">
+<div
+  class={clsx(styles.cardWrapper, showBorder && styles.withBorder)}
+  data-expandable="wrapper"
+  data-auto-expand={autoExpand}
+  data-disable-hover={disableHover}
+>
   <div class={styles.card} data-expandable="card">
     <div class={styles.header}>
       <div class={styles.metaSection}>
-        <Typography variant="body-semi">
+        <Typography variant="body-semi" className={styles.changelogType}>
           {item.type}
         </Typography>
-        <Typography variant="body-s" color="muted">
+        <Typography variant="body-s" color="muted" className={styles.date}>
           {formattedDate}
         </Typography>
       </div>
     </div>
 
     <div class={styles.content} data-expandable="content">
+      {
+        showNetworksAndTopic && (item.networks || item.topic) && (
+          <div class={styles.networksAndTopicSection}>
+            {item.networks && <div set:html={item.networks} />}
+            {item.topic && <span class="prod-chip">{item.topic}</span>}
+          </div>
+        )
+      }
+
       <Typography
         variant="h6"
         style={{
@@ -46,9 +74,11 @@ const formattedDate = formatDate(item["date-of-release"])
       </Typography>
 
       <div class={styles.descriptionContent}>
-        {item["text-description"] && <div class="description" set:html={item["text-description"]} />}
+        {item["text-description"] && <div class={styles.description} set:html={item["text-description"]} />}
       </div>
     </div>
+
+    {showCopyButton && <CopyButton client:only="react" url={item.slug} />}
   </div>
 
   <div class={styles.contentFooter} data-expandable="footer">
@@ -111,6 +141,18 @@ const formattedDate = formatDate(item["date-of-release"])
       const text = button?.querySelector('[data-expandable="text"]')
 
       if (!card || !content || !button) return
+
+      // Check if auto-expand is enabled
+      const autoExpand = (wrapper as HTMLElement).dataset.autoExpand === "true"
+
+      if (autoExpand) {
+        // Auto-expand: set to full height and hide footer
+        ;(wrapper as HTMLElement).style.maxHeight = "none"
+        wrapper.classList.add("expanded")
+        footer.style.opacity = "0"
+        footer.style.pointerEvents = "none"
+        return // Skip the rest of the logic
+      }
 
       // Wait for images to load before checking height
       const images = card.querySelectorAll("img")
@@ -283,13 +325,12 @@ const formattedDate = formatDate(item["date-of-release"])
   .log-item__list-chains {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-1x);
   }
 
   .log-item__img-chain {
     width: 24px;
     height: 24px;
-    border-radius: 50%;
     object-fit: cover;
   }
 
@@ -299,15 +340,44 @@ const formattedDate = formatDate(item["date-of-release"])
     justify-content: center;
     width: 24px;
     height: 24px;
-    border-radius: 50%;
-    background-color: var(--muted);
+    background-color: var(--gray-950);
     font-size: 10px;
     font-weight: 600;
-    color: var(--color-text-secondary);
+    color: var(--white);
+    border-radius: 3px;
   }
 
   /* Hidden filter elements */
   .log-item__list-chains .hidden {
     display: none;
+  }
+
+  /* Disable hover effects when data-disable-hover is true */
+  [data-disable-hover="true"]:hover {
+    background-color: transparent !important;
+  }
+
+  [data-disable-hover="true"]:hover .copyButton {
+    opacity: 0 !important;
+  }
+
+  [data-disable-hover="true"].withBorder:hover {
+    background-color: transparent !important;
+  }
+
+  [data-disable-hover="true"].withBorder:hover .contentFooter {
+    background: none !important;
+  }
+
+  /* Product Chip */
+  .prod-chip {
+    background-color: var(--muted-more);
+    color: var(--mirage);
+    border-radius: 4px;
+    margin-bottom: 0;
+    padding: var(--space-1x) var(--space-2x);
+    font-size: 12px;
+    line-height: 16px;
+    display: inline-block;
   }
 </style>

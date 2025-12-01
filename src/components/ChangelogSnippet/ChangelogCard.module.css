@@ -1,27 +1,58 @@
-/* Card Wrapper */
+/* Card Wrapper used in Changelog page */
 .cardWrapper {
   max-height: 400px;
   overflow: hidden;
-  transition: max-height 0.5s ease;
+  transition: all 0.5s ease;
   position: relative;
+
+  &:hover {
+    background-color: var(--gray-50);
+  }
+
+  &:hover .copyButton {
+    opacity: 1;
+  }
+
+  & .card {
+    padding: var(--space-4x);
+  }
+}
+
+/* Used on individual pages like CCIP/DataFeeds */
+.cardWrapper.withBorder {
   border: 1px solid var(--border);
+
+  &:hover {
+    background-color: var(--muted);
+  }
+}
+
+/* Disable hover background when disableHover is true */
+.cardWrapper[data-disable-hover="true"]:hover {
+  background-color: transparent !important;
+}
+
+.cardWrapper.withBorder[data-disable-hover="true"]:hover {
+  background-color: transparent !important;
+}
+
+/* Remove padding when disableHover is true */
+.cardWrapper[data-disable-hover="true"] .card {
+  padding: 0 !important;
 }
 
 /* Card Container */
 .card {
   display: flex;
   gap: 82px;
-  padding: var(--space-6x);
 }
 
-.cardWrapper.expanded .card {
+.cardWrapper.withBorder.expanded .card {
   -webkit-mask-image: none;
   mask-image: none;
 }
 
-.cardWrapper:hover {
-  background-color: var(--muted);
-
+.cardWrapper.withBorder:hover {
   & .contentFooter {
     background: linear-gradient(to top, var(--muted) 50%, transparent);
   }
@@ -54,11 +85,11 @@
 
 .description p {
   margin: 0;
-  color: var(--foreground);
+  color: var(--muted-foreground);
 }
 
 .description a {
-  color: var(--color-blue-600);
+  color: var(--link);
   text-decoration: none;
 }
 
@@ -68,7 +99,7 @@
 
 .header {
   display: flex;
-  width: 150px;
+  width: 160px;
 }
 
 .content {
@@ -80,6 +111,15 @@
 /* Description Content */
 .descriptionContent {
   flex: 1;
+}
+
+/* Networks and Topic Section */
+.networksAndTopicSection {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3x);
+  margin-bottom: var(--space-4x);
+  flex-wrap: wrap;
 }
 
 /* Content Footer */
@@ -119,16 +159,58 @@
   transition: transform 0.3s ease;
 }
 
-@media (max-width: 768px) {
+.copyButton {
+  display: flex;
+  height: fit-content;
+  gap: var(--space-2x);
+  border-radius: var(--space-1x);
+  border: 1px solid var(--border);
+  width: 118px;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-2x) 0;
+  transition: all 0.2s ease;
+  opacity: 0;
+
+  & > svg {
+    color: var(--muted-foreground);
+  }
+
+  &:hover {
+    border: 1px solid var(--foreground);
+  }
+}
+
+.checkmark {
+  stroke: var(--success-foreground);
+}
+.copyIconMobile {
+  display: none;
+}
+
+.copyIconDesktop {
+  display: block;
+}
+
+@media screen and (max-width: 425px) {
+  .changelogType {
+    font-size: 14px;
+  }
+
+  .metaSection {
+    gap: 0 !important;
+  }
+}
+
+@media screen and (max-width: 768px) {
   .card {
-    padding: var(--space-4x);
+    padding: 0 !important;
+    gap: 0;
     flex-direction: column;
-    gap: var(--space-4x);
   }
 
   .header {
     gap: var(--space-3x);
-    width: 100%;
   }
 
   .metaSection {
@@ -146,5 +228,29 @@
 
   .contentFooter {
     padding-left: var(--space-4x);
+  }
+
+  .copyIconDesktop {
+    display: none;
+  }
+
+  .copyIconMobile {
+    display: block;
+  }
+  .copyText {
+    display: none;
+  }
+
+  .copyButton {
+    width: 32px;
+    opacity: 1;
+  }
+}
+
+@media screen and (max-width: 990px) {
+  .copyButton {
+    position: absolute;
+    right: var(--space-4x);
+    top: var(--space-4x);
   }
 }
