@@ -10,7 +10,7 @@
  * 4. Wallet - Browser wallet integration
  *
  * Migration Complete: All legacy code has been removed.
- * Use DripOrchestrator from @api/ccip/services/faucet/drip-orchestrator for business logic.
+ * Use DripOrchestrator from ~/lib/ccip/services-api/faucet/drip-orchestrator for business logic.
  */
 
 // Core layer - Pure utilities with no dependencies

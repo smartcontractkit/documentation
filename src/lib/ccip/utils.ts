@@ -5,6 +5,7 @@ import { SupportedChain } from "@config/index.ts"
 import { directoryToSupportedChain } from "@features/utils/index.ts"
 import { v4 as uuidv4 } from "uuid"
 import type { TokenMetadata, ChainType, OutputKeyType } from "./types/index.ts"
+import { jsonHeaders, commonHeaders as sharedCommonHeaders } from "@lib/api/cacheHeaders.js"
 
 export const prerender = false
 
@@ -15,20 +16,15 @@ export type { SelectorsConfig } from "@config/data/ccip/selectors.ts"
 
 /**
  * Common HTTP headers used across all API responses
+ * @deprecated Use sharedCommonHeaders from @lib/api/cacheHeaders.js instead
  */
-export const commonHeaders = {
-  "Content-Type": "application/json",
-}
+export const commonHeaders = sharedCommonHeaders
 
 /**
  * Extended headers for successful responses with caching directives
+ * @deprecated Use jsonHeaders from @lib/api/cacheHeaders.js instead
  */
-export const successHeaders = {
-  ...commonHeaders,
-  "Cache-Control": "s-max-age=300, stale-while-revalidate",
-  "CDN-Cache-Control": "max-age=300",
-  "Vercel-CDN-Cache-Control": "max-age=300",
-}
+export const successHeaders = jsonHeaders
 
 /**
  * Custom error class for CCIP-specific errors

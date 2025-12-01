@@ -6,11 +6,11 @@ import {
   TokenChainData,
   TokenDataResponse,
   TokenServiceResponse,
-} from "../ccip/types/index.ts"
+} from "~/lib/ccip/types/index.ts"
 import { Version } from "@config/data/ccip/types.ts"
 import { SupportedChain } from "@config/index.ts"
 import { getAllSupportedTokens, getAllTokenLanes, getTokenData } from "@config/data/ccip/data.ts"
-import { resolveChainOrThrow, generateChainKey } from "@api/ccip/utils.ts"
+import { resolveChainOrThrow, generateChainKey } from "~/lib/ccip/utils.ts"
 import { logger } from "@lib/logging/index.js"
 import { getChainId, getChainTypeAndFamily, getTitle } from "../../../features/utils/index.ts"
 import { getSelectorEntry } from "@config/data/ccip/selectors.ts"
