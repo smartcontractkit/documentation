@@ -16,7 +16,7 @@ import { TransactionManager } from "@lib/solana/domain/transaction/services/mana
 import { detectTokenProgram, getBackendSigner } from "@lib/solana/core/services/index.ts"
 import { NetworkComputeBudgetService, TransactionComplexity } from "@lib/solana/core/services/network-compute-budget.ts"
 import type { IRpcContext } from "@lib/solana/infrastructure/rpc/types.ts"
-import type { FaucetChainConfig } from "@api/ccip/types/faucet.ts"
+import type { FaucetChainConfig } from "~/lib/ccip/types/faucet.ts"
 import type { Address } from "@solana/kit"
 import { directoryToSupportedChain } from "@features/utils/index.ts"
 

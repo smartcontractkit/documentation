@@ -5,5 +5,5 @@ export type SupportedLanguage = "go" | "ts"
 // Store with localStorage persistence
 export const selectedLanguage = persistentAtom<SupportedLanguage>(
   "docs-language-preference",
-  "go" // default value
+  "ts" // default value
 )

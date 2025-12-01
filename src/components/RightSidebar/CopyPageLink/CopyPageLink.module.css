@@ -1,4 +1,9 @@
-.dropdown {
+/**
+ * Styles for CopyPageLink component
+ * Matches left sidebar dropdown styling pattern
+ */
+
+.container {
   position: relative;
   width: 100%;
 }
@@ -14,6 +19,7 @@
 }
 
 .trigger {
+  /* Match left sidebar dropdown styling */
   display: flex;
   align-items: center;
   gap: 10px;
@@ -34,12 +40,15 @@
   background-color: var(--gray-200, #e5e7eb);
 }
 
+.trigger:focus-visible {
+  outline: 2px solid var(--blue-500, #0847f7);
+  outline-offset: 2px;
+}
+
 .triggerIcon {
   width: 20px;
   height: 20px;
-  object-fit: contain;
   flex-shrink: 0;
-  border-radius: 3px;
 }
 
 .triggerText {
@@ -62,7 +71,7 @@
   transform: rotate(180deg);
 }
 
-.menu {
+.dropdown {
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
@@ -76,64 +85,80 @@
   isolation: isolate;
 }
 
-.menuContent {
+.dropdownContent {
   padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
-.option {
+.dropdownItem {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  align-items: flex-start;
+  gap: 12px;
   width: 100%;
   padding: 10px 12px;
   background: transparent;
   border: none;
-  border-radius: 6px;
+  border-bottom: 1px solid var(--gray-200, #e5e7eb);
+  border-radius: 0;
   cursor: pointer;
   text-align: left;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--gray-800, #1f2937);
   transition: all 0.2s ease;
   position: relative;
 }
 
-.option:hover {
+.dropdownItem:last-child {
+  border-bottom: none;
+}
+
+.dropdownItem:first-child {
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+.dropdownItem:last-child {
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.dropdownItem:hover {
   background-color: var(--blue-50, #eff6ff);
 }
 
-.option:focus {
+.dropdownItem:focus-visible {
   outline: 2px solid var(--blue-500, #0847f7);
   outline-offset: -2px;
 }
 
-.option:focus-visible {
-  outline: 2px solid var(--blue-500, #0847f7);
-  outline-offset: -2px;
-}
-
-.option.selected {
-  background-color: var(--blue-100, #dbeafe);
-  color: var(--blue-900, #1e3a8a);
-  font-weight: 600;
-}
-
-.option.selected:hover {
-  background-color: var(--blue-150, #c7e0fd);
-}
-
-.optionIcon {
+.itemIcon {
   width: 20px;
   height: 20px;
-  object-fit: contain;
   flex-shrink: 0;
-  border-radius: 3px;
+  margin-top: 2px;
+  opacity: 0.7;
 }
 
-.checkmark {
-  margin-left: auto;
-  flex-shrink: 0;
-  color: var(--blue-600, #2563eb);
+.dropdownItem:hover .itemIcon {
+  opacity: 1;
+}
+
+.itemContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-900, #111827);
+  margin-bottom: 2px;
+}
+
+.itemDescription {
+  font-size: 12px;
+  color: var(--gray-600, #4b5563);
+  line-height: 1.4;
 }
 
 /* Responsive adjustments */
@@ -143,8 +168,7 @@
     font-size: 14px;
   }
 
-  .triggerIcon,
-  .optionIcon {
+  .triggerIcon {
     width: 18px;
     height: 18px;
   }

@@ -7,7 +7,7 @@
 import { getSolanaDevnetConfig } from "@lib/core/config/index.ts"
 import { createRpcContext } from "@lib/solana/infrastructure/rpc/solana-rpc.ts"
 import type { IRpcContext } from "@lib/solana/infrastructure/rpc/types.ts"
-import type { FaucetChainConfig } from "@api/ccip/types/faucet.ts"
+import type { FaucetChainConfig } from "~/lib/ccip/types/faucet.ts"
 
 export const prerender = false
 
