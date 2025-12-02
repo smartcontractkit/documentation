@@ -15,6 +15,7 @@ import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/TableOfContents/tocStore.ts"
 import alertIcon from "../../../components/Alert/Assets/alert-icon.svg"
 import { ChainSelector } from "~/components/ChainSelector/ChainSelector.tsx"
+import { isFeedVisible } from "../utils/feedVisibility.ts"
 
 export type DataFeedType =
   | "default"
@@ -606,24 +607,35 @@ export const FeedList = ({
     const networkTypes = { mainnet: false, testnet: false }
 
     // Filter networks by feed type
-    const filteredNetworks = chainMetadata.processedData.networks.filter((network) => {
-      if (isDeprecating) {
-        let foundDeprecated = false
-        network.metadata?.forEach((feed: any) => {
-          if (feed.feedCategory === "deprecating") {
-            foundDeprecated = true
-          }
-        })
-        return foundDeprecated
-      }
+    const filteredNetworks = chainMetadata.processedData.networks
+      .filter((network) => {
+        if (isDeprecating) {
+          let foundDeprecated = false
+          network.metadata?.forEach((feed: any) => {
+            if (feed.feedCategory === "deprecating") {
+              foundDeprecated = true
+            }
+          })
+          // A deprecating network is relevant only if it still has at least one non-hidden deprecating feed
+          if (!foundDeprecated) return false
+          const hasVisible = network.metadata?.some(
+            (feed: any) => feed.feedCategory === "deprecating" && feed.feedCategory !== "hidden" && !feed.docs?.hidden
+          )
+          return !!hasVisible
+        }
 
-      if (isStreams) return network.tags?.includes("streams")
-      if (isSmartData) return network.tags?.includes("smartData")
-      if (isRates) return network.tags?.includes("rates")
-      if (isUSGovernmentMacroeconomicData) return network.tags?.includes("usGovernmentMacroeconomicData")
+        if (isStreams) return network.tags?.includes("streams")
+        if (isSmartData) return network.tags?.includes("smartData")
+        if (isRates) return network.tags?.includes("rates")
+        if (isUSGovernmentMacroeconomicData) return network.tags?.includes("usGovernmentMacroeconomicData")
 
-      return true
-    })
+        return true
+      })
+      .filter((network) => {
+        // Ensure the network has at least one visible feed for the current dataFeedType
+        const feeds = network.metadata || []
+        return feeds.some((feed: any) => isFeedVisible(feed, dataFeedType, ecosystem))
+      })
 
     // Check available network types
     filteredNetworks.forEach((network) => {
