@@ -13,6 +13,7 @@ import { FEED_CATEGORY_CONFIG } from "../../../db/feedCategories.js"
 import { useBatchedFeedCategories, getFeedCategoryFromBatch, getNetworkIdentifier } from "./useBatchedFeedCategories.ts"
 import { isSharedSVR, isAaveSVR } from "~/features/feeds/utils/svrDetection.ts"
 import { ExpandableTableWrapper } from "./ExpandableTableWrapper.tsx"
+import { isFeedVisible } from "~/features/feeds/utils/feedVisibility.ts"
 
 const feedItems = monitoredFeeds.mainnet
 
@@ -1145,87 +1146,13 @@ export const MainnetTable = ({
 
       if (isDeprecating) return !!metadata.docs.shutdownDate
 
-      if (dataFeedType === "streamsCrypto") {
-        const isValidStreamsFeed =
-          metadata.contractType === "verifier" &&
-          (metadata.docs.feedType === "Crypto" || metadata.docs.feedType === "Crypto-DEX")
-
-        if (showOnlyDEXFeeds) {
-          return isValidStreamsFeed && metadata.docs.feedType === "Crypto-DEX"
-        }
-
-        return isValidStreamsFeed
-      }
-      if (dataFeedType === "streamsRwa") {
-        const isRwaFeed =
-          metadata.contractType === "verifier" &&
-          (metadata.docs.feedType === "Equities" ||
-            metadata.docs.feedType === "Forex" ||
-            metadata.docs.feedType === "Datalink")
-
-        if (!isRwaFeed) return false
-
-        // Apply feed type filter
-        if (streamCategoryFilter === "datalink") {
-          if (metadata.docs.feedType !== "Datalink") return false
-        } else if (streamCategoryFilter === "equities") {
-          if (metadata.docs.feedType !== "Equities") return false
-        } else if (streamCategoryFilter === "forex") {
-          if (metadata.docs.feedType !== "Forex") return false
-        }
-
-        // Apply schema filter
-        if (rwaSchemaFilter === "v8") {
-          return metadata.docs?.schema === "v8" || !metadata.docs?.schema
-        }
-        if (rwaSchemaFilter === "v11") {
-          return metadata.docs?.schema === "v11"
-        }
-
-        return true
-      }
-
-      if (dataFeedType === "streamsNav") {
-        return metadata.contractType === "verifier" && metadata.docs.feedType === "Net Asset Value"
-      }
-
-      if (dataFeedType === "streamsExRate") {
-        return metadata.contractType === "verifier" && metadata.docs?.productTypeCode === "ExRate"
-      }
-
-      if (dataFeedType === "streamsBacked") {
-        return metadata.contractType === "verifier" && metadata.docs.feedType === "Tokenized Equities"
-      }
-
-      if (isSmartData) {
-        if (showOnlyMVRFeeds) {
-          return !metadata.docs?.hidden && metadata.docs?.isMVR === true && metadata.docs?.deliveryChannelCode !== "DS"
-        }
-
-        return (
-          !metadata.docs?.hidden &&
-          metadata.docs?.deliveryChannelCode !== "DS" &&
-          (metadata.docs?.productType === "Proof of Reserve" ||
-            metadata.docs?.productType === "NAVLink" ||
-            metadata.docs?.productType === "SmartAUM" ||
-            metadata.docs?.isMVR === true)
-        )
-      }
-
-      if (isUSGovernmentMacroeconomicData) {
-        const isMacro = metadata.docs?.productTypeCode === "RefMacro"
-        return isMacro
-      }
-
-      // Exclude MVR feeds from default view
-      return (
-        !metadata.docs.porType &&
-        metadata.contractType !== "verifier" &&
-        metadata.docs.productType !== "Proof of Reserve" &&
-        metadata.docs.productType !== "NAVLink" &&
-        metadata.docs.productType !== "SmartAUM" &&
-        metadata.docs?.productTypeCode !== "RefMacro"
-      )
+      // Use shared visibility logic with filters
+      return isFeedVisible(metadata, dataFeedType as any, ecosystem, {
+        showOnlyDEXFeeds,
+        streamCategoryFilter,
+        rwaSchemaFilter,
+        showOnlyMVRFeeds,
+      })
     })
     .filter((metadata) => {
       if (isSmartData) {
@@ -1428,98 +1355,13 @@ export const TestnetTable = ({
       }
 
       if (batchCategory === "hidden") return false
-      if (isStreams) {
-        if (dataFeedType === "streamsCrypto") {
-          const isValidStreamsFeed =
-            metadata.contractType === "verifier" &&
-            (metadata.feedType === "Crypto" || metadata.feedType === "Crypto-DEX")
-
-          if (showOnlyDEXFeeds) {
-            return isValidStreamsFeed && metadata.feedType === "Crypto-DEX"
-          }
-
-          return isValidStreamsFeed
-        }
-
-        if (dataFeedType === "streamsRwa") {
-          const isRwaFeed =
-            metadata.contractType === "verifier" &&
-            (metadata.docs.feedType === "Equities" ||
-              metadata.docs.feedType === "Forex" ||
-              metadata.docs.feedType === "Datalink")
-
-          if (!isRwaFeed) return false
-
-          // Apply feed type filter
-          if (streamCategoryFilter === "datalink") {
-            if (metadata.docs.feedType !== "Datalink") return false
-          } else if (streamCategoryFilter === "equities") {
-            if (metadata.docs.feedType !== "Equities") return false
-          } else if (streamCategoryFilter === "forex") {
-            if (metadata.docs.feedType !== "Forex") return false
-          }
-
-          // Apply schema filter
-          if (rwaSchemaFilter === "v8") {
-            return metadata.docs?.schema === "v8" || !metadata.docs?.schema
-          }
-          if (rwaSchemaFilter === "v11") {
-            return metadata.docs?.schema === "v11"
-          }
-
-          return true
-        }
-
-        if (dataFeedType === "streamsExRate") {
-          return metadata.contractType === "verifier" && metadata.docs?.productTypeCode === "ExRate"
-        }
-
-        if (dataFeedType === "streamsNav") {
-          return metadata.contractType === "verifier" && metadata.docs.feedType === "Net Asset Value"
-        }
-
-        if (dataFeedType === "streamsBacked") {
-          return metadata.contractType === "verifier" && metadata.docs.feedType === "Tokenized Equities"
-        }
-
-        // If we're in streams mode but didn't match any specific stream type, exclude this feed
-        return false
-      }
-
-      if (isSmartData) {
-        if (showOnlyMVRFeeds) {
-          return !metadata.docs?.hidden && metadata.docs?.isMVR === true && metadata.docs?.deliveryChannelCode !== "DS"
-        }
-
-        // Otherwise, include all SmartData feeds (MVR, PoR, NAVLink, SmartAUM)
-        return (
-          !metadata.docs?.hidden &&
-          metadata.docs?.deliveryChannelCode !== "DS" &&
-          (metadata.docs?.productType === "Proof of Reserve" ||
-            metadata.docs?.productType === "NAVLink" ||
-            metadata.docs?.productType === "SmartAUM" ||
-            metadata.docs?.isMVR === true)
-        )
-      }
-
-      if (isRates)
-        return !!(metadata.docs.productType === "Rates" || metadata.docs.productSubType === "Realized Volatility")
-
-      if (isUSGovernmentMacroeconomicData) {
-        return metadata.docs?.productTypeCode === "RefMacro"
-      }
-
-      // Exclude MVR feeds from default view
-      return (
-        !metadata.feedId &&
-        !metadata.docs.porType &&
-        metadata.docs.productType !== "Rates" &&
-        metadata.docs.productSubType !== "Realized Volatility" &&
-        metadata.docs.productType !== "Proof of Reserve" &&
-        metadata.docs.productType !== "NAVLink" &&
-        metadata.docs.productType !== "SmartAUM" &&
-        metadata.docs?.productTypeCode !== "RefMacro"
-      )
+      // Use shared visibility logic with filters
+      return isFeedVisible(metadata, dataFeedType as any, undefined, {
+        showOnlyDEXFeeds,
+        streamCategoryFilter,
+        rwaSchemaFilter,
+        showOnlyMVRFeeds,
+      })
     })
     .filter((metadata) => {
       if (isSmartData) {
