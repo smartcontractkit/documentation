@@ -1,0 +1,47 @@
+---
+import { Typography, SvgArrowRight2, SvgButtonPlay } from "@chainlink/blocks"
+import styles from "./ResourceCard.module.css"
+import { ResourceItem } from "./ResourceGrid.astro"
+
+type Props = ResourceItem
+
+const { image, imageAlt, label, link, description, type } = Astro.props
+
+const imageSrc = typeof image === "string" ? image : image?.src
+
+const isVideo = type === "video"
+---
+
+<a href={link} class={styles.card} target={isVideo ? "_blank" : "_self"}>
+  {
+    imageSrc && (
+      <div class={styles.imageWrapper}>
+        <img src={imageSrc} alt={imageAlt} class={styles.image} />
+        <div class={styles.overlay}>
+          <span class={styles.playButtonWrapper}>
+            <SvgButtonPlay color="card" width={15} height={17.25} />
+          </span>
+        </div>
+      </div>
+    )
+  }
+  <div class={styles.content}>
+    <Typography
+      variant="body-semi-l"
+      style={{
+        marginBottom: isVideo ? "var(--space-2x)" : "var(--space-8x)",
+      }}>{label}</Typography
+    >
+    <Typography variant="body-s" color="muted">
+      {description}
+    </Typography>
+  </div>
+  {
+    type === "article" && (
+      <div class={styles.cardFooter}>
+        <span class={styles.footerText}>Read the full article</span>
+        <SvgArrowRight2 color="muted" width={12} height={12} />
+      </div>
+    )
+  }
+</a>
