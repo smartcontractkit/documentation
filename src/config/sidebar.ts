@@ -596,6 +596,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Selecting Quality Data Feeds",
           url: "data-feeds/selecting-data-feeds",
         },
+        {
+          title: "Deprecating Feeds",
+          url: "data-feeds/deprecating-feeds",
+        },
       ],
     },
     {

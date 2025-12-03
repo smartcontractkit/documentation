@@ -1109,7 +1109,8 @@ export const FeedList = ({
             .filter((network: any) => {
               let foundDeprecated = false
               network.metadata?.forEach((feed: any) => {
-                if (feed.feedCategory === "deprecating") {
+                // Only include actual feeds (not streams) with deprecating status
+                if (feed.feedCategory === "deprecating" && !(feed.contractType === "verifier" && feed.feedId)) {
                   foundDeprecated = true
                 }
               })
@@ -1135,7 +1136,10 @@ export const FeedList = ({
                   }
                   network={{
                     ...network,
-                    metadata: network.metadata.filter((feed: any) => feed.feedCategory === "deprecating"),
+                    metadata: network.metadata.filter(
+                      (feed: any) =>
+                        feed.feedCategory === "deprecating" && !(feed.contractType === "verifier" && feed.feedId)
+                    ),
                   }}
                   showExtraDetails={showExtraDetails}
                   showOnlySVR={showOnlySVR}
@@ -1160,7 +1164,8 @@ export const FeedList = ({
             if (isDeprecating) {
               let foundDeprecated = false
               network.metadata?.forEach((feed: any) => {
-                if (feed.feedCategory === "deprecating") {
+                // Only include actual feeds (not streams) with deprecating status
+                if (feed.feedCategory === "deprecating" && !(feed.contractType === "verifier" && feed.feedId)) {
                   foundDeprecated = true
                 }
               })

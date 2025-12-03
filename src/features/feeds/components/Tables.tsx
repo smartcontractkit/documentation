@@ -1154,7 +1154,10 @@ export const MainnetTable = ({
         return false
       }
 
-      if (isDeprecating) return !!metadata.docs.shutdownDate
+      if (isDeprecating) {
+        // Only show feeds (not streams) with shutdown dates
+        return !!metadata.docs.shutdownDate && !(metadata.contractType === "verifier" && metadata.feedId)
+      }
 
       // Use shared visibility logic with filters
       return isFeedVisible(metadata, dataFeedType as any, ecosystem, {
