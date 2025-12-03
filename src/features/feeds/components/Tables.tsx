@@ -884,187 +884,190 @@ export const StreamsTr = ({ metadata, isMainnet }) => {
         {metadata.docs.shutdownDate && (
           <div className={clsx(feedList.shutDate)}>
             <hr />
-            <a href="/data-streams/deprecating-streams" style={{ color: "inherit", textDecoration: "underline dotted" }}>
+            <a
+              href="/data-streams/deprecating-streams"
+              style={{ color: "inherit", textDecoration: "underline dotted" }}
+            >
               Deprecating:
             </a>
             <br />
             {metadata.docs.shutdownDate}
           </div>
         )}
-    </td>
-    <td style="width:80%;">
-      <div className={tableStyles.assetAddress}>
-        <span className={tableStyles.streamAddress}>{metadata.feedId}</span>
-        <button
-          className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-          style={{ height: "16px", width: "16px" }}
-          data-clipboard-text={metadata.feedId}
-          onClick={(e) =>
-            handleClick(e, {
-              product: "STREAMS",
-              action: "feedId_copied",
-              extraInfo1: isMainnet ? "Mainnet" : "Testnet",
-              extraInfo2: metadata.pair[0],
-              extraInfo3: metadata.feedId,
-            })
-          }
-        >
-          <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
-        </button>
-      </div>
-      <div>
-        <dl className={tableStyles.listContainer}>
-          {isMainnet && metadata.docs.clicProductName && metadata.feedType !== "Tokenized Equities" && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Full name:</span>
-              </dt>
-              <dd>{metadata.docs.clicProductName}</dd>
-            </div>
-          )}
-          {metadata.assetName && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Asset name:</span>
-              </dt>
-              <dd>{metadata.assetName}</dd>
-            </div>
-          )}
-          {metadata.docs.assetClass ? (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Asset class:</span>
-              </dt>
-              <dd>
-                {metadata.docs.assetClass}
-                {metadata.docs.assetSubClass &&
-                metadata.docs.assetSubClass !== "Crypto" &&
-                metadata.docs.assetSubClass !== "Equities"
-                  ? " - " + metadata.docs.assetSubClass
-                  : ""}
-              </dd>
-            </div>
-          ) : null}
-          {metadata.docs.marketHours ? (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Market hours:</span>
-              </dt>
-              <dd>
-                <a href="/data-streams/market-hours" target="_blank">
-                  {metadata.docs.marketHours}
-                </a>
-              </dd>
-            </div>
-          ) : null}
-          {streamsCategoryMap[metadata.feedCategory] ? (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Category:</span>
-              </dt>
-              <dd>
-                <a href={streamsCategoryMap[metadata.feedCategory].link}>
-                  {streamsCategoryMap[metadata.feedCategory].text}
-                </a>
-              </dd>
-            </div>
-          ) : null}
-          {metadata.decimals ? (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Decimals:</span>
-              </dt>
-              <dd>{metadata.decimals}</dd>
-            </div>
-          ) : null}
-          {metadata.feedType === "Crypto-DEX" && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Report Schema:</span>
-              </dt>
-              <dd>
-                <a href="/data-streams/reference/report-schema-v3-dex" rel="noreferrer" target="_blank">
-                  Report Schema v3 (Crypto DEX)
-                </a>
-              </dd>
-            </div>
-          )}
-          {metadata.feedType === "Crypto" && metadata.docs?.productTypeCode !== "ExRate" && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Report Schema:</span>
-              </dt>
-              <dd>
-                <a href="/data-streams/reference/report-schema-v3" rel="noreferrer" target="_blank">
-                  Report Schema v3 (Crypto)
-                </a>
-              </dd>
-            </div>
-          )}
-          {(metadata.feedType === "Equities" || metadata.feedType === "Forex") && metadata.docs?.schema !== "v11" && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Report Schema:</span>
-              </dt>
-              <dd>
-                <a href="/data-streams/reference/report-schema-v8" rel="noreferrer" target="_blank">
-                  Report Schema v8 (RWA)
-                </a>
-              </dd>
-            </div>
-          )}
-          {metadata.docs?.productTypeCode === "ExRate" && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Report Schema:</span>
-              </dt>
-              <dd>
-                <a href="/data-streams/reference/report-schema-v7" rel="noreferrer" target="_blank">
-                  Report Schema v7 (Redemption Rates)
-                </a>
-              </dd>
-            </div>
-          )}
-          {metadata.feedType === "Net Asset Value" && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Report Schema:</span>
-              </dt>
-              <dd>
-                <a href="/data-streams/reference/report-schema-v9" rel="noreferrer" target="_blank">
-                  Report Schema v9 (NAV)
-                </a>
-              </dd>
-            </div>
-          )}
-          {metadata.feedType === "Tokenized Equities" && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Report Schema:</span>
-              </dt>
-              <dd>
-                <a href="/data-streams/reference/report-schema-v10" rel="noreferrer" target="_blank">
-                  Report Schema v10 (Tokenized Assets)
-                </a>
-              </dd>
-            </div>
-          )}
-          {metadata.docs?.schema === "v11" && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Report Schema:</span>
-              </dt>
-              <dd>
-                <a href="/data-streams/reference/report-schema-v11" rel="noreferrer" target="_blank">
-                  RWA Advanced (v11)
-                </a>
-              </dd>
-            </div>
-          )}
-        </dl>
-      </div>
-    </td>
-  </tr>
+      </td>
+      <td style="width:80%;">
+        <div className={tableStyles.assetAddress}>
+          <span className={tableStyles.streamAddress}>{metadata.feedId}</span>
+          <button
+            className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+            style={{ height: "16px", width: "16px" }}
+            data-clipboard-text={metadata.feedId}
+            onClick={(e) =>
+              handleClick(e, {
+                product: "STREAMS",
+                action: "feedId_copied",
+                extraInfo1: isMainnet ? "Mainnet" : "Testnet",
+                extraInfo2: metadata.pair[0],
+                extraInfo3: metadata.feedId,
+              })
+            }
+          >
+            <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+          </button>
+        </div>
+        <div>
+          <dl className={tableStyles.listContainer}>
+            {isMainnet && metadata.docs.clicProductName && metadata.feedType !== "Tokenized Equities" && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Full name:</span>
+                </dt>
+                <dd>{metadata.docs.clicProductName}</dd>
+              </div>
+            )}
+            {metadata.assetName && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Asset name:</span>
+                </dt>
+                <dd>{metadata.assetName}</dd>
+              </div>
+            )}
+            {metadata.docs.assetClass ? (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Asset class:</span>
+                </dt>
+                <dd>
+                  {metadata.docs.assetClass}
+                  {metadata.docs.assetSubClass &&
+                  metadata.docs.assetSubClass !== "Crypto" &&
+                  metadata.docs.assetSubClass !== "Equities"
+                    ? " - " + metadata.docs.assetSubClass
+                    : ""}
+                </dd>
+              </div>
+            ) : null}
+            {metadata.docs.marketHours ? (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Market hours:</span>
+                </dt>
+                <dd>
+                  <a href="/data-streams/market-hours" target="_blank">
+                    {metadata.docs.marketHours}
+                  </a>
+                </dd>
+              </div>
+            ) : null}
+            {streamsCategoryMap[metadata.feedCategory] ? (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Category:</span>
+                </dt>
+                <dd>
+                  <a href={streamsCategoryMap[metadata.feedCategory].link}>
+                    {streamsCategoryMap[metadata.feedCategory].text}
+                  </a>
+                </dd>
+              </div>
+            ) : null}
+            {metadata.decimals ? (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Decimals:</span>
+                </dt>
+                <dd>{metadata.decimals}</dd>
+              </div>
+            ) : null}
+            {metadata.feedType === "Crypto-DEX" && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Report Schema:</span>
+                </dt>
+                <dd>
+                  <a href="/data-streams/reference/report-schema-v3-dex" rel="noreferrer" target="_blank">
+                    Report Schema v3 (Crypto DEX)
+                  </a>
+                </dd>
+              </div>
+            )}
+            {metadata.feedType === "Crypto" && metadata.docs?.productTypeCode !== "ExRate" && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Report Schema:</span>
+                </dt>
+                <dd>
+                  <a href="/data-streams/reference/report-schema-v3" rel="noreferrer" target="_blank">
+                    Report Schema v3 (Crypto)
+                  </a>
+                </dd>
+              </div>
+            )}
+            {(metadata.feedType === "Equities" || metadata.feedType === "Forex") && metadata.docs?.schema !== "v11" && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Report Schema:</span>
+                </dt>
+                <dd>
+                  <a href="/data-streams/reference/report-schema-v8" rel="noreferrer" target="_blank">
+                    Report Schema v8 (RWA)
+                  </a>
+                </dd>
+              </div>
+            )}
+            {metadata.docs?.productTypeCode === "ExRate" && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Report Schema:</span>
+                </dt>
+                <dd>
+                  <a href="/data-streams/reference/report-schema-v7" rel="noreferrer" target="_blank">
+                    Report Schema v7 (Redemption Rates)
+                  </a>
+                </dd>
+              </div>
+            )}
+            {metadata.feedType === "Net Asset Value" && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Report Schema:</span>
+                </dt>
+                <dd>
+                  <a href="/data-streams/reference/report-schema-v9" rel="noreferrer" target="_blank">
+                    Report Schema v9 (NAV)
+                  </a>
+                </dd>
+              </div>
+            )}
+            {metadata.feedType === "Tokenized Equities" && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Report Schema:</span>
+                </dt>
+                <dd>
+                  <a href="/data-streams/reference/report-schema-v10" rel="noreferrer" target="_blank">
+                    Report Schema v10 (Tokenized Assets)
+                  </a>
+                </dd>
+              </div>
+            )}
+            {metadata.docs?.schema === "v11" && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Report Schema:</span>
+                </dt>
+                <dd>
+                  <a href="/data-streams/reference/report-schema-v11" rel="noreferrer" target="_blank">
+                    RWA Advanced (v11)
+                  </a>
+                </dd>
+              </div>
+            )}
+          </dl>
+        </div>
+      </td>
+    </tr>
   )
 }
 

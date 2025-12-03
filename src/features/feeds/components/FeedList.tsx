@@ -747,11 +747,12 @@ export const FeedList = ({
     // For deprecating streams, show a consolidated table across all networks
     if (isDeprecating) {
       const allDeprecatingStreams: any[] = []
-      
+
       // Check both chainMetadata and initialCache for deprecating streams
-      const networksToCheck = chainMetadata.processedData?.networks || 
+      const networksToCheck =
+        chainMetadata.processedData?.networks ||
         (initialCache && initialCache.deprecated ? (initialCache.deprecated as any).networks : [])
-      
+
       networksToCheck.forEach((network: any) => {
         network.metadata?.forEach((item: any) => {
           // Only include items that are actual streams (have verifier contract type and feedId)
@@ -769,7 +770,7 @@ export const FeedList = ({
         <>
           {chainMetadata.loading && !chainMetadata.processedData && !initialCache && <p>Loading...</p>}
           {chainMetadata.error && <p>There was an error loading the streams...</p>}
-          
+
           {allDeprecatingStreams.length > 0 ? (
             <SectionWrapper title="Deprecating Streams" depth={2}>
               <div className={feedList.tableWrapper}>
@@ -784,9 +785,7 @@ export const FeedList = ({
               </div>
             </SectionWrapper>
           ) : (
-            !chainMetadata.loading && (
-              <p>No deprecating streams found at this time.</p>
-            )
+            !chainMetadata.loading && <p>No deprecating streams found at this time.</p>
           )}
         </>
       )
