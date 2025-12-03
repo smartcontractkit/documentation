@@ -895,6 +895,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Market Hours",
           url: "data-streams/market-hours",
         },
+        {
+          title: "Deprecating Streams",
+          url: "data-streams/deprecating-streams",
+        },
       ],
     },
     {

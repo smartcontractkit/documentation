@@ -1,0 +1,55 @@
+---
+import { FeedList, DataFeedType } from "@features/feeds/components/FeedList"
+import { Aside } from "@components"
+export type Props = {
+  initialNetwork?: string
+  ecosystem?: string
+  dataFeedType?: DataFeedType
+  allowNetworkTableExpansion?: boolean
+  defaultNetworkTableExpanded?: boolean
+}
+import { getServerSideChainMetadata } from "~/features/data/api/backend"
+import { CHAINS, ALL_CHAINS } from "~/features/data/chains"
+
+const { initialNetwork, ecosystem, dataFeedType, allowNetworkTableExpansion, defaultNetworkTableExpanded } = Astro.props
+
+// Skip cache for deprecating page to always fetch fresh data
+const isDeprecating = ecosystem === "deprecating"
+const initialCache = await getServerSideChainMetadata([...CHAINS, ...ALL_CHAINS], isDeprecating)
+---
+
+{
+  ecosystem === "deprecating" ? (
+    <>
+      <p>Placeholder text for deprecating streams page.</p>
+    </>
+  ) : (
+    <>
+      <p>
+        To learn how to use Data Streams, see the{" "}
+        <a href="/data-streams/tutorials/go-sdk-fetch">Fetch and decode reports</a> tutorial.
+      </p>
+      <p>
+        For LINK token and Faucet details, see the{" "}
+        <a href="/resources/link-token-contracts?parent=dataFeeds">LINK Token Contracts</a> page.
+      </p>
+
+      <Aside type="note" title="Talk to an expert">
+        <p>
+          <a href="https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs">Contact us</a> to talk to an expert
+          about integrating Chainlink Data Streams with your applications.
+        </p>
+      </Aside>
+    </>
+  )
+}
+
+<FeedList
+  client:idle
+  initialNetwork={initialNetwork ?? "arbitrum"}
+  dataFeedType={dataFeedType ?? "streamsCrypto"}
+  ecosystem={ecosystem ?? ""}
+  initialCache={initialCache}
+  allowNetworkTableExpansion={allowNetworkTableExpansion}
+  defaultNetworkTableExpanded={defaultNetworkTableExpanded}
+/>

@@ -842,7 +842,7 @@ export const StreamsNetworkAddressesTable = ({
   )
 }
 
-const StreamsTHead = () => (
+export const StreamsTHead = () => (
   <thead>
     <tr>
       <th className={tableStyles.heading}>Stream</th>
@@ -862,29 +862,35 @@ const streamsCategoryMap = {
   },
 }
 
-const StreamsTr = ({ metadata, isMainnet }) => (
-  <tr>
-    <td className={tableStyles.pairCol}>
-      <div className={tableStyles.assetPair}>
-        {metadata.pair[0]}/{metadata.pair[1]}
-        {metadata.feedType === "Crypto-DEX" && (
-          <a
-            href="/data-streams/concepts/dex-state-price-streams"
-            target="_blank"
-            className={tableStyles.feedVariantBadge}
-          >
-            DEX State Price
-          </a>
-        )}
-      </div>
-      {metadata.docs.shutdownDate && (
-        <div className={clsx(feedList.shutDate)}>
-          <hr />
-          Deprecating:
-          <br />
-          {metadata.docs.shutdownDate}
+export const StreamsTr = ({ metadata, isMainnet }) => {
+  // Determine if stream is deprecating
+  const isDeprecating = !!metadata.docs?.shutdownDate
+
+  return (
+    <tr>
+      <td className={tableStyles.pairCol}>
+        <div className={tableStyles.assetPair}>
+          {metadata.pair[0]}/{metadata.pair[1]}
+          {metadata.feedType === "Crypto-DEX" && (
+            <a
+              href="/data-streams/concepts/dex-state-price-streams"
+              target="_blank"
+              className={tableStyles.feedVariantBadge}
+            >
+              DEX State Price
+            </a>
+          )}
         </div>
-      )}
+        {metadata.docs.shutdownDate && (
+          <div className={clsx(feedList.shutDate)}>
+            <hr />
+            <a href="/data-streams/deprecating-streams" style={{ color: "inherit", textDecoration: "underline dotted" }}>
+              Deprecating:
+            </a>
+            <br />
+            {metadata.docs.shutdownDate}
+          </div>
+        )}
     </td>
     <td style="width:80%;">
       <div className={tableStyles.assetAddress}>
@@ -1059,7 +1065,8 @@ const StreamsTr = ({ metadata, isMainnet }) => (
       </div>
     </td>
   </tr>
-)
+  )
+}
 
 export const MainnetTable = ({
   network,
