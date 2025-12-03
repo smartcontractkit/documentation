@@ -1,0 +1,63 @@
+---
+section: cre
+title: "Finality and Confidence Levels"
+date: Last Modified
+metadata:
+  description: "Understand how CRE handles blockchain finality across different chains, including confidence levels, finality tags, and block depth configurations."
+  datePublished: "2025-12-03"
+  lastModified: "2025-12-03"
+---
+
+import { Aside, CopyText } from "@components"
+
+Finality determines when a blockchain transaction is considered irreversible. Until a block is finalized, it could be reorganized (replaced by a different block if the chain temporarily forks), which means any data you read from it might change.
+
+Different blockchains achieve finality in different ways and at different speeds. CRE abstracts these differences through **confidence levels**, allowing you to specify your finality requirements without needing to know the underlying chain-specific implementation.
+
+You specify confidence levels in two places:
+
+- **[EVM Log Triggers](/cre/reference/sdk/triggers/evm-log-trigger)** — The `confidence` parameter determines when the trigger fires based on block finality.
+- **[EVM Client contract reads](/cre/reference/sdk/evm-client)** — The `blockNumber` parameter lets you query data from `LATEST` or `FINALIZED` blocks.
+
+## Confidence levels
+
+When reading from the blockchain or setting up triggers, you can specify one of three confidence levels:
+
+| Confidence Level | Description                                                                         | Use Case                                                                         |
+| ---------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| **`LATEST`**     | The most recent block. No finality guarantees—the block could still be reorganized. | Non-critical, time-sensitive operations where speed matters more than certainty. |
+| **`SAFE`**       | A block that is unlikely to be reorganized, but not yet fully finalized.            | A balance between speed and security for most operations.                        |
+| **`FINALIZED`**  | A block that is considered irreversible. This is the safest option.                 | Critical operations where you need absolute certainty the data won't change.     |
+
+<Aside type="note" title="Default behavior">
+  If you don't specify a confidence level, CRE defaults to `SAFE` for triggers and `LATEST` for contract reads.
+</Aside>
+
+### Choosing the right level
+
+- **Use `FINALIZED`** when: Processing financial transactions, updating critical state, or when incorrect data could cause significant issues.
+- **Use `SAFE`** when: You need reasonable confidence without waiting for full finality. Good for most monitoring and alerting use cases.
+- **Use `LATEST`** when: Building real-time dashboards, price displays, or other applications where showing the most current data is more important than guaranteed accuracy.
+
+## How confidence levels work per chain
+
+CRE translates confidence levels to the appropriate blockchain mechanism:
+
+### SAFE and LATEST
+
+For all supported chains, `SAFE` and `LATEST` use the chain's native `safe` and `latest` block tags respectively. These are standard JSON-RPC block parameters supported by all CRE-compatible chains.
+
+### FINALIZED
+
+- **Finality tag**: Uses the chain's native `finalized` block tag
+- **Block depth**: Waits for a specified number of blocks to pass
+
+| Chain                           | Finality Method | Block Depth |
+| ------------------------------- | --------------- | ----------- |
+| Arbitrum One / Arbitrum Sepolia | Finality tag    | —           |
+| Avalanche / Avalanche Fuji      | Finality tag    | —           |
+| Base / Base Sepolia             | Finality tag    | —           |
+| BNB Chain / BNB Testnet         | Finality tag    | —           |
+| Ethereum / Ethereum Sepolia     | Finality tag    | —           |
+| OP Mainnet / OP Sepolia         | Finality tag    | —           |
+| Polygon / Polygon Amoy          | Block depth     | 500         |

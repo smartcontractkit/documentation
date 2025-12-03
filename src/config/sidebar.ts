@@ -418,6 +418,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "TypeScript Runtime Environment",
           url: "cre/concepts/typescript-wasm-runtime",
         },
+        {
+          title: "Finality and Confidence Levels",
+          url: "cre/concepts/finality",
+        },
       ],
     },
     {

@@ -7112,6 +7112,64 @@ Yes. Once you call `runtime.Rand()` and get a `*rand.Rand` object, you can reuse
 
 ---
 
+# Finality and Confidence Levels
+Source: https://docs.chain.link/cre/concepts/finality
+Last Updated: 2025-12-03
+
+Finality determines when a blockchain transaction is considered irreversible. Until a block is finalized, it could be reorganized (replaced by a different block if the chain temporarily forks), which means any data you read from it might change.
+
+Different blockchains achieve finality in different ways and at different speeds. CRE abstracts these differences through **confidence levels**, allowing you to specify your finality requirements without needing to know the underlying chain-specific implementation.
+
+You specify confidence levels in two places:
+
+- **[EVM Log Triggers](/cre/reference/sdk/triggers/evm-log-trigger)** — The `confidence` parameter determines when the trigger fires based on block finality.
+- **[EVM Client contract reads](/cre/reference/sdk/evm-client)** — The `blockNumber` parameter lets you query data from `LATEST` or `FINALIZED` blocks.
+
+## Confidence levels
+
+When reading from the blockchain or setting up triggers, you can specify one of three confidence levels:
+
+| Confidence Level | Description                                                                         | Use Case                                                                         |
+| ---------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| **`LATEST`**     | The most recent block. No finality guarantees—the block could still be reorganized. | Non-critical, time-sensitive operations where speed matters more than certainty. |
+| **`SAFE`**       | A block that is unlikely to be reorganized, but not yet fully finalized.            | A balance between speed and security for most operations.                        |
+| **`FINALIZED`**  | A block that is considered irreversible. This is the safest option.                 | Critical operations where you need absolute certainty the data won't change.     |
+
+<Aside type="note" title="Default behavior">
+  If you don't specify a confidence level, CRE defaults to `SAFE` for triggers and `LATEST` for contract reads.
+</Aside>
+
+### Choosing the right level
+
+- **Use `FINALIZED`** when: Processing financial transactions, updating critical state, or when incorrect data could cause significant issues.
+- **Use `SAFE`** when: You need reasonable confidence without waiting for full finality. Good for most monitoring and alerting use cases.
+- **Use `LATEST`** when: Building real-time dashboards, price displays, or other applications where showing the most current data is more important than guaranteed accuracy.
+
+## How confidence levels work per chain
+
+CRE translates confidence levels to the appropriate blockchain mechanism:
+
+### SAFE and LATEST
+
+For all supported chains, `SAFE` and `LATEST` use the chain's native `safe` and `latest` block tags respectively. These are standard JSON-RPC block parameters supported by all CRE-compatible chains.
+
+### FINALIZED
+
+- **Finality tag**: Uses the chain's native `finalized` block tag
+- **Block depth**: Waits for a specified number of blocks to pass
+
+| Chain                           | Finality Method | Block Depth |
+| ------------------------------- | --------------- | ----------- |
+| Arbitrum One / Arbitrum Sepolia | Finality tag    | —           |
+| Avalanche / Avalanche Fuji      | Finality tag    | —           |
+| Base / Base Sepolia             | Finality tag    | —           |
+| BNB Chain / BNB Testnet         | Finality tag    | —           |
+| Ethereum / Ethereum Sepolia     | Finality tag    | —           |
+| OP Mainnet / OP Sepolia         | Finality tag    | —           |
+| Polygon / Polygon Amoy          | Block depth     | 500         |
+
+---
+
 # CRE Templates
 Source: https://docs.chain.link/cre/templates
 Last Updated: 2025-11-21
@@ -9110,7 +9168,7 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 	}
 	logger.Info("Successfully fetched offchain value", "result", offchainValue)
 
-
+	
 	// Get the first EVM configuration from the list.
 	evmConfig := config.Evms[0]
 
@@ -9146,7 +9204,7 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 	return &MyResult{
 		FinalResult: finalResult,
 	}, nil
-
+	
 }
 
 func main() {
@@ -9451,7 +9509,7 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 	}
 	logger.Info("Successfully read onchain value", "result", onchainValue)
 
-
+	
 	// Step 3: Calculate the final result
 	finalResultInt := new(big.Int).Add(onchainValue, offchainValue)
 
@@ -9474,7 +9532,7 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 	logger.Info("Workflow finished successfully!", "result", finalWorkflowResult)
 
 	return finalWorkflowResult, nil
-
+	
 }
 
 func fetchMathResult(config *Config, logger *slog.Logger, sendRequester *http.SendRequester) (*big.Int, error) {
@@ -13371,10 +13429,10 @@ func (c *Client) CallContract(runtime cre.Runtime, input *CallContractRequest) c
 
 This is the main input object for the `CallContract` function. It acts as a wrapper for the call message and an optional block number.
 
-| Field         | Type           | Description                                                                                                                                                                                                                     |
-| ------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Call`        | `*evm.CallMsg` | Contains the actual details of the function call you want to make.                                                                                                                                                              |
-| `BlockNumber` | `*pb.BigInt`   | Optional. The block number to query. Defaults to `latest`. Use `-2` for `latest` (the most recent block, which may be subject to re-orgs) or `-3` for `finalized` (a block that is considered immutable and safe from re-orgs). |
+| Field         | Type           | Description                                                                                                                                                                                                                                                                                                                                       |
+| ------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Call`        | `*evm.CallMsg` | Contains the actual details of the function call you want to make.                                                                                                                                                                                                                                                                                |
+| `BlockNumber` | `*pb.BigInt`   | Optional. The block number to query. Defaults to `latest`. Use `-2` for `latest` (the most recent block, which may be subject to re-orgs) or `-3` for `finalized` (a block that is considered immutable and safe from re-orgs). See [Finality and Confidence Levels](/cre/concepts/finality) for details on how finality is determined per chain. |
 
 #### `evm.CallMsg`
 
@@ -14122,9 +14180,9 @@ The configuration struct for the EVM log trigger.
 | `Topics`     | `[]*evm.TopicValues` | A fixed 4-element array to filter event topics. The first element contains event signatures, and the next three elements contain indexed argument values. An empty array element acts as a wildcard.                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | `Confidence` | `ConfidenceLevel`    | The block confirmation level to monitor. Can be: <ul><li>**`evm.ConfidenceLevel_CONFIDENCE_LEVEL_SAFE` (default):** A block that is considered unlikely to be reorged but is not yet irreversible.</li><li>**`evm.ConfidenceLevel_CONFIDENCE_LEVEL_LATEST`:** The most recent block. This is the fastest but least secure, as the block could be orphaned. Best for non-critical, time-sensitive actions.</li><li>**`evm.ConfidenceLevel_CONFIDENCE_LEVEL_FINALIZED`:** A block that is considered irreversible. This is the safest option, as the event is guaranteed to be on the canonical chain, but it requires waiting longer for finality.</li></ul> |
 
-
-<Aside type="caution" title="SAFE block tag fallback">
-  **Some chains do not support the SAFE block tag** (e.g., Shibarium). When you specify `CONFIDENCE_LEVEL_SAFE` on chains that don't support it, CRE automatically falls back to `CONFIDENCE_LEVEL_FINALIZED` for safety. Users are responsible for knowing which chains support the SAFE tag. If you need consistent behavior across all chains, explicitly use `CONFIDENCE_LEVEL_FINALIZED` or `CONFIDENCE_LEVEL_LATEST`.
+<Aside type="note" title="Finality details">
+  For details on how each confidence level maps to specific chains and estimated wait times, see [Finality and
+  Confidence Levels](/cre/concepts/finality).
 </Aside>
 
 ### `evm.Log`
