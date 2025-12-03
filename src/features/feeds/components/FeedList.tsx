@@ -1,6 +1,6 @@
 /** @jsxImportSource preact */
 import { useEffect, useState, useRef, useMemo } from "preact/hooks"
-import { MainnetTable, TestnetTable, StreamsNetworkAddressesTable } from "./Tables.tsx"
+import { MainnetTable, TestnetTable, StreamsNetworkAddressesTable, StreamsTHead, StreamsTr } from "./Tables.tsx"
 import feedList from "./FeedList.module.css"
 import tableStyles from "./Tables.module.css"
 import { clsx } from "~/lib/clsx/clsx.ts"
@@ -744,6 +744,54 @@ export const FeedList = ({
     dataFeedType === "streamsExRate" ||
     dataFeedType === "streamsBacked"
   ) {
+    // For deprecating streams, show a consolidated table across all networks
+    if (isDeprecating) {
+      const allDeprecatingStreams: any[] = []
+
+      // Check both chainMetadata and initialCache for deprecating streams
+      const networksToCheck =
+        chainMetadata.processedData?.networks ||
+        (initialCache && initialCache.deprecated ? (initialCache.deprecated as any).networks : [])
+
+      networksToCheck.forEach((network: any) => {
+        network.metadata?.forEach((item: any) => {
+          // Only include items that are actual streams (have verifier contract type and feedId)
+          // and have a shutdown date
+          if (item.contractType === "verifier" && item.feedId && item.docs?.shutdownDate) {
+            allDeprecatingStreams.push({
+              ...item,
+              networkName: network.name,
+            })
+          }
+        })
+      })
+
+      return (
+        <>
+          {chainMetadata.loading && !chainMetadata.processedData && !initialCache && <p>Loading...</p>}
+          {chainMetadata.error && <p>There was an error loading the streams...</p>}
+
+          {allDeprecatingStreams.length > 0 ? (
+            <SectionWrapper title="Deprecating Streams" depth={2}>
+              <div className={feedList.tableWrapper}>
+                <table className={clsx(tableStyles.table)}>
+                  <StreamsTHead />
+                  <tbody>
+                    {allDeprecatingStreams.map((stream, index) => (
+                      <StreamsTr key={`${stream.feedId}-${index}`} metadata={stream} isMainnet={true} />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </SectionWrapper>
+          ) : (
+            !chainMetadata.loading && <p>No deprecating streams found at this time.</p>
+          )}
+        </>
+      )
+    }
+
+    // Regular streams view (non-deprecating)
     const mainnetFeeds: ChainNetwork[] = []
     const testnetFeeds: ChainNetwork[] = []
 
@@ -759,20 +807,24 @@ export const FeedList = ({
 
     return (
       <>
-        {allowNetworkTableExpansion ? (
-          <div style={{ marginBottom: "var(--space-2x)" }}>
-            <StreamsNetworkAddressesTable
-              allowExpansion={allowNetworkTableExpansion}
-              defaultExpanded={defaultNetworkTableExpanded}
-            />
-          </div>
-        ) : (
-          <SectionWrapper title="Streams Verifier Network Addresses" depth={2}>
-            <StreamsNetworkAddressesTable
-              allowExpansion={allowNetworkTableExpansion}
-              defaultExpanded={defaultNetworkTableExpanded}
-            />
-          </SectionWrapper>
+        {!isDeprecating && (
+          <>
+            {allowNetworkTableExpansion ? (
+              <div style={{ marginBottom: "var(--space-2x)" }}>
+                <StreamsNetworkAddressesTable
+                  allowExpansion={allowNetworkTableExpansion}
+                  defaultExpanded={defaultNetworkTableExpanded}
+                />
+              </div>
+            ) : (
+              <SectionWrapper title="Streams Verifier Network Addresses" depth={2}>
+                <StreamsNetworkAddressesTable
+                  allowExpansion={allowNetworkTableExpansion}
+                  defaultExpanded={defaultNetworkTableExpanded}
+                />
+              </SectionWrapper>
+            )}
+          </>
         )}
 
         <SectionWrapper
@@ -1057,7 +1109,8 @@ export const FeedList = ({
             .filter((network: any) => {
               let foundDeprecated = false
               network.metadata?.forEach((feed: any) => {
-                if (feed.feedCategory === "deprecating") {
+                // Only include actual feeds (not streams) with deprecating status
+                if (feed.feedCategory === "deprecating" && !(feed.contractType === "verifier" && feed.feedId)) {
                   foundDeprecated = true
                 }
               })
@@ -1083,7 +1136,10 @@ export const FeedList = ({
                   }
                   network={{
                     ...network,
-                    metadata: network.metadata.filter((feed: any) => feed.feedCategory === "deprecating"),
+                    metadata: network.metadata.filter(
+                      (feed: any) =>
+                        feed.feedCategory === "deprecating" && !(feed.contractType === "verifier" && feed.feedId)
+                    ),
                   }}
                   showExtraDetails={showExtraDetails}
                   showOnlySVR={showOnlySVR}
@@ -1108,7 +1164,8 @@ export const FeedList = ({
             if (isDeprecating) {
               let foundDeprecated = false
               network.metadata?.forEach((feed: any) => {
-                if (feed.feedCategory === "deprecating") {
+                // Only include actual feeds (not streams) with deprecating status
+                if (feed.feedCategory === "deprecating" && !(feed.contractType === "verifier" && feed.feedId)) {
                   foundDeprecated = true
                 }
               })
