@@ -6,6 +6,7 @@ import {
   Environment,
   getAllNetworks,
   getAllSupportedTokens,
+  getAllUniqueVerifiers,
   getChainsOfToken,
   getSearchLanes,
   Version,
@@ -13,9 +14,11 @@ import {
 import { getTokenIconUrl } from "~/features/utils"
 import LazyNetworkGrid from "./LazyNetworkGrid"
 import LazyTokenGrid from "../TokenGrid/LazyTokenGrid"
+import LazyVerifierGrid from "../VerifierGrid/LazyVerifierGrid"
 import StructuredData from "~/components/StructuredData.astro"
 import { generateDirectoryStructuredData } from "~/utils/ccipStructuredData"
 import { DOCS_BASE_URL } from "~/utils/structuredData"
+import AddButton from "~/components/CCIP/AddButton/AddButton.astro"
 
 export type Props = {
   environment: Environment
@@ -42,6 +45,10 @@ const allTokens = tokens.map((token) => {
     logo,
     totalNetworks: getChainsOfToken({ token, filter: environment }).length,
   }
+})
+const allVerifiers = getAllUniqueVerifiers({
+  environment,
+  version: Version.V1_2_0,
 })
 const searchLanes = getSearchLanes({ environment })
 
@@ -76,9 +83,15 @@ const directoryStructuredData = generateDirectoryStructuredData(environment, net
     <div>
       <div class="ccip-heading">
         <h2>Tokens <span>({allTokens.length})</span></h2>
-        <a class="button secondary" href="/ccip/tutorials/evm/token-manager#verifying-your-token">Add my token</a>
+        <AddButton href="/ccip/tutorials/evm/token-manager#verifying-your-token" text="Add my token" />
       </div>
       <LazyTokenGrid tokens={allTokens} environment={environment} client:visible />
+    </div>
+    <div>
+      <div class="ccip-heading">
+        <h2>Verifiers <span>({allVerifiers.length})</span></h2>
+      </div>
+      <LazyVerifierGrid verifiers={allVerifiers} environment={environment} client:visible />
     </div>
   </section>
 </CcipDirectoryLayout>
@@ -125,11 +138,9 @@ const directoryStructuredData = generateDirectoryStructuredData(environment, net
   @media (min-width: 992px) {
     .layout {
       --doc-padding: var(--space-10x);
-      display: grid;
       padding-top: var(--doc-padding);
       padding-bottom: var(--doc-padding);
-      grid-template-columns: 1fr 1fr;
-      gap: var(--space-24x);
+      gap: var(--space-10x);
     }
   }
 </style>
