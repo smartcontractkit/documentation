@@ -10164,28 +10164,25 @@ When calling contract read methods, you must specify a block number. There are t
 
 - **Finalized block**: Use `big.NewInt(-3)` to read from the latest finalized block (recommended for production)
 - **Latest block**: Use `big.NewInt(-2)` to read from the latest block
-- **Specific block**: Use `big.NewInt(blockNumber)` to read from a specific historical block
 
-### Using rpc constants (alternative)
-
-You can also use constants from the `go-ethereum/rpc` package for better readability:
-
-```go
-import (
-    "math/big"
-    "github.com/ethereum/go-ethereum/rpc"
-)
-
-// For latest block
-reqBlockNumber := big.NewInt(rpc.LatestBlockNumber.Int64())
-
-// For finalized block
-reqBlockNumber := big.NewInt(rpc.FinalizedBlockNumber.Int64())
-```
+For explicit block numbers, see [Custom block depths](#custom-block-depths) below.
 
 ### Custom block depths
 
-For use cases requiring fixed confirmation thresholds (e.g., regulatory compliance), you can calculate a custom block depth:
+For use cases requiring fixed confirmation thresholds (e.g., regulatory compliance) or historical state verification, you can specify an exact block number.
+
+**Example 1 - Read from a specific historical block**:
+
+```go
+// Read from block 12345678
+specificBlock := big.NewInt(12345678)
+value, err := storageContract.Get(runtime, specificBlock).Await()
+if err != nil {
+    return nil, fmt.Errorf("failed to read from specific block: %w", err)
+}
+```
+
+**Example 2 - Read from 500 blocks ago from latest block**:
 
 ```go
 import (
@@ -10204,9 +10201,8 @@ func pbBigIntToBigInt(pb *pb.BigInt) *big.Int {
     return result
 }
 
-// Read from 500 blocks ago for custom finality
-latestHeaderPromise := evmClient.HeaderByNumber(runtime, &evm.HeaderByNumberRequest{})
-latestHeader, err := latestHeaderPromise.Await()
+// Get the latest block number
+latestHeader, err := evmClient.HeaderByNumber(runtime, &evm.HeaderByNumberRequest{}).Await()
 if err != nil {
     return nil, fmt.Errorf("failed to get latest block: %w", err)
 }
@@ -10217,8 +10213,7 @@ customDepth := big.NewInt(500)
 customBlock := new(big.Int).Sub(latestBlockNum, customDepth)
 
 // Use the custom block number with the contract binding
-valuePromise := storageContract.Get(runtime, customBlock)
-value, err := valuePromise.Await()
+value, err := storageContract.Get(runtime, customBlock).Await()
 if err != nil {
     return nil, fmt.Errorf("failed to read from custom block: %w", err)
 }
