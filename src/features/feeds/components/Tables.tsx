@@ -16,6 +16,29 @@ import { ExpandableTableWrapper } from "./ExpandableTableWrapper.tsx"
 
 const feedItems = monitoredFeeds.mainnet
 
+// Helper function to extract schema version from clicProductName
+// e.g., "HOOD/USD-Streams-RegularHoursEquityPrice-DS-Premium-Global-011" -> "v11"
+// e.g., "USD/SEK-Datalink-DeutscheBoerse-DS-Premium-Global-008" -> "v8"
+const getSchemaVersion = (metadata: any): string | undefined => {
+  // First try to get from docs.schema
+  if (metadata.docs?.schema) {
+    return metadata.docs.schema
+  }
+
+  // Fallback: parse from clicProductName
+  const clicProductName = metadata.docs?.clicProductName
+  if (clicProductName) {
+    const match = clicProductName.match(/-0(\d{2})$/)
+    if (match) {
+      const version = match[1]
+      if (version === "08") return "v8"
+      if (version === "11") return "v11"
+    }
+  }
+
+  return undefined
+}
+
 // Helper function to parse markdown links and render them
 const parseMarkdownLink = (text: string) => {
   // Match markdown link format: [text](url)
@@ -938,6 +961,39 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               </dd>
             </div>
           ) : null}
+          {(() => {
+            const assetSubClass = (metadata.docs as any)?.assetSubClass
+            if (
+              assetSubClass === "Regular Hours" ||
+              assetSubClass === "Extended Hours" ||
+              assetSubClass === "Overnight Hours"
+            ) {
+              let timeRange = ""
+
+              if (assetSubClass === "Regular Hours") {
+                timeRange = "9:30am–4:00pm Mon–Fri"
+              } else if (assetSubClass === "Extended Hours") {
+                timeRange = "4:00am–9:30am & 4:00pm–8:00pm Mon–Fri"
+              } else if (assetSubClass === "Overnight Hours") {
+                timeRange = "8:00pm–4:00am Sun evening–Fri morning"
+              }
+
+              return (
+                <div className={tableStyles.definitionGroup}>
+                  <dt>
+                    <span className="label">Trading hours:</span>
+                  </dt>
+                  <dd>
+                    <a href="/data-streams/market-hours" target="_blank">
+                      <strong>{assetSubClass}</strong>
+                    </a>{" "}
+                    — {timeRange} ET
+                  </dd>
+                </div>
+              )
+            }
+            return null
+          })()}
           {metadata.docs.marketHours ? (
             <div className={tableStyles.definitionGroup}>
               <dt>
@@ -994,66 +1050,91 @@ const StreamsTr = ({ metadata, isMainnet }) => (
               </dd>
             </div>
           )}
-          {(metadata.feedType === "Equities" || metadata.feedType === "Forex") && metadata.docs?.schema !== "v11" && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Report Schema:</span>
-              </dt>
-              <dd>
-                <a href="/data-streams/reference/report-schema-v8" rel="noreferrer" target="_blank">
-                  Report Schema v8 (RWA)
-                </a>
-              </dd>
-            </div>
-          )}
-          {metadata.docs?.productTypeCode === "ExRate" && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Report Schema:</span>
-              </dt>
-              <dd>
-                <a href="/data-streams/reference/report-schema-v7" rel="noreferrer" target="_blank">
-                  Report Schema v7 (Redemption Rates)
-                </a>
-              </dd>
-            </div>
-          )}
-          {metadata.feedType === "Net Asset Value" && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Report Schema:</span>
-              </dt>
-              <dd>
-                <a href="/data-streams/reference/report-schema-v9" rel="noreferrer" target="_blank">
-                  Report Schema v9 (NAV)
-                </a>
-              </dd>
-            </div>
-          )}
-          {metadata.feedType === "Tokenized Equities" && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Report Schema:</span>
-              </dt>
-              <dd>
-                <a href="/data-streams/reference/report-schema-v10" rel="noreferrer" target="_blank">
-                  Report Schema v10 (Tokenized Assets)
-                </a>
-              </dd>
-            </div>
-          )}
-          {metadata.docs?.schema === "v11" && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Report Schema:</span>
-              </dt>
-              <dd>
-                <a href="/data-streams/reference/report-schema-v11" rel="noreferrer" target="_blank">
-                  RWA Advanced (v11)
-                </a>
-              </dd>
-            </div>
-          )}
+          {(() => {
+            const schemaVersion = getSchemaVersion(metadata)
+            const feedType = metadata.feedType || metadata.docs?.feedType
+
+            // RWA streams (Equities, Forex, Datalink) - v8 or v11
+            if (feedType === "Equities" || feedType === "Forex" || feedType === "Datalink") {
+              if (schemaVersion === "v11") {
+                return (
+                  <div className={tableStyles.definitionGroup}>
+                    <dt>
+                      <span className="label">Report Schema:</span>
+                    </dt>
+                    <dd>
+                      <a href="/data-streams/reference/report-schema-v11" rel="noreferrer" target="_blank">
+                        Report Schema v11 (RWA Advanced)
+                      </a>
+                    </dd>
+                  </div>
+                )
+              } else if (schemaVersion === "v8") {
+                return (
+                  <div className={tableStyles.definitionGroup}>
+                    <dt>
+                      <span className="label">Report Schema:</span>
+                    </dt>
+                    <dd>
+                      <a href="/data-streams/reference/report-schema-v8" rel="noreferrer" target="_blank">
+                        Report Schema v8 (RWA Standard)
+                      </a>
+                    </dd>
+                  </div>
+                )
+              }
+            }
+
+            // Exchange Rate streams
+            if (metadata.docs?.productTypeCode === "ExRate") {
+              return (
+                <div className={tableStyles.definitionGroup}>
+                  <dt>
+                    <span className="label">Report Schema:</span>
+                  </dt>
+                  <dd>
+                    <a href="/data-streams/reference/report-schema-v7" rel="noreferrer" target="_blank">
+                      Report Schema v7 (Redemption Rates)
+                    </a>
+                  </dd>
+                </div>
+              )
+            }
+
+            // NAV streams
+            if (feedType === "Net Asset Value") {
+              return (
+                <div className={tableStyles.definitionGroup}>
+                  <dt>
+                    <span className="label">Report Schema:</span>
+                  </dt>
+                  <dd>
+                    <a href="/data-streams/reference/report-schema-v9" rel="noreferrer" target="_blank">
+                      Report Schema v9 (NAV)
+                    </a>
+                  </dd>
+                </div>
+              )
+            }
+
+            // Tokenized Equities streams
+            if (feedType === "Tokenized Equities") {
+              return (
+                <div className={tableStyles.definitionGroup}>
+                  <dt>
+                    <span className="label">Report Schema:</span>
+                  </dt>
+                  <dd>
+                    <a href="/data-streams/reference/report-schema-v10" rel="noreferrer" target="_blank">
+                      Report Schema v10 (Tokenized Assets)
+                    </a>
+                  </dd>
+                </div>
+              )
+            }
+
+            return null
+          })()}
         </dl>
       </div>
     </td>
@@ -1068,6 +1149,8 @@ export const MainnetTable = ({
   showOnlyDEXFeeds,
   rwaSchemaFilter,
   streamCategoryFilter,
+  show24x5Feeds,
+  tradingHoursFilter,
   dataFeedType,
   ecosystem,
   selectedFeedCategories,
@@ -1085,6 +1168,8 @@ export const MainnetTable = ({
   showOnlyDEXFeeds: boolean
   rwaSchemaFilter?: "all" | "v8" | "v11"
   streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
+  show24x5Feeds?: boolean
+  tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
   dataFeedType: string
   ecosystem: string
   selectedFeedCategories: string[]
@@ -1165,6 +1250,35 @@ export const MainnetTable = ({
 
         if (!isRwaFeed) return false
 
+        // Get schema version using helper (fallback to clicProductName)
+        const schemaVersion = getSchemaVersion(metadata)
+
+        // Apply 24/5 filter (only v11 equity streams with assetSubClass)
+        if (show24x5Feeds) {
+          const assetSubClass = (metadata.docs as any)?.assetSubClass
+          const feedType = metadata.docs?.feedType || metadata.feedType
+
+          // For 24/5 testing: ignore hidden flag and check for equity streams with trading hours
+          const is24x5Feed =
+            feedType === "Equities" &&
+            schemaVersion === "v11" &&
+            assetSubClass &&
+            (assetSubClass === "Regular Hours" ||
+              assetSubClass === "Extended Hours" ||
+              assetSubClass === "Overnight Hours")
+
+          if (!is24x5Feed) return false
+
+          // Apply trading hours filter if specified
+          if (tradingHoursFilter && tradingHoursFilter !== "all") {
+            if (tradingHoursFilter === "regular" && assetSubClass !== "Regular Hours") return false
+            if (tradingHoursFilter === "extended" && assetSubClass !== "Extended Hours") return false
+            if (tradingHoursFilter === "overnight" && assetSubClass !== "Overnight Hours") return false
+          }
+
+          return true
+        }
+
         // Apply feed type filter
         if (streamCategoryFilter === "datalink") {
           if (metadata.docs.feedType !== "Datalink") return false
@@ -1174,12 +1288,12 @@ export const MainnetTable = ({
           if (metadata.docs.feedType !== "Forex") return false
         }
 
-        // Apply schema filter
+        // Apply schema filter using helper function
         if (rwaSchemaFilter === "v8") {
-          return metadata.docs?.schema === "v8" || !metadata.docs?.schema
+          return schemaVersion === "v8"
         }
         if (rwaSchemaFilter === "v11") {
-          return metadata.docs?.schema === "v11"
+          return schemaVersion === "v11"
         }
 
         return true
@@ -1368,6 +1482,8 @@ export const TestnetTable = ({
   showOnlyDEXFeeds,
   rwaSchemaFilter,
   streamCategoryFilter,
+  show24x5Feeds,
+  tradingHoursFilter,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
@@ -1383,6 +1499,8 @@ export const TestnetTable = ({
   showOnlyDEXFeeds?: boolean
   rwaSchemaFilter?: "all" | "v8" | "v11"
   streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
+  show24x5Feeds?: boolean
+  tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
 }) => {
   if (!network.metadata) return null
 
@@ -1450,6 +1568,34 @@ export const TestnetTable = ({
 
           if (!isRwaFeed) return false
 
+          // Get schema version using helper (fallback to clicProductName)
+          const schemaVersion = getSchemaVersion(metadata)
+
+          // Apply 24/5 filter (only v11 equity streams with assetSubClass)
+          if (show24x5Feeds) {
+            const assetSubClass = (metadata.docs as any)?.assetSubClass
+            const feedType = metadata.docs?.feedType || metadata.feedType
+
+            const is24x5Feed =
+              feedType === "Equities" &&
+              schemaVersion === "v11" &&
+              assetSubClass &&
+              (assetSubClass === "Regular Hours" ||
+                assetSubClass === "Extended Hours" ||
+                assetSubClass === "Overnight Hours")
+
+            if (!is24x5Feed) return false
+
+            // Apply trading hours filter if specified
+            if (tradingHoursFilter && tradingHoursFilter !== "all") {
+              if (tradingHoursFilter === "regular" && assetSubClass !== "Regular Hours") return false
+              if (tradingHoursFilter === "extended" && assetSubClass !== "Extended Hours") return false
+              if (tradingHoursFilter === "overnight" && assetSubClass !== "Overnight Hours") return false
+            }
+
+            return true
+          }
+
           // Apply feed type filter
           if (streamCategoryFilter === "datalink") {
             if (metadata.docs.feedType !== "Datalink") return false
@@ -1459,12 +1605,12 @@ export const TestnetTable = ({
             if (metadata.docs.feedType !== "Forex") return false
           }
 
-          // Apply schema filter
+          // Apply schema filter using helper function
           if (rwaSchemaFilter === "v8") {
-            return metadata.docs?.schema === "v8" || !metadata.docs?.schema
+            return schemaVersion === "v8"
           }
           if (rwaSchemaFilter === "v11") {
-            return metadata.docs?.schema === "v11"
+            return schemaVersion === "v11"
           }
 
           return true
