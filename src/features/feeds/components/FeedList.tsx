@@ -326,6 +326,10 @@ export const FeedList = ({
   const testnetLastAddr = Number(testnetCurrentPage) * testnetAddrPerPage
   const testnetFirstAddr = testnetLastAddr - testnetAddrPerPage
 
+  // Pagination for deprecating streams
+  const [deprecatingStreamsPage, setDeprecatingStreamsPage] = useState(1)
+  const streamsPerPage = 25
+
   // Dynamic feed categories loaded from Supabase
   const [dataFeedCategory, setDataFeedCategory] = useState([
     { key: "low", name: "Low Market Risk" },
@@ -748,23 +752,35 @@ export const FeedList = ({
     if (isDeprecating) {
       const allDeprecatingStreams: any[] = []
 
-      // Check both chainMetadata and initialCache for deprecating streams
-      const networksToCheck =
-        chainMetadata.processedData?.networks ||
-        (initialCache && initialCache.deprecated ? (initialCache.deprecated as any).networks : [])
-
-      networksToCheck.forEach((network: any) => {
-        network.metadata?.forEach((item: any) => {
-          // Only include items that are actual streams (have verifier contract type and feedId)
-          // and have a shutdown date
-          if (item.contractType === "verifier" && item.feedId && item.docs?.shutdownDate) {
-            allDeprecatingStreams.push({
-              ...item,
-              networkName: network.name,
+      // Check all chains in initialCache for deprecating streams
+      if (initialCache) {
+        Object.values(initialCache).forEach((chainData: any) => {
+          chainData.networks?.forEach((network: any) => {
+            network.metadata?.forEach((item: any) => {
+              // Only include items that are actual streams (have verifier contract type and feedId)
+              // and have a shutdown date
+              if (item.contractType === "verifier" && item.feedId && item.docs?.shutdownDate) {
+                allDeprecatingStreams.push({
+                  ...item,
+                  networkName: network.name,
+                })
+              }
             })
-          }
+          })
         })
+      }
+
+      // Sort alphabetically by asset name or product name
+      allDeprecatingStreams.sort((a, b) => {
+        const nameA = (a.assetName || a.docs?.clicProductName || "").toUpperCase()
+        const nameB = (b.assetName || b.docs?.clicProductName || "").toUpperCase()
+        return nameA.localeCompare(nameB)
       })
+
+      // Calculate pagination
+      const lastStreamIndex = deprecatingStreamsPage * streamsPerPage
+      const firstStreamIndex = lastStreamIndex - streamsPerPage
+      const paginatedStreams = allDeprecatingStreams.slice(firstStreamIndex, lastStreamIndex)
 
       return (
         <>
@@ -777,12 +793,35 @@ export const FeedList = ({
                 <table className={clsx(tableStyles.table)}>
                   <StreamsTHead />
                   <tbody>
-                    {allDeprecatingStreams.map((stream, index) => (
+                    {paginatedStreams.map((stream, index) => (
                       <StreamsTr key={`${stream.feedId}-${index}`} metadata={stream} isMainnet={true} />
                     ))}
                   </tbody>
                 </table>
               </div>
+              {allDeprecatingStreams.length > streamsPerPage && (
+                <div className={tableStyles.pagination} role="navigation" aria-label="Table pagination">
+                  <button
+                    className={button.secondary}
+                    disabled={deprecatingStreamsPage === 1}
+                    onClick={() => setDeprecatingStreamsPage(deprecatingStreamsPage - 1)}
+                  >
+                    Prev
+                  </button>
+                  <p aria-live="polite">
+                    {firstStreamIndex + 1}-
+                    {lastStreamIndex > allDeprecatingStreams.length ? allDeprecatingStreams.length : lastStreamIndex} of{" "}
+                    {allDeprecatingStreams.length}
+                  </p>
+                  <button
+                    className={button.secondary}
+                    disabled={lastStreamIndex >= allDeprecatingStreams.length}
+                    onClick={() => setDeprecatingStreamsPage(deprecatingStreamsPage + 1)}
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
             </SectionWrapper>
           ) : (
             !chainMetadata.loading && <p>No deprecating streams found at this time.</p>
