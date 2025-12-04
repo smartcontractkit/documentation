@@ -208,8 +208,7 @@ customDepth := big.NewInt(500)
 customBlock := new(big.Int).Sub(latestBlockNum, customDepth)
 
 // Use the custom block number with the contract binding
-valuePromise := storageContract.Get(runtime, customBlock)
-value, err := valuePromise.Await()
+value, err := storageContract.Get(runtime, customBlock).Await()
 if err != nil {
     return nil, fmt.Errorf("failed to read from custom block: %w", err)
 }
