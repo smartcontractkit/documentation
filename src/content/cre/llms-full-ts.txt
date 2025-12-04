@@ -5754,64 +5754,6 @@ WebAssembly provides several benefits for CRE workflows:
 
 ---
 
-# Finality and Confidence Levels
-Source: https://docs.chain.link/cre/concepts/finality
-Last Updated: 2025-12-03
-
-Finality determines when a blockchain transaction is considered irreversible. Until a block is finalized, it could be reorganized (replaced by a different block if the chain temporarily forks), which means any data you read from it might change.
-
-Different blockchains achieve finality in different ways and at different speeds. CRE abstracts these differences through **confidence levels**, allowing you to specify your finality requirements without needing to know the underlying chain-specific implementation.
-
-You specify confidence levels in two places:
-
-- **[EVM Log Triggers](/cre/reference/sdk/triggers/evm-log-trigger)** — The `confidence` parameter determines when the trigger fires based on block finality.
-- **[EVM Client contract reads](/cre/reference/sdk/evm-client)** — The `blockNumber` parameter lets you query data from `LATEST` or `FINALIZED` blocks.
-
-## Confidence levels
-
-When reading from the blockchain or setting up triggers, you can specify one of three confidence levels:
-
-| Confidence Level | Description                                                                         | Use Case                                                                         |
-| ---------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| **`LATEST`**     | The most recent block. No finality guarantees—the block could still be reorganized. | Non-critical, time-sensitive operations where speed matters more than certainty. |
-| **`SAFE`**       | A block that is unlikely to be reorganized, but not yet fully finalized.            | A balance between speed and security for most operations.                        |
-| **`FINALIZED`**  | A block that is considered irreversible. This is the safest option.                 | Critical operations where you need absolute certainty the data won't change.     |
-
-<Aside type="note" title="Default behavior">
-  If you don't specify a confidence level, CRE defaults to `SAFE` for triggers and `LATEST` for contract reads.
-</Aside>
-
-### Choosing the right level
-
-- **Use `FINALIZED`** when: Processing financial transactions, updating critical state, or when incorrect data could cause significant issues.
-- **Use `SAFE`** when: You need reasonable confidence without waiting for full finality. Good for most monitoring and alerting use cases.
-- **Use `LATEST`** when: Building real-time dashboards, price displays, or other applications where showing the most current data is more important than guaranteed accuracy.
-
-## How confidence levels work per chain
-
-Here's how CRE determines which blocks to use for each confidence level:
-
-### SAFE and LATEST
-
-When you specify `SAFE` or `LATEST` in your workflows, CRE uses the chain's native `safe` and `latest` block tags respectively for all supported chains.
-
-### FINALIZED
-
-- **Finality tag**: Uses the chain's native `finalized` block tag
-- **Block depth**: Waits for a specified number of blocks to pass
-
-| Chain                           | Finality Method | Block Depth |
-| ------------------------------- | --------------- | ----------- |
-| Arbitrum One / Arbitrum Sepolia | Finality tag    | —           |
-| Avalanche / Avalanche Fuji      | Finality tag    | —           |
-| Base / Base Sepolia             | Finality tag    | —           |
-| BNB Chain / BNB Testnet         | Finality tag    | —           |
-| Ethereum / Ethereum Sepolia     | Finality tag    | —           |
-| OP Mainnet / OP Sepolia         | Finality tag    | —           |
-| Polygon / Polygon Amoy          | Block depth     | 500         |
-
----
-
 # CRE Templates
 Source: https://docs.chain.link/cre/templates
 Last Updated: 2025-11-21
@@ -6929,6 +6871,93 @@ cre version v1.0.2
 
 - [CLI Installation](/cre/getting-started/cli-installation) — How to install and update the CRE CLI
 - [CLI Reference](/cre/reference/cli) — Complete CLI command reference
+
+---
+
+# Finality and Confidence Levels
+Source: https://docs.chain.link/cre/concepts/finality-ts
+Last Updated: 2025-12-04
+
+Finality determines when a blockchain transaction is considered irreversible. Until a block is finalized, it could be reorganized (replaced by a different block if the chain temporarily forks), which means any data you read from it might change.
+
+Different blockchains achieve finality in different ways and at different speeds. CRE abstracts these differences through **confidence levels**, allowing you to specify your finality requirements without needing to know the underlying chain-specific implementation.
+
+You specify confidence levels in two places:
+
+- **[EVM Log Triggers](/cre/reference/sdk/triggers/evm-log-trigger-ts)** — The `confidence` parameter determines when the trigger fires based on block finality.
+- **[EVM Client contract reads](/cre/reference/sdk/evm-client-ts)** — The `blockNumber` parameter lets you query data from `LATEST` or `FINALIZED` blocks, or any specific block number.
+
+## Confidence levels
+
+CRE provides three **abstraction levels** that work consistently across all chains. When you specify `FINALIZED` in your workflow, CRE automatically maps this to a chain-specific implementation—whether that's a native finality tag or a block depth threshold.
+
+When reading from the blockchain or setting up triggers, you can specify one of three confidence levels:
+
+| Confidence Level | Description                                                                         | Use Case                                                                         |
+| ---------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| **`LATEST`**     | The most recent block. No finality guarantees—the block could still be reorganized. | Non-critical, time-sensitive operations where speed matters more than certainty. |
+| **`SAFE`**       | A block that is unlikely to be reorganized, but not yet fully finalized.            | A balance between speed and security for most operations.                        |
+| **`FINALIZED`**  | A block that is considered irreversible. This is the safest option.                 | Critical operations where you need absolute certainty the data won't change.     |
+
+<Aside type="note" title="Default behavior">
+  If you don't specify a confidence level, CRE defaults to `SAFE` for triggers and `LATEST` for contract reads.
+</Aside>
+
+### Choosing the right level
+
+- **Use `FINALIZED`** when: Processing financial transactions, updating critical state, or when incorrect data could cause significant issues.
+- **Use `SAFE`** when: You need reasonable confidence without waiting for full finality. Good for most monitoring and alerting use cases.
+- **Use `LATEST`** when: Building real-time dashboards, price displays, or other applications where showing the most current data is more important than guaranteed accuracy.
+
+### How CRE confidence levels map to chains
+
+Here's how CRE determines which blocks to use for each confidence level:
+
+#### SAFE and LATEST
+
+When you specify `SAFE` or `LATEST` in your workflows, CRE uses the chain's native `safe` and `latest` block tags respectively for all supported chains.
+
+#### FINALIZED
+
+- **Finality tag**: Uses the chain's native `finalized` block tag
+- **Block depth**: Waits for a specified number of blocks to pass
+
+| Chain                           | Finality Method | Block Depth |
+| ------------------------------- | --------------- | ----------- |
+| Arbitrum One / Arbitrum Sepolia | Finality tag    | —           |
+| Avalanche / Avalanche Fuji      | Finality tag    | —           |
+| Base / Base Sepolia             | Finality tag    | —           |
+| BNB Chain / BNB Testnet         | Finality tag    | —           |
+| Ethereum / Ethereum Sepolia     | Finality tag    | —           |
+| OP Mainnet / OP Sepolia         | Finality tag    | —           |
+| Polygon / Polygon Amoy          | Block depth     | 500         |
+
+## Custom block depths for chain reads
+
+For chain reads, you're not limited to the three predefined confidence levels. The EVM Client also accepts **any explicit block number**, enabling you to:
+
+- **Implement custom finality rules** tailored to your risk profile (e.g., "always wait 1,000 blocks")
+- **Meet regulatory requirements** that mandate fixed, auditable confirmation thresholds
+- **Query historical state** at specific past block heights for analysis or verification
+
+This flexibility is available for all EVM read methods ([`CallContract`](/cre/reference/sdk/evm-client-ts#callcontract), [`BalanceAt`](/cre/reference/sdk/evm-client-ts#balanceat), [`FilterLogs`](/cre/reference/sdk/evm-client-ts#filterlogs), etc.).
+
+### When to use custom block depths
+
+Use explicit block numbers when:
+
+- **Regulatory compliance**: Your smart contract interactions require provable, fixed confirmation thresholds that must be documented for auditors
+- **Changing chain parameters**: The chain's finality definition may change over time, but your security model must remain constant
+- **Historical verification**: You need to verify state at a specific moment
+
+### Implementation
+
+Block numbers must be provided as `BigIntJson` objects. See [Onchain Read](/cre/guides/workflow/using-evm-client/onchain-read-ts#custom-block-depths) for the conversion pattern and examples.
+
+<Aside type="note" title="Limitation: Chain reads only">
+  Custom block numbers are **only available for EVM chain reads**. EVM Log Triggers must use the three confidence levels
+  (`LATEST`, `SAFE`, `FINALIZED`).
+</Aside>
 
 ---
 
@@ -8877,7 +8906,7 @@ When calling `callContract()`, you can specify which block to read from:
 
 - **`LAST_FINALIZED_BLOCK_NUMBER`**: Read from the last finalized block (recommended for production)
 - **`LATEST_BLOCK_NUMBER`**: Read from the latest block
-- **Specific block**: Use an object with `{ absVal: "base64EncodedNumber", sign: "1" }` format
+- **Custom block number**: Use a `BigIntJson` object for custom finality depths or historical queries
 
 ```typescript
 import { LAST_FINALIZED_BLOCK_NUMBER, LATEST_BLOCK_NUMBER } from "@chainlink/cre-sdk"
@@ -8894,6 +8923,68 @@ const contractCall = evmClient.callContract(runtime, {
   blockNumber: LATEST_BLOCK_NUMBER,
 }).result()
 ```
+
+#### Custom block depths
+
+For use cases requiring fixed confirmation thresholds (e.g., regulatory compliance) or historical state verification, you can specify an exact block number.
+
+**Example 1 - Read from a specific historical block**:
+
+```typescript
+const historicalBlock = 9767655n
+const contractCall = evmClient.callContract(runtime, {
+  call: encodeCallMsg({...}),
+  blockNumber: {
+    absVal: Buffer.from(historicalBlock.toString(16).padStart(2, '0'), 'hex').toString('base64'),
+  },
+}).result()
+```
+
+**Example 2 - Read from 500 blocks ago for latest block**:
+
+```typescript
+// Helper to convert protobuf BigInt to native bigint
+const protoBigIntToBigInt = (pb: { absVal: Uint8Array; sign: bigint }): bigint => {
+  let result = 0n
+  for (const byte of pb.absVal) {
+    result = (result << 8n) + BigInt(byte)
+  }
+  return pb.sign < 0n ? -result : result
+}
+
+// Example: Read from 500 blocks ago for custom finality
+const latestHeader = evmClient.headerByNumber(runtime, {}).result()
+if (!latestHeader.header?.blockNumber) {
+  throw new Error("Failed to get latest block number")
+}
+
+const latestBlockNum = protoBigIntToBigInt(latestHeader.header.blockNumber)
+const customBlock = latestBlockNum - 500n
+
+const contractCall = evmClient.callContract(runtime, {
+  call: encodeCallMsg({...}),
+  blockNumber: {
+    absVal: Buffer.from(customBlock.toString(16).padStart(2, '0'), 'hex').toString('base64'),
+  },
+}).result()
+```
+
+**Understanding the conversions:**
+
+1. **Protobuf `BigInt` to native `bigint`:** The `protoBigIntToBigInt` helper converts the SDK's protobuf `BigInt` type (which stores the value as `absVal: Uint8Array`) to JavaScript's native `bigint`. This allows you to perform arithmetic like subtracting 500 blocks.
+
+2. **Native `bigint` to `BigIntJson`:** To pass a native `bigint` back to the SDK:
+   - `blockNum.toString(16)` converts to hexadecimal
+   - `.padStart(2, '0')` ensures even-length hex string (required by `Buffer.from`)
+   - `Buffer.from(..., 'hex')` creates a byte array from the hex
+   - `.toString('base64')` converts to base64 format required by `BigIntJson.absVal`
+
+<Aside type="note" title="SDK enhancements planned">
+  The SDK team is working on built-in helpers for both conversions (protobuf `BigInt` ↔ native `bigint` and `bigint` →
+  `BigIntJson`). Until then, use the patterns shown above.
+</Aside>
+
+See [Finality and Confidence Levels](/cre/concepts/finality-ts) for more details on when to use custom block depths.
 
 ### Encoding call messages with `encodeCallMsg()`
 
@@ -12525,10 +12616,10 @@ callContract(
 
 This is the main input object for the `callContract()` method.
 
-| Field         | Type          | Required | Description                                                                                                                                                                                                                                                  |
-| ------------- | ------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `call`        | `CallMsgJson` | Yes      | Contains the actual details of the function call you want to make.                                                                                                                                                                                           |
-| `blockNumber` | `string`      | No       | The block number to query. Use `LAST_FINALIZED_BLOCK_NUMBER` for finalized blocks or `LATEST_BLOCK_NUMBER` for the most recent block. Defaults to `"latest"`. See [Finality and Confidence Levels](/cre/concepts/finality) for how finality works per chain. |
+| Field         | Type          | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ------------- | ------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `call`        | `CallMsgJson` | Yes      | Contains the actual details of the function call you want to make.                                                                                                                                                                                                                                                                                                                                                                                    |
+| `blockNumber` | `BigIntJson`  | No       | The block number to query. Accepts:<br />• `LATEST_BLOCK_NUMBER` (default): the most recent block<br />• `LAST_FINALIZED_BLOCK_NUMBER`: a finalized block<br />• **`BigIntJson` object**: an explicit block height (see [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-ts#custom-block-depths) for conversion details).<br /><br />See [Finality and Confidence Levels](/cre/concepts/finality-ts) for finality strategies. |
 
 #### `CallMsg` / `CallMsgJson`
 
@@ -12647,10 +12738,10 @@ balanceAt(
 
 #### `BalanceAtRequest` / `BalanceAtRequestJson`
 
-| Field         | Type     | Required | Description                                               |
-| ------------- | -------- | -------- | --------------------------------------------------------- |
-| `account`     | `string` | Yes      | The 20-byte address of the account to query (hex string). |
-| `blockNumber` | `string` | No       | The block number to query. Defaults to `"latest"`.        |
+| Field         | Type         | Required | Description                                                                                                                                                                                                                                                                                                                       |
+| ------------- | ------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `account`     | `string`     | Yes      | The 20-byte address of the account to query (hex string).                                                                                                                                                                                                                                                                         |
+| `blockNumber` | `BigIntJson` | No       | The block number to query. Accepts `LATEST_BLOCK_NUMBER` (default), `LAST_FINALIZED_BLOCK_NUMBER`, or a `BigIntJson` object for an explicit block height (see [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-ts#custom-block-depths)). See [Finality and Confidence Levels](/cre/concepts/finality-ts). |
 
 #### `BalanceAtReply`
 
@@ -12782,9 +12873,9 @@ headerByNumber(
 
 #### `HeaderByNumberRequest` / `HeaderByNumberRequestJson`
 
-| Field         | Type     | Required | Description                                                                      |
-| ------------- | -------- | -------- | -------------------------------------------------------------------------------- |
-| `blockNumber` | `string` | No       | The number of the block to retrieve. If `undefined`, retrieves the latest block. |
+| Field         | Type         | Required | Description                                                                                                                                                                                                                                                                                                                                                           |
+| ------------- | ------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `blockNumber` | `BigIntJson` | No       | The number of the block to retrieve. Accepts `undefined` for `latest` (default), `LATEST_BLOCK_NUMBER`, `LAST_FINALIZED_BLOCK_NUMBER`, or a `BigIntJson` object for an explicit block height (see [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-ts#custom-block-depths)). See [Finality and Confidence Levels](/cre/concepts/finality-ts). |
 
 #### `HeaderByNumberReply`
 

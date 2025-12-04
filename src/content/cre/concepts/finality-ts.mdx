@@ -1,0 +1,94 @@
+---
+section: cre
+title: "Finality and Confidence Levels"
+date: Last Modified
+sdkLang: "ts"
+pageId: "concepts-finality"
+metadata:
+  description: "Understand how CRE handles blockchain finality across different chains, including confidence levels, finality tags, and block depth configurations."
+  datePublished: "2025-12-04"
+  lastModified: "2025-12-04"
+---
+
+import { Aside, CopyText } from "@components"
+
+Finality determines when a blockchain transaction is considered irreversible. Until a block is finalized, it could be reorganized (replaced by a different block if the chain temporarily forks), which means any data you read from it might change.
+
+Different blockchains achieve finality in different ways and at different speeds. CRE abstracts these differences through **confidence levels**, allowing you to specify your finality requirements without needing to know the underlying chain-specific implementation.
+
+You specify confidence levels in two places:
+
+- **[EVM Log Triggers](/cre/reference/sdk/triggers/evm-log-trigger-ts)** — The `confidence` parameter determines when the trigger fires based on block finality.
+- **[EVM Client contract reads](/cre/reference/sdk/evm-client-ts)** — The `blockNumber` parameter lets you query data from `LATEST` or `FINALIZED` blocks, or any specific block number.
+
+## Confidence levels
+
+CRE provides three **abstraction levels** that work consistently across all chains. When you specify `FINALIZED` in your workflow, CRE automatically maps this to a chain-specific implementation—whether that's a native finality tag or a block depth threshold.
+
+When reading from the blockchain or setting up triggers, you can specify one of three confidence levels:
+
+| Confidence Level | Description                                                                         | Use Case                                                                         |
+| ---------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| **`LATEST`**     | The most recent block. No finality guarantees—the block could still be reorganized. | Non-critical, time-sensitive operations where speed matters more than certainty. |
+| **`SAFE`**       | A block that is unlikely to be reorganized, but not yet fully finalized.            | A balance between speed and security for most operations.                        |
+| **`FINALIZED`**  | A block that is considered irreversible. This is the safest option.                 | Critical operations where you need absolute certainty the data won't change.     |
+
+<Aside type="note" title="Default behavior">
+  If you don't specify a confidence level, CRE defaults to `SAFE` for triggers and `LATEST` for contract reads.
+</Aside>
+
+### Choosing the right level
+
+- **Use `FINALIZED`** when: Processing financial transactions, updating critical state, or when incorrect data could cause significant issues.
+- **Use `SAFE`** when: You need reasonable confidence without waiting for full finality. Good for most monitoring and alerting use cases.
+- **Use `LATEST`** when: Building real-time dashboards, price displays, or other applications where showing the most current data is more important than guaranteed accuracy.
+
+### How CRE confidence levels map to chains
+
+Here's how CRE determines which blocks to use for each confidence level:
+
+#### SAFE and LATEST
+
+When you specify `SAFE` or `LATEST` in your workflows, CRE uses the chain's native `safe` and `latest` block tags respectively for all supported chains.
+
+#### FINALIZED
+
+- **Finality tag**: Uses the chain's native `finalized` block tag
+- **Block depth**: Waits for a specified number of blocks to pass
+
+| Chain                           | Finality Method | Block Depth |
+| ------------------------------- | --------------- | ----------- |
+| Arbitrum One / Arbitrum Sepolia | Finality tag    | —           |
+| Avalanche / Avalanche Fuji      | Finality tag    | —           |
+| Base / Base Sepolia             | Finality tag    | —           |
+| BNB Chain / BNB Testnet         | Finality tag    | —           |
+| Ethereum / Ethereum Sepolia     | Finality tag    | —           |
+| OP Mainnet / OP Sepolia         | Finality tag    | —           |
+| Polygon / Polygon Amoy          | Block depth     | 500         |
+
+## Custom block depths for chain reads
+
+For chain reads, you're not limited to the three predefined confidence levels. The EVM Client also accepts **any explicit block number**, enabling you to:
+
+- **Implement custom finality rules** tailored to your risk profile (e.g., "always wait 1,000 blocks")
+- **Meet regulatory requirements** that mandate fixed, auditable confirmation thresholds
+- **Query historical state** at specific past block heights for analysis or verification
+
+This flexibility is available for all EVM read methods ([`CallContract`](/cre/reference/sdk/evm-client-ts#callcontract), [`BalanceAt`](/cre/reference/sdk/evm-client-ts#balanceat), [`FilterLogs`](/cre/reference/sdk/evm-client-ts#filterlogs), etc.).
+
+### When to use custom block depths
+
+Use explicit block numbers when:
+
+- **Regulatory compliance**: Your smart contract interactions require provable, fixed confirmation thresholds that must be documented for auditors
+- **Changing chain parameters**: The chain's finality definition may change over time, but your security model must remain constant
+- **Historical verification**: You need to verify state at a specific moment
+
+### Implementation
+
+Block numbers must be provided as `BigIntJson` objects. See [Onchain Read](/cre/guides/workflow/using-evm-client/onchain-read-ts#custom-block-depths) for the conversion pattern and examples.
+
+<Aside type="note" title="Limitation: Chain reads only">
+  Custom block numbers are **only available for EVM chain reads**. EVM Log Triggers must use the three confidence levels
+  (`LATEST`, `SAFE`, `FINALIZED`).
+</Aside>

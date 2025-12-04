@@ -153,9 +153,9 @@ When calling contract read methods, you must specify a block number. There are t
 
 ### Using magic numbers
 
-- **Finalized block**: Use `big.NewInt(-3)` to read from the latest finalized block
+- **Finalized block**: Use `big.NewInt(-3)` to read from the latest finalized block (recommended for production)
 - **Latest block**: Use `big.NewInt(-2)` to read from the latest block
-- **Specific block**: Use `big.NewInt(blockNumber)` to read from a specific block
+- **Specific block**: Use `big.NewInt(blockNumber)` to read from a specific historical block
 
 ### Using rpc constants (alternative)
 
@@ -174,7 +174,57 @@ reqBlockNumber := big.NewInt(rpc.LatestBlockNumber.Int64())
 reqBlockNumber := big.NewInt(rpc.FinalizedBlockNumber.Int64())
 ```
 
-Both approaches are equivalent - use whichever you find more readable in your code.
+### Custom block depths
+
+For use cases requiring fixed confirmation thresholds (e.g., regulatory compliance), you can calculate a custom block depth:
+
+```go
+import (
+    pb "github.com/smartcontractkit/chainlink-protos/cre/go/values/pb"
+)
+
+// Helper to convert protobuf BigInt to standard library big.Int
+func pbBigIntToBigInt(pb *pb.BigInt) *big.Int {
+    if pb == nil {
+        return nil
+    }
+    result := new(big.Int).SetBytes(pb.AbsVal)
+    if pb.Sign < 0 {
+        result.Neg(result)
+    }
+    return result
+}
+
+// Read from 500 blocks ago for custom finality
+latestHeaderPromise := evmClient.HeaderByNumber(runtime, &evm.HeaderByNumberRequest{})
+latestHeader, err := latestHeaderPromise.Await()
+if err != nil {
+    return nil, fmt.Errorf("failed to get latest block: %w", err)
+}
+
+// Convert protobuf BigInt to standard library big.Int
+latestBlockNum := pbBigIntToBigInt(latestHeader.Header.BlockNumber)
+customDepth := big.NewInt(500)
+customBlock := new(big.Int).Sub(latestBlockNum, customDepth)
+
+// Use the custom block number with the contract binding
+valuePromise := storageContract.Get(runtime, customBlock)
+value, err := valuePromise.Await()
+if err != nil {
+    return nil, fmt.Errorf("failed to read from custom block: %w", err)
+}
+```
+
+**Understanding the conversion:**
+
+The `pbBigIntToBigInt` helper converts the SDK's protobuf `*pb.BigInt` type (which stores the value as `AbsVal []byte` and `Sign int64`) to Go's standard library `*big.Int`. This allows you to perform arithmetic operations like subtracting 500 blocks.
+
+<Aside type="note" title="SDK enhancement planned">
+  The SDK team is working on a built-in helper to simplify this conversion. Until then, use the `pbBigIntToBigInt`
+  helper shown above.
+</Aside>
+
+See [Finality and Confidence Levels](/cre/concepts/finality-go) for more details on when to use custom block depths.
 
 ## Complete example
 

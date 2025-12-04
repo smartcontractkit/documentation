@@ -419,8 +419,9 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "cre/concepts/typescript-wasm-runtime",
         },
         {
-          title: "Finality and Confidence Levels",
+          title: "Finality & Confidence Levels",
           url: "cre/concepts/finality",
+          highlightAsCurrent: ["cre/concepts/finality-go", "cre/concepts/finality-ts"],
         },
       ],
     },
