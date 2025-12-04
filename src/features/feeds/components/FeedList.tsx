@@ -314,21 +314,16 @@ export const FeedList = ({
   }
   const closeAllDropdowns = () => setOpenDropdownId(null)
   const paginate = (pageNumber) => setCurrentPage(String(pageNumber))
-  // Disable pagination for deprecating feeds by using a very high page size
-  const addrPerPage = ecosystem === "deprecating" ? 10000 : 8
+  const addrPerPage = ecosystem === "deprecating" && isStreams ? 10 : ecosystem === "deprecating" ? 10000 : 8
   const lastAddr = Number(currentPage) * addrPerPage
   const firstAddr = lastAddr - addrPerPage
 
   // Pagination for testnet table
   const [testnetCurrentPage, setTestnetCurrentPage] = useQueryString("testnetPage", "1")
   const testnetPaginate = (pageNumber) => setTestnetCurrentPage(String(pageNumber))
-  const testnetAddrPerPage = ecosystem === "deprecating" ? 10000 : 8
+  const testnetAddrPerPage = ecosystem === "deprecating" && isStreams ? 10 : ecosystem === "deprecating" ? 10000 : 8
   const testnetLastAddr = Number(testnetCurrentPage) * testnetAddrPerPage
   const testnetFirstAddr = testnetLastAddr - testnetAddrPerPage
-
-  // Pagination for deprecating streams
-  const [deprecatingStreamsPage, setDeprecatingStreamsPage] = useState(1)
-  const streamsPerPage = 25
 
   // Dynamic feed categories loaded from Supabase
   const [dataFeedCategory, setDataFeedCategory] = useState([
@@ -748,84 +743,194 @@ export const FeedList = ({
     dataFeedType === "streamsExRate" ||
     dataFeedType === "streamsBacked"
   ) {
-    // For deprecating streams, show a consolidated table across all networks
+    // For deprecating streams, show two separate tables: mainnet and testnet
     if (isDeprecating) {
-      const allDeprecatingStreams: any[] = []
+      const mainnetDeprecatingStreams: any[] = []
+      const testnetDeprecatingStreams: any[] = []
 
-      // Check all chains in initialCache for deprecating streams
       if (initialCache) {
         Object.values(initialCache).forEach((chainData: any) => {
-          chainData.networks?.forEach((network: any) => {
-            network.metadata?.forEach((item: any) => {
-              // Only include items that are actual streams (have verifier contract type and feedId)
-              // and have a shutdown date
-              if (item.contractType === "verifier" && item.feedId && item.docs?.shutdownDate) {
-                allDeprecatingStreams.push({
-                  ...item,
-                  networkName: network.name,
-                })
-              }
+          // Only check Arbitrum chains for streams
+          if (chainData.page === "arbitrum") {
+            chainData.networks?.forEach((network: any) => {
+              network.metadata?.forEach((item: any) => {
+                // Only include items that are actual streams (have verifier contract type and feedId)
+                // and have a shutdown date
+                if (item.contractType === "verifier" && item.feedId && item.docs?.shutdownDate) {
+                  const streamWithNetwork = {
+                    ...item,
+                    networkName: network.name,
+                  }
+                  if (network.networkType === "mainnet") {
+                    mainnetDeprecatingStreams.push(streamWithNetwork)
+                  } else if (network.networkType === "testnet") {
+                    testnetDeprecatingStreams.push(streamWithNetwork)
+                  }
+                }
+              })
             })
-          })
+          }
         })
       }
 
       // Sort alphabetically by asset name or product name
-      allDeprecatingStreams.sort((a, b) => {
-        const nameA = (a.assetName || a.docs?.clicProductName || "").toUpperCase()
-        const nameB = (b.assetName || b.docs?.clicProductName || "").toUpperCase()
-        return nameA.localeCompare(nameB)
+      const sortStreams = (streams: any[]) => {
+        return streams.sort((a, b) => {
+          const nameA = (a.assetName || a.docs?.clicProductName || "").toUpperCase()
+          const nameB = (b.assetName || b.docs?.clicProductName || "").toUpperCase()
+          return nameA.localeCompare(nameB)
+        })
+      }
+
+      sortStreams(mainnetDeprecatingStreams)
+      sortStreams(testnetDeprecatingStreams)
+
+      // Apply search filter for mainnet
+      const filteredMainnetStreams = mainnetDeprecatingStreams.filter((stream) => {
+        if (!searchValue || typeof searchValue !== "string") return true
+        const searchLower = searchValue.toLowerCase()
+        return (
+          stream.feedId?.toLowerCase().includes(searchLower) ||
+          stream.assetName?.toLowerCase().includes(searchLower) ||
+          stream.feedType?.toLowerCase().includes(searchLower) ||
+          stream.networkName?.toLowerCase().includes(searchLower) ||
+          stream.docs?.clicProductName?.toLowerCase().includes(searchLower)
+        )
       })
 
-      // Calculate pagination
-      const lastStreamIndex = deprecatingStreamsPage * streamsPerPage
-      const firstStreamIndex = lastStreamIndex - streamsPerPage
-      const paginatedStreams = allDeprecatingStreams.slice(firstStreamIndex, lastStreamIndex)
+      // Apply search filter for testnet
+      const filteredTestnetStreams = testnetDeprecatingStreams.filter((stream) => {
+        if (!testnetSearchValue || typeof testnetSearchValue !== "string") return true
+        const searchLower = testnetSearchValue.toLowerCase()
+        return (
+          stream.feedId?.toLowerCase().includes(searchLower) ||
+          stream.assetName?.toLowerCase().includes(searchLower) ||
+          stream.feedType?.toLowerCase().includes(searchLower) ||
+          stream.networkName?.toLowerCase().includes(searchLower) ||
+          stream.docs?.clicProductName?.toLowerCase().includes(searchLower)
+        )
+      })
+
+      // Calculate mainnet pagination
+      const paginatedMainnetStreams = filteredMainnetStreams.slice(firstAddr, lastAddr)
+
+      // Calculate testnet pagination
+      const paginatedTestnetStreams = filteredTestnetStreams.slice(testnetFirstAddr, testnetLastAddr)
 
       return (
         <>
           {chainMetadata.loading && !chainMetadata.processedData && !initialCache && <p>Loading...</p>}
           {chainMetadata.error && <p>There was an error loading the streams...</p>}
 
-          {allDeprecatingStreams.length > 0 ? (
-            <SectionWrapper title="Deprecating Streams" depth={2}>
-              <div className={feedList.tableWrapper}>
-                <table className={clsx(tableStyles.table)}>
-                  <StreamsTHead />
-                  <tbody>
-                    {paginatedStreams.map((stream, index) => (
-                      <StreamsTr key={`${stream.feedId}-${index}`} metadata={stream} isMainnet={true} />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {allDeprecatingStreams.length > streamsPerPage && (
-                <div className={tableStyles.pagination} role="navigation" aria-label="Table pagination">
-                  <button
-                    className={button.secondary}
-                    disabled={deprecatingStreamsPage === 1}
-                    onClick={() => setDeprecatingStreamsPage(deprecatingStreamsPage - 1)}
-                  >
-                    Prev
-                  </button>
-                  <p aria-live="polite">
-                    {firstStreamIndex + 1}-
-                    {lastStreamIndex > allDeprecatingStreams.length ? allDeprecatingStreams.length : lastStreamIndex} of{" "}
-                    {allDeprecatingStreams.length}
-                  </p>
-                  <button
-                    className={button.secondary}
-                    disabled={lastStreamIndex >= allDeprecatingStreams.length}
-                    onClick={() => setDeprecatingStreamsPage(deprecatingStreamsPage + 1)}
-                  >
-                    Next
-                  </button>
+          <SectionWrapper title="Mainnet Deprecating Streams" depth={2}>
+            <form class={feedList.filterDropdown_search}>
+              <input
+                id="search"
+                class={feedList.filterDropdown_searchInput}
+                placeholder="Search"
+                value={typeof searchValue === "string" ? searchValue : ""}
+                onInput={(event) => {
+                  setSearchValue((event.target as HTMLInputElement).value)
+                  setCurrentPage("1")
+                }}
+              />
+            </form>
+            {filteredMainnetStreams.length > 0 ? (
+              <>
+                <div className={feedList.tableWrapper}>
+                  <table className={clsx(tableStyles.table)}>
+                    <StreamsTHead />
+                    <tbody>
+                      {paginatedMainnetStreams.map((stream, index) => (
+                        <StreamsTr key={`${stream.feedId}-${index}`} metadata={stream} isMainnet={true} />
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              )}
-            </SectionWrapper>
-          ) : (
-            !chainMetadata.loading && <p>No deprecating streams found at this time.</p>
-          )}
+                {filteredMainnetStreams.length > addrPerPage && (
+                  <div className={tableStyles.pagination} role="navigation" aria-label="Table pagination">
+                    <button
+                      className={button.secondary}
+                      disabled={Number(currentPage) === 1}
+                      onClick={() => paginate(Number(currentPage) - 1)}
+                    >
+                      Prev
+                    </button>
+                    <p aria-live="polite">
+                      {firstAddr + 1}-
+                      {lastAddr > filteredMainnetStreams.length ? filteredMainnetStreams.length : lastAddr} of{" "}
+                      {filteredMainnetStreams.length}
+                    </p>
+                    <button
+                      className={button.secondary}
+                      disabled={lastAddr >= filteredMainnetStreams.length}
+                      onClick={() => paginate(Number(currentPage) + 1)}
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <p>No mainnet deprecating streams found.</p>
+            )}
+          </SectionWrapper>
+
+          <SectionWrapper title="Testnet Deprecating Streams" depth={2}>
+            <form class={feedList.filterDropdown_search}>
+              <input
+                id="testnetSearch"
+                class={feedList.filterDropdown_searchInput}
+                placeholder="Search"
+                value={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
+                onInput={(event) => {
+                  setTestnetSearchValue((event.target as HTMLInputElement).value)
+                  setTestnetCurrentPage("1")
+                }}
+              />
+            </form>
+            {filteredTestnetStreams.length > 0 ? (
+              <>
+                <div className={feedList.tableWrapper}>
+                  <table className={clsx(tableStyles.table)}>
+                    <StreamsTHead />
+                    <tbody>
+                      {paginatedTestnetStreams.map((stream, index) => (
+                        <StreamsTr key={`${stream.feedId}-${index}`} metadata={stream} isMainnet={false} />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {filteredTestnetStreams.length > testnetAddrPerPage && (
+                  <div className={tableStyles.pagination} role="navigation" aria-label="Table pagination">
+                    <button
+                      className={button.secondary}
+                      disabled={Number(testnetCurrentPage) === 1}
+                      onClick={() => testnetPaginate(Number(testnetCurrentPage) - 1)}
+                    >
+                      Prev
+                    </button>
+                    <p aria-live="polite">
+                      {testnetFirstAddr + 1}-
+                      {testnetLastAddr > filteredTestnetStreams.length
+                        ? filteredTestnetStreams.length
+                        : testnetLastAddr}{" "}
+                      of {filteredTestnetStreams.length}
+                    </p>
+                    <button
+                      className={button.secondary}
+                      disabled={testnetLastAddr >= filteredTestnetStreams.length}
+                      onClick={() => testnetPaginate(Number(testnetCurrentPage) + 1)}
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <p>No testnet deprecating streams found.</p>
+            )}
+          </SectionWrapper>
         </>
       )
     }
