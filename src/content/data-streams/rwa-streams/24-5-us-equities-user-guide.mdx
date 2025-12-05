@@ -13,12 +13,13 @@ whatsnext:
 ---
 
 import { Aside, ClickToZoom } from "@components"
+import { Tabs } from "@components/Tabs"
 
-Chainlink 24/5 U.S. Equities Streams provide real-time equity pricing data across all major U.S. single-name equities and ETFs spanning regular, pre-market, post-market, and overnight trading sessions. [Flexible, real-time schemas](/data-streams/reference/report-schema-v11) include fields such as market status flags, best bid and ask prices, bid and ask volumes, staleness measures, and last traded prices to facilitate more advanced execution and risk management.
+Chainlink 24/5 U.S. Equities Streams provide real-time equity pricing data across all major U.S. single-name equities and ETFs spanning regular, pre-market, post-market, and overnight trading sessions. The [advanced RWA schema](/data-streams/reference/report-schema-v11) includes fields such as market status flags, best bid and ask prices, bid and ask volumes, staleness measures, and last traded prices to facilitate more advanced execution and risk management.
 
 <ClickToZoom src="/images/data-streams/24-5-availability.png" caption="24/5 Streams Availability Diagram" />
 
-The data referenced in this document covers 24/5 trading hours in US equities on a range of traditional venues. While there is currently no trading activity in traditional markets over the weekend on any venue, protocols can extend their pricing coverage to 24/7 in multiple ways, such as leveraging the pricing of [tokenized stocks](#tokenized-assets) on secondary markets such as CEXes and DEXes.
+The data referenced in this document covers 24/5 trading hours in US equities on a range of traditional venues. While there is currently no trading activity in traditional markets over the weekend on any venue, protocols can extend their pricing coverage to 24/7 in multiple ways, such as leveraging the pricing of [tokenized stocks](#stream-switching-example-logic) on secondary markets such as CEXes and DEXes.
 
 Developers are responsible for choosing the appropriate feed and that the operation and performance of their choice matches expectations. For more information, please visit the Chainlink [documentation](/data-streams/developer-responsibilities).
 
@@ -26,15 +27,19 @@ Developers are responsible for choosing the appropriate feed and that the operat
 
 The data is delivered using the [RWA Advanced (v11) schema](/data-streams/reference/report-schema-v11).
 
+This advanced RWA schema is built to support 24/5 streams, including liquidity-weighted `mid` price (with its corresponding timestamp `lastSeenTimestampNs` for staleness tracking), order book depth (`bid`, `ask`, `bidVolume`, `askVolume`), execution data (`lastTradedPrice`), and granular market phases (`marketStatus` values for Pre-market, Regular hours, Post-market, Overnight, and Weekend).
+
 ## Feeds
 
-Each instrument is exposed through **three distinct data streams**, each corresponding to a specific trading phase: **Regular Hours**, **Extended Hours**, and **Overnight Hours**.
+Each instrument is exposed through three distinct data streams feeds, each corresponding to a specific trading phase: **Regular Hours**, **Extended Hours**, and **Overnight Hours**.
 
-For example, the instrument **TSLA** will provide the following streams:
+[Click here to view a list of RWA streams that support 24-5 US equities](/data-streams/rwa-streams?page=1&testnetPage=1&show24x5=true). Use the filters to select your desired time segment.
 
-- `TSLA_stream_regular_hours`
-- `TSLA_stream_extended_hours`
-- `TSLA_stream_overnight_hours`
+For example, **TSLA** is available via the [following streams](/data-streams/rwa-streams?page=1&testnetPage=1&show24x5=true&search=tsla):
+
+- `TSLA/USD-Streams-ExtendedHours`
+- `TSLA/USD-Streams-OvernightHours`
+- `TSLA/USD-Streams-RegularHours`
 
 To construct a **continuous price feed**, users must **dynamically switch** between these individual streams based on the value of `marketStatus`. The mapping logic is as follows:
 
@@ -45,11 +50,20 @@ To construct a **continuous price feed**, users must **dynamically switch** betw
 | `3` (Post-market) | `TSLA_stream_extended_hours`  |
 | `4` (Overnight)   | `TSLA_stream_overnight_hours` |
 
+<Aside type="note" title="Note">
+  Market status `0` (Unknown) and `5` (Weekend) require custom handling. See the [Building a Continuous Price
+  Feed](#building-a-continuous-price-feed) section below.
+</Aside>
+
 ## Building a Continuous Price Feed
 
 Building a continuous price feed by dynamically switching streams requires robust exception handling to manage edge cases effectively. Because different protocols have unique risk profiles and design requirements, Data Streams allows you to implement custom logic tailored to your specific needs.
 
-### Price Jumps at Session Transition Boundaries
+There is no one-size-fits-all solution to integrating 24/5 streams. The sections below outline edge cases you will encounter when building a continuous price feed along with recommended mitigation strategies. For information on structural risks and protocol-specific considerations, see the [Risks](#risks) section. If you're ready to implement switching logic, jump to [Stream Switching Example Logic](#stream-switching-example-logic).
+
+### Edge Cases and Mitigation
+
+#### Price Jumps at Session Transition Boundaries
 
 When transitioning between Regular ↔ Extended ↔ Overnight sessions, noticeable price dislocations can occur.
 
@@ -64,86 +78,237 @@ Typical jumps are **1–2%**, but **larger spikes (10–20%+)** are possible dur
 
 ##### Mitigation
 
-Data Streams intentionally provides phase-specific feeds so users can choose when and how to switch. Optional safeguards can include:
+**Phase-specific streams are provided intentionally** to give users control over when and how transitions occur. Optional safeguards:
 
-- Delay the feed switch until price convergence or stability threshold
-- Apply price smoothing (EMA/VWAP/TWAP) across the transition window
-- Temporarily reference [tokenized asset](#strategic-fallbacks-tokenized-assets) price if available
-- Briefly pause or lock markets during transition windows
+- Pause or lock market activity during transition windows
+- Delay feed switching until price convergence or stability threshold is met
+- Apply price smoothing (EMA/VWAP/TWAP) across transition windows
+- Temporarily reference [tokenized asset](#stream-switching-example-logic) prices (where available)
 
-### Market Status Signal May Be Unknown or Unavailable
+#### Market Status Unknown/Unavailable (`marketStatus = 0`)
 
-The market status is sourced from two independent providers which are set as primary / fallback. While resilient, the system will return `0` (Unknown) if both providers fail. If your implementation relies on automated feed switching based on market status, you must account for this scenario.
+The system may return `marketStatus = 0` (Unknown). **If your implementation relies on automated feed switching based on market status, you must account for this scenario.**
+
+Market status is sourced from several independent providers configured as primary/fallback. While resilient, multiple providers can fail simultaneously.
 
 ##### Mitigation
 
-Consumers must treat `0` (Unknown) as a valid state and define deterministic behaviors when it is returned. Potential actions include:
+Consumers must treat `marketStatus = 0` (Unknown) as a valid state and define deterministic behaviors when it is returned. Potential actions include:
 
-- Temporarily reference tokenized asset price if available
-- Pausing a market
+- Pause or lock market activity
 - Allow restricted trading within a bounded range (e.g., last-valid price ± threshold)
+- Temporarily reference [tokenized asset](#stream-switching-example-logic) price (where available)
 
-### Market Status indicates `5` (Weekend)
+#### Weekends (`marketStatus = 5`)
 
 Traditional equity markets are closed on weekends, so all three feeds will carry stale values. This reflects true underlying market inactivity rather than an outage or failure.
 
 ##### Mitigation
 
-Consumers must treat `5` (Weekend) as a valid state and define deterministic behaviors when it is returned. Potential actions include:
+Consumers must treat `marketStatus = 5` (Weekend) as a valid state and define deterministic behaviors when it is returned. Potential actions include:
 
-- Temporarily reference tokenized asset price if available
-- Pausing a market
+- Pause or lock market activity
 - Allow restricted trading within a bounded range (e.g., last-valid price ± threshold)
+- Temporarily reference [tokenized asset](#stream-switching-example-logic) price (where available)
 
-### Staleness indicator might indicate that the market is not updating
+#### Stale Data Detection
 
-The staleness indicator intentionally flags that the underlying venue has stopped updating, which may occur due to exchange outages, circuit breakers, trading halts, or corporate actions.
+Markets may stop updating due to exchange outages, circuit breakers, trading halts, or corporate actions. Use the `lastSeenTimestampNs` field (the timestamp for the `mid` price) to detect staleness by comparing it against the current time. When this timestamp stops advancing, it indicates the underlying venue has stopped providing updates.
 
-> Note: Overnight feeds also halt during corporate actions.
+Phase-specific feeds can introduce unique behavior. For example, overnight feeds also halt during corporate actions even though the overnight session is technically active.
 
 ##### Mitigation
 
-Consumers must have fallback in place when the data is stale. Potential actions include:
+Consumers must have fallback logic in place when the data is stale. Potential actions include:
 
-- Continue using last-valid trade price as reference
+- Pause or lock market activity
+- Use last-valid price as reference
 - Allow bounded-range trading based on last-valid price
-- Temporarily fallback to tokenized pricing
-- Pause or restrict market activity
+- Temporarily fallback to tokenized pricing (where available)
 
-### Strategic Fallbacks: Tokenized Assets
+### Stream Switching Example Logic
 
-Developers interested in integrating tokenized asset prices can find the list of supported assets and schema in the [Tokenized Assets documentation](/data-streams/backed-streams).
+The following examples demonstrate how to implement a continuous price feed by dynamically switching between phase-specific streams. These examples use tokenized asset prices as the fallback strategy for edge cases (stale data, Unknown market status, and Weekends). Developers may choose alternative mitigation strategies based on their protocol's risk requirements.
+
+Developers interested in using tokenized assets can find the list of supported assets and schema in the [Tokenized Assets documentation](/data-streams/backed-streams). Using tokenized assets carries its own risks, including liquidity limitations and price deviations from spot markets. Evaluate these factors carefully before integrating tokenized prices into your protocol.
 
 <Aside type="note" title="Note">
-  Tokenized Assets are often Total Return Trackers (TRT), if used the price should be normalized back to a non-TRT
+  Tokenized Assets are often Total Return Trackers (TRT). If used, the price should be normalized back to a non-TRT
   price: `Spot_RWA_Price = Tokenized_RWA_Price / TRT_Multiplier`
 </Aside>
 
-### Example Implementation Logic
+#### Decision Flow
 
-In this example, the user has chosen to use the **Stock tokenized asset price** as the fallback price source for _all_ exception scenarios. The switching logic would therefore be:
+To build a continuous price feed, follow this decision flow:
 
+1. **Fetch and decode** the Regular Hours stream report to get `marketStatus` and `lastSeenTimestampNs`
+
+2. **Check staleness first:**
+   - **If data is stale** (timestamp older than your threshold) → **[Use Tokenized Asset stream](/data-streams/backed-streams)** or apply custom risk mitigation
+   - **If data is fresh** → Continue to step 3
+
+3. **Route based on market status:**
+   - **`marketStatus = 0`** (Unknown) → **Use Tokenized Asset stream** or apply custom risk mitigation
+   - **`marketStatus = 1`** (Pre-market) → **Use Extended Hours stream**
+   - **`marketStatus = 2`** (Regular) → **Use Regular Hours stream**
+   - **`marketStatus = 3`** (Post-market) → **Use Extended Hours stream**
+   - **`marketStatus = 4`** (Overnight) → **Use Overnight Hours stream**
+   - **`marketStatus = 5`** (Weekend) → **Use Tokenized Asset stream** or apply custom risk mitigation
+
+4. **Apply additional safeguards** as needed for your protocol (e.g., price jump checks, circuit breakers, holiday calendars, bounded trading ranges)
+
+5. **Return the `mid` price** from the selected stream
+
+<Aside type="caution" title="Important">
+  This is a simplified decision flow. Your implementation must account for all risks outlined in the [Risks](#risks)
+  section below, including price jumps at transition boundaries, corporate actions, public holidays, and
+  protocol-specific edge cases. Each protocol has unique risk requirements—design your switching logic accordingly.
+</Aside>
+
+#### Example Implementation Logic
+
+This example demonstrates switching logic with tokenized asset prices as fallback. View examples in different SDK languages.
+
+{/* prettier-ignore */}
+<Tabs client:visible>
+  <Fragment slot="tab.1">TypeScript</Fragment>
+  <Fragment slot="tab.2">Go</Fragment>
+  <Fragment slot="tab.3">Rust</Fragment>
+  <Fragment slot="panel.1">
+```typescript
+import { createClient, decodeReport } from "@chainlink/data-streams-sdk"
+
+const client = createClient({ apiKey, userSecret, endpoint })
+
+async function getPrice() {
+const regularReport = await client.getLatestReport(REGULAR_HOURS)
+const decoded = decodeReport(regularReport.fullReport, regularReport.feedID)
+
+// Check staleness (5 minute threshold)
+const isStale = (Date.now() - decoded.lastSeenTimestampNs / 1000000) > 300000
+
+// Determine which stream to use
+if (isStale || decoded.marketStatus === 0 || decoded.marketStatus === 5) {
+const tokenReport = await client.getLatestReport(TOKENIZED_TSLA)
+return decodeReport(tokenReport.fullReport, tokenReport.feedID).mid
+} else if (decoded.marketStatus === 1 || decoded.marketStatus === 3) {
+const report = await client.getLatestReport(EXTENDED_HOURS)
+return decodeReport(report.fullReport, report.feedID).mid
+} else if (decoded.marketStatus === 2) {
+return decoded.mid
+} else if (decoded.marketStatus === 4) {
+const report = await client.getLatestReport(OVERNIGHT_HOURS)
+return decodeReport(report.fullReport, report.feedID).mid
+}
+}
+
+````
+  </Fragment>
+  <Fragment slot="panel.2">
+```go
+import "github.com/smartcontractkit/data-streams-sdk/go/feed"
+
+func getPrice() (*big.Int, error) {
+    report, err := client.GetLatestReport(REGULAR_HOURS)
+    if err != nil {
+        return nil, err
+    }
+
+    decoded, err := feed.Decode(report.FullReport)
+    if err != nil {
+        return nil, err
+    }
+
+    // Check staleness (5 minute threshold)
+    isStale := time.Since(decoded.LastSeenTimestamp) > 5*time.Minute
+
+    // Determine which stream to use
+    if isStale || decoded.MarketStatus == 0 || decoded.MarketStatus == 5 {
+        tokenReport, _ := client.GetLatestReport(TOKENIZED_TSLA)
+        tokenDecoded, _ := feed.Decode(tokenReport.FullReport)
+        return tokenDecoded.Mid, nil
+    } else if decoded.MarketStatus == 1 || decoded.MarketStatus == 3 {
+        extReport, _ := client.GetLatestReport(EXTENDED_HOURS)
+        extDecoded, _ := feed.Decode(extReport.FullReport)
+        return extDecoded.Mid, nil
+    } else if decoded.MarketStatus == 2 {
+        return decoded.Mid, nil
+    } else if decoded.MarketStatus == 4 {
+        ovnReport, _ := client.GetLatestReport(OVERNIGHT_HOURS)
+        ovnDecoded, _ := feed.Decode(ovnReport.FullReport)
+        return ovnDecoded.Mid, nil
+    }
+}
+````
+
+  </Fragment>
+  <Fragment slot="panel.3">
 ```rust
-IF StalenessIndicator == "stale" THEN use TSLA_tokenized_price
-ELSE IF marketStatus == 0 THEN use TSLA_tokenized_price
-ELSE IF marketStatus == 5 THEN use TSLA_tokenized_price
-ELSE IF marketStatus == 1 THEN use TSLA_stream_extended_hours
-ELSE IF marketStatus == 2 THEN use TSLA_stream_regular_hours
-ELSE IF marketStatus == 3 THEN use TSLA_stream_extended_hours
-ELSE IF marketStatus == 4 THEN use TSLA_stream_overnight_hours
+use data_streams_sdk::{client::Client, feed};
+
+async fn get_price() -> Result<i128, Box<dyn std::error::Error>> {
+let report = client.get_latest_report(REGULAR_HOURS).await?;
+let decoded = feed::decode(&report.full_report)?;
+
+    // Check staleness (5 minute threshold)
+    let is_stale = (SystemTime::now().duration_since(UNIX_EPOCH)?.as_nanos()
+        - decoded.last_seen_timestamp_ns as u128) > 300_000_000_000;
+
+    // Determine which stream to use
+    if is_stale || decoded.market_status == 0 || decoded.market_status == 5 {
+        let token_report = client.get_latest_report(TOKENIZED_TSLA).await?;
+        let token_decoded = feed::decode(&token_report.full_report)?;
+        Ok(token_decoded.mid)
+    } else if decoded.market_status == 1 || decoded.market_status == 3 {
+        let ext_report = client.get_latest_report(EXTENDED_HOURS).await?;
+        let ext_decoded = feed::decode(&ext_report.full_report)?;
+        Ok(ext_decoded.mid)
+    } else if decoded.market_status == 2 {
+        Ok(decoded.mid)
+    } else if decoded.market_status == 4 {
+        let ovn_report = client.get_latest_report(OVERNIGHT_HOURS).await?;
+        let ovn_decoded = feed::decode(&ovn_report.full_report)?;
+        Ok(ovn_decoded.mid)
+    } else {
+        Err("Unknown market status".into())
+    }
+
+}
+
 ```
+  </Fragment>
+</Tabs>
+
+
+<Aside type="caution" title="Disclaimer">
+  This guide represents an example of using a Chainlink product or service and is provided to help you understand how to
+  interact with Chainlink's systems and services so that you can integrate them into your own. This template is provided
+  "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key checks or
+  error handling to make the usage of the product more clear. Do not use the code in this example in a production
+  environment without completing your own audits and application of best practices. Neither Chainlink Labs, the
+  Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due to
+  errors in code.
+</Aside>
 
 ## Risks
 
 While 24/5 streams provide extended market coverage, they introduce specific risks related to liquidity, volatility, and data sourcing. Users must understand these factors and implement appropriate safeguards.
 
+In the following sections, we outline key risks and recommended mitigation strategies.
+
 ### Single Provider for Extended & Overnight Data
 
-Extended and overnight session price feeds are sourced from a single data provider, making these sessions less reliable than the regular hours price feed which is multi-sourced. If the provider experiences downtime, technical failures, or connectivity disruption, the feed may flatline or report highly inaccurate figures, preventing users from reacting to real price movements. Such issues may lead to mispricing, failed liquidations, and potential bad debt accumulation.
+Extended and overnight session price feeds are currently sourced from a single data provider, making these sessions less reliable than the regular hours price feed which is multi-sourced.
+
+If the provider experiences downtime, technical failures, or connectivity disruption, the feed may flatline or report highly inaccurate figures, preventing users from reacting to real price movements. Such issues may lead to mispricing, failed liquidations, and potential bad debt accumulation.
 
 ##### Mitigation
 
-The feed includes a staleness indicator, allowing consumers to detect when data stops updating. Users are strongly recommended to implement fallback logic within their protocol risk framework, which may include: (a) pausing trading, (b) restricting to narrow price bands, or (c) temporarily switching to the tokenized price feed, understanding that it also carries liquidity limitations.
+The feed includes a staleness indicator, allowing consumers to detect when data stops updating. Users are strongly recommended to implement fallback logic within their protocol risk framework, which may include:
+
+- Pause  or lock market activity
+- Restrict to narrow price bands
+- Temporarily switch to the tokenized price feed (understanding that it also carries liquidity limitations)
 
 ### Structural Illiquidity and Volatility in Extended & Overnight Hours
 
@@ -151,28 +316,33 @@ Pre-market and post-market sessions are typically thinly traded, with fragmented
 
 ##### Mitigation
 
-Users should evaluate whether the full 24/5 price coverage is appropriate for their use case and configure risk thresholds, circuit breakers, or mode switching aligned with their own risk appetite. Validate these configurations during integration and simulation, not post-deployment.
+Users should evaluate whether the full 24/5 price coverage is appropriate for their use case. Consider the following:
+
+- Configure risk thresholds, circuit breakers, or mode switching aligned with your risk appetite
+- Validate these configurations during integration and simulation, not post-deployment
 
 ### Corporate Actions
 
-Traditional equities are subject to corporate actions which can dramatically change the price of an asset overnight, especially in the case of stock split and reverse stock split.
+Traditional equities are subject to corporate actions which can dramatically change the price of an asset overnight, especially in the case of stock splits and reverse stock splits. These actions are usually announced outside regular trading hours and can cause substantial price movements when markets reopen.
 
 ##### Mitigation
 
-Consumers should actively monitor corporate actions and adjust pricing logic, risk parameters, and open positions accordingly.
+Consumers should:
 
-### Price Jumps at Session Transition Boundaries
-
-Switching between Regular, Extended, and Overnight sessions can result in noticeable price dislocations at the transition points. These jumps are not errors; they reflect real underlying market microstructure dynamics such as fragmented liquidity, different participant types, and distinct venue activity across sessions. Typical transitions may produce 1–2% moves, though much larger dislocations can occur during low-liquidity periods or high-impact news cycles. Protocols relying on automated session switching must account for these effects to avoid unintended liquidation cascades, mispricing, or user-experience anomalies.
-
-##### Mitigation
-
-Users are strongly encouraged to implement safeguards around transition windows.
+- Actively monitor corporate action announcements
+- Adjust pricing logic, risk parameters, and open positions accordingly
+- Consider pausing markets during corporate action windows to prevent unfair liquidations
 
 ### Public Holiday Closures Are Not Explicitly Flagged
 
-Market Status data providers do not flag exchange public holidays. As a result, the feeds for instruments listed on U.S. exchanges may appear stale, flatline, or behave inconsistently on holiday dates even though this reflects true market closure. Automated switching logic that relies only on marketStatus or staleness signals can incorrectly interpret holiday inactivity as an outage or unexpected feed degradation, leading to unnecessary fallbacks, paused markets, or erroneous risk decisions.
+Market Status data providers do not flag exchange public holidays. As a result, the feeds for instruments listed on U.S. exchanges may appear stale, flatline, or behave inconsistently on holiday dates even though this reflects true market closure. Automated switching logic that relies only on `marketStatus` or staleness signals can incorrectly interpret holiday inactivity as an outage or unexpected feed degradation, leading to unnecessary fallbacks, paused markets, or erroneous risk decisions.
 
 ##### Mitigation
 
-Consumers must incorporate an authoritative exchange holiday calendar into their integration (for U.S. listings, the NYSE/NASDAQ holiday calendar is the recommended source). See [Market Hours documentation](/data-streams/market-hours) for more details.
+Consumers must:
+
+- Incorporate an authoritative exchange holiday calendar into their integration (for U.S. listings, the NYSE/NASDAQ holiday calendar is the recommended source)
+- Keep markets closed during exchange holidays to prevent users from trading at unfair prices
+
+For detailed market hours and trading schedules, see the [Market Hours](/data-streams/market-hours) documentation.
+```
