@@ -39,16 +39,16 @@ Here is the source code for the contract so you can see how it works:
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import { IReceiverTemplate } from "./keystone/IReceiverTemplate.sol";
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
 
 /**
  * @title CalculatorConsumer (Testing Version)
  * @notice This contract receives reports from a CRE workflow and stores the results of a calculation onchain.
- * @dev This version uses IReceiverTemplate without configuring any security checks, making it compatible
+ * @dev This version uses ReceiverTemplate without configuring any security checks, making it compatible
  * with the mock Forwarder used during simulation. All permission fields remain at their default zero
  * values (disabled).
  */
-contract CalculatorConsumer is IReceiverTemplate {
+contract CalculatorConsumer is ReceiverTemplate {
   // Struct to hold the data sent in a report from the workflow
   struct CalculatorResult {
     uint256 offchainValue;
@@ -66,13 +66,13 @@ contract CalculatorConsumer is IReceiverTemplate {
 
   /**
    * @dev The constructor doesn't set any security checks.
-   * The IReceiverTemplate parent constructor will initialize all permission fields to zero (disabled).
+   * The ReceiverTemplate parent constructor will initialize all permission fields to zero (disabled).
    */
   constructor() {}
 
   /**
    * @notice Implements the core business logic for processing reports.
-   * @dev This is called automatically by IReceiverTemplate's onReport function after security checks.
+   * @dev This is called automatically by ReceiverTemplate's onReport function after security checks.
    */
   function _processReport(bytes calldata report) internal override {
     // Decode the report bytes into our CalculatorResult struct
