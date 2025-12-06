@@ -1435,6 +1435,8 @@ export const TestnetTable = ({
   showOnlyDEXFeeds,
   rwaSchemaFilter,
   streamCategoryFilter,
+  show24x5Feeds,
+  tradingHoursFilter,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
@@ -1450,6 +1452,8 @@ export const TestnetTable = ({
   showOnlyDEXFeeds?: boolean
   rwaSchemaFilter?: "all" | "v8" | "v11"
   streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
+  show24x5Feeds?: boolean
+  tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
 }) => {
   if (!network.metadata) return null
 
@@ -1502,6 +1506,39 @@ export const TestnetTable = ({
         rwaSchemaFilter,
         showOnlyMVRFeeds,
       })
+    })
+    .filter((metadata) => {
+      // When 24/5 checkbox is checked, ONLY show 24/5 feeds
+      if (show24x5Feeds) {
+        const schemaVersion = getSchemaVersion(metadata)
+        const feedType = metadata.feedType || metadata.docs?.feedType
+
+        // 24/5 feeds are Equities/Forex with v11 schema
+        const is24x5Feed = (feedType === "Equities" || feedType === "Forex") && schemaVersion === "v11"
+
+        if (!is24x5Feed) return false
+
+        // Apply trading hours sub-filter
+        if (tradingHoursFilter && tradingHoursFilter !== "all") {
+          const assetSubClass = (metadata.docs as any)?.assetSubClass
+          const clicProductName = (metadata.docs as any)?.clicProductName || ""
+
+          // Check both assetSubClass and clicProductName for hours identification
+          const isRegularHours =
+            assetSubClass === "Regular Hours" ||
+            (clicProductName.includes("RegularHours") &&
+              !clicProductName.includes("ExtendedHours") &&
+              !clicProductName.includes("OvernightHours"))
+          const isExtendedHours = assetSubClass === "Extended Hours" || clicProductName.includes("ExtendedHours")
+          const isOvernightHours = assetSubClass === "Overnight Hours" || clicProductName.includes("OvernightHours")
+
+          if (tradingHoursFilter === "regular" && !isRegularHours) return false
+          if (tradingHoursFilter === "extended" && !isExtendedHours) return false
+          if (tradingHoursFilter === "overnight" && !isOvernightHours) return false
+        }
+      }
+
+      return true
     })
     .filter((metadata) => {
       if (isSmartData) {
