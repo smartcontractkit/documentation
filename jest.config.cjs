@@ -13,6 +13,7 @@ module.exports = {
   extensionsToTreatAsEsm: [".ts", ".tsx"],
   moduleFileExtensions: ["js", "jsx", "ts", "tsx", "json", "node"],
   moduleNameMapper: {
+    "^(\\.{1,2}/.*)\\.js$": "$1",
     "\\.(css)$": "<rootDir>/src/__mocks__/styleMock.ts",
     "^~/(.*)$": "<rootDir>/src/$1",
     "^@api/(.*)$": "<rootDir>/src/pages/api/$1",
@@ -29,6 +30,7 @@ module.exports = {
     "^@variables$": "<rootDir>/src/config/markdown-variables.ts",
     "^@abi$": "<rootDir>/src/features/abi/index.ts",
     "^@lib$": "<rootDir>/src/lib/index.ts",
+    "^@lib/(.*)\\.js$": "<rootDir>/src/lib/$1",
     "^@lib/(.*)$": "<rootDir>/src/lib/$1",
     "\\.ya?ml$": "<rootDir>/src/__mocks__/yamlMock.ts",
   },

@@ -8,11 +8,11 @@ import {
   APIErrorType,
   createErrorResponse,
   CCIPError,
-} from "../utils.ts"
+} from "~/lib/ccip/utils.ts"
 import { logger } from "@lib/logging/index.js"
 
-import type { LaneFilterType, LaneApiResponse, LaneMetadata } from "../types/index.ts"
-import { LaneDataService } from "../../services/lane-data.ts"
+import type { LaneFilterType, LaneApiResponse, LaneMetadata } from "~/lib/ccip/types/index.ts"
+import { LaneDataService } from "~/lib/ccip/services/lane-data.ts"
 
 export const prerender = false
 

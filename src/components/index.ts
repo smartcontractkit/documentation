@@ -10,6 +10,7 @@
 export { default as CodeSample } from "./CodeSample/CodeSample.astro"
 export { default as Address } from "./Address"
 export { default as CopyText } from "./CopyText"
+export { CopyPageLink } from "./RightSidebar/CopyPageLink"
 export { default as Aside } from "./Aside.astro"
 export { default as ReleaseNotes } from "./ReleaseNotes.astro"
 export { default as Icon } from "./Icon.astro"

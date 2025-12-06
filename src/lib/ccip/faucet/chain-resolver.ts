@@ -1,7 +1,7 @@
 import { getSelectorEntry } from "@config/data/ccip/selectors.ts"
-import { resolveChainOrThrow } from "@api/ccip/utils.ts"
+import { resolveChainOrThrow } from "~/lib/ccip/utils.ts"
 import { getChainTypeAndFamily, getChainId, directoryToSupportedChain } from "@features/utils/index.ts"
-import { FaucetChainConfig } from "@api/ccip/types/faucet.ts"
+import { FaucetChainConfig } from "~/lib/ccip/types/faucet.ts"
 import { getFaucetAddress, getSolanaDevnetConfig } from "@lib/core/config/index.ts"
 import { BNM_MINT_ADDRESSES } from "@lib/solana/core/constants/token-resolver.ts"
 

@@ -13,12 +13,14 @@ import { FEED_CATEGORY_CONFIG } from "../../../db/feedCategories.js"
 import { useBatchedFeedCategories, getFeedCategoryFromBatch, getNetworkIdentifier } from "./useBatchedFeedCategories.ts"
 import { isSharedSVR, isAaveSVR } from "~/features/feeds/utils/svrDetection.ts"
 import { ExpandableTableWrapper } from "./ExpandableTableWrapper.tsx"
+import { isFeedVisible } from "~/features/feeds/utils/feedVisibility.ts"
 
 const feedItems = monitoredFeeds.mainnet
 
 // Helper function to extract schema version from clicProductName
 // e.g., "HOOD/USD-Streams-RegularHoursEquityPrice-DS-Premium-Global-011" -> "v11"
 // e.g., "USD/SEK-Datalink-DeutscheBoerse-DS-Premium-Global-008" -> "v8"
+// e.g., "AAPL/USD-Streams-EquityPrice-DS-Premium-Global-004" -> "v8"
 const getSchemaVersion = (metadata: any): string | undefined => {
   // First try to get from docs.schema
   if (metadata.docs?.schema) {
@@ -31,7 +33,7 @@ const getSchemaVersion = (metadata: any): string | undefined => {
     const match = clicProductName.match(/-0(\d{2})$/)
     if (match) {
       const version = match[1]
-      if (version === "08") return "v8"
+      if (version === "04" || version === "08") return "v8"
       if (version === "11") return "v11"
     }
   }
@@ -864,7 +866,7 @@ export const StreamsNetworkAddressesTable = ({
   )
 }
 
-const StreamsTHead = () => (
+export const StreamsTHead = () => (
   <thead>
     <tr>
       <th className={tableStyles.heading}>Stream</th>
@@ -884,262 +886,280 @@ const streamsCategoryMap = {
   },
 }
 
-const StreamsTr = ({ metadata, isMainnet }) => (
-  <tr>
-    <td className={tableStyles.pairCol}>
-      <div className={tableStyles.assetPair}>
-        {metadata.pair[0]}/{metadata.pair[1]}
-        {metadata.feedType === "Crypto-DEX" && (
-          <a
-            href="/data-streams/concepts/dex-state-price-streams"
-            target="_blank"
-            className={tableStyles.feedVariantBadge}
-          >
-            DEX State Price
-          </a>
-        )}
-      </div>
-      {metadata.docs.shutdownDate && (
-        <div className={clsx(feedList.shutDate)}>
-          <hr />
-          Deprecating:
-          <br />
-          {metadata.docs.shutdownDate}
+export const StreamsTr = ({ metadata, isMainnet }) => {
+  // Determine if stream is deprecating
+  const isDeprecating = !!metadata.docs?.shutdownDate
+
+  return (
+    <tr>
+      <td className={tableStyles.pairCol}>
+        <div className={tableStyles.assetPair}>
+          {metadata.pair[0]}/{metadata.pair[1]}
+          {metadata.feedType === "Crypto-DEX" && (
+            <a
+              href="/data-streams/concepts/dex-state-price-streams"
+              target="_blank"
+              className={tableStyles.feedVariantBadge}
+            >
+              DEX State Price
+            </a>
+          )}
         </div>
-      )}
-    </td>
-    <td style="width:80%;">
-      <div className={tableStyles.assetAddress}>
-        <span className={tableStyles.streamAddress}>{metadata.feedId}</span>
-        <button
-          className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-          style={{ height: "16px", width: "16px" }}
-          data-clipboard-text={metadata.feedId}
-          onClick={(e) =>
-            handleClick(e, {
-              product: "STREAMS",
-              action: "feedId_copied",
-              extraInfo1: isMainnet ? "Mainnet" : "Testnet",
-              extraInfo2: metadata.pair[0],
-              extraInfo3: metadata.feedId,
-            })
-          }
-        >
-          <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
-        </button>
-      </div>
-      <div>
-        <dl className={tableStyles.listContainer}>
-          {isMainnet && metadata.docs.clicProductName && metadata.feedType !== "Tokenized Equities" && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Full name:</span>
-              </dt>
-              <dd>{metadata.docs.clicProductName}</dd>
-            </div>
-          )}
-          {metadata.assetName && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Asset name:</span>
-              </dt>
-              <dd>{metadata.assetName}</dd>
-            </div>
-          )}
-          {metadata.docs.assetClass ? (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Asset class:</span>
-              </dt>
-              <dd>
-                {metadata.docs.assetClass}
-                {metadata.docs.assetSubClass &&
-                metadata.docs.assetSubClass !== "Crypto" &&
-                metadata.docs.assetSubClass !== "Equities"
-                  ? " - " + metadata.docs.assetSubClass
-                  : ""}
-              </dd>
-            </div>
-          ) : null}
-          {(() => {
-            const assetSubClass = (metadata.docs as any)?.assetSubClass
-            if (
-              assetSubClass === "Regular Hours" ||
-              assetSubClass === "Extended Hours" ||
-              assetSubClass === "Overnight Hours"
-            ) {
+        {metadata.docs.shutdownDate && (
+          <div className={clsx(feedList.shutDate)}>
+            <hr />
+            <a
+              href="/data-streams/deprecating-streams"
+              style={{ color: "inherit", textDecoration: "underline dotted" }}
+            >
+              Deprecating:
+            </a>
+            <br />
+            {metadata.docs.shutdownDate}
+          </div>
+        )}
+      </td>
+      <td style="width:80%;">
+        <div className={tableStyles.assetAddress}>
+          <span className={tableStyles.streamAddress}>{metadata.feedId}</span>
+          <button
+            className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+            style={{ height: "16px", width: "16px" }}
+            data-clipboard-text={metadata.feedId}
+            onClick={(e) =>
+              handleClick(e, {
+                product: "STREAMS",
+                action: "feedId_copied",
+                extraInfo1: isMainnet ? "Mainnet" : "Testnet",
+                extraInfo2: metadata.pair[0],
+                extraInfo3: metadata.feedId,
+              })
+            }
+          >
+            <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+          </button>
+        </div>
+        <div>
+          <dl className={tableStyles.listContainer}>
+            {isMainnet && metadata.docs.clicProductName && metadata.feedType !== "Tokenized Equities" && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Full name:</span>
+                </dt>
+                <dd>{metadata.docs.clicProductName}</dd>
+              </div>
+            )}
+            {metadata.assetName && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Asset name:</span>
+                </dt>
+                <dd>{metadata.assetName}</dd>
+              </div>
+            )}
+            {metadata.docs.assetClass ? (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Asset class:</span>
+                </dt>
+                <dd>
+                  {metadata.docs.assetClass}
+                  {metadata.docs.assetSubClass &&
+                  metadata.docs.assetSubClass !== "Crypto" &&
+                  metadata.docs.assetSubClass !== "Equities"
+                    ? " - " + metadata.docs.assetSubClass
+                    : ""}
+                </dd>
+              </div>
+            ) : null}
+            {(() => {
+              const assetSubClass = (metadata.docs as any)?.assetSubClass
+              const clicProductName = (metadata.docs as any)?.clicProductName || ""
+
+              // Determine the trading hours type from either assetSubClass or clicProductName
+              let hoursType = ""
               let timeRange = ""
 
-              if (assetSubClass === "Regular Hours") {
+              if (
+                assetSubClass === "Regular Hours" ||
+                (clicProductName.includes("RegularHours") &&
+                  !clicProductName.includes("ExtendedHours") &&
+                  !clicProductName.includes("OvernightHours"))
+              ) {
+                hoursType = "Regular Hours"
                 timeRange = "9:30am–4:00pm Mon–Fri"
-              } else if (assetSubClass === "Extended Hours") {
+              } else if (assetSubClass === "Extended Hours" || clicProductName.includes("ExtendedHours")) {
+                hoursType = "Extended Hours"
                 timeRange = "4:00am–9:30am & 4:00pm–8:00pm Mon–Fri"
-              } else if (assetSubClass === "Overnight Hours") {
+              } else if (assetSubClass === "Overnight Hours" || clicProductName.includes("OvernightHours")) {
+                hoursType = "Overnight Hours"
                 timeRange = "8:00pm–4:00am Sun evening–Fri morning"
               }
 
-              return (
-                <div className={tableStyles.definitionGroup}>
-                  <dt>
-                    <span className="label">Trading hours:</span>
-                  </dt>
-                  <dd>
-                    <a href="/data-streams/market-hours" target="_blank">
-                      <strong>{assetSubClass}</strong>
-                    </a>{" "}
-                    — {timeRange} ET
-                  </dd>
-                </div>
-              )
-            }
-            return null
-          })()}
-          {metadata.docs.marketHours ? (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Market hours:</span>
-              </dt>
-              <dd>
-                <a href="/data-streams/market-hours" target="_blank">
-                  {metadata.docs.marketHours}
-                </a>
-              </dd>
-            </div>
-          ) : null}
-          {streamsCategoryMap[metadata.feedCategory] ? (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Category:</span>
-              </dt>
-              <dd>
-                <a href={streamsCategoryMap[metadata.feedCategory].link}>
-                  {streamsCategoryMap[metadata.feedCategory].text}
-                </a>
-              </dd>
-            </div>
-          ) : null}
-          {metadata.decimals ? (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Decimals:</span>
-              </dt>
-              <dd>{metadata.decimals}</dd>
-            </div>
-          ) : null}
-          {metadata.feedType === "Crypto-DEX" && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Report Schema:</span>
-              </dt>
-              <dd>
-                <a href="/data-streams/reference/report-schema-v3-dex" rel="noreferrer" target="_blank">
-                  Report Schema v3 (Crypto DEX)
-                </a>
-              </dd>
-            </div>
-          )}
-          {metadata.feedType === "Crypto" && metadata.docs?.productTypeCode !== "ExRate" && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Report Schema:</span>
-              </dt>
-              <dd>
-                <a href="/data-streams/reference/report-schema-v3" rel="noreferrer" target="_blank">
-                  Report Schema v3 (Crypto)
-                </a>
-              </dd>
-            </div>
-          )}
-          {(() => {
-            const schemaVersion = getSchemaVersion(metadata)
-            const feedType = metadata.feedType || metadata.docs?.feedType
-
-            // RWA streams (Equities, Forex, Datalink) - v8 or v11
-            if (feedType === "Equities" || feedType === "Forex" || feedType === "Datalink") {
-              if (schemaVersion === "v11") {
+              if (hoursType) {
                 return (
                   <div className={tableStyles.definitionGroup}>
                     <dt>
-                      <span className="label">Report Schema:</span>
+                      <span className="label">Trading hours:</span>
                     </dt>
                     <dd>
-                      <a href="/data-streams/reference/report-schema-v11" rel="noreferrer" target="_blank">
-                        Report Schema v11 (RWA Advanced)
-                      </a>
+                      <a href="/data-streams/market-hours" target="_blank">
+                        <strong>{hoursType}</strong>
+                      </a>{" "}
+                      — {timeRange} ET
                     </dd>
                   </div>
                 )
-              } else if (schemaVersion === "v8") {
+              }
+              return null
+            })()}
+            {metadata.docs.marketHours ? (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Market hours:</span>
+                </dt>
+                <dd>
+                  <a href="/data-streams/market-hours" target="_blank">
+                    {metadata.docs.marketHours}
+                  </a>
+                </dd>
+              </div>
+            ) : null}
+            {streamsCategoryMap[metadata.feedCategory] ? (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Category:</span>
+                </dt>
+                <dd>
+                  <a href={streamsCategoryMap[metadata.feedCategory].link}>
+                    {streamsCategoryMap[metadata.feedCategory].text}
+                  </a>
+                </dd>
+              </div>
+            ) : null}
+            {metadata.decimals ? (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Decimals:</span>
+                </dt>
+                <dd>{metadata.decimals}</dd>
+              </div>
+            ) : null}
+            {metadata.feedType === "Crypto-DEX" && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Report Schema:</span>
+                </dt>
+                <dd>
+                  <a href="/data-streams/reference/report-schema-v3-dex" rel="noreferrer" target="_blank">
+                    Report Schema v3 (Crypto DEX)
+                  </a>
+                </dd>
+              </div>
+            )}
+            {metadata.feedType === "Crypto" && metadata.docs?.productTypeCode !== "ExRate" && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Report Schema:</span>
+                </dt>
+                <dd>
+                  <a href="/data-streams/reference/report-schema-v3" rel="noreferrer" target="_blank">
+                    Report Schema v3 (Crypto)
+                  </a>
+                </dd>
+              </div>
+            )}
+            {(() => {
+              const schemaVersion = getSchemaVersion(metadata)
+              const feedType = metadata.feedType || metadata.docs?.feedType
+
+              // RWA streams (Equities, Forex, Datalink) - v8 or v11
+              if (feedType === "Equities" || feedType === "Forex" || feedType === "Datalink") {
+                if (schemaVersion === "v11") {
+                  return (
+                    <div className={tableStyles.definitionGroup}>
+                      <dt>
+                        <span className="label">Report Schema:</span>
+                      </dt>
+                      <dd>
+                        <a href="/data-streams/reference/report-schema-v11" rel="noreferrer" target="_blank">
+                          Report Schema v11 (RWA Advanced)
+                        </a>
+                      </dd>
+                    </div>
+                  )
+                } else if (schemaVersion === "v8") {
+                  return (
+                    <div className={tableStyles.definitionGroup}>
+                      <dt>
+                        <span className="label">Report Schema:</span>
+                      </dt>
+                      <dd>
+                        <a href="/data-streams/reference/report-schema-v8" rel="noreferrer" target="_blank">
+                          Report Schema v8 (RWA Standard)
+                        </a>
+                      </dd>
+                    </div>
+                  )
+                }
+              }
+
+              // Exchange Rate streams
+              if (metadata.docs?.productTypeCode === "ExRate") {
                 return (
                   <div className={tableStyles.definitionGroup}>
                     <dt>
                       <span className="label">Report Schema:</span>
                     </dt>
                     <dd>
-                      <a href="/data-streams/reference/report-schema-v8" rel="noreferrer" target="_blank">
-                        Report Schema v8 (RWA Standard)
+                      <a href="/data-streams/reference/report-schema-v7" rel="noreferrer" target="_blank">
+                        Report Schema v7 (Redemption Rates)
                       </a>
                     </dd>
                   </div>
                 )
               }
-            }
 
-            // Exchange Rate streams
-            if (metadata.docs?.productTypeCode === "ExRate") {
-              return (
-                <div className={tableStyles.definitionGroup}>
-                  <dt>
-                    <span className="label">Report Schema:</span>
-                  </dt>
-                  <dd>
-                    <a href="/data-streams/reference/report-schema-v7" rel="noreferrer" target="_blank">
-                      Report Schema v7 (Redemption Rates)
-                    </a>
-                  </dd>
-                </div>
-              )
-            }
+              // NAV streams
+              if (feedType === "Net Asset Value") {
+                return (
+                  <div className={tableStyles.definitionGroup}>
+                    <dt>
+                      <span className="label">Report Schema:</span>
+                    </dt>
+                    <dd>
+                      <a href="/data-streams/reference/report-schema-v9" rel="noreferrer" target="_blank">
+                        Report Schema v9 (NAV)
+                      </a>
+                    </dd>
+                  </div>
+                )
+              }
 
-            // NAV streams
-            if (feedType === "Net Asset Value") {
-              return (
-                <div className={tableStyles.definitionGroup}>
-                  <dt>
-                    <span className="label">Report Schema:</span>
-                  </dt>
-                  <dd>
-                    <a href="/data-streams/reference/report-schema-v9" rel="noreferrer" target="_blank">
-                      Report Schema v9 (NAV)
-                    </a>
-                  </dd>
-                </div>
-              )
-            }
+              // Tokenized Equities streams
+              if (feedType === "Tokenized Equities") {
+                return (
+                  <div className={tableStyles.definitionGroup}>
+                    <dt>
+                      <span className="label">Report Schema:</span>
+                    </dt>
+                    <dd>
+                      <a href="/data-streams/reference/report-schema-v10" rel="noreferrer" target="_blank">
+                        Report Schema v10 (Tokenized Assets)
+                      </a>
+                    </dd>
+                  </div>
+                )
+              }
 
-            // Tokenized Equities streams
-            if (feedType === "Tokenized Equities") {
-              return (
-                <div className={tableStyles.definitionGroup}>
-                  <dt>
-                    <span className="label">Report Schema:</span>
-                  </dt>
-                  <dd>
-                    <a href="/data-streams/reference/report-schema-v10" rel="noreferrer" target="_blank">
-                      Report Schema v10 (Tokenized Assets)
-                    </a>
-                  </dd>
-                </div>
-              )
-            }
-
-            return null
-          })()}
-        </dl>
-      </div>
-    </td>
-  </tr>
-)
+              return null
+            })()}
+          </dl>
+        </div>
+      </td>
+    </tr>
+  )
+}
 
 export const MainnetTable = ({
   network,
@@ -1228,118 +1248,51 @@ export const MainnetTable = ({
         return false
       }
 
-      if (isDeprecating) return !!metadata.docs.shutdownDate
-
-      if (dataFeedType === "streamsCrypto") {
-        const isValidStreamsFeed =
-          metadata.contractType === "verifier" &&
-          (metadata.docs.feedType === "Crypto" || metadata.docs.feedType === "Crypto-DEX")
-
-        if (showOnlyDEXFeeds) {
-          return isValidStreamsFeed && metadata.docs.feedType === "Crypto-DEX"
-        }
-
-        return isValidStreamsFeed
+      if (isDeprecating) {
+        // Only show feeds (not streams) with shutdown dates
+        return !!metadata.docs.shutdownDate && !(metadata.contractType === "verifier" && metadata.feedId)
       }
-      if (dataFeedType === "streamsRwa") {
-        const isRwaFeed =
-          metadata.contractType === "verifier" &&
-          (metadata.docs.feedType === "Equities" ||
-            metadata.docs.feedType === "Forex" ||
-            metadata.docs.feedType === "Datalink")
 
-        if (!isRwaFeed) return false
-
-        // Get schema version using helper (fallback to clicProductName)
+      // Use shared visibility logic with filters
+      return isFeedVisible(metadata, dataFeedType as any, ecosystem, {
+        showOnlyDEXFeeds,
+        streamCategoryFilter,
+        rwaSchemaFilter,
+        showOnlyMVRFeeds,
+      })
+    })
+    .filter((metadata) => {
+      // When 24/5 checkbox is checked, ONLY show 24/5 feeds
+      if (show24x5Feeds) {
         const schemaVersion = getSchemaVersion(metadata)
+        const feedType = metadata.feedType || metadata.docs?.feedType
 
-        // Apply 24/5 filter (only v11 equity streams with assetSubClass)
-        if (show24x5Feeds) {
+        // 24/5 feeds are Equities/Forex with v11 schema
+        const is24x5Feed = (feedType === "Equities" || feedType === "Forex") && schemaVersion === "v11"
+
+        if (!is24x5Feed) return false
+
+        // Apply trading hours sub-filter
+        if (tradingHoursFilter && tradingHoursFilter !== "all") {
           const assetSubClass = (metadata.docs as any)?.assetSubClass
-          const feedType = metadata.docs?.feedType || metadata.feedType
+          const clicProductName = (metadata.docs as any)?.clicProductName || ""
 
-          // For 24/5 testing: ignore hidden flag and check for equity streams with trading hours
-          const is24x5Feed =
-            feedType === "Equities" &&
-            schemaVersion === "v11" &&
-            assetSubClass &&
-            (assetSubClass === "Regular Hours" ||
-              assetSubClass === "Extended Hours" ||
-              assetSubClass === "Overnight Hours")
+          // Check both assetSubClass and clicProductName for hours identification
+          const isRegularHours =
+            assetSubClass === "Regular Hours" ||
+            (clicProductName.includes("RegularHours") &&
+              !clicProductName.includes("ExtendedHours") &&
+              !clicProductName.includes("OvernightHours"))
+          const isExtendedHours = assetSubClass === "Extended Hours" || clicProductName.includes("ExtendedHours")
+          const isOvernightHours = assetSubClass === "Overnight Hours" || clicProductName.includes("OvernightHours")
 
-          if (!is24x5Feed) return false
-
-          // Apply trading hours filter if specified
-          if (tradingHoursFilter && tradingHoursFilter !== "all") {
-            if (tradingHoursFilter === "regular" && assetSubClass !== "Regular Hours") return false
-            if (tradingHoursFilter === "extended" && assetSubClass !== "Extended Hours") return false
-            if (tradingHoursFilter === "overnight" && assetSubClass !== "Overnight Hours") return false
-          }
-
-          return true
+          if (tradingHoursFilter === "regular" && !isRegularHours) return false
+          if (tradingHoursFilter === "extended" && !isExtendedHours) return false
+          if (tradingHoursFilter === "overnight" && !isOvernightHours) return false
         }
-
-        // Apply feed type filter
-        if (streamCategoryFilter === "datalink") {
-          if (metadata.docs.feedType !== "Datalink") return false
-        } else if (streamCategoryFilter === "equities") {
-          if (metadata.docs.feedType !== "Equities") return false
-        } else if (streamCategoryFilter === "forex") {
-          if (metadata.docs.feedType !== "Forex") return false
-        }
-
-        // Apply schema filter using helper function
-        if (rwaSchemaFilter === "v8") {
-          return schemaVersion === "v8"
-        }
-        if (rwaSchemaFilter === "v11") {
-          return schemaVersion === "v11"
-        }
-
-        return true
       }
 
-      if (dataFeedType === "streamsNav") {
-        return metadata.contractType === "verifier" && metadata.docs.feedType === "Net Asset Value"
-      }
-
-      if (dataFeedType === "streamsExRate") {
-        return metadata.contractType === "verifier" && metadata.docs?.productTypeCode === "ExRate"
-      }
-
-      if (dataFeedType === "streamsBacked") {
-        return metadata.contractType === "verifier" && metadata.docs.feedType === "Tokenized Equities"
-      }
-
-      if (isSmartData) {
-        if (showOnlyMVRFeeds) {
-          return !metadata.docs?.hidden && metadata.docs?.isMVR === true && metadata.docs?.deliveryChannelCode !== "DS"
-        }
-
-        return (
-          !metadata.docs?.hidden &&
-          metadata.docs?.deliveryChannelCode !== "DS" &&
-          (metadata.docs?.productType === "Proof of Reserve" ||
-            metadata.docs?.productType === "NAVLink" ||
-            metadata.docs?.productType === "SmartAUM" ||
-            metadata.docs?.isMVR === true)
-        )
-      }
-
-      if (isUSGovernmentMacroeconomicData) {
-        const isMacro = metadata.docs?.productTypeCode === "RefMacro"
-        return isMacro
-      }
-
-      // Exclude MVR feeds from default view
-      return (
-        !metadata.docs.porType &&
-        metadata.contractType !== "verifier" &&
-        metadata.docs.productType !== "Proof of Reserve" &&
-        metadata.docs.productType !== "NAVLink" &&
-        metadata.docs.productType !== "SmartAUM" &&
-        metadata.docs?.productTypeCode !== "RefMacro"
-      )
+      return true
     })
     .filter((metadata) => {
       if (isSmartData) {
@@ -1482,8 +1435,6 @@ export const TestnetTable = ({
   showOnlyDEXFeeds,
   rwaSchemaFilter,
   streamCategoryFilter,
-  show24x5Feeds,
-  tradingHoursFilter,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
@@ -1499,8 +1450,6 @@ export const TestnetTable = ({
   showOnlyDEXFeeds?: boolean
   rwaSchemaFilter?: "all" | "v8" | "v11"
   streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
-  show24x5Feeds?: boolean
-  tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
 }) => {
   if (!network.metadata) return null
 
@@ -1546,126 +1495,13 @@ export const TestnetTable = ({
       }
 
       if (batchCategory === "hidden") return false
-      if (isStreams) {
-        if (dataFeedType === "streamsCrypto") {
-          const isValidStreamsFeed =
-            metadata.contractType === "verifier" &&
-            (metadata.feedType === "Crypto" || metadata.feedType === "Crypto-DEX")
-
-          if (showOnlyDEXFeeds) {
-            return isValidStreamsFeed && metadata.feedType === "Crypto-DEX"
-          }
-
-          return isValidStreamsFeed
-        }
-
-        if (dataFeedType === "streamsRwa") {
-          const isRwaFeed =
-            metadata.contractType === "verifier" &&
-            (metadata.docs.feedType === "Equities" ||
-              metadata.docs.feedType === "Forex" ||
-              metadata.docs.feedType === "Datalink")
-
-          if (!isRwaFeed) return false
-
-          // Get schema version using helper (fallback to clicProductName)
-          const schemaVersion = getSchemaVersion(metadata)
-
-          // Apply 24/5 filter (only v11 equity streams with assetSubClass)
-          if (show24x5Feeds) {
-            const assetSubClass = (metadata.docs as any)?.assetSubClass
-            const feedType = metadata.docs?.feedType || metadata.feedType
-
-            const is24x5Feed =
-              feedType === "Equities" &&
-              schemaVersion === "v11" &&
-              assetSubClass &&
-              (assetSubClass === "Regular Hours" ||
-                assetSubClass === "Extended Hours" ||
-                assetSubClass === "Overnight Hours")
-
-            if (!is24x5Feed) return false
-
-            // Apply trading hours filter if specified
-            if (tradingHoursFilter && tradingHoursFilter !== "all") {
-              if (tradingHoursFilter === "regular" && assetSubClass !== "Regular Hours") return false
-              if (tradingHoursFilter === "extended" && assetSubClass !== "Extended Hours") return false
-              if (tradingHoursFilter === "overnight" && assetSubClass !== "Overnight Hours") return false
-            }
-
-            return true
-          }
-
-          // Apply feed type filter
-          if (streamCategoryFilter === "datalink") {
-            if (metadata.docs.feedType !== "Datalink") return false
-          } else if (streamCategoryFilter === "equities") {
-            if (metadata.docs.feedType !== "Equities") return false
-          } else if (streamCategoryFilter === "forex") {
-            if (metadata.docs.feedType !== "Forex") return false
-          }
-
-          // Apply schema filter using helper function
-          if (rwaSchemaFilter === "v8") {
-            return schemaVersion === "v8"
-          }
-          if (rwaSchemaFilter === "v11") {
-            return schemaVersion === "v11"
-          }
-
-          return true
-        }
-
-        if (dataFeedType === "streamsExRate") {
-          return metadata.contractType === "verifier" && metadata.docs?.productTypeCode === "ExRate"
-        }
-
-        if (dataFeedType === "streamsNav") {
-          return metadata.contractType === "verifier" && metadata.docs.feedType === "Net Asset Value"
-        }
-
-        if (dataFeedType === "streamsBacked") {
-          return metadata.contractType === "verifier" && metadata.docs.feedType === "Tokenized Equities"
-        }
-
-        // If we're in streams mode but didn't match any specific stream type, exclude this feed
-        return false
-      }
-
-      if (isSmartData) {
-        if (showOnlyMVRFeeds) {
-          return !metadata.docs?.hidden && metadata.docs?.isMVR === true && metadata.docs?.deliveryChannelCode !== "DS"
-        }
-
-        // Otherwise, include all SmartData feeds (MVR, PoR, NAVLink, SmartAUM)
-        return (
-          !metadata.docs?.hidden &&
-          metadata.docs?.deliveryChannelCode !== "DS" &&
-          (metadata.docs?.productType === "Proof of Reserve" ||
-            metadata.docs?.productType === "NAVLink" ||
-            metadata.docs?.productType === "SmartAUM" ||
-            metadata.docs?.isMVR === true)
-        )
-      }
-
-      if (isRates)
-        return !!(metadata.docs.productType === "Rates" || metadata.docs.productSubType === "Realized Volatility")
-
-      if (isUSGovernmentMacroeconomicData) {
-        return metadata.docs?.productTypeCode === "RefMacro"
-      }
-
-      // Exclude MVR feeds from default view
-      return (
-        !metadata.feedId &&
-        !metadata.docs.porType &&
-        metadata.docs.productType !== "Rates" &&
-        metadata.docs.productSubType !== "Realized Volatility" &&
-        metadata.docs.productType !== "Proof of Reserve" &&
-        metadata.docs.productType !== "NAVLink" &&
-        metadata.docs.productType !== "SmartAUM" &&
-        metadata.docs?.productTypeCode !== "RefMacro"
-      )
+      // Use shared visibility logic with filters
+      return isFeedVisible(metadata, dataFeedType as any, undefined, {
+        showOnlyDEXFeeds,
+        streamCategoryFilter,
+        rwaSchemaFilter,
+        showOnlyMVRFeeds,
+      })
     })
     .filter((metadata) => {
       if (isSmartData) {

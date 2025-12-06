@@ -9,10 +9,10 @@ import {
   OutputKeyType,
   ChainType,
   ChainFamily,
-} from "../ccip/types/index.ts"
+} from "~/lib/ccip/types/index.ts"
 import { loadReferenceData, Version } from "@config/data/ccip/index.ts"
 import type { LaneConfig, ChainConfig } from "@config/data/ccip/types.ts"
-import { generateChainKey, normalizeVersion } from "@api/ccip/utils.ts"
+import { generateChainKey, normalizeVersion } from "~/lib/ccip/utils.ts"
 import { logger } from "@lib/logging/index.js"
 import {
   getChainId,

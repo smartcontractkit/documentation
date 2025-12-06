@@ -10,11 +10,11 @@ import {
   createErrorResponse,
   CCIPError,
   loadChainConfiguration,
-} from "../utils.ts"
+} from "~/lib/ccip/utils.ts"
 import { logger } from "@lib/logging/index.js"
 
-import type { TokenFilterType, TokenApiResponse } from "../types/index.ts"
-import { TokenDataService } from "../../services/token-data.ts"
+import type { TokenFilterType, TokenApiResponse } from "~/lib/ccip/types/index.ts"
+import { TokenDataService } from "~/lib/ccip/services/token-data.ts"
 
 export const prerender = false
 

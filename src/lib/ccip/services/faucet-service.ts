@@ -1,7 +1,7 @@
 import { logger } from "@lib/logging/index.js"
-import { resolveFaucetChain } from "@api/ccip/faucet/chain-resolver.ts"
-import { FaucetAdapterFactory } from "@api/ccip/faucet/adapters/index.ts"
-import { ChallengeParams, ChallengeResponse, VerifyRequest, VerifyResponse } from "@api/ccip/types/faucet.ts"
+import { resolveFaucetChain } from "~/lib/ccip/faucet/chain-resolver.ts"
+import { FaucetAdapterFactory } from "~/lib/ccip/faucet/adapters/index.ts"
+import { ChallengeParams, ChallengeResponse, VerifyRequest, VerifyResponse } from "~/lib/ccip/types/faucet.ts"
 
 export const prerender = false
 

@@ -7,9 +7,9 @@ import {
   createMetadata,
   CCIPError,
   handleApiError,
-} from "../pages/api/ccip/utils.ts"
+} from "~/lib/ccip/utils.ts"
 import type { Environment } from "../config/data/ccip/types.ts"
-import { ChainDataService } from "../pages/api/services/chain-data.ts"
+import { ChainDataService } from "~/lib/ccip/services/chain-data.ts"
 import { mockReferenceData } from "../__mocks__/chainMock.ts"
 
 // Mock the Environment enum

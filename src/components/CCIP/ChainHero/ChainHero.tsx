@@ -189,7 +189,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 RMN
                 <Tooltip
                   label=""
-                  tip="The RMN contract verifies RMN blessings, and is used to curse."
+                  tip="The RMN contract is used to curse."
                   labelStyle={{
                     marginRight: "8px",
                   }}

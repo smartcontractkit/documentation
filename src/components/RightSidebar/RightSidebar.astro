@@ -3,25 +3,20 @@ import MoreMenu from "./MoreMenu.astro"
 import { Feedback } from "../PageContent/Feedback"
 import { MarkdownHeading } from "astro"
 import TableOfContents from "~/components/TableOfContents/TableOfContents"
-import { LanguageSwitcherDropdown } from "~/components/LanguageSwitcherDropdown"
+import { CopyPageLink } from "./CopyPageLink"
 
 export type Props = {
   githubEditUrl: string
   headings: MarkdownHeading[]
-  showLanguageSwitcher?: boolean
   frontmatter?: Record<string, any>
 }
-const { githubEditUrl, showLanguageSwitcher, headings, frontmatter } = Astro.props
+const { githubEditUrl, headings, frontmatter } = Astro.props
 ---
 
 <section class="sidebar-nav" aria-labelledby="grid-right" data-sticky>
-  {
-    showLanguageSwitcher && (
-      <div class="language-switcher-wrapper">
-        <LanguageSwitcherDropdown client:only="react" />
-      </div>
-    )
-  }
+  <div class="copy-page-wrapper">
+    <CopyPageLink client:only="react" />
+  </div>
   <h2 class="heading">On this page</h2>
   <div class="toc-wrapper">
     <TableOfContents client:media="(min-width: 50em)" initialHeadings={headings} />
@@ -60,7 +55,7 @@ const { githubEditUrl, showLanguageSwitcher, headings, frontmatter } = Astro.pro
     margin-top: var(--space-3x);
   }
 
-  .language-switcher-wrapper {
+  .copy-page-wrapper {
     margin-bottom: var(--space-6x);
   }
 
