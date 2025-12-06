@@ -29,6 +29,12 @@ The data is delivered using the [RWA Advanced (v11) schema](/data-streams/refere
 
 This advanced RWA schema is built to support 24/5 streams, including liquidity-weighted `mid` price (with its corresponding timestamp `lastSeenTimestampNs` for staleness tracking), order book depth (`bid`, `ask`, `bidVolume`, `askVolume`), execution data (`lastTradedPrice`), and granular market phases (`marketStatus` values for Pre-market, Regular hours, Post-market, Overnight, and Weekend).
 
+<Aside type="caution" title="Important: Timestamp Scope">
+  The `lastSeenTimestampNs` field indicates the timestamp for the `mid` price **only**. This timestamp does **not**
+  apply to other fields in the report such as `bid`, `ask`, `bidVolume`, `askVolume`, or `lastTradedPrice`. Different
+  fields may have been updated at different times.
+</Aside>
+
 ## Feeds
 
 Each instrument is exposed through three distinct data streams feeds, each corresponding to a specific trading phase: **Regular Hours**, **Extended Hours**, and **Overnight Hours**.
