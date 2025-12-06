@@ -232,3 +232,24 @@ export interface DecommissionedNetwork {
   explorer: ExplorerInfo
   chainType: ChainType
 }
+
+// Verifier types
+export type VerifierType = "committee" | "api"
+
+export interface VerifierMetadata {
+  id: string
+  name: string
+  type: VerifierType
+}
+
+export interface VerifiersConfig {
+  [networkId: string]: {
+    [address: string]: VerifierMetadata
+  }
+}
+
+export interface Verifier extends VerifierMetadata {
+  network: string
+  address: string
+  logo: string
+}
