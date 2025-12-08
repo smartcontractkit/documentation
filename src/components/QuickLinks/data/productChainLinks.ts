@@ -409,7 +409,7 @@ export const chainNames: Record<string, string> = {
   metal: "Metal L2",
   rootstock: "Rootstock",
   etherlink: "Etherlink",
-  : "",
+  janction: "Janction",
   neox: "Neo X",
   polygonkatana: "Polygon Katana",
   tac: "Tac",
