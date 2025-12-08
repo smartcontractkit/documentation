@@ -30,9 +30,9 @@ The data is delivered using the [RWA Advanced (v11) schema](/data-streams/refere
 This advanced RWA schema is built to support 24/5 streams, including liquidity-weighted `mid` price (with its corresponding timestamp `lastSeenTimestampNs` for staleness tracking), order book depth (`bid`, `ask`, `bidVolume`, `askVolume`), execution data (`lastTradedPrice`), and granular market phases (`marketStatus` values for Pre-market, Regular hours, Post-market, Overnight, and Weekend).
 
 <Aside type="caution" title="Important: Timestamp Scope">
-  The `lastSeenTimestampNs` field indicates the timestamp for the `mid` price **only**. This timestamp does **not**
-  apply to other fields in the report such as `bid`, `ask`, `bidVolume`, `askVolume`, or `lastTradedPrice`. Different
-  fields may have been updated at different times.
+  The `lastSeenTimestampNs` field reflects the timestamp of the last update for the `mid` price only. This timestamp
+  does **not** apply to other fields in the report such as `bid`, `ask`, `bidVolume`, `askVolume`, or `lastTradedPrice`.
+  Different fields may have been updated at different times.
 </Aside>
 
 ## Feeds
@@ -121,7 +121,7 @@ Consumers must treat `marketStatus = 5` (Weekend) as a valid state and define de
 
 #### Stale Data Detection
 
-Markets may stop updating due to exchange outages, circuit breakers, trading halts, or corporate actions. Use the `lastSeenTimestampNs` field (the timestamp for the `mid` price) to detect staleness by comparing it against the current time. When this timestamp stops advancing, it indicates the underlying venue has stopped providing updates.
+Markets may stop updating due to exchange outages, circuit breakers, trading halts, or corporate actions. Use the `lastSeenTimestampNs` field (which reflects the timestamp of the last update for the `mid` price only) to detect staleness by comparing it against the current time. When this timestamp stops advancing, it indicates the underlying venue has stopped providing updates.
 
 Phase-specific feeds can introduce unique behavior. For example, overnight feeds also halt during corporate actions even though the overnight session is technically active.
 
