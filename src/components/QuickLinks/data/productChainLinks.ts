@@ -419,7 +419,6 @@ export const chainNames: Record<string, string> = {
   tac: "Tac",
   kaia: "Kaia",
   plasma: "Plasma",
-  jovay: "Jovay",
   memento: "Memento",
   xdc: "XDC",
   bittensor: "Bittensor EVM",
