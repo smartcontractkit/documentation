@@ -99,6 +99,9 @@ export const productChainLinks: ProductChainLinks = {
       abchain: "/ccip/directory/mainnet/chain/ab-mainnet",
       henesys: "/ccip/directory/mainnet/chain/nexon-mainnet-henesys",
       pharos: "/ccip/directory/testnet/chain/pharos-atlantic-testnet",
+      morph: "/ccip/directory/mainnet/chain/morph-mainnet",
+      jovay: "/ccip/directory/mainnet/chain/jovay-mainnet",
+      stable: "/ccip/directory/mainnet/chain/stable-mainnet",
     },
   },
   CRE: {
