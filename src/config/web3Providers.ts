@@ -165,7 +165,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   NEXON_HENESYS_MAINNET: () => new JsonRpcProvider("https://henesys-rpc.msu.io/"),
   PHAROS_ATLANTIC_TESTNET: () => new JsonRpcProvider("https://atlantic.dplabs-internal.com/"),
   MORPH_MAINNET: () => new JsonRpcProvider("https://rpc.morphl2.io"),
-  MORPH_TESTNET: () => new JsonRpcProvider("https://rpc-hoodi.morphl2.io/"),
+  MORPH_HOODI_TESTNET: () => new JsonRpcProvider("https://rpc-hoodi.morphl2.io/"),
   JOVAY_MAINNET: () => new JsonRpcProvider("https://rpc.jovay.io"),
   JOVAY_TESTNET: () => new JsonRpcProvider("https://api.zan.top/public/jovay-testnet"),
   STABLE_MAINNET: () => new JsonRpcProvider("https://rpc.stable.xyz"),
