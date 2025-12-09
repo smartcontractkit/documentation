@@ -193,19 +193,9 @@ const DefaultTHead = ({
 }
 
 const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, dataFeedType }) => {
-  // Risk categorization logic
-  const contractAddress = metadata.contractAddress || metadata.proxyAddress
-  const networkIdentifier = getNetworkIdentifier(network)
-  let finalTier =
-    contractAddress && batchedCategoryData?.size
-      ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)
-          ?.final ?? metadata.feedCategory)
-      : metadata.feedCategory
-
-  // Override with deprecating category if feed has shutdown date
-  if (metadata.docs?.shutdownDate) {
-    finalTier = "deprecating"
-  }
+  // Use the pre-computed finalCategory from enriched metadata
+  // (already includes deprecating status and Supabase risk tier)
+  const finalTier = metadata.finalCategory || metadata.feedCategory
 
   // US Government Macroeconomic Data logic
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
@@ -409,19 +399,9 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
   // Only show MVR badge if explicitly flagged as MVR
   const finalIsMVRFeed = isMVRFlagSet && hasDecoding
 
-  // Resolve final category from batch (fallback to metadata)
-  const contractAddress = metadata.contractAddress || metadata.proxyAddress
-  const networkIdentifier = getNetworkIdentifier(network)
-  let finalTier =
-    contractAddress && batchedCategoryData?.size
-      ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)
-          ?.final ?? metadata.feedCategory)
-      : metadata.feedCategory
-
-  // Override with deprecating category if feed has shutdown date
-  if (metadata.docs?.shutdownDate) {
-    finalTier = "deprecating"
-  }
+  // Use the pre-computed finalCategory from enriched metadata
+  // (already includes deprecating status and Supabase risk tier)
+  const finalTier = metadata.finalCategory || metadata.feedCategory
 
   return (
     <tr>
@@ -1121,35 +1101,41 @@ export const MainnetTable = ({
   const isDefault = !isStreams && !isSmartData && !isUSGovernmentMacroeconomicData
   const isDeprecating = ecosystem === "deprecating"
 
-  const filteredMetadata = network.metadata
+  // Enrich metadata with final category (combining RDD and Supabase data)
+  // Priority: deprecating status from RDD > Supabase risk tier > RDD category fallback
+  const enrichedMetadata = network.metadata.map((metadata) => {
+    // Check for deprecating status from RDD first (has shutdown date)
+    if (metadata.docs?.shutdownDate) {
+      return { ...metadata, finalCategory: "deprecating" }
+    }
+
+    // Otherwise, get risk category from Supabase (or fall back to RDD)
+    const contractAddress = metadata.contractAddress || metadata.proxyAddress
+    const networkIdentifier = getNetworkIdentifier(network)
+    let finalCategory = metadata.feedCategory
+
+    if (contractAddress && batchedCategoryData?.size) {
+      const categoryResult = getFeedCategoryFromBatch(
+        batchedCategoryData,
+        contractAddress,
+        networkIdentifier,
+        metadata.feedCategory
+      )
+      const supabaseCategory = categoryResult?.final ?? null
+
+      if (supabaseCategory) {
+        finalCategory = supabaseCategory
+      }
+    }
+
+    return { ...metadata, finalCategory }
+  })
+
+  const filteredMetadata = enrichedMetadata
     .sort((a, b) => (a.name.toUpperCase() < b.name.toUpperCase() ? -1 : 1))
     .filter((metadata) => {
-      // ---
-      // Categorization logic:
-      // 1. Try to get the risk category for this feed from Supabase (batchedCategoryData).
-      //    - Uses contractAddress and networkIdentifier as lookup keys.
-      //    - If found, use the DB value; if not, fall back to the default from metadata.
-      // 2. If the risk category is 'hidden', exclude this feed from the docs.
-      // ---
-      const contractAddress = metadata.contractAddress || metadata.proxyAddress
-      const networkIdentifier = getNetworkIdentifier(network)
-      let batchCategory = metadata.feedCategory
-
-      if (contractAddress && batchedCategoryData?.size) {
-        const categoryResult = getFeedCategoryFromBatch(
-          batchedCategoryData,
-          contractAddress,
-          networkIdentifier,
-          metadata.feedCategory
-        )
-        const finalCategory = categoryResult?.final ?? null
-
-        if (finalCategory) {
-          batchCategory = finalCategory
-        }
-      }
-
-      if (batchCategory === "hidden") return false
+      // Filter out hidden feeds (from Supabase)
+      if (metadata.finalCategory === "hidden") return false
       if (showOnlySVR && !metadata.secondaryProxyAddress) {
         return false
       }
@@ -1181,9 +1167,10 @@ export const MainnetTable = ({
 
         return included
       }
+      // Filter by final category (Supabase risk tier takes precedence over RDD)
       return (
         selectedFeedCategories.length === 0 ||
-        selectedFeedCategories.map((cat) => cat.toLowerCase()).includes(metadata.feedCategory?.toLowerCase())
+        selectedFeedCategories.map((cat) => cat.toLowerCase()).includes(metadata.finalCategory?.toLowerCase())
       )
     })
     .filter(
@@ -1339,35 +1326,41 @@ export const TestnetTable = ({
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
   const isDefault = !isSmartData && !isRates && !isStreams && !isUSGovernmentMacroeconomicData
 
-  const filteredMetadata = network.metadata
+  // Enrich metadata with final category (combining RDD and Supabase data)
+  // Priority: deprecating status from RDD > Supabase risk tier > RDD category fallback
+  const enrichedMetadata = network.metadata.map((metadata) => {
+    // Check for deprecating status from RDD first (has shutdown date)
+    if (metadata.docs?.shutdownDate) {
+      return { ...metadata, finalCategory: "deprecating" }
+    }
+
+    // Otherwise, get risk category from Supabase (or fall back to RDD)
+    const contractAddress = metadata.contractAddress || metadata.proxyAddress
+    const networkIdentifier = getNetworkIdentifier(network)
+    let finalCategory = metadata.feedCategory
+
+    if (contractAddress && batchedCategoryData?.size) {
+      const categoryResult = getFeedCategoryFromBatch(
+        batchedCategoryData,
+        contractAddress,
+        networkIdentifier,
+        metadata.feedCategory
+      )
+      const supabaseCategory = categoryResult?.final ?? null
+
+      if (supabaseCategory) {
+        finalCategory = supabaseCategory
+      }
+    }
+
+    return { ...metadata, finalCategory }
+  })
+
+  const filteredMetadata = enrichedMetadata
     .sort((a, b) => (a.name.toUpperCase() < b.name.toUpperCase() ? -1 : 1))
     .filter((metadata) => {
-      // ---
-      // Categorization logic:
-      // 1. Try to get the risk category for this feed from Supabase (batchedCategoryData).
-      //    - Uses contractAddress and networkIdentifier as lookup keys.
-      //    - If found, use the DB value; if not, fall back to the default from metadata.
-      // 2. If the risk category is 'hidden', exclude this feed from the docs.
-      // ---
-      const contractAddress = metadata.contractAddress || metadata.proxyAddress
-      const networkIdentifier = getNetworkIdentifier(network)
-      let batchCategory = metadata.feedCategory
-
-      if (contractAddress && batchedCategoryData?.size) {
-        const categoryResult = getFeedCategoryFromBatch(
-          batchedCategoryData,
-          contractAddress,
-          networkIdentifier,
-          metadata.feedCategory
-        )
-        const finalCategory = categoryResult?.final ?? null
-
-        if (finalCategory) {
-          batchCategory = finalCategory
-        }
-      }
-
-      if (batchCategory === "hidden") return false
+      // Filter out hidden feeds (from Supabase)
+      if (metadata.finalCategory === "hidden") return false
       // Use shared visibility logic with filters
       return isFeedVisible(metadata, dataFeedType as any, undefined, {
         showOnlyDEXFeeds,
@@ -1389,9 +1382,10 @@ export const TestnetTable = ({
 
         return included
       }
+      // Filter by final category (Supabase risk tier takes precedence over RDD)
       return (
         selectedFeedCategories.length === 0 ||
-        selectedFeedCategories.map((cat) => cat.toLowerCase()).includes(metadata.feedCategory?.toLowerCase())
+        selectedFeedCategories.map((cat) => cat.toLowerCase()).includes(metadata.finalCategory?.toLowerCase())
       )
     })
     .filter(
