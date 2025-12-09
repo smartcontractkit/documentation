@@ -77,6 +77,9 @@ export type SupportedTechnology =
   | "AB_CHAIN"
   | "PHAROS"
   | "HENESYS"
+  | "MORPH"
+  | "JOVAY"
+  | "STABLE"
 
 export type ChainType = "evm" | "solana" | "aptos"
 
@@ -242,6 +245,11 @@ export type SupportedChain =
   | "MONAD_MAINNET"
   | "NEXON_HENESYS_MAINNET"
   | "PHAROS_ATLANTIC_TESTNET"
+  | "MORPH_MAINNET"
+  | "MORPH_TESTNET"
+  | "JOVAY_MAINNET"
+  | "JOVAY_TESTNET"
+  | "STABLE_MAINNET"
 
 export type ExplorerInfo = {
   baseUrl: string

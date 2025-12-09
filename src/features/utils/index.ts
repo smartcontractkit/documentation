@@ -514,6 +514,16 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "NEXON_HENESYS_MAINNET"
     case "pharos-atlantic-testnet":
       return "PHAROS_ATLANTIC_TESTNET"
+    case "morph-mainnet":
+      return "MORPH_MAINNET"
+    case "morph-testnet":
+      return "MORPH_TESTNET"
+    case "jovay-mainnet":
+      return "JOVAY_MAINNET"
+    case "jovay-testnet":
+      return "JOVAY_TESTNET"
+    case "stable-mainnet":
+      return "STABLE_MAINNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -827,6 +837,16 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "nexon-mainnet-henesys"
     case "PHAROS_ATLANTIC_TESTNET":
       return "pharos-atlantic-testnet"
+    case "MORPH_MAINNET":
+      return "morph-mainnet"
+    case "MORPH_TESTNET":
+      return "morph-testnet"
+    case "JOVAY_MAINNET":
+      return "jovay-mainnet"
+    case "JOVAY_TESTNET":
+      return "jovay-testnet"
+    case "STABLE_MAINNET":
+      return "stable-mainnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
