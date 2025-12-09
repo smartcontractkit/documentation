@@ -949,7 +949,7 @@ Want to dive deeper into specific concepts from the Getting Started guide? Use t
 
 - **[EVM Client Overview](/cre/guides/workflow/using-evm-client/overview)** - Introduction to smart contract interactions
 - **[Onchain Read Guide](/cre/guides/workflow/using-evm-client/onchain-read)** - Reading from a smart contract
-- **[Onchain Write Guide](/cre/guides/workflow/using-evm-client/onchain-write)** - Complete write patterns and report generation
+- **[Onchain Write Guide](/cre/guides/workflow/using-evm-client/onchain-write/overview)** - Complete write patterns and report generation
 
 **Configuration & Secrets**
 
@@ -2328,7 +2328,7 @@ This generated test file demonstrates real-world patterns for testing complex wo
 
 ## Where to go next
 
-Now that you know how to generate bindings, you can use them to [read data from](/cre/guides/workflow/using-evm-client/onchain-read) or [write data to](/cre/guides/workflow/using-evm-client/onchain-write) your contracts, or [trigger workflows from events](/cre/guides/workflow/using-triggers/evm-log-trigger).
+Now that you know how to generate bindings, you can use them to [read data from](/cre/guides/workflow/using-evm-client/onchain-read) or [write data to](/cre/guides/workflow/using-evm-client/onchain-write/overview) your contracts, or [trigger workflows from events](/cre/guides/workflow/using-triggers/evm-log-trigger).
 
 ---
 
@@ -3548,7 +3548,7 @@ func main() {
 
 ## Learn more
 
-- **[Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write)**: Understand all onchain write approaches
+- **[Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write/overview)**: Understand all onchain write approaches
 - **[Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain)**: Submit your generated report to the blockchain
 - **[Generating Reports: Structs](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-structs)**: Manually encode and generate reports for struct data
 - **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)**: Create contracts that can receive your reports
@@ -9297,7 +9297,7 @@ You have successfully read a value from a smart contract and combined it with of
 
 # Part 4: Writing Onchain
 Source: https://docs.chain.link/cre/getting-started/part-4-writing-onchain-go
-Last Updated: 2025-11-04
+Last Updated: 2025-12-09
 
 In the previous parts, you successfully fetched offchain data and read from a smart contract. Now, you'll complete the "Onchain Calculator" by writing your computed result back to the blockchain.
 
@@ -9388,7 +9388,7 @@ contract CalculatorConsumer is ReceiverTemplate {
 }
 ```
 
-The contract is already deployed for you on Sepolia at the following address: <a href="https://sepolia.etherscan.io/address/0xF3abEAa889e46c6C5b9A0bD818cE54Cc4eAF8A54#code" target="_blank" rel="noopener noreferrer">`0xF3abEAa889e46c6C5b9A0bD818cE54Cc4eAF8A54`</a>. You will use this address in your configuration file.
+The contract is already deployed for you on Sepolia at the following address: <a href="https://sepolia.etherscan.io/address/0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52#code" target="_blank" rel="noopener noreferrer">`0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52`</a>. You will use this address in your configuration file.
 
 ## Step 2: Generate the consumer contract binding
 
@@ -9428,7 +9428,7 @@ Add the `CalculatorConsumer` contract address to your `config.staging.json`:
   "evms": [
     {
       "storageAddress": "0xa17CF997C28FF154eDBae1422e6a50BeF23927F4",
-      "calculatorConsumerAddress": "0xF3abEAa889e46c6C5b9A0bD818cE54Cc4eAF8A54",
+      "calculatorConsumerAddress": "0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52",
       "chainName": "ethereum-testnet-sepolia",
       "gasLimit": 500000
     }
@@ -9670,34 +9670,34 @@ Your workflow will now show the complete end-to-end execution, including the fin
 
 ```bash
 Workflow compiled
-2025-11-03T22:48:41Z [SIMULATION] Simulator Initialized
+2025-12-09T13:36:10Z [SIMULATION] Simulator Initialized
 
-2025-11-03T22:48:41Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
-2025-11-03T22:48:41Z [USER LOG] msg="Successfully fetched offchain value" result=56
-2025-11-03T22:48:41Z [USER LOG] msg="Successfully read onchain value" result=22
-2025-11-03T22:48:41Z [USER LOG] msg="Final calculated result" result=78
-2025-11-03T22:48:41Z [USER LOG] msg="Updating calculator result" consumerAddress=0xF3abEAa889e46c6C5b9A0bD818cE54Cc4eAF8A54
-2025-11-03T22:48:41Z [USER LOG] msg="Writing report to consumer contract" offchainValue=56 onchainValue=22 finalResult=78
-2025-11-03T22:48:41Z [USER LOG] msg="Waiting for write report response"
-2025-11-03T22:48:48Z [USER LOG] msg="Write report transaction succeeded" txHash=0x86a26f848c83f37b8eace8123ec275a0af9d21b23b1fbba9cc7664b7e474314f
-2025-11-03T22:48:48Z [USER LOG] msg="View transaction at" url=https://sepolia.etherscan.io/tx/0x86a26f848c83f37b8eace8123ec275a0af9d21b23b1fbba9cc7664b7e474314f
-2025-11-03T22:48:48Z [USER LOG] msg="Workflow finished successfully!" result="&{OffchainValue:+56 OnchainValue:+22 FinalResult:+78 TxHash:0x86a26f848c83f37b8eace8123ec275a0af9d21b23b1fbba9cc7664b7e474314f}"
+2025-12-09T13:36:10Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+2025-12-09T13:36:10Z [USER LOG] msg="Successfully fetched offchain value" result=77
+2025-12-09T13:36:10Z [USER LOG] msg="Successfully read onchain value" result=22
+2025-12-09T13:36:10Z [USER LOG] msg="Final calculated result" result=99
+2025-12-09T13:36:10Z [USER LOG] msg="Updating calculator result" consumerAddress=0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52
+2025-12-09T13:36:10Z [USER LOG] msg="Writing report to consumer contract" offchainValue=77 onchainValue=22 finalResult=99
+2025-12-09T13:36:10Z [USER LOG] msg="Waiting for write report response"
+2025-12-09T13:36:36Z [USER LOG] msg="Write report transaction succeeded" txHash=0xaf3a4bf742bac76361c0eb4bc4ea58290049a3d97e991fb80bf0a8f17719527c
+2025-12-09T13:36:36Z [USER LOG] msg="View transaction at" url=https://sepolia.etherscan.io/tx/0xaf3a4bf742bac76361c0eb4bc4ea58290049a3d97e991fb80bf0a8f17719527c
+2025-12-09T13:36:36Z [USER LOG] msg="Workflow finished successfully!" result="&{OffchainValue:+77 OnchainValue:+22 FinalResult:+99 TxHash:0xaf3a4bf742bac76361c0eb4bc4ea58290049a3d97e991fb80bf0a8f17719527c}"
 
 Workflow Simulation Result:
  {
-  "FinalResult": 78,
-  "OffchainValue": 56,
+  "FinalResult": 99,
+  "OffchainValue": 77,
   "OnchainValue": 22,
-  "TxHash": "0x86a26f848c83f37b8eace8123ec275a0af9d21b23b1fbba9cc7664b7e474314f"
+  "TxHash": "0xaf3a4bf742bac76361c0eb4bc4ea58290049a3d97e991fb80bf0a8f17719527c"
 }
 
-2025-11-03T22:48:48Z [SIMULATION] Execution finished signal received
-2025-11-03T22:48:48Z [SIMULATION] Skipping WorkflowEngineV2
+2025-12-09T13:36:36Z [SIMULATION] Execution finished signal received
+2025-12-09T13:36:36Z [SIMULATION] Skipping WorkflowEngineV2
 ```
 
-- **`[USER LOG]`**: You can see all of your `logger.Info()` calls showing the complete workflow execution, including the offchain value (`result=56`), onchain value (`result=22`), final calculation (`result=78`), and the transaction hash.
+- **`[USER LOG]`**: You can see all of your `logger.Info()` calls showing the complete workflow execution, including the offchain value (`result=77`), onchain value (`result=22`), final calculation (`result=99`), and the transaction hash.
 - **`[SIMULATION]`**: These are system-level messages from the simulator showing its internal state.
-- **`Workflow Simulation Result`**: This is the final return value of your workflow. The `MyResult` struct contains all the values (56 + 22 = 78) and the transaction hash confirming the write operation succeeded.
+- **`Workflow Simulation Result`**: This is the final return value of your workflow. The `MyResult` struct contains all the values (77 + 22 = 99) and the transaction hash confirming the write operation succeeded.
 
 ## Step 7: Verify the result onchain
 
@@ -9713,13 +9713,13 @@ Click the URL (or copy and paste it into your browser) to see the full details o
 
 **What are you seeing on a blockchain explorer?**
 
-You'll notice the transaction's `to` address is not the `CalculatorConsumer` contract you intended to call. Instead, it's to a **Forwarder** contract. Your workflow sends a secure report to the Forwarder, which then verifies the request and makes the final call to the `CalculatorConsumer` on your workflow's behalf. To learn more, see the [Onchain Write guide](/cre/guides/workflow/using-evm-client/onchain-write).
+You'll notice the transaction's `to` address is not the `CalculatorConsumer` contract you intended to call. Instead, it's to a **Forwarder** contract. Your workflow sends a secure report to the Forwarder, which then verifies the request and makes the final call to the `CalculatorConsumer` on your workflow's behalf. To learn more, see the [Onchain Write guide](/cre/guides/workflow/using-evm-client/onchain-write/overview).
 
 ### **2. Check the contract state**
 
 While your wallet interacted with the Forwarder, the `CalculatorConsumer` contract's state was still updated. You can verify this change directly on Etherscan:
 
-- Navigate to the `CalculatorConsumer` contract address: <a href="https://sepolia.etherscan.io/address/0xF3abEAa889e46c6C5b9A0bD818cE54Cc4eAF8A54#readContract" target="_blank" rel="noopener noreferrer">`0xF3abEAa889e46c6C5b9A0bD818cE54Cc4eAF8A54`</a>.
+- Navigate to the `CalculatorConsumer` contract address: <a href="https://sepolia.etherscan.io/address/0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52#readContract" target="_blank" rel="noopener noreferrer">`0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52`</a>.
 - Expand the `latestResult` function and click **Query**. The values should match the `finalResult`, `offchainValue`, and `onchainValue` from your workflow logs.
 
 This completes the end-to-end loop: triggering a workflow, fetching data, reading onchain state, and verifiably writing the result back to a public blockchain.
@@ -9727,7 +9727,7 @@ This completes the end-to-end loop: triggering a workflow, fetching data, readin
 To learn more about implementing consumer contracts and the secure write process, see these guides:
 
 - **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)**: Learn how to create your own secure consumer contracts with proper validation.
-- **[Onchain Write Guide](/cre/guides/workflow/using-evm-client/onchain-write)**: Dive deeper into the write patterns.
+- **[Onchain Write Guide](/cre/guides/workflow/using-evm-client/onchain-write/overview-go)**: Dive deeper into the write patterns.
 
 ## Next steps
 
@@ -10499,7 +10499,7 @@ This approach gives you IDE autocompletion, compile-time type checking, and elim
 
 - **[Generating Contract Bindings](/cre/guides/workflow/using-evm-client/generating-bindings)**: Learn how to generate type-safe Go bindings from contract ABIs using the CRE CLI
 - **[Onchain Read](/cre/guides/workflow/using-evm-client/onchain-read)**: Learn how to call `view` and `pure` functions on your smart contracts to read onchain state
-- **[Onchain Write](/cre/guides/workflow/using-evm-client/onchain-write)**: Learn how to call state-changing functions on your smart contracts to write data to the blockchain
+- **[Onchain Write](/cre/guides/workflow/using-evm-client/onchain-write/overview)**: Learn how to call state-changing functions on your smart contracts to write data to the blockchain
   - **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)**: Learn how to write your own consumer contracts that can receive reports from your workflow
 
 ---
