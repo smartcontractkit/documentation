@@ -553,7 +553,7 @@ This script will:
 - Detect your operating system and architecture automatically
 - Download the correct binary for your system
 - Verify the binary's integrity
-- Install it to `/usr/local/bin` (or prompt you for a custom location)
+- Install it to `$HOME/.cre`
 - Make the binary executable
 
 After the script completes, verify the installation:
@@ -711,8 +711,8 @@ You should see version information: `cre version v1.0.2`.
 **If it doesn't work:**
 
 - Make sure you opened a **new terminal window** after making PATH changes
-- Check the binary location: `which cre` should return `/usr/local/bin/cre` (or your custom path)
-- Check that the binary has execute permissions: `ls -la /usr/local/bin/cre`
+- Check the binary location: `which cre` should return the path to your installation
+- Check that the binary has execute permissions: `ls -la $(which cre)`
 - Verify your PATH includes the correct directory: `echo $PATH`
 
 #### 5. Confirm your PATH (troubleshooting)
@@ -766,7 +766,7 @@ This script will:
 
 - Download the correct binary for Windows
 - Verify the binary's integrity
-- Install it to a location in your PATH
+- Install it to `$env:LOCALAPPDATA\Programs\cre`
 - Make the binary executable
 
 After the script completes, **open a new PowerShell window** and verify the installation:
@@ -949,7 +949,7 @@ Want to dive deeper into specific concepts from the Getting Started guide? Use t
 
 - **[EVM Client Overview](/cre/guides/workflow/using-evm-client/overview)** - Introduction to smart contract interactions
 - **[Onchain Read Guide](/cre/guides/workflow/using-evm-client/onchain-read)** - Reading from a smart contract
-- **[Onchain Write Guide](/cre/guides/workflow/using-evm-client/onchain-write)** - Complete write patterns and report generation
+- **[Onchain Write Guide](/cre/guides/workflow/using-evm-client/onchain-write/overview)** - Complete write patterns and report generation
 
 **Configuration & Secrets**
 
@@ -2328,7 +2328,7 @@ This generated test file demonstrates real-world patterns for testing complex wo
 
 ## Where to go next
 
-Now that you know how to generate bindings, you can use them to [read data from](/cre/guides/workflow/using-evm-client/onchain-read) or [write data to](/cre/guides/workflow/using-evm-client/onchain-write) your contracts, or [trigger workflows from events](/cre/guides/workflow/using-triggers/evm-log-trigger).
+Now that you know how to generate bindings, you can use them to [read data from](/cre/guides/workflow/using-evm-client/onchain-read) or [write data to](/cre/guides/workflow/using-evm-client/onchain-write/overview) your contracts, or [trigger workflows from events](/cre/guides/workflow/using-triggers/evm-log-trigger).
 
 ---
 
@@ -2344,7 +2344,7 @@ This guide explains how to build a consumer contract that can securely receive a
 
 - [Core Concepts: The Onchain Data Flow](#1-core-concepts-the-onchain-data-flow)
 - [The IReceiver Standard](#2-the-ireceiver-standard)
-- [Using IReceiverTemplate](#3-using-ireceivertemplate)
+- [Using ReceiverTemplate](#3-using-receivertemplate)
 - [Working with Simulation](#4-working-with-simulation)
 - [Advanced Usage](#5-advanced-usage-optional)
 - [Complete Examples](#6-complete-examples)
@@ -2370,18 +2370,18 @@ interface IReceiver is IERC165 {
 }
 ```
 
-- `metadata`: Contains information about the workflow (ID, name, owner).
+- `metadata`: Contains information about the workflow (ID, name, owner). This is encoded by the Forwarder using `abi.encodePacked` with the following structure: `bytes32 workflowId`, `bytes10 workflowName`, `address workflowOwner`.
 - `report`: The raw, ABI-encoded data payload from your workflow.
 
 ### 2.2 Support ERC165 Interface Detection
 
 [ERC165](https://eips.ethereum.org/EIPS/eip-165) is a standard that allows contracts to publish the interfaces they support. The `KeystoneForwarder` uses this to check if your contract supports the `IReceiver` interface before sending a report.
 
-## 3. Using `IReceiverTemplate`
+## 3. Using `ReceiverTemplate`
 
 ### 3.1 Overview
 
-While you can implement these standards manually, we provide an abstract contract, `IReceiverTemplate.sol`, that does the heavy lifting for you. Inheriting from it is the recommended best practice.
+While you can implement these standards manually, we provide an abstract contract, `ReceiverTemplate.sol`, that does the heavy lifting for you. Inheriting from it is the recommended best practice.
 
 **Key features:**
 
@@ -2402,15 +2402,18 @@ import {IERC165} from "./IERC165.sol";
 import {IReceiver} from "./IReceiver.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-/// @title IReceiverTemplate - Abstract receiver with optional permission controls
+/// @title ReceiverTemplate - Abstract receiver with optional permission controls
 /// @notice Provides flexible, updatable security checks for receiving workflow reports
 /// @dev All permission fields default to zero (disabled). Use setter functions to enable checks.
-abstract contract IReceiverTemplate is IReceiver, Ownable {
+abstract contract ReceiverTemplate is IReceiver, Ownable {
     // Optional permission fields (all default to zero = disabled)
-    address public forwarderAddress; // If set, only this address can call onReport
-    address public expectedAuthor; // If set, only reports from this workflow owner are accepted
-    bytes10 public expectedWorkflowName; // If set, only reports with this workflow name are accepted
-    bytes32 public expectedWorkflowId; // If set, only reports from this specific workflow ID are accepted
+    address private s_forwarderAddress; // If set, only this address can call onReport
+    address private s_expectedAuthor; // If set, only reports from this workflow owner are accepted
+    bytes10 private s_expectedWorkflowName; // If set, only reports with this workflow name are accepted
+    bytes32 private s_expectedWorkflowId; // If set, only reports from this specific workflow ID are accepted
+
+    // Hex character lookup table for bytes-to-hex conversion
+    bytes private constant HEX_CHARS = "0123456789abcdef";
 
     // Custom errors
     error InvalidSender(address sender, address expected);
@@ -2418,30 +2421,60 @@ abstract contract IReceiverTemplate is IReceiver, Ownable {
     error InvalidWorkflowName(bytes10 received, bytes10 expected);
     error InvalidWorkflowId(bytes32 received, bytes32 expected);
 
+    // Events
+    event ForwarderAddressUpdated(address indexed previousForwarder, address indexed newForwarder);
+    event ExpectedAuthorUpdated(address indexed previousAuthor, address indexed newAuthor);
+    event ExpectedWorkflowNameUpdated(bytes10 indexed previousName, bytes10 indexed newName);
+    event ExpectedWorkflowIdUpdated(bytes32 indexed previousId, bytes32 indexed newId);
+
     /// @notice Constructor sets msg.sender as the owner
     /// @dev All permission fields are initialized to zero (disabled by default)
     constructor() Ownable(msg.sender) {}
+
+    /// @notice Returns the configured forwarder address
+    /// @return The forwarder address (address(0) if not set)
+    function getForwarderAddress() external view returns (address) {
+        return s_forwarderAddress;
+    }
+
+    /// @notice Returns the expected workflow author address
+    /// @return The expected author address (address(0) if not set)
+    function getExpectedAuthor() external view returns (address) {
+        return s_expectedAuthor;
+    }
+
+    /// @notice Returns the expected workflow name
+    /// @return The expected workflow name (bytes10(0) if not set)
+    function getExpectedWorkflowName() external view returns (bytes10) {
+        return s_expectedWorkflowName;
+    }
+
+    /// @notice Returns the expected workflow ID
+    /// @return The expected workflow ID (bytes32(0) if not set)
+    function getExpectedWorkflowId() external view returns (bytes32) {
+        return s_expectedWorkflowId;
+    }
 
     /// @inheritdoc IReceiver
     /// @dev Performs optional validation checks based on which permission fields are set
     function onReport(bytes calldata metadata, bytes calldata report) external override {
         // Security Check 1: Verify caller is the trusted Chainlink Forwarder (if configured)
-        if (forwarderAddress != address(0) && msg.sender != forwarderAddress) {
-            revert InvalidSender(msg.sender, forwarderAddress);
+        if (s_forwarderAddress != address(0) && msg.sender != s_forwarderAddress) {
+            revert InvalidSender(msg.sender, s_forwarderAddress);
         }
 
         // Security Checks 2-4: Verify workflow identity - ID, owner, and/or name (if any are configured)
-        if (expectedWorkflowId != bytes32(0) || expectedAuthor != address(0) || expectedWorkflowName != bytes10(0)) {
+        if (s_expectedWorkflowId != bytes32(0) || s_expectedAuthor != address(0) || s_expectedWorkflowName != bytes10(0)) {
             (bytes32 workflowId, bytes10 workflowName, address workflowOwner) = _decodeMetadata(metadata);
 
-            if (expectedWorkflowId != bytes32(0) && workflowId != expectedWorkflowId) {
-                revert InvalidWorkflowId(workflowId, expectedWorkflowId);
+            if (s_expectedWorkflowId != bytes32(0) && workflowId != s_expectedWorkflowId) {
+                revert InvalidWorkflowId(workflowId, s_expectedWorkflowId);
             }
-            if (expectedAuthor != address(0) && workflowOwner != expectedAuthor) {
-                revert InvalidAuthor(workflowOwner, expectedAuthor);
+            if (s_expectedAuthor != address(0) && workflowOwner != s_expectedAuthor) {
+                revert InvalidAuthor(workflowOwner, s_expectedAuthor);
             }
-            if (expectedWorkflowName != bytes10(0) && workflowName != expectedWorkflowName) {
-                revert InvalidWorkflowName(workflowName, expectedWorkflowName);
+            if (s_expectedWorkflowName != bytes10(0) && workflowName != s_expectedWorkflowName) {
+                revert InvalidWorkflowName(workflowName, s_expectedWorkflowName);
             }
         }
 
@@ -2451,21 +2484,28 @@ abstract contract IReceiverTemplate is IReceiver, Ownable {
     /// @notice Updates the forwarder address that is allowed to call onReport
     /// @param _forwarder The new forwarder address (use address(0) to disable this check)
     function setForwarderAddress(address _forwarder) external onlyOwner {
-        forwarderAddress = _forwarder;
+        address previousForwarder = s_forwarderAddress;
+        s_forwarderAddress = _forwarder;
+        emit ForwarderAddressUpdated(previousForwarder, _forwarder);
     }
 
     /// @notice Updates the expected workflow owner address
     /// @param _author The new expected author address (use address(0) to disable this check)
     function setExpectedAuthor(address _author) external onlyOwner {
-        expectedAuthor = _author;
+        address previousAuthor = s_expectedAuthor;
+        s_expectedAuthor = _author;
+        emit ExpectedAuthorUpdated(previousAuthor, _author);
     }
 
     /// @notice Updates the expected workflow name from a plaintext string
     /// @param _name The workflow name as a string (use empty string "" to disable this check)
     /// @dev The name is hashed using SHA256 and truncated
     function setExpectedWorkflowName(string calldata _name) external onlyOwner {
+        bytes10 previousName = s_expectedWorkflowName;
+
         if (bytes(_name).length == 0) {
-            expectedWorkflowName = bytes10(0);
+            s_expectedWorkflowName = bytes10(0);
+            emit ExpectedWorkflowNameUpdated(previousName, bytes10(0));
             return;
         }
 
@@ -2474,35 +2514,37 @@ abstract contract IReceiverTemplate is IReceiver, Ownable {
         bytes32 hash = sha256(bytes(_name));
         bytes memory hexString = _bytesToHexString(abi.encodePacked(hash));
         bytes memory first10 = new bytes(10);
-        for (uint i = 0; i < 10; i++) {
+        for (uint256 i = 0; i < 10; i++) {
             first10[i] = hexString[i];
         }
-        expectedWorkflowName = bytes10(first10);
+        s_expectedWorkflowName = bytes10(first10);
+        emit ExpectedWorkflowNameUpdated(previousName, s_expectedWorkflowName);
     }
 
     /// @notice Updates the expected workflow ID
     /// @param _id The new expected workflow ID (use bytes32(0) to disable this check)
     function setExpectedWorkflowId(bytes32 _id) external onlyOwner {
-        expectedWorkflowId = _id;
+        bytes32 previousId = s_expectedWorkflowId;
+        s_expectedWorkflowId = _id;
+        emit ExpectedWorkflowIdUpdated(previousId, _id);
     }
 
     /// @notice Helper function to convert bytes to hex string
     /// @param data The bytes to convert
     /// @return The hex string representation
     function _bytesToHexString(bytes memory data) private pure returns (bytes memory) {
-        bytes memory hexChars = "0123456789abcdef";
         bytes memory hexString = new bytes(data.length * 2);
 
         for (uint256 i = 0; i < data.length; i++) {
-            hexString[i * 2] = hexChars[uint8(data[i] >> 4)];
-            hexString[i * 2 + 1] = hexChars[uint8(data[i] & 0x0f)];
+            hexString[i * 2] = HEX_CHARS[uint8(data[i] >> 4)];
+            hexString[i * 2 + 1] = HEX_CHARS[uint8(data[i] & 0x0f)];
         }
 
         return hexString;
     }
 
     /// @notice Extracts all metadata fields from the onReport metadata parameter
-    /// @param metadata The metadata in bytes format
+    /// @param metadata The metadata bytes encoded using abi.encodePacked(workflowId, workflowName, workflowOwner)
     /// @return workflowId The unique identifier of the workflow (bytes32)
     /// @return workflowName The name of the workflow (bytes10)
     /// @return workflowOwner The owner address of the workflow
@@ -2511,7 +2553,7 @@ abstract contract IReceiverTemplate is IReceiver, Ownable {
         pure
         returns (bytes32 workflowId, bytes10 workflowName, address workflowOwner)
     {
-        // Metadata structure:
+        // Metadata structure (encoded using abi.encodePacked by the Forwarder):
         // - First 32 bytes: length of the byte array (standard for dynamic bytes)
         // - Offset 32, size 32: workflow_id (bytes32)
         // - Offset 64, size 10: workflow_name (bytes10)
@@ -2521,6 +2563,7 @@ abstract contract IReceiverTemplate is IReceiver, Ownable {
             workflowName := mload(add(metadata, 64))
             workflowOwner := shr(mul(12, 8), mload(add(metadata, 74)))
         }
+        return (workflowId, workflowName, workflowOwner);
     }
 
     /// @notice Abstract function to process the report data
@@ -2537,24 +2580,24 @@ abstract contract IReceiverTemplate is IReceiver, Ownable {
 
 ### 3.3 Quick Start
 
-The simplest way to use `IReceiverTemplate` is to inherit from it and implement the `_processReport` function:
+The simplest way to use `ReceiverTemplate` is to inherit from it and implement the `_processReport` function:
 
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
-import { IReceiverTemplate } from "./IReceiverTemplate.sol";
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
 
-contract MyConsumer is IReceiverTemplate {
-  uint256 public storedValue;
+contract MyConsumer is ReceiverTemplate {
+  uint256 public s_storedValue;
   event ValueUpdated(uint256 newValue);
 
   // Simple constructor - no parameters needed
-  constructor() IReceiverTemplate() {}
+  constructor() ReceiverTemplate() {}
 
   // Implement your business logic here
   function _processReport(bytes calldata report) internal override {
     uint256 newValue = abi.decode(report, (uint256));
-    storedValue = newValue;
+    s_storedValue = newValue;
     emit ValueUpdated(newValue);
   }
 }
@@ -2613,7 +2656,7 @@ myConsumer.setExpectedWorkflowName(""); // Empty string disables the check
 
 #### How workflow names are encoded
 
-The `workflowName` field in the metadata uses the **`bytes10`** type rather than plaintext strings. When you call `setExpectedWorkflowName("my_workflow")`, the `IReceiverTemplate` automatically encodes it using the same algorithm as the CRE engine:
+The `workflowName` field in the metadata uses the **`bytes10`** type rather than plaintext strings. When you call `setExpectedWorkflowName("my_workflow")`, the `ReceiverTemplate` automatically encodes it using the same algorithm as the CRE engine:
 
 1. Compute SHA256 hash of the workflow name
 2. Convert hash to hex string (64 characters)
@@ -2692,25 +2735,27 @@ See [Configuring Permissions](#34-configuring-permissions) for complete details.
 You can override `onReport` to add your own validation logic before or after the standard checks:
 
 ```solidity
-import { IReceiverTemplate } from "./IReceiverTemplate.sol";
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
 
-contract AdvancedConsumer is IReceiverTemplate {
-  uint256 public minReportInterval = 1 hours;
-  uint256 public lastReportTime;
+contract AdvancedConsumer is ReceiverTemplate {
+  uint256 private s_minReportInterval = 1 hours;
+  uint256 private s_lastReportTime;
 
   error ReportTooFrequent(uint256 timeSinceLastReport, uint256 minInterval);
+
+  event MinReportIntervalUpdated(uint256 previousInterval, uint256 newInterval);
 
   // Add custom validation before parent's checks
   function onReport(bytes calldata metadata, bytes calldata report) external override {
     // Custom check: Rate limiting
-    if (block.timestamp < lastReportTime + minReportInterval) {
-      revert ReportTooFrequent(block.timestamp - lastReportTime, minReportInterval);
+    if (block.timestamp < s_lastReportTime + s_minReportInterval) {
+      revert ReportTooFrequent(block.timestamp - s_lastReportTime, s_minReportInterval);
     }
 
     // Call parent implementation for standard permission checks
     super.onReport(metadata, report);
 
-    lastReportTime = block.timestamp;
+    s_lastReportTime = block.timestamp;
   }
 
   function _processReport(bytes calldata report) internal override {
@@ -2719,9 +2764,24 @@ contract AdvancedConsumer is IReceiverTemplate {
     // ... store or process the value ...
   }
 
-  // Allow owner to update rate limit
+  /// @notice Returns the minimum interval between reports
+  /// @return The minimum interval in seconds
+  function getMinReportInterval() external view returns (uint256) {
+    return s_minReportInterval;
+  }
+
+  /// @notice Returns the timestamp of the last report
+  /// @return The last report timestamp
+  function getLastReportTime() external view returns (uint256) {
+    return s_lastReportTime;
+  }
+
+  /// @notice Updates the minimum interval between reports
+  /// @param _interval The new minimum interval in seconds
   function setMinReportInterval(uint256 _interval) external onlyOwner {
-    minReportInterval = _interval;
+    uint256 previousInterval = s_minReportInterval;
+    s_minReportInterval = _interval;
+    emit MinReportIntervalUpdated(previousInterval, _interval);
   }
 }
 ```
@@ -2731,8 +2791,8 @@ contract AdvancedConsumer is IReceiverTemplate {
 The `_decodeMetadata` helper function is available for use in your `_processReport` implementation. This allows you to access workflow metadata for custom business logic:
 
 ```solidity
-contract MetadataAwareConsumer is IReceiverTemplate {
-  mapping(bytes32 => uint256) public reportCountByWorkflow;
+contract MetadataAwareConsumer is ReceiverTemplate {
+  mapping(bytes32 => uint256) public s_reportCountByWorkflow;
 
   function _processReport(bytes calldata report) internal override {
     // Access the metadata to get workflow ID
@@ -2740,7 +2800,7 @@ contract MetadataAwareConsumer is IReceiverTemplate {
     (bytes32 workflowId, , ) = _decodeMetadata(metadata);
 
     // Use workflow ID in your business logic
-    reportCountByWorkflow[workflowId]++;
+    s_reportCountByWorkflow[workflowId]++;
 
     // Process the report data
     uint256 value = abi.decode(report, (uint256));
@@ -2758,23 +2818,23 @@ contract MetadataAwareConsumer is IReceiverTemplate {
 
 ### Example 1: Simple Consumer Contract
 
-This example inherits from `IReceiverTemplate` to store a temperature value.
+This example inherits from `ReceiverTemplate` to store a temperature value.
 
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
-import { IReceiverTemplate } from "./IReceiverTemplate.sol";
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
 
-contract TemperatureConsumer is IReceiverTemplate {
-  int256 public currentTemperature;
+contract TemperatureConsumer is ReceiverTemplate {
+  int256 public s_currentTemperature;
   event TemperatureUpdated(int256 newTemperature);
 
   // Simple constructor - no parameters needed
-  constructor() IReceiverTemplate() {}
+  constructor() ReceiverTemplate() {}
 
   function _processReport(bytes calldata report) internal override {
     int256 newTemperature = abi.decode(report, (int256));
-    currentTemperature = newTemperature;
+    s_currentTemperature = newTemperature;
     emit TemperatureUpdated(newTemperature);
   }
 }
@@ -2795,7 +2855,7 @@ temperatureConsumer.setExpectedWorkflowId(0xYourWorkflowId...);
 For more complex scenarios, it's best to separate your Chainlink-aware code from your core business logic. The **Proxy Pattern** is a robust architecture that uses two contracts to achieve this:
 
 - **A Logic Contract**: Holds the state and the core functions of your application. It knows nothing about the Forwarder contract or the `onReport` function.
-- **A Proxy Contract**: Acts as the secure entry point. It inherits from `IReceiverTemplate` and forwards validated reports to the Logic Contract.
+- **A Proxy Contract**: Acts as the secure entry point. It inherits from `ReceiverTemplate` and forwards validated reports to the Logic Contract.
 
 This separation makes your business logic more modular and reusable.
 
@@ -2815,28 +2875,59 @@ contract ReserveManager is Ownable {
     uint256 btcPrice;
   }
 
-  address public proxyAddress;
-  uint256 public lastEthPrice;
-  uint256 public lastBtcPrice;
-  uint256 public lastUpdateTime;
+  address private s_proxyAddress;
+  uint256 private s_lastEthPrice;
+  uint256 private s_lastBtcPrice;
+  uint256 private s_lastUpdateTime;
 
   event ReservesUpdated(uint256 ethPrice, uint256 btcPrice, uint256 updateTime);
+  event ProxyAddressUpdated(address indexed previousProxy, address indexed newProxy);
 
   modifier onlyProxy() {
-    require(msg.sender == proxyAddress, "Caller is not the authorized proxy");
+    require(msg.sender == s_proxyAddress, "Caller is not the authorized proxy");
     _;
   }
 
   constructor() Ownable(msg.sender) {}
 
-  function setProxyAddress(address _proxyAddress) external onlyOwner {
-    proxyAddress = _proxyAddress;
+  /// @notice Returns the proxy address
+  /// @return The authorized proxy address
+  function getProxyAddress() external view returns (address) {
+    return s_proxyAddress;
   }
 
+  /// @notice Returns the last ETH price
+  /// @return The last recorded ETH price
+  function getLastEthPrice() external view returns (uint256) {
+    return s_lastEthPrice;
+  }
+
+  /// @notice Returns the last BTC price
+  /// @return The last recorded BTC price
+  function getLastBtcPrice() external view returns (uint256) {
+    return s_lastBtcPrice;
+  }
+
+  /// @notice Returns the last update timestamp
+  /// @return The timestamp of the last update
+  function getLastUpdateTime() external view returns (uint256) {
+    return s_lastUpdateTime;
+  }
+
+  /// @notice Updates the authorized proxy address
+  /// @param _proxyAddress The new proxy address
+  function setProxyAddress(address _proxyAddress) external onlyOwner {
+    address previousProxy = s_proxyAddress;
+    s_proxyAddress = _proxyAddress;
+    emit ProxyAddressUpdated(previousProxy, _proxyAddress);
+  }
+
+  /// @notice Updates the reserve prices
+  /// @param data The new reserve data containing ETH and BTC prices
   function updateReserves(UpdateReserves memory data) external onlyProxy {
-    lastEthPrice = data.ethPrice;
-    lastBtcPrice = data.btcPrice;
-    lastUpdateTime = block.timestamp;
+    s_lastEthPrice = data.ethPrice;
+    s_lastBtcPrice = data.btcPrice;
+    s_lastUpdateTime = block.timestamp;
     emit ReservesUpdated(data.ethPrice, data.btcPrice, block.timestamp);
   }
 }
@@ -2844,23 +2935,29 @@ contract ReserveManager is Ownable {
 
 #### The Proxy Contract (`UpdateReservesProxy.sol`)
 
-This contract, our "bouncer", is the only contract that interacts with the Chainlink platform. It inherits `IReceiverTemplate` to validate incoming reports and then calls the `ReserveManager`.
+This contract, our "bouncer", is the only contract that interacts with the Chainlink platform. It inherits `ReceiverTemplate` to validate incoming reports and then calls the `ReserveManager`.
 
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
 import { ReserveManager } from "./ReserveManager.sol";
-import { IReceiverTemplate } from "./keystone/IReceiverTemplate.sol";
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
 
-contract UpdateReservesProxy is IReceiverTemplate {
-  ReserveManager public s_reserveManager;
+contract UpdateReservesProxy is ReceiverTemplate {
+  ReserveManager private s_reserveManager;
 
   constructor(address reserveManagerAddress) {
     s_reserveManager = ReserveManager(reserveManagerAddress);
   }
 
-  /// @inheritdoc IReceiverTemplate
+  /// @notice Returns the reserve manager contract address
+  /// @return The ReserveManager contract instance
+  function getReserveManager() external view returns (ReserveManager) {
+    return s_reserveManager;
+  }
+
+  /// @inheritdoc ReceiverTemplate
   function _processReport(bytes calldata report) internal override {
     ReserveManager.UpdateReserves memory updateReservesData = abi.decode(report, (ReserveManager.UpdateReserves));
     s_reserveManager.updateReserves(updateReservesData);
@@ -2907,12 +3004,6 @@ The deployment and configuration process involves these steps:
    - Update the workflow configuration to use the new proxy address
 
 #### End-to-End Sequence
-
-## Where to go next?
-
-Now that you know how to build a consumer contract, the next step is to call it from your workflow.
-
-- **[Onchain Write](/cre/guides/workflow/using-evm-client/onchain-write)**: Learn how to use the `EVMClient` to send data to your new consumer contract.
 
 ---
 
@@ -3457,7 +3548,7 @@ func main() {
 
 ## Learn more
 
-- **[Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write)**: Understand all onchain write approaches
+- **[Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write/overview)**: Understand all onchain write approaches
 - **[Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain)**: Submit your generated report to the blockchain
 - **[Generating Reports: Structs](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-structs)**: Manually encode and generate reports for struct data
 - **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)**: Create contracts that can receive your reports
@@ -9206,7 +9297,7 @@ You have successfully read a value from a smart contract and combined it with of
 
 # Part 4: Writing Onchain
 Source: https://docs.chain.link/cre/getting-started/part-4-writing-onchain-go
-Last Updated: 2025-11-04
+Last Updated: 2025-12-09
 
 In the previous parts, you successfully fetched offchain data and read from a smart contract. Now, you'll complete the "Onchain Calculator" by writing your computed result back to the blockchain.
 
@@ -9233,16 +9324,16 @@ Here is the source code for the contract so you can see how it works:
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import { IReceiverTemplate } from "./keystone/IReceiverTemplate.sol";
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
 
 /**
  * @title CalculatorConsumer (Testing Version)
  * @notice This contract receives reports from a CRE workflow and stores the results of a calculation onchain.
- * @dev This version uses IReceiverTemplate without configuring any security checks, making it compatible
+ * @dev This version uses ReceiverTemplate without configuring any security checks, making it compatible
  * with the mock Forwarder used during simulation. All permission fields remain at their default zero
  * values (disabled).
  */
-contract CalculatorConsumer is IReceiverTemplate {
+contract CalculatorConsumer is ReceiverTemplate {
   // Struct to hold the data sent in a report from the workflow
   struct CalculatorResult {
     uint256 offchainValue;
@@ -9260,13 +9351,13 @@ contract CalculatorConsumer is IReceiverTemplate {
 
   /**
    * @dev The constructor doesn't set any security checks.
-   * The IReceiverTemplate parent constructor will initialize all permission fields to zero (disabled).
+   * The ReceiverTemplate parent constructor will initialize all permission fields to zero (disabled).
    */
   constructor() {}
 
   /**
    * @notice Implements the core business logic for processing reports.
-   * @dev This is called automatically by IReceiverTemplate's onReport function after security checks.
+   * @dev This is called automatically by ReceiverTemplate's onReport function after security checks.
    */
   function _processReport(bytes calldata report) internal override {
     // Decode the report bytes into our CalculatorResult struct
@@ -9297,7 +9388,7 @@ contract CalculatorConsumer is IReceiverTemplate {
 }
 ```
 
-The contract is already deployed for you on Sepolia at the following address: <a href="https://sepolia.etherscan.io/address/0xF3abEAa889e46c6C5b9A0bD818cE54Cc4eAF8A54#code" target="_blank" rel="noopener noreferrer">`0xF3abEAa889e46c6C5b9A0bD818cE54Cc4eAF8A54`</a>. You will use this address in your configuration file.
+The contract is already deployed for you on Sepolia at the following address: <a href="https://sepolia.etherscan.io/address/0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52#code" target="_blank" rel="noopener noreferrer">`0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52`</a>. You will use this address in your configuration file.
 
 ## Step 2: Generate the consumer contract binding
 
@@ -9337,7 +9428,7 @@ Add the `CalculatorConsumer` contract address to your `config.staging.json`:
   "evms": [
     {
       "storageAddress": "0xa17CF997C28FF154eDBae1422e6a50BeF23927F4",
-      "calculatorConsumerAddress": "0xF3abEAa889e46c6C5b9A0bD818cE54Cc4eAF8A54",
+      "calculatorConsumerAddress": "0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52",
       "chainName": "ethereum-testnet-sepolia",
       "gasLimit": 500000
     }
@@ -9579,34 +9670,34 @@ Your workflow will now show the complete end-to-end execution, including the fin
 
 ```bash
 Workflow compiled
-2025-11-03T22:48:41Z [SIMULATION] Simulator Initialized
+2025-12-09T13:36:10Z [SIMULATION] Simulator Initialized
 
-2025-11-03T22:48:41Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
-2025-11-03T22:48:41Z [USER LOG] msg="Successfully fetched offchain value" result=56
-2025-11-03T22:48:41Z [USER LOG] msg="Successfully read onchain value" result=22
-2025-11-03T22:48:41Z [USER LOG] msg="Final calculated result" result=78
-2025-11-03T22:48:41Z [USER LOG] msg="Updating calculator result" consumerAddress=0xF3abEAa889e46c6C5b9A0bD818cE54Cc4eAF8A54
-2025-11-03T22:48:41Z [USER LOG] msg="Writing report to consumer contract" offchainValue=56 onchainValue=22 finalResult=78
-2025-11-03T22:48:41Z [USER LOG] msg="Waiting for write report response"
-2025-11-03T22:48:48Z [USER LOG] msg="Write report transaction succeeded" txHash=0x86a26f848c83f37b8eace8123ec275a0af9d21b23b1fbba9cc7664b7e474314f
-2025-11-03T22:48:48Z [USER LOG] msg="View transaction at" url=https://sepolia.etherscan.io/tx/0x86a26f848c83f37b8eace8123ec275a0af9d21b23b1fbba9cc7664b7e474314f
-2025-11-03T22:48:48Z [USER LOG] msg="Workflow finished successfully!" result="&{OffchainValue:+56 OnchainValue:+22 FinalResult:+78 TxHash:0x86a26f848c83f37b8eace8123ec275a0af9d21b23b1fbba9cc7664b7e474314f}"
+2025-12-09T13:36:10Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+2025-12-09T13:36:10Z [USER LOG] msg="Successfully fetched offchain value" result=77
+2025-12-09T13:36:10Z [USER LOG] msg="Successfully read onchain value" result=22
+2025-12-09T13:36:10Z [USER LOG] msg="Final calculated result" result=99
+2025-12-09T13:36:10Z [USER LOG] msg="Updating calculator result" consumerAddress=0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52
+2025-12-09T13:36:10Z [USER LOG] msg="Writing report to consumer contract" offchainValue=77 onchainValue=22 finalResult=99
+2025-12-09T13:36:10Z [USER LOG] msg="Waiting for write report response"
+2025-12-09T13:36:36Z [USER LOG] msg="Write report transaction succeeded" txHash=0xaf3a4bf742bac76361c0eb4bc4ea58290049a3d97e991fb80bf0a8f17719527c
+2025-12-09T13:36:36Z [USER LOG] msg="View transaction at" url=https://sepolia.etherscan.io/tx/0xaf3a4bf742bac76361c0eb4bc4ea58290049a3d97e991fb80bf0a8f17719527c
+2025-12-09T13:36:36Z [USER LOG] msg="Workflow finished successfully!" result="&{OffchainValue:+77 OnchainValue:+22 FinalResult:+99 TxHash:0xaf3a4bf742bac76361c0eb4bc4ea58290049a3d97e991fb80bf0a8f17719527c}"
 
 Workflow Simulation Result:
  {
-  "FinalResult": 78,
-  "OffchainValue": 56,
+  "FinalResult": 99,
+  "OffchainValue": 77,
   "OnchainValue": 22,
-  "TxHash": "0x86a26f848c83f37b8eace8123ec275a0af9d21b23b1fbba9cc7664b7e474314f"
+  "TxHash": "0xaf3a4bf742bac76361c0eb4bc4ea58290049a3d97e991fb80bf0a8f17719527c"
 }
 
-2025-11-03T22:48:48Z [SIMULATION] Execution finished signal received
-2025-11-03T22:48:48Z [SIMULATION] Skipping WorkflowEngineV2
+2025-12-09T13:36:36Z [SIMULATION] Execution finished signal received
+2025-12-09T13:36:36Z [SIMULATION] Skipping WorkflowEngineV2
 ```
 
-- **`[USER LOG]`**: You can see all of your `logger.Info()` calls showing the complete workflow execution, including the offchain value (`result=56`), onchain value (`result=22`), final calculation (`result=78`), and the transaction hash.
+- **`[USER LOG]`**: You can see all of your `logger.Info()` calls showing the complete workflow execution, including the offchain value (`result=77`), onchain value (`result=22`), final calculation (`result=99`), and the transaction hash.
 - **`[SIMULATION]`**: These are system-level messages from the simulator showing its internal state.
-- **`Workflow Simulation Result`**: This is the final return value of your workflow. The `MyResult` struct contains all the values (56 + 22 = 78) and the transaction hash confirming the write operation succeeded.
+- **`Workflow Simulation Result`**: This is the final return value of your workflow. The `MyResult` struct contains all the values (77 + 22 = 99) and the transaction hash confirming the write operation succeeded.
 
 ## Step 7: Verify the result onchain
 
@@ -9622,13 +9713,13 @@ Click the URL (or copy and paste it into your browser) to see the full details o
 
 **What are you seeing on a blockchain explorer?**
 
-You'll notice the transaction's `to` address is not the `CalculatorConsumer` contract you intended to call. Instead, it's to a **Forwarder** contract. Your workflow sends a secure report to the Forwarder, which then verifies the request and makes the final call to the `CalculatorConsumer` on your workflow's behalf. To learn more, see the [Onchain Write guide](/cre/guides/workflow/using-evm-client/onchain-write).
+You'll notice the transaction's `to` address is not the `CalculatorConsumer` contract you intended to call. Instead, it's to a **Forwarder** contract. Your workflow sends a secure report to the Forwarder, which then verifies the request and makes the final call to the `CalculatorConsumer` on your workflow's behalf. To learn more, see the [Onchain Write guide](/cre/guides/workflow/using-evm-client/onchain-write/overview).
 
 ### **2. Check the contract state**
 
 While your wallet interacted with the Forwarder, the `CalculatorConsumer` contract's state was still updated. You can verify this change directly on Etherscan:
 
-- Navigate to the `CalculatorConsumer` contract address: <a href="https://sepolia.etherscan.io/address/0xF3abEAa889e46c6C5b9A0bD818cE54Cc4eAF8A54#readContract" target="_blank" rel="noopener noreferrer">`0xF3abEAa889e46c6C5b9A0bD818cE54Cc4eAF8A54`</a>.
+- Navigate to the `CalculatorConsumer` contract address: <a href="https://sepolia.etherscan.io/address/0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52#readContract" target="_blank" rel="noopener noreferrer">`0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52`</a>.
 - Expand the `latestResult` function and click **Query**. The values should match the `finalResult`, `offchainValue`, and `onchainValue` from your workflow logs.
 
 This completes the end-to-end loop: triggering a workflow, fetching data, reading onchain state, and verifiably writing the result back to a public blockchain.
@@ -9636,7 +9727,7 @@ This completes the end-to-end loop: triggering a workflow, fetching data, readin
 To learn more about implementing consumer contracts and the secure write process, see these guides:
 
 - **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)**: Learn how to create your own secure consumer contracts with proper validation.
-- **[Onchain Write Guide](/cre/guides/workflow/using-evm-client/onchain-write)**: Dive deeper into the write patterns.
+- **[Onchain Write Guide](/cre/guides/workflow/using-evm-client/onchain-write/overview-go)**: Dive deeper into the write patterns.
 
 ## Next steps
 
@@ -10408,7 +10499,7 @@ This approach gives you IDE autocompletion, compile-time type checking, and elim
 
 - **[Generating Contract Bindings](/cre/guides/workflow/using-evm-client/generating-bindings)**: Learn how to generate type-safe Go bindings from contract ABIs using the CRE CLI
 - **[Onchain Read](/cre/guides/workflow/using-evm-client/onchain-read)**: Learn how to call `view` and `pure` functions on your smart contracts to read onchain state
-- **[Onchain Write](/cre/guides/workflow/using-evm-client/onchain-write)**: Learn how to call state-changing functions on your smart contracts to write data to the blockchain
+- **[Onchain Write](/cre/guides/workflow/using-evm-client/onchain-write/overview)**: Learn how to call state-changing functions on your smart contracts to write data to the blockchain
   - **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)**: Learn how to write your own consumer contracts that can receive reports from your workflow
 
 ---
