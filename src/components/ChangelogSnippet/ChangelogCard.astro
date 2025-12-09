@@ -160,19 +160,18 @@ const formattedDate = formatDate(item["date-of-release"])
       const totalImages = images.length
 
       const checkCardHeight = () => {
-        // Determine max height based on viewport
-        const isMobile = window.innerWidth <= 768
-        const wrapperMaxHeight = isMobile ? 300 : 400
+        // Check if wrapper's content exceeds its visible height
+        const wrapperEl = wrapper as HTMLElement
+        const hasOverflow = card.scrollHeight > wrapperEl.clientHeight
 
-        // Check if card exceeds wrapper height
-        if (card.scrollHeight <= wrapperMaxHeight) {
-          // Card fits, hide the button and fade
-          footer.style.opacity = "0"
-          footer.style.pointerEvents = "none"
-        } else {
-          // Card exceeds wrapper, show button and fade
+        if (hasOverflow) {
+          // Content exceeds wrapper, show button and fade
           footer.style.opacity = "1"
           footer.style.pointerEvents = "auto"
+        } else {
+          // Content fits within wrapper, hide the button and fade
+          footer.style.opacity = "0"
+          footer.style.pointerEvents = "none"
         }
       }
 
@@ -199,10 +198,10 @@ const formattedDate = formatDate(item["date-of-release"])
             })
           }
         })
-      } else {
-        // No images, check immediately
-        checkCardHeight()
       }
+
+      // this is needed to make the fade/show more work.
+      setTimeout(checkCardHeight, 2000)
 
       let isExpanded = false
 
@@ -230,12 +229,7 @@ const formattedDate = formatDate(item["date-of-release"])
     })
   }
 
-  // Initialize on page load
-  swapDataAttributeImages()
-  initExpandableCards()
-
-  // Re-initialize after navigation (for SPA-like behavior)
-  document.addEventListener("astro:page-load", () => {
+  document.addEventListener("DOMContentLoaded", () => {
     swapDataAttributeImages()
     initExpandableCards()
   })
