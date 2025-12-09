@@ -516,8 +516,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "PHAROS_ATLANTIC_TESTNET"
     case "morph-mainnet":
       return "MORPH_MAINNET"
-    case "morph-testnet":
-      return "MORPH_TESTNET"
+    case "ethereum-testnet-hoodi-morph":
+      return "MORPH_HOODI_TESTNET"
     case "jovay-mainnet":
       return "JOVAY_MAINNET"
     case "jovay-testnet":
@@ -839,8 +839,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "pharos-atlantic-testnet"
     case "MORPH_MAINNET":
       return "morph-mainnet"
-    case "MORPH_TESTNET":
-      return "morph-testnet"
+    case "MORPH_HOODI_TESTNET":
+      return "ethereum-testnet-hoodi-morph"
     case "JOVAY_MAINNET":
       return "jovay-mainnet"
     case "JOVAY_TESTNET":
