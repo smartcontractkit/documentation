@@ -360,7 +360,7 @@ These quotas apply to each individual workflow.
 | Quota                 | Description                                               | Value     |
 | --------------------- | --------------------------------------------------------- | --------- |
 | Target Chains         | Maximum number of destination chains for write operations | 10        |
-| Report Size           | Maximum size of a report payload                          | 1 KB      |
+| Report Size           | Maximum size of a report payload                          | 5 KB      |
 | Transaction Gas Quota | Gas quota per EVM transaction                             | 5,000,000 |
 
 ### EVM read capability
@@ -441,9 +441,18 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2025-11-04
+Last Updated: 2025-11-20
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.0.2 - November 20, 2025
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.0.2" target="_blank">CRE CLI version 1.0.2</a> is now available.** This release includes various improvements based on user feedback.
+
+### How to update
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
 
 ## Release - November 4, 2025
 
@@ -520,9 +529,9 @@ These guides explain how to install the Chainlink Developer Platform CLI (also r
 
 # Installing the CRE CLI on macOS and Linux
 Source: https://docs.chain.link/cre/getting-started/cli-installation/macos-linux
-Last Updated: 2025-11-04
+Last Updated: 2025-11-20
 
-This page explains how to install the CRE CLI on macOS or Linux. The recommended version at the time of writing is **v1.0.1**.
+This page explains how to install the CRE CLI on macOS or Linux. The recommended version at the time of writing is **v1.0.2**.
 
 ## Installation
 
@@ -544,7 +553,7 @@ This script will:
 - Detect your operating system and architecture automatically
 - Download the correct binary for your system
 - Verify the binary's integrity
-- Install it to `/usr/local/bin` (or prompt you for a custom location)
+- Install it to `$HOME/.cre`
 - Make the binary executable
 
 After the script completes, verify the installation:
@@ -553,7 +562,7 @@ After the script completes, verify the installation:
 cre version
 ```
 
-**Expected output:** `cre version v1.0.1`
+**Expected output:** `cre version v1.0.2`
 
 <Aside type="note" title="macOS Gatekeeper">
   If you see warnings about "unrecognized developer/source" on macOS, run:{" "}
@@ -596,10 +605,10 @@ Compare the output with the official checksum below:
 
 | File                     | SHA-256 Checksum                                                 |
 | ------------------------ | ---------------------------------------------------------------- |
-| `cre_darwin_amd64.zip`   | 4464ed2c005dc383a14a8fbab22361eba6590a36970d3e327f2952f2b45b3619 |
-| `cre_darwin_arm64.zip`   | 621ba08b8fdfa094fb846f16a1e87753bb70687dc0d0f2a6336ab03825e24fb9 |
-| `cre_linux_amd64.tar.gz` | 36c394650ad309b649860fa3fb16df6d23617d47123b5c96947f7060eb9198fd |
-| `cre_linux_arm64.tar.gz` | f0019c04f8dc797186ebea18694a06baea79b3e98818b86a9c73559cba0c24e1 |
+| `cre_darwin_amd64.zip`   | 482e53d3a5f8471034d30c935196d2dca2ab09a5fe1ab2083ad336172565291b |
+| `cre_darwin_arm64.zip`   | 92b0409801dd4e44f90a85331615f3e4b8cf1fe9f90a8eab3ad8bb3458b4b6cf |
+| `cre_linux_amd64.tar.gz` | d3a8b9b999b4b8bf73b2235d27386acf4efbc8f05d86d9e6066abda23ee9ce9b |
+| `cre_linux_arm64.tar.gz` | f52d618727ccc8fb6ab4b1f9418b09424c8505428131a49c01bb33ca2bc86fe3 |
 
 If the checksum doesn't match, do not proceed with installation. Contact your Chainlink point of contact for assistance.
 
@@ -624,7 +633,7 @@ If the checksum doesn't match, do not proceed with installation. Contact your Ch
 3. **Rename the extracted binary to `cre`**
 
    ```bash
-   mv cre_v1.0.1_darwin_arm64 cre
+   mv cre_v1.0.2_darwin_arm64 cre
    ```
 
 4. **Make it executable**:
@@ -697,13 +706,13 @@ cre version
 
 **Expected output:**
 
-You should see version information: `cre version v1.0.1`.
+You should see version information: `cre version v1.0.2`.
 
 **If it doesn't work:**
 
 - Make sure you opened a **new terminal window** after making PATH changes
-- Check the binary location: `which cre` should return `/usr/local/bin/cre` (or your custom path)
-- Check that the binary has execute permissions: `ls -la /usr/local/bin/cre`
+- Check the binary location: `which cre` should return the path to your installation
+- Check that the binary has execute permissions: `ls -la $(which cre)`
 - Verify your PATH includes the correct directory: `echo $PATH`
 
 #### 5. Confirm your PATH (troubleshooting)
@@ -734,9 +743,9 @@ Once you're authenticated, you're ready to build your first workflow:
 
 # Installing the CRE CLI on Windows
 Source: https://docs.chain.link/cre/getting-started/cli-installation/windows
-Last Updated: 2025-11-04
+Last Updated: 2025-11-20
 
-This page explains how to install the Chainlink Developer Platform CLI (also referred to as the CRE CLI) on Windows. The recommended version at the time of writing is **v1.0.1**.
+This page explains how to install the Chainlink Developer Platform CLI (also referred to as the CRE CLI) on Windows. The recommended version at the time of writing is **v1.0.2**.
 
 ## Installation
 
@@ -757,7 +766,7 @@ This script will:
 
 - Download the correct binary for Windows
 - Verify the binary's integrity
-- Install it to a location in your PATH
+- Install it to `$env:LOCALAPPDATA\Programs\cre`
 - Make the binary executable
 
 After the script completes, **open a new PowerShell window** and verify the installation:
@@ -766,7 +775,7 @@ After the script completes, **open a new PowerShell window** and verify the inst
 cre version
 ```
 
-**Expected output:** `cre version v1.0.1`
+**Expected output:** `cre version v1.0.2`
 
 ### Manual installation
 
@@ -794,7 +803,7 @@ Compare the `Hash` value in the output with the official checksum below:
 
 | File                    | SHA-256 Checksum                                                 |
 | ----------------------- | ---------------------------------------------------------------- |
-| `cre_windows_amd64.zip` | ae6f7d3a8978e12716c2cdcfdf6a35617e63c327fcf0e74b0b5d657b1cdf503a |
+| `cre_windows_amd64.zip` | 60fe65b74619c4164c0a9d6442611bf8537a04a6daf1ed3ecefc608cbbffdb01 |
 
 If the checksum doesn't match, do not proceed with installation. Contact your Chainlink point of contact for assistance.
 
@@ -803,7 +812,7 @@ If the checksum doesn't match, do not proceed with installation. Contact your Ch
 1. Navigate to the directory where you downloaded the archive.
 2. Right-click the `.zip` file and select **Extract All...**.
 3. Choose a permanent location for the extracted folder (e.g., `C:\Program Files\cre-cli`).
-4. Inside the extracted folder, rename the file `cre_v1.0.1_windows_amd64.exe` to `cre.exe`.
+4. Inside the extracted folder, rename the file `cre_v1.0.2_windows_amd64.exe` to `cre.exe`.
 
 #### 3. Add the CLI to your PATH
 
@@ -828,7 +837,7 @@ Open a new **PowerShell** or **Command Prompt** window and run:
 cre version
 ```
 
-You should see version information: `cre version v1.0.1`.
+You should see version information: `cre version v1.0.2`.
 
 ## Next steps
 
@@ -940,7 +949,7 @@ Want to dive deeper into specific concepts from the Getting Started guide? Use t
 
 - **[EVM Client Overview](/cre/guides/workflow/using-evm-client/overview)** - Introduction to smart contract interactions
 - **[Onchain Read Guide](/cre/guides/workflow/using-evm-client/onchain-read)** - Reading from a smart contract
-- **[Onchain Write Guide](/cre/guides/workflow/using-evm-client/onchain-write)** - Complete write patterns and report generation
+- **[Onchain Write Guide](/cre/guides/workflow/using-evm-client/onchain-write/overview)** - Complete write patterns and report generation
 
 **Configuration & Secrets**
 
@@ -2319,13 +2328,13 @@ This generated test file demonstrates real-world patterns for testing complex wo
 
 ## Where to go next
 
-Now that you know how to generate bindings, you can use them to [read data from](/cre/guides/workflow/using-evm-client/onchain-read) or [write data to](/cre/guides/workflow/using-evm-client/onchain-write) your contracts, or [trigger workflows from events](/cre/guides/workflow/using-triggers/evm-log-trigger).
+Now that you know how to generate bindings, you can use them to [read data from](/cre/guides/workflow/using-evm-client/onchain-read) or [write data to](/cre/guides/workflow/using-evm-client/onchain-write/overview) your contracts, or [trigger workflows from events](/cre/guides/workflow/using-triggers/evm-log-trigger).
 
 ---
 
 # Building Consumer Contracts
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts
-Last Updated: 2025-11-04
+Last Updated: 2025-11-20
 
 When your workflow [writes data to the blockchain](/cre/guides/workflow/using-evm-client/onchain-write), it doesn't call your contract directly. Instead, it submits a signed report to a Chainlink `KeystoneForwarder` contract, which then calls your contract.
 
@@ -2335,7 +2344,7 @@ This guide explains how to build a consumer contract that can securely receive a
 
 - [Core Concepts: The Onchain Data Flow](#1-core-concepts-the-onchain-data-flow)
 - [The IReceiver Standard](#2-the-ireceiver-standard)
-- [Using IReceiverTemplate](#3-using-ireceivertemplate)
+- [Using ReceiverTemplate](#3-using-receivertemplate)
 - [Working with Simulation](#4-working-with-simulation)
 - [Advanced Usage](#5-advanced-usage-optional)
 - [Complete Examples](#6-complete-examples)
@@ -2361,18 +2370,18 @@ interface IReceiver is IERC165 {
 }
 ```
 
-- `metadata`: Contains information about the workflow (ID, name, owner).
+- `metadata`: Contains information about the workflow (ID, name, owner). This is encoded by the Forwarder using `abi.encodePacked` with the following structure: `bytes32 workflowId`, `bytes10 workflowName`, `address workflowOwner`.
 - `report`: The raw, ABI-encoded data payload from your workflow.
 
 ### 2.2 Support ERC165 Interface Detection
 
 [ERC165](https://eips.ethereum.org/EIPS/eip-165) is a standard that allows contracts to publish the interfaces they support. The `KeystoneForwarder` uses this to check if your contract supports the `IReceiver` interface before sending a report.
 
-## 3. Using `IReceiverTemplate`
+## 3. Using `ReceiverTemplate`
 
 ### 3.1 Overview
 
-While you can implement these standards manually, we provide an abstract contract, `IReceiverTemplate.sol`, that does the heavy lifting for you. Inheriting from it is the recommended best practice.
+While you can implement these standards manually, we provide an abstract contract, `ReceiverTemplate.sol`, that does the heavy lifting for you. Inheriting from it is the recommended best practice.
 
 **Key features:**
 
@@ -2393,15 +2402,18 @@ import {IERC165} from "./IERC165.sol";
 import {IReceiver} from "./IReceiver.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-/// @title IReceiverTemplate - Abstract receiver with optional permission controls
+/// @title ReceiverTemplate - Abstract receiver with optional permission controls
 /// @notice Provides flexible, updatable security checks for receiving workflow reports
 /// @dev All permission fields default to zero (disabled). Use setter functions to enable checks.
-abstract contract IReceiverTemplate is IReceiver, Ownable {
+abstract contract ReceiverTemplate is IReceiver, Ownable {
     // Optional permission fields (all default to zero = disabled)
-    address public forwarderAddress; // If set, only this address can call onReport
-    address public expectedAuthor; // If set, only reports from this workflow owner are accepted
-    bytes10 public expectedWorkflowName; // If set, only reports with this workflow name are accepted
-    bytes32 public expectedWorkflowId; // If set, only reports from this specific workflow ID are accepted
+    address private s_forwarderAddress; // If set, only this address can call onReport
+    address private s_expectedAuthor; // If set, only reports from this workflow owner are accepted
+    bytes10 private s_expectedWorkflowName; // If set, only reports with this workflow name are accepted
+    bytes32 private s_expectedWorkflowId; // If set, only reports from this specific workflow ID are accepted
+
+    // Hex character lookup table for bytes-to-hex conversion
+    bytes private constant HEX_CHARS = "0123456789abcdef";
 
     // Custom errors
     error InvalidSender(address sender, address expected);
@@ -2409,30 +2421,60 @@ abstract contract IReceiverTemplate is IReceiver, Ownable {
     error InvalidWorkflowName(bytes10 received, bytes10 expected);
     error InvalidWorkflowId(bytes32 received, bytes32 expected);
 
+    // Events
+    event ForwarderAddressUpdated(address indexed previousForwarder, address indexed newForwarder);
+    event ExpectedAuthorUpdated(address indexed previousAuthor, address indexed newAuthor);
+    event ExpectedWorkflowNameUpdated(bytes10 indexed previousName, bytes10 indexed newName);
+    event ExpectedWorkflowIdUpdated(bytes32 indexed previousId, bytes32 indexed newId);
+
     /// @notice Constructor sets msg.sender as the owner
     /// @dev All permission fields are initialized to zero (disabled by default)
     constructor() Ownable(msg.sender) {}
+
+    /// @notice Returns the configured forwarder address
+    /// @return The forwarder address (address(0) if not set)
+    function getForwarderAddress() external view returns (address) {
+        return s_forwarderAddress;
+    }
+
+    /// @notice Returns the expected workflow author address
+    /// @return The expected author address (address(0) if not set)
+    function getExpectedAuthor() external view returns (address) {
+        return s_expectedAuthor;
+    }
+
+    /// @notice Returns the expected workflow name
+    /// @return The expected workflow name (bytes10(0) if not set)
+    function getExpectedWorkflowName() external view returns (bytes10) {
+        return s_expectedWorkflowName;
+    }
+
+    /// @notice Returns the expected workflow ID
+    /// @return The expected workflow ID (bytes32(0) if not set)
+    function getExpectedWorkflowId() external view returns (bytes32) {
+        return s_expectedWorkflowId;
+    }
 
     /// @inheritdoc IReceiver
     /// @dev Performs optional validation checks based on which permission fields are set
     function onReport(bytes calldata metadata, bytes calldata report) external override {
         // Security Check 1: Verify caller is the trusted Chainlink Forwarder (if configured)
-        if (forwarderAddress != address(0) && msg.sender != forwarderAddress) {
-            revert InvalidSender(msg.sender, forwarderAddress);
+        if (s_forwarderAddress != address(0) && msg.sender != s_forwarderAddress) {
+            revert InvalidSender(msg.sender, s_forwarderAddress);
         }
 
         // Security Checks 2-4: Verify workflow identity - ID, owner, and/or name (if any are configured)
-        if (expectedWorkflowId != bytes32(0) || expectedAuthor != address(0) || expectedWorkflowName != bytes10(0)) {
+        if (s_expectedWorkflowId != bytes32(0) || s_expectedAuthor != address(0) || s_expectedWorkflowName != bytes10(0)) {
             (bytes32 workflowId, bytes10 workflowName, address workflowOwner) = _decodeMetadata(metadata);
 
-            if (expectedWorkflowId != bytes32(0) && workflowId != expectedWorkflowId) {
-                revert InvalidWorkflowId(workflowId, expectedWorkflowId);
+            if (s_expectedWorkflowId != bytes32(0) && workflowId != s_expectedWorkflowId) {
+                revert InvalidWorkflowId(workflowId, s_expectedWorkflowId);
             }
-            if (expectedAuthor != address(0) && workflowOwner != expectedAuthor) {
-                revert InvalidAuthor(workflowOwner, expectedAuthor);
+            if (s_expectedAuthor != address(0) && workflowOwner != s_expectedAuthor) {
+                revert InvalidAuthor(workflowOwner, s_expectedAuthor);
             }
-            if (expectedWorkflowName != bytes10(0) && workflowName != expectedWorkflowName) {
-                revert InvalidWorkflowName(workflowName, expectedWorkflowName);
+            if (s_expectedWorkflowName != bytes10(0) && workflowName != s_expectedWorkflowName) {
+                revert InvalidWorkflowName(workflowName, s_expectedWorkflowName);
             }
         }
 
@@ -2442,29 +2484,67 @@ abstract contract IReceiverTemplate is IReceiver, Ownable {
     /// @notice Updates the forwarder address that is allowed to call onReport
     /// @param _forwarder The new forwarder address (use address(0) to disable this check)
     function setForwarderAddress(address _forwarder) external onlyOwner {
-        forwarderAddress = _forwarder;
+        address previousForwarder = s_forwarderAddress;
+        s_forwarderAddress = _forwarder;
+        emit ForwarderAddressUpdated(previousForwarder, _forwarder);
     }
 
     /// @notice Updates the expected workflow owner address
     /// @param _author The new expected author address (use address(0) to disable this check)
     function setExpectedAuthor(address _author) external onlyOwner {
-        expectedAuthor = _author;
+        address previousAuthor = s_expectedAuthor;
+        s_expectedAuthor = _author;
+        emit ExpectedAuthorUpdated(previousAuthor, _author);
     }
 
-    /// @notice Updates the expected workflow name
-    /// @param _name The new expected workflow name (use bytes10(0) to disable this check)
-    function setExpectedWorkflowName(bytes10 _name) external onlyOwner {
-        expectedWorkflowName = _name;
+    /// @notice Updates the expected workflow name from a plaintext string
+    /// @param _name The workflow name as a string (use empty string "" to disable this check)
+    /// @dev The name is hashed using SHA256 and truncated
+    function setExpectedWorkflowName(string calldata _name) external onlyOwner {
+        bytes10 previousName = s_expectedWorkflowName;
+
+        if (bytes(_name).length == 0) {
+            s_expectedWorkflowName = bytes10(0);
+            emit ExpectedWorkflowNameUpdated(previousName, bytes10(0));
+            return;
+        }
+
+        // Convert workflow name to bytes10:
+        // SHA256 hash → hex encode → take first 10 chars → hex encode those chars
+        bytes32 hash = sha256(bytes(_name));
+        bytes memory hexString = _bytesToHexString(abi.encodePacked(hash));
+        bytes memory first10 = new bytes(10);
+        for (uint256 i = 0; i < 10; i++) {
+            first10[i] = hexString[i];
+        }
+        s_expectedWorkflowName = bytes10(first10);
+        emit ExpectedWorkflowNameUpdated(previousName, s_expectedWorkflowName);
     }
 
     /// @notice Updates the expected workflow ID
     /// @param _id The new expected workflow ID (use bytes32(0) to disable this check)
     function setExpectedWorkflowId(bytes32 _id) external onlyOwner {
-        expectedWorkflowId = _id;
+        bytes32 previousId = s_expectedWorkflowId;
+        s_expectedWorkflowId = _id;
+        emit ExpectedWorkflowIdUpdated(previousId, _id);
+    }
+
+    /// @notice Helper function to convert bytes to hex string
+    /// @param data The bytes to convert
+    /// @return The hex string representation
+    function _bytesToHexString(bytes memory data) private pure returns (bytes memory) {
+        bytes memory hexString = new bytes(data.length * 2);
+
+        for (uint256 i = 0; i < data.length; i++) {
+            hexString[i * 2] = HEX_CHARS[uint8(data[i] >> 4)];
+            hexString[i * 2 + 1] = HEX_CHARS[uint8(data[i] & 0x0f)];
+        }
+
+        return hexString;
     }
 
     /// @notice Extracts all metadata fields from the onReport metadata parameter
-    /// @param metadata The metadata in bytes format
+    /// @param metadata The metadata bytes encoded using abi.encodePacked(workflowId, workflowName, workflowOwner)
     /// @return workflowId The unique identifier of the workflow (bytes32)
     /// @return workflowName The name of the workflow (bytes10)
     /// @return workflowOwner The owner address of the workflow
@@ -2473,7 +2553,7 @@ abstract contract IReceiverTemplate is IReceiver, Ownable {
         pure
         returns (bytes32 workflowId, bytes10 workflowName, address workflowOwner)
     {
-        // Metadata structure:
+        // Metadata structure (encoded using abi.encodePacked by the Forwarder):
         // - First 32 bytes: length of the byte array (standard for dynamic bytes)
         // - Offset 32, size 32: workflow_id (bytes32)
         // - Offset 64, size 10: workflow_name (bytes10)
@@ -2483,6 +2563,7 @@ abstract contract IReceiverTemplate is IReceiver, Ownable {
             workflowName := mload(add(metadata, 64))
             workflowOwner := shr(mul(12, 8), mload(add(metadata, 74)))
         }
+        return (workflowId, workflowName, workflowOwner);
     }
 
     /// @notice Abstract function to process the report data
@@ -2499,24 +2580,24 @@ abstract contract IReceiverTemplate is IReceiver, Ownable {
 
 ### 3.3 Quick Start
 
-The simplest way to use `IReceiverTemplate` is to inherit from it and implement the `_processReport` function:
+The simplest way to use `ReceiverTemplate` is to inherit from it and implement the `_processReport` function:
 
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
-import { IReceiverTemplate } from "./IReceiverTemplate.sol";
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
 
-contract MyConsumer is IReceiverTemplate {
-  uint256 public storedValue;
+contract MyConsumer is ReceiverTemplate {
+  uint256 public s_storedValue;
   event ValueUpdated(uint256 newValue);
 
   // Simple constructor - no parameters needed
-  constructor() IReceiverTemplate() {}
+  constructor() ReceiverTemplate() {}
 
   // Implement your business logic here
   function _processReport(bytes calldata report) internal override {
     uint256 newValue = abi.decode(report, (uint256));
-    storedValue = newValue;
+    s_storedValue = newValue;
     emit ValueUpdated(newValue);
   }
 }
@@ -2547,10 +2628,10 @@ myConsumer.setExpectedWorkflowId(0x1234...); // Your specific workflow ID
 
 // Example: Enable workflow owner and name checks
 myConsumer.setExpectedAuthor(0xYourAddress...);
-myConsumer.setExpectedWorkflowName(0x6d795f776f726b666c6f77); // "my_workflo" in hex (bytes10 = 10 chars max)
+myConsumer.setExpectedWorkflowName("my_workflow"); // The plaintext workflow name
 
-// Example: Disable a check later (set to zero)
-myConsumer.setExpectedWorkflowName(bytes10(0));
+// Example: Disable a check later
+myConsumer.setExpectedWorkflowName(""); // Empty string disables the check
 ```
 
 
@@ -2573,6 +2654,29 @@ myConsumer.setExpectedWorkflowName(bytes10(0));
 - Your business logic in `_processReport`
 - (Optional) Configure permissions after deployment using setter functions
 
+#### How workflow names are encoded
+
+The `workflowName` field in the metadata uses the **`bytes10`** type rather than plaintext strings. When you call `setExpectedWorkflowName("my_workflow")`, the `ReceiverTemplate` automatically encodes it using the same algorithm as the CRE engine:
+
+1. Compute SHA256 hash of the workflow name
+2. Convert hash to hex string (64 characters)
+3. Take the first 10 hex characters (e.g., `"b76f3ae1de"`)
+4. Hex-encode those 10 ASCII characters to get `bytes10` (20 hex characters / 10 bytes)
+
+**Example:** `"my_workflow"` → SHA256 → `"b76f3ae1de..."` → hex-encode → `0x62373666336165316465`
+
+This encoding ensures consistent, fixed-size representation regardless of the original workflow name length.
+
+**Usage:**
+
+```solidity
+// Just use the plaintext workflow name - the interface handles the encoding automatically
+myConsumer.setExpectedWorkflowName("my_workflow");
+
+// To disable the check later
+myConsumer.setExpectedWorkflowName(""); // Empty string disables the check
+```
+
 ## 4. Working with Simulation
 
 When you run `cre workflow simulate`, your workflow interacts with a **`MockKeystoneForwarder`** contract that does not provide workflow metadata (`workflow_name`, `workflow_owner`).
@@ -2583,12 +2687,14 @@ When you run `cre workflow simulate`, your workflow interacts with a **`MockKeys
 
 ### Forwarder address validation
 
-You **can** configure the forwarder address check during simulation:
+You **can** configure the forwarder address check during simulation using the **Mock Forwarder Address**:
 
 ```solidity
-// Optional: Validate the MockKeystoneForwarder address during simulation
-myConsumer.setForwarderAddress(0xMockForwarderAddress);
+// Example: Use Mock Forwarder for Ethereum Sepolia simulation
+myConsumer.setForwarderAddress(0x15fC6ae953E024d975e77382eEeC56A9101f9F88);
 ```
+
+Find Mock Forwarder addresses for all networks in the [Supported Networks](/cre/guides/workflow/using-evm-client/supported-networks) page.
 
 
 <Aside type="caution" title="Important: Different addresses for simulation vs production">
@@ -2629,25 +2735,27 @@ See [Configuring Permissions](#34-configuring-permissions) for complete details.
 You can override `onReport` to add your own validation logic before or after the standard checks:
 
 ```solidity
-import { IReceiverTemplate } from "./IReceiverTemplate.sol";
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
 
-contract AdvancedConsumer is IReceiverTemplate {
-  uint256 public minReportInterval = 1 hours;
-  uint256 public lastReportTime;
+contract AdvancedConsumer is ReceiverTemplate {
+  uint256 private s_minReportInterval = 1 hours;
+  uint256 private s_lastReportTime;
 
   error ReportTooFrequent(uint256 timeSinceLastReport, uint256 minInterval);
+
+  event MinReportIntervalUpdated(uint256 previousInterval, uint256 newInterval);
 
   // Add custom validation before parent's checks
   function onReport(bytes calldata metadata, bytes calldata report) external override {
     // Custom check: Rate limiting
-    if (block.timestamp < lastReportTime + minReportInterval) {
-      revert ReportTooFrequent(block.timestamp - lastReportTime, minReportInterval);
+    if (block.timestamp < s_lastReportTime + s_minReportInterval) {
+      revert ReportTooFrequent(block.timestamp - s_lastReportTime, s_minReportInterval);
     }
 
     // Call parent implementation for standard permission checks
     super.onReport(metadata, report);
 
-    lastReportTime = block.timestamp;
+    s_lastReportTime = block.timestamp;
   }
 
   function _processReport(bytes calldata report) internal override {
@@ -2656,9 +2764,24 @@ contract AdvancedConsumer is IReceiverTemplate {
     // ... store or process the value ...
   }
 
-  // Allow owner to update rate limit
+  /// @notice Returns the minimum interval between reports
+  /// @return The minimum interval in seconds
+  function getMinReportInterval() external view returns (uint256) {
+    return s_minReportInterval;
+  }
+
+  /// @notice Returns the timestamp of the last report
+  /// @return The last report timestamp
+  function getLastReportTime() external view returns (uint256) {
+    return s_lastReportTime;
+  }
+
+  /// @notice Updates the minimum interval between reports
+  /// @param _interval The new minimum interval in seconds
   function setMinReportInterval(uint256 _interval) external onlyOwner {
-    minReportInterval = _interval;
+    uint256 previousInterval = s_minReportInterval;
+    s_minReportInterval = _interval;
+    emit MinReportIntervalUpdated(previousInterval, _interval);
   }
 }
 ```
@@ -2668,8 +2791,8 @@ contract AdvancedConsumer is IReceiverTemplate {
 The `_decodeMetadata` helper function is available for use in your `_processReport` implementation. This allows you to access workflow metadata for custom business logic:
 
 ```solidity
-contract MetadataAwareConsumer is IReceiverTemplate {
-  mapping(bytes32 => uint256) public reportCountByWorkflow;
+contract MetadataAwareConsumer is ReceiverTemplate {
+  mapping(bytes32 => uint256) public s_reportCountByWorkflow;
 
   function _processReport(bytes calldata report) internal override {
     // Access the metadata to get workflow ID
@@ -2677,7 +2800,7 @@ contract MetadataAwareConsumer is IReceiverTemplate {
     (bytes32 workflowId, , ) = _decodeMetadata(metadata);
 
     // Use workflow ID in your business logic
-    reportCountByWorkflow[workflowId]++;
+    s_reportCountByWorkflow[workflowId]++;
 
     // Process the report data
     uint256 value = abi.decode(report, (uint256));
@@ -2695,23 +2818,23 @@ contract MetadataAwareConsumer is IReceiverTemplate {
 
 ### Example 1: Simple Consumer Contract
 
-This example inherits from `IReceiverTemplate` to store a temperature value.
+This example inherits from `ReceiverTemplate` to store a temperature value.
 
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
-import { IReceiverTemplate } from "./IReceiverTemplate.sol";
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
 
-contract TemperatureConsumer is IReceiverTemplate {
-  int256 public currentTemperature;
+contract TemperatureConsumer is ReceiverTemplate {
+  int256 public s_currentTemperature;
   event TemperatureUpdated(int256 newTemperature);
 
   // Simple constructor - no parameters needed
-  constructor() IReceiverTemplate() {}
+  constructor() ReceiverTemplate() {}
 
   function _processReport(bytes calldata report) internal override {
     int256 newTemperature = abi.decode(report, (int256));
-    currentTemperature = newTemperature;
+    s_currentTemperature = newTemperature;
     emit TemperatureUpdated(newTemperature);
   }
 }
@@ -2732,7 +2855,7 @@ temperatureConsumer.setExpectedWorkflowId(0xYourWorkflowId...);
 For more complex scenarios, it's best to separate your Chainlink-aware code from your core business logic. The **Proxy Pattern** is a robust architecture that uses two contracts to achieve this:
 
 - **A Logic Contract**: Holds the state and the core functions of your application. It knows nothing about the Forwarder contract or the `onReport` function.
-- **A Proxy Contract**: Acts as the secure entry point. It inherits from `IReceiverTemplate` and forwards validated reports to the Logic Contract.
+- **A Proxy Contract**: Acts as the secure entry point. It inherits from `ReceiverTemplate` and forwards validated reports to the Logic Contract.
 
 This separation makes your business logic more modular and reusable.
 
@@ -2752,28 +2875,59 @@ contract ReserveManager is Ownable {
     uint256 btcPrice;
   }
 
-  address public proxyAddress;
-  uint256 public lastEthPrice;
-  uint256 public lastBtcPrice;
-  uint256 public lastUpdateTime;
+  address private s_proxyAddress;
+  uint256 private s_lastEthPrice;
+  uint256 private s_lastBtcPrice;
+  uint256 private s_lastUpdateTime;
 
   event ReservesUpdated(uint256 ethPrice, uint256 btcPrice, uint256 updateTime);
+  event ProxyAddressUpdated(address indexed previousProxy, address indexed newProxy);
 
   modifier onlyProxy() {
-    require(msg.sender == proxyAddress, "Caller is not the authorized proxy");
+    require(msg.sender == s_proxyAddress, "Caller is not the authorized proxy");
     _;
   }
 
   constructor() Ownable(msg.sender) {}
 
-  function setProxyAddress(address _proxyAddress) external onlyOwner {
-    proxyAddress = _proxyAddress;
+  /// @notice Returns the proxy address
+  /// @return The authorized proxy address
+  function getProxyAddress() external view returns (address) {
+    return s_proxyAddress;
   }
 
+  /// @notice Returns the last ETH price
+  /// @return The last recorded ETH price
+  function getLastEthPrice() external view returns (uint256) {
+    return s_lastEthPrice;
+  }
+
+  /// @notice Returns the last BTC price
+  /// @return The last recorded BTC price
+  function getLastBtcPrice() external view returns (uint256) {
+    return s_lastBtcPrice;
+  }
+
+  /// @notice Returns the last update timestamp
+  /// @return The timestamp of the last update
+  function getLastUpdateTime() external view returns (uint256) {
+    return s_lastUpdateTime;
+  }
+
+  /// @notice Updates the authorized proxy address
+  /// @param _proxyAddress The new proxy address
+  function setProxyAddress(address _proxyAddress) external onlyOwner {
+    address previousProxy = s_proxyAddress;
+    s_proxyAddress = _proxyAddress;
+    emit ProxyAddressUpdated(previousProxy, _proxyAddress);
+  }
+
+  /// @notice Updates the reserve prices
+  /// @param data The new reserve data containing ETH and BTC prices
   function updateReserves(UpdateReserves memory data) external onlyProxy {
-    lastEthPrice = data.ethPrice;
-    lastBtcPrice = data.btcPrice;
-    lastUpdateTime = block.timestamp;
+    s_lastEthPrice = data.ethPrice;
+    s_lastBtcPrice = data.btcPrice;
+    s_lastUpdateTime = block.timestamp;
     emit ReservesUpdated(data.ethPrice, data.btcPrice, block.timestamp);
   }
 }
@@ -2781,23 +2935,29 @@ contract ReserveManager is Ownable {
 
 #### The Proxy Contract (`UpdateReservesProxy.sol`)
 
-This contract, our "bouncer", is the only contract that interacts with the Chainlink platform. It inherits `IReceiverTemplate` to validate incoming reports and then calls the `ReserveManager`.
+This contract, our "bouncer", is the only contract that interacts with the Chainlink platform. It inherits `ReceiverTemplate` to validate incoming reports and then calls the `ReserveManager`.
 
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
 import { ReserveManager } from "./ReserveManager.sol";
-import { IReceiverTemplate } from "./keystone/IReceiverTemplate.sol";
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
 
-contract UpdateReservesProxy is IReceiverTemplate {
-  ReserveManager public s_reserveManager;
+contract UpdateReservesProxy is ReceiverTemplate {
+  ReserveManager private s_reserveManager;
 
   constructor(address reserveManagerAddress) {
     s_reserveManager = ReserveManager(reserveManagerAddress);
   }
 
-  /// @inheritdoc IReceiverTemplate
+  /// @notice Returns the reserve manager contract address
+  /// @return The ReserveManager contract instance
+  function getReserveManager() external view returns (ReserveManager) {
+    return s_reserveManager;
+  }
+
+  /// @inheritdoc ReceiverTemplate
   function _processReport(bytes calldata report) internal override {
     ReserveManager.UpdateReserves memory updateReservesData = abi.decode(report, (ReserveManager.UpdateReserves));
     s_reserveManager.updateReserves(updateReservesData);
@@ -2844,12 +3004,6 @@ The deployment and configuration process involves these steps:
    - Update the workflow configuration to use the new proxy address
 
 #### End-to-End Sequence
-
-## Where to go next?
-
-Now that you know how to build a consumer contract, the next step is to call it from your workflow.
-
-- **[Onchain Write](/cre/guides/workflow/using-evm-client/onchain-write)**: Learn how to use the `EVMClient` to send data to your new consumer contract.
 
 ---
 
@@ -3394,7 +3548,7 @@ func main() {
 
 ## Learn more
 
-- **[Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write)**: Understand all onchain write approaches
+- **[Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write/overview)**: Understand all onchain write approaches
 - **[Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain)**: Submit your generated report to the blockchain
 - **[Generating Reports: Structs](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-structs)**: Manually encode and generate reports for struct data
 - **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)**: Create contracts that can receive your reports
@@ -7049,12 +7203,220 @@ Yes. Once you call `runtime.Rand()` and get a `*rand.Rand` object, you can reuse
 
 ---
 
+# CRE Templates
+Source: https://docs.chain.link/cre/templates
+Last Updated: 2025-11-21
+
+Templates are workflow examples you can copy and customize for your own projects. They are curated and maintained by Chainlink, offering patterns you can use as references or starting points for your own workflows.
+
+
+<Aside type="caution" title="Educational Example Disclaimer">
+  This page includes educational examples to use a Chainlink system, product, or service and is provided to
+  demonstrate how to interact with Chainlink's systems, products, and services to integrate them into your own. This
+  template is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, it has not been audited, and it may be
+  missing key checks or error handling to make the usage of the system, product or service more clear. Do not use the
+  code in this example in a production environment without completing your own audits and application of best practices.
+  Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs
+  that are generated due to errors in code.
+</Aside>
+
+## Building Blocks and Starter Templates
+
+Templates are organized into two categories:
+
+### 1. Building Blocks
+
+[Building Blocks](https://github.com/smartcontractkit/cre-templates/tree/main/building-blocks) are small, focused examples that teach **one concept at a time**. Each Building Block is self-contained and demonstrates a specific CRE capability or pattern. They feature minimal code, clear configuration, and are runnable locally with `cre workflow simulate`.
+
+**Available Building Blocks:**
+
+1. **`kv-store`** (Key-Value Store with AWS S3)
+   - Reads a value from an AWS S3 object, increments it, and writes it back
+   - Demonstrates: SigV4-signed HTTP requests, CRE secrets (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`), and consensus read → single write flow
+   - Use case: Learn offchain write patterns with secrets and consensus
+
+2. **`read-data-feeds`** (Chainlink Data Feeds)
+   - Reads `decimals()` and `latestAnswer()` from <a href="https://docs.chain.link/data-feeds" target="_blank" rel="noopener noreferrer">Chainlink Data Feeds</a> on a cron schedule
+   - Demonstrates: Contract ABIs, Go bindings generation, RPC configuration, and onchain reads
+   - Use case: Learn how to read onchain data via contract calls
+
+**When to use Building Blocks:**
+
+- You want to learn a specific feature quickly (e.g., secrets + HTTP signing, reading a data feed, cron triggers)
+- You need a focused code snippet to copy into your project
+- You're exploring a new capability before integrating it into a larger workflow
+
+### 2. Starter Templates
+
+[Starter Templates](https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates) are complete, end-to-end workflows that combine multiple capabilities and mirror real-world use cases. These templates are more comprehensive than Building Blocks and include production-like configuration, optional precompiled smart contracts, and generated bindings. They can be adapted directly into your own projects.
+
+**Available Starter Templates:**
+
+1. **`custom-data-feed`** (Custom Data Feed)
+   - Periodically fetches offchain data via HTTP and pushes updates onchain
+   - Demonstrates: Cron scheduling, secrets management, contract bindings, and blockchain writes
+   - Use case: Build data feeds that combine offchain APIs with onchain smart contracts
+
+2. **`bring-your-own-data`** (BYOD - NAV & PoR)
+   - End-to-end examples for publishing Net Asset Value (NAV) and Proof of Reserve (PoR) data onchain
+   - Demonstrates: Complete workflow with demo contracts for publishing institutional data
+   - Use case: Publish verified financial or reserve data to smart contracts
+
+3. **`multi-chain-token-manager`** (Multi-Chain Token Manager)
+   - Orchestrates token operations and state across multiple blockchain networks
+   - Demonstrates: Multi-chain RPC configuration, bindings, and cross-chain coordination patterns
+   - Use case: Manage token operations across different EVM chains from a single workflow
+
+**When to use Starter Templates:**
+
+- You want a runnable reference architecture that shows production-ready patterns
+- You're starting a new project and need a solid foundation
+- You want to see how multiple CRE capabilities integrate in a real workflow
+
+### How to access templates
+
+All templates are available on GitHub at [github.com/smartcontractkit/cre-templates](https://github.com/smartcontractkit/cre-templates)
+
+- Browse all Building Blocks and Starter Templates
+- Clone or fork templates to customize them for your use case
+- View individual READMEs for detailed usage instructions
+
+<Aside type="tip" title="Quick Start: Custom Data Feed via CLI">
+  The **Custom Data Feed** starter template is also available through `cre init` for a guided, interactive setup
+  experience. We provide a step-by-step guide: [Running a Demo Workflow](/cre/templates/running-demo-workflow).
+</Aside>
+
+## When to use what
+
+Choose the right template based on where you are in your CRE journey:
+
+| Your Situation                                                           | Recommended Action                                                               |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| Just finished the [Getting Started guide](/cre/getting-started/overview) | Run the **Custom Data Feed** template to see a more complex, real-world example  |
+| Want to learn offchain writes with secrets and consensus                 | Clone the **`kv-store`** Building Block (AWS S3 example)                         |
+| Need to read Chainlink Data Feeds in your workflow                       | Clone the **`read-data-feeds`** Building Block (onchain reads with ABIs)         |
+| Building a custom data feed for your protocol                            | Fork the **`custom-data-feed`** Starter Template and customize it                |
+| Publishing NAV or PoR data onchain                                       | Fork the **`bring-your-own-data`** Starter Template (includes demo contracts)    |
+| Managing tokens across multiple chains                                   | Fork the **`multi-chain-token-manager`** Starter Template (cross-chain patterns) |
+
+## Next steps
+
+Ready to explore templates?
+
+- **[Run the Custom Data Feed Template](/cre/templates/running-demo-workflow)** - Walk through this template with our step-by-step guide (available in Go and TypeScript)
+
+- **[Browse all templates on GitHub](https://github.com/smartcontractkit/cre-templates)** - Explore the full collection of Building Blocks and Starter Templates
+
+<Aside type="note" title="Contributing">
+  The CRE Templates repository is open source under the MIT license. If you've built a useful workflow pattern and want
+  to share it with the community, consider contributing.
+</Aside>
+
+---
+
+# AI-Powered Prediction Market
+Source: https://docs.chain.link/cre/demos/prediction-market
+Last Updated: 2025-11-21
+
+This demo showcases a complete, end-to-end prediction market application that integrates CRE with external services. Unlike [templates](/cre/templates) that are meant to be copied and customized, this demo is designed to be explored and studied to understand what's possible with CRE.
+
+
+<Aside type="caution" title="Educational Example Disclaimer">
+  This page includes educational examples to use a Chainlink system, product, or service and is provided to
+  demonstrate how to interact with Chainlink's systems, products, and services to integrate them into your own. This
+  template is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, it has not been audited, and it may be
+  missing key checks or error handling to make the usage of the system, product or service more clear. Do not use the
+  code in this example in a production environment without completing your own audits and application of best practices.
+  Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs
+  that are generated due to errors in code.
+</Aside>
+
+## GitHub Repository
+
+The [repository](https://github.com/smartcontractkit/cre-gcp-prediction-market-demo) contains complete setup instructions, including quick start guides and full end-to-end deployment steps.
+
+## What this demo does
+
+This demo showcases a fully automated prediction market where:
+
+1. **Users create markets** by asking binary (Yes/No) questions onchain
+2. **Users stake ERC-20 tokens** (USDC) to make predictions
+3. **After the market closes**, anyone can request settlement
+4. **CRE automatically triggers** when it detects the settlement request event
+5. **Gemini AI determines the outcome** using Google search grounding for factual verification
+6. **CRE submits a cryptographically signed settlement** report back onchain
+7. **Settlement data is stored in Firestore** for audit trails and frontend display
+8. **Winners claim their proportional share** of the total pool
+
+## Key integrations
+
+This demo demonstrates several important CRE integration patterns:
+
+### Event-driven workflows
+
+The CRE workflow listens for `SettlementRequested` events onchain using CRE's [EVM log trigger capability](/cre/guides/workflow/using-triggers/evm-log-trigger). When a settlement is requested, the workflow automatically triggers and begins the settlement process.
+
+### External AI service integration
+
+The workflow sends the market question to Google's Gemini AI with search grounding enabled. Gemini searches the web to determine the factual outcome and returns a result with a confidence score.
+
+### Data persistence
+
+Settlement results, including the AI's response and confidence level, are stored in [Firebase Firestore](https://firebase.google.com/docs/firestore). This creates a trail and enables the frontend to display settlement history.
+
+### Cryptographic signing
+
+The workflow generates cryptographically signed settlement reports that the smart contract can verify. This ensures only authorized, consensus-approved data reaches the contract.
+
+### Full-stack architecture
+
+The demo includes:
+
+- **Smart contracts** (Solidity + Foundry): `SimpleMarket.sol` for managing prediction markets
+- **CRE workflow** (TypeScript): Event-driven settlement logic with AI integration
+- **Database** (Firebase/Firestore): Audit trail and data persistence
+- **Frontend** (Next.js): User interface for viewing settlement history
+
+## What you'll learn
+
+Exploring this demo will teach you:
+
+1. **Event-driven workflow patterns**: How to use CRE's log trigger to react to onchain events in real-time
+2. **External service integration**: Best practices for integrating AI services like Gemini with your workflows
+3. **Error handling and validation**: How to validate external API responses before using them onchain
+4. **Data persistence patterns**: Techniques for storing workflow results in external databases
+5. **Full-stack dApp architecture**: How CRE fits into a complete application with smart contracts, workflows, and frontends
+6. **Cryptographic signing**: How CRE generates and submits cryptographically signed reports
+
+## Getting started
+
+The repository includes two quick start options:
+
+### Option 1: Test CRE Workflow Only (Fastest)
+
+Test the workflow using a pre-deployed contract and transaction. This lets you see the workflow in action without deploying anything yourself.
+
+### Option 2: Full End-to-End Test
+
+Deploy your own contracts, create markets, request settlements, and run the workflow end-to-end. This gives you complete hands-on experience with all components.
+
+See the [repository README](https://github.com/smartcontractkit/cre-gcp-prediction-market-demo) for detailed prerequisites and setup instructions.
+
+## Next steps
+
+- **[Explore the repository](https://github.com/smartcontractkit/cre-gcp-prediction-market-demo)** - Clone the demo and follow the setup instructions
+- **[Learn about log triggers](/cre/guides/workflow/using-triggers/evm-log-trigger)** - Understand how to build event-driven workflows
+- **[Explore HTTP capabilities](/cre/guides/workflow/using-http-client)** - Learn more about integrating external APIs
+- **[Browse templates](/cre/templates)** - Check out workflow templates you can copy and customize
+
+---
+
 # CLI Reference
 Source: https://docs.chain.link/cre/reference/cli
-Last Updated: 2025-11-04
+Last Updated: 2025-11-20
 
-<Aside type="note" title="Required CLI Version: v1.0.1">
-  To ensure compatibility with the guides and examples in this documentation, please use version `v1.0.1` of the CRE
+<Aside type="note" title="Required CLI Version: v1.0.2">
+  To ensure compatibility with the guides and examples in this documentation, please use version `v1.0.2` of the CRE
   CLI. You can check your installed version by running `cre version`. Refer to the [CLI
   Installation](/cre/getting-started/cli-installation/macos-linux) guide for more information.
 </Aside>
@@ -7901,7 +8263,7 @@ For details, see [Using Multi-sig Wallets](/cre/guides/operations/using-multisig
 
 # Utility Commands
 Source: https://docs.chain.link/cre/reference/cli/utilities
-Last Updated: 2025-11-04
+Last Updated: 2025-11-20
 
 Utility commands provide helpful information and troubleshooting capabilities.
 
@@ -7946,12 +8308,12 @@ cre version
 **Example output:**
 
 ```bash
-cre version v1.0.1
+cre version v1.0.2
 ```
 
 
 <Aside type="note" title="Version compatibility">
-  Always check that your CLI version matches the version recommended in the documentation. The current recommended version is **v1.0.1**. See the [CLI Installation guide](/cre/getting-started/cli-installation) for more information.
+  Always check that your CLI version matches the version recommended in the documentation. The current recommended version is **v1.0.2**. See the [CLI Installation guide](/cre/getting-started/cli-installation) for more information.
 </Aside>
 
 ## Learn more
@@ -8839,7 +9201,7 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 	}
 	logger.Info("Successfully fetched offchain value", "result", offchainValue)
 
-
+	
 	// Get the first EVM configuration from the list.
 	evmConfig := config.Evms[0]
 
@@ -8875,7 +9237,7 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 	return &MyResult{
 		FinalResult: finalResult,
 	}, nil
-
+	
 }
 
 func main() {
@@ -8935,7 +9297,7 @@ You have successfully read a value from a smart contract and combined it with of
 
 # Part 4: Writing Onchain
 Source: https://docs.chain.link/cre/getting-started/part-4-writing-onchain-go
-Last Updated: 2025-11-04
+Last Updated: 2025-12-09
 
 In the previous parts, you successfully fetched offchain data and read from a smart contract. Now, you'll complete the "Onchain Calculator" by writing your computed result back to the blockchain.
 
@@ -8962,16 +9324,16 @@ Here is the source code for the contract so you can see how it works:
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import { IReceiverTemplate } from "./keystone/IReceiverTemplate.sol";
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
 
 /**
  * @title CalculatorConsumer (Testing Version)
  * @notice This contract receives reports from a CRE workflow and stores the results of a calculation onchain.
- * @dev This version uses IReceiverTemplate without configuring any security checks, making it compatible
+ * @dev This version uses ReceiverTemplate without configuring any security checks, making it compatible
  * with the mock Forwarder used during simulation. All permission fields remain at their default zero
  * values (disabled).
  */
-contract CalculatorConsumer is IReceiverTemplate {
+contract CalculatorConsumer is ReceiverTemplate {
   // Struct to hold the data sent in a report from the workflow
   struct CalculatorResult {
     uint256 offchainValue;
@@ -8989,13 +9351,13 @@ contract CalculatorConsumer is IReceiverTemplate {
 
   /**
    * @dev The constructor doesn't set any security checks.
-   * The IReceiverTemplate parent constructor will initialize all permission fields to zero (disabled).
+   * The ReceiverTemplate parent constructor will initialize all permission fields to zero (disabled).
    */
   constructor() {}
 
   /**
    * @notice Implements the core business logic for processing reports.
-   * @dev This is called automatically by IReceiverTemplate's onReport function after security checks.
+   * @dev This is called automatically by ReceiverTemplate's onReport function after security checks.
    */
   function _processReport(bytes calldata report) internal override {
     // Decode the report bytes into our CalculatorResult struct
@@ -9026,7 +9388,7 @@ contract CalculatorConsumer is IReceiverTemplate {
 }
 ```
 
-The contract is already deployed for you on Sepolia at the following address: <a href="https://sepolia.etherscan.io/address/0xF3abEAa889e46c6C5b9A0bD818cE54Cc4eAF8A54#code" target="_blank" rel="noopener noreferrer">`0xF3abEAa889e46c6C5b9A0bD818cE54Cc4eAF8A54`</a>. You will use this address in your configuration file.
+The contract is already deployed for you on Sepolia at the following address: <a href="https://sepolia.etherscan.io/address/0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52#code" target="_blank" rel="noopener noreferrer">`0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52`</a>. You will use this address in your configuration file.
 
 ## Step 2: Generate the consumer contract binding
 
@@ -9066,7 +9428,7 @@ Add the `CalculatorConsumer` contract address to your `config.staging.json`:
   "evms": [
     {
       "storageAddress": "0xa17CF997C28FF154eDBae1422e6a50BeF23927F4",
-      "calculatorConsumerAddress": "0xF3abEAa889e46c6C5b9A0bD818cE54Cc4eAF8A54",
+      "calculatorConsumerAddress": "0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52",
       "chainName": "ethereum-testnet-sepolia",
       "gasLimit": 500000
     }
@@ -9180,7 +9542,7 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 	}
 	logger.Info("Successfully read onchain value", "result", onchainValue)
 
-
+	
 	// Step 3: Calculate the final result
 	finalResultInt := new(big.Int).Add(onchainValue, offchainValue)
 
@@ -9203,7 +9565,7 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 	logger.Info("Workflow finished successfully!", "result", finalWorkflowResult)
 
 	return finalWorkflowResult, nil
-
+	
 }
 
 func fetchMathResult(config *Config, logger *slog.Logger, sendRequester *http.SendRequester) (*big.Int, error) {
@@ -9308,34 +9670,34 @@ Your workflow will now show the complete end-to-end execution, including the fin
 
 ```bash
 Workflow compiled
-2025-11-03T22:48:41Z [SIMULATION] Simulator Initialized
+2025-12-09T13:36:10Z [SIMULATION] Simulator Initialized
 
-2025-11-03T22:48:41Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
-2025-11-03T22:48:41Z [USER LOG] msg="Successfully fetched offchain value" result=56
-2025-11-03T22:48:41Z [USER LOG] msg="Successfully read onchain value" result=22
-2025-11-03T22:48:41Z [USER LOG] msg="Final calculated result" result=78
-2025-11-03T22:48:41Z [USER LOG] msg="Updating calculator result" consumerAddress=0xF3abEAa889e46c6C5b9A0bD818cE54Cc4eAF8A54
-2025-11-03T22:48:41Z [USER LOG] msg="Writing report to consumer contract" offchainValue=56 onchainValue=22 finalResult=78
-2025-11-03T22:48:41Z [USER LOG] msg="Waiting for write report response"
-2025-11-03T22:48:48Z [USER LOG] msg="Write report transaction succeeded" txHash=0x86a26f848c83f37b8eace8123ec275a0af9d21b23b1fbba9cc7664b7e474314f
-2025-11-03T22:48:48Z [USER LOG] msg="View transaction at" url=https://sepolia.etherscan.io/tx/0x86a26f848c83f37b8eace8123ec275a0af9d21b23b1fbba9cc7664b7e474314f
-2025-11-03T22:48:48Z [USER LOG] msg="Workflow finished successfully!" result="&{OffchainValue:+56 OnchainValue:+22 FinalResult:+78 TxHash:0x86a26f848c83f37b8eace8123ec275a0af9d21b23b1fbba9cc7664b7e474314f}"
+2025-12-09T13:36:10Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+2025-12-09T13:36:10Z [USER LOG] msg="Successfully fetched offchain value" result=77
+2025-12-09T13:36:10Z [USER LOG] msg="Successfully read onchain value" result=22
+2025-12-09T13:36:10Z [USER LOG] msg="Final calculated result" result=99
+2025-12-09T13:36:10Z [USER LOG] msg="Updating calculator result" consumerAddress=0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52
+2025-12-09T13:36:10Z [USER LOG] msg="Writing report to consumer contract" offchainValue=77 onchainValue=22 finalResult=99
+2025-12-09T13:36:10Z [USER LOG] msg="Waiting for write report response"
+2025-12-09T13:36:36Z [USER LOG] msg="Write report transaction succeeded" txHash=0xaf3a4bf742bac76361c0eb4bc4ea58290049a3d97e991fb80bf0a8f17719527c
+2025-12-09T13:36:36Z [USER LOG] msg="View transaction at" url=https://sepolia.etherscan.io/tx/0xaf3a4bf742bac76361c0eb4bc4ea58290049a3d97e991fb80bf0a8f17719527c
+2025-12-09T13:36:36Z [USER LOG] msg="Workflow finished successfully!" result="&{OffchainValue:+77 OnchainValue:+22 FinalResult:+99 TxHash:0xaf3a4bf742bac76361c0eb4bc4ea58290049a3d97e991fb80bf0a8f17719527c}"
 
 Workflow Simulation Result:
  {
-  "FinalResult": 78,
-  "OffchainValue": 56,
+  "FinalResult": 99,
+  "OffchainValue": 77,
   "OnchainValue": 22,
-  "TxHash": "0x86a26f848c83f37b8eace8123ec275a0af9d21b23b1fbba9cc7664b7e474314f"
+  "TxHash": "0xaf3a4bf742bac76361c0eb4bc4ea58290049a3d97e991fb80bf0a8f17719527c"
 }
 
-2025-11-03T22:48:48Z [SIMULATION] Execution finished signal received
-2025-11-03T22:48:48Z [SIMULATION] Skipping WorkflowEngineV2
+2025-12-09T13:36:36Z [SIMULATION] Execution finished signal received
+2025-12-09T13:36:36Z [SIMULATION] Skipping WorkflowEngineV2
 ```
 
-- **`[USER LOG]`**: You can see all of your `logger.Info()` calls showing the complete workflow execution, including the offchain value (`result=56`), onchain value (`result=22`), final calculation (`result=78`), and the transaction hash.
+- **`[USER LOG]`**: You can see all of your `logger.Info()` calls showing the complete workflow execution, including the offchain value (`result=77`), onchain value (`result=22`), final calculation (`result=99`), and the transaction hash.
 - **`[SIMULATION]`**: These are system-level messages from the simulator showing its internal state.
-- **`Workflow Simulation Result`**: This is the final return value of your workflow. The `MyResult` struct contains all the values (56 + 22 = 78) and the transaction hash confirming the write operation succeeded.
+- **`Workflow Simulation Result`**: This is the final return value of your workflow. The `MyResult` struct contains all the values (77 + 22 = 99) and the transaction hash confirming the write operation succeeded.
 
 ## Step 7: Verify the result onchain
 
@@ -9351,13 +9713,13 @@ Click the URL (or copy and paste it into your browser) to see the full details o
 
 **What are you seeing on a blockchain explorer?**
 
-You'll notice the transaction's `to` address is not the `CalculatorConsumer` contract you intended to call. Instead, it's to a **Forwarder** contract. Your workflow sends a secure report to the Forwarder, which then verifies the request and makes the final call to the `CalculatorConsumer` on your workflow's behalf. To learn more, see the [Onchain Write guide](/cre/guides/workflow/using-evm-client/onchain-write).
+You'll notice the transaction's `to` address is not the `CalculatorConsumer` contract you intended to call. Instead, it's to a **Forwarder** contract. Your workflow sends a secure report to the Forwarder, which then verifies the request and makes the final call to the `CalculatorConsumer` on your workflow's behalf. To learn more, see the [Onchain Write guide](/cre/guides/workflow/using-evm-client/onchain-write/overview).
 
 ### **2. Check the contract state**
 
 While your wallet interacted with the Forwarder, the `CalculatorConsumer` contract's state was still updated. You can verify this change directly on Etherscan:
 
-- Navigate to the `CalculatorConsumer` contract address: <a href="https://sepolia.etherscan.io/address/0xF3abEAa889e46c6C5b9A0bD818cE54Cc4eAF8A54#readContract" target="_blank" rel="noopener noreferrer">`0xF3abEAa889e46c6C5b9A0bD818cE54Cc4eAF8A54`</a>.
+- Navigate to the `CalculatorConsumer` contract address: <a href="https://sepolia.etherscan.io/address/0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52#readContract" target="_blank" rel="noopener noreferrer">`0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52`</a>.
 - Expand the `latestResult` function and click **Query**. The values should match the `finalResult`, `offchainValue`, and `onchainValue` from your workflow logs.
 
 This completes the end-to-end loop: triggering a workflow, fetching data, reading onchain state, and verifiably writing the result back to a public blockchain.
@@ -9365,7 +9727,7 @@ This completes the end-to-end loop: triggering a workflow, fetching data, readin
 To learn more about implementing consumer contracts and the secure write process, see these guides:
 
 - **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)**: Learn how to create your own secure consumer contracts with proper validation.
-- **[Onchain Write Guide](/cre/guides/workflow/using-evm-client/onchain-write)**: Dive deeper into the write patterns.
+- **[Onchain Write Guide](/cre/guides/workflow/using-evm-client/onchain-write/overview-go)**: Dive deeper into the write patterns.
 
 ## Next steps
 
@@ -10137,57 +10499,97 @@ This approach gives you IDE autocompletion, compile-time type checking, and elim
 
 - **[Generating Contract Bindings](/cre/guides/workflow/using-evm-client/generating-bindings)**: Learn how to generate type-safe Go bindings from contract ABIs using the CRE CLI
 - **[Onchain Read](/cre/guides/workflow/using-evm-client/onchain-read)**: Learn how to call `view` and `pure` functions on your smart contracts to read onchain state
-- **[Onchain Write](/cre/guides/workflow/using-evm-client/onchain-write)**: Learn how to call state-changing functions on your smart contracts to write data to the blockchain
+- **[Onchain Write](/cre/guides/workflow/using-evm-client/onchain-write/overview)**: Learn how to call state-changing functions on your smart contracts to write data to the blockchain
   - **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)**: Learn how to write your own consumer contracts that can receive reports from your workflow
 
 ---
 
 # Supported Networks
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/supported-networks-go
-Last Updated: 2025-11-04
+Last Updated: 2025-11-20
 
-CRE workflows support EVM read and write operations on the following blockchain networks. Use the chain names listed below when [configuring your workflows in `project.yaml`](/cre/reference/project-configuration-go#31-global-configuration-projectyaml) or when creating EVM clients in your code.
+This page lists the EVM-compatible networks supported by CRE workflows, along with their chain names (for configuration) and forwarder contract addresses (for consumer contract validation).
 
-## Mainnets
+## How to Use This Page
 
-| Network          | Chain Name                    | Forwarder Address                                                                                                                                                                     |
-| ---------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Arbitrum One     | ethereum-mainnet-arbitrum-1   | <a href="https://arbiscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">0xF8344CFd5c43616a4366C34E3EEE75af79a74482</a>             |
-| Avalanche        | avalanche-mainnet             | <a href="https://snowscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">0x76c9cf548b4179F8901cda1f8623568b58215E62</a>            |
-| Base             | ethereum-mainnet-base-1       | <a href="https://basescan.org/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">0xF8344CFd5c43616a4366C34E3EEE75af79a74482</a>            |
-| BNB Chain        | binance_smart_chain-mainnet | <a href="https://bscscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">0x76c9cf548b4179F8901cda1f8623568b58215E62</a>             |
-| Ethereum Mainnet | ethereum-mainnet              | <a href="https://etherscan.io/address/0x0b93082D9b3C7C97fAcd250082899BAcf3af3885" target="_blank" rel="noopener noreferrer">0x0b93082D9b3C7C97fAcd250082899BAcf3af3885</a>            |
-| OP Mainnet       | ethereum-mainnet-optimism-1   | <a href="https://optimistic.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">0xF8344CFd5c43616a4366C34E3EEE75af79a74482</a> |
-| Polygon          | polygon-mainnet               | <a href="https://polygonscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">0x76c9cf548b4179F8901cda1f8623568b58215E62</a>         |
+This reference provides three key pieces of information for each network:
 
-<Aside type="note" title="What is a Forwarder Address?">
-  The Forwarder Address is the Chainlink `KeystoneForwarder` contract that receives signed reports from CRE workflows
-  and delivers them to your consumer contracts. You don't need to interact with this address directly in your workflow
-  code—the EVM capability handles this automatically when you call `writeReport()`.
+1. **Network Name**: The human-readable network identifier
+2. **Chain Name**: The value to use in your [`project.yaml`](/cre/reference/project-configuration-go#31-global-configuration-projectyaml) configuration and [EVM Client code](/cre/reference/sdk/evm-client-go#chain-selectors)
+3. **Forwarder Address**: The contract address for optional consumer contract validation
 
-  Learn more: [Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write/overview)
+## Understanding Forwarder Addresses
 
-  **Permissioning with the Forwarder address**: You can optionally use the forwarder address to add an extra security layer to your consumer contracts by restricting the `onReport()` function to only accept calls from the trusted forwarder. See [Configuring Permissions](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#34-configuring-permissions) for implementation details.
-</Aside>
+Forwarder addresses are relevant **only if you want to add security validation to your consumer contracts**. Your workflow code does not interact with forwarders directly—the EVM capability handles report delivery automatically. Learn more: [Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write/overview-go).
 
-## Testnets
+**Optional security layer**: You can configure your consumer contract's `onReport()` function to accept calls only from the trusted forwarder address. See [Configuring Permissions](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#34-configuring-permissions) for implementation details.
 
-| Network           | Chain Name                          | Forwarder Address                                                                                                                                                                           |
-| ----------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Arbitrum Sepolia  | ethereum-testnet-sepolia-arbitrum-1 | <a href="https://sepolia.arbiscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">0x76c9cf548b4179F8901cda1f8623568b58215E62</a>           |
-| Avalanche Fuji    | avalanche-testnet-fuji              | <a href="https://testnet.snowscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">0x76c9cf548b4179F8901cda1f8623568b58215E62</a>          |
-| Base Sepolia      | ethereum-testnet-sepolia-base-1     | <a href="https://sepolia.basescan.org/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">0xF8344CFd5c43616a4366C34E3EEE75af79a74482</a>          |
-| BNB Chain Testnet | binance_smart_chain-testnet       | <a href="https://testnet.bscscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">0x76c9cf548b4179F8901cda1f8623568b58215E62</a>           |
-| Ethereum Sepolia  | ethereum-testnet-sepolia            | <a href="https://sepolia.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">0xF8344CFd5c43616a4366C34E3EEE75af79a74482</a>          |
-| OP Sepolia        | ethereum-testnet-sepolia-optimism-1 | <a href="https://sepolia-optimism.etherscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">0x76c9cf548b4179F8901cda1f8623568b58215E62</a> |
-| Polygon Amoy      | polygon-testnet-amoy                | <a href="https://amoy.polygonscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">0x76c9cf548b4179F8901cda1f8623568b58215E62</a>          |
+### Simulation vs Production Addresses
 
-## Using these networks in your workflows
+**Important**: Forwarder contracts differ between local simulation and production:
 
-To use these networks in your workflows:
+| Environment      | Contract Type           | Section                                         |
+| ---------------- | ----------------------- | ----------------------------------------------- |
+| Local simulation | `MockKeystoneForwarder` | [Simulation Forwarders](#simulation-forwarders) |
+| Production       | `KeystoneForwarder`     | [Production Forwarders](#production-forwarders) |
 
-- **Configure RPC endpoints**: Add the chain name to your `project.yaml` file. See [Project Configuration](/cre/reference/project-configuration) for details.
-- **In your workflow code**: Use the chain names with the EVM Client. See the [chain selector documentation](/cre/reference/sdk/evm-client-go#chain-selectors).
+If you configure forwarder validation in your consumer contract, **remember to update the forwarder address** when deploying to production. Learn more: [Working with Simulation](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#4-working-with-simulation).
+
+## Simulation Forwarders
+
+These `MockKeystoneForwarder` addresses are used when running `cre workflow simulate` with the `--broadcast` flag. Use these addresses **only** during local development and testing.
+
+### Simulation Mainnets
+
+| Network                                                                                                                                               | Chain Name                    | Mock Forwarder Address                     |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------ |
+| <a href="https://arbiscan.io/address/0xd770499057619c9a76205fd4168161cf94abc532" target="_blank" rel="noopener noreferrer">Arbitrum One</a>           | ethereum-mainnet-arbitrum-1   | 0xd770499057619c9a76205fd4168161cf94abc532 |
+| <a href="https://snowscan.xyz/address/0xdc21e279934ff6721cadfdd112dafb3261f09a2c" target="_blank" rel="noopener noreferrer">Avalanche</a>             | avalanche-mainnet             | 0xdc21e279934ff6721cadfdd112dafb3261f09a2c |
+| <a href="https://basescan.org/address/0x5e342a8438b4f5d39e72875fcee6f76b39cce548" target="_blank" rel="noopener noreferrer">Base</a>                  | ethereum-mainnet-base-1       | 0x5e342a8438b4f5d39e72875fcee6f76b39cce548 |
+| <a href="https://bscscan.com/address/0x6f3239bbb26e98961e1115aba83f8a282e5508c8" target="_blank" rel="noopener noreferrer">BNB Chain</a>              | binance_smart_chain-mainnet | 0x6f3239bbb26e98961e1115aba83f8a282e5508c8 |
+| <a href="https://etherscan.io/address/0xa3d1ad4ac559a6575a114998affb2fb2ec97a7d9" target="_blank" rel="noopener noreferrer">Ethereum Mainnet</a>      | ethereum-mainnet              | 0xa3d1ad4ac559a6575a114998affb2fb2ec97a7d9 |
+| <a href="https://optimistic.etherscan.io/address/0x9119a1501550ed94a3f2794038ed9258337afa18" target="_blank" rel="noopener noreferrer">OP Mainnet</a> | ethereum-mainnet-optimism-1   | 0x9119a1501550ed94a3f2794038ed9258337afa18 |
+| <a href="https://polygonscan.com/address/0xf458d621885e29a5003ea9bbba5280d54e19b1ce" target="_blank" rel="noopener noreferrer">Polygon</a>            | polygon-mainnet               | 0xf458d621885e29a5003ea9bbba5280d54e19b1ce |
+
+### Simulation Testnets
+
+| Network                                                                                                                                                     | Chain Name                          | Mock Forwarder Address                     |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------ |
+| <a href="https://sepolia.arbiscan.io/address/0xd41263567ddfead91504199b8c6c87371e83ca5d" target="_blank" rel="noopener noreferrer">Arbitrum Sepolia</a>     | ethereum-testnet-sepolia-arbitrum-1 | 0xd41263567ddfead91504199b8c6c87371e83ca5d |
+| <a href="https://testnet.snowscan.xyz/address/0x2e7371a5d032489e4f60216d8d898a4c10805963" target="_blank" rel="noopener noreferrer">Avalanche Fuji</a>      | avalanche-testnet-fuji              | 0x2e7371a5d032489e4f60216d8d898a4c10805963 |
+| <a href="https://sepolia.basescan.org/address/0x82300bd7c3958625581cc2f77bc6464dcecdf3e5" target="_blank" rel="noopener noreferrer">Base Sepolia</a>        | ethereum-testnet-sepolia-base-1     | 0x82300bd7c3958625581cc2f77bc6464dcecdf3e5 |
+| <a href="https://testnet.bscscan.com/address/0xa238e42cb8782808dbb2f37e19859244ec4779b0" target="_blank" rel="noopener noreferrer">BNB Chain Testnet</a>    | binance_smart_chain-testnet       | 0xa238e42cb8782808dbb2f37e19859244ec4779b0 |
+| <a href="https://sepolia.etherscan.io/address/0x15fC6ae953E024d975e77382eEeC56A9101f9F88" target="_blank" rel="noopener noreferrer">Ethereum Sepolia</a>    | ethereum-testnet-sepolia            | 0x15fC6ae953E024d975e77382eEeC56A9101f9F88 |
+| <a href="https://sepolia-optimism.etherscan.io/address/0xa2888380dff3704a8ab6d1cd1a8f69c15fea5ee3" target="_blank" rel="noopener noreferrer">OP Sepolia</a> | ethereum-testnet-sepolia-optimism-1 | 0xa2888380dff3704a8ab6d1cd1a8f69c15fea5ee3 |
+| <a href="https://amoy.polygonscan.com/address/0x3675a5eb2286a3f87e8278fc66edf458a2e3bb74" target="_blank" rel="noopener noreferrer">Polygon Amoy</a>        | polygon-testnet-amoy                | 0x3675a5eb2286a3f87e8278fc66edf458a2e3bb74 |
+
+## Production Forwarders
+
+These `KeystoneForwarder` addresses are used by deployed workflows. Use these addresses when configuring your consumer contracts for production.
+
+### Mainnets
+
+| Network                                                                                                                                               | Chain Name                    | Forwarder Address                          |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------ |
+| <a href="https://arbiscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Arbitrum One</a>           | ethereum-mainnet-arbitrum-1   | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
+| <a href="https://snowscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Avalanche</a>             | avalanche-mainnet             | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://basescan.org/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Base</a>                  | ethereum-mainnet-base-1       | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
+| <a href="https://bscscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">BNB Chain</a>              | binance_smart_chain-mainnet | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://etherscan.io/address/0x0b93082D9b3C7C97fAcd250082899BAcf3af3885" target="_blank" rel="noopener noreferrer">Ethereum Mainnet</a>      | ethereum-mainnet              | 0x0b93082D9b3C7C97fAcd250082899BAcf3af3885 |
+| <a href="https://optimistic.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">OP Mainnet</a> | ethereum-mainnet-optimism-1   | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
+| <a href="https://polygonscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Polygon</a>            | polygon-mainnet               | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+
+### Testnets
+
+| Network                                                                                                                                                     | Chain Name                          | Forwarder Address                          |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------ |
+| <a href="https://sepolia.arbiscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Arbitrum Sepolia</a>     | ethereum-testnet-sepolia-arbitrum-1 | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://testnet.snowscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Avalanche Fuji</a>      | avalanche-testnet-fuji              | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://sepolia.basescan.org/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Base Sepolia</a>        | ethereum-testnet-sepolia-base-1     | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
+| <a href="https://testnet.bscscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">BNB Chain Testnet</a>    | binance_smart_chain-testnet       | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://sepolia.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Ethereum Sepolia</a>    | ethereum-testnet-sepolia            | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
+| <a href="https://sepolia-optimism.etherscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">OP Sepolia</a> | ethereum-testnet-sepolia-optimism-1 | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://amoy.polygonscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Polygon Amoy</a>        | polygon-testnet-amoy                | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 
 ---
 
@@ -12406,39 +12808,6 @@ The typical project setup flow for Go workflows:
 
 ---
 
-# Forwarder Addresses
-Source: https://docs.chain.link/cre/reference/general/forwarder-addresses
-
-[COMING SOON]
-
-When you [write data to a smart contract](/cre/guides/workflow/using-evm-client/onchain-write), your workflow does not call the contract directly. Instead, it submits a report to a `KeystoneForwarder` contract, which then validates the report and calls the `onReport()` function on your [consumer contract](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts).
-
-Below is a list of the deployed `KeystoneForwarder` contract addresses and their corresponding Chain Selectors for various testnets. Use the address matching the network where your consumer contract is deployed.
-
-| Network | Chain Selector | Forwarder Address |
-| :------ | :------------- | :---------------- |
-| XXX     | `XXX`          | `XXX`             |
-
----
-
-# General Reference
-Source: https://docs.chain.link/cre/reference/general
-
-[COMING SOON]
-
-This section provides general reference material for CRE.
-
----
-
-# CRE Limits
-Source: https://docs.chain.link/cre/reference/general/limits
-
-[COMING SOON]
-
-This page outlines the key limits in CRE that may impact your usage. Each table explains the limit, its default value, how you can configure it (if applicable), and what it means in practice.
-
----
-
 # Project Configuration
 Source: https://docs.chain.link/cre/reference/project-configuration-go
 Last Updated: 2025-11-04
@@ -14280,7 +14649,7 @@ This demo showcases several important patterns and features of the Go SDK:
 
 You have successfully run the Custom Data Feed demo workflow. To understand how the different pieces of the workflow code work, explore these detailed guides:
 
-- **How are the Cron and EVM Log events handled?** Learn how to use different event sources to start your workflow in the **[Using Triggers](/cre/guides/workflow/using-triggers)** guides.
+- **How are the Cron and EVM Log events handled?** Learn how to use different event sources to start your workflow in the **[Using Triggers](/cre/guides/workflow/using-triggers/overview)** guides.
 - **How does it fetch API data?** The demo uses the `http.Client` to fetch offchain reserve data. Learn more in the **[API Interactions](/cre/guides/workflow/using-http-client)** guide.
-- **How does it read from or write to the blockchain?** It uses the `evm.Client` for all onchain interactions. See the [**EVM Chain Interactions**](/cre/guides/workflow/using-evm-client) guides for details.
+- **How does it read from or write to the blockchain?** It uses the `evm.Client` for all onchain interactions. See the [**EVM Chain Interactions**](/cre/guides/workflow/using-evm-client/overview) guides for details.
 - **How does it use a contract binding?** The demo uses pre-built bindings to interact with the contracts safely. Learn how to create your own in the **[Generating Bindings](/cre/guides/workflow/using-evm-client/generating-bindings)** guide.

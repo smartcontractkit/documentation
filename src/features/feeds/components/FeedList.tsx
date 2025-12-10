@@ -1,6 +1,6 @@
 /** @jsxImportSource preact */
 import { useEffect, useState, useRef, useMemo } from "preact/hooks"
-import { MainnetTable, TestnetTable, StreamsNetworkAddressesTable } from "./Tables.tsx"
+import { MainnetTable, TestnetTable, StreamsNetworkAddressesTable, StreamsTHead, StreamsTr } from "./Tables.tsx"
 import feedList from "./FeedList.module.css"
 import tableStyles from "./Tables.module.css"
 import { clsx } from "~/lib/clsx/clsx.ts"
@@ -15,6 +15,7 @@ import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/TableOfContents/tocStore.ts"
 import alertIcon from "../../../components/Alert/Assets/alert-icon.svg"
 import { ChainSelector } from "~/components/ChainSelector/ChainSelector.tsx"
+import { isFeedVisible } from "../utils/feedVisibility.ts"
 
 export type DataFeedType =
   | "default"
@@ -26,6 +27,95 @@ export type DataFeedType =
   | "streamsNav"
   | "streamsExRate"
   | "streamsBacked"
+
+type SchemaFilterValue = "all" | "v8" | "v11"
+type StreamsRwaFeedTypeValue = "all" | "datalink" | "equities" | "forex"
+
+type FilterOption<T extends string> = {
+  label: string
+  value: T
+}
+
+interface FilterDropdownProps<T extends string> {
+  label: string
+  options: FilterOption<T>[]
+  value: T
+  onSelect: (value: T) => void
+  isOpen: boolean
+  onToggle: (isOpen: boolean) => void
+  onClose: () => void
+  groupId: string
+}
+
+const schemaFilterOptions: FilterOption<SchemaFilterValue>[] = [
+  { label: "All", value: "all" },
+  { label: "RWA Standard (v8)", value: "v8" },
+  { label: "RWA Advanced (v11)", value: "v11" },
+]
+
+const feedTypeFilterOptions: FilterOption<StreamsRwaFeedTypeValue>[] = [
+  { label: "All", value: "all" },
+  { label: "Datalink Streams", value: "datalink" },
+  { label: "Equity Streams", value: "equities" },
+  { label: "Forex Streams", value: "forex" },
+]
+
+const isSchemaFilterValue = (value: unknown): value is SchemaFilterValue =>
+  value === "all" || value === "v8" || value === "v11"
+const isStreamsRwaFeedTypeValue = (value: unknown): value is StreamsRwaFeedTypeValue =>
+  value === "all" || value === "datalink" || value === "equities" || value === "forex"
+
+const FilterDropdown = <T extends string>({
+  label,
+  options,
+  value,
+  onSelect,
+  isOpen,
+  onToggle,
+  onClose,
+  groupId,
+}: FilterDropdownProps<T>) => {
+  const selectedOption = options.find((option) => option.value === value)
+  const isDefault = value === options[0]?.value
+  const summaryLabel = isDefault ? label : (selectedOption?.label ?? label)
+
+  return (
+    <details
+      class={feedList.filterDropdown_details}
+      data-hasvalue={isDefault ? "false" : "true"}
+      open={isOpen}
+      onToggle={(event) => onToggle(event.currentTarget.open)}
+    >
+      <summary class="text-200" title={summaryLabel}>
+        {summaryLabel}
+      </summary>
+      {isOpen && (
+        <nav>
+          <ul>
+            {options.map((option) => {
+              const isSelected = value === option.value
+              return (
+                <li key={option.value}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelect(option.value)
+                      onClose()
+                    }}
+                    style="user-select: none;"
+                  >
+                    <input type="radio" name={groupId} checked={isSelected} readOnly style="cursor:pointer;" />
+                    <span style="user-select: none;">{option.label}</span>
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        </nav>
+      )}
+    </details>
+  )
+}
 export const FeedList = ({
   initialNetwork,
   dataFeedType = "default",
@@ -177,22 +267,61 @@ export const FeedList = ({
 
   // Initialize all other states
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState<boolean>(false)
+  const [streamCategoryFilterParam, setStreamCategoryFilterParam] = useQueryString("feedType")
+  const streamCategoryFilter =
+    typeof streamCategoryFilterParam === "string" && isStreamsRwaFeedTypeValue(streamCategoryFilterParam)
+      ? streamCategoryFilterParam
+      : "all"
+  const setStreamCategoryFilter = (next: StreamsRwaFeedTypeValue) => {
+    setStreamCategoryFilterParam(next === "all" ? [] : next)
+  }
+  const [testnetStreamCategoryFilterParam, setTestnetStreamCategoryFilterParam] = useQueryString("testnetFeedType")
+  const testnetStreamCategoryFilter =
+    typeof testnetStreamCategoryFilterParam === "string" && isStreamsRwaFeedTypeValue(testnetStreamCategoryFilterParam)
+      ? testnetStreamCategoryFilterParam
+      : "all"
+  const setTestnetStreamCategoryFilter = (next: StreamsRwaFeedTypeValue) => {
+    setTestnetStreamCategoryFilterParam(next === "all" ? [] : next)
+  }
   const [showExtraDetails, setShowExtraDetails] = useState(false)
   const [showOnlyMVRFeeds, setShowOnlyMVRFeeds] = useState(false)
   const [showOnlyMVRFeedsTestnet, setShowOnlyMVRFeedsTestnet] = useState(false)
   const [showOnlySVR, setShowOnlySVR] = useState(false)
   const [showOnlyDEXFeeds, setShowOnlyDEXFeeds] = useState(false)
   const [showOnlyDEXFeedsTestnet, setShowOnlyDEXFeedsTestnet] = useState(false)
+  const [rwaSchemaFilterParam, setRwaSchemaFilterParam] = useQueryString("schema")
+  const rwaSchemaFilter =
+    typeof rwaSchemaFilterParam === "string" && isSchemaFilterValue(rwaSchemaFilterParam) ? rwaSchemaFilterParam : "all"
+  const setRwaSchemaFilter = (next: SchemaFilterValue) => {
+    setRwaSchemaFilterParam(next === "all" ? [] : next)
+  }
+  const [testnetRwaSchemaFilterParam, setTestnetRwaSchemaFilterParam] = useQueryString("testnetSchema")
+  const testnetRwaSchemaFilter =
+    typeof testnetRwaSchemaFilterParam === "string" && isSchemaFilterValue(testnetRwaSchemaFilterParam)
+      ? testnetRwaSchemaFilterParam
+      : "all"
+  const setTestnetRwaSchemaFilter = (next: SchemaFilterValue) => {
+    setTestnetRwaSchemaFilterParam(next === "all" ? [] : next)
+  }
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null)
+  const handleDropdownToggle = (dropdownId: string, isOpen: boolean) => {
+    setOpenDropdownId((current) => {
+      if (isOpen) {
+        return dropdownId
+      }
+      return current === dropdownId ? null : current
+    })
+  }
+  const closeAllDropdowns = () => setOpenDropdownId(null)
   const paginate = (pageNumber) => setCurrentPage(String(pageNumber))
-  // Disable pagination for deprecating feeds by using a very high page size
-  const addrPerPage = ecosystem === "deprecating" ? 10000 : 8
+  const addrPerPage = ecosystem === "deprecating" && isStreams ? 10 : ecosystem === "deprecating" ? 10000 : 8
   const lastAddr = Number(currentPage) * addrPerPage
   const firstAddr = lastAddr - addrPerPage
 
   // Pagination for testnet table
   const [testnetCurrentPage, setTestnetCurrentPage] = useQueryString("testnetPage", "1")
   const testnetPaginate = (pageNumber) => setTestnetCurrentPage(String(pageNumber))
-  const testnetAddrPerPage = ecosystem === "deprecating" ? 10000 : 8
+  const testnetAddrPerPage = ecosystem === "deprecating" && isStreams ? 10 : ecosystem === "deprecating" ? 10000 : 8
   const testnetLastAddr = Number(testnetCurrentPage) * testnetAddrPerPage
   const testnetFirstAddr = testnetLastAddr - testnetAddrPerPage
 
@@ -221,6 +350,7 @@ export const FeedList = ({
     { key: "Proof of Reserve", name: "Proof of Reserve" },
     { key: "NAVLink", name: "NAVLink" },
     { key: "SmartAUM", name: "SmartAUM" },
+    { key: "Stablecoin Stability Assessment", name: "Stablecoin Stability Assessment" },
   ]
   const [streamsChain] = useState(initialNetwork)
   const activeChain = isStreams ? streamsChain : currentNetwork
@@ -368,6 +498,7 @@ export const FeedList = ({
 
   // Network selection handler
   function handleNetworkSelect(chain: Chain) {
+    closeAllDropdowns()
     if (!isStreams) {
       const params = new URLSearchParams(window.location.search)
       params.set("network", chain.page)
@@ -385,6 +516,7 @@ export const FeedList = ({
 
   // Network type change handler for testnet/mainnet switching
   function handleNetworkTypeChange(networkType: "mainnet" | "testnet") {
+    closeAllDropdowns()
     // Update the selected network type
     setSelectedNetworkType(networkType)
 
@@ -474,24 +606,35 @@ export const FeedList = ({
     const networkTypes = { mainnet: false, testnet: false }
 
     // Filter networks by feed type
-    const filteredNetworks = chainMetadata.processedData.networks.filter((network) => {
-      if (isDeprecating) {
-        let foundDeprecated = false
-        network.metadata?.forEach((feed: any) => {
-          if (feed.feedCategory === "deprecating") {
-            foundDeprecated = true
-          }
-        })
-        return foundDeprecated
-      }
+    const filteredNetworks = chainMetadata.processedData.networks
+      .filter((network) => {
+        if (isDeprecating) {
+          let foundDeprecated = false
+          network.metadata?.forEach((feed: any) => {
+            if (feed.feedCategory === "deprecating") {
+              foundDeprecated = true
+            }
+          })
+          // A deprecating network is relevant only if it still has at least one non-hidden deprecating feed
+          if (!foundDeprecated) return false
+          const hasVisible = network.metadata?.some(
+            (feed: any) => feed.feedCategory === "deprecating" && feed.feedCategory !== "hidden" && !feed.docs?.hidden
+          )
+          return !!hasVisible
+        }
 
-      if (isStreams) return network.tags?.includes("streams")
-      if (isSmartData) return network.tags?.includes("smartData")
-      if (isRates) return network.tags?.includes("rates")
-      if (isUSGovernmentMacroeconomicData) return network.tags?.includes("usGovernmentMacroeconomicData")
+        if (isStreams) return network.tags?.includes("streams")
+        if (isSmartData) return network.tags?.includes("smartData")
+        if (isRates) return network.tags?.includes("rates")
+        if (isUSGovernmentMacroeconomicData) return network.tags?.includes("usGovernmentMacroeconomicData")
 
-      return true
-    })
+        return true
+      })
+      .filter((network) => {
+        // Ensure the network has at least one visible feed for the current dataFeedType
+        const feeds = network.metadata || []
+        return feeds.some((feed: any) => isFeedVisible(feed, dataFeedType, ecosystem))
+      })
 
     // Check available network types
     filteredNetworks.forEach((network) => {
@@ -561,7 +704,7 @@ export const FeedList = ({
         : dataFeedType === "streamsExRate"
           ? "Mainnet Exchange Rate Streams"
           : dataFeedType === "streamsBacked"
-            ? "Mainnet Backed xStock Streams"
+            ? "Mainnet Tokenized Asset Streams"
             : "Mainnet RWA Streams"
   const streamsTestnetSectionTitle =
     dataFeedType === "streamsCrypto"
@@ -571,7 +714,7 @@ export const FeedList = ({
         : dataFeedType === "streamsExRate"
           ? "Testnet Exchange Rate Streams"
           : dataFeedType === "streamsBacked"
-            ? "Testnet Backed xStock Streams"
+            ? "Testnet Tokenized Asset Streams"
             : "Testnet RWA Streams"
 
   // Initialize search input fields with URL parameter values
@@ -600,6 +743,199 @@ export const FeedList = ({
     dataFeedType === "streamsExRate" ||
     dataFeedType === "streamsBacked"
   ) {
+    // For deprecating streams, show two separate tables: mainnet and testnet
+    if (isDeprecating) {
+      const mainnetDeprecatingStreams: any[] = []
+      const testnetDeprecatingStreams: any[] = []
+
+      if (initialCache) {
+        Object.values(initialCache).forEach((chainData: any) => {
+          // Only check Arbitrum chains for streams
+          if (chainData.page === "arbitrum") {
+            chainData.networks?.forEach((network: any) => {
+              network.metadata?.forEach((item: any) => {
+                // Only include items that are actual streams (have verifier contract type and feedId)
+                // and have a shutdown date
+                if (item.contractType === "verifier" && item.feedId && item.docs?.shutdownDate) {
+                  const streamWithNetwork = {
+                    ...item,
+                    networkName: network.name,
+                  }
+                  if (network.networkType === "mainnet") {
+                    mainnetDeprecatingStreams.push(streamWithNetwork)
+                  } else if (network.networkType === "testnet") {
+                    testnetDeprecatingStreams.push(streamWithNetwork)
+                  }
+                }
+              })
+            })
+          }
+        })
+      }
+
+      // Sort alphabetically by asset name or product name
+      const sortStreams = (streams: any[]) => {
+        return streams.sort((a, b) => {
+          const nameA = (a.assetName || a.docs?.clicProductName || "").toUpperCase()
+          const nameB = (b.assetName || b.docs?.clicProductName || "").toUpperCase()
+          return nameA.localeCompare(nameB)
+        })
+      }
+
+      sortStreams(mainnetDeprecatingStreams)
+      sortStreams(testnetDeprecatingStreams)
+
+      // Apply search filter for mainnet
+      const filteredMainnetStreams = mainnetDeprecatingStreams.filter((stream) => {
+        if (!searchValue || typeof searchValue !== "string") return true
+        const searchLower = searchValue.toLowerCase()
+        return (
+          stream.feedId?.toLowerCase().includes(searchLower) ||
+          stream.assetName?.toLowerCase().includes(searchLower) ||
+          stream.feedType?.toLowerCase().includes(searchLower) ||
+          stream.networkName?.toLowerCase().includes(searchLower) ||
+          stream.docs?.clicProductName?.toLowerCase().includes(searchLower)
+        )
+      })
+
+      // Apply search filter for testnet
+      const filteredTestnetStreams = testnetDeprecatingStreams.filter((stream) => {
+        if (!testnetSearchValue || typeof testnetSearchValue !== "string") return true
+        const searchLower = testnetSearchValue.toLowerCase()
+        return (
+          stream.feedId?.toLowerCase().includes(searchLower) ||
+          stream.assetName?.toLowerCase().includes(searchLower) ||
+          stream.feedType?.toLowerCase().includes(searchLower) ||
+          stream.networkName?.toLowerCase().includes(searchLower) ||
+          stream.docs?.clicProductName?.toLowerCase().includes(searchLower)
+        )
+      })
+
+      // Calculate mainnet pagination
+      const paginatedMainnetStreams = filteredMainnetStreams.slice(firstAddr, lastAddr)
+
+      // Calculate testnet pagination
+      const paginatedTestnetStreams = filteredTestnetStreams.slice(testnetFirstAddr, testnetLastAddr)
+
+      return (
+        <>
+          {chainMetadata.loading && !chainMetadata.processedData && !initialCache && <p>Loading...</p>}
+          {chainMetadata.error && <p>There was an error loading the streams...</p>}
+
+          <SectionWrapper title="Mainnet Deprecating Streams" depth={2}>
+            <form class={feedList.filterDropdown_search}>
+              <input
+                id="search"
+                class={feedList.filterDropdown_searchInput}
+                placeholder="Search"
+                value={typeof searchValue === "string" ? searchValue : ""}
+                onInput={(event) => {
+                  setSearchValue((event.target as HTMLInputElement).value)
+                  setCurrentPage("1")
+                }}
+              />
+            </form>
+            {filteredMainnetStreams.length > 0 ? (
+              <>
+                <div className={feedList.tableWrapper}>
+                  <table className={clsx(tableStyles.table)}>
+                    <StreamsTHead />
+                    <tbody>
+                      {paginatedMainnetStreams.map((stream, index) => (
+                        <StreamsTr key={`${stream.feedId}-${index}`} metadata={stream} isMainnet={true} />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {filteredMainnetStreams.length > addrPerPage && (
+                  <div className={tableStyles.pagination} role="navigation" aria-label="Table pagination">
+                    <button
+                      className={button.secondary}
+                      disabled={Number(currentPage) === 1}
+                      onClick={() => paginate(Number(currentPage) - 1)}
+                    >
+                      Prev
+                    </button>
+                    <p aria-live="polite">
+                      {firstAddr + 1}-
+                      {lastAddr > filteredMainnetStreams.length ? filteredMainnetStreams.length : lastAddr} of{" "}
+                      {filteredMainnetStreams.length}
+                    </p>
+                    <button
+                      className={button.secondary}
+                      disabled={lastAddr >= filteredMainnetStreams.length}
+                      onClick={() => paginate(Number(currentPage) + 1)}
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <p>No mainnet deprecating streams found.</p>
+            )}
+          </SectionWrapper>
+
+          <SectionWrapper title="Testnet Deprecating Streams" depth={2}>
+            <form class={feedList.filterDropdown_search}>
+              <input
+                id="testnetSearch"
+                class={feedList.filterDropdown_searchInput}
+                placeholder="Search"
+                value={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
+                onInput={(event) => {
+                  setTestnetSearchValue((event.target as HTMLInputElement).value)
+                  setTestnetCurrentPage("1")
+                }}
+              />
+            </form>
+            {filteredTestnetStreams.length > 0 ? (
+              <>
+                <div className={feedList.tableWrapper}>
+                  <table className={clsx(tableStyles.table)}>
+                    <StreamsTHead />
+                    <tbody>
+                      {paginatedTestnetStreams.map((stream, index) => (
+                        <StreamsTr key={`${stream.feedId}-${index}`} metadata={stream} isMainnet={false} />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {filteredTestnetStreams.length > testnetAddrPerPage && (
+                  <div className={tableStyles.pagination} role="navigation" aria-label="Table pagination">
+                    <button
+                      className={button.secondary}
+                      disabled={Number(testnetCurrentPage) === 1}
+                      onClick={() => testnetPaginate(Number(testnetCurrentPage) - 1)}
+                    >
+                      Prev
+                    </button>
+                    <p aria-live="polite">
+                      {testnetFirstAddr + 1}-
+                      {testnetLastAddr > filteredTestnetStreams.length
+                        ? filteredTestnetStreams.length
+                        : testnetLastAddr}{" "}
+                      of {filteredTestnetStreams.length}
+                    </p>
+                    <button
+                      className={button.secondary}
+                      disabled={testnetLastAddr >= filteredTestnetStreams.length}
+                      onClick={() => testnetPaginate(Number(testnetCurrentPage) + 1)}
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <p>No testnet deprecating streams found.</p>
+            )}
+          </SectionWrapper>
+        </>
+      )
+    }
+
+    // Regular streams view (non-deprecating)
     const mainnetFeeds: ChainNetwork[] = []
     const testnetFeeds: ChainNetwork[] = []
 
@@ -615,20 +951,24 @@ export const FeedList = ({
 
     return (
       <>
-        {allowNetworkTableExpansion ? (
-          <div style={{ marginBottom: "var(--space-2x)" }}>
-            <StreamsNetworkAddressesTable
-              allowExpansion={allowNetworkTableExpansion}
-              defaultExpanded={defaultNetworkTableExpanded}
-            />
-          </div>
-        ) : (
-          <SectionWrapper title="Streams Verifier Network Addresses" depth={2}>
-            <StreamsNetworkAddressesTable
-              allowExpansion={allowNetworkTableExpansion}
-              defaultExpanded={defaultNetworkTableExpanded}
-            />
-          </SectionWrapper>
+        {!isDeprecating && (
+          <>
+            {allowNetworkTableExpansion ? (
+              <div style={{ marginBottom: "var(--space-2x)" }}>
+                <StreamsNetworkAddressesTable
+                  allowExpansion={allowNetworkTableExpansion}
+                  defaultExpanded={defaultNetworkTableExpanded}
+                />
+              </div>
+            ) : (
+              <SectionWrapper title="Streams Verifier Network Addresses" depth={2}>
+                <StreamsNetworkAddressesTable
+                  allowExpansion={allowNetworkTableExpansion}
+                  defaultExpanded={defaultNetworkTableExpanded}
+                />
+              </SectionWrapper>
+            )}
+          </>
         )}
 
         <SectionWrapper
@@ -642,28 +982,13 @@ export const FeedList = ({
                 id="search"
                 class={feedList.filterDropdown_searchInput}
                 placeholder="Search"
+                onFocus={closeAllDropdowns}
                 onInput={(event) => {
+                  closeAllDropdowns()
                   setSearchValue((event.target as HTMLInputElement).value)
                   setCurrentPage("1")
                 }}
               />
-              {searchValue && (
-                <button
-                  type="button"
-                  className={clsx(button.secondary, feedList.clearFilterBtn)}
-                  onClick={() => {
-                    setSearchValue("")
-                    setCurrentPage("1")
-                    const inputElement = document.getElementById("search") as HTMLInputElement
-                    if (inputElement) {
-                      inputElement.value = ""
-                    }
-                  }}
-                  aria-label="Clear search filter"
-                >
-                  Clear filter
-                </button>
-              )}
             </form>
             {dataFeedType === "streamsCrypto" && (
               <div className={feedList.checkboxContainer}>
@@ -673,6 +998,7 @@ export const FeedList = ({
                     style="width:15px;height:15px;display:inline;margin-right:8px;"
                     checked={showOnlyDEXFeeds}
                     onChange={() => {
+                      closeAllDropdowns()
                       setShowOnlyDEXFeeds((old) => !old)
                       setCurrentPage("1") // Reset to first page when filter changes
                     }}
@@ -681,8 +1007,60 @@ export const FeedList = ({
                 </label>
               </div>
             )}
+            {dataFeedType === "streamsRwa" && (
+              <>
+                <FilterDropdown
+                  isOpen={openDropdownId === "main-schema"}
+                  onToggle={(isOpen) => handleDropdownToggle("main-schema", isOpen)}
+                  onClose={closeAllDropdowns}
+                  label="Filter schema"
+                  options={schemaFilterOptions}
+                  value={rwaSchemaFilter}
+                  groupId="schema-main"
+                  onSelect={(next) => {
+                    setRwaSchemaFilter(next)
+                    setCurrentPage("1")
+                  }}
+                />
+                <FilterDropdown
+                  isOpen={openDropdownId === "main-feed-type"}
+                  onToggle={(isOpen) => handleDropdownToggle("main-feed-type", isOpen)}
+                  onClose={closeAllDropdowns}
+                  label="Filter category"
+                  options={feedTypeFilterOptions}
+                  value={streamCategoryFilter}
+                  groupId="feed-type-main"
+                  onSelect={(next) => {
+                    setStreamCategoryFilter(next)
+                    setCurrentPage("1")
+                  }}
+                />
+                {(searchValue || rwaSchemaFilter !== "all" || streamCategoryFilter !== "all") && (
+                  <button
+                    type="button"
+                    className={clsx(button.secondary, feedList.clearFilterBtn)}
+                    onClick={() => {
+                      closeAllDropdowns()
+                      setSearchValue("")
+                      setRwaSchemaFilter("all")
+                      setStreamCategoryFilter("all")
+                      setCurrentPage("1")
+                      const inputElement = document.getElementById("search") as HTMLInputElement
+                      if (inputElement) {
+                        inputElement.value = ""
+                      }
+                    }}
+                    aria-label="Clear all filters"
+                  >
+                    Clear filter
+                  </button>
+                )}
+              </>
+            )}
           </div>
-          {mainnetFeeds.length ? (
+          {chainMetadata.loading || !chainMetadata.processedData ? (
+            <p style="font-style: italic;">Loading...</p>
+          ) : mainnetFeeds.length > 0 ? (
             mainnetFeeds.map((network) => (
               <MainnetTable
                 selectedFeedCategories={
@@ -697,6 +1075,8 @@ export const FeedList = ({
                 showOnlySVR={showOnlySVR}
                 showOnlyMVRFeeds={showOnlyMVRFeeds}
                 showOnlyDEXFeeds={showOnlyDEXFeeds}
+                rwaSchemaFilter={rwaSchemaFilter}
+                streamCategoryFilter={streamCategoryFilter}
                 dataFeedType={dataFeedType}
                 ecosystem={ecosystem}
                 lastAddr={lastAddr}
@@ -723,28 +1103,13 @@ export const FeedList = ({
                 id="testnetSearch"
                 class={feedList.filterDropdown_searchInput}
                 placeholder="Search"
+                onFocus={closeAllDropdowns}
                 onInput={(event) => {
+                  closeAllDropdowns()
                   setTestnetSearchValue((event.target as HTMLInputElement).value)
                   setTestnetCurrentPage("1")
                 }}
               />
-              {testnetSearchValue && (
-                <button
-                  type="button"
-                  className={clsx(button.secondary, feedList.clearFilterBtn)}
-                  onClick={() => {
-                    setTestnetSearchValue("")
-                    setTestnetCurrentPage("1")
-                    const inputElement = document.getElementById("testnetSearch") as HTMLInputElement
-                    if (inputElement) {
-                      inputElement.value = ""
-                    }
-                  }}
-                  aria-label="Clear search filter"
-                >
-                  Clear filter
-                </button>
-              )}
             </form>
             {dataFeedType === "streamsCrypto" && (
               <div className={feedList.checkboxContainer}>
@@ -762,8 +1127,60 @@ export const FeedList = ({
                 </label>
               </div>
             )}
+            {dataFeedType === "streamsRwa" && (
+              <>
+                <FilterDropdown
+                  isOpen={openDropdownId === "test-schema"}
+                  onToggle={(isOpen) => handleDropdownToggle("test-schema", isOpen)}
+                  onClose={closeAllDropdowns}
+                  label="Filter schema"
+                  options={schemaFilterOptions}
+                  value={testnetRwaSchemaFilter}
+                  groupId="schema-testnet"
+                  onSelect={(next) => {
+                    setTestnetRwaSchemaFilter(next)
+                    setTestnetCurrentPage("1")
+                  }}
+                />
+                <FilterDropdown
+                  isOpen={openDropdownId === "test-feed-type"}
+                  onToggle={(isOpen) => handleDropdownToggle("test-feed-type", isOpen)}
+                  onClose={closeAllDropdowns}
+                  label="Filter category"
+                  options={feedTypeFilterOptions}
+                  value={testnetStreamCategoryFilter}
+                  groupId="feed-type-testnet"
+                  onSelect={(next) => {
+                    setTestnetStreamCategoryFilter(next)
+                    setTestnetCurrentPage("1")
+                  }}
+                />
+                {(testnetSearchValue || testnetRwaSchemaFilter !== "all" || testnetStreamCategoryFilter !== "all") && (
+                  <button
+                    type="button"
+                    className={clsx(button.secondary, feedList.clearFilterBtn)}
+                    onClick={() => {
+                      closeAllDropdowns()
+                      setTestnetSearchValue("")
+                      setTestnetRwaSchemaFilter("all")
+                      setTestnetStreamCategoryFilter("all")
+                      setTestnetCurrentPage("1")
+                      const inputElement = document.getElementById("testnetSearch") as HTMLInputElement
+                      if (inputElement) {
+                        inputElement.value = ""
+                      }
+                    }}
+                    aria-label="Clear all filters"
+                  >
+                    Clear filter
+                  </button>
+                )}
+              </>
+            )}
           </div>
-          {testnetFeeds.length ? (
+          {chainMetadata.loading || !chainMetadata.processedData ? (
+            <p style="font-style: italic;">Loading...</p>
+          ) : testnetFeeds.length > 0 ? (
             testnetFeeds.map((network) => (
               <TestnetTable
                 key={network.name}
@@ -779,6 +1196,8 @@ export const FeedList = ({
                 }
                 showOnlyMVRFeeds={showOnlyMVRFeedsTestnet}
                 showOnlyDEXFeeds={showOnlyDEXFeedsTestnet}
+                rwaSchemaFilter={testnetRwaSchemaFilter}
+                streamCategoryFilter={testnetStreamCategoryFilter}
                 firstAddr={testnetFirstAddr}
                 lastAddr={testnetLastAddr}
                 addrPerPage={testnetAddrPerPage}
@@ -834,7 +1253,8 @@ export const FeedList = ({
             .filter((network: any) => {
               let foundDeprecated = false
               network.metadata?.forEach((feed: any) => {
-                if (feed.feedCategory === "deprecating") {
+                // Only include actual feeds (not streams) with deprecating status
+                if (feed.feedCategory === "deprecating" && !(feed.contractType === "verifier" && feed.feedId)) {
                   foundDeprecated = true
                 }
               })
@@ -860,7 +1280,10 @@ export const FeedList = ({
                   }
                   network={{
                     ...network,
-                    metadata: network.metadata.filter((feed: any) => feed.feedCategory === "deprecating"),
+                    metadata: network.metadata.filter(
+                      (feed: any) =>
+                        feed.feedCategory === "deprecating" && !(feed.contractType === "verifier" && feed.feedId)
+                    ),
                   }}
                   showExtraDetails={showExtraDetails}
                   showOnlySVR={showOnlySVR}
@@ -885,7 +1308,8 @@ export const FeedList = ({
             if (isDeprecating) {
               let foundDeprecated = false
               network.metadata?.forEach((feed: any) => {
-                if (feed.feedCategory === "deprecating") {
+                // Only include actual feeds (not streams) with deprecating status
+                if (feed.feedCategory === "deprecating" && !(feed.contractType === "verifier" && feed.feedId)) {
                   foundDeprecated = true
                 }
               })
@@ -1029,7 +1453,9 @@ export const FeedList = ({
                               id="search"
                               class={feedList.filterDropdown_searchInput}
                               placeholder="Search"
+                              onFocus={closeAllDropdowns}
                               onInput={(event) => {
+                                closeAllDropdowns()
                                 setSearchValue((event.target as HTMLInputElement).value)
                                 setCurrentPage("1")
                               }}
@@ -1039,6 +1465,7 @@ export const FeedList = ({
                                 type="button"
                                 className={clsx(button.secondary, feedList.clearFilterBtn)}
                                 onClick={() => {
+                                  closeAllDropdowns()
                                   setSearchValue("")
                                   setCurrentPage("1")
                                   const inputElement = document.getElementById("search") as HTMLInputElement

@@ -4,7 +4,7 @@ import { FeedList, DataFeedType } from "./FeedList"
 import { Aside } from "@components"
 export type Props = {
   initialNetwork?: string
-  ecosystem: string
+  ecosystem?: string
   dataFeedType?:
     | DataFeedType
     | "streamsBacked"
@@ -25,7 +25,9 @@ import { FeedDataItem, monitoredFeeds } from "~/features/data"
 
 const { initialNetwork, ecosystem, dataFeedType, allowNetworkTableExpansion, defaultNetworkTableExpanded } = Astro.props
 
-const initialCache = await getServerSideChainMetadata([...CHAINS, ...ALL_CHAINS])
+// Skip cache for deprecating page to always fetch fresh data
+const isDeprecating = ecosystem === "deprecating"
+const initialCache = await getServerSideChainMetadata([...CHAINS, ...ALL_CHAINS], isDeprecating)
 const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
 ---
 

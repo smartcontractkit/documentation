@@ -8,6 +8,7 @@ concurrency:
 
 env:
   FOUNDRY_PROFILE: ci
+  NODE_VERSION: '22'
 
 # Set default permissions as restrictive as possible
 permissions:
@@ -21,12 +22,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
@@ -50,12 +51,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
@@ -86,7 +87,7 @@ jobs:
         run: npm run sol:fmt:check
 
       - name: Check Solidity Compilation
-        run: forge build --sizes
+        run: npm run sol:compile
 
       - name: Check Solidity Linting
         run: npm run lint-solc
@@ -97,12 +98,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
@@ -136,12 +137,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
@@ -161,8 +162,6 @@ jobs:
       
       - name: Check Internal Links
         run: npm run linkcheck-internal
-        env:
-          NODE_OPTIONS: "--max-old-space-size=8192"
 
   # Job 4: Check Types
   typecheck:
@@ -170,12 +169,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
@@ -207,19 +206,15 @@ jobs:
   jest:
     needs: [setup]
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20.x]
-      fail-fast: false
     
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       
-      - name: Setup Node.js ${{ matrix.node-version }}
+      - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
@@ -244,6 +239,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v5
         with:
-          name: coverage-report-node-${{ matrix.node-version }}
+          name: coverage-report-node-${{ env.NODE_VERSION }}
           path: coverage/
           retention-days: 30

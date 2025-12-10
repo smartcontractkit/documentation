@@ -463,8 +463,15 @@ export const CHAINS: Chain[] = [
     supportedFeatures: ["feeds"],
     networks: [
       {
+        name: "Monad Mainnet",
+        explorerUrl: "https://monadvision.com/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-monad-mainnet.json",
+        queryString: "monad-mainnet",
+      },
+      {
         name: "Monad Testnet",
-        explorerUrl: "https://testnet.monadexplorer.com/address/%s",
+        explorerUrl: "https://testnet.monadvision.com/address/%s",
         networkType: "testnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-monad-testnet.json",
         queryString: "monad-testnet",

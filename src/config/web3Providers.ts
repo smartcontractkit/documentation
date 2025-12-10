@@ -158,7 +158,17 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   MEMENTO_TESTNET: () => new JsonRpcProvider("https://testnet-rpc.mementoblockchain.com"),
   XDC_MAINNET: () => new JsonRpcProvider("https://erpc.xinfin.network"),
   XDC_TESTNET: () => new JsonRpcProvider("https://rpc.apothem.network/"),
-  BITTENSOR_MAINNET: () => new JsonRpcProvider("ttps://lite.chain.opentensor.ai"),
+  BITTENSOR_MAINNET: () => new JsonRpcProvider("https://lite.chain.opentensor.ai"),
+  EVERCLEAR_MAINNET: () => new JsonRpcProvider("https://rpc.everclear.raas.gelato.cloud"),
+  AB_CHAIN_MAINNET: () => new JsonRpcProvider("https://rpc.core.ab.org"),
+  MONAD_MAINNET: () => new JsonRpcProvider("https://rpc3.monad.xyz"),
+  NEXON_HENESYS_MAINNET: () => new JsonRpcProvider("https://henesys-rpc.msu.io/"),
+  PHAROS_ATLANTIC_TESTNET: () => new JsonRpcProvider("https://atlantic.dplabs-internal.com/"),
+  MORPH_MAINNET: () => new JsonRpcProvider("https://rpc.morphl2.io"),
+  MORPH_HOODI_TESTNET: () => new JsonRpcProvider("https://rpc-hoodi.morphl2.io/"),
+  JOVAY_MAINNET: () => new JsonRpcProvider("https://rpc.jovay.io"),
+  JOVAY_TESTNET: () => new JsonRpcProvider("https://api.zan.top/public/jovay-testnet"),
+  STABLE_MAINNET: () => new JsonRpcProvider("https://rpc.stable.xyz"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {

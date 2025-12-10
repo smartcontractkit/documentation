@@ -1,8 +1,8 @@
 import type { APIRoute } from "astro"
-import { APIErrorType, createErrorResponse, commonHeaders, CCIPError } from "@api/ccip/utils.ts"
+import { APIErrorType, createErrorResponse, commonHeaders, CCIPError } from "~/lib/ccip/utils.ts"
 import { logger } from "@lib/logging/index.js"
 import { getFaucetConfig } from "@lib/core/config/index.ts"
-import { FaucetService } from "../../../../services/faucet-service.ts"
+import { FaucetService } from "~/lib/ccip/services/faucet-service.ts"
 
 export const prerender = false
 export const runtime = "nodejs" // Required for crypto operations

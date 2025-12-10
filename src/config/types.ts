@@ -73,6 +73,13 @@ export type SupportedTechnology =
   | "MEMENTO"
   | "XDC"
   | "BITTENSOR"
+  | "EVERCLEAR"
+  | "AB_CHAIN"
+  | "PHAROS"
+  | "HENESYS"
+  | "MORPH"
+  | "JOVAY"
+  | "STABLE"
 
 export type ChainType = "evm" | "solana" | "aptos"
 
@@ -233,6 +240,17 @@ export type SupportedChain =
   | "XDC_MAINNET"
   | "XDC_TESTNET"
   | "BITTENSOR_MAINNET"
+  | "EVERCLEAR_MAINNET"
+  | "AB_CHAIN_MAINNET"
+  | "MONAD_MAINNET"
+  | "NEXON_HENESYS_MAINNET"
+  | "PHAROS_ATLANTIC_TESTNET"
+  | "MORPH_MAINNET"
+  | "MORPH_HOODI_TESTNET"
+  | "JOVAY_MAINNET"
+  | "JOVAY_TESTNET"
+  | "STABLE_MAINNET"
+
 export type ExplorerInfo = {
   baseUrl: string
   queryParameters?: {

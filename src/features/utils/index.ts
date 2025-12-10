@@ -11,7 +11,7 @@ import {
 import { CCIP_TOKEN_ICON_MAPPINGS } from "@config/data/ccip/tokenIconMappings.ts"
 import { TOKEN_ICONS_PATH } from "@config/cdn.ts"
 import { toQuantity } from "ethers"
-import referenceChains from "src/scripts/reference/chains.json" with { type: "json" }
+import referenceChains from "~/scripts/reference/chains.json" with { type: "json" }
 
 interface AddEthereumChainParameter {
   chainId: string
@@ -506,6 +506,26 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "XDC_TESTNET"
     case "bittensor-mainnet":
       return "BITTENSOR_MAINNET"
+    case "everclear-mainnet":
+      return "EVERCLEAR_MAINNET"
+    case "ab-mainnet":
+      return "AB_CHAIN_MAINNET"
+    case "monad-mainnet":
+      return "MONAD_MAINNET"
+    case "nexon-mainnet-henesys":
+      return "NEXON_HENESYS_MAINNET"
+    case "pharos-atlantic-testnet":
+      return "PHAROS_ATLANTIC_TESTNET"
+    case "morph-mainnet":
+      return "MORPH_MAINNET"
+    case "ethereum-testnet-hoodi-morph":
+      return "MORPH_HOODI_TESTNET"
+    case "jovay-mainnet":
+      return "JOVAY_MAINNET"
+    case "jovay-testnet":
+      return "JOVAY_TESTNET"
+    case "stable-mainnet":
+      return "STABLE_MAINNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -809,6 +829,26 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "xdc-testnet"
     case "BITTENSOR_MAINNET":
       return "bittensor-mainnet"
+    case "EVERCLEAR_MAINNET":
+      return "everclear-mainnet"
+    case "AB_CHAIN_MAINNET":
+      return "ab-mainnet"
+    case "MONAD_MAINNET":
+      return "monad-mainnet"
+    case "NEXON_HENESYS_MAINNET":
+      return "nexon-mainnet-henesys"
+    case "PHAROS_ATLANTIC_TESTNET":
+      return "pharos-atlantic-testnet"
+    case "MORPH_MAINNET":
+      return "morph-mainnet"
+    case "MORPH_HOODI_TESTNET":
+      return "ethereum-testnet-hoodi-morph"
+    case "JOVAY_MAINNET":
+      return "jovay-mainnet"
+    case "JOVAY_TESTNET":
+      return "jovay-testnet"
+    case "STABLE_MAINNET":
+      return "stable-mainnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
