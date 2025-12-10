@@ -9049,58 +9049,44 @@ For use cases requiring fixed confirmation thresholds (e.g., regulatory complian
 **Example 1 - Read from a specific historical block**:
 
 ```typescript
+import { blockNumber } from '@chainlink/cre-sdk'
+
 const historicalBlock = 9767655n
 const contractCall = evmClient.callContract(runtime, {
   call: encodeCallMsg({...}),
-  blockNumber: {
-    absVal: Buffer.from(historicalBlock.toString(16).padStart(2, '0'), 'hex').toString('base64'),
-  },
+  blockNumber: blockNumber(historicalBlock),
 }).result()
 ```
 
-**Example 2 - Read from 500 blocks ago for latest block**:
+**Example 2 - Read from 500 blocks ago for custom finality**:
 
 ```typescript
-// Helper to convert protobuf BigInt to native bigint
-const protoBigIntToBigInt = (pb: { absVal: Uint8Array; sign: bigint }): bigint => {
-  let result = 0n
-  for (const byte of pb.absVal) {
-    result = (result << 8n) + BigInt(byte)
-  }
-  return pb.sign < 0n ? -result : result
-}
+import { protoBigIntToBigint, blockNumber } from '@chainlink/cre-sdk'
 
-// Example: Read from 500 blocks ago for custom finality
+// Get the latest block number
 const latestHeader = evmClient.headerByNumber(runtime, {}).result()
 if (!latestHeader.header?.blockNumber) {
   throw new Error("Failed to get latest block number")
 }
 
-const latestBlockNum = protoBigIntToBigInt(latestHeader.header.blockNumber)
+// Convert protobuf BigInt to native bigint and calculate custom block
+const latestBlockNum = protoBigIntToBigint(latestHeader.header.blockNumber)
 const customBlock = latestBlockNum - 500n
 
+// Call the contract at the custom block height
 const contractCall = evmClient.callContract(runtime, {
   call: encodeCallMsg({...}),
-  blockNumber: {
-    absVal: Buffer.from(customBlock.toString(16).padStart(2, '0'), 'hex').toString('base64'),
-  },
+  blockNumber: blockNumber(customBlock),
 }).result()
 ```
 
-**Understanding the conversions:**
+**Helper functions:**
 
-1. **Protobuf `BigInt` to native `bigint`:** The `protoBigIntToBigInt` helper converts the SDK's protobuf `BigInt` type (which stores the value as `absVal: Uint8Array`) to JavaScript's native `bigint`. This allows you to perform arithmetic like subtracting 500 blocks.
+The SDK provides two helper functions for working with block numbers:
 
-2. **Native `bigint` to `BigIntJson`:** To pass a native `bigint` back to the SDK:
-   - `blockNum.toString(16)` converts to hexadecimal
-   - `.padStart(2, '0')` ensures even-length hex string (required by `Buffer.from`)
-   - `Buffer.from(..., 'hex')` creates a byte array from the hex
-   - `.toString('base64')` converts to base64 format required by `BigIntJson.absVal`
+- **`protoBigIntToBigint(pb)`** — Converts a protobuf `BigInt` (returned by SDK methods like `headerByNumber`) to a native JavaScript `bigint`. Use this when you need to perform arithmetic on block numbers.
 
-<Aside type="note" title="SDK enhancements planned">
-  The SDK team is working on built-in helpers for both conversions (protobuf `BigInt` ↔ native `bigint` and `bigint` →
-  `BigIntJson`). Until then, use the patterns shown above.
-</Aside>
+- **`blockNumber(n)`** — Converts a native `bigint`, `number`, or `string` to the protobuf `BigInt` JSON format required by SDK methods. This is an alias for `bigintToProtoBigInt`.
 
 See [Finality and Confidence Levels](/cre/concepts/finality-ts) for more details on when to use custom block depths.
 
