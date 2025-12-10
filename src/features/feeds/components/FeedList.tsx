@@ -13,9 +13,9 @@ import { getFeedCategories } from "../../../db/feedCategories.js"
 import SectionWrapper from "~/components/SectionWrapper/SectionWrapper.tsx"
 import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/TableOfContents/tocStore.ts"
-import alertIcon from "../../../components/Alert/Assets/alert-icon.svg"
 import { ChainSelector } from "~/components/ChainSelector/ChainSelector.tsx"
 import { isFeedVisible } from "../utils/feedVisibility.ts"
+import { updateUrlClean, clearFilters } from "./urlStateHelpers.ts"
 
 export type DataFeedType =
   | "default"
@@ -260,10 +260,16 @@ export const FeedList = ({
   }, [])
 
   // Regular query string states
-  const [searchValue, setSearchValue] = useQueryString("search", "")
-  const [testnetSearchValue, setTestnetSearchValue] = useQueryString("testnetSearch", "")
-  const [selectedFeedCategories, setSelectedFeedCategories] = useQueryString("categories", [])
-  const [currentPage, setCurrentPage] = useQueryString("page", "1")
+  const [searchValue, setSearchValue] = useQueryString("search")
+  const [testnetSearchValue, setTestnetSearchValue] = useQueryString("testnetSearch")
+  const [selectedFeedCategoriesRaw, setSelectedFeedCategories] = useQueryString("categories")
+  // Ensure categories is always an array
+  const selectedFeedCategories = Array.isArray(selectedFeedCategoriesRaw)
+    ? selectedFeedCategoriesRaw
+    : selectedFeedCategoriesRaw
+      ? [selectedFeedCategoriesRaw]
+      : []
+  const [currentPage, setCurrentPage] = useQueryString("page")
 
   // Initialize all other states
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState<boolean>(false)
@@ -283,10 +289,26 @@ export const FeedList = ({
   const setTestnetStreamCategoryFilter = (next: StreamsRwaFeedTypeValue) => {
     setTestnetStreamCategoryFilterParam(next === "all" ? [] : next)
   }
-  const [showExtraDetails, setShowExtraDetails] = useState(false)
+
+  // Checkbox states backed by URL params
+  const [showDetailsParam, setShowDetailsParam] = useQueryString("showDetails")
+  const showExtraDetails = showDetailsParam === "true"
+  const setShowExtraDetails = (value: boolean) => {
+    setShowDetailsParam(value ? "true" : "")
+    updateUrlClean({ showDetails: value || undefined })
+  }
+
+  const [showSvrParam, setShowSvrParam] = useQueryString("showSvr")
+  const showOnlySVR = showSvrParam === "true"
+  const setShowOnlySVR = (value: boolean) => {
+    setShowSvrParam(value ? "true" : "")
+    updateUrlClean({ showSvr: value || undefined })
+    if (value) paginate(1)
+  }
+
+  // MVR and DEX filters are not in URL (too specialized)
   const [showOnlyMVRFeeds, setShowOnlyMVRFeeds] = useState(false)
   const [showOnlyMVRFeedsTestnet, setShowOnlyMVRFeedsTestnet] = useState(false)
-  const [showOnlySVR, setShowOnlySVR] = useState(false)
   const [showOnlyDEXFeeds, setShowOnlyDEXFeeds] = useState(false)
   const [showOnlyDEXFeedsTestnet, setShowOnlyDEXFeedsTestnet] = useState(false)
   const [rwaSchemaFilterParam, setRwaSchemaFilterParam] = useQueryString("schema")
@@ -313,16 +335,26 @@ export const FeedList = ({
     })
   }
   const closeAllDropdowns = () => setOpenDropdownId(null)
-  const paginate = (pageNumber) => setCurrentPage(String(pageNumber))
+  const paginate = (pageNumber) => {
+    const pageStr = String(pageNumber)
+    setCurrentPage(pageStr)
+    updateUrlClean({ page: pageNumber === 1 ? undefined : pageNumber })
+  }
   const addrPerPage = ecosystem === "deprecating" && isStreams ? 10 : ecosystem === "deprecating" ? 10000 : 8
-  const lastAddr = Number(currentPage) * addrPerPage
+  const currentPageNum = Number(currentPage) || 1
+  const lastAddr = currentPageNum * addrPerPage
   const firstAddr = lastAddr - addrPerPage
 
   // Pagination for testnet table
-  const [testnetCurrentPage, setTestnetCurrentPage] = useQueryString("testnetPage", "1")
-  const testnetPaginate = (pageNumber) => setTestnetCurrentPage(String(pageNumber))
+  const [testnetCurrentPage, setTestnetCurrentPage] = useQueryString("testnetPage")
+  const testnetPaginate = (pageNumber) => {
+    const pageStr = String(pageNumber)
+    setTestnetCurrentPage(pageStr)
+    updateUrlClean({ testnetPage: pageNumber === 1 ? undefined : pageNumber })
+  }
   const testnetAddrPerPage = ecosystem === "deprecating" && isStreams ? 10 : ecosystem === "deprecating" ? 10000 : 8
-  const testnetLastAddr = Number(testnetCurrentPage) * testnetAddrPerPage
+  const testnetPageNum = Number(testnetCurrentPage) || 1
+  const testnetLastAddr = testnetPageNum * testnetAddrPerPage
   const testnetFirstAddr = testnetLastAddr - testnetAddrPerPage
 
   // Dynamic feed categories loaded from Supabase
@@ -500,56 +532,54 @@ export const FeedList = ({
   function handleNetworkSelect(chain: Chain) {
     closeAllDropdowns()
     if (!isStreams) {
-      const params = new URLSearchParams(window.location.search)
-      params.set("network", chain.page)
-      // Clear hash when changing networks
-      const newUrl = window.location.pathname + "?" + params.toString()
-      window.history.replaceState({ path: newUrl }, "", newUrl)
       setCurrentNetwork(chain.page)
+      // Clear all filters and pagination when switching networks
+      setSearchValue("")
+      setTestnetSearchValue("")
+      setSelectedFeedCategories([])
+      setCurrentPage("")
+      setTestnetCurrentPage("")
+      setShowOnlyMVRFeeds(false)
+      setShowOnlyMVRFeedsTestnet(false)
+      // Update URL with just the network (and networkType if not mainnet)
+      const params = new URLSearchParams(window.location.search)
+      const networkType = params.get("networkType")
+      updateUrlClean({
+        network: chain.page,
+        networkType: networkType === "testnet" ? "testnet" : undefined,
+        search: undefined,
+        testnetSearch: undefined,
+        page: undefined,
+        testnetPage: undefined,
+      })
     }
-    setSearchValue("")
-    setSelectedFeedCategories([])
-    setCurrentPage("1")
-    setShowOnlyMVRFeeds(false)
-    setShowOnlyMVRFeedsTestnet(false)
   }
 
   // Network type change handler for testnet/mainnet switching
   function handleNetworkTypeChange(networkType: "mainnet" | "testnet") {
     closeAllDropdowns()
-    // Update the selected network type
     setSelectedNetworkType(networkType)
-
-    // Update URL parameters to reflect network type state
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search)
-
-      if (networkType === "testnet") {
-        // Set networkType parameter to testnet
-        params.set("networkType", "testnet")
-        // Ensure testnetPage is set (default to 1 if not present)
-        if (!params.get("testnetPage")) {
-          params.set("testnetPage", "1")
-        }
-      } else {
-        // Remove testnet-specific parameters when switching to mainnet
-        params.delete("networkType")
-        params.delete("testnetSearch")
-        // Keep testnetPage for potential future navigation
-      }
-
-      const newUrl = window.location.pathname + "?" + params.toString()
-      window.history.replaceState({ path: newUrl }, "", newUrl)
-    }
 
     // Reset filters and pagination when switching network types
     setSearchValue("")
     setTestnetSearchValue("")
     setSelectedFeedCategories([])
-    setCurrentPage("1")
-    setTestnetCurrentPage("1")
+    setCurrentPage("")
+    setTestnetCurrentPage("")
     setShowOnlyMVRFeeds(false)
     setShowOnlyMVRFeedsTestnet(false)
+
+    // Update URL with clean params
+    const params = new URLSearchParams(window.location.search)
+    const network = params.get("network")
+    updateUrlClean({
+      network: network || undefined,
+      networkType: networkType === "testnet" ? "testnet" : undefined,
+      search: undefined,
+      testnetSearch: undefined,
+      page: undefined,
+      testnetPage: undefined,
+    })
   }
 
   const handleCategorySelection = (category) => {
@@ -567,18 +597,14 @@ export const FeedList = ({
   }
 
   useEffect(() => {
+    // Clean up empty search params
     if (searchValue === "") {
-      const searchParams = new URLSearchParams(window.location.search)
-      searchParams.delete("search")
-      const hashFragment = window.location.hash
-      const newUrl = window.location.pathname + "?" + searchParams.toString() + hashFragment
-      window.history.replaceState({ path: newUrl }, "", newUrl)
-      const inputElement = document.getElementById("search") as HTMLInputElement
-      if (inputElement) {
-        inputElement.placeholder = "Search"
-      }
+      updateUrlClean({ search: undefined })
     }
-  }, [chainMetadata.processedData, searchValue])
+    if (testnetSearchValue === "") {
+      updateUrlClean({ testnetSearch: undefined })
+    }
+  }, [searchValue, testnetSearchValue])
 
   const useOutsideAlerter = (ref: RefObject<HTMLDivElement>) => {
     useEffect(() => {
@@ -1082,7 +1108,7 @@ export const FeedList = ({
                 lastAddr={lastAddr}
                 firstAddr={firstAddr}
                 addrPerPage={addrPerPage}
-                currentPage={Number(currentPage)}
+                currentPage={currentPageNum}
                 paginate={paginate}
                 searchValue={typeof searchValue === "string" ? searchValue : ""}
               />
@@ -1201,7 +1227,7 @@ export const FeedList = ({
                 firstAddr={testnetFirstAddr}
                 lastAddr={testnetLastAddr}
                 addrPerPage={testnetAddrPerPage}
-                currentPage={Number(testnetCurrentPage)}
+                currentPage={testnetPageNum}
                 paginate={testnetPaginate}
                 searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
               />
@@ -1294,7 +1320,7 @@ export const FeedList = ({
                   lastAddr={lastAddr}
                   firstAddr={firstAddr}
                   addrPerPage={addrPerPage}
-                  currentPage={Number(currentPage)}
+                  currentPage={currentPageNum}
                   paginate={paginate}
                   searchValue={typeof searchValue === "string" ? searchValue : ""}
                 />
@@ -1485,7 +1511,7 @@ export const FeedList = ({
                                 type="checkbox"
                                 style="width:15px;height:15px;display:inline;margin-right:8px;"
                                 checked={showExtraDetails}
-                                onChange={() => setShowExtraDetails((old) => !old)}
+                                onChange={() => setShowExtraDetails(!showExtraDetails)}
                               />
                               Show more details
                             </label>
@@ -1512,10 +1538,7 @@ export const FeedList = ({
                                 type="checkbox"
                                 style="width:15px;height:15px;display:inline;margin-right:8px;"
                                 checked={showOnlySVR}
-                                onChange={() => {
-                                  setShowOnlySVR((old) => !old)
-                                  setCurrentPage("1")
-                                }}
+                                onChange={() => setShowOnlySVR(!showOnlySVR)}
                               />
                               Show Smart Value Recapture (SVR) feeds
                             </label>
@@ -1540,7 +1563,7 @@ export const FeedList = ({
                         lastAddr={lastAddr}
                         firstAddr={firstAddr}
                         addrPerPage={addrPerPage}
-                        currentPage={Number(currentPage)}
+                        currentPage={currentPageNum}
                         paginate={paginate}
                         searchValue={typeof searchValue === "string" ? searchValue : ""}
                       />
@@ -1647,7 +1670,7 @@ export const FeedList = ({
                                 type="checkbox"
                                 style="width:15px;height:15px;display:inline;margin-right:8px;"
                                 checked={showExtraDetails}
-                                onChange={() => setShowExtraDetails((old) => !old)}
+                                onChange={() => setShowExtraDetails(!showExtraDetails)}
                               />
                               Show more details
                             </label>
@@ -1717,7 +1740,7 @@ export const FeedList = ({
                         firstAddr={testnetFirstAddr}
                         lastAddr={testnetLastAddr}
                         addrPerPage={testnetAddrPerPage}
-                        currentPage={Number(testnetCurrentPage)}
+                        currentPage={testnetPageNum}
                         paginate={testnetPaginate}
                         searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
                       />
