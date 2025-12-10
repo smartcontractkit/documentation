@@ -46,7 +46,7 @@ export const GET: APIRoute = async ({ params, request }) => {
       environment,
       source,
       destination,
-      "internalId"
+      "internal_id"
     )
 
     if (!result.data) {

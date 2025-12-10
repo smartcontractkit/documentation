@@ -44,7 +44,7 @@ export const GET: APIRoute = async ({ request }) => {
 
     // Validate filters
     const filters: FilterType = {
-      chainId: params.get("chainId") || undefined,
+      chainId: params.get("chain_id") || undefined,
       selector: params.get("selector") || undefined,
       internalId: params.get("internalId") || undefined,
     }
@@ -104,7 +104,7 @@ export const GET: APIRoute = async ({ request }) => {
         acc[family] = chainList.reduce(
           (familyAcc, chain) => {
             const key =
-              outputKey === "chainId"
+              outputKey === "chain_id"
                 ? generateChainKey(chain.chainId, chain.chainType, outputKey)
                 : outputKey
                   ? chain[outputKey].toString()

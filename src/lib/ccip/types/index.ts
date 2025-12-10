@@ -64,7 +64,7 @@ export type ChainApiResponse = {
   }[]
 }
 
-export type OutputKeyType = "chainId" | "selector" | "internalId"
+export type OutputKeyType = "chain_id" | "selector" | "internal_id"
 
 export type ChainApiError = {
   error: string
@@ -313,7 +313,7 @@ export interface LaneFilterType {
 /**
  * Input key type for lane path parameters
  */
-export type LaneInputKeyType = "chainId" | "selector" | "internalId"
+export type LaneInputKeyType = "chain_id" | "selector" | "internal_id"
 
 /**
  * Metadata for single lane detail API responses

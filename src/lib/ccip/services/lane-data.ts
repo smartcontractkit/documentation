@@ -252,18 +252,18 @@ export class LaneDataService {
     filters: LaneFilterType
   ): boolean {
     // Check source chain filters
-    if (filters.sourceChainId && !this.matchesChainFilter(sourceChain, filters.sourceChainId, "chainId")) {
+    if (filters.sourceChainId && !this.matchesChainFilter(sourceChain, filters.sourceChainId, "chain_id")) {
       return false
     }
     if (filters.sourceSelector && !this.matchesChainFilter(sourceChain, filters.sourceSelector, "selector")) {
       return false
     }
-    if (filters.sourceInternalId && !this.matchesChainFilter(sourceChain, filters.sourceInternalId, "internalId")) {
+    if (filters.sourceInternalId && !this.matchesChainFilter(sourceChain, filters.sourceInternalId, "internal_id")) {
       return false
     }
 
     // Check destination chain filters
-    if (filters.destinationChainId && !this.matchesChainFilter(destChain, filters.destinationChainId, "chainId")) {
+    if (filters.destinationChainId && !this.matchesChainFilter(destChain, filters.destinationChainId, "chain_id")) {
       return false
     }
     if (filters.destinationSelector && !this.matchesChainFilter(destChain, filters.destinationSelector, "selector")) {
@@ -271,7 +271,7 @@ export class LaneDataService {
     }
     if (
       filters.destinationInternalId &&
-      !this.matchesChainFilter(destChain, filters.destinationInternalId, "internalId")
+      !this.matchesChainFilter(destChain, filters.destinationInternalId, "internal_id")
     ) {
       return false
     }
@@ -285,14 +285,21 @@ export class LaneDataService {
   private matchesChainFilter(
     chain: ChainInfoInternal,
     filterValue: string,
-    filterType: "chainId" | "selector" | "internalId"
+    filterType: "chain_id" | "selector" | "internal_id"
   ): boolean {
     const filterValues = filterValue.split(",").map((v) => v.trim())
-    const chainValue = chain[filterType].toString()
+    // Map snake_case filter types to camelCase property names
+    const propertyMap: Record<string, keyof ChainInfoInternal> = {
+      chain_id: "chainId",
+      selector: "selector",
+      internal_id: "internalId",
+    }
+    const propertyName = propertyMap[filterType]
+    const chainValue = chain[propertyName].toString()
 
-    // For chainId, also check generated chain key format
-    if (filterType === "chainId") {
-      const generatedKey = generateChainKey(chain.chainId, chain.chainType, "chainId")
+    // For chain_id, also check generated chain key format
+    if (filterType === "chain_id") {
+      const generatedKey = generateChainKey(chain.chainId, chain.chainType, "chain_id")
       return filterValues.includes(chainValue) || filterValues.includes(generatedKey)
     }
 
@@ -307,15 +314,23 @@ export class LaneDataService {
     destChain: ChainInfoInternal,
     outputKey: OutputKeyType
   ): string {
+    // Map snake_case output keys to camelCase property names
+    const propertyMap: Record<string, keyof ChainInfoInternal> = {
+      chain_id: "chainId",
+      selector: "selector",
+      internal_id: "internalId",
+    }
+    const propertyName = propertyMap[outputKey]
+
     const sourceKey =
-      outputKey === "chainId"
+      outputKey === "chain_id"
         ? generateChainKey(sourceChain.chainId, sourceChain.chainType, outputKey)
-        : sourceChain[outputKey].toString()
+        : sourceChain[propertyName].toString()
 
     const destKey =
-      outputKey === "chainId"
+      outputKey === "chain_id"
         ? generateChainKey(destChain.chainId, destChain.chainType, outputKey)
-        : destChain[outputKey].toString()
+        : destChain[propertyName].toString()
 
     return `${sourceKey}_to_${destKey}`
   }
@@ -515,14 +530,14 @@ export class LaneDataService {
     inputKeyType: LaneInputKeyType,
     chainsReferenceData: Record<string, ChainConfig>
   ): string | null {
-    // If already an internalId, return it directly
-    if (inputKeyType === "internalId") {
+    // If already an internal_id, return it directly
+    if (inputKeyType === "internal_id") {
       return chainsReferenceData[identifier] ? identifier : null
     }
 
-    // Search through chains to find matching chainId or selector
+    // Search through chains to find matching chain_id or selector
     for (const [internalId, chainConfig] of Object.entries(chainsReferenceData)) {
-      if (inputKeyType === "chainId") {
+      if (inputKeyType === "chain_id") {
         // Try to match by numeric chain ID
         try {
           const supportedChain = directoryToSupportedChain(internalId)

@@ -149,12 +149,12 @@ export class TokenDataService {
 
               if (!destNumericChainId) return destChainId
 
-              if (outputKey === "chainId") {
+              if (outputKey === "chain_id") {
                 return generateChainKey(destNumericChainId, destChainType, outputKey)
               } else if (outputKey === "selector") {
                 const selectorEntry = getSelectorEntry(destNumericChainId, destChainType)
                 return selectorEntry?.selector || destChainId
-              } else if (outputKey === "internalId") {
+              } else if (outputKey === "internal_id") {
                 const selectorEntry = getSelectorEntry(destNumericChainId, destChainType)
                 return selectorEntry?.name || destChainId
               }
@@ -164,14 +164,14 @@ export class TokenDataService {
 
           // Get the appropriate key based on outputKey parameter
           let chainKey = chainId
-          if (outputKey === "chainId") {
+          if (outputKey === "chain_id") {
             chainKey = generateChainKey(numericChainId, chainType, outputKey)
           } else if (outputKey === "selector") {
             const selectorEntry = getSelectorEntry(numericChainId, chainType)
             if (selectorEntry) {
               chainKey = selectorEntry.selector
             }
-          } else if (outputKey === "internalId") {
+          } else if (outputKey === "internal_id") {
             const selectorEntry = getSelectorEntry(numericChainId, chainType)
             if (selectorEntry) {
               chainKey = selectorEntry.name
@@ -276,7 +276,7 @@ export class TokenDataService {
   public async getFilteredTokens(
     environment: Environment,
     filters: TokenFilterType,
-    outputKey: OutputKeyType = "chainId"
+    outputKey: OutputKeyType = "chain_id"
   ): Promise<TokenServiceResponse> {
     logger.info({
       message: "Starting token filtering process",
@@ -388,7 +388,7 @@ export class TokenDataService {
   public async getTokenWithFinality(
     environment: Environment,
     tokenCanonicalSymbol: string,
-    outputKey: OutputKeyType = "chainId"
+    outputKey: OutputKeyType = "chain_id"
   ): Promise<TokenDetailServiceResponse | null> {
     logger.info({
       message: "Getting token with finality data",
@@ -523,7 +523,7 @@ export class TokenDataService {
   public async getTokenFinality(
     environment: Environment,
     tokenCanonicalSymbol: string,
-    outputKey: OutputKeyType = "chainId"
+    outputKey: OutputKeyType = "chain_id"
   ): Promise<TokenFinalityServiceResponse | null> {
     logger.info({
       message: "Getting token finality data",

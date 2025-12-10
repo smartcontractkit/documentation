@@ -332,12 +332,12 @@ export const validateFilters = (filters: FilterType): void => {
  * @returns Validated output key
  * @throws CCIPError if output key is invalid
  */
-export const validateOutputKey = (outputKey?: string): "chainId" | "selector" | "internalId" => {
-  if (!outputKey) return "chainId"
-  if (!["chainId", "selector", "internalId"].includes(outputKey)) {
-    throw new CCIPError(400, "output_key must be one of: chainId, selector, or internalId")
+export const validateOutputKey = (outputKey?: string): "chain_id" | "selector" | "internal_id" => {
+  if (!outputKey) return "chain_id"
+  if (!["chain_id", "selector", "internal_id"].includes(outputKey)) {
+    throw new CCIPError(400, "output_key must be one of: chain_id, selector, or internal_id")
   }
-  return outputKey as "chainId" | "selector" | "internalId"
+  return outputKey as "chain_id" | "selector" | "internal_id"
 }
 
 /**
@@ -358,7 +358,7 @@ export const validateEnrichFeeTokens = (enrichFeeTokens?: string): boolean => {
 export const generateChainKey = (chainId: number | string, chainType: ChainType, outputKey: OutputKeyType): string => {
   const chainIdStr = chainId.toString()
 
-  if (outputKey === "chainId" && chainType !== "evm" && chainType !== "solana") {
+  if (outputKey === "chain_id" && chainType !== "evm" && chainType !== "solana") {
     return `${chainType}-${chainIdStr}`
   }
 

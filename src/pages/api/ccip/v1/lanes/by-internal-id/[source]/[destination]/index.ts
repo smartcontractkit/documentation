@@ -42,7 +42,7 @@ export const GET: APIRoute = async ({ params, request }) => {
     })
 
     const laneDataService = new LaneDataService()
-    const result = await laneDataService.getLaneDetails(environment, source, destination, "internalId")
+    const result = await laneDataService.getLaneDetails(environment, source, destination, "internal_id")
 
     if (!result.data) {
       throw new CCIPError(404, `Lane from '${source}' to '${destination}' not found`)
