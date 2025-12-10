@@ -32,7 +32,7 @@ All Data Streams use a [Decentralized Oracle Network (DON)](/data-streams/archit
 
 Traditional Data Streams aggregate market data from multiple independent providers, ensuring no single data source can compromise the stream's integrity.
 
-Instead of aggregating raw market data, Calculated Streams compute derived values using predefined formulas applied to various inputs—including existing data streams, onchain state, and offchain APIs. This enables protocols to consume complex, computed data points without implementing their own calculation logic.
+Instead of aggregating only raw market data, calculated streams compute derived values using predefined formulas applied to various inputs, including existing data streams, onchain state, and offchain APIs. Some inputs are decentralized aggregates (for example, crypto price streams from multiple independent providers), while others may come from a single protocol or API (for example, a specific vault contract or yield provider). Because a calculated stream depends on all of these inputs, you should evaluate their dependencies and failure modes carefully before using it in a value-securing application.
 
 <Aside type="caution" title="Important Considerations">
   Calculated streams introduce additional dependencies and timing considerations compared to standard streams. Before
@@ -97,7 +97,7 @@ Calculated streams inherit risks from their underlying inputs and introduce addi
 
 ### Multiple dependencies
 
-Each input—RPC providers, external APIs, smart contracts—represents a potential point of failure. If any required input becomes unavailable, the calculated stream cannot produce a value.
+If a required input becomes unavailable or unreliable, the calculated stream might not continue to reflect current conditions. Integrators should not assume any specific fallback behavior and must design their protocols to handle this scenario explicitly.
 
 #### Mitigation
 
@@ -105,9 +105,9 @@ Each input—RPC providers, external APIs, smart contracts—represents a potent
 
 ### Timing and synchronization
 
-Inputs update at different frequencies and are read via separate calls, so they may reflect slightly different block heights or timestamps. The calculated value is an approximation based on the latest available data, not a single-block atomic snapshot.
+Inputs update at different frequencies and are read via separate calls, so they may reflect slightly different block heights or timestamps. The calculated value is an approximation based on the latest available data from each input, not a single-block atomic snapshot.
 
-Users should expect small, transient differences between the calculated stream value and values you see on dashboards or compute independently. This is normal during rapid changes (large deposits, withdrawals, market volatility).
+Users should expect small, transient differences between the calculated stream value and values observed on block explorers, vault dashboards, or DEX charts—especially during rapid changes such as large deposits, withdrawals, or sharp market moves. This does not necessarily indicate an issue with the stream, but is a natural consequence of combining multiple inputs with different update cadences.
 
 #### Mitigation
 
