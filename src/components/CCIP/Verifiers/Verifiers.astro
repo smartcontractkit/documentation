@@ -1,0 +1,98 @@
+---
+import CcipDirectoryLayout from "~/layouts/CcipDirectoryLayout.astro"
+import { getEntry, render } from "astro:content"
+import { getAllNetworks, getAllVerifiers, getSearchLanes, Version, Environment } from "~/config/data/ccip"
+import Table from "~/components/CCIP/Tables/VerifiersTable"
+import { getAllUniqueVerifiers } from "~/config/data/ccip/data.ts"
+import { DOCS_BASE_URL } from "~/utils/structuredData"
+import ChainHero from "~/components/CCIP/ChainHero/ChainHero"
+import "./Verifiers.css"
+
+interface Props {
+  environment: Environment
+}
+
+const { environment } = Astro.props as Props
+
+const entry = await getEntry("ccip", "index")
+if (!entry) {
+  throw new Error('Could not find "ccip/index" doc. Check src/content/ccip/index.mdx!')
+}
+
+const { headings } = await render(entry)
+
+const networks = getAllNetworks({ filter: environment })
+
+const allVerifiers = getAllVerifiers({
+  environment,
+  version: Version.V1_2_0,
+})
+
+const uniqueVerifiers = getAllUniqueVerifiers({
+  environment,
+  version: Version.V1_2_0,
+})
+
+const searchLanes = getSearchLanes({ environment })
+
+// Generate dynamic metadata for verifiers page
+const environmentText = environment === Environment.Mainnet ? "Mainnet" : "Testnet"
+const verifiersMetadata = {
+  title: `CCIP Verifiers - ${environmentText} Networks`,
+  description: `View all CCIP verifiers across ${environmentText} networks. Explore ${allVerifiers.length} verifiers, their addresses, types, and supported networks for cross-chain verification.`,
+  image: "/assets/product-logos/ccip-logo.svg",
+  excerpt: `CCIP verifiers ${environmentText.toLowerCase()} networks addresses types committee api cross-chain verification blockchain interoperability`,
+}
+
+// Generate structured data for verifiers page
+const currentPath = new URL(Astro.request.url).pathname
+const canonicalForJsonLd = `${DOCS_BASE_URL}${currentPath}`
+---
+
+<CcipDirectoryLayout
+  frontmatter={{
+    title: verifiersMetadata.title,
+    section: "ccip",
+    metadata: {
+      description: verifiersMetadata.description,
+      image: verifiersMetadata.image,
+      excerpt: verifiersMetadata.excerpt,
+    },
+  }}
+  {headings}
+  environment={environment}
+  pageTitleOverride={verifiersMetadata.title}
+  metadataOverride={{
+    description: verifiersMetadata.description,
+    image: verifiersMetadata.image,
+    excerpt: verifiersMetadata.excerpt,
+  }}
+>
+  <ChainHero
+    chains={networks}
+    tokens={uniqueVerifiers.map((verifier) => ({
+      id: verifier.id,
+      totalNetworks: verifier.totalNetworks,
+      logo: verifier.logo,
+    }))}
+    lanes={searchLanes}
+    environment={environment}
+    breadcrumbItems={[
+      {
+        name: "CCIP Directory",
+        url: `/ccip/directory/${environment}`,
+      },
+      {
+        name: "Verifiers",
+        url: `/ccip/directory/${environment}/verifiers`,
+      },
+    ]}
+    client:load
+  />
+
+  <section class="layout">
+    <div>
+      <Table client:load verifiers={allVerifiers} />
+    </div>
+  </section>
+</CcipDirectoryLayout>

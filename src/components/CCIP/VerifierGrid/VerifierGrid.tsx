@@ -20,7 +20,7 @@ function VerifierGrid({ verifiers, environment }: VerifierGridProps) {
       items={verifiers}
       initialDisplayCount={BEFORE_SEE_MORE}
       seeMoreLabel="View all verifiers"
-      seeMoreLink="/verifiers"
+      seeMoreLink={`/ccip/directory/${environment}/verifiers`}
       renderItem={(verifier) => {
         const subtitle = `${verifier.totalNetworks} ${verifier.totalNetworks === 1 ? "network" : "networks"}`
         const logoElement = (
@@ -34,8 +34,8 @@ function VerifierGrid({ verifiers, environment }: VerifierGridProps) {
             logo={logoElement}
             title={verifier.name}
             subtitle={subtitle}
-            link={`/ccip/directory/${environment}/verifier/${verifier.id}`}
-            ariaLabel={`View ${verifier.name} verifier details`}
+            link={`/ccip/directory/${environment}/verifiers`}
+            ariaLabel={`View verifiers page for ${verifier.name}`}
           />
         )
       }}
