@@ -101,7 +101,6 @@ Each input—RPC providers, external APIs, smart contracts—represents a potent
 
 #### Mitigation
 
-- Chainlink operators use redundant RPC and API providers
 - Design your protocol to handle missing data gracefully (pause operations, use last-known values, or implement fallbacks based on your risk tolerance)
 
 ### Timing and synchronization
@@ -135,9 +134,9 @@ A calculated stream for a tokenized yield-bearing vault might combine:
 
 **Formula:** `(vault balance + accrued yield) / token supply`
 
-**Result:** A price per share that accounts for both principal and yield
+**Result**: a price per share that reflects the vault's total value including pending yield.
 
-**Why this matters:** Protocols can price positions, determine collateral values, or calculate redemption rates without implementing vault-specific logic or managing multiple data sources. The calculated stream handles RPC calls, API queries, and the arithmetic.
+Without this stream, protocols accepting the vault token as collateral would need to query the vault contract, fetch accrued interest from the yield provider's API, perform the calculation themselves, and keep this logic synchronized across all integrators. A calculated stream ensures everyone prices the same way and updates together when the underlying formula or yield source changes.
 
 ## Best practices
 
