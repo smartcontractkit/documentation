@@ -60,6 +60,9 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
               <th>Token address</th>
               <th>Token pool type</th>
               <th>Token pool address</th>
+              <th>Pool version</th>
+              <th>Custom</th>
+              <th>Min Blocks required</th>
             </tr>
           </thead>
           <tbody>
@@ -125,7 +128,7 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                       <Address
                         contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.tokenAddress)}
                         address={network.tokenAddress}
-                        endLength={6}
+                        endLength={4}
                       />
                     </td>
                     <td>{tokenPoolDisplay(network.tokenPoolType)}</td>
@@ -136,9 +139,12 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                           network.chainType
                         )(network.tokenPoolAddress)}
                         address={network.tokenPoolAddress}
-                        endLength={6}
+                        endLength={4}
                       />
                     </td>
+                    <td>TBC</td>
+                    <td>TBC</td>
+                    <td>TBC</td>
                   </tr>
                 )
               })}
