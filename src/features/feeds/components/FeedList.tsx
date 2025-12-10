@@ -30,6 +30,7 @@ export type DataFeedType =
 
 type SchemaFilterValue = "all" | "v8" | "v11"
 type StreamsRwaFeedTypeValue = "all" | "datalink" | "equities" | "forex"
+type TradingHoursFilterValue = "all" | "regular" | "extended" | "overnight"
 
 type FilterOption<T extends string> = {
   label: string
@@ -60,10 +61,19 @@ const feedTypeFilterOptions: FilterOption<StreamsRwaFeedTypeValue>[] = [
   { label: "Forex Streams", value: "forex" },
 ]
 
+const tradingHoursFilterOptions: FilterOption<TradingHoursFilterValue>[] = [
+  { label: "All Time Segments", value: "all" },
+  { label: "Regular Hours", value: "regular" },
+  { label: "Extended Hours", value: "extended" },
+  { label: "Overnight Hours", value: "overnight" },
+]
+
 const isSchemaFilterValue = (value: unknown): value is SchemaFilterValue =>
   value === "all" || value === "v8" || value === "v11"
 const isStreamsRwaFeedTypeValue = (value: unknown): value is StreamsRwaFeedTypeValue =>
   value === "all" || value === "datalink" || value === "equities" || value === "forex"
+const isTradingHoursFilterValue = (value: unknown): value is TradingHoursFilterValue =>
+  value === "all" || value === "regular" || value === "extended" || value === "overnight"
 
 const FilterDropdown = <T extends string>({
   label,
@@ -311,6 +321,19 @@ export const FeedList = ({
   const [showOnlyMVRFeedsTestnet, setShowOnlyMVRFeedsTestnet] = useState(false)
   const [showOnlyDEXFeeds, setShowOnlyDEXFeeds] = useState(false)
   const [showOnlyDEXFeedsTestnet, setShowOnlyDEXFeedsTestnet] = useState(false)
+  const [show24x5FeedsParam, setShow24x5FeedsParam] = useQueryString("show24x5")
+  const show24x5Feeds = show24x5FeedsParam === "true"
+  const setShow24x5Feeds = (value: boolean) => {
+    setShow24x5FeedsParam(value ? "true" : [])
+  }
+  const [tradingHoursFilterParam, setTradingHoursFilterParam] = useQueryString("tradingHours")
+  const tradingHoursFilter =
+    typeof tradingHoursFilterParam === "string" && isTradingHoursFilterValue(tradingHoursFilterParam)
+      ? tradingHoursFilterParam
+      : "all"
+  const setTradingHoursFilter = (next: TradingHoursFilterValue) => {
+    setTradingHoursFilterParam(next === "all" ? [] : next)
+  }
   const [rwaSchemaFilterParam, setRwaSchemaFilterParam] = useQueryString("schema")
   const rwaSchemaFilter =
     typeof rwaSchemaFilterParam === "string" && isSchemaFilterValue(rwaSchemaFilterParam) ? rwaSchemaFilterParam : "all"
@@ -324,6 +347,19 @@ export const FeedList = ({
       : "all"
   const setTestnetRwaSchemaFilter = (next: SchemaFilterValue) => {
     setTestnetRwaSchemaFilterParam(next === "all" ? [] : next)
+  }
+  const [show24x5FeedsTestnetParam, setShow24x5FeedsTestnetParam] = useQueryString("testnetShow24x5")
+  const show24x5FeedsTestnet = show24x5FeedsTestnetParam === "true"
+  const setShow24x5FeedsTestnet = (value: boolean) => {
+    setShow24x5FeedsTestnetParam(value ? "true" : [])
+  }
+  const [testnetTradingHoursFilterParam, setTestnetTradingHoursFilterParam] = useQueryString("testnetTradingHours")
+  const testnetTradingHoursFilter =
+    typeof testnetTradingHoursFilterParam === "string" && isTradingHoursFilterValue(testnetTradingHoursFilterParam)
+      ? testnetTradingHoursFilterParam
+      : "all"
+  const setTestnetTradingHoursFilter = (next: TradingHoursFilterValue) => {
+    setTestnetTradingHoursFilterParam(next === "all" ? [] : next)
   }
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null)
   const handleDropdownToggle = (dropdownId: string, isOpen: boolean) => {
@@ -1061,7 +1097,42 @@ export const FeedList = ({
                     setCurrentPage("1")
                   }}
                 />
-                {(searchValue || rwaSchemaFilter !== "all" || streamCategoryFilter !== "all") && (
+                <div className={feedList.checkboxContainer}>
+                  <label className={feedList.detailsLabel}>
+                    <input
+                      type="checkbox"
+                      style="width:15px;height:15px;display:inline;margin-right:8px;"
+                      checked={show24x5Feeds}
+                      onChange={() => {
+                        closeAllDropdowns()
+                        const newValue = !show24x5Feeds
+                        setShow24x5Feeds(newValue)
+                        if (newValue) {
+                          // Reset trading hours filter when enabling 24/5
+                          setTradingHoursFilter("all")
+                        }
+                        setCurrentPage("1")
+                      }}
+                    />
+                    Show only 24/5 Equity Streams
+                  </label>
+                </div>
+                {show24x5Feeds && (
+                  <FilterDropdown
+                    isOpen={openDropdownId === "main-trading-hours"}
+                    onToggle={(isOpen) => handleDropdownToggle("main-trading-hours", isOpen)}
+                    onClose={closeAllDropdowns}
+                    label="Time segment"
+                    options={tradingHoursFilterOptions}
+                    value={tradingHoursFilter}
+                    groupId="trading-hours-main"
+                    onSelect={(next) => {
+                      setTradingHoursFilter(next)
+                      setCurrentPage("1")
+                    }}
+                  />
+                )}
+                {(searchValue || rwaSchemaFilter !== "all" || streamCategoryFilter !== "all" || show24x5Feeds) && (
                   <button
                     type="button"
                     className={clsx(button.secondary, feedList.clearFilterBtn)}
@@ -1070,6 +1141,8 @@ export const FeedList = ({
                       setSearchValue("")
                       setRwaSchemaFilter("all")
                       setStreamCategoryFilter("all")
+                      setShow24x5Feeds(false)
+                      setTradingHoursFilter("all")
                       setCurrentPage("1")
                       const inputElement = document.getElementById("search") as HTMLInputElement
                       if (inputElement) {
@@ -1103,6 +1176,8 @@ export const FeedList = ({
                 showOnlyDEXFeeds={showOnlyDEXFeeds}
                 rwaSchemaFilter={rwaSchemaFilter}
                 streamCategoryFilter={streamCategoryFilter}
+                show24x5Feeds={show24x5Feeds}
+                tradingHoursFilter={tradingHoursFilter}
                 dataFeedType={dataFeedType}
                 ecosystem={ecosystem}
                 lastAddr={lastAddr}
@@ -1181,7 +1256,45 @@ export const FeedList = ({
                     setTestnetCurrentPage("1")
                   }}
                 />
-                {(testnetSearchValue || testnetRwaSchemaFilter !== "all" || testnetStreamCategoryFilter !== "all") && (
+                <div className={feedList.checkboxContainer}>
+                  <label className={feedList.detailsLabel}>
+                    <input
+                      type="checkbox"
+                      style="width:15px;height:15px;display:inline;margin-right:8px;"
+                      checked={show24x5FeedsTestnet}
+                      onChange={() => {
+                        closeAllDropdowns()
+                        const newValue = !show24x5FeedsTestnet
+                        setShow24x5FeedsTestnet(newValue)
+                        if (newValue) {
+                          // Reset trading hours filter when enabling 24/5
+                          setTestnetTradingHoursFilter("all")
+                        }
+                        setTestnetCurrentPage("1")
+                      }}
+                    />
+                    Show only 24/5 Equity Streams
+                  </label>
+                </div>
+                {show24x5FeedsTestnet && (
+                  <FilterDropdown
+                    isOpen={openDropdownId === "test-trading-hours"}
+                    onToggle={(isOpen) => handleDropdownToggle("test-trading-hours", isOpen)}
+                    onClose={closeAllDropdowns}
+                    label="Time segment"
+                    options={tradingHoursFilterOptions}
+                    value={testnetTradingHoursFilter}
+                    groupId="trading-hours-testnet"
+                    onSelect={(next) => {
+                      setTestnetTradingHoursFilter(next)
+                      setTestnetCurrentPage("1")
+                    }}
+                  />
+                )}
+                {(testnetSearchValue ||
+                  testnetRwaSchemaFilter !== "all" ||
+                  testnetStreamCategoryFilter !== "all" ||
+                  show24x5FeedsTestnet) && (
                   <button
                     type="button"
                     className={clsx(button.secondary, feedList.clearFilterBtn)}
@@ -1190,6 +1303,8 @@ export const FeedList = ({
                       setTestnetSearchValue("")
                       setTestnetRwaSchemaFilter("all")
                       setTestnetStreamCategoryFilter("all")
+                      setShow24x5FeedsTestnet(false)
+                      setTestnetTradingHoursFilter("all")
                       setTestnetCurrentPage("1")
                       const inputElement = document.getElementById("testnetSearch") as HTMLInputElement
                       if (inputElement) {
@@ -1224,6 +1339,8 @@ export const FeedList = ({
                 showOnlyDEXFeeds={showOnlyDEXFeedsTestnet}
                 rwaSchemaFilter={testnetRwaSchemaFilter}
                 streamCategoryFilter={testnetStreamCategoryFilter}
+                show24x5Feeds={show24x5FeedsTestnet}
+                tradingHoursFilter={testnetTradingHoursFilter}
                 firstAddr={testnetFirstAddr}
                 lastAddr={testnetLastAddr}
                 addrPerPage={testnetAddrPerPage}
