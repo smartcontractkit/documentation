@@ -4,7 +4,7 @@ import { clsx } from "~/lib/clsx/clsx.ts"
 import { useClickOutside } from "~/hooks/useClickOutside.tsx"
 import { Environment, LaneConfig, LaneFilter } from "~/config/data/ccip/types.ts"
 import { directoryToSupportedChain, getExplorer, fallbackTokenIconUrl } from "~/features/utils/index.ts"
-import { drawerContentStore } from "../Drawer/drawerStore.ts"
+import { drawerContentStore, drawerWidthStore, DrawerWidth } from "../Drawer/drawerStore.ts"
 import LaneDrawer from "../Drawer/LaneDrawer.tsx"
 import { ChainType, ExplorerInfo } from "~/config/types.ts"
 import type { WorkerMessage, WorkerResponse } from "~/workers/data-worker.ts"
@@ -236,7 +236,8 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                     <li key={lane.sourceNetwork.name + lane.destinationNetwork.key}>
                       <button
                         type="button"
-                        onClick={() =>
+                        onClick={() => {
+                          drawerWidthStore.set(DrawerWidth.Wide)
                           drawerContentStore.set(() => (
                             <LaneDrawer
                               environment={environment}
@@ -249,7 +250,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                               explorer={generateExplorerUrl(lane)}
                             />
                           ))
-                        }
+                        }}
                         aria-label={`View lane from ${lane.sourceNetwork.name} to ${lane.destinationNetwork.name}`}
                       >
                         <div className="ccip-hero__search-results__lane-images">

@@ -1,5 +1,5 @@
 import "../Tables/Table.css"
-import { drawerContentStore } from "../Drawer/drawerStore.ts"
+import { drawerContentStore, drawerWidthStore, DrawerWidth } from "../Drawer/drawerStore.ts"
 import TokenDetailsHero from "../ChainHero/TokenDetailsHero.tsx"
 import {
   Environment,
@@ -231,6 +231,7 @@ function TokenDrawer({
                           type="button"
                           className={`ccip-table__network-name ${tokenPaused ? "ccip-table__network-name--paused" : ""}`}
                           onClick={() => {
+                            drawerWidthStore.set(DrawerWidth.Wide)
                             drawerContentStore.set(() => (
                               <LaneDrawer
                                 environment={environment}
