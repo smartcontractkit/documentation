@@ -4,13 +4,12 @@ import {
   validateOutputKey,
   createTokenMetadata,
   handleApiError,
-  successHeaders,
-  commonHeaders,
   APIErrorType,
   createErrorResponse,
   CCIPError,
   loadChainConfiguration,
 } from "~/lib/ccip/utils.ts"
+import { jsonHeaders } from "@lib/api/cacheHeaders.ts"
 import { logger } from "@lib/logging/index.js"
 
 import type { TokenFilterType, TokenApiResponse } from "~/lib/ccip/types/index.ts"
@@ -52,7 +51,7 @@ export const GET: APIRoute = async ({ request }) => {
     })
 
     // Validate output key - we'll still use this for formatting display options
-    const outputKey = validateOutputKey(params.get("outputKey") || undefined)
+    const outputKey = validateOutputKey(params.get("output_key") || undefined)
     logger.debug({
       message: "Output key validated",
       requestId,
@@ -100,7 +99,7 @@ export const GET: APIRoute = async ({ request }) => {
     })
 
     return new Response(JSON.stringify(response), {
-      headers: { ...commonHeaders, ...successHeaders },
+      headers: jsonHeaders,
     })
   } catch (error) {
     logger.error({

@@ -7,14 +7,13 @@ import {
   generateChainKey,
   createMetadata,
   handleApiError,
-  successHeaders,
-  commonHeaders,
   loadChainConfiguration,
   FilterType,
   APIErrorType,
   createErrorResponse,
   CCIPError,
 } from "~/lib/ccip/utils.ts"
+import { jsonHeaders } from "@lib/api/cacheHeaders.ts"
 import { logger } from "@lib/logging/index.js"
 
 import type { ChainDetails, ChainApiResponse } from "~/lib/ccip/types/index.ts"
@@ -57,15 +56,15 @@ export const GET: APIRoute = async ({ request }) => {
     })
 
     // Validate output key
-    const outputKey = validateOutputKey(params.get("outputKey") || undefined)
+    const outputKey = validateOutputKey(params.get("output_key") || undefined)
     logger.debug({
       message: "Output key validated",
       requestId,
       outputKey,
     })
 
-    // Validate enrichFeeTokens parameter
-    const enrichFeeTokens = validateEnrichFeeTokens(params.get("enrichFeeTokens") || undefined)
+    // Validate enrich_fee_tokens parameter
+    const enrichFeeTokens = validateEnrichFeeTokens(params.get("enrich_fee_tokens") || undefined)
     logger.debug({
       message: "EnrichFeeTokens parameter validated",
       requestId,
@@ -133,7 +132,7 @@ export const GET: APIRoute = async ({ request }) => {
     })
 
     return new Response(JSON.stringify(response), {
-      headers: { ...commonHeaders, ...successHeaders },
+      headers: jsonHeaders,
     })
   } catch (error) {
     logger.error({

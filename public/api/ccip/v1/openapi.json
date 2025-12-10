@@ -2,8 +2,8 @@
   "openapi": "3.0.0",
   "info": {
     "title": "CCIP Docs config API",
-    "description": "API for retrieving CCIP chain, token, and lane information.\n\nTo get started quickly, you can download our [Postman Collection](/api/ccip/v1/postman-collection.json) which includes all endpoints and example requests.",
-    "version": "1.5.0",
+    "description": "API for retrieving CCIP chain, token, lane, and rate limits information.\n\nTo get started quickly, you can download our [Postman Collection](/api/ccip/v1/postman-collection.json) which includes all endpoints and example requests.",
+    "version": "1.11.0",
     "contact": {
       "name": "File issues",
       "url": "https://github.com/smartcontractkit/documentation/issues/new/choose"
@@ -34,7 +34,7 @@
     },
     {
       "name": "lanes",
-      "description": "Cross-chain lane information endpoints"
+      "description": "Cross-chain lane information endpoints with rate limits"
     }
   ],
   "paths": {
@@ -83,7 +83,7 @@
             "example": "ethereum-mainnet,bsc-mainnet"
           },
           {
-            "name": "outputKey",
+            "name": "output_key",
             "in": "query",
             "schema": {
               "type": "string",
@@ -93,7 +93,7 @@
             "description": "Key to use for organizing the response data"
           },
           {
-            "name": "enrichFeeTokens",
+            "name": "enrich_fee_tokens",
             "in": "query",
             "schema": {
               "type": "string",
@@ -270,7 +270,7 @@
             "example": "1,56"
           },
           {
-            "name": "outputKey",
+            "name": "output_key",
             "in": "query",
             "schema": {
               "type": "string",
@@ -361,6 +361,275 @@
         }
       }
     },
+    "/tokens/{tokenCanonicalSymbol}": {
+      "get": {
+        "tags": ["tokens"],
+        "summary": "Retrieve detailed token information with custom finality data",
+        "description": "Returns detailed information about a specific CCIP token, including chain-specific configurations and custom finality settings (minBlockConfirmation and hasCustomFinality).",
+        "operationId": "getTokenDetail",
+        "parameters": [
+          {
+            "name": "tokenCanonicalSymbol",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The canonical symbol for the token (e.g., LINK, USDC, BETS)",
+            "example": "BETS"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["mainnet", "testnet"]
+            },
+            "description": "The network environment to query"
+          },
+          {
+            "name": "output_key",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["chainId", "selector", "internalId"],
+              "default": "chainId"
+            },
+            "description": "Key to use for organizing the response data by chain"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with token detail data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenDetailApiResponse"
+                },
+                "examples": {
+                  "withCustomFinality": {
+                    "summary": "Token with custom finality enabled",
+                    "value": {
+                      "metadata": {
+                        "environment": "mainnet",
+                        "timestamp": "2025-12-10T12:00:00Z",
+                        "requestId": "123e4567-e89b-12d3-a456-426614174000",
+                        "tokenSymbol": "BETS",
+                        "chainCount": 2
+                      },
+                      "data": {
+                        "43114": {
+                          "chainId": 43114,
+                          "chainName": "Avalanche",
+                          "decimals": 18,
+                          "destinations": ["1", "137"],
+                          "name": "BetSwirl v2",
+                          "poolAddress": "0xe9d2...9C06",
+                          "poolType": "burnMint",
+                          "symbol": "BETS",
+                          "tokenAddress": "0x9402...E6e5",
+                          "hasCustomFinality": true,
+                          "minBlockConfirmation": 5
+                        },
+                        "1": {
+                          "chainId": 1,
+                          "chainName": "Ethereum",
+                          "decimals": 18,
+                          "destinations": ["43114"],
+                          "name": "BetSwirl v2",
+                          "poolAddress": "0x1234...5678",
+                          "poolType": "lockRelease",
+                          "symbol": "BETS",
+                          "tokenAddress": "0xabcd...ef01",
+                          "hasCustomFinality": false,
+                          "minBlockConfirmation": 0
+                        }
+                      }
+                    }
+                  },
+                  "unavailable": {
+                    "summary": "Token with unavailable finality data",
+                    "value": {
+                      "metadata": {
+                        "environment": "mainnet",
+                        "timestamp": "2025-12-10T12:00:00Z",
+                        "requestId": "456e7890-e89b-12d3-a456-426614174000",
+                        "tokenSymbol": "USDC",
+                        "chainCount": 1
+                      },
+                      "data": {
+                        "1": {
+                          "chainId": 1,
+                          "chainName": "Ethereum",
+                          "decimals": 6,
+                          "destinations": ["43114"],
+                          "name": "USD Coin",
+                          "poolAddress": "0x1234...5678",
+                          "poolType": "burnMint",
+                          "symbol": "USDC",
+                          "tokenAddress": "0xA0b8...c4d2",
+                          "hasCustomFinality": null,
+                          "minBlockConfirmation": null
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Token not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "NOT_FOUND",
+                  "message": "Token 'INVALID' not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tokens/{tokenCanonicalSymbol}/finality": {
+      "get": {
+        "tags": ["tokens"],
+        "summary": "Retrieve token finality data only",
+        "description": "Returns only custom finality information (hasCustomFinality and minBlockConfirmation) for a specific token across all chains. This is a lightweight endpoint that returns minimal data for UI components that only need finality status.",
+        "operationId": "getTokenFinality",
+        "parameters": [
+          {
+            "name": "tokenCanonicalSymbol",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The canonical symbol for the token (e.g., LINK, USDC, BETS)",
+            "example": "BETS"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["mainnet", "testnet"]
+            },
+            "description": "The network environment to query"
+          },
+          {
+            "name": "output_key",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["chainId", "selector", "internalId"],
+              "default": "chainId"
+            },
+            "description": "Key to use for organizing the response data by chain"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with token finality data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenFinalityApiResponse"
+                },
+                "examples": {
+                  "mixedFinality": {
+                    "summary": "Token with mixed finality states",
+                    "value": {
+                      "metadata": {
+                        "environment": "mainnet",
+                        "timestamp": "2025-12-10T12:00:00Z",
+                        "requestId": "123e4567-e89b-12d3-a456-426614174000",
+                        "tokenSymbol": "BETS",
+                        "chainCount": 3
+                      },
+                      "data": {
+                        "avalanche-mainnet": {
+                          "hasCustomFinality": true,
+                          "minBlockConfirmation": 5
+                        },
+                        "ethereum-mainnet": {
+                          "hasCustomFinality": false,
+                          "minBlockConfirmation": 0
+                        },
+                        "polygon-mainnet": {
+                          "hasCustomFinality": null,
+                          "minBlockConfirmation": null
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Token not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "NOT_FOUND",
+                  "message": "Token 'INVALID' not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/lanes": {
       "get": {
         "tags": ["lanes"],
@@ -379,7 +648,7 @@
             "description": "The network environment to query"
           },
           {
-            "name": "sourceChainId",
+            "name": "source_chain_id",
             "in": "query",
             "schema": {
               "type": "string"
@@ -388,7 +657,7 @@
             "example": "1,56"
           },
           {
-            "name": "destinationChainId",
+            "name": "destination_chain_id",
             "in": "query",
             "schema": {
               "type": "string"
@@ -397,7 +666,7 @@
             "example": "137,42161"
           },
           {
-            "name": "sourceSelector",
+            "name": "source_selector",
             "in": "query",
             "schema": {
               "type": "string"
@@ -406,7 +675,7 @@
             "example": "5009297550715157269"
           },
           {
-            "name": "destinationSelector",
+            "name": "destination_selector",
             "in": "query",
             "schema": {
               "type": "string"
@@ -415,7 +684,7 @@
             "example": "4949039107694359620"
           },
           {
-            "name": "sourceInternalId",
+            "name": "source_internal_id",
             "in": "query",
             "schema": {
               "type": "string"
@@ -424,7 +693,7 @@
             "example": "ethereum-mainnet"
           },
           {
-            "name": "destinationInternalId",
+            "name": "destination_internal_id",
             "in": "query",
             "schema": {
               "type": "string"
@@ -442,7 +711,7 @@
             "example": "1.6.0"
           },
           {
-            "name": "outputKey",
+            "name": "output_key",
             "in": "query",
             "schema": {
               "type": "string",
@@ -524,6 +793,498 @@
           },
           "400": {
             "description": "Bad request - invalid parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lanes/by-chain-id/{source}/{destination}": {
+      "get": {
+        "tags": ["lanes"],
+        "summary": "Retrieve lane details by chain ID",
+        "description": "Returns detailed information about a specific CCIP lane identified by source and destination chain IDs",
+        "operationId": "getLaneByChainId",
+        "parameters": [
+          {
+            "name": "source",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Source chain ID (e.g., 1 for Ethereum, 56 for BSC)",
+            "example": "1"
+          },
+          {
+            "name": "destination",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Destination chain ID",
+            "example": "43114"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["mainnet", "testnet"]
+            },
+            "description": "The network environment to query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with lane details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LaneDetailApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lane not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lanes/by-chain-id/{source}/{destination}/supported-tokens": {
+      "get": {
+        "tags": ["lanes"],
+        "summary": "Retrieve supported tokens with rate limits by chain ID",
+        "description": "Returns only the supported tokens and their rate limit configurations for a lane identified by chain IDs",
+        "operationId": "getSupportedTokensByChainId",
+        "parameters": [
+          {
+            "name": "source",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Source chain ID",
+            "example": "1"
+          },
+          {
+            "name": "destination",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Destination chain ID",
+            "example": "43114"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["mainnet", "testnet"]
+            },
+            "description": "The network environment to query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with supported tokens data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupportedTokensApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lane not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lanes/by-selector/{source}/{destination}": {
+      "get": {
+        "tags": ["lanes"],
+        "summary": "Retrieve lane details by CCIP selector",
+        "description": "Returns detailed information about a specific CCIP lane identified by source and destination CCIP selectors",
+        "operationId": "getLaneBySelector",
+        "parameters": [
+          {
+            "name": "source",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Source chain CCIP selector",
+            "example": "5009297550715157269"
+          },
+          {
+            "name": "destination",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Destination chain CCIP selector",
+            "example": "6433500567565415381"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["mainnet", "testnet"]
+            },
+            "description": "The network environment to query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with lane details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LaneDetailApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lane not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lanes/by-selector/{source}/{destination}/supported-tokens": {
+      "get": {
+        "tags": ["lanes"],
+        "summary": "Retrieve supported tokens with rate limits by CCIP selector",
+        "description": "Returns only the supported tokens and their rate limit configurations for a lane identified by CCIP selectors",
+        "operationId": "getSupportedTokensBySelector",
+        "parameters": [
+          {
+            "name": "source",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Source chain CCIP selector",
+            "example": "5009297550715157269"
+          },
+          {
+            "name": "destination",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Destination chain CCIP selector",
+            "example": "6433500567565415381"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["mainnet", "testnet"]
+            },
+            "description": "The network environment to query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with supported tokens data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupportedTokensApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lane not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lanes/by-internal-id/{source}/{destination}": {
+      "get": {
+        "tags": ["lanes"],
+        "summary": "Retrieve lane details by internal ID",
+        "description": "Returns detailed information about a specific CCIP lane identified by source and destination internal IDs",
+        "operationId": "getLaneByInternalId",
+        "parameters": [
+          {
+            "name": "source",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Source chain internal identifier",
+            "example": "ethereum-mainnet"
+          },
+          {
+            "name": "destination",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Destination chain internal identifier",
+            "example": "avalanche-mainnet"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["mainnet", "testnet"]
+            },
+            "description": "The network environment to query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with lane details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LaneDetailApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lane not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lanes/by-internal-id/{source}/{destination}/supported-tokens": {
+      "get": {
+        "tags": ["lanes"],
+        "summary": "Retrieve supported tokens with rate limits by internal ID",
+        "description": "Returns only the supported tokens and their rate limit configurations for a lane identified by internal IDs",
+        "operationId": "getSupportedTokensByInternalId",
+        "parameters": [
+          {
+            "name": "source",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Source chain internal identifier",
+            "example": "ethereum-mainnet"
+          },
+          {
+            "name": "destination",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Destination chain internal identifier",
+            "example": "avalanche-mainnet"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["mainnet", "testnet"]
+            },
+            "description": "The network environment to query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with supported tokens data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupportedTokensApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lane not found",
             "content": {
               "application/json": {
                 "schema": {
@@ -920,6 +1681,198 @@
           }
         }
       },
+      "LaneDetailApiResponse": {
+        "type": "object",
+        "required": ["metadata", "data"],
+        "properties": {
+          "metadata": {
+            "$ref": "#/components/schemas/LaneDetailMetadata"
+          },
+          "data": {
+            "$ref": "#/components/schemas/LaneDetailWithRateLimits"
+          }
+        },
+        "description": "Response for a single lane detail query with rate limits included"
+      },
+      "LaneDetailWithRateLimits": {
+        "type": "object",
+        "required": ["sourceChain", "destinationChain", "onRamp", "offRamp", "supportedTokens"],
+        "properties": {
+          "sourceChain": {
+            "$ref": "#/components/schemas/ChainInfo"
+          },
+          "destinationChain": {
+            "$ref": "#/components/schemas/ChainInfo"
+          },
+          "onRamp": {
+            "type": "object",
+            "required": ["address", "version"],
+            "properties": {
+              "address": {
+                "type": "string",
+                "description": "OnRamp contract address"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^\\d+\\.\\d+\\.\\d+$",
+                "description": "Normalized semantic version of the OnRamp contract"
+              },
+              "enforceOutOfOrder": {
+                "type": "boolean",
+                "description": "Whether the OnRamp enforces out-of-order execution"
+              }
+            }
+          },
+          "offRamp": {
+            "type": "object",
+            "required": ["address", "version"],
+            "properties": {
+              "address": {
+                "type": "string",
+                "description": "OffRamp contract address"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^\\d+\\.\\d+\\.\\d+$",
+                "description": "Normalized semantic version of the OffRamp contract"
+              }
+            }
+          },
+          "supportedTokens": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TokenRateLimits"
+            },
+            "description": "Supported tokens with their rate limit configurations"
+          }
+        },
+        "description": "Lane details with rate limits included in supportedTokens"
+      },
+      "TokenRateLimits": {
+        "type": "object",
+        "properties": {
+          "standard": {
+            "oneOf": [{ "$ref": "#/components/schemas/RateLimiterDirections" }, { "type": "null" }],
+            "description": "Standard rate limit configuration (null if unavailable)"
+          },
+          "custom": {
+            "oneOf": [{ "$ref": "#/components/schemas/RateLimiterDirections" }, { "type": "null" }],
+            "description": "Custom (FTF) rate limit configuration (null if unavailable)"
+          }
+        },
+        "description": "Rate limit configurations for a token"
+      },
+      "RateLimiterDirections": {
+        "type": "object",
+        "properties": {
+          "in": {
+            "$ref": "#/components/schemas/RateLimiterConfig"
+          },
+          "out": {
+            "$ref": "#/components/schemas/RateLimiterConfig"
+          }
+        },
+        "description": "Inbound and outbound rate limiter configurations"
+      },
+      "RateLimiterConfig": {
+        "type": "object",
+        "required": ["capacity", "isEnabled", "rate"],
+        "properties": {
+          "capacity": {
+            "type": "string",
+            "description": "Maximum capacity in token units (wei for ERC20)"
+          },
+          "isEnabled": {
+            "type": "boolean",
+            "description": "Whether the rate limiter is enabled"
+          },
+          "rate": {
+            "type": "string",
+            "description": "Refill rate per second in token units"
+          }
+        },
+        "description": "Single direction rate limiter configuration"
+      },
+      "LaneDetailMetadata": {
+        "type": "object",
+        "required": ["environment", "timestamp", "requestId", "sourceChain", "destinationChain"],
+        "properties": {
+          "environment": {
+            "type": "string",
+            "enum": ["mainnet", "testnet"],
+            "description": "The network environment"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO timestamp of the response"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the request"
+          },
+          "sourceChain": {
+            "type": "string",
+            "description": "Source chain identifier used in the request"
+          },
+          "destinationChain": {
+            "type": "string",
+            "description": "Destination chain identifier used in the request"
+          }
+        }
+      },
+      "SupportedTokensApiResponse": {
+        "type": "object",
+        "required": ["metadata", "data"],
+        "properties": {
+          "metadata": {
+            "$ref": "#/components/schemas/SupportedTokensMetadata"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TokenRateLimits"
+            },
+            "description": "Supported tokens with their rate limit configurations"
+          }
+        },
+        "description": "Response containing only supported tokens and their rate limits"
+      },
+      "SupportedTokensMetadata": {
+        "type": "object",
+        "required": ["environment", "timestamp", "requestId", "sourceChain", "destinationChain", "tokenCount"],
+        "properties": {
+          "environment": {
+            "type": "string",
+            "enum": ["mainnet", "testnet"],
+            "description": "The network environment"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO timestamp of the response"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the request"
+          },
+          "sourceChain": {
+            "type": "string",
+            "description": "Source chain identifier used in the request"
+          },
+          "destinationChain": {
+            "type": "string",
+            "description": "Destination chain identifier used in the request"
+          },
+          "tokenCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of supported tokens returned"
+          }
+        }
+      },
       "ErrorResponse": {
         "type": "object",
         "required": ["error", "message"],
@@ -1046,6 +1999,103 @@
           }
         }
       },
+      "TokenDetailChainData": {
+        "type": "object",
+        "description": "Extended token chain data with custom finality information",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/TokenChainData"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "hasCustomFinality": {
+                "type": ["boolean", "null"],
+                "description": "Whether custom finality is enabled (derived from minBlockConfirmation > 0). Null if data is unavailable."
+              },
+              "minBlockConfirmation": {
+                "type": ["integer", "null"],
+                "description": "Minimum block confirmations required. Null if data is unavailable."
+              }
+            }
+          }
+        ]
+      },
+      "TokenDetailMetadata": {
+        "type": "object",
+        "required": ["environment", "timestamp", "requestId", "tokenSymbol", "chainCount"],
+        "properties": {
+          "environment": {
+            "type": "string",
+            "enum": ["mainnet", "testnet"],
+            "description": "Network environment"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp of the response"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for this request"
+          },
+          "tokenSymbol": {
+            "type": "string",
+            "description": "Canonical symbol of the requested token"
+          },
+          "chainCount": {
+            "type": "integer",
+            "description": "Number of chains this token is available on"
+          }
+        }
+      },
+      "TokenDetailApiResponse": {
+        "type": "object",
+        "required": ["metadata", "data"],
+        "properties": {
+          "metadata": {
+            "$ref": "#/components/schemas/TokenDetailMetadata"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TokenDetailChainData"
+            },
+            "description": "Token data indexed by chain ID/selector, including custom finality information"
+          }
+        }
+      },
+      "TokenFinalityData": {
+        "type": "object",
+        "description": "Finality data for a token on a specific chain",
+        "properties": {
+          "hasCustomFinality": {
+            "type": ["boolean", "null"],
+            "description": "Whether custom finality is enabled (derived from minBlockConfirmation > 0). Null if data is unavailable."
+          },
+          "minBlockConfirmation": {
+            "type": ["integer", "null"],
+            "description": "Minimum block confirmations required. Null if data is unavailable."
+          }
+        }
+      },
+      "TokenFinalityApiResponse": {
+        "type": "object",
+        "required": ["metadata", "data"],
+        "properties": {
+          "metadata": {
+            "$ref": "#/components/schemas/TokenDetailMetadata"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TokenFinalityData"
+            },
+            "description": "Finality data indexed by chain ID/selector"
+          }
+        }
+      },
       "TokenDetails": {
         "type": "object",
         "required": ["symbol", "lanes", "chains"],
@@ -1118,6 +2168,88 @@
               "$ref": "#/components/schemas/TokenConfigError"
             },
             "description": "List of tokens that were ignored due to configuration issues"
+          }
+        }
+      },
+      "RateLimitsMetadata": {
+        "type": "object",
+        "required": ["environment", "timestamp", "requestId", "sourceChain", "destinationChain", "tokenCount"],
+        "properties": {
+          "environment": {
+            "type": "string",
+            "enum": ["mainnet", "testnet"],
+            "description": "The network environment"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO timestamp of the response"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the request"
+          },
+          "sourceChain": {
+            "type": "string",
+            "description": "Source chain internal identifier"
+          },
+          "destinationChain": {
+            "type": "string",
+            "description": "Destination chain internal identifier"
+          },
+          "tokenCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of tokens in the response"
+          }
+        }
+      },
+      "RateLimiterConfig": {
+        "type": "object",
+        "required": ["capacity", "isEnabled", "rate"],
+        "properties": {
+          "capacity": {
+            "type": "string",
+            "description": "Maximum token capacity for rate limiting (in token smallest unit as string)"
+          },
+          "isEnabled": {
+            "type": "boolean",
+            "description": "Whether rate limiting is enabled for this direction"
+          },
+          "rate": {
+            "type": "string",
+            "description": "Rate of token replenishment per second (in token smallest unit as string)"
+          }
+        }
+      },
+      "TokenRateLimits": {
+        "type": "object",
+        "properties": {
+          "in": {
+            "$ref": "#/components/schemas/RateLimiterConfig",
+            "description": "Inbound rate limiter configuration (tokens coming into destination chain)"
+          },
+          "out": {
+            "$ref": "#/components/schemas/RateLimiterConfig",
+            "description": "Outbound rate limiter configuration (tokens leaving source chain)"
+          }
+        },
+        "description": "Rate limiter configurations for both inbound and outbound directions"
+      },
+      "RateLimitsApiResponse": {
+        "type": "object",
+        "required": ["metadata", "data"],
+        "properties": {
+          "metadata": {
+            "$ref": "#/components/schemas/RateLimitsMetadata"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TokenRateLimits"
+            },
+            "description": "Rate limits data indexed by token symbol"
           }
         }
       }

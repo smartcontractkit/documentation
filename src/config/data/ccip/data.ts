@@ -272,13 +272,14 @@ export const getAllSupportedTokens = (params: { environment: Environment; versio
 
     Object.entries(laneReferenceData).forEach(([destinationChainRdd, destinationLaneReferenceData]) => {
       const supportedTokens = destinationLaneReferenceData.supportedTokens
-      if (supportedTokens) {
-        Object.entries(supportedTokens).forEach(([token, tokenConfig]) => {
+      if (supportedTokens && Array.isArray(supportedTokens)) {
+        supportedTokens.forEach((token) => {
           const destinationChain = directoryToSupportedChain(destinationChainRdd)
 
           tokens[token] = tokens[token] || {}
           tokens[token][sourceChain] = tokens[token][sourceChain] || {}
-          tokens[token][sourceChain][destinationChain] = tokenConfig
+          // Rate limiter config is now in separate files, store empty config
+          tokens[token][sourceChain][destinationChain] = {}
         })
       }
     })
@@ -316,8 +317,8 @@ export const getTokenMechanism = (params: {
   const tokenConfig = tokensReferenceData[params.token]
   const sourceChainPoolInfo = tokenConfig[sourceChainRdd]
   const destinationChainPoolInfo = tokenConfig[destinationChainRdd]
-  const sourceChainPoolType = sourceChainPoolInfo.poolType
-  const destinationChainPoolType = destinationChainPoolInfo.poolType
+  const sourceChainPoolType = sourceChainPoolInfo.pool.type
+  const destinationChainPoolType = destinationChainPoolInfo.pool.type
   const tokenMechanism = determineTokenMechanism(sourceChainPoolType, destinationChainPoolType)
   return tokenMechanism
 }
@@ -474,7 +475,7 @@ export const getTokensOfChain = ({ chain, filter }: { chain: string; filter: Env
   return Object.keys(tokensData).filter((token) => {
     const tokenData = tokensData[token]
     // Check if tokenData for the given chain exists and isn't 'feeTokenOnly'
-    if (tokenData[chain] && tokenData[chain].poolType !== "feeTokenOnly") {
+    if (tokenData[chain] && tokenData[chain].pool.type !== "feeTokenOnly") {
       const lanes = getAllTokenLanes({ token, environment: filter })
       // Ensure there is at least one lane and that the lane exists for the given chain
       return Object.keys(lanes).length > 0 && lanes[chain] && Object.keys(lanes[chain]).length > 0
@@ -593,7 +594,7 @@ export const getChainsOfToken = ({ token, filter }: { token: string; filter: Env
 
   // Get all valid chains for the given token
   return Object.entries(tokensData[token])
-    .filter(([, tokenData]) => tokenData.poolType !== "feeTokenOnly")
+    .filter(([, tokenData]) => tokenData.pool.type !== "feeTokenOnly")
     .filter(([chain]) => {
       const lanes = getAllTokenLanes({ token, environment: filter })
       return Object.keys(lanes).length > 0 && lanes[chain] && Object.keys(lanes[chain]).length > 0
@@ -677,11 +678,13 @@ export function getAllTokenLanes({
     for (const destinationChain in sourceData) {
       const destinationData = sourceData[destinationChain]
 
-      // Check if the token is supported
-      if (destinationData?.supportedTokens?.[token]) {
+      // Check if the token is supported (supportedTokens is now an array)
+      const supportedTokens = destinationData?.supportedTokens
+      if (Array.isArray(supportedTokens) && supportedTokens.includes(token)) {
         allDestinationLanes[sourceChain] = {
           ...allDestinationLanes[sourceChain],
-          [destinationChain]: destinationData.supportedTokens[token],
+          // Rate limiter config is now in separate files, store empty config
+          [destinationChain]: {},
         }
       }
     }
