@@ -28,9 +28,7 @@ import { Aside, ClickToZoom } from "@components"
 
 Calculated streams are Chainlink data streams whose values are derived by applying arithmetic expressions to multiple underlying inputs.
 
-All Data Streams use a [Decentralized Oracle Network (DON)](/data-streams/architecture) where nodes reach consensus and publish signed reports.
-
-Traditional Data Streams aggregate market data from multiple independent providers, ensuring no single data source can compromise the stream's integrity.
+All Data Streams use a [Decentralized Oracle Network (DON)](/data-streams/architecture) where nodes reach consensus and publish signed reports. Traditional Data Streams aggregate market data from multiple independent providers, ensuring no single data source can compromise the stream's integrity.
 
 Instead of aggregating only raw market data, calculated streams compute derived values using predefined formulas applied to various inputs, including existing data streams, onchain state, and offchain APIs. Some inputs are decentralized aggregates (for example, crypto price streams from multiple independent providers), while others may come from a single protocol or API (for example, a specific vault contract or yield provider). Because a calculated stream depends on all of these inputs, you should evaluate their dependencies and failure modes carefully before using it in a value-securing application.
 
@@ -48,7 +46,7 @@ Instead of aggregating only raw market data, calculated streams compute derived 
 
 ## How to identify calculated streams
 
-Calculated streams are marked with a **Calculated** badge in the documentation.
+Calculated streams are marked with a <span style="display: inline-block; font-size: 0.75rem; padding: 2px 6px; margin-left: 4px; border-radius: 4px; background: var(--blue-100); color: var(--blue-700); font-weight: 500; vertical-align: middle;">Calculated</span> badge in the documentation.
 
 ## How calculated streams work
 
@@ -97,7 +95,7 @@ Calculated streams inherit risks from their underlying inputs and introduce addi
 
 ### Multiple dependencies
 
-If a required input becomes unavailable or unreliable, the calculated stream might not continue to reflect current conditions. Integrators should not assume any specific fallback behavior and must design their protocols to handle this scenario explicitly.
+If a required input becomes unavailable or unreliable, the calculated stream might stop updating or cease to reflect current conditions. Integrators should not assume any specific fallback behavior and must design their protocols to handle this scenario explicitly.
 
 #### Mitigation
 
@@ -136,7 +134,7 @@ A calculated stream for a tokenized yield-bearing vault might combine:
 
 **Result**: a price per share that reflects the vault's total value including pending yield.
 
-Without this stream, protocols accepting the vault token as collateral would need to query the vault contract, fetch accrued interest from the yield provider's API, perform the calculation themselves, and keep this logic synchronized across all integrators. A calculated stream ensures everyone prices the same way and updates together when the underlying formula or yield source changes.
+Without this stream, protocols accepting the vault token as collateral would need to query the vault contract, fetch accrued interest from the yield provider's API, perform the calculation themselves, and keep this logic synchronized across all integrators. A calculated stream helps ensure integrators apply the same pricing logic and update together when the underlying formula or yield source changes.
 
 ## Best practices
 
@@ -156,4 +154,3 @@ Without this stream, protocols accepting the vault token as collateral would nee
 
 - Subscribe to Chainlink release notes for formula changes
 - Test new streams or updated configurations in staging
-- Build flexibility to support stream ID updates when formulas evolve

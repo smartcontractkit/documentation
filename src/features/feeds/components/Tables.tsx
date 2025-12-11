@@ -846,6 +846,13 @@ export const StreamsTr = ({ metadata, isMainnet }) => {
   // Determine if stream is deprecating
   const isDeprecating = !!metadata.docs?.shutdownDate
 
+  // Temporary calculated stream detection until proper metadata tagging is implemented
+  // TODO: Replace with metadata.docs.isCalculated or similar once available
+  const isCalculatedStream =
+    metadata.docs?.productTypeCode === "ExRate" &&
+    metadata.docs?.attributeType === "ExchangeRate" &&
+    metadata.docs?.assetClass === "Tokenized Debt"
+
   return (
     <tr>
       <td className={tableStyles.pairCol}>
@@ -858,6 +865,16 @@ export const StreamsTr = ({ metadata, isMainnet }) => {
               className={tableStyles.feedVariantBadge}
             >
               DEX State Price
+            </a>
+          )}
+          {isCalculatedStream && (
+            <a
+              href="/data-streams/concepts/calculated-streams"
+              target="_blank"
+              className={tableStyles.feedVariantBadge}
+              title="Calculated Stream"
+            >
+              Calculated
             </a>
           )}
         </div>
