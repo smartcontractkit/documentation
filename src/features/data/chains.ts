@@ -458,8 +458,8 @@ export const CHAINS: Chain[] = [
     title: "Monad Data Feeds",
     label: "Monad",
     img: "/assets/chains/monad.svg",
-    networkStatusUrl: "",
-    tags: ["default"],
+    networkStatusUrl: "https://monadvision.com/",
+    tags: ["default", "smartData"],
     supportedFeatures: ["feeds"],
     networks: [
       {
