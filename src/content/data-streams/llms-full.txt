@@ -408,6 +408,135 @@ For broader guidance around market hours and event handling, refer to the [Marke
 
 ---
 
+# Calculated Streams
+Source: https://docs.chain.link/data-streams/concepts/calculated-streams
+
+Calculated streams are Chainlink data streams whose values are derived by applying arithmetic expressions to multiple underlying inputs.
+
+All Data Streams use a [Decentralized Oracle Network (DON)](/data-streams/architecture) where nodes reach consensus and publish signed reports. Traditional Data Streams aggregate market data from multiple independent providers, ensuring no single data source can compromise the stream's integrity.
+
+Instead of aggregating only raw market data, calculated streams compute derived values using predefined formulas applied to various inputs, including existing data streams, onchain state, and offchain APIs. Some inputs are decentralized aggregates (for example, crypto price streams from multiple independent providers), while others may come from a single protocol or API (for example, a specific vault contract or yield provider). Because a calculated stream depends on all of these inputs, you should evaluate their dependencies and failure modes carefully before using it in a value-securing application.
+
+<Aside type="caution" title="Important Considerations">
+  Calculated streams introduce additional dependencies and timing considerations compared to standard streams. Before
+  integrating a calculated stream, review the <a href="#unique-risks-and-mitigation">risks and mitigation</a> section to
+  understand how multiple inputs and update cadences may affect your application.
+</Aside>
+
+## Why use calculated streams?
+
+- **Simpler integrations**: Consume one stream instead of implementing calculation logic in your contracts or backend
+- **Canonical formulas**: All integrators use the same formula and inputs, ensuring consistency across protocols
+- **Managed infrastructure**: Chainlink handles RPC calls, API integrations, and the calculation pipeline
+
+## How to identify calculated streams
+
+Calculated streams are marked with a <span style="display: inline-block; font-size: 0.75rem; padding: 2px 6px; margin-left: 4px; border-radius: 4px; background: var(--blue-100); color: var(--blue-700); font-weight: 500; vertical-align: middle;">Calculated</span> badge in the documentation.
+
+## How calculated streams work
+
+Calculated streams leverage existing Data Streams infrastructure. Data providers feed market data into the DON, which produces base streams. The DON then uses these base streams—along with onchain state and offchain APIs—as inputs to calculate derived values.
+
+### Architecture flow
+
+1. **Data collection**: The DON retrieves inputs specific to each calculated stream, which may include:
+   - Existing Data Streams (market prices from multiple independent data providers)
+   - Onchain state via RPC calls (vault balances, token supplies, contract data)
+   - Offchain data via APIs (yield rates, interest components, external reference data)
+2. **Calculation**: The DON applies the predefined formula to combine the inputs
+3. **Consensus and signing**: Nodes reach consensus on the calculated value and sign the report
+4. **Publication**: Calculated streams are published through the Data Streams Aggregation Network
+
+### Input sources
+
+The inputs for a calculated stream depend on what it's computing. A stream might use:
+
+#### Existing Data Streams
+
+Market prices already aggregated from multiple independent sources (3+ providers). Example: using individual crypto asset prices as inputs for an index calculation.
+
+#### Onchain state
+
+Protocol-specific data read via RPC, such as vault balances, token supplies, or smart contract state. May come from a single protocol's contracts.
+
+#### Offchain APIs
+
+External data from specific trusted providers, such as yield rates or reference values. May come from a single API endpoint.
+
+### Calculation and output
+
+The DON executes the predefined formula (weighted averages, ratios, sums, etc.) using the latest available inputs. The calculated value is packaged into a signed report with standard metadata (timestamps, fees) and published through the Data Streams Aggregation Network. You consume these reports using the same REST APIs, WebSocket connections, and onchain verification as traditional streams.
+
+***
+
+## Risks and mitigation
+
+Calculated streams inherit risks from their underlying inputs and introduce additional considerations due to combining multiple data sources.
+
+### Multiple dependencies
+
+If a required input becomes unavailable or unreliable, the calculated stream might stop updating or cease to reflect current conditions. Integrators should not assume any specific fallback behavior and must design their protocols to handle this scenario explicitly.
+
+#### Mitigation
+
+- Design your protocol to handle missing data gracefully (pause operations, use last-known values, or implement fallbacks based on your risk tolerance)
+
+### Timing and synchronization
+
+Inputs update at different frequencies and are read via separate calls, so they may reflect slightly different block heights or timestamps. The calculated value is an approximation based on the latest available data from each input, not a single-block atomic snapshot.
+
+Users should expect small, transient differences between the calculated stream value and values observed on block explorers, vault dashboards, or DEX charts—especially during rapid changes such as large deposits, withdrawals, or sharp market moves. This does not necessarily indicate an issue with the stream, but is a natural consequence of combining multiple inputs with different update cadences.
+
+#### Mitigation
+
+- Implement max deviation checks against expected ranges
+- Use time-weighted averages or circuit breakers for extreme moves
+- Monitor trends over time rather than reacting to individual updates
+
+<Aside type="note" title="Developer Responsibilities">
+  When using calculated streams, you inherit all responsibilities associated with the underlying inputs plus additional
+  responsibilities for monitoring calculation health and managing time-sensitivity requirements. Review the{" "}
+  <a href="/data-streams/developer-responsibilities">Developer Responsibilities</a> page for comprehensive guidance on
+  risk assessment and mitigation techniques.
+</Aside>
+
+***
+
+## Example: Tokenized yield product
+
+A calculated stream for a tokenized yield-bearing vault might combine:
+
+- **Vault balance (onchain)**: Total assets in the vault contract
+- **Token supply (onchain)**: Circulating supply of vault shares
+- **Accrued yield (offchain)**: Interest from an external API
+
+**Formula:** `(vault balance + accrued yield) / token supply`
+
+**Result**: a price per share that reflects the vault's total value including pending yield.
+
+Without this stream, protocols accepting the vault token as collateral would need to query the vault contract, fetch accrued interest from the yield provider's API, perform the calculation themselves, and keep this logic synchronized across all integrators. A calculated stream helps ensure integrators apply the same pricing logic and update together when the underlying formula or yield source changes.
+
+## Best practices
+
+### Protocol design
+
+- Set deviation limits to cap price changes per update or time window
+- Compare calculated values against market references when available (e.g., spot prices for index tokens)
+- Define fallback behavior if the stream stops updating or jumps beyond thresholds
+
+### Monitoring
+
+- Track the calculated stream value over time to establish normal behavior
+- Monitor key inputs independently when feasible (vault balances, token supplies) to cross-check outputs
+- Alert on update gaps or movements outside your safe range
+
+### Handling updates
+
+- Subscribe to Chainlink release notes for formula changes
+- Test new streams or updated configurations in staging
+
+---
+
 # DEX State Price Streams
 Source: https://docs.chain.link/data-streams/concepts/dex-state-price-streams
 
