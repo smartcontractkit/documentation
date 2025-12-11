@@ -35,6 +35,12 @@ This advanced RWA schema is built to support 24/5 streams, including DON Consens
   Different fields may have been updated at different times.
 </Aside>
 
+<Aside type="note" title="Bid/Ask Volume Interpretation">
+  For U.S. equities, there is no single consolidated order book—multiple venues each maintain their own. The `bidVolume`
+  and `askVolume` reported come from one specific order book at a time, not an aggregate across all venues. These values
+  should not be treated as a proxy for total market liquidity and are primarily informational.
+</Aside>
+
 ## Feeds
 
 Each instrument is exposed through three distinct data streams feeds, each corresponding to a specific trading phase: **Regular Hours**, **Extended Hours**, and **Overnight Hours**.
@@ -128,8 +134,6 @@ Phase-specific feeds can introduce unique behavior due to venue-specific operati
 ##### Regular Hours Session: Delayed Quote Availability at Market Open
 
 During the first 10–20 seconds after regular hours open (9:30am ET), bid/ask quotes may not yet be available from the regular hours venue. In those cases, the reported price may still reflect the previous regular hours close rather than live market data.
-
-This delay occurs because it takes time for the venue to begin publishing quotes after the market opens. This behavior is normal market microstructure, not a data quality issue.
 
 Users should factor this transition period into their switching logic and consider alternative strategies during the first ~20 seconds of regular hours, such as:
 

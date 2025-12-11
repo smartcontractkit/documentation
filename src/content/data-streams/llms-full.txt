@@ -5087,9 +5087,9 @@ Chainlink Data Streams that use the RWA Advanced (v11) schema adhere to the stru
 | `mid`                   | `int192`  | DON Consensus mid-price                                                                                                                                                                                                                                                             |
 | `lastSeenTimestampNs`   | `uint64`  | Reflects the timestamp of the last update for the **mid price only** (nanoseconds). See [Notes](#notes) below.                                                                                                                                                                      |
 | `bid`                   | `int192`  | Median bid price                                                                                                                                                                                                                                                                    |
-| `bidVolume`             | `int192`  | Volume at bid price                                                                                                                                                                                                                                                                 |
+| `bidVolume`             | `int192`  | Volume at bid price. See [bid/ask volume note](#bidask-volume-note) below.                                                                                                                                                                                                          |
 | `ask`                   | `int192`  | Median ask price                                                                                                                                                                                                                                                                    |
-| `askVolume`             | `int192`  | Volume at ask price                                                                                                                                                                                                                                                                 |
+| `askVolume`             | `int192`  | Volume at ask price. See [bid/ask volume note](#bidask-volume-note) below.                                                                                                                                                                                                          |
 | `lastTradedPrice`       | `int192`  | Last traded price                                                                                                                                                                                                                                                                   |
 | `marketStatus`          | `uint32`  | Status of the real-world equity market. <br /> Possible values: <br /> `0` (Unknown), <br /> `1` (Pre-market extended hours), <br /> `2` (Regular hours), <br /> `3` (Post-market hours), <br /> `4` (Overnight), <br /> `5` (Weekend) <br /> [More details](#market-status-values) |
 
@@ -5110,8 +5110,19 @@ Users should implement appropriate safeguards based on market status, such as pa
 
 ### Notes
 
+#### Last Seen Timestamp
+
 - **IMPORTANT**: The `lastSeenTimestampNs` field reflects the timestamp of the last update for the `mid` price only. Do not assume this timestamp applies to `bid`, `ask`, `bidVolume`, `askVolume`, or `lastTradedPrice`. Different fields may have been updated at different times.
 - `lastSeenTimestampNs` helps applications detect stale data for the mid price, especially important during market transitions and holidays.
+
+#### Bid/Ask Volume
+
+For U.S. equities, there is no single consolidated order book. Instead, multiple venues each maintain their own order books. Because data providers source from different markets, the `bidVolume` and `askVolume` reported at each update come from one specific order book at a time, not an aggregate across all venues.
+
+As a result, these volume fields should not be treated as a proxy for total market liquidity at the top of book. They are informational and not especially representative in fragmented markets like U.S. equities.
+
+#### Additional Notes
+
 - Future streams using this format may adopt different report schemas as needed.
 - Market status cannot detect public holidays. See [Market Hours](/data-streams/market-hours) for major holiday periods.
 - Data availability and sourcing vary by session. Liquidity is typically highest during regular hours and lower during extended and overnight sessions.
@@ -5312,6 +5323,12 @@ This advanced RWA schema is built to support 24/5 streams, including DON Consens
   Different fields may have been updated at different times.
 </Aside>
 
+<Aside type="note" title="Bid/Ask Volume Interpretation">
+  For U.S. equities, there is no single consolidated order book—multiple venues each maintain their own. The `bidVolume`
+  and `askVolume` reported come from one specific order book at a time, not an aggregate across all venues. These values
+  should not be treated as a proxy for total market liquidity and are primarily informational.
+</Aside>
+
 ## Feeds
 
 Each instrument is exposed through three distinct data streams feeds, each corresponding to a specific trading phase: **Regular Hours**, **Extended Hours**, and **Overnight Hours**.
@@ -5400,8 +5417,6 @@ Phase-specific feeds can introduce unique behavior due to venue-specific operati
 ##### Regular Hours Session: Delayed Quote Availability at Market Open
 
 During the first 10–20 seconds after regular hours open (9:30am ET), bid/ask quotes may not yet be available from the regular hours venue. In those cases, the reported price may still reflect the previous regular hours close rather than live market data.
-
-This delay occurs because it takes time for the venue to begin publishing quotes after the market opens. This behavior is normal market microstructure, not a data quality issue.
 
 Users should factor this transition period into their switching logic and consider alternative strategies during the first \~20 seconds of regular hours, such as:
 
