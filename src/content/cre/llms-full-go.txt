@@ -8324,6 +8324,116 @@ cre version v1.0.2
 
 ---
 
+# Finality and Confidence Levels
+Source: https://docs.chain.link/cre/concepts/finality-go
+Last Updated: 2025-12-10
+
+Finality determines when a blockchain transaction is considered irreversible. Until a block is finalized, it could be reorganized (replaced by a different block if the chain temporarily forks), which means any data you read from it might change.
+
+Different blockchains achieve finality in different ways and at different speeds. CRE abstracts these differences through **confidence levels**, allowing you to specify your finality requirements without needing to know the underlying chain-specific implementation.
+
+## Understanding CRE's finality model
+
+CRE provides three confidence levels for reading blockchain data and monitoring events. These levels work consistently across all supported chains.
+
+### The three confidence levels
+
+| Confidence Level | Description                                                                         | Use Case                                                                         |
+| ---------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| **`LATEST`**     | The most recent block. No finality guarantees—the block could still be reorganized. | Non-critical, time-sensitive operations where speed matters more than certainty. |
+| **`SAFE`**       | A block that is unlikely to be reorganized, but not yet fully finalized.            | A balance between speed and security for most operations.                        |
+| **`FINALIZED`**  | A block that is considered irreversible. This is the safest option.                 | Critical operations where you need absolute certainty the data won't change.     |
+
+**Choosing the right level:**
+
+- **`FINALIZED`** — Use for financial transactions, critical state updates, or when incorrect data could cause significant issues
+- **`SAFE`** — Use when you need reasonable confidence without waiting for full finality (good for most monitoring/alerting)
+- **`LATEST`** — Use for real-time dashboards or displays where speed matters more than guaranteed accuracy
+
+### How confidence levels map to chains
+
+**SAFE and LATEST:**
+
+CRE uses the chain's native `safe` and `latest` block tags respectively for all supported chains.
+
+**FINALIZED:**
+
+When you specify `FINALIZED` in your workflow, CRE automatically maps this to a native finality tag or a block depth threshold depending on the chain.
+
+| Chain                           | Finality Method              | Block Depth |
+| ------------------------------- | ---------------------------- | ----------- |
+| Arbitrum One / Arbitrum Sepolia | Native `finalized` tag       | —           |
+| Avalanche / Avalanche Fuji      | Native `finalized` tag       | —           |
+| Base / Base Sepolia             | Native `finalized` tag       | —           |
+| BNB Chain / BNB Testnet         | Native `finalized` tag       | —           |
+| Ethereum / Ethereum Sepolia     | Native `finalized` tag       | —           |
+| OP Mainnet / OP Sepolia         | Native `finalized` tag       | —           |
+| Polygon / Polygon Amoy          | Block depth (500 blocks ago) | 500         |
+
+## Finality for chain reads
+
+Chain read operations ([`CallContract`](/cre/reference/sdk/evm-client-go#callcontract), [`BalanceAt`](/cre/reference/sdk/evm-client-go#balanceat), [`FilterLogs`](/cre/reference/sdk/evm-client-go#filterlogs), etc.) support confidence levels and custom block depths.
+
+### Using confidence levels
+
+For most read operations, use the standard confidence levels by passing `-2` (latest) or `-3` (finalized) as the `BlockNumber` parameter. If you don't specify a block number, CRE defaults to `LATEST`.
+
+**Note:** The `SAFE` confidence level is not available for chain reads—only `LATEST` and `FINALIZED` are supported.
+
+### Custom block depths
+
+For use cases requiring fixed confirmation thresholds or historical state verification, you can specify **any explicit block number** instead of using the predefined confidence levels. This enables you to:
+
+- Implement custom finality rules tailored to your risk profile (e.g., "always wait 1,000 blocks")
+- Meet regulatory requirements that mandate fixed, auditable confirmation thresholds
+- Query historical state at specific past block heights for analysis or verification
+
+**When to use custom block depths:**
+
+- **Regulatory compliance** — Your interactions require provable, fixed confirmation thresholds for auditors
+- **Changing chain parameters** — The chain's finality definition may change, but your security model must remain constant
+- **Historical verification** — You need to verify state at a specific moment
+
+**Implementation:**
+
+You can pass any `*big.Int` directly as the `BlockNumber` parameter. The SDK accepts both special values (like `-2` for latest, `-3` for finalized) and positive integers for explicit block heights. See [Onchain Read](/cre/guides/workflow/using-evm-client/onchain-read-go#custom-block-depths) for examples.
+
+## Finality for chain writes
+
+Chain write operations return a [`WriteReportReply`](/cre/reference/sdk/evm-client-go#evmwritereportreply) when the transaction is included in a block, not when it reaches finality.
+
+### What a successful response means
+
+When [`WriteReportReply`](/cre/reference/sdk/evm-client-go#evmwritereportreply) returns with `TxStatus` equal to `SUCCESS`:
+
+- Your transaction was **included in a block**
+- The transaction is **not necessarily finalized** yet
+
+The reply is returned as soon as the transaction appears in a block, not when the block reaches finality. This is important for time-sensitive workflows, but it means the transaction could still be reorganized.
+
+### Reorg handling
+
+If a block containing your transaction is reorganized:
+
+- CRE's Transaction Manager (TXM) automatically resubmits your transaction
+- Gas bumping is applied as needed to ensure the transaction is included
+- **Important:** The transaction hash may change during resubmission
+- You are not automatically notified if the hash changes
+
+<Aside type="caution" title="For mission-critical applications">
+  If you need absolute certainty that your write transaction reached finality, implement post-write verification by
+  reading the blockchain state after a custom number of confirmations. Do not rely solely on `WriteReportReply` for
+  finality confirmation.
+</Aside>
+
+## Finality for event triggers
+
+EVM Log Triggers must use the three confidence levels (`LATEST`, `SAFE`, or `FINALIZED`). Custom block depths are not supported for triggers.
+
+By default, triggers use `SAFE` if no confidence level is specified. For details on configuring trigger confidence levels, see [EVM Log Trigger](/cre/reference/sdk/triggers/evm-log-trigger-go#evmfilterlogtriggerrequest).
+
+---
+
 # Avoiding Non-Determinism in Workflows
 Source: https://docs.chain.link/cre/concepts/non-determinism-go
 Last Updated: 2025-11-04
@@ -10024,7 +10134,7 @@ func main() {
 
 # Onchain Read
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/onchain-read-go
-Last Updated: 2025-11-04
+Last Updated: 2025-12-10
 
 This guide explains how to read data from a smart contract from within your CRE workflow. The process uses [generated bindings](/cre/guides/workflow/using-evm-client/generating-bindings) and the SDK's [`evm.Client`](/cre/reference/sdk/evm-client) to create a simple, type-safe developer experience.
 
@@ -10167,28 +10277,73 @@ When calling contract read methods, you must specify a block number. There are t
 
 ### Using magic numbers
 
-- **Finalized block**: Use `big.NewInt(-3)` to read from the latest finalized block
+- **Finalized block**: Use `big.NewInt(-3)` to read from the latest finalized block (recommended for production)
 - **Latest block**: Use `big.NewInt(-2)` to read from the latest block
-- **Specific block**: Use `big.NewInt(blockNumber)` to read from a specific block
 
-### Using rpc constants (alternative)
+For explicit block numbers, see [Custom block depths](#custom-block-depths) below.
 
-You can also use constants from the `go-ethereum/rpc` package for better readability:
+### Custom block depths
+
+For use cases requiring fixed confirmation thresholds (e.g., regulatory compliance) or historical state verification, you can specify an exact block number.
+
+**Example 1 - Read from a specific historical block**:
+
+```go
+// Read from block 12345678
+specificBlock := big.NewInt(12345678)
+value, err := storageContract.Get(runtime, specificBlock).Await()
+if err != nil {
+    return nil, fmt.Errorf("failed to read from specific block: %w", err)
+}
+```
+
+**Example 2 - Read from 500 blocks ago from latest block**:
 
 ```go
 import (
-    "math/big"
-    "github.com/ethereum/go-ethereum/rpc"
+    pb "github.com/smartcontractkit/chainlink-protos/cre/go/values/pb"
 )
 
-// For latest block
-reqBlockNumber := big.NewInt(rpc.LatestBlockNumber.Int64())
+// Helper to convert protobuf BigInt to standard library big.Int
+func pbBigIntToBigInt(pb *pb.BigInt) *big.Int {
+    if pb == nil {
+        return nil
+    }
+    result := new(big.Int).SetBytes(pb.AbsVal)
+    if pb.Sign < 0 {
+        result.Neg(result)
+    }
+    return result
+}
 
-// For finalized block
-reqBlockNumber := big.NewInt(rpc.FinalizedBlockNumber.Int64())
+// Get the latest block number
+latestHeader, err := evmClient.HeaderByNumber(runtime, &evm.HeaderByNumberRequest{}).Await()
+if err != nil {
+    return nil, fmt.Errorf("failed to get latest block: %w", err)
+}
+
+// Convert protobuf BigInt to standard library big.Int
+latestBlockNum := pbBigIntToBigInt(latestHeader.Header.BlockNumber)
+customDepth := big.NewInt(500)
+customBlock := new(big.Int).Sub(latestBlockNum, customDepth)
+
+// Use the custom block number with the contract binding
+value, err := storageContract.Get(runtime, customBlock).Await()
+if err != nil {
+    return nil, fmt.Errorf("failed to read from custom block: %w", err)
+}
 ```
 
-Both approaches are equivalent - use whichever you find more readable in your code.
+**Understanding the conversion:**
+
+The `pbBigIntToBigInt` helper converts the SDK's protobuf `*pb.BigInt` type (which stores the value as `AbsVal []byte` and `Sign int64`) to Go's standard library `*big.Int`. This allows you to perform arithmetic operations like subtracting 500 blocks.
+
+<Aside type="note" title="SDK enhancement planned">
+  The SDK team is working on a built-in helper to simplify this conversion. Until then, use the `pbBigIntToBigInt`
+  helper shown above.
+</Aside>
+
+See [Finality and Confidence Levels](/cre/concepts/finality-go) for more details on when to use custom block depths.
 
 ## Complete example
 
@@ -13463,10 +13618,10 @@ func (c *Client) CallContract(runtime cre.Runtime, input *CallContractRequest) c
 
 This is the main input object for the `CallContract` function. It acts as a wrapper for the call message and an optional block number.
 
-| Field         | Type           | Description                                                                                                                                                                                                                     |
-| ------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Call`        | `*evm.CallMsg` | Contains the actual details of the function call you want to make.                                                                                                                                                              |
-| `BlockNumber` | `*pb.BigInt`   | Optional. The block number to query. Defaults to `latest`. Use `-2` for `latest` (the most recent block, which may be subject to re-orgs) or `-3` for `finalized` (a block that is considered immutable and safe from re-orgs). |
+| Field         | Type           | Description                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Call`        | `*evm.CallMsg` | Contains the actual details of the function call you want to make.                                                                                                                                                                                                                                                                                                                                                                             |
+| `BlockNumber` | `*pb.BigInt`   | Optional. The block number to query. Accepts:<br />• `nil` or `-2` (default): `latest` — the most recent block<br />• `-3`: `finalized` — an immutable block<br />• **Any positive integer**: an explicit block height (see [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-go#custom-block-depths) for examples)<br /><br />See [Finality and Confidence Levels](/cre/concepts/finality-go) for finality strategies. |
 
 #### `evm.CallMsg`
 
@@ -13498,10 +13653,10 @@ func (c *Client) BalanceAt(runtime cre.Runtime, input *BalanceAtRequest) cre.Pro
 
 #### `evm.BalanceAtRequest`
 
-| Field         | Type         | Description                                                |
-| ------------- | ------------ | ---------------------------------------------------------- |
-| `Account`     | `[]byte`     | The 20-byte address of the account to query.               |
-| `BlockNumber` | `*pb.BigInt` | Optional. The block number to query. Defaults to `latest`. |
+| Field         | Type         | Description                                                                                                                                                                                                                                                                                                                            |
+| ------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Account`     | `[]byte`     | The 20-byte address of the account to query.                                                                                                                                                                                                                                                                                           |
+| `BlockNumber` | `*pb.BigInt` | Optional. The block number to query. Accepts `nil` or `-2` for `latest` (default), `-3` for `finalized`, or any positive integer for an explicit block height (see [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-go#custom-block-depths)). See [Finality and Confidence Levels](/cre/concepts/finality-go). |
 
 #### `evm.BalanceAtReply`
 
@@ -13587,9 +13742,9 @@ func (c *Client) HeaderByNumber(runtime cre.Runtime, input *HeaderByNumberReques
 
 #### `evm.HeaderByNumberRequest`
 
-| Field         | Type         | Description                                                                |
-| ------------- | ------------ | -------------------------------------------------------------------------- |
-| `BlockNumber` | `*pb.BigInt` | The number of the block to retrieve. If `nil`, retrieves the latest block. |
+| Field         | Type         | Description                                                                                                                                                                                                                                                                                                                                       |
+| ------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BlockNumber` | `*pb.BigInt` | The number of the block to retrieve. Accepts `nil` for `latest` (default), `-2` for `latest`, `-3` for `finalized`, or any positive integer for an explicit block height (see [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-go#custom-block-depths)). See [Finality and Confidence Levels](/cre/concepts/finality-go). |
 
 #### `evm.HeaderByNumberReply`
 
@@ -13653,10 +13808,11 @@ func (c *Client) WriteReport(runtime cre.Runtime, input *WriteCreReportRequest) 
 
 A **chain selector** is a unique identifier for a blockchain network used throughout the CRE platform. The same chain can be referenced in three different ways depending on the context. All three formats are equivalent and refer to the same blockchain.
 
+
 <Aside type="note" title="Related resources">
   - **Forwarder addresses**: For network-specific forwarder contract addresses, see [Supported
-    Networks](/cre/guides/workflow/using-evm-client/supported-networks) - **RPC configuration**: For configuring RPC
-    endpoints in `project.yaml`, see [Project Configuration](/cre/reference/project-configuration)
+    Networks](/cre/guides/workflow/using-evm-client/supported-networks)
+  - **RPC configuration**: For configuring RPC endpoints in `project.yaml`, see [Project Configuration](/cre/reference/project-configuration)
 </Aside>
 
 ### Understanding the three formats
@@ -14214,9 +14370,9 @@ The configuration struct for the EVM log trigger.
 | `Topics`     | `[]*evm.TopicValues` | A fixed 4-element array to filter event topics. The first element contains event signatures, and the next three elements contain indexed argument values. An empty array element acts as a wildcard.                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | `Confidence` | `ConfidenceLevel`    | The block confirmation level to monitor. Can be: <ul><li>**`evm.ConfidenceLevel_CONFIDENCE_LEVEL_SAFE` (default):** A block that is considered unlikely to be reorged but is not yet irreversible.</li><li>**`evm.ConfidenceLevel_CONFIDENCE_LEVEL_LATEST`:** The most recent block. This is the fastest but least secure, as the block could be orphaned. Best for non-critical, time-sensitive actions.</li><li>**`evm.ConfidenceLevel_CONFIDENCE_LEVEL_FINALIZED`:** A block that is considered irreversible. This is the safest option, as the event is guaranteed to be on the canonical chain, but it requires waiting longer for finality.</li></ul> |
 
-
-<Aside type="caution" title="SAFE block tag fallback">
-  **Some chains do not support the SAFE block tag** (e.g., Shibarium). When you specify `CONFIDENCE_LEVEL_SAFE` on chains that don't support it, CRE automatically falls back to `CONFIDENCE_LEVEL_FINALIZED` for safety. Users are responsible for knowing which chains support the SAFE tag. If you need consistent behavior across all chains, explicitly use `CONFIDENCE_LEVEL_FINALIZED` or `CONFIDENCE_LEVEL_LATEST`.
+<Aside type="note" title="Finality details">
+  For details on how each confidence level maps to specific chains and estimated wait times, see [Finality and
+  Confidence Levels](/cre/concepts/finality).
 </Aside>
 
 ### `evm.Log`

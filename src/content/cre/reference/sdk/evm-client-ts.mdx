@@ -82,10 +82,10 @@ callContract(
 
 This is the main input object for the `callContract()` method.
 
-| <div style="width:110px">Field</div> | <div style="width:110px">Type</div> | Required | Description                                                                                                                                                   |
-| ------------------------------------ | ----------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `call`                               | `CallMsgJson`                       | Yes      | Contains the actual details of the function call you want to make.                                                                                            |
-| `blockNumber`                        | `string`                            | No       | The block number to query. Use `LAST_FINALIZED_BLOCK_NUMBER` for finalized blocks or `LATEST_BLOCK_NUMBER` for the most recent block. Defaults to `"latest"`. |
+| <div style="width:110px">Field</div> | <div style="width:110px">Type</div> | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ------------------------------------ | ----------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `call`                               | `CallMsgJson`                       | Yes      | Contains the actual details of the function call you want to make.                                                                                                                                                                                                                                                                                                                                                                               |
+| `blockNumber`                        | `BigIntJson`                        | No       | The block number to query. Accepts:<br/>• `LATEST_BLOCK_NUMBER` (default): the most recent block<br/>• `LAST_FINALIZED_BLOCK_NUMBER`: a finalized block<br/>• **`BigIntJson` object**: an explicit block height (see [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-ts#custom-block-depths) for conversion details).<br/><br/>See [Finality and Confidence Levels](/cre/concepts/finality-ts) for finality strategies. |
 
 #### `CallMsg` / `CallMsgJson`
 
@@ -204,10 +204,10 @@ balanceAt(
 
 #### `BalanceAtRequest` / `BalanceAtRequestJson`
 
-| Field         | Type     | Required | Description                                               |
-| ------------- | -------- | -------- | --------------------------------------------------------- |
-| `account`     | `string` | Yes      | The 20-byte address of the account to query (hex string). |
-| `blockNumber` | `string` | No       | The block number to query. Defaults to `"latest"`.        |
+| <div style="width:110px">Field</div> | <div style="width:110px">Type</div> | Required | Description                                                                                                                                                                                                                                                                                                                       |
+| ------------------------------------ | ----------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `account`                            | `string`                            | Yes      | The 20-byte address of the account to query (hex string).                                                                                                                                                                                                                                                                         |
+| `blockNumber`                        | `BigIntJson`                        | No       | The block number to query. Accepts `LATEST_BLOCK_NUMBER` (default), `LAST_FINALIZED_BLOCK_NUMBER`, or a `BigIntJson` object for an explicit block height (see [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-ts#custom-block-depths)). See [Finality and Confidence Levels](/cre/concepts/finality-ts). |
 
 #### `BalanceAtReply`
 
@@ -339,9 +339,9 @@ headerByNumber(
 
 #### `HeaderByNumberRequest` / `HeaderByNumberRequestJson`
 
-| <div style="width: 100px;">Field</div> | <div style="width: 100px;">Type</div> | Required | Description                                                                      |
-| -------------------------------------- | ------------------------------------- | -------- | -------------------------------------------------------------------------------- |
-| `blockNumber`                          | `string`                              | No       | The number of the block to retrieve. If `undefined`, retrieves the latest block. |
+| <div style="width: 100px;">Field</div> | <div style="width: 100px;">Type</div> | Required | Description                                                                                                                                                                                                                                                                                                                                                           |
+| -------------------------------------- | ------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `blockNumber`                          | `BigIntJson`                          | No       | The number of the block to retrieve. Accepts `undefined` for `latest` (default), `LATEST_BLOCK_NUMBER`, `LAST_FINALIZED_BLOCK_NUMBER`, or a `BigIntJson` object for an explicit block height (see [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-ts#custom-block-depths)). See [Finality and Confidence Levels](/cre/concepts/finality-ts). |
 
 #### `HeaderByNumberReply`
 
