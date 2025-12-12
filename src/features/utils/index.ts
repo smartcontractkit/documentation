@@ -402,6 +402,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "0G_MAINNET"
     case "megaeth-testnet":
       return "MEGAETH_TESTNET"
+    case "megaeth-mainnet":
+      return "MEGAETH_MAINNET"
     case "mind-testnet":
       return "MIND_NETWORK_TESTNET"
     case "mind-mainnet":
@@ -524,6 +526,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "JOVAY_TESTNET"
     case "stable-mainnet":
       return "STABLE_MAINNET"
+    case "tempo-testnet":
+      return "TEMPO_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -727,6 +731,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "0g-mainnet"
     case "MEGAETH_TESTNET":
       return "megaeth-testnet"
+    case "MEGAETH_MAINNET":
+      return "megaeth-mainnet"
     case "MIND_NETWORK_TESTNET":
       return "mind-testnet"
     case "MIND_NETWORK_MAINNET":
@@ -847,6 +853,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "jovay-testnet"
     case "STABLE_MAINNET":
       return "stable-mainnet"
+    case "TEMPO_TESTNET":
+      return "tempo-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

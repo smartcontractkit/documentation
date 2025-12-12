@@ -336,6 +336,7 @@ export const productChainLinks: ProductChainLinks = {
     bittensor: "/resources/link-token-contracts#bittensor-evm",
     everclear: "/resources/link-token-contracts#everclear",
     abchain: "/resources/link-token-contracts#ab-chain",
+    tempo: "/resources/link-token-contracts#tempo",
   },
 }
 
@@ -428,4 +429,5 @@ export const chainNames: Record<string, string> = {
   morph: "Morph",
   jovay: "Jovay",
   stable: "Stable",
+  tempo: "Tempo",
 }
