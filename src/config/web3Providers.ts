@@ -170,6 +170,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   JOVAY_MAINNET: () => new JsonRpcProvider("https://rpc.jovay.io"),
   JOVAY_TESTNET: () => new JsonRpcProvider("https://api.zan.top/public/jovay-testnet"),
   STABLE_MAINNET: () => new JsonRpcProvider("https://rpc.stable.xyz"),
+  TEMPO_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.tempo.xyz"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {
