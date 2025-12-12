@@ -81,6 +81,7 @@ export const productChainLinks: ProductChainLinks = {
       plume: "/ccip/directory/mainnet/chain/plume-mainnet",
       superseed: "/ccip/directory/mainnet/chain/superseed-mainnet",
       taiko: "/ccip/directory/mainnet/chain/ethereum-mainnet-taiko-1",
+      tempo: "/ccip/directory/testnet/chain/tempo-testnet",
       metal: "/ccip/directory/mainnet/chain/metal-mainnet",
       rootstock: "/ccip/directory/mainnet/chain/rootstock-mainnet",
       janction: "/ccip/directory/testnet/chain/janction-testnet-sepolia",
