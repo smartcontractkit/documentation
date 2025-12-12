@@ -1,0 +1,41 @@
+# Lychee Link Checker Configuration
+# https://lychee.cli.rs/
+
+# Only check local files (no network requests)
+offline = true
+
+# Check links in code blocks
+include_verbatim = true
+
+# Don't show progress bar (better for CI)
+no_progress = true
+
+# Patterns to exclude from link checking
+exclude = [
+    # CSS files
+    'assets/.*\.css$',
+    '_astro/.*\.css$',
+
+    # Dynamic pages with query params
+    '/ccip/directory/.*',
+    '/data-feeds/price-feeds/addresses\?.*',
+    '/data-feeds/smartdata/addresses\?.*',
+
+    # Other files
+    'sitemap-index\.xml',
+    '@vite/client',
+
+    # Database connection strings
+    '^postgresql:',
+    '^mysql:',
+]
+
+# Paths to exclude from scanning (won't check links on these pages)
+exclude_path = [
+    'ccip/api-reference/evm/v162/.*',
+    'ccip/api-reference/evm/v163/.*',
+]
+
+# TODO: Re-enable fragment checking once Astro slug generation compatibility is resolved
+# include_fragments = true
+# Astro's heading ID generation and lychee's GitHub-style kebab-case expectations
