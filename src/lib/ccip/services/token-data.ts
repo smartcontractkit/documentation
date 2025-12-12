@@ -6,6 +6,13 @@ import {
   TokenChainData,
   TokenDataResponse,
   TokenServiceResponse,
+  TokenDetailChainData,
+  TokenDetailDataResponse,
+  TokenDetailServiceResponse,
+  TokenFinalityData,
+  TokenFinalityDataResponse,
+  TokenFinalityServiceResponse,
+  RateLimitsData,
 } from "~/lib/ccip/types/index.ts"
 import { Version } from "@config/data/ccip/types.ts"
 import { SupportedChain } from "@config/index.ts"
@@ -14,6 +21,10 @@ import { resolveChainOrThrow, generateChainKey } from "~/lib/ccip/utils.ts"
 import { logger } from "@lib/logging/index.js"
 import { getChainId, getChainTypeAndFamily, getTitle } from "../../../features/utils/index.ts"
 import { getSelectorEntry } from "@config/data/ccip/selectors.ts"
+
+// Import rate limits mock data for custom finality info
+import rateLimitsMainnet from "~/__mocks__/rate-limits-mainnet.json" with { type: "json" }
+import rateLimitsTestnet from "~/__mocks__/rate-limits-testnet.json" with { type: "json" }
 
 export const prerender = false
 
@@ -99,11 +110,11 @@ export class TokenDataService {
 
       Object.entries(tokenData).forEach(([chainId, chainData]) => {
         try {
-          // Only process chains where poolAddress exists
-          if (!chainData.poolAddress) {
+          // Only process chains where pool.address exists
+          if (!chainData.pool?.address) {
             this.skippedTokensCount++
             logger.warn({
-              message: "Chain missing poolAddress - skipping only this chain",
+              message: "Chain missing pool.address - skipping only this chain",
               requestId: this.requestId,
               tokenCanonicalId,
               chainId,
@@ -138,12 +149,12 @@ export class TokenDataService {
 
               if (!destNumericChainId) return destChainId
 
-              if (outputKey === "chainId") {
+              if (outputKey === "chain_id") {
                 return generateChainKey(destNumericChainId, destChainType, outputKey)
               } else if (outputKey === "selector") {
                 const selectorEntry = getSelectorEntry(destNumericChainId, destChainType)
                 return selectorEntry?.selector || destChainId
-              } else if (outputKey === "internalId") {
+              } else if (outputKey === "internal_id") {
                 const selectorEntry = getSelectorEntry(destNumericChainId, destChainType)
                 return selectorEntry?.name || destChainId
               }
@@ -153,14 +164,14 @@ export class TokenDataService {
 
           // Get the appropriate key based on outputKey parameter
           let chainKey = chainId
-          if (outputKey === "chainId") {
+          if (outputKey === "chain_id") {
             chainKey = generateChainKey(numericChainId, chainType, outputKey)
           } else if (outputKey === "selector") {
             const selectorEntry = getSelectorEntry(numericChainId, chainType)
             if (selectorEntry) {
               chainKey = selectorEntry.selector
             }
-          } else if (outputKey === "internalId") {
+          } else if (outputKey === "internal_id") {
             const selectorEntry = getSelectorEntry(numericChainId, chainType)
             if (selectorEntry) {
               chainKey = selectorEntry.name
@@ -176,8 +187,12 @@ export class TokenDataService {
               decimals: chainData.decimals,
               destinations,
               name: chainData.name || "",
-              poolAddress: chainData.poolAddress,
-              poolType: chainData.poolType,
+              pool: {
+                address: chainData.pool.address || "",
+                rawType: chainData.pool.rawType,
+                type: chainData.pool.type,
+                version: chainData.pool.version,
+              },
               symbol: chainData.symbol,
               tokenAddress: chainData.tokenAddress,
             },
@@ -261,7 +276,7 @@ export class TokenDataService {
   public async getFilteredTokens(
     environment: Environment,
     filters: TokenFilterType,
-    outputKey: OutputKeyType = "chainId"
+    outputKey: OutputKeyType = "chain_id"
   ): Promise<TokenServiceResponse> {
     logger.info({
       message: "Starting token filtering process",
@@ -359,6 +374,226 @@ export class TokenDataService {
       tokens: filteredTokens,
       errors: this.errors,
       metadata,
+    }
+  }
+
+  /**
+   * Retrieves detailed token information for a specific token, including custom finality data
+   *
+   * @param environment - Network environment (mainnet/testnet)
+   * @param tokenCanonicalSymbol - Canonical symbol for the token
+   * @param outputKey - Format to use for displaying chain information
+   * @returns Token details with custom finality information for each chain
+   */
+  public async getTokenWithFinality(
+    environment: Environment,
+    tokenCanonicalSymbol: string,
+    outputKey: OutputKeyType = "chain_id"
+  ): Promise<TokenDetailServiceResponse | null> {
+    logger.info({
+      message: "Getting token with finality data",
+      requestId: this.requestId,
+      environment,
+      tokenCanonicalSymbol,
+      outputKey,
+    })
+
+    // Get base token data using existing method
+    const tokenData = await this.processTokenData(environment, tokenCanonicalSymbol, outputKey)
+
+    if (!tokenData) {
+      logger.warn({
+        message: "Token not found",
+        requestId: this.requestId,
+        tokenCanonicalSymbol,
+      })
+      return null
+    }
+
+    // Load rate limits data for finality info
+    const rateLimitsData = this.loadRateLimitsData(environment)
+
+    // Get token's rate limits by internal ID
+    const tokenRateLimits = rateLimitsData[tokenCanonicalSymbol]
+
+    // Merge token data with custom finality information
+    const result: TokenDetailDataResponse = {}
+
+    for (const [chainKey, chainData] of Object.entries(tokenData)) {
+      // Look up minBlockConfirmation using internal ID
+      // We need to map the chainKey back to internal ID for rate limits lookup
+      const internalId = this.getInternalIdFromChainKey(chainData.chainId, chainData.chainName, outputKey)
+
+      let minBlockConfirmation: number | null = null
+      let hasCustomFinality: boolean | null = null
+
+      if (tokenRateLimits && internalId && tokenRateLimits[internalId]) {
+        minBlockConfirmation = tokenRateLimits[internalId].minBlockConfirmation
+
+        // Derive hasCustomFinality from minBlockConfirmation
+        if (minBlockConfirmation === null) {
+          hasCustomFinality = null // Unavailable
+        } else if (minBlockConfirmation > 0) {
+          hasCustomFinality = true
+        } else {
+          hasCustomFinality = false
+        }
+      }
+
+      const detailChainData: TokenDetailChainData = {
+        ...chainData,
+        hasCustomFinality,
+        minBlockConfirmation,
+      }
+
+      result[chainKey] = detailChainData
+    }
+
+    logger.info({
+      message: "Token with finality data retrieved",
+      requestId: this.requestId,
+      tokenCanonicalSymbol,
+      chainCount: Object.keys(result).length,
+    })
+
+    return {
+      data: result,
+      metadata: {
+        chainCount: Object.keys(result).length,
+      },
+    }
+  }
+
+  /**
+   * Loads rate limits data for the specified environment
+   */
+  private loadRateLimitsData(environment: Environment): RateLimitsData {
+    if (environment === Environment.Mainnet) {
+      return rateLimitsMainnet as RateLimitsData
+    }
+    return rateLimitsTestnet as RateLimitsData
+  }
+
+  /**
+   * Gets the internal ID for a chain based on chainId/chainName
+   * This is needed to look up rate limits data which uses internal IDs as keys
+   */
+  private getInternalIdFromChainKey(
+    chainId: number | string,
+    chainName: string,
+    outputKey: OutputKeyType
+  ): string | null {
+    try {
+      // If outputKey is internalId, the chainName might already be the internal ID
+      // We need to look up the selector entry by chainId
+      const numericChainId = typeof chainId === "string" ? parseInt(chainId, 10) : chainId
+
+      if (isNaN(numericChainId)) {
+        // chainId is not numeric, might be a non-EVM chain identifier
+        // Try to find by name pattern
+        return null
+      }
+
+      // Get selector entry which has the internal name
+      const selectorEntry = getSelectorEntry(numericChainId, "evm")
+      if (selectorEntry) {
+        return selectorEntry.name
+      }
+
+      return null
+    } catch {
+      logger.debug({
+        message: "Could not resolve internal ID for chain",
+        requestId: this.requestId,
+        chainId,
+        chainName,
+      })
+      return null
+    }
+  }
+
+  /**
+   * Retrieves only finality data for a specific token (lightweight endpoint)
+   *
+   * @param environment - Network environment (mainnet/testnet)
+   * @param tokenCanonicalSymbol - Canonical symbol for the token
+   * @param outputKey - Format to use for displaying chain information
+   * @returns Finality information (hasCustomFinality, minBlockConfirmation) for each chain
+   */
+  public async getTokenFinality(
+    environment: Environment,
+    tokenCanonicalSymbol: string,
+    outputKey: OutputKeyType = "chain_id"
+  ): Promise<TokenFinalityServiceResponse | null> {
+    logger.info({
+      message: "Getting token finality data",
+      requestId: this.requestId,
+      environment,
+      tokenCanonicalSymbol,
+      outputKey,
+    })
+
+    // Get base token data to know which chains the token exists on
+    const tokenData = await this.processTokenData(environment, tokenCanonicalSymbol, outputKey)
+
+    if (!tokenData) {
+      logger.warn({
+        message: "Token not found",
+        requestId: this.requestId,
+        tokenCanonicalSymbol,
+      })
+      return null
+    }
+
+    // Load rate limits data for finality info
+    const rateLimitsData = this.loadRateLimitsData(environment)
+
+    // Get token's rate limits by internal ID
+    const tokenRateLimits = rateLimitsData[tokenCanonicalSymbol]
+
+    // Extract only finality data for each chain
+    const result: TokenFinalityDataResponse = {}
+
+    for (const [chainKey, chainData] of Object.entries(tokenData)) {
+      // Look up minBlockConfirmation using internal ID
+      const internalId = this.getInternalIdFromChainKey(chainData.chainId, chainData.chainName, outputKey)
+
+      let minBlockConfirmation: number | null = null
+      let hasCustomFinality: boolean | null = null
+
+      if (tokenRateLimits && internalId && tokenRateLimits[internalId]) {
+        minBlockConfirmation = tokenRateLimits[internalId].minBlockConfirmation
+
+        // Derive hasCustomFinality from minBlockConfirmation
+        if (minBlockConfirmation === null) {
+          hasCustomFinality = null // Unavailable
+        } else if (minBlockConfirmation > 0) {
+          hasCustomFinality = true
+        } else {
+          hasCustomFinality = false
+        }
+      }
+
+      const finalityData: TokenFinalityData = {
+        hasCustomFinality,
+        minBlockConfirmation,
+      }
+
+      result[chainKey] = finalityData
+    }
+
+    logger.info({
+      message: "Token finality data retrieved",
+      requestId: this.requestId,
+      tokenCanonicalSymbol,
+      chainCount: Object.keys(result).length,
+    })
+
+    return {
+      data: result,
+      metadata: {
+        chainCount: Object.keys(result).length,
+      },
     }
   }
 }

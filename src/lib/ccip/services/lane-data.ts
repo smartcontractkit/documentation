@@ -4,11 +4,17 @@ import {
   LaneFilterType,
   LaneConfigError,
   LaneServiceResponse,
+  LaneDetailServiceResponse,
+  LaneDetailWithRateLimits,
+  SupportedTokensServiceResponse,
   ChainInfo,
   ChainInfoInternal,
   OutputKeyType,
   ChainType,
   ChainFamily,
+  LaneInputKeyType,
+  TokenRateLimits,
+  RateLimitsData,
 } from "~/lib/ccip/types/index.ts"
 import { loadReferenceData, Version } from "@config/data/ccip/index.ts"
 import type { LaneConfig, ChainConfig } from "@config/data/ccip/types.ts"
@@ -20,6 +26,10 @@ import {
   getChainTypeAndFamily,
   directoryToSupportedChain,
 } from "../../../features/utils/index.ts"
+
+// Import rate limits mock data
+import rateLimitsMainnet from "~/__mocks__/rate-limits-mainnet.json" with { type: "json" }
+import rateLimitsTestnet from "~/__mocks__/rate-limits-testnet.json" with { type: "json" }
 
 export const prerender = false
 
@@ -242,18 +252,18 @@ export class LaneDataService {
     filters: LaneFilterType
   ): boolean {
     // Check source chain filters
-    if (filters.sourceChainId && !this.matchesChainFilter(sourceChain, filters.sourceChainId, "chainId")) {
+    if (filters.sourceChainId && !this.matchesChainFilter(sourceChain, filters.sourceChainId, "chain_id")) {
       return false
     }
     if (filters.sourceSelector && !this.matchesChainFilter(sourceChain, filters.sourceSelector, "selector")) {
       return false
     }
-    if (filters.sourceInternalId && !this.matchesChainFilter(sourceChain, filters.sourceInternalId, "internalId")) {
+    if (filters.sourceInternalId && !this.matchesChainFilter(sourceChain, filters.sourceInternalId, "internal_id")) {
       return false
     }
 
     // Check destination chain filters
-    if (filters.destinationChainId && !this.matchesChainFilter(destChain, filters.destinationChainId, "chainId")) {
+    if (filters.destinationChainId && !this.matchesChainFilter(destChain, filters.destinationChainId, "chain_id")) {
       return false
     }
     if (filters.destinationSelector && !this.matchesChainFilter(destChain, filters.destinationSelector, "selector")) {
@@ -261,7 +271,7 @@ export class LaneDataService {
     }
     if (
       filters.destinationInternalId &&
-      !this.matchesChainFilter(destChain, filters.destinationInternalId, "internalId")
+      !this.matchesChainFilter(destChain, filters.destinationInternalId, "internal_id")
     ) {
       return false
     }
@@ -275,14 +285,21 @@ export class LaneDataService {
   private matchesChainFilter(
     chain: ChainInfoInternal,
     filterValue: string,
-    filterType: "chainId" | "selector" | "internalId"
+    filterType: "chain_id" | "selector" | "internal_id"
   ): boolean {
     const filterValues = filterValue.split(",").map((v) => v.trim())
-    const chainValue = chain[filterType].toString()
+    // Map snake_case filter types to camelCase property names
+    const propertyMap: Record<string, keyof ChainInfoInternal> = {
+      chain_id: "chainId",
+      selector: "selector",
+      internal_id: "internalId",
+    }
+    const propertyName = propertyMap[filterType]
+    const chainValue = chain[propertyName].toString()
 
-    // For chainId, also check generated chain key format
-    if (filterType === "chainId") {
-      const generatedKey = generateChainKey(chain.chainId, chain.chainType, "chainId")
+    // For chain_id, also check generated chain key format
+    if (filterType === "chain_id") {
+      const generatedKey = generateChainKey(chain.chainId, chain.chainType, "chain_id")
       return filterValues.includes(chainValue) || filterValues.includes(generatedKey)
     }
 
@@ -297,15 +314,23 @@ export class LaneDataService {
     destChain: ChainInfoInternal,
     outputKey: OutputKeyType
   ): string {
+    // Map snake_case output keys to camelCase property names
+    const propertyMap: Record<string, keyof ChainInfoInternal> = {
+      chain_id: "chainId",
+      selector: "selector",
+      internal_id: "internalId",
+    }
+    const propertyName = propertyMap[outputKey]
+
     const sourceKey =
-      outputKey === "chainId"
+      outputKey === "chain_id"
         ? generateChainKey(sourceChain.chainId, sourceChain.chainType, outputKey)
-        : sourceChain[outputKey].toString()
+        : sourceChain[propertyName].toString()
 
     const destKey =
-      outputKey === "chainId"
+      outputKey === "chain_id"
         ? generateChainKey(destChain.chainId, destChain.chainType, outputKey)
-        : destChain[outputKey].toString()
+        : destChain[propertyName].toString()
 
     return `${sourceKey}_to_${destKey}`
   }
@@ -353,13 +378,12 @@ export class LaneDataService {
    * Extracts supported token keys from lane configuration
    */
   private extractSupportedTokens(laneConfig: LaneConfig): string[] {
-    if (!laneConfig.supportedTokens) {
+    if (!laneConfig.supportedTokens || !Array.isArray(laneConfig.supportedTokens)) {
       return []
     }
 
-    // Extract token keys from supportedTokens object
-    // lanes.json structure: "supportedTokens": { "LINK": {...}, "CCIP-BnM": {...} }
-    return Object.keys(laneConfig.supportedTokens)
+    // lanes.json structure: "supportedTokens": ["LINK", "CCIP-BnM", ...]
+    return laneConfig.supportedTokens
   }
 
   /**
@@ -388,5 +412,360 @@ export class LaneDataService {
    */
   getRequestId(): string {
     return this.requestId
+  }
+
+  /**
+   * Retrieves details for a specific lane by source and destination chain identifiers
+   *
+   * @param environment - Network environment (mainnet/testnet)
+   * @param sourceIdentifier - Source chain identifier (chainId, selector, or internalId)
+   * @param destinationIdentifier - Destination chain identifier
+   * @param inputKeyType - Type of identifier used (chainId, selector, internalId)
+   * @returns Lane details or null if not found
+   */
+  async getLaneDetails(
+    environment: Environment,
+    sourceIdentifier: string,
+    destinationIdentifier: string,
+    inputKeyType: LaneInputKeyType
+  ): Promise<LaneDetailServiceResponse> {
+    logger.info({
+      message: "Getting lane details",
+      requestId: this.requestId,
+      environment,
+      sourceIdentifier,
+      destinationIdentifier,
+      inputKeyType,
+    })
+
+    try {
+      // Load reference data
+      const { lanesReferenceData, chainsReferenceData } = loadReferenceData({
+        environment,
+        version: Version.V1_2_0,
+      })
+
+      // Resolve identifiers to internal IDs
+      const sourceInternalId = this.resolveToInternalId(
+        sourceIdentifier,
+        inputKeyType,
+        chainsReferenceData as Record<string, ChainConfig>
+      )
+      const destinationInternalId = this.resolveToInternalId(
+        destinationIdentifier,
+        inputKeyType,
+        chainsReferenceData as Record<string, ChainConfig>
+      )
+
+      if (!sourceInternalId || !destinationInternalId) {
+        logger.warn({
+          message: "Could not resolve chain identifiers",
+          requestId: this.requestId,
+          sourceIdentifier,
+          destinationIdentifier,
+          sourceInternalId,
+          destinationInternalId,
+        })
+        return { data: null }
+      }
+
+      // Get lane data
+      const sourceLanes = lanesReferenceData[sourceInternalId] as Record<string, LaneConfig> | undefined
+      if (!sourceLanes) {
+        return { data: null }
+      }
+
+      const laneConfig = sourceLanes[destinationInternalId]
+      if (!laneConfig) {
+        return { data: null }
+      }
+
+      // Resolve chain info
+      const sourceChain = this.resolveChainInfo(sourceInternalId, chainsReferenceData)
+      const destChain = this.resolveChainInfo(destinationInternalId, chainsReferenceData)
+
+      if (!sourceChain || !destChain) {
+        return { data: null }
+      }
+
+      // Build lane details with rate limits
+      const laneDetails = this.buildLaneDetailsWithRateLimits(
+        sourceChain,
+        destChain,
+        laneConfig,
+        sourceInternalId,
+        destinationInternalId,
+        environment
+      )
+
+      logger.info({
+        message: "Lane details with rate limits retrieved",
+        requestId: this.requestId,
+        sourceInternalId,
+        destinationInternalId,
+        tokenCount: Object.keys(laneDetails.supportedTokens).length,
+      })
+
+      return { data: laneDetails }
+    } catch (error) {
+      logger.error({
+        message: "Failed to get lane details",
+        requestId: this.requestId,
+        error: error instanceof Error ? error.message : "Unknown error",
+      })
+      return { data: null }
+    }
+  }
+
+  /**
+   * Resolves a chain identifier to its internal ID
+   *
+   * @param identifier - Chain identifier (chainId, selector, or internalId)
+   * @param inputKeyType - Type of identifier
+   * @param chainsReferenceData - Chain configuration data
+   * @returns Internal ID or null if not found
+   */
+  resolveToInternalId(
+    identifier: string,
+    inputKeyType: LaneInputKeyType,
+    chainsReferenceData: Record<string, ChainConfig>
+  ): string | null {
+    // If already an internal_id, return it directly
+    if (inputKeyType === "internal_id") {
+      return chainsReferenceData[identifier] ? identifier : null
+    }
+
+    // Search through chains to find matching chain_id or selector
+    for (const [internalId, chainConfig] of Object.entries(chainsReferenceData)) {
+      if (inputKeyType === "chain_id") {
+        // Try to match by numeric chain ID
+        try {
+          const supportedChain = directoryToSupportedChain(internalId)
+          const chainId = getChainId(supportedChain)
+          if (chainId && chainId.toString() === identifier) {
+            return internalId
+          }
+        } catch {
+          // Skip chains that can't be resolved
+        }
+      } else if (inputKeyType === "selector") {
+        // Match by selector
+        if (chainConfig.chainSelector === identifier) {
+          return internalId
+        }
+      }
+    }
+
+    return null
+  }
+
+  /**
+   * Loads rate limits data for the specified environment
+   */
+  private loadRateLimitsData(environment: Environment): RateLimitsData {
+    return environment === "mainnet"
+      ? (rateLimitsMainnet as unknown as RateLimitsData)
+      : (rateLimitsTestnet as unknown as RateLimitsData)
+  }
+
+  /**
+   * Builds lane details with rate limits included in supportedTokens
+   */
+  private buildLaneDetailsWithRateLimits(
+    sourceChain: ChainInfoInternal,
+    destChain: ChainInfoInternal,
+    laneConfig: LaneConfig,
+    sourceInternalId: string,
+    destinationInternalId: string,
+    environment: Environment
+  ): LaneDetailWithRateLimits {
+    // Convert internal chain info to public interface
+    const publicSourceChain: ChainInfo = {
+      chainId: sourceChain.chainId,
+      displayName: sourceChain.displayName,
+      selector: sourceChain.selector,
+      internalId: sourceChain.internalId,
+    }
+
+    const publicDestChain: ChainInfo = {
+      chainId: destChain.chainId,
+      displayName: destChain.displayName,
+      selector: destChain.selector,
+      internalId: destChain.internalId,
+    }
+
+    // Extract supported token symbols
+    const tokenSymbols = this.extractSupportedTokens(laneConfig)
+
+    // Load rate limits data
+    const rateLimitsData = this.loadRateLimitsData(environment)
+
+    // Build supportedTokens with rate limits
+    const supportedTokensWithRateLimits: Record<string, TokenRateLimits> = {}
+
+    for (const tokenSymbol of tokenSymbols) {
+      const tokenData = rateLimitsData[tokenSymbol]
+      if (tokenData) {
+        const sourceData = tokenData[sourceInternalId]
+        if (sourceData?.remote) {
+          const destData = sourceData.remote[destinationInternalId]
+          if (destData) {
+            supportedTokensWithRateLimits[tokenSymbol] = {
+              standard: destData.standard,
+              custom: destData.custom,
+            }
+          } else {
+            // Token exists but no rate limits for this lane - use null for unavailable
+            supportedTokensWithRateLimits[tokenSymbol] = {
+              standard: null,
+              custom: null,
+            }
+          }
+        } else {
+          // Token exists but no data for source chain
+          supportedTokensWithRateLimits[tokenSymbol] = {
+            standard: null,
+            custom: null,
+          }
+        }
+      } else {
+        // Token not found in rate limits data
+        supportedTokensWithRateLimits[tokenSymbol] = {
+          standard: null,
+          custom: null,
+        }
+      }
+    }
+
+    return {
+      sourceChain: publicSourceChain,
+      destinationChain: publicDestChain,
+      onRamp: {
+        address: laneConfig.onRamp.address,
+        version: normalizeVersion(laneConfig.onRamp.version),
+        enforceOutOfOrder: laneConfig.onRamp.enforceOutOfOrder,
+      },
+      offRamp: {
+        address: laneConfig.offRamp.address,
+        version: normalizeVersion(laneConfig.offRamp.version),
+      },
+      supportedTokens: supportedTokensWithRateLimits,
+    }
+  }
+
+  /**
+   * Retrieves only supported tokens with rate limits for a specific lane
+   *
+   * @param environment - Network environment (mainnet/testnet)
+   * @param sourceIdentifier - Source chain identifier (chainId, selector, or internalId)
+   * @param destinationIdentifier - Destination chain identifier
+   * @param inputKeyType - Type of identifier used (chainId, selector, internalId)
+   * @returns Supported tokens with rate limits or null if lane not found
+   */
+  async getSupportedTokensWithRateLimits(
+    environment: Environment,
+    sourceIdentifier: string,
+    destinationIdentifier: string,
+    inputKeyType: LaneInputKeyType
+  ): Promise<SupportedTokensServiceResponse> {
+    logger.info({
+      message: "Getting supported tokens with rate limits",
+      requestId: this.requestId,
+      environment,
+      sourceIdentifier,
+      destinationIdentifier,
+      inputKeyType,
+    })
+
+    try {
+      // Load reference data
+      const { lanesReferenceData, chainsReferenceData } = loadReferenceData({
+        environment,
+        version: Version.V1_2_0,
+      })
+
+      // Resolve identifiers to internal IDs
+      const sourceInternalId = this.resolveToInternalId(
+        sourceIdentifier,
+        inputKeyType,
+        chainsReferenceData as Record<string, ChainConfig>
+      )
+      const destinationInternalId = this.resolveToInternalId(
+        destinationIdentifier,
+        inputKeyType,
+        chainsReferenceData as Record<string, ChainConfig>
+      )
+
+      if (!sourceInternalId || !destinationInternalId) {
+        logger.warn({
+          message: "Could not resolve chain identifiers",
+          requestId: this.requestId,
+          sourceIdentifier,
+          destinationIdentifier,
+        })
+        return { data: null, tokenCount: 0 }
+      }
+
+      // Get lane data
+      const sourceLanes = lanesReferenceData[sourceInternalId] as Record<string, LaneConfig> | undefined
+      if (!sourceLanes) {
+        return { data: null, tokenCount: 0 }
+      }
+
+      const laneConfig = sourceLanes[destinationInternalId]
+      if (!laneConfig) {
+        return { data: null, tokenCount: 0 }
+      }
+
+      // Extract supported token symbols
+      const tokenSymbols = this.extractSupportedTokens(laneConfig)
+
+      // Load rate limits data
+      const rateLimitsData = this.loadRateLimitsData(environment)
+
+      // Build supportedTokens with rate limits
+      const supportedTokensWithRateLimits: Record<string, TokenRateLimits> = {}
+
+      for (const tokenSymbol of tokenSymbols) {
+        const tokenData = rateLimitsData[tokenSymbol]
+        if (tokenData) {
+          const sourceData = tokenData[sourceInternalId]
+          if (sourceData?.remote) {
+            const destData = sourceData.remote[destinationInternalId]
+            if (destData) {
+              supportedTokensWithRateLimits[tokenSymbol] = {
+                standard: destData.standard,
+                custom: destData.custom,
+              }
+            } else {
+              supportedTokensWithRateLimits[tokenSymbol] = { standard: null, custom: null }
+            }
+          } else {
+            supportedTokensWithRateLimits[tokenSymbol] = { standard: null, custom: null }
+          }
+        } else {
+          supportedTokensWithRateLimits[tokenSymbol] = { standard: null, custom: null }
+        }
+      }
+
+      const tokenCount = Object.keys(supportedTokensWithRateLimits).length
+
+      logger.info({
+        message: "Supported tokens with rate limits retrieved",
+        requestId: this.requestId,
+        sourceInternalId,
+        destinationInternalId,
+        tokenCount,
+      })
+
+      return { data: supportedTokensWithRateLimits, tokenCount }
+    } catch (error) {
+      logger.error({
+        message: "Failed to get supported tokens with rate limits",
+        requestId: this.requestId,
+        error: error instanceof Error ? error.message : "Unknown error",
+      })
+      return { data: null, tokenCount: 0 }
+    }
   }
 }

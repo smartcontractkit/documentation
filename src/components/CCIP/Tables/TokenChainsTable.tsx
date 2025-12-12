@@ -23,6 +23,7 @@ interface TableProps {
     tokenAddress: string
     tokenPoolType: PoolType
     tokenPoolAddress: string
+    tokenPoolVersion: string
     explorer: ExplorerInfo
   }[]
   token: {
@@ -60,6 +61,9 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
               <th>Token address</th>
               <th>Token pool type</th>
               <th>Token pool address</th>
+              <th>Pool version</th>
+              <th>Custom finality</th>
+              <th>Min Blocks required</th>
             </tr>
           </thead>
           <tbody>
@@ -138,6 +142,18 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                         address={network.tokenPoolAddress}
                         endLength={6}
                       />
+                    </td>
+                    <td>{network.tokenPoolVersion}</td>
+                    <td>
+                      {/* TODO: Fetch from API - GET /api/ccip/v1/tokens/{tokenCanonicalSymbol}/finality?environment={environment}
+                          Custom finality is derived from minBlockConfirmation > 0
+                          Display: "Yes" | "No" | "N/A" (with tooltip for unavailable) */}
+                      -
+                    </td>
+                    <td>
+                      {/* TODO: Fetch from API - GET /api/ccip/v1/tokens/{tokenCanonicalSymbol}/finality?environment={environment}
+                          Display minBlockConfirmation value or "-" if custom finality is disabled/unavailable */}
+                      -
                     </td>
                   </tr>
                 )
