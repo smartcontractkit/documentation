@@ -4,7 +4,7 @@ date: Last Modified
 title: "CCIP Best Practices (EVM)"
 metadata:
   description: "Comprehensive security guide for CCIP on EVM chains covering message verification, gas optimization, token administration, liquidity management, multi-signature protection, and chain-specific considerations for building secure cross-chain applications."
-  image: "/images/ccip/ccip-hl-v1.6.gif"
+  image: "/images/ccip/ccip-hl-v1.6.png"
   excerpt: "ccip evm best practices ethereum security message verification gas limit optimization token administration liquidity management multi-signature contracts ccip receiver extra args defensive programming"
   datePublished: "2025-05-19T11:22:47Z"
   lastModified: "2025-05-19T11:22:47Z"
@@ -82,7 +82,7 @@ The `allowOutOfOrderExecution` parameter enables you to control the execution or
 - **When `allowOutOfOrderExecution` is Optional:**
   - You can set `allowOutOfOrderExecution` to either `true` or `false`, depending on your application's requirements.
     - **`true`:** Messages can be executed in any order relative to other messages from the same sender. If a previous message has not yet been executed on the destination chain, it does not block the execution of subsequent messages.
-    - **`false`:** Messages are executed in order. CCIP ensures that preceding messages are processed before executing the current message.
+    - **`false`:** Messages are executed in order. CCIP ensures that preceding messages are processed before executing the current message. Note: Functionality for `allowOutofOrderExecution` = `false` (ie., enforcing In-Order cross-chain messages) is being deprecated in early 2026.
 
 - **When `allowOutOfOrderExecution` is Required:**
   - You **must** set `allowOutOfOrderExecution` to `true`. This setting acknowledges that messages may be executed out of order. If set to `false`, the message will revert and will not be processed.
