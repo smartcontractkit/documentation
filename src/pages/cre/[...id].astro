@@ -107,24 +107,28 @@ if (isCanonical) {
 ---
 
 <DocsLayout frontmatter={currentEntry.data} {headings}>
+  {/* noindex for redirect pages */}
+  {isCanonical && <meta name="robots" content="noindex, follow" slot="head-scripts" />}
+
   {
-    isCanonical ? (
+    isCanonical && (
       <script
         is:inline
         slot="head-scripts"
         define:vars={{ goUrl: `/cre/${goEntry!.id}`, tsUrl: `/cre/${tsEntry!.id}` }}
         set:html={`(function(){try{var s=localStorage.getItem("docs-language-preference"),l=s==="go"||s==='"go"'?"go":"ts",u=l==="go"?goUrl:tsUrl;u&&window.location.replace(u)}catch(e){tsUrl&&window.location.replace(tsUrl)}})();`}
       />
-    ) : (
-      goEntry &&
-      tsEntry && (
-        <script
-          is:inline
-          slot="head-scripts"
-          define:vars={{ goUrl: `/cre/${goEntry.id}`, tsUrl: `/cre/${tsEntry.id}`, currentLang: entry!.data.sdkLang }}
-          set:html={`(function(){try{var s=localStorage.getItem("docs-language-preference");if(s){var l=s==="go"||s==='"go"'?"go":"ts";if(l!==currentLang){var u=l==="go"?goUrl:tsUrl;u&&window.location.replace(u)}}else{try{localStorage.setItem("docs-language-preference",currentLang)}catch(e){}}}catch(e){}})();`}
-        />
-      )
+    )
+  }
+
+  {
+    !isCanonical && goEntry && tsEntry && (
+      <script
+        is:inline
+        slot="head-scripts"
+        define:vars={{ currentLang: entry!.data.sdkLang }}
+        set:html={`(function(){try{localStorage.setItem("docs-language-preference",currentLang)}catch(e){}})();`}
+      />
     )
   }
 

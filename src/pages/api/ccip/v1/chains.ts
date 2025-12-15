@@ -7,18 +7,17 @@ import {
   generateChainKey,
   createMetadata,
   handleApiError,
-  successHeaders,
-  commonHeaders,
   loadChainConfiguration,
   FilterType,
   APIErrorType,
   createErrorResponse,
   CCIPError,
-} from "../utils.ts"
+} from "~/lib/ccip/utils.ts"
+import { jsonHeaders } from "@lib/api/cacheHeaders.ts"
 import { logger } from "@lib/logging/index.js"
 
-import type { ChainDetails, ChainApiResponse } from "../types/index.ts"
-import { ChainDataService } from "../../services/chain-data.ts"
+import type { ChainDetails, ChainApiResponse } from "~/lib/ccip/types/index.ts"
+import { ChainDataService } from "~/lib/ccip/services/chain-data.ts"
 
 export const prerender = false
 
@@ -45,7 +44,7 @@ export const GET: APIRoute = async ({ request }) => {
 
     // Validate filters
     const filters: FilterType = {
-      chainId: params.get("chainId") || undefined,
+      chainId: params.get("chain_id") || undefined,
       selector: params.get("selector") || undefined,
       internalId: params.get("internalId") || undefined,
     }
@@ -57,15 +56,15 @@ export const GET: APIRoute = async ({ request }) => {
     })
 
     // Validate output key
-    const outputKey = validateOutputKey(params.get("outputKey") || undefined)
+    const outputKey = validateOutputKey(params.get("output_key") || undefined)
     logger.debug({
       message: "Output key validated",
       requestId,
       outputKey,
     })
 
-    // Validate enrichFeeTokens parameter
-    const enrichFeeTokens = validateEnrichFeeTokens(params.get("enrichFeeTokens") || undefined)
+    // Validate enrich_fee_tokens parameter
+    const enrichFeeTokens = validateEnrichFeeTokens(params.get("enrich_fee_tokens") || undefined)
     logger.debug({
       message: "EnrichFeeTokens parameter validated",
       requestId,
@@ -105,7 +104,7 @@ export const GET: APIRoute = async ({ request }) => {
         acc[family] = chainList.reduce(
           (familyAcc, chain) => {
             const key =
-              outputKey === "chainId"
+              outputKey === "chain_id"
                 ? generateChainKey(chain.chainId, chain.chainType, outputKey)
                 : outputKey
                   ? chain[outputKey].toString()
@@ -133,7 +132,7 @@ export const GET: APIRoute = async ({ request }) => {
     })
 
     return new Response(JSON.stringify(response), {
-      headers: { ...commonHeaders, ...successHeaders },
+      headers: jsonHeaders,
     })
   } catch (error) {
     logger.error({

@@ -1,6 +1,6 @@
 /** @jsxImportSource preact */
 import { useEffect, useState, useRef, useMemo } from "preact/hooks"
-import { MainnetTable, TestnetTable, StreamsNetworkAddressesTable } from "./Tables.tsx"
+import { MainnetTable, TestnetTable, StreamsNetworkAddressesTable, StreamsTHead, StreamsTr } from "./Tables.tsx"
 import feedList from "./FeedList.module.css"
 import tableStyles from "./Tables.module.css"
 import { clsx } from "~/lib/clsx/clsx.ts"
@@ -13,8 +13,9 @@ import { getFeedCategories } from "../../../db/feedCategories.js"
 import SectionWrapper from "~/components/SectionWrapper/SectionWrapper.tsx"
 import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/TableOfContents/tocStore.ts"
-import alertIcon from "../../../components/Alert/Assets/alert-icon.svg"
 import { ChainSelector } from "~/components/ChainSelector/ChainSelector.tsx"
+import { isFeedVisible } from "../utils/feedVisibility.ts"
+import { updateUrlClean, clearFilters } from "./urlStateHelpers.ts"
 
 export type DataFeedType =
   | "default"
@@ -259,10 +260,16 @@ export const FeedList = ({
   }, [])
 
   // Regular query string states
-  const [searchValue, setSearchValue] = useQueryString("search", "")
-  const [testnetSearchValue, setTestnetSearchValue] = useQueryString("testnetSearch", "")
-  const [selectedFeedCategories, setSelectedFeedCategories] = useQueryString("categories", [])
-  const [currentPage, setCurrentPage] = useQueryString("page", "1")
+  const [searchValue, setSearchValue] = useQueryString("search")
+  const [testnetSearchValue, setTestnetSearchValue] = useQueryString("testnetSearch")
+  const [selectedFeedCategoriesRaw, setSelectedFeedCategories] = useQueryString("categories")
+  // Ensure categories is always an array
+  const selectedFeedCategories = Array.isArray(selectedFeedCategoriesRaw)
+    ? selectedFeedCategoriesRaw
+    : selectedFeedCategoriesRaw
+      ? [selectedFeedCategoriesRaw]
+      : []
+  const [currentPage, setCurrentPage] = useQueryString("page")
 
   // Initialize all other states
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState<boolean>(false)
@@ -282,10 +289,26 @@ export const FeedList = ({
   const setTestnetStreamCategoryFilter = (next: StreamsRwaFeedTypeValue) => {
     setTestnetStreamCategoryFilterParam(next === "all" ? [] : next)
   }
-  const [showExtraDetails, setShowExtraDetails] = useState(false)
+
+  // Checkbox states backed by URL params
+  const [showDetailsParam, setShowDetailsParam] = useQueryString("showDetails")
+  const showExtraDetails = showDetailsParam === "true"
+  const setShowExtraDetails = (value: boolean) => {
+    setShowDetailsParam(value ? "true" : "")
+    updateUrlClean({ showDetails: value || undefined })
+  }
+
+  const [showSvrParam, setShowSvrParam] = useQueryString("showSvr")
+  const showOnlySVR = showSvrParam === "true"
+  const setShowOnlySVR = (value: boolean) => {
+    setShowSvrParam(value ? "true" : "")
+    updateUrlClean({ showSvr: value || undefined })
+    if (value) paginate(1)
+  }
+
+  // MVR and DEX filters are not in URL (too specialized)
   const [showOnlyMVRFeeds, setShowOnlyMVRFeeds] = useState(false)
   const [showOnlyMVRFeedsTestnet, setShowOnlyMVRFeedsTestnet] = useState(false)
-  const [showOnlySVR, setShowOnlySVR] = useState(false)
   const [showOnlyDEXFeeds, setShowOnlyDEXFeeds] = useState(false)
   const [showOnlyDEXFeedsTestnet, setShowOnlyDEXFeedsTestnet] = useState(false)
   const [rwaSchemaFilterParam, setRwaSchemaFilterParam] = useQueryString("schema")
@@ -312,17 +335,26 @@ export const FeedList = ({
     })
   }
   const closeAllDropdowns = () => setOpenDropdownId(null)
-  const paginate = (pageNumber) => setCurrentPage(String(pageNumber))
-  // Disable pagination for deprecating feeds by using a very high page size
-  const addrPerPage = ecosystem === "deprecating" ? 10000 : 8
-  const lastAddr = Number(currentPage) * addrPerPage
+  const paginate = (pageNumber) => {
+    const pageStr = String(pageNumber)
+    setCurrentPage(pageStr)
+    updateUrlClean({ page: pageNumber === 1 ? undefined : pageNumber })
+  }
+  const addrPerPage = ecosystem === "deprecating" && isStreams ? 10 : ecosystem === "deprecating" ? 10000 : 8
+  const currentPageNum = Number(currentPage) || 1
+  const lastAddr = currentPageNum * addrPerPage
   const firstAddr = lastAddr - addrPerPage
 
   // Pagination for testnet table
-  const [testnetCurrentPage, setTestnetCurrentPage] = useQueryString("testnetPage", "1")
-  const testnetPaginate = (pageNumber) => setTestnetCurrentPage(String(pageNumber))
-  const testnetAddrPerPage = ecosystem === "deprecating" ? 10000 : 8
-  const testnetLastAddr = Number(testnetCurrentPage) * testnetAddrPerPage
+  const [testnetCurrentPage, setTestnetCurrentPage] = useQueryString("testnetPage")
+  const testnetPaginate = (pageNumber) => {
+    const pageStr = String(pageNumber)
+    setTestnetCurrentPage(pageStr)
+    updateUrlClean({ testnetPage: pageNumber === 1 ? undefined : pageNumber })
+  }
+  const testnetAddrPerPage = ecosystem === "deprecating" && isStreams ? 10 : ecosystem === "deprecating" ? 10000 : 8
+  const testnetPageNum = Number(testnetCurrentPage) || 1
+  const testnetLastAddr = testnetPageNum * testnetAddrPerPage
   const testnetFirstAddr = testnetLastAddr - testnetAddrPerPage
 
   // Dynamic feed categories loaded from Supabase
@@ -500,56 +532,54 @@ export const FeedList = ({
   function handleNetworkSelect(chain: Chain) {
     closeAllDropdowns()
     if (!isStreams) {
-      const params = new URLSearchParams(window.location.search)
-      params.set("network", chain.page)
-      // Clear hash when changing networks
-      const newUrl = window.location.pathname + "?" + params.toString()
-      window.history.replaceState({ path: newUrl }, "", newUrl)
       setCurrentNetwork(chain.page)
+      // Clear all filters and pagination when switching networks
+      setSearchValue("")
+      setTestnetSearchValue("")
+      setSelectedFeedCategories([])
+      setCurrentPage("")
+      setTestnetCurrentPage("")
+      setShowOnlyMVRFeeds(false)
+      setShowOnlyMVRFeedsTestnet(false)
+      // Update URL with just the network (and networkType if not mainnet)
+      const params = new URLSearchParams(window.location.search)
+      const networkType = params.get("networkType")
+      updateUrlClean({
+        network: chain.page,
+        networkType: networkType === "testnet" ? "testnet" : undefined,
+        search: undefined,
+        testnetSearch: undefined,
+        page: undefined,
+        testnetPage: undefined,
+      })
     }
-    setSearchValue("")
-    setSelectedFeedCategories([])
-    setCurrentPage("1")
-    setShowOnlyMVRFeeds(false)
-    setShowOnlyMVRFeedsTestnet(false)
   }
 
   // Network type change handler for testnet/mainnet switching
   function handleNetworkTypeChange(networkType: "mainnet" | "testnet") {
     closeAllDropdowns()
-    // Update the selected network type
     setSelectedNetworkType(networkType)
-
-    // Update URL parameters to reflect network type state
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search)
-
-      if (networkType === "testnet") {
-        // Set networkType parameter to testnet
-        params.set("networkType", "testnet")
-        // Ensure testnetPage is set (default to 1 if not present)
-        if (!params.get("testnetPage")) {
-          params.set("testnetPage", "1")
-        }
-      } else {
-        // Remove testnet-specific parameters when switching to mainnet
-        params.delete("networkType")
-        params.delete("testnetSearch")
-        // Keep testnetPage for potential future navigation
-      }
-
-      const newUrl = window.location.pathname + "?" + params.toString()
-      window.history.replaceState({ path: newUrl }, "", newUrl)
-    }
 
     // Reset filters and pagination when switching network types
     setSearchValue("")
     setTestnetSearchValue("")
     setSelectedFeedCategories([])
-    setCurrentPage("1")
-    setTestnetCurrentPage("1")
+    setCurrentPage("")
+    setTestnetCurrentPage("")
     setShowOnlyMVRFeeds(false)
     setShowOnlyMVRFeedsTestnet(false)
+
+    // Update URL with clean params
+    const params = new URLSearchParams(window.location.search)
+    const network = params.get("network")
+    updateUrlClean({
+      network: network || undefined,
+      networkType: networkType === "testnet" ? "testnet" : undefined,
+      search: undefined,
+      testnetSearch: undefined,
+      page: undefined,
+      testnetPage: undefined,
+    })
   }
 
   const handleCategorySelection = (category) => {
@@ -567,18 +597,14 @@ export const FeedList = ({
   }
 
   useEffect(() => {
+    // Clean up empty search params
     if (searchValue === "") {
-      const searchParams = new URLSearchParams(window.location.search)
-      searchParams.delete("search")
-      const hashFragment = window.location.hash
-      const newUrl = window.location.pathname + "?" + searchParams.toString() + hashFragment
-      window.history.replaceState({ path: newUrl }, "", newUrl)
-      const inputElement = document.getElementById("search") as HTMLInputElement
-      if (inputElement) {
-        inputElement.placeholder = "Search"
-      }
+      updateUrlClean({ search: undefined })
     }
-  }, [chainMetadata.processedData, searchValue])
+    if (testnetSearchValue === "") {
+      updateUrlClean({ testnetSearch: undefined })
+    }
+  }, [searchValue, testnetSearchValue])
 
   const useOutsideAlerter = (ref: RefObject<HTMLDivElement>) => {
     useEffect(() => {
@@ -606,24 +632,35 @@ export const FeedList = ({
     const networkTypes = { mainnet: false, testnet: false }
 
     // Filter networks by feed type
-    const filteredNetworks = chainMetadata.processedData.networks.filter((network) => {
-      if (isDeprecating) {
-        let foundDeprecated = false
-        network.metadata?.forEach((feed: any) => {
-          if (feed.feedCategory === "deprecating") {
-            foundDeprecated = true
-          }
-        })
-        return foundDeprecated
-      }
+    const filteredNetworks = chainMetadata.processedData.networks
+      .filter((network) => {
+        if (isDeprecating) {
+          let foundDeprecated = false
+          network.metadata?.forEach((feed: any) => {
+            if (feed.feedCategory === "deprecating") {
+              foundDeprecated = true
+            }
+          })
+          // A deprecating network is relevant only if it still has at least one non-hidden deprecating feed
+          if (!foundDeprecated) return false
+          const hasVisible = network.metadata?.some(
+            (feed: any) => feed.feedCategory === "deprecating" && feed.feedCategory !== "hidden" && !feed.docs?.hidden
+          )
+          return !!hasVisible
+        }
 
-      if (isStreams) return network.tags?.includes("streams")
-      if (isSmartData) return network.tags?.includes("smartData")
-      if (isRates) return network.tags?.includes("rates")
-      if (isUSGovernmentMacroeconomicData) return network.tags?.includes("usGovernmentMacroeconomicData")
+        if (isStreams) return network.tags?.includes("streams")
+        if (isSmartData) return network.tags?.includes("smartData")
+        if (isRates) return network.tags?.includes("rates")
+        if (isUSGovernmentMacroeconomicData) return network.tags?.includes("usGovernmentMacroeconomicData")
 
-      return true
-    })
+        return true
+      })
+      .filter((network) => {
+        // Ensure the network has at least one visible feed for the current dataFeedType
+        const feeds = network.metadata || []
+        return feeds.some((feed: any) => isFeedVisible(feed, dataFeedType, ecosystem))
+      })
 
     // Check available network types
     filteredNetworks.forEach((network) => {
@@ -732,6 +769,199 @@ export const FeedList = ({
     dataFeedType === "streamsExRate" ||
     dataFeedType === "streamsBacked"
   ) {
+    // For deprecating streams, show two separate tables: mainnet and testnet
+    if (isDeprecating) {
+      const mainnetDeprecatingStreams: any[] = []
+      const testnetDeprecatingStreams: any[] = []
+
+      if (initialCache) {
+        Object.values(initialCache).forEach((chainData: any) => {
+          // Only check Arbitrum chains for streams
+          if (chainData.page === "arbitrum") {
+            chainData.networks?.forEach((network: any) => {
+              network.metadata?.forEach((item: any) => {
+                // Only include items that are actual streams (have verifier contract type and feedId)
+                // and have a shutdown date
+                if (item.contractType === "verifier" && item.feedId && item.docs?.shutdownDate) {
+                  const streamWithNetwork = {
+                    ...item,
+                    networkName: network.name,
+                  }
+                  if (network.networkType === "mainnet") {
+                    mainnetDeprecatingStreams.push(streamWithNetwork)
+                  } else if (network.networkType === "testnet") {
+                    testnetDeprecatingStreams.push(streamWithNetwork)
+                  }
+                }
+              })
+            })
+          }
+        })
+      }
+
+      // Sort alphabetically by asset name or product name
+      const sortStreams = (streams: any[]) => {
+        return streams.sort((a, b) => {
+          const nameA = (a.assetName || a.docs?.clicProductName || "").toUpperCase()
+          const nameB = (b.assetName || b.docs?.clicProductName || "").toUpperCase()
+          return nameA.localeCompare(nameB)
+        })
+      }
+
+      sortStreams(mainnetDeprecatingStreams)
+      sortStreams(testnetDeprecatingStreams)
+
+      // Apply search filter for mainnet
+      const filteredMainnetStreams = mainnetDeprecatingStreams.filter((stream) => {
+        if (!searchValue || typeof searchValue !== "string") return true
+        const searchLower = searchValue.toLowerCase()
+        return (
+          stream.feedId?.toLowerCase().includes(searchLower) ||
+          stream.assetName?.toLowerCase().includes(searchLower) ||
+          stream.feedType?.toLowerCase().includes(searchLower) ||
+          stream.networkName?.toLowerCase().includes(searchLower) ||
+          stream.docs?.clicProductName?.toLowerCase().includes(searchLower)
+        )
+      })
+
+      // Apply search filter for testnet
+      const filteredTestnetStreams = testnetDeprecatingStreams.filter((stream) => {
+        if (!testnetSearchValue || typeof testnetSearchValue !== "string") return true
+        const searchLower = testnetSearchValue.toLowerCase()
+        return (
+          stream.feedId?.toLowerCase().includes(searchLower) ||
+          stream.assetName?.toLowerCase().includes(searchLower) ||
+          stream.feedType?.toLowerCase().includes(searchLower) ||
+          stream.networkName?.toLowerCase().includes(searchLower) ||
+          stream.docs?.clicProductName?.toLowerCase().includes(searchLower)
+        )
+      })
+
+      // Calculate mainnet pagination
+      const paginatedMainnetStreams = filteredMainnetStreams.slice(firstAddr, lastAddr)
+
+      // Calculate testnet pagination
+      const paginatedTestnetStreams = filteredTestnetStreams.slice(testnetFirstAddr, testnetLastAddr)
+
+      return (
+        <>
+          {chainMetadata.loading && !chainMetadata.processedData && !initialCache && <p>Loading...</p>}
+          {chainMetadata.error && <p>There was an error loading the streams...</p>}
+
+          <SectionWrapper title="Mainnet Deprecating Streams" depth={2}>
+            <form class={feedList.filterDropdown_search}>
+              <input
+                id="search"
+                class={feedList.filterDropdown_searchInput}
+                placeholder="Search"
+                value={typeof searchValue === "string" ? searchValue : ""}
+                onInput={(event) => {
+                  setSearchValue((event.target as HTMLInputElement).value)
+                  setCurrentPage("1")
+                }}
+              />
+            </form>
+            {filteredMainnetStreams.length > 0 ? (
+              <>
+                <div className={feedList.tableWrapper}>
+                  <table className={clsx(tableStyles.table)}>
+                    <StreamsTHead />
+                    <tbody>
+                      {paginatedMainnetStreams.map((stream, index) => (
+                        <StreamsTr key={`${stream.feedId}-${index}`} metadata={stream} isMainnet={true} />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {filteredMainnetStreams.length > addrPerPage && (
+                  <div className={tableStyles.pagination} role="navigation" aria-label="Table pagination">
+                    <button
+                      className={button.secondary}
+                      disabled={Number(currentPage) === 1}
+                      onClick={() => paginate(Number(currentPage) - 1)}
+                    >
+                      Prev
+                    </button>
+                    <p aria-live="polite">
+                      {firstAddr + 1}-
+                      {lastAddr > filteredMainnetStreams.length ? filteredMainnetStreams.length : lastAddr} of{" "}
+                      {filteredMainnetStreams.length}
+                    </p>
+                    <button
+                      className={button.secondary}
+                      disabled={lastAddr >= filteredMainnetStreams.length}
+                      onClick={() => paginate(Number(currentPage) + 1)}
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <p>No mainnet deprecating streams found.</p>
+            )}
+          </SectionWrapper>
+
+          <SectionWrapper title="Testnet Deprecating Streams" depth={2}>
+            <form class={feedList.filterDropdown_search}>
+              <input
+                id="testnetSearch"
+                class={feedList.filterDropdown_searchInput}
+                placeholder="Search"
+                value={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
+                onInput={(event) => {
+                  setTestnetSearchValue((event.target as HTMLInputElement).value)
+                  setTestnetCurrentPage("1")
+                }}
+              />
+            </form>
+            {filteredTestnetStreams.length > 0 ? (
+              <>
+                <div className={feedList.tableWrapper}>
+                  <table className={clsx(tableStyles.table)}>
+                    <StreamsTHead />
+                    <tbody>
+                      {paginatedTestnetStreams.map((stream, index) => (
+                        <StreamsTr key={`${stream.feedId}-${index}`} metadata={stream} isMainnet={false} />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {filteredTestnetStreams.length > testnetAddrPerPage && (
+                  <div className={tableStyles.pagination} role="navigation" aria-label="Table pagination">
+                    <button
+                      className={button.secondary}
+                      disabled={Number(testnetCurrentPage) === 1}
+                      onClick={() => testnetPaginate(Number(testnetCurrentPage) - 1)}
+                    >
+                      Prev
+                    </button>
+                    <p aria-live="polite">
+                      {testnetFirstAddr + 1}-
+                      {testnetLastAddr > filteredTestnetStreams.length
+                        ? filteredTestnetStreams.length
+                        : testnetLastAddr}{" "}
+                      of {filteredTestnetStreams.length}
+                    </p>
+                    <button
+                      className={button.secondary}
+                      disabled={testnetLastAddr >= filteredTestnetStreams.length}
+                      onClick={() => testnetPaginate(Number(testnetCurrentPage) + 1)}
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <p>No testnet deprecating streams found.</p>
+            )}
+          </SectionWrapper>
+        </>
+      )
+    }
+
+    // Regular streams view (non-deprecating)
     const mainnetFeeds: ChainNetwork[] = []
     const testnetFeeds: ChainNetwork[] = []
 
@@ -747,20 +977,24 @@ export const FeedList = ({
 
     return (
       <>
-        {allowNetworkTableExpansion ? (
-          <div style={{ marginBottom: "var(--space-2x)" }}>
-            <StreamsNetworkAddressesTable
-              allowExpansion={allowNetworkTableExpansion}
-              defaultExpanded={defaultNetworkTableExpanded}
-            />
-          </div>
-        ) : (
-          <SectionWrapper title="Streams Verifier Network Addresses" depth={2}>
-            <StreamsNetworkAddressesTable
-              allowExpansion={allowNetworkTableExpansion}
-              defaultExpanded={defaultNetworkTableExpanded}
-            />
-          </SectionWrapper>
+        {!isDeprecating && (
+          <>
+            {allowNetworkTableExpansion ? (
+              <div style={{ marginBottom: "var(--space-2x)" }}>
+                <StreamsNetworkAddressesTable
+                  allowExpansion={allowNetworkTableExpansion}
+                  defaultExpanded={defaultNetworkTableExpanded}
+                />
+              </div>
+            ) : (
+              <SectionWrapper title="Streams Verifier Network Addresses" depth={2}>
+                <StreamsNetworkAddressesTable
+                  allowExpansion={allowNetworkTableExpansion}
+                  defaultExpanded={defaultNetworkTableExpanded}
+                />
+              </SectionWrapper>
+            )}
+          </>
         )}
 
         <SectionWrapper
@@ -874,7 +1108,7 @@ export const FeedList = ({
                 lastAddr={lastAddr}
                 firstAddr={firstAddr}
                 addrPerPage={addrPerPage}
-                currentPage={Number(currentPage)}
+                currentPage={currentPageNum}
                 paginate={paginate}
                 searchValue={typeof searchValue === "string" ? searchValue : ""}
               />
@@ -993,7 +1227,7 @@ export const FeedList = ({
                 firstAddr={testnetFirstAddr}
                 lastAddr={testnetLastAddr}
                 addrPerPage={testnetAddrPerPage}
-                currentPage={Number(testnetCurrentPage)}
+                currentPage={testnetPageNum}
                 paginate={testnetPaginate}
                 searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
               />
@@ -1045,7 +1279,8 @@ export const FeedList = ({
             .filter((network: any) => {
               let foundDeprecated = false
               network.metadata?.forEach((feed: any) => {
-                if (feed.feedCategory === "deprecating") {
+                // Only include actual feeds (not streams) with deprecating status
+                if (feed.feedCategory === "deprecating" && !(feed.contractType === "verifier" && feed.feedId)) {
                   foundDeprecated = true
                 }
               })
@@ -1071,7 +1306,10 @@ export const FeedList = ({
                   }
                   network={{
                     ...network,
-                    metadata: network.metadata.filter((feed: any) => feed.feedCategory === "deprecating"),
+                    metadata: network.metadata.filter(
+                      (feed: any) =>
+                        feed.feedCategory === "deprecating" && !(feed.contractType === "verifier" && feed.feedId)
+                    ),
                   }}
                   showExtraDetails={showExtraDetails}
                   showOnlySVR={showOnlySVR}
@@ -1082,7 +1320,7 @@ export const FeedList = ({
                   lastAddr={lastAddr}
                   firstAddr={firstAddr}
                   addrPerPage={addrPerPage}
-                  currentPage={Number(currentPage)}
+                  currentPage={currentPageNum}
                   paginate={paginate}
                   searchValue={typeof searchValue === "string" ? searchValue : ""}
                 />
@@ -1096,7 +1334,8 @@ export const FeedList = ({
             if (isDeprecating) {
               let foundDeprecated = false
               network.metadata?.forEach((feed: any) => {
-                if (feed.feedCategory === "deprecating") {
+                // Only include actual feeds (not streams) with deprecating status
+                if (feed.feedCategory === "deprecating" && !(feed.contractType === "verifier" && feed.feedId)) {
                   foundDeprecated = true
                 }
               })
@@ -1272,7 +1511,7 @@ export const FeedList = ({
                                 type="checkbox"
                                 style="width:15px;height:15px;display:inline;margin-right:8px;"
                                 checked={showExtraDetails}
-                                onChange={() => setShowExtraDetails((old) => !old)}
+                                onChange={() => setShowExtraDetails(!showExtraDetails)}
                               />
                               Show more details
                             </label>
@@ -1299,10 +1538,7 @@ export const FeedList = ({
                                 type="checkbox"
                                 style="width:15px;height:15px;display:inline;margin-right:8px;"
                                 checked={showOnlySVR}
-                                onChange={() => {
-                                  setShowOnlySVR((old) => !old)
-                                  setCurrentPage("1")
-                                }}
+                                onChange={() => setShowOnlySVR(!showOnlySVR)}
                               />
                               Show Smart Value Recapture (SVR) feeds
                             </label>
@@ -1327,7 +1563,7 @@ export const FeedList = ({
                         lastAddr={lastAddr}
                         firstAddr={firstAddr}
                         addrPerPage={addrPerPage}
-                        currentPage={Number(currentPage)}
+                        currentPage={currentPageNum}
                         paginate={paginate}
                         searchValue={typeof searchValue === "string" ? searchValue : ""}
                       />
@@ -1434,7 +1670,7 @@ export const FeedList = ({
                                 type="checkbox"
                                 style="width:15px;height:15px;display:inline;margin-right:8px;"
                                 checked={showExtraDetails}
-                                onChange={() => setShowExtraDetails((old) => !old)}
+                                onChange={() => setShowExtraDetails(!showExtraDetails)}
                               />
                               Show more details
                             </label>
@@ -1504,7 +1740,7 @@ export const FeedList = ({
                         firstAddr={testnetFirstAddr}
                         lastAddr={testnetLastAddr}
                         addrPerPage={testnetAddrPerPage}
-                        currentPage={Number(testnetCurrentPage)}
+                        currentPage={testnetPageNum}
                         paginate={testnetPaginate}
                         searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
                       />
