@@ -90,9 +90,11 @@ strong {
 }
 
 /* Override browser extensions (1Password, etc.) that inject dark themes into code elements */
-:not(pre) > code,
-table code:not(pre code),
-.copyContainer > code {
+/* Higher specificity to beat extension selectors */
+body :not(pre) > code,
+body table code:not(pre code),
+body .copyContainer > code {
+  background: var(--theme-code-inline-bg) !important;
   background-color: var(--theme-code-inline-bg) !important;
   color: var(--theme-code-inline-text) !important;
   font-family: var(--font-mono) !important;
@@ -106,9 +108,10 @@ table code:not(pre code),
 }
 
 /* Override even if extensions add language-* classes */
-:not(pre) > code[class*="language-"],
-table code[class*="language-"]:not(pre code),
-.copyContainer > code[class*="language-"] {
+body :not(pre) > code[class*="language-"],
+body table code[class*="language-"]:not(pre code),
+body .copyContainer > code[class*="language-"] {
+  background: var(--theme-code-inline-bg) !important;
   background-color: var(--theme-code-inline-bg) !important;
   color: var(--theme-code-inline-text) !important;
   font-family: var(--font-mono) !important;
