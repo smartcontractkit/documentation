@@ -249,7 +249,7 @@ The mechanism by which a DON comes to a single, reliable, and tamper-proof resul
 
 # Service Quotas
 Source: https://docs.chain.link/cre/service-quotas
-Last Updated: 2025-11-04
+Last Updated: 2025-12-11
 
 This page documents the service quotas for Chainlink Runtime Environment (CRE) workflows.
 
@@ -261,15 +261,10 @@ This page documents the service quotas for Chainlink Runtime Environment (CRE) w
 
 These quotas apply to each workflow owner (user account) within an organization.
 
-| Quota                           | Description                                                                                      | Value                              |
-| ------------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------- |
-| Workflow Deployment Rate        | Maximum rate at which an organization can deploy new workflows                                   | Rate: 1 per minute <br /> Burst: 1 |
-| Concurrent Workflow Executions  | Maximum number of workflows that can execute simultaneously                                      | 5                                  |
-| Workflow Trigger Rate           | Maximum rate at which triggers can fire for all workflows owned by a single owner (user account) | Rate: 5 per second <br /> Burst: 5 |
-| Workflow Binary Size            | Maximum size of the compiled WASM binary                                                         | 100 MB                             |
-| Workflow Compressed Binary Size | Maximum size of the compressed WASM binary                                                       | 20 MB                              |
-| Workflow Configuration Size     | Maximum size of the workflow configuration                                                       | 1 MB                               |
-| Secrets Size                    | Maximum total size of secrets accessible to a workflow                                           | 1 MB                               |
+| Quota Key                                                                                                                                              | Description                                                 | Value |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- | ----- |
+| <a href="#perowner-workflowexecutionconcurrencylimit" id="perowner-workflowexecutionconcurrencylimit">`PerOwner.WorkflowExecutionConcurrencyLimit`</a> | Maximum number of workflows that can execute simultaneously | 5     |
+| <a href="#perowner-vaultsecretslimit" id="perowner-vaultsecretslimit">`PerOwner.VaultSecretsLimit`</a>                                                 | Maximum number of secrets that can be stored per owner      | 100   |
 
 <Aside type="note" title="Quota enforcement">
   When workflow executions exceed the quotas defined above, they are queued and automatically retried for up to 10
@@ -280,57 +275,64 @@ These quotas apply to each workflow owner (user account) within an organization.
 
 These quotas apply to each individual workflow.
 
+### Workflow deployment quotas
+
+| Quota Key                                                                                                                                           | Description                                | Value  |
+| --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ------ |
+| <a href="#perworkflow-wasmbinarysizelimit" id="perworkflow-wasmbinarysizelimit">`PerWorkflow.WASMBinarySizeLimit`</a>                               | Maximum size of the compiled WASM binary   | 100 MB |
+| <a href="#perworkflow-wasmcompressedbinarysizelimit" id="perworkflow-wasmcompressedbinarysizelimit">`PerWorkflow.WASMCompressedBinarySizeLimit`</a> | Maximum size of the compressed WASM binary | 20 MB  |
+| <a href="#perworkflow-wasmconfigsizelimit" id="perworkflow-wasmconfigsizelimit">`PerWorkflow.WASMConfigSizeLimit`</a>                               | Maximum size of the workflow configuration | 1 MB   |
+
 ### Trigger quotas
 
-| Quota                         | Description                                                            | Value                                  |
-| ----------------------------- | ---------------------------------------------------------------------- | -------------------------------------- |
-| Trigger Rate                  | Maximum rate at which a workflow's triggers can fire                   | Rate: 1 per 30 seconds <br /> Burst: 3 |
-| Maximum Triggers per Workflow | Maximum number of triggers that can be registered to a single workflow | 10                                     |
+| Quota Key                                                                                                                            | Description                                                            | Value |
+| ------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------- | ----- |
+| <a href="#perworkflow-triggersubscriptionlimit" id="perworkflow-triggersubscriptionlimit">`PerWorkflow.TriggerSubscriptionLimit`</a> | Maximum number of triggers that can be registered to a single workflow | 10    |
 
 ### Execution quotas
 
-| Quota                         | Description                                                     | Value             |
-| ----------------------------- | --------------------------------------------------------------- | ----------------- |
-| Concurrent Workflow Instances | Maximum number of concurrent executions for a specific workflow | 5 <br /> Burst: 5 |
-| Workflow Timeout              | Maximum total execution time for a single workflow run          | 5 minutes         |
-| Workflow Memory Allocation    | Maximum memory allocated to a workflow                          | 100 MB            |
-| Response Size                 | Maximum size of the data a workflow can return                  | 100 KB            |
+| Quota Key                                                                                                                               | Description                                                     | Value     |
+| --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | --------- |
+| <a href="#perworkflow-executionconcurrencylimit" id="perworkflow-executionconcurrencylimit">`PerWorkflow.ExecutionConcurrencyLimit`</a> | Maximum number of concurrent executions for a specific workflow | 5         |
+| <a href="#perworkflow-executiontimeout" id="perworkflow-executiontimeout">`PerWorkflow.ExecutionTimeout`</a>                            | Maximum total execution time for a single workflow run          | 5 minutes |
+| <a href="#perworkflow-wasmmemorylimit" id="perworkflow-wasmmemorylimit">`PerWorkflow.WASMMemoryLimit`</a>                               | Maximum memory allocated to a workflow                          | 100 MB    |
+| <a href="#perworkflow-executionresponselimit" id="perworkflow-executionresponselimit">`PerWorkflow.ExecutionResponseLimit`</a>          | Maximum size of the data a workflow can return                  | 100 KB    |
 
-### Capability call quotas
+### General capability quotas
 
-| Quota                       | Description                                                                                            | Value     |
-| --------------------------- | ------------------------------------------------------------------------------------------------------ | --------- |
-| Concurrent Capability Calls | Maximum concurrent capability calls (HTTP, EVM read/write, secrets) that can execute within a workflow | 3         |
-| Capability Call Timeout     | Maximum time a single capability call can take to complete                                             | 3 minutes |
+| Quota Key                                                                                                                                  | Description                                                                                            | Value     |
+| ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ | --------- |
+| <a href="#perworkflow-capabilityconcurrencylimit" id="perworkflow-capabilityconcurrencylimit">`PerWorkflow.CapabilityConcurrencyLimit`</a> | Maximum concurrent capability calls (HTTP, EVM read/write, secrets) that can execute within a workflow | 3         |
+| <a href="#perworkflow-capabilitycalltimeout" id="perworkflow-capabilitycalltimeout">`PerWorkflow.CapabilityCallTimeout`</a>                | Maximum time a single capability call can take to complete                                             | 3 minutes |
 
 ### Secrets quotas
 
-| Quota                      | Description                                                                                                                      | Value |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----- |
-| Secrets Size               | Maximum total size of secrets accessible to a workflow                                                                           | 1 MB  |
-| Concurrent Secrets Fetches | Maximum number of secrets that can be fetched concurrently. [Learn how to fetch multiple secrets](/cre/guides/workflow/secrets). | 5     |
+| Quota Key                                                                                                                         | Description                                                                                                                      | Value |
+| --------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| <a href="#perworkflow-wasmsecreetssizelimit" id="perworkflow-wasmsecreetssizelimit">`PerWorkflow.WASMSecretsSizeLimit`</a>        | Maximum total size of secrets accessible to a workflow                                                                           | 1 MB  |
+| <a href="#perworkflow-secretsconcurrencylimit" id="perworkflow-secretsconcurrencylimit">`PerWorkflow.SecretsConcurrencyLimit`</a> | Maximum number of secrets that can be fetched concurrently. [Learn how to fetch multiple secrets](/cre/guides/workflow/secrets). | 5     |
 
 ### Consensus quotas
 
-| Quota                 | Description                                                      | Value  |
-| --------------------- | ---------------------------------------------------------------- | ------ |
-| Observation Size      | Maximum size of data that can be passed to consensus aggregation | 100 KB |
-| Total Consensus Calls | Maximum number of consensus calls per workflow execution         | 2,000  |
+| Quota Key                                                                                                                                              | Description                                                      | Value  |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- | ------ |
+| <a href="#perworkflow-consensus-observationsizelimit" id="perworkflow-consensus-observationsizelimit">`PerWorkflow.Consensus.ObservationSizeLimit`</a> | Maximum size of data that can be passed to consensus aggregation | 100 KB |
+| <a href="#perworkflow-consensus-calllimit" id="perworkflow-consensus-calllimit">`PerWorkflow.Consensus.CallLimit`</a>                                  | Maximum number of consensus calls per workflow execution         | 2,000  |
 
 ### Logging quotas
 
-| Quota         | Description                                         | Value |
-| ------------- | --------------------------------------------------- | ----- |
-| Log Line Size | Maximum size of a single log line                   | 1 KB  |
-| Log Events    | Maximum number of log events per workflow execution | 1,000 |
+| Quota Key                                                                                           | Description                                         | Value |
+| --------------------------------------------------------------------------------------------------- | --------------------------------------------------- | ----- |
+| <a href="#perworkflow-loglinelimit" id="perworkflow-loglinelimit">`PerWorkflow.LogLineLimit`</a>    | Maximum size of a single log line                   | 1 KB  |
+| <a href="#perworkflow-logeventlimit" id="perworkflow-logeventlimit">`PerWorkflow.LogEventLimit`</a> | Maximum number of log events per workflow execution | 1,000 |
 
 ## Trigger-specific quotas
 
 ### Cron trigger
 
-| Quota        | Description                                   | Value                                  |
-| ------------ | --------------------------------------------- | -------------------------------------- |
-| Trigger Rate | Maximum rate at which a cron trigger can fire | Rate: 1 per 30 seconds <br /> Burst: 1 |
+| Quota Key                                                                                                                                                             | Description                                 | Value      |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- | ---------- |
+| <a href="#perworkflow-crontrigger-fastestscheduleinterval" id="perworkflow-crontrigger-fastestscheduleinterval">`PerWorkflow.CRONTrigger.FastestScheduleInterval`</a> | Minimum interval between cron trigger fires | 30 seconds |
 
 <Aside type="note" title="Minimum cron schedule">
   While the rate quota allows firing once per 30 seconds, you should consider the [Concurrent Workflow
@@ -339,47 +341,46 @@ These quotas apply to each individual workflow.
 
 ### HTTP trigger
 
-| Quota        | Description                                    | Value                                  |
-| ------------ | ---------------------------------------------- | -------------------------------------- |
-| Trigger Rate | Maximum rate at which an HTTP trigger can fire | Rate: 1 per 30 seconds <br /> Burst: 3 |
+| Quota Key                                                                                                                   | Description                                    | Value                                  |
+| --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | -------------------------------------- |
+| <a href="#perworkflow-httptrigger-ratelimit" id="perworkflow-httptrigger-ratelimit">`PerWorkflow.HTTPTrigger.RateLimit`</a> | Maximum rate at which an HTTP trigger can fire | Rate: 1 per 30 seconds <br /> Burst: 3 |
 
 ### EVM log trigger
 
-| Quota                  | Description                                                                                                                                                                                                                  | Value                                   |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
-| Maximum Log Triggers   | Maximum number of EVM log triggers per workflow                                                                                                                                                                              | 5                                       |
-| Event Rate             | Maximum rate at which log events can be processed                                                                                                                                                                            | Rate: 10 per 6 seconds <br /> Burst: 10 |
-| Filter Addresses       | Maximum number of contract addresses that can be monitored                                                                                                                                                                   | 5                                       |
-| Filter Topics per Slot | Maximum number of topic values that can be specified within a single topic position (Topics[0], Topics[1], Topics[2], or Topics[3]). [Learn about topic filtering](/cre/guides/workflow/using-triggers/evm-log-trigger). | 10                                      |
-| Event Size             | Maximum size of a single log event                                                                                                                                                                                           | 5 KB                                    |
+| Quota Key                                                                                                                                                             | Description                                                                                                                                                                                                                  | Value                                   |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| <a href="#perworkflow-logtrigger-eventratelimit" id="perworkflow-logtrigger-eventratelimit">`PerWorkflow.LogTrigger.EventRateLimit`</a>                               | Maximum rate at which log events can be processed                                                                                                                                                                            | Rate: 10 per 6 seconds <br /> Burst: 10 |
+| <a href="#perworkflow-logtrigger-filteraddresslimit" id="perworkflow-logtrigger-filteraddresslimit">`PerWorkflow.LogTrigger.FilterAddressLimit`</a>                   | Maximum number of contract addresses that can be monitored                                                                                                                                                                   | 5                                       |
+| <a href="#perworkflow-logtrigger-filtertopicsperslotlimit" id="perworkflow-logtrigger-filtertopicsperslotlimit">`PerWorkflow.LogTrigger.FilterTopicsPerSlotLimit`</a> | Maximum number of topic values that can be specified within a single topic position (Topics[0], Topics[1], Topics[2], or Topics[3]). [Learn about topic filtering](/cre/guides/workflow/using-triggers/evm-log-trigger). | 10                                      |
+| <a href="#perworkflow-logtrigger-eventsizelimit" id="perworkflow-logtrigger-eventsizelimit">`PerWorkflow.LogTrigger.EventSizeLimit`</a>                               | Maximum size of a single log event                                                                                                                                                                                           | 5 KB                                    |
 
 ## Capability-specific quotas
 
 ### EVM write capability
 
-| Quota                 | Description                                               | Value     |
-| --------------------- | --------------------------------------------------------- | --------- |
-| Target Chains         | Maximum number of destination chains for write operations | 10        |
-| Report Size           | Maximum size of a report payload                          | 5 KB      |
-| Transaction Gas Quota | Gas quota per EVM transaction                             | 5,000,000 |
+| Quota Key                                                                                                                                                          | Description                                               | Value     |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------- | --------- |
+| <a href="#perworkflow-chainwrite-targetslimit" id="perworkflow-chainwrite-targetslimit">`PerWorkflow.ChainWrite.TargetsLimit`</a>                                  | Maximum number of destination chains for write operations | 10        |
+| <a href="#perworkflow-chainwrite-reportsizelimit" id="perworkflow-chainwrite-reportsizelimit">`PerWorkflow.ChainWrite.ReportSizeLimit`</a>                         | Maximum size of a report payload                          | 5 KB      |
+| <a href="#perworkflow-chainwrite-evm-transactiongaslimit" id="perworkflow-chainwrite-evm-transactiongaslimit">`PerWorkflow.ChainWrite.EVM.TransactionGasLimit`</a> | Gas quota per EVM transaction                             | 5,000,000 |
 
 ### EVM read capability
 
-| Quota                    | Description                                                      | Value |
-| ------------------------ | ---------------------------------------------------------------- | ----- |
-| Read Calls per Execution | Maximum number of EVM read calls per workflow execution          | 10    |
-| Log Query Block Quota    | Maximum number of blocks that can be queried for historical logs | 100   |
-| Payload Size             | Maximum size of an EVM read request payload                      | 5 KB  |
+| Quota Key                                                                                                                                        | Description                                                      | Value |
+| ------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- | ----- |
+| <a href="#perworkflow-chainread-calllimit" id="perworkflow-chainread-calllimit">`PerWorkflow.ChainRead.CallLimit`</a>                            | Maximum number of EVM read calls per workflow execution          | 10    |
+| <a href="#perworkflow-chainread-logqueryblocklimit" id="perworkflow-chainread-logqueryblocklimit">`PerWorkflow.ChainRead.LogQueryBlockLimit`</a> | Maximum number of blocks that can be queried for historical logs | 100   |
+| <a href="#perworkflow-chainread-payloadsizelimit" id="perworkflow-chainread-payloadsizelimit">`PerWorkflow.ChainRead.PayloadSizeLimit`</a>       | Maximum size of an EVM read request payload                      | 5 KB  |
 
 ### HTTP capability
 
-| Quota                    | Description                                            | Value      |
-| ------------------------ | ------------------------------------------------------ | ---------- |
-| HTTP Calls per Execution | Maximum number of HTTP requests per workflow execution | 5          |
-| Response Size            | Maximum size of an HTTP response                       | 10 KB      |
-| Connection Timeout       | Maximum time to establish an HTTP connection           | 10 seconds |
-| Request Size             | Maximum size of an HTTP request payload                | 100 KB     |
-| Cache Age                | Maximum time HTTP responses can be cached              | 10 minutes |
+| Quota Key                                                                                                                                        | Description                                            | Value      |
+| ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ | ---------- |
+| <a href="#perworkflow-httpaction-calllimit" id="perworkflow-httpaction-calllimit">`PerWorkflow.HTTPAction.CallLimit`</a>                         | Maximum number of HTTP requests per workflow execution | 5          |
+| <a href="#perworkflow-httpaction-responsesizelimit" id="perworkflow-httpaction-responsesizelimit">`PerWorkflow.HTTPAction.ResponseSizeLimit`</a> | Maximum size of an HTTP response                       | 100 KB     |
+| <a href="#perworkflow-httpaction-connectiontimeout" id="perworkflow-httpaction-connectiontimeout">`PerWorkflow.HTTPAction.ConnectionTimeout`</a> | Maximum time to establish an HTTP connection           | 10 seconds |
+| <a href="#perworkflow-httpaction-requestsizelimit" id="perworkflow-httpaction-requestsizelimit">`PerWorkflow.HTTPAction.RequestSizeLimit`</a>    | Maximum size of an HTTP request payload                | 10 KB      |
+| <a href="#perworkflow-httpaction-cacheagelimit" id="perworkflow-httpaction-cacheagelimit">`PerWorkflow.HTTPAction.CacheAgeLimit`</a>             | Maximum time HTTP responses can be cached              | 10 minutes |
 
 ## Quota increases
 
@@ -545,7 +546,7 @@ Choose your installation method:
 The easiest way to install the CRE CLI is using the installation script:
 
 ```bash
-curl -sSL https://cre.chain.link/install.sh | sh
+curl -sSL https://cre.chain.link/install.sh | bash
 ```
 
 This script will:
@@ -553,7 +554,7 @@ This script will:
 - Detect your operating system and architecture automatically
 - Download the correct binary for your system
 - Verify the binary's integrity
-- Install it to `/usr/local/bin` (or prompt you for a custom location)
+- Install it to `$HOME/.cre`
 - Make the binary executable
 
 After the script completes, verify the installation:
@@ -711,8 +712,8 @@ You should see version information: `cre version v1.0.2`.
 **If it doesn't work:**
 
 - Make sure you opened a **new terminal window** after making PATH changes
-- Check the binary location: `which cre` should return `/usr/local/bin/cre` (or your custom path)
-- Check that the binary has execute permissions: `ls -la /usr/local/bin/cre`
+- Check the binary location: `which cre` should return the path to your installation
+- Check that the binary has execute permissions: `ls -la $(which cre)`
 - Verify your PATH includes the correct directory: `echo $PATH`
 
 #### 5. Confirm your PATH (troubleshooting)
@@ -766,7 +767,7 @@ This script will:
 
 - Download the correct binary for Windows
 - Verify the binary's integrity
-- Install it to a location in your PATH
+- Install it to `$env:LOCALAPPDATA\Programs\cre`
 - Make the binary executable
 
 After the script completes, **open a new PowerShell window** and verify the installation:
@@ -949,7 +950,7 @@ Want to dive deeper into specific concepts from the Getting Started guide? Use t
 
 - **[EVM Client Overview](/cre/guides/workflow/using-evm-client/overview)** - Introduction to smart contract interactions
 - **[Onchain Read Guide](/cre/guides/workflow/using-evm-client/onchain-read)** - Reading from a smart contract
-- **[Onchain Write Guide](/cre/guides/workflow/using-evm-client/onchain-write)** - Complete write patterns and report generation
+- **[Onchain Write Guide](/cre/guides/workflow/using-evm-client/onchain-write/overview)** - Complete write patterns and report generation
 
 **Configuration & Secrets**
 
@@ -1933,7 +1934,7 @@ This guide explains how to build a consumer contract that can securely receive a
 
 - [Core Concepts: The Onchain Data Flow](#1-core-concepts-the-onchain-data-flow)
 - [The IReceiver Standard](#2-the-ireceiver-standard)
-- [Using IReceiverTemplate](#3-using-ireceivertemplate)
+- [Using ReceiverTemplate](#3-using-receivertemplate)
 - [Working with Simulation](#4-working-with-simulation)
 - [Advanced Usage](#5-advanced-usage-optional)
 - [Complete Examples](#6-complete-examples)
@@ -1959,18 +1960,18 @@ interface IReceiver is IERC165 {
 }
 ```
 
-- `metadata`: Contains information about the workflow (ID, name, owner).
+- `metadata`: Contains information about the workflow (ID, name, owner). This is encoded by the Forwarder using `abi.encodePacked` with the following structure: `bytes32 workflowId`, `bytes10 workflowName`, `address workflowOwner`.
 - `report`: The raw, ABI-encoded data payload from your workflow.
 
 ### 2.2 Support ERC165 Interface Detection
 
 [ERC165](https://eips.ethereum.org/EIPS/eip-165) is a standard that allows contracts to publish the interfaces they support. The `KeystoneForwarder` uses this to check if your contract supports the `IReceiver` interface before sending a report.
 
-## 3. Using `IReceiverTemplate`
+## 3. Using `ReceiverTemplate`
 
 ### 3.1 Overview
 
-While you can implement these standards manually, we provide an abstract contract, `IReceiverTemplate.sol`, that does the heavy lifting for you. Inheriting from it is the recommended best practice.
+While you can implement these standards manually, we provide an abstract contract, `ReceiverTemplate.sol`, that does the heavy lifting for you. Inheriting from it is the recommended best practice.
 
 **Key features:**
 
@@ -1991,15 +1992,18 @@ import {IERC165} from "./IERC165.sol";
 import {IReceiver} from "./IReceiver.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-/// @title IReceiverTemplate - Abstract receiver with optional permission controls
+/// @title ReceiverTemplate - Abstract receiver with optional permission controls
 /// @notice Provides flexible, updatable security checks for receiving workflow reports
 /// @dev All permission fields default to zero (disabled). Use setter functions to enable checks.
-abstract contract IReceiverTemplate is IReceiver, Ownable {
+abstract contract ReceiverTemplate is IReceiver, Ownable {
     // Optional permission fields (all default to zero = disabled)
-    address public forwarderAddress; // If set, only this address can call onReport
-    address public expectedAuthor; // If set, only reports from this workflow owner are accepted
-    bytes10 public expectedWorkflowName; // If set, only reports with this workflow name are accepted
-    bytes32 public expectedWorkflowId; // If set, only reports from this specific workflow ID are accepted
+    address private s_forwarderAddress; // If set, only this address can call onReport
+    address private s_expectedAuthor; // If set, only reports from this workflow owner are accepted
+    bytes10 private s_expectedWorkflowName; // If set, only reports with this workflow name are accepted
+    bytes32 private s_expectedWorkflowId; // If set, only reports from this specific workflow ID are accepted
+
+    // Hex character lookup table for bytes-to-hex conversion
+    bytes private constant HEX_CHARS = "0123456789abcdef";
 
     // Custom errors
     error InvalidSender(address sender, address expected);
@@ -2007,30 +2011,60 @@ abstract contract IReceiverTemplate is IReceiver, Ownable {
     error InvalidWorkflowName(bytes10 received, bytes10 expected);
     error InvalidWorkflowId(bytes32 received, bytes32 expected);
 
+    // Events
+    event ForwarderAddressUpdated(address indexed previousForwarder, address indexed newForwarder);
+    event ExpectedAuthorUpdated(address indexed previousAuthor, address indexed newAuthor);
+    event ExpectedWorkflowNameUpdated(bytes10 indexed previousName, bytes10 indexed newName);
+    event ExpectedWorkflowIdUpdated(bytes32 indexed previousId, bytes32 indexed newId);
+
     /// @notice Constructor sets msg.sender as the owner
     /// @dev All permission fields are initialized to zero (disabled by default)
     constructor() Ownable(msg.sender) {}
+
+    /// @notice Returns the configured forwarder address
+    /// @return The forwarder address (address(0) if not set)
+    function getForwarderAddress() external view returns (address) {
+        return s_forwarderAddress;
+    }
+
+    /// @notice Returns the expected workflow author address
+    /// @return The expected author address (address(0) if not set)
+    function getExpectedAuthor() external view returns (address) {
+        return s_expectedAuthor;
+    }
+
+    /// @notice Returns the expected workflow name
+    /// @return The expected workflow name (bytes10(0) if not set)
+    function getExpectedWorkflowName() external view returns (bytes10) {
+        return s_expectedWorkflowName;
+    }
+
+    /// @notice Returns the expected workflow ID
+    /// @return The expected workflow ID (bytes32(0) if not set)
+    function getExpectedWorkflowId() external view returns (bytes32) {
+        return s_expectedWorkflowId;
+    }
 
     /// @inheritdoc IReceiver
     /// @dev Performs optional validation checks based on which permission fields are set
     function onReport(bytes calldata metadata, bytes calldata report) external override {
         // Security Check 1: Verify caller is the trusted Chainlink Forwarder (if configured)
-        if (forwarderAddress != address(0) && msg.sender != forwarderAddress) {
-            revert InvalidSender(msg.sender, forwarderAddress);
+        if (s_forwarderAddress != address(0) && msg.sender != s_forwarderAddress) {
+            revert InvalidSender(msg.sender, s_forwarderAddress);
         }
 
         // Security Checks 2-4: Verify workflow identity - ID, owner, and/or name (if any are configured)
-        if (expectedWorkflowId != bytes32(0) || expectedAuthor != address(0) || expectedWorkflowName != bytes10(0)) {
+        if (s_expectedWorkflowId != bytes32(0) || s_expectedAuthor != address(0) || s_expectedWorkflowName != bytes10(0)) {
             (bytes32 workflowId, bytes10 workflowName, address workflowOwner) = _decodeMetadata(metadata);
 
-            if (expectedWorkflowId != bytes32(0) && workflowId != expectedWorkflowId) {
-                revert InvalidWorkflowId(workflowId, expectedWorkflowId);
+            if (s_expectedWorkflowId != bytes32(0) && workflowId != s_expectedWorkflowId) {
+                revert InvalidWorkflowId(workflowId, s_expectedWorkflowId);
             }
-            if (expectedAuthor != address(0) && workflowOwner != expectedAuthor) {
-                revert InvalidAuthor(workflowOwner, expectedAuthor);
+            if (s_expectedAuthor != address(0) && workflowOwner != s_expectedAuthor) {
+                revert InvalidAuthor(workflowOwner, s_expectedAuthor);
             }
-            if (expectedWorkflowName != bytes10(0) && workflowName != expectedWorkflowName) {
-                revert InvalidWorkflowName(workflowName, expectedWorkflowName);
+            if (s_expectedWorkflowName != bytes10(0) && workflowName != s_expectedWorkflowName) {
+                revert InvalidWorkflowName(workflowName, s_expectedWorkflowName);
             }
         }
 
@@ -2040,21 +2074,28 @@ abstract contract IReceiverTemplate is IReceiver, Ownable {
     /// @notice Updates the forwarder address that is allowed to call onReport
     /// @param _forwarder The new forwarder address (use address(0) to disable this check)
     function setForwarderAddress(address _forwarder) external onlyOwner {
-        forwarderAddress = _forwarder;
+        address previousForwarder = s_forwarderAddress;
+        s_forwarderAddress = _forwarder;
+        emit ForwarderAddressUpdated(previousForwarder, _forwarder);
     }
 
     /// @notice Updates the expected workflow owner address
     /// @param _author The new expected author address (use address(0) to disable this check)
     function setExpectedAuthor(address _author) external onlyOwner {
-        expectedAuthor = _author;
+        address previousAuthor = s_expectedAuthor;
+        s_expectedAuthor = _author;
+        emit ExpectedAuthorUpdated(previousAuthor, _author);
     }
 
     /// @notice Updates the expected workflow name from a plaintext string
     /// @param _name The workflow name as a string (use empty string "" to disable this check)
     /// @dev The name is hashed using SHA256 and truncated
     function setExpectedWorkflowName(string calldata _name) external onlyOwner {
+        bytes10 previousName = s_expectedWorkflowName;
+
         if (bytes(_name).length == 0) {
-            expectedWorkflowName = bytes10(0);
+            s_expectedWorkflowName = bytes10(0);
+            emit ExpectedWorkflowNameUpdated(previousName, bytes10(0));
             return;
         }
 
@@ -2063,35 +2104,37 @@ abstract contract IReceiverTemplate is IReceiver, Ownable {
         bytes32 hash = sha256(bytes(_name));
         bytes memory hexString = _bytesToHexString(abi.encodePacked(hash));
         bytes memory first10 = new bytes(10);
-        for (uint i = 0; i < 10; i++) {
+        for (uint256 i = 0; i < 10; i++) {
             first10[i] = hexString[i];
         }
-        expectedWorkflowName = bytes10(first10);
+        s_expectedWorkflowName = bytes10(first10);
+        emit ExpectedWorkflowNameUpdated(previousName, s_expectedWorkflowName);
     }
 
     /// @notice Updates the expected workflow ID
     /// @param _id The new expected workflow ID (use bytes32(0) to disable this check)
     function setExpectedWorkflowId(bytes32 _id) external onlyOwner {
-        expectedWorkflowId = _id;
+        bytes32 previousId = s_expectedWorkflowId;
+        s_expectedWorkflowId = _id;
+        emit ExpectedWorkflowIdUpdated(previousId, _id);
     }
 
     /// @notice Helper function to convert bytes to hex string
     /// @param data The bytes to convert
     /// @return The hex string representation
     function _bytesToHexString(bytes memory data) private pure returns (bytes memory) {
-        bytes memory hexChars = "0123456789abcdef";
         bytes memory hexString = new bytes(data.length * 2);
 
         for (uint256 i = 0; i < data.length; i++) {
-            hexString[i * 2] = hexChars[uint8(data[i] >> 4)];
-            hexString[i * 2 + 1] = hexChars[uint8(data[i] & 0x0f)];
+            hexString[i * 2] = HEX_CHARS[uint8(data[i] >> 4)];
+            hexString[i * 2 + 1] = HEX_CHARS[uint8(data[i] & 0x0f)];
         }
 
         return hexString;
     }
 
     /// @notice Extracts all metadata fields from the onReport metadata parameter
-    /// @param metadata The metadata in bytes format
+    /// @param metadata The metadata bytes encoded using abi.encodePacked(workflowId, workflowName, workflowOwner)
     /// @return workflowId The unique identifier of the workflow (bytes32)
     /// @return workflowName The name of the workflow (bytes10)
     /// @return workflowOwner The owner address of the workflow
@@ -2100,7 +2143,7 @@ abstract contract IReceiverTemplate is IReceiver, Ownable {
         pure
         returns (bytes32 workflowId, bytes10 workflowName, address workflowOwner)
     {
-        // Metadata structure:
+        // Metadata structure (encoded using abi.encodePacked by the Forwarder):
         // - First 32 bytes: length of the byte array (standard for dynamic bytes)
         // - Offset 32, size 32: workflow_id (bytes32)
         // - Offset 64, size 10: workflow_name (bytes10)
@@ -2110,6 +2153,7 @@ abstract contract IReceiverTemplate is IReceiver, Ownable {
             workflowName := mload(add(metadata, 64))
             workflowOwner := shr(mul(12, 8), mload(add(metadata, 74)))
         }
+        return (workflowId, workflowName, workflowOwner);
     }
 
     /// @notice Abstract function to process the report data
@@ -2126,24 +2170,24 @@ abstract contract IReceiverTemplate is IReceiver, Ownable {
 
 ### 3.3 Quick Start
 
-The simplest way to use `IReceiverTemplate` is to inherit from it and implement the `_processReport` function:
+The simplest way to use `ReceiverTemplate` is to inherit from it and implement the `_processReport` function:
 
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
-import { IReceiverTemplate } from "./IReceiverTemplate.sol";
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
 
-contract MyConsumer is IReceiverTemplate {
-  uint256 public storedValue;
+contract MyConsumer is ReceiverTemplate {
+  uint256 public s_storedValue;
   event ValueUpdated(uint256 newValue);
 
   // Simple constructor - no parameters needed
-  constructor() IReceiverTemplate() {}
+  constructor() ReceiverTemplate() {}
 
   // Implement your business logic here
   function _processReport(bytes calldata report) internal override {
     uint256 newValue = abi.decode(report, (uint256));
-    storedValue = newValue;
+    s_storedValue = newValue;
     emit ValueUpdated(newValue);
   }
 }
@@ -2202,7 +2246,7 @@ myConsumer.setExpectedWorkflowName(""); // Empty string disables the check
 
 #### How workflow names are encoded
 
-The `workflowName` field in the metadata uses the **`bytes10`** type rather than plaintext strings. When you call `setExpectedWorkflowName("my_workflow")`, the `IReceiverTemplate` automatically encodes it using the same algorithm as the CRE engine:
+The `workflowName` field in the metadata uses the **`bytes10`** type rather than plaintext strings. When you call `setExpectedWorkflowName("my_workflow")`, the `ReceiverTemplate` automatically encodes it using the same algorithm as the CRE engine:
 
 1. Compute SHA256 hash of the workflow name
 2. Convert hash to hex string (64 characters)
@@ -2281,25 +2325,27 @@ See [Configuring Permissions](#34-configuring-permissions) for complete details.
 You can override `onReport` to add your own validation logic before or after the standard checks:
 
 ```solidity
-import { IReceiverTemplate } from "./IReceiverTemplate.sol";
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
 
-contract AdvancedConsumer is IReceiverTemplate {
-  uint256 public minReportInterval = 1 hours;
-  uint256 public lastReportTime;
+contract AdvancedConsumer is ReceiverTemplate {
+  uint256 private s_minReportInterval = 1 hours;
+  uint256 private s_lastReportTime;
 
   error ReportTooFrequent(uint256 timeSinceLastReport, uint256 minInterval);
+
+  event MinReportIntervalUpdated(uint256 previousInterval, uint256 newInterval);
 
   // Add custom validation before parent's checks
   function onReport(bytes calldata metadata, bytes calldata report) external override {
     // Custom check: Rate limiting
-    if (block.timestamp < lastReportTime + minReportInterval) {
-      revert ReportTooFrequent(block.timestamp - lastReportTime, minReportInterval);
+    if (block.timestamp < s_lastReportTime + s_minReportInterval) {
+      revert ReportTooFrequent(block.timestamp - s_lastReportTime, s_minReportInterval);
     }
 
     // Call parent implementation for standard permission checks
     super.onReport(metadata, report);
 
-    lastReportTime = block.timestamp;
+    s_lastReportTime = block.timestamp;
   }
 
   function _processReport(bytes calldata report) internal override {
@@ -2308,9 +2354,24 @@ contract AdvancedConsumer is IReceiverTemplate {
     // ... store or process the value ...
   }
 
-  // Allow owner to update rate limit
+  /// @notice Returns the minimum interval between reports
+  /// @return The minimum interval in seconds
+  function getMinReportInterval() external view returns (uint256) {
+    return s_minReportInterval;
+  }
+
+  /// @notice Returns the timestamp of the last report
+  /// @return The last report timestamp
+  function getLastReportTime() external view returns (uint256) {
+    return s_lastReportTime;
+  }
+
+  /// @notice Updates the minimum interval between reports
+  /// @param _interval The new minimum interval in seconds
   function setMinReportInterval(uint256 _interval) external onlyOwner {
-    minReportInterval = _interval;
+    uint256 previousInterval = s_minReportInterval;
+    s_minReportInterval = _interval;
+    emit MinReportIntervalUpdated(previousInterval, _interval);
   }
 }
 ```
@@ -2320,8 +2381,8 @@ contract AdvancedConsumer is IReceiverTemplate {
 The `_decodeMetadata` helper function is available for use in your `_processReport` implementation. This allows you to access workflow metadata for custom business logic:
 
 ```solidity
-contract MetadataAwareConsumer is IReceiverTemplate {
-  mapping(bytes32 => uint256) public reportCountByWorkflow;
+contract MetadataAwareConsumer is ReceiverTemplate {
+  mapping(bytes32 => uint256) public s_reportCountByWorkflow;
 
   function _processReport(bytes calldata report) internal override {
     // Access the metadata to get workflow ID
@@ -2329,7 +2390,7 @@ contract MetadataAwareConsumer is IReceiverTemplate {
     (bytes32 workflowId, , ) = _decodeMetadata(metadata);
 
     // Use workflow ID in your business logic
-    reportCountByWorkflow[workflowId]++;
+    s_reportCountByWorkflow[workflowId]++;
 
     // Process the report data
     uint256 value = abi.decode(report, (uint256));
@@ -2347,23 +2408,23 @@ contract MetadataAwareConsumer is IReceiverTemplate {
 
 ### Example 1: Simple Consumer Contract
 
-This example inherits from `IReceiverTemplate` to store a temperature value.
+This example inherits from `ReceiverTemplate` to store a temperature value.
 
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
-import { IReceiverTemplate } from "./IReceiverTemplate.sol";
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
 
-contract TemperatureConsumer is IReceiverTemplate {
-  int256 public currentTemperature;
+contract TemperatureConsumer is ReceiverTemplate {
+  int256 public s_currentTemperature;
   event TemperatureUpdated(int256 newTemperature);
 
   // Simple constructor - no parameters needed
-  constructor() IReceiverTemplate() {}
+  constructor() ReceiverTemplate() {}
 
   function _processReport(bytes calldata report) internal override {
     int256 newTemperature = abi.decode(report, (int256));
-    currentTemperature = newTemperature;
+    s_currentTemperature = newTemperature;
     emit TemperatureUpdated(newTemperature);
   }
 }
@@ -2384,7 +2445,7 @@ temperatureConsumer.setExpectedWorkflowId(0xYourWorkflowId...);
 For more complex scenarios, it's best to separate your Chainlink-aware code from your core business logic. The **Proxy Pattern** is a robust architecture that uses two contracts to achieve this:
 
 - **A Logic Contract**: Holds the state and the core functions of your application. It knows nothing about the Forwarder contract or the `onReport` function.
-- **A Proxy Contract**: Acts as the secure entry point. It inherits from `IReceiverTemplate` and forwards validated reports to the Logic Contract.
+- **A Proxy Contract**: Acts as the secure entry point. It inherits from `ReceiverTemplate` and forwards validated reports to the Logic Contract.
 
 This separation makes your business logic more modular and reusable.
 
@@ -2404,28 +2465,59 @@ contract ReserveManager is Ownable {
     uint256 btcPrice;
   }
 
-  address public proxyAddress;
-  uint256 public lastEthPrice;
-  uint256 public lastBtcPrice;
-  uint256 public lastUpdateTime;
+  address private s_proxyAddress;
+  uint256 private s_lastEthPrice;
+  uint256 private s_lastBtcPrice;
+  uint256 private s_lastUpdateTime;
 
   event ReservesUpdated(uint256 ethPrice, uint256 btcPrice, uint256 updateTime);
+  event ProxyAddressUpdated(address indexed previousProxy, address indexed newProxy);
 
   modifier onlyProxy() {
-    require(msg.sender == proxyAddress, "Caller is not the authorized proxy");
+    require(msg.sender == s_proxyAddress, "Caller is not the authorized proxy");
     _;
   }
 
   constructor() Ownable(msg.sender) {}
 
-  function setProxyAddress(address _proxyAddress) external onlyOwner {
-    proxyAddress = _proxyAddress;
+  /// @notice Returns the proxy address
+  /// @return The authorized proxy address
+  function getProxyAddress() external view returns (address) {
+    return s_proxyAddress;
   }
 
+  /// @notice Returns the last ETH price
+  /// @return The last recorded ETH price
+  function getLastEthPrice() external view returns (uint256) {
+    return s_lastEthPrice;
+  }
+
+  /// @notice Returns the last BTC price
+  /// @return The last recorded BTC price
+  function getLastBtcPrice() external view returns (uint256) {
+    return s_lastBtcPrice;
+  }
+
+  /// @notice Returns the last update timestamp
+  /// @return The timestamp of the last update
+  function getLastUpdateTime() external view returns (uint256) {
+    return s_lastUpdateTime;
+  }
+
+  /// @notice Updates the authorized proxy address
+  /// @param _proxyAddress The new proxy address
+  function setProxyAddress(address _proxyAddress) external onlyOwner {
+    address previousProxy = s_proxyAddress;
+    s_proxyAddress = _proxyAddress;
+    emit ProxyAddressUpdated(previousProxy, _proxyAddress);
+  }
+
+  /// @notice Updates the reserve prices
+  /// @param data The new reserve data containing ETH and BTC prices
   function updateReserves(UpdateReserves memory data) external onlyProxy {
-    lastEthPrice = data.ethPrice;
-    lastBtcPrice = data.btcPrice;
-    lastUpdateTime = block.timestamp;
+    s_lastEthPrice = data.ethPrice;
+    s_lastBtcPrice = data.btcPrice;
+    s_lastUpdateTime = block.timestamp;
     emit ReservesUpdated(data.ethPrice, data.btcPrice, block.timestamp);
   }
 }
@@ -2433,23 +2525,29 @@ contract ReserveManager is Ownable {
 
 #### The Proxy Contract (`UpdateReservesProxy.sol`)
 
-This contract, our "bouncer", is the only contract that interacts with the Chainlink platform. It inherits `IReceiverTemplate` to validate incoming reports and then calls the `ReserveManager`.
+This contract, our "bouncer", is the only contract that interacts with the Chainlink platform. It inherits `ReceiverTemplate` to validate incoming reports and then calls the `ReserveManager`.
 
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
 import { ReserveManager } from "./ReserveManager.sol";
-import { IReceiverTemplate } from "./keystone/IReceiverTemplate.sol";
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
 
-contract UpdateReservesProxy is IReceiverTemplate {
-  ReserveManager public s_reserveManager;
+contract UpdateReservesProxy is ReceiverTemplate {
+  ReserveManager private s_reserveManager;
 
   constructor(address reserveManagerAddress) {
     s_reserveManager = ReserveManager(reserveManagerAddress);
   }
 
-  /// @inheritdoc IReceiverTemplate
+  /// @notice Returns the reserve manager contract address
+  /// @return The ReserveManager contract instance
+  function getReserveManager() external view returns (ReserveManager) {
+    return s_reserveManager;
+  }
+
+  /// @inheritdoc ReceiverTemplate
   function _processReport(bytes calldata report) internal override {
     ReserveManager.UpdateReserves memory updateReservesData = abi.decode(report, (ReserveManager.UpdateReserves));
     s_reserveManager.updateReserves(updateReservesData);
@@ -6868,6 +6966,116 @@ cre version v1.0.2
 
 ---
 
+# Finality and Confidence Levels
+Source: https://docs.chain.link/cre/concepts/finality-ts
+Last Updated: 2025-12-10
+
+Finality determines when a blockchain transaction is considered irreversible. Until a block is finalized, it could be reorganized (replaced by a different block if the chain temporarily forks), which means any data you read from it might change.
+
+Different blockchains achieve finality in different ways and at different speeds. CRE abstracts these differences through **confidence levels**, allowing you to specify your finality requirements without needing to know the underlying chain-specific implementation.
+
+## Understanding CRE's finality model
+
+CRE provides three confidence levels for reading blockchain data and monitoring events. These levels work consistently across all supported chains.
+
+### The three confidence levels
+
+| Confidence Level | Description                                                                         | Use Case                                                                         |
+| ---------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| **`LATEST`**     | The most recent block. No finality guarantees—the block could still be reorganized. | Non-critical, time-sensitive operations where speed matters more than certainty. |
+| **`SAFE`**       | A block that is unlikely to be reorganized, but not yet fully finalized.            | A balance between speed and security for most operations.                        |
+| **`FINALIZED`**  | A block that is considered irreversible. This is the safest option.                 | Critical operations where you need absolute certainty the data won't change.     |
+
+**Choosing the right level:**
+
+- **`FINALIZED`** — Use for financial transactions, critical state updates, or when incorrect data could cause significant issues
+- **`SAFE`** — Use when you need reasonable confidence without waiting for full finality (good for most monitoring/alerting)
+- **`LATEST`** — Use for real-time dashboards or displays where speed matters more than guaranteed accuracy
+
+### How confidence levels map to chains
+
+**SAFE and LATEST:**
+
+CRE uses the chain's native `safe` and `latest` block tags respectively for all supported chains.
+
+**FINALIZED:**
+
+When you specify `FINALIZED` in your workflow, CRE automatically maps this to its finality method—whether it uses the native finality tag or block depth (with the number of blocks specified for block depth).
+
+| Chain                           | Finality Method          |
+| ------------------------------- | ------------------------ |
+| Arbitrum One / Arbitrum Sepolia | Native `finalized` tag   |
+| Avalanche / Avalanche Fuji      | Native `finalized` tag   |
+| Base / Base Sepolia             | Native `finalized` tag   |
+| BNB Chain / BNB Testnet         | Native `finalized` tag   |
+| Ethereum / Ethereum Sepolia     | Native `finalized` tag   |
+| OP Mainnet / OP Sepolia         | Native `finalized` tag   |
+| Polygon / Polygon Amoy          | Block depth (500 blocks) |
+
+## Finality for chain reads
+
+Chain read operations ([`CallContract`](/cre/reference/sdk/evm-client-ts#callcontract), [`BalanceAt`](/cre/reference/sdk/evm-client-ts#balanceat), [`FilterLogs`](/cre/reference/sdk/evm-client-ts#filterlogs), etc.) support confidence levels and custom block depths.
+
+### Using confidence levels
+
+For most read operations, use the standard confidence levels by passing [`LATEST_BLOCK_NUMBER`](/cre/reference/sdk/evm-client-ts#latest_block_number) or [`LAST_FINALIZED_BLOCK_NUMBER`](/cre/reference/sdk/evm-client-ts#last_finalized_block_number) as the `blockNumber` parameter. If you don't specify a block number, CRE defaults to `LATEST`.
+
+**Note:** The `SAFE` confidence level is not available for chain reads—only `LATEST` and `FINALIZED` are supported.
+
+### Custom block depths
+
+For use cases requiring fixed confirmation thresholds or historical state verification, you can specify **any explicit block number** instead of using the predefined confidence levels. This enables you to:
+
+- Implement custom finality rules tailored to your risk profile (e.g., "always wait 1,000 blocks")
+- Meet regulatory requirements that mandate fixed, auditable confirmation thresholds
+- Query historical state at specific past block heights for analysis or verification
+
+**When to use custom block depths:**
+
+- **Regulatory compliance** — Your interactions require provable, fixed confirmation thresholds for auditors
+- **Changing chain parameters** — The chain's finality definition may change, but your security model must remain constant
+- **Historical verification** — You need to verify state at a specific moment
+
+**Implementation:**
+
+Block numbers must be provided as `BigIntJson` objects. See [Onchain Read](/cre/guides/workflow/using-evm-client/onchain-read-ts#custom-block-depths) for the conversion pattern and examples.
+
+## Finality for chain writes
+
+Chain write operations return a [`WriteReportReply`](/cre/reference/sdk/evm-client-ts#writereportreply) when the transaction is included in a block, not when it reaches finality.
+
+### What a successful response means
+
+When [`WriteReportReply`](/cre/reference/sdk/evm-client-ts#writereportreply) returns with `txStatus` equal to `TX_STATUS_SUCCESS`:
+
+- Your transaction was **included in a block**
+- The transaction is **not necessarily finalized** yet
+
+The reply is returned as soon as the transaction appears in a block, not when the block reaches finality. This is important for time-sensitive workflows, but it means the transaction could still be reorganized.
+
+### Reorg handling
+
+If a block containing your transaction is reorganized:
+
+- CRE's Transaction Manager (TXM) automatically resubmits your transaction
+- Gas bumping is applied as needed to ensure the transaction is included
+- **Important:** The transaction hash may change during resubmission
+- You are not automatically notified if the hash changes
+
+<Aside type="caution" title="For mission-critical applications">
+  If you need absolute certainty that your write transaction reached finality, implement post-write verification by
+  reading the blockchain state after a custom number of confirmations. Do not rely solely on `WriteReportReply` for
+  finality confirmation.
+</Aside>
+
+## Finality for event triggers
+
+EVM Log Triggers must use the three confidence levels (`LATEST`, `SAFE`, or `FINALIZED`). Custom block depths are not supported for triggers.
+
+By default, triggers use `SAFE` if no confidence level is specified. For details on configuring trigger confidence levels, see [EVM Log Trigger](/cre/reference/sdk/triggers/evm-log-trigger-ts#configuration).
+
+---
+
 # Avoiding Non-Determinism in Workflows
 Source: https://docs.chain.link/cre/concepts/non-determinism-ts
 Last Updated: 2025-11-04
@@ -7972,7 +8180,7 @@ You have successfully read a value from a smart contract and combined it with of
 
 # Part 4: Writing Onchain
 Source: https://docs.chain.link/cre/getting-started/part-4-writing-onchain-ts
-Last Updated: 2025-11-04
+Last Updated: 2025-12-09
 
 In the previous parts, you successfully fetched offchain data and read from a smart contract. Now, you'll complete the "Onchain Calculator" by writing your computed result back to the blockchain.
 
@@ -7999,16 +8207,16 @@ Here is the source code for the contract so you can see how it works:
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import { IReceiverTemplate } from "./keystone/IReceiverTemplate.sol";
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
 
 /**
  * @title CalculatorConsumer (Testing Version)
  * @notice This contract receives reports from a CRE workflow and stores the results of a calculation onchain.
- * @dev This version uses IReceiverTemplate without configuring any security checks, making it compatible
+ * @dev This version uses ReceiverTemplate without configuring any security checks, making it compatible
  * with the mock Forwarder used during simulation. All permission fields remain at their default zero
  * values (disabled).
  */
-contract CalculatorConsumer is IReceiverTemplate {
+contract CalculatorConsumer is ReceiverTemplate {
   // Struct to hold the data sent in a report from the workflow
   struct CalculatorResult {
     uint256 offchainValue;
@@ -8026,13 +8234,13 @@ contract CalculatorConsumer is IReceiverTemplate {
 
   /**
    * @dev The constructor doesn't set any security checks.
-   * The IReceiverTemplate parent constructor will initialize all permission fields to zero (disabled).
+   * The ReceiverTemplate parent constructor will initialize all permission fields to zero (disabled).
    */
   constructor() {}
 
   /**
    * @notice Implements the core business logic for processing reports.
-   * @dev This is called automatically by IReceiverTemplate's onReport function after security checks.
+   * @dev This is called automatically by ReceiverTemplate's onReport function after security checks.
    */
   function _processReport(bytes calldata report) internal override {
     // Decode the report bytes into our CalculatorResult struct
@@ -8063,7 +8271,7 @@ contract CalculatorConsumer is IReceiverTemplate {
 }
 ```
 
-The contract is already deployed for you on Sepolia at the following address: <a href="https://sepolia.etherscan.io/address/0xF3abEAa889e46c6C5b9A0bD818cE54Cc4eAF8A54#code" target="_blank" rel="noopener noreferrer">`0xF3abEAa889e46c6C5b9A0bD818cE54Cc4eAF8A54`</a>. You will use this address in your configuration file.
+The contract is already deployed for you on Sepolia at the following address: <a href="https://sepolia.etherscan.io/address/0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52#code" target="_blank" rel="noopener noreferrer">`0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52`</a>. You will use this address in your configuration file.
 
 ## Step 2: Update your workflow configuration
 
@@ -8076,7 +8284,7 @@ Add the `CalculatorConsumer` contract address to your `config.staging.json`:
   "evms": [
     {
       "storageAddress": "0xa17CF997C28FF154eDBae1422e6a50BeF23927F4",
-      "calculatorConsumerAddress": "0xF3abEAa889e46c6C5b9A0bD818cE54Cc4eAF8A54",
+      "calculatorConsumerAddress": "0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52",
       "chainName": "ethereum-testnet-sepolia",
       "gasLimit": "500000"
     }
@@ -8365,30 +8573,34 @@ Your workflow will now show the complete end-to-end execution, including the fin
 
 ```bash
 Workflow compiled
-2025-11-03T19:09:22Z [SIMULATION] Simulator Initialized
+2025-12-09T13:31:18Z [SIMULATION] Simulator Initialized
 
-2025-11-03T19:09:22Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
-2025-11-03T19:09:22Z [USER LOG] Successfully fetched offchain value: 39
-2025-11-03T19:09:22Z [USER LOG] Successfully read onchain value: 22
-2025-11-03T19:09:22Z [USER LOG] Final calculated result: 61
-2025-11-03T19:09:22Z [USER LOG] Updating calculator result for consumer: 0xF3abEAa889e46c6C5b9A0bD818cE54Cc4eAF8A54
-2025-11-03T19:09:22Z [USER LOG] Writing report to consumer contract - offchainValue: 39, onchainValue: 22, finalResult: 61
-2025-11-03T19:09:25Z [USER LOG] Waiting for write report response
-2025-11-03T19:09:25Z [USER LOG] Write report transaction succeeded: 0xcc99cf4fcdc1262162762f747eeb660b52cc117754c953fdb72842414fcecdc4
-2025-11-03T19:09:25Z [USER LOG] View transaction at https://sepolia.etherscan.io/tx/0xcc99cf4fcdc1262162762f747eeb660b52cc117754c953fdb72842414fcecdc4
-2025-11-03T19:09:25Z [USER LOG] Workflow finished successfully! offchainValue: 39, onchainValue: 22, finalResult: 61, txHash: 0xcc99cf4fcdc1262162762f747eeb660b52cc117754c953fdb72842414fcecdc4
+2025-12-09T13:31:18Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+2025-12-09T13:31:18Z [USER LOG] Successfully fetched offchain value: 62
+2025-12-09T13:31:18Z [USER LOG] Successfully read onchain value: 22
+2025-12-09T13:31:18Z [USER LOG] Final calculated result: 84
+2025-12-09T13:31:18Z [USER LOG] Updating calculator result for consumer: 0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52
+2025-12-09T13:31:18Z [USER LOG] Writing report to consumer contract - offchainValue: 62, onchainValue: 22, finalResult: 84
+2025-12-09T13:31:48Z [USER LOG] Waiting for write report response
+2025-12-09T13:31:48Z [USER LOG] Write report transaction succeeded: 0x7e2e58613f4d8414826d2e6164e42b110fefb97137a1065ac69d1c3decd259f2
+2025-12-09T13:31:48Z [USER LOG] View transaction at https://sepolia.etherscan.io/tx/0x7e2e58613f4d8414826d2e6164e42b110fefb97137a1065ac69d1c3decd259f2
+2025-12-09T13:31:48Z [USER LOG] Workflow finished successfully! offchainValue: 62, onchainValue: 22, finalResult: 84, txHash: 0x7e2e58613f4d8414826d2e6164e42b110fefb97137a1065ac69d1c3decd259f2
 
 Workflow Simulation Result:
  {
-  "finalResult": 61,
-  "offchainValue": 39,
+  "finalResult": 84,
+  "offchainValue": 62,
   "onchainValue": 22,
-  "txHash": "0xcc99cf4fcdc1262162762f747eeb660b52cc117754c953fdb72842414fcecdc4"
+  "txHash": "0x7e2e58613f4d8414826d2e6164e42b110fefb97137a1065ac69d1c3decd259f2"
 }
 
-2025-11-03T19:09:25Z [SIMULATION] Execution finished signal received
-2025-11-03T19:09:25Z [SIMULATION] Skipping WorkflowEngineV2
+2025-12-09T13:31:48Z [SIMULATION] Execution finished signal received
+2025-12-09T13:31:48Z [SIMULATION] Skipping WorkflowEngineV2
 ```
+
+- **`[USER LOG]`**: You can see all of your `logger.info()` calls showing the complete workflow execution, including the offchain value (`62`), onchain value (`22`), final calculation (`84`), and the transaction hash.
+- **`[SIMULATION]`**: These are system-level messages from the simulator showing its internal state.
+- **`Workflow Simulation Result`**: This is the final return value of your workflow. The `MyResult` object contains all the values (62 + 22 = 84) and the transaction hash confirming the write operation succeeded.
 
 ## Step 5: Verify the result onchain
 
@@ -8404,13 +8616,13 @@ Click the URL (or copy and paste it into your browser) to see the full details o
 
 **What are you seeing on a blockchain explorer?**
 
-You'll notice the transaction's `to` address is not the `CalculatorConsumer` contract you intended to call. Instead, it's to a **Forwarder** contract. Your workflow sends a secure report to the Forwarder, which then verifies the request and makes the final call to the `CalculatorConsumer` on your workflow's behalf. To learn more, see the [Onchain Write guide](/cre/guides/workflow/using-evm-client/onchain-write).
+You'll notice the transaction's `to` address is not the `CalculatorConsumer` contract you intended to call. Instead, it's to a **Forwarder** contract. Your workflow sends a secure report to the Forwarder, which then verifies the request and makes the final call to the `CalculatorConsumer` on your workflow's behalf. To learn more, see the [Onchain Write guide](/cre/guides/workflow/using-evm-client/onchain-write/overview).
 
 ### **2. Check the contract state**
 
 While your wallet interacted with the Forwarder, the `CalculatorConsumer` contract's state was still updated. You can verify this change directly on Etherscan:
 
-- Navigate to the `CalculatorConsumer` contract address: <a href="https://sepolia.etherscan.io/address/0xF3abEAa889e46c6C5b9A0bD818cE54Cc4eAF8A54#readContract" target="_blank" rel="noopener noreferrer">`0xF3abEAa889e46c6C5b9A0bD818cE54Cc4eAF8A54`</a>.
+- Navigate to the `CalculatorConsumer` contract address: <a href="https://sepolia.etherscan.io/address/0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52#readContract" target="_blank" rel="noopener noreferrer">`0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52`</a>.
 - Expand the `latestResult` function and click **Query**. The values should match the `finalResult`, `offchainValue`, and `onchainValue` from your workflow logs.
 
 This completes the end-to-end loop: triggering a workflow, fetching data, reading onchain state, and verifiably writing the result back to a public blockchain.
@@ -8418,7 +8630,7 @@ This completes the end-to-end loop: triggering a workflow, fetching data, readin
 To learn more about implementing consumer contracts and the secure write process, see these guides:
 
 - **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)**: Learn how to create your own secure consumer contracts with proper validation.
-- **[Onchain Write Guide](/cre/guides/workflow/using-evm-client/onchain-write)**: Dive deeper into the write patterns.
+- **[Onchain Write Guide](/cre/guides/workflow/using-evm-client/onchain-write/overview-ts)**: Dive deeper into the write patterns.
 
 ## Next steps
 
@@ -8655,7 +8867,7 @@ main()
 
 # Onchain Read
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/onchain-read-ts
-Last Updated: 2025-11-04
+Last Updated: 2025-12-10
 
 This guide explains how to read data from a smart contract from within your CRE workflow. The TypeScript SDK uses [viem](https://viem.sh/) for ABI handling and the SDK's [`EVMClient`](/cre/reference/sdk/evm-client-ts) to create a type-safe developer experience.
 
@@ -8813,7 +9025,7 @@ When calling `callContract()`, you can specify which block to read from:
 
 - **`LAST_FINALIZED_BLOCK_NUMBER`**: Read from the last finalized block (recommended for production)
 - **`LATEST_BLOCK_NUMBER`**: Read from the latest block
-- **Specific block**: Use an object with `{ absVal: "base64EncodedNumber", sign: "1" }` format
+- **Custom block number**: Use a `BigIntJson` object for custom finality depths or historical queries
 
 ```typescript
 import { LAST_FINALIZED_BLOCK_NUMBER, LATEST_BLOCK_NUMBER } from "@chainlink/cre-sdk"
@@ -8830,6 +9042,54 @@ const contractCall = evmClient.callContract(runtime, {
   blockNumber: LATEST_BLOCK_NUMBER,
 }).result()
 ```
+
+#### Custom block depths
+
+For use cases requiring fixed confirmation thresholds (e.g., regulatory compliance) or historical state verification, you can specify an exact block number.
+
+**Example 1 - Read from a specific historical block**:
+
+```typescript
+import { blockNumber } from '@chainlink/cre-sdk'
+
+const historicalBlock = 9767655n
+const contractCall = evmClient.callContract(runtime, {
+  call: encodeCallMsg({...}),
+  blockNumber: blockNumber(historicalBlock),
+}).result()
+```
+
+**Example 2 - Read from 500 blocks ago for custom finality**:
+
+```typescript
+import { protoBigIntToBigint, blockNumber } from '@chainlink/cre-sdk'
+
+// Get the latest block number
+const latestHeader = evmClient.headerByNumber(runtime, {}).result()
+if (!latestHeader.header?.blockNumber) {
+  throw new Error("Failed to get latest block number")
+}
+
+// Convert protobuf BigInt to native bigint and calculate custom block
+const latestBlockNum = protoBigIntToBigint(latestHeader.header.blockNumber)
+const customBlock = latestBlockNum - 500n
+
+// Call the contract at the custom block height
+const contractCall = evmClient.callContract(runtime, {
+  call: encodeCallMsg({...}),
+  blockNumber: blockNumber(customBlock),
+}).result()
+```
+
+**Helper functions:**
+
+The SDK provides two helper functions for working with block numbers:
+
+- **`protoBigIntToBigint(pb)`** — Converts a protobuf `BigInt` (returned by SDK methods like `headerByNumber`) to a native JavaScript `bigint`. Use this when you need to perform arithmetic on block numbers.
+
+- **`blockNumber(n)`** — Converts a native `bigint`, `number`, or `string` to the protobuf `BigInt` JSON format required by SDK methods. This is an alias for `bigintToProtoBigInt`.
+
+See [Finality and Confidence Levels](/cre/concepts/finality-ts) for more details on when to use custom block depths.
 
 ### Encoding call messages with `encodeCallMsg()`
 
@@ -9022,7 +9282,7 @@ This pattern provides better organization, reusability, and type safety across y
 
 ## Next steps
 
-- Learn how to [write data to contracts](/cre/guides/workflow/using-evm-client/onchain-write)
+- Learn how to [write data to contracts](/cre/guides/workflow/using-evm-client/onchain-write/overview)
 - Explore the [EVM Client SDK Reference](/cre/reference/sdk/evm-client-ts) for all available methods
 - See [Part 3](/cre/getting-started/part-3-reading-onchain-value) and [Part 4](/cre/getting-started/part-4-writing-onchain) of the Getting Started guide for more examples
 
@@ -12687,10 +12947,10 @@ callContract(
 
 This is the main input object for the `callContract()` method.
 
-| Field         | Type          | Required | Description                                                                                                                                                   |
-| ------------- | ------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `call`        | `CallMsgJson` | Yes      | Contains the actual details of the function call you want to make.                                                                                            |
-| `blockNumber` | `string`      | No       | The block number to query. Use `LAST_FINALIZED_BLOCK_NUMBER` for finalized blocks or `LATEST_BLOCK_NUMBER` for the most recent block. Defaults to `"latest"`. |
+| Field         | Type          | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ------------- | ------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `call`        | `CallMsgJson` | Yes      | Contains the actual details of the function call you want to make.                                                                                                                                                                                                                                                                                                                                                                                    |
+| `blockNumber` | `BigIntJson`  | No       | The block number to query. Accepts:<br />• `LATEST_BLOCK_NUMBER` (default): the most recent block<br />• `LAST_FINALIZED_BLOCK_NUMBER`: a finalized block<br />• **`BigIntJson` object**: an explicit block height (see [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-ts#custom-block-depths) for conversion details).<br /><br />See [Finality and Confidence Levels](/cre/concepts/finality-ts) for finality strategies. |
 
 #### `CallMsg` / `CallMsgJson`
 
@@ -12809,10 +13069,10 @@ balanceAt(
 
 #### `BalanceAtRequest` / `BalanceAtRequestJson`
 
-| Field         | Type     | Required | Description                                               |
-| ------------- | -------- | -------- | --------------------------------------------------------- |
-| `account`     | `string` | Yes      | The 20-byte address of the account to query (hex string). |
-| `blockNumber` | `string` | No       | The block number to query. Defaults to `"latest"`.        |
+| Field         | Type         | Required | Description                                                                                                                                                                                                                                                                                                                       |
+| ------------- | ------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `account`     | `string`     | Yes      | The 20-byte address of the account to query (hex string).                                                                                                                                                                                                                                                                         |
+| `blockNumber` | `BigIntJson` | No       | The block number to query. Accepts `LATEST_BLOCK_NUMBER` (default), `LAST_FINALIZED_BLOCK_NUMBER`, or a `BigIntJson` object for an explicit block height (see [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-ts#custom-block-depths)). See [Finality and Confidence Levels](/cre/concepts/finality-ts). |
 
 #### `BalanceAtReply`
 
@@ -12944,9 +13204,9 @@ headerByNumber(
 
 #### `HeaderByNumberRequest` / `HeaderByNumberRequestJson`
 
-| Field         | Type     | Required | Description                                                                      |
-| ------------- | -------- | -------- | -------------------------------------------------------------------------------- |
-| `blockNumber` | `string` | No       | The number of the block to retrieve. If `undefined`, retrieves the latest block. |
+| Field         | Type         | Required | Description                                                                                                                                                                                                                                                                                                                                                           |
+| ------------- | ------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `blockNumber` | `BigIntJson` | No       | The number of the block to retrieve. Accepts `undefined` for `latest` (default), `LATEST_BLOCK_NUMBER`, `LAST_FINALIZED_BLOCK_NUMBER`, or a `BigIntJson` object for an explicit block height (see [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-ts#custom-block-depths)). See [Finality and Confidence Levels](/cre/concepts/finality-ts). |
 
 #### `HeaderByNumberReply`
 
@@ -14244,9 +14504,9 @@ The `logTrigger()` method accepts a configuration object with the following fiel
 | `topics`     | `TopicValues[]` | Optional. A fixed 4-element array to filter event topics. The first element contains event signatures, and the next three elements contain indexed argument values. An empty array element acts as a wildcard.                                                                                                                                                                                            |
 | `confidence` | `string`        | Optional. The block confirmation level to monitor. Can be: <ul><li>**`"CONFIDENCE_LEVEL_LATEST"`**: The most recent block (fastest but least secure).</li><li>**`"CONFIDENCE_LEVEL_SAFE"` (default)**: A block unlikely to be reorged but not yet irreversible.</li><li>**`"CONFIDENCE_LEVEL_FINALIZED"`**: A block considered irreversible (safest, but requires waiting longer for finality).</li></ul> |
 
-
-<Aside type="caution" title="SAFE block tag fallback">
-  **Some chains do not support the SAFE block tag** (e.g., Shibarium). When you specify `"CONFIDENCE_LEVEL_SAFE"` on chains that don't support it, CRE automatically falls back to `"CONFIDENCE_LEVEL_FINALIZED"` for safety. Users are responsible for knowing which chains support the SAFE tag. If you need consistent behavior across all chains, explicitly use `"CONFIDENCE_LEVEL_FINALIZED"` or `"CONFIDENCE_LEVEL_LATEST"`.
+<Aside type="note" title="Finality details">
+  For details on how each confidence level maps to specific chains and estimated wait times, see [Finality and
+  Confidence Levels](/cre/concepts/finality).
 </Aside>
 
 ### `TopicValues`
@@ -14461,13 +14721,6 @@ const onLogTrigger = (runtime: Runtime<Config>, log: EVMLog): string => {
   return "Log decoded"
 }
 ```
-
-<Aside type="note" title="Using contract ABIs">
-  For type-safe event handling, organize your contract ABIs in separate TypeScript files (e.g.,
-  `contracts/abi/MyContract.ts`) as demonstrated in the [demo
-  workflow](https://github.com/smartcontractkit/cre-cli/tree/main/examples/proof-of-reserve). Define ABIs as `const`
-  arrays with full JSON ABI structures for optimal TypeScript type inference with viem.
-</Aside>
 
 ---
 

@@ -283,12 +283,12 @@ export const StreamsNetworksData: NetworkData[] = [
     mainnet: {
       label: "HyperEVM Mainnet",
       verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
-      explorerUrl: "https://hyperliquid.cloud.blockscout.com/address/%s",
+      explorerUrl: "https://hyperevmscan.io/address/address/%s",
     },
     testnet: {
       label: "HyperEVM Testnet",
       verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
-      explorerUrl: "https://evm.hyperstats.xyz/address/%s",
+      explorerUrl: "https://testnet.purrsec.com/address/%s",
     },
   },
   {

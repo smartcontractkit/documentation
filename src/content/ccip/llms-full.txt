@@ -1096,7 +1096,7 @@ When the Router forwards a `ccipSend()` request to the OnRamp, the contract perf
    - If the message involves token transfers, it retrieves the correct Token Pool from the Token Admin Registry.
    - Initiates calls to lock or burn the token, based on the token handling mechanism.
 3. **Nonce Management**
-   - Uses the Nonce Manager to ensure messages requiring in-order execution are processed in the correct order.
+   - Uses the Nonce Manager to ensure messages requiring in-order execution are processed in the correct order. Note: In-Order enforcement using Nonce Manager will be deprecated in early 2026.
 4. **Message ID Generation**
    - Returns a unique message ID to the Router.
 5. **Event Emission**
@@ -1165,17 +1165,6 @@ The FeeQuoter is an internal CCIP smart contract that calculates and returns CCI
   - When a Commit Report contains price updates, the FeeQuoter on the destination chain is updated accordingly.
 
 For additional details on how CCIP fees are calculated, refer to the [CCIP Billing page](/ccip/billing).
-
-## NonceManager
-
-The NonceManager helps order messages in CCIP by tracking outbound nonces on the source blockchain and inbound nonces on the destination blockchain. It ensures strict ordering when the message's extraArgs parameter requires ordering, thus providing a flexible design.
-
-1. **Ordered Messages**
-   - **Non-zero Nonces:** When an OnRamp identifies a message that must preserve ordering, it increments and assigns a non-zero outbound nonce.
-   - **Inbound Validation:** On the destination blockchain, the OffRamp checks that the incoming message's nonce matches the expected inbound nonce. If there is a mismatch, the message is skipped or deferred for later retry.
-2. **Out-of-Order Messages**
-   - **Zero Nonces:** For messages marked "out of order," the OnRamp sets the nonce to **0**.
-   - **No Sequence Checks:** Because `nonce == 0` indicates no ordering, the OffRamp does not validate or increment inbound nonces. These messages can execute immediately without waiting for earlier messages.
 
 ## Token Admin Registry
 
@@ -1838,17 +1827,8 @@ When the Router forwards a `ccip_send` request, the OnRamp performs the followin
   - If the message involves token transfers, it initiates a secure callback pattern by calling the `Token Admin Dispatcher`.
   - The dispatcher uses the `Token Admin Registry` to store the message context (sender, receiver, etc.) before invoking the correct `Token Pool` to `lock_or_burn` the assets.
 
-- **Nonce Management**
-  - For ordered messages, it calls the `Nonce Manager` to retrieve and increment the sender's nonce for that destination.
-
 - **Event Emission**
   - Generates a unique `messageId` and emits a `CCIPMessageSent` event containing the complete, sequenced message details.
-
-## Nonce Manager
-
-The `ccip::nonce_manager` module enables optional strict message ordering. It tracks outbound nonces on a per-sender and per-destination-chain basis.
-
-When out-of-order execution is disabled for a message, the `OnRamp` module uses the `Nonce Manager` to assign an incrementing nonce, which is then verified by the `OffRamp` on the destination chain.
 
 ## OffRamp
 
@@ -4381,7 +4361,7 @@ The `allowOutOfOrderExecution` parameter enables you to control the execution or
 - **When `allowOutOfOrderExecution` is Optional:**
   - You can set `allowOutOfOrderExecution` to either `true` or `false`, depending on your application's requirements.
     - **`true`:** Messages can be executed in any order relative to other messages from the same sender. If a previous message has not yet been executed on the destination chain, it does not block the execution of subsequent messages.
-    - **`false`:** Messages are executed in order. CCIP ensures that preceding messages are processed before executing the current message.
+    - **`false`:** Messages are executed in order. CCIP ensures that preceding messages are processed before executing the current message. Note: Functionality for `allowOutofOrderExecution` = `false` (ie., enforcing In-Order cross-chain messages) is being deprecated in early 2026.
 
 - **When `allowOutOfOrderExecution` is Required:**
   - You **must** set `allowOutOfOrderExecution` to `true`. This setting acknowledges that messages may be executed out of order. If set to `false`, the message will revert and will not be processed.

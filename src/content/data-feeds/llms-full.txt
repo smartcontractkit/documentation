@@ -560,7 +560,7 @@ You now have a funded testnet account on Aptos.
 
    - The `platform` address is the `ChainlinkPlatform` package address on Aptos testnet ([`0x516e771e1b4a903afe74c27d057c65849ecc1383782f6642d7ff21425f4f9c99`](https://explorer.aptoslabs.com/object/0x516e771e1b4a903afe74c27d057c65849ecc1383782f6642d7ff21425f4f9c99/modules/packages/ChainlinkPlatform?network=testnet)).
 
-   **Note**: You can find the mainnet addresses in the [Feeds Addresses](/data-feeds/price-feeds/addresses?page=1\&testnetPage=1\&network=aptos) page.
+   **Note**: You can find the mainnet addresses in the [Feeds Addresses](/data-feeds/price-feeds/addresses?network=aptos) page.
 
 3. Run the following command to download the compiled bytecode for the `ChainlinkPlatform` and `ChainlinkDataFeeds` packages:
 
@@ -1393,6 +1393,10 @@ Scroll Mainnet: [0x45c2b8C204568A03Dc7A2E32B71D67Fe97F908A9](https://scrollscan.
 
 Soneium Mainnet: [0xaDE1b9AbB98c6A542E4B49db2588a3Ec4bF7Cdf0](https://soneium.blockscout.com/address/0xaDE1b9AbB98c6A542E4B49db2588a3Ec4bF7Cdf0)
 
+### <img src="/assets/chains/xlayer.svg" style="height: 20px; width: auto; margin-right: 8px;" />X Layer
+
+X Layer Mainnet: [0x45c2b8C204568A03Dc7A2E32B71D67Fe97F908A9](https://www.okx.com/web3/explorer/xlayer/address/0x45c2b8C204568A03Dc7A2E32B71D67Fe97F908A9)
+
 ### <img src="/assets/chains/zksync.svg" style="height: 20px; width: auto; margin-right: 8px;" />ZKsync
 
 zkSync Mainnet: [0x0E6AC8B967393dcD3D36677c126976157F993940](https://explorer.zksync.io/address/0x0E6AC8B967393dcD3D36677c126976157F993940)
@@ -1404,7 +1408,7 @@ zkSync Mainnet: [0x0E6AC8B967393dcD3D36677c126976157F993940](https://explorer.zk
 The diagram below shows how these feeds update and how a consumer retrieves the status of the Arbitrum sequencer.
 
 1. Chainlink nodes trigger an OCR round every 30s and update the sequencer status by calling the `validate` function in the [`ArbitrumValidator` contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/l2ep/dev/arbitrum/ArbitrumValidator.sol) by calling it through the [`ValidatorProxy` contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.0.0/contracts/src/v0.8/ValidatorProxy.sol).
-2. The `ArbitrumValidator` checks to see if the latest update is different from the previous update. If it detects a difference, it places a message in the [Arbitrum inbox contract](https://developer.offchainlabs.com/docs/inside_arbitrum#the-big-picture).
+2. The `ArbitrumValidator` checks to see if the latest update is different from the previous update. If it detects a difference, it places a message in the [Arbitrum inbox contract](https://docs.arbitrum.io/how-arbitrum-works/inside-arbitrum-nitro).
 3. The inbox contract sends the message to the [`ArbitrumSequencerUptimeFeed` contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/l2ep/dev/arbitrum/ArbitrumSequencerUptimeFeed.sol). The message calls the `updateStatus` function in the `ArbitrumSequencerUptimeFeed` contract and updates the latest sequencer status to 0 if the sequencer is up and 1 if it is down. It also records the block timestamp to indicate when the message was sent from the L1 network.
 4. A consumer contract on the L2 network can read these values from the [`ArbitrumUptimeFeedProxy` contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.0.0/contracts/src/v0.6/EACAggregatorProxy.sol), which reads values from the `ArbitrumSequencerUptimeFeed` contract.
 
@@ -3212,6 +3216,14 @@ Data feeds managed by Chainlink Labs will be considered for deprecation if they 
 
 Known users of these feeds will be contacted directly about the feeds' deprecation. Notifications will also be posted on the [Feeds Scheduled For Deprecation](/data-feeds/deprecating-feeds) page and on our [Discord channel](https://discord.com/channels/592041321326182401/991444378335838318) with two weeks of notice before they are shut down.
 
+
+<Aside type="note" title="Data Feed Shutdown Behavior">
+  Once a feed is shutdown, calls to the feed will behave as follows:
+
+  - `lastAnswer` will return `0`
+  - `latestRoundData` will revert with no data available
+</Aside>
+
 ## Market hours
 
 In addition to categories, be aware that markets for several assets are actively traded only during certain hours. Listed data feeds include an attribute describing their market hours. Chainlink Labs recommends using these feeds only during their specified hours:
@@ -4811,7 +4823,7 @@ Traditional MEV searching depends on spotting oracle price updates in the public
 
 ### Example Application: Aave Liquidations
 
-Aave is a lending protocol where collateralized positions must remain above a [threshold](https://aave.com/docs/concepts/liquidations) called their health factor. When an oracle price update reveals a borrower is undercollateralized, the position becomes eligible for liquidation. The searcher liquidates the position in exchange for a liquidation bonus reward. With Chainlink SVR, a searcher's liquidation transaction can be bundled with the new SVR price update through Flashbots.
+Aave is a lending protocol where collateralized positions must remain above a [threshold](https://aave.com/help/borrowing/liquidations) called their health factor. When an oracle price update reveals a borrower is undercollateralized, the position becomes eligible for liquidation. The searcher liquidates the position in exchange for a liquidation bonus reward. With Chainlink SVR, a searcher's liquidation transaction can be bundled with the new SVR price update through Flashbots.
 
 For more background on how Aave liquidations work, see [Aave Documentation](https://docs.aave.com/). To understand how Chainlink SVR adds a structured auction for these Aave liquidation opportunities, read the following sections.
 

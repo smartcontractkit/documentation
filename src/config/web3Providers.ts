@@ -109,6 +109,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   MIND_NETWORK_TESTNET: () => new JsonRpcProvider("https://rpc-testnet.mindnetwork.xyz"),
   MIND_NETWORK_MAINNET: () => new JsonRpcProvider("https://rpc-mainnet.mindnetwork.xyz"),
   MEGAETH_TESTNET: () => new JsonRpcProvider("https://carrot.megaeth.com/rpc"),
+  MEGAETH_MAINNET: () => new JsonRpcProvider("https://carrot.megaeth.com/rpc"),
   "0G_GALILEO_TESTNET": () => new JsonRpcProvider("https://evmrpc-testnet.0g.ai/"),
   "0G_MAINNET": () => new JsonRpcProvider("https://evmrpc.0g.ai/"),
   TAIKO_MAINNET: () => new JsonRpcProvider("https://rpc.mainnet.taiko.xyz"),
@@ -165,10 +166,11 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   NEXON_HENESYS_MAINNET: () => new JsonRpcProvider("https://henesys-rpc.msu.io/"),
   PHAROS_ATLANTIC_TESTNET: () => new JsonRpcProvider("https://atlantic.dplabs-internal.com/"),
   MORPH_MAINNET: () => new JsonRpcProvider("https://rpc.morphl2.io"),
-  MORPH_TESTNET: () => new JsonRpcProvider("https://rpc-hoodi.morphl2.io/"),
+  MORPH_HOODI_TESTNET: () => new JsonRpcProvider("https://rpc-hoodi.morphl2.io/"),
   JOVAY_MAINNET: () => new JsonRpcProvider("https://rpc.jovay.io"),
   JOVAY_TESTNET: () => new JsonRpcProvider("https://api.zan.top/public/jovay-testnet"),
   STABLE_MAINNET: () => new JsonRpcProvider("https://rpc.stable.xyz"),
+  TEMPO_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.tempo.xyz"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {

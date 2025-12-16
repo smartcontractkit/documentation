@@ -80,6 +80,7 @@ export type SupportedTechnology =
   | "MORPH"
   | "JOVAY"
   | "STABLE"
+  | "TEMPO"
 
 export type ChainType = "evm" | "solana" | "aptos"
 
@@ -192,6 +193,7 @@ export type SupportedChain =
   | "MIND_NETWORK_TESTNET"
   | "MIND_NETWORK_MAINNET"
   | "MEGAETH_TESTNET"
+  | "MEGAETH_MAINNET"
   | "TAIKO_MAINNET"
   | "TAIKO_HEKLA"
   | "PLUME_MAINNET"
@@ -246,10 +248,11 @@ export type SupportedChain =
   | "NEXON_HENESYS_MAINNET"
   | "PHAROS_ATLANTIC_TESTNET"
   | "MORPH_MAINNET"
-  | "MORPH_TESTNET"
+  | "MORPH_HOODI_TESTNET"
   | "JOVAY_MAINNET"
   | "JOVAY_TESTNET"
   | "STABLE_MAINNET"
+  | "TEMPO_TESTNET"
 
 export type ExplorerInfo = {
   baseUrl: string
