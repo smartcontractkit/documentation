@@ -5,9 +5,12 @@ import { Environment, SupportedTokenConfig, tokenPoolDisplay, PoolType } from "~
 import { areAllLanesPaused } from "~/config/data/ccip/utils.ts"
 import { ChainType, ExplorerInfo } from "~/config/types.ts"
 import TableSearchInput from "./TableSearchInput.tsx"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { getExplorerAddressUrl, fallbackTokenIconUrl } from "~/features/utils/index.ts"
 import TokenDrawer from "../Drawer/TokenDrawer.tsx"
+import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
+import { RealtimeDataService } from "~/lib/ccip/services/realtime-data.ts"
+import type { TokenFinalityData } from "~/lib/ccip/types/index.ts"
 
 interface TableProps {
   networks: {
@@ -42,6 +45,36 @@ interface TableProps {
 
 function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
   const [search, setSearch] = useState("")
+  const [finalityData, setFinalityData] = useState<Record<string, TokenFinalityData>>({})
+  const [loading, setLoading] = useState(true)
+
+  console.log("[TokenChainsTable] Render - loading:", loading, "finalityData keys:", Object.keys(finalityData))
+
+  useEffect(() => {
+    const fetchFinalityData = async () => {
+      try {
+        console.log("[TokenChainsTable] Starting fetch for token:", token.id, "env:", environment)
+        const realtimeService = new RealtimeDataService()
+        const result = await realtimeService.getTokenFinality(token.id, environment, "internal_id")
+        console.log("[TokenChainsTable] Received result:", result)
+
+        if (result && result.data) {
+          console.log("[TokenChainsTable] Setting finality data:", result.data)
+          setFinalityData(result.data)
+        } else {
+          console.warn("[TokenChainsTable] No data received")
+        }
+      } catch (error) {
+        console.error("Failed to fetch token finality data:", error)
+      } finally {
+        console.log("[TokenChainsTable] Setting loading to false")
+        setLoading(false)
+      }
+    }
+
+    fetchFinalityData()
+  }, [token.id, environment])
+
   return (
     <>
       <div className="ccip-table__filters">
@@ -145,15 +178,47 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                     </td>
                     <td>{network.tokenPoolVersion}</td>
                     <td>
-                      {/* TODO: Fetch from API - GET /api/ccip/v1/tokens/{tokenCanonicalSymbol}/finality?environment={environment}
-                          Custom finality is derived from minBlockConfirmation > 0
-                          Display: "Yes" | "No" | "N/A" (with tooltip for unavailable) */}
-                      -
+                      {(() => {
+                        console.log(
+                          `[TokenChainsTable] Checking finality for network: ${network.name}, key: "${network.key}", hasData:`,
+                          !!finalityData[network.key],
+                          "finality:",
+                          finalityData[network.key]
+                        )
+                        return null
+                      })()}
+                      {loading ? (
+                        "-"
+                      ) : finalityData[network.key] ? (
+                        finalityData[network.key].hasCustomFinality === null ? (
+                          <Tooltip
+                            label="N/A"
+                            tip="Custom finality data is currently unavailable. You can find the custom finality settings by reading the Token Pool contract directly on the relevant blockchain."
+                            labelStyle={{ marginRight: "5px" }}
+                            style={{ display: "inline-block", verticalAlign: "middle" }}
+                          />
+                        ) : finalityData[network.key].hasCustomFinality ? (
+                          "Yes"
+                        ) : (
+                          "No"
+                        )
+                      ) : (
+                        <Tooltip
+                          label="N/A"
+                          tip="Custom finality data is currently unavailable. You can find the custom finality settings by reading the Token Pool contract directly on the relevant blockchain."
+                          labelStyle={{ marginRight: "5px" }}
+                          style={{ display: "inline-block", verticalAlign: "middle" }}
+                        />
+                      )}
                     </td>
                     <td>
-                      {/* TODO: Fetch from API - GET /api/ccip/v1/tokens/{tokenCanonicalSymbol}/finality?environment={environment}
-                          Display minBlockConfirmation value or "-" if custom finality is disabled/unavailable */}
-                      -
+                      {loading
+                        ? "-"
+                        : finalityData[network.key]
+                          ? finalityData[network.key].minBlockConfirmation === null
+                            ? "-"
+                            : finalityData[network.key].minBlockConfirmation
+                          : "-"}
                     </td>
                   </tr>
                 )
