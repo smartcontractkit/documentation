@@ -262,7 +262,7 @@ function LaneDrawer({
                         <td data-clipboard-type="token">
                           <Address
                             address={data[sourceNetwork.key].tokenAddress}
-                            endLength={6}
+                            endLength={4}
                             contractUrl={getExplorerAddressUrl(explorer)(data[sourceNetwork.key].tokenAddress)}
                           />
                         </td>
