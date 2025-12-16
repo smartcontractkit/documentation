@@ -89,6 +89,22 @@ strong {
   word-break: break-word;
 }
 
+/* Override browser extensions (1Password, etc.) that inject dark themes into code elements */
+:not(pre) > code,
+table code:not(pre code),
+.copyContainer > code {
+  background-color: var(--theme-code-inline-bg) !important;
+  color: var(--theme-code-inline-text) !important;
+}
+
+/* Override even if extensions add language-* classes */
+:not(pre) > code[class*="language-"],
+table code[class*="language-"]:not(pre code),
+.copyContainer > code[class*="language-"] {
+  background-color: var(--theme-code-inline-bg) !important;
+  color: var(--theme-code-inline-text) !important;
+}
+
 /* Inline code in headings should inherit heading font size and weight */
 :is(h1, h2, h3, h4, h5, h6) :not(pre) > code,
 :is(h1, h2, h3, h4, h5, h6) code {

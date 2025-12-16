@@ -41,7 +41,7 @@ const CopyContainer = ({ text, code, format, formatType, eventName, additionalIn
 
   return (
     <span className="copyContainer">
-      {code ? <code>{displayText}</code> : displayText}
+      {code ? <code data-1p-ignore>{displayText}</code> : displayText}
       <button
         className={clsx("copyBtn", "copy-iconbutton")}
         style={{ height: "16px", width: "16px", minWidth: "12px" }}
