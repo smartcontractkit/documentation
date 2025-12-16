@@ -48,18 +48,13 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
   const [finalityData, setFinalityData] = useState<Record<string, TokenFinalityData>>({})
   const [loading, setLoading] = useState(true)
 
-  console.log("[TokenChainsTable] Render - loading:", loading, "finalityData keys:", Object.keys(finalityData))
-
   useEffect(() => {
     const fetchFinalityData = async () => {
       try {
-        console.log("[TokenChainsTable] Starting fetch for token:", token.id, "env:", environment)
         const realtimeService = new RealtimeDataService()
         const result = await realtimeService.getTokenFinality(token.id, environment, "internal_id")
-        console.log("[TokenChainsTable] Received result:", result)
 
         if (result && result.data) {
-          console.log("[TokenChainsTable] Setting finality data:", result.data)
           setFinalityData(result.data)
         } else {
           console.warn("[TokenChainsTable] No data received")
@@ -67,7 +62,6 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
       } catch (error) {
         console.error("Failed to fetch token finality data:", error)
       } finally {
-        console.log("[TokenChainsTable] Setting loading to false")
         setLoading(false)
       }
     }
