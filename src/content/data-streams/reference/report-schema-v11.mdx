@@ -30,26 +30,40 @@ Chainlink Data Streams that use the RWA Advanced (v11) schema adhere to the stru
 
 ## Schema Fields
 
-| Field                   | Type      | Description                                                                                                                                                                                                                                                                 |
-| ----------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                                                                                                                                                                                                                                 |
-| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                                                                                                                                                                                                                        |
-| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                                                                                                                                                                                                                          |
-| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)                                                                                                                                                                                                                                |
-| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                                                                                                                                                                                                                                        |
-| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                                                                                                                                                                                                                     |
-| `mid`                   | `int192`  | DON Consensus mid-price                                                                                                                                                                                                                                                     |
-| `lastSeenTimestampNs`   | `uint64`  | Reflects the timestamp of the last update for the **mid price only** (nanoseconds). See [Notes](#notes) below.                                                                                                                                                              |
-| `bid`                   | `int192`  | Median bid price                                                                                                                                                                                                                                                            |
-| `bidVolume`             | `int192`  | Volume at bid price. See [bid/ask volume note](#bidask-volume-note) below.                                                                                                                                                                                                  |
-| `ask`                   | `int192`  | Median ask price                                                                                                                                                                                                                                                            |
-| `askVolume`             | `int192`  | Volume at ask price. See [bid/ask volume note](#bidask-volume-note) below.                                                                                                                                                                                                  |
-| `lastTradedPrice`       | `int192`  | Last traded price                                                                                                                                                                                                                                                           |
-| `marketStatus`          | `uint32`  | Status of the real-world equity market. <br/> Possible values: <br/> `0` (Unknown), <br/> `1` (Pre-market extended hours), <br/> `2` (Regular hours), <br/> `3` (Post-market hours), <br/> `4` (Overnight), <br/> `5` (Weekend) <br/> [More details](#market-status-values) |
+| Field                   | Type      | Description                                                                                                                                          |
+| ----------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                                                                                                          |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                                                                                                 |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                                                                                                   |
+| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)                                                                                                         |
+| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                                                                                                                 |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                                                                                              |
+| `mid`                   | `int192`  | DON Consensus mid-price                                                                                                                              |
+| `lastSeenTimestampNs`   | `uint64`  | Reflects the timestamp of the last update for the **mid price only** (nanoseconds). See [Notes](#notes) below.                                       |
+| `bid`                   | `int192`  | Median bid price                                                                                                                                     |
+| `bidVolume`             | `int192`  | Volume at bid price. See [bid/ask volume note](#bidask-volume-note) below.                                                                           |
+| `ask`                   | `int192`  | Median ask price                                                                                                                                     |
+| `askVolume`             | `int192`  | Volume at ask price. See [bid/ask volume note](#bidask-volume-note) below.                                                                           |
+| `lastTradedPrice`       | `int192`  | Last traded price                                                                                                                                    |
+| `marketStatus`          | `uint32`  | Status of the real-world asset market. Values depend on the stream's supported hours. See [Market Status Values](#market-status-values) for details. |
 
 ### Market Status Values
 
-The `marketStatus` field reflects the current state of the equity market:
+The `marketStatus` field indicates the current state of the market. The possible values vary depending on the stream's supported trading hours:
+
+#### Standard RWA Streams
+
+For streams with standard market hours coverage. Unless a feed explicitly states extended hours support, it is assumed to follow this format:
+
+| Value | Status      | Description                        |
+| ----- | ----------- | ---------------------------------- |
+| `0`   | **Unknown** | Market status cannot be determined |
+| `1`   | **Closed**  | Market is closed                   |
+| `2`   | **Open**    | Market is open                     |
+
+#### 24/5 US Equities Streams
+
+For streams with 24/5 extended hours coverage (e.g., US Equities):
 
 | Value | Status            | Hours (ET)                            | Description                                    |
 | ----- | ----------------- | ------------------------------------- | ---------------------------------------------- |
@@ -60,7 +74,7 @@ The `marketStatus` field reflects the current state of the equity market:
 | `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning | Overnight session with limited liquidity       |
 | `5`   | **Weekend**       | 8:00pm Fri–8:00pm Sun                 | Weekend period when primary markets are closed |
 
-Users should implement appropriate safeguards based on market status, such as pausing trading, adjusting risk parameters, or implementing staleness checks during non-regular hours.
+Users should implement appropriate safeguards based on market status, such as pausing trading, adjusting risk parameters, or implementing staleness checks during non-regular hours or closed periods.
 
 ### Notes
 
