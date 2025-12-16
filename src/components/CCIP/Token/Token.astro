@@ -5,6 +5,7 @@ import {
   getAllNetworks,
   getAllSupportedTokens,
   getAllTokenLanes,
+  getAllUniqueVerifiers,
   getChainsOfToken,
   getSearchLanes,
   getTokenData,
@@ -76,6 +77,11 @@ const tokenLanes = getAllTokenLanes({
 
 const searchLanes = getSearchLanes({ environment })
 
+const allVerifiers = getAllUniqueVerifiers({
+  environment,
+  version: Version.V1_2_0,
+})
+
 // Generate dynamic metadata for this specific token
 const environmentText = environment === Environment.Mainnet ? "Mainnet" : "Testnet"
 const tokenMetadata = {
@@ -117,6 +123,13 @@ const tokenStructuredData = generateTokenStructuredData(token, environment, chai
     tokens={allTokens}
     client:load
     lanes={searchLanes}
+    verifiers={allVerifiers.map((verifier) => ({
+      id: verifier.id,
+      name: verifier.name,
+      type: verifier.type,
+      logo: verifier.logo,
+      totalNetworks: verifier.totalNetworks,
+    }))}
     token={{
       id: token,
       name: data[firstSupportedChain]?.name || "",

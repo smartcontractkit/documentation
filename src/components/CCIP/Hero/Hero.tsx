@@ -33,17 +33,24 @@ interface HeroProps {
     }
     lane: LaneConfig
   }[]
+  verifiers?: {
+    id: string
+    name: string
+    type: string
+    logo: string
+    totalNetworks: number
+  }[]
   environment: Environment
 }
 
-function Hero({ chains, tokens, environment, lanes }: HeroProps) {
+function Hero({ chains, tokens, environment, lanes, verifiers = [] }: HeroProps) {
   return (
     <section className="ccip-hero">
       <div className="ccip-hero__content">
         <Typography variant="h1" className="ccip-hero__heading">
           CCIP Directory
         </Typography>
-        <Search chains={chains} tokens={tokens} environment={environment} lanes={lanes} />
+        <Search chains={chains} tokens={tokens} environment={environment} lanes={lanes} verifiers={verifiers} />
       </div>
     </section>
   )

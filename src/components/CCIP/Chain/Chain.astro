@@ -6,6 +6,7 @@ import {
   Network,
   getAllNetworkLanes,
   getAllNetworks,
+  getAllUniqueVerifiers,
   getSearchLanes,
   getTokensOfChain,
   Version,
@@ -48,6 +49,11 @@ const lanes = await getAllNetworkLanes({
 })
 
 const searchLanes = getSearchLanes({ environment })
+
+const allVerifiers = getAllUniqueVerifiers({
+  environment,
+  version: Version.V1_2_0,
+})
 
 // Generate dynamic metadata for this specific chain
 const environmentText = environment === Environment.Mainnet ? "Mainnet" : "Testnet"
@@ -107,6 +113,13 @@ const chainStructuredData = generateChainStructuredData(
     network={network}
     environment={environment}
     lanes={searchLanes}
+    verifiers={allVerifiers.map((verifier) => ({
+      id: verifier.id,
+      name: verifier.name,
+      type: verifier.type,
+      logo: verifier.logo,
+      totalNetworks: verifier.totalNetworks,
+    }))}
     client:load
   />
   <section class="layout">
