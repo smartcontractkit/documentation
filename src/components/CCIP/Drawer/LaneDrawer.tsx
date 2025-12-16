@@ -280,25 +280,27 @@ function LaneDrawer({
                         </td>
 
                         <td>
-                          {isLoadingRateLimits
-                            ? "Loading..."
-                            : allLimits.standard
-                              ? allLimits.standard.isEnabled
-                                ? formatRateLimit(allLimits.standard.capacity)
-                                : "Disabled"
-                              : (
-                                <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                                  Unavailable
-                                  <Tooltip
-                                    label=""
-                                    tip="Rate limit data is currently unavailable. You can find the Token Pool rate limit by reading the Token Pool contract directly on the relevant blockchain."
-                                    style={{
-                                      display: "inline-block",
-                                      verticalAlign: "middle",
-                                    }}
-                                  />
-                                </span>
-                              )}
+                          {isLoadingRateLimits ? (
+                            "Loading..."
+                          ) : allLimits.standard ? (
+                            allLimits.standard.isEnabled ? (
+                              formatRateLimit(allLimits.standard.capacity)
+                            ) : (
+                              "Disabled"
+                            )
+                          ) : (
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                              Unavailable
+                              <Tooltip
+                                label=""
+                                tip="Rate limit data is currently unavailable. You can find the Token Pool rate limit by reading the Token Pool contract directly on the relevant blockchain."
+                                style={{
+                                  display: "inline-block",
+                                  verticalAlign: "middle",
+                                }}
+                              />
+                            </span>
+                          )}
                         </td>
                         <td className="rate-tooltip-cell">
                           {isLoadingRateLimits
@@ -310,25 +312,27 @@ function LaneDrawer({
                               : "N/A"}
                         </td>
                         <td>
-                          {isLoadingRateLimits
-                            ? "Loading..."
-                            : allLimits.ftf
-                              ? allLimits.ftf.isEnabled
-                                ? formatRateLimit(allLimits.ftf.capacity)
-                                : "Disabled"
-                              : (
-                                <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                                  Unavailable
-                                  <Tooltip
-                                    label=""
-                                    tip="Rate limit data is currently unavailable. You can find the Token Pool rate limit by reading the Token Pool contract directly on the relevant blockchain."
-                                    style={{
-                                      display: "inline-block",
-                                      verticalAlign: "middle",
-                                    }}
-                                  />
-                                </span>
-                              )}
+                          {isLoadingRateLimits ? (
+                            "Loading..."
+                          ) : allLimits.ftf ? (
+                            allLimits.ftf.isEnabled ? (
+                              formatRateLimit(allLimits.ftf.capacity)
+                            ) : (
+                              "Disabled"
+                            )
+                          ) : (
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                              Unavailable
+                              <Tooltip
+                                label=""
+                                tip="Rate limit data is currently unavailable. You can find the Token Pool rate limit by reading the Token Pool contract directly on the relevant blockchain."
+                                style={{
+                                  display: "inline-block",
+                                  verticalAlign: "middle",
+                                }}
+                              />
+                            </span>
+                          )}
                         </td>
                         <td>
                           {isLoadingRateLimits
