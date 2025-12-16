@@ -13,12 +13,14 @@ import {
   getTokenData,
   LaneConfig,
 } from "~/config/data/ccip/index.ts"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ChainType, ExplorerInfo, SupportedChain } from "~/config/index.ts"
 import LaneDrawer from "../Drawer/LaneDrawer.tsx"
 import TableSearchInput from "../Tables/TableSearchInput.tsx"
 import Tabs from "../Tables/Tabs.tsx"
 import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
+import { RealtimeDataService } from "~/lib/ccip/services/realtime-data.ts"
+import type { TokenRateLimits } from "~/lib/ccip/types/index.ts"
 
 function TokenDrawer({
   token,
@@ -54,6 +56,7 @@ function TokenDrawer({
 }) {
   const [search, setSearch] = useState("")
   const [inOutbound, setInOutbound] = useState<LaneFilter>(LaneFilter.Outbound)
+  const [rateLimits, setRateLimits] = useState<Record<string, Record<string, TokenRateLimits>>>({})
 
   type LaneRow = {
     networkDetails: {
@@ -64,6 +67,29 @@ function TokenDrawer({
     destinationChain: string
     destinationPoolType: PoolType
   }
+
+  // Fetch rate limits for all lanes
+  useEffect(() => {
+    const fetchAllRateLimits = async () => {
+      const realtimeService = new RealtimeDataService()
+      const newRateLimits: Record<string, Record<string, TokenRateLimits>> = {}
+
+      for (const destinationChain of Object.keys(destinationLanes)) {
+        const source = inOutbound === LaneFilter.Outbound ? network.key : destinationChain
+        const destination = inOutbound === LaneFilter.Outbound ? destinationChain : network.key
+        const laneKey = `${source}-${destination}`
+
+        const response = await realtimeService.getLaneSupportedTokens(source, destination, environment)
+        if (response?.data) {
+          newRateLimits[laneKey] = response.data
+        }
+      }
+
+      setRateLimits(newRateLimits)
+    }
+
+    fetchAllRateLimits()
+  }, [network.key, destinationLanes, environment, inOutbound])
 
   const laneRows: LaneRow[] = Object.keys(destinationLanes)
     .map((destinationChain) => {
@@ -186,6 +212,8 @@ function TokenDrawer({
                     }}
                   />
                 </th>
+                <th>FTF Rate limit capacity</th>
+                <th>FTF Rate limit refill rate</th>
                 <th>
                   Mechanism
                   <Tooltip
@@ -213,10 +241,33 @@ function TokenDrawer({
                 .map(({ networkDetails, laneData, destinationChain, destinationPoolType }) => {
                   if (!laneData || !networkDetails) return null
 
-                  // TODO: Fetch rate limits from API for both inbound and outbound
-                  // Token pause detection requires rate limiter data from API
-                  // A token is paused when rate limit capacity is 0
-                  const tokenPaused = false
+                  // Get rate limit data for this lane
+                  const source = inOutbound === LaneFilter.Outbound ? network.key : destinationChain
+                  const destination = inOutbound === LaneFilter.Outbound ? destinationChain : network.key
+                  const laneKey = `${source}-${destination}`
+                  const laneRateLimits = rateLimits[laneKey]
+                  const tokenRateLimits = laneRateLimits?.[token.id]
+
+                  const realtimeService = new RealtimeDataService()
+                  const direction = inOutbound === LaneFilter.Outbound ? "out" : "in"
+
+                  // Get standard and FTF rate limits
+                  const allLimits = tokenRateLimits
+                    ? realtimeService.getAllRateLimitsForDirection(tokenRateLimits, direction)
+                    : { standard: null, ftf: null }
+
+                  // Token is paused if standard rate limit capacity is 0
+                  const tokenPaused = allLimits.standard?.capacity === "0"
+
+                  // Format rate limit values
+                  const formatRateLimit = (value: string | null) => {
+                    if (!value || value === "0") return "0"
+                    const numValue = BigInt(value)
+                    const formatted = Number(numValue) / 1e18
+                    return formatted.toLocaleString(undefined, { maximumFractionDigits: 2 })
+                  }
+
+                  const isLoading = !laneRateLimits
 
                   return (
                     <tr key={networkDetails.name} className={tokenPaused ? "ccip-table__row--paused" : ""}>
@@ -257,15 +308,40 @@ function TokenDrawer({
                         </button>
                       </td>
                       <td>
-                        {/* TODO: Fetch rate limits from API for both inbound and outbound
-                            GET /api/ccip/v1/lanes/by-internal-id/{source}/{destination}/supported-tokens?environment={environment}
-                            Response will contain both standard and custom rate limits per token */}
-                        Disabled
+                        {isLoading
+                          ? "Loading..."
+                          : allLimits.standard
+                            ? allLimits.standard.isEnabled
+                              ? formatRateLimit(allLimits.standard.capacity)
+                              : "Disabled"
+                            : "N/A"}
                       </td>
                       <td>
-                        {/* TODO: Fetch rate limits from API for both inbound and outbound
-                            Display refill rate from standard.in/out or custom.in/out based on inOutbound filter */}
-                        Disabled
+                        {isLoading
+                          ? "Loading..."
+                          : allLimits.standard
+                            ? allLimits.standard.isEnabled
+                              ? formatRateLimit(allLimits.standard.rate)
+                              : "Disabled"
+                            : "N/A"}
+                      </td>
+                      <td>
+                        {isLoading
+                          ? "Loading..."
+                          : allLimits.ftf
+                            ? allLimits.ftf.isEnabled
+                              ? formatRateLimit(allLimits.ftf.capacity)
+                              : "Disabled"
+                            : "N/A"}
+                      </td>
+                      <td>
+                        {isLoading
+                          ? "Loading..."
+                          : allLimits.ftf
+                            ? allLimits.ftf.isEnabled
+                              ? formatRateLimit(allLimits.ftf.rate)
+                              : "Disabled"
+                            : "N/A"}
                       </td>
                       <td>
                         {inOutbound === LaneFilter.Outbound

@@ -34,7 +34,7 @@ export interface LaneSupportedTokensResponse {
     destinationChain: string
     tokenCount: number
   }
-  supportedTokens: Record<string, TokenRateLimits>
+  data: Record<string, TokenRateLimits>
 }
 
 /**
@@ -162,5 +162,94 @@ export class RealtimeDataService {
    */
   getRequestId(): string {
     return this.requestId
+  }
+
+  /**
+   * Extracts FTF (custom) rate limit data for a specific token and direction
+   *
+   * @param tokenRateLimits - Token rate limits containing standard and custom entries
+   * @param direction - Direction ("in" for inbound, "out" for outbound)
+   * @returns FTF rate limiter config or null if unavailable
+   */
+  getFTFRateLimit(tokenRateLimits: TokenRateLimits, direction: "in" | "out"): RateLimiterConfig | null {
+    if (!tokenRateLimits.custom || this.isRateLimiterUnavailable(tokenRateLimits.custom)) {
+      return null
+    }
+
+    const customEntry = tokenRateLimits.custom
+    return customEntry[direction] || null
+  }
+
+  /**
+   * Gets FTF capacity for a specific token and direction
+   *
+   * @param tokenRateLimits - Token rate limits containing standard and custom entries
+   * @param direction - Direction ("in" for inbound, "out" for outbound)
+   * @returns FTF capacity value or null if unavailable
+   */
+  getFTFCapacity(tokenRateLimits: TokenRateLimits, direction: "in" | "out"): string | null {
+    const ftfLimit = this.getFTFRateLimit(tokenRateLimits, direction)
+    return ftfLimit?.capacity || null
+  }
+
+  /**
+   * Gets FTF refill rate for a specific token and direction
+   *
+   * @param tokenRateLimits - Token rate limits containing standard and custom entries
+   * @param direction - Direction ("in" for inbound, "out" for outbound)
+   * @returns FTF refill rate value or null if unavailable
+   */
+  getFTFRefillRate(tokenRateLimits: TokenRateLimits, direction: "in" | "out"): string | null {
+    const ftfLimit = this.getFTFRateLimit(tokenRateLimits, direction)
+    return ftfLimit?.rate || null
+  }
+
+  /**
+   * Checks if FTF rate limiting is enabled for a specific token and direction
+   *
+   * @param tokenRateLimits - Token rate limits containing standard and custom entries
+   * @param direction - Direction ("in" for inbound, "out" for outbound)
+   * @returns True if FTF is enabled, false otherwise
+   */
+  isFTFEnabled(tokenRateLimits: TokenRateLimits, direction: "in" | "out"): boolean {
+    const ftfLimit = this.getFTFRateLimit(tokenRateLimits, direction)
+    return ftfLimit?.isEnabled || false
+  }
+
+  /**
+   * Gets both standard and FTF rate limits for a specific token and direction
+   *
+   * @param tokenRateLimits - Token rate limits containing standard and custom entries
+   * @param direction - Direction ("in" for inbound, "out" for outbound)
+   * @returns Object containing both standard and FTF rate limits
+   */
+  getAllRateLimitsForDirection(
+    tokenRateLimits: TokenRateLimits,
+    direction: "in" | "out"
+  ): {
+    standard: RateLimiterConfig | null
+    ftf: RateLimiterConfig | null
+  } {
+    const standardLimit =
+      tokenRateLimits.standard && !this.isRateLimiterUnavailable(tokenRateLimits.standard)
+        ? tokenRateLimits.standard[direction] || null
+        : null
+
+    const ftfLimit = this.getFTFRateLimit(tokenRateLimits, direction)
+
+    return {
+      standard: standardLimit,
+      ftf: ftfLimit,
+    }
+  }
+
+  /**
+   * Checks if a token has FTF rate limiting available
+   *
+   * @param tokenRateLimits - Token rate limits to check
+   * @returns True if FTF data is available (not null/unavailable)
+   */
+  hasFTFRateLimits(tokenRateLimits: TokenRateLimits): boolean {
+    return tokenRateLimits.custom !== null && !this.isRateLimiterUnavailable(tokenRateLimits.custom)
   }
 }

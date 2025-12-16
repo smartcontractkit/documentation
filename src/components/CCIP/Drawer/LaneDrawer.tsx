@@ -3,12 +3,14 @@ import "../Tables/Table.css"
 import { Environment, LaneConfig, LaneFilter, Version } from "~/config/data/ccip/types.ts"
 import { getNetwork, getTokenData } from "~/config/data/ccip/data.ts"
 import { determineTokenMechanism } from "~/config/data/ccip/utils.ts"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import LaneDetailsHero from "../ChainHero/LaneDetailsHero.tsx"
 import { getExplorerAddressUrl, getTokenIconUrl, fallbackTokenIconUrl } from "~/features/utils/index.ts"
 import TableSearchInput from "../Tables/TableSearchInput.tsx"
 import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
 import { ChainType, ExplorerInfo } from "@config/types.ts"
+import { RealtimeDataService } from "~/lib/ccip/services/realtime-data.ts"
+import type { TokenRateLimits } from "~/lib/ccip/types/index.ts"
 
 function LaneDrawer({
   lane,
@@ -26,6 +28,9 @@ function LaneDrawer({
   inOutbound: LaneFilter
 }) {
   const [search, setSearch] = useState("")
+  const [rateLimits, setRateLimits] = useState<Record<string, TokenRateLimits>>({})
+  const [isLoadingRateLimits, setIsLoadingRateLimits] = useState(true)
+
   const destinationNetworkDetails = getNetwork({
     filter: environment,
     chain: destinationNetwork.key,
@@ -35,6 +40,27 @@ function LaneDrawer({
     filter: environment,
     chain: sourceNetwork.key,
   })
+
+  // Fetch rate limits data
+  useEffect(() => {
+    const fetchRateLimits = async () => {
+      setIsLoadingRateLimits(true)
+      const realtimeService = new RealtimeDataService()
+
+      // Determine source and destination based on inOutbound filter
+      const source = inOutbound === LaneFilter.Outbound ? sourceNetwork.key : destinationNetwork.key
+      const destination = inOutbound === LaneFilter.Outbound ? destinationNetwork.key : sourceNetwork.key
+
+      const response = await realtimeService.getLaneSupportedTokens(source, destination, environment)
+
+      if (response?.data) {
+        setRateLimits(response.data)
+      }
+      setIsLoadingRateLimits(false)
+    }
+
+    fetchRateLimits()
+  }, [sourceNetwork.key, destinationNetwork.key, environment, inOutbound])
 
   return (
     <>
@@ -184,10 +210,29 @@ function LaneDrawer({
                     if (!Object.keys(data).length) return null
                     const logo = getTokenIconUrl(token)
 
-                    // TODO: Fetch rate limits from API for both inbound and outbound
-                    // Token pause detection requires rate limiter data from API
-                    // A token is paused when rate limit capacity is 0
-                    const tokenPaused = false
+                    // Get rate limit data for this token
+                    const tokenRateLimits = rateLimits[token]
+                    const realtimeService = new RealtimeDataService()
+
+                    // Determine direction based on inOutbound filter
+                    const direction = inOutbound === LaneFilter.Outbound ? "out" : "in"
+
+                    // Get standard and FTF rate limits
+                    const allLimits = tokenRateLimits
+                      ? realtimeService.getAllRateLimitsForDirection(tokenRateLimits, direction)
+                      : { standard: null, ftf: null }
+
+                    // Token is paused if standard rate limit capacity is 0
+                    const tokenPaused = allLimits.standard?.capacity === "0"
+
+                    // Format rate limit values
+                    const formatRateLimit = (value: string | null) => {
+                      if (!value || value === "0") return "0"
+                      // Convert from wei to tokens (divide by 1e18)
+                      const numValue = BigInt(value)
+                      const formatted = Number(numValue) / 1e18
+                      return formatted.toLocaleString(undefined, { maximumFractionDigits: 2 })
+                    }
 
                     return (
                       <tr key={index} className={tokenPaused ? "ccip-table__row--paused" : ""}>
@@ -235,23 +280,64 @@ function LaneDrawer({
                         </td>
 
                         <td>
-                          {/* TODO: Fetch rate limits from API for both inbound and outbound
-                              GET /api/ccip/v1/lanes/by-internal-id/{source}/{destination}/supported-tokens?environment={environment}
-                              Response will contain both standard and custom rate limits per token */}
-                          Disabled
+                          {isLoadingRateLimits
+                            ? "Loading..."
+                            : allLimits.standard
+                              ? allLimits.standard.isEnabled
+                                ? formatRateLimit(allLimits.standard.capacity)
+                                : "Disabled"
+                              : (
+                                <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                  Unavailable
+                                  <Tooltip
+                                    label=""
+                                    tip="Rate limit data is currently unavailable. You can find the Token Pool rate limit by reading the Token Pool contract directly on the relevant blockchain."
+                                    style={{
+                                      display: "inline-block",
+                                      verticalAlign: "middle",
+                                    }}
+                                  />
+                                </span>
+                              )}
                         </td>
                         <td className="rate-tooltip-cell">
-                          {/* TODO: Fetch rate limits from API for both inbound and outbound
-                              Display refill rate from standard.in/out or custom.in/out based on inOutbound filter */}
-                          Disabled
+                          {isLoadingRateLimits
+                            ? "Loading..."
+                            : allLimits.standard
+                              ? allLimits.standard.isEnabled
+                                ? formatRateLimit(allLimits.standard.rate)
+                                : "Disabled"
+                              : "N/A"}
                         </td>
                         <td>
-                          {/* Placeholder for FTF Rate limit capacity - data not yet available */}
-                          TBC
+                          {isLoadingRateLimits
+                            ? "Loading..."
+                            : allLimits.ftf
+                              ? allLimits.ftf.isEnabled
+                                ? formatRateLimit(allLimits.ftf.capacity)
+                                : "Disabled"
+                              : (
+                                <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                  Unavailable
+                                  <Tooltip
+                                    label=""
+                                    tip="Rate limit data is currently unavailable. You can find the Token Pool rate limit by reading the Token Pool contract directly on the relevant blockchain."
+                                    style={{
+                                      display: "inline-block",
+                                      verticalAlign: "middle",
+                                    }}
+                                  />
+                                </span>
+                              )}
                         </td>
                         <td>
-                          {/* Placeholder for FTF Rate limit refill rate - data not yet available */}
-                          TBC
+                          {isLoadingRateLimits
+                            ? "Loading..."
+                            : allLimits.ftf
+                              ? allLimits.ftf.isEnabled
+                                ? formatRateLimit(allLimits.ftf.rate)
+                                : "Disabled"
+                              : "N/A"}
                         </td>
                       </tr>
                     )
