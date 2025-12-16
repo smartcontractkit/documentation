@@ -172,15 +172,6 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                     </td>
                     <td>{network.tokenPoolVersion}</td>
                     <td>
-                      {(() => {
-                        console.log(
-                          `[TokenChainsTable] Checking finality for network: ${network.name}, key: "${network.key}", hasData:`,
-                          !!finalityData[network.key],
-                          "finality:",
-                          finalityData[network.key]
-                        )
-                        return null
-                      })()}
                       {loading ? (
                         "-"
                       ) : finalityData[network.key] ? (
