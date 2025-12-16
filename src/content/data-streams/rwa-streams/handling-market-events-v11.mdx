@@ -18,9 +18,9 @@ import MarketEventsTabs from "@features/data-streams/common/MarketEventsTabs.ast
 <MarketEventsTabs />
 
 <Aside type="note" title="24/5 US Equities">
-  This guide is designed for standard Data Streams operating during regular market hours (9:30am-4pm ET). Users
-  integrating 24/5 streams with extended and overnight trading sessions should refer to the [24/5 US Equities User
-  Guide](/data-streams/rwa-streams/24-5-us-equities-user-guide), which addresses continuous trading coverage.
+  This guide covers standard market hours operation (9:30am-4pm ET). For streams with extended hours coverage including
+  pre-market, post-market, and overnight sessions, refer to the [24/5 US Equities User
+  Guide](/data-streams/rwa-streams/24-5-us-equities-user-guide) for additional guidance on handling continuous trading.
 </Aside>
 
 Apply these best practices when integrating or operating markets that use tokenized real-world assets during standard market hours. Developers and operators are responsible for assessing market integrity, implementing mitigations, and managing application-level risks — see the [Developer Responsibilities](/data-streams/developer-responsibilities) guidance for details.
@@ -39,19 +39,19 @@ Market gaps occur when there are interruptions in trading or price discovery, le
 
 #### Market close
 
-Large price jumps between trading sessions due to after-hours news.
+The following is written from the perspective of someone integrating a v11 schema Data Stream for regular trading hours. For streams with different trading hours, the `marketStatus` field values should be adjusted accordingly.
 
-A large price jump at market open could cause sudden liquidations, potentially leaving the perpetual DEX with bad debt if a trader's collateral is insufficient to cover the losses.
+Around market close, large price jumps may occur due to after-hours news. This can create a large pricing gap between the close of the last session and the open of the new session. Such a price jump can cause issues for protocols by triggering sudden liquidations.
 
-| Data Stream behavior                                                                                                                                                                                                          | User guidance                                                                                                                                                                                                                                                 |
-| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| <ul><li>`midPrice`: Closing price is repeated until market open.</li><li>`marketStatus`: `1`, `3`, `4`, `5` (Not Regular Hours).</li><li>`lastUpdateTimestamp`: Timestamp of the closing price of the last session.</li></ul> | Keep markets closed while `marketStatus != 2` to prevent users trading at unfair prices.<br/><br/> Leverage available should be set in line with the asset average volatility to avoid bad debt if a trader's collateral is insufficient to cover the losses. |
+| Data Stream behavior                                                                                                                                                                                                          | User guidance                                                                                                                                                                                                                                               |
+| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until market open.</li><li>`marketStatus`: `1`, `3`, `4`, `5` (Not Regular Hours).</li><li>`lastUpdateTimestamp`: Timestamp of the closing price of the last session.</li></ul> | Keep markets closed while `marketStatus != 2` to prevent users trading at unfair prices.<br/><br/> Leverage available should be set in line with the asset average volatility to avoid bad debt if a user's collateral is insufficient to cover the losses. |
 
 #### Price formation at open/close
 
 Certain assets (e.g., FX open on Sunday afternoon) experience gradual price discovery due to fragmented liquidity and delayed trading activity.
 
-The perpetual DEX should avoid opening their market with the last close price.
+Integrating protocols should avoid opening their market with the last close price.
 
 | Data Stream behavior                                                                                                                                                                                                                               | User guidance                                                                                                   |
 | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
@@ -59,9 +59,9 @@ The perpetual DEX should avoid opening their market with the last close price.
 
 #### Sudden failures
 
-Unexpected system outages, order execution failures, or data feed disruptions can occur.
+Unexpected system outages, order execution failures, or data feed disruptions can occur in traditional data brokers and trading systems.
 
-The price will be flat during that period, meaning if a perp DEX lacks a mechanism to handle halts, it may struggle to determine fair prices thus leading to unpredictable liquidations.
+The price will be flat during that period, meaning if an integrating protocol lacks a mechanism to handle halts, it may struggle to determine fair prices thus leading to unpredictable liquidations.
 
 | Data Stream behavior                                                                                                                                                                                  | User guidance                                                                                                     |
 | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
@@ -71,7 +71,7 @@ The price will be flat during that period, meaning if a perp DEX lacks a mechani
 
 Stocks can be halted due to extreme volatility (e.g., limit up/down rules) or regulatory actions.
 
-The price will be flat during that period, meaning if a perp DEX lacks a mechanism to handle halts, it may struggle to determine fair prices thus leading to unpredictable liquidations.
+The price will be flat during that period, meaning if an integrating protocol lacks a mechanism to handle halts, it may struggle to determine fair prices thus leading to unpredictable liquidations.
 
 | Data Stream behavior                                                                                                                                                                                  | User guidance                                                                                                     |
 | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
@@ -123,7 +123,7 @@ Delisting will zero out prices for the asset.
 
 When a company spins off a business unit into a separate publicly traded entity, the parent company's stock may adjust accordingly, while the spun-off company's shares begin trading independently.
 
-Positions may need to be manually adjusted if the DEX doesn't support tracking the new entity.
+Positions may need to be manually adjusted if the integrating protocol doesn't support tracking the new entity.
 
 | Data Stream behavior                                                                                                                                                                                | User guidance                                                                                                                                                                                                                                                                                                                         |
 | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

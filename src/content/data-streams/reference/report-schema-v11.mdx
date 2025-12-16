@@ -22,6 +22,8 @@ metadata:
 import DataStreams from "@features/data-streams/common/DataStreams.astro"
 import ReportSchemaTabs from "@features/data-streams/common/ReportSchemaTabs.astro"
 
+import { Aside } from "@components"
+
 <DataStreams section="dsNotes" />
 
 <ReportSchemaTabs />
@@ -65,7 +67,7 @@ For streams with standard market hours coverage. Unless a feed explicitly states
 
 For streams with 24/5 extended hours coverage (e.g., US Equities):
 
-| Value | Status            | Hours (ET)                            | Description                                    |
+| Value | Status            | Normal Hours (ET)                     | Description                                    |
 | ----- | ----------------- | ------------------------------------- | ---------------------------------------------- |
 | `0`   | **Unknown**       | —                                     | Market status cannot be determined             |
 | `1`   | **Pre-market**    | 4:00am–9:30am Mon–Fri                 | Extended hours before regular trading session  |
@@ -74,14 +76,20 @@ For streams with 24/5 extended hours coverage (e.g., US Equities):
 | `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning | Overnight session with limited liquidity       |
 | `5`   | **Weekend**       | 8:00pm Fri–8:00pm Sun                 | Weekend period when primary markets are closed |
 
+<Aside type="note" title="Holidays">
+  During public market holidays (e.g., Christmas, Thanksgiving), the `marketStatus` is expected to return `4`
+  (Overnight) because data providers do not explicitly flag holiday closures. Users should cross-reference major holiday
+  periods using the [Market Hours](/data-streams/market-hours) guide and implement additional safeguards as needed.
+</Aside>
+
 Users should implement appropriate safeguards based on market status, such as pausing trading, adjusting risk parameters, or implementing staleness checks during non-regular hours or closed periods.
 
 ### Notes
 
 #### Last Seen Timestamp
 
-- **IMPORTANT**: The `lastSeenTimestampNs` field reflects the timestamp of the last update for the `mid` price only. Do not assume this timestamp applies to `bid`, `ask`, `bidVolume`, `askVolume`, or `lastTradedPrice`. Different fields may have been updated at different times.
 - `lastSeenTimestampNs` helps applications detect stale data for the mid price, especially important during market transitions and holidays.
+- **IMPORTANT**: The `lastSeenTimestampNs` field reflects the timestamp of the last update for the `mid` price only. Do not assume this timestamp applies to `bid`, `ask`, `bidVolume`, `askVolume`, or `lastTradedPrice`. Different fields may have been updated at different times.
 
 #### Bid/Ask Volume
 
