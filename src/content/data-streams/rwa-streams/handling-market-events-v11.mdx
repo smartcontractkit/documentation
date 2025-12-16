@@ -17,10 +17,10 @@ import MarketEventsTabs from "@features/data-streams/common/MarketEventsTabs.ast
 
 <MarketEventsTabs />
 
-<Aside type="note" title="24/5 US Equities">
-  This guide covers standard market hours operation (9:30am-4pm ET). For streams with extended hours coverage including
-  pre-market, post-market, and overnight sessions, refer to the [24/5 US Equities User
-  Guide](/data-streams/rwa-streams/24-5-us-equities-user-guide) for additional guidance on handling continuous trading.
+<Aside type="note" title="Market Status Values">
+  The `marketStatus` field values vary depending on the stream's supported hours. Refer to the [RWA Advanced (v11)
+  schema documentation](/data-streams/reference/report-schema-v11#market-status-values) to understand which values apply
+  to your specific stream. This guide uses generic "Open" and "Closed" terminology that applies across all v11 streams.
 </Aside>
 
 Apply these best practices when integrating or operating markets that use tokenized real-world assets during standard market hours. Developers and operators are responsible for assessing market integrity, implementing mitigations, and managing application-level risks — see the [Developer Responsibilities](/data-streams/developer-responsibilities) guidance for details.
@@ -39,13 +39,13 @@ Market gaps occur when there are interruptions in trading or price discovery, le
 
 #### Market close
 
-The following is written from the perspective of someone integrating a v11 schema Data Stream for regular trading hours. For streams with different trading hours, the `marketStatus` field values should be adjusted accordingly.
+The following guidance applies to streams during non-trading hours. Check your stream's specific `marketStatus` values in the [schema documentation](/data-streams/reference/report-schema-v11#market-status-values).
 
 Around market close, large price jumps may occur due to after-hours news. This can create a large pricing gap between the close of the last session and the open of the new session. Such a price jump can cause issues for protocols by triggering sudden liquidations.
 
-| Data Stream behavior                                                                                                                                                                                                          | User guidance                                                                                                                                                                                                                                               |
-| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <ul><li>`midPrice`: Closing price is repeated until market open.</li><li>`marketStatus`: `1`, `3`, `4`, `5` (Not Regular Hours).</li><li>`lastUpdateTimestamp`: Timestamp of the closing price of the last session.</li></ul> | Keep markets closed while `marketStatus != 2` to prevent users trading at unfair prices.<br/><br/> Leverage available should be set in line with the asset average volatility to avoid bad debt if a user's collateral is insufficient to cover the losses. |
+| Data Stream behavior                                                                                                                                                                                                 | User guidance                                                                                                                                                                                                                                                           |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until market open.</li><li>`marketStatus`: Market Closed status value(s).</li><li>`lastUpdateTimestamp`: Timestamp of the closing price of the last session.</li></ul> | Keep markets closed while `marketStatus` indicates closed to prevent users trading at unfair prices.<br/><br/> Leverage available should be set in line with the asset average volatility to avoid bad debt if a user's collateral is insufficient to cover the losses. |
 
 #### Price formation at open/close
 
@@ -53,9 +53,9 @@ Certain assets (e.g., FX open on Sunday afternoon) experience gradual price disc
 
 Integrating protocols should avoid opening their market with the last close price.
 
-| Data Stream behavior                                                                                                                                                                                                                               | User guidance                                                                                                   |
-| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
-| <ul><li>`midPrice`: Closing price is repeated until a bid/ask becomes available or a transaction occurs.</li><li>`marketStatus`: `2` (Regular Hours).</li><li>`lastUpdateTimestamp`: Timestamp of the closing price of the last session.</li></ul> | Wait until `lastUpdateTimestamp` is current before opening the market so traders don't execute on stale quotes. |
+| Data Stream behavior                                                                                                                                                                                                                                    | User guidance                                                                                                   |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until a bid/ask becomes available or a transaction occurs.</li><li>`marketStatus`: Market Open status value.</li><li>`lastUpdateTimestamp`: Timestamp of the closing price of the last session.</li></ul> | Wait until `lastUpdateTimestamp` is current before opening the market so traders don't execute on stale quotes. |
 
 #### Sudden failures
 
@@ -63,9 +63,9 @@ Unexpected system outages, order execution failures, or data feed disruptions ca
 
 The price will be flat during that period, meaning if an integrating protocol lacks a mechanism to handle halts, it may struggle to determine fair prices thus leading to unpredictable liquidations.
 
-| Data Stream behavior                                                                                                                                                                                  | User guidance                                                                                                     |
-| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
-| <ul><li>`midPrice`: Last mid-price is repeated until a new price is available.</li><li>`marketStatus`: `2` (Regular Hours).</li><li>`lastUpdateTimestamp`: Timestamp of the last mid-price.</li></ul> | Decide whether to allow users to open/close positions when `marketStatus = 2` but `lastUpdateTimestamp` is stale. |
+| Data Stream behavior                                                                                                                                                                                       | User guidance                                                                                                                |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Last mid-price is repeated until a new price is available.</li><li>`marketStatus`: Market Open status value.</li><li>`lastUpdateTimestamp`: Timestamp of the last mid-price.</li></ul> | Decide whether to allow users to open/close positions when `marketStatus` indicates open but `lastUpdateTimestamp` is stale. |
 
 #### Trading halts
 
@@ -73,9 +73,9 @@ Stocks can be halted due to extreme volatility (e.g., limit up/down rules) or re
 
 The price will be flat during that period, meaning if an integrating protocol lacks a mechanism to handle halts, it may struggle to determine fair prices thus leading to unpredictable liquidations.
 
-| Data Stream behavior                                                                                                                                                                                  | User guidance                                                                                                     |
-| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
-| <ul><li>`midPrice`: Last mid-price is repeated until a new price is available.</li><li>`marketStatus`: `2` (Regular Hours).</li><li>`lastUpdateTimestamp`: Timestamp of the last mid-price.</li></ul> | Decide whether to allow users to open/close positions when `marketStatus = 2` but `lastUpdateTimestamp` is stale. |
+| Data Stream behavior                                                                                                                                                                                       | User guidance                                                                                                                |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Last mid-price is repeated until a new price is available.</li><li>`marketStatus`: Market Open status value.</li><li>`lastUpdateTimestamp`: Timestamp of the last mid-price.</li></ul> | Decide whether to allow users to open/close positions when `marketStatus` indicates open but `lastUpdateTimestamp` is stale. |
 
 ---
 
@@ -89,9 +89,9 @@ Rapid-fire trading by algos can create unpredictable price movements.
 
 High volatility can lead to liquidation and potential bad debt accumulation.
 
-| Data Stream behavior                                                                                                                            | User guidance                                                            |
-| :---------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
-| <ul><li>`midPrice`: Current mid price.</li><li>`marketStatus`: `2` (Regular Hours).</li><li>`lastUpdateTimestamp`: Current timestamp.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
+| Data Stream behavior                                                                                                                                 | User guidance                                                            |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Current mid price.</li><li>`marketStatus`: Market Open status value.</li><li>`lastUpdateTimestamp`: Current timestamp.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
 
 ### Low liquidity at open/close
 
@@ -99,9 +99,9 @@ Reduced market depth at trading session transitions can lead to higher volatilit
 
 High volatility can lead to liquidation and potential bad debt accumulation.
 
-| Data Stream behavior                                                                                                                            | User guidance                                                            |
-| :---------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
-| <ul><li>`midPrice`: Current mid price.</li><li>`marketStatus`: `2` (Regular Hours).</li><li>`lastUpdateTimestamp`: Current timestamp.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
+| Data Stream behavior                                                                                                                                 | User guidance                                                            |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Current mid price.</li><li>`marketStatus`: Market Open status value.</li><li>`lastUpdateTimestamp`: Current timestamp.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
 
 ---
 
@@ -115,9 +115,9 @@ Bankruptcy can lead to delisting or complete loss of equity value.
 
 Delisting will zero out prices for the asset.
 
-| Data Stream behavior                                                                                                                                                                                                          | User guidance                                                                                   |
-| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------- |
-| <ul><li>`midPrice`: Closing price is repeated until a new price is available.</li><li>`marketStatus`: `1`, `3`, `4`, `5` (Not Regular Hours).</li><li>`lastUpdateTimestamp`: Closing timestamp of the last session.</li></ul> | Monitor delisting news during `marketStatus != 2` and close markets permanently once confirmed. |
+| Data Stream behavior                                                                                                                                                                                                 | User guidance                                                                                     |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------ |
+| <ul><li>`midPrice`: Closing price is repeated until a new price is available.</li><li>`marketStatus`: Market Closed status value(s).</li><li>`lastUpdateTimestamp`: Closing timestamp of the last session.</li></ul> | Monitor delisting news during market closed periods and close markets permanently once confirmed. |
 
 ### Spin-offs
 
@@ -125,9 +125,9 @@ When a company spins off a business unit into a separate publicly traded entity,
 
 Positions may need to be manually adjusted if the integrating protocol doesn't support tracking the new entity.
 
-| Data Stream behavior                                                                                                                                                                                | User guidance                                                                                                                                                                                                                                                                                                                         |
-| :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| <ul><li>`midPrice`: Closing price is repeated until the first post-spin trade.</li><li>`marketStatus`: `1`, `3`, `4`, `5` (Not Regular Hours).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor spin-off and split announcements while `marketStatus != 2`.<br/><br/>Auto-pause the market if the first post-event price moves by more than X% from the prior close, update positions, then reopen.<br/><br/>If automatic adjustment isn't possible, disable leverage during the event window to prevent unfair liquidations. |
+| Data Stream behavior                                                                                                                                                                       | User guidance                                                                                                                                                                                                                                                                                                                            |
+| :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until the first post-spin trade.</li><li>`marketStatus`: Market Closed status value(s).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor spin-off and split announcements during market closed periods.<br/><br/>Auto-pause the market if the first post-event price moves by more than X% from the prior close, update positions, then reopen.<br/><br/>If automatic adjustment isn't possible, disable leverage during the event window to prevent unfair liquidations. |
 
 ### Stock splits & reverse splits
 
@@ -141,9 +141,9 @@ A stock split increases the number of shares while reducing the price per share 
 
 A 2-for-1 split would reduce the price by 50% from the previous trading session, any leveraged user could get liquidated.
 
-| Data Stream behavior                                                                                                                                                                                      | User guidance                                                                                                                                                                                                                                                                                                                         |
-| :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| <ul><li>`midPrice`: Closing price is repeated until the split-adjusted price prints.</li><li>`marketStatus`: `1`, `3`, `4`, `5` (Not Regular Hours).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor spin-off and split announcements while `marketStatus != 2`.<br/><br/>Auto-pause the market if the first post-event price moves by more than X% from the prior close, update positions, then reopen.<br/><br/>If automatic adjustment isn't possible, disable leverage during the event window to prevent unfair liquidations. |
+| Data Stream behavior                                                                                                                                                                             | User guidance                                                                                                                                                                                                                                                                                                                            |
+| :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until the split-adjusted price prints.</li><li>`marketStatus`: Market Closed status value(s).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor spin-off and split announcements during market closed periods.<br/><br/>Auto-pause the market if the first post-event price moves by more than X% from the prior close, update positions, then reopen.<br/><br/>If automatic adjustment isn't possible, disable leverage during the event window to prevent unfair liquidations. |
 
 ### Mergers & acquisitions (M&A)
 
@@ -151,9 +151,9 @@ If a company is being acquired, its stock price may rise to reflect the acquisit
 
 Announcements can cause sharp price spikes or sustained moves.
 
-| Data Stream behavior                                                                                                                                                                         | User guidance                                                            |
-| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
-| <ul><li>`midPrice`: Closing price is repeated until a new price prints.</li><li>`marketStatus`: `1`, `3`, `4`, `5` (Not Regular Hours).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
+| Data Stream behavior                                                                                                                                                                | User guidance                                                            |
+| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until a new price prints.</li><li>`marketStatus`: Market Closed status value(s).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
 
 ### Share buybacks & stock issuance
 
@@ -161,9 +161,9 @@ Reduced share supply from a buyback can drive stock prices higher, while an incr
 
 Announcements can cause sharp price spikes or sustained moves.
 
-| Data Stream behavior                                                                                                                                                                         | User guidance                                                            |
-| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
-| <ul><li>`midPrice`: Closing price is repeated until a new price prints.</li><li>`marketStatus`: `1`, `3`, `4`, `5` (Not Regular Hours).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
+| Data Stream behavior                                                                                                                                                                | User guidance                                                            |
+| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until a new price prints.</li><li>`marketStatus`: Market Closed status value(s).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
 
 ### Dividends
 
@@ -171,6 +171,6 @@ A company's stock price typically adjusts to reflect dividend payments. For exam
 
 Announcements can cause sharp price spikes or sustained moves.
 
-| Data Stream behavior                                                                                                                                                                               | User guidance                                                            |
-| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
-| <ul><li>`midPrice`: Closing price is repeated until the ex-date trade prints.</li><li>`marketStatus`: `1`, `3`, `4`, `5` (Not Regular Hours).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
+| Data Stream behavior                                                                                                                                                                      | User guidance                                                            |
+| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until the ex-date trade prints.</li><li>`marketStatus`: Market Closed status value(s).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
