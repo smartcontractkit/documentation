@@ -30,14 +30,18 @@ function isPrismCompromised(): boolean {
   // Look for code elements with language-* class but no token spans inside
   const codeBlocks = document.querySelectorAll('pre code[class*="language-"]')
 
+  console.log("[Prism Fix] Checking", codeBlocks.length, "code blocks")
+
   for (const block of Array.from(codeBlocks)) {
     const hasTokens = block.querySelector('[class*="token"]')
     if (!hasTokens && block.textContent && block.textContent.trim().length > 0) {
       // Found a code block that should be highlighted but isn't
+      console.log("[Prism Fix] Found compromised block:", block)
       return true
     }
   }
 
+  console.log("[Prism Fix] All code blocks appear to be properly highlighted")
   return false
 }
 
@@ -79,16 +83,35 @@ function checkAndFix(delay = 100) {
  * Initialize the fix
  */
 function init() {
-  // Check immediately after DOM is ready
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => checkAndFix(50))
-  } else {
-    checkAndFix(50)
+  console.log("[Prism Fix] Initializing browser extension fix")
+  console.log("[Prism Fix] Prism available?", typeof window.Prism !== "undefined")
+
+  // Wait for Prism to load before attempting fixes
+  function waitForPrism() {
+    if (typeof window.Prism !== "undefined") {
+      console.log("[Prism Fix] Prism loaded successfully")
+      startChecking()
+    } else {
+      console.log("[Prism Fix] Waiting for Prism to load...")
+      setTimeout(waitForPrism, 100)
+    }
   }
 
-  // Check again after a short delay (in case extension runs after us)
-  checkAndFix(200)
-  checkAndFix(500)
+  function startChecking() {
+    // Check immediately after DOM is ready
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => checkAndFix(50))
+    } else {
+      checkAndFix(50)
+    }
+
+    // Check again after a short delay (in case extension runs after us)
+    checkAndFix(200)
+    checkAndFix(500)
+    checkAndFix(1000)
+  }
+
+  waitForPrism()
 
   // Set up a MutationObserver to detect if extension modifies code blocks
   const observer = new MutationObserver((mutations) => {
