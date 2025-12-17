@@ -89,11 +89,20 @@ strong {
   word-break: break-word;
 }
 
-/* Override browser extensions (1Password, etc.) that inject dark themes into code elements */
-/* Higher specificity to beat extension selectors */
-body :not(pre) > code,
-body table code:not(pre code),
-body .copyContainer > code {
+/* Override browser extensions (1Password, etc.) that inject dark themes into INLINE code elements ONLY */
+/* Specifically exclude pre>code blocks to preserve syntax highlighting */
+/* Target: inline code in paragraphs, tables, and CopyText components */
+body p code:not([class*="token"]),
+body li code:not([class*="token"]),
+body td code:not([class*="token"]),
+body th code:not([class*="token"]),
+body .copyContainer > code:not([class*="token"]),
+body h1 code:not([class*="token"]),
+body h2 code:not([class*="token"]),
+body h3 code:not([class*="token"]),
+body h4 code:not([class*="token"]),
+body h5 code:not([class*="token"]),
+body h6 code:not([class*="token"]) {
   background: var(--theme-code-inline-bg) !important;
   background-color: var(--theme-code-inline-bg) !important;
   color: var(--theme-code-inline-text) !important;
@@ -107,10 +116,13 @@ body .copyContainer > code {
   font-weight: bold !important;
 }
 
-/* Override even if extensions add language-* classes */
-body :not(pre) > code[class*="language-"],
-body table code[class*="language-"]:not(pre code),
-body .copyContainer > code[class*="language-"] {
+/* Override even if extensions add language-* classes to inline code */
+/* Still exclude token classes to preserve Prism syntax highlighting */
+body p code[class*="language-"]:not([class*="token"]),
+body li code[class*="language-"]:not([class*="token"]),
+body td code[class*="language-"]:not([class*="token"]),
+body th code[class*="language-"]:not([class*="token"]),
+body .copyContainer > code[class*="language-"]:not([class*="token"]) {
   background: var(--theme-code-inline-bg) !important;
   background-color: var(--theme-code-inline-bg) !important;
   color: var(--theme-code-inline-text) !important;
