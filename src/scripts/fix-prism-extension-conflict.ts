@@ -34,9 +34,18 @@ function isPrismCompromised(): boolean {
 
   for (const block of Array.from(codeBlocks)) {
     const hasTokens = block.querySelector('[class*="token"]')
-    if (!hasTokens && block.textContent && block.textContent.trim().length > 0) {
+    const textContent = block.textContent || ""
+    const hasContent = textContent.trim().length > 0
+
+    console.log("[Prism Fix] Block check:", {
+      hasTokens: !!hasTokens,
+      hasContent,
+      language: block.className,
+    })
+
+    if (!hasTokens && hasContent) {
       // Found a code block that should be highlighted but isn't
-      console.log("[Prism Fix] Found compromised block:", block)
+      console.log("[Prism Fix] Found compromised block - will attempt to fix:", block)
       return true
     }
   }
@@ -73,8 +82,12 @@ function reHighlightCode() {
  */
 function checkAndFix(delay = 100) {
   setTimeout(() => {
+    console.log("[Prism Fix] Running check (retry count:", retryCount, "/", MAX_RETRIES, ")")
     if (isPrismCompromised() && retryCount < MAX_RETRIES) {
+      console.log("[Prism Fix] Attempting to fix...")
       reHighlightCode()
+    } else if (retryCount >= MAX_RETRIES) {
+      console.log("[Prism Fix] Max retries reached, stopping checks")
     }
   }, delay)
 }
