@@ -46,7 +46,7 @@ Instead of aggregating only raw market data, calculated streams compute derived 
 
 ## How to identify calculated streams
 
-Calculated streams are marked with a <span style="display: inline-block; font-size: 0.75rem; padding: 2px 6px; margin-left: 4px; border-radius: 4px; background: var(--blue-100); color: var(--blue-700); font-weight: 500; vertical-align: middle;">Calculated</span> badge in the documentation.
+Calculated streams are marked with a <span style="display: inline-block; font-size: 0.75rem; padding: 2px 6px; margin-left: 4px; border-radius: 4px; background: var(--blue-100); color: var(--blue-700); font-weight: 500; vertical-align: middle;">Calculated</span> badge in the Data Streams feed list.
 
 ## How calculated streams work
 
@@ -87,6 +87,20 @@ External data from specific trusted providers, such as yield rates or reference 
 
 The DON executes the predefined formula (weighted averages, ratios, sums, etc.) using the latest available inputs. The calculated value is packaged into a signed report with standard metadata (timestamps, fees) and published through the Data Streams Aggregation Network. You consume these reports using the same REST APIs, WebSocket connections, and onchain verification as traditional streams.
 
+## Example: Tokenized yield product
+
+A calculated stream for a tokenized yield-bearing vault might combine:
+
+- **Vault balance (onchain)**: Total assets in the vault contract
+- **Token supply (onchain)**: Circulating supply of vault shares
+- **Accrued yield (offchain)**: Interest from an external API
+
+**Formula:** `(vault balance + accrued yield) / token supply`
+
+**Result**: a price per share that reflects the vault's total value including pending yield.
+
+Without this stream, protocols accepting the vault token as collateral would need to query the vault contract, fetch accrued interest from the yield provider's API, perform the calculation themselves, and keep this logic synchronized across all integrators. A calculated stream helps ensure integrators apply the same pricing logic and update together when the underlying formula or yield source changes.
+
 ---
 
 ## Risks and mitigation
@@ -100,6 +114,8 @@ If a required input becomes unavailable or returns errors, the calculated stream
 Single-source inputs (such as a specific protocol API or contract) carry higher risk than decentralized aggregates. If a single source experiences downtime, report production halts entirely until the source recovers. Review which inputs are single-source vs. decentralized aggregates when assessing a calculated stream for your application.
 
 #### Mitigation
+
+The following strategies can help mitigate multiple dependency risks:
 
 - Design your protocol to handle report gaps gracefully (pause operations, use last-known values with appropriate staleness checks, or implement fallbacks based on your risk tolerance)
 - Implement staleness checks to detect when reports stop arriving and trigger appropriate protocol responses
@@ -115,6 +131,8 @@ If any input source experiences an outage (API errors, RPC failures, or contract
 
 #### Mitigation
 
+The following strategies can help mitigate timing and synchronization risks:
+
 - Implement max deviation checks against expected ranges
 - Use time-weighted averages or circuit breakers for extreme moves
 - Monitor trends over time rather than reacting to individual updates
@@ -129,21 +147,9 @@ If any input source experiences an outage (API errors, RPC failures, or contract
 
 ---
 
-## Example: Tokenized yield product
-
-A calculated stream for a tokenized yield-bearing vault might combine:
-
-- **Vault balance (onchain)**: Total assets in the vault contract
-- **Token supply (onchain)**: Circulating supply of vault shares
-- **Accrued yield (offchain)**: Interest from an external API
-
-**Formula:** `(vault balance + accrued yield) / token supply`
-
-**Result**: a price per share that reflects the vault's total value including pending yield.
-
-Without this stream, protocols accepting the vault token as collateral would need to query the vault contract, fetch accrued interest from the yield provider's API, perform the calculation themselves, and keep this logic synchronized across all integrators. A calculated stream helps ensure integrators apply the same pricing logic and update together when the underlying formula or yield source changes.
-
 ## Best practices
+
+To ensure the reliability and integrity of calculated streams in your application, consider the following best practices:
 
 ### Protocol design
 
@@ -158,8 +164,3 @@ Without this stream, protocols accepting the vault token as collateral would nee
 - Monitor key inputs independently when feasible (vault balances, token supplies, API availability) to identify which input may be causing issues
 - Alert on movements outside your expected range
 - For critical applications, consider independently monitoring the availability of single-source APIs or contracts used as inputs
-
-### Handling updates
-
-- Subscribe to Chainlink release notes for formula changes
-- Test new streams or updated configurations in staging
