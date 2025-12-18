@@ -33,9 +33,10 @@ All Data Streams use a [Decentralized Oracle Network (DON)](/data-streams/archit
 Instead of aggregating only raw market data, calculated streams compute derived values using predefined formulas applied to various inputs, including existing data streams, onchain state, and offchain APIs. Some inputs are decentralized aggregates (for example, crypto price streams from multiple independent providers), while others may come from a single protocol or API (for example, a specific vault contract or yield provider). Because a calculated stream depends on all of these inputs, you should evaluate their dependencies and failure modes carefully before using it in a value-securing application.
 
 <Aside type="caution" title="Important Considerations">
-  Calculated streams introduce additional dependencies and timing considerations compared to standard streams. Before
-  integrating a calculated stream, review the <a href="#unique-risks-and-mitigation">risks and mitigation</a> section to
-  understand how multiple inputs and update cadences may affect your application.
+  Calculated streams behave differently from standard streams in important ways. Before integrating a calculated stream,
+  review the <a href="#key-differences-from-standard-streams">key differences</a> and{" "}
+  <a href="#risks-and-mitigation">risks and mitigation</a> sections to understand how these differences may affect your
+  application.
 </Aside>
 
 ## Why use calculated streams?
@@ -101,42 +102,65 @@ A calculated stream for a tokenized yield-bearing vault might combine:
 
 Without this stream, protocols accepting the vault token as collateral would need to query the vault contract, fetch accrued interest from the yield provider's API, perform the calculation themselves, and keep this logic synchronized across all integrators. A calculated stream helps ensure integrators apply the same pricing logic and update together when the underlying formula or yield source changes.
 
+## Key differences from standard streams
+
+While calculated streams use the same infrastructure and delivery mechanisms as standard streams, they have distinct behaviors you should understand before integrating.
+
+### Report availability
+
+Standard streams aggregate data from multiple independent providers, so they remain available as long as enough providers are reporting. Calculated streams depend on **all** of their inputs being available. If any required input becomes unavailable or returns errors, the calculated **stream stops producing reports until all inputs recover**. This prevents potentially incorrect values from being published.
+
+### Input reliability
+
+Standard streams source data exclusively from decentralized aggregates of multiple independent data providers. Calculated streams may include a mix of:
+
+- **Decentralized aggregates**: Existing Data Streams with multiple independent sources (similar reliability to standard streams)
+- **Single-source inputs**: Specific protocol contracts or APIs where availability depends on a single system
+
+Single-source inputs carry higher risk. If that source experiences downtime, report production halts entirely until it recovers. Review the input sources for any calculated stream you plan to use.
+
+### Timing characteristics
+
+Standard streams reflect a single aggregated market price at a point in time. Calculated streams combine multiple inputs that may update at different frequencies and reflect slightly different timestamps. The calculated value is an approximation based on the latest available data from each input, not a single-block atomic snapshot.
+
+During rapid changes (large deposits, withdrawals, or sharp market moves), you may observe temporary differences between the calculated stream value and values from other sources like block explorers or protocol dashboards. These differences typically resolve as all inputs update to reflect the new state.
+
 ---
 
 ## Risks and mitigation
 
-Calculated streams inherit risks from their underlying inputs and introduce additional considerations due to combining multiple data sources.
+Calculated streams inherit risks from their underlying inputs and introduce additional considerations. Use these strategies to mitigate potential issues.
 
-### Multiple dependencies
+### Handling report gaps
 
-If a required input becomes unavailable or returns errors, the calculated stream stops producing reports until all inputs recover. This prevents potentially incorrect values from being published.
-
-Single-source inputs (such as a specific protocol API or contract) carry higher risk than decentralized aggregates. If a single source experiences downtime, report production halts entirely until the source recovers. Review which inputs are single-source vs. decentralized aggregates when assessing a calculated stream for your application.
+Because calculated streams stop producing reports when any input fails, your application must handle gaps in report availability.
 
 #### Mitigation
-
-The following strategies can help mitigate multiple dependency risks:
 
 - Design your protocol to handle report gaps gracefully (pause operations, use last-known values with appropriate staleness checks, or implement fallbacks based on your risk tolerance)
 - Implement staleness checks to detect when reports stop arriving and trigger appropriate protocol responses
-- Understand your input sources and assess the reliability of each, particularly single-source APIs or contracts
+- Set alerts for report gaps to detect input source issues early
 
-### Timing and synchronization
+### Single-source input reliability
 
-Inputs update at different frequencies and are read via separate calls, so they may reflect slightly different block heights or timestamps. The calculated value is an approximation based on the latest available data from each input, not a single-block atomic snapshot.
-
-During rapid market changes or protocol events (such as large deposits, withdrawals, or sharp market moves), you may observe temporary differences between the calculated stream value and values from other sources like block explorers, vault dashboards, or DEX charts. These differences typically resolve as all inputs update to reflect the new state.
-
-If any input source experiences an outage (API errors, RPC failures, or contract issues), report production pauses until all inputs are available again. Your application should be prepared to handle gaps in report availability.
+Single-source inputs (specific APIs or contracts) may have lower availability than decentralized aggregates.
 
 #### Mitigation
 
-The following strategies can help mitigate timing and synchronization risks:
+- Understand your input sources and assess the reliability of each, particularly single-source APIs or contracts
+- For critical applications, consider independently monitoring the availability of single-source inputs
+- Define acceptable downtime thresholds and corresponding protocol responses
+
+### Timing discrepancies
+
+Temporary differences between the calculated stream and other data sources are expected during rapid changes.
+
+#### Mitigation
 
 - Implement max deviation checks against expected ranges
 - Use time-weighted averages or circuit breakers for extreme moves
 - Monitor trends over time rather than reacting to individual updates
-- Set alerts for report gaps to detect input source issues early
+- Compare calculated values against market references when available (e.g., spot prices for index tokens)
 
 <Aside type="note" title="Developer Responsibilities">
   When using calculated streams, you inherit all responsibilities associated with the underlying inputs plus additional
@@ -149,13 +173,11 @@ The following strategies can help mitigate timing and synchronization risks:
 
 ## Best practices
 
-To ensure the reliability and integrity of calculated streams in your application, consider the following best practices:
-
 ### Protocol design
 
 - Set deviation limits to cap price changes per update or time window
-- Compare calculated values against market references when available (e.g., spot prices for index tokens)
 - Define fallback behavior if the stream stops updating or jumps beyond thresholds
+- Test your protocol's behavior during report gaps before deploying to production
 
 ### Monitoring
 
@@ -163,4 +185,3 @@ To ensure the reliability and integrity of calculated streams in your applicatio
 - Track the calculated stream value over time to establish normal behavior patterns
 - Monitor key inputs independently when feasible (vault balances, token supplies, API availability) to identify which input may be causing issues
 - Alert on movements outside your expected range
-- For critical applications, consider independently monitoring the availability of single-source APIs or contracts used as inputs
