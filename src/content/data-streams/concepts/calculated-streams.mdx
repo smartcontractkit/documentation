@@ -95,23 +95,30 @@ Calculated streams inherit risks from their underlying inputs and introduce addi
 
 ### Multiple dependencies
 
-If a required input becomes unavailable or unreliable, the calculated stream might stop updating or cease to reflect current conditions. Integrators should not assume any specific fallback behavior and must design their protocols to handle this scenario explicitly.
+If a required input becomes unavailable or returns errors, the calculated stream stops producing reports until all inputs recover. This prevents potentially incorrect values from being published.
+
+Single-source inputs (such as a specific protocol API or contract) carry higher risk than decentralized aggregates. If a single source experiences downtime, report production halts entirely until the source recovers. Review which inputs are single-source vs. decentralized aggregates when assessing a calculated stream for your application.
 
 #### Mitigation
 
-- Design your protocol to handle missing data gracefully (pause operations, use last-known values, or implement fallbacks based on your risk tolerance)
+- Design your protocol to handle report gaps gracefully (pause operations, use last-known values with appropriate staleness checks, or implement fallbacks based on your risk tolerance)
+- Implement staleness checks to detect when reports stop arriving and trigger appropriate protocol responses
+- Understand your input sources and assess the reliability of each, particularly single-source APIs or contracts
 
 ### Timing and synchronization
 
 Inputs update at different frequencies and are read via separate calls, so they may reflect slightly different block heights or timestamps. The calculated value is an approximation based on the latest available data from each input, not a single-block atomic snapshot.
 
-Users should expect small, transient differences between the calculated stream value and values observed on block explorers, vault dashboards, or DEX charts—especially during rapid changes such as large deposits, withdrawals, or sharp market moves. This does not necessarily indicate an issue with the stream, but is a natural consequence of combining multiple inputs with different update cadences.
+During rapid market changes or protocol events (such as large deposits, withdrawals, or sharp market moves), you may observe temporary differences between the calculated stream value and values from other sources like block explorers, vault dashboards, or DEX charts. These differences typically resolve as all inputs update to reflect the new state.
+
+If any input source experiences an outage (API errors, RPC failures, or contract issues), report production pauses until all inputs are available again. Your application should be prepared to handle gaps in report availability.
 
 #### Mitigation
 
 - Implement max deviation checks against expected ranges
 - Use time-weighted averages or circuit breakers for extreme moves
 - Monitor trends over time rather than reacting to individual updates
+- Set alerts for report gaps to detect input source issues early
 
 <Aside type="note" title="Developer Responsibilities">
   When using calculated streams, you inherit all responsibilities associated with the underlying inputs plus additional
@@ -146,9 +153,11 @@ Without this stream, protocols accepting the vault token as collateral would nee
 
 ### Monitoring
 
-- Track the calculated stream value over time to establish normal behavior
-- Monitor key inputs independently when feasible (vault balances, token supplies) to cross-check outputs
-- Alert on update gaps or movements outside your safe range
+- Set alerts for report gaps to detect when no new reports arrive within your expected update frequency
+- Track the calculated stream value over time to establish normal behavior patterns
+- Monitor key inputs independently when feasible (vault balances, token supplies, API availability) to identify which input may be causing issues
+- Alert on movements outside your expected range
+- For critical applications, consider independently monitoring the availability of single-source APIs or contracts used as inputs
 
 ### Handling updates
 
