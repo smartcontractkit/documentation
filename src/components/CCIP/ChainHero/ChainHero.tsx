@@ -46,6 +46,13 @@ interface ChainHeroProps {
     }
     lane: LaneConfig
   }[]
+  verifiers?: {
+    id: string
+    name: string
+    type: string
+    logo: string
+    totalNetworks: number
+  }[]
   network?: Network
   token?: {
     id: string
@@ -60,7 +67,16 @@ interface ChainHeroProps {
   }>
 }
 
-function ChainHero({ chains, tokens, network, token, environment, lanes, breadcrumbItems }: ChainHeroProps) {
+function ChainHero({
+  chains,
+  tokens,
+  network,
+  token,
+  environment,
+  lanes,
+  verifiers = [],
+  breadcrumbItems,
+}: ChainHeroProps) {
   // Get chain-specific tooltip configuration
   const chainTooltipConfig = network?.chain ? getChainTooltip(network.chain) : null
 
@@ -119,7 +135,14 @@ function ChainHero({ chains, tokens, network, token, environment, lanes, breadcr
             }
           />
           <div className="ccip-chain-hero__chainSearch">
-            <Search chains={chains} tokens={tokens} small environment={environment} lanes={lanes} />
+            <Search
+              chains={chains}
+              tokens={tokens}
+              small
+              environment={environment}
+              lanes={lanes}
+              verifiers={verifiers}
+            />
           </div>
         </div>
 

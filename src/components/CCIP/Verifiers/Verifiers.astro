@@ -1,11 +1,20 @@
 ---
 import CcipDirectoryLayout from "~/layouts/CcipDirectoryLayout.astro"
 import { getEntry, render } from "astro:content"
-import { getAllNetworks, getAllVerifiers, getSearchLanes, Version, Environment } from "~/config/data/ccip"
+import {
+  getAllNetworks,
+  getAllVerifiers,
+  getSearchLanes,
+  Version,
+  Environment,
+  getAllSupportedTokens,
+  getChainsOfToken,
+} from "~/config/data/ccip"
 import Table from "~/components/CCIP/Tables/VerifiersTable"
 import { getAllUniqueVerifiers } from "~/config/data/ccip/data.ts"
 import { DOCS_BASE_URL } from "~/utils/structuredData"
 import ChainHero from "~/components/CCIP/ChainHero/ChainHero"
+import { getTokenIconUrl } from "~/features/utils"
 import "./Verifiers.css"
 
 interface Props {
@@ -34,6 +43,20 @@ const uniqueVerifiers = getAllUniqueVerifiers({
 })
 
 const searchLanes = getSearchLanes({ environment })
+
+const supportedTokens = getAllSupportedTokens({
+  environment,
+  version: Version.V1_2_0,
+})
+const tokens = Object.keys(supportedTokens).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }))
+const allTokens = tokens.map((token) => {
+  const logo = getTokenIconUrl(token) || ""
+  return {
+    id: token,
+    logo,
+    totalNetworks: getChainsOfToken({ token, filter: environment }).length,
+  }
+})
 
 // Generate dynamic metadata for verifiers page
 const environmentText = environment === Environment.Mainnet ? "Mainnet" : "Testnet"
@@ -70,12 +93,9 @@ const canonicalForJsonLd = `${DOCS_BASE_URL}${currentPath}`
 >
   <ChainHero
     chains={networks}
-    tokens={uniqueVerifiers.map((verifier) => ({
-      id: verifier.id,
-      totalNetworks: verifier.totalNetworks,
-      logo: verifier.logo,
-    }))}
+    tokens={allTokens}
     lanes={searchLanes}
+    verifiers={uniqueVerifiers}
     environment={environment}
     breadcrumbItems={[
       {
