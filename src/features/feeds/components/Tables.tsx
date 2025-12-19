@@ -1168,9 +1168,11 @@ export const MainnetTable = ({
         return included
       }
       // Filter by final category (Supabase risk tier takes precedence over RDD)
+      // Normalize spaces for comparison (e.g., "very high" → "veryhigh")
+      const normalizedFinalCategory = metadata.finalCategory?.toLowerCase().replace(/\s+/g, "")
       return (
         selectedFeedCategories.length === 0 ||
-        selectedFeedCategories.map((cat) => cat.toLowerCase()).includes(metadata.finalCategory?.toLowerCase())
+        selectedFeedCategories.map((cat) => cat.toLowerCase().replace(/\s+/g, "")).includes(normalizedFinalCategory)
       )
     })
     .filter(
@@ -1381,9 +1383,11 @@ export const TestnetTable = ({
         return included
       }
       // Filter by final category (Supabase risk tier takes precedence over RDD)
+      // Normalize spaces for comparison (e.g., "very high" → "veryhigh")
+      const normalizedFinalCategory = metadata.finalCategory?.toLowerCase().replace(/\s+/g, "")
       return (
         selectedFeedCategories.length === 0 ||
-        selectedFeedCategories.map((cat) => cat.toLowerCase()).includes(metadata.finalCategory?.toLowerCase())
+        selectedFeedCategories.map((cat) => cat.toLowerCase().replace(/\s+/g, "")).includes(normalizedFinalCategory)
       )
     })
     .filter(
