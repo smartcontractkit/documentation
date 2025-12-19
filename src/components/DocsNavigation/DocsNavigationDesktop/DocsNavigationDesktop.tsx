@@ -1,6 +1,5 @@
 import { clsx } from "~/lib/clsx/clsx.ts"
 import { useNavBar } from "../../Header/useNavBar/useNavBar.ts"
-import DocsPickerDesktop from "./DocsPickerDesktop.tsx"
 import styles from "./docsNavigationDesktop.module.css"
 import QuickLinksModal from "../../Header/Nav/QuickLinksModal.tsx"
 import { useState } from "react"
@@ -29,10 +28,7 @@ function DocsNavigationDesktop({
         })}
       >
         <div className={styles.container}>
-          <div className={styles.left}>
-            <DocsPickerDesktop pathname={pathname} />
-            {children}
-          </div>
+          <div className={styles.left}>{children}</div>
           <div className={styles.links}>
             {isCcipPage ? (
               /* Custom links for CCIP Directory pages */

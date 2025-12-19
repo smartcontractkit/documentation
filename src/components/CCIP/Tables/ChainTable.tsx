@@ -4,7 +4,7 @@ import Tabs from "./Tabs.tsx"
 import TableSearchInput from "./TableSearchInput.tsx"
 import { useEffect, useState } from "react"
 import { getExplorerAddressUrl } from "~/features/utils/index.ts"
-import { drawerContentStore } from "../Drawer/drawerStore.ts"
+import { drawerContentStore, drawerWidthStore, DrawerWidth } from "../Drawer/drawerStore.ts"
 import LaneDrawer from "../Drawer/LaneDrawer.tsx"
 import { Environment, Version, LaneFilter } from "~/config/data/ccip/types.ts"
 import { getLane } from "~/config/data/ccip/data.ts"
@@ -130,6 +130,7 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
                           version: Version.V1_2_0,
                         })
 
+                        drawerWidthStore.set(DrawerWidth.Wide)
                         drawerContentStore.set(() => (
                           <LaneDrawer
                             environment={environment}

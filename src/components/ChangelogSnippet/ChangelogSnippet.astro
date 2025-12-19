@@ -1,0 +1,65 @@
+---
+import { SvgArrowRight2, Typography } from "@chainlink/blocks"
+import { SearchClient, searchClient } from "@algolia/client-search"
+import ChangelogCard from "./ChangelogCard.astro"
+import { AlgoliaQuery, type ChangelogItem } from "./types"
+import styles from "./ChangelogSnippet.module.css"
+import { getSecret } from "astro:env/server"
+
+interface Props {
+  query: AlgoliaQuery
+}
+
+const { query } = Astro.props
+
+const appId = getSecret("ALGOLIA_APP_ID")
+const apiKey = getSecret("PUBLIC_ALGOLIA_SEARCH_PUBLIC_API_KEY")
+
+let client: SearchClient
+let latestLog: ChangelogItem | undefined = undefined
+
+// Initialize client if appId and apiKey are available to avoid needing to update
+// the github actions with the new keys (satisfies linkcheck-internal)
+if (appId && apiKey) {
+  client = searchClient(appId, apiKey)
+
+  const req = await client.search({
+    requests: [
+      {
+        indexName: "Changelog",
+        restrictSearchableAttributes: ["topic"],
+        query,
+        hitsPerPage: 1,
+      },
+    ],
+  })
+
+  const firstResult = req.results[0]
+  const results = "hits" in firstResult ? (firstResult.hits as ChangelogItem[]) : []
+
+  // logs are returned sorted by created_at DESC
+  latestLog = results[0]
+}
+---
+
+{
+  latestLog && (
+    <section class={styles.container}>
+      <header class={styles.sectionHeader}>
+        <Typography
+          variant="h2"
+          style={{
+            fontSize: "32px",
+          }}
+        >
+          Changelog
+        </Typography>
+
+        <a href="https://dev.chain.link/changelog" class={styles.arrow}>
+          <SvgArrowRight2 height={12} width={12} />
+        </a>
+      </header>
+      <ChangelogCard item={latestLog} />
+    </section>
+  )
+}

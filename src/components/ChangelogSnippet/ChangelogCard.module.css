@@ -1,0 +1,150 @@
+/* Card Wrapper */
+.cardWrapper {
+  max-height: 400px;
+  overflow: hidden;
+  transition: max-height 0.5s ease;
+  position: relative;
+  border: 1px solid var(--border);
+}
+
+/* Card Container */
+.card {
+  display: flex;
+  gap: 82px;
+  padding: var(--space-6x);
+}
+
+.cardWrapper.expanded .card {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.cardWrapper:hover {
+  background-color: var(--muted);
+
+  & .contentFooter {
+    background: linear-gradient(to top, var(--muted) 50%, transparent);
+  }
+}
+
+/* Header Section */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4x);
+  margin-bottom: var(--space-3x);
+}
+
+.metaSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1x);
+  flex: 1;
+}
+
+/* Description Section */
+.description {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3x);
+  line-height: 1.6;
+  margin-top: var(--space-3x);
+}
+
+.description p {
+  margin: 0;
+  color: var(--foreground);
+}
+
+.description a {
+  color: var(--color-blue-600);
+  text-decoration: none;
+}
+
+.description a:hover {
+  text-decoration: underline;
+}
+
+.header {
+  display: flex;
+  width: 150px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* Description Content */
+.descriptionContent {
+  flex: 1;
+}
+
+/* Content Footer */
+.contentFooter {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  height: calc(var(--space-6x) + 68px);
+  display: flex;
+  align-items: end;
+  background: linear-gradient(to top, white 50%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease-in-out;
+}
+
+/* Expand Button */
+.expandButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: 600;
+  transition: color 0.2s ease;
+  cursor: default;
+  margin-left: 256px;
+  margin-bottom: var(--space-6x);
+}
+
+.expandButton svg {
+  transition: transform 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .card {
+    padding: var(--space-4x);
+    flex-direction: column;
+    gap: var(--space-4x);
+  }
+
+  .header {
+    gap: var(--space-3x);
+    width: 100%;
+  }
+
+  .metaSection {
+    gap: var(--space-1x);
+  }
+
+  .expandButton {
+    margin-left: 0;
+  }
+
+  .cardWrapper.expanded .card {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .contentFooter {
+    padding-left: var(--space-4x);
+  }
+}

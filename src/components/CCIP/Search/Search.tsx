@@ -4,7 +4,7 @@ import { clsx } from "~/lib/clsx/clsx.ts"
 import { useClickOutside } from "~/hooks/useClickOutside.tsx"
 import { Environment, LaneConfig, LaneFilter } from "~/config/data/ccip/types.ts"
 import { directoryToSupportedChain, getExplorer, fallbackTokenIconUrl } from "~/features/utils/index.ts"
-import { drawerContentStore } from "../Drawer/drawerStore.ts"
+import { drawerContentStore, drawerWidthStore, DrawerWidth } from "../Drawer/drawerStore.ts"
 import LaneDrawer from "../Drawer/LaneDrawer.tsx"
 import { ChainType, ExplorerInfo } from "~/config/types.ts"
 import type { WorkerMessage, WorkerResponse } from "~/workers/data-worker.ts"
@@ -38,11 +38,18 @@ interface SearchProps {
     }
     lane: LaneConfig
   }[]
+  verifiers?: {
+    id: string
+    name: string
+    type: string
+    logo: string
+    totalNetworks: number
+  }[]
   small?: boolean
   environment: Environment
 }
 
-function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
+function Search({ chains, tokens, small, environment, lanes, verifiers = [] }: SearchProps) {
   const [search, setSearch] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
   const [openSearchMenu, setOpenSearchMenu] = useState(false)
@@ -50,6 +57,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
   const [networksResults, setNetworksResults] = useState<typeof chains>([])
   const [tokensResults, setTokensResults] = useState<typeof tokens>([])
   const [lanesResults, setLanesResults] = useState<typeof lanes>([])
+  const [verifiersResults, setVerifiersResults] = useState<typeof verifiers>([])
   const searchRef = useRef<HTMLDivElement>(null)
   const workerRef = useRef<Worker | null>(null)
   const workerReadyRef = useRef(false)
@@ -59,10 +67,11 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
     if (workerReadyRef.current || typeof window === "undefined") return
     workerRef.current = new Worker(new URL("~/workers/data-worker.ts", import.meta.url), { type: "module" })
     workerRef.current.onmessage = (event: MessageEvent<WorkerResponse>) => {
-      const { networks, tokens: workerTokens, lanes: workerLanes } = event.data
+      const { networks, tokens: workerTokens, lanes: workerLanes, verifiers: workerVerifiers } = event.data
       setNetworksResults(networks || [])
       setTokensResults(workerTokens || [])
       setLanesResults(workerLanes || [])
+      setVerifiersResults(workerVerifiers || [])
     }
     workerReadyRef.current = true
   }
@@ -90,6 +99,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
       setNetworksResults([])
       setTokensResults([])
       setLanesResults([])
+      setVerifiersResults([])
       return
     }
 
@@ -102,11 +112,12 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
           chains,
           tokens,
           lanes,
+          verifiers,
         },
       }
       workerRef.current.postMessage(message)
     }
-  }, [debouncedSearch, chains, tokens, lanes])
+  }, [debouncedSearch, chains, tokens, lanes, verifiers])
 
   // Handle menu visibility
   useEffect(() => {
@@ -146,7 +157,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
         <img src="/assets/icons/search.svg" alt="Search icon" />
         <input
           type="search"
-          placeholder="Network/Token/Lane"
+          placeholder="Network/Token/Lane/Verifier"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onFocus={() => {
@@ -154,7 +165,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
             ensureWorker()
           }}
           onBlur={() => setIsActive(false)}
-          aria-label="Search networks, tokens, and lanes"
+          aria-label="Search networks, tokens, lanes, and verifiers"
           aria-describedby={openSearchMenu ? "search-results" : undefined}
         />
         {openSearchMenu && (
@@ -167,9 +178,12 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
             aria-live="polite"
             aria-label="Search results"
           >
-            {networksResults.length === 0 && tokensResults.length === 0 && (
-              <span className="ccip-hero__search-results__no-result">No results found</span>
-            )}
+            {networksResults.length === 0 &&
+              tokensResults.length === 0 &&
+              lanesResults.length === 0 &&
+              verifiersResults.length === 0 && (
+                <span className="ccip-hero__search-results__no-result">No results found</span>
+              )}
             {networksResults.length > 0 && (
               <>
                 <span className="ccip-hero__search-results__title">Networks</span>
@@ -236,7 +250,8 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                     <li key={lane.sourceNetwork.name + lane.destinationNetwork.key}>
                       <button
                         type="button"
-                        onClick={() =>
+                        onClick={() => {
+                          drawerWidthStore.set(DrawerWidth.Wide)
                           drawerContentStore.set(() => (
                             <LaneDrawer
                               environment={environment}
@@ -249,7 +264,7 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                               explorer={generateExplorerUrl(lane)}
                             />
                           ))
-                        }
+                        }}
                         aria-label={`View lane from ${lane.sourceNetwork.name} to ${lane.destinationNetwork.name}`}
                       >
                         <div className="ccip-hero__search-results__lane-images">
@@ -278,6 +293,36 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                           </span>
                         )}
                       </button>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+
+            {verifiersResults.length > 0 && (
+              <>
+                <span className="ccip-hero__search-results__title">Verifiers</span>
+                <ul aria-label="Verifiers">
+                  {verifiersResults.map((verifier) => (
+                    <li key={verifier.id}>
+                      <a href={`/ccip/directory/${environment}/verifiers#${verifier.id}`}>
+                        <img
+                          src={verifier.logo}
+                          alt={`${verifier.name} verifier logo`}
+                          loading="lazy"
+                          onError={({ currentTarget }) => {
+                            currentTarget.onerror = null // prevents looping
+                            currentTarget.src = fallbackTokenIconUrl
+                          }}
+                        />
+                        {verifier.name}
+                        {!small && (
+                          <span>
+                            {verifier.totalNetworks} {verifier.totalNetworks > 1 ? "networks" : "network"} |{" "}
+                            {verifier.type}
+                          </span>
+                        )}
+                      </a>
                     </li>
                   ))}
                 </ul>

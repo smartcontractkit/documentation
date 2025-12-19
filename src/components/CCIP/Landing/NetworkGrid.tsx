@@ -1,7 +1,5 @@
-import { useState } from "react"
-import NetworkCard from "../Cards/NetworkCard.tsx"
-import SeeMore from "../SeeMore/SeeMore.tsx"
-import "./NetworkGrid.css"
+import Card from "../Cards/Card.tsx"
+import Grid from "./Grid.tsx"
 
 interface NetworkGridProps {
   networks: {
@@ -14,27 +12,27 @@ interface NetworkGridProps {
   environment: string
 }
 
-const BEFORE_SEE_MORE = 2 * 7 // Number of networks to show before the "See more" button, 2 rows x 7 items
+const BEFORE_SEE_MORE = 2 * 4 // Number of networks to show before the "See more" button, 2 rows x 4 items
 
 function NetworkGrid({ networks, environment }: NetworkGridProps) {
-  const [seeMore, setSeeMore] = useState(networks.length <= BEFORE_SEE_MORE)
   return (
-    <>
-      <div className="networks__grid">
-        {networks.slice(0, seeMore ? networks.length : BEFORE_SEE_MORE).map((chain) => (
-          <a href={`/ccip/directory/${environment}/chain/${chain.chain}`} key={chain.chain}>
-            <NetworkCard
-              name={chain.name}
-              totalLanes={chain.totalLanes}
-              totalTokens={chain.totalTokens}
-              logo={chain.logo}
-              key={chain.chain}
-            />
-          </a>
-        ))}
-      </div>
-      {!seeMore && <SeeMore onClick={() => setSeeMore(!seeMore)} />}
-    </>
+    <Grid
+      items={networks}
+      initialDisplayCount={BEFORE_SEE_MORE}
+      seeMoreLabel="View all networks"
+      renderItem={(chain) => {
+        const subtitle = `${chain.totalLanes} ${chain.totalLanes === 1 ? "lane" : "lanes"} | ${chain.totalTokens} ${chain.totalTokens === 1 ? "token" : "tokens"}`
+        return (
+          <Card
+            key={chain.chain}
+            logo={<img src={chain.logo} alt="" loading="lazy" />}
+            title={chain.name}
+            subtitle={subtitle}
+            link={`/ccip/directory/${environment}/chain/${chain.chain}`}
+          />
+        )
+      }}
+    />
   )
 }
 

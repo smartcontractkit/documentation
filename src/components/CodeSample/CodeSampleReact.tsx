@@ -13,7 +13,6 @@ export const CodeSampleReact: React.FC<CodeSampleReactProps> = ({ src, showButto
 
   const isSolidityFile = src.match(/\.sol/)
   const isSample = isSolidityFile && (src.indexOf("samples/") === 0 || src.indexOf("/samples/") === 0)
-
   if (!isSample || !showButtonOnly || !remixUrl) return null
 
   return (

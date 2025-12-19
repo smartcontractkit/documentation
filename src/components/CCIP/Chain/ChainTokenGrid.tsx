@@ -36,6 +36,7 @@ function ChainTokenGrid({ tokens, network, environment }: ChainTokenGridProps) {
               id={token.id}
               logo={token.logo}
               key={token.id}
+              variant="square"
               onClick={() => {
                 const selectedNetwork = Object.keys(data)
                   .map((key) => {
