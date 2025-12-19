@@ -90,6 +90,7 @@ export type SupportedChain =
   | "ETHEREUM_MAINNET"
   | "ETHEREUM_SEPOLIA"
   | "ETHEREUM_HOLESKY"
+  | "ETHEREUM_HOODI"
   | "BNB_MAINNET"
   | "BNB_TESTNET"
   | "POLYGON_MAINNET"

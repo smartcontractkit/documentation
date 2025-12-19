@@ -48,6 +48,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   SONEIUM_MAINNET: () => new JsonRpcProvider("https://rpc.soneium.org"),
   SONEIUM_MINATO: () => new JsonRpcProvider("https://rpc.minato.soneium.org"),
   ETHEREUM_HOLESKY: () => new JsonRpcProvider("https://ethereum-holesky-rpc.publicnode.com"),
+  ETHEREUM_HOODI: () => new JsonRpcProvider("https://rpc.hoodi.ethpandaops.io"),
   ASTAR_MAINNET: () => new JsonRpcProvider("https://rpc.astar.network"),
   ASTAR_SHIBUYA: () => new JsonRpcProvider("https://evm.shibuya.astar.network/"),
   ZIRCUIT_MAINNET: () => new JsonRpcProvider("https://zircuit1-mainnet.liquify.com"),
