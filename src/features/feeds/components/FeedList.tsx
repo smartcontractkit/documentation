@@ -362,6 +362,7 @@ export const FeedList = ({
     { key: "low", name: "Low Market Risk" },
     { key: "medium", name: "Medium Market Risk" },
     { key: "high", name: "High Market Risk" },
+    { key: "veryhigh", name: "Very High Market Risk" },
     { key: "custom", name: "Custom" },
     { key: "new", name: "New Token" },
     { key: "deprecating", name: "Deprecating" },
@@ -644,7 +645,7 @@ export const FeedList = ({
           // A deprecating network is relevant only if it still has at least one non-hidden deprecating feed
           if (!foundDeprecated) return false
           const hasVisible = network.metadata?.some(
-            (feed: any) => feed.feedCategory === "deprecating" && feed.feedCategory !== "hidden" && !feed.docs?.hidden
+            (feed: any) => feed.feedCategory === "deprecating" && !feed.docs?.hidden
           )
           return !!hasVisible
         }

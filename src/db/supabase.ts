@@ -1,9 +1,10 @@
 import { createClient } from "@supabase/supabase-js"
 
+// Try PUBLIC_ prefixed vars first (needed for client-side/browser access in Astro)
+// These work both locally and on Vercel when properly configured
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL
 const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY
 
-// Export a function that safely creates the client
 export function getSupabaseClient() {
   if (!supabaseUrl || !supabaseKey) {
     return null
@@ -11,5 +12,4 @@ export function getSupabaseClient() {
   return createClient(supabaseUrl, supabaseKey)
 }
 
-// Export the client instance (may be null)
 export const supabase = getSupabaseClient()

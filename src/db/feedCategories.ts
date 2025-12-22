@@ -35,15 +35,23 @@ export const FEED_CATEGORY_CONFIG = {
   high: {
     key: "high",
     name: "High Market Risk",
-    icon: "🔴",
+    icon: "🟠",
     title:
       "High Market Risk - Feeds that deliver a heightened degree of some of the risk factors associated with Medium Market Risk Feeds, or a separate risk that makes the market price subject to uncertainty or volatile. In using a high market risk data feed you acknowledge that you understand the risks associated with such a feed and that you are solely responsible for monitoring and mitigating such risks.",
     link: "/data-feeds/selecting-data-feeds#-high-market-risk-feeds",
   },
+  veryhigh: {
+    key: "veryhigh",
+    name: "Very High Market Risk",
+    icon: "🔴",
+    title:
+      "Very High Market Risk - Feeds with significant risk factors that require careful consideration. Users must thoroughly evaluate and understand all associated risks before use.",
+    link: "/data-feeds/selecting-data-feeds#-very-high-market-risk-feeds",
+  },
   new: {
     key: "new",
     name: "New Token",
-    icon: "🟠",
+    icon: "🆕",
     title:
       "New Token - Tokens without the historical data required to implement a risk assessment framework may be launched in this category. Users must understand the additional market and volatility risks inherent with such assets. Users of New Token Feeds are responsible for independently verifying the liquidity and stability of the assets priced by feeds that they use.",
     link: "/data-feeds/selecting-data-feeds#-new-token-feeds",
@@ -72,11 +80,12 @@ export type CategoryKey = keyof typeof FEED_CATEGORY_CONFIG
    Small helpers
    =========================== */
 
-const TABLE = "docs_feeds_risk"
+const TABLE = "prod_feeds_risk_docs"
 
 const normalizeKey = (v?: string | null): CategoryKey | undefined => {
   if (!v) return undefined
-  const key = v.toLowerCase() as CategoryKey
+  // Handle "very high" from DB → "veryhigh" config key
+  const key = v.toLowerCase().replace(/\s+/g, "") as CategoryKey
   return key in FEED_CATEGORY_CONFIG ? key : undefined
 }
 
