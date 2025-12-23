@@ -276,6 +276,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "SONEIUM_MINATO"
     case "ethereum-testnet-holesky":
       return "ETHEREUM_HOLESKY"
+    case "ethereum-testnet-hoodi":
+      return "ETHEREUM_HOODI"
     case "polkadot-mainnet-astar":
       return "ASTAR_MAINNET"
     case "polkadot-testnet-astar-shibuya":
@@ -609,6 +611,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-testnet-sepolia-soneium-1"
     case "ETHEREUM_HOLESKY":
       return "ethereum-testnet-holesky"
+    case "ETHEREUM_HOODI":
+      return "ethereum-testnet-hoodi"
     case "ASTAR_MAINNET":
       return "polkadot-mainnet-astar"
     case "ASTAR_SHIBUYA":

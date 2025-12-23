@@ -249,7 +249,7 @@ The mechanism by which a DON comes to a single, reliable, and tamper-proof resul
 
 # Service Quotas
 Source: https://docs.chain.link/cre/service-quotas
-Last Updated: 2025-12-11
+Last Updated: 2025-12-18
 
 This page documents the service quotas for Chainlink Runtime Environment (CRE) workflows.
 
@@ -314,10 +314,10 @@ These quotas apply to each individual workflow.
 
 ### Consensus quotas
 
-| Quota Key                                                                                                                                              | Description                                                      | Value  |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- | ------ |
-| <a href="#perworkflow-consensus-observationsizelimit" id="perworkflow-consensus-observationsizelimit">`PerWorkflow.Consensus.ObservationSizeLimit`</a> | Maximum size of data that can be passed to consensus aggregation | 100 KB |
-| <a href="#perworkflow-consensus-calllimit" id="perworkflow-consensus-calllimit">`PerWorkflow.Consensus.CallLimit`</a>                                  | Maximum number of consensus calls per workflow execution         | 2,000  |
+| Quota Key                                                                                                                                              | Description                                                      | Value |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- | ----- |
+| <a href="#perworkflow-consensus-observationsizelimit" id="perworkflow-consensus-observationsizelimit">`PerWorkflow.Consensus.ObservationSizeLimit`</a> | Maximum size of data that can be passed to consensus aggregation | 25 KB |
+| <a href="#perworkflow-consensus-calllimit" id="perworkflow-consensus-calllimit">`PerWorkflow.Consensus.CallLimit`</a>                                  | Maximum number of consensus calls per workflow execution         | 2,000 |
 
 ### Logging quotas
 
@@ -4174,7 +4174,7 @@ By default, `cre workflow simulate` performs a dry run without broadcasting tran
 cre workflow simulate my-workflow --broadcast --target staging-settings
 ```
 
-See the [CLI Reference](/cre/reference/cli#cre-workflow-simulate) for more details.
+See the [CLI Reference](/cre/reference/cli/workflow#cre-workflow-simulate) for more details.
 
 ## Troubleshooting
 
@@ -9758,7 +9758,7 @@ go mod tidy
 <Aside type="note" title="Funding Your Account">
   This step submits an onchain transaction, which requires gas. Before running the simulation, verify that the account
   associated with the private key from [Part
-  1](/cre/getting-started/part-1-project-setup#step-3-configure-the-environment) is funded with sufficient Sepolia ETH.
+  1](/cre/getting-started/part-1-project-setup-go#set-up-your-private-key) is funded with sufficient Sepolia ETH.
   An unfunded account will cause the transaction to fail, often with an error message like `gas required exceeds
     allowance`.
 
@@ -10984,7 +10984,7 @@ The `http.Client` is the SDK's interface for the underlying [HTTP Capability](/c
 All HTTP requests are wrapped in a consensus mechanism to provide a single, reliable result. The SDK provides two ways to do this:
 
 - **[`http.SendRequest`](#1-the-httpsendrequest-pattern-recommended):** (Recommended) A high-level helper function that simplifies making requests.
-- **[`cre.RunInNodeMode`](#2-the-cre-runinnodemode-pattern-low-level):** The lower-level pattern for more complex scenarios.
+- **[`cre.RunInNodeMode`](#2-the-creruninnodemode-pattern-low-level):** The lower-level pattern for more complex scenarios.
 
 ## Prerequisites
 
@@ -11866,7 +11866,7 @@ Here are common patterns for formatting reports. Choose the one that matches you
 | Pattern                                                                                                 | When to use                                               |
 | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
 | [**Pattern 1: Report in body**](#pattern-1-report-in-body-simplest)                                     | Your API accepts raw binary data and handles decoding     |
-| [**Pattern 2: Report + signatures in body**](#pattern-2-report-signatures-in-body)                      | Your API needs everything concatenated in one binary blob |
+| [**Pattern 2: Report + signatures in body**](#pattern-2-report--signatures-in-body)                     | Your API needs everything concatenated in one binary blob |
 | [**Pattern 3: Report in body, signatures in headers**](#pattern-3-report-in-body-signatures-in-headers) | Your API needs signatures separated for easier parsing    |
 | [**Pattern 4: JSON-formatted report**](#pattern-4-json-formatted-report)                                | Your API only accepts JSON payloads                       |
 
@@ -12889,7 +12889,7 @@ func onHttpTrigger(config *Config, runtime cre.Runtime, payload *http.Payload) (
     logger := runtime.Logger()
 
     // Unmarshal the JSON input from bytes
-    var requestData map[string]interface{}
+    var requestData map[string]any
     if err := json.Unmarshal(payload.Input, &requestData); err != nil {
         return nil, fmt.Errorf("failed to unmarshal input: %w", err)
     }
@@ -12937,7 +12937,7 @@ func onHttpTrigger(config *Config, runtime cre.Runtime, payload *http.Payload) (
 
     // The payload.Input is []byte containing JSON data.
     // Unmarshal it into a map or a custom struct.
-    var requestData map[string]interface{}
+    var requestData map[string]any
     if err := json.Unmarshal(payload.Input, &requestData); err != nil {
         return nil, fmt.Errorf("failed to unmarshal input: %w", err)
     }
@@ -13437,8 +13437,8 @@ This is a generic interface passed as the final argument to `cre.RunInNodeMode`.
 
 There are two primary ways to specify an aggregation method:
 
-1. [**Using Built-in Functions**](/cre/reference/sdk/consensus-go/#1-built-in-aggregation-functions): For simple types, you can use functions like [`ConsensusMedianAggregation`](/cre/reference/sdk/consensus/#consensusmedianaggregationt).
-2. [**Using Struct Tags**](/cre/reference/sdk/consensus-go/#2-aggregation-via-struct-tags): For complex types (structs), you can use [`ConsensusAggregationFromTags`](/cre/reference/sdk/consensus/#aggregation-via-struct-tags).
+1. [**Using Built-in Functions**](/cre/reference/sdk/consensus-go/#1-built-in-aggregation-functions): For simple types, you can use functions like [`ConsensusMedianAggregation`](/cre/reference/sdk/consensus-go#consensusmedianaggregationt).
+2. [**Using Struct Tags**](/cre/reference/sdk/consensus-go/#2-aggregation-via-struct-tags): For complex types (structs), you can use [`ConsensusAggregationFromTags`](/cre/reference/sdk/consensus-go#2-aggregation-via-struct-tags).
 
 ## 1. Built-in aggregation functions
 
@@ -13594,7 +13594,7 @@ These interfaces provide access to capabilities and manage the execution context
 
 - **`cre.Runtime` ("Easy Mode")**: Passed to your main trigger callback, this represents the **DON's (Decentralized Oracle Network) execution context**. It is used for operations that are already guaranteed to be Byzantine Fault Tolerant (BFT). When you use the `Runtime`, you ask the network to execute something, and CRE handles the underlying complexity to ensure you get back one final, secure, and trustworthy result. A common use case is writing a transaction to a blockchain with the EVM client.
 
-- **`cre.NodeRuntime` ("Manual Mode")**: Represents an **individual node's execution context**. This is used when a BFT guarantee cannot be provided automatically (e.g., calling a third-party API). You tell each node to perform a task on its own, and each node returns its own individual answer. You are then responsible for telling the SDK how to combine them into a single, trusted result by providing a consensus and aggregation algorithm. It is used exclusively inside a [`RunInNodeMode`](#sdkruninnodemode) block and is provided by that function—you do not get this type directly in your handler's callback.
+- **`cre.NodeRuntime` ("Manual Mode")**: Represents an **individual node's execution context**. This is used when a BFT guarantee cannot be provided automatically (e.g., calling a third-party API). You tell each node to perform a task on its own, and each node returns its own individual answer. You are then responsible for telling the SDK how to combine them into a single, trusted result by providing a consensus and aggregation algorithm. It is used exclusively inside a [`RunInNodeMode`](#creruninnodemode) block and is provided by that function—you do not get this type directly in your handler's callback.
 
 To learn more about how to aggregate results from `NodeRuntime`, see the [Consensus & Aggregation](/cre/reference/sdk/consensus) reference.
 
@@ -14877,7 +14877,7 @@ Now you are ready to compile and run the workflow. The workflow code (`workflow.
    <Aside type="note" title="Onchain Writes are Dry Runs by Default">
      The `--broadcast` flag is included here because this workflow performs an onchain write. By default, the `simulate`
      command performs a dry run and will not broadcast the transaction without this flag. For more details, see the `cre
-       workflow simulate` [reference](/cre/reference/cli#cre-workflow-simulate).
+       workflow simulate` [reference](/cre/reference/cli/workflow#cre-workflow-simulate).
    </Aside>
 
    You will first see a `Workflow compiled` message, followed by the trigger selection menu.
