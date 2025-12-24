@@ -19,6 +19,35 @@
   margin-top: 55px;
 }
 
+/* NEW: CTA group wrapper should behave like the old footer (buttons as direct children) */
+.contentFooter :global(.cta-item),
+.contentFooterMobile :global(.cta-item-mobile) {
+  display: flex;
+  gap: var(--space-6x); /* match footer spacing */
+  align-items: center;
+}
+
+/* Optional: ensure hidden groups don't occupy space (extra-safe) */
+.contentFooter :global(.cta-item[aria-hidden="true"]),
+.contentFooterMobile :global(.cta-item-mobile[aria-hidden="true"]) {
+  display: none;
+}
+
+/* prevent CTA row reflow across tabs */
+.contentFooter,
+.contentFooterMobile {
+  min-height: 56px; /* keeps vertical stability too */
+}
+
+/* apply to actual anchor buttons inside the active CTA group */
+.contentFooter :global(.cta-item) a,
+.contentFooterMobile :global(.cta-item-mobile) a {
+  width: 280px; /* tune */
+  justify-content: center; /* centers text inside button */
+  text-align: center;
+  white-space: nowrap; /* avoid wrapping */
+}
+
 .content {
   display: grid;
   grid-template-columns: 1fr 1fr;
