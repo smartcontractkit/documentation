@@ -118,7 +118,7 @@ receiverContractExecutionStatus: ReceiverContractExecutionStatus.REVERTED
 **Common causes**:
 
 - Forwarder address mismatch: You configured the wrong forwarder address in your consumer contract (simulation forwarders are different from production forwarders - see [Supported Networks](/cre/guides/workflow/using-evm-client/supported-networks-ts))
-- Security check failed (if you configured expected values for workflow ID, owner, or name in your contract)
+- [Security check](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#34-configuring-permissions) failed (if you configured expected values for workflow ID, owner, or name in your contract)
 - Custom validation in `_processReport()` rejected the data
 - ABI decoding failure (struct mismatch between workflow and contract)
 - Custom business logic constraints not met
@@ -127,8 +127,9 @@ receiverContractExecutionStatus: ReceiverContractExecutionStatus.REVERTED
 
 ### Scenario 3: Transaction failed
 
+Transaction failed to be mined:
+
 ```typescript
-// Transaction failed to be mined
 txStatus: TxStatus.REVERTED or TxStatus.FATAL
 receiverContractExecutionStatus: undefined
 ```
