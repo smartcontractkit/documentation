@@ -44,7 +44,7 @@ This section provides more detail on the Onchain components.
 **Sender Responsibilities**:
 
 - Prepare a structured CCIP Message.
-- Include all required accounts in the transaction context, due to the SVM account model. To learn more, read the `ccip_send` [API reference](/ccip/api-reference/svm/v0.1.1/router).
+- Include all required accounts in the transaction context, due to the SVM account model. To learn more, read the `ccip_send` [API reference](/ccip/api-reference/svm/v1.6.0/router).
 - Retrieve a fee estimate from the Router.
 - Call the Router to send the message, as described in the Message Lifecycle section.
 - Authorization Mechanisms:
@@ -59,12 +59,12 @@ This section provides more detail on the Onchain components.
 
 **Receiver Considerations**:
 
-- **Data Processing**: If the CCIP Message contains a bytes payload or a programmable token transfer, the receiver must be a program implementing the `ccip_receive` function with a specific discriminator. To learn more, read the `ccip_receive` [API reference](/ccip/api-reference/svm/v0.1.1/messages).
+- **Data Processing**: If the CCIP Message contains a bytes payload or a programmable token transfer, the receiver must be a program implementing the `ccip_receive` function with a specific discriminator. To learn more, read the `ccip_receive` [API reference](/ccip/api-reference/svm/v1.6.0/messages).
 - **Security Validation**: The receiver program should validate that the caller is an authorized OffRamp by checking the `ALLOWED_OFFRAMP` PDA from the Router program.
 
 **Additional Resources**:
 
-- CCIP provides program examples for a Sender/Receiver in the [Programs folder](https://github.com/smartcontractkit/chainlink-ccip/tree/v0.1.1-solana/chains/solana/contracts/programs).
+- CCIP provides program examples for a Sender/Receiver in the [Programs folder](https://github.com/smartcontractkit/chainlink-ccip/tree/solana-v1.6.0/chains/solana/contracts/programs).
 
 ## Router
 
@@ -188,18 +188,12 @@ The FeeQuoter is a central component in Chainlink CCIP that maintains token and 
 
 - Token Pools are deployed by token developers and exist independently of the core CCIP programs.
 - Token Pools are programs that interact with SPL token programs.
-- Token pools follow standard models (Lock/Release and Burn/Mint), with audited code available in the [CCIP repository](https://github.com/smartcontractkit/chainlink-ccip/tree/v0.1.1-solana/chains/solana/contracts/programs).
+- Token pools follow standard models (Lock/Release and Burn/Mint), with audited code available in the [CCIP repository](https://github.com/smartcontractkit/chainlink-ccip/tree/solana-v1.6.0/chains/solana/contracts/programs).
 - For tokens requiring bespoke logic before burn/mint/lock/release, custom pools can be built on top of the base pools. More details are available in the CCT documentation.
 
 ## Risk Management Network
 
-The Risk Management Network (RMN) adds an additional security layer to CCIP by performing offchain risk validation and maintaining an onchain "cursing" mechanism. The RMN program enables verification of cross-chain messages and can halt message transmission for specific blockchains or globally when security threats are detected.
-
-### Blessing and Verification
-
-- Offchain RMN nodes generate ECDSA signatures over merkle roots representing cross-chain message batches.
-- CCIP programs (such as Router or OffRamp) make CPI calls to the `verify_not_cursed` function to check whether the relevant chain (source or destination) is cursed.
-- The RMN program checks its `Curses` account to verify the subject isn't cursed before allowing the transaction to proceed.
+The Risk Management Network (RMN) adds an additional security layer to CCIP by maintaining an onchain "cursing" mechanism. The RMN program enables verification of cross-chain messages and can halt message transmission for specific blockchains or globally when security threats are detected.
 
 ### Cursing Mechanism
 

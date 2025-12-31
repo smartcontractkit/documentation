@@ -1,0 +1,566 @@
+---
+section: cre
+title: "Making POST Requests"
+date: Last Modified
+sdkLang: "go"
+pageId: "guides-workflow-http-post-request"
+metadata:
+  description: "Send data to external APIs in Go: learn to make POST requests from your workflow with authentication and custom headers."
+  datePublished: "2025-11-04"
+  lastModified: "2025-12-16"
+---
+
+import { Aside } from "@components"
+
+This guide explains how to use the HTTP Client to send data to an external API using a `POST` request. Because POST requests typically create resources or trigger actions, this guide shows you how to ensure your request executes only once, even though multiple nodes in the DON run your workflow.
+
+{/* prettier-ignore */}
+<Aside type="note" title="Single-Execution Pattern">
+  By default, **all nodes in the DON execute HTTP requests**. For POST, PUT, PATCH, and DELETE operations, this would cause duplicate actions (like creating multiple resources or sending multiple emails).
+  
+  This guide shows you the **recommended pattern** using `CacheSettings` to ensure only one node makes the actual HTTP call. This is the standard approach for non-idempotent operations.
+</Aside>
+
+All HTTP requests are wrapped in a consensus mechanism. The SDK provides two ways to do this:
+
+- **[`http.SendRequest`](#1-the-httpsendrequest-pattern-recommended):** A high-level helper function that simplifies making requests. This is the recommended approach for most use cases.
+- **[`cre.RunInNodeMode`](#2-the-cre-runinnodemode-pattern-low-level):** The lower-level pattern for more complex scenarios.
+
+## Choosing your approach
+
+### Use `http.SendRequest` (Section 1) when:
+
+- Making a **single HTTP POST request**
+- Your logic is straightforward: make request → parse response → return result
+- You want **simple, clean code** with minimal boilerplate
+- You need to use secrets (fetch them first and use closures—see [Using secrets with `http.SendRequest`](#using-secrets-with-httpsendrequest-optional))
+
+This is the recommended approach for most use cases.
+
+### Use `cre.RunInNodeMode` (Section 2) when:
+
+- You need **multiple HTTP requests** with logic between them
+- You need **conditional execution** (if/else based on runtime conditions)
+- You're **combining HTTP with other node-level operations**
+- You need **custom retry logic** or complex error handling
+
+If you're unsure, start with Section 1. You can always migrate to Section 2 later if your requirements become more complex.
+
+For this example, we will use <a href="https://webhook.site/" target="_blank">**webhook.site**</a>, a free service that provides a unique URL to which you can send requests and see the results in real-time.
+
+## Prerequisites
+
+This guide assumes you have a basic understanding of CRE. If you are new, we strongly recommend completing the [Getting Started tutorial](/cre/getting-started/overview) first.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Redirects are not supported">
+  HTTP requests to URLs that return redirects (3xx status codes) will fail. Ensure the URL you provide is the final destination and does not redirect to another URL.
+</Aside>
+
+## 1. The `http.SendRequest` Pattern (recommended)
+
+The `http.SendRequest` helper function is the simplest and recommended way to make `POST` requests. It automatically handles the `cre.RunInNodeMode` pattern for you.
+
+### Step 1: Generate your unique webhook URL
+
+1. Go to <a href="https://webhook.site/" target="_blank">**webhook.site**</a>.
+1. Copy the unique URL provided for use in your configuration.
+
+### Step 2: Configure your workflow
+
+In your `config.json` file, add the webhook URL:
+
+```json
+{
+  "webhookUrl": "https://webhook.site/<your-unique-id>",
+  "schedule": "*/30 * * * * *"
+}
+```
+
+### Step 3: Implement the POST request logic
+
+#### 1. Understanding single-execution with `CacheSettings`
+
+Before writing code, it's important to understand how to prevent duplicate POST requests. When your workflow runs, **all nodes in the DON execute your code**. For POST requests that create resources or trigger actions, this would cause duplicates.
+
+**The solution**: Use `CacheSettings` in your HTTP request. This enables a shared cache across nodes:
+
+1. The first node makes the HTTP request and stores the response in the cache
+1. Other nodes check the cache first and reuse the cached response
+1. Result: Only one actual HTTP call is made, while all nodes participate in consensus
+
+{/* prettier-ignore */}
+<Aside type="note" title="When to use CacheSettings">
+  Use `CacheSettings` for **all POST, PUT, PATCH, and DELETE requests** unless your API is explicitly designed to be idempotent (safe to call multiple times). This is the standard pattern.
+</Aside>
+
+**Key configuration:**
+
+- `Store: true` — Enables caching of the response
+- `MaxAge` — How long to accept cached responses (as a `*durationpb.Duration`)
+
+Now let's implement this pattern.
+
+#### 2. Define your data structures
+
+In your `main.go`, define the structs for your configuration, the data to be sent, and the response you want to achieve consensus on.
+
+```go
+type Config struct {
+	WebhookUrl string `json:"webhookUrl"`
+	Schedule   string `json:"schedule"`
+}
+
+type MyData struct {
+	Message string `json:"message"`
+	Value   int    `json:"value"`
+}
+
+type PostResponse struct {
+	StatusCode uint32 `json:"statusCode" consensus_aggregation:"identical"`
+}
+
+type MyResult struct{}
+```
+
+#### 3. Create the data posting function
+
+Create the function that will be passed to `http.SendRequest`. It prepares the data, serializes it to JSON, and uses the `sendRequester` to send the `POST` request **with `CacheSettings`** to ensure single execution.
+
+```go
+func postData(config *Config, logger *slog.Logger, sendRequester *http.SendRequester) (*PostResponse, error) {
+	// 1. Prepare the data to be sent
+	dataToSend := MyData{
+		Message: "Hello there!",
+		Value:   77,
+	}
+
+	// 2. Serialize the data to JSON
+	body, err := json.Marshal(dataToSend)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal data: %w", err)
+	}
+
+	// 3. Construct the POST request with CacheSettings
+	req := &http.Request{
+		Url:    config.WebhookUrl,
+		Method: "POST",
+		Body:   body,
+		Headers: map[string]string{
+			"Content-Type": "application/json",
+		},
+		CacheSettings: &http.CacheSettings{
+			Store:   true,                             // Enable caching
+			MaxAge:  durationpb.New(60 * time.Second), // Accept cached responses up to 1 minute old
+		},
+	}
+
+	// 4. Send the request and wait for the response
+	resp, err := sendRequester.SendRequest(req).Await()
+	if err != nil {
+		return nil, fmt.Errorf("failed to send POST request: %w", err)
+	}
+
+	logger.Info("HTTP Response", "statusCode", resp.StatusCode, "body", string(resp.Body))
+	return &PostResponse{StatusCode: resp.StatusCode}, nil
+}
+```
+
+#### 4. Call `http.SendRequest` from your handler
+
+In your main `onCronTrigger` handler, call the `http.SendRequest` helper, passing it your `postData` function.
+
+```go
+func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*MyResult, error) {
+    logger := runtime.Logger()
+    client := &http.Client{}
+
+	postPromise := http.SendRequest(config, runtime, client,
+		postData,
+		cre.ConsensusAggregationFromTags[*PostResponse](),
+	)
+
+	_, err := postPromise.Await()
+	if err != nil {
+		logger.Error("POST promise failed", "error", err)
+		return nil, err
+	}
+
+	logger.Info("Successfully sent data to webhook.")
+	return &MyResult{}, nil
+}
+```
+
+#### 5. Assemble the full workflow
+
+Finally, add the `InitWorkflow` and `main` functions.
+
+```go
+func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+	return cre.Workflow[*Config]{
+		cre.Handler(
+			cron.Trigger(&cron.Config{Schedule: config.Schedule}),
+			onCronTrigger,
+		),
+	}, nil
+}
+
+func main() {
+	wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
+}
+```
+
+#### The complete workflow file
+
+```go
+//go:build wasip1
+
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"log/slog"
+	"time"
+
+	"github.com/smartcontractkit/cre-sdk-go/capabilities/networking/http"
+	"github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
+	"github.com/smartcontractkit/cre-sdk-go/cre"
+	"github.com/smartcontractkit/cre-sdk-go/cre/wasm"
+	"google.golang.org/protobuf/types/known/durationpb"
+)
+
+type Config struct {
+	WebhookUrl string `json:"webhookUrl"`
+	Schedule   string `json:"schedule"`
+}
+
+type MyData struct {
+	Message string `json:"message"`
+	Value   int    `json:"value"`
+}
+
+type PostResponse struct {
+	StatusCode uint32 `json:"statusCode" consensus_aggregation:"identical"`
+}
+
+type MyResult struct{}
+
+func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+	return cre.Workflow[*Config]{
+		cre.Handler(
+			cron.Trigger(&cron.Config{Schedule: config.Schedule}),
+			onCronTrigger,
+		),
+	}, nil
+}
+
+func postData(config *Config, logger *slog.Logger, sendRequester *http.SendRequester) (*PostResponse, error) {
+	// 1. Prepare the data to be sent
+	dataToSend := MyData{
+		Message: "Hello there!",
+		Value:   77,
+	}
+
+	// 2. Serialize the data to JSON
+	body, err := json.Marshal(dataToSend)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal data: %w", err)
+	}
+
+	// 3. Construct the POST request with CacheSettings
+	req := &http.Request{
+		Url:    config.WebhookUrl,
+		Method: "POST",
+		Body:   body,
+		Headers: map[string]string{
+			"Content-Type": "application/json",
+		},
+		CacheSettings: &http.CacheSettings{
+			Store:   true,                             // Enable caching
+			MaxAge:  durationpb.New(60 * time.Second), // Accept cached responses up to 1 minute old
+		},
+	}
+
+	// 4. Send the request and wait for the response
+	resp, err := sendRequester.SendRequest(req).Await()
+	if err != nil {
+		return nil, fmt.Errorf("failed to send POST request: %w", err)
+	}
+
+	logger.Info("HTTP Response", "statusCode", resp.StatusCode, "body", string(resp.Body))
+	return &PostResponse{StatusCode: resp.StatusCode}, nil
+}
+
+func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*MyResult, error) {
+    logger := runtime.Logger()
+    client := &http.Client{}
+
+	postPromise := http.SendRequest(config, runtime, client,
+		postData,
+		cre.ConsensusAggregationFromTags[*PostResponse](),
+	)
+
+	_, err := postPromise.Await()
+	if err != nil {
+		logger.Error("POST promise failed", "error", err)
+		return nil, err
+	}
+
+	logger.Info("Successfully sent data to webhook.")
+	return &MyResult{}, nil
+}
+
+func main() {
+	wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
+}
+```
+
+### Step 4: Sync your dependencies
+
+1. **Sync Dependencies**: Your code imports the following packages. Run the following `go get` commands to add them to your Go module.
+
+   ```bash
+   go get github.com/smartcontractkit/cre-sdk-go/capabilities/networking/http@v1.0.0-beta.0
+   go get github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron@v1.0.0-beta.0
+   go get github.com/smartcontractkit/cre-sdk-go@v1.0.0
+   ```
+
+1. **Clean up and organize your module files**:
+
+   ```bash
+   go mod tidy
+   ```
+
+### Step 5: Run the simulation and verify
+
+1. **Run the simulation**:
+
+   ```bash
+   cre workflow simulate my-workflow --target staging-settings
+   ```
+
+1. **Check webhook.site**:
+
+   Open the webhook.site page with your unique URL. You should see a new request appear. Click on it to inspect the details, and you will see the JSON payload you sent.
+
+   ```json
+   {
+     "message": "Hello there!",
+     "value": 77
+   }
+   ```
+
+{/* prettier-ignore */}
+<Aside type="note" title="Understanding the Caching Mechanism">
+  The `CacheSettings` approach is a **best-effort mechanism** that works reliably in most scenarios. In rare cases, multiple requests may still occur. For more technical details, see the [HTTP Client reference](/cre/reference/sdk/http-client#understanding-cachesettings-behavior).
+</Aside>
+
+---
+
+### Using secrets with `http.SendRequest` (optional)
+
+If your POST request requires authentication (e.g., an API key in the headers), you can use secrets with `http.SendRequest` by fetching the secret first and using a closure pattern.
+
+#### 1. Configure your secret
+
+Add your secret to `.env`:
+
+```bash
+API_KEY=your-secret-api-key
+```
+
+Add the secret declaration to `secrets.yaml`:
+
+```yaml
+secretsNames:
+  API_KEY:
+    - API_KEY
+```
+
+For more details on configuring secrets, see [Secrets](/cre/guides/workflow/secrets).
+
+#### 2. Create a wrapper function
+
+Create a function that returns a closure capturing the API key:
+
+```go
+// ResponseFunc matches the signature expected by http.SendRequest
+type ResponseFunc func(config *Config, logger *slog.Logger, sendRequester *http.SendRequester) (*PostResponse, error)
+
+// withAPIKey returns a function that has access to the API key via closure
+func withAPIKey(apiKey string) ResponseFunc {
+	return func(config *Config, logger *slog.Logger, sendRequester *http.SendRequester) (*PostResponse, error) {
+		// Prepare the data to be sent
+		dataToSend := MyData{
+			Message: "Hello there!",
+			Value:   77,
+		}
+
+		// Serialize the data to JSON
+		body, err := json.Marshal(dataToSend)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal data: %w", err)
+		}
+
+		// Construct the POST request with API key in headers
+		req := &http.Request{
+			Url:    config.WebhookUrl,
+			Method: "POST",
+			Body:   body,
+			Headers: map[string]string{
+				"Content-Type":  "application/json",
+				"Authorization": "Bearer " + apiKey, // Use the secret from closure
+			},
+			CacheSettings: &http.CacheSettings{
+				Store:  true,
+				MaxAge: durationpb.New(60 * time.Second),
+			},
+		}
+
+		// Send the request and wait for the response
+		resp, err := sendRequester.SendRequest(req).Await()
+		if err != nil {
+			return nil, fmt.Errorf("failed to send POST request: %w", err)
+		}
+
+		logger.Info("HTTP Response", "statusCode", resp.StatusCode, "body", string(resp.Body))
+		return &PostResponse{StatusCode: resp.StatusCode}, nil
+	}
+}
+```
+
+#### 3. Update your handler to fetch the secret
+
+Modify your `onCronTrigger` handler to fetch the secret and use the wrapper function:
+
+```go
+func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*MyResult, error) {
+	logger := runtime.Logger()
+
+	// 1. Fetch the secret first
+	secretReq := &pb.SecretRequest{
+		Id: "API_KEY", // The secret name from secrets.yaml
+	}
+	secret, err := runtime.GetSecret(secretReq).Await()
+	if err != nil {
+		logger.Error("Failed to get API key", "error", err)
+		return nil, fmt.Errorf("failed to get API key: %w", err)
+	}
+
+	apiKey := secret.Value
+
+	// 2. Use http.SendRequest with the closure that captures the API key
+	client := &http.Client{}
+	postPromise := http.SendRequest(config, runtime, client,
+		withAPIKey(apiKey), // Pass the wrapper function
+		cre.ConsensusAggregationFromTags[*PostResponse](),
+	)
+
+	_, err = postPromise.Await()
+	if err != nil {
+		logger.Error("POST promise failed", "error", err)
+		return nil, err
+	}
+
+	logger.Info("Successfully sent authenticated data to webhook.")
+	return &MyResult{}, nil
+}
+```
+
+{/* prettier-ignore */}
+<Aside type="note" title="Why this pattern works">
+  The `withAPIKey` function returns a closure—a function that "remembers" the `apiKey` variable from the scope where it was created. This allows you to pass the secret to your POST logic.
+</Aside>
+
+## 2. The `cre.RunInNodeMode` pattern (alternative)
+
+For more complex scenarios or when you prefer working directly with the lower-level API, you can use `cre.RunInNodeMode`. This pattern gives you direct access to `nodeRuntime` within the callback function.
+
+{/* prettier-ignore */}
+<Aside type="note" title="When to use this pattern">
+  Use `cre.RunInNodeMode` when you need more control over the execution flow, such as making multiple sequential HTTP requests with conditional logic, or when you prefer accessing secrets directly within the callback rather than using closures.
+</Aside>
+
+### Example with secrets
+
+Here's how to make a POST request with an API key from secrets:
+
+```go
+func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*MyResult, error) {
+    logger := runtime.Logger()
+
+	// Define a function that has access to runtime (and thus secrets)
+	postDataWithAuth := func(config *Config, nodeRuntime cre.NodeRuntime) (*PostResponse, error) {
+		// 1. Get the API key from secrets
+		secretReq := &pb.SecretRequest{
+			Id: "API_KEY", // The secret name from your secrets.yaml
+		}
+		secret, err := runtime.GetSecret(secretReq).Await()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get API key: %w", err)
+		}
+
+		// Use the secret value
+		apiKey := secret.Value
+
+		// 2. Prepare the data to be sent
+		dataToSend := MyData{
+			Message: "Hello there!",
+			Value:   77,
+		}
+
+		// 3. Serialize the data to JSON
+		body, err := json.Marshal(dataToSend)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal data: %w", err)
+		}
+
+		// 4. Create HTTP client and construct request with API key
+		client := &http.Client{}
+		req := &http.Request{
+			Url:    config.WebhookUrl,
+			Method: "POST",
+			Body:   body,
+			Headers: map[string]string{
+				"Content-Type":  "application/json",
+				"Authorization": "Bearer " + apiKey, // Use the secret
+			},
+			CacheSettings: &http.CacheSettings{
+				Store:  true,
+				MaxAge: durationpb.New(60 * time.Second),
+			},
+		}
+
+		// 5. Send the request
+		resp, err := client.SendRequest(nodeRuntime, req).Await()
+		if err != nil {
+			return nil, fmt.Errorf("failed to send POST request: %w", err)
+		}
+
+		logger.Info("HTTP Response", "statusCode", resp.StatusCode, "body", string(resp.Body))
+		return &PostResponse{StatusCode: resp.StatusCode}, nil
+	}
+
+	// Execute the function with consensus
+	postPromise := cre.RunInNodeMode(config, runtime,
+		postDataWithAuth,
+		cre.ConsensusAggregationFromTags[*PostResponse](),
+	)
+
+	_, err := postPromise.Await()
+	if err != nil {
+		logger.Error("POST promise failed", "error", err)
+		return nil, err
+	}
+
+	logger.Info("Successfully sent data to webhook.")
+	return &MyResult{}, nil
+}
+```
+
+## Learn more
+
+- **[HTTP Client SDK Reference](/cre/reference/sdk/http-client)** — Complete API reference with all request options
+- **[Secrets](/cre/guides/workflow/secrets)** — Learn how to securely use API keys and sensitive data
+- **[GET Requests](/cre/guides/workflow/using-http-client/get-request)** — Learn how to fetch data from APIs

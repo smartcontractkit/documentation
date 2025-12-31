@@ -1,0 +1,311 @@
+---
+section: cre
+title: "Testing with Local JWT Server"
+date: Last Modified
+metadata:
+  description: "Test deployed HTTP trigger workflows easily with the cre-http-trigger TypeScript tool: automatic JWT generation, local proxy server, and simple configuration."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+The <a href="https://github.com/smartcontractkit/cre-sdk-typescript/tree/main/packages/cre-http-trigger" target="_blank" rel="noopener noreferrer">`cre-http-trigger` TypeScript package</a> simplifies testing deployed workflows with HTTP triggers by handling JWT generation, signing, and request formatting automatically. It provides a local HTTP server that acts as a proxy between your test requests and the CRE gateway.
+
+Manually creating JWT tokens for HTTP trigger requests involves complex steps: computing SHA256 digests with sorted JSON keys, generating ECDSA signatures, and encoding everything correctly (see [Triggering Deployed Workflows](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows)).
+
+The `cre-http-trigger` tool eliminates this complexity by:
+
+1. **Managing JWT generation** - Automatically creates properly signed JWT tokens
+1. **Handling request formatting** - Constructs valid JSON-RPC requests
+1. **Providing a simple API** - Send test requests with plain JSON payloads
+1. **Enabling local testing** - Run a local server that forwards requests to the gateway
+
+<Aside type="note" title="For testing only">
+  This tool is designed for **development and testing** of deployed workflows. For production integrations, implement
+  JWT generation directly in your backend service for better security and control.
+</Aside>
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Educational Example Disclaimer">
+  This page includes an educational example to use a Chainlink system, product, or service and is provided to
+  demonstrate how to interact with Chainlink's systems, products, and services to integrate them into your own. This
+  template is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, it has not been audited, and it may be
+  missing key checks or error handling to make the usage of the system, product or service more clear. Do not use the
+  code in this example in a production environment without completing your own audits and application of best practices.
+  Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs
+  that are generated due to errors in code.
+</Aside>
+
+## Prerequisites
+
+- **Bun runtime**: The tool requires <a href="https://bun.sh" target="_blank" rel="noopener noreferrer">Bun</a> version 1.2.21 or higher
+- **Deployed workflow**: Your workflow must be deployed with an HTTP trigger
+- **Workflow ID**: Available from deployment output or the CRE UI
+- **Private key**: The private key corresponding to one of the `authorizedKeys` in your HTTP trigger configuration
+
+## Installation
+
+Clone the CRE SDK TypeScript repository and navigate to the HTTP trigger package:
+
+```bash
+git clone https://github.com/smartcontractkit/cre-sdk-typescript.git
+cd cre-sdk-typescript/packages/cre-http-trigger
+```
+
+## Setup
+
+### 1. Install dependencies
+
+```bash
+bun install
+```
+
+### 2. Configure environment variables
+
+Create a `.env` file in the package root:
+
+```bash
+PRIVATE_KEY=0xYourPrivateKeyHere
+GATEWAY_URL=https://01.gateway.zone-a.cre.chain.link
+```
+
+Replace `0xYourPrivateKeyHere` with your EVM private key.
+
+<Aside type="caution" title="Keep your .env file secure">
+  Never commit `.env` files to version control. Add `.env` to your `.gitignore` file. The package repository already
+  includes `.env` in `.gitignore` by default.
+</Aside>
+
+### 3. Start the server
+
+Run the local proxy server:
+
+```bash
+bun start
+```
+
+The server starts on **port 2000** by default. You should see:
+
+```
+🚀 HTTP Trigger Server running at http://localhost:2000
+```
+
+## Usage
+
+With the server running, you can trigger workflows by sending HTTP POST requests to `http://localhost:2000/trigger`.
+
+### Basic request
+
+Send a POST request with your workflow ID as a query parameter and input data in the body:
+
+```bash
+curl -X POST "http://localhost:2000/trigger?workflowID=<your-workflow-id>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input": {
+      "userId": "user_123",
+      "action": "purchase",
+      "amount": 100
+    }
+  }'
+```
+
+### Request format
+
+**Query parameter:**
+
+| Field        | Type   | Description                                    |
+| ------------ | ------ | ---------------------------------------------- |
+| `workflowID` | string | Your 64-character workflow ID (no `0x` prefix) |
+
+**Request body:**
+
+| Field   | Type   | Description                                   |
+| ------- | ------ | --------------------------------------------- |
+| `input` | object | JSON payload passed to your workflow callback |
+
+### Example
+
+```bash
+curl -X POST "http://localhost:2000/trigger?workflowID=<your-workflow-id>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input": {
+      "userId": "user_456",
+      "action": "purchase",
+      "amount": 250
+    }
+  }'
+```
+
+**Server logs:**
+
+When the server processes your request, you'll see logs in the terminal where the server is running:
+
+```
+🚀 Triggering workflow...
+
+   Workflow: {
+  workflowID: "<your-workflow-id>",
+}
+
+   Input: {
+  "userId": "user_456",
+  "action": "purchase",
+  "amount": 250
+}
+
+   Signed by: <your-public-address>
+
+   Response: Response (297 bytes) {
+  ok: true,
+  url: "https://01.gateway.zone-a.cre.chain.link/",
+  status: 200,
+  statusText: "OK",
+  ...
+}
+```
+
+**Client response:**
+
+Your curl command receives a JSON response:
+
+```json
+{
+  "success": true,
+  "response": {
+    "jsonrpc": "2.0",
+    "id": "<your-request-id>",
+    "method": "workflows.execute",
+    "result": {
+      "workflow_id": "<your-workflow-id>",
+      "workflow_execution_id": "<your-workflow-execution-id>",
+      "status": "ACCEPTED"
+    }
+  }
+}
+```
+
+**Response fields:**
+
+| <div style={{ width: '250px' }}>Field</div> | Description                                                                           |
+| ------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `success`                                   | Always `true` for successful proxy requests                                           |
+| `response.jsonrpc`                          | JSON-RPC version (always `"2.0"`)                                                     |
+| `response.id`                               | Unique request ID generated by the tool                                               |
+| `response.method`                           | Always `"workflows.execute"`                                                          |
+| `result.workflow_id`                        | Your workflow ID (with `0x` prefix)                                                   |
+| `result.workflow_execution_id`              | Unique execution ID for this workflow run (use this to track execution in the CRE UI) |
+| `result.status`                             | Execution status (typically `"ACCEPTED"` for valid requests)                          |
+
+<Aside type="tip" title="Track your execution">
+  Copy the `workflow_execution_id` to track this specific execution in the [CRE UI](https://cre.chain.link/workflows).
+  You can view logs, events, and execution details using this ID.
+</Aside>
+
+### Health check endpoint
+
+Verify the server is running:
+
+```bash
+curl http://localhost:2000/health
+```
+
+**Response:**
+
+```
+OK
+```
+
+## How it works
+
+The tool performs the following steps automatically:
+
+1. **Receives your request** at `/trigger` with `workflowID` as a query parameter and `input` in the request body
+1. **Loads configuration** from environment variables (`PRIVATE_KEY`, `GATEWAY_URL`)
+1. **Constructs JSON-RPC payload**:
+   ```json
+   {
+     "jsonrpc": "2.0",
+     "id": "generated-uuid",
+     "method": "workflows.execute",
+     "params": {
+       "input": { ... },
+       "workflow": { "workflowID": "..." }
+     }
+   }
+   ```
+1. **Computes digest** of the request body (SHA256 with sorted keys)
+1. **Creates JWT payload** with `digest`, `iss`, `iat`, `exp`, `jti`
+1. **Signs JWT** using your private key with ECDSA
+1. **Sends authenticated request** to the CRE gateway with the JWT in the `Authorization` header
+1. **Returns the response** to your test client
+
+This eliminates the need to manually handle cryptographic operations and request formatting.
+
+## Code structure
+
+If you're curious about the implementation or need to customize the tool:
+
+| File                      | Purpose                                                                |
+| ------------------------- | ---------------------------------------------------------------------- |
+| `src/index.ts`            | HTTP server setup (Bun server with `/health` and `/trigger` endpoints) |
+| `src/trigger-workflow.ts` | Main orchestration: calls config, JWT generation, and sends request    |
+| `src/create-jwt.ts`       | JWT creation: header, payload, signing with ECDSA                      |
+| `src/get-config.ts`       | Loads `PRIVATE_KEY` and `GATEWAY_URL` from environment                 |
+| `src/schemas.ts`          | Zod schemas for input validation                                       |
+| `src/utils.ts`            | Helper functions (SHA256 hashing, base64url encoding)                  |
+
+All code is available in the <a href="https://github.com/smartcontractkit/cre-sdk-typescript/tree/main/packages/cre-http-trigger" target="_blank" rel="noopener noreferrer">cre-http-trigger package</a>.
+
+## Monitoring execution
+
+After triggering workflows with the tool, verify execution in the CRE UI:
+
+1. Go to <a href="https://cre.chain.link/workflows" target="_blank" rel="noopener noreferrer">cre.chain.link/workflows</a>
+1. Click on your workflow
+1. Navigate to the **Execution** tab
+1. Find recent executions and click **Execution ID** to view Events and Logs
+
+See [Monitoring & Debugging Workflows](/cre/guides/operations/monitoring-workflows) for complete guidance.
+
+## Troubleshooting
+
+### "Invalid private key" error
+
+**Cause:** The `PRIVATE_KEY` environment variable is missing or malformed.
+
+**Solution:** Ensure your `.env` file contains a valid EVM private key (with or without `0x` prefix).
+
+### "Unauthorized" error
+
+**Cause:** The private key doesn't correspond to any of the `authorizedKeys` in your workflow's HTTP trigger configuration.
+
+**Solution:** Verify that the public address derived from your private key matches an entry in your workflow's `authorizedKeys`.
+
+### "Workflow not found" error
+
+**Cause:** Incorrect `workflowID` or the workflow isn't deployed.
+
+**Solution:** Double-check the workflow ID from the CRE UI or deployment output.
+
+### Server won't start
+
+**Cause:** Port 2000 is already in use.
+
+**Solution:** Stop any other services using port 2000, or modify `src/index.ts` to use a different port.
+
+## Production considerations
+
+This tool is **not intended for production use**. For production integrations:
+
+1. **Implement JWT generation in your backend** - Use your backend service's language and crypto libraries
+1. **Secure private key storage** - Use a secrets manager
+1. **Add retry logic** - Handle transient network errors and gateway timeouts
+1. **Monitor and log** - Track requests, responses, and execution outcomes
+1. **Rate limiting** - Implement appropriate request throttling
+
+## Next steps
+
+- **[Monitoring Workflows](/cre/guides/operations/monitoring-workflows)** - View execution logs and debug issues

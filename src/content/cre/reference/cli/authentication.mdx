@@ -1,0 +1,76 @@
+---
+section: cre
+date: Last Modified
+title: "Authentication Commands"
+metadata:
+  description: "Manage your CLI authentication: reference for login, logout, and whoami commands to control your CRE sessions."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+The authentication commands manage your CRE credentials and account information.
+
+<Aside type="note" title="Global flags">
+  All `cre` commands support [global flags](/cre/reference/cli#global-flags) like `--env`, `--target`, `--project-root`,
+  and `--verbose`.
+</Aside>
+
+## `cre login`
+
+Starts the authentication flow. This command opens your browser for user login and saves your credentials locally.
+
+**Usage:**
+
+```bash
+cre login
+```
+
+**Authentication steps:**
+
+1. The CLI opens your default web browser to the login page
+1. Enter your account email address
+1. Enter your account password
+1. Enter your one-time password (OTP) from your authenticator app
+1. The CLI automatically captures and saves your credentials locally
+
+## `cre logout`
+
+Revokes authentication tokens and removes local credentials. This invalidates the current authentication tokens and deletes stored credentials from your machine.
+
+**Usage:**
+
+```bash
+cre logout
+```
+
+## `cre whoami`
+
+Shows your current account details. This command fetches and displays your account information, including your email and organization ID.
+
+**Usage:**
+
+```bash
+cre whoami
+```
+
+<Aside type="note" title="Verify authentication">
+  Use `cre whoami` to verify you're logged in and check which account is currently active. This is useful before
+  deploying workflows or performing other authenticated operations.
+</Aside>
+
+## Authentication workflow
+
+The typical authentication flow:
+
+1. **`cre login`** — Authenticate with the CRE UI (browser-based)
+1. **`cre whoami`** — Verify your authentication and account details
+1. **Perform CLI operations** — Deploy, manage workflows, etc.
+1. **`cre logout`** — (Optional) Revoke credentials when done
+
+## Learn more
+
+- [Getting Started](/cre/getting-started) — Includes authentication setup in the initial steps
+- [Account Management](/cre/reference/cli/account) — Link keys after authentication
+- [Deploying Workflows](/cre/guides/operations/deploying-workflows) — Requires authentication

@@ -1,0 +1,255 @@
+---
+section: cre
+title: "SDK Reference: Core"
+date: Last Modified
+sdkLang: "go"
+pageId: "reference-sdk-core"
+metadata:
+  description: "Reference for core Go SDK: Workflow, Handler, Runtime, NodeRuntime, and essential functions every CRE workflow uses."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+This page provides a reference for the core data structures and functions of the CRE Go SDK. These are the fundamental building blocks that every workflow uses, regardless of trigger types or capabilities.
+
+## Key concepts and components
+
+### `cre.Handler`
+
+The `cre.Handler` function is the cornerstone of every workflow. It registers a handler that links a specific trigger to a callback function containing your workflow logic. It is typically called within your [`InitWorkflow`](#initworkflow) function.
+
+**Usage:**
+
+```go
+workflow := cre.Workflow[*Config]{
+    cre.Handler(
+        // 1. A configured trigger, e.g., cron.Trigger(...).
+        // This determines WHEN the workflow runs.
+        triggerInstance,
+
+        // 2. The callback function to execute when the trigger fires.
+        // This is WHERE your workflow logic lives.
+        myCallbackFunction,
+    ),
+}
+```
+
+- **The Trigger**: An instance of a trigger capability (e.g., `cron.Trigger(...)`). This defines the event that will start your workflow. See the [Triggers reference](/cre/reference/sdk/triggers) for details.
+- **The Callback**: The function to be executed when the trigger fires. The signature of your callback function must match the output type of the trigger you are using.
+
+<Aside type="note" title="Callback Function Signatures">
+  Each trigger type requires a specific callback signature. See the [Triggers reference](/cre/reference/sdk/triggers)
+  for the exact signature required for each trigger type.
+</Aside>
+
+### `Runtime` and `NodeRuntime`
+
+These interfaces provide access to capabilities and manage the execution context of your workflow. The key difference is who is responsible for creating a single, trusted result from the work of many nodes.
+
+- **`cre.Runtime` ("Easy Mode")**: Passed to your main trigger callback, this represents the **DON's (Decentralized Oracle Network) execution context**. It is used for operations that are already guaranteed to be Byzantine Fault Tolerant (BFT). When you use the `Runtime`, you ask the network to execute something, and CRE handles the underlying complexity to ensure you get back one final, secure, and trustworthy result. A common use case is writing a transaction to a blockchain with the EVM client.
+
+- **`cre.NodeRuntime` ("Manual Mode")**: Represents an **individual node's execution context**. This is used when a BFT guarantee cannot be provided automatically (e.g., calling a third-party API). You tell each node to perform a task on its own, and each node returns its own individual answer. You are then responsible for telling the SDK how to combine them into a single, trusted result by providing a consensus and aggregation algorithm. It is used exclusively inside a [`RunInNodeMode`](#creruninnodemode) block and is provided by that function—you do not get this type directly in your handler's callback.
+
+To learn more about how to aggregate results from `NodeRuntime`, see the [Consensus & Aggregation](/cre/reference/sdk/consensus) reference.
+
+### `Promise`
+
+A placeholder for a result that has not yet been computed. Asynchronous operations in the SDK, such as calls made with the [EVM Client](/cre/reference/sdk/evm-client) or [HTTP Client](/cre/reference/sdk/http-client), immediately return a `Promise`.
+
+<Aside type="note" title="Promise Execution in a Single-Threaded Environment">
+
+Due to the single-threaded nature of WASM, the CRE SDK's `Promise` model has specific execution behavior:
+
+- **Execution is driven by `.Await()`**: Creating a `Promise` or chaining them with `cre.Then` only builds a plan of execution. The underlying asynchronous operations are only performed when `.Await()` is called on a promise. If you never call `.Await()` at the end of a promise chain, the operations in that chain will never run.
+
+- **Chaining with `cre.Then`**: When a promise is fulfilled, any and all callback functions attached to it via `cre.Then` will be executed. This allows for
+  "fan-out" patterns where a single result can trigger multiple downstream operations.
+
+</Aside>
+
+**Methods:**
+
+- **`.Await()`**: Pauses the execution of a callback and waits for the underlying asynchronous operation to complete. It returns the final result and an error.
+- **`cre.Then(...)`**: A function that allows chaining promises. It takes a promise and a function to execute when that promise resolves. The function returns a result or error directly.
+- **`cre.ThenPromise(...)`**: Similar to `cre.Then`, but for functions that return another promise. This is useful when the next step in the chain is also asynchronous.
+
+**`Await()` Example:**
+
+```go
+// myClient.SendRequest returns a Promise
+promise := myClient.SendRequest(runtime, req)
+
+// Await blocks until the result is available
+result, err := promise.Await()
+if err != nil {
+    return nil, fmt.Errorf("failed to send request: %w", err)
+}
+
+// Use the result
+logger := runtime.Logger()
+logger.Info("Request sent successfully", "response", result)
+```
+
+**`cre.Then()` Example:**
+
+`cre.Then` can help avoid nested `.Await()` calls. The following two code blocks are equivalent:
+
+```go
+// With nested .Await()
+firstPromise := client.Step1(runtime, input)
+firstResult, err := firstPromise.Await()
+if err != nil { /* handle error */ }
+
+secondPromise := client.Step2(runtime, firstResult)
+secondResult, err := secondPromise.Await()
+if err != nil { /* handle error */ }
+```
+
+```go
+// With cre.Then()
+firstPromise := client.Step1(runtime, input)
+secondPromise := cre.Then(firstPromise, func(firstResult Step1OutputType) (Step2OutputType, error) {
+    return client.Step2(runtime, firstResult).Await()
+})
+
+secondResult, err := secondPromise.Await()
+if err != nil { /* handle error */ }
+```
+
+**`cre.ThenPromise()` Example:**
+
+When your chaining function itself returns a promise, use `ThenPromise` to avoid unnecessary `.Await()` calls:
+
+```go
+// When the chaining function returns a Promise
+firstPromise := client.Step1(runtime, input)
+secondPromise := cre.ThenPromise(firstPromise, func(firstResult Step1OutputType) cre.Promise[Step2OutputType] {
+    return client.Step2(runtime, firstResult)  // Returns a Promise directly
+})
+
+secondResult, err := secondPromise.Await()
+if err != nil { /* handle error */ }
+```
+
+## Workflow entry points
+
+Your workflow code requires two specific functions to serve as entry points for compilation and execution.
+
+### `main()`
+
+This is the entry point of your workflow binary. You must define this function to create a WASM runner and start your workflow.
+
+**Required Signature:**
+
+```go
+import "github.com/smartcontractkit/cre-sdk-go/cre/wasm"
+
+func main() {
+    // The runner parses your workflow's static configuration and
+    // is responsible for executing your workflow logic.
+    wasm.NewRunner(cre.ParseJSON[*Config]).Run(InitWorkflow)
+}
+```
+
+### `InitWorkflow`
+
+This is the second required entry point. The CRE runner calls this function to initialize your workflow and register all its handlers.
+
+**Required Signature:**
+
+```go
+import (
+    "log/slog"
+    "github.com/smartcontractkit/cre-sdk-go/cre"
+)
+
+func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error)
+```
+
+**Parameters:**
+
+- `config`: A pointer to your workflow's static configuration struct.
+- `logger`: A `slog.Logger` instance for structured logging.
+- `secretsProvider`: An interface for requesting secrets.
+
+**Returns:**
+
+- A `cre.Workflow` slice containing all the handlers for your workflow.
+- An `error` if initialization fails.
+
+**Example:**
+
+```go
+import (
+	"log/slog"
+	"github.com/smartcontractkit/cre-sdk-go/cre"
+	"github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
+)
+
+// onCronTrigger is the callback function executed by the handler.
+func onCronTrigger(config *Config, runtime cre.Runtime, payload *cron.Payload) (string, error) {
+    // ... workflow logic ...
+    return "complete", nil
+}
+
+
+func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+    // ...
+    workflow := cre.Workflow[*Config]{
+        cre.Handler(
+            cron.Trigger(&cron.Config{Schedule: "0 */10 * * * *"}),
+            onCronTrigger,
+        ),
+    }
+    return workflow, nil
+}
+```
+
+## `cre.RunInNodeMode`
+
+As explained in the [`Runtime` and `NodeRuntime`](#runtime-and-noderuntime) section, this helper function is the bridge between the DON-level execution context (`Runtime`) and the individual node-level context (`NodeRuntime`). It allows you to execute code on individual nodes and then aggregate their results back into a single, trusted outcome.
+
+**Signature:**
+
+```go
+func RunInNodeMode[C, T any](
+	config C,
+	runtime Runtime,
+	fn func(config C, nodeRuntime NodeRuntime) (T, error),
+	ca ConsensusAggregation[T],
+) Promise[T]
+```
+
+**Example:**
+
+This example uses `RunInNodeMode` to fetch data from an API on each node, and then uses the DON-level `Runtime` to write the aggregated result onchain.
+
+```go
+import "github.com/smartcontractkit/cre-sdk-go/cre"
+
+func onTrigger(config *Config, runtime cre.Runtime, ...) (string, error) {
+    // 1. Run code on individual nodes using `RunInNodeMode`
+    // The `fn` passed to it receives a `NodeRuntime`
+    pricePromise := cre.RunInNodeMode(config, runtime,
+        func(config *Config, nodeRuntime cre.NodeRuntime) (int, error) {
+            // Use nodeRuntime to call a capability like the HTTP Client
+            return fetchOffchainPrice(nodeRuntime)
+        },
+        // The results from all nodes are aggregated with a consensus algorithm
+        cre.ConsensusMedianAggregation[int](),
+    )
+
+    price, err := pricePromise.Await()
+    if err != nil {
+        return "", err
+    }
+
+    // 2. Now, back in the DON context, use the top-level `runtime`
+    // to perform an action that requires consensus, like an onchain write.
+    txPromise := onchainContract.WriteReportUpdatePrice(runtime, price, nil)
+    tx, err := txPromise.Await()
+    //...
+}
+```

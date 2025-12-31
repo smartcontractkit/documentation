@@ -4,7 +4,7 @@ date: Last Modified
 title: "Building CCIP Messages from EVM to Aptos"
 isIndex: false
 metadata:
-  description: "Implement CCIP messages from EVM chains to Aptos. Guide covers message structure, parameters, and implementation for token transfers, arbitrary data, and programmatic token transfers (data+tokens)."
+  description: "Implement CCIP messages from EVM chains to Aptos. Guide covers message structure, parameters, and implementation for token transfers, arbitrary data, and programmable token transfers (data+tokens)."
   image: "/images/ccip/concepts/architecture/ccip-aptos-destination-chain.jpg"
   excerpt: "message structure, Aptos accounts, object, resource account, extraArgs, tokens, data, CCIP, Aptos FA, Fungible Asset"
   datePublished: "2025-09-03"
@@ -19,7 +19,7 @@ import CcipCommon from "@features/ccip/CcipCommon.astro"
 
 ## Introduction
 
-This guide explains how to construct CCIP Messages from Ethereum Virtual Machine (EVM) chains (e.g., Ethereum, Arbitrum, Base, etc.) to the Aptos blockchain. We'll cover the message structure, required parameters, and implementation details for different message types including token transfers, arbitrary data messaging, and programmatic token transfers (data and tokens).
+This guide explains how to construct CCIP Messages from Ethereum Virtual Machine (EVM) chains (e.g., Ethereum, Arbitrum, Base, etc.) to the Aptos blockchain. We'll cover the message structure, required parameters, and implementation details for different message types including token transfers, arbitrary data messaging, and programmable token transfers (data and tokens).
 
 <Aside title="Note">
   The code snippets below use the [ethers.js](https://www.npmjs.com/package/ethers) package for formatting and encoding
@@ -28,7 +28,7 @@ This guide explains how to construct CCIP Messages from Ethereum Virtual Machine
 
 ## CCIP Message Structure
 
-CCIP messages from EVM are built using the [`EVM2AnyMessage`](/ccip/api-reference/evm/v1.6.0/client#evm2anymessage) struct from the [`Client.sol`](/ccip/api-reference/evm/v1.6.0/client) library. The `EVM2AnyMessage` struct is defined as follows:
+CCIP messages from EVM are built using the [`EVM2AnyMessage`](/ccip/api-reference/evm/v1.6.1/client#evm2anymessage) struct from the [`Client.sol`](/ccip/api-reference/evm/v1.6.1/client) library. The `EVM2AnyMessage` struct is defined as follows:
 
 ```solidity
 struct EVM2AnyMessage {
@@ -44,7 +44,7 @@ struct EVM2AnyMessage {
 
 - **Definition**: The 32-byte account address of the receiver on Aptos.
 - **For token-only transfers**: This is the **end user's wallet address** on Aptos.
-- **For arbitrary messaging** or **programmatic token transfers**: This must be the account address of your custom Aptos module that is intended to receive and process the message.
+- **For arbitrary messaging** or **programmable token transfers**: This must be the account address of your custom Aptos module that is intended to receive and process the message.
 
 <Aside title="Formatting Aptos Addresses">
   When providing an Aptos account address as the `receiver`, it must be represented as a 32-byte hex string (`bytes32`). Standard Aptos addresses are already 32 bytes and represented in hex, so you just need to ensure it includes the `0x` prefix.
@@ -67,7 +67,7 @@ const message = {
 
 - **Definition**: Contains the payload to be delivered to the destination chain.
 - **For token-only transfers**: Must be empty (`0x`).
-- **For arbitrary messaging** or **programmatic token transfers**: Contains the custom data the receiver module will process.
+- **For arbitrary messaging** or **programmable token transfers**: Contains the custom data the receiver module will process.
 - **Encoding requirement**: Must be encoded as a hex string with a `0x` prefix.
 
 <Aside type="tip" title="Data Encoding">
@@ -88,7 +88,7 @@ const arbitraryMessageData = hexlify(toUtf8Bytes("Hello Aptos"))
 
 - **Definition**: An array of token addresses and amounts to transfer.
 - **For data-only messages**: Must be an empty array (`[]`).
-- **For token transfers** or **programmatic token transfers**: Each entry specifies a token address and amount. **Note**: Check the [CCIP Directory](/ccip/directory) for the list of supported tokens on each lane.
+- **For token transfers** or **programmable token transfers**: Each entry specifies a token address and amount. **Note**: Check the [CCIP Directory](/ccip/directory) for the list of supported tokens on each lane.
 
 ### feeToken
 
@@ -98,12 +98,12 @@ const arbitraryMessageData = hexlify(toUtf8Bytes("Hello Aptos"))
 
 ## extraArgs
 
-For Aptos-bound messages, the `extraArgs` parameter is a byte string composed of a 4-byte tag (`0x181dcf10`) prepended to the ABI-encoded tuple `(uint256 gasLimit, bool allowOutOfOrderExecution)`. This format is specified in the [`GenericExtraArgsV2`](/ccip/api-reference/evm/v1.6.0/client#genericextraargsv2) reference.
+For Aptos-bound messages, the `extraArgs` parameter is a byte string composed of a 4-byte tag (`0x181dcf10`) prepended to the ABI-encoded tuple `(uint256 gasLimit, bool allowOutOfOrderExecution)`. This format is specified in the [`GenericExtraArgsV2`](/ccip/api-reference/evm/v1.6.1/client#genericextraargsv2) reference.
 
 ### gasLimit
 
 - **Definition**: Specifies the amount of gas units to allocate for execution on Aptos.
-- **Usage**: For simple token and data transfers as shown in the examples, `0` is a sufficient value. For complex programmatic token transfers involving significant computation in your receiving module, this value must be determined through testing.
+- **Usage**: For simple token and data transfers as shown in the examples, `0` is a sufficient value. For complex programmable token transfers involving significant computation in your receiving module, this value must be determined through testing.
 
 ### allowOutOfOrderExecution
 
@@ -236,7 +236,7 @@ Use this configuration when sending only a data payload to a custom module on Ap
 
 </Aside>
 
-### Programmatic Token Transfer (Data and Tokens)
+### Programmable Token Transfer (Data and Tokens)
 
 Use this configuration when sending both tokens and a data payload to a custom module on Aptos.
 
@@ -292,13 +292,13 @@ To see these concepts in action with step-by-step implementation guides, check o
 
 - [Token Transfers: EVM to Aptos](/ccip/tutorials/aptos/destination/token-transfers) - Learn how to implement token-only transfers from EVM chains to Aptos wallets.
 - [Arbitrary Messaging: EVM to Aptos](/ccip/tutorials/aptos/destination/arbitrary-messaging) - Learn how to send data messages from EVM chains to Aptos modules.
-- [Programmatic Token Transfers: EVM to Aptos](/ccip/tutorials/aptos/destination/programmatic-token-transfers) - Learn how to send both tokens and data in a single message to trigger module execution with token transfers on Aptos.
+- [Programmable Token Transfers: EVM to Aptos](/ccip/tutorials/aptos/destination/programmable-token-transfers) - Learn how to send both tokens and data in a single message to trigger module execution with token transfers on Aptos.
 
 These tutorials provide complete, working examples using the concepts covered in this guide.
 
 ## Further Resources
 
-- [**CCIP EVM Client API Reference**](/ccip/api-reference/evm/v1.6.0/client): Complete technical details about the `EVM2AnyMessage` struct, helper functions, and message construction on EVM chains.
+- [**CCIP EVM Client API Reference**](/ccip/api-reference/evm/v1.6.1/client): Complete technical details about the `EVM2AnyMessage` struct, helper functions, and message construction on EVM chains.
 - **Aptos TS-SDK Docs**: For more information on building the receiving Aptos module, refer to the [official Aptos TS-SDK docs](https://aptos.dev/en/build/sdks/ts-sdk).
 
 <CcipCommon callout="educationalDisclaimer" />

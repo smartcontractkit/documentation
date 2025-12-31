@@ -1,30 +1,81 @@
 ---
 section: dataStreams
-date: Last Modified
+date: "Last Modified"
 title: "Data Streams Market Hours"
 metadata:
   title: "Chainlink Data Streams Market Hours | Trading Hours by Asset Class"
-  description: "Learn about trading hours for different asset classes in Chainlink Data Streams including cryptocurrency, forex, and precious metals market schedules."
-  keywords: ["Market Hours", "Trading Hours", "Crypto", "Forex", "Precious Metals", "Data Streams"]
+  description: "Market-open schedules for Chainlink Data Streams, covering crypto, forex, precious metals, US equities, and commodities."
+  keywords:
+    [
+      "Market Hours",
+      "Trading Hours",
+      "Crypto",
+      "Forex",
+      "Precious Metals",
+      "US Equities",
+      "Commodities",
+      "RWA",
+      "Data Streams",
+    ]
 whatsnext:
   {
     "Find the list of available Crypto streams": "/data-streams/crypto-streams",
     "Find the list of available RWA streams": "/data-streams/rwa-streams",
     "Find the schema of data to expect from Data Streams reports: Crypto": "/data-streams/reference/report-schema-v3",
     "Find the schema of data to expect from Data Streams reports: RWA": "/data-streams/reference/report-schema-v8",
+    "Learn best practices for managing market hours risks": "/data-streams/concepts/best-practices",
   }
 ---
 
-Markets for several assets are actively traded only during certain hours. Listed streams include an attribute describing their market hours.
+import { Aside } from "@components"
 
-## Market hours
+Markets for several assets are actively traded only during certain hours.
 
-| Asset class         | Hours                                                                                                                                                                                                                                                                           |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Crypto**          | 24/7/365 - No market close.                                                                                                                                                                                                                                                     |
-| **Forex**           | 18:00 ET Sunday to 17:00 ET Friday. <br/> The feeds also follow the global Forex market Christmas and New Year's Day holiday schedule. Many non-G12 currencies primarily trade during local market hours. It is recommended to use those feeds only during local trading hours. |
-| **Precious Metals** | 18:00 ET Sunday to 17:00 ET Friday with a one-hour break Monday through Thursday from 17:00 to 18:00. <br/> The feeds also follow the global Forex market holiday schedule for Christmas and New Year's Day.                                                                    |
+---
 
-## Real World Asset market status
+## Cryptocurrency
 
-Reports for Real World Asset (RWA) streams include the `marketStatus` value, which reflects the DON'S consensus on whether the market is currently open. For additional information, refer to the [RWA report schema](/data-streams/reference/report-schema-v8) page.
+Cryptocurrency markets operate continuously, with no designated market close.
+
+| Asset class | Hours                       |
+| ----------- | --------------------------- |
+| **Crypto**  | 24/7/365 — No market close. |
+
+---
+
+## Real-World Asset (RWA) market hours <span id="rwa-market-hours"></span>
+
+RWA markets operate during specific hours, with breaks for holidays and sometimes daily pauses.
+
+{/* prettier-ignore */}
+<Aside type="note" title="marketStatus field differences">
+  The <code>marketStatus</code> field varies by schema version:<br/><br/>
+  <strong>RWA Standard (v8)</strong> — [View schema](/data-streams/reference/report-schema-v8)<br/>
+  • <code>0</code> → <strong>Unknown</strong><br/>
+  • <code>1</code> → <strong>Closed</strong><br/>
+  • <code>2</code> → <strong>Open</strong><br/>
+  <br/>
+  <strong>RWA Advanced (v11)</strong> — [View schema](/data-streams/reference/report-schema-v11)<br/>
+  • <code>0</code> → <strong>Unknown</strong><br/>
+  • <code>1</code> → <strong>Pre-market</strong><br/>
+  • <code>2</code> → <strong>Regular hours</strong><br/>
+  • <code>3</code> → <strong>Post-market</strong><br/>
+  • <code>4</code> → <strong>Overnight</strong><br/>
+  • <code>5</code> → <strong>Weekend</strong><br/>
+  </Aside>
+
+| Asset class                                                     | Weekly Open   | Weekly Close  | Daily Breaks \*     | Bank Holidays \*\*                                                                     |
+| --------------------------------------------------------------- | ------------- | ------------- | ------------------- | -------------------------------------------------------------------------------------- |
+| **US Equities**<br/>(top-50 by market cap&nbsp;+ selected ETFs) | **09:30 Mon** | **16:00 Fri** | —                   | [NYSE holiday calendar](https://www.nyse.com/markets/hours-calendars)                  |
+| **FX Majors**<br/>(G10 + KRW, SGD, HKD, CNH …)                  | **17:00 Sun** | **17:00 Fri** | —                   | Jan 1, Dec 25                                                                          |
+| **Precious Metals (Spot)**<br/>(XAU, XAG)                       | **18:00 Sun** | **17:00 Fri** | 17:00–18:00 Mon-Thu | Jan 1, Good Fri, Dec 25                                                                |
+| **Commodities** <br/> (WTI Synthetic Spot)                      | **18:00 Sun** | **17:00 Fri** | 17:00–18:00 Mon-Thu | [NYMEX holiday calendar](https://www.cmegroup.com/tools-information/holiday-calendar/) |
+
+\* Times shown as **HH:MM ET**.  
+\*\* Half-day trading may apply on the eve of certain U.S. holidays (e.g., Jul 3, Nov 28). Consult the linked exchange calendars for exact cut-off times.
+
+---
+
+## User Recommendations
+
+For comprehensive guidance on managing risks related to market hours, market gaps, volatility, and corporate actions, see the [Best Practices](/data-streams/concepts/best-practices#market-hours) page.

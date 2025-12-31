@@ -1,0 +1,366 @@
+---
+section: cre
+title: "Making GET Requests"
+date: Last Modified
+sdkLang: "ts"
+pageId: "guides-workflow-http-get-request"
+metadata:
+  description: "Fetch data from APIs in TypeScript: learn to make GET requests with consensus validation to bring offchain data into your workflow."
+  datePublished: "2025-11-04"
+  lastModified: "2025-12-16"
+---
+
+import { Aside } from "@components"
+
+The `HTTPClient` is the SDK's interface for the underlying [HTTP Capability](/cre/capabilities/http). It allows your workflow to fetch data from any external API.
+
+All HTTP requests are wrapped in a consensus mechanism to provide a single, reliable result. The SDK provides two ways to do this:
+
+- **`sendRequest`:** (Recommended) A high-level helper method that simplifies making requests.
+- **`runInNodeMode`:** The lower-level pattern for more complex scenarios.
+
+## Prerequisites
+
+This guide assumes you have a basic understanding of CRE. If you are new, we strongly recommend completing the [Getting Started tutorial](/cre/getting-started/overview) first.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Redirects are not supported">
+  HTTP requests to URLs that return redirects (3xx status codes) will fail. Ensure the URL you provide is the final destination and does not redirect to another URL.
+</Aside>
+
+## Choosing your approach
+
+### Use `sendRequest` (Section 1) when:
+
+- Making a **single HTTP GET request**
+- Your logic is straightforward: make request → parse response → return result
+- You want **simple, clean code** with minimal boilerplate
+
+This is the recommended approach for most use cases.
+
+### Use `runInNodeMode` (Section 2) when:
+
+- You need **multiple HTTP requests** with logic between them
+- You need **conditional execution** (if/else based on runtime conditions)
+- You need **custom retry logic** or complex error handling
+- You need **complex data transformation** (fetching from multiple APIs and combining results)
+
+If you're unsure, start with Section 1. You can always migrate to Section 2 later if your requirements become more complex.
+
+## 1. The `sendRequest` Pattern (Recommended)
+
+The high-level `sendRequest()` method is the simplest and recommended way to make HTTP calls. It automatically handles the `runInNodeMode` pattern for you.
+
+### How it works
+
+The pattern involves two key components:
+
+1. **A Fetching Function**: You create a function (e.g., `fetchAndParse`) that receives a `sendRequester` object and additional arguments (like `config`). This function contains your core logic—making the request, parsing the response, and returning a clean data object.
+1. **Your Main Handler**: Your main trigger callback calls `httpClient.sendRequest()`, which returns a function that you then call with your additional arguments. For a full list of supported consensus methods, see the [Consensus & Aggregation reference](/cre/reference/sdk/consensus-ts).
+
+This separation keeps your code clean and focused.
+
+### Step-by-step example
+
+This example shows a complete workflow that fetches the price of an asset, parses it into a typed object, and aggregates the results using field-based consensus.
+
+#### Step 1: Configure your workflow
+
+Add the API URL to your `config.json` file.
+
+```json
+{
+  "schedule": "0 */5 * * * *",
+  "apiUrl": "https://some-price-api.com/price?ids=ethereum"
+}
+```
+
+#### Step 2: Define the response types
+
+Define TypeScript types for the API response and your internal data model.
+
+```typescript
+import { cre, type Runtime, type HTTPSendRequester, Runner } from "@chainlink/cre-sdk"
+import { z } from "zod"
+
+// Config schema
+const configSchema = z.object({
+  schedule: z.string(),
+  apiUrl: z.string(),
+})
+
+type Config = z.infer<typeof configSchema>
+
+// PriceData is the clean, internal type that our workflow will use
+type PriceData = {
+  price: number
+  lastUpdated: Date
+}
+
+// ExternalApiResponse is used to parse the nested JSON from the external API
+type ExternalApiResponse = {
+  ethereum: {
+    usd: number
+    last_updated_at: number
+  }
+}
+```
+
+#### Step 3: Implement the fetch and parse logic
+
+Create the function that will be passed to `sendRequest()`. This function receives the `sendRequester` and `config` as parameters.
+
+```typescript
+const fetchAndParse = (sendRequester: HTTPSendRequester, config: Config): PriceData => {
+  // 1. Construct the request
+  const req = {
+    url: config.apiUrl,
+    method: "GET" as const,
+  }
+
+  // 2. Send the request using the provided sendRequester
+  const resp = sendRequester.sendRequest(req).result()
+
+  if (resp.statusCode !== 200) {
+    throw new Error(`API returned status ${resp.statusCode}`)
+  }
+
+  // 3. Parse the raw JSON into our ExternalApiResponse type
+  const bodyText = new TextDecoder().decode(resp.body)
+  const externalResp = JSON.parse(bodyText) as ExternalApiResponse
+
+  // 4. Transform into our internal PriceData type and return
+  return {
+    price: externalResp.ethereum.usd,
+    lastUpdated: new Date(externalResp.ethereum.last_updated_at * 1000),
+  }
+}
+```
+
+#### Step 4: Call `sendRequest()` and aggregate results
+
+In your `onCronTrigger` handler, call `httpClient.sendRequest()`. This returns a function that you call with `runtime.config`.
+
+```typescript
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  const httpClient = new cre.capabilities.HTTPClient()
+
+  // sendRequest returns a function that we call with runtime.config
+  const result = httpClient
+    .sendRequest(
+      runtime,
+      fetchAndParse,
+      new cre.consensus.ConsensusAggregationByFields<PriceData>({
+        price: cre.consensus.median<number>(),
+        lastUpdated: cre.consensus.median<Date>(),
+      })
+    )(runtime.config) // Call the returned function with config
+    .result()
+
+  runtime.log(`Successfully fetched and aggregated price data: $${result.price} at ${result.lastUpdated.toISOString()}`)
+
+  return `Price: ${result.price}`
+}
+```
+
+#### Complete example
+
+Here's the full workflow code:
+
+```typescript
+import { cre, type Runtime, type HTTPSendRequester, Runner } from "@chainlink/cre-sdk"
+import { z } from "zod"
+
+// Config schema
+const configSchema = z.object({
+  schedule: z.string(),
+  apiUrl: z.string(),
+})
+
+type Config = z.infer<typeof configSchema>
+
+// Types
+type PriceData = {
+  price: number
+  lastUpdated: Date
+}
+
+type ExternalApiResponse = {
+  ethereum: {
+    usd: number
+    last_updated_at: number
+  }
+}
+
+// Fetch function receives sendRequester and config as parameters
+const fetchAndParse = (sendRequester: HTTPSendRequester, config: Config): PriceData => {
+  const req = {
+    url: config.apiUrl,
+    method: "GET" as const,
+  }
+
+  const resp = sendRequester.sendRequest(req).result()
+
+  if (resp.statusCode !== 200) {
+    throw new Error(`API returned status ${resp.statusCode}`)
+  }
+
+  const bodyText = new TextDecoder().decode(resp.body)
+  const externalResp = JSON.parse(bodyText) as ExternalApiResponse
+
+  return {
+    price: externalResp.ethereum.usd,
+    lastUpdated: new Date(externalResp.ethereum.last_updated_at * 1000),
+  }
+}
+
+// Main workflow handler
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  const httpClient = new cre.capabilities.HTTPClient()
+
+  const result = httpClient
+    .sendRequest(
+      runtime,
+      fetchAndParse,
+      new cre.consensus.ConsensusAggregationByFields<PriceData>({
+        price: cre.consensus.median<number>(),
+        lastUpdated: cre.consensus.median<Date>(),
+      })
+    )(runtime.config) // Call with config
+    .result()
+
+  runtime.log(`Successfully fetched price: $${result.price} at ${result.lastUpdated.toISOString()}`)
+
+  return `Price: ${result.price}`
+}
+
+// Initialize workflow
+const initWorkflow = (config: Config) => {
+  return [
+    cre.handler(
+      new cre.capabilities.CronCapability().trigger({
+        schedule: config.schedule,
+      }),
+      onCronTrigger
+    ),
+  ]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+
+main()
+```
+
+## 2. The `runInNodeMode` Pattern (Low-Level)
+
+For more complex scenarios, you can use the lower-level `runtime.runInNodeMode()` method directly. This gives you more control but requires more boilerplate code.
+
+The pattern works like a "map-reduce" for the DON:
+
+1. **Map**: You provide a function (e.g., `fetchPriceData`) that executes on every node.
+1. **Reduce**: You provide a consensus aggregation to reduce the individual results into a single outcome. For a full list of supported consensus methods, see the [Consensus & Aggregation reference](/cre/reference/sdk/consensus-ts).
+
+The example below is functionally identical to the `sendRequest` example above, but implemented using the low-level pattern.
+
+```typescript
+import { cre, type Runtime, type NodeRuntime, Runner } from "@chainlink/cre-sdk"
+import { z } from "zod"
+
+// Config and types (same as before)
+const configSchema = z.object({
+  schedule: z.string(),
+  apiUrl: z.string(),
+})
+
+type Config = z.infer<typeof configSchema>
+
+type PriceData = {
+  price: number
+  lastUpdated: Date
+}
+
+type ExternalApiResponse = {
+  ethereum: {
+    usd: number
+    last_updated_at: number
+  }
+}
+
+// fetchPriceData is a function that runs on each individual node
+const fetchPriceData = (nodeRuntime: NodeRuntime<Config>): PriceData => {
+  // 1. Create HTTP client and fetch raw data
+  const httpClient = new cre.capabilities.HTTPClient()
+
+  const req = {
+    url: nodeRuntime.config.apiUrl,
+    method: "GET" as const,
+  }
+
+  const resp = httpClient.sendRequest(nodeRuntime, req).result()
+
+  if (resp.statusCode !== 200) {
+    throw new Error(`API returned status ${resp.statusCode}`)
+  }
+
+  // 2. Parse and transform the response
+  const bodyText = new TextDecoder().decode(resp.body)
+  const externalResp = JSON.parse(bodyText) as ExternalApiResponse
+
+  return {
+    price: externalResp.ethereum.usd,
+    lastUpdated: new Date(externalResp.ethereum.last_updated_at * 1000),
+  }
+}
+
+// Main workflow handler
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  const result = runtime
+    .runInNodeMode(
+      fetchPriceData,
+      new cre.consensus.ConsensusAggregationByFields<PriceData>({
+        price: cre.consensus.median<number>(),
+        lastUpdated: cre.consensus.median<Date>(),
+      })
+    )()
+    .result()
+
+  runtime.log(`Successfully fetched price: $${result.price} at ${result.lastUpdated.toISOString()}`)
+
+  return `Price: ${result.price}`
+}
+
+// Initialize workflow (same as before)
+const initWorkflow = (config: Config) => {
+  return [
+    cre.handler(
+      new cre.capabilities.CronCapability().trigger({
+        schedule: config.schedule,
+      }),
+      onCronTrigger
+    ),
+  ]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+
+main()
+```
+
+## Response helper functions
+
+The SDK provides utility functions (`ok()`, `text()`, `json()`, `getHeader()`) to simplify working with HTTP responses. For full documentation and examples, see the [HTTP Client SDK Reference](/cre/reference/sdk/http-client-ts#helper-functions).
+
+## Customizing your requests
+
+The request object provides several fields to customize your HTTP call. See the [HTTP Client SDK Reference](/cre/reference/sdk/http-client-ts) for a full list of options, including:
+
+- **Headers**: Custom HTTP headers
+- **Body**: Request payload (for POST, PUT, etc.)
+- **Timeout**: Request timeout in milliseconds
+- **Cache settings**: Control response caching behavior

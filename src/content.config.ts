@@ -3,6 +3,7 @@ import { glob } from "astro/loaders"
 import { sectionValues } from "./config/sidebarSections.js"
 
 enum Products {
+  CRE = "cre",
   CCIP = "ccip",
   AUTOMATION = "automation",
   FUNCTIONS = "functions",
@@ -10,9 +11,12 @@ enum Products {
   FEEDS = "feeds",
   GENERAL = "general",
   CHAINLINK_LOCAL = "chainlink-local",
+  DTA_TECHNICAL_STANDARD = "dta-technical-standard",
+  DATALINK = "datalink",
 }
 
 export const productsInfo: Record<Products, { name: string; slug: string }> = {
+  cre: { name: "CRE", slug: "cre" },
   ccip: { name: "CCIP", slug: "ccip" },
   automation: { name: "Automation", slug: "chainlink-automation" },
   functions: { name: "Functions", slug: "chainlink-functions" },
@@ -20,6 +24,8 @@ export const productsInfo: Record<Products, { name: string; slug: string }> = {
   feeds: { name: "Data Feeds", slug: "data-feeds" },
   general: { name: "General", slug: "/" },
   "chainlink-local": { name: "Chainlink Local", slug: "chainlink-local" },
+  "dta-technical-standard": { name: "DTA", slug: "dta-technical-standard" },
+  datalink: { name: "DataLink", slug: "datalink" },
 }
 
 const productEnum = z.preprocess((val) => (val as string).toLowerCase(), z.nativeEnum(Products))
@@ -57,6 +63,8 @@ const baseFrontmatter = z
     metadata,
     datafeedtype: z.string().optional(),
     fileExtension: z.string().optional(),
+    sdkLang: z.enum(["go", "ts"]).optional(),
+    pageId: z.string().optional(),
   })
   .strict()
 
@@ -159,6 +167,30 @@ const chainlinkLocalCollection = defineCollection({
   schema: baseFrontmatter,
 })
 
+const dtaTechnicalStandardCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/dta-technical-standard",
+    pattern: "**/*.md?(x)",
+  }),
+  schema: baseFrontmatter,
+})
+
+const datalinkCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/datalink",
+    pattern: "**/*.md?(x)",
+  }),
+  schema: baseFrontmatter,
+})
+
+const creCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/cre",
+    pattern: "**/*.md?(x)",
+  }),
+  schema: baseFrontmatter,
+})
+
 /** Quickstarts collection uses a different schema */
 const quickstartsCollection = defineCollection({
   loader: glob({
@@ -211,6 +243,9 @@ export const collections = {
   "chainlink-functions": chainlinkFunctionsCollection,
   "chainlink-nodes": chainlinkNodesCollection,
   "data-streams": dataStreamsCollection,
+  "dta-technical-standard": dtaTechnicalStandardCollection,
+  datalink: datalinkCollection,
+  cre: creCollection,
   resources: resourcesCollection,
   vrf: vrfCollection,
   "chainlink-local": chainlinkLocalCollection,

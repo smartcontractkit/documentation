@@ -1,0 +1,209 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.6.0 SVM Receiver API Reference"
+metadata:
+  description: "Complete API documentation for implementing CCIP receivers on SVM-based blockchains like Solana. Detailed guide covering receiver trait implementation, message handling, cross-chain message processing, and receiver program development for blockchain interoperability."
+  excerpt: "CCIP receiver, SVM receiver implementation, Solana receiver, cross-chain receiver, message handling, receiver trait, ccip receive, blockchain interoperability, message processing"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## Receiver
+
+[Git Source](https://github.com/smartcontractkit/chainlink-ccip/tree/solana-v1.6.0/chains/solana/contracts/programs/example-ccip-receiver)
+
+Below is a complete API reference for the `ccip_receive` instruction that must be implemented by any Solana program wishing to receive CCIP messages.
+
+### `ccip_receive`
+
+This instruction is the entry point for receiving a cross-chain message on an SVM-based blockchain from any source blockchain.
+
+```rust
+pub fn ccip_receive(
+    ctx: Context<CcipReceive>,
+    message: Any2SVMMessage
+) -> Result<()>;
+```
+
+#### Parameters
+
+| Name      | Type             | Description                                                                                                                           |
+| --------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `message` | `Any2SVMMessage` | The cross-chain message being delivered. See [Message Structure](/ccip/api-reference/svm/v1.6.0/messages#any2svmmessage) for details. |
+
+#### Context (Accounts)
+
+These are the required accounts that must be passed to implement a secure CCIP Receiver. The first three accounts form the critical security validation chain and must be implemented exactly as shown.
+
+| Field                          | Type                                   | Writable? | Description                                                                                                                                                                                                     |
+| ------------------------------ | -------------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `authority`                    | <nobr>`Signer<'info>`</nobr>           | No        | The Offramp CPI signer PDA. This must be the first account.<br/>**Derivation**: `[EXTERNAL_EXECUTION_CONFIG_SEED, receiver_program_id]` under the `offramp_program`.                                            |
+| <nobr>`offramp_program`</nobr> | <nobr>`UncheckedAccount<'info>`</nobr> | No        | The Offramp program ID. This exists only to derive the allowed offramp PDA and must be the second account.                                                                                                      |
+| `allowed_offramp`              | <nobr>`UncheckedAccount<'info>`</nobr> | No        | PDA owned by the Router program that verifies this Offramp is allowed.<br/>**Derivation**: `[ALLOWED_OFFRAMP, source_chain_selector, offramp_program_key]` under the Router program. Must be the third account. |
+| _Additional accounts_          | _Various_                              | _Varies_  | The receiver program can define additional accounts as needed for its specific logic (state accounts, token accounts, etc.). These are application-specific.                                                    |
+
+#### Implementation Requirements
+
+1. **Instruction Name and Discriminator**:
+   - If using Anchor, the instruction name must be exactly `ccip_receive`.
+   - If not using Anchor, the instruction discriminator must be `[0x0b, 0xf4, 0x09, 0xf9, 0x2c, 0x53, 0x2f, 0xf5]`.
+
+1. **Security Pattern**:
+   - The first three accounts in the `CcipReceive` context must follow the exact pattern shown above.
+   - Your program must store the Router address (typically in a state account) to verify the `allowed_offramp` PDA.
+
+1. **Account Validation**:
+   - The `authority` must be validated as a PDA derived from the offramp program.
+   - The `allowed_offramp` must be validated as a PDA owned by the router program with the correct seeds.
+
+1. **State Management**:
+   - The receiver program should maintain state that includes at minimum the router address.
+   - Optionally track processed message IDs to prevent replay attacks.
+
+## Example
+
+Below is a minimal example of a secure `CcipReceive` context implementation:
+
+```rust
+#[derive(Accounts, Debug)]
+#[instruction(message: Any2SVMMessage)]
+pub struct CcipReceive<'info> {
+    // Offramp CPI signer PDA must be first.
+    #[account(
+        seeds = [EXTERNAL_EXECUTION_CONFIG_SEED, crate::ID.as_ref()],
+        bump,
+        seeds::program = offramp_program.key(),
+    )]
+    pub authority: Signer<'info>,
+
+    /// CHECK offramp program: exists only to derive the allowed offramp PDA
+    pub offramp_program: UncheckedAccount<'info>,
+
+    /// CHECK PDA of the router program verifying the signer is an allowed offramp.
+    #[account(
+        owner = state.router @ CcipReceiverError::InvalidCaller,
+        seeds = [
+            ALLOWED_OFFRAMP,
+            message.source_chain_selector.to_le_bytes().as_ref(),
+            offramp_program.key().as_ref()
+        ],
+        bump,
+        seeds::program = state.router,
+    )]
+    pub allowed_offramp: UncheckedAccount<'info>,
+
+    // Program-specific state account - must contain router address
+    #[account(
+        seeds = [STATE],
+        bump,
+    )]
+    pub state: Account<'info, BaseState>,
+
+    // Additional program-specific accounts...
+}
+```
+
+And a minimal implementation of the `ccip_receive` instruction:
+
+```rust
+pub fn ccip_receive(ctx: Context<CcipReceive>, message: Any2SVMMessage) -> Result<()> {
+    // Process message data
+    if !message.data.is_empty() {
+        // Process arbitrary data payload
+    }
+
+    // Process token transfers
+    if !message.token_amounts.is_empty() {
+        // Handle received tokens
+    }
+
+    // Emit event for tracking
+    emit!(MessageReceived {
+        message_id: message.message_id
+    });
+
+    Ok(())
+}
+```
+
+## Token Handling
+
+When implementing a CCIP Receiver that needs to handle token transfers, you must create a PDA that will serve as the token administrator. This PDA will have the authority to sign token transfer instructions.
+
+### Token Admin PDA
+
+Create a dedicated PDA to manage tokens within your program:
+
+```rust
+// During program initialization
+#[account(
+    init,
+    seeds = [TOKEN_ADMIN_SEED],
+    bump,
+    payer = authority,
+    space = ANCHOR_DISCRIMINATOR,
+)]
+/// CHECK: CPI signer for tokens
+pub token_admin: UncheckedAccount<'info>,
+```
+
+### Using remaining_accounts for Token Transfers
+
+When handling token transfers, the number of accounts passed depends on the specific token being handled. The `ccip_receive` handler should use `remaining_accounts` to access these token accounts.
+
+Below is an example of a typical token transfer implementation:
+
+```rust
+// Example of token-related accounts in remaining_accounts
+// For each token transfer:
+// 1. token_mint: Account<Mint>
+// 2. source_token_account: Account<TokenAccount> (owned by program with token_admin authority)
+// 3. token_admin: UncheckedAccount (the PDA with authority)
+// 4. recipient_token_account: Account<TokenAccount>
+// 5. token_program: Program<Token>
+
+// Example token transfer logic
+pub fn handle_token_transfer(ctx: Context<CcipReceive>, message: Any2SVMMessage) -> Result<()> {
+    // Check if we have sufficient remaining accounts for token handling
+    if ctx.remaining_accounts.len() < 5 {
+        return Err(ErrorCode::InvalidRemainingAccounts.into());
+    }
+
+    // Extract account references from the remaining_accounts
+    let token_mint_info = &ctx.remaining_accounts[0];
+    let source_token_account = &ctx.remaining_accounts[1];
+    let token_admin_info = &ctx.remaining_accounts[2];
+    let recipient_account_info = &ctx.remaining_accounts[3];
+    let token_program_info = &ctx.remaining_accounts[4];
+
+    // Verify the token_admin is the expected PDA
+    let (expected_token_admin, admin_bump) =
+        Pubkey::find_program_address(&[TOKEN_ADMIN_SEED], &crate::ID);
+    if token_admin_info.key() != expected_token_admin {
+        return Err(ErrorCode::InvalidTokenAdmin.into());
+    }
+
+    // Create and execute the token transfer instruction
+    let seeds = &[TOKEN_ADMIN_SEED, &[admin_bump]];
+    let signer_seeds = &[&seeds[..]];
+
+    // Transfer tokens using CPI with the PDA as signer
+    // ... token transfer code ...
+
+    Ok(())
+}
+```
+
+<Aside type="caution" title="Security Critical">
+
+    The security of your CCIP Receiver depends on correctly implementing the account validation pattern shown above. Always validate that:
+
+    1. The `authority` is derived from the Offramp program
+    1. The `allowed_offramp` is derived from and owned by the Router program
+    1. The Router address used for validation is securely stored in your program's state
+
+</Aside>
+
+<CcipCommon callout="educationalDisclaimer" />

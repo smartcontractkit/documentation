@@ -3,7 +3,7 @@
   "info": {
     "title": "CCIP Docs config API",
     "description": "API for retrieving CCIP chain, token, and lane information.\n\nTo get started quickly, you can download our [Postman Collection](/api/ccip/v1/postman-collection.json) which includes all endpoints and example requests.",
-    "version": "1.4.0",
+    "version": "1.5.0",
     "contact": {
       "name": "File issues",
       "url": "https://github.com/smartcontractkit/documentation/issues/new/choose"
@@ -91,6 +91,16 @@
               "default": "chainId"
             },
             "description": "Key to use for organizing the response data"
+          },
+          {
+            "name": "enrichFeeTokens",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["true", "false"],
+              "default": "false"
+            },
+            "description": "When set to 'true', returns detailed fee token information including addresses, names, and decimals instead of just symbol strings"
           }
         ],
         "responses": {
@@ -101,47 +111,102 @@
                 "schema": {
                   "$ref": "#/components/schemas/ChainApiResponse"
                 },
-                "example": {
-                  "metadata": {
-                    "environment": "mainnet",
-                    "timestamp": "2024-03-14T12:00:00Z",
-                    "requestId": "123e4567-e89b-12d3-a456-426614174000",
-                    "ignoredChainCount": 0,
-                    "validChainCount": 2
-                  },
-                  "data": {
-                    "evm": {
-                      "1": {
-                        "chainId": 1,
-                        "displayName": "Ethereum",
-                        "selector": "5009297550715157269",
-                        "internalId": "ethereum-mainnet",
-                        "feeTokens": ["LINK", "WETH", "ETH"],
-                        "router": "0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D",
-                        "rmn": "0x411dE17f12D1A34ecC7F45f49844626267c75e81",
-                        "registryModule": "0x13022e3e6C77524308BD56AEd716E88311b2E533",
-                        "tokenAdminRegistry": "0xb22764f98dD05c789929716D677382Df22C05Cb6",
-                        "tokenPoolFactory": "0x17D8a409fE2ceF2d3808bcB61F14aBEFfc28876e",
-                        "chainType": "evm",
-                        "chainFamily": "evm"
-                      }
-                    },
-                    "svm": {
-                      "solana-devnet": {
-                        "chainId": "solana-devnet",
-                        "displayName": "Solana Devnet",
-                        "selector": "16015286601757825753",
-                        "internalId": "solana-devnet",
-                        "feeTokens": ["LINK", "SOL"],
-                        "router": "CCiPv7hcmEqNdMdJgmHDJmEJyCkBgLqxmcf87R1Gho6H",
-                        "rmn": "CRmNVnB7S6SqEPFG6m9dVp9fJJCjr3TC2TiAWB3RqNod",
-                        "feeQuoter": "FqbCVbS7a4ndxs9xZ8UmfL6LQsUhAJNkWxW3duJRrCWD",
-                        "chainType": "solana",
-                        "chainFamily": "svm"
-                      }
+                "examples": {
+                  "default": {
+                    "summary": "Default response (string array for feeTokens)",
+                    "value": {
+                      "metadata": {
+                        "environment": "mainnet",
+                        "timestamp": "2024-03-14T12:00:00Z",
+                        "requestId": "123e4567-e89b-12d3-a456-426614174000",
+                        "ignoredChainCount": 0,
+                        "validChainCount": 2
+                      },
+                      "data": {
+                        "evm": {
+                          "1": {
+                            "chainId": 1,
+                            "displayName": "Ethereum",
+                            "selector": "5009297550715157269",
+                            "internalId": "ethereum-mainnet",
+                            "feeTokens": ["LINK", "WETH", "GHO"],
+                            "router": "0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D",
+                            "rmn": "0x411dE17f12D1A34ecC7F45f49844626267c75e81",
+                            "registryModule": "0x13022e3e6C77524308BD56AEd716E88311b2E533",
+                            "tokenAdminRegistry": "0xb22764f98dD05c789929716D677382Df22C05Cb6",
+                            "tokenPoolFactory": "0x17D8a409fE2ceF2d3808bcB61F14aBEFfc28876e",
+                            "chainType": "evm",
+                            "chainFamily": "evm"
+                          }
+                        },
+                        "svm": {
+                          "solana-devnet": {
+                            "chainId": "solana-devnet",
+                            "displayName": "Solana Devnet",
+                            "selector": "16015286601757825753",
+                            "internalId": "solana-devnet",
+                            "feeTokens": ["LINK", "SOL"],
+                            "router": "CCiPv7hcmEqNdMdJgmHDJmEJyCkBgLqxmcf87R1Gho6H",
+                            "rmn": "CRmNVnB7S6SqEPFG6m9dVp9fJJCjr3TC2TiAWB3RqNod",
+                            "feeQuoter": "FqbCVbS7a4ndxs9xZ8UmfL6LQsUhAJNkWxW3duJRrCWD",
+                            "chainType": "solana",
+                            "chainFamily": "svm"
+                          }
+                        }
+                      },
+                      "ignored": []
                     }
                   },
-                  "ignored": []
+                  "enriched": {
+                    "summary": "Enriched response (detailed objects for feeTokens when enrichFeeTokens=true)",
+                    "value": {
+                      "metadata": {
+                        "environment": "mainnet",
+                        "timestamp": "2024-03-14T12:00:00Z",
+                        "requestId": "123e4567-e89b-12d3-a456-426614174000",
+                        "ignoredChainCount": 0,
+                        "validChainCount": 1
+                      },
+                      "data": {
+                        "evm": {
+                          "1": {
+                            "chainId": 1,
+                            "displayName": "Ethereum",
+                            "selector": "5009297550715157269",
+                            "internalId": "ethereum-mainnet",
+                            "feeTokens": [
+                              {
+                                "symbol": "GHO",
+                                "name": "Gho Token",
+                                "address": "0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f",
+                                "decimals": 18
+                              },
+                              {
+                                "symbol": "LINK",
+                                "name": "ChainLink Token",
+                                "address": "0x514910771AF9Ca656af840dff83E8264EcF986CA",
+                                "decimals": 18
+                              },
+                              {
+                                "symbol": "WETH",
+                                "name": "Wrapped Ether",
+                                "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+                                "decimals": 18
+                              }
+                            ],
+                            "router": "0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D",
+                            "rmn": "0x411dE17f12D1A34ecC7F45f49844626267c75e81",
+                            "registryModule": "0x13022e3e6C77524308BD56AEd716E88311b2E533",
+                            "tokenAdminRegistry": "0xb22764f98dD05c789929716D677382Df22C05Cb6",
+                            "tokenPoolFactory": "0x17D8a409fE2ceF2d3808bcB61F14aBEFfc28876e",
+                            "chainType": "evm",
+                            "chainFamily": "evm"
+                          }
+                        }
+                      },
+                      "ignored": []
+                    }
+                  }
                 }
               }
             }
@@ -514,6 +579,30 @@
           }
         }
       },
+      "FeeTokenEnriched": {
+        "type": "object",
+        "required": ["symbol", "name", "address", "decimals"],
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "description": "Token symbol (e.g., LINK, WETH)"
+          },
+          "name": {
+            "type": "string",
+            "description": "Token name (e.g., Chainlink, Wrapped Ether)"
+          },
+          "address": {
+            "type": "string",
+            "description": "Token contract address on this chain"
+          },
+          "decimals": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 18,
+            "description": "Number of decimals for the token"
+          }
+        }
+      },
       "ChainDetails": {
         "type": "object",
         "required": [
@@ -545,11 +634,23 @@
             "description": "Internal identifier for the chain"
           },
           "feeTokens": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "List of supported fee tokens"
+            "oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "List of supported fee token symbols (when enrichFeeTokens=false)"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/FeeTokenEnriched"
+                },
+                "description": "Detailed fee token information (when enrichFeeTokens=true)"
+              }
+            ],
+            "description": "Fee tokens - either as string symbols or enriched objects with addresses"
           },
           "router": {
             "type": "string",

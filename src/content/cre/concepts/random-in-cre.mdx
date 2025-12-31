@@ -1,0 +1,226 @@
+---
+section: cre
+title: "Random in CRE"
+sdkLang: "go"
+date: Last Modified
+metadata:
+  description: "Generate random numbers safely in CRE: use runtime.Rand() to ensure all nodes get the same values and maintain consensus."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+<Aside type="note" title="TL;DR">
+  Use `runtime.Rand()` to generate random numbers in your workflows. This provides secure, deterministic randomness that
+  enables all nodes in the network to reach consensus. Do **not** use Go's global `rand` package—it can break consensus.
+</Aside>
+
+## The problem: Why randomness needs special handling
+
+Workflows often need randomness for various purposes: generating nonces, selecting winners from a list, or creating unpredictable values. However, in a decentralized network, naive use of random number generators creates a critical problem:
+
+**If each node generates different random values, they cannot reach consensus on the workflow's output.**
+
+For example, if your workflow selects a lottery winner using each node's local random generator, different nodes would select different winners, making it impossible to agree on a single result to write onchain.
+
+## The solution: Consensus-safe randomness
+
+CRE provides randomness through the `runtime.Rand()` method, which returns a standard Go `*rand.Rand` object. This random generator is managed by the CRE platform to ensure all nodes generate the same sequence of random values, enabling consensus while still providing unpredictability across different workflow executions.
+
+### Usage
+
+```go
+// Get the random generator from the runtime
+rnd, err := runtime.Rand()
+if err != nil {
+    return err
+}
+
+// Use it with standard Go rand methods
+randomInt := rnd.Intn(100)           // Random int in [0, 100)
+randomBigInt := new(big.Int).Rand(rnd, big.NewInt(1000))  // Random big.Int
+```
+
+## Common use cases
+
+- Selecting a winner from a lottery or pool
+- Generating nonces for transactions
+- Creating random identifiers or values
+- Any random selection that needs to be agreed upon by all nodes
+
+## Working with big.Int random values
+
+For Solidity `uint256` types, you often need random `*big.Int` values:
+
+```go
+rnd, err := runtime.Rand()
+if err != nil {
+    return err
+}
+
+// Generate a random number in the range [0, max)
+max := new(big.Int)
+max.SetString("1000000000000000000", 10)  // 1 ETH in wei
+
+randomAmount := new(big.Int).Rand(rnd, max)
+// randomAmount is a random value between 0 and 1 ETH
+```
+
+## Complete example: Random lottery
+
+Here's a complete example that demonstrates using DON mode randomness to select a lottery winner and generate a prize amount:
+
+```go
+//go:build wasip1
+
+package main
+
+import (
+	"fmt"
+	"log/slog"
+	"math/big"
+
+	"github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
+	"github.com/smartcontractkit/cre-sdk-go/cre"
+	"github.com/smartcontractkit/cre-sdk-go/cre/wasm"
+)
+
+type Config struct {
+	Schedule string `json:"schedule"`
+}
+
+type MyResult struct {
+	WinnerIndex  int
+	Winner       string
+	RandomBigInt string
+}
+
+func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+	return cre.Workflow[*Config]{
+		cre.Handler(cron.Trigger(&cron.Config{Schedule: config.Schedule}), onCronTrigger),
+	}, nil
+}
+
+func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*MyResult, error) {
+	logger := runtime.Logger()
+	logger.Info("Running random lottery")
+
+	// Define participants
+	participants := []string{"Alice", "Bob", "Charlie", "Diana", "Eve"}
+	logger.Info("Participants in lottery", "count", len(participants), "names", participants)
+
+	// Get the DON mode random generator
+	rnd, err := runtime.Rand()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get random generator: %w", err)
+	}
+
+	// Select a random winner (index in range [0, 5))
+	winnerIndex := rnd.Intn(len(participants))
+	winner := participants[winnerIndex]
+	logger.Info("Selected winner", "index", winnerIndex, "winner", winner)
+
+	// Generate a random prize amount up to 1,000,000 wei
+	maxPrize := big.NewInt(1000000)
+	randomPrize := new(big.Int).Rand(rnd, maxPrize)
+	logger.Info("Generated random prize", "amount", randomPrize.String())
+
+	// Return the results
+	result := &MyResult{
+		WinnerIndex:  winnerIndex,
+		Winner:       winner,
+		RandomBigInt: randomPrize.String(),
+	}
+
+	logger.Info("Random lottery complete!", "result", result)
+	return result, nil
+}
+
+func main() {
+	wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
+}
+```
+
+**What this example demonstrates:**
+
+1. **DON mode context**: The randomness is called directly in the trigger callback (DON mode), ensuring all nodes in the network would select the same winner and prize amount.
+
+1. **Random selection**: Uses `rnd.Intn(len(participants))` to select a random index from the participant list. The `Intn(n)` method returns a value in the range `[0, n)`.
+
+1. **Random big.Int for Solidity**: Generates a `*big.Int` value suitable for use with Solidity `uint256` types.
+
+1. **Error handling**: Properly checks for errors when calling `runtime.Rand()`.
+
+When you run this workflow multiple times, each execution will select different winners and prize amounts (because each execution gets a different seed), but within a single execution, all nodes in the DON would arrive at the same winner.
+
+## Best practices
+
+### Do:
+
+- **Always use `runtime.Rand()`** for randomness in your workflows
+- **Check for errors** when calling `runtime.Rand()`
+  ```go
+  rnd, err := runtime.Rand()
+  if err != nil {
+      return fmt.Errorf("failed to get random generator: %w", err)
+  }
+  ```
+
+### Don't:
+
+- **Don't use Go's global `rand` package** directly. Always get your random generator from `runtime.Rand()` first.
+
+## Mode-aware behavior
+
+The randomness provided by `runtime.Rand()` is **mode-aware**. The examples above demonstrate DON mode (the default execution mode for workflows). There is also a Node mode with different random behavior, used in advanced scenarios. Each mode provides a different type of randomness.
+
+### DON mode (default)
+
+The examples above all use DON mode. In this mode:
+
+- All nodes generate the **same** random sequence
+- Enables consensus on random values
+- This is the mode your main workflow callback runs in
+
+### Node mode
+
+When using `cre.RunInNodeMode`, you can access Node mode randomness:
+
+- Each node generates **different** random values
+- Useful for scenarios where per-node variability is accepted
+- Access via `nodeRuntime.Rand()` inside the Node mode function
+
+**Example:**
+
+```go
+resultPromise := cre.RunInNodeMode(config, runtime,
+    func(config *Config, nodeRuntime cre.NodeRuntime) (int, error) {
+        rnd, err := nodeRuntime.Rand()
+        if err != nil {
+            return 0, err
+        }
+        // Each node generates a different value
+        return rnd.Intn(100), nil
+    },
+    cre.ConsensusMedianAggregation[int](),
+)
+```
+
+### Important: Mode isolation
+
+Random generators are tied to the mode they were created in. **Do not** attempt to use a random generator from one mode in another mode—it will cause a panic and crash your workflow.
+
+## FAQ
+
+**Is the randomness cryptographically secure?**
+
+The randomness is sourced from the host environment's secure random generator, but the standard Go `*rand.Rand` object is **not** intended for cryptographic purposes. For cryptographic operations, use dedicated crypto libraries.
+
+**What happens if I try to use randomness in the wrong mode?**
+
+The SDK will panic with the error: `"random cannot be used outside the mode it was created in"`. This is intentional—it prevents subtle consensus bugs.
+
+**Can I use the same random generator across multiple calls?**
+
+Yes. Once you call `runtime.Rand()` and get a `*rand.Rand` object, you can reuse it within the same execution mode. Each call to methods like `Intn()` will produce the next value in the deterministic sequence.

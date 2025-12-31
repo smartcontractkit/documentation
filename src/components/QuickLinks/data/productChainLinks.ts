@@ -1,9 +1,10 @@
-import ccipLogo from "../assets/products/ccip-logo.svg"
-import vrfLogo from "../assets/products/vrf-logo.svg"
-import functionsLogo from "../assets/products/functions-logo.svg"
-import automationLogo from "../assets/products/automation-logo.svg"
-import dataFeedsLogo from "../assets/products/data-feeds-logo.svg"
-import dataStreamsLogo from "../assets/products/data-streams-logo.svg"
+import ccipLogo from "../../../assets/product-logos/ccip-logo.svg"
+import vrfLogo from "../../../assets/product-logos/vrf-logo.svg"
+import functionsLogo from "../../../assets/product-logos/functions-logo.svg"
+import automationLogo from "../../../assets/product-logos/automation-logo.svg"
+import dataFeedsLogo from "../../../assets/product-logos/data-feeds-logo.svg"
+import dataStreamsLogo from "../../../assets/product-logos/data-streams-logo.svg"
+import creLogo from "../../../assets/product-logos/cre-logo.svg"
 
 export interface ProductData {
   learnMoreLink: string
@@ -57,7 +58,7 @@ export const productChainLinks: ProductChainLinks = {
       hashkey: "/ccip/directory/mainnet/chain/ethereum-mainnet-hashkey-1",
       botanix: "/ccip/directory/mainnet/chain/bitcoin-mainnet-botanix",
       sei: "/ccip/directory/mainnet/chain/sei-mainnet",
-      monad: "/ccip/directory/testnet/chain/monad-testnet",
+      monad: "/ccip/directory/mainnet/chain/monad-mainnet",
       treasure: "/ccip/directory/mainnet/chain/treasure-mainnet",
       merlin: "/ccip/directory/mainnet/chain/bitcoin-merlin-mainnet",
       fraxtal: "/ccip/directory/mainnet/chain/fraxtal-mainnet",
@@ -80,17 +81,41 @@ export const productChainLinks: ProductChainLinks = {
       plume: "/ccip/directory/mainnet/chain/plume-mainnet",
       superseed: "/ccip/directory/mainnet/chain/superseed-mainnet",
       taiko: "/ccip/directory/mainnet/chain/ethereum-mainnet-taiko-1",
+      tempo: "/ccip/directory/testnet/chain/tempo-testnet",
       metal: "/ccip/directory/mainnet/chain/metal-mainnet",
       rootstock: "/ccip/directory/mainnet/chain/rootstock-mainnet",
       janction: "/ccip/directory/testnet/chain/janction-testnet-sepolia",
       neox: "/ccip/directory/testnet/chain/neox-testnet-t4",
       polygonkatana: "/ccip/directory/mainnet/chain/polygon-mainnet-katana",
       "0g": "/ccip/directory/mainnet/chain/0g-mainnet",
-      hyperevm: "/ccip/directory/mainnet/chain/hyperevm-mainnet",
-      etherlink: "/ccip/directory/testnet/chain/etherlink-testnet",
+      hyperevm: "/ccip/directory/mainnet/chain/hyperliquid-mainnet",
+      etherlink: "/ccip/directory/mainnet/chain/etherlink-mainnet",
       kaia: "/ccip/directory/mainnet/chain/kaia-mainnet",
       tac: "/ccip/directory/mainnet/chain/tac-mainnet",
       plasma: "/ccip/directory/mainnet/chain/plasma-mainnet",
+      memento: "/ccip/directory/mainnet/chain/memento-mainnet",
+      xdc: "/ccip/directory/mainnet/chain/xdc-mainnet",
+      bittensor: "/ccip/directory/mainnet/chain/bittensor-mainnet",
+      everclear: "/ccip/directory/mainnet/chain/everclear-mainnet",
+      abchain: "/ccip/directory/mainnet/chain/ab-mainnet",
+      henesys: "/ccip/directory/mainnet/chain/nexon-mainnet-henesys",
+      pharos: "/ccip/directory/testnet/chain/pharos-atlantic-testnet",
+      morph: "/ccip/directory/mainnet/chain/morph-mainnet",
+      jovay: "/ccip/directory/mainnet/chain/jovay-mainnet",
+      stable: "/ccip/directory/mainnet/chain/stable-mainnet",
+    },
+  },
+  CRE: {
+    learnMoreLink: "cre",
+    logo: creLogo,
+    chains: {
+      arbitrum: "/cre/guides/workflow/using-evm-client/supported-networks",
+      avalanche: "/cre/guides/workflow/using-evm-client/supported-networks",
+      base: "/cre/guides/workflow/using-evm-client/supported-networks",
+      "bnb-chain": "/cre/guides/workflow/using-evm-client/supported-networks",
+      ethereum: "/cre/guides/workflow/using-evm-client/supported-networks",
+      optimism: "/cre/guides/workflow/using-evm-client/supported-networks",
+      polygon: "/cre/guides/workflow/using-evm-client/supported-networks",
     },
   },
   "Data Feeds": {
@@ -109,6 +134,7 @@ export const productChainLinks: ProductChainLinks = {
       fantom: "/data-feeds/price-feeds/addresses?page=1&network=fantom#networks",
       "gnosis-chain": "/data-feeds/price-feeds/addresses?page=1&network=gnosis-chain#networks",
       hedera: "/data-feeds/price-feeds/addresses?page=1&network=hedera#networks",
+      hyperevm: "/data-feeds/price-feeds/addresses?page=1&network=hyperevm#networks",
       linea: "/data-feeds/price-feeds/addresses?page=1&network=linea#networks",
       mantle: "/data-feeds/price-feeds/addresses?page=1&network=mantle#networks",
       metis: "/data-feeds/price-feeds/addresses?page=1&network=metis#networks",
@@ -138,6 +164,7 @@ export const productChainLinks: ProductChainLinks = {
     chains: {
       "0g": "/data-streams/crypto-streams",
       apechain: "/data-streams/crypto-streams",
+      aptos: "/data-streams/crypto-streams",
       arbitrum: "/data-streams/crypto-streams",
       avalanche: "/data-streams/crypto-streams",
       base: "/data-streams/crypto-streams",
@@ -152,8 +179,10 @@ export const productChainLinks: ProductChainLinks = {
       "gnosis-chain": "/data-streams/crypto-streams",
       gravity: "/data-streams/crypto-streams",
       hashkey: "/data-streams/crypto-streams",
+      hedera: "/data-streams/crypto-streams",
       hyperevm: "/data-streams/crypto-streams",
       ink: "/data-streams/crypto-streams",
+      injective: "/data-streams/crypto-streams",
       jovay: "/data-streams/crypto-streams",
       lens: "/data-streams/crypto-streams",
       linea: "/data-streams/crypto-streams",
@@ -248,7 +277,11 @@ export const productChainLinks: ProductChainLinks = {
     mode: "/resources/link-token-contracts#mode",
     moonbeam: "/resources/link-token-contracts#moonbeam",
     moonriver: "/resources/link-token-contracts#moonriver",
+    neox: "/resources/link-token-contracts#neo-x",
+    henesys: "/resources/link-token-contracts#henesys",
     optimism: "/resources/link-token-contracts#op",
+    pharos: "/resources/link-token-contracts#pharos",
+    plasma: "/resources/link-token-contracts#plasma",
     polygonzkevm: "/resources/link-token-contracts#polygon-zkevm",
     polygon: "/resources/link-token-contracts#polygon",
     scroll: "/resources/link-token-contracts#scroll",
@@ -263,6 +296,7 @@ export const productChainLinks: ProductChainLinks = {
     sonic: "/resources/link-token-contracts#sonic",
     bob: "/resources/link-token-contracts#bob",
     worldchain: "/resources/link-token-contracts#world",
+    xdc: "/resources/link-token-contracts#xdc",
     xlayer: "/resources/link-token-contracts#x-layer",
     ink: "/resources/link-token-contracts#ink",
     corn: "/resources/link-token-contracts#corn",
@@ -294,12 +328,16 @@ export const productChainLinks: ProductChainLinks = {
     etherlink: "/resources/link-token-contracts#etherlink",
     opbnb: "/resources/link-token-contracts#opbnb",
     janction: "/resources/link-token-contracts#janction",
-    neox: "/resources/link-token-contracts#neo-x",
     polygonkatana: "/resources/link-token-contracts#polygon-katana",
     "0g": "/resources/link-token-contracts#0g",
     hyperevm: "/resources/link-token-contracts#hyperevm",
     kaia: "/resources/link-token-contracts#kaia",
     tac: "/resources/link-token-contracts#tac",
+    memento: "/resources/link-token-contracts#memento",
+    bittensor: "/resources/link-token-contracts#bittensor-evm",
+    everclear: "/resources/link-token-contracts#everclear",
+    abchain: "/resources/link-token-contracts#ab-chain",
+    tempo: "/resources/link-token-contracts#tempo",
   },
 }
 
@@ -382,5 +420,15 @@ export const chainNames: Record<string, string> = {
   tac: "Tac",
   kaia: "Kaia",
   plasma: "Plasma",
+  memento: "Memento",
+  xdc: "XDC",
+  bittensor: "Bittensor EVM",
+  everclear: "Everclear",
+  abchain: "AB Chain",
+  henesys: "Henesys",
+  pharos: "Pharos",
+  morph: "Morph",
   jovay: "Jovay",
+  stable: "Stable",
+  tempo: "Tempo",
 }

@@ -189,7 +189,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 RMN
                 <Tooltip
                   label=""
-                  tip="The RMN contract verifies RMN blessings, and is used to curse."
+                  tip="The RMN contract is used to curse."
                   labelStyle={{
                     marginRight: "8px",
                   }}
@@ -212,28 +212,6 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 )}
               </div>
             </div>
-            {/*
-            <div className="ccip-chain-hero__details__item">
-              <div className="ccip-chain-hero__details__label">
-                RMN Blessing
-                <Tooltip
-                  label=""
-                  tip="Indicates if messages from this chain are blessed by RMN."
-                  labelStyle={{
-                    marginRight: "8px",
-                  }}
-                  style={{
-                    display: "inline-block",
-                    verticalAlign: "middle",
-                    marginBottom: "2px",
-                  }}
-                />
-              </div>
-              <div className="ccip-chain-hero__details__value" data-clipboard-type="rmn-blessing">
-                {network?.rmnPermeable === false ? "Enabled" : "Disabled"}
-              </div>
-            </div>
-            */}
 
             {/* Conditional rendering based on chain type */}
             {network.chainType === "evm" && (

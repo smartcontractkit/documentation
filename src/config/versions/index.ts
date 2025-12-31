@@ -24,8 +24,10 @@ export const VERSIONS = {
     // Split versions by VM type
     evm: {
       LATEST: "v1.6.1",
-      ALL: ["v1.6.1", "v1.6.0", "v1.5.1", "v1.5.0"] as const,
+      ALL: [/* "v1.6.3", "v1.6.2", */ "v1.6.1", "v1.6.0", "v1.5.1", "v1.5.0"] as const,
       RELEASE_DATES: {
+        // "v1.6.3": "2025-11-05T00:00:00Z", // 5 November 2025
+        // "v1.6.2": "2025-10-06T00:00:00Z", // 6 October 2025
         "v1.6.1": "2025-09-08T00:00:00Z", // 8 September 2025
         "v1.6.0": "2025-05-19T00:00:00Z", // 19 May 2025
         "v1.5.0": "2023-10-04T00:00:00Z", // 4 October 2023
@@ -33,10 +35,10 @@ export const VERSIONS = {
       },
     },
     svm: {
-      LATEST: "v0.1.1",
-      ALL: ["v0.1.1"] as const,
+      LATEST: "v1.6.0",
+      ALL: ["v1.6.0"] as const,
       RELEASE_DATES: {
-        "v0.1.1": "2023-10-04T00:00:00Z", // Placeholder release date – update when known
+        "v1.6.0": "2025-05-19T00:00:00Z", // 19 May 2025
       },
     },
     aptos: {

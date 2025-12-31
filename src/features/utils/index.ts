@@ -10,7 +10,7 @@ import {
 } from "@config/index.ts"
 import { CCIP_TOKEN_ICON_MAPPINGS } from "@config/data/ccip/tokenIconMappings.ts"
 import { toQuantity } from "ethers"
-import referenceChains from "src/scripts/reference/chains.json" with { type: "json" }
+import referenceChains from "~/scripts/reference/chains.json" with { type: "json" }
 
 interface AddEthereumChainParameter {
   chainId: string
@@ -120,9 +120,6 @@ export const getChainTypeAndFamily = (supportedChain: SupportedChain): ChainType
       chainFamily = "mvm"
       break
     case "solana":
-      chainFamily = "svm"
-      break
-    case "sui":
       chainFamily = "svm"
       break
     default:
@@ -279,6 +276,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "SONEIUM_MINATO"
     case "ethereum-testnet-holesky":
       return "ETHEREUM_HOLESKY"
+    case "ethereum-testnet-hoodi":
+      return "ETHEREUM_HOODI"
     case "polkadot-mainnet-astar":
       return "ASTAR_MAINNET"
     case "polkadot-testnet-astar-shibuya":
@@ -405,6 +404,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "0G_MAINNET"
     case "megaeth-testnet":
       return "MEGAETH_TESTNET"
+    case "megaeth-mainnet":
+      return "MEGAETH_MAINNET"
     case "mind-testnet":
       return "MIND_NETWORK_TESTNET"
     case "mind-mainnet":
@@ -497,6 +498,38 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "PLASMA_MAINNET"
     case "plasma-testnet":
       return "PLASMA_TESTNET"
+    case "memento-mainnet":
+      return "MEMENTO_MAINNET"
+    case "memento-testnet":
+      return "MEMENTO_TESTNET"
+    case "xdc-mainnet":
+      return "XDC_MAINNET"
+    case "xdc-testnet":
+      return "XDC_TESTNET"
+    case "bittensor-mainnet":
+      return "BITTENSOR_MAINNET"
+    case "everclear-mainnet":
+      return "EVERCLEAR_MAINNET"
+    case "ab-mainnet":
+      return "AB_CHAIN_MAINNET"
+    case "monad-mainnet":
+      return "MONAD_MAINNET"
+    case "nexon-mainnet-henesys":
+      return "NEXON_HENESYS_MAINNET"
+    case "pharos-atlantic-testnet":
+      return "PHAROS_ATLANTIC_TESTNET"
+    case "morph-mainnet":
+      return "MORPH_MAINNET"
+    case "ethereum-testnet-hoodi-morph":
+      return "MORPH_HOODI_TESTNET"
+    case "jovay-mainnet":
+      return "JOVAY_MAINNET"
+    case "jovay-testnet":
+      return "JOVAY_TESTNET"
+    case "stable-mainnet":
+      return "STABLE_MAINNET"
+    case "tempo-testnet":
+      return "TEMPO_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -578,6 +611,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-testnet-sepolia-soneium-1"
     case "ETHEREUM_HOLESKY":
       return "ethereum-testnet-holesky"
+    case "ETHEREUM_HOODI":
+      return "ethereum-testnet-hoodi"
     case "ASTAR_MAINNET":
       return "polkadot-mainnet-astar"
     case "ASTAR_SHIBUYA":
@@ -700,6 +735,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "0g-mainnet"
     case "MEGAETH_TESTNET":
       return "megaeth-testnet"
+    case "MEGAETH_MAINNET":
+      return "megaeth-mainnet"
     case "MIND_NETWORK_TESTNET":
       return "mind-testnet"
     case "MIND_NETWORK_MAINNET":
@@ -790,6 +827,38 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "plasma-mainnet"
     case "PLASMA_TESTNET":
       return "plasma-testnet"
+    case "MEMENTO_MAINNET":
+      return "memento-mainnet"
+    case "MEMENTO_TESTNET":
+      return "memento-testnet"
+    case "XDC_MAINNET":
+      return "xdc-mainnet"
+    case "XDC_TESTNET":
+      return "xdc-testnet"
+    case "BITTENSOR_MAINNET":
+      return "bittensor-mainnet"
+    case "EVERCLEAR_MAINNET":
+      return "everclear-mainnet"
+    case "AB_CHAIN_MAINNET":
+      return "ab-mainnet"
+    case "MONAD_MAINNET":
+      return "monad-mainnet"
+    case "NEXON_HENESYS_MAINNET":
+      return "nexon-mainnet-henesys"
+    case "PHAROS_ATLANTIC_TESTNET":
+      return "pharos-atlantic-testnet"
+    case "MORPH_MAINNET":
+      return "morph-mainnet"
+    case "MORPH_HOODI_TESTNET":
+      return "ethereum-testnet-hoodi-morph"
+    case "JOVAY_MAINNET":
+      return "jovay-mainnet"
+    case "JOVAY_TESTNET":
+      return "jovay-testnet"
+    case "STABLE_MAINNET":
+      return "stable-mainnet"
+    case "TEMPO_TESTNET":
+      return "tempo-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

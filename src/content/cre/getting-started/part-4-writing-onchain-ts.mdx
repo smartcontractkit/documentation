@@ -1,0 +1,274 @@
+---
+section: cre
+title: "Part 4: Writing Onchain"
+date: Last Modified
+sdkLang: "ts"
+pageId: "getting-started-part-4"
+metadata:
+  description: "Getting started Part 4 (TypeScript): write verified workflow results onchain to smart contracts and complete your first end-to-end workflow."
+  datePublished: "2025-11-04"
+  lastModified: "2025-12-09"
+---
+
+import { Aside } from "@components"
+import { CodeHighlightBlock } from "@components"
+import part4Code from "./snippets/part-4-main.ts?raw"
+
+In the previous parts, you successfully fetched offchain data and read from a smart contract. Now, you'll complete the "Onchain Calculator" by writing your computed result back to the blockchain.
+
+## What you'll do
+
+- Use the `CalculatorConsumer` contract to receive workflow results
+- Modify your workflow to write data to the blockchain using the EVM capability
+- Execute your first onchain write transaction through CRE
+- Verify your result on the blockchain
+
+## Step 1: The consumer contract
+
+To write data onchain, your workflow needs a target smart contract (a "consumer contract"). For this guide, we have pre-deployed a simple `CalculatorConsumer` contract on the Sepolia testnet. This contract is designed to receive and store the calculation results from your workflow.
+
+Here is the source code for the contract so you can see how it works:
+
+<Aside type="note" title="Note">
+  Don't worry if you don't understand every line of this contract right now. We're showing it to you for context, but
+  the key takeaway is that it's designed to securely receive data from a CRE workflow. We'll cover the important details
+  of how this works in a later guide.
+</Aside>
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
+
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
+
+/**
+ * @title CalculatorConsumer (Testing Version)
+ * @notice This contract receives reports from a CRE workflow and stores the results of a calculation onchain.
+ * @dev This version uses ReceiverTemplate without configuring any security checks, making it compatible
+ * with the mock Forwarder used during simulation. All permission fields remain at their default zero
+ * values (disabled).
+ */
+contract CalculatorConsumer is ReceiverTemplate {
+  // Struct to hold the data sent in a report from the workflow
+  struct CalculatorResult {
+    uint256 offchainValue;
+    int256 onchainValue;
+    uint256 finalResult;
+  }
+
+  // --- State Variables ---
+  CalculatorResult public latestResult;
+  uint256 public resultCount;
+  mapping(uint256 => CalculatorResult) public results;
+
+  // --- Events ---
+  event ResultUpdated(uint256 indexed resultId, uint256 finalResult);
+
+  /**
+   * @dev The constructor doesn't set any security checks.
+   * The ReceiverTemplate parent constructor will initialize all permission fields to zero (disabled).
+   */
+  constructor() {}
+
+  /**
+   * @notice Implements the core business logic for processing reports.
+   * @dev This is called automatically by ReceiverTemplate's onReport function after security checks.
+   */
+  function _processReport(bytes calldata report) internal override {
+    // Decode the report bytes into our CalculatorResult struct
+    CalculatorResult memory calculatorResult = abi.decode(report, (CalculatorResult));
+
+    // --- Core Logic ---
+    // Update contract state with the new result
+    resultCount++;
+    results[resultCount] = calculatorResult;
+    latestResult = calculatorResult;
+
+    emit ResultUpdated(resultCount, calculatorResult.finalResult);
+  }
+
+  // This function is a "dry-run" utility. It allows an offchain system to check
+  // if a prospective result is an outlier before submitting it for a real onchain update.
+  // It is also used to guide the binding generator to create a method that accepts the CalculatorResult struct.
+  function isResultAnomalous(CalculatorResult memory _prospectiveResult) public view returns (bool) {
+    // A result is not considered anomalous if it's the first one.
+    if (resultCount == 0) {
+      return false;
+    }
+
+    // Business logic: Define an anomaly as a new result that is more than double the previous result.
+    // This is just one example of a validation rule you could implement.
+    return _prospectiveResult.finalResult > (latestResult.finalResult * 2);
+  }
+}
+```
+
+The contract is already deployed for you on Sepolia at the following address: <a href="https://sepolia.etherscan.io/address/0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52#code" target="_blank" rel="noopener noreferrer">`0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52`</a>. You will use this address in your configuration file.
+
+## Step 2: Update your workflow configuration
+
+Add the `CalculatorConsumer` contract address to your `config.staging.json`:
+
+```json
+{
+  "schedule": "*/30 * * * * *",
+  "apiUrl": "https://api.mathjs.org/v4/?expr=randomInt(1,101)",
+  "evms": [
+    {
+      "storageAddress": "0xa17CF997C28FF154eDBae1422e6a50BeF23927F4",
+      "calculatorConsumerAddress": "0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52",
+      "chainName": "ethereum-testnet-sepolia",
+      "gasLimit": "500000"
+    }
+  ]
+}
+```
+
+## Step 3: Update your workflow logic
+
+Now modify your workflow to write the final result to the contract. Writing onchain involves a two-step process:
+
+1. **Generate a signed report**: Use `runtime.report()` to create a cryptographically signed report from your workflow data
+2. **Submit the report**: Use `evmClient.writeReport()` to submit the signed report to the consumer contract
+
+The TypeScript SDK uses Viem's `encodeAbiParameters` to properly encode the struct data according to the contract's ABI before generating the report.
+
+<Aside type="note" title="Configuring Gas Limit">
+  Notice that in the code below, we pass the `gasLimit` from our config file to the `writeReport` function. Explicitly
+  setting a sufficient gas limit is crucial for write operations to prevent them from failing due to "out of gas"
+  errors.
+</Aside>
+
+Replace the entire content of `onchain-calculator/my-calculator-workflow/main.ts` with this final version.
+
+**Note:** Lines highlighted in green indicate new or modified code compared to Part 3.
+
+<CodeHighlightBlock lang="typescript" code={part4Code} title="onchain-calculator/my-calculator-workflow/main.ts" />
+
+{/* prettier-ignore */}
+<Aside type="note" title="Optional: Add runtime validation">
+  If you added Zod validation in Part 1, you can continue using it here. The `Config` type now includes `gasLimit` and `calculatorConsumerAddress` fields, so update your Zod schema accordingly. See [Part 1: Optional Runtime Validation](/cre/getting-started/part-1-project-setup#optional-runtime-validation) for details.
+</Aside>
+
+**Key TypeScript SDK features for writing:**
+
+- **`encodeAbiParameters()`**: From Viem, encodes structured data according to a contract's ABI
+- **`parseAbiParameters()`**: From Viem, defines the parameter types for encoding
+- **`runtime.report()`**: Generates a signed report using the consensus capability
+- **`writeReport()`**: EVMClient method for submitting the signed report to a consumer contract
+- **`txHash`**: The transaction hash returned after a successful write operation
+
+{/* prettier-ignore */}
+<Aside type="tip" title="Convenience helpers for cleaner code">
+  Once you're comfortable with these core concepts, the SDK provides convenience helpers for more concise code:
+  - **HTTP helpers**: The [`HTTPSendRequester`](/cre/reference/sdk/http-client-ts#using-sendrequester) type includes [`ok()`](/cre/reference/sdk/http-client-ts#ok), [`text()`](/cre/reference/sdk/http-client-ts#text), and [`json()`](/cre/reference/sdk/http-client-ts#json) functions for cleaner response handling
+  - **Report helper**: [`prepareReportRequest()`](/cre/reference/sdk/evm-client-ts#preparereportrequest) automatically sets default encoding parameters (`ecdsa`, `keccak256`, `evm`) for report generation
+
+<br />
+These helpers are great for production code, but we use the explicit approach here for educational clarity.
+
+</Aside>
+
+<Aside type="note" title="Organizing ABIs for reusability">
+  Notice that we encoded the `CalculatorResult` struct inline using `parseAbiParameters()`. This works great for one-off
+  workflows. However, if you're building workflows that interact with the same consumer contract multiple times or want
+  better code organization, you can define the ABI parameters in a dedicated file (like we did with the `Storage`
+  contract in [Part 3](/cre/getting-started/part-3-reading-onchain-value-ts#step-3-create-the-contract-abi-file)). To
+  learn more about organizing ABIs for write operations, see [Organizing ABIs for reusable data
+  structures](/cre/guides/workflow/using-evm-client/onchain-write/writing-data-onchain#organizing-abis-for-reusable-data-structures).
+</Aside>
+
+## Step 4: Run the simulation and review the output
+
+{/* prettier-ignore */}
+<Aside type="note" title="Funding Your Account">
+  This step submits an onchain transaction, which requires gas. Before running the simulation, verify that the account
+  associated with the private key from [Part
+  1](/cre/getting-started/part-1-project-setup-ts#set-up-your-private-key) is funded with sufficient Sepolia ETH.
+  An unfunded account will cause the transaction to fail, often with an error message like `gas required exceeds
+  allowance`.
+  <br/>
+  If you need more Sepolia ETH, go to <a href="https://faucets.chain.link" target="blank">faucets.chain.link</a> to get some Sepolia ETH.
+</Aside>
+
+<Aside type="caution" title="Broadcasting Your Transaction">
+  By default, `cre workflow simulate` performs a **dry run** for onchain write operations. It will simulate the transaction and return a successful response, but will **not** broadcast it to the network, resulting in an empty transaction hash (`0x`).
+
+To execute a real transaction, you must add the `--broadcast` flag to the command.
+
+</Aside>
+
+Run the simulation from your project root directory (the `onchain-calculator/` folder). Because there is only one trigger, the simulator runs it automatically.
+
+```bash
+cre workflow simulate my-calculator-workflow --target staging-settings --broadcast
+```
+
+Your workflow will now show the complete end-to-end execution, including the final log of the `MyResult` object containing the transaction hash.
+
+```bash
+Workflow compiled
+2025-12-09T13:31:18Z [SIMULATION] Simulator Initialized
+
+2025-12-09T13:31:18Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+2025-12-09T13:31:18Z [USER LOG] Successfully fetched offchain value: 62
+2025-12-09T13:31:18Z [USER LOG] Successfully read onchain value: 22
+2025-12-09T13:31:18Z [USER LOG] Final calculated result: 84
+2025-12-09T13:31:18Z [USER LOG] Updating calculator result for consumer: 0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52
+2025-12-09T13:31:18Z [USER LOG] Writing report to consumer contract - offchainValue: 62, onchainValue: 22, finalResult: 84
+2025-12-09T13:31:48Z [USER LOG] Waiting for write report response
+2025-12-09T13:31:48Z [USER LOG] Write report transaction succeeded: 0x7e2e58613f4d8414826d2e6164e42b110fefb97137a1065ac69d1c3decd259f2
+2025-12-09T13:31:48Z [USER LOG] View transaction at https://sepolia.etherscan.io/tx/0x7e2e58613f4d8414826d2e6164e42b110fefb97137a1065ac69d1c3decd259f2
+2025-12-09T13:31:48Z [USER LOG] Workflow finished successfully! offchainValue: 62, onchainValue: 22, finalResult: 84, txHash: 0x7e2e58613f4d8414826d2e6164e42b110fefb97137a1065ac69d1c3decd259f2
+
+Workflow Simulation Result:
+ {
+  "finalResult": 84,
+  "offchainValue": 62,
+  "onchainValue": 22,
+  "txHash": "0x7e2e58613f4d8414826d2e6164e42b110fefb97137a1065ac69d1c3decd259f2"
+}
+
+2025-12-09T13:31:48Z [SIMULATION] Execution finished signal received
+2025-12-09T13:31:48Z [SIMULATION] Skipping WorkflowEngineV2
+```
+
+- **`[USER LOG]`**: You can see all of your `logger.info()` calls showing the complete workflow execution, including the offchain value (`62`), onchain value (`22`), final calculation (`84`), and the transaction hash.
+- **`[SIMULATION]`**: These are system-level messages from the simulator showing its internal state.
+- **`Workflow Simulation Result`**: This is the final return value of your workflow. The `MyResult` object contains all the values (62 + 22 = 84) and the transaction hash confirming the write operation succeeded.
+
+## Step 5: Verify the result onchain
+
+### **1. Check the Transaction**
+
+In your terminal output, you'll see a clickable URL to view the transaction on Sepolia Etherscan:
+
+```
+[USER LOG] View transaction at https://sepolia.etherscan.io/tx/0x...
+```
+
+Click the URL (or copy and paste it into your browser) to see the full details of the transaction your workflow submitted.
+
+**What are you seeing on a blockchain explorer?**
+
+You'll notice the transaction's `to` address is not the `CalculatorConsumer` contract you intended to call. Instead, it's to a **Forwarder** contract. Your workflow sends a secure report to the Forwarder, which then verifies the request and makes the final call to the `CalculatorConsumer` on your workflow's behalf. To learn more, see the [Onchain Write guide](/cre/guides/workflow/using-evm-client/onchain-write/overview).
+
+### **2. Check the contract state**
+
+While your wallet interacted with the Forwarder, the `CalculatorConsumer` contract's state was still updated. You can verify this change directly on Etherscan:
+
+- Navigate to the `CalculatorConsumer` contract address: <a href="https://sepolia.etherscan.io/address/0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52#readContract" target="_blank" rel="noopener noreferrer">`0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52`</a>.
+- Expand the `latestResult` function and click **Query**. The values should match the `finalResult`, `offchainValue`, and `onchainValue` from your workflow logs.
+
+This completes the end-to-end loop: triggering a workflow, fetching data, reading onchain state, and verifiably writing the result back to a public blockchain.
+
+To learn more about implementing consumer contracts and the secure write process, see these guides:
+
+- **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)**: Learn how to create your own secure consumer contracts with proper validation.
+- **[Onchain Write Guide](/cre/guides/workflow/using-evm-client/onchain-write/overview-ts)**: Dive deeper into the write patterns.
+
+## Next steps
+
+You've now mastered the complete CRE development workflow!
+
+- **[Conclusion & Next Steps](/cre/getting-started/conclusion)**: Review what you've learned and find resources for advanced topics.

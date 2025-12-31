@@ -48,6 +48,7 @@ const NETWORK_ENDPOINTS: Record<string, string> = {
   polygonkatana: "https://reference-data-directory.vercel.app/feeds-polygon-mainnet-katana.json",
   bob: "https://reference-data-directory.vercel.app/feeds-bitcoin-mainnet-bob-1.json",
   plasma: "https://reference-data-directory.vercel.app/feeds-plasma-mainnet.json",
+  hyperevm: "https://reference-data-directory.vercel.app/feeds-hyperliquid-mainnet.json",
 }
 
 // Path to the baseline JSON file that contains known feed IDs
@@ -106,6 +107,7 @@ function buildFeedUrl(item: DataItem): string {
     "gnosis-chain": "xdai",
     polygonzkevm: "polygon-zkevm",
     polygonkatana: "katana",
+    hyperevm: "hyperliquid",
     // Add more mappings as needed
   }
 
@@ -121,6 +123,7 @@ function buildFeedUrl(item: DataItem): string {
     soneium: "soneium",
     xlayer: "xlayer",
     zksync: "zksync",
+    hyperevm: "hyperliquid",
     // Add more exceptions as they're discovered
   }
 

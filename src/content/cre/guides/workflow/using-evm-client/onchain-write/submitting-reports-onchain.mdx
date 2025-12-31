@@ -1,0 +1,304 @@
+---
+section: cre
+title: "Submitting Reports Onchain"
+sdkLang: "go"
+date: Last Modified
+metadata:
+  description: "Send reports to the blockchain in Go: learn to submit your generated reports onchain across multiple EVM chains securely."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+This guide shows how to manually submit a generated report to the blockchain using the low-level `evm.Client.WriteReport()` method.
+
+**Use this approach when:**
+
+- You've already generated a report using `runtime.GenerateReport()` (from [single value](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) or [struct](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-structs) generation)
+- You need fine-grained control over the submission process
+- You don't have (or can't use) the `WriteReportFrom<StructName>()` binding helper
+
+<Aside type="note" title="Looking for a simpler approach?">
+  If your struct is in your contract's ABI, consider using the all-in-one [WriteReportFrom
+  Helpers](/cre/guides/workflow/using-evm-client/onchain-write/using-write-report-helpers) approach instead. It handles
+  encoding, report generation, AND submission in a single call.
+</Aside>
+
+## Prerequisites
+
+You must have:
+
+- A generated report ready to submit (from [single value](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values) or [struct](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-structs) generation)
+- A [consumer contract](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts) address that implements the `IReceiver` interface
+
+## Step-by-step example
+
+### Step 1: Create an EVM client
+
+```go
+import "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/evm"
+
+evmClient := &evm.Client{
+    ChainSelector: config.ChainSelector, // e.g., 16015286601757825753 for Sepolia
+}
+```
+
+### Step 2: Prepare submission parameters
+
+```go
+import "github.com/ethereum/go-ethereum/common"
+
+// Receiver contract address (must implement IReceiver interface)
+receiverAddress := common.HexToAddress(config.ReceiverAddress)
+
+// Optional gas configuration
+gasConfig := &evm.GasConfig{
+    GasLimit: config.GasLimit, // e.g., 1000000
+}
+```
+
+### Step 3: Submit the report
+
+```go
+writePromise := evmClient.WriteReport(runtime, &evm.WriteCreReportRequest{
+    Receiver:  receiverAddress.Bytes(),
+    Report:    report, // The report from runtime.GenerateReport()
+    GasConfig: gasConfig,
+})
+
+resp, err := writePromise.Await()
+if err != nil {
+    return fmt.Errorf("failed to write report: %w", err)
+}
+
+// Extract transaction hash
+txHash := fmt.Sprintf("0x%x", resp.TxHash)
+logger.Info("Report submitted successfully", "txHash", txHash)
+```
+
+### Understanding the response
+
+The `WriteReportReply` struct provides comprehensive transaction details:
+
+```go
+type WriteReportReply struct {
+    TxStatus                        TxStatus                         // SUCCESS, REVERTED, or FATAL
+    ReceiverContractExecutionStatus *ReceiverContractExecutionStatus // Contract execution status
+    TxHash                          []byte                            // Transaction hash
+    TransactionFee                  *pb.BigInt                        // Fee paid in Wei
+    ErrorMessage                    *string                           // Error message if failed
+}
+```
+
+**Key fields to check:**
+
+- **`TxStatus`**: Indicates whether the transaction succeeded, reverted, or had a fatal error
+- **`TxHash`**: The transaction hash you can use to verify on a block explorer (e.g., Etherscan)
+- **`TransactionFee`**: The total gas cost paid for the transaction in Wei
+- **`ReceiverContractExecutionStatus`**: Whether your consumer contract's `onReport()` function executed successfully
+- **`ErrorMessage`**: If the transaction failed, this field contains details about what went wrong
+
+## Best practices
+
+When submitting reports onchain, follow these practices to ensure reliability and observability:
+
+1. **Log transaction details**: Always log the transaction hash for debugging and monitoring. This allows you to track your submission on block explorers and troubleshoot issues.
+
+   ```go
+   txHash := fmt.Sprintf("0x%x", resp.TxHash)
+   logger.Info("Report submitted successfully", "txHash", txHash, "status", resp.TxStatus)
+   ```
+
+1. **Handle gas configuration**: Provide explicit gas limits for complex transactions to avoid out-of-gas errors. Adjust based on your contract's complexity and the data size.
+
+   ```go
+   gasConfig := &evm.GasConfig{
+       GasLimit: 500000, // Adjust based on your needs
+   }
+   ```
+
+1. **Monitor transaction status**: Always check the `TxStatus` field in the response to ensure your transaction was successful. Handle `REVERTED` and `FATAL` statuses appropriately.
+   ```go
+   if resp.TxStatus != evm.TxStatusSuccess {
+       return fmt.Errorf("transaction failed with status: %v, error: %s", resp.TxStatus, *resp.ErrorMessage)
+   }
+   ```
+
+## Complete example
+
+Here's a full workflow that generates a report from a single value and submits it onchain:
+
+```go
+//go:build wasip1
+
+package main
+
+import (
+	"fmt"
+	"log/slog"
+	"math/big"
+
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/evm"
+	"github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
+	"github.com/smartcontractkit/cre-sdk-go/cre"
+	"github.com/smartcontractkit/cre-sdk-go/cre/wasm"
+)
+
+type Config struct {
+	Schedule        string `json:"schedule"`
+	ReceiverAddress string `json:"receiverAddress"`
+	ChainSelector   uint64 `json:"chainSelector"`
+	GasLimit        uint64 `json:"gasLimit"`
+}
+
+type MyResult struct {
+	TxHash string
+}
+
+func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+	return cre.Workflow[*Config]{
+		cre.Handler(cron.Trigger(&cron.Config{Schedule: config.Schedule}), onCronTrigger),
+	}, nil
+}
+
+func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*MyResult, error) {
+	logger := runtime.Logger()
+
+	// Step 1: Create and encode a value
+	myValue := big.NewInt(123456789)
+	logger.Info("Created value to encode", "value", myValue.String())
+
+	uint256Type, err := abi.NewType("uint256", "", nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create type: %w", err)
+	}
+
+	args := abi.Arguments{{Type: uint256Type}}
+	encodedValue, err := args.Pack(myValue)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode value: %w", err)
+	}
+	logger.Info("Encoded value", "hex", fmt.Sprintf("0x%x", encodedValue))
+
+	// Step 2: Generate report
+	reportPromise := runtime.GenerateReport(&cre.ReportRequest{
+		EncodedPayload: encodedValue,
+		EncoderName:    "evm",
+		SigningAlgo:    "ecdsa",
+		HashingAlgo:    "keccak256",
+	})
+
+	report, err := reportPromise.Await()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate report: %w", err)
+	}
+	logger.Info("Report generated successfully")
+
+	// Step 3: Create EVM client
+	evmClient := &evm.Client{
+		ChainSelector: config.ChainSelector,
+	}
+
+	// Step 4: Submit report onchain
+	receiverAddress := common.HexToAddress(config.ReceiverAddress)
+	gasConfig := &evm.GasConfig{GasLimit: config.GasLimit}
+
+	writePromise := evmClient.WriteReport(runtime, &evm.WriteCreReportRequest{
+		Receiver:  receiverAddress.Bytes(),
+		Report:    report,
+		GasConfig: gasConfig,
+	})
+
+	logger.Info("Submitting report onchain...")
+
+	resp, err := writePromise.Await()
+	if err != nil {
+		return nil, fmt.Errorf("failed to submit report: %w", err)
+	}
+
+	// Check transaction status
+	if resp.TxStatus != evm.TxStatusSuccess {
+		errorMsg := "unknown error"
+		if resp.ErrorMessage != nil {
+			errorMsg = *resp.ErrorMessage
+		}
+		return nil, fmt.Errorf("transaction failed with status %v: %s", resp.TxStatus, errorMsg)
+	}
+
+	txHash := fmt.Sprintf("0x%x", resp.TxHash)
+	logger.Info("Report submitted successfully", "txHash", txHash, "fee", resp.TransactionFee)
+
+	return &MyResult{TxHash: txHash}, nil
+}
+
+func main() {
+	wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
+}
+```
+
+**Configuration file** (`config.json`):
+
+```json
+{
+  "schedule": "0 */1 * * * *",
+  "receiverAddress": "0xYourReceiverContractAddress",
+  "chainSelector": 16015286601757825753,
+  "gasLimit": 1000000
+}
+```
+
+## Broadcasting transactions
+
+By default, `cre workflow simulate` performs a dry run without broadcasting transactions to the network. To execute real onchain transactions, use the `--broadcast` flag:
+
+```bash
+cre workflow simulate my-workflow --broadcast --target staging-settings
+```
+
+See the [CLI Reference](/cre/reference/cli/workflow#cre-workflow-simulate) for more details.
+
+## Troubleshooting
+
+**"failed to submit report" or transaction fails to broadcast**
+
+- Verify your consumer contract address is correct and deployed on the target chain
+- Check that you're using the correct chain selector for your target blockchain
+- Verify network connectivity and RPC endpoint availability
+
+**Transaction succeeds but `TxStatus` is `REVERTED`**
+
+- Check the `ErrorMessage` field for details about why the transaction reverted
+- Verify your consumer contract implements the `IReceiver` interface correctly (see [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts))
+- Review your consumer contract's `onReport()` validation logic—it may be rejecting the report
+- Ensure the report data format matches what your consumer contract expects
+
+**"out of gas" error or transaction runs out of gas**
+
+- Increase the `GasLimit` in your `GasConfig`
+- Check if your consumer contract's `onReport()` function has unexpectedly complex logic
+- Review the transaction on a block explorer to see the actual gas used
+
+**`ReceiverContractExecutionStatus` indicates failure**
+
+- Your consumer contract's `onReport()` function executed but encountered an error
+- Review the contract's event logs and error messages on a block explorer
+- Check that your contract's validation logic (e.g., forwarder checks, workflow ID checks) is correctly configured
+- Verify the decoded data in your contract matches the expected struct/value format
+
+**"invalid receiver address" or address-related errors**
+
+- Confirm the receiver address is a valid Ethereum address format
+- Verify the contract is deployed at that address on the target chain
+- Use `common.HexToAddress()` to properly convert address strings
+
+## Learn more
+
+- **[Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write)**: Understand all onchain write approaches
+- **[Using WriteReportFrom Helpers](/cre/guides/workflow/using-evm-client/onchain-write/using-write-report-helpers)**: Use the simpler all-in-one helper for struct submission
+- **[Generating Reports: Single Values](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values)**: Generate reports for single primitive values
+- **[Generating Reports: Structs](/cre/guides/workflow/using-evm-client/onchain-write/generating-reports-structs)**: Generate reports for struct data
+- **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)**: Create contracts that can receive reports
+- **[EVM Client Reference](/cre/reference/sdk/evm-client)**: Complete API documentation

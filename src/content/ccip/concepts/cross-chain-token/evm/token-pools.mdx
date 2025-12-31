@@ -25,12 +25,12 @@ When CCIP interacts with your token pools, it expects the presence of the follow
 1. **Sending Tokens (Source)**:
    - This must include the following function: `lockOrBurn(Pool.LockOrBurnInV1 calldata lockOrBurnIn) external returns (Pool.LockOrBurnOutV1 memory)`.
    - This function locks or burns tokens depending on the implementation of the token pool.
-   - See implementation details in [`LockReleaseTokenPool.lockOrBurn`](/ccip/api-reference/evm/v1.6.0/lock-release-token-pool#lockorburn) or [`BurnMintTokenPoolAbstract.lockOrBurn`](/ccip/api-reference/evm/v1.6.0/burn-mint-token-pool-abstract#lockorburn).
+   - See implementation details in [`TokenPool.lockOrBurn`](/ccip/api-reference/evm/v1.6.1/token-pool#lockorburn).
 
 1. **Receiving Tokens (Destination)**:
    - This must include the following function: `releaseOrMint(Pool.ReleaseOrMintInV1 calldata releaseOrMintIn) external returns (Pool.ReleaseOrMintOutV1 memory)`.
    - This function releases or mints tokens depending on the implementation of the token pool.
-   - See implementation details in [`LockReleaseTokenPool.releaseOrMint`](/ccip/api-reference/evm/v1.6.0/lock-release-token-pool#releaseormint) or [`BurnMintTokenPoolAbstract.releaseOrMint`](/ccip/api-reference/evm/v1.6.0/burn-mint-token-pool-abstract#releaseormint).
+   - See implementation details in [`TokenPool.releaseOrMint`](/ccip/api-reference/evm/v1.6.1/token-pool#releaseormint).
 
 ### Gas Requirements
 
@@ -125,13 +125,13 @@ Consider a token developer who deployed their token across three blockchains wit
 
 ## Standard Token Pools
 
-Depending on your use case (token handling mechanism), you need to deploy the appropriate token pool type for each blockchain you want to support. Chainlink provides a set of token pool contracts that you can use to deploy your token pools in minutes. These token pools are fully audited and ready for deployment on your blockchains. You can find the token pool contracts in the [Chainlink GitHub repository](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-release/1.6.0/chains/evm/contracts/pools). For most use cases, you should use either:
+Depending on your use case (token handling mechanism), you need to deploy the appropriate token pool type for each blockchain you want to support. Chainlink provides a set of token pool contracts that you can use to deploy your token pools in minutes. These token pools are fully audited and ready for deployment on your blockchains. You can find the token pool contracts in the [Chainlink GitHub repository](https://github.com/smartcontractkit/chainlink-ccip/tree/release/contracts-ccip-1.6.2/chains/evm/contracts/pools). For most use cases, you should use either:
 
-- **[BurnMintTokenPool](https://github.com/smartcontractkit/chainlink-ccip/blob/contracts-ccip-release/1.6.0/chains/evm/contracts/pools/BurnMintTokenPool.sol)**: This token pool is used to burn or mint tokens. You can read the API reference here.
-- **[BurnFromMintTokenPool](https://github.com/smartcontractkit/chainlink-ccip/blob/contracts-ccip-release/1.6.0/chains/evm/contracts/pools/BurnFromMintTokenPool.sol)**: This is a variant of the BurnMintTokenPool that uses the `burnFrom(from, amount)` function to burn tokens from a specified account. You can read the API reference here. **Note**: If your token supports the standard `burn` function, you should typically use the BurnMintTokenPool instead of BurnFromMintTokenPool.
-- **[LockReleaseTokenPool](https://github.com/smartcontractkit/chainlink-ccip/blob/contracts-ccip-release/1.6.0/chains/evm/contracts/pools/LockReleaseTokenPool.sol)**: This token pool is used to lock or release tokens. You can read the API reference here.
+- **[BurnMintTokenPool](https://github.com/smartcontractkit/chainlink-ccip/blob/release/contracts-ccip-1.6.2/chains/evm/contracts/pools/BurnMintTokenPool.sol)**: This token pool is used to burn or mint tokens. You can read the API reference here.
+- **[BurnFromMintTokenPool](https://github.com/smartcontractkit/chainlink-ccip/blob/release/contracts-ccip-1.6.2/chains/evm/contracts/pools/BurnFromMintTokenPool.sol)**: This is a variant of the BurnMintTokenPool that uses the `burnFrom(from, amount)` function to burn tokens from a specified account. You can read the API reference here. **Note**: If your token supports the standard `burn` function, you should typically use the BurnMintTokenPool instead of BurnFromMintTokenPool.
+- **[LockReleaseTokenPool](https://github.com/smartcontractkit/chainlink-ccip/blob/release/contracts-ccip-1.6.2/chains/evm/contracts/pools/LockReleaseTokenPool.sol)**: This token pool is used to lock or release tokens. You can read the API reference here.
 
-**Note**: Both token pools inherit from the same base [TokenPool](https://github.com/smartcontractkit/chainlink-ccip/blob/contracts-ccip-release/1.6.0/chains/evm/contracts/pools/TokenPool.sol) contract, which provides all the common functions necessary for a token pool. For example, it includes the `applyChainUpdates` function, which is used to configure the token pool. You can read the API reference here.
+**Note**: Both token pools inherit from the same base [TokenPool](https://github.com/smartcontractkit/chainlink-ccip/blob/release/contracts-ccip-1.6.2/chains/evm/contracts/pools/TokenPool.sol) contract, which provides all the common functions necessary for a token pool. For example, it includes the `applyChainUpdates` function, which is used to configure the token pool. You can read the API reference here.
 
 ## Custom Token Pools
 

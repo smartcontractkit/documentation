@@ -3,6 +3,7 @@ import {
   validateEnvironment,
   validateFilters,
   validateOutputKey,
+  validateEnrichFeeTokens,
   generateChainKey,
   createMetadata,
   handleApiError,
@@ -13,11 +14,11 @@ import {
   APIErrorType,
   createErrorResponse,
   CCIPError,
-} from "../utils.ts"
+} from "~/lib/ccip/utils.ts"
 import { logger } from "@lib/logging/index.js"
 
-import type { ChainDetails, ChainApiResponse } from "../types/index.ts"
-import { ChainDataService } from "../../services/chain-data.ts"
+import type { ChainDetails, ChainApiResponse } from "~/lib/ccip/types/index.ts"
+import { ChainDataService } from "~/lib/ccip/services/chain-data.ts"
 
 export const prerender = false
 
@@ -63,6 +64,14 @@ export const GET: APIRoute = async ({ request }) => {
       outputKey,
     })
 
+    // Validate enrichFeeTokens parameter
+    const enrichFeeTokens = validateEnrichFeeTokens(params.get("enrichFeeTokens") || undefined)
+    logger.debug({
+      message: "EnrichFeeTokens parameter validated",
+      requestId,
+      enrichFeeTokens,
+    })
+
     const config = await loadChainConfiguration(environment)
     logger.debug({
       message: "Chain configuration loaded",
@@ -72,7 +81,11 @@ export const GET: APIRoute = async ({ request }) => {
     })
 
     const chainDataService = new ChainDataService(config.chainsConfig)
-    const { data, errors, metadata: serviceMetadata } = await chainDataService.getFilteredChains(environment, filters)
+    const {
+      data,
+      errors,
+      metadata: serviceMetadata,
+    } = await chainDataService.getFilteredChains(environment, filters, enrichFeeTokens)
 
     logger.info({
       message: "Chain data retrieved successfully",

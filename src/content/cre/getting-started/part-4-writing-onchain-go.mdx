@@ -1,0 +1,273 @@
+---
+section: cre
+title: "Part 4: Writing Onchain"
+date: Last Modified
+sdkLang: "go"
+pageId: "getting-started-part-4"
+metadata:
+  description: "Getting started Part 4 (Go): write verified workflow results onchain to smart contracts and complete your first end-to-end workflow."
+  datePublished: "2025-11-04"
+  lastModified: "2025-12-09"
+---
+
+import { Aside } from "@components"
+import { CodeHighlightBlock } from "@components"
+import part4Code from "./snippets/part-4-main.go?raw"
+
+In the previous parts, you successfully fetched offchain data and read from a smart contract. Now, you'll complete the "Onchain Calculator" by writing your computed result back to the blockchain.
+
+## What you'll do
+
+- Generate bindings for a pre-deployed `CalculatorConsumer` contract
+- Modify your workflow to write data to the blockchain using the EVM capability
+- Execute your first onchain write transaction through CRE
+- Verify your result on the blockchain
+
+## Step 1: The consumer contract
+
+To write data onchain, your workflow needs a target smart contract (a "consumer contract"). For this guide, we have pre-deployed a simple `CalculatorConsumer` contract on the Sepolia testnet. This contract is designed to receive and store the calculation results from your workflow.
+
+Here is the source code for the contract so you can see how it works:
+
+<Aside type="note" title="Note">
+  Don't worry if you don't understand every line of this contract right now. We're showing it to you for context, but
+  the key takeaway is that it's designed to securely receive data from a CRE workflow. We'll cover the important details
+  of how this works in a later guide.
+</Aside>
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
+
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
+
+/**
+ * @title CalculatorConsumer (Testing Version)
+ * @notice This contract receives reports from a CRE workflow and stores the results of a calculation onchain.
+ * @dev This version uses ReceiverTemplate without configuring any security checks, making it compatible
+ * with the mock Forwarder used during simulation. All permission fields remain at their default zero
+ * values (disabled).
+ */
+contract CalculatorConsumer is ReceiverTemplate {
+  // Struct to hold the data sent in a report from the workflow
+  struct CalculatorResult {
+    uint256 offchainValue;
+    int256 onchainValue;
+    uint256 finalResult;
+  }
+
+  // --- State Variables ---
+  CalculatorResult public latestResult;
+  uint256 public resultCount;
+  mapping(uint256 => CalculatorResult) public results;
+
+  // --- Events ---
+  event ResultUpdated(uint256 indexed resultId, uint256 finalResult);
+
+  /**
+   * @dev The constructor doesn't set any security checks.
+   * The ReceiverTemplate parent constructor will initialize all permission fields to zero (disabled).
+   */
+  constructor() {}
+
+  /**
+   * @notice Implements the core business logic for processing reports.
+   * @dev This is called automatically by ReceiverTemplate's onReport function after security checks.
+   */
+  function _processReport(bytes calldata report) internal override {
+    // Decode the report bytes into our CalculatorResult struct
+    CalculatorResult memory calculatorResult = abi.decode(report, (CalculatorResult));
+
+    // --- Core Logic ---
+    // Update contract state with the new result
+    resultCount++;
+    results[resultCount] = calculatorResult;
+    latestResult = calculatorResult;
+
+    emit ResultUpdated(resultCount, calculatorResult.finalResult);
+  }
+
+  // This function is a "dry-run" utility. It allows an offchain system to check
+  // if a prospective result is an outlier before submitting it for a real onchain update.
+  // It is also used to guide the binding generator to create a method that accepts the CalculatorResult struct.
+  function isResultAnomalous(CalculatorResult memory _prospectiveResult) public view returns (bool) {
+    // A result is not considered anomalous if it's the first one.
+    if (resultCount == 0) {
+      return false;
+    }
+
+    // Business logic: Define an anomaly as a new result that is more than double the previous result.
+    // This is just one example of a validation rule you could implement.
+    return _prospectiveResult.finalResult > (latestResult.finalResult * 2);
+  }
+}
+```
+
+The contract is already deployed for you on Sepolia at the following address: <a href="https://sepolia.etherscan.io/address/0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52#code" target="_blank" rel="noopener noreferrer">`0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52`</a>. You will use this address in your configuration file.
+
+## Step 2: Generate the consumer contract binding
+
+You need to create a binding for the consumer contract so your workflow can interact with it.
+
+1. **Add the consumer contract ABI**: Create a new file for the consumer contract ABI. From your project root (`onchain-calculator/`), run:
+
+   ```bash
+   touch contracts/evm/src/abi/CalculatorConsumer.abi
+   ```
+
+1. **Add the ABI content**: Open `contracts/evm/src/abi/CalculatorConsumer.abi` and paste the contract's ABI:
+
+   {/* prettier-ignore */}
+   ```json
+    [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[{"internalType":"address","name":"received","type":"address"},{"internalType":"address","name":"expected","type":"address"}],"name":"InvalidAuthor","type":"error"},{"inputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"address","name":"expected","type":"address"}],"name":"InvalidSender","type":"error"},{"inputs":[{"internalType":"bytes32","name":"received","type":"bytes32"},{"internalType":"bytes32","name":"expected","type":"bytes32"}],"name":"InvalidWorkflowId","type":"error"},{"inputs":[{"internalType":"bytes10","name":"received","type":"bytes10"},{"internalType":"bytes10","name":"expected","type":"bytes10"}],"name":"InvalidWorkflowName","type":"error"},{"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"OwnableInvalidOwner","type":"error"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"OwnableUnauthorizedAccount","type":"error"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"resultId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"finalResult","type":"uint256"}],"name":"ResultUpdated","type":"event"},{"inputs":[],"name":"expectedAuthor","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"expectedWorkflowId","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"expectedWorkflowName","outputs":[{"internalType":"bytes10","name":"","type":"bytes10"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"forwarderAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"components":[{"internalType":"uint256","name":"offchainValue","type":"uint256"},{"internalType":"int256","name":"onchainValue","type":"int256"},{"internalType":"uint256","name":"finalResult","type":"uint256"}],"internalType":"struct CalculatorConsumer.CalculatorResult","name":"_prospectiveResult","type":"tuple"}],"name":"isResultAnomalous","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"latestResult","outputs":[{"internalType":"uint256","name":"offchainValue","type":"uint256"},{"internalType":"int256","name":"onchainValue","type":"int256"},{"internalType":"uint256","name":"finalResult","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes","name":"metadata","type":"bytes"},{"internalType":"bytes","name":"report","type":"bytes"}],"name":"onReport","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"resultCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"results","outputs":[{"internalType":"uint256","name":"offchainValue","type":"uint256"},{"internalType":"int256","name":"onchainValue","type":"int256"},{"internalType":"uint256","name":"finalResult","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_author","type":"address"}],"name":"setExpectedAuthor","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_id","type":"bytes32"}],"name":"setExpectedWorkflowId","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes10","name":"_name","type":"bytes10"}],"name":"setExpectedWorkflowName","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_forwarder","type":"address"}],"name":"setForwarderAddress","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"}]
+    ```
+
+1. **Generate the bindings**: Run the binding generator to create Go bindings for all ABI files in your project. From your project root (`onchain-calculator/`), run:
+
+   ```bash
+   cre generate-bindings evm
+   ```
+
+   This will generate bindings for both the `Storage` contract (from Part 3) and the new `CalculatorConsumer` contract. For each contract, you'll see two files: `<ContractName>.go` (main binding) and `<ContractName>_mock.go` (for testing).
+
+   **Generated method**: The binding generator sees the `CalculatorResult` struct and creates a `WriteReportFromCalculatorResult` method in the `CalculatorConsumer` binding that automatically handles encoding the struct and submitting it onchain.
+
+## Step 3: Update your workflow configuration
+
+Add the `CalculatorConsumer` contract address to your `config.staging.json`:
+
+```json
+{
+  "schedule": "0 */1 * * * *",
+  "apiUrl": "https://api.mathjs.org/v4/?expr=randomInt(1,101)",
+  "evms": [
+    {
+      "storageAddress": "0xa17CF997C28FF154eDBae1422e6a50BeF23927F4",
+      "calculatorConsumerAddress": "0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52",
+      "chainName": "ethereum-testnet-sepolia",
+      "gasLimit": 500000
+    }
+  ]
+}
+```
+
+## Step 4: Update your workflow logic
+
+Now modify your workflow to write the final result to the contract. The binding generator creates a `WriteReportFrom<StructName>` method that automatically handles encoding the `CalculatorResult` struct.
+
+<Aside type="note" title="Configuring Gas Limit">
+  Notice that in the code below, we create an `evm.GasConfig` struct and pass the `gasLimit` from our config file to the
+  `WriteReport` function. Explicitly setting a sufficient gas limit is crucial for write operations to prevent them from
+  failing due to "out of gas" errors.
+</Aside>
+
+Replace the entire content of `onchain-calculator/my-calculator-workflow/main.go` with this final version.
+
+**Note:** Lines highlighted in green indicate new or modified code compared to Part 3.
+
+<CodeHighlightBlock lang="go" code={part4Code} title="onchain-calculator/my-calculator-workflow/main.go" />
+
+## Step 5: Sync your dependencies
+
+Because the `main.go` file has been updated to import new packages for the `CalculatorConsumer` binding, you must sync your dependencies.
+
+Run `go mod tidy` to automatically download the new dependencies and update your `go.mod` and `go.sum` files.
+
+```bash
+go mod tidy
+```
+
+## Step 6: Run the simulation and review the output
+
+{/* prettier-ignore */}
+<Aside type="note" title="Funding Your Account">
+  This step submits an onchain transaction, which requires gas. Before running the simulation, verify that the account
+  associated with the private key from [Part
+  1](/cre/getting-started/part-1-project-setup-go#set-up-your-private-key) is funded with sufficient Sepolia ETH.
+  An unfunded account will cause the transaction to fail, often with an error message like `gas required exceeds
+  allowance`.
+  <br/>
+  If you need more Sepolia ETH, go to <a href="https://faucets.chain.link" target="blank">faucets.chain.link</a> to get some Sepolia ETH.
+</Aside>
+
+<Aside type="caution" title="Broadcasting Your Transaction">
+  By default, `cre workflow simulate` performs a **dry run** for onchain write operations. It will simulate the transaction and return a successful response, but will **not** broadcast it to the network, resulting in an empty transaction hash (`0x`).
+
+To execute a real transaction, you must add the `--broadcast` flag to the command.
+
+</Aside>
+
+Run the simulation from your project root directory (the `onchain-calculator/` folder). Because there is only one trigger, the simulator runs it automatically.
+
+```bash
+cre workflow simulate my-calculator-workflow --target staging-settings --broadcast
+```
+
+Your workflow will now show the complete end-to-end execution, including the final log of the `MyResult` struct containing the transaction hash.
+
+```bash
+Workflow compiled
+2025-12-09T13:36:10Z [SIMULATION] Simulator Initialized
+
+2025-12-09T13:36:10Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+2025-12-09T13:36:10Z [USER LOG] msg="Successfully fetched offchain value" result=77
+2025-12-09T13:36:10Z [USER LOG] msg="Successfully read onchain value" result=22
+2025-12-09T13:36:10Z [USER LOG] msg="Final calculated result" result=99
+2025-12-09T13:36:10Z [USER LOG] msg="Updating calculator result" consumerAddress=0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52
+2025-12-09T13:36:10Z [USER LOG] msg="Writing report to consumer contract" offchainValue=77 onchainValue=22 finalResult=99
+2025-12-09T13:36:10Z [USER LOG] msg="Waiting for write report response"
+2025-12-09T13:36:36Z [USER LOG] msg="Write report transaction succeeded" txHash=0xaf3a4bf742bac76361c0eb4bc4ea58290049a3d97e991fb80bf0a8f17719527c
+2025-12-09T13:36:36Z [USER LOG] msg="View transaction at" url=https://sepolia.etherscan.io/tx/0xaf3a4bf742bac76361c0eb4bc4ea58290049a3d97e991fb80bf0a8f17719527c
+2025-12-09T13:36:36Z [USER LOG] msg="Workflow finished successfully!" result="&{OffchainValue:+77 OnchainValue:+22 FinalResult:+99 TxHash:0xaf3a4bf742bac76361c0eb4bc4ea58290049a3d97e991fb80bf0a8f17719527c}"
+
+Workflow Simulation Result:
+ {
+  "FinalResult": 99,
+  "OffchainValue": 77,
+  "OnchainValue": 22,
+  "TxHash": "0xaf3a4bf742bac76361c0eb4bc4ea58290049a3d97e991fb80bf0a8f17719527c"
+}
+
+2025-12-09T13:36:36Z [SIMULATION] Execution finished signal received
+2025-12-09T13:36:36Z [SIMULATION] Skipping WorkflowEngineV2
+```
+
+- **`[USER LOG]`**: You can see all of your `logger.Info()` calls showing the complete workflow execution, including the offchain value (`result=77`), onchain value (`result=22`), final calculation (`result=99`), and the transaction hash.
+- **`[SIMULATION]`**: These are system-level messages from the simulator showing its internal state.
+- **`Workflow Simulation Result`**: This is the final return value of your workflow. The `MyResult` struct contains all the values (77 + 22 = 99) and the transaction hash confirming the write operation succeeded.
+
+## Step 7: Verify the result onchain
+
+### **1. Check the Transaction**
+
+In your terminal output, you'll see a clickable URL to view the transaction on Sepolia Etherscan:
+
+```
+[USER LOG] msg="View transaction at" url=https://sepolia.etherscan.io/tx/0x...
+```
+
+Click the URL (or copy and paste it into your browser) to see the full details of the transaction your workflow submitted.
+
+**What are you seeing on a blockchain explorer?**
+
+You'll notice the transaction's `to` address is not the `CalculatorConsumer` contract you intended to call. Instead, it's to a **Forwarder** contract. Your workflow sends a secure report to the Forwarder, which then verifies the request and makes the final call to the `CalculatorConsumer` on your workflow's behalf. To learn more, see the [Onchain Write guide](/cre/guides/workflow/using-evm-client/onchain-write/overview).
+
+### **2. Check the contract state**
+
+While your wallet interacted with the Forwarder, the `CalculatorConsumer` contract's state was still updated. You can verify this change directly on Etherscan:
+
+- Navigate to the `CalculatorConsumer` contract address: <a href="https://sepolia.etherscan.io/address/0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52#readContract" target="_blank" rel="noopener noreferrer">`0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52`</a>.
+- Expand the `latestResult` function and click **Query**. The values should match the `finalResult`, `offchainValue`, and `onchainValue` from your workflow logs.
+
+This completes the end-to-end loop: triggering a workflow, fetching data, reading onchain state, and verifiably writing the result back to a public blockchain.
+
+To learn more about implementing consumer contracts and the secure write process, see these guides:
+
+- **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)**: Learn how to create your own secure consumer contracts with proper validation.
+- **[Onchain Write Guide](/cre/guides/workflow/using-evm-client/onchain-write/overview-go)**: Dive deeper into the write patterns.
+
+## Next steps
+
+You've now mastered the complete CRE development workflow!
+
+- **[Conclusion & Next Steps](/cre/getting-started/conclusion)**: Review what you've learned and find resources for advanced topics.

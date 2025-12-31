@@ -124,15 +124,17 @@ event ChainRemoved(uint64 remoteChainSelector);
 Emitted when tokens are locked or burned by the pool as part of an outbound cross-chain transfer.
 
 ```solidity
-event LockedOrBurned(address indexed sender, uint256 amount);
+event LockedOrBurned(uint64 indexed remoteChainSelector, address token, address sender, uint256 amount);
 ```
 
 **Parameters**
 
-| Name     | Type      | Indexed | Description                                    |
-| -------- | --------- | ------- | ---------------------------------------------- |
-| `sender` | `address` | Yes     | The address initiating the lock/burn operation |
-| `amount` | `uint256` | No      | The amount of tokens locked or burned          |
+| Name                  | Type      | Indexed | Description                                     |
+| --------------------- | --------- | ------- | ----------------------------------------------- |
+| `remoteChainSelector` | `uint64`  | Yes     | The destination chain selector                  |
+| `token`               | `address` | No      | The address of the token being locked or burned |
+| `sender`              | `address` | No      | The address initiating the lock/burn operation  |
+| `amount`              | `uint256` | No      | The amount of tokens locked or burned           |
 
 ### RemotePoolAdded
 
@@ -154,16 +156,18 @@ event RemotePoolAdded(uint64 indexed remoteChainSelector, bytes remotePoolAddres
 Emitted when tokens are released or minted by the pool as part of an inbound cross-chain transfer.
 
 ```solidity
-event ReleasedOrMinted(address indexed sender, address indexed recipient, uint256 amount);
+event ReleasedOrMinted(uint64 indexed remoteChainSelector, address token, address sender, address recipient, uint256 amount);
 ```
 
 **Parameters**
 
-| Name        | Type      | Indexed | Description                                         |
-| ----------- | --------- | ------- | --------------------------------------------------- |
-| `sender`    | `address` | Yes     | The address initiating the release/mint operation   |
-| `recipient` | `address` | Yes     | The address receiving the released or minted tokens |
-| `amount`    | `uint256` | No      | The amount of tokens released or minted             |
+| Name                  | Type      | Indexed | Description                                         |
+| --------------------- | --------- | ------- | --------------------------------------------------- |
+| `remoteChainSelector` | `uint64`  | Yes     | The source chain selector                           |
+| `token`               | `address` | No      | The address of the token being released or minted   |
+| `sender`              | `address` | No      | The address initiating the release/mint operation   |
+| `recipient`           | `address` | No      | The address receiving the released or minted tokens |
+| `amount`              | `uint256` | No      | The amount of tokens released or minted             |
 
 ### RemotePoolRemoved
 
@@ -223,7 +227,7 @@ event OutboundRateLimitConsumed(uint64 indexed remoteChainSelector, address toke
 | --------------------- | --------- | ------- | --------------------------------------------- |
 | `remoteChainSelector` | `uint64`  | Yes     | The destination chain selector                |
 | `token`               | `address` | No      | The address of the token being sent           |
-| `amount`              | `uint64`  | No      | The amount of tokens consuming the rate limit |
+| `amount`              | `uint256` | No      | The amount of tokens consuming the rate limit |
 
 ### InboundRateLimitConsumed
 
@@ -1322,13 +1326,13 @@ Processes token locking with security validation:
 
 | Name           | Type                                                                        | Description                             |
 | -------------- | --------------------------------------------------------------------------- | --------------------------------------- |
-| `lockOrBurnIn` | [`Pool.LockOrBurnInV1`](/ccip/api-reference/evm/v1.6.0/pool#lockorburninv1) | Input parameters for the lock operation |
+| `lockOrBurnIn` | [`Pool.LockOrBurnInV1`](/ccip/api-reference/evm/v1.6.1/pool#lockorburninv1) | Input parameters for the lock operation |
 
 **Returns**
 
 | Type                                                                          | Description                                      |
 | ----------------------------------------------------------------------------- | ------------------------------------------------ |
-| [`Pool.LockOrBurnOutV1`](/ccip/api-reference/evm/v1.6.0/pool#lockorburnoutv1) | Contains destination token address and pool data |
+| [`Pool.LockOrBurnOutV1`](/ccip/api-reference/evm/v1.6.1/pool#lockorburnoutv1) | Contains destination token address and pool data |
 
 ### releaseOrMint
 
@@ -1355,13 +1359,13 @@ Processes token release with security validation:
 
 | Name              | Type                                                                              | Description                                |
 | ----------------- | --------------------------------------------------------------------------------- | ------------------------------------------ |
-| `releaseOrMintIn` | [`Pool.ReleaseOrMintInV1`](/ccip/api-reference/evm/v1.6.0/pool#releaseormintinv1) | Input parameters for the release operation |
+| `releaseOrMintIn` | [`Pool.ReleaseOrMintInV1`](/ccip/api-reference/evm/v1.6.1/pool#releaseormintinv1) | Input parameters for the release operation |
 
 **Returns**
 
 | Type                                                                                | Description                                        |
 | ----------------------------------------------------------------------------------- | -------------------------------------------------- |
-| [`Pool.ReleaseOrMintOutV1`](/ccip/api-reference/evm/v1.6.0/pool#releaseormintoutv1) | Contains the final amount released in local tokens |
+| [`Pool.ReleaseOrMintOutV1`](/ccip/api-reference/evm/v1.6.1/pool#releaseormintoutv1) | Contains the final amount released in local tokens |
 
 ### removeRemotePool
 

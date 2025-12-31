@@ -1,0 +1,146 @@
+---
+import DocsLayout from "~/layouts/DocsLayout.astro"
+import { getCollection, render } from "astro:content"
+
+export async function getStaticPaths() {
+  const allEntries = await getCollection("cre")
+  const pagesByPageId = new Map<string, any[]>()
+  const standalonePages: any[] = []
+
+  // Group entries by pageId or treat as standalone
+  for (const entry of allEntries) {
+    if (entry.data.pageId && entry.data.sdkLang) {
+      if (!pagesByPageId.has(entry.data.pageId)) {
+        pagesByPageId.set(entry.data.pageId, [])
+      }
+      pagesByPageId.get(entry.data.pageId)!.push(entry)
+    } else {
+      standalonePages.push(entry)
+    }
+  }
+
+  const paths: any[] = []
+
+  // Create routes for grouped pages (with language-specific files)
+  for (const entries of pagesByPageId.values()) {
+    const goEntry = entries.find((e) => e.data.sdkLang === "go")
+    const tsEntry = entries.find((e) => e.data.sdkLang === "ts")
+
+    if (goEntry && tsEntry) {
+      // Create canonical URL (without language suffix) that redirects
+      const canonicalPath = goEntry.id.replace(/-go(\.mdx?)?$/, "")
+      paths.push({
+        params: { id: canonicalPath },
+        props: {
+          entry: null,
+          goEntry,
+          tsEntry,
+          isCanonical: true,
+        },
+      })
+
+      // Create language-specific URLs: /cre/page-go and /cre/page-ts
+      paths.push({
+        params: { id: goEntry.id },
+        props: {
+          entry: goEntry,
+          goEntry,
+          tsEntry,
+          isCanonical: false,
+        },
+      })
+
+      paths.push({
+        params: { id: tsEntry.id },
+        props: {
+          entry: tsEntry,
+          goEntry,
+          tsEntry,
+          isCanonical: false,
+        },
+      })
+    }
+  }
+
+  // Standalone pages (single file, no language variants)
+  standalonePages.forEach((entry) => {
+    const routeId = entry.id.replace(/\.(md|mdx)$/, "")
+    paths.push({
+      params: { id: routeId },
+      props: {
+        entry,
+        isCanonical: false,
+        goEntry: null,
+        tsEntry: null,
+      },
+    })
+  })
+
+  return paths
+}
+
+interface Props {
+  entry: Awaited<ReturnType<typeof getCollection<"cre">>>[number] | null
+  goEntry: Awaited<ReturnType<typeof getCollection<"cre">>>[number] | null
+  tsEntry: Awaited<ReturnType<typeof getCollection<"cre">>>[number] | null
+  isCanonical: boolean
+}
+
+const { entry, goEntry, tsEntry, isCanonical } = Astro.props
+
+// Determine what to render
+let Content, headings, currentEntry
+
+if (isCanonical) {
+  // Canonical URL - will redirect client-side based on preference
+  currentEntry = goEntry || tsEntry!
+  const renderResult = await render(currentEntry)
+  Content = () => null // Don't render content, just redirect
+  headings = renderResult.headings
+} else {
+  // Language-specific URL - render the content
+  currentEntry = entry!
+  const renderResult = await render(currentEntry)
+  Content = renderResult.Content
+  headings = renderResult.headings
+}
+---
+
+<DocsLayout frontmatter={currentEntry.data} {headings}>
+  {/* noindex for redirect pages */}
+  {isCanonical && <meta name="robots" content="noindex, follow" slot="head-scripts" />}
+
+  {
+    isCanonical && (
+      <script
+        is:inline
+        slot="head-scripts"
+        define:vars={{ goUrl: `/cre/${goEntry!.id}`, tsUrl: `/cre/${tsEntry!.id}` }}
+        set:html={`(function(){try{var s=localStorage.getItem("docs-language-preference"),l=s==="go"||s==='"go"'?"go":"ts",u=l==="go"?goUrl:tsUrl;u&&window.location.replace(u)}catch(e){tsUrl&&window.location.replace(tsUrl)}})();`}
+      />
+    )
+  }
+
+  {
+    !isCanonical && goEntry && tsEntry && (
+      <script
+        is:inline
+        slot="head-scripts"
+        define:vars={{ currentLang: entry!.data.sdkLang }}
+        set:html={`(function(){try{localStorage.setItem("docs-language-preference",currentLang)}catch(e){}})();`}
+      />
+    )
+  }
+
+  {isCanonical ? <div /> : <Content />}
+</DocsLayout>
+
+{
+  !isCanonical && goEntry && tsEntry && (
+    <script
+      type="module"
+      define:vars={{ goUrl: `/cre/${goEntry.id}`, tsUrl: `/cre/${tsEntry.id}` }}
+      set:html={`window.addEventListener("languageChanged",function(e){try{var l=e.detail.language,u=l==="go"?goUrl:tsUrl;u&&(window.location.href=u)}catch(e){console.error("Language change error:",e)}});`}
+    />
+  )
+}

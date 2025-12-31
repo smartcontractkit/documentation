@@ -51,9 +51,9 @@ const data = await response.json()
       }
 
       if (isAaveSVR(feed)) {
-        feedGroups[baseName].aaveAddress = feed.secondaryProxyAddress
+        feedGroups[baseName].aaveAddress = feed.contractAddress
       } else if (isSharedSVR(feed)) {
-        feedGroups[baseName].svrAddress = feed.secondaryProxyAddress
+        feedGroups[baseName].svrAddress = feed.contractAddress
       }
     })
 
@@ -205,7 +205,7 @@ Traditional MEV searching depends on spotting oracle price updates in the public
 
 ### Example Application: Aave Liquidations
 
-Aave is a lending protocol where collateralized positions must remain above a [threshold](https://aave.com/docs/concepts/liquidations) called their health factor. When an oracle price update reveals a borrower is undercollateralized, the position becomes eligible for liquidation. The searcher liquidates the position in exchange for a liquidation bonus reward. With Chainlink SVR, a searcher's liquidation transaction can be bundled with the new SVR price update through Flashbots.
+Aave is a lending protocol where collateralized positions must remain above a [threshold](https://aave.com/help/borrowing/liquidations) called their health factor. When an oracle price update reveals a borrower is undercollateralized, the position becomes eligible for liquidation. The searcher liquidates the position in exchange for a liquidation bonus reward. With Chainlink SVR, a searcher's liquidation transaction can be bundled with the new SVR price update through Flashbots.
 
 For more background on how Aave liquidations work, see [Aave Documentation](https://docs.aave.com/). To understand how Chainlink SVR adds a structured auction for these Aave liquidation opportunities, read the following sections.
 
@@ -376,6 +376,15 @@ Once you've detected an SVR update and identified a profitable liquidation oppor
 - **Bidding Strategy**: Block builders typically select the highest-paying bundle. Your bid must be competitive while leaving room for profit. The bundle's economic value comes from:
   - The gas price of your transaction
   - Any explicit payment you include to the builder
+
+  **How to submit your bid**: Within your backrun transaction itself, send ETH to `block.coinbase` (the block builder's address). The higher the payment sent to `block.coinbase`, the more competitive your bundle becomes. Example:
+
+  ```solidity
+  // Within your liquidation transaction, send payment to block.coinbase
+  payable(block.coinbase).transfer(bidAmount);
+  ```
+
+  You pay your full bid amount to `block.coinbase`. The revenue split between Chainlink and the DeFi protocol occurs as part of the SVR system.
 
 - **Inclusion Parameters**: Specify the target block range for your bundle to be considered
   - Typically target the next block plus a small range for redundancy

@@ -1,0 +1,62 @@
+---
+section: cre
+date: Last Modified
+title: "Updating Deployed Workflows"
+metadata:
+  description: "Update your live workflows: learn how to safely deploy new versions and replace your running workflows without downtime."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+When you update a deployed workflow, you redeploy it with the same workflow name. The new deployment replaces the previous version in the Workflow Registry contract. Currently, CRE does not maintain version history—each deployment overwrites the previous one.
+
+## Prerequisites
+
+Before updating a deployed workflow, ensure you have:
+
+- **A [deployed workflow](/cre/guides/operations/deploying-workflows)**: The workflow must already exist in the Workflow Registry.
+- **Workflow ownership**: You must be the owner of the workflow (the account that originally deployed it). Only the workflow owner can update it.
+- **Local workflow folder**: You must run this command from your project directory. The CLI reads the workflow name and configuration from your `workflow.yaml` file to identify which workflow to update.
+- **[Logged in](/cre/reference/cli/authentication#cre-login)**: Authenticated with the platform by running `cre login`. To check if you are logged in, run `cre whoami`.
+- **A funded wallet**: The account must be funded with ETH on Ethereum Mainnet to pay the gas fees for the onchain transaction to the Workflow Registry contract.
+
+## Updating a workflow
+
+To update a workflow, simply redeploy it using the same workflow name:
+
+```bash
+cre workflow deploy my-workflow --target production-settings
+```
+
+### What happens during an update
+
+1. **Compilation**: Your updated workflow code is compiled to WASM
+1. **Upload**: The new binary and configuration files are uploaded to the CRE Storage Service
+1. **Registration**: A new registration transaction is sent to the Workflow Registry contract
+1. **Replacement**: The previous version is replaced with the new deployment
+
+{/* prettier-ignore */}
+<Aside type="caution" title="No version history">
+  CRE does not currently maintain workflow version history. When you redeploy a workflow with the same name, it completely replaces the previous deployment. You cannot roll back to a previous version through the CLI.
+</Aside>
+
+## Best practices for updates
+
+1. **Test locally first**: Always test your changes using `cre workflow simulate` before deploying to production
+1. **Pause before updating** (optional): If you want to ensure no triggers fire during the update, pause the workflow first using `cre workflow pause`
+1. **Monitor after deployment**: Check that the updated workflow executes correctly after deployment
+1. **Keep track of changes**: Maintain your own version control (e.g., Git tags) to track workflow versions
+
+## Using multi-sig wallets
+
+The `deploy` command supports multi-sig wallets through the `--unsigned` flag. When using this flag, the CLI generates raw transaction data that you can submit through your multi-sig wallet interface instead of sending the transaction directly.
+
+For complete setup instructions, configuration requirements, and step-by-step guidance, see [Using Multi-sig Wallets](/cre/guides/operations/using-multisig-wallets).
+
+## Learn more
+
+- [Deploying Workflows](/cre/guides/operations/deploying-workflows) — Learn about the initial deployment process
+- [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows) — Control workflow execution state
+- [Deleting Workflows](/cre/guides/operations/deleting-workflows) — Remove workflows from the registry

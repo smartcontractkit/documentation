@@ -123,7 +123,7 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                     <td>{network.tokenDecimals}</td>
                     <td data-clipboard-type="token">
                       <Address
-                        contractUrl={getExplorerAddressUrl(network.explorer)(network.tokenAddress)}
+                        contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.tokenAddress)}
                         address={network.tokenAddress}
                         endLength={6}
                       />
@@ -131,7 +131,10 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                     <td>{tokenPoolDisplay(network.tokenPoolType)}</td>
                     <td data-clipboard-type="token-pool">
                       <Address
-                        contractUrl={getExplorerAddressUrl(network.explorer)(network.tokenPoolAddress)}
+                        contractUrl={getExplorerAddressUrl(
+                          network.explorer,
+                          network.chainType
+                        )(network.tokenPoolAddress)}
                         address={network.tokenPoolAddress}
                         endLength={6}
                       />
