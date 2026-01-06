@@ -22,8 +22,6 @@ import { Callout } from "@components/Callout/Callout.tsx"
 import { Accordion, CodeSample, ClickToZoom, CopyText, Aside } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-<CcipCommon callout="talkToExpert" />
-
 **Build and run a secure cross-chain messaging workflow between two EVM chains using Chainlink CCIP.**
 
 In this guide, you will:
@@ -302,8 +300,13 @@ This script does the following:
 npx hardhat run scripts/send-cross-chain-message.ts
 ```
 
-4. Wait for a few minutes for the message to be delivered to the receiver contract.
-   Then create a new file named `verify-cross-chain-message.ts` in the `scripts` directory and paste the following code inside it:
+</Accordion>
+
+<Accordion title="Verify message delivery" number={4}>
+
+1. Wait for a few minutes for the message to be delivered to the receiver contract.
+
+2. Create a new file named `verify-cross-chain-message.ts` in the `scripts` directory and paste the following code inside it:
 
 <Callout type="note" title="Paste the Receiver contract address here">
   The second script will call the `getLastReceivedMessageDetails` function on the receiver contract to verify if the
@@ -344,13 +347,13 @@ This script does the following:
 - Checks if any message has been received.
 - Prints the message ID and text of the last received message.
 
-5. Run the following command to verify the cross-chain message:
+3. Run the following command to verify the cross-chain message:
 
 ```bash filename="terminal"
 npx hardhat run scripts/verify-cross-chain-message.ts
 ```
 
-6. You should see the message ID and text of the last received message printed in the terminal.
+4. You should see the message ID and text of the last received message printed in the terminal.
 
 </Accordion>
 
@@ -548,7 +551,11 @@ forge script script/SendCrossChainMessage.s.sol:SendCrossChainMessage --broadcas
   by using the `-vvvv` verbosity flag.
 </Aside>
 
-4. Create a new file named `VerifyCrossChainMessage.s.sol` in the `script` directory and paste the following code inside it:
+</Accordion>
+
+<Accordion title="Verify message delivery" number={4}>
+
+1. Create a new file named `VerifyCrossChainMessage.s.sol` in the `script` directory and paste the following code inside it:
 
 ```solidity filename="script/VerifyCrossChainMessage.s.sol"
 // SPDX-License-Identifier: UNLICENSED
@@ -589,7 +596,7 @@ contract VerifyCrossChainMessage is Script {
 }
 ```
 
-5. Run the following command to verify the cross-chain message:
+2. Run the following command to verify the cross-chain message:
 
 ```bash filename="terminal"
 forge script script/VerifyCrossChainMessage.s.sol:VerifyCrossChainMessage
