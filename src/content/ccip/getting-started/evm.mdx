@@ -148,31 +148,42 @@ Create a project with the following options:
 
 ```bash filename="terminal"
 npm install @chainlink/contracts-ccip @chainlink/contracts @openzeppelin/contracts viem dotenv
-npm install --save-dev @nomicfoundation/hardhat-viem
+npm install --save-dev @nomicfoundation/hardhat-viem @nomicfoundation/hardhat-keystore
 ```
 
-<Callout type="danger" title="PLEASE DON'T USE PRIVATE KEYS WITH MAINNET FUNDS">
-  Private keys stored in `.env` files have been compromised and accidently pushed online before. Please be VERY CAREFUL
-  while choosing which private key to use for this tutorial.
-</Callout>
+<Aside type="caution" title="WE HIGHLY RECOMMEND NOT USING PLAINTEXT PRIVATE KEYS">
+  It is not recommended to store your sensitive keys in plaintext in `.env` files.
+  In this tutorial we use in-built keystores for both Hardhat and Foundry for their
+  respective projects.
 
-3. Create a `.env` file with the following variables:
+</Aside>
 
-```env filename=".env"
-PRIVATE_KEY=0x.....
-SEPOLIA_RPC_URL=https.....
-FUJI_RPC_URL=https.....
+3. Configure your environment variables using the `hardhat-keystore` plugin.
+   If you have followed the tutorial you have already installed the required package.
+   Follow [this page in Hardhat's documentation](https://hardhat.org/docs/guides/configuration-variables) to configure the environment variables:
+
+```env
+SEPOLIA_RPC_URL
+FUJI_RPC_URL
+PRIVATE_KEY
 ```
+
+The output of `npx hardhat keystore list ` should look like this:
+
+      <ClickToZoom
+        src="/images/ccip/tutorials/ccip-getting-started-evm-1.png"
+        alt="Hardhat keystore list command output"
+      />
 
 4. Update `hardhat.config.ts` to use your environment variables and the `hardhat-viem` plugin:
 
 ```typescript filename="hardhat.config.ts"
-import "dotenv/config"
 import { configVariable, defineConfig } from "hardhat/config"
+import hardhatKeystore from "@nomicfoundation/hardhat-keystore"
 import hardhatViem from "@nomicfoundation/hardhat-viem"
 
 export default defineConfig({
-  plugins: [hardhatViem],
+  plugins: [hardhatViem, hardhatKeystore],
   solidity: {
     version: "0.8.24",
   },
