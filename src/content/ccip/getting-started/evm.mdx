@@ -396,7 +396,20 @@ forge init
 forge install smartcontractkit/chainlink-ccip smartcontractkit/chainlink-evm OpenZeppelin/openzeppelin-contracts
 ```
 
-3. Configure the remappings so that your `foundry.toml` file looks like this:
+3. Use Foundry's `cast` command to create a new keystore for your `PRIVATE_KEY`:
+
+```bash filename="terminal"
+cast wallet import --interactive PRIVATE_KEY
+```
+
+And use the `cast wallet list` command to verify:
+
+      <ClickToZoom
+        src="/images/ccip/tutorials/ccip-getting-started-evm-2.png"
+        alt="Hardhat keystore list command output"
+      />
+
+4. Configure the remappings so that your `foundry.toml` file looks like this:
 
 ```toml filename="foundry.toml"
 [profile.default]
@@ -415,21 +428,14 @@ remappings = [
 
 # RPC URLs will be fed to our script via Foundry's config file
 [rpc_endpoints]
-sepolia = "${SEPOLIA_RPC_URL}"
-fuji = "${FUJI_RPC_URL}"
+sepolia = "ENTER_YOUR_SEPOLIA_RPC_URL_HERE"
+fuji = "ENTER_YOUR_FUJI_RPC_URL_HERE"
 ```
 
-4. Create a `.env` at the root of the project with the following variables:
-
-```env filename=".env"
-PRIVATE_KEY=0x...
-SEPOLIA_RPC_URL=https://...
-FUJI_RPC_URL=https://...
-```
-
-<Aside type="note">
-  You might need to run `source .env` to load the environment variables into your terminal session to access them in
-  your script.
+<Aside type="note" title="Note">
+  You will notice that while we pulled in our RPC URLs via encrypted keystore variables in the Hardhat project, we only
+  encrypt the `PRIVATE_KEY` in Foundry. This is because as of of writing, Foundry supports keystore encryption only for
+  Private keys, and not generic strings.
 </Aside>
 
 </Accordion>
@@ -489,8 +495,6 @@ contract SendCrossChainMessage is Script {
     uint256 ONE_LINK = 1e18;
 
     function run() public {
-        // Load private key from env file
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
 
         // Load form configs from foundry.toml
         uint256 fujiFork = vm.createFork(vm.rpcUrl("fuji"));
@@ -501,7 +505,7 @@ contract SendCrossChainMessage is Script {
         // Connect to Fuji Network
         console.log("Connecting to Avalanche Fuji...");
         vm.selectFork(fujiFork);
-        vm.startBroadcast(deployerPrivateKey);
+        vm.startBroadcast();
 
         // Deploy Sender contract
         console.log("\n[Step 1] Deploying Sender contract on Avalanche Fuji...");
@@ -525,7 +529,7 @@ contract SendCrossChainMessage is Script {
         // Connect to Sepolia Network
         console.log("Connecting to Ethereum Sepolia...");
         vm.selectFork(sepoliaFork);
-        vm.startBroadcast(deployerPrivateKey);
+        vm.startBroadcast();
 
         // Deploy Receiver contract
 
@@ -544,7 +548,7 @@ contract SendCrossChainMessage is Script {
 
         // Step 4: Send cross-chain message (Fuji -> Sepolia)
         vm.selectFork(fujiFork);
-        vm.startBroadcast(deployerPrivateKey);
+        vm.startBroadcast();
 
         // Send cross-chain message
         console.log("Sending cross-chain message from Fuji to Sepolia...");
@@ -566,12 +570,12 @@ contract SendCrossChainMessage is Script {
 3. Run the following command to send the cross-chain message:
 
 ```bash filename="terminal"
-forge script script/SendCrossChainMessage.s.sol:SendCrossChainMessage --broadcast
+forge script script/SendCrossChainMessage.s.sol:SendCrossChainMessage --broadcast --multi --account PRIVATE_KEY
 ```
 
 <Aside type="note">
   1. The `--broadcast` flag is used to broadcast transactions to an actual network. 2. You can get detailed runtime logs
-  by using the `-vvvv` verbosity flag.
+  by using the `-vvvv` verbosity flag. 2. The `--multi` flag is used to send transactions to multiple chains.
 </Aside>
 
 </Accordion>
