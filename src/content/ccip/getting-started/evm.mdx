@@ -40,12 +40,13 @@ You will need:
 - Choose one of the following development environments:
   - **[Hardhat](https://hardhat.org/docs/getting-started)**
   - **[Foundry](https://book.getfoundry.sh/)**
+  - **[Remix](https://remix.ethereum.org/)**
 
 ## Examine the example code
 
 This section goes through the code for the `sender` and `receiver` contracts
 needed to complete the tutorial.
-We will use the same contracts for both Hardhat and Foundry.
+We will use the same contracts for all three development environments.
 
 <br />
 
@@ -623,5 +624,144 @@ contract VerifyCrossChainMessage is Script {
 ```bash filename="terminal"
 forge script script/VerifyCrossChainMessage.s.sol:VerifyCrossChainMessage
 ```
+
+</Accordion>
+
+### Remix
+
+Best for **Web3-native** workflows that prefer a browser-based IDE.
+
+<br />
+
+<Accordion title="Deploy the sender contract" number={1}>
+
+Deploy the `Sender.sol` contract on _Avalanche Fuji_. To see a detailed explanation of this contract, read the [Code Explanation](#sender-code) section.
+
+1. [Open the Sender.sol contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/CCIP/Sender.sol) in Remix.
+
+   <CodeSample src="samples/CCIP/Sender.sol" showButtonOnly={true} />
+
+2. Compile the contract.
+
+3. Deploy the sender contract on _Avalanche Fuji_:
+   1. Open MetaMask and select the _Avalanche Fuji_ network.
+   2. In Remix under the **Deploy & Run Transactions** tab, select _Injected Provider - MetaMask_ in the **Environment** list. Remix will use the MetaMask wallet to communicate with _Avalanche Fuji_.
+   3. Under the **Deploy** section, fill in the router address and the LINK token contract addresses for your specific blockchain. You can find both of these addresses on the [CCIP Directory](/ccip/directory). The LINK token contract address is also listed on the [LINK Token Contracts](/resources/link-token-contracts) page. For _Avalanche Fuji_, the router address is <CopyText text="0xF694E193200268f9a4868e4Aa017A0118C9a8177" code/> and the LINK address is <CopyText text="0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" code/>.
+
+      <ClickToZoom
+        src="/images/ccip/tutorials/deploy-sender-avalanche-fuji.webp"
+        alt="Chainlink CCIP deploy sender Avalanche Fuji"
+      />
+
+   4. Click the **transact** button to deploy the contract. MetaMask prompts you to confirm the transaction. Check the transaction details to make sure you are deploying the contract to _Avalanche Fuji_.
+
+   5. After you confirm the transaction, the contract address appears in the **Deployed Contracts** list. Copy your contract address.
+
+      <ClickToZoom
+        src="/images/ccip/tutorials/deployed-sender-avalanche-fuji.webp"
+        alt="Chainlink CCIP Deployed sender Avalanche Fuji"
+        style="max-width: 70%;"
+      />
+
+   6. Open MetaMask and send <CopyText text="70" code/> LINK to the contract address that you copied. Your contract will pay CCIP fees in LINK.
+
+      **Note:** This transaction fee is significantly higher than normal due to gas spikes on Sepolia. To run this example, you can get additional testnet LINK
+      from [faucets.chain.link](https://faucets.chain.link) or use a supported testnet other than Sepolia.
+
+</Accordion>
+
+<Accordion title="Deploy the receiver contract" number={2}>
+
+Deploy the receiver contract on _Ethereum Sepolia_. You will use this contract to receive data from the sender that you deployed on _Avalanche Fuji_. To see a detailed explanation of this contract, read the [Code Explanation](#receiver-code) section.
+
+1. [Open the Receiver.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/CCIP/Receiver.sol) contract in Remix.
+
+   <CodeSample src="samples/CCIP/Receiver.sol" showButtonOnly={true} />
+
+2. Compile the contract.
+
+3. Deploy the receiver contract on _Ethereum Sepolia_:
+   1. Open MetaMask and select the _Ethereum Sepolia_ network.
+
+   2. In Remix under the **Deploy & Run Transactions** tab, make sure the **Environment** is still set to _Injected Provider - MetaMask_.
+   3. Under the **Deploy** section, fill in the router address field. For _Ethereum Sepolia_, the Router address is <CopyText text="0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59" code/>. You can find the addresses for each network on the [CCIP Directory](/ccip/directory).
+
+      <ClickToZoom
+        src="/images/ccip/tutorials/deploy-receiver-sepolia.webp"
+        alt="Chainlink CCIP Deploy receiver Sepolia"
+      />
+
+   4. Click the **Deploy** button to deploy the contract. MetaMask prompts you to confirm the transaction. Check the transaction details to make sure you are deploying the contract to _Ethereum Sepolia_.
+
+   5. After you confirm the transaction, the contract address appears as the second item in the **Deployed Contracts** list. Copy this contract address.
+
+      <ClickToZoom
+        src="/images/ccip/tutorials/deployed-receiver-sepolia.webp"
+        alt="Chainlink CCIP deployed receiver Sepolia"
+        style="max-width: 70%;"
+      />
+
+You now have one _sender_ contract on _Avalanche Fuji_ and one _receiver_ contract on _Ethereum Sepolia_. You sent `70` LINK to the _sender_ contract to pay the CCIP fees. Next, send data from the sender contract to the receiver contract.
+
+</Accordion>
+
+<Accordion title="Send data" number={3}>
+Send a `Hello World!` string from your contract on _Avalanche Fuji_ to the contract you deployed on _Ethereum Sepolia_:
+
+1.  Open MetaMask and select the _Avalanche Fuji_ network.
+2.  In Remix under the **Deploy & Run Transactions** tab, expand the first contract in the **Deployed Contracts** section.
+3.  Expand the **sendMessage** function and fill in the following arguments:
+
+    | Argument                 | Description                                                                                                                         | Value (_Ethereum Sepolia_)                   |
+    | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+    | destinationChainSelector | CCIP Chain identifier of the target blockchain. You can find each network's chain selector on the [CCIP Directory](/ccip/directory) | <CopyText text="16015286601757825753" code/> |
+    | receiver                 | The destination smart contract address                                                                                              | Your deployed contract address               |
+    | text                     | Any `string`                                                                                                                        | <CopyText text="Hello World!" code/>         |
+
+    <ClickToZoom
+      src="/images/ccip/tutorials/fuji-sendmessage.webp"
+      alt="Chainlink CCIP Sepolia send message"
+      style="max-width: 70%;"
+    />
+
+4.  Click the **transact** button to run the function. MetaMask prompts you to confirm the transaction.
+
+    <CcipCommon callout="gasSpike" />
+
+5.  After the transaction is successful, note the transaction hash. Here is an [example](https://testnet.snowtrace.io/tx/0x113933ec9f1b2e795a1e2f564c9d452db92d3e9a150545712687eb546916e633) of a successful transaction on _Avalanche Fuji_.
+
+After the transaction is finalized on the source chain, it will take a few minutes for CCIP to deliver the data to _Ethereum Sepolia_ and call the `ccipReceive` function on your receiver contract. You can use the [CCIP explorer](https://ccip.chain.link/) to see the status of your CCIP transaction and then read data stored by your receiver contract.
+
+6. Open the [CCIP explorer](https://ccip.chain.link/) and use the transaction hash that you copied to search for your cross-chain transaction. The explorer provides several details about your request.
+
+   <ClickToZoom
+     src="/images/ccip/tutorials/ccip-explorer-tx-details.webp"
+     alt="Chainlink CCIP Explorer transaction details"
+   />
+
+7. When the status of the transaction is marked with a "Success" status, the CCIP transaction and the destination transaction are complete.
+
+   <ClickToZoom
+     src="/images/ccip/tutorials/ccip-explorer-tx-details-success.webp"
+     alt="Chainlink CCIP Explorer transaction details success"
+   />
+
+</Accordion>
+
+<Accordion title="Read data" number={3}>
+
+Read data stored by the receiver contract on _Ethereum Sepolia_:
+
+1. Open MetaMask and select the _Ethereum Sepolia_ network.
+2. In Remix under the **Deploy & Run Transactions** tab, expand the receiver contract deployed on _Ethereum Sepolia_.
+3. Click the **getLastReceivedMessageDetails** function button to read the stored data. In this example, it should be "Hello World!".
+
+   <ClickToZoom
+     src="/images/ccip/tutorials/sepolia-getmessagedetails.webp"
+     alt="Chainlink CCIP Sepolia message details"
+     style="max-width: 70%;"
+   />
+
+Congratulations! You just sent your first cross-chain data using CCIP. Next, examine the example code to learn how this contract works.
 
 </Accordion>
