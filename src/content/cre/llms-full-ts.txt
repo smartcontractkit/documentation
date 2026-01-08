@@ -2004,7 +2004,7 @@ abstract contract ReceiverTemplate is IReceiver, Ownable {
 
     // Optional permission fields (all default to zero = disabled)
     address private s_expectedAuthor; // If set, only reports from this workflow owner are accepted
-    bytes10 private s_expectedWorkflowName; // Disabled by default - see setExpectedWorkflowName()
+    bytes10 private s_expectedWorkflowName; // Only validated when s_expectedAuthor is also set
     bytes32 private s_expectedWorkflowId; // If set, only reports from this specific workflow ID are accepted
 
     // Hex character lookup table for bytes-to-hex conversion
@@ -2016,6 +2016,7 @@ abstract contract ReceiverTemplate is IReceiver, Ownable {
     error InvalidAuthor(address received, address expected);
     error InvalidWorkflowName(bytes10 received, bytes10 expected);
     error InvalidWorkflowId(bytes32 received, bytes32 expected);
+    error WorkflowNameRequiresAuthorValidation();
 
     // Events
     event ForwarderAddressUpdated(address indexed previousForwarder, address indexed newForwarder);
@@ -2067,9 +2068,9 @@ abstract contract ReceiverTemplate is IReceiver, Ownable {
             revert InvalidSender(msg.sender, s_forwarderAddress);
         }
 
-        // Security Checks 2-3: Verify workflow identity - ID and/or owner (if any are configured)
-        if (s_expectedWorkflowId != bytes32(0) || s_expectedAuthor != address(0)) {
-            (bytes32 workflowId, , address workflowOwner) = _decodeMetadata(metadata);
+        // Security Checks 2-4: Verify workflow identity - ID, owner, and/or name (if any are configured)
+        if (s_expectedWorkflowId != bytes32(0) || s_expectedAuthor != address(0) || s_expectedWorkflowName != bytes10(0)) {
+            (bytes32 workflowId, bytes10 workflowName, address workflowOwner) = _decodeMetadata(metadata);
 
             if (s_expectedWorkflowId != bytes32(0) && workflowId != s_expectedWorkflowId) {
                 revert InvalidWorkflowId(workflowId, s_expectedWorkflowId);
@@ -2078,23 +2079,25 @@ abstract contract ReceiverTemplate is IReceiver, Ownable {
                 revert InvalidAuthor(workflowOwner, s_expectedAuthor);
             }
 
-            // ====================================================================================
-            // WORKFLOW NAME VALIDATION - DISABLED BY DEFAULT
-            // ====================================================================================
-            // Workflow name validation is disabled by default for security reasons: the workflow
-            // name uses only 40-bit truncation (bytes10), making collision attacks computationally
-            // feasible. Additionally, workflow names are not guaranteed to be
-            // unique. Only enable this check if you fully understand these limitations and use
-            // it in combination with workflowId or author validation.
-            //
-            // To enable this validation:
-            // 1. Update the _decodeMetadata call above to extract workflowName:
-            //    (bytes32 workflowId, bytes10 workflowName, address workflowOwner) = _decodeMetadata(metadata);
-            // 2. Uncomment the validation check below:
-            //    if (s_expectedWorkflowName != bytes10(0) && workflowName != s_expectedWorkflowName) {
-            //        revert InvalidWorkflowName(workflowName, s_expectedWorkflowName);
-            //    }
-            // ====================================================================================
+            // =========================================================================================
+            // WORKFLOW NAME VALIDATION - REQUIRES AUTHOR VALIDATION
+            // =========================================================================================
+            // Do not rely on workflow name validation alone. Workflow names are unique
+            // per owner, but not across owners.
+            // Furthermore, workflow names use 40-bit truncation (bytes10), making collisions possible.
+            // Therefore, workflow name validation REQUIRES author (workflow owner) validation.
+            // The code enforces this dependency at runtime.
+            // =========================================================================================
+            if (s_expectedWorkflowName != bytes10(0)) {
+                // Author must be configured if workflow name is used
+                if (s_expectedAuthor == address(0)) {
+                    revert WorkflowNameRequiresAuthorValidation();
+                }
+                // Validate workflow name matches (author already validated above)
+                if (workflowName != s_expectedWorkflowName) {
+                    revert InvalidWorkflowName(workflowName, s_expectedWorkflowName);
+                }
+            }
         }
 
         _processReport(report);
@@ -2127,10 +2130,11 @@ abstract contract ReceiverTemplate is IReceiver, Ownable {
 
     /// @notice Updates the expected workflow name from a plaintext string
     /// @param _name The workflow name as a string (use empty string "" to disable this check)
-    /// @dev WARNING: This validation is DISABLED BY DEFAULT in onReport().
-    ///      The workflow name uses only 40-bit truncation, making collision attacks feasible.
-    ///      Only enable this check if you fully understand these limitations and use it in
-    ///      combination with setExpectedWorkflowId() and/or setExpectedAuthor().
+    /// @dev IMPORTANT: Workflow name validation REQUIRES author validation to be enabled.
+    ///      The workflow name uses only 40-bit truncation, making collision attacks feasible
+    ///      when used alone. However, since workflow names are unique per owner, validating
+    ///      both the name AND the author address provides adequate security.
+    ///      You must call setExpectedAuthor() before or after calling this function.
     ///      The name is hashed using SHA256 and truncated to bytes10.
     function setExpectedWorkflowName(string calldata _name) external onlyOwner {
         bytes10 previousName = s_expectedWorkflowName;
@@ -2261,7 +2265,7 @@ myConsumer.setExpectedWorkflowId(0x1234...); // Your specific workflow ID
 // Example: Add workflow owner check
 myConsumer.setExpectedAuthor(0xYourAddress...);
 
-// Example: Enable workflow name check (not recommended as sole validation)
+// Example: Add workflow name check (requires author validation to be set)
 myConsumer.setExpectedWorkflowName("my_workflow");
 
 // Example: Disable a check later
@@ -2281,7 +2285,7 @@ myConsumer.setExpectedWorkflowName(""); // Empty string disables the check
 - Validates the caller address against the configured forwarder (required at deployment)
 - Validates the workflow ID (if `expectedWorkflowId` is configured)
 - Validates the workflow owner (if `expectedAuthor` is configured)
-- Stores the workflow name (if `expectedWorkflowName` is configured, but validation is disabled by default)
+- Validates the workflow name (if both `expectedWorkflowName` AND `expectedAuthor` are configured)
 - Implements ERC165 interface detection
 - Provides access control via OpenZeppelin's `Ownable`
 - Calls your `_processReport` function with validated data
@@ -2306,17 +2310,20 @@ The `workflowName` field in the metadata uses the **`bytes10`** type rather than
 This encoding ensures consistent, fixed-size representation regardless of the original workflow name length.
 
 
-<Aside type="caution" title="Workflow name validation is disabled by default">
-  The workflow name check is **not enabled by default** in `ReceiverTemplate.onReport()` due to security limitations (40-bit truncation collision risk and no uniqueness guarantee). Setting the expected workflow name stores the value but does not activate the check unless you explicitly enable it in your implementation. See [Security Considerations](#7-security-considerations) for details.
+<Aside type="caution" title="Workflow name validation requires author validation">
+  Workflow name validation is **only performed when author validation is also configured**. The code enforces this at runtime: if you set `expectedWorkflowName`, you must also set `expectedAuthor`, otherwise the validation will revert with `WorkflowNameRequiresAuthorValidation()`. This prevents the 40-bit collision attack by ensuring workflow names are validated in combination with the owner address. See [Security Considerations](#7-security-considerations) for details.
 </Aside>
 
 **Usage:**
 
 ```solidity
-// Set the expected workflow name (does not enable validation by default)
+// Set the expected author first (required)
+myConsumer.setExpectedAuthor(0xYourAddress...);
+
+// Then set the expected workflow name (only works with author validation)
 myConsumer.setExpectedWorkflowName("my_workflow");
 
-// To disable/clear the stored value
+// To disable the workflow name check
 myConsumer.setExpectedWorkflowName(""); // Empty string clears the stored value
 ```
 
@@ -2695,18 +2702,19 @@ The forwarder address provides baseline security, but you can add additional val
 
 - **`expectedWorkflowId`**: Ensures only one specific workflow can update your contract. Use this when a single workflow writes to your consumer (highest security for single-workflow scenarios).
 - **`expectedAuthor`**: Restricts to workflows owned by a specific address. Use this when multiple workflows from the same owner should access your contract.
-- **`expectedWorkflowName`** (Not recommended): Disabled by default due to collision risks and non-uniqueness. See [Workflow name validation risks](#workflow-name-validation-risks) below.
+- **`expectedWorkflowName`**: Can be used in combination with `expectedAuthor` for additional validation. Requires author validation to be configured. See [Workflow name validation](#workflow-name-validation) below.
 
-### Workflow name validation risks
+### Workflow name validation
 
 
-<Aside type="caution" title="Workflow name validation disabled by default">
-  The `expectedWorkflowName` check is **disabled by default** in `ReceiverTemplate.onReport()` because:
+<Aside type="caution" title="Workflow name validation requires author validation">
+  The `expectedWorkflowName` check in `ReceiverTemplate.onReport()` **requires author validation** to be configured:
 
-  - **Collision Risk**: Workflow names use only 40-bit truncation (bytes10), making collision attacks computationally feasible
-  - **No Uniqueness Guarantee**: Workflow names are not guaranteed to be unique across the platform
+  - **Collision Risk**: Workflow names use only 40-bit truncation (bytes10), making collision attacks computationally feasible when used alone
+  - **Unique per owner**: Workflow names are unique per owner but not across different owners
+  - **Runtime enforcement**: The code enforces that if `expectedWorkflowName` is set, `expectedAuthor` must also be set, otherwise it reverts with `WorkflowNameRequiresAuthorValidation()`
 
-  If you need to enable this check in your implementation, you **must** use it in combination with `expectedWorkflowId` and/or `expectedAuthor` validation. Never rely on workflow name alone.
+  By combining workflow name (40-bit) with author validation (160-bit address), the contract achieves adequate collision resistance. You can safely use workflow name validation as long as author validation is also enabled.
 </Aside>
 
 ### Best practices
@@ -2718,7 +2726,7 @@ The forwarder address provides baseline security, but you can add additional val
    - **Multiple workflows from different owners**: Implement custom validation logic in your `onReport()` override
 3. **Keep your owner key secure** - The owner can update all permission settings
 4. **Test permission configurations** - Verify your security settings work as expected before production deployment
-5. **Never rely on workflow name alone** - If you enable this check, combine it with workflow ID or author validation
+5. **Workflow name validation** - Can be used with `setExpectedWorkflowName()` but requires `setExpectedAuthor()` to also be configured for security
 
 ---
 
