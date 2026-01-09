@@ -7,7 +7,8 @@ import {ReceiverTemplate} from "./ReceiverTemplate.sol";
  * @title CalculatorConsumer (Testing Version)
  * @notice This contract receives reports from a CRE workflow and stores the results of a calculation onchain.
  * @dev Inherits from ReceiverTemplate which provides security checks. The forwarder address must be
- * configured at deployment. Additional security checks (workflowId, author) can be enabled via setter functions.
+ * configured at deployment. Additional security checks (workflowId, workflowName, author) can be enabled via setter
+ * functions.
  */
 contract CalculatorConsumer is ReceiverTemplate {
   // Struct to hold the data sent in a report from the workflow
