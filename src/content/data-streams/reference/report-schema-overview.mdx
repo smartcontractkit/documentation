@@ -86,7 +86,7 @@ Each stream category uses one or more report schemas to deliver data. Several ca
         <a href="/data-streams/nav-streams">NAV</a>
       </td>
       <td>
-        <a href="/data-streams/reference/report-schema-v9">NAV (v9)</a>
+        <a href="/data-streams/reference/report-schema-v9">SmartData (v9)</a>
       </td>
       <td>Net Asset Value (NAV)</td>
       <td>
@@ -95,12 +95,12 @@ Each stream category uses one or more report schemas to deliver data. Several ca
     </tr>
     <tr>
       <td>
-        <a href="/data-streams/backed-streams">Tokenized Asset</a>
+        <a href="/data-streams/tokenized-asset-streams">Tokenized Asset</a>
       </td>
       <td>
         <a href="/data-streams/reference/report-schema-v10">Tokenized Asset (v10)</a>
       </td>
-      <td>Backed xStock</td>
+      <td>Tokenized equities</td>
       <td>
         <code>price</code>, <code>tokenizedPrice</code>, <code>marketStatus</code>, <code>currentMultiplier</code>,{" "}
         <code>newMultiplier</code>
@@ -157,7 +157,7 @@ These advanced fields enable protocols to implement more sophisticated risk mana
 
 ## Net Asset Value (NAV)
 
-[Chainlink NAV streams](/data-streams/nav-streams) use the [NAV (v9)](/data-streams/reference/report-schema-v9) report schema to provide real-time, tamper-proof access to the Net Asset Value (`navPerShare`) of tokenized assets, funds, or portfolios. Each report includes NAV per share (`navPerShare`), NAV date (`navDate`), assets under management (`aum`), and ripcord status (`ripcord`). The ripcord is set to true (`1`) by the asset issuer when the consumer should ignore the value being sent (for cases such as maintenance, upstream data source outages, etc). The feed data will remain stale until the ripcord returns false (`0`).
+[Chainlink NAV streams](/data-streams/nav-streams) use the [SmartData (v9)](/data-streams/reference/report-schema-v9) report schema to provide real-time, tamper-proof access to the Net Asset Value (`navPerShare`) of tokenized assets, funds, or portfolios. Each report includes NAV per share (`navPerShare`), NAV date (`navDate`), assets under management (`aum`), and ripcord status (`ripcord`). The ripcord is set to true (`1`) by the asset issuer when the consumer should ignore the value being sent (for cases such as maintenance, upstream data source outages, etc). The feed data will remain stale until the ripcord returns false (`0`).
 
 NAV is a fundamental financial metric that represents the value of an investment vehicle such as a mutual fund or ETF and is calculated as the total assets minus the total liabilities.
 
@@ -165,8 +165,8 @@ Data Streams ensures that any NAV update, whenever it occurs, is captured and ma
 
 ## Tokenized Asset
 
-[Chainlink Tokenized Asset streams](/data-streams/backed-streams) use the [Tokenized Asset (v10)](/data-streams/reference/report-schema-v10) report schema to provide financial market data for tokenized equities such as [xStock](https://xstocks.com/us) assets. These streams combine data from US equity streams with data from the tokenization service to enable users to handle corporate actions affecting the underlying equities. Each report includes the staleness measure (`lastUpdateTimestamp`), consensus mid price (`price`), market status (`marketStatus`), current multiplier (`currentMultiplier`, the number of underlying shares each xStock is redeemable for), new multiplier (`newMultiplier`, the future number of shares after a scheduled corporate action), activation date/time of the corporate action (`activationDateTime`) and the tokenized price if available on primary or secondary markets (`tokenizedPrice`).
+[Chainlink Tokenized Asset streams](/data-streams/tokenized-asset-streams) use the [Tokenized Asset (v10)](/data-streams/reference/report-schema-v10) report schema to provide financial market data for tokenized equities. These streams combine data from US equity streams with data from tokenization services to enable users to handle corporate actions affecting the underlying equities. Each report includes the staleness measure (`lastUpdateTimestamp`), consensus mid price (`price`), market status (`marketStatus`), current multiplier (`currentMultiplier`, the number of underlying shares each tokenized asset is redeemable for), new multiplier (`newMultiplier`, the future number of shares after a scheduled corporate action), activation date/time of the corporate action (`activationDateTime`) and the tokenized price if available on primary or secondary markets (`tokenizedPrice`).
 
 The underlying US equities trade on traditional exchanges during [market hours](/data-streams/market-hours). These market hours depend per asset class and can be subject to unexpected halts, pauses and other behaviors affecting traditional markets. For this reason, this class of Data Streams contains a market hours flag and a staleness measure to equip our users to handle these events correctly. It is critical that users implement correct safeguards on their end to pause markets, add more conservative risk caps, or implement other measures appropriate for their application.
 
-[Tokenized Asset (v10)](/data-streams/reference/report-schema-v10) is designed specifically for tokenized equities such as xStocks and contains data from the Chainlink US equities streams, combined with data provided by the tokenizer to properly handle corporate actions. With this enhanced data users are able to handle expected and unexpected market events such as pauses, halts and market off hours. The tokenization provider layers in data around the `currentMultiplier`, the `newMultiplier` and the `activationDateTime` of the new multiplier to handle corporate actions.
+[Tokenized Asset (v10)](/data-streams/reference/report-schema-v10) is designed specifically for tokenized equities and contains data from the Chainlink US equities streams, combined with data provided by the tokenizer to properly handle corporate actions. With this enhanced data users are able to handle expected and unexpected market events such as pauses, halts and market off hours. The tokenization provider layers in data around the `currentMultiplier`, the `newMultiplier` and the `activationDateTime` of the new multiplier to handle corporate actions.
