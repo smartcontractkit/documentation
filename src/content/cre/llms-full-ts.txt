@@ -11142,6 +11142,17 @@ EVM events can have up to 3 `indexed` parameters (in addition to the event signa
 - **`topics`**: An event must match the conditions for **all** defined topic slots (**AND** logic between topics). Within a single topic, you can provide multiple values, and it will match if the event's topic is **any** of those values (**OR** logic within a topic).
 - **Wildcarding topics**: To skip filtering on a specific topic position, omit it from the topics array or provide an empty values array `{ values: [] }`. For example, to filter on topic 1 and topic 3 but not topic 2, you would provide `[topic0, topic1, { values: [] }, topic3]`.
 
+<Aside type="caution" title="Topic values must be padded to 32 bytes and base64 encoded">
+  EVM logs always store indexed parameters as **32-byte values**. When filtering on topics 1, 2, or 3:
+
+  1. **Pad your values to 32 bytes** using `padHex(value, { size: 32 })` (e.g., addresses are 20 bytes and must be padded)
+  2. **Convert to base64** using `hexToBase64()`
+
+  If you don't pad correctly, your filter won't match the actual log topics and the trigger will not fire.
+
+  Topic 0 (the event signature from `keccak256`) is already 32 bytes and doesn't need padding.
+</Aside>
+
 #### Example 1: Filtering on a single indexed parameter
 
 To trigger only on `Transfer` events where the `from` address is a specific value:
