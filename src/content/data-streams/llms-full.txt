@@ -944,9 +944,9 @@ curl -X POST \
 
 **`/api/v1/symbol_info`**
 
-| Type     | Description                                              | Parameter(s)                                                                                     |
-| :------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------- |
-| HTTP GET | Gets a list of all supported symbols on the environment. | <ul><li>`group` (optional): Filter symbols by group. Currently only supports "crypto".</li></ul> |
+| Type     | Description                                              | Parameter(s)                                                                                                                        |
+| :------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------- |
+| HTTP GET | Gets a list of all supported symbols on the environment. | <ul><li>`group` (optional): Filter symbols by group. See [`/groups`](#get-list-of-supported-groups) for available groups.</li></ul> |
 
 ##### Sample request
 
@@ -983,26 +983,85 @@ curl -X GET \
 | `401`       | `Unauthorized - Authorization header is required \|\| Invalid authorization header format \|\| token signature is invalid: signature is invalid \|\| ...` | The authorization header was missing or invalid. |
 | `500`       | `Error - Something went wrong`                                                                                                                            | An unexpected server error occurred.             |
 
+### Get list of supported groups
+
+##### Endpoint
+
+**`/api/v1/groups`**
+
+| Type     | Description                                                                                                                                   | Parameter(s) |
+| :------- | :-------------------------------------------------------------------------------------------------------------------------------------------- | :----------- |
+| HTTP GET | Gets a list of all supported symbol types on the environment. Any group name returned can be used as a filter in the `/symbol_info` endpoint. | None         |
+
+##### Sample request
+
+```bash
+curl -X GET \
+  -H "Authorization: Bearer {YOUR_ACCESS_TOKEN}" \
+  https://priceapi.testnet-dataengine.chain.link/api/v1/groups
+```
+
+##### Response
+
+- **Status**: `200`
+
+  ```json
+  {
+    "s": "ok",
+    "d": {
+      "groups": [{ "id": "crypto" }, { "id": "equities" }, { "id": "forex" }, { "id": "equity" }]
+    }
+  }
+  ```
+
+  | Field    | Type     | Description                        |
+  | :------- | :------- | :--------------------------------- |
+  | `s`      | `string` | The status of the request.         |
+  | `d`      | `object` | The data returned by the API call. |
+  | `groups` | `array`  | Array of supported groups.         |
+
+##### Error Responses
+
+| Status Code | Error Message                                                                                                                                             | Description                                      |
+| :---------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------- |
+| `401`       | `Unauthorized - Authorization header is required \|\| Invalid authorization header format \|\| token signature is invalid: signature is invalid \|\| ...` | The authorization header was missing or invalid. |
+| `500`       | `Error - Something went wrong`                                                                                                                            | An unexpected server error occurred.             |
+
 ### Get candlestick data (column format)
 
 ##### Endpoint
 
 **`/api/v1/history`**
 
-| Type     | Description                             | Parameter(s)                                                                                                                                                                                                                                                                      |
-| :------- | :-------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| HTTP GET | Gets candlestick data in column format. | <ul><li>`symbol`: The symbol to query.</li><li>`resolution`: Resolution of the data (required but not used, use "1m").</li><li>`from`: Unix timestamp of the leftmost required bar (inclusive).</li><li>`to`: Unix timestamp of the rightmost required bar (inclusive).</li></ul> |
+| Type     | Description                             | Parameter(s)                                                                                                                                                                                                                                                                                                            |
+| :------- | :-------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| HTTP GET | Gets candlestick data in column format. | <ul><li>`symbol`: The symbol to query.</li><li>`resolution`: Resolution of the data. E.g., "1m". Must match [supported resolutions](#supported-resolutions).</li><li>`from`: Unix timestamp of the leftmost required bar (inclusive).</li><li>`to`: Unix timestamp of the rightmost required bar (inclusive).</li></ul> |
 
-**Note**: The resolution of the data is currently based on the size of the time window:
+#### Supported resolutions
 
-| Max time window size | Resolution of candles |
-| :------------------- | :-------------------- |
-| \<= 24 hours         | 1 minute              |
-| \<= 5 days           | 5 minutes             |
-| \<= 30 days          | 30 minutes            |
-| \<= 90 days          | 1 hour                |
-| \<= 6 months         | 2 hours               |
-| > 6 months           | 1 day                 |
+The resolution you provide must be within the supported boundaries for the given time window size:
+
+| Time window size          | Supported resolutions            |
+| :------------------------ | :------------------------------- |
+| 1 min - 24 hours          | 1 minute - 24 hours (1m - 24h)   |
+| 1 - 5 days                | 5 minutes - 5 days (5m - 5d)     |
+| 5 - 30 days               | 30 minutes - 30 days (30m - 30d) |
+| 30 - 90 days              | 1 hour - 90 days (1h - 90d)      |
+| 90 - 180 days             | 2 hours - 180 days (2h - 6M)     |
+| 180 - 365 days            | 24 hours - 365 days (24h - 1y)   |
+| 365 - 1825 days (1-5 yrs) | 1 week - 5 years (1w - 5y)       |
+| Over 1825 days (> 5 yrs)  | Over 1 month                     |
+
+Resolutions can be provided in the following units:
+
+| Name    | Unit | Example |
+| :------ | :--- | :------ |
+| minutes | m    | 5m      |
+| hours   | h    | 3h      |
+| days    | d    | 1d      |
+| weeks   | w    | 2w      |
+| months  | M    | 6M      |
+| years   | y    | 2y      |
 
 ##### Sample request
 
@@ -1055,9 +1114,9 @@ curl -X GET \
 
 **`/api/v1/history/rows`**
 
-| Type     | Description                          | Parameter(s)                                                                                                                                                                                                                                                                      |
-| :------- | :----------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| HTTP GET | Gets candlestick data in row format. | <ul><li>`symbol`: The symbol to query.</li><li>`resolution`: Resolution of the data (required but not used, use "1m").</li><li>`from`: Unix timestamp of the leftmost required bar (inclusive).</li><li>`to`: Unix timestamp of the rightmost required bar (inclusive).</li></ul> |
+| Type     | Description                          | Parameter(s)                                                                                                                                                                                                                                                                                                            |
+| :------- | :----------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| HTTP GET | Gets candlestick data in row format. | <ul><li>`symbol`: The symbol to query.</li><li>`resolution`: Resolution of the data. E.g., "1m". Must match [supported resolutions](#supported-resolutions).</li><li>`from`: Unix timestamp of the leftmost required bar (inclusive).</li><li>`to`: Unix timestamp of the rightmost required bar (inclusive).</li></ul> |
 
 ##### Sample request
 
@@ -5468,6 +5527,226 @@ Data Streams require several interfaces in order to retrieve and verify reports.
 
 In the current code example for using Data Streams with Automation, these interfaces are specified in the example itself. Imports for these interfaces will be available in the future.
 
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import {ILogAutomation, Log} from "@chainlink/contracts/src/v0.8/automation/interfaces/ILogAutomation.sol";
+import {
+  StreamsLookupCompatibleInterface
+} from "@chainlink/contracts/src/v0.8/automation/interfaces/StreamsLookupCompatibleInterface.sol";
+import {Common} from "@chainlink/contracts/src/v0.8/llo-feeds/libraries/Common.sol";
+
+import {IRewardManager} from "@chainlink/contracts/src/v0.8/llo-feeds/v0.3.0/interfaces/IRewardManager.sol";
+import {IVerifierFeeManager} from "@chainlink/contracts/src/v0.8/llo-feeds/v0.3.0/interfaces/IVerifierFeeManager.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE FOR DEMONSTRATION PURPOSES.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
+// Custom interfaces for IVerifierProxy and IFeeManager
+interface IVerifierProxy {
+  /**
+   * @notice Verifies that the data encoded has been signed.
+   * correctly by routing to the correct verifier, and bills the user if applicable.
+   * @param payload The encoded data to be verified, including the signed
+   * report.
+   * @param parameterPayload Fee metadata for billing. For the current implementation this is just the abi-encoded fee
+   * token ERC-20 address.
+   * @return verifierResponse The encoded report from the verifier.
+   */
+  function verify(
+    bytes calldata payload,
+    bytes calldata parameterPayload
+  ) external payable returns (bytes memory verifierResponse);
+
+  function s_feeManager() external view returns (IVerifierFeeManager);
+}
+
+interface IFeeManager {
+  /**
+   * @notice Calculates the fee and reward associated with verifying a report, including discounts for subscribers.
+   * This function assesses the fee and reward for report verification, applying a discount for recognized subscriber
+   * addresses.
+   * @param subscriber The address attempting to verify the report. A discount is applied if this address
+   * is recognized as a subscriber.
+   * @param unverifiedReport The report data awaiting verification. The content of this report is used to
+   * determine the base fee and reward, before considering subscriber discounts.
+   * @param quoteAddress The payment token address used for quoting fees and rewards.
+   * @return fee The fee assessed for verifying the report, with subscriber discounts applied where applicable.
+   * @return reward The reward allocated to the caller for successfully verifying the report.
+   * @return totalDiscount The total discount amount deducted from the fee for subscribers
+   */
+  function getFeeAndReward(
+    address subscriber,
+    bytes memory unverifiedReport,
+    address quoteAddress
+  ) external returns (Common.Asset memory, Common.Asset memory, uint256);
+
+  function i_linkAddress() external view returns (address);
+
+  function i_nativeAddress() external view returns (address);
+
+  function i_rewardManager() external view returns (address);
+}
+
+contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
+  error InvalidReportVersion(uint16 version); // Thrown when an unsupported report version is provided to verifyReport.
+
+  /**
+   * @dev Represents a data report from a Data Streams stream for v3 schema (used for crypto and DEX State Price
+   * streams).
+   * The `price`, `bid`, and `ask` values are carried to either 8 or 18 decimal places, depending on the stream.
+   * `bid`, and `ask` values are not available for DEX State Price streams.
+   * For more information, see https://docs.chain.link/data-streams/crypto-streams and
+   * https://docs.chain.link/data-streams/reference/report-schema
+   */
+  struct ReportV3 {
+    bytes32 feedId; // The stream ID the report has data for.
+    uint32 validFromTimestamp; // Earliest timestamp for which price is applicable.
+    uint32 observationsTimestamp; // Latest timestamp for which price is applicable.
+    uint192 nativeFee; // Base cost to validate a transaction using the report, denominated in the chain’s native
+    // token (e.g., WETH/ETH).
+    uint192 linkFee; // Base cost to validate a transaction using the report, denominated in LINK.
+    uint32 expiresAt; // Latest timestamp where the report can be verified onchain.
+    int192 price; // DON consensus median price (8 or 18 decimals).
+    int192 bid; // Simulated price impact of a buy order up to the X% depth of liquidity utilisation (8 or 18 decimals).
+    // Note: not available for DEX State Price streams.
+    int192 ask; // Simulated price impact of a sell order up to the X% depth of liquidity utilisation (8 or 18
+    // decimals). Note: not available for DEX State Price streams.
+  }
+
+  /**
+   * @dev Represents a data report from a Data Streams stream for v4 schema (RWA streams).
+   * The `price` value is carried to either 8 or 18 decimal places, depending on the stream.
+   * The `marketStatus` indicates whether the market is currently open. Possible values: `0` (`Unknown`), `1`
+   * (`Closed`), `2` (`Open`).
+   * For more information, see https://docs.chain.link/data-streams/rwa-streams and
+   * https://docs.chain.link/data-streams/reference/report-schema-v4
+   */
+  struct ReportV4 {
+    bytes32 feedId; // The stream ID the report has data for.
+    uint32 validFromTimestamp; // Earliest timestamp for which price is applicable.
+    uint32 observationsTimestamp; // Latest timestamp for which price is applicable.
+    uint192 nativeFee; // Base cost to validate a transaction using the report, denominated in the chain’s native
+    // token (e.g., WETH/ETH).
+    uint192 linkFee; // Base cost to validate a transaction using the report, denominated in LINK.
+    uint32 expiresAt; // Latest timestamp where the report can be verified onchain.
+    int192 price; // DON consensus median benchmark price (8 or 18 decimals).
+    uint32 marketStatus; // The DON's consensus on whether the market is currently open.
+  }
+
+  struct Quote {
+    address quoteAddress;
+  }
+
+  IVerifierProxy public verifier;
+
+  address public FEE_ADDRESS;
+  string public constant DATASTREAMS_FEEDLABEL = "feedIDs";
+  string public constant DATASTREAMS_QUERYLABEL = "timestamp";
+  int192 public lastDecodedPrice;
+
+  // This example reads the ID for the ETH/USD report.
+  // Find a complete list of IDs at https://docs.chain.link/data-streams/crypto-streams.
+  string[] public feedIds = ["0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"];
+
+  constructor(
+    address _verifier
+  ) {
+    verifier = IVerifierProxy(_verifier);
+  }
+
+  // This function uses revert to convey call information.
+  // See https://eips.ethereum.org/EIPS/eip-3668#rationale for details.
+  function checkLog(
+    Log calldata log,
+    bytes memory
+  ) external returns (bool upkeepNeeded, bytes memory performData) {
+    revert StreamsLookup(DATASTREAMS_FEEDLABEL, feedIds, DATASTREAMS_QUERYLABEL, log.timestamp, "");
+  }
+
+  /**
+   * @notice this is a new, optional function in streams lookup. It is meant to surface streams lookup errors.
+   * @return upkeepNeeded boolean to indicate whether the keeper should call performUpkeep or not.
+   * @return performData bytes that the keeper should call performUpkeep with, if
+   * upkeep is needed. If you would like to encode data to decode later, try `abi.encode`.
+   */
+  function checkErrorHandler(
+    uint256, /*errCode*/
+    bytes memory /*extraData*/
+  ) external pure returns (bool upkeepNeeded, bytes memory performData) {
+    return (true, "0");
+    // Hardcoded to always perform upkeep.
+    // Read the StreamsLookup error handler guide for more information.
+    // https://docs.chain.link/chainlink-automation/guides/streams-lookup-error-handler
+  }
+
+  // The Data Streams report bytes is passed here.
+  // extraData is context data from stream lookup process.
+  // Your contract may include logic to further process this data.
+  // This method is intended only to be simulated offchain by Automation.
+  // The data returned will then be passed by Automation into performUpkeep
+  function checkCallback(
+    bytes[] calldata values,
+    bytes calldata extraData
+  ) external pure returns (bool, bytes memory) {
+    return (true, abi.encode(values, extraData));
+  }
+
+  // function will be performed onchain
+  function performUpkeep(
+    bytes calldata performData
+  ) external {
+    // Decode the performData bytes passed in by CL Automation.
+    // This contains the data returned by your implementation in checkCallback().
+    (bytes[] memory signedReports, bytes memory extraData) = abi.decode(performData, (bytes[], bytes));
+
+    bytes memory unverifiedReport = signedReports[0];
+
+    (, /* bytes32[3] reportContextData */ bytes memory reportData) = abi.decode(unverifiedReport, (bytes32[3], bytes));
+
+    // Extract report version from reportData
+    uint16 reportVersion = (uint16(uint8(reportData[0])) << 8) | uint16(uint8(reportData[1]));
+
+    // Validate report version
+    if (reportVersion != 3 && reportVersion != 4) {
+      revert InvalidReportVersion(uint8(reportVersion));
+    }
+
+    // Report verification fees
+    IFeeManager feeManager = IFeeManager(address(verifier.s_feeManager()));
+    IRewardManager rewardManager = IRewardManager(address(feeManager.i_rewardManager()));
+
+    address feeTokenAddress = feeManager.i_linkAddress();
+    (Common.Asset memory fee,,) = feeManager.getFeeAndReward(address(this), reportData, feeTokenAddress);
+
+    // Approve rewardManager to spend this contract's balance in fees
+    IERC20(feeTokenAddress).approve(address(rewardManager), fee.amount);
+
+    // Verify the report
+    bytes memory verifiedReportData = verifier.verify(unverifiedReport, abi.encode(feeTokenAddress));
+
+    // Decode verified report data into the appropriate Report struct based on reportVersion
+    if (reportVersion == 3) {
+      // v3 report schema
+      ReportV3 memory verifiedReport = abi.decode(verifiedReportData, (ReportV3));
+
+      // Store the price from the report
+      lastDecodedPrice = verifiedReport.price;
+    } else if (reportVersion == 4) {
+      // v4 report schema
+      ReportV4 memory verifiedReport = abi.decode(verifiedReportData, (ReportV4));
+
+      // Store the price from the report
+      lastDecodedPrice = verifiedReport.price;
+    }
+  }
+}
+```
+
 ---
 
 # Supported Networks
@@ -5522,6 +5801,228 @@ Deploy a `ClientReportsVerifier` contract on *Arbitrum Sepolia*. This contract i
 
 1. [Open the ClientReportsVerifier.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataStreams/ClientReportsVerifier.sol) contract in Remix.
 
+   ```sol
+   // SPDX-License-Identifier: MIT
+   pragma solidity ^0.8.20;
+
+   import {Common} from "@chainlink/contracts/src/v0.8/llo-feeds/libraries/Common.sol";
+   import {IVerifierFeeManager} from "@chainlink/contracts/src/v0.8/llo-feeds/v0.3.0/interfaces/IVerifierFeeManager.sol";
+   import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+   import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
+   using SafeERC20 for IERC20;
+
+   /**
+    * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE FOR DEMONSTRATION PURPOSES.
+    * DO NOT USE THIS CODE IN PRODUCTION.
+    *
+    *  This contract can verify Chainlink Data Streams reports onchain and pay
+    *  the verification fee in LINK (when required).
+    *
+    * - If `VerifierProxy.s_feeManager()` returns a non-zero address, the network
+    *   expects you to interact with that FeeManager for every verification call:
+    *   quote fees, approve the RewardManager, then call `verify()`.
+    *
+    * - If `s_feeManager()` returns the zero address, no FeeManager contract has
+    *   been deployed on that chain. In that case there is nothing to quote or pay
+    *   onchain, so the contract skips the fee logic entirely.
+    *
+    *  The `if (address(feeManager) != address(0))` check below chooses the
+    *  correct path automatically, making the same bytecode usable on any chain.
+    */
+
+   // ────────────────────────────────────────────────────────────────────────────
+   //  Interfaces
+   // ────────────────────────────────────────────────────────────────────────────
+
+   interface IVerifierProxy {
+     /**
+      * @notice Route a report to the correct verifier and (optionally) bill fees.
+      * @param payload           Full report payload (header + signed report).
+      * @param parameterPayload  ABI-encoded fee metadata.
+      */
+     function verify(
+       bytes calldata payload,
+       bytes calldata parameterPayload
+     ) external payable returns (bytes memory verifierResponse);
+
+     function verifyBulk(
+       bytes[] calldata payloads,
+       bytes calldata parameterPayload
+     ) external payable returns (bytes[] memory verifiedReports);
+
+     function s_feeManager() external view returns (IVerifierFeeManager);
+   }
+
+   interface IFeeManager {
+     /**
+      * @return fee, reward, totalDiscount
+      */
+     function getFeeAndReward(
+       address subscriber,
+       bytes memory unverifiedReport,
+       address quoteAddress
+     ) external returns (Common.Asset memory, Common.Asset memory, uint256);
+
+     function i_linkAddress() external view returns (address);
+
+     function i_nativeAddress() external view returns (address);
+
+     function i_rewardManager() external view returns (address);
+   }
+
+   // ────────────────────────────────────────────────────────────────────────────
+   //  Contract
+   // ────────────────────────────────────────────────────────────────────────────
+
+   /**
+    * @dev This contract implements functionality to verify Data Streams reports from
+    * the Data Streams API, with payment in LINK tokens.
+    */
+   contract ClientReportsVerifier {
+     // ----------------- Errors -----------------
+     error NothingToWithdraw();
+     error NotOwner(address caller);
+     error InvalidReportVersion(uint16 version);
+
+     // ----------------- Report schemas -----------------
+     // More info: https://docs.chain.link/data-streams/reference/report-schema-v3
+     /**
+      * @dev Data Streams report schema v3 (crypto streams).
+      *      Prices, bids and asks use 8 or 18 decimals depending on the stream.
+      */
+     struct ReportV3 {
+       bytes32 feedId;
+       uint32 validFromTimestamp;
+       uint32 observationsTimestamp;
+       uint192 nativeFee;
+       uint192 linkFee;
+       uint32 expiresAt;
+       int192 price;
+       int192 bid;
+       int192 ask;
+     }
+
+     /**
+      * @dev Data Streams report schema v8 (RWA streams).
+      */
+     struct ReportV8 {
+       bytes32 feedId;
+       uint32 validFromTimestamp;
+       uint32 observationsTimestamp;
+       uint192 nativeFee;
+       uint192 linkFee;
+       uint32 expiresAt;
+       uint64 lastUpdateTimestamp;
+       int192 midPrice;
+       uint32 marketStatus;
+     }
+
+     // ----------------- Storage -----------------
+     IVerifierProxy public immutable i_verifierProxy;
+     address private immutable i_owner;
+
+     int192 public lastDecodedPrice;
+
+     // ----------------- Events -----------------
+     event DecodedPrice(int192 price);
+
+     // ----------------- Constructor / modifier -----------------
+     /**
+      * @param _verifierProxy Address of the VerifierProxy on the target network.
+      *        Addresses: https://docs.chain.link/data-streams/crypto-streams
+      */
+     constructor(
+       address _verifierProxy
+     ) {
+       i_owner = msg.sender;
+       i_verifierProxy = IVerifierProxy(_verifierProxy);
+     }
+
+     modifier onlyOwner() {
+       if (msg.sender != i_owner) revert NotOwner(msg.sender);
+       _;
+     }
+
+     // ----------------- Public API -----------------
+
+     /**
+      * @notice Verify a Data Streams report (schema v3 or v8).
+      *
+      * @dev Steps:
+      *  1. Decode the unverified report to get `reportData`.
+      *  2. Read the first two bytes → schema version (`0x0003` or `0x0008`).
+      *     - Revert if the version is unsupported.
+      *  3. Fee handling:
+      *     - Query `s_feeManager()` on the proxy.
+      *       – Non-zero → quote the fee, approve the RewardManager,
+      *         ABI-encode the fee token address for `verify()`.
+      *       – Zero     → no FeeManager; skip quoting/approval and pass `""`.
+      *  4. Call `VerifierProxy.verify()`.
+      *  5. Decode the verified report into the correct struct and emit the price.
+      *
+      *  @param unverifiedReport Full payload returned by Streams Direct.
+      *  @custom:reverts InvalidReportVersion when schema ≠ v3/v8.
+      */
+     function verifyReport(
+       bytes memory unverifiedReport
+     ) external {
+       // ─── 1. & 2. Extract reportData and schema version ──
+       (, bytes memory reportData) = abi.decode(unverifiedReport, (bytes32[3], bytes));
+
+       uint16 reportVersion = (uint16(uint8(reportData[0])) << 8) | uint16(uint8(reportData[1]));
+       if (reportVersion != 3 && reportVersion != 8) {
+         revert InvalidReportVersion(reportVersion);
+       }
+
+       // ─── 3. Fee handling ──
+       IFeeManager feeManager = IFeeManager(address(i_verifierProxy.s_feeManager()));
+
+       bytes memory parameterPayload;
+       if (address(feeManager) != address(0)) {
+         // FeeManager exists — always quote & approve
+         address feeToken = feeManager.i_linkAddress();
+
+         (Common.Asset memory fee,,) = feeManager.getFeeAndReward(address(this), reportData, feeToken);
+
+         IERC20(feeToken).approve(feeManager.i_rewardManager(), fee.amount);
+         parameterPayload = abi.encode(feeToken);
+       } else {
+         // No FeeManager deployed on this chain
+         parameterPayload = bytes("");
+       }
+
+       // ─── 4. Verify through the proxy ──
+       bytes memory verified = i_verifierProxy.verify(unverifiedReport, parameterPayload);
+
+       // ─── 5. Decode & store price ──
+       if (reportVersion == 3) {
+         int192 price = abi.decode(verified, (ReportV3)).price;
+         lastDecodedPrice = price;
+         emit DecodedPrice(price);
+       } else {
+         int192 price = abi.decode(verified, (ReportV8)).midPrice;
+         lastDecodedPrice = price;
+         emit DecodedPrice(price);
+       }
+     }
+
+     /**
+      * @notice Withdraw all balance of an ERC-20 token held by this contract.
+      * @param _beneficiary Address that receives the tokens.
+      * @param _token       ERC-20 token address.
+      */
+     function withdrawToken(
+       address _beneficiary,
+       address _token
+     ) external onlyOwner {
+       uint256 amount = IERC20(_token).balanceOf(address(this));
+       if (amount == 0) revert NothingToWithdraw();
+       IERC20(_token).safeTransfer(_beneficiary, amount);
+     }
+   }
+   ```
+
 2. Select the `ClientReportsVerifier.sol` contract in the **Solidity Compiler** tab.
 
 3. Compile the contract.
@@ -5564,6 +6065,228 @@ For this tutorial on *Arbitrum Sepolia*, fees are required, so you need to fund 
 ## Examine the code
 
 The example code you deployed has all the interfaces and functions required to verify Data Streams reports onchain.
+
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import {Common} from "@chainlink/contracts/src/v0.8/llo-feeds/libraries/Common.sol";
+import {IVerifierFeeManager} from "@chainlink/contracts/src/v0.8/llo-feeds/v0.3.0/interfaces/IVerifierFeeManager.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
+using SafeERC20 for IERC20;
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE FOR DEMONSTRATION PURPOSES.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ *
+ *  This contract can verify Chainlink Data Streams reports onchain and pay
+ *  the verification fee in LINK (when required).
+ *
+ * - If `VerifierProxy.s_feeManager()` returns a non-zero address, the network
+ *   expects you to interact with that FeeManager for every verification call:
+ *   quote fees, approve the RewardManager, then call `verify()`.
+ *
+ * - If `s_feeManager()` returns the zero address, no FeeManager contract has
+ *   been deployed on that chain. In that case there is nothing to quote or pay
+ *   onchain, so the contract skips the fee logic entirely.
+ *
+ *  The `if (address(feeManager) != address(0))` check below chooses the
+ *  correct path automatically, making the same bytecode usable on any chain.
+ */
+
+// ────────────────────────────────────────────────────────────────────────────
+//  Interfaces
+// ────────────────────────────────────────────────────────────────────────────
+
+interface IVerifierProxy {
+  /**
+   * @notice Route a report to the correct verifier and (optionally) bill fees.
+   * @param payload           Full report payload (header + signed report).
+   * @param parameterPayload  ABI-encoded fee metadata.
+   */
+  function verify(
+    bytes calldata payload,
+    bytes calldata parameterPayload
+  ) external payable returns (bytes memory verifierResponse);
+
+  function verifyBulk(
+    bytes[] calldata payloads,
+    bytes calldata parameterPayload
+  ) external payable returns (bytes[] memory verifiedReports);
+
+  function s_feeManager() external view returns (IVerifierFeeManager);
+}
+
+interface IFeeManager {
+  /**
+   * @return fee, reward, totalDiscount
+   */
+  function getFeeAndReward(
+    address subscriber,
+    bytes memory unverifiedReport,
+    address quoteAddress
+  ) external returns (Common.Asset memory, Common.Asset memory, uint256);
+
+  function i_linkAddress() external view returns (address);
+
+  function i_nativeAddress() external view returns (address);
+
+  function i_rewardManager() external view returns (address);
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+//  Contract
+// ────────────────────────────────────────────────────────────────────────────
+
+/**
+ * @dev This contract implements functionality to verify Data Streams reports from
+ * the Data Streams API, with payment in LINK tokens.
+ */
+contract ClientReportsVerifier {
+  // ----------------- Errors -----------------
+  error NothingToWithdraw();
+  error NotOwner(address caller);
+  error InvalidReportVersion(uint16 version);
+
+  // ----------------- Report schemas -----------------
+  // More info: https://docs.chain.link/data-streams/reference/report-schema-v3
+  /**
+   * @dev Data Streams report schema v3 (crypto streams).
+   *      Prices, bids and asks use 8 or 18 decimals depending on the stream.
+   */
+  struct ReportV3 {
+    bytes32 feedId;
+    uint32 validFromTimestamp;
+    uint32 observationsTimestamp;
+    uint192 nativeFee;
+    uint192 linkFee;
+    uint32 expiresAt;
+    int192 price;
+    int192 bid;
+    int192 ask;
+  }
+
+  /**
+   * @dev Data Streams report schema v8 (RWA streams).
+   */
+  struct ReportV8 {
+    bytes32 feedId;
+    uint32 validFromTimestamp;
+    uint32 observationsTimestamp;
+    uint192 nativeFee;
+    uint192 linkFee;
+    uint32 expiresAt;
+    uint64 lastUpdateTimestamp;
+    int192 midPrice;
+    uint32 marketStatus;
+  }
+
+  // ----------------- Storage -----------------
+  IVerifierProxy public immutable i_verifierProxy;
+  address private immutable i_owner;
+
+  int192 public lastDecodedPrice;
+
+  // ----------------- Events -----------------
+  event DecodedPrice(int192 price);
+
+  // ----------------- Constructor / modifier -----------------
+  /**
+   * @param _verifierProxy Address of the VerifierProxy on the target network.
+   *        Addresses: https://docs.chain.link/data-streams/crypto-streams
+   */
+  constructor(
+    address _verifierProxy
+  ) {
+    i_owner = msg.sender;
+    i_verifierProxy = IVerifierProxy(_verifierProxy);
+  }
+
+  modifier onlyOwner() {
+    if (msg.sender != i_owner) revert NotOwner(msg.sender);
+    _;
+  }
+
+  // ----------------- Public API -----------------
+
+  /**
+   * @notice Verify a Data Streams report (schema v3 or v8).
+   *
+   * @dev Steps:
+   *  1. Decode the unverified report to get `reportData`.
+   *  2. Read the first two bytes → schema version (`0x0003` or `0x0008`).
+   *     - Revert if the version is unsupported.
+   *  3. Fee handling:
+   *     - Query `s_feeManager()` on the proxy.
+   *       – Non-zero → quote the fee, approve the RewardManager,
+   *         ABI-encode the fee token address for `verify()`.
+   *       – Zero     → no FeeManager; skip quoting/approval and pass `""`.
+   *  4. Call `VerifierProxy.verify()`.
+   *  5. Decode the verified report into the correct struct and emit the price.
+   *
+   *  @param unverifiedReport Full payload returned by Streams Direct.
+   *  @custom:reverts InvalidReportVersion when schema ≠ v3/v8.
+   */
+  function verifyReport(
+    bytes memory unverifiedReport
+  ) external {
+    // ─── 1. & 2. Extract reportData and schema version ──
+    (, bytes memory reportData) = abi.decode(unverifiedReport, (bytes32[3], bytes));
+
+    uint16 reportVersion = (uint16(uint8(reportData[0])) << 8) | uint16(uint8(reportData[1]));
+    if (reportVersion != 3 && reportVersion != 8) {
+      revert InvalidReportVersion(reportVersion);
+    }
+
+    // ─── 3. Fee handling ──
+    IFeeManager feeManager = IFeeManager(address(i_verifierProxy.s_feeManager()));
+
+    bytes memory parameterPayload;
+    if (address(feeManager) != address(0)) {
+      // FeeManager exists — always quote & approve
+      address feeToken = feeManager.i_linkAddress();
+
+      (Common.Asset memory fee,,) = feeManager.getFeeAndReward(address(this), reportData, feeToken);
+
+      IERC20(feeToken).approve(feeManager.i_rewardManager(), fee.amount);
+      parameterPayload = abi.encode(feeToken);
+    } else {
+      // No FeeManager deployed on this chain
+      parameterPayload = bytes("");
+    }
+
+    // ─── 4. Verify through the proxy ──
+    bytes memory verified = i_verifierProxy.verify(unverifiedReport, parameterPayload);
+
+    // ─── 5. Decode & store price ──
+    if (reportVersion == 3) {
+      int192 price = abi.decode(verified, (ReportV3)).price;
+      lastDecodedPrice = price;
+      emit DecodedPrice(price);
+    } else {
+      int192 price = abi.decode(verified, (ReportV8)).midPrice;
+      lastDecodedPrice = price;
+      emit DecodedPrice(price);
+    }
+  }
+
+  /**
+   * @notice Withdraw all balance of an ERC-20 token held by this contract.
+   * @param _beneficiary Address that receives the tokens.
+   * @param _token       ERC-20 token address.
+   */
+  function withdrawToken(
+    address _beneficiary,
+    address _token
+  ) external onlyOwner {
+    uint256 amount = IERC20(_token).balanceOf(address(this));
+    if (amount == 0) revert NothingToWithdraw();
+    IERC20(_token).safeTransfer(_beneficiary, amount);
+  }
+}
+```
 
 ### Initializing the contract
 
