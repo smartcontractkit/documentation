@@ -1250,6 +1250,40 @@ Source: https://docs.chain.link/chainlink-nodes/job-specs/direct-request-get-str
 This is an example v2 (TOML) job spec for returning a *string* in one Chainlink API Call. Note that the job calls the `fulfillOracleRequest2` function. If you are a node operator, use an [Operator contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/operatorforwarder/Operator.sol) with this job.
 To test it from a smart contract, see this [Example](/any-api/get-request/examples/array-response).
 
+
+```toml
+# THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
+# THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
+# DO NOT USE THIS CODE IN PRODUCTION.
+
+type = "directrequest"
+# evmChainID for Sepolia Testnet
+evmChainID = "11155111"
+schemaVersion = 1
+name = "Get > String"
+contractAddress = "YOUR_ORACLE_CONTRACT_ADDRESS"
+maxTaskDuration = "0s"
+minIncomingConfirmations = 0
+observationSource = """
+    decode_log   [type="ethabidecodelog"
+                  abi="OracleRequest(bytes32 indexed specId, address requester, bytes32 requestId, uint256 payment, address callbackAddr, bytes4 callbackFunctionId, uint256 cancelExpiration, uint256 dataVersion, bytes data)"
+                  data="$(jobRun.logData)"
+                  topics="$(jobRun.logTopics)"]
+
+    decode_cbor  [type="cborparse" data="$(decode_log.data)"]
+    fetch        [type="http" method=GET url="$(decode_cbor.get)" allowUnrestrictedNetworkAccess="true"]
+    parse        [type="jsonparse" path="$(decode_cbor.path)" data="$(fetch)"]
+    encode_data  [type="ethabiencode" abi="(bytes32 requestId, string value)" data="{ \\"requestId\\": $(decode_log.requestId), \\"value\\": $(parse) }"]
+    encode_tx    [type="ethabiencode"
+                  abi="fulfillOracleRequest2(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes calldata data)"
+                  data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\":   $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_data)}"
+                  ]
+    submit_tx    [type="ethtx" to="YOUR_ORACLE_CONTRACT_ADDRESS" data="$(encode_tx)"]
+
+    decode_log -> decode_cbor -> fetch -> parse -> encode_data -> encode_tx -> submit_tx
+"""
+```
+
 ---
 
 # GET > Uint256 Example Job Spec
@@ -4033,6 +4067,44 @@ You will create a job that calls an OpenAPI , parses the response and then retur
 
 2. Paste the job specification from above into the text field.
 
+
+   ```toml
+   # THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
+   # THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
+   # DO NOT USE THIS CODE IN PRODUCTION.
+
+   name = "Get > Uint256 - (TOML)"
+   schemaVersion = 1
+   type = "directrequest"
+   # evmChainID for Sepolia Testnet
+   evmChainID = "11155111"
+   # Optional External Job ID: Automatically generated if unspecified
+   # externalJobID = "b1d42cd5-4a3a-4200-b1f7-25a68e48aad8"
+   contractAddress = "YOUR_OPERATOR_CONTRACT_ADDRESS"
+   maxTaskDuration = "0s"
+   minIncomingConfirmations = 0
+   observationSource = """
+       decode_log   [type="ethabidecodelog"
+                     abi="OracleRequest(bytes32 indexed specId, address requester, bytes32 requestId, uint256 payment, address callbackAddr, bytes4 callbackFunctionId, uint256 cancelExpiration, uint256 dataVersion, bytes data)"
+                     data="$(jobRun.logData)"
+                     topics="$(jobRun.logTopics)"]
+
+       decode_cbor  [type="cborparse" data="$(decode_log.data)"]
+       fetch        [type="http" method=GET url="$(decode_cbor.get)" allowUnrestrictedNetworkAccess="true"]
+       parse        [type="jsonparse" path="$(decode_cbor.path)" data="$(fetch)"]
+
+       multiply     [type="multiply" input="$(parse)" times="$(decode_cbor.times)"]
+
+       encode_data  [type="ethabiencode" abi="(bytes32 requestId, uint256 value)" data="{ \\"requestId\\": $(decode_log.requestId), \\"value\\": $(multiply) }"]
+       encode_tx    [type="ethabiencode"
+                     abi="fulfillOracleRequest2(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes calldata data)"
+                     data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\":   $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_data)}"
+                     ]
+       submit_tx    [type="ethtx" to="YOUR_OPERATOR_CONTRACT_ADDRESS" data="$(encode_tx)"]
+
+       decode_log -> decode_cbor -> fetch -> parse -> multiply -> encode_data -> encode_tx -> submit_tx
+   """
+   ```
 
 3. Replace `YOUR_OPERATOR_CONTRACT_ADDRESS` with the address of your deployed operator contract address from the previous steps.
 
@@ -24560,9 +24632,80 @@ This section is similar to the [Fulfilling Requests](/chainlink-nodes/v1/fulfill
    - `YOUR_OPERATOR_CONTRACT_ADDRESS` with the address of your deployed operator contract address.
    - `EOA_ADDRESS` with the **first** Chainlink node EOA.
 
+     ```toml
+     # THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
+     # THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
+     # DO NOT USE THIS CODE IN PRODUCTION.
+
+     # evmChainID for Sepolia Testnet
+     evmChainID = "11155111"
+     contractAddress = "YOUR_OPERATOR_CONTRACT_ADDRESS"
+     forwardingAllowed = true
+     maxTaskDuration = "0s"
+     minIncomingConfirmations = 0
+     name = "Get > Uint256"
+     observationSource = """
+         decode_log   [type="ethabidecodelog"
+                       abi="OracleRequest(bytes32 indexed specId, address requester, bytes32 requestId, uint256 payment, address callbackAddr, bytes4 callbackFunctionId, uint256 cancelExpiration, uint256 dataVersion, bytes data)"
+                       data="$(jobRun.logData)"
+                       topics="$(jobRun.logTopics)"]
+
+         decode_cbor  [type="cborparse" data="$(decode_log.data)"]
+         fetch        [type="http" method=GET url="$(decode_cbor.get)" allowUnrestrictedNetworkAccess="true"]
+         parse        [type="jsonparse" path="$(decode_cbor.path)" data="$(fetch)"]
+
+         multiply     [type="multiply" input="$(parse)" times="$(decode_cbor.times)"]
+
+         encode_data  [type="ethabiencode" abi="(bytes32 requestId, uint256 value)" data="{ \\"requestId\\": $(decode_log.requestId), \\"value\\": $(multiply) }"]
+         encode_tx    [type="ethabiencode"
+                       abi="fulfillOracleRequest2(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes calldata data)"
+                       data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\":   $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_data)}"
+                       ]
+         submit_tx    [type="ethtx" to="YOUR_OPERATOR_CONTRACT_ADDRESS" data="$(encode_tx)" from="[\\"EOA_ADDRESS\\"]"]
+
+         decode_log -> decode_cbor -> fetch -> parse -> multiply -> encode_data -> encode_tx -> submit_tx
+     """
+     schemaVersion = 1
+     type = "directrequest"
+     ```
+
 4. Create the `string` job. Replace:
    - `YOUR_OPERATOR_CONTRACT_ADDRESS` with the address of your deployed operator contract address.
    - `EOA_ADDRESS` with the **second** Chainlink node EOA.
+
+     ```toml
+     # THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
+     # THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
+     # DO NOT USE THIS CODE IN PRODUCTION.
+
+     # evmChainID for Sepolia Testnet
+     evmChainID = "11155111"
+     contractAddress = "YOUR_OPERATOR_CONTRACT_ADDRESS"
+     forwardingAllowed = true
+     maxTaskDuration = "0s"
+     minIncomingConfirmations = 0
+     name = "Get > String"
+     observationSource = """
+         decode_log   [type="ethabidecodelog"
+                       abi="OracleRequest(bytes32 indexed specId, address requester, bytes32 requestId, uint256 payment, address callbackAddr, bytes4 callbackFunctionId, uint256 cancelExpiration, uint256 dataVersion, bytes data)"
+                       data="$(jobRun.logData)"
+                       topics="$(jobRun.logTopics)"]
+
+         decode_cbor  [type="cborparse" data="$(decode_log.data)"]
+         fetch        [type="http" method=GET url="$(decode_cbor.get)" allowUnrestrictedNetworkAccess="true"]
+         parse        [type="jsonparse" path="$(decode_cbor.path)" data="$(fetch)"]
+         encode_data  [type="ethabiencode" abi="(bytes32 requestId, string value)" data="{ \\"requestId\\": $(decode_log.requestId), \\"value\\": $(parse) }"]
+         encode_tx    [type="ethabiencode"
+                       abi="fulfillOracleRequest2(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes calldata data)"
+                       data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\":   $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_data)}"
+                       ]
+         submit_tx    [type="ethtx" to="YOUR_OPERATOR_CONTRACT_ADDRESS" data="$(encode_tx)" from="[\\"EOA_ADDRESS\\"]"]
+
+         decode_log -> decode_cbor -> fetch -> parse -> encode_data -> encode_tx -> submit_tx
+     """
+     schemaVersion = 1
+     type = "directrequest"
+     ```
 
 5. After you create the jobs, record the two job IDs.
 
