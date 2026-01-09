@@ -881,8 +881,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
-          title: "Net Asset Value (NAV)",
-          url: "data-streams/nav-streams",
+          title: "SmartData",
+          url: "data-streams/smartdata-streams",
           children: [
             {
               title: "Report Schema v9 (SmartData)",
