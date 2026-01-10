@@ -16,7 +16,7 @@ import (
 // Add the ApiUrl to your config struct
 type Config struct {
 	Schedule string `json:"schedule"`
-	ApiUrl   string `json:"apiUrl"` 
+	ApiUrl   string `json:"apiUrl"`
 }
 
 type MyResult struct {
@@ -83,4 +83,4 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 
 func main() {
 	wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
-} 
+}
