@@ -1,5 +1,5 @@
 ---
-import { Prism } from "@astrojs/prism"
+import { runHighlighterWithAstro } from "@astrojs/prism/dist/highlighter"
 
 import fs from "node:fs/promises"
 import path from "node:path"
@@ -7,13 +7,38 @@ import path from "node:path"
 export type Props = {
   src: string
   lang?: string
+  filename?: string
   showButtonOnly?: boolean
   optimize?: boolean
   runs?: number
 }
-const { src, lang, showButtonOnly, optimize, runs } = Astro.props as Props
+const { src, lang, filename, showButtonOnly, optimize, runs } = Astro.props as Props
 
 const data = (await fs.readFile(path.join(process.cwd(), "public", src), "utf-8")).toString()
+
+const prismLang = lang ?? "solidity"
+const headerFilename = filename?.trim() || undefined
+const { classLanguage, html } = runHighlighterWithAstro(prismLang, data)
+const languageKey = prismLang.toLowerCase()
+const languageIconSrc = getLanguageIconSrc(languageKey)
+
+function languageBadge(language: string) {
+  const l = language.toLowerCase()
+  if (l === "solidity" || l === "sol") return "SOL"
+  if (["javascript", "js", "mjs", "cjs"].includes(l)) return "JS"
+  if (["typescript", "ts", "mts", "cts"].includes(l)) return "TS"
+  if (["bash", "sh", "shell"].includes(l)) return "SH"
+  if (l === "go" || l === "golang") return "GO"
+  if (l === "json" || l === "jsonc") return "JSON"
+  if (l === "yaml" || l === "yml") return "YAML"
+  return l.slice(0, 4).toUpperCase()
+}
+
+function getLanguageIconSrc(l: string) {
+  // Quick iteration: only Solidity for now (reuses existing asset in this repo)
+  if (l === "solidity" || l === "sol") return "/images/tutorial-icons/solidity_logo.svg"
+  return undefined
+}
 
 const isSolidityFile = src.match(/\.sol/)
 const isSample = isSolidityFile && (src.indexOf("samples/") === 0 || src.indexOf("/samples/") === 0)
@@ -29,7 +54,38 @@ const remixUrl = `https://remix.ethereum.org/#url=https://docs.chain.link/${clea
 }`
 ---
 
-{!showButtonOnly && <Prism code={data} lang={lang ?? "solidity"} />}
+{
+  !showButtonOnly &&
+    (headerFilename ? (
+      <div class="code-sample" data-language={languageKey}>
+        <div class="code-sample__header">
+          <div class="code-sample__header-left">
+            <span class="code-sample__lang" aria-hidden="true">
+              {languageIconSrc ? (
+                <img class="code-sample__lang-icon" src={languageIconSrc} alt="" />
+              ) : (
+                languageBadge(prismLang)
+              )}
+            </span>
+            <span class="code-sample__filename" title={headerFilename}>
+              {headerFilename}
+            </span>
+          </div>
+          <button type="button" class="code-sample__copy-button" aria-label="Copy code">
+            <img src="/assets/icons/copyIcon.svg" alt="Copy code" width="16" height="16" />
+          </button>
+        </div>
+        <pre class={`code-sample__pre code-sample__pre--with-header ${classLanguage}`} data-no-copy-button>
+          <code class={classLanguage} set:html={html} />
+        </pre>
+      </div>
+    ) : (
+      <pre class={classLanguage}>
+        <code class={classLanguage} set:html={html} />
+      </pre>
+    ))
+}
+
 {
   isSample && (
     <div class="remix-callout">
@@ -40,3 +96,146 @@ const remixUrl = `https://remix.ethereum.org/#url=https://docs.chain.link/${clea
     </div>
   )
 }
+
+<style is:global>
+  .code-sample {
+    margin: 1rem 0;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .code-sample__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 10px 14px 11px 14px;
+    background: #3a3a3a;
+    color: #e0e0e0;
+    font-family: var(
+      --font-mono,
+      ui-monospace,
+      SFMono-Regular,
+      Menlo,
+      Monaco,
+      Consolas,
+      "Liberation Mono",
+      "Courier New",
+      monospace
+    );
+    font-size: 0.8rem;
+    line-height: 1;
+  }
+
+  .code-sample__header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+
+  .code-sample__lang {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    height: 24px;
+    padding: 0 6px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .code-sample__lang-icon {
+    width: 24px;
+    height: 24px;
+    display: block;
+    object-fit: contain;
+  }
+
+  /* Solidity SVG is black by default; make it readable on dark headers. */
+  .code-sample[data-language="solidity"] .code-sample__lang-icon,
+  .code-sample[data-language="sol"] .code-sample__lang-icon {
+    filter: brightness(0) invert(1);
+    opacity: 0.95;
+  }
+
+  .code-sample__filename {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .code-sample__copy-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+    flex: 0 0 auto;
+  }
+
+  .code-sample__copy-button:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .code-sample__copy-button > img {
+    display: block;
+    /* Make the icon white/bright on the dark header background */
+    filter: brightness(0) invert(1);
+    opacity: 0.95;
+  }
+
+  .code-sample__pre--with-header {
+    margin: 0;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+  }
+</style>
+
+<script is:inline>
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text)
+    }
+    // Fallback for non-secure contexts (e.g. http://localhost)
+    const textarea = document.createElement("textarea")
+    textarea.value = text
+    textarea.setAttribute("readonly", "")
+    textarea.style.position = "absolute"
+    textarea.style.left = "-9999px"
+    document.body.appendChild(textarea)
+    textarea.select()
+    const ok = document.execCommand("copy")
+    document.body.removeChild(textarea)
+    return ok ? Promise.resolve() : Promise.reject(new Error("Copy failed"))
+  }
+
+  document.addEventListener("click", async (e) => {
+    const button = e.target?.closest?.(".code-sample__copy-button")
+    if (!button) return
+
+    const root = button.closest(".code-sample")
+    const codeEl = root?.querySelector("pre code")
+    const text = codeEl ? codeEl.innerText : ""
+    if (!text) return
+
+    const oldHtml = button.innerHTML
+    try {
+      await copyText(text)
+      button.innerHTML = '<img src="/assets/icons/checkCircleIconGrey.svg" alt="Copied" width="16" height="16" />'
+      window.setTimeout(() => {
+        button.innerHTML = oldHtml
+      }, 1500)
+    } catch (_err) {
+      // no-op; keep original UI
+    }
+  })
+</script>
