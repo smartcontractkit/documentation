@@ -11215,12 +11215,19 @@ This guide explains the two key parts of working with log triggers:
 
 You create an EVM Log trigger by calling the `EVMClient.logTrigger()` method with a `FilterLogTriggerRequest` configuration. This configuration specifies which contract addresses and event topics to listen for.
 
+<Aside type="note" title="Base64 Encoding Required">
+  **All addresses and topic values must be base64 encoded** using the `hexToBase64()` helper function from the CRE SDK.
+  While the workflow simulator accepts raw hex strings for convenience during development, **deployed workflows require
+  base64 encoding**. Always use `hexToBase64()` on addresses and topic values to ensure your workflow works in both
+  simulation and production.
+</Aside>
+
 ### Basic configuration
 
 The simplest configuration listens for **all events** from specific contract addresses:
 
 ```typescript
-import { cre, getNetwork, type Runtime, type EVMLog, Runner, bytesToHex } from "@chainlink/cre-sdk"
+import { cre, getNetwork, type Runtime, type EVMLog, Runner, bytesToHex, hexToBase64 } from "@chainlink/cre-sdk"
 
 type Config = {
   chainSelectorName: string
@@ -11250,7 +11257,7 @@ const initWorkflow = (config: Config) => {
   return [
     cre.handler(
       evmClient.logTrigger({
-        addresses: [config.contractAddress],
+        addresses: [hexToBase64(config.contractAddress)],
       }),
       onLogTrigger
     ),
@@ -11267,10 +11274,11 @@ main()
 
 ### Filtering by event type
 
-To listen for **specific event types**, you need to provide the event's signature hash as the first topic (`Topics[0]`). You can compute this using viem's `keccak256` and `toHex` functions:
+To listen for **specific event types**, you need to provide the event's signature hash as the first topic (`Topics[0]`). You can compute this using viem's `keccak256` and `toBytes` functions:
 
 ```typescript
-import { keccak256, toHex } from "viem"
+import { keccak256, toBytes } from "viem"
+import { hexToBase64 } from "@chainlink/cre-sdk"
 
 const initWorkflow = (config: Config) => {
   const network = getNetwork({
@@ -11286,14 +11294,14 @@ const initWorkflow = (config: Config) => {
   const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
 
   // Compute the event signature hash for Transfer(address,address,uint256)
-  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
+  const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
 
   return [
     cre.handler(
       evmClient.logTrigger({
-        addresses: [config.contractAddress],
+        addresses: [hexToBase64(config.contractAddress)],
         topics: [
-          { values: [transferEventHash] }, // Listen only for Transfer events
+          { values: [hexToBase64(transferEventHash)] }, // Listen only for Transfer events
         ],
       }),
       onLogTrigger
@@ -11310,13 +11318,26 @@ EVM events can have up to 3 `indexed` parameters (in addition to the event signa
 
 - **`addresses`**: The trigger fires if the event is emitted from **any** contract in this list (**OR** logic).
 - **`topics`**: An event must match the conditions for **all** defined topic slots (**AND** logic between topics). Within a single topic, you can provide multiple values, and it will match if the event's topic is **any** of those values (**OR** logic within a topic).
+- **Wildcarding topics**: To skip filtering on a specific topic position, omit it from the topics array or provide an empty values array `{ values: [] }`. For example, to filter on topic 1 and topic 3 but not topic 2, you would provide `[topic0, topic1, { values: [] }, topic3]`.
+
+<Aside type="caution" title="Topic values must be padded to 32 bytes and base64 encoded">
+  EVM logs always store indexed parameters as **32-byte values**. When filtering on topics 1, 2, or 3:
+
+  1. **Pad your values to 32 bytes** using `padHex(value, { size: 32 })` (e.g., addresses are 20 bytes and must be padded)
+  2. **Convert to base64** using `hexToBase64()`
+
+  If you don't pad correctly, your filter won't match the actual log topics and the trigger will not fire.
+
+  Topic 0 (the event signature from `keccak256`) is already 32 bytes and doesn't need padding.
+</Aside>
 
 #### Example 1: Filtering on a single indexed parameter
 
 To trigger only on `Transfer` events where the `from` address is a specific value:
 
 ```typescript
-import { keccak256, toHex, pad } from "viem"
+import { keccak256, toBytes, padHex } from "viem"
+import { hexToBase64 } from "@chainlink/cre-sdk"
 
 const initWorkflow = (config: Config) => {
   const network = getNetwork({
@@ -11331,16 +11352,16 @@ const initWorkflow = (config: Config) => {
 
   const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
 
-  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
-  const aliceAddress = "0xAlice..."
+  const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
+  const aliceAddress = "0xAlice..." as `0x${string}`
 
   return [
     cre.handler(
       evmClient.logTrigger({
-        addresses: [config.contractAddress],
+        addresses: [hexToBase64(config.contractAddress)],
         topics: [
-          { values: [transferEventHash] }, // Topic 0: Event signature (Transfer)
-          { values: [pad(aliceAddress)] }, // Topic 1: from = Alice
+          { values: [hexToBase64(transferEventHash)] }, // Topic 0: Event signature (Transfer)
+          { values: [hexToBase64(padHex(aliceAddress, { size: 32 }))] }, // Topic 1: from = Alice
         ],
       }),
       onLogTrigger
@@ -11349,10 +11370,13 @@ const initWorkflow = (config: Config) => {
 }
 ```
 
+
 <Aside type="note" title="Indexed Parameters and Topics">
-  Only parameters marked as `indexed` in the Solidity event definition can be filtered using topics. The event signature
-  is always `Topics[0]`. Subsequent indexed parameters are `Topics[1]`, `Topics[2]`, and `Topics[3]`. Address values
-  must be padded to 32 bytes using viem's `pad()` function.
+  Only parameters marked as `indexed` in the Solidity event definition can be filtered using topics. The event signature is always `Topics[0]`. Subsequent indexed parameters are `Topics[1]`, `Topics[2]`, and `Topics[3]`. Encoding different types:
+
+  - **Addresses**: Cast as `` `0x${string}` ``, use `padHex(address, { size: 32 })` then `hexToBase64()`
+  - **uint256**: Use `padHex(numberToHex(value), { size: 32 })` then `hexToBase64()`
+  - **bytes32**: Ensure it's 32 bytes, then use `hexToBase64()` directly
 </Aside>
 
 #### Example 2: "AND" filtering
@@ -11360,7 +11384,8 @@ const initWorkflow = (config: Config) => {
 To trigger on `Transfer` events where `from` is Alice **AND** `to` is Bob:
 
 ```typescript
-import { keccak256, toHex, pad } from "viem"
+import { keccak256, toBytes, padHex } from "viem"
+import { hexToBase64 } from "@chainlink/cre-sdk"
 
 const initWorkflow = (config: Config) => {
   const network = getNetwork({
@@ -11375,18 +11400,18 @@ const initWorkflow = (config: Config) => {
 
   const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
 
-  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
-  const aliceAddress = "0xAlice..."
-  const bobAddress = "0xBob..."
+  const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
+  const aliceAddress = "0xAlice..." as `0x${string}`
+  const bobAddress = "0xBob..." as `0x${string}`
 
   return [
     cre.handler(
       evmClient.logTrigger({
-        addresses: [config.contractAddress],
+        addresses: [hexToBase64(config.contractAddress)],
         topics: [
-          { values: [transferEventHash] }, // Topic 0: Event signature (Transfer)
-          { values: [pad(aliceAddress)] }, // Topic 1: from = Alice
-          { values: [pad(bobAddress)] }, // Topic 2: to = Bob
+          { values: [hexToBase64(transferEventHash)] }, // Topic 0: Event signature (Transfer)
+          { values: [hexToBase64(padHex(aliceAddress, { size: 32 }))] }, // Topic 1: from = Alice
+          { values: [hexToBase64(padHex(bobAddress, { size: 32 }))] }, // Topic 2: to = Bob
         ],
       }),
       onLogTrigger
@@ -11400,7 +11425,8 @@ const initWorkflow = (config: Config) => {
 To trigger on `Transfer` events where `from` is **either** Alice **OR** Charlie:
 
 ```typescript
-import { keccak256, toHex, pad } from "viem"
+import { keccak256, toBytes, padHex } from "viem"
+import { hexToBase64 } from "@chainlink/cre-sdk"
 
 const initWorkflow = (config: Config) => {
   const network = getNetwork({
@@ -11415,17 +11441,22 @@ const initWorkflow = (config: Config) => {
 
   const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
 
-  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
-  const aliceAddress = "0xAlice..."
-  const charlieAddress = "0xCharlie..."
+  const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
+  const aliceAddress = "0xAlice..." as `0x${string}`
+  const charlieAddress = "0xCharlie..." as `0x${string}`
 
   return [
     cre.handler(
       evmClient.logTrigger({
-        addresses: [config.contractAddress],
+        addresses: [hexToBase64(config.contractAddress)],
         topics: [
-          { values: [transferEventHash] }, // Topic 0: Event signature (Transfer)
-          { values: [pad(aliceAddress), pad(charlieAddress)] }, // Topic 1: from = Alice OR Charlie
+          { values: [hexToBase64(transferEventHash)] }, // Topic 0: Event signature (Transfer)
+          {
+            values: [
+              hexToBase64(padHex(aliceAddress, { size: 32 })),
+              hexToBase64(padHex(charlieAddress, { size: 32 })),
+            ],
+          }, // Topic 1: from = Alice OR Charlie
         ],
       }),
       onLogTrigger
@@ -11439,7 +11470,8 @@ const initWorkflow = (config: Config) => {
 To listen for **multiple event types** from a single contract, provide multiple event signature hashes in `Topics[0]`:
 
 ```typescript
-import { keccak256, toHex } from "viem"
+import { keccak256, toBytes } from "viem"
+import { hexToBase64 } from "@chainlink/cre-sdk"
 
 const initWorkflow = (config: Config) => {
   const network = getNetwork({
@@ -11454,15 +11486,15 @@ const initWorkflow = (config: Config) => {
 
   const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
 
-  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
-  const approvalEventHash = keccak256(toHex("Approval(address,address,uint256)"))
+  const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
+  const approvalEventHash = keccak256(toBytes("Approval(address,address,uint256)"))
 
   return [
     cre.handler(
       evmClient.logTrigger({
-        addresses: [config.contractAddress],
+        addresses: [hexToBase64(config.contractAddress)],
         topics: [
-          { values: [transferEventHash, approvalEventHash] }, // Listen for Transfer OR Approval
+          { values: [hexToBase64(transferEventHash), hexToBase64(approvalEventHash)] }, // Listen for Transfer OR Approval
         ],
       }),
       onLogTrigger
@@ -11476,6 +11508,9 @@ const initWorkflow = (config: Config) => {
 To listen for the **same event from multiple contracts**, provide multiple addresses:
 
 ```typescript
+import { keccak256, toBytes } from "viem"
+import { hexToBase64 } from "@chainlink/cre-sdk"
+
 const initWorkflow = (config: Config) => {
   const network = getNetwork({
     chainFamily: "evm",
@@ -11489,14 +11524,14 @@ const initWorkflow = (config: Config) => {
 
   const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
 
-  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
+  const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
 
   return [
     cre.handler(
       evmClient.logTrigger({
-        addresses: ["0xTokenA...", "0xTokenB...", "0xTokenC..."],
+        addresses: [hexToBase64("0xTokenA..."), hexToBase64("0xTokenB..."), hexToBase64("0xTokenC...")],
         topics: [
-          { values: [transferEventHash] }, // Listen for Transfer events from any of these contracts
+          { values: [hexToBase64(transferEventHash)] }, // Listen for Transfer events from any of these contracts
         ],
       }),
       onLogTrigger
@@ -11505,13 +11540,61 @@ const initWorkflow = (config: Config) => {
 }
 ```
 
+#### Example 6: Filtering on uint256 indexed parameter
+
+To filter on indexed `uint256` or other numeric types, convert them to a 32-byte hex value:
+
+```typescript
+import { keccak256, toBytes, numberToHex, padHex } from "viem"
+import { hexToBase64 } from "@chainlink/cre-sdk"
+
+const initWorkflow = (config: Config) => {
+  const network = getNetwork({
+    chainFamily: "evm",
+    chainSelectorName: config.chainSelectorName,
+    isTestnet: true,
+  })
+
+  if (!network) {
+    throw new Error(`Network not found: ${config.chainSelectorName}`)
+  }
+
+  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+
+  // Example: event ValueChanged(address indexed user, uint256 indexed newValue)
+  const eventHash = keccak256(toBytes("ValueChanged(address,uint256)"))
+  const userAddress = padHex("0xUser..." as `0x${string}`, { size: 32 })
+  const targetValue = padHex(numberToHex(12345), { size: 32 })
+
+  return [
+    cre.handler(
+      evmClient.logTrigger({
+        addresses: [hexToBase64(config.contractAddress)],
+        topics: [
+          { values: [hexToBase64(eventHash)] }, // Topic 0: Event signature
+          { values: [hexToBase64(userAddress)] }, // Topic 1: user address
+          { values: [hexToBase64(targetValue)] }, // Topic 2: newValue = 12345
+        ],
+      }),
+      onLogTrigger
+    ),
+  ]
+}
+```
+
+<Aside type="note" title="Converting Numbers to Topics">
+  For indexed `uint256` parameters, use `numberToHex()` to convert the number to hex, then `padHex()` to ensure it's 32
+  bytes, and finally `hexToBase64()` to encode it for the trigger configuration. For `bytes32` parameters, ensure
+  they're already 32 bytes and apply `hexToBase64()` directly.
+</Aside>
+
 ### Confidence level
 
 You can set the block confirmation level by adding the `confidence` field to the trigger configuration:
 
 ```typescript
 evmClient.logTrigger({
-  addresses: [config.contractAddress],
+  addresses: [hexToBase64(config.contractAddress)],
   confidence: "CONFIDENCE_LEVEL_FINALIZED", // Wait for finalized blocks
 })
 ```
@@ -11625,7 +11708,7 @@ const onLogTrigger = (runtime: Runtime<Config>, log: EVMLog): string => {
   The type assertion
 
   ```
-  as [\`0x${string}\`, ...\`0x${string}\`[]]
+  as [`0x${string}`, ...`0x${string}`[]]
   ```
 
   tells TypeScript that `topics` is a non-empty array of
@@ -11664,8 +11747,8 @@ const onLogTrigger = (runtime: Runtime<Config>, log: EVMLog): string => {
 Here's a complete example that listens for ERC20 `Transfer` events and decodes them:
 
 ```typescript
-import { cre, getNetwork, type Runtime, type EVMLog, Runner, bytesToHex } from "@chainlink/cre-sdk"
-import { keccak256, toHex, decodeEventLog, parseAbi } from "viem"
+import { cre, getNetwork, type Runtime, type EVMLog, Runner, bytesToHex, hexToBase64 } from "@chainlink/cre-sdk"
+import { keccak256, toBytes, decodeEventLog, parseAbi } from "viem"
 
 type Config = {
   chainSelectorName: string
@@ -11702,13 +11785,13 @@ const initWorkflow = (config: Config) => {
   }
 
   const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
-  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
+  const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
 
   return [
     cre.handler(
       evmClient.logTrigger({
-        addresses: [config.tokenAddress],
-        topics: [{ values: [transferEventHash] }],
+        addresses: [hexToBase64(config.tokenAddress)],
+        topics: [{ values: [hexToBase64(transferEventHash)] }],
         confidence: "CONFIDENCE_LEVEL_FINALIZED",
       }),
       onLogTrigger
