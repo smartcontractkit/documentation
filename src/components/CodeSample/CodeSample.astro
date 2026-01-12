@@ -21,6 +21,9 @@ const headerFilename = filename?.trim() || undefined
 const { classLanguage, html } = runHighlighterWithAstro(prismLang, data)
 const languageKey = prismLang.toLowerCase()
 const languageIconSrc = getLanguageIconSrc(languageKey)
+// NOTE: We inject the <code> element via `set:html` on <pre>.
+// This prevents "first line displacement" caused by formatter-introduced whitespace text nodes inside <pre>.
+const preInnerHtml = `<code class="${classLanguage}">${html}</code>`
 
 function languageBadge(language: string) {
   const l = language.toLowerCase()
@@ -75,14 +78,14 @@ const remixUrl = `https://remix.ethereum.org/#url=https://docs.chain.link/${clea
             <img src="/assets/icons/copyIcon.svg" alt="Copy code" width="16" height="16" />
           </button>
         </div>
-        <pre class={`code-sample__pre code-sample__pre--with-header ${classLanguage}`} data-no-copy-button>
-          <code class={classLanguage} set:html={html} />
-        </pre>
+        <pre
+          class={`code-sample__pre code-sample__pre--with-header ${classLanguage}`}
+          data-no-copy-button
+          set:html={preInnerHtml}
+        />
       </div>
     ) : (
-      <pre class={classLanguage}>
-        <code class={classLanguage} set:html={html} />
-      </pre>
+      <pre class={classLanguage} set:html={preInnerHtml} />
     ))
 }
 
