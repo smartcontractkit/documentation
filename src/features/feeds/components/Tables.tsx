@@ -1017,7 +1017,7 @@ export const StreamsTr = ({ metadata, isMainnet }) => {
                 </dt>
                 <dd>
                   <a href="/data-streams/reference/report-schema-v9" rel="noreferrer" target="_blank">
-                    Report Schema v9 (NAV)
+                    Report Schema v9 (SmartData)
                   </a>
                 </dd>
               </div>
