@@ -111,17 +111,6 @@ Automatic failover handles availability and traffic routing in the following sce
 
 ---
 
-# Tokenized Asset Data Streams
-Source: https://docs.chain.link/data-streams/backed-streams
-
-<Aside type="danger" title="Weekend Usage Disclaimer">
-  **Users should not use these streams during weekends** due to limited exchange activity.
-
-  If usage is necessary, increase fees to mitigate risks. Developers are solely responsible for monitoring and mitigating market integrity risks, as outlined in the [Developer Responsibilities](/data-streams/developer-responsibilities) documentation.
-</Aside>
-
----
-
 # Data Streams Billing
 Source: https://docs.chain.link/data-streams/billing
 
@@ -265,9 +254,9 @@ Positions may need to be manually adjusted if the DEX doesn't support tracking t
 #### Stock splits & reverse splits
 
 <Aside type="note" title="Tokenized Stocks Guidance">
-  Tokenized stocks such as [Backed xStock](/data-streams/reference/report-schema-v10) handle stock splits differently
-  using activation dates and staged multipliers to maintain price continuity. [Learn more about advanced stock split
-  handling](#handling-stock-splits-for-tokenized-assets).
+  Tokenized stocks such as [Tokenized Asset streams](/data-streams/reference/report-schema-v10) handle stock splits
+  differently using activation dates and staged multipliers to maintain price continuity. [Learn more about advanced
+  stock split handling](#handling-stock-splits-for-tokenized-assets).
 </Aside>
 
 A stock split increases the number of shares while reducing the price per share (e.g., 2-for-1 split), often making shares more accessible to investors. A reverse split does the opposite, consolidating shares to increase the price per share.
@@ -860,13 +849,6 @@ RWA markets operate during specific hours, with breaks for holidays and sometime
 ## User Recommendations
 
 For comprehensive guidance on managing risks related to market hours, market gaps, volatility, and corporate actions, see the [Best Practices](/data-streams/concepts/best-practices#market-hours) page.
-
----
-
-# Net Asset Value (NAV) Data Streams
-Source: https://docs.chain.link/data-streams/nav-streams
-
-<FeedPage dataFeedType="streamsNav" initialNetwork="arbitrum" allowNetworkTableExpansion={true} defaultNetworkTableExpanded={false} />
 
 ---
 
@@ -5194,21 +5176,21 @@ The [RWA Advanced (v11)](/data-streams/reference/report-schema-v11) report schem
 
 These advanced fields enable protocols to implement more sophisticated risk management and settlement logic. Where applicable, streams using this schema can provide coverage across extended trading sessions including pre-market, post-market, and overnight hours — though extended hours availability varies by stream. See individual [RWA stream details](/data-streams/rwa-streams?schema=v11) for specific coverage and the [RWA Advanced (v11) reference](/data-streams/reference/report-schema-v11) for complete field specifications.
 
-## Net Asset Value (NAV)
+## SmartData
 
-[Chainlink NAV streams](/data-streams/nav-streams) use the [NAV (v9)](/data-streams/reference/report-schema-v9) report schema to provide real-time, tamper-proof access to the Net Asset Value (`navPerShare`) of tokenized assets, funds, or portfolios. Each report includes NAV per share (`navPerShare`), NAV date (`navDate`), assets under management (`aum`), and ripcord status (`ripcord`). The ripcord is set to true (`1`) by the asset issuer when the consumer should ignore the value being sent (for cases such as maintenance, upstream data source outages, etc). The feed data will remain stale until the ripcord returns false (`0`).
+[Chainlink SmartData streams](/data-streams/smartdata-streams) use the [SmartData (v9)](/data-streams/reference/report-schema-v9) report schema to provide real-time, tamper-proof access to data such as Net Asset Value (`navPerShare`) of tokenized assets, funds, or portfolios, as well as Proof of Reserve data. Each report includes NAV per share (`navPerShare`), NAV date (`navDate`), assets under management (`aum`), and ripcord status (`ripcord`). The ripcord is set to true (`1`) by the asset issuer when the consumer should ignore the value being sent (for cases such as maintenance, upstream data source outages, etc). The feed data will remain stale until the ripcord returns false (`0`).
 
 NAV is a fundamental financial metric that represents the value of an investment vehicle such as a mutual fund or ETF and is calculated as the total assets minus the total liabilities.
 
-Data Streams ensures that any NAV update, whenever it occurs, is captured and made available immediately and at low latency, allowing for seamless integration with onchain applications alongside other real-time data streams. Although the NAV value may not change frequently, Data Streams provides the most recent NAV as soon as it is published by the source.
+Data Streams ensures that any SmartData update, whenever it occurs, is captured and made available immediately and at low latency, allowing for seamless integration with onchain applications alongside other real-time data streams. Although the values may not change frequently, Data Streams provides the most recent data as soon as it is published by the source.
 
 ## Tokenized Asset
 
-[Chainlink Tokenized Asset streams](/data-streams/backed-streams) use the [Tokenized Asset (v10)](/data-streams/reference/report-schema-v10) report schema to provide financial market data for tokenized equities such as [xStock](https://xstocks.com/us) assets. These streams combine data from US equity streams with data from the tokenization service to enable users to handle corporate actions affecting the underlying equities. Each report includes the staleness measure (`lastUpdateTimestamp`), consensus mid price (`price`), market status (`marketStatus`), current multiplier (`currentMultiplier`, the number of underlying shares each xStock is redeemable for), new multiplier (`newMultiplier`, the future number of shares after a scheduled corporate action), activation date/time of the corporate action (`activationDateTime`) and the tokenized price if available on primary or secondary markets (`tokenizedPrice`).
+[Chainlink Tokenized Asset streams](/data-streams/tokenized-asset-streams) use the [Tokenized Asset (v10)](/data-streams/reference/report-schema-v10) report schema to provide financial market data for tokenized equities. These streams combine data from US equity streams with data from tokenization services to enable users to handle corporate actions affecting the underlying equities. Each report includes the staleness measure (`lastUpdateTimestamp`), consensus mid price (`price`), market status (`marketStatus`), current multiplier (`currentMultiplier`, the number of underlying shares each tokenized asset is redeemable for), new multiplier (`newMultiplier`, the future number of shares after a scheduled corporate action), activation date/time of the corporate action (`activationDateTime`) and the tokenized price if available on primary or secondary markets (`tokenizedPrice`).
 
 The underlying US equities trade on traditional exchanges during [market hours](/data-streams/market-hours). These market hours depend per asset class and can be subject to unexpected halts, pauses and other behaviors affecting traditional markets. For this reason, this class of Data Streams contains a market hours flag and a staleness measure to equip our users to handle these events correctly. It is critical that users implement correct safeguards on their end to pause markets, add more conservative risk caps, or implement other measures appropriate for their application.
 
-[Tokenized Asset (v10)](/data-streams/reference/report-schema-v10) is designed specifically for tokenized equities such as xStocks and contains data from the Chainlink US equities streams, combined with data provided by the tokenizer to properly handle corporate actions. With this enhanced data users are able to handle expected and unexpected market events such as pauses, halts and market off hours. The tokenization provider layers in data around the `currentMultiplier`, the `newMultiplier` and the `activationDateTime` of the new multiplier to handle corporate actions.
+[Tokenized Asset (v10)](/data-streams/reference/report-schema-v10) is designed specifically for tokenized equities and contains data from the Chainlink US equities streams, combined with data provided by the tokenizer to properly handle corporate actions. With this enhanced data users are able to handle expected and unexpected market events such as pauses, halts and market off hours. The tokenization provider layers in data around the `currentMultiplier`, the `newMultiplier` and the `activationDateTime` of the new multiplier to handle corporate actions.
 
 ---
 
@@ -5217,7 +5199,7 @@ Source: https://docs.chain.link/data-streams/reference/report-schema-v10
 
 <DataStreams section="dsNotes" />
 
-Chainlink Backed xStock Data Streams adhere to the report schema outlined below.
+Chainlink Tokenized Asset Data Streams adhere to the report schema outlined below.
 
 ### Schema Fields
 
@@ -5246,7 +5228,7 @@ Chainlink Backed xStock Data Streams adhere to the report schema outlined below.
 
 **Notes:**
 
-- Future Backed xStock streams may use different report schemas.
+- Future Tokenized Asset streams may use different report schemas.
 - `price` updates in real time during market open, but may become stale during market closed periods.
 - `currentMultiplier` reflects all past corporate actions and is updated only when a new action is activated.
 - `activationDateTime` and `newMultiplier` provide advance notice of upcoming corporate actions, allowing protocols to prepare.
@@ -5444,12 +5426,12 @@ RWA streams adhere to the report schema outlined below.
 
 ---
 
-# Report Schema: NAV (v9)
+# Report Schema: SmartData (v9)
 Source: https://docs.chain.link/data-streams/reference/report-schema-v9
 
 <DataStreams section="dsNotes" />
 
-Chainlink NAV Data Streams streams adhere to the report schema outlined below.
+Chainlink SmartData streams adhere to the report schema outlined below.
 
 ### Schema Fields
 
@@ -5468,7 +5450,7 @@ Chainlink NAV Data Streams streams adhere to the report schema outlined below.
 
 **Notes:**
 
-- Future NAV streams may use different report schemas.
+- Future SmartData streams may use different report schemas.
 
 ##### `ripcord` Status
 
@@ -5481,6 +5463,13 @@ Chainlink NAV Data Streams streams adhere to the report schema outlined below.
 Source: https://docs.chain.link/data-streams/rwa-streams
 
 <FeedPage dataFeedType="streamsRwa" initialNetwork="arbitrum" allowNetworkTableExpansion={true} defaultNetworkTableExpanded={false} />
+
+---
+
+# SmartData Streams
+Source: https://docs.chain.link/data-streams/smartdata-streams
+
+<FeedPage dataFeedType="streamsNav" initialNetwork="arbitrum" allowNetworkTableExpansion={true} defaultNetworkTableExpanded={false} />
 
 ---
 
@@ -5771,6 +5760,17 @@ Streams Trade is currently available on the following networks:
 - Ethereum
 - Optimism
 - Polygon
+
+---
+
+# Tokenized Asset Data Streams
+Source: https://docs.chain.link/data-streams/tokenized-asset-streams
+
+<Aside type="danger" title="Weekend Usage Disclaimer">
+  **Users should not use these streams during weekends** due to limited exchange activity.
+
+  If usage is necessary, increase fees to mitigate risks. Developers are solely responsible for monitoring and mitigating market integrity risks, as outlined in the [Developer Responsibilities](/data-streams/developer-responsibilities) documentation.
+</Aside>
 
 ---
 
@@ -6306,7 +6306,7 @@ The `verifyReport` function is the core function that handles onchain report ver
     - Schema version `0x0003` corresponds to the [Crypto Advanced (v3)](/data-streams/reference/report-schema-v3).
     - Schema version `0x0008` corresponds to the [RWA Standard (v8)](/data-streams/reference/report-schema-v8).
     - Schema version `0x0007` corresponds to the [Redemption Rates (v7)](/data-streams/reference/report-schema-v7).
-    - Schema version `0x0009` corresponds to the [NAV (v9)](/data-streams/reference/report-schema-v9).
+    - Schema version `0x0009` corresponds to the [SmartData (v9)](/data-streams/reference/report-schema-v9).
     - Schema version `0x000A` corresponds to the [Tokenized Asset (v10)](/data-streams/reference/report-schema-v10).
     - Schema version `0x000B` corresponds to the [RWA Advanced (v11)](/data-streams/reference/report-schema-v11).
   - If the report version is unsupported, the function reverts with an InvalidReportVersion error.
