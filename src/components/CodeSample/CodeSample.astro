@@ -21,8 +21,6 @@ const headerFilename = filename?.trim() || undefined
 const { classLanguage, html } = runHighlighterWithAstro(prismLang, data)
 const languageKey = prismLang.toLowerCase()
 const languageIconSrc = getLanguageIconSrc(languageKey)
-// NOTE: We inject the <code> element via `set:html` on <pre>.
-// This prevents "first line displacement" caused by formatter-introduced whitespace text nodes inside <pre>.
 const preInnerHtml = `<code class="${classLanguage}">${html}</code>`
 
 function languageBadge(language: string) {
@@ -38,8 +36,14 @@ function languageBadge(language: string) {
 }
 
 function getLanguageIconSrc(l: string) {
-  // Quick iteration: only Solidity for now (reuses existing asset in this repo)
-  if (l === "solidity" || l === "sol") return "/images/tutorial-icons/solidity_logo.svg"
+  // Map language names/aliases to icons in `public/images/language-icons/`.
+  if (l === "solidity" || l === "sol") return "/images/language-icons/solidity.svg"
+  if (["typescript", "ts", "mts", "cts"].includes(l)) return "/images/language-icons/typescript.svg"
+  if (["go", "golang"].includes(l)) return "/images/language-icons/go.svg"
+  if (["json", "jsonc"].includes(l)) return "/images/language-icons/json.svg"
+  if (["python", "py"].includes(l)) return "/images/language-icons/python.svg"
+  if (["rust", "rs"].includes(l)) return "/images/language-icons/rust.svg"
+  if (["bash", "sh", "shell", "zsh", "terminal"].includes(l)) return "/images/language-icons/terminal.svg"
   return undefined
 }
 
@@ -63,7 +67,7 @@ const remixUrl = `https://remix.ethereum.org/#url=https://docs.chain.link/${clea
       <div class="code-sample" data-language={languageKey}>
         <div class="code-sample__header">
           <div class="code-sample__header-left">
-            <span class="code-sample__lang" aria-hidden="true">
+            <span class={`code-sample__lang ${languageIconSrc ? "code-sample__lang--icon" : ""}`} aria-hidden="true">
               {languageIconSrc ? (
                 <img class="code-sample__lang-icon" src={languageIconSrc} alt="" />
               ) : (
@@ -100,108 +104,7 @@ const remixUrl = `https://remix.ethereum.org/#url=https://docs.chain.link/${clea
   )
 }
 
-<style is:global>
-  .code-sample {
-    margin: 1rem 0;
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .code-sample__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    padding: 10px 14px 11px 14px;
-    background: #3a3a3a;
-    color: #e0e0e0;
-    font-family: var(
-      --font-mono,
-      ui-monospace,
-      SFMono-Regular,
-      Menlo,
-      Monaco,
-      Consolas,
-      "Liberation Mono",
-      "Courier New",
-      monospace
-    );
-    font-size: 0.8rem;
-    line-height: 1;
-  }
-
-  .code-sample__header-left {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    min-width: 0;
-  }
-
-  .code-sample__lang {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 30px;
-    height: 24px;
-    padding: 0 6px;
-    border-radius: 6px;
-    background: rgba(255, 255, 255, 0.1);
-    font-weight: 600;
-    letter-spacing: 0.02em;
-  }
-
-  .code-sample__lang-icon {
-    width: 24px;
-    height: 24px;
-    display: block;
-    object-fit: contain;
-  }
-
-  /* Solidity SVG is black by default; make it readable on dark headers. */
-  .code-sample[data-language="solidity"] .code-sample__lang-icon,
-  .code-sample[data-language="sol"] .code-sample__lang-icon {
-    filter: brightness(0) invert(1);
-    opacity: 0.95;
-  }
-
-  .code-sample__filename {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .code-sample__copy-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 34px;
-    height: 34px;
-    padding: 0;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    background: rgba(255, 255, 255, 0.08);
-    cursor: pointer;
-    flex: 0 0 auto;
-  }
-
-  .code-sample__copy-button:hover {
-    background: rgba(255, 255, 255, 0.12);
-  }
-
-  .code-sample__copy-button > img {
-    display: block;
-    /* Make the icon white/bright on the dark header background */
-    filter: brightness(0) invert(1);
-    opacity: 0.95;
-  }
-
-  .code-sample__pre--with-header {
-    margin: 0;
-    border-top-left-radius: 0 !important;
-    border-top-right-radius: 0 !important;
-  }
-</style>
+<!-- Styles live in src/styles/code-blocks.css -->
 
 <script is:inline>
   function copyText(text) {
