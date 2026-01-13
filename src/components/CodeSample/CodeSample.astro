@@ -4,6 +4,8 @@ import { runHighlighterWithAstro } from "@astrojs/prism/dist/highlighter"
 import fs from "node:fs/promises"
 import path from "node:path"
 
+import { getLanguageIconSrc, languageBadge } from "../../lib/codeSample/language.js"
+
 export type Props = {
   src: string
   lang?: string
@@ -22,30 +24,6 @@ const { classLanguage, html } = runHighlighterWithAstro(prismLang, data)
 const languageKey = prismLang.toLowerCase()
 const languageIconSrc = getLanguageIconSrc(languageKey)
 const preInnerHtml = `<code class="${classLanguage}">${html}</code>`
-
-function languageBadge(language: string) {
-  const l = language.toLowerCase()
-  if (l === "solidity" || l === "sol") return "SOL"
-  if (["javascript", "js", "mjs", "cjs"].includes(l)) return "JS"
-  if (["typescript", "ts", "mts", "cts"].includes(l)) return "TS"
-  if (["bash", "sh", "shell"].includes(l)) return "SH"
-  if (l === "go" || l === "golang") return "GO"
-  if (l === "json" || l === "jsonc") return "JSON"
-  if (l === "yaml" || l === "yml") return "YAML"
-  return l.slice(0, 4).toUpperCase()
-}
-
-function getLanguageIconSrc(l: string) {
-  // Map language names/aliases to icons in `public/images/language-icons/`.
-  if (l === "solidity" || l === "sol") return "/images/language-icons/solidity.svg"
-  if (["typescript", "ts", "mts", "cts"].includes(l)) return "/images/language-icons/typescript.svg"
-  if (["go", "golang"].includes(l)) return "/images/language-icons/go.svg"
-  if (["json", "jsonc"].includes(l)) return "/images/language-icons/json.svg"
-  if (["python", "py"].includes(l)) return "/images/language-icons/python.svg"
-  if (["rust", "rs"].includes(l)) return "/images/language-icons/rust.svg"
-  if (["bash", "sh", "shell", "zsh", "terminal"].includes(l)) return "/images/language-icons/terminal.svg"
-  return undefined
-}
 
 const isSolidityFile = src.match(/\.sol/)
 const isSample = isSolidityFile && (src.indexOf("samples/") === 0 || src.indexOf("/samples/") === 0)
@@ -103,45 +81,3 @@ const remixUrl = `https://remix.ethereum.org/#url=https://docs.chain.link/${clea
     </div>
   )
 }
-
-<!-- Styles live in src/styles/code-blocks.css -->
-
-<script is:inline>
-  function copyText(text) {
-    if (navigator.clipboard && window.isSecureContext) {
-      return navigator.clipboard.writeText(text)
-    }
-    // Fallback for non-secure contexts (e.g. http://localhost)
-    const textarea = document.createElement("textarea")
-    textarea.value = text
-    textarea.setAttribute("readonly", "")
-    textarea.style.position = "absolute"
-    textarea.style.left = "-9999px"
-    document.body.appendChild(textarea)
-    textarea.select()
-    const ok = document.execCommand("copy")
-    document.body.removeChild(textarea)
-    return ok ? Promise.resolve() : Promise.reject(new Error("Copy failed"))
-  }
-
-  document.addEventListener("click", async (e) => {
-    const button = e.target?.closest?.(".code-sample__copy-button")
-    if (!button) return
-
-    const root = button.closest(".code-sample")
-    const codeEl = root?.querySelector("pre code")
-    const text = codeEl ? codeEl.innerText : ""
-    if (!text) return
-
-    const oldHtml = button.innerHTML
-    try {
-      await copyText(text)
-      button.innerHTML = '<img src="/assets/icons/checkCircleIconGrey.svg" alt="Copied" width="16" height="16" />'
-      window.setTimeout(() => {
-        button.innerHTML = oldHtml
-      }, 1500)
-    } catch (_err) {
-      // no-op; keep original UI
-    }
-  })
-</script>
