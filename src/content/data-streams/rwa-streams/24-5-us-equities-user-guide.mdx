@@ -63,7 +63,7 @@ To construct a **continuous price feed**, users must **dynamically switch** betw
 | `4` (Overnight)   | `TSLA/USD-Streams-OvernightHours` |
 
 <Aside type="note" title="Note">
-  Market status `0` (Unknown) and `5` (Weekend) require custom handling. See the [Building a Continuous Price
+  Market status `0` (Unknown) and `5` (Closed) require custom handling. See the [Building a Continuous Price
   Feed](#building-a-continuous-price-feed) section below.
 </Aside>
 
@@ -113,13 +113,13 @@ Consumers must treat `marketStatus = 0` (Unknown) as a valid state and define de
 - Allow restricted trading within a bounded range (e.g., last-valid price ± threshold)
 - Temporarily reference [tokenized asset](#stream-switching-example-logic) price (where available)
 
-#### Weekends (`marketStatus = 5`)
+#### Closed (`marketStatus = 5`)
 
-Traditional equity markets are closed on weekends, so all three feeds will carry stale values. This reflects true underlying market inactivity rather than an outage or failure.
+Market status `5` indicates the market is closed, which includes weekends, public holidays, and unexpected market closures. During these periods, all three feeds will carry stale values. This reflects true underlying market inactivity rather than an outage or failure.
 
 ##### Mitigation
 
-Consumers must treat `marketStatus = 5` (Weekend) as a valid state and define deterministic behaviors when it is returned. Potential actions include:
+Consumers must treat `marketStatus = 5` (Closed) as a valid state and define deterministic behaviors when it is returned. Potential actions include:
 
 - Pause or lock market activity
 - Allow restricted trading within a bounded range (e.g., last-valid price ± threshold)
@@ -185,7 +185,7 @@ To build a continuous price feed, follow this general decision flow. This is a s
    - **`marketStatus = 2`** (Regular) → **Use Regular Hours stream**
    - **`marketStatus = 3`** (Post-market) → **Use Extended Hours stream**
    - **`marketStatus = 4`** (Overnight) → **Use Overnight Hours stream**
-   - **`marketStatus = 5`** (Weekend) → **Use Tokenized Asset stream** or apply custom risk mitigation
+   - **`marketStatus = 5`** (Closed) → **Use Tokenized Asset stream** or apply custom risk mitigation
 
 4. **Apply additional safeguards** as needed for your protocol (e.g., price jump checks, circuit breakers, holiday calendars, bounded trading ranges)
 
@@ -225,6 +225,7 @@ Please note that these code snippets are illustrative and may require adaptation
 
       // Determine which stream to use
       if (isStale || decoded.marketStatus === 0 || decoded.marketStatus === 5) {
+        // Stale, Unknown, or Closed -> use tokenized asset
         const tokenReport = await client.getLatestReport(TOKENIZED_TSLA)
         return decodeReport(tokenReport.fullReport, tokenReport.feedID).mid
       } else if (decoded.marketStatus === 1 || decoded.marketStatus === 3) {
@@ -260,6 +261,7 @@ Please note that these code snippets are illustrative and may require adaptation
 
         // Determine which stream to use
         if isStale || decoded.MarketStatus == 0 || decoded.MarketStatus == 5 {
+            // Stale, Unknown, or Closed -> use tokenized asset
             tokenReport, _ := client.GetLatestReport(TOKENIZED_TSLA)
             tokenDecoded, _ := feed.Decode(tokenReport.FullReport)
             return tokenDecoded.Mid, nil
@@ -292,6 +294,7 @@ Please note that these code snippets are illustrative and may require adaptation
 
         // Determine which stream to use
         if is_stale || decoded.market_status == 0 || decoded.market_status == 5 {
+            // Stale, Unknown, or Closed -> use tokenized asset
             let token_report = client.get_latest_report(TOKENIZED_TSLA).await?;
             let token_decoded = feed::decode(&token_report.full_report)?;
             Ok(token_decoded.mid)
@@ -370,21 +373,17 @@ Consumers should:
 - Consider pausing markets during corporate action windows to prevent unfair liquidations
 - Implement staleness checks on `lastSeenTimestampNs` to detect when overnight session data stops updating due to symbol-specific trading halts
 
-### Market Closures and Halts Are Not Explicitly Flagged
+### Trading Halts Are Not Explicitly Flagged
 
-Market Status data providers do not flag exchange public holidays or trading halts. As a result, the feeds for instruments listed on U.S. exchanges may appear stale, flatline, or behave inconsistently during these periods even though this reflects true market inactivity.
+Trading halts can occur for various reasons including regulatory actions, pending news announcements, volatility circuit breakers, or operational issues. When the underlying market is halted, this will not be reflected in the `marketStatus` field.
 
-Trading halts can occur for various reasons including regulatory actions, pending news announcements, volatility circuit breakers, or operational issues. Similar to holidays, when the underlying market is halted, this will not be reflected in the `marketStatus` field.
-
-Automated switching logic that relies only on `marketStatus` or staleness signals can incorrectly interpret holiday or halt inactivity as an outage or unexpected feed degradation, leading to unnecessary fallbacks, paused markets, or erroneous risk decisions.
+Automated switching logic that relies only on `marketStatus` or staleness signals can incorrectly interpret halt inactivity as an outage or unexpected feed degradation, leading to unnecessary fallbacks, paused markets, or erroneous risk decisions.
 
 ##### Mitigation
 
 Consumers must:
 
-- Incorporate an authoritative exchange holiday calendar into their integration (for U.S. listings, the NYSE/NASDAQ holiday calendar is the recommended source)
 - Monitor exchange halt notifications and adjust protocol behavior accordingly
-- Keep markets closed during exchange holidays to prevent users from trading at unfair prices
 - Implement appropriate safeguards when trading halts are detected to prevent unfair liquidations or trades at stale prices
 
 For detailed market hours and trading schedules, see the [Market Hours](/data-streams/market-hours) documentation.

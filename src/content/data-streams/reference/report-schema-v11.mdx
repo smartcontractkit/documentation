@@ -67,22 +67,22 @@ For streams with standard market hours coverage. Unless a feed explicitly states
 
 For streams with 24/5 extended hours coverage (e.g., US Equities):
 
-| Value | Status            | Normal Hours (ET)                     | Description                                    |
-| ----- | ----------------- | ------------------------------------- | ---------------------------------------------- |
-| `0`   | **Unknown**       | —                                     | Market status cannot be determined             |
-| `1`   | **Pre-market**    | 4:00am–9:30am Mon–Fri                 | Extended hours before regular trading session  |
-| `2`   | **Regular hours** | 9:30am–4:00pm Mon–Fri                 | Primary trading session with highest liquidity |
-| `3`   | **Post-market**   | 4:00pm–8:00pm Mon–Fri                 | Extended hours after regular trading session   |
-| `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning | Overnight session with limited liquidity       |
-| `5`   | **Weekend**       | 8:00pm Fri–8:00pm Sun                 | Weekend period when primary markets are closed |
-
-<Aside type="note" title="Holidays">
-  During public market holidays (e.g., Christmas, Thanksgiving), the `marketStatus` is expected to return `4`
-  (Overnight) because data providers do not explicitly flag holiday closures. Users should cross-reference major holiday
-  periods using the [Market Hours](/data-streams/market-hours) guide and implement additional safeguards as needed.
-</Aside>
+| Value | Status            | Normal Hours (ET)                     | Description                                                |
+| ----- | ----------------- | ------------------------------------- | ---------------------------------------------------------- |
+| `0`   | **Unknown**       | —                                     | Market status cannot be determined                         |
+| `1`   | **Pre-market**    | 4:00am–9:30am Mon–Fri                 | Extended hours before regular trading session              |
+| `2`   | **Regular hours** | 9:30am–4:00pm Mon–Fri                 | Primary trading session with highest liquidity             |
+| `3`   | **Post-market**   | 4:00pm–8:00pm Mon–Fri                 | Extended hours after regular trading session               |
+| `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning | Overnight session with limited liquidity                   |
+| `5`   | **Closed**        | —                                     | Market closed (weekends, holidays, or unexpected closures) |
 
 Users should implement appropriate safeguards based on market status, such as pausing trading, adjusting risk parameters, or implementing staleness checks during non-regular hours or closed periods.
+
+<Aside type="note" title="Handling Unknown and Closed Status">
+  Consumers should implement logic to handle market status `0` (Unknown) and market status `5` (Closed), as these
+  periods imply no active feed and require a decision on fallback behavior (e.g., using a tokenized price, pausing the
+  market, etc.).
+</Aside>
 
 ### Notes
 
@@ -100,5 +100,4 @@ As a result, these volume fields should not be treated as a proxy for total mark
 #### Additional Notes
 
 - Future streams using this format may adopt different report schemas as needed.
-- Market status cannot detect public holidays. See [Market Hours](/data-streams/market-hours) for major holiday periods.
 - Data availability and sourcing vary by session. Liquidity is typically highest during regular hours and lower during extended and overnight sessions.
