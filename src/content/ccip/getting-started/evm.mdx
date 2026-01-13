@@ -148,13 +148,13 @@ Create a project with the following options:
 2. Install the additional dependencies required by this tutorial:
 
 ```bash filename="terminal"
-npm install @chainlink/contracts-ccip @chainlink/contracts @openzeppelin/contracts viem dotenv
+npm install @chainlink/contracts-ccip @chainlink/contracts @openzeppelin/contracts viem
 npm install --save-dev @nomicfoundation/hardhat-viem @nomicfoundation/hardhat-keystore
 ```
 
 <Aside type="caution" title="WE HIGHLY RECOMMEND NOT USING PLAINTEXT PRIVATE KEYS">
-  It is not recommended to store your sensitive keys in plaintext in `.env` files.
-  In this tutorial we use in-built keystores for both Hardhat and Foundry for their
+1. It is not recommended to store your sensitive keys in plaintext in `.env` files.
+2. In this tutorial we use in-built keystores for both Hardhat and Foundry for their
   respective projects.
 
 </Aside>
@@ -214,7 +214,7 @@ export default defineConfig({
    It will need access to an ERC-20 interface to be able to call the `transfer` function.
 5. Paste the following code into the `IERC20.sol` file:
 
-```solidity filename="contracts/interfaces/IERC20.sol"
+```solidity filename="src/interfaces/IERC20.sol"
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
@@ -264,7 +264,7 @@ console.log("\n[Step 1] Deploying Sender contract on Avalanche Fuji...")
 const sender = await fujiNetwork.viem.deployContract("Sender", [FUJI_ROUTER, FUJI_LINK])
 const fujiPublicClient = await fujiNetwork.viem.getPublicClient()
 
-console.log(`Sender contract has been deployed to this address on the Fuji testnet: ${sender.address}`)
+console.log(`Sender contract has been deployed to this address on Avalanche Fuji: ${sender.address}`)
 console.log(`View on Avascan: https://testnet.avascan.info/blockchain/all/address/${sender.address}`)
 
 // Step 2: Fund Sender with LINK
@@ -284,7 +284,7 @@ console.log("\n[Step 3] Deploying Receiver on Ethereum Sepolia...")
 const receiver = await sepoliaNetwork.viem.deployContract("Receiver", [SEPOLIA_ROUTER])
 const sepoliaPublicClient = await sepoliaNetwork.viem.getPublicClient()
 
-console.log(`Receiver contract has been deployed to this address on the Sepolia testnet: ${receiver.address}`)
+console.log(`Receiver contract has been deployed to this address on Ethereum Sepolia: ${receiver.address}`)
 console.log(`View on Etherscan: https://sepolia.etherscan.io/address/${receiver.address}`)
 console.log(`\n📋 Copy the receiver address since it will be needed to run the verification script 📋 \n`)
 
@@ -294,7 +294,7 @@ console.log("\n[Step 4] Sending cross-chain message...")
 const sendMessageTx = await sender.write.sendMessage([
   SEPOLIA_CHAIN_SELECTOR,
   receiver.address,
-  "Hello World! cdnjkdjmdsd",
+  "Hello World from Hardhat script!",
 ])
 
 console.log("Cross-chain message sent, awaiting confirmation...")
@@ -406,7 +406,7 @@ And use the `cast wallet list` command to verify:
 
       <ClickToZoom
         src="/images/ccip/tutorials/ccip-getting-started-evm-2.png"
-        alt="Hardhat keystore list command output"
+        alt="Foundry keystore list command output"
       />
 
 4. Configure the remappings so that your `foundry.toml` file looks like this:
@@ -510,7 +510,7 @@ contract SendCrossChainMessage is Script {
         // Deploy Sender contract
         console.log("\n[Step 1] Deploying Sender contract on Avalanche Fuji...");
         Sender sender = new Sender(FUJI_ROUTER, FUJI_LINK);
-        console.log("Sender contract has been deployed to this address on the Fuji testnet:", address(sender));
+        console.log("Sender contract has been deployed to this address on Avalanche Fuji:", address(sender));
         console.log(
             string.concat(
                 "View on Avascan: https://testnet.avascan.info/blockchain/all/address/",
@@ -598,7 +598,7 @@ contract VerifyCrossChainMessage is Script {
     function run() public {
 
         address receiverAddress = PASTE_RECEIVER_ADDRESS_HERE;
-        require(receiverAddress != address(0), "Set RECEIVER_ADDRESS (in .env or in script)");
+        require(receiverAddress != address(0), "Set RECEIVER_ADDRESS");
 
         console.log("Connecting to Ethereum Sepolia...");
         uint256 sepoliaFork = vm.createFork(vm.rpcUrl("sepolia"));
@@ -641,9 +641,7 @@ Best for **Web3-native** workflows that prefer a browser-based IDE.
 
 Deploy the `Sender.sol` contract on _Avalanche Fuji_. To see a detailed explanation of this contract, read the [Code Explanation](#sender-code) section.
 
-1. [Open the Sender.sol contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/CCIP/Sender.sol) in Remix.
-
-   <CodeSample src="samples/CCIP/Sender.sol" showButtonOnly={true} />
+1. Open the Sender.sol contract in Remix.
 
 2. Compile the contract.
 
@@ -752,7 +750,7 @@ After the transaction is finalized on the source chain, it will take a few minut
 
 </Accordion>
 
-<Accordion title="Read data" number={3}>
+<Accordion title="Read data" number={4}>
 
 Read data stored by the receiver contract on _Ethereum Sepolia_:
 
