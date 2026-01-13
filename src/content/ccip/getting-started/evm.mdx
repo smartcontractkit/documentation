@@ -32,15 +32,20 @@ In this guide, you will:
 
 ## Before you begin
 
+<Aside type="note" title="Please note">
+  1. We use the same two smart contracts throughout the tutorial. 2. You can check them out in the [Examine the example
+  code](#examine-the-example-code) section.
+</Aside>
+
 You will need:
 
 - Basic [Solidity](https://soliditylang.org/) and [smart contract deployment](/quickstarts/deploy-your-first-contract) experience
-- One [wallet](https://metamask.io/) funded on two CCIP-supported EVM testnets
+- One [wallet](https://metamask.io/) funded on two CCIP-supported EVM testnets: [Avalanche Fuji and Ethereum Sepolia](/ccip/directory/testnet)
 
 - Choose one of the following development environments:
-  - **[Hardhat](https://hardhat.org/docs/getting-started)**
+  - **[Hardhat 3](https://hardhat.org/docs/getting-started)**
   - **[Foundry](https://book.getfoundry.sh/)**
-  - **[Remix](https://remix.ethereum.org/)**
+  - **[Remix](https://remix-ide.readthedocs.io/en/latest/)**
 
 ## Examine the example code
 
@@ -123,7 +128,7 @@ Note that the receiver contract in this example inherits from the base contract 
 
 Send and verify a cross-chain message using CCIP in under 10 minutes, with your favorite development framework.
 
-### Hardhat
+### Hardhat 3
 
 Best for a `Typescript` based scripting workflow where you deploy contracts, send a CCIP message, and verify delivery from the command line.
 {/* Ideal for getting a full end-to-end CCIP flow running quickly. */}
@@ -208,8 +213,8 @@ export default defineConfig({
 <Accordion title="Set up the contracts" number={2}>
 
 1. Create a new directory named `contracts` for your smart contracts if it doesn't already exist.
-2. Create a new file named `Sender.sol` in this directory and paste the sender contract code inside it.
-3. Create a new file named `Receiver.sol` in the same directory and paste the receiver contract code inside it.
+2. Create a new file named `Sender.sol` in this directory and paste the [sender contract code](#examine-the-example-code) inside it.
+3. Create a new file named `Receiver.sol` in the same directory and paste the [receiver contract code](#examine-the-example-code) inside it.
 4. Create a `contracts/interfaces` directory and create a new file named `IERC20.sol` inside it. Our script will need to make a call to the `LINK ERC-20` contract to transfer LINK to the sender contract.
    It will need access to an ERC-20 interface to be able to call the `transfer` function.
 5. Paste the following code into the `IERC20.sol` file:
@@ -396,6 +401,11 @@ forge init
 forge install smartcontractkit/chainlink-ccip smartcontractkit/chainlink-evm OpenZeppelin/openzeppelin-contracts
 ```
 
+<Aside type="note" title="Note">
+  1. `cast wallet import` will throw an error if an `env` variable with the same name already exists. 2. Use `cast
+  wallet list` to check previously set variables.
+</Aside>
+
 3. Use Foundry's `cast` command to create a new keystore for your `PRIVATE_KEY`:
 
 ```bash filename="terminal"
@@ -408,6 +418,12 @@ And use the `cast wallet list` command to verify:
         src="/images/ccip/tutorials/ccip-getting-started-evm-2.png"
         alt="Foundry keystore list command output"
       />
+
+<Aside type="caution" title="Note">
+  You will notice that while we pulled in our RPC URLs via encrypted keystore variables in the Hardhat project, we only
+  encrypt the `PRIVATE_KEY` in Foundry. This is because as of of writing, Foundry supports keystore encryption only for
+  Private keys, and not generic strings.
+</Aside>
 
 4. Configure the remappings so that your `foundry.toml` file looks like this:
 
@@ -431,12 +447,6 @@ remappings = [
 sepolia = "ENTER_YOUR_SEPOLIA_RPC_URL_HERE"
 fuji = "ENTER_YOUR_FUJI_RPC_URL_HERE"
 ```
-
-<Aside type="note" title="Note">
-  You will notice that while we pulled in our RPC URLs via encrypted keystore variables in the Hardhat project, we only
-  encrypt the `PRIVATE_KEY` in Foundry. This is because as of of writing, Foundry supports keystore encryption only for
-  Private keys, and not generic strings.
-</Aside>
 
 </Accordion>
 
