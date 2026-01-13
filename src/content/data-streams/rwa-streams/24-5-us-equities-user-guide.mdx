@@ -27,7 +27,7 @@ Developers are responsible for choosing the appropriate feed and ensuring that t
 
 The data is delivered using the [RWA Advanced (v11) schema](/data-streams/reference/report-schema-v11).
 
-This advanced RWA schema is built to support 24/5 streams, including DON Consensus `mid` price (with its corresponding timestamp `lastSeenTimestampNs` for staleness tracking), order book depth (`bid`, `ask`, `bidVolume`, `askVolume`), execution data (`lastTradedPrice`), and granular market phases (`marketStatus` values for Pre-market, Regular hours, Post-market, Overnight, and Weekend).
+This advanced RWA schema is built to support 24/5 streams, including DON Consensus `mid` price (with its corresponding timestamp `lastSeenTimestampNs` for staleness tracking), order book depth (`bid`, `ask`, `bidVolume`, `askVolume`), execution data (`lastTradedPrice`), and granular market phases (`marketStatus` values for Pre-market, Regular hours, Post-market, Overnight, and Closed).
 
 <Aside type="caution" title="Important: Timestamp Scope">
   The `lastSeenTimestampNs` field reflects the timestamp of the last update for the `mid` price only. This timestamp
@@ -160,7 +160,7 @@ Consumers must have fallback logic in place when the data is stale. Potential ac
 
 ### Stream Switching Example Logic
 
-The following examples demonstrate how to implement a continuous price feed by dynamically switching between phase-specific streams. These examples use tokenized asset prices as the fallback strategy for edge cases (stale data, Unknown market status, and Weekends). Developers may choose alternative mitigation strategies based on their protocol's risk requirements.
+The following examples demonstrate how to implement a continuous price feed by dynamically switching between phase-specific streams. These examples use tokenized asset prices as the fallback strategy for edge cases (stale data, Unknown market status, and Closed). Developers may choose alternative mitigation strategies based on their protocol's risk requirements.
 
 Developers interested in using tokenized assets can find the list of supported assets and schema in the [Tokenized Assets documentation](/data-streams/backed-streams). Using tokenized assets carries its own risks, including liquidity limitations and price deviations from spot markets. Evaluate these factors carefully before integrating tokenized prices into your protocol.
 
