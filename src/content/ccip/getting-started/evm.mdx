@@ -147,7 +147,7 @@ Best for a `Typescript` based scripting workflow where you deploy contracts, sen
 
 1. Open a new terminal in a directory of your choice and run this command:
 
-```bash filename="terminal"
+```bash filename="Terminal"
 npx hardhat --init
 ```
 
@@ -160,8 +160,8 @@ Create a project with the following options:
 
 2. Install the additional dependencies required by this tutorial:
 
-```bash filename="terminal"
-npm install @chainlink/contracts-ccip @chainlink/contracts @openzeppelin/contracts viem
+```bash filename="Terminal"
+npm install @chainlink/contracts-ccip @chainlink/contracts viem
 npm install --save-dev @nomicfoundation/hardhat-viem @nomicfoundation/hardhat-keystore
 ```
 
@@ -174,12 +174,13 @@ npm install --save-dev @nomicfoundation/hardhat-viem @nomicfoundation/hardhat-ke
 
 3. Configure your environment variables using the `hardhat-keystore` plugin.
    If you have followed the tutorial you have already installed the required package.
-   Follow [this page in Hardhat's documentation](https://hardhat.org/docs/guides/configuration-variables) to configure the environment variables:
+   You will need to run the following three commands in succession to configure the environment variables, Hardhat will ask you to enter the password for the keystore
+   for each of the variables:
 
-```env
-SEPOLIA_RPC_URL
-FUJI_RPC_URL
-PRIVATE_KEY
+```bash filename="Terminal"
+npx hardhat keystore set SEPOLIA_RPC_URL
+npx hardhat keystore set FUJI_RPC_URL
+npx hardhat keystore set PRIVATE_KEY
 ```
 
 The output of `npx hardhat keystore list ` should look like this:
@@ -223,23 +224,9 @@ export default defineConfig({
 1. Create a new directory named `contracts` for your smart contracts if it doesn't already exist.
 2. Create a new file named `Sender.sol` in this directory and paste the [sender contract code](#examine-the-example-code) inside it.
 3. Create a new file named `Receiver.sol` in the same directory and paste the [receiver contract code](#examine-the-example-code) inside it.
-4. Create a `contracts/interfaces` directory and create a new file named `IERC20.sol` inside it. Our script will need to make a call to the `LINK ERC-20` contract to transfer LINK to the sender contract.
-   It will need access to an ERC-20 interface to be able to call the `transfer` function.
-5. Paste the following code into the `IERC20.sol` file:
+4. Run the following command to compile the contracts:
 
-```solidity filename="src/interfaces/IERC20.sol"
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
-
-// Re-export OpenZeppelin's IERC20 interface
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-interface IERC20Extended is IERC20 {}
-```
-
-6. Run the following command to compile the contracts:
-
-```bash filename="terminal"
+```bash filename="Terminal"
 npx hardhat build
 ```
 
@@ -252,7 +239,7 @@ npx hardhat build
 
 ```typescript filename="scripts/send-cross-chain-message.ts"
 import { network } from "hardhat"
-import { parseUnits } from "viem"
+import { getContract, parseAbi, parseUnits } from "viem"
 
 // Avalanche Fuji configuration
 const FUJI_ROUTER = "0xF694E193200268f9a4868e4Aa017A0118C9a8177"
@@ -277,15 +264,28 @@ console.log("\n[Step 1] Deploying Sender contract on Avalanche Fuji...")
 const sender = await fujiNetwork.viem.deployContract("Sender", [FUJI_ROUTER, FUJI_LINK])
 const fujiPublicClient = await fujiNetwork.viem.getPublicClient()
 
-console.log(`Sender contract has been deployed to this address on Avalanche Fuji: ${sender.address}`)
+console.log(`Sender contract has been deployed to this address on the Fuji testnet: ${sender.address}`)
 console.log(`View on Avascan: https://testnet.avascan.info/blockchain/all/address/${sender.address}`)
 
 // Step 2: Fund Sender with LINK
 console.log("\n[Step 2] Funding Sender with 1 LINK...")
 
-const fujiLinkToken = await fujiNetwork.viem.getContractAt("IERC20Extended", FUJI_LINK)
+const [fujiWalletClient] = await fujiNetwork.viem.getWalletClients()
+if (!fujiWalletClient) {
+  throw new Error("No wallet client available. Check PRIVATE_KEY + network config in hardhat.config.ts.")
+}
 
-const transferLinkToFujiContract = await fujiLinkToken.write.transfer([sender.address, parseUnits("1", 18)])
+// We create a minimal interface for the LINK token to be able to call the transfer function.
+
+const linkTokenInterfaceAbi = parseAbi(["function transfer(address to, uint256 value) returns (bool)"])
+
+const link = getContract({
+  address: FUJI_LINK,
+  abi: linkTokenInterfaceAbi,
+  client: { public: fujiPublicClient, wallet: fujiWalletClient },
+})
+
+const transferLinkToFujiContract = await link.write.transfer([sender.address, parseUnits("1", 18)])
 
 console.log("LINK token transfer in progress, awaiting confirmation...")
 await fujiPublicClient.waitForTransactionReceipt({ hash: transferLinkToFujiContract, confirmations: 1 })
@@ -297,7 +297,7 @@ console.log("\n[Step 3] Deploying Receiver on Ethereum Sepolia...")
 const receiver = await sepoliaNetwork.viem.deployContract("Receiver", [SEPOLIA_ROUTER])
 const sepoliaPublicClient = await sepoliaNetwork.viem.getPublicClient()
 
-console.log(`Receiver contract has been deployed to this address on Ethereum Sepolia: ${receiver.address}`)
+console.log(`Receiver contract has been deployed to this address on the Sepolia testnet: ${receiver.address}`)
 console.log(`View on Etherscan: https://sepolia.etherscan.io/address/${receiver.address}`)
 console.log(`\n📋 Copy the receiver address since it will be needed to run the verification script 📋 \n`)
 
@@ -326,9 +326,15 @@ This script does the following:
 - Deploys the receiver contract on Ethereum Sepolia.
 - Sends a cross-chain message from the sender contract to the receiver contract.
 
+<Aside type="note" title="LINK token Interface">
+  1. You will notice that we create a minimal interface for the `LINK` token as part of our script. 2. Another option
+  could have been to generate a compiled artifact out of an empty contract that extends the `LinkTokenInterface` from
+  the `@chainlink/contracts` package. 3. Which approach do you prefer?
+</Aside>
+
 3. Run the following command to send the cross-chain message:
 
-```bash filename="terminal"
+```bash filename="Terminal"
 npx hardhat run scripts/send-cross-chain-message.ts
 ```
 
@@ -381,7 +387,7 @@ This script does the following:
 
 3. Run the following command to verify the cross-chain message:
 
-```bash filename="terminal"
+```bash filename="Terminal"
 npx hardhat run scripts/verify-cross-chain-message.ts
 ```
 
@@ -399,14 +405,14 @@ Best for **Solidity-native** workflows that prefer a modular, powerful scripting
 
 1. Open a new terminal in a directory of your choice and run this command to initialize a new Foundry project at the root:
 
-```bash filename="terminal"
+```bash filename="Terminal"
 forge init
 ```
 
 2. Install the required dependencies:
 
-```bash filename="terminal"
-forge install smartcontractkit/chainlink-ccip smartcontractkit/chainlink-evm OpenZeppelin/openzeppelin-contracts
+```bash filename="Terminal"
+forge install smartcontractkit/chainlink-ccip smartcontractkit/chainlink-evm
 ```
 
 <Aside type="note" title="Note">
@@ -416,7 +422,7 @@ forge install smartcontractkit/chainlink-ccip smartcontractkit/chainlink-evm Ope
 
 3. Use Foundry's `cast` command to create a new keystore for your `PRIVATE_KEY`:
 
-```bash filename="terminal"
+```bash filename="Terminal"
 cast wallet import --interactive PRIVATE_KEY
 ```
 
@@ -446,8 +452,6 @@ remappings = [
   "forge-std/=lib/forge-std/src/",
   "@chainlink/contracts-ccip/contracts/=lib/chainlink-ccip/chains/evm/contracts/",
   "@chainlink/contracts/=lib/chainlink-evm/contracts/",
-  "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
-  "@openzeppelin/contracts@5.0.2/=lib/openzeppelin-contracts/contracts/",
 ]
 
 # RPC URLs will be fed to our script via Foundry's config file
@@ -461,25 +465,11 @@ fuji = "ENTER_YOUR_FUJI_RPC_URL_HERE"
 <Accordion title="Set up the contracts" number={2}>
 
 1. Create a new directory named `src` at the root of the project if it doesn't already exist.
-2. Create a new file named `Sender.sol` in this directory and paste the sender contract code inside it.
-3. Create a new file named `Receiver.sol` in the same directory and paste the receiver contract code inside it.
-4. Create a `src/interfaces` directory and create a new file named `IERC20.sol` inside it. Our script will need to make a call to the `LINK ERC-20` contract to transfer LINK to the sender contract.
-   It will need access to an ERC-20 interface to be able to call the `transfer` function.
-5. Paste the following code into the `IERC20.sol` file:
+2. Create a new file named `Sender.sol` in this directory and paste the [sender contract code](#examine-the-example-code) inside it.
+3. Create a new file named `Receiver.sol` in the same directory and paste the [receiver contract code](#examine-the-example-code) inside it.
+4. Run the following command to compile the contracts:
 
-```solidity filename="contracts/interfaces/IERC20.sol"
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
-
-// Re-export OpenZeppelin's IERC20 interface
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-interface IERC20Extended is IERC20 {}
-```
-
-6. Run the following command to compile the contracts:
-
-```bash filename="terminal"
+```bash filename="Terminal"
 forge build
 ```
 
@@ -498,7 +488,7 @@ import {Script, console} from "forge-std/Script.sol";
 
 import {Sender} from "../src/Sender.sol";
 import {Receiver} from "../src/Receiver.sol";
-import {IERC20Extended} from "../src/interfaces/IERC20.sol";
+import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
 
 contract SendCrossChainMessage is Script {
     // Avalanche Fuji configuration
@@ -528,7 +518,7 @@ contract SendCrossChainMessage is Script {
         // Deploy Sender contract
         console.log("\n[Step 1] Deploying Sender contract on Avalanche Fuji...");
         Sender sender = new Sender(FUJI_ROUTER, FUJI_LINK);
-        console.log("Sender contract has been deployed to this address on Avalanche Fuji:", address(sender));
+        console.log("Sender contract has been deployed to this address on the Fuji testnet:", address(sender));
         console.log(
             string.concat(
                 "View on Avascan: https://testnet.avascan.info/blockchain/all/address/",
@@ -538,7 +528,7 @@ contract SendCrossChainMessage is Script {
 
         // Step 2: Fund Sender with 1 LINK
         console.log("\n[Step 2] Funding Sender with 1 LINK on Avalanche Fuji...");
-        IERC20Extended(FUJI_LINK).transfer(address(sender), ONE_LINK);
+        LinkTokenInterface(FUJI_LINK).transfer(address(sender), ONE_LINK);
         vm.stopBroadcast();
         console.log("Funded Sender with 1 LINK on Fuji");
 
@@ -587,7 +577,7 @@ contract SendCrossChainMessage is Script {
 
 3. Run the following command to send the cross-chain message:
 
-```bash filename="terminal"
+```bash filename="Terminal"
 forge script script/SendCrossChainMessage.s.sol:SendCrossChainMessage --broadcast --multi --account PRIVATE_KEY
 ```
 
@@ -643,7 +633,7 @@ contract VerifyCrossChainMessage is Script {
 
 2. Run the following command to verify the cross-chain message:
 
-```bash filename="terminal"
+```bash filename="Terminal"
 forge script script/VerifyCrossChainMessage.s.sol:VerifyCrossChainMessage
 ```
 
