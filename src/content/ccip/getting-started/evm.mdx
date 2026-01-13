@@ -105,8 +105,16 @@ When you deploy the contract, you define the router address. The receiver contra
 On the destination blockchain:
 
 1. The CCIP Router invokes the `ccipReceive` [function](/ccip/api-reference/evm/v1.6.1/ccip-receiver#ccipreceive). **Note**: This function is protected by the `onlyRouter` [modifier](/ccip/api-reference/evm/v1.6.1/ccip-receiver#onlyrouter), which ensures that only the router can call the receiver contract.
-1. The `ccipReceive` [function](/ccip/api-reference/evm/v1.6.1/ccip-receiver#ccipreceive) calls an internal function `_ccipReceive` [function](/ccip/api-reference/evm/v1.6.1/ccip-receiver#_ccipreceive). The receiver contract implements this function.
-1. This `_ccipReceive` [function](/ccip/api-reference/evm/v1.6.1/ccip-receiver#_ccipreceive) expects an `Any2EVMMessage` [struct](/ccip/api-reference/evm/v1.6.1/client#any2evmmessage) that contains the following values:
+
+2. The `ccipReceive` [function](/ccip/api-reference/evm/v1.6.1/ccip-receiver#ccipreceive) calls an internal function `_ccipReceive` [function](/ccip/api-reference/evm/v1.6.1/ccip-receiver#_ccipreceive). The receiver contract implements this function.
+
+<Aside type="caution" title="_ccipReceive">
+  - It is critical for the receiver contract to implement this function. - The CCIP router will look for this function
+  to deliver the message to the receiver contract. - The message won't be delivered to the receiver contract if this
+  function is not implemented correctly.
+</Aside>
+
+3. This `_ccipReceive` [function](/ccip/api-reference/evm/v1.6.1/ccip-receiver#_ccipreceive) expects an `Any2EVMMessage` [struct](/ccip/api-reference/evm/v1.6.1/client#any2evmmessage) that contains the following values:
    - The CCIP `messageId`.
    - The `sourceChainSelector`.
    - The `sender` address in bytes format. The sender is a contract deployed on an EVM-compatible blockchain, so the address is decoded from bytes to an Ethereum address using the [ABI specification](https://docs.soliditylang.org/en/v0.8.20/abi-spec.html).
