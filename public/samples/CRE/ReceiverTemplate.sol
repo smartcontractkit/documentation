@@ -75,7 +75,10 @@ abstract contract ReceiverTemplate is IReceiver, Ownable {
 
   /// @inheritdoc IReceiver
   /// @dev Performs optional validation checks based on which permission fields are set
-  function onReport(bytes calldata metadata, bytes calldata report) external override {
+  function onReport(
+    bytes calldata metadata,
+    bytes calldata report
+  ) external override {
     // Security Check 1: Verify caller is the trusted Chainlink Forwarder (if configured)
     if (s_forwarderAddress != address(0) && msg.sender != s_forwarderAddress) {
       revert InvalidSender(msg.sender, s_forwarderAddress);
