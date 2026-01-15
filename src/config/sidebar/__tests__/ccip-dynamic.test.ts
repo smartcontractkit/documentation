@@ -296,9 +296,11 @@ describe("CCIP Sidebar Configuration", () => {
     it("should have URLs on leaf nodes (items without children)", () => {
       const checkLeafNodes = (item: SectionContent) => {
         if (!item.children || item.children.length === 0) {
-          // Leaf node - should have a URL
-          expect(item.url).toBeDefined()
-          expect(typeof item.url).toBe("string")
+          // Leaf node - should have a URL (except for non-link sidebar separators)
+          if (item.type !== "separator") {
+            expect(item.url).toBeDefined()
+            expect(typeof item.url).toBe("string")
+          }
         }
         if (item.children) {
           item.children.forEach(checkLeafNodes)

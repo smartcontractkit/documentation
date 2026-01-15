@@ -59,6 +59,15 @@ const PageLink = ({ page, currentPath, level }: { page: Page; currentPath: strin
   )
 }
 
+const Separator = ({ page, level }: { page: Page; level: number }) => {
+  const chainAttr = page.chainTypes ? page.chainTypes.join(",") : "universal"
+  return (
+    <div className={`${styles.separator} subproduct-separator level-${level}`} data-chain-types={chainAttr}>
+      {page.label}
+    </div>
+  )
+}
+
 const renderPages = (pages: Page[], currentPath: string, currentLang: string, level = 0): React.ReactNode[] => {
   return pages
     .filter((page) => {
@@ -69,10 +78,15 @@ const renderPages = (pages: Page[], currentPath: string, currentLang: string, le
       // If no sdkLang, always show (language-agnostic pages)
       return true
     })
-    .map((page) => {
+    .map((page, idx) => {
+      const key = `${page.label}-${page.href}-${level}-${idx}`
       return (
-        <React.Fragment key={`${page.label}-${page.href}`}>
-          <PageLink page={page} currentPath={currentPath} level={level} />
+        <React.Fragment key={key}>
+          {page.type === "separator" ? (
+            <Separator page={page} level={level} />
+          ) : (
+            <PageLink page={page} currentPath={currentPath} level={level} />
+          )}
           {page.children && renderPages(page.children, currentPath, currentLang, level + 1)}
         </React.Fragment>
       )

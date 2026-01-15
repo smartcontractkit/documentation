@@ -12,6 +12,11 @@ export type Page = {
   sdkLang?: string
   chainTypes?: ChainType[]
   highlightAsCurrent?: string[]
+  /**
+   * Special rendering behavior for this item in navigation UIs.
+   * - "separator": A non-clickable header used to visually group links.
+   */
+  type?: "separator"
   children?: Page[]
 }
 

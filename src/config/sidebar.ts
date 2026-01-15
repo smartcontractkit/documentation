@@ -21,9 +21,16 @@ import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/
  * @property children - Optional array of nested navigation items
  * @property isCollapsible - Optional flag to control if a section can be collapsed
  * @property chainTypes - Optional array of chain types this item belongs to (for chain-aware sections like CCIP)
+ * @property type - Optional discriminator for special non-link items rendered in the sidebar UI
  */
 export type SectionContent = {
   title: string
+  /**
+   * Special rendering behavior for this item in the sidebar UI.
+   *
+   * - "separator": A non-clickable header used to visually group items within a section.
+   */
+  type?: "separator"
   url?: string
   highlightAsCurrent?: string[]
   children?: SectionContent[]

@@ -20,6 +20,7 @@ interface Page {
   href: string
   sdkLang?: string
   chainTypes?: ChainType[]
+  type?: "separator"
   children?: Page[]
 }
 
@@ -28,6 +29,7 @@ interface SidebarContent {
   url?: string
   highlightAsCurrent?: string[]
   chainTypes?: ChainType[]
+  type?: "separator"
   children?: SidebarContent[]
 }
 
@@ -43,6 +45,7 @@ const mapContents = (contents: SidebarContent[], pageSdkLangMap: Map<string, str
       ...(sdkLang && { sdkLang }),
       ...(page.chainTypes && { chainTypes: page.chainTypes }),
       ...(page.highlightAsCurrent && { highlightAsCurrent: page.highlightAsCurrent }),
+      ...(page.type && { type: page.type }),
     }
 
     if (page.children && Array.isArray(page.children)) {
