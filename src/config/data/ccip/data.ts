@@ -19,7 +19,7 @@ import {
 } from "./types.ts"
 import { determineTokenMechanism } from "./utils.ts"
 import { ExplorerInfo, SupportedChain, ChainType } from "@config/types.ts"
-import { VERIFIER_LOGOS_PATH } from "@config/cdn.ts"
+import { NETWORK_ICON_PATH, VERIFIER_ICON_PATH } from "@config/cdn.ts"
 import {
   directoryToSupportedChain,
   getChainIcon,
@@ -31,6 +31,7 @@ import {
   getTokenIconUrl,
   getNativeCurrency,
 } from "@features/utils/index.ts"
+import { normalizeTechnologyName } from "src/features/utils/networkIcons.ts"
 
 // For mainnet
 import chainsMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/chains.json" with { type: "json" }
@@ -852,8 +853,20 @@ export const loadVerifiersData = ({ environment, version }: { environment: Envir
  * Get logo URL for a verifier by ID
  * Uses CloudFront CDN, same infrastructure as token icons
  */
-export const getVerifierLogoUrl = (verifierId: string): string => {
-  return `${VERIFIER_LOGOS_PATH}/${verifierId}.svg`
+export const getVerifierIconUrl = (verifierId: string): string => {
+  return `${VERIFIER_ICON_PATH}/${verifierId}.svg`
+}
+
+/**
+ * Get logo URL for a network by ID
+ * Uses CloudFront CDN, same infrastructure as token icons
+ */
+export const getNetworkIconUrl = (networkName: string | undefined): string | undefined => {
+  if (!networkName) {
+    return
+  }
+  const normalizedName = normalizeTechnologyName(networkName)
+  return `${NETWORK_ICON_PATH}/${normalizedName}.svg`
 }
 
 /**
@@ -889,7 +902,7 @@ export const getAllVerifiers = ({
         ...metadata,
         network: networkId,
         address,
-        logo: getVerifierLogoUrl(metadata.id),
+        logo: getVerifierIconUrl(metadata.id),
       })
     }
   }
@@ -927,7 +940,7 @@ export const getVerifiersByNetwork = ({
       ...metadata,
       network: networkId,
       address,
-      logo: getVerifierLogoUrl(metadata.id),
+      logo: getVerifierIconUrl(metadata.id),
     })
   }
 
@@ -996,7 +1009,7 @@ export const getVerifier = ({
     ...metadata,
     network: networkId,
     address,
-    logo: getVerifierLogoUrl(metadata.id),
+    logo: getVerifierIconUrl(metadata.id),
   }
 }
 

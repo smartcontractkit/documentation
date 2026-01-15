@@ -10,8 +10,9 @@ export type Props = {
   showButtonOnly?: boolean
   optimize?: boolean
   runs?: number
+  showButtons?: boolean
 }
-const { src, lang, showButtonOnly, optimize, runs } = Astro.props as Props
+const { src, lang, showButtonOnly, optimize, runs, showButtons = true } = Astro.props as Props
 
 const data = (await fs.readFile(path.join(process.cwd(), "public", src), "utf-8")).toString()
 
@@ -31,7 +32,7 @@ const remixUrl = `https://remix.ethereum.org/#url=https://docs.chain.link/${clea
 
 {!showButtonOnly && <Prism code={data} lang={lang ?? "solidity"} />}
 {
-  isSample && (
+  isSample && showButtons && (
     <div class="remix-callout">
       <a href={remixUrl} target="_blank">
         Open in Remix

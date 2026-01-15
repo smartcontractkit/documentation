@@ -33,6 +33,13 @@ interface SearchData {
     }
     lane: LaneConfig
   }>
+  verifiers: Array<{
+    id: string
+    name: string
+    type: string
+    logo: string
+    totalNetworks: number
+  }>
 }
 
 interface WorkerMessage {
@@ -44,6 +51,7 @@ interface WorkerResponse {
   networks: SearchData["chains"]
   tokens: SearchData["tokens"]
   lanes: SearchData["lanes"]
+  verifiers: SearchData["verifiers"]
 }
 
 self.onmessage = (event: MessageEvent<WorkerMessage>) => {
@@ -51,7 +59,7 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
   const { search, data } = event.data
 
   if (!search || !data) {
-    self.postMessage({ networks: [], tokens: [], lanes: [] } as WorkerResponse)
+    self.postMessage({ networks: [], tokens: [], lanes: [], verifiers: [] } as WorkerResponse)
     return
   }
 
@@ -74,7 +82,15 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
     return matchesNetwork && hasTokens
   })
 
-  self.postMessage({ networks, tokens, lanes } as WorkerResponse)
+  // Filter verifiers
+  const verifiers = data.verifiers.filter(
+    (verifier) =>
+      verifier.name.toLowerCase().includes(searchLower) ||
+      verifier.id.toLowerCase().includes(searchLower) ||
+      verifier.type.toLowerCase().includes(searchLower)
+  )
+
+  self.postMessage({ networks, tokens, lanes, verifiers } as WorkerResponse)
 }
 
 // Export types for use in main thread

@@ -1,35 +1,47 @@
-import { useState } from "react"
-import SeeMore from "../SeeMore/SeeMore.tsx"
-import "./TokenGrid.css"
-import TokenCard from "../Cards/TokenCard.tsx"
+import { fallbackTokenIconUrl } from "~/features/utils/index.ts"
+import Card from "../Cards/Card.tsx"
+import Grid from "../Landing/Grid.tsx"
 
 interface TokenGridProps {
   tokens: {
     id: string
     logo: string
+    totalNetworks?: number
   }[]
   environment: string
 }
 
-const BEFORE_SEE_MORE = 6 * 4 // Number of networks to show before the "See more" button, 6 rows x 4 items
+const BEFORE_SEE_MORE = 2 * 4 // Number of tokens to show before the "See more" button, 2 rows x 4 items
 
-function NetworkGrid({ tokens, environment }: TokenGridProps) {
-  const [seeMore, setSeeMore] = useState(tokens.length <= BEFORE_SEE_MORE)
+function TokenGrid({ tokens, environment }: TokenGridProps) {
   return (
-    <>
-      <div className="tokens__grid">
-        {tokens.slice(0, seeMore ? tokens.length : BEFORE_SEE_MORE).map((token) => (
-          <TokenCard
-            id={token.id}
+    <Grid
+      items={tokens}
+      initialDisplayCount={BEFORE_SEE_MORE}
+      seeMoreLabel="View all tokens"
+      renderItem={(token) => {
+        const subtitle =
+          token.totalNetworks !== undefined
+            ? `${token.totalNetworks} ${token.totalNetworks === 1 ? "network" : "networks"}`
+            : undefined
+        const logoElement = (
+          <object data={token.logo} type="image/png" aria-label={`${token.id} token logo`}>
+            <img src={fallbackTokenIconUrl} alt={`${token.id} token logo`} loading="lazy" />
+          </object>
+        )
+        return (
+          <Card
             key={token.id}
-            logo={token.logo}
+            logo={logoElement}
+            title={token.id}
+            subtitle={subtitle}
             link={`/ccip/directory/${environment}/token/${token.id}`}
+            ariaLabel={`View ${token.id} token details`}
           />
-        ))}
-      </div>
-      {!seeMore && <SeeMore onClick={() => setSeeMore(!seeMore)} />}
-    </>
+        )
+      }}
+    />
   )
 }
 
-export default NetworkGrid
+export default TokenGrid
