@@ -34,8 +34,7 @@ export function isFeedVisible(
   // ===========================================================================
   // 1. Universal Exclusions
   // ===========================================================================
-  // Always hide feeds marked as hidden in metadata or docs
-  if (feed.feedCategory === "hidden" || feed.docs?.hidden) return false
+  if (feed.docs?.hidden) return false
 
   const isDeprecating = ecosystem === "deprecating"
   const isStreams =

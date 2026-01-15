@@ -333,11 +333,11 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
                 url: "ccip/tutorials/evm/offchain/ccip-tools/get-status-offchain",
                 chainTypes: ["evm"],
               },
-              {
-                title: "Get Supported Tokens",
-                url: "ccip/tutorials/evm/offchain/ccip-tools/get-supported-tokens",
-                chainTypes: ["evm"],
-              },
+              // {
+              //   title: "Get Supported Tokens",
+              //   url: "ccip/tutorials/evm/offchain/ccip-tools/get-supported-tokens",
+              //   chainTypes: ["evm"],
+              // },
             ],
           },
         ],

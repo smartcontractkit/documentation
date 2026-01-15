@@ -373,6 +373,182 @@ contract VRFD20 is VRFConsumerBaseV2Plus {
 ```
 
 
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+
+/**
+ * @notice A Chainlink VRF consumer which uses randomness to mimic the rolling
+ * of a 20 sided dice
+ */
+
+/**
+ * Request testnet LINK and ETH here: https://faucets.chain.link/
+ * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here:
+ * https://docs.chain.link/docs/link-token-contracts/
+ */
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+contract VRFD20 is VRFConsumerBaseV2Plus {
+  uint256 private constant ROLL_IN_PROGRESS = 42;
+
+  // Your subscription ID.
+  uint256 public s_subscriptionId;
+
+  // Sepolia coordinator. For other networks,
+  // see https://docs.chain.link/vrf/v2-5/supported-networks#configurations
+  address public vrfCoordinator = 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B;
+
+  // The gas lane to use, which specifies the maximum gas price to bump to.
+  // For a list of available gas lanes on each network,
+  // see https://docs.chain.link/vrf/v2-5/supported-networks#configurations
+  bytes32 public s_keyHash = 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
+
+  // Depends on the number of requested values that you want sent to the
+  // fulfillRandomWords() function. Storing each word costs about 20,000 gas,
+  // so 40,000 is a safe default for this example contract. Test and adjust
+  // this limit based on the network that you select, the size of the request,
+  // and the processing of the callback request in the fulfillRandomWords()
+  // function.
+  uint32 public callbackGasLimit = 40_000;
+
+  // The default is 3, but you can set this higher.
+  uint16 public requestConfirmations = 3;
+
+  // For this example, retrieve 1 random value in one request.
+  // Cannot exceed VRFCoordinatorV2_5.MAX_NUM_WORDS.
+  uint32 public numWords = 1;
+
+  // map rollers to requestIds
+  mapping(uint256 => address) private s_rollers;
+  // map vrf results to rollers
+  mapping(address => uint256) private s_results;
+
+  event DiceRolled(uint256 indexed requestId, address indexed roller);
+  event DiceLanded(uint256 indexed requestId, uint256 indexed result);
+
+  /**
+   * @notice Constructor inherits VRFConsumerBaseV2Plus
+   *
+   * @dev NETWORK: Sepolia
+   *
+   * @param subscriptionId subscription ID that this consumer contract can use
+   */
+  constructor(
+    uint256 subscriptionId
+  ) VRFConsumerBaseV2Plus(vrfCoordinator) {
+    s_subscriptionId = subscriptionId;
+  }
+
+  /**
+   * @notice Requests randomness
+   * @dev Warning: if the VRF response is delayed, avoid calling requestRandomness repeatedly
+   * as that would give miners/VRF operators latitude about which VRF response arrives first.
+   * @dev You must review your implementation details with extreme care.
+   *
+   * @param roller address of the roller
+   */
+  function rollDice(
+    address roller
+  ) public onlyOwner returns (uint256 requestId) {
+    require(s_results[roller] == 0, "Already rolled");
+    // Will revert if subscription is not set and funded.
+    requestId = s_vrfCoordinator.requestRandomWords(
+      VRFV2PlusClient.RandomWordsRequest({
+        keyHash: s_keyHash,
+        subId: s_subscriptionId,
+        requestConfirmations: requestConfirmations,
+        callbackGasLimit: callbackGasLimit,
+        numWords: numWords,
+        extraArgs: VRFV2PlusClient._argsToBytes(
+          // Set nativePayment to true to pay for VRF requests with Sepolia ETH instead of LINK
+          VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
+        )
+      })
+    );
+
+    s_rollers[requestId] = roller;
+    s_results[roller] = ROLL_IN_PROGRESS;
+    emit DiceRolled(requestId, roller);
+  }
+
+  /**
+   * @notice Callback function used by VRF Coordinator to return the random number to this contract.
+   *
+   * @dev Some action on the contract state should be taken here, like storing the result.
+   * @dev WARNING: take care to avoid having multiple VRF requests in flight if their order of arrival would result
+   * in contract states with different outcomes. Otherwise miners or the VRF operator would could take advantage
+   * by controlling the order.
+   * @dev The VRF Coordinator will only send this function verified responses, and the parent VRFConsumerBaseV2
+   * contract ensures that this method only receives randomness from the designated VRFCoordinator.
+   *
+   * @param requestId uint256
+   * @param randomWords  uint256[] The random result returned by the oracle.
+   */
+  function fulfillRandomWords(
+    uint256 requestId,
+    uint256[] calldata randomWords
+  ) internal override {
+    uint256 d20Value = (randomWords[0] % 20) + 1;
+    s_results[s_rollers[requestId]] = d20Value;
+    emit DiceLanded(requestId, d20Value);
+  }
+
+  /**
+   * @notice Get the house assigned to the player once the address has rolled
+   * @param player address
+   * @return house as a string
+   */
+  function house(
+    address player
+  ) public view returns (string memory) {
+    require(s_results[player] != 0, "Dice not rolled");
+    require(s_results[player] != ROLL_IN_PROGRESS, "Roll in progress");
+    return _getHouseName(s_results[player]);
+  }
+
+  /**
+   * @notice Get the house name from the id
+   * @param id uint256
+   * @return house name string
+   */
+  function _getHouseName(
+    uint256 id
+  ) private pure returns (string memory) {
+    string[20] memory houseNames = [
+      "Targaryen",
+      "Lannister",
+      "Stark",
+      "Tyrell",
+      "Baratheon",
+      "Martell",
+      "Tully",
+      "Bolton",
+      "Greyjoy",
+      "Arryn",
+      "Frey",
+      "Mormont",
+      "Tarley",
+      "Dayne",
+      "Umber",
+      "Valeryon",
+      "Manderly",
+      "Clegane",
+      "Glover",
+      "Karstark"
+    ];
+    return houseNames[id - 1];
+  }
+}
+```
+
 You have now completed all necessary functions to generate randomness and assign the user a *Game of Thrones* house. We've added a few helper functions in there to make using the contract easier and more flexible. You can deploy and interact with the complete contract in Remix.
 
 ## How do I deploy to testnet?
@@ -473,6 +649,128 @@ If using subscriptions, [create and fund a new VRF v2.5 subscription](/vrf/v2-5/
 
 For direct funding, deploy the [`DirectFundingConsumer`](/samples/VRF/v2-5/DirectFundingConsumer.sol) example:
 
+```sol
+// SPDX-License-Identifier: MIT
+// An example of a consumer contract that directly pays for each request.
+pragma solidity ^0.8.20;
+
+import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
+import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
+import {VRFV2PlusWrapperConsumerBase} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapperConsumerBase.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+
+/**
+ * Request testnet LINK and ETH here: https://faucets.chain.link/
+ * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here:
+ * https://docs.chain.link/docs/link-token-contracts/
+ */
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+contract DirectFundingConsumer is VRFV2PlusWrapperConsumerBase, ConfirmedOwner {
+  event RequestSent(uint256 requestId, uint32 numWords);
+  event RequestFulfilled(uint256 requestId, uint256[] randomWords, uint256 payment);
+
+  struct RequestStatus {
+    uint256 paid; // amount paid in link
+    bool fulfilled; // whether the request has been successfully fulfilled
+    uint256[] randomWords;
+  }
+
+  mapping(uint256 => RequestStatus) public s_requests; /* requestId --> requestStatus */
+
+  // past requests Id.
+  uint256[] public requestIds;
+  uint256 public lastRequestId;
+
+  // Depends on the number of requested values that you want sent to the
+  // fulfillRandomWords() function. Test and adjust
+  // this limit based on the network that you select, the size of the request,
+  // and the processing of the callback request in the fulfillRandomWords()
+  // function.
+  uint32 public callbackGasLimit = 100_000;
+
+  // The default is 3, but you can set this higher.
+  uint16 public requestConfirmations = 3;
+
+  // For this example, retrieve 2 random values in one request.
+  // Cannot exceed VRFV2Wrapper.getConfig().maxNumWords.
+  uint32 public numWords = 2;
+
+  // Address LINK - hardcoded for Sepolia
+  address public linkAddress = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
+
+  // address WRAPPER - hardcoded for Sepolia
+  address public wrapperAddress = 0x195f15F2d49d693cE265b4fB0fdDbE15b1850Cc1;
+
+  constructor() ConfirmedOwner(msg.sender) VRFV2PlusWrapperConsumerBase(wrapperAddress) {}
+
+  function requestRandomWords(
+    bool enableNativePayment
+  ) external onlyOwner returns (uint256) {
+    bytes memory extraArgs =
+      VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: enableNativePayment}));
+    uint256 requestId;
+    uint256 reqPrice;
+    if (enableNativePayment) {
+      (requestId, reqPrice) = requestRandomnessPayInNative(callbackGasLimit, requestConfirmations, numWords, extraArgs);
+    } else {
+      (requestId, reqPrice) = requestRandomness(callbackGasLimit, requestConfirmations, numWords, extraArgs);
+    }
+    s_requests[requestId] = RequestStatus({paid: reqPrice, randomWords: new uint256[](0), fulfilled: false});
+    requestIds.push(requestId);
+    lastRequestId = requestId;
+    emit RequestSent(requestId, numWords);
+    return requestId;
+  }
+
+  function fulfillRandomWords(
+    uint256 _requestId,
+    uint256[] memory _randomWords
+  ) internal override {
+    require(s_requests[_requestId].paid > 0, "request not found");
+    s_requests[_requestId].fulfilled = true;
+    s_requests[_requestId].randomWords = _randomWords;
+    emit RequestFulfilled(_requestId, _randomWords, s_requests[_requestId].paid);
+  }
+
+  function getRequestStatus(
+    uint256 _requestId
+  ) external view returns (uint256 paid, bool fulfilled, uint256[] memory randomWords) {
+    require(s_requests[_requestId].paid > 0, "request not found");
+    RequestStatus memory request = s_requests[_requestId];
+    return (request.paid, request.fulfilled, request.randomWords);
+  }
+
+  /**
+   * Allow withdraw of Link tokens from the contract
+   */
+  function withdrawLink() public onlyOwner {
+    LinkTokenInterface link = LinkTokenInterface(linkAddress);
+    require(link.transfer(msg.sender, link.balanceOf(address(this))), "Unable to transfer");
+  }
+
+  /// @notice withdrawNative withdraws the amount specified in amount to the owner
+  /// @param amount the amount to withdraw, in wei
+  function withdrawNative(
+    uint256 amount
+  ) external onlyOwner {
+    (bool success,) = payable(owner()).call{value: amount}("");
+    // solhint-disable-next-line gas-custom-errors
+    require(success, "withdrawNative failed");
+  }
+
+  event Received(address, uint256);
+
+  receive() external payable {
+    emit Received(msg.sender, msg.value);
+  }
+}
+```
+
 ### Update your code
 
 To modify your existing smart contract code to work with VRF v2.5, complete the following changes:
@@ -486,6 +784,118 @@ The example `SubscriptionConsumer` contract shows the migration steps above, app
 
 Open the full example `SubscriptionConsumer` contract:
 
+```sol
+// SPDX-License-Identifier: MIT
+// An example of a consumer contract that relies on a subscription for funding.
+pragma solidity ^0.8.20;
+
+import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+
+/**
+ * Request testnet LINK and ETH here: https://faucets.chain.link/
+ * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here:
+ * https://docs.chain.link/docs/link-token-contracts/
+ */
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+contract SubscriptionConsumer is VRFConsumerBaseV2Plus {
+  event RequestSent(uint256 requestId, uint32 numWords);
+  event RequestFulfilled(uint256 requestId, uint256[] randomWords);
+
+  struct RequestStatus {
+    bool fulfilled; // whether the request has been successfully fulfilled
+    bool exists; // whether a requestId exists
+    uint256[] randomWords;
+  }
+
+  mapping(uint256 => RequestStatus) public s_requests; /* requestId --> requestStatus */
+
+  // Your subscription ID.
+  uint256 public s_subscriptionId;
+
+  // Past request IDs.
+  uint256[] public requestIds;
+  uint256 public lastRequestId;
+
+  // The gas lane to use, which specifies the maximum gas price to bump to.
+  // For a list of available gas lanes on each network,
+  // see https://docs.chain.link/vrf/v2-5/supported-networks
+  bytes32 public keyHash = 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
+
+  // Depends on the number of requested values that you want sent to the
+  // fulfillRandomWords() function. Storing each word costs about 20,000 gas,
+  // so 100,000 is a safe default for this example contract. Test and adjust
+  // this limit based on the network that you select, the size of the request,
+  // and the processing of the callback request in the fulfillRandomWords()
+  // function.
+  uint32 public callbackGasLimit = 100_000;
+
+  // The default is 3, but you can set this higher.
+  uint16 public requestConfirmations = 3;
+
+  // For this example, retrieve 2 random values in one request.
+  // Cannot exceed VRFCoordinatorV2_5.MAX_NUM_WORDS.
+  uint32 public numWords = 2;
+
+  /**
+   * HARDCODED FOR SEPOLIA
+   * COORDINATOR: 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B
+   */
+  constructor(
+    uint256 subscriptionId
+  ) VRFConsumerBaseV2Plus(0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B) {
+    s_subscriptionId = subscriptionId;
+  }
+
+  // Assumes the subscription is funded sufficiently.
+  // @param enableNativePayment: Set to `true` to enable payment in native tokens, or
+  // `false` to pay in LINK
+  function requestRandomWords(
+    bool enableNativePayment
+  ) external onlyOwner returns (uint256 requestId) {
+    // Will revert if subscription is not set and funded.
+    requestId = s_vrfCoordinator.requestRandomWords(
+      VRFV2PlusClient.RandomWordsRequest({
+        keyHash: keyHash,
+        subId: s_subscriptionId,
+        requestConfirmations: requestConfirmations,
+        callbackGasLimit: callbackGasLimit,
+        numWords: numWords,
+        extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: enableNativePayment}))
+      })
+    );
+    s_requests[requestId] = RequestStatus({randomWords: new uint256[](0), exists: true, fulfilled: false});
+    requestIds.push(requestId);
+    lastRequestId = requestId;
+    emit RequestSent(requestId, numWords);
+    return requestId;
+  }
+
+  function fulfillRandomWords(
+    uint256 _requestId,
+    uint256[] calldata _randomWords
+  ) internal override {
+    require(s_requests[_requestId].exists, "request not found");
+    s_requests[_requestId].fulfilled = true;
+    s_requests[_requestId].randomWords = _randomWords;
+    emit RequestFulfilled(_requestId, _randomWords);
+  }
+
+  function getRequestStatus(
+    uint256 _requestId
+  ) external view returns (bool fulfilled, uint256[] memory randomWords) {
+    require(s_requests[_requestId].exists, "request not found");
+    RequestStatus memory request = s_requests[_requestId];
+    return (request.fulfilled, request.randomWords);
+  }
+}
+```
+
 Compare the major changes between V2.5 and V2:
 
 
@@ -494,6 +904,128 @@ Compare the major changes between V2.5 and V2:
 The example `DirectFundingConsumer` contract shows the migration steps above, applied to the example code from [this VRF V2 tutorial](/vrf/v2/direct-funding/examples/get-a-random-number#analyzing-the-contract). Both of these examples use the direct funding method.
 
 Open the full example `DirectFundingConsumer` contract:
+
+```sol
+// SPDX-License-Identifier: MIT
+// An example of a consumer contract that directly pays for each request.
+pragma solidity ^0.8.20;
+
+import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
+import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
+import {VRFV2PlusWrapperConsumerBase} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapperConsumerBase.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+
+/**
+ * Request testnet LINK and ETH here: https://faucets.chain.link/
+ * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here:
+ * https://docs.chain.link/docs/link-token-contracts/
+ */
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+contract DirectFundingConsumer is VRFV2PlusWrapperConsumerBase, ConfirmedOwner {
+  event RequestSent(uint256 requestId, uint32 numWords);
+  event RequestFulfilled(uint256 requestId, uint256[] randomWords, uint256 payment);
+
+  struct RequestStatus {
+    uint256 paid; // amount paid in link
+    bool fulfilled; // whether the request has been successfully fulfilled
+    uint256[] randomWords;
+  }
+
+  mapping(uint256 => RequestStatus) public s_requests; /* requestId --> requestStatus */
+
+  // past requests Id.
+  uint256[] public requestIds;
+  uint256 public lastRequestId;
+
+  // Depends on the number of requested values that you want sent to the
+  // fulfillRandomWords() function. Test and adjust
+  // this limit based on the network that you select, the size of the request,
+  // and the processing of the callback request in the fulfillRandomWords()
+  // function.
+  uint32 public callbackGasLimit = 100_000;
+
+  // The default is 3, but you can set this higher.
+  uint16 public requestConfirmations = 3;
+
+  // For this example, retrieve 2 random values in one request.
+  // Cannot exceed VRFV2Wrapper.getConfig().maxNumWords.
+  uint32 public numWords = 2;
+
+  // Address LINK - hardcoded for Sepolia
+  address public linkAddress = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
+
+  // address WRAPPER - hardcoded for Sepolia
+  address public wrapperAddress = 0x195f15F2d49d693cE265b4fB0fdDbE15b1850Cc1;
+
+  constructor() ConfirmedOwner(msg.sender) VRFV2PlusWrapperConsumerBase(wrapperAddress) {}
+
+  function requestRandomWords(
+    bool enableNativePayment
+  ) external onlyOwner returns (uint256) {
+    bytes memory extraArgs =
+      VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: enableNativePayment}));
+    uint256 requestId;
+    uint256 reqPrice;
+    if (enableNativePayment) {
+      (requestId, reqPrice) = requestRandomnessPayInNative(callbackGasLimit, requestConfirmations, numWords, extraArgs);
+    } else {
+      (requestId, reqPrice) = requestRandomness(callbackGasLimit, requestConfirmations, numWords, extraArgs);
+    }
+    s_requests[requestId] = RequestStatus({paid: reqPrice, randomWords: new uint256[](0), fulfilled: false});
+    requestIds.push(requestId);
+    lastRequestId = requestId;
+    emit RequestSent(requestId, numWords);
+    return requestId;
+  }
+
+  function fulfillRandomWords(
+    uint256 _requestId,
+    uint256[] memory _randomWords
+  ) internal override {
+    require(s_requests[_requestId].paid > 0, "request not found");
+    s_requests[_requestId].fulfilled = true;
+    s_requests[_requestId].randomWords = _randomWords;
+    emit RequestFulfilled(_requestId, _randomWords, s_requests[_requestId].paid);
+  }
+
+  function getRequestStatus(
+    uint256 _requestId
+  ) external view returns (uint256 paid, bool fulfilled, uint256[] memory randomWords) {
+    require(s_requests[_requestId].paid > 0, "request not found");
+    RequestStatus memory request = s_requests[_requestId];
+    return (request.paid, request.fulfilled, request.randomWords);
+  }
+
+  /**
+   * Allow withdraw of Link tokens from the contract
+   */
+  function withdrawLink() public onlyOwner {
+    LinkTokenInterface link = LinkTokenInterface(linkAddress);
+    require(link.transfer(msg.sender, link.balanceOf(address(this))), "Unable to transfer");
+  }
+
+  /// @notice withdrawNative withdraws the amount specified in amount to the owner
+  /// @param amount the amount to withdraw, in wei
+  function withdrawNative(
+    uint256 amount
+  ) external onlyOwner {
+    (bool success,) = payable(owner()).call{value: amount}("");
+    // solhint-disable-next-line gas-custom-errors
+    require(success, "withdrawNative failed");
+  }
+
+  event Received(address, uint256);
+
+  receive() external payable {
+    emit Received(msg.sender, msg.value);
+  }
+}
+```
 
 Compare the major changes between V2.5 and V2:
 
@@ -545,6 +1077,128 @@ If using subscriptions, [create and fund a new VRF v2.5 subscription](/vrf/v2-5/
 
 For direct funding, deploy the [`DirectFundingConsumer`](/samples/VRF/v2-5/DirectFundingConsumer.sol) example:
 
+```sol
+// SPDX-License-Identifier: MIT
+// An example of a consumer contract that directly pays for each request.
+pragma solidity ^0.8.20;
+
+import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
+import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
+import {VRFV2PlusWrapperConsumerBase} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapperConsumerBase.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+
+/**
+ * Request testnet LINK and ETH here: https://faucets.chain.link/
+ * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here:
+ * https://docs.chain.link/docs/link-token-contracts/
+ */
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+contract DirectFundingConsumer is VRFV2PlusWrapperConsumerBase, ConfirmedOwner {
+  event RequestSent(uint256 requestId, uint32 numWords);
+  event RequestFulfilled(uint256 requestId, uint256[] randomWords, uint256 payment);
+
+  struct RequestStatus {
+    uint256 paid; // amount paid in link
+    bool fulfilled; // whether the request has been successfully fulfilled
+    uint256[] randomWords;
+  }
+
+  mapping(uint256 => RequestStatus) public s_requests; /* requestId --> requestStatus */
+
+  // past requests Id.
+  uint256[] public requestIds;
+  uint256 public lastRequestId;
+
+  // Depends on the number of requested values that you want sent to the
+  // fulfillRandomWords() function. Test and adjust
+  // this limit based on the network that you select, the size of the request,
+  // and the processing of the callback request in the fulfillRandomWords()
+  // function.
+  uint32 public callbackGasLimit = 100_000;
+
+  // The default is 3, but you can set this higher.
+  uint16 public requestConfirmations = 3;
+
+  // For this example, retrieve 2 random values in one request.
+  // Cannot exceed VRFV2Wrapper.getConfig().maxNumWords.
+  uint32 public numWords = 2;
+
+  // Address LINK - hardcoded for Sepolia
+  address public linkAddress = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
+
+  // address WRAPPER - hardcoded for Sepolia
+  address public wrapperAddress = 0x195f15F2d49d693cE265b4fB0fdDbE15b1850Cc1;
+
+  constructor() ConfirmedOwner(msg.sender) VRFV2PlusWrapperConsumerBase(wrapperAddress) {}
+
+  function requestRandomWords(
+    bool enableNativePayment
+  ) external onlyOwner returns (uint256) {
+    bytes memory extraArgs =
+      VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: enableNativePayment}));
+    uint256 requestId;
+    uint256 reqPrice;
+    if (enableNativePayment) {
+      (requestId, reqPrice) = requestRandomnessPayInNative(callbackGasLimit, requestConfirmations, numWords, extraArgs);
+    } else {
+      (requestId, reqPrice) = requestRandomness(callbackGasLimit, requestConfirmations, numWords, extraArgs);
+    }
+    s_requests[requestId] = RequestStatus({paid: reqPrice, randomWords: new uint256[](0), fulfilled: false});
+    requestIds.push(requestId);
+    lastRequestId = requestId;
+    emit RequestSent(requestId, numWords);
+    return requestId;
+  }
+
+  function fulfillRandomWords(
+    uint256 _requestId,
+    uint256[] memory _randomWords
+  ) internal override {
+    require(s_requests[_requestId].paid > 0, "request not found");
+    s_requests[_requestId].fulfilled = true;
+    s_requests[_requestId].randomWords = _randomWords;
+    emit RequestFulfilled(_requestId, _randomWords, s_requests[_requestId].paid);
+  }
+
+  function getRequestStatus(
+    uint256 _requestId
+  ) external view returns (uint256 paid, bool fulfilled, uint256[] memory randomWords) {
+    require(s_requests[_requestId].paid > 0, "request not found");
+    RequestStatus memory request = s_requests[_requestId];
+    return (request.paid, request.fulfilled, request.randomWords);
+  }
+
+  /**
+   * Allow withdraw of Link tokens from the contract
+   */
+  function withdrawLink() public onlyOwner {
+    LinkTokenInterface link = LinkTokenInterface(linkAddress);
+    require(link.transfer(msg.sender, link.balanceOf(address(this))), "Unable to transfer");
+  }
+
+  /// @notice withdrawNative withdraws the amount specified in amount to the owner
+  /// @param amount the amount to withdraw, in wei
+  function withdrawNative(
+    uint256 amount
+  ) external onlyOwner {
+    (bool success,) = payable(owner()).call{value: amount}("");
+    // solhint-disable-next-line gas-custom-errors
+    require(success, "withdrawNative failed");
+  }
+
+  event Received(address, uint256);
+
+  receive() external payable {
+    emit Received(msg.sender, msg.value);
+  }
+}
+```
+
 ### Update your code
 
 To modify your existing smart contract code to work with VRF v2.5, complete the following changes:
@@ -556,7 +1210,241 @@ View example code for both VRF 2.5 subscription and direct funding:
 
 Open the full example `SubscriptionConsumer` contract:
 
+```sol
+// SPDX-License-Identifier: MIT
+// An example of a consumer contract that relies on a subscription for funding.
+pragma solidity ^0.8.20;
+
+import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+
+/**
+ * Request testnet LINK and ETH here: https://faucets.chain.link/
+ * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here:
+ * https://docs.chain.link/docs/link-token-contracts/
+ */
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+contract SubscriptionConsumer is VRFConsumerBaseV2Plus {
+  event RequestSent(uint256 requestId, uint32 numWords);
+  event RequestFulfilled(uint256 requestId, uint256[] randomWords);
+
+  struct RequestStatus {
+    bool fulfilled; // whether the request has been successfully fulfilled
+    bool exists; // whether a requestId exists
+    uint256[] randomWords;
+  }
+
+  mapping(uint256 => RequestStatus) public s_requests; /* requestId --> requestStatus */
+
+  // Your subscription ID.
+  uint256 public s_subscriptionId;
+
+  // Past request IDs.
+  uint256[] public requestIds;
+  uint256 public lastRequestId;
+
+  // The gas lane to use, which specifies the maximum gas price to bump to.
+  // For a list of available gas lanes on each network,
+  // see https://docs.chain.link/vrf/v2-5/supported-networks
+  bytes32 public keyHash = 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
+
+  // Depends on the number of requested values that you want sent to the
+  // fulfillRandomWords() function. Storing each word costs about 20,000 gas,
+  // so 100,000 is a safe default for this example contract. Test and adjust
+  // this limit based on the network that you select, the size of the request,
+  // and the processing of the callback request in the fulfillRandomWords()
+  // function.
+  uint32 public callbackGasLimit = 100_000;
+
+  // The default is 3, but you can set this higher.
+  uint16 public requestConfirmations = 3;
+
+  // For this example, retrieve 2 random values in one request.
+  // Cannot exceed VRFCoordinatorV2_5.MAX_NUM_WORDS.
+  uint32 public numWords = 2;
+
+  /**
+   * HARDCODED FOR SEPOLIA
+   * COORDINATOR: 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B
+   */
+  constructor(
+    uint256 subscriptionId
+  ) VRFConsumerBaseV2Plus(0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B) {
+    s_subscriptionId = subscriptionId;
+  }
+
+  // Assumes the subscription is funded sufficiently.
+  // @param enableNativePayment: Set to `true` to enable payment in native tokens, or
+  // `false` to pay in LINK
+  function requestRandomWords(
+    bool enableNativePayment
+  ) external onlyOwner returns (uint256 requestId) {
+    // Will revert if subscription is not set and funded.
+    requestId = s_vrfCoordinator.requestRandomWords(
+      VRFV2PlusClient.RandomWordsRequest({
+        keyHash: keyHash,
+        subId: s_subscriptionId,
+        requestConfirmations: requestConfirmations,
+        callbackGasLimit: callbackGasLimit,
+        numWords: numWords,
+        extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: enableNativePayment}))
+      })
+    );
+    s_requests[requestId] = RequestStatus({randomWords: new uint256[](0), exists: true, fulfilled: false});
+    requestIds.push(requestId);
+    lastRequestId = requestId;
+    emit RequestSent(requestId, numWords);
+    return requestId;
+  }
+
+  function fulfillRandomWords(
+    uint256 _requestId,
+    uint256[] calldata _randomWords
+  ) internal override {
+    require(s_requests[_requestId].exists, "request not found");
+    s_requests[_requestId].fulfilled = true;
+    s_requests[_requestId].randomWords = _randomWords;
+    emit RequestFulfilled(_requestId, _randomWords);
+  }
+
+  function getRequestStatus(
+    uint256 _requestId
+  ) external view returns (bool fulfilled, uint256[] memory randomWords) {
+    require(s_requests[_requestId].exists, "request not found");
+    RequestStatus memory request = s_requests[_requestId];
+    return (request.fulfilled, request.randomWords);
+  }
+}
+```
+
 Open the full example `DirectFundingConsumer` contract:
+
+```sol
+// SPDX-License-Identifier: MIT
+// An example of a consumer contract that directly pays for each request.
+pragma solidity ^0.8.20;
+
+import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
+import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
+import {VRFV2PlusWrapperConsumerBase} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapperConsumerBase.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+
+/**
+ * Request testnet LINK and ETH here: https://faucets.chain.link/
+ * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here:
+ * https://docs.chain.link/docs/link-token-contracts/
+ */
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+contract DirectFundingConsumer is VRFV2PlusWrapperConsumerBase, ConfirmedOwner {
+  event RequestSent(uint256 requestId, uint32 numWords);
+  event RequestFulfilled(uint256 requestId, uint256[] randomWords, uint256 payment);
+
+  struct RequestStatus {
+    uint256 paid; // amount paid in link
+    bool fulfilled; // whether the request has been successfully fulfilled
+    uint256[] randomWords;
+  }
+
+  mapping(uint256 => RequestStatus) public s_requests; /* requestId --> requestStatus */
+
+  // past requests Id.
+  uint256[] public requestIds;
+  uint256 public lastRequestId;
+
+  // Depends on the number of requested values that you want sent to the
+  // fulfillRandomWords() function. Test and adjust
+  // this limit based on the network that you select, the size of the request,
+  // and the processing of the callback request in the fulfillRandomWords()
+  // function.
+  uint32 public callbackGasLimit = 100_000;
+
+  // The default is 3, but you can set this higher.
+  uint16 public requestConfirmations = 3;
+
+  // For this example, retrieve 2 random values in one request.
+  // Cannot exceed VRFV2Wrapper.getConfig().maxNumWords.
+  uint32 public numWords = 2;
+
+  // Address LINK - hardcoded for Sepolia
+  address public linkAddress = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
+
+  // address WRAPPER - hardcoded for Sepolia
+  address public wrapperAddress = 0x195f15F2d49d693cE265b4fB0fdDbE15b1850Cc1;
+
+  constructor() ConfirmedOwner(msg.sender) VRFV2PlusWrapperConsumerBase(wrapperAddress) {}
+
+  function requestRandomWords(
+    bool enableNativePayment
+  ) external onlyOwner returns (uint256) {
+    bytes memory extraArgs =
+      VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: enableNativePayment}));
+    uint256 requestId;
+    uint256 reqPrice;
+    if (enableNativePayment) {
+      (requestId, reqPrice) = requestRandomnessPayInNative(callbackGasLimit, requestConfirmations, numWords, extraArgs);
+    } else {
+      (requestId, reqPrice) = requestRandomness(callbackGasLimit, requestConfirmations, numWords, extraArgs);
+    }
+    s_requests[requestId] = RequestStatus({paid: reqPrice, randomWords: new uint256[](0), fulfilled: false});
+    requestIds.push(requestId);
+    lastRequestId = requestId;
+    emit RequestSent(requestId, numWords);
+    return requestId;
+  }
+
+  function fulfillRandomWords(
+    uint256 _requestId,
+    uint256[] memory _randomWords
+  ) internal override {
+    require(s_requests[_requestId].paid > 0, "request not found");
+    s_requests[_requestId].fulfilled = true;
+    s_requests[_requestId].randomWords = _randomWords;
+    emit RequestFulfilled(_requestId, _randomWords, s_requests[_requestId].paid);
+  }
+
+  function getRequestStatus(
+    uint256 _requestId
+  ) external view returns (uint256 paid, bool fulfilled, uint256[] memory randomWords) {
+    require(s_requests[_requestId].paid > 0, "request not found");
+    RequestStatus memory request = s_requests[_requestId];
+    return (request.paid, request.fulfilled, request.randomWords);
+  }
+
+  /**
+   * Allow withdraw of Link tokens from the contract
+   */
+  function withdrawLink() public onlyOwner {
+    LinkTokenInterface link = LinkTokenInterface(linkAddress);
+    require(link.transfer(msg.sender, link.balanceOf(address(this))), "Unable to transfer");
+  }
+
+  /// @notice withdrawNative withdraws the amount specified in amount to the owner
+  /// @param amount the amount to withdraw, in wei
+  function withdrawNative(
+    uint256 amount
+  ) external onlyOwner {
+    (bool success,) = payable(owner()).call{value: amount}("");
+    // solhint-disable-next-line gas-custom-errors
+    require(success, "withdrawNative failed");
+  }
+
+  event Received(address, uint256);
+
+  receive() external payable {
+    emit Received(msg.sender, msg.value);
+  }
+}
+```
 
 ---
 
@@ -1383,6 +2271,118 @@ Build and deploy the contract on Sepolia.
 1. Open the [SubscriptionConsumer.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/v2-5/SubscriptionConsumer.sol) in Remix.
 
 
+   ```sol
+   // SPDX-License-Identifier: MIT
+   // An example of a consumer contract that relies on a subscription for funding.
+   pragma solidity ^0.8.20;
+
+   import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+   import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+
+   /**
+    * Request testnet LINK and ETH here: https://faucets.chain.link/
+    * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here:
+    * https://docs.chain.link/docs/link-token-contracts/
+    */
+
+   /**
+    * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+    * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+    * DO NOT USE THIS CODE IN PRODUCTION.
+    */
+   contract SubscriptionConsumer is VRFConsumerBaseV2Plus {
+     event RequestSent(uint256 requestId, uint32 numWords);
+     event RequestFulfilled(uint256 requestId, uint256[] randomWords);
+
+     struct RequestStatus {
+       bool fulfilled; // whether the request has been successfully fulfilled
+       bool exists; // whether a requestId exists
+       uint256[] randomWords;
+     }
+
+     mapping(uint256 => RequestStatus) public s_requests; /* requestId --> requestStatus */
+
+     // Your subscription ID.
+     uint256 public s_subscriptionId;
+
+     // Past request IDs.
+     uint256[] public requestIds;
+     uint256 public lastRequestId;
+
+     // The gas lane to use, which specifies the maximum gas price to bump to.
+     // For a list of available gas lanes on each network,
+     // see https://docs.chain.link/vrf/v2-5/supported-networks
+     bytes32 public keyHash = 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
+
+     // Depends on the number of requested values that you want sent to the
+     // fulfillRandomWords() function. Storing each word costs about 20,000 gas,
+     // so 100,000 is a safe default for this example contract. Test and adjust
+     // this limit based on the network that you select, the size of the request,
+     // and the processing of the callback request in the fulfillRandomWords()
+     // function.
+     uint32 public callbackGasLimit = 100_000;
+
+     // The default is 3, but you can set this higher.
+     uint16 public requestConfirmations = 3;
+
+     // For this example, retrieve 2 random values in one request.
+     // Cannot exceed VRFCoordinatorV2_5.MAX_NUM_WORDS.
+     uint32 public numWords = 2;
+
+     /**
+      * HARDCODED FOR SEPOLIA
+      * COORDINATOR: 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B
+      */
+     constructor(
+       uint256 subscriptionId
+     ) VRFConsumerBaseV2Plus(0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B) {
+       s_subscriptionId = subscriptionId;
+     }
+
+     // Assumes the subscription is funded sufficiently.
+     // @param enableNativePayment: Set to `true` to enable payment in native tokens, or
+     // `false` to pay in LINK
+     function requestRandomWords(
+       bool enableNativePayment
+     ) external onlyOwner returns (uint256 requestId) {
+       // Will revert if subscription is not set and funded.
+       requestId = s_vrfCoordinator.requestRandomWords(
+         VRFV2PlusClient.RandomWordsRequest({
+           keyHash: keyHash,
+           subId: s_subscriptionId,
+           requestConfirmations: requestConfirmations,
+           callbackGasLimit: callbackGasLimit,
+           numWords: numWords,
+           extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: enableNativePayment}))
+         })
+       );
+       s_requests[requestId] = RequestStatus({randomWords: new uint256[](0), exists: true, fulfilled: false});
+       requestIds.push(requestId);
+       lastRequestId = requestId;
+       emit RequestSent(requestId, numWords);
+       return requestId;
+     }
+
+     function fulfillRandomWords(
+       uint256 _requestId,
+       uint256[] calldata _randomWords
+     ) internal override {
+       require(s_requests[_requestId].exists, "request not found");
+       s_requests[_requestId].fulfilled = true;
+       s_requests[_requestId].randomWords = _randomWords;
+       emit RequestFulfilled(_requestId, _randomWords);
+     }
+
+     function getRequestStatus(
+       uint256 _requestId
+     ) external view returns (bool fulfilled, uint256[] memory randomWords) {
+       require(s_requests[_requestId].exists, "request not found");
+       RequestStatus memory request = s_requests[_requestId];
+       return (request.fulfilled, request.randomWords);
+     }
+   }
+   ```
+
 2. On the **Compile** tab in Remix, compile the `SubscriptionConsumer.sol` contract.
 
 3. Configure your deployment. On the **Deploy** tab in Remix, select the **Injected Provider** environment, select the `SubscriptionConsumer` contract from the contract list, and specify your `subscriptionId` so the constructor can set it.
@@ -1434,6 +2434,118 @@ You deployed a simple contract that can request and receive random values from C
 ## Analyzing the contract
 
 In this example, your MetaMask wallet is the subscription owner and you created a consuming contract to use that subscription. The consuming contract uses static configuration parameters.
+
+```sol
+// SPDX-License-Identifier: MIT
+// An example of a consumer contract that relies on a subscription for funding.
+pragma solidity ^0.8.20;
+
+import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+
+/**
+ * Request testnet LINK and ETH here: https://faucets.chain.link/
+ * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here:
+ * https://docs.chain.link/docs/link-token-contracts/
+ */
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+contract SubscriptionConsumer is VRFConsumerBaseV2Plus {
+  event RequestSent(uint256 requestId, uint32 numWords);
+  event RequestFulfilled(uint256 requestId, uint256[] randomWords);
+
+  struct RequestStatus {
+    bool fulfilled; // whether the request has been successfully fulfilled
+    bool exists; // whether a requestId exists
+    uint256[] randomWords;
+  }
+
+  mapping(uint256 => RequestStatus) public s_requests; /* requestId --> requestStatus */
+
+  // Your subscription ID.
+  uint256 public s_subscriptionId;
+
+  // Past request IDs.
+  uint256[] public requestIds;
+  uint256 public lastRequestId;
+
+  // The gas lane to use, which specifies the maximum gas price to bump to.
+  // For a list of available gas lanes on each network,
+  // see https://docs.chain.link/vrf/v2-5/supported-networks
+  bytes32 public keyHash = 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
+
+  // Depends on the number of requested values that you want sent to the
+  // fulfillRandomWords() function. Storing each word costs about 20,000 gas,
+  // so 100,000 is a safe default for this example contract. Test and adjust
+  // this limit based on the network that you select, the size of the request,
+  // and the processing of the callback request in the fulfillRandomWords()
+  // function.
+  uint32 public callbackGasLimit = 100_000;
+
+  // The default is 3, but you can set this higher.
+  uint16 public requestConfirmations = 3;
+
+  // For this example, retrieve 2 random values in one request.
+  // Cannot exceed VRFCoordinatorV2_5.MAX_NUM_WORDS.
+  uint32 public numWords = 2;
+
+  /**
+   * HARDCODED FOR SEPOLIA
+   * COORDINATOR: 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B
+   */
+  constructor(
+    uint256 subscriptionId
+  ) VRFConsumerBaseV2Plus(0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B) {
+    s_subscriptionId = subscriptionId;
+  }
+
+  // Assumes the subscription is funded sufficiently.
+  // @param enableNativePayment: Set to `true` to enable payment in native tokens, or
+  // `false` to pay in LINK
+  function requestRandomWords(
+    bool enableNativePayment
+  ) external onlyOwner returns (uint256 requestId) {
+    // Will revert if subscription is not set and funded.
+    requestId = s_vrfCoordinator.requestRandomWords(
+      VRFV2PlusClient.RandomWordsRequest({
+        keyHash: keyHash,
+        subId: s_subscriptionId,
+        requestConfirmations: requestConfirmations,
+        callbackGasLimit: callbackGasLimit,
+        numWords: numWords,
+        extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: enableNativePayment}))
+      })
+    );
+    s_requests[requestId] = RequestStatus({randomWords: new uint256[](0), exists: true, fulfilled: false});
+    requestIds.push(requestId);
+    lastRequestId = requestId;
+    emit RequestSent(requestId, numWords);
+    return requestId;
+  }
+
+  function fulfillRandomWords(
+    uint256 _requestId,
+    uint256[] calldata _randomWords
+  ) internal override {
+    require(s_requests[_requestId].exists, "request not found");
+    s_requests[_requestId].fulfilled = true;
+    s_requests[_requestId].randomWords = _randomWords;
+    emit RequestFulfilled(_requestId, _randomWords);
+  }
+
+  function getRequestStatus(
+    uint256 _requestId
+  ) external view returns (bool fulfilled, uint256[] memory randomWords) {
+    require(s_requests[_requestId].exists, "request not found");
+    RequestStatus memory request = s_requests[_requestId];
+    return (request.fulfilled, request.randomWords);
+  }
+}
+```
 
 The parameters define how your requests will be processed. You can find the values for your network in the [Configuration](/vrf/v2-5/supported-networks) page.
 
@@ -1506,7 +2618,112 @@ For local testing, use the default "Remix VM" environment.
 
 Open *VRFv2_5Consumer* and compile in Remix:
 
+```sol
+// SPDX-License-Identifier: MIT
+// An example of a consumer contract that relies on a subscription for funding.
+pragma solidity ^0.8.20;
+
+import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
+/**
+ * @title The RandomNumberConsumerV2_5 contract
+ * @notice A contract that gets random values from Chainlink VRF V2_5
+ */
+contract RandomNumberConsumerV2_5 is VRFConsumerBaseV2Plus {
+  // Your subscription ID.
+  uint256 immutable s_subscriptionId;
+
+  // The gas lane to use, which specifies the maximum gas price to bump to.
+  // For a list of available gas lanes on each network,
+  // see https://docs.chain.link/docs/vrf-contracts/#configurations
+  bytes32 immutable s_keyHash;
+
+  // Depends on the number of requested values that you want sent to the
+  // fulfillRandomWords() function. Storing each word costs about 20,000 gas,
+  // so 100,000 is a safe default for this example contract. Test and adjust
+  // this limit based on the network that you select, the size of the request,
+  // and the processing of the callback request in the fulfillRandomWords()
+  // function.
+  uint32 constant CALLBACK_GAS_LIMIT = 100_000;
+
+  // The default is 3, but you can set this higher.
+  uint16 constant REQUEST_CONFIRMATIONS = 3;
+
+  // For this example, retrieve 2 random values in one request.
+  // Cannot exceed VRFCoordinatorV2_5.MAX_NUM_WORDS.
+  uint32 constant NUM_WORDS = 2;
+
+  uint256[] public s_randomWords;
+  uint256 public s_requestId;
+
+  event ReturnedRandomness(uint256[] randomWords);
+
+  /**
+   * @notice Constructor inherits VRFConsumerBaseV2Plus
+   *
+   * @param subscriptionId - the subscription ID that this contract uses for funding requests
+   * @param vrfCoordinator - coordinator, check https://docs.chain.link/vrf/v2-5/supported-networks
+   * @param keyHash - the gas lane to use, which specifies the maximum gas price to bump to
+   */
+  constructor(
+    uint256 subscriptionId,
+    address vrfCoordinator,
+    bytes32 keyHash
+  ) VRFConsumerBaseV2Plus(vrfCoordinator) {
+    s_keyHash = keyHash;
+    s_subscriptionId = subscriptionId;
+  }
+
+  /**
+   * @notice Requests randomness
+   * Assumes the subscription is funded sufficiently; "Words" refers to unit of data in Computer Science
+   */
+  function requestRandomWords() external onlyOwner {
+    // Will revert if subscription is not set and funded.
+    s_requestId = s_vrfCoordinator.requestRandomWords(
+      VRFV2PlusClient.RandomWordsRequest({
+        keyHash: s_keyHash,
+        subId: s_subscriptionId,
+        requestConfirmations: REQUEST_CONFIRMATIONS,
+        callbackGasLimit: CALLBACK_GAS_LIMIT,
+        numWords: NUM_WORDS,
+        extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
+      })
+    );
+  }
+
+  /**
+   * @notice Callback function used by VRF Coordinator
+   *
+   * @param  - id of the request
+   * @param randomWords - array of random results from VRF Coordinator
+   */
+  function fulfillRandomWords(
+    uint256,
+    /* requestId */
+    uint256[] calldata randomWords
+  ) internal override {
+    s_randomWords = randomWords;
+    emit ReturnedRandomness(randomWords);
+  }
+}
+```
+
 Open *VRFCoordinatorV2_5Mock* in Remix:
+
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
+```
 
 On the *Solidity Compiler* tab, expand the *Advanced Configurations* section and check the *Enable optimization* box before you compile the *VRFCoordinatorV2_5Mock* contract:
 
@@ -1630,6 +2847,128 @@ Build and deploy the contract on Sepolia.
 1. Open the [`DirectFundingConsumer.sol` contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/v2-5/DirectFundingConsumer.sol) in Remix.
 
 
+   ```sol
+   // SPDX-License-Identifier: MIT
+   // An example of a consumer contract that directly pays for each request.
+   pragma solidity ^0.8.20;
+
+   import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
+   import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
+   import {VRFV2PlusWrapperConsumerBase} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapperConsumerBase.sol";
+   import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+
+   /**
+    * Request testnet LINK and ETH here: https://faucets.chain.link/
+    * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here:
+    * https://docs.chain.link/docs/link-token-contracts/
+    */
+
+   /**
+    * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+    * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+    * DO NOT USE THIS CODE IN PRODUCTION.
+    */
+   contract DirectFundingConsumer is VRFV2PlusWrapperConsumerBase, ConfirmedOwner {
+     event RequestSent(uint256 requestId, uint32 numWords);
+     event RequestFulfilled(uint256 requestId, uint256[] randomWords, uint256 payment);
+
+     struct RequestStatus {
+       uint256 paid; // amount paid in link
+       bool fulfilled; // whether the request has been successfully fulfilled
+       uint256[] randomWords;
+     }
+
+     mapping(uint256 => RequestStatus) public s_requests; /* requestId --> requestStatus */
+
+     // past requests Id.
+     uint256[] public requestIds;
+     uint256 public lastRequestId;
+
+     // Depends on the number of requested values that you want sent to the
+     // fulfillRandomWords() function. Test and adjust
+     // this limit based on the network that you select, the size of the request,
+     // and the processing of the callback request in the fulfillRandomWords()
+     // function.
+     uint32 public callbackGasLimit = 100_000;
+
+     // The default is 3, but you can set this higher.
+     uint16 public requestConfirmations = 3;
+
+     // For this example, retrieve 2 random values in one request.
+     // Cannot exceed VRFV2Wrapper.getConfig().maxNumWords.
+     uint32 public numWords = 2;
+
+     // Address LINK - hardcoded for Sepolia
+     address public linkAddress = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
+
+     // address WRAPPER - hardcoded for Sepolia
+     address public wrapperAddress = 0x195f15F2d49d693cE265b4fB0fdDbE15b1850Cc1;
+
+     constructor() ConfirmedOwner(msg.sender) VRFV2PlusWrapperConsumerBase(wrapperAddress) {}
+
+     function requestRandomWords(
+       bool enableNativePayment
+     ) external onlyOwner returns (uint256) {
+       bytes memory extraArgs =
+         VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: enableNativePayment}));
+       uint256 requestId;
+       uint256 reqPrice;
+       if (enableNativePayment) {
+         (requestId, reqPrice) = requestRandomnessPayInNative(callbackGasLimit, requestConfirmations, numWords, extraArgs);
+       } else {
+         (requestId, reqPrice) = requestRandomness(callbackGasLimit, requestConfirmations, numWords, extraArgs);
+       }
+       s_requests[requestId] = RequestStatus({paid: reqPrice, randomWords: new uint256[](0), fulfilled: false});
+       requestIds.push(requestId);
+       lastRequestId = requestId;
+       emit RequestSent(requestId, numWords);
+       return requestId;
+     }
+
+     function fulfillRandomWords(
+       uint256 _requestId,
+       uint256[] memory _randomWords
+     ) internal override {
+       require(s_requests[_requestId].paid > 0, "request not found");
+       s_requests[_requestId].fulfilled = true;
+       s_requests[_requestId].randomWords = _randomWords;
+       emit RequestFulfilled(_requestId, _randomWords, s_requests[_requestId].paid);
+     }
+
+     function getRequestStatus(
+       uint256 _requestId
+     ) external view returns (uint256 paid, bool fulfilled, uint256[] memory randomWords) {
+       require(s_requests[_requestId].paid > 0, "request not found");
+       RequestStatus memory request = s_requests[_requestId];
+       return (request.paid, request.fulfilled, request.randomWords);
+     }
+
+     /**
+      * Allow withdraw of Link tokens from the contract
+      */
+     function withdrawLink() public onlyOwner {
+       LinkTokenInterface link = LinkTokenInterface(linkAddress);
+       require(link.transfer(msg.sender, link.balanceOf(address(this))), "Unable to transfer");
+     }
+
+     /// @notice withdrawNative withdraws the amount specified in amount to the owner
+     /// @param amount the amount to withdraw, in wei
+     function withdrawNative(
+       uint256 amount
+     ) external onlyOwner {
+       (bool success,) = payable(owner()).call{value: amount}("");
+       // solhint-disable-next-line gas-custom-errors
+       require(success, "withdrawNative failed");
+     }
+
+     event Received(address, uint256);
+
+     receive() external payable {
+       emit Received(msg.sender, msg.value);
+     }
+   }
+   ```
+
 2. On the **Compile** tab in Remix, compile the `DirectFundingConsumer` contract.
 
 3. Configure your deployment. On the **Deploy** tab in Remix, select the **Injected Web3 Environment** and select the `DirectFundingConsumer` contract from the contract list.
@@ -1669,6 +3008,128 @@ The deployed contract requests random values from Chainlink VRF, receives those 
 ## Analyzing the contract
 
 In this example, the consuming contract uses static configuration parameters.
+
+```sol
+// SPDX-License-Identifier: MIT
+// An example of a consumer contract that directly pays for each request.
+pragma solidity ^0.8.20;
+
+import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
+import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
+import {VRFV2PlusWrapperConsumerBase} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFV2PlusWrapperConsumerBase.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+
+/**
+ * Request testnet LINK and ETH here: https://faucets.chain.link/
+ * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here:
+ * https://docs.chain.link/docs/link-token-contracts/
+ */
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+contract DirectFundingConsumer is VRFV2PlusWrapperConsumerBase, ConfirmedOwner {
+  event RequestSent(uint256 requestId, uint32 numWords);
+  event RequestFulfilled(uint256 requestId, uint256[] randomWords, uint256 payment);
+
+  struct RequestStatus {
+    uint256 paid; // amount paid in link
+    bool fulfilled; // whether the request has been successfully fulfilled
+    uint256[] randomWords;
+  }
+
+  mapping(uint256 => RequestStatus) public s_requests; /* requestId --> requestStatus */
+
+  // past requests Id.
+  uint256[] public requestIds;
+  uint256 public lastRequestId;
+
+  // Depends on the number of requested values that you want sent to the
+  // fulfillRandomWords() function. Test and adjust
+  // this limit based on the network that you select, the size of the request,
+  // and the processing of the callback request in the fulfillRandomWords()
+  // function.
+  uint32 public callbackGasLimit = 100_000;
+
+  // The default is 3, but you can set this higher.
+  uint16 public requestConfirmations = 3;
+
+  // For this example, retrieve 2 random values in one request.
+  // Cannot exceed VRFV2Wrapper.getConfig().maxNumWords.
+  uint32 public numWords = 2;
+
+  // Address LINK - hardcoded for Sepolia
+  address public linkAddress = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
+
+  // address WRAPPER - hardcoded for Sepolia
+  address public wrapperAddress = 0x195f15F2d49d693cE265b4fB0fdDbE15b1850Cc1;
+
+  constructor() ConfirmedOwner(msg.sender) VRFV2PlusWrapperConsumerBase(wrapperAddress) {}
+
+  function requestRandomWords(
+    bool enableNativePayment
+  ) external onlyOwner returns (uint256) {
+    bytes memory extraArgs =
+      VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: enableNativePayment}));
+    uint256 requestId;
+    uint256 reqPrice;
+    if (enableNativePayment) {
+      (requestId, reqPrice) = requestRandomnessPayInNative(callbackGasLimit, requestConfirmations, numWords, extraArgs);
+    } else {
+      (requestId, reqPrice) = requestRandomness(callbackGasLimit, requestConfirmations, numWords, extraArgs);
+    }
+    s_requests[requestId] = RequestStatus({paid: reqPrice, randomWords: new uint256[](0), fulfilled: false});
+    requestIds.push(requestId);
+    lastRequestId = requestId;
+    emit RequestSent(requestId, numWords);
+    return requestId;
+  }
+
+  function fulfillRandomWords(
+    uint256 _requestId,
+    uint256[] memory _randomWords
+  ) internal override {
+    require(s_requests[_requestId].paid > 0, "request not found");
+    s_requests[_requestId].fulfilled = true;
+    s_requests[_requestId].randomWords = _randomWords;
+    emit RequestFulfilled(_requestId, _randomWords, s_requests[_requestId].paid);
+  }
+
+  function getRequestStatus(
+    uint256 _requestId
+  ) external view returns (uint256 paid, bool fulfilled, uint256[] memory randomWords) {
+    require(s_requests[_requestId].paid > 0, "request not found");
+    RequestStatus memory request = s_requests[_requestId];
+    return (request.paid, request.fulfilled, request.randomWords);
+  }
+
+  /**
+   * Allow withdraw of Link tokens from the contract
+   */
+  function withdrawLink() public onlyOwner {
+    LinkTokenInterface link = LinkTokenInterface(linkAddress);
+    require(link.transfer(msg.sender, link.balanceOf(address(this))), "Unable to transfer");
+  }
+
+  /// @notice withdrawNative withdraws the amount specified in amount to the owner
+  /// @param amount the amount to withdraw, in wei
+  function withdrawNative(
+    uint256 amount
+  ) external onlyOwner {
+    (bool success,) = payable(owner()).call{value: amount}("");
+    // solhint-disable-next-line gas-custom-errors
+    require(success, "withdrawNative failed");
+  }
+
+  event Received(address, uint256);
+
+  receive() external payable {
+    emit Received(msg.sender, msg.value);
+  }
+}
+```
 
 The parameters define how your requests will be processed. You can find the values for your network in the [Supported networks](/vrf/v2-5/supported-networks) page.
 
@@ -2096,6 +3557,71 @@ Note, the below values have to be configured correctly for VRF requests to work.
   testnet LINK](/resources/acquire-link) and [Fund your contract](/resources/fund-your-contract)**.
 </Aside>
 
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.7;
+
+import {VRFConsumerBase} from "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBase.sol";
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
+/**
+ * Request testnet LINK and ETH here: https://faucets.chain.link/
+ * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here:
+ * https://docs.chain.link/docs/link-token-contracts/
+ */
+contract RandomNumberConsumer is VRFConsumerBase {
+  event RequestFulfilled(bytes32 requestId, uint256 randomness);
+
+  bytes32 internal keyHash;
+  uint256 internal fee;
+  uint256 public randomResult;
+
+  /**
+   * Constructor inherits VRFConsumerBase
+   *
+   * Network: Sepolia
+   * Chainlink VRF Coordinator address: 0x271682DEB8C4E0901D1a1550aD2e64D568E69909
+   * LINK token address: 0x779877A7B0D9E8603169DdbD7836e478b4624789
+   * Key Hash: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c
+   */
+  constructor()
+    VRFConsumerBase(
+      0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625, // VRF Coordinator
+      0x779877A7B0D9E8603169DdbD7836e478b4624789 // LINK Token
+    )
+  {
+    keyHash = 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c;
+    fee = 0.1 * 10 ** 18; // 0.1 LINK (Varies by network)
+  }
+
+  /**
+   * Requests randomness
+   */
+  function getRandomNumber() public returns (bytes32 requestId) {
+    require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK - fill contract with faucet");
+    return requestRandomness(keyHash, fee);
+  }
+
+  /**
+   * Callback function used by VRF Coordinator
+   */
+  function fulfillRandomness(
+    bytes32 requestId,
+    uint256 randomness
+  ) internal override {
+    randomResult = randomness;
+    emit RequestFulfilled(requestId, randomness);
+  }
+
+  // function withdrawLink() external {} - Implement a withdraw function to avoid locking your LINK in the contract
+}
+```
+
 <Aside type="note" title="Maximum Gas for Callback">
   If your `fulfillRandomness` function uses more than 200k gas, the transaction will fail.
 </Aside>
@@ -2379,6 +3905,126 @@ function fulfillRandomWords(
 
 If you want to process VRF responses depending on predetermined conditions, you can create an `enum`. When requesting for randomness, map each `requestId` to an enum. This way, you can handle different execution paths in `fulfillRandomWords`. See the following example:
 
+```sol
+// SPDX-License-Identifier: MIT
+// An example of a consumer contract that relies on a subscription for funding.
+// It shows how to setup multiple execution paths for handling a response.
+pragma solidity ^0.8.7;
+
+import {VRFConsumerBaseV2} from "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
+import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/vrf/interfaces/VRFCoordinatorV2Interface.sol";
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+contract VRFv2MultiplePaths is VRFConsumerBaseV2 {
+  VRFCoordinatorV2Interface COORDINATOR;
+
+  // Your subscription ID.
+  uint64 s_subscriptionId;
+
+  // Sepolia coordinator. For other networks,
+  // see https://docs.chain.link/docs/vrf/v2/supported-networks/#configurations
+  address vrfCoordinator = 0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625;
+
+  // The gas lane to use, which specifies the maximum gas price to bump to.
+  // For a list of available gas lanes on each network,
+  // see https://docs.chain.link/docs/vrf/v2/supported-networks/#configurations
+  bytes32 keyHash = 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c;
+
+  uint32 callbackGasLimit = 100_000;
+
+  // The default is 3, but you can set this higher.
+  uint16 requestConfirmations = 3;
+
+  // For this example, retrieve 1 random value in one request.
+  // Cannot exceed VRFCoordinatorV2.MAX_NUM_WORDS.
+  uint32 numWords = 1;
+
+  enum Variable {
+    A,
+    B,
+    C
+  }
+
+  uint256 public variableA;
+  uint256 public variableB;
+  uint256 public variableC;
+
+  mapping(uint256 => Variable) public requests;
+
+  // events
+  event FulfilledA(uint256 requestId, uint256 value);
+  event FulfilledB(uint256 requestId, uint256 value);
+  event FulfilledC(uint256 requestId, uint256 value);
+
+  constructor(
+    uint64 subscriptionId
+  ) VRFConsumerBaseV2(vrfCoordinator) {
+    COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
+    s_subscriptionId = subscriptionId;
+  }
+
+  function updateVariable(
+    uint256 input
+  ) public {
+    uint256 requestId =
+      COORDINATOR.requestRandomWords(keyHash, s_subscriptionId, requestConfirmations, callbackGasLimit, numWords);
+
+    if (input % 2 == 0) {
+      requests[requestId] = Variable.A;
+    } else if (input % 3 == 0) {
+      requests[requestId] = Variable.B;
+    } else {
+      requests[requestId] = Variable.C;
+    }
+  }
+
+  function fulfillRandomWords(
+    uint256 requestId,
+    uint256[] memory randomWords
+  ) internal override {
+    Variable variable = requests[requestId];
+    if (variable == Variable.A) {
+      fulfillA(requestId, randomWords[0]);
+    } else if (variable == Variable.B) {
+      fulfillB(requestId, randomWords[0]);
+    } else if (variable == Variable.C) {
+      fulfillC(requestId, randomWords[0]);
+    }
+  }
+
+  function fulfillA(
+    uint256 requestId,
+    uint256 randomWord
+  ) private {
+    // execution path A
+    variableA = randomWord;
+    emit FulfilledA(requestId, randomWord);
+  }
+
+  function fulfillB(
+    uint256 requestId,
+    uint256 randomWord
+  ) private {
+    // execution path B
+    variableB = randomWord;
+    emit FulfilledB(requestId, randomWord);
+  }
+
+  function fulfillC(
+    uint256 requestId,
+    uint256 randomWord
+  ) private {
+    // execution path C
+    variableC = randomWord;
+    emit FulfilledC(requestId, randomWord);
+  }
+}
+```
+
 ---
 
 # Get a Random Number with VRF V2
@@ -2411,6 +4057,104 @@ Build and deploy the contract on Sepolia.
 
 1. Open the [`VRFv2DirectFundingConsumer.sol` contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2DirectFundingConsumer.sol) in Remix.
 
+
+   ```sol
+   // SPDX-License-Identifier: MIT
+   // An example of a consumer contract that directly pays for each request.
+   pragma solidity ^0.8.7;
+
+   import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
+
+   import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
+   import {VRFV2WrapperConsumerBase} from "@chainlink/contracts/src/v0.8/vrf/VRFV2WrapperConsumerBase.sol";
+
+   /**
+    * Request testnet LINK and ETH here: https://faucets.chain.link/
+    * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here:
+    * https://docs.chain.link/docs/link-token-contracts/
+    */
+
+   /**
+    * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+    * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+    * DO NOT USE THIS CODE IN PRODUCTION.
+    */
+   contract VRFv2DirectFundingConsumer is VRFV2WrapperConsumerBase, ConfirmedOwner {
+     event RequestSent(uint256 requestId, uint32 numWords);
+     event RequestFulfilled(uint256 requestId, uint256[] randomWords, uint256 payment);
+
+     struct RequestStatus {
+       uint256 paid; // amount paid in link
+       bool fulfilled; // whether the request has been successfully fulfilled
+       uint256[] randomWords;
+     }
+
+     mapping(uint256 => RequestStatus) public s_requests; /* requestId --> requestStatus */
+
+     // past requests Id.
+     uint256[] public requestIds;
+     uint256 public lastRequestId;
+
+     // Depends on the number of requested values that you want sent to the
+     // fulfillRandomWords() function. Test and adjust
+     // this limit based on the network that you select, the size of the request,
+     // and the processing of the callback request in the fulfillRandomWords()
+     // function.
+     uint32 callbackGasLimit = 100_000;
+
+     // The default is 3, but you can set this higher.
+     uint16 requestConfirmations = 3;
+
+     // For this example, retrieve 2 random values in one request.
+     // Cannot exceed VRFV2Wrapper.getConfig().maxNumWords.
+     uint32 numWords = 2;
+
+     // Address LINK - hardcoded for Sepolia
+     address linkAddress = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
+
+     // address WRAPPER - hardcoded for Sepolia
+     address wrapperAddress = 0xab18414CD93297B0d12ac29E63Ca20f515b3DB46;
+
+     constructor() ConfirmedOwner(msg.sender) VRFV2WrapperConsumerBase(linkAddress, wrapperAddress) {}
+
+     function requestRandomWords() external onlyOwner returns (uint256 requestId) {
+       requestId = requestRandomness(callbackGasLimit, requestConfirmations, numWords);
+       s_requests[requestId] = RequestStatus({
+         paid: VRF_V2_WRAPPER.calculateRequestPrice(callbackGasLimit), randomWords: new uint256[](0), fulfilled: false
+       });
+       requestIds.push(requestId);
+       lastRequestId = requestId;
+       emit RequestSent(requestId, numWords);
+       return requestId;
+     }
+
+     function fulfillRandomWords(
+       uint256 _requestId,
+       uint256[] memory _randomWords
+     ) internal override {
+       require(s_requests[_requestId].paid > 0, "request not found");
+       s_requests[_requestId].fulfilled = true;
+       s_requests[_requestId].randomWords = _randomWords;
+       emit RequestFulfilled(_requestId, _randomWords, s_requests[_requestId].paid);
+     }
+
+     function getRequestStatus(
+       uint256 _requestId
+     ) external view returns (uint256 paid, bool fulfilled, uint256[] memory randomWords) {
+       require(s_requests[_requestId].paid > 0, "request not found");
+       RequestStatus memory request = s_requests[_requestId];
+       return (request.paid, request.fulfilled, request.randomWords);
+     }
+
+     /**
+      * Allow withdraw of Link tokens from the contract
+      */
+     function withdrawLink() public onlyOwner {
+       LinkTokenInterface link = LinkTokenInterface(linkAddress);
+       require(link.transfer(msg.sender, link.balanceOf(address(this))), "Unable to transfer");
+     }
+   }
+   ```
 
 2. On the **Compile** tab in Remix, compile the `VRFv2DirectFundingConsumer` contract.
 
@@ -2463,6 +4207,104 @@ The deployed contract requests random values from Chainlink VRF, receives those 
 
 In this example, the consuming contract uses static configuration parameters.
 
+```sol
+// SPDX-License-Identifier: MIT
+// An example of a consumer contract that directly pays for each request.
+pragma solidity ^0.8.7;
+
+import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
+
+import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
+import {VRFV2WrapperConsumerBase} from "@chainlink/contracts/src/v0.8/vrf/VRFV2WrapperConsumerBase.sol";
+
+/**
+ * Request testnet LINK and ETH here: https://faucets.chain.link/
+ * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here:
+ * https://docs.chain.link/docs/link-token-contracts/
+ */
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+contract VRFv2DirectFundingConsumer is VRFV2WrapperConsumerBase, ConfirmedOwner {
+  event RequestSent(uint256 requestId, uint32 numWords);
+  event RequestFulfilled(uint256 requestId, uint256[] randomWords, uint256 payment);
+
+  struct RequestStatus {
+    uint256 paid; // amount paid in link
+    bool fulfilled; // whether the request has been successfully fulfilled
+    uint256[] randomWords;
+  }
+
+  mapping(uint256 => RequestStatus) public s_requests; /* requestId --> requestStatus */
+
+  // past requests Id.
+  uint256[] public requestIds;
+  uint256 public lastRequestId;
+
+  // Depends on the number of requested values that you want sent to the
+  // fulfillRandomWords() function. Test and adjust
+  // this limit based on the network that you select, the size of the request,
+  // and the processing of the callback request in the fulfillRandomWords()
+  // function.
+  uint32 callbackGasLimit = 100_000;
+
+  // The default is 3, but you can set this higher.
+  uint16 requestConfirmations = 3;
+
+  // For this example, retrieve 2 random values in one request.
+  // Cannot exceed VRFV2Wrapper.getConfig().maxNumWords.
+  uint32 numWords = 2;
+
+  // Address LINK - hardcoded for Sepolia
+  address linkAddress = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
+
+  // address WRAPPER - hardcoded for Sepolia
+  address wrapperAddress = 0xab18414CD93297B0d12ac29E63Ca20f515b3DB46;
+
+  constructor() ConfirmedOwner(msg.sender) VRFV2WrapperConsumerBase(linkAddress, wrapperAddress) {}
+
+  function requestRandomWords() external onlyOwner returns (uint256 requestId) {
+    requestId = requestRandomness(callbackGasLimit, requestConfirmations, numWords);
+    s_requests[requestId] = RequestStatus({
+      paid: VRF_V2_WRAPPER.calculateRequestPrice(callbackGasLimit), randomWords: new uint256[](0), fulfilled: false
+    });
+    requestIds.push(requestId);
+    lastRequestId = requestId;
+    emit RequestSent(requestId, numWords);
+    return requestId;
+  }
+
+  function fulfillRandomWords(
+    uint256 _requestId,
+    uint256[] memory _randomWords
+  ) internal override {
+    require(s_requests[_requestId].paid > 0, "request not found");
+    s_requests[_requestId].fulfilled = true;
+    s_requests[_requestId].randomWords = _randomWords;
+    emit RequestFulfilled(_requestId, _randomWords, s_requests[_requestId].paid);
+  }
+
+  function getRequestStatus(
+    uint256 _requestId
+  ) external view returns (uint256 paid, bool fulfilled, uint256[] memory randomWords) {
+    require(s_requests[_requestId].paid > 0, "request not found");
+    RequestStatus memory request = s_requests[_requestId];
+    return (request.paid, request.fulfilled, request.randomWords);
+  }
+
+  /**
+   * Allow withdraw of Link tokens from the contract
+   */
+  function withdrawLink() public onlyOwner {
+    LinkTokenInterface link = LinkTokenInterface(linkAddress);
+    require(link.transfer(msg.sender, link.balanceOf(address(this))), "Unable to transfer");
+  }
+}
+```
+
 The parameters define how your requests will be processed. You can find the values for your network in the [Supported networks](/vrf/v2/direct-funding/supported-networks) page.
 
 - `uint32 callbackGasLimit`: The limit for how much gas to use for the callback request to your contract's `fulfillRandomWords()` function. It must be less than the `maxGasLimit` limit on the coordinator contract minus the `wrapperGasOverhead`. See the [VRF v2 Direct funding limits](/vrf/v2/direct-funding/#limits) for more details. Adjust this value for larger requests depending on how your `fulfillRandomWords()` function processes and stores the received random values. If your `callbackGasLimit` is not sufficient, the callback will fail and your consuming contract is still charged for the work done to generate your requested random values.
@@ -2513,7 +4355,7 @@ This guide explains how to test Chainlink VRF v2 on a [Remix IDE](https://remix-
 Complete the following tasks to test your VRF v2 consumer locally:
 
 1. Deploy the [VRFCoordinatorV2Mock](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2Mock.sol). This contract is a mock of the [VRFCoordinatorV2](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/vrf/VRFCoordinatorV2.sol) contract.
-2. Deploy the [MockV3Aggregator](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/shared/mocks/MockV3Aggregator.sol) contract.
+2. Deploy the [MockV3Aggregator](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/tests/MockV3Aggregator.sol) contract.
 3. Deploy the [LinkToken](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/shared/token/ERC677/LinkToken.sol) contract.
 4. Deploy the [VRFV2Wrapper](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/vrf/VRFV2Wrapper.sol) contract.
 5. Call the VRFV2Wrapper [setConfig function](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/vrf/VRFV2Wrapper.sol#L119) to set wrapper specific parameters.
@@ -2550,13 +4392,141 @@ This guide will require you to finetune the gas limit when fulfilling requests. 
 
 Open *VRFCoordinatorV2Mock* and compile in Remix:
 
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.7;
+
+import "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2Mock.sol";
+```
+
 Open *MockV3Aggregator* and compile in Remix:
+
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.7;
+
+import "@chainlink/contracts/src/v0.8/shared/mocks/MockV3Aggregator.sol";
+```
 
 Open *LinkToken* and compile in Remix:
 
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@chainlink/contracts/src/v0.8/shared/token/ERC677/LinkToken.sol";
+```
+
 Open *VRFV2Wrapper* and compile in Remix:
 
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.6;
+
+import "@chainlink/contracts/src/v0.8/vrf/VRFV2Wrapper.sol";
+```
+
 Open *RandomNumberDirectFundingConsumerV2* and compile in Remix:
+
+```sol
+// SPDX-License-Identifier: MIT
+// An example of a consumer contract that directly pays for each request.
+pragma solidity ^0.8.7;
+
+import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
+import {VRFV2WrapperConsumerBase} from "@chainlink/contracts/src/v0.8/vrf/VRFV2WrapperConsumerBase.sol";
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UNAUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+contract RandomNumberDirectFundingConsumerV2 is VRFV2WrapperConsumerBase, ConfirmedOwner {
+  event RequestSent(uint256 requestId, uint32 numWords, uint256 paid);
+  event RequestFulfilled(uint256 requestId, uint256[] randomWords, uint256 payment);
+
+  error InsufficientFunds(uint256 balance, uint256 paid);
+  error RequestNotFound(uint256 requestId);
+  error LinkTransferError(address sender, address receiver, uint256 amount);
+
+  struct RequestStatus {
+    uint256 paid; // amount paid in link
+    bool fulfilled; // whether the request has been successfully fulfilled
+    uint256[] randomWords;
+  }
+
+  mapping(uint256 => RequestStatus) public s_requests; /* requestId --> requestStatus */
+
+  // past requests Id.
+  uint256[] public requestIds;
+  uint256 public lastRequestId;
+
+  // configuration: https://docs.chain.link/vrf/v2/direct-funding/supported-networks#configurations
+  constructor(
+    address _linkAddress,
+    address _wrapperAddress
+  ) ConfirmedOwner(msg.sender) VRFV2WrapperConsumerBase(_linkAddress, _wrapperAddress) {}
+
+  // Depends on the number of requested values that you want sent to the
+  // fulfillRandomWords() function. Test and adjust
+  // this limit based on the network that you select, the size of the request,
+  // and the processing of the callback request in the fulfillRandomWords()
+  // function.
+  // The default is 3, but you can set this higher.
+  // For this example, retrieve 2 random values in one request.
+  // Cannot exceed VRFV2Wrapper.getConfig().maxNumWords.
+  function requestRandomWords(
+    uint32 _callbackGasLimit,
+    uint16 _requestConfirmations,
+    uint32 _numWords
+  ) external onlyOwner returns (uint256 requestId) {
+    requestId = requestRandomness(_callbackGasLimit, _requestConfirmations, _numWords);
+    uint256 paid = VRF_V2_WRAPPER.calculateRequestPrice(_callbackGasLimit);
+    uint256 balance = LINK.balanceOf(address(this));
+    if (balance < paid) revert InsufficientFunds(balance, paid);
+    s_requests[requestId] = RequestStatus({paid: paid, randomWords: new uint256[](0), fulfilled: false});
+    requestIds.push(requestId);
+    lastRequestId = requestId;
+    emit RequestSent(requestId, _numWords, paid);
+    return requestId;
+  }
+
+  function fulfillRandomWords(
+    uint256 _requestId,
+    uint256[] memory _randomWords
+  ) internal override {
+    RequestStatus storage request = s_requests[_requestId];
+    if (request.paid == 0) revert RequestNotFound(_requestId);
+    request.fulfilled = true;
+    request.randomWords = _randomWords;
+    emit RequestFulfilled(_requestId, _randomWords, request.paid);
+  }
+
+  function getNumberOfRequests() external view returns (uint256) {
+    return requestIds.length;
+  }
+
+  function getRequestStatus(
+    uint256 _requestId
+  ) external view returns (uint256 paid, bool fulfilled, uint256[] memory randomWords) {
+    RequestStatus memory request = s_requests[_requestId];
+    if (request.paid == 0) revert RequestNotFound(_requestId);
+    return (request.paid, request.fulfilled, request.randomWords);
+  }
+
+  /**
+   * Allow withdraw of Link tokens from the contract
+   */
+  function withdrawLink(
+    address _receiver
+  ) public onlyOwner {
+    bool success = LINK.transfer(_receiver, LINK.balanceOf(address(this)));
+    if (!success) {
+      revert LinkTransferError(msg.sender, _receiver, LINK.balanceOf(address(this)));
+    }
+  }
+}
+```
 
 Your RemixIDE file explorer should display the opened contracts:
 
@@ -3423,6 +5393,181 @@ contract VRFD20 is VRFConsumerBaseV2 {
 ```
 
 
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.7;
+
+import {VRFConsumerBaseV2} from "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
+import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/vrf/interfaces/VRFCoordinatorV2Interface.sol";
+
+/**
+ * @notice A Chainlink VRF consumer which uses randomness to mimic the rolling
+ * of a 20 sided dice
+ */
+
+/**
+ * Request testnet LINK and ETH here: https://faucets.chain.link/
+ * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here:
+ * https://docs.chain.link/docs/link-token-contracts/
+ */
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+contract VRFD20 is VRFConsumerBaseV2 {
+  uint256 private constant ROLL_IN_PROGRESS = 42;
+
+  VRFCoordinatorV2Interface COORDINATOR;
+
+  // Your subscription ID.
+  uint64 s_subscriptionId;
+
+  // Sepolia coordinator. For other networks,
+  // see https://docs.chain.link/docs/vrf-contracts/#configurations
+  address vrfCoordinator = 0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625;
+
+  // The gas lane to use, which specifies the maximum gas price to bump to.
+  // For a list of available gas lanes on each network,
+  // see https://docs.chain.link/docs/vrf-contracts/#configurations
+  bytes32 s_keyHash = 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c;
+
+  // Depends on the number of requested values that you want sent to the
+  // fulfillRandomWords() function. Storing each word costs about 20,000 gas,
+  // so 40,000 is a safe default for this example contract. Test and adjust
+  // this limit based on the network that you select, the size of the request,
+  // and the processing of the callback request in the fulfillRandomWords()
+  // function.
+  uint32 callbackGasLimit = 40_000;
+
+  // The default is 3, but you can set this higher.
+  uint16 requestConfirmations = 3;
+
+  // For this example, retrieve 1 random value in one request.
+  // Cannot exceed VRFCoordinatorV2.MAX_NUM_WORDS.
+  uint32 numWords = 1;
+  address s_owner;
+
+  // map rollers to requestIds
+  mapping(uint256 => address) private s_rollers;
+  // map vrf results to rollers
+  mapping(address => uint256) private s_results;
+
+  event DiceRolled(uint256 indexed requestId, address indexed roller);
+  event DiceLanded(uint256 indexed requestId, uint256 indexed result);
+
+  /**
+   * @notice Constructor inherits VRFConsumerBaseV2
+   *
+   * @dev NETWORK: Sepolia
+   *
+   * @param subscriptionId subscription id that this consumer contract can use
+   */
+  constructor(
+    uint64 subscriptionId
+  ) VRFConsumerBaseV2(vrfCoordinator) {
+    COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
+    s_owner = msg.sender;
+    s_subscriptionId = subscriptionId;
+  }
+
+  /**
+   * @notice Requests randomness
+   * @dev Warning: if the VRF response is delayed, avoid calling requestRandomness repeatedly
+   * as that would give miners/VRF operators latitude about which VRF response arrives first.
+   * @dev You must review your implementation details with extreme care.
+   *
+   * @param roller address of the roller
+   */
+  function rollDice(
+    address roller
+  ) public onlyOwner returns (uint256 requestId) {
+    require(s_results[roller] == 0, "Already rolled");
+    // Will revert if subscription is not set and funded.
+    requestId =
+      COORDINATOR.requestRandomWords(s_keyHash, s_subscriptionId, requestConfirmations, callbackGasLimit, numWords);
+
+    s_rollers[requestId] = roller;
+    s_results[roller] = ROLL_IN_PROGRESS;
+    emit DiceRolled(requestId, roller);
+  }
+
+  /**
+   * @notice Callback function used by VRF Coordinator to return the random number to this contract.
+   *
+   * @dev Some action on the contract state should be taken here, like storing the result.
+   * @dev WARNING: take care to avoid having multiple VRF requests in flight if their order of arrival would result
+   * in contract states with different outcomes. Otherwise miners or the VRF operator would could take advantage
+   * by controlling the order.
+   * @dev The VRF Coordinator will only send this function verified responses, and the parent VRFConsumerBaseV2
+   * contract ensures that this method only receives randomness from the designated VRFCoordinator.
+   *
+   * @param requestId uint256
+   * @param randomWords  uint256[] The random result returned by the oracle.
+   */
+  function fulfillRandomWords(
+    uint256 requestId,
+    uint256[] memory randomWords
+  ) internal override {
+    uint256 d20Value = (randomWords[0] % 20) + 1;
+    s_results[s_rollers[requestId]] = d20Value;
+    emit DiceLanded(requestId, d20Value);
+  }
+
+  /**
+   * @notice Get the house assigned to the player once the address has rolled
+   * @param player address
+   * @return house as a string
+   */
+  function house(
+    address player
+  ) public view returns (string memory) {
+    require(s_results[player] != 0, "Dice not rolled");
+    require(s_results[player] != ROLL_IN_PROGRESS, "Roll in progress");
+    return getHouseName(s_results[player]);
+  }
+
+  /**
+   * @notice Get the house name from the id
+   * @param id uint256
+   * @return house name string
+   */
+  function getHouseName(
+    uint256 id
+  ) private pure returns (string memory) {
+    string[20] memory houseNames = [
+      "Targaryen",
+      "Lannister",
+      "Stark",
+      "Tyrell",
+      "Baratheon",
+      "Martell",
+      "Tully",
+      "Bolton",
+      "Greyjoy",
+      "Arryn",
+      "Frey",
+      "Mormont",
+      "Tarley",
+      "Dayne",
+      "Umber",
+      "Valeryon",
+      "Manderly",
+      "Clegane",
+      "Glover",
+      "Karstark"
+    ];
+    return houseNames[id - 1];
+  }
+
+  modifier onlyOwner() {
+    require(msg.sender == s_owner);
+    _;
+  }
+}
+```
+
 You have now completed all necessary functions to generate randomness and assign the user a *Game of Thrones* house. We've added a few helper functions in there to make using the contract easier and more flexible. You can deploy and interact with the complete contract in Remix.
 
 ## How do I deploy to testnet?
@@ -3593,6 +5738,109 @@ Build and deploy the contract on Sepolia.
 1. Open the [`VRFv2Consumer.sol` contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2Consumer.sol) in Remix.
 
 
+   ```sol
+   // SPDX-License-Identifier: MIT
+   // An example of a consumer contract that relies on a subscription for funding.
+   pragma solidity ^0.8.7;
+
+   import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
+   import {VRFConsumerBaseV2} from "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
+   import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/vrf/interfaces/VRFCoordinatorV2Interface.sol";
+
+   /**
+    * Request testnet LINK and ETH here: https://faucets.chain.link/
+    * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here:
+    * https://docs.chain.link/docs/link-token-contracts/
+    */
+
+   /**
+    * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+    * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+    * DO NOT USE THIS CODE IN PRODUCTION.
+    */
+   contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
+     event RequestSent(uint256 requestId, uint32 numWords);
+     event RequestFulfilled(uint256 requestId, uint256[] randomWords);
+
+     struct RequestStatus {
+       bool fulfilled; // whether the request has been successfully fulfilled
+       bool exists; // whether a requestId exists
+       uint256[] randomWords;
+     }
+
+     mapping(uint256 => RequestStatus) public s_requests; /* requestId --> requestStatus */
+     VRFCoordinatorV2Interface COORDINATOR;
+
+     // Your subscription ID.
+     uint64 s_subscriptionId;
+
+     // past requests Id.
+     uint256[] public requestIds;
+     uint256 public lastRequestId;
+
+     // The gas lane to use, which specifies the maximum gas price to bump to.
+     // For a list of available gas lanes on each network,
+     // see https://docs.chain.link/docs/vrf/v2/subscription/supported-networks/#configurations
+     bytes32 keyHash = 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c;
+
+     // Depends on the number of requested values that you want sent to the
+     // fulfillRandomWords() function. Storing each word costs about 20,000 gas,
+     // so 100,000 is a safe default for this example contract. Test and adjust
+     // this limit based on the network that you select, the size of the request,
+     // and the processing of the callback request in the fulfillRandomWords()
+     // function.
+     uint32 callbackGasLimit = 100_000;
+
+     // The default is 3, but you can set this higher.
+     uint16 requestConfirmations = 3;
+
+     // For this example, retrieve 2 random values in one request.
+     // Cannot exceed VRFCoordinatorV2.MAX_NUM_WORDS.
+     uint32 numWords = 2;
+
+     /**
+      * HARDCODED FOR SEPOLIA
+      * COORDINATOR: 0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625
+      */
+     constructor(
+       uint64 subscriptionId
+     ) VRFConsumerBaseV2(0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625) ConfirmedOwner(msg.sender) {
+       COORDINATOR = VRFCoordinatorV2Interface(0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625);
+       s_subscriptionId = subscriptionId;
+     }
+
+     // Assumes the subscription is funded sufficiently.
+     function requestRandomWords() external onlyOwner returns (uint256 requestId) {
+       // Will revert if subscription is not set and funded.
+       requestId =
+         COORDINATOR.requestRandomWords(keyHash, s_subscriptionId, requestConfirmations, callbackGasLimit, numWords);
+       s_requests[requestId] = RequestStatus({randomWords: new uint256[](0), exists: true, fulfilled: false});
+       requestIds.push(requestId);
+       lastRequestId = requestId;
+       emit RequestSent(requestId, numWords);
+       return requestId;
+     }
+
+     function fulfillRandomWords(
+       uint256 _requestId,
+       uint256[] memory _randomWords
+     ) internal override {
+       require(s_requests[_requestId].exists, "request not found");
+       s_requests[_requestId].fulfilled = true;
+       s_requests[_requestId].randomWords = _randomWords;
+       emit RequestFulfilled(_requestId, _randomWords);
+     }
+
+     function getRequestStatus(
+       uint256 _requestId
+     ) external view returns (bool fulfilled, uint256[] memory randomWords) {
+       require(s_requests[_requestId].exists, "request not found");
+       RequestStatus memory request = s_requests[_requestId];
+       return (request.fulfilled, request.randomWords);
+     }
+   }
+   ```
+
 2. On the **Compile** tab in Remix, compile the `VRFv2Consumer.sol` contract.
 
 3. Configure your deployment. On the **Deploy** tab in Remix, select the **Injected Provider** environment, select the `VRFv2Consumer` contract from the contract list, and specify your `subscriptionId` so the constructor can set it.
@@ -3639,6 +5887,109 @@ You deployed a simple contract that can request and receive random values from C
 ## Analyzing the contract
 
 In this example, your MetaMask wallet is the subscription owner and you created a consuming contract to use that subscription. The consuming contract uses static configuration parameters.
+
+```sol
+// SPDX-License-Identifier: MIT
+// An example of a consumer contract that relies on a subscription for funding.
+pragma solidity ^0.8.7;
+
+import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
+import {VRFConsumerBaseV2} from "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
+import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/vrf/interfaces/VRFCoordinatorV2Interface.sol";
+
+/**
+ * Request testnet LINK and ETH here: https://faucets.chain.link/
+ * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here:
+ * https://docs.chain.link/docs/link-token-contracts/
+ */
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+contract VRFv2Consumer is VRFConsumerBaseV2, ConfirmedOwner {
+  event RequestSent(uint256 requestId, uint32 numWords);
+  event RequestFulfilled(uint256 requestId, uint256[] randomWords);
+
+  struct RequestStatus {
+    bool fulfilled; // whether the request has been successfully fulfilled
+    bool exists; // whether a requestId exists
+    uint256[] randomWords;
+  }
+
+  mapping(uint256 => RequestStatus) public s_requests; /* requestId --> requestStatus */
+  VRFCoordinatorV2Interface COORDINATOR;
+
+  // Your subscription ID.
+  uint64 s_subscriptionId;
+
+  // past requests Id.
+  uint256[] public requestIds;
+  uint256 public lastRequestId;
+
+  // The gas lane to use, which specifies the maximum gas price to bump to.
+  // For a list of available gas lanes on each network,
+  // see https://docs.chain.link/docs/vrf/v2/subscription/supported-networks/#configurations
+  bytes32 keyHash = 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c;
+
+  // Depends on the number of requested values that you want sent to the
+  // fulfillRandomWords() function. Storing each word costs about 20,000 gas,
+  // so 100,000 is a safe default for this example contract. Test and adjust
+  // this limit based on the network that you select, the size of the request,
+  // and the processing of the callback request in the fulfillRandomWords()
+  // function.
+  uint32 callbackGasLimit = 100_000;
+
+  // The default is 3, but you can set this higher.
+  uint16 requestConfirmations = 3;
+
+  // For this example, retrieve 2 random values in one request.
+  // Cannot exceed VRFCoordinatorV2.MAX_NUM_WORDS.
+  uint32 numWords = 2;
+
+  /**
+   * HARDCODED FOR SEPOLIA
+   * COORDINATOR: 0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625
+   */
+  constructor(
+    uint64 subscriptionId
+  ) VRFConsumerBaseV2(0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625) ConfirmedOwner(msg.sender) {
+    COORDINATOR = VRFCoordinatorV2Interface(0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625);
+    s_subscriptionId = subscriptionId;
+  }
+
+  // Assumes the subscription is funded sufficiently.
+  function requestRandomWords() external onlyOwner returns (uint256 requestId) {
+    // Will revert if subscription is not set and funded.
+    requestId =
+      COORDINATOR.requestRandomWords(keyHash, s_subscriptionId, requestConfirmations, callbackGasLimit, numWords);
+    s_requests[requestId] = RequestStatus({randomWords: new uint256[](0), exists: true, fulfilled: false});
+    requestIds.push(requestId);
+    lastRequestId = requestId;
+    emit RequestSent(requestId, numWords);
+    return requestId;
+  }
+
+  function fulfillRandomWords(
+    uint256 _requestId,
+    uint256[] memory _randomWords
+  ) internal override {
+    require(s_requests[_requestId].exists, "request not found");
+    s_requests[_requestId].fulfilled = true;
+    s_requests[_requestId].randomWords = _randomWords;
+    emit RequestFulfilled(_requestId, _randomWords);
+  }
+
+  function getRequestStatus(
+    uint256 _requestId
+  ) external view returns (bool fulfilled, uint256[] memory randomWords) {
+    require(s_requests[_requestId].exists, "request not found");
+    RequestStatus memory request = s_requests[_requestId];
+    return (request.fulfilled, request.randomWords);
+  }
+}
+```
 
 The parameters define how your requests will be processed. You can find the values for your network in the [Configuration](/vrf/v2/subscription/supported-networks) page.
 
@@ -3714,6 +6065,137 @@ In this example, the contract operates as a subscription owner and can run funct
 
 Subscription owners and consumers do not have to be separate. This contract not only allows adding consumers with `addConsumer(address consumerAddress)` but can also act as a consumer by running its own `requestRandomWords()` function. This example contract includes a `createNewSubscription()` function in the `constructor()` that creates the subscription and adds itself as a consumer automatically when you deploy it.
 
+```sol
+// SPDX-License-Identifier: MIT
+// An example of a consumer contract that also owns and manages the subscription
+pragma solidity ^0.8.7;
+
+import {LinkTokenInterface} from "@chainlink/contracts/src/v0.8/shared/interfaces/LinkTokenInterface.sol";
+
+import {VRFConsumerBaseV2} from "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
+import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/vrf/interfaces/VRFCoordinatorV2Interface.sol";
+
+/**
+ * Request testnet LINK and ETH here: https://faucets.chain.link/
+ * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here:
+ * https://docs.chain.link/docs/link-token-contracts/
+ */
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+contract VRFv2SubscriptionManager is VRFConsumerBaseV2 {
+  VRFCoordinatorV2Interface COORDINATOR;
+  LinkTokenInterface LINKTOKEN;
+
+  // Sepolia coordinator. For other networks,
+  // see https://docs.chain.link/docs/vrf-contracts/#configurations
+  address vrfCoordinator = 0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625;
+
+  // Sepolia LINK token contract. For other networks, see
+  // https://docs.chain.link/docs/vrf-contracts/#configurations
+  address link_token_contract = 0x779877A7B0D9E8603169DdbD7836e478b4624789;
+
+  // The gas lane to use, which specifies the maximum gas price to bump to.
+  // For a list of available gas lanes on each network,
+  // see https://docs.chain.link/docs/vrf-contracts/#configurations
+  bytes32 keyHash = 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c;
+
+  // A reasonable default is 100000, but this value could be different
+  // on other networks.
+  uint32 callbackGasLimit = 100_000;
+
+  // The default is 3, but you can set this higher.
+  uint16 requestConfirmations = 3;
+
+  // For this example, retrieve 2 random values in one request.
+  // Cannot exceed VRFCoordinatorV2.MAX_NUM_WORDS.
+  uint32 numWords = 2;
+
+  // Storage parameters
+  uint256[] public s_randomWords;
+  uint256 public s_requestId;
+  uint64 public s_subscriptionId;
+  address s_owner;
+
+  constructor() VRFConsumerBaseV2(vrfCoordinator) {
+    COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
+    LINKTOKEN = LinkTokenInterface(link_token_contract);
+    s_owner = msg.sender;
+    //Create a new subscription when you deploy the contract.
+    createNewSubscription();
+  }
+
+  // Assumes the subscription is funded sufficiently.
+  function requestRandomWords() external onlyOwner {
+    // Will revert if subscription is not set and funded.
+    s_requestId =
+      COORDINATOR.requestRandomWords(keyHash, s_subscriptionId, requestConfirmations, callbackGasLimit, numWords);
+  }
+
+  function fulfillRandomWords(
+    uint256,
+    /* requestId */
+    uint256[] memory randomWords
+  ) internal override {
+    s_randomWords = randomWords;
+  }
+
+  // Create a new subscription when the contract is initially deployed.
+  function createNewSubscription() private onlyOwner {
+    s_subscriptionId = COORDINATOR.createSubscription();
+    // Add this contract as a consumer of its own subscription.
+    COORDINATOR.addConsumer(s_subscriptionId, address(this));
+  }
+
+  // Assumes this contract owns link.
+  // 1000000000000000000 = 1 LINK
+  function topUpSubscription(
+    uint256 amount
+  ) external onlyOwner {
+    LINKTOKEN.transferAndCall(address(COORDINATOR), amount, abi.encode(s_subscriptionId));
+  }
+
+  function addConsumer(
+    address consumerAddress
+  ) external onlyOwner {
+    // Add a consumer contract to the subscription.
+    COORDINATOR.addConsumer(s_subscriptionId, consumerAddress);
+  }
+
+  function removeConsumer(
+    address consumerAddress
+  ) external onlyOwner {
+    // Remove a consumer contract from the subscription.
+    COORDINATOR.removeConsumer(s_subscriptionId, consumerAddress);
+  }
+
+  function cancelSubscription(
+    address receivingWallet
+  ) external onlyOwner {
+    // Cancel the subscription and send the remaining LINK to a wallet address.
+    COORDINATOR.cancelSubscription(s_subscriptionId, receivingWallet);
+    s_subscriptionId = 0;
+  }
+
+  // Transfer this contract's funds to an address.
+  // 1000000000000000000 = 1 LINK
+  function withdraw(
+    uint256 amount,
+    address to
+  ) external onlyOwner {
+    LINKTOKEN.transfer(to, amount);
+  }
+
+  modifier onlyOwner() {
+    require(msg.sender == s_owner);
+    _;
+  }
+}
+```
+
 To use this contract, compile and deploy it in Remix.
 
 1. Open the contract in [Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/VRF/VRFv2SubscriptionManager.sol).
@@ -3749,6 +6231,27 @@ To use this contract, compile and deploy it in Remix.
 ## Funding and requesting simultaneously
 
 You can fund a subscription and request randomness in a single transaction. You must estimate how much the transaction might cost and determine the amount of funding to send to the subscription yourself. See the [Subscription billing](/vrf/v2/subscription/#subscription-limits) page to learn how to estimate request costs.
+
+```sol
+// Assumes this contract owns link
+// You must estimate LINK cost yourself based on the gas lane and limits.
+// 1_000_000_000_000_000_000 = 1 LINK
+function fundAndRequestRandomWords(uint256 amount) external onlyOwner {
+    LINKTOKEN.transferAndCall(
+        address(COORDINATOR),
+        amount,
+        abi.encode(s_subscriptionId)
+    );
+    // Will revert if subscription is not set and funded.
+    s_requestId = COORDINATOR.requestRandomWords(
+        keyHash,
+        s_subscriptionId,
+        requestConfirmations,
+        callbackGasLimit,
+        numWords
+    );
+}
+```
 
 Add this function to your contracts if you need to provide funding simultaneously with your requests. The `transferAndCall()` function sends LINK from your contract to the subscription, and the `requestRandomWords()` function requests the random words. Your contract still needs the `fulfillRandomWords()` callback function to receive the random values.
 
@@ -3789,7 +6292,114 @@ Complete the following tasks to test your VRF v2 consumer locally:
 
 Open *VRFCoordinatorV2Mock* and compile in Remix:
 
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.7;
+
+import "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2Mock.sol";
+```
+
 Open *VRFv2Consumer* and compile in Remix:
+
+```sol
+// SPDX-License-Identifier: MIT
+// An example of a consumer contract that relies on a subscription for funding.
+pragma solidity ^0.8.7;
+
+import {VRFConsumerBaseV2} from "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
+import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/vrf/interfaces/VRFCoordinatorV2Interface.sol";
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
+/**
+ * @title The RandomNumberConsumerV2 contract
+ * @notice A contract that gets random values from Chainlink VRF V2
+ */
+contract RandomNumberConsumerV2 is VRFConsumerBaseV2 {
+  VRFCoordinatorV2Interface immutable COORDINATOR;
+
+  // Your subscription ID.
+  uint64 immutable s_subscriptionId;
+
+  // The gas lane to use, which specifies the maximum gas price to bump to.
+  // For a list of available gas lanes on each network,
+  // see https://docs.chain.link/docs/vrf-contracts/#configurations
+  bytes32 immutable s_keyHash;
+
+  // Depends on the number of requested values that you want sent to the
+  // fulfillRandomWords() function. Storing each word costs about 20,000 gas,
+  // so 100,000 is a safe default for this example contract. Test and adjust
+  // this limit based on the network that you select, the size of the request,
+  // and the processing of the callback request in the fulfillRandomWords()
+  // function.
+  uint32 constant CALLBACK_GAS_LIMIT = 100_000;
+
+  // The default is 3, but you can set this higher.
+  uint16 constant REQUEST_CONFIRMATIONS = 3;
+
+  // For this example, retrieve 2 random values in one request.
+  // Cannot exceed VRFCoordinatorV2.MAX_NUM_WORDS.
+  uint32 constant NUM_WORDS = 2;
+
+  uint256[] public s_randomWords;
+  uint256 public s_requestId;
+  address s_owner;
+
+  event ReturnedRandomness(uint256[] randomWords);
+
+  /**
+   * @notice Constructor inherits VRFConsumerBaseV2
+   *
+   * @param subscriptionId - the subscription ID that this contract uses for funding requests
+   * @param vrfCoordinator - coordinator, check https://docs.chain.link/docs/vrf-contracts/#configurations
+   * @param keyHash - the gas lane to use, which specifies the maximum gas price to bump to
+   */
+  constructor(
+    uint64 subscriptionId,
+    address vrfCoordinator,
+    bytes32 keyHash
+  ) VRFConsumerBaseV2(vrfCoordinator) {
+    COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
+    s_keyHash = keyHash;
+    s_owner = msg.sender;
+    s_subscriptionId = subscriptionId;
+  }
+
+  /**
+   * @notice Requests randomness
+   * Assumes the subscription is funded sufficiently; "Words" refers to unit of data in Computer Science
+   */
+  function requestRandomWords() external onlyOwner {
+    // Will revert if subscription is not set and funded.
+    s_requestId =
+      COORDINATOR.requestRandomWords(s_keyHash, s_subscriptionId, REQUEST_CONFIRMATIONS, CALLBACK_GAS_LIMIT, NUM_WORDS);
+  }
+
+  /**
+   * @notice Callback function used by VRF Coordinator
+   *
+   * @param  - id of the request
+   * @param randomWords - array of random results from VRF Coordinator
+   */
+  function fulfillRandomWords(
+    uint256,
+    /* requestId */
+    uint256[] memory randomWords
+  ) internal override {
+    s_randomWords = randomWords;
+    emit ReturnedRandomness(randomWords);
+  }
+
+  modifier onlyOwner() {
+    require(msg.sender == s_owner);
+    _;
+  }
+}
+```
 
 Your RemixIDE file explorer should display *VRFCoordinatorV2Mock.sol* and *VRFv2Consumer.sol*:
 

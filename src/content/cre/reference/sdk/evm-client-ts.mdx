@@ -82,10 +82,10 @@ callContract(
 
 This is the main input object for the `callContract()` method.
 
-| <div style="width:110px">Field</div> | <div style="width:110px">Type</div> | Required | Description                                                                                                                                                   |
-| ------------------------------------ | ----------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `call`                               | `CallMsgJson`                       | Yes      | Contains the actual details of the function call you want to make.                                                                                            |
-| `blockNumber`                        | `string`                            | No       | The block number to query. Use `LAST_FINALIZED_BLOCK_NUMBER` for finalized blocks or `LATEST_BLOCK_NUMBER` for the most recent block. Defaults to `"latest"`. |
+| <div style="width:110px">Field</div> | <div style="width:110px">Type</div> | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ------------------------------------ | ----------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `call`                               | `CallMsgJson`                       | Yes      | Contains the actual details of the function call you want to make.                                                                                                                                                                                                                                                                                                                                                                               |
+| `blockNumber`                        | `BigIntJson`                        | No       | The block number to query. Accepts:<br/>• `LATEST_BLOCK_NUMBER` (default): the most recent block<br/>• `LAST_FINALIZED_BLOCK_NUMBER`: a finalized block<br/>• **`BigIntJson` object**: an explicit block height (see [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-ts#custom-block-depths) for conversion details).<br/><br/>See [Finality and Confidence Levels](/cre/concepts/finality-ts) for finality strategies. |
 
 #### `CallMsg` / `CallMsgJson`
 
@@ -204,10 +204,10 @@ balanceAt(
 
 #### `BalanceAtRequest` / `BalanceAtRequestJson`
 
-| Field         | Type     | Required | Description                                               |
-| ------------- | -------- | -------- | --------------------------------------------------------- |
-| `account`     | `string` | Yes      | The 20-byte address of the account to query (hex string). |
-| `blockNumber` | `string` | No       | The block number to query. Defaults to `"latest"`.        |
+| <div style="width:110px">Field</div> | <div style="width:110px">Type</div> | Required | Description                                                                                                                                                                                                                                                                                                                       |
+| ------------------------------------ | ----------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `account`                            | `string`                            | Yes      | The 20-byte address of the account to query (hex string).                                                                                                                                                                                                                                                                         |
+| `blockNumber`                        | `BigIntJson`                        | No       | The block number to query. Accepts `LATEST_BLOCK_NUMBER` (default), `LAST_FINALIZED_BLOCK_NUMBER`, or a `BigIntJson` object for an explicit block height (see [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-ts#custom-block-depths)). See [Finality and Confidence Levels](/cre/concepts/finality-ts). |
 
 #### `BalanceAtReply`
 
@@ -339,9 +339,9 @@ headerByNumber(
 
 #### `HeaderByNumberRequest` / `HeaderByNumberRequestJson`
 
-| <div style="width: 100px;">Field</div> | <div style="width: 100px;">Type</div> | Required | Description                                                                      |
-| -------------------------------------- | ------------------------------------- | -------- | -------------------------------------------------------------------------------- |
-| `blockNumber`                          | `string`                              | No       | The number of the block to retrieve. If `undefined`, retrieves the latest block. |
+| <div style="width: 100px;">Field</div> | <div style="width: 100px;">Type</div> | Required | Description                                                                                                                                                                                                                                                                                                                                                           |
+| -------------------------------------- | ------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `blockNumber`                          | `BigIntJson`                          | No       | The number of the block to retrieve. Accepts `undefined` for `latest` (default), `LATEST_BLOCK_NUMBER`, `LAST_FINALIZED_BLOCK_NUMBER`, or a `BigIntJson` object for an explicit block height (see [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-ts#custom-block-depths)). See [Finality and Confidence Levels](/cre/concepts/finality-ts). |
 
 #### `HeaderByNumberReply`
 
@@ -556,6 +556,86 @@ Converts a `0x`-prefixed hex string to a base64-encoded string. This is useful f
 ```typescript
 function hexToBase64(hex: Hex): string
 ```
+
+---
+
+### `protoBigIntToBigint()`
+
+Converts a protobuf `BigInt` (returned by SDK methods like `headerByNumber`) to a native JavaScript `bigint`. Use this when you need to perform arithmetic on block numbers or other numeric values returned from the blockchain.
+
+**Signature:**
+
+```typescript
+function protoBigIntToBigint(pb: ProtoBigInt): bigint
+```
+
+**Parameters:**
+
+- `pb`: A protobuf `BigInt` object with `absVal` (Uint8Array) and `sign` (bigint) fields
+
+**Returns:**
+
+A native JavaScript `bigint` value.
+
+**Usage:**
+
+```typescript
+import { protoBigIntToBigint } from "@chainlink/cre-sdk"
+
+// Get the latest block number from the blockchain
+const latestHeader = evmClient.headerByNumber(runtime, {}).result()
+
+// Convert the protobuf BigInt to a native bigint for arithmetic
+const latestBlockNum = protoBigIntToBigint(latestHeader.header.blockNumber)
+const customBlock = latestBlockNum - 500n // Now you can do arithmetic
+
+console.log(`Latest block: ${latestBlockNum}`)
+console.log(`Custom block (500 blocks ago): ${customBlock}`)
+```
+
+See [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-ts#custom-block-depths) for a complete example.
+
+---
+
+### `blockNumber()`
+
+Converts a native `bigint`, `number`, or `string` to the protobuf `BigInt` JSON format required by SDK methods. This is a convenience alias for `bigintToProtoBigInt`. Use this when specifying an explicit block height for contract calls or other blockchain queries.
+
+**Signature:**
+
+```typescript
+function blockNumber(n: number | bigint | string): BigIntJson
+```
+
+**Parameters:**
+
+- `n`: The block number as a native `bigint`, `number`, or `string`
+
+**Returns:**
+
+A `BigIntJson` object in the protobuf format expected by SDK methods.
+
+**Usage:**
+
+```typescript
+import { blockNumber, encodeCallMsg } from "@chainlink/cre-sdk"
+import { zeroAddress } from "viem"
+
+// Read from a specific historical block
+const historicalBlock = 9767655n
+const contractCall = evmClient
+  .callContract(runtime, {
+    call: encodeCallMsg({
+      from: zeroAddress,
+      to: contractAddress,
+      data: callData,
+    }),
+    blockNumber: blockNumber(historicalBlock),
+  })
+  .result()
+```
+
+See [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-ts#custom-block-depths) for a complete example.
 
 ---
 

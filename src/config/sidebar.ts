@@ -418,6 +418,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "TypeScript Runtime Environment",
           url: "cre/concepts/typescript-wasm-runtime",
         },
+        {
+          title: "Finality & Confidence Levels",
+          url: "cre/concepts/finality",
+          highlightAsCurrent: ["cre/concepts/finality-go", "cre/concepts/finality-ts"],
+        },
       ],
     },
     {
@@ -876,18 +881,18 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
-          title: "Net Asset Value (NAV)",
-          url: "data-streams/nav-streams",
+          title: "SmartData",
+          url: "data-streams/smartdata-streams",
           children: [
             {
-              title: "Report Schema v9 (NAV)",
+              title: "Report Schema v9 (SmartData)",
               url: "data-streams/reference/report-schema-v9",
             },
           ],
         },
         {
           title: "Tokenized Asset",
-          url: "data-streams/backed-streams",
+          url: "data-streams/tokenized-asset-streams",
           children: [
             {
               title: "Report Schema v10 (Tokenized Asset)",

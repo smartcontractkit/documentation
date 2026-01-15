@@ -50,7 +50,9 @@ const parseMarkdownLink = (text: string) => {
 // Render a category icon/link from the config
 const getFeedCategoryElement = (riskTier: string | undefined) => {
   if (!riskTier) return ""
-  const category = FEED_CATEGORY_CONFIG[riskTier.toLowerCase()]
+  // Normalize: "very high" → "veryhigh" to match config keys
+  const normalizedKey = riskTier.toLowerCase().replace(/\s+/g, "")
+  const category = FEED_CATEGORY_CONFIG[normalizedKey]
   if (!category) return ""
   return (
     <span className={clsx(feedList.hoverText, tableStyles.statusIcon, "feed-category")} title={category.title}>
@@ -1032,7 +1034,7 @@ export const StreamsTr = ({ metadata, isMainnet }) => {
                 </dt>
                 <dd>
                   <a href="/data-streams/reference/report-schema-v9" rel="noreferrer" target="_blank">
-                    Report Schema v9 (NAV)
+                    Report Schema v9 (SmartData)
                   </a>
                 </dd>
               </div>
@@ -1151,8 +1153,6 @@ export const MainnetTable = ({
   const filteredMetadata = enrichedMetadata
     .sort((a, b) => (a.name.toUpperCase() < b.name.toUpperCase() ? -1 : 1))
     .filter((metadata) => {
-      // Filter out hidden feeds (from Supabase)
-      if (metadata.finalCategory === "hidden") return false
       if (showOnlySVR && !metadata.secondaryProxyAddress) {
         return false
       }
@@ -1185,9 +1185,11 @@ export const MainnetTable = ({
         return included
       }
       // Filter by final category (Supabase risk tier takes precedence over RDD)
+      // Normalize spaces for comparison (e.g., "very high" → "veryhigh")
+      const normalizedFinalCategory = metadata.finalCategory?.toLowerCase().replace(/\s+/g, "")
       return (
         selectedFeedCategories.length === 0 ||
-        selectedFeedCategories.map((cat) => cat.toLowerCase()).includes(metadata.finalCategory?.toLowerCase())
+        selectedFeedCategories.map((cat) => cat.toLowerCase().replace(/\s+/g, "")).includes(normalizedFinalCategory)
       )
     })
     .filter(
@@ -1376,8 +1378,6 @@ export const TestnetTable = ({
   const filteredMetadata = enrichedMetadata
     .sort((a, b) => (a.name.toUpperCase() < b.name.toUpperCase() ? -1 : 1))
     .filter((metadata) => {
-      // Filter out hidden feeds (from Supabase)
-      if (metadata.finalCategory === "hidden") return false
       // Use shared visibility logic with filters
       return isFeedVisible(metadata, dataFeedType as any, undefined, {
         showOnlyDEXFeeds,
@@ -1400,9 +1400,11 @@ export const TestnetTable = ({
         return included
       }
       // Filter by final category (Supabase risk tier takes precedence over RDD)
+      // Normalize spaces for comparison (e.g., "very high" → "veryhigh")
+      const normalizedFinalCategory = metadata.finalCategory?.toLowerCase().replace(/\s+/g, "")
       return (
         selectedFeedCategories.length === 0 ||
-        selectedFeedCategories.map((cat) => cat.toLowerCase()).includes(metadata.finalCategory?.toLowerCase())
+        selectedFeedCategories.map((cat) => cat.toLowerCase().replace(/\s+/g, "")).includes(normalizedFinalCategory)
       )
     })
     .filter(

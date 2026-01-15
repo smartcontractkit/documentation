@@ -7,7 +7,7 @@ date: Last Modified
 metadata:
   description: "Read data from smart contracts in Go: learn to call view functions and fetch verified blockchain state in your workflows."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2025-12-10"
 ---
 
 import { Aside } from "@components"
@@ -153,28 +153,73 @@ When calling contract read methods, you must specify a block number. There are t
 
 ### Using magic numbers
 
-- **Finalized block**: Use `big.NewInt(-3)` to read from the latest finalized block
+- **Finalized block**: Use `big.NewInt(-3)` to read from the latest finalized block (recommended for production)
 - **Latest block**: Use `big.NewInt(-2)` to read from the latest block
-- **Specific block**: Use `big.NewInt(blockNumber)` to read from a specific block
 
-### Using rpc constants (alternative)
+For explicit block numbers, see [Custom block depths](#custom-block-depths) below.
 
-You can also use constants from the `go-ethereum/rpc` package for better readability:
+### Custom block depths
+
+For use cases requiring fixed confirmation thresholds (e.g., regulatory compliance) or historical state verification, you can specify an exact block number.
+
+**Example 1 - Read from a specific historical block**:
+
+```go
+// Read from block 12345678
+specificBlock := big.NewInt(12345678)
+value, err := storageContract.Get(runtime, specificBlock).Await()
+if err != nil {
+    return nil, fmt.Errorf("failed to read from specific block: %w", err)
+}
+```
+
+**Example 2 - Read from 500 blocks ago from latest block**:
 
 ```go
 import (
-    "math/big"
-    "github.com/ethereum/go-ethereum/rpc"
+    pb "github.com/smartcontractkit/chainlink-protos/cre/go/values/pb"
 )
 
-// For latest block
-reqBlockNumber := big.NewInt(rpc.LatestBlockNumber.Int64())
+// Helper to convert protobuf BigInt to standard library big.Int
+func pbBigIntToBigInt(pb *pb.BigInt) *big.Int {
+    if pb == nil {
+        return nil
+    }
+    result := new(big.Int).SetBytes(pb.AbsVal)
+    if pb.Sign < 0 {
+        result.Neg(result)
+    }
+    return result
+}
 
-// For finalized block
-reqBlockNumber := big.NewInt(rpc.FinalizedBlockNumber.Int64())
+// Get the latest block number
+latestHeader, err := evmClient.HeaderByNumber(runtime, &evm.HeaderByNumberRequest{}).Await()
+if err != nil {
+    return nil, fmt.Errorf("failed to get latest block: %w", err)
+}
+
+// Convert protobuf BigInt to standard library big.Int
+latestBlockNum := pbBigIntToBigInt(latestHeader.Header.BlockNumber)
+customDepth := big.NewInt(500)
+customBlock := new(big.Int).Sub(latestBlockNum, customDepth)
+
+// Use the custom block number with the contract binding
+value, err := storageContract.Get(runtime, customBlock).Await()
+if err != nil {
+    return nil, fmt.Errorf("failed to read from custom block: %w", err)
+}
 ```
 
-Both approaches are equivalent - use whichever you find more readable in your code.
+**Understanding the conversion:**
+
+The `pbBigIntToBigInt` helper converts the SDK's protobuf `*pb.BigInt` type (which stores the value as `AbsVal []byte` and `Sign int64`) to Go's standard library `*big.Int`. This allows you to perform arithmetic operations like subtracting 500 blocks.
+
+<Aside type="note" title="SDK enhancement planned">
+  The SDK team is working on a built-in helper to simplify this conversion. Until then, use the `pbBigIntToBigInt`
+  helper shown above.
+</Aside>
+
+See [Finality and Confidence Levels](/cre/concepts/finality-go) for more details on when to use custom block depths.
 
 ## Complete example
 

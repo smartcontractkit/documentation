@@ -85,17 +85,8 @@ When the Router forwards a `ccip_send` request, the OnRamp performs the followin
   - If the message involves token transfers, it initiates a secure callback pattern by calling the `Token Admin Dispatcher`.
   - The dispatcher uses the `Token Admin Registry` to store the message context (sender, receiver, etc.) before invoking the correct `Token Pool` to `lock_or_burn` the assets.
 
-- **Nonce Management**
-  - For ordered messages, it calls the `Nonce Manager` to retrieve and increment the sender's nonce for that destination.
-
 - **Event Emission**
   - Generates a unique `messageId` and emits a `CCIPMessageSent` event containing the complete, sequenced message details.
-
-## Nonce Manager
-
-The `ccip::nonce_manager` module enables optional strict message ordering. It tracks outbound nonces on a per-sender and per-destination-chain basis.
-
-When out-of-order execution is disabled for a message, the `OnRamp` module uses the `Nonce Manager` to assign an incrementing nonce, which is then verified by the `OffRamp` on the destination chain.
 
 ## OffRamp
 

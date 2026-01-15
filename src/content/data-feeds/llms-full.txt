@@ -978,6 +978,15 @@ The example below uses Javascript Web3 library to interact with ENS. See the [EN
 
 This example logs the address of the data feed on the Ethereum mainnet for ETH / USD prices.
 
+```js
+const Web3 = require("web3")
+
+const web3 = new Web3("https://rpc.ankr.com/eth")
+web3.eth.ens.getAddress("eth-usd.data.eth").then((address) => {
+  console.log(address)
+})
+```
+
 ### Solidity
 
 In Solidity, the address of the ENS registry must be known. According to [ENS documentation](https://docs.ens.domains/ens-deployments), this address is the same across Mainnet and testnet:
@@ -987,6 +996,52 @@ ENS registry address: [0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e](https://ether
 Also, instead of using readable string names like `eth-usd.data.eth`, resolvers accept bytes32 hash IDs for names. Hash IDs can be retrieved from [this subgraph](https://thegraph.com/explorer/subgraphs/5XqPmWe6gjyrJtFn9cLy237i4cWw2j9HcUJEXsP5qGtH) or via this npm package [eth-ens-namehash](https://www.npmjs.com/package/@ensdomains/eth-ens-namehash).
 
 "ETH / USD" hash: `0xf599f4cd075a34b92169cf57271da65a7a936c35e3f31e854447fbb3e7eb736d`
+
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.7;
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
+// ENS Registry Contract
+interface ENS {
+  function resolver(
+    bytes32 node
+  ) external view returns (Resolver);
+}
+
+// Chainlink Resolver
+interface Resolver {
+  function addr(
+    bytes32 node
+  ) external view returns (address);
+}
+
+// Consumer contract
+contract ENSConsumer {
+  ENS ens;
+
+  // ENS registry address: 0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e
+  constructor(
+    address ensAddress
+  ) {
+    ens = ENS(ensAddress);
+  }
+
+  // Use ID Hash instead of readable name
+  // ETH / USD hash: 0xf599f4cd075a34b92169cf57271da65a7a936c35e3f31e854447fbb3e7eb736d
+  function resolve(
+    bytes32 node
+  ) public view returns (address) {
+    Resolver resolver = ens.resolver(node);
+    return resolver.addr(node);
+  }
+}
+```
 
 ---
 
@@ -1028,6 +1083,59 @@ If you are new to smart contract development, learn how to [Deploy Your First Sm
 ## Examine the sample contract
 
 This example contract obtains the latest price answer from the [BTC / USD feed](/data-feeds/price-feeds/addresses) on the Sepolia testnet, but you can modify it to read any of the different [Types of Data Feeds](/data-feeds#types-of-data-feeds).
+
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.7;
+
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED
+ * VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
+/**
+ * If you are reading data feeds on L2 networks, you must
+ * check the latest answer from the L2 Sequencer Uptime
+ * Feed to ensure that the data is accurate in the event
+ * of an L2 sequencer outage. See the
+ * https://docs.chain.link/data-feeds/l2-sequencer-feeds
+ * page for details.
+ */
+contract DataConsumerV3 {
+  AggregatorV3Interface internal dataFeed;
+
+  /**
+   * Network: Sepolia
+   * Aggregator: BTC/USD
+   * Address: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43
+   */
+  constructor() {
+    dataFeed = AggregatorV3Interface(0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43);
+  }
+
+  /**
+   * Returns the latest answer.
+   */
+  function getChainlinkDataFeedLatestAnswer() public view returns (int256) {
+    // prettier-ignore
+    (
+      /* uint80 roundId */
+      ,
+      int256 answer,
+      /*uint256 startedAt*/
+      ,
+      /*uint256 updatedAt*/
+      ,
+      /*uint80 answeredInRound*/
+    ) = dataFeed.latestRoundData();
+    return answer;
+  }
+}
+```
 
 The contract has the following components:
 
@@ -1183,11 +1291,159 @@ The [`getRoundData` function](/data-feeds/api-reference/#getrounddata) returns t
 
 ### Solidity
 
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.7;
+
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+contract HistoricalDataConsumerV3 {
+  AggregatorV3Interface internal dataFeed;
+
+  /**
+   * Network: Sepolia
+   * Aggregator: ETH/USD
+   * Address: 0x694AA1769357215DE4FAC081bf1f309aDC325306
+   */
+  constructor() {
+    dataFeed = AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306);
+  }
+
+  /**
+   * Returns historical data for a round ID.
+   * roundId is NOT incremental. Not all roundIds are valid.
+   * You must know a valid roundId before consuming historical data.
+   *
+   * ROUNDID VALUES:
+   *    InValid:      18446744073709562300
+   *    Valid:        18446744073709554683
+   *
+   * @dev A timestamp with zero value means the round is not complete and should not be used.
+   */
+  function getHistoricalData(
+    uint80 roundId
+  ) public view returns (int256) {
+    // prettier-ignore
+    (
+      /*uint80 roundID*/
+      ,
+      int256 answer,
+      /*uint startedAt*/
+      ,
+      /*uint timeStamp*/
+      ,
+      /*uint80 answeredInRound*/
+    ) = dataFeed.getRoundData(roundId);
+    return answer;
+  }
+}
+```
+
 ### Javascript
 
-<HistoricalPrice client:idle feedAddress={priceFeedAddresses.btc.usd.sepolia.address} roundId={priceFeedAddresses.btc.usd.sepolia.historicalRound} supportedChain="ETHEREUM_SEPOLIA" />
+```js
+/**
+ * THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
+const Web3 = require("web3") // for nodejs only
+// Replace the provider URL with your own endpoint URL
+const web3 = new Web3("https://rpc.ankr.com/eth_sepolia")
+const aggregatorV3InterfaceABI = [
+  {
+    inputs: [],
+    name: "decimals",
+    outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "description",
+    outputs: [{ internalType: "string", name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint80", name: "_roundId", type: "uint80" }],
+    name: "getRoundData",
+    outputs: [
+      { internalType: "uint80", name: "roundId", type: "uint80" },
+      { internalType: "int256", name: "answer", type: "int256" },
+      { internalType: "uint256", name: "startedAt", type: "uint256" },
+      { internalType: "uint256", name: "updatedAt", type: "uint256" },
+      { internalType: "uint80", name: "answeredInRound", type: "uint80" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "latestRoundData",
+    outputs: [
+      { internalType: "uint80", name: "roundId", type: "uint80" },
+      { internalType: "int256", name: "answer", type: "int256" },
+      { internalType: "uint256", name: "startedAt", type: "uint256" },
+      { internalType: "uint256", name: "updatedAt", type: "uint256" },
+      { internalType: "uint80", name: "answeredInRound", type: "uint80" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "version",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+]
+const addr = "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43"
+const dataFeed = new web3.eth.Contract(aggregatorV3InterfaceABI, addr)
+
+// Valid roundId must be known. They are NOT incremental.
+let validId = BigInt("18446744073709554177")
+dataFeed.methods
+  .getRoundData(validId)
+  .call()
+  .then((historicalRoundData) => {
+    document.getElementById("get-data-field").value = historicalRoundData.answer
+  })
+```
 
 ### Python
+
+```py
+# THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
+# THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
+# DO NOT USE THIS CODE IN PRODUCTION.
+
+from web3 import Web3
+
+# Change this to use your own RPC URL
+web3 = Web3(Web3.HTTPProvider('https://rpc.ankr.com/eth_sepolia'))
+# AggregatorV3Interface ABI
+abi = '[{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"description","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint80","name":"_roundId","type":"uint80"}],"name":"getRoundData","outputs":[{"internalType":"uint80","name":"roundId","type":"uint80"},{"internalType":"int256","name":"answer","type":"int256"},{"internalType":"uint256","name":"startedAt","type":"uint256"},{"internalType":"uint256","name":"updatedAt","type":"uint256"},{"internalType":"uint80","name":"answeredInRound","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"latestRoundData","outputs":[{"internalType":"uint80","name":"roundId","type":"uint80"},{"internalType":"int256","name":"answer","type":"int256"},{"internalType":"uint256","name":"startedAt","type":"uint256"},{"internalType":"uint256","name":"updatedAt","type":"uint256"},{"internalType":"uint80","name":"answeredInRound","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"version","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]'
+# Feed address
+addr = '0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43'
+
+# Set up contract instance
+contract = web3.eth.contract(address=addr, abi=abi)
+
+#  Valid roundId must be known. They are NOT incremental.
+# invalidRoundId = 18446744073709562300
+validRoundId = 18446744073709554177
+
+historicalData = contract.functions.getRoundData(validRoundId).call()
+print(historicalData)
+```
 
 ---
 
@@ -1408,7 +1664,7 @@ zkSync Mainnet: [0x0E6AC8B967393dcD3D36677c126976157F993940](https://explorer.zk
 The diagram below shows how these feeds update and how a consumer retrieves the status of the Arbitrum sequencer.
 
 1. Chainlink nodes trigger an OCR round every 30s and update the sequencer status by calling the `validate` function in the [`ArbitrumValidator` contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/l2ep/dev/arbitrum/ArbitrumValidator.sol) by calling it through the [`ValidatorProxy` contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.0.0/contracts/src/v0.8/ValidatorProxy.sol).
-2. The `ArbitrumValidator` checks to see if the latest update is different from the previous update. If it detects a difference, it places a message in the [Arbitrum inbox contract](https://developer.offchainlabs.com/docs/inside_arbitrum#the-big-picture).
+2. The `ArbitrumValidator` checks to see if the latest update is different from the previous update. If it detects a difference, it places a message in the [Arbitrum inbox contract](https://docs.arbitrum.io/how-arbitrum-works/inside-arbitrum-nitro).
 3. The inbox contract sends the message to the [`ArbitrumSequencerUptimeFeed` contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/l2ep/dev/arbitrum/ArbitrumSequencerUptimeFeed.sol). The message calls the `updateStatus` function in the `ArbitrumSequencerUptimeFeed` contract and updates the latest sequencer status to 0 if the sequencer is up and 1 if it is down. It also records the block timestamp to indicate when the message was sent from the L1 network.
 4. A consumer contract on the L2 network can read these values from the [`ArbitrumUptimeFeedProxy` contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.0.0/contracts/src/v0.6/EACAggregatorProxy.sol), which reads values from the `ArbitrumSequencerUptimeFeed` contract.
 
@@ -1460,6 +1716,83 @@ This example code works on any network that supports Solidity. Create the consum
 
 - Configure the `sequencerUptimeFeed` object with the [sequencer uptime feed proxy address](#supported-networks) for your L2 network.
 - Configure the `dataFeed` object with one of the [Data Feed proxy addresses](/data-feeds/price-feeds/addresses) that are available for your network.
+
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.7;
+
+import {AggregatorV2V3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV2V3Interface.sol";
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+contract DataConsumerWithSequencerCheck {
+  AggregatorV2V3Interface internal dataFeed;
+  AggregatorV2V3Interface internal sequencerUptimeFeed;
+
+  uint256 private constant GRACE_PERIOD_TIME = 3600;
+
+  error SequencerDown();
+  error GracePeriodNotOver();
+
+  /**
+   * Network: OP Mainnet
+   * Data Feed: BTC/USD
+   * Data Feed address: 0xD702DD976Fb76Fffc2D3963D037dfDae5b04E593
+   * Uptime Feed address: 0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389
+   * For a list of available Sequencer Uptime Feed proxy addresses, see:
+   * https://docs.chain.link/docs/data-feeds/l2-sequencer-feeds
+   */
+  constructor() {
+    dataFeed = AggregatorV2V3Interface(0xD702DD976Fb76Fffc2D3963D037dfDae5b04E593);
+    sequencerUptimeFeed = AggregatorV2V3Interface(0x371EAD81c9102C9BF4874A9075FFFf170F2Ee389);
+  }
+
+  // Check the sequencer status and return the latest data
+  function getChainlinkDataFeedLatestAnswer() public view returns (int256) {
+    // prettier-ignore
+    (
+      /*uint80 roundID*/
+      ,
+      int256 answer,
+      uint256 startedAt,
+      /*uint256 updatedAt*/
+      ,
+      /*uint80 answeredInRound*/
+    ) = sequencerUptimeFeed.latestRoundData();
+
+    // Answer == 0: Sequencer is up
+    // Answer == 1: Sequencer is down
+    bool isSequencerUp = answer == 0;
+    if (!isSequencerUp) {
+      revert SequencerDown();
+    }
+
+    // Make sure the grace period has passed after the
+    // sequencer is back up.
+    uint256 timeSinceUp = block.timestamp - startedAt;
+    if (timeSinceUp <= GRACE_PERIOD_TIME) {
+      revert GracePeriodNotOver();
+    }
+
+    // prettier-ignore
+    (
+      /*uint80 roundID*/
+      ,
+      int256 data,
+      /*uint startedAt*/
+      ,
+      /*uint timeStamp*/
+      ,
+      /*uint80 answeredInRound*/
+    ) = dataFeed.latestRoundData();
+
+    return data;
+  }
+}
+```
 
 The `sequencerUptimeFeed` object returns the following values:
 
@@ -2412,6 +2745,157 @@ Below is a full example that demonstrates how to:
   5. Update the field names in `consumeData()` to match your struct
 </Aside>
 
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.24;
+
+import {IBundleAggregatorProxy} from "@chainlink/contracts/src/v0.8/data-feeds/interfaces/IBundleAggregatorProxy.sol";
+
+/**
+ * @notice This struct defines the exact data structure of the MVR feed
+ * @dev The order and types must match exactly what's defined in the feed
+ */
+struct Data {
+  uint256 netAssetValue;
+  uint256 assetsUnderManagement;
+  uint256 outstandingShares;
+  uint256 netIncomeExpenses;
+  bool openToNewInvestors;
+}
+
+contract MVRDataConsumer {
+  // Reference to the MVR feed proxy
+  IBundleAggregatorProxy public s_proxy;
+
+  // Maximum allowed staleness duration for the data
+  // IMPORTANT: This should be configured based on the specific feed's heartbeat interval
+  // Check the feed's documentation for the appropriate value instead of using this example value
+  uint256 public immutable STALENESS_THRESHOLD;
+
+  // Storage for scaled values (after dividing by decimals)
+  uint256 public netAssetValue;
+  uint256 public assetsUnderManagement;
+  uint256 public outstandingShares;
+  uint256 public netIncomeExpenses;
+  bool public openToNewInvestors;
+
+  // Storage for original onchain values (no decimal adjustments)
+  uint256 public rawNetAssetValue;
+  uint256 public rawAssetsUnderManagement;
+  uint256 public rawOutstandingShares;
+  uint256 public rawNetIncomeExpenses;
+
+  // Keep track of decimals for each field in the struct.
+  // Non-numeric fields (e.g., bool) typically return 0.
+  uint8[] public decimals;
+
+  // Error for stale data
+  error StaleData(uint256 lastUpdateTimestamp, uint256 blockTimestamp, uint256 threshold);
+
+  // Error for insufficient decimals array
+  error InsufficientDecimals(uint256 expected, uint256 actual);
+
+  /**
+   * @notice Constructor that sets the staleness threshold for the feed
+   * @param _proxy The address of the MVR feed's proxy contract
+   * @param _stalenessThreshold Maximum time (in seconds) since last update before data is considered stale
+   * @dev The threshold should be based on the feed's heartbeat interval from documentation
+   * For example, if a feed updates every 24 hours (86400s), you might set this to 86400s + some buffer
+   */
+  constructor(
+    IBundleAggregatorProxy _proxy,
+    uint256 _stalenessThreshold
+  ) {
+    s_proxy = _proxy;
+    STALENESS_THRESHOLD = _stalenessThreshold;
+  }
+
+  /**
+   * @notice Stores the decimals array in your contract for repeated usage.
+   * @dev Index mapping for this example:
+   *      0 -> netAssetValue,
+   *      1 -> assetsUnderManagement,
+   *      2 -> outstandingShares,
+   *      3 -> netIncomeExpenses,
+   *      4 -> openToNewInvestors (likely returns 0).
+   */
+  function storeDecimals() external {
+    decimals = s_proxy.bundleDecimals();
+  }
+
+  /**
+   * @notice Returns the timestamp of the most recent MVR feed update.
+   */
+  function getLatestBundleTimestamp() external view returns (uint256) {
+    return s_proxy.latestBundleTimestamp();
+  }
+
+  /**
+   * @notice Simple boolean check for data freshness (block explorer friendly)
+   * @return true if data is fresh, false if stale
+   */
+  function isDataFresh() public view returns (bool) {
+    uint256 lastUpdateTime = s_proxy.latestBundleTimestamp();
+    return (block.timestamp - lastUpdateTime) <= STALENESS_THRESHOLD;
+  }
+
+  /**
+   * @notice Fetches and decodes the latest MVR feed data, then stores both the raw and scaled values.
+   * @dev This process demonstrates the complete flow of consuming MVR feed data:
+   * 1. Check data freshness
+   * 2. Fetch the raw bytes
+   * 3. Decode into the struct matching the feed's data structure
+   * 4. Store raw values (preserving original precision)
+   * 5. Apply decimal conversions to get the true numerical values
+   */
+  function consumeData() external {
+    // Check data freshness before proceeding
+    if (!isDataFresh()) {
+      uint256 lastUpdateTime = s_proxy.latestBundleTimestamp();
+      revert StaleData(lastUpdateTime, block.timestamp, STALENESS_THRESHOLD);
+    }
+
+    // Ensure we have the decimals array - if not, fetch it
+    if (decimals.length == 0) {
+      decimals = s_proxy.bundleDecimals();
+    }
+
+    // Verify we have enough decimal values for our struct fields
+    if (decimals.length < 4) {
+      revert InsufficientDecimals(4, decimals.length);
+    }
+
+    // 1. Retrieve the raw bytes from the MVR feed
+    // This is the encoded form of all data fields packed together
+    bytes memory b = s_proxy.latestBundle();
+
+    // 2. Decode the raw bytes into our known struct
+    // The struct Data must match exactly what the feed encodes
+    Data memory d = abi.decode(b, (Data));
+
+    // 3. Store the raw (original onchain) values
+    // These preserve the full precision as reported by the feed
+    rawNetAssetValue = d.netAssetValue;
+    rawAssetsUnderManagement = d.assetsUnderManagement;
+    rawOutstandingShares = d.outstandingShares;
+    rawNetIncomeExpenses = d.netIncomeExpenses;
+    openToNewInvestors = d.openToNewInvestors; // Boolean, no need for decimal adjustment
+
+    // 4. Convert values by dividing by 10^decimals[i]
+    // This removes the decimal scaling factor to get the human-readable representation
+    // Note: This uses integer division which truncates decimal places
+    // For example, if decimals[0] = 8 and rawNetAssetValue = 1850000000,
+    // then netAssetValue = 18 (integer division, decimals are truncated)
+    netAssetValue = d.netAssetValue / (10 ** decimals[0]);
+    assetsUnderManagement = d.assetsUnderManagement / (10 ** decimals[1]);
+    outstandingShares = d.outstandingShares / (10 ** decimals[2]);
+    netIncomeExpenses = d.netIncomeExpenses / (10 ** decimals[3]);
+    // Note: We don't need to apply decimals to boolean fields
+    // The openToNewInvestors field typically has 0 decimals in the array
+  }
+}
+```
+
 **Key Points**:
 
 - **Exact Order Matters**: The struct fields and their types must match the feed's definition.
@@ -3137,8 +3621,9 @@ Data feeds are grouped into the following categories based on the level of marke
 
 - [🟢 Low Market Risk](#-low-market-risk-feeds)
 - [🟡 Medium Market Risk](#-medium-market-risk-feeds)
-- [🔴 High Market Risk](#-high-market-risk-feeds)
-- [🟠 New Token Feeds](#-new-token-feeds)
+- [🟠 High Market Risk](#-high-market-risk-feeds)
+- [🔴 Very High Market Risk](#-very-high-market-risk-feeds)
+- [🆕 New Token Feeds](#-new-token-feeds)
 - [🔵 Custom Feeds](#-custom-feeds)
 - [⭕ Deprecating](#-deprecating)
 
@@ -3165,44 +3650,47 @@ These feeds also follow a standardized data feeds workflow to report market pric
 
 Types of market risk that may lead to a feed being categorized as Medium Market Risk include:
 
-- Lower or inconsistent asset volume may result in periods of low liquidity in the market for such assets. This, in turn, can lead to volatile price movements
+- Lower or inconsistent asset volume may result in periods of low liquidity in the market for such assets. This, in turn, can lead to volatile price movements.
 - A spread between the price for this asset on different trading venues or liquidity pools.
 - Market Concentration Risk: If the volume for a given asset is excessively concentrated on a single exchange, that trading venue could become a single point of failure for the feed.
 - Cross-Rate Risk: The base asset trades in large volumes against assets that are not pegged to the quote asset. As a result, the price of this specific asset pair may fluctuate even if the underlying asset is not being traded.
 - The asset is going through a significant market event such as a token or liquidity migration.
 - The asset has a high spread between data providers, the root cause of which is often one of the above factors.
 
-### 🔴 High Market Risk Feeds
+### 🟠 High Market Risk Feeds
 
-These feeds also follow a standardized data feeds workflow to report market prices for an asset pair. However, the pair in question often exhibits a heightened degree of some of the risk factors outlined under “Medium Market Risk”, or a separate risk that makes the market price subject to uncertainty or volatility. In using a High Market Risk data feed you acknowledge that you understand the risks associated with such a feed and that you are solely responsible for monitoring and mitigating such risks.
+These feeds also follow a standardized data feeds workflow to report market prices for an asset pair. However, the pair in question often exhibits a heightened degree of some of the risk factors outlined under Medium Market Risk, or a separate risk that makes the market price subject to uncertainty or volatility. In using a High Market Risk data feed you acknowledge that you understand the risks associated with such a feed and that you are solely responsible for monitoring and mitigating such risks. Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and that the operation and performance of High Market Risk data feeds matches expectations. High Market Risk data feeds may be deprecated. See the [Data Feed Shutdown Policy](#data-feed-shutdown-policy) for more information.
 
-Types of market risk that may lead to a feed being categorized as High Market Risk include:
+### 🔴 Very High Market Risk Feeds
+
+Very High Market Risk feeds price assets with quotes that are subject to extreme levels of risk, greater than those outlined above for High Market Risk. Types of market risk that may lead to a feed being categorized as Very High Market Risk include, but are not limited to:
 
 - The asset is going through a significant market event such as a hack, bridge failure, or a delisting from a major exchange.
 - The asset or project is being deprecated in the market.
 - Volumes have dropped to extremely low levels.
 
-### 🟠 New Token Feeds
+Users should wind down their reliance on these feeds and/or implement strict capital and risk management policies accounting for extreme price and market structure volatility. Very High Market Risk feeds will be wound down over time in accordance with the [Data Feed Shutdown Policy](#data-feed-shutdown-policy). In using a Very High Market Risk data feed you acknowledge that you understand the risks associated with such a feed and that you are solely responsible for monitoring and mitigating such risks. You understand that Chainlink may not provide separate monitoring for these feeds. Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and that the operation and performance of Very High Market Risk data feeds matches expectations.
 
-When a token is newly launched, the historical data required to implement a rigorous risk assessment framework that would allow the categorization of a market data feed for that token as low, medium, or high market risk is unavailable. Consistent price discovery may involve an indeterminate amount of time. Users must understand the additional [market and volatility risks](https://docs.chain.link/data-feeds/selecting-data-feeds#evaluating-data-sources-and-risks) inherent with such assets. Users of new token feeds are responsible for independently verifying the liquidity and stability of the assets priced by the feeds that they use.
-At the end of a probationary period, the status of new token feeds may be adjusted to high/medium/low market risk or in rare cases be deprecated entirely.
+### 🆕 New Token Feeds
+
+When a token is newly launched, the historical data required to implement a rigorous risk assessment framework that would allow the categorization of a market data feed for that token as Low, Medium, or High Market Risk is unavailable. Consistent price discovery may involve an indeterminate amount of time. Users must understand the additional [market and volatility risks](#evaluating-data-sources-and-risks) inherent with such assets. Users of New Token feeds are responsible for independently verifying the liquidity and stability of the assets priced by the feeds that they use. At the end of a probationary period, the status of New Token feeds may be adjusted to High, Medium, or Low Market Risk, or in rare cases be deprecated entirely.
 
 ### 🔵 Custom Feeds
 
 Custom Feeds are built to serve a specific use case and might not be suitable for general use or your use case's risk parameters. Users must evaluate the properties of a feed to make sure it aligns with their intended use case. [Contact the Chainlink Labs team](https://chain.link/contact?ref_id=DataFeed) if you want more detail on any specific feeds in this category.
 
-Custom feeds have the following categories and compositions:
+Custom Feeds have the following categories and compositions:
 
-- Onchain single source feeds: These feeds take their data from an onchain source, however, the feed has only a single data provider currently supporting the feed.
-- Onchain Proof of Reserve Feeds: Chainlink Proof of Reserve uses a large decentralized collection of security-reviewed and Sybil-resistant node operators to acquire and verify reserve data. In this use case, reserves reside onchain.
-- Exchange Rate Feeds: These feeds read an exchange rate from an external contract onchain that is designed to allow conversion from one token to another. Chainlink does not own or control these contracts in any way. They are not equivalent to market price feeds.
-- Technical Feeds: Feeds within this category measure a particular technical metric from a specified blockchain. For example, Fast Gas or Block Difficulty.
-- Total Value Locked Feeds: These feeds measure the total value locked in a particular protocol.
-- Custom Index Feeds: An index calculates a function of the values for multiple underlying assets. The function is specific to that index and is typically calculated by node operators following an agreed formula.
-- Offchain Single Source Feeds: Some data providers use a single data source, which might be necessary if only one source exists offchain for a specific type of data.
-- Offchain Proof of Reserve Feeds: Chainlink Proof of Reserve uses a large decentralized collection of security-reviewed and Sybil-resistant node operators to acquire and verify reserve data. In this use case, reserves reside offchain.
-- LP Token Feeds: These feeds use a decentralized feed for the underlying asset as well as calculations to value the liquidity pool (LP) tokens.
-- Wrapped Calculated Feeds: These feeds are typically pegged 1:1 to the underlying token or asset. Under normal market conditions, these feeds track their underlying value accurately. However, given that the price is a derivative formed from a calculated method, the derivative asset may not always precisely track the value of the underlying token or asset precisely.
+- **Onchain Single Source Feeds:** These feeds take their data from an onchain source, however, the feed has only a single data provider currently supporting the feed.
+- **Onchain Proof of Reserve Feeds:** Chainlink Proof of Reserve uses a large decentralized collection of security-reviewed and Sybil-resistant node operators to acquire and verify reserve data. In this use case, reserves reside onchain.
+- **Exchange Rate Feeds:** These feeds read an exchange rate from an external contract onchain that is designed to allow conversion from one token to another. Chainlink does not own or control these contracts in any way. They are not equivalent to market price feeds.
+- **Technical Feeds:** Feeds within this category measure a particular technical metric from a specified blockchain. For example, Fast Gas or Block Difficulty.
+- **Total Value Locked Feeds:** These feeds measure the total value locked in a particular protocol.
+- **Custom Index Feeds:** An index calculates a function of the values for multiple underlying assets. The function is specific to that index and is typically calculated by node operators following an agreed formula.
+- **Offchain Single Source Feeds:** Some data providers use a single data source, which might be necessary if only one source exists offchain for a specific type of data.
+- **Offchain Proof of Reserve Feeds:** Chainlink Proof of Reserve uses a large decentralized collection of security-reviewed and Sybil-resistant node operators to acquire and verify reserve data. In this use case, reserves reside offchain.
+- **LP Token Feeds:** These feeds use a decentralized feed for the underlying asset as well as calculations to value the liquidity pool (LP) tokens.
+- **Wrapped Calculated Feeds:** These feeds are typically pegged 1:1 to the underlying token or asset. Under normal market conditions, these feeds track their underlying value accurately. However, given that the price is a derivative formed from a calculated method, the derivative asset may not always precisely track the value of the underlying token or asset.
 
 If you plan on using one of these feeds and would like to get a more detailed understanding, [contact the Chainlink Labs team](https://chain.link/contact?ref_id=DataFeed).
 
@@ -3212,9 +3700,9 @@ These feeds are being deprecated. To find the deprecation dates for specific fee
 
 #### Data Feed Shutdown Policy
 
-Data feeds managed by Chainlink Labs will be considered for deprecation if they pose a risk to the Chainlink Community and broader ecosystem, if the asset or assets on the feed have significantly deteriorated and no longer meet our Quality Assurance standards, or if the data feed has become economically unsustainable to support.
+Data feeds managed by Chainlink Labs will be considered for deprecation if they pose a risk to the Chainlink Community and broader ecosystem, if the asset or assets (or their volume or liquidity) on the feed have significantly deteriorated or are unreliable and no longer meet our Quality Assurance standards, or if the data feed has become economically unsustainable to support. Users are therefore advised to ensure they have measures in place for the orderly deprecation of reliance on specific Chainlink price feeds.
 
-Known users of these feeds will be contacted directly about the feeds' deprecation. Notifications will also be posted on the [Feeds Scheduled For Deprecation](/data-feeds/deprecating-feeds) page and on our [Discord channel](https://discord.com/channels/592041321326182401/991444378335838318) with two weeks of notice before they are shut down.
+Known users of these feeds will be contacted directly about the feeds' deprecation whenever possible. Notifications will also be posted on the [Feeds Scheduled For Deprecation](/data-feeds/deprecating-feeds) page and on our [Discord channel](https://discord.com/channels/592041321326182401/991444378335838318) with two weeks of notice before they are shut down except where conditions require an accelerated deprecation.
 
 
 <Aside type="note" title="Data Feed Shutdown Behavior">
@@ -3466,6 +3954,45 @@ Using Solidity, your smart contract should reference [`AggregatorV3Interface`](h
 
 Example for reading a Proof of Reserve feed:
 
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.24;
+
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+
+contract ReserveConsumerV3 {
+  AggregatorV3Interface internal reserveFeed;
+
+  /**
+   * Network: Ethereum Mainnet
+   * Aggregator: WBTC PoR
+   * Address: 0xa81FE04086865e63E12dD3776978E49DEEa2ea4e
+   */
+  constructor() {
+    reserveFeed = AggregatorV3Interface(0xa81FE04086865e63E12dD3776978E49DEEa2ea4e);
+  }
+
+  /**
+   * Returns the latest price
+   */
+  function getLatestReserve() public view returns (int256) {
+    // prettier-ignore
+    (
+      /*uint80 roundID*/
+      ,
+      int256 reserve,
+      /*uint startedAt*/
+      ,
+      /*uint timeStamp*/
+      ,
+      /*uint80 answeredInRound*/
+    ) = reserveFeed.latestRoundData();
+
+    return reserve;
+  }
+}
+```
+
 ### Using MVR Feeds
 
 [MVR feeds](/data-feeds/mvr-feeds) require a different approach compared to single-value SmartData feeds. Instead of returning a single numeric value, they return a bytes array that must be decoded into a specific data structure.
@@ -3643,7 +4170,85 @@ Install the necessary components and include the example code in your project. O
 
 9. Copy the sample code into your project. This example queries price data offchain. By default, the script reads the SOL/USD feed, but you can change the `CHAINLINK_FEED_ADDRESS` variable to point to the [feed account addresses](/data-feeds/price-feeds/addresses?network=solana) that you want to query. You can take the components of these code samples and integrate them with your existing project. Because these examples read data feeds without making any onchain changes, no lamports are required to run them.
 
-   <CodeSample src="samples/Solana/PriceFeeds/off-chain-read.ts" />
+   ```js
+   /**
+    * THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
+    * THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
+    * DO NOT USE THIS CODE IN PRODUCTION.
+    */
+
+   const anchor = require("@project-serum/anchor")
+   const chainlink = require("@chainlink/solana-sdk")
+   const provider = anchor.AnchorProvider.env()
+
+   async function main() {
+     anchor.setProvider(provider)
+
+     const CHAINLINK_FEED_ADDRESS = "99B2bTijsU6f1GCT73HmdR7HCFFjGMBcPZY6jZ96ynrR"
+     const CHAINLINK_PROGRAM_ID = new anchor.web3.PublicKey("cjg3oHmg9uuPsP8D6g29NWvhySJkdYdAo9D25PRbKXJ")
+     const feedAddress = new anchor.web3.PublicKey(CHAINLINK_FEED_ADDRESS) //SOL-USD Devnet Feed
+
+     //load the data feed account
+     let dataFeed = await chainlink.OCR2Feed.load(CHAINLINK_PROGRAM_ID, provider)
+     let listener = null
+
+     //listen for events agains the price feed, and grab the latest rounds price data
+     listener = dataFeed.onRound(feedAddress, (event) => {
+       console.log(event.answer.toNumber())
+     })
+
+     //block execution and keep waiting for events to be emitted with price data
+     await new Promise(function () {})
+   }
+
+   main().then(
+     () => process.exit(),
+     (err) => {
+       console.error(err)
+       process.exit(-1)
+     }
+   )
+   ```
+
+   ```ts
+   /**
+    * THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
+    * THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
+    * DO NOT USE THIS CODE IN PRODUCTION.
+    */
+
+   import * as anchor from "@project-serum/anchor"
+   import { OCR2Feed } from "@chainlink/solana-sdk"
+
+   async function main() {
+     const provider = anchor.AnchorProvider.env()
+     anchor.setProvider(provider)
+
+     const CHAINLINK_FEED_ADDRESS = "99B2bTijsU6f1GCT73HmdR7HCFFjGMBcPZY6jZ96ynrR"
+     const CHAINLINK_PROGRAM_ID = new anchor.web3.PublicKey("cjg3oHmg9uuPsP8D6g29NWvhySJkdYdAo9D25PRbKXJ")
+     const feedAddress = new anchor.web3.PublicKey(CHAINLINK_FEED_ADDRESS) //SOL-USD Devnet Feed
+
+     //load the data feed account
+     let dataFeed = await OCR2Feed.load(CHAINLINK_PROGRAM_ID, provider)
+     let listener: null | number = null
+
+     //listen for events agains the price feed, and grab the latest rounds price data
+     listener = dataFeed.onRound(feedAddress, (event) => {
+       console.log(event.answer.toNumber())
+     })
+
+     //block execution and keep waiting for events to be emitted with price data
+     await new Promise(function () {})
+   }
+
+   main().then(
+     () => process.exit(),
+     (err) => {
+       console.error(err)
+       process.exit(-1)
+     }
+   )
+   ```
 
    You can run these examples using the following commands:
 
@@ -4151,7 +4756,7 @@ starkli --version
 0.2.8 (f59724e)
 ```
 
-Follow the official [installation guide]((https://book.starkli.rs/installation)) if necessary.
+Follow the official [installation guide](https://book.starkli.rs/installation) if necessary.
 
 ### Read data from a Chainlink Price Feed
 
@@ -4823,7 +5428,7 @@ Traditional MEV searching depends on spotting oracle price updates in the public
 
 ### Example Application: Aave Liquidations
 
-Aave is a lending protocol where collateralized positions must remain above a [threshold](https://aave.com/docs/concepts/liquidations) called their health factor. When an oracle price update reveals a borrower is undercollateralized, the position becomes eligible for liquidation. The searcher liquidates the position in exchange for a liquidation bonus reward. With Chainlink SVR, a searcher's liquidation transaction can be bundled with the new SVR price update through Flashbots.
+Aave is a lending protocol where collateralized positions must remain above a [threshold](https://aave.com/help/borrowing/liquidations) called their health factor. When an oracle price update reveals a borrower is undercollateralized, the position becomes eligible for liquidation. The searcher liquidates the position in exchange for a liquidation bonus reward. With Chainlink SVR, a searcher's liquidation transaction can be bundled with the new SVR price update through Flashbots.
 
 For more background on how Aave liquidations work, see [Aave Documentation](https://docs.aave.com/). To understand how Chainlink SVR adds a structured auction for these Aave liquidation opportunities, read the following sections.
 
@@ -4892,6 +5497,34 @@ The decoding process involves understanding two function calls:
    ```
 
 Below is an example of an ABI definition for the `forward` and `transmitSecondary` function interfaces to help you decode the function calls:
+
+```json
+[
+  {
+    "type": "function",
+    "name": "forward",
+    "inputs": [
+      { "name": "to", "type": "address" },
+      { "name": "callData", "type": "bytes" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "transmitSecondary",
+    "inputs": [
+      { "name": "reportContext", "type": "bytes32[3]", "internalType": "bytes32[3]" },
+      { "name": "report", "type": "bytes", "internalType": "bytes" },
+      { "name": "rs", "type": "bytes32[]", "internalType": "bytes32[]" },
+      { "name": "ss", "type": "bytes32[]", "internalType": "bytes32[]" },
+      { "name": "rawVs", "type": "bytes32", "internalType": "bytes32" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  }
+]
+```
 
 The following code samples demonstrate the complete decoding process, including extracting the median price from the nested report structure. These implementations show how to:
 
@@ -5257,6 +5890,59 @@ These code examples demonstrate how to deploy a consumer contract onchain that r
 
 To consume price data, your smart contract should reference [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol), which defines the external functions implemented by Data Feeds.
 
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.7;
+
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED
+ * VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
+/**
+ * If you are reading data feeds on L2 networks, you must
+ * check the latest answer from the L2 Sequencer Uptime
+ * Feed to ensure that the data is accurate in the event
+ * of an L2 sequencer outage. See the
+ * https://docs.chain.link/data-feeds/l2-sequencer-feeds
+ * page for details.
+ */
+contract DataConsumerV3 {
+  AggregatorV3Interface internal dataFeed;
+
+  /**
+   * Network: Sepolia
+   * Aggregator: BTC/USD
+   * Address: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43
+   */
+  constructor() {
+    dataFeed = AggregatorV3Interface(0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43);
+  }
+
+  /**
+   * Returns the latest answer.
+   */
+  function getChainlinkDataFeedLatestAnswer() public view returns (int256) {
+    // prettier-ignore
+    (
+      /* uint80 roundId */
+      ,
+      int256 answer,
+      /*uint256 startedAt*/
+      ,
+      /*uint256 updatedAt*/
+      ,
+      /*uint80 answeredInRound*/
+    ) = dataFeed.latestRoundData();
+    return answer;
+  }
+}
+```
+
 The `latestRoundData` function returns five values representing information about the latest price data. See the [Data Feeds API Reference](/data-feeds/api-reference) for more details.
 
 ### Vyper
@@ -5278,6 +5964,27 @@ This example uses [web3.js](https://web3js.readthedocs.io/) to retrieve feed dat
 
 This example uses [Web3.py](https://web3py.readthedocs.io/en/stable/) to retrieve feed data from the [BTC / USD feed](https://sepolia.etherscan.io/address/0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43) on the Sepolia testnet.
 
+```py
+# THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
+# THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
+# DO NOT USE THIS CODE IN PRODUCTION.
+
+from web3 import Web3
+
+# Change this to use your own RPC URL
+web3 = Web3(Web3.HTTPProvider('https://rpc.ankr.com/eth_sepolia'))
+# AggregatorV3Interface ABI
+abi = '[{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"description","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint80","name":"_roundId","type":"uint80"}],"name":"getRoundData","outputs":[{"internalType":"uint80","name":"roundId","type":"uint80"},{"internalType":"int256","name":"answer","type":"int256"},{"internalType":"uint256","name":"startedAt","type":"uint256"},{"internalType":"uint256","name":"updatedAt","type":"uint256"},{"internalType":"uint80","name":"answeredInRound","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"latestRoundData","outputs":[{"internalType":"uint80","name":"roundId","type":"uint80"},{"internalType":"int256","name":"answer","type":"int256"},{"internalType":"uint256","name":"startedAt","type":"uint256"},{"internalType":"uint256","name":"updatedAt","type":"uint256"},{"internalType":"uint80","name":"answeredInRound","type":"uint80"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"version","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]'
+# Price Feed address
+addr = '0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43'
+
+# Set up contract instance
+contract = web3.eth.contract(address=addr, abi=abi)
+# Make call to latestRoundData()
+latestData = contract.functions.latestRoundData().call()
+print(latestData)
+```
+
 ### Golang
 
 You can find an example with all the source files [here](https://github.com/smartcontractkit/smart-contract-examples/tree/main/pricefeed-golang). This example uses [go-ethereum](https://github.com/ethereum/go-ethereum) to retrieve feed data from the [BTC / USD feed](https://sepolia.etherscan.io/address/0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43) on the Sepolia testnet.
@@ -5294,6 +6001,60 @@ If you require a denomination other than what is provided, you can use two data 
 <Aside type="caution" title="Important">
   If your contracts require Solidity versions that are `>=0.6.0 <0.8.0`, use [OpenZeppelin's SafeMath version 3.4](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.4/contracts/math/SafeMath.sol).
 </Aside>
+
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.7;
+
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+
+/**
+ * Network: Sepolia
+ * Base: BTC/USD
+ * Base Address: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43
+ * Quote: EUR/USD
+ * Quote Address: 0x1a81afB8146aeFfCFc5E50e8479e826E7D55b910
+ * Decimals: 8
+ */
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+contract PriceConverter {
+  function getDerivedPrice(
+    address _base,
+    address _quote,
+    uint8 _decimals
+  ) public view returns (int256) {
+    require(_decimals > uint8(0) && _decimals <= uint8(18), "Invalid _decimals");
+    int256 decimals = int256(10 ** uint256(_decimals));
+    (, int256 basePrice,,,) = AggregatorV3Interface(_base).latestRoundData();
+    uint8 baseDecimals = AggregatorV3Interface(_base).decimals();
+    basePrice = scalePrice(basePrice, baseDecimals, _decimals);
+
+    (, int256 quotePrice,,,) = AggregatorV3Interface(_quote).latestRoundData();
+    uint8 quoteDecimals = AggregatorV3Interface(_quote).decimals();
+    quotePrice = scalePrice(quotePrice, quoteDecimals, _decimals);
+
+    return (basePrice * decimals) / quotePrice;
+  }
+
+  function scalePrice(
+    int256 _price,
+    uint8 _priceDecimals,
+    uint8 _decimals
+  ) internal pure returns (int256) {
+    if (_priceDecimals < _decimals) {
+      return _price * int256(10 ** uint256(_decimals - _priceDecimals));
+    } else if (_priceDecimals > _decimals) {
+      return _price / int256(10 ** uint256(_priceDecimals - _decimals));
+    }
+    return _price;
+  }
+}
+```
 
 ## More aggregator functions
 

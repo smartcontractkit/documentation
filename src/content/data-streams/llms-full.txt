@@ -111,17 +111,6 @@ Automatic failover handles availability and traffic routing in the following sce
 
 ---
 
-# Tokenized Asset Data Streams
-Source: https://docs.chain.link/data-streams/backed-streams
-
-<Aside type="danger" title="Weekend Usage Disclaimer">
-  **Users should not use these streams during weekends** due to limited exchange activity.
-
-  If usage is necessary, increase fees to mitigate risks. Developers are solely responsible for monitoring and mitigating market integrity risks, as outlined in the [Developer Responsibilities](/data-streams/developer-responsibilities) documentation.
-</Aside>
-
----
-
 # Data Streams Billing
 Source: https://docs.chain.link/data-streams/billing
 
@@ -265,9 +254,9 @@ Positions may need to be manually adjusted if the DEX doesn't support tracking t
 #### Stock splits & reverse splits
 
 <Aside type="note" title="Tokenized Stocks Guidance">
-  Tokenized stocks such as [Backed xStock](/data-streams/reference/report-schema-v10) handle stock splits differently
-  using activation dates and staged multipliers to maintain price continuity. [Learn more about advanced stock split
-  handling](#handling-stock-splits-for-tokenized-assets).
+  Tokenized stocks such as [Tokenized Asset streams](/data-streams/reference/report-schema-v10) handle stock splits
+  differently using activation dates and staged multipliers to maintain price continuity. [Learn more about advanced
+  stock split handling](#handling-stock-splits-for-tokenized-assets).
 </Aside>
 
 A stock split increases the number of shares while reducing the price per share (e.g., 2-for-1 split), often making shares more accessible to investors. A reverse split does the opposite, consolidating shares to increase the price per share.
@@ -418,9 +407,10 @@ All Data Streams use a [Decentralized Oracle Network (DON)](/data-streams/archit
 Instead of aggregating only raw market data, calculated streams compute derived values using predefined formulas applied to various inputs, including existing data streams, onchain state, and offchain APIs. Some inputs are decentralized aggregates (for example, crypto price streams from multiple independent providers), while others may come from a single protocol or API (for example, a specific vault contract or yield provider). Because a calculated stream depends on all of these inputs, you should evaluate their dependencies and failure modes carefully before using it in a value-securing application.
 
 <Aside type="caution" title="Important Considerations">
-  Calculated streams introduce additional dependencies and timing considerations compared to standard streams. Before
-  integrating a calculated stream, review the <a href="#unique-risks-and-mitigation">risks and mitigation</a> section to
-  understand how multiple inputs and update cadences may affect your application.
+  Calculated streams behave differently from standard streams in important ways. Before integrating a calculated stream,
+  review the <a href="#key-differences-from-standard-streams">key differences</a> and{" "}
+  <a href="#risks-and-mitigation">risks and mitigation</a> sections to understand how these differences may affect your
+  application.
 </Aside>
 
 ## Why use calculated streams?
@@ -431,7 +421,7 @@ Instead of aggregating only raw market data, calculated streams compute derived 
 
 ## How to identify calculated streams
 
-Calculated streams are marked with a <span style="display: inline-block; font-size: 0.75rem; padding: 2px 6px; margin-left: 4px; border-radius: 4px; background: var(--blue-100); color: var(--blue-700); font-weight: 500; vertical-align: middle;">Calculated</span> badge in the documentation.
+Calculated streams are marked with a <span style="display: inline-block; font-size: 0.75rem; padding: 2px 6px; margin-left: 4px; border-radius: 4px; background: var(--blue-100); color: var(--blue-700); font-weight: 500; vertical-align: middle;">Calculated</span> badge in the Data Streams feed list.
 
 ## How calculated streams work
 
@@ -467,41 +457,6 @@ External data from specific trusted providers, such as yield rates or reference 
 
 The DON executes the predefined formula (weighted averages, ratios, sums, etc.) using the latest available inputs. The calculated value is packaged into a signed report with standard metadata (timestamps, fees) and published through the Data Streams Aggregation Network. You consume these reports using the same REST APIs, WebSocket connections, and onchain verification as traditional streams.
 
-***
-
-## Risks and mitigation
-
-Calculated streams inherit risks from their underlying inputs and introduce additional considerations due to combining multiple data sources.
-
-### Multiple dependencies
-
-If a required input becomes unavailable or unreliable, the calculated stream might stop updating or cease to reflect current conditions. Integrators should not assume any specific fallback behavior and must design their protocols to handle this scenario explicitly.
-
-#### Mitigation
-
-- Design your protocol to handle missing data gracefully (pause operations, use last-known values, or implement fallbacks based on your risk tolerance)
-
-### Timing and synchronization
-
-Inputs update at different frequencies and are read via separate calls, so they may reflect slightly different block heights or timestamps. The calculated value is an approximation based on the latest available data from each input, not a single-block atomic snapshot.
-
-Users should expect small, transient differences between the calculated stream value and values observed on block explorers, vault dashboards, or DEX charts—especially during rapid changes such as large deposits, withdrawals, or sharp market moves. This does not necessarily indicate an issue with the stream, but is a natural consequence of combining multiple inputs with different update cadences.
-
-#### Mitigation
-
-- Implement max deviation checks against expected ranges
-- Use time-weighted averages or circuit breakers for extreme moves
-- Monitor trends over time rather than reacting to individual updates
-
-<Aside type="note" title="Developer Responsibilities">
-  When using calculated streams, you inherit all responsibilities associated with the underlying inputs plus additional
-  responsibilities for monitoring calculation health and managing time-sensitivity requirements. Review the{" "}
-  <a href="/data-streams/developer-responsibilities">Developer Responsibilities</a> page for comprehensive guidance on
-  risk assessment and mitigation techniques.
-</Aside>
-
-***
-
 ## Example: Tokenized yield product
 
 A calculated stream for a tokenized yield-bearing vault might combine:
@@ -516,24 +471,89 @@ A calculated stream for a tokenized yield-bearing vault might combine:
 
 Without this stream, protocols accepting the vault token as collateral would need to query the vault contract, fetch accrued interest from the yield provider's API, perform the calculation themselves, and keep this logic synchronized across all integrators. A calculated stream helps ensure integrators apply the same pricing logic and update together when the underlying formula or yield source changes.
 
+## Key differences from standard streams
+
+While calculated streams use the same infrastructure and delivery mechanisms as standard streams, they have distinct behaviors you should understand before integrating. For mitigation strategies, see [Risks and mitigation](#risks-and-mitigation).
+
+### Report availability
+
+Standard streams aggregate data from multiple independent providers, so they remain available as long as enough providers are reporting. Calculated streams depend on **all** of their inputs being available. If any required input becomes unavailable or returns errors, the calculated **stream stops producing reports until all inputs recover**. This prevents potentially incorrect values from being published.
+
+### Input reliability
+
+Standard streams source data exclusively from decentralized aggregates of multiple independent data providers. Calculated streams may include a mix of:
+
+- **Decentralized aggregates**: Existing Data Streams with multiple independent sources (similar reliability to standard streams)
+- **Single-source inputs**: Specific protocol contracts or APIs where availability depends on a single system
+
+Single-source inputs carry higher risk. If that source experiences downtime, report production halts entirely until it recovers. Review the input sources for any calculated stream you plan to use.
+
+### Timing characteristics
+
+Standard streams reflect a single aggregated market price at a point in time. Calculated streams combine multiple inputs that may update at different frequencies and reflect slightly different timestamps. The calculated value is an approximation based on the latest available data from each input, not a single-block atomic snapshot.
+
+During rapid changes (large deposits, withdrawals, or sharp market moves), you may observe temporary differences between the calculated stream value and values from other sources like block explorers or protocol dashboards. These differences typically resolve as all inputs update to reflect the new state.
+
+***
+
+## Risks and mitigation
+
+Calculated streams inherit risks from their underlying inputs and introduce additional considerations. Use these strategies to mitigate potential issues.
+
+### Handling report gaps
+
+Because calculated streams stop producing reports when any input fails, your application must handle gaps in report availability.
+
+#### Mitigation
+
+- Design your protocol to handle report gaps gracefully (pause operations, use last-known values with appropriate staleness checks, or implement fallbacks based on your risk tolerance)
+- Implement staleness checks to detect when reports stop arriving and trigger appropriate protocol responses
+- Set alerts for report gaps to detect input source issues early
+
+### Single-source input reliability
+
+Single-source inputs (specific APIs or contracts) may have lower availability than decentralized aggregates.
+
+#### Mitigation
+
+- Understand your input sources and assess the reliability of each, particularly single-source APIs or contracts
+- For critical applications, consider independently monitoring the availability of single-source inputs
+- Define acceptable downtime thresholds and corresponding protocol responses
+
+### Timing discrepancies
+
+Temporary differences between the calculated stream and other data sources are expected during rapid changes.
+
+#### Mitigation
+
+- Implement max deviation checks against expected ranges
+- Use time-weighted averages or circuit breakers for extreme moves
+- Monitor trends over time rather than reacting to individual updates
+- Compare calculated values against market references when available (e.g., spot prices for index tokens)
+
+<Aside type="note" title="Developer Responsibilities">
+  When using calculated streams, you inherit all responsibilities associated with the underlying inputs plus additional
+  responsibilities for monitoring calculation health and managing time-sensitivity requirements. Review the{" "}
+  <a href="/data-streams/developer-responsibilities">Developer Responsibilities</a> page for comprehensive guidance on
+  risk assessment and mitigation techniques.
+</Aside>
+
+***
+
 ## Best practices
 
 ### Protocol design
 
 - Set deviation limits to cap price changes per update or time window
-- Compare calculated values against market references when available (e.g., spot prices for index tokens)
 - Define fallback behavior if the stream stops updating or jumps beyond thresholds
+- Test your protocol's behavior during report gaps before deploying to production
 
 ### Monitoring
 
-- Track the calculated stream value over time to establish normal behavior
-- Monitor key inputs independently when feasible (vault balances, token supplies) to cross-check outputs
-- Alert on update gaps or movements outside your safe range
-
-### Handling updates
-
-- Subscribe to Chainlink release notes for formula changes
-- Test new streams or updated configurations in staging
+- Set alerts for report gaps to detect when no new reports arrive within your expected update frequency
+- Track the calculated stream value over time to establish normal behavior patterns
+- Monitor key inputs independently when feasible (vault balances, token supplies, API availability) to identify which input may be causing issues
+- Alert on movements outside your expected range
 
 ---
 
@@ -992,13 +1012,6 @@ For comprehensive guidance on managing risks related to market hours, market gap
 
 ---
 
-# Net Asset Value (NAV) Data Streams
-Source: https://docs.chain.link/data-streams/nav-streams
-
-<FeedPage dataFeedType="streamsNav" initialNetwork="arbitrum" allowNetworkTableExpansion={true} defaultNetworkTableExpanded={false} />
-
----
-
 # Data Streams Candlestick API
 Source: https://docs.chain.link/data-streams/reference/candlestick-api
 
@@ -1073,9 +1086,9 @@ curl -X POST \
 
 **`/api/v1/symbol_info`**
 
-| Type     | Description                                              | Parameter(s)                                                                                     |
-| :------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------- |
-| HTTP GET | Gets a list of all supported symbols on the environment. | <ul><li>`group` (optional): Filter symbols by group. Currently only supports "crypto".</li></ul> |
+| Type     | Description                                              | Parameter(s)                                                                                                                        |
+| :------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------- |
+| HTTP GET | Gets a list of all supported symbols on the environment. | <ul><li>`group` (optional): Filter symbols by group. See [`/groups`](#get-list-of-supported-groups) for available groups.</li></ul> |
 
 ##### Sample request
 
@@ -1112,26 +1125,85 @@ curl -X GET \
 | `401`       | `Unauthorized - Authorization header is required \|\| Invalid authorization header format \|\| token signature is invalid: signature is invalid \|\| ...` | The authorization header was missing or invalid. |
 | `500`       | `Error - Something went wrong`                                                                                                                            | An unexpected server error occurred.             |
 
+### Get list of supported groups
+
+##### Endpoint
+
+**`/api/v1/groups`**
+
+| Type     | Description                                                                                                                                   | Parameter(s) |
+| :------- | :-------------------------------------------------------------------------------------------------------------------------------------------- | :----------- |
+| HTTP GET | Gets a list of all supported symbol types on the environment. Any group name returned can be used as a filter in the `/symbol_info` endpoint. | None         |
+
+##### Sample request
+
+```bash
+curl -X GET \
+  -H "Authorization: Bearer {YOUR_ACCESS_TOKEN}" \
+  https://priceapi.testnet-dataengine.chain.link/api/v1/groups
+```
+
+##### Response
+
+- **Status**: `200`
+
+  ```json
+  {
+    "s": "ok",
+    "d": {
+      "groups": [{ "id": "crypto" }, { "id": "equities" }, { "id": "forex" }, { "id": "equity" }]
+    }
+  }
+  ```
+
+  | Field    | Type     | Description                        |
+  | :------- | :------- | :--------------------------------- |
+  | `s`      | `string` | The status of the request.         |
+  | `d`      | `object` | The data returned by the API call. |
+  | `groups` | `array`  | Array of supported groups.         |
+
+##### Error Responses
+
+| Status Code | Error Message                                                                                                                                             | Description                                      |
+| :---------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------- |
+| `401`       | `Unauthorized - Authorization header is required \|\| Invalid authorization header format \|\| token signature is invalid: signature is invalid \|\| ...` | The authorization header was missing or invalid. |
+| `500`       | `Error - Something went wrong`                                                                                                                            | An unexpected server error occurred.             |
+
 ### Get candlestick data (column format)
 
 ##### Endpoint
 
 **`/api/v1/history`**
 
-| Type     | Description                             | Parameter(s)                                                                                                                                                                                                                                                                      |
-| :------- | :-------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| HTTP GET | Gets candlestick data in column format. | <ul><li>`symbol`: The symbol to query.</li><li>`resolution`: Resolution of the data (required but not used, use "1m").</li><li>`from`: Unix timestamp of the leftmost required bar (inclusive).</li><li>`to`: Unix timestamp of the rightmost required bar (inclusive).</li></ul> |
+| Type     | Description                             | Parameter(s)                                                                                                                                                                                                                                                                                                            |
+| :------- | :-------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| HTTP GET | Gets candlestick data in column format. | <ul><li>`symbol`: The symbol to query.</li><li>`resolution`: Resolution of the data. E.g., "1m". Must match [supported resolutions](#supported-resolutions).</li><li>`from`: Unix timestamp of the leftmost required bar (inclusive).</li><li>`to`: Unix timestamp of the rightmost required bar (inclusive).</li></ul> |
 
-**Note**: The resolution of the data is currently based on the size of the time window:
+#### Supported resolutions
 
-| Max time window size | Resolution of candles |
-| :------------------- | :-------------------- |
-| \<= 24 hours         | 1 minute              |
-| \<= 5 days           | 5 minutes             |
-| \<= 30 days          | 30 minutes            |
-| \<= 90 days          | 1 hour                |
-| \<= 6 months         | 2 hours               |
-| > 6 months           | 1 day                 |
+The resolution you provide must be within the supported boundaries for the given time window size:
+
+| Time window size          | Supported resolutions            |
+| :------------------------ | :------------------------------- |
+| 1 min - 24 hours          | 1 minute - 24 hours (1m - 24h)   |
+| 1 - 5 days                | 5 minutes - 5 days (5m - 5d)     |
+| 5 - 30 days               | 30 minutes - 30 days (30m - 30d) |
+| 30 - 90 days              | 1 hour - 90 days (1h - 90d)      |
+| 90 - 180 days             | 2 hours - 180 days (2h - 6M)     |
+| 180 - 365 days            | 24 hours - 365 days (24h - 1y)   |
+| 365 - 1825 days (1-5 yrs) | 1 week - 5 years (1w - 5y)       |
+| Over 1825 days (> 5 yrs)  | Over 1 month                     |
+
+Resolutions can be provided in the following units:
+
+| Name    | Unit | Example |
+| :------ | :--- | :------ |
+| minutes | m    | 5m      |
+| hours   | h    | 3h      |
+| days    | d    | 1d      |
+| weeks   | w    | 2w      |
+| months  | M    | 6M      |
+| years   | y    | 2y      |
 
 ##### Sample request
 
@@ -1184,9 +1256,9 @@ curl -X GET \
 
 **`/api/v1/history/rows`**
 
-| Type     | Description                          | Parameter(s)                                                                                                                                                                                                                                                                      |
-| :------- | :----------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| HTTP GET | Gets candlestick data in row format. | <ul><li>`symbol`: The symbol to query.</li><li>`resolution`: Resolution of the data (required but not used, use "1m").</li><li>`from`: Unix timestamp of the leftmost required bar (inclusive).</li><li>`to`: Unix timestamp of the rightmost required bar (inclusive).</li></ul> |
+| Type     | Description                          | Parameter(s)                                                                                                                                                                                                                                                                                                            |
+| :------- | :----------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| HTTP GET | Gets candlestick data in row format. | <ul><li>`symbol`: The symbol to query.</li><li>`resolution`: Resolution of the data. E.g., "1m". Must match [supported resolutions](#supported-resolutions).</li><li>`from`: Unix timestamp of the leftmost required bar (inclusive).</li><li>`to`: Unix timestamp of the rightmost required bar (inclusive).</li></ul> |
 
 ##### Sample request
 
@@ -5264,21 +5336,21 @@ The [RWA Advanced (v11)](/data-streams/reference/report-schema-v11) report schem
 
 These advanced fields enable protocols to implement more sophisticated risk management and settlement logic. Where applicable, streams using this schema can provide coverage across extended trading sessions including pre-market, post-market, and overnight hours — though extended hours availability varies by stream. See individual [RWA stream details](/data-streams/rwa-streams?schema=v11) for specific coverage and the [RWA Advanced (v11) reference](/data-streams/reference/report-schema-v11) for complete field specifications.
 
-## Net Asset Value (NAV)
+## SmartData
 
-[Chainlink NAV streams](/data-streams/nav-streams) use the [NAV (v9)](/data-streams/reference/report-schema-v9) report schema to provide real-time, tamper-proof access to the Net Asset Value (`navPerShare`) of tokenized assets, funds, or portfolios. Each report includes NAV per share (`navPerShare`), NAV date (`navDate`), assets under management (`aum`), and ripcord status (`ripcord`). The ripcord is set to true (`1`) by the asset issuer when the consumer should ignore the value being sent (for cases such as maintenance, upstream data source outages, etc). The feed data will remain stale until the ripcord returns false (`0`).
+[Chainlink SmartData streams](/data-streams/smartdata-streams) use the [SmartData (v9)](/data-streams/reference/report-schema-v9) report schema to provide real-time, tamper-proof access to data such as Net Asset Value (`navPerShare`) of tokenized assets, funds, or portfolios, as well as Proof of Reserve data. Each report includes NAV per share (`navPerShare`), NAV date (`navDate`), assets under management (`aum`), and ripcord status (`ripcord`). The ripcord is set to true (`1`) by the asset issuer when the consumer should ignore the value being sent (for cases such as maintenance, upstream data source outages, etc). The feed data will remain stale until the ripcord returns false (`0`).
 
 NAV is a fundamental financial metric that represents the value of an investment vehicle such as a mutual fund or ETF and is calculated as the total assets minus the total liabilities.
 
-Data Streams ensures that any NAV update, whenever it occurs, is captured and made available immediately and at low latency, allowing for seamless integration with onchain applications alongside other real-time data streams. Although the NAV value may not change frequently, Data Streams provides the most recent NAV as soon as it is published by the source.
+Data Streams ensures that any SmartData update, whenever it occurs, is captured and made available immediately and at low latency, allowing for seamless integration with onchain applications alongside other real-time data streams. Although the values may not change frequently, Data Streams provides the most recent data as soon as it is published by the source.
 
 ## Tokenized Asset
 
-[Chainlink Tokenized Asset streams](/data-streams/backed-streams) use the [Tokenized Asset (v10)](/data-streams/reference/report-schema-v10) report schema to provide financial market data for tokenized equities such as [xStock](https://xstocks.com/us) assets. These streams combine data from US equity streams with data from the tokenization service to enable users to handle corporate actions affecting the underlying equities. Each report includes the staleness measure (`lastUpdateTimestamp`), consensus mid price (`price`), market status (`marketStatus`), current multiplier (`currentMultiplier`, the number of underlying shares each xStock is redeemable for), new multiplier (`newMultiplier`, the future number of shares after a scheduled corporate action), activation date/time of the corporate action (`activationDateTime`) and the tokenized price if available on primary or secondary markets (`tokenizedPrice`).
+[Chainlink Tokenized Asset streams](/data-streams/tokenized-asset-streams) use the [Tokenized Asset (v10)](/data-streams/reference/report-schema-v10) report schema to provide financial market data for tokenized equities. These streams combine data from US equity streams with data from tokenization services to enable users to handle corporate actions affecting the underlying equities. Each report includes the staleness measure (`lastUpdateTimestamp`), consensus mid price (`price`), market status (`marketStatus`), current multiplier (`currentMultiplier`, the number of underlying shares each tokenized asset is redeemable for), new multiplier (`newMultiplier`, the future number of shares after a scheduled corporate action), activation date/time of the corporate action (`activationDateTime`) and the tokenized price if available on primary or secondary markets (`tokenizedPrice`).
 
 The underlying US equities trade on traditional exchanges during [market hours](/data-streams/market-hours). These market hours depend per asset class and can be subject to unexpected halts, pauses and other behaviors affecting traditional markets. For this reason, this class of Data Streams contains a market hours flag and a staleness measure to equip our users to handle these events correctly. It is critical that users implement correct safeguards on their end to pause markets, add more conservative risk caps, or implement other measures appropriate for their application.
 
-[Tokenized Asset (v10)](/data-streams/reference/report-schema-v10) is designed specifically for tokenized equities such as xStocks and contains data from the Chainlink US equities streams, combined with data provided by the tokenizer to properly handle corporate actions. With this enhanced data users are able to handle expected and unexpected market events such as pauses, halts and market off hours. The tokenization provider layers in data around the `currentMultiplier`, the `newMultiplier` and the `activationDateTime` of the new multiplier to handle corporate actions.
+[Tokenized Asset (v10)](/data-streams/reference/report-schema-v10) is designed specifically for tokenized equities and contains data from the Chainlink US equities streams, combined with data provided by the tokenizer to properly handle corporate actions. With this enhanced data users are able to handle expected and unexpected market events such as pauses, halts and market off hours. The tokenization provider layers in data around the `currentMultiplier`, the `newMultiplier` and the `activationDateTime` of the new multiplier to handle corporate actions.
 
 ---
 
@@ -5287,7 +5359,7 @@ Source: https://docs.chain.link/data-streams/reference/report-schema-v10
 
 <DataStreams section="dsNotes" />
 
-Chainlink Backed xStock Data Streams adhere to the report schema outlined below.
+Chainlink Tokenized Asset Data Streams adhere to the report schema outlined below.
 
 ### Schema Fields
 
@@ -5316,7 +5388,7 @@ Chainlink Backed xStock Data Streams adhere to the report schema outlined below.
 
 **Notes:**
 
-- Future Backed xStock streams may use different report schemas.
+- Future Tokenized Asset streams may use different report schemas.
 - `price` updates in real time during market open, but may become stale during market closed periods.
 - `currentMultiplier` reflects all past corporate actions and is updated only when a new action is activated.
 - `activationDateTime` and `newMultiplier` provide advance notice of upcoming corporate actions, allowing protocols to prepare.
@@ -5514,12 +5586,12 @@ RWA streams adhere to the report schema outlined below.
 
 ---
 
-# Report Schema: NAV (v9)
+# Report Schema: SmartData (v9)
 Source: https://docs.chain.link/data-streams/reference/report-schema-v9
 
 <DataStreams section="dsNotes" />
 
-Chainlink NAV Data Streams streams adhere to the report schema outlined below.
+Chainlink SmartData streams adhere to the report schema outlined below.
 
 ### Schema Fields
 
@@ -5538,7 +5610,7 @@ Chainlink NAV Data Streams streams adhere to the report schema outlined below.
 
 **Notes:**
 
-- Future NAV streams may use different report schemas.
+- Future SmartData streams may use different report schemas.
 
 ##### `ripcord` Status
 
@@ -5551,6 +5623,13 @@ Chainlink NAV Data Streams streams adhere to the report schema outlined below.
 Source: https://docs.chain.link/data-streams/rwa-streams
 
 <FeedPage dataFeedType="streamsRwa" initialNetwork="arbitrum" allowNetworkTableExpansion={true} defaultNetworkTableExpanded={false} />
+
+---
+
+# SmartData Streams
+Source: https://docs.chain.link/data-streams/smartdata-streams
+
+<FeedPage dataFeedType="streamsNav" initialNetwork="arbitrum" allowNetworkTableExpansion={true} defaultNetworkTableExpanded={false} />
 
 ---
 
@@ -5597,6 +5676,226 @@ Data Streams require several interfaces in order to retrieve and verify reports.
 
 In the current code example for using Data Streams with Automation, these interfaces are specified in the example itself. Imports for these interfaces will be available in the future.
 
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import {ILogAutomation, Log} from "@chainlink/contracts/src/v0.8/automation/interfaces/ILogAutomation.sol";
+import {
+  StreamsLookupCompatibleInterface
+} from "@chainlink/contracts/src/v0.8/automation/interfaces/StreamsLookupCompatibleInterface.sol";
+import {Common} from "@chainlink/contracts/src/v0.8/llo-feeds/libraries/Common.sol";
+
+import {IRewardManager} from "@chainlink/contracts/src/v0.8/llo-feeds/v0.3.0/interfaces/IRewardManager.sol";
+import {IVerifierFeeManager} from "@chainlink/contracts/src/v0.8/llo-feeds/v0.3.0/interfaces/IVerifierFeeManager.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE FOR DEMONSTRATION PURPOSES.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+
+// Custom interfaces for IVerifierProxy and IFeeManager
+interface IVerifierProxy {
+  /**
+   * @notice Verifies that the data encoded has been signed.
+   * correctly by routing to the correct verifier, and bills the user if applicable.
+   * @param payload The encoded data to be verified, including the signed
+   * report.
+   * @param parameterPayload Fee metadata for billing. For the current implementation this is just the abi-encoded fee
+   * token ERC-20 address.
+   * @return verifierResponse The encoded report from the verifier.
+   */
+  function verify(
+    bytes calldata payload,
+    bytes calldata parameterPayload
+  ) external payable returns (bytes memory verifierResponse);
+
+  function s_feeManager() external view returns (IVerifierFeeManager);
+}
+
+interface IFeeManager {
+  /**
+   * @notice Calculates the fee and reward associated with verifying a report, including discounts for subscribers.
+   * This function assesses the fee and reward for report verification, applying a discount for recognized subscriber
+   * addresses.
+   * @param subscriber The address attempting to verify the report. A discount is applied if this address
+   * is recognized as a subscriber.
+   * @param unverifiedReport The report data awaiting verification. The content of this report is used to
+   * determine the base fee and reward, before considering subscriber discounts.
+   * @param quoteAddress The payment token address used for quoting fees and rewards.
+   * @return fee The fee assessed for verifying the report, with subscriber discounts applied where applicable.
+   * @return reward The reward allocated to the caller for successfully verifying the report.
+   * @return totalDiscount The total discount amount deducted from the fee for subscribers
+   */
+  function getFeeAndReward(
+    address subscriber,
+    bytes memory unverifiedReport,
+    address quoteAddress
+  ) external returns (Common.Asset memory, Common.Asset memory, uint256);
+
+  function i_linkAddress() external view returns (address);
+
+  function i_nativeAddress() external view returns (address);
+
+  function i_rewardManager() external view returns (address);
+}
+
+contract StreamsUpkeep is ILogAutomation, StreamsLookupCompatibleInterface {
+  error InvalidReportVersion(uint16 version); // Thrown when an unsupported report version is provided to verifyReport.
+
+  /**
+   * @dev Represents a data report from a Data Streams stream for v3 schema (used for crypto and DEX State Price
+   * streams).
+   * The `price`, `bid`, and `ask` values are carried to either 8 or 18 decimal places, depending on the stream.
+   * `bid`, and `ask` values are not available for DEX State Price streams.
+   * For more information, see https://docs.chain.link/data-streams/crypto-streams and
+   * https://docs.chain.link/data-streams/reference/report-schema
+   */
+  struct ReportV3 {
+    bytes32 feedId; // The stream ID the report has data for.
+    uint32 validFromTimestamp; // Earliest timestamp for which price is applicable.
+    uint32 observationsTimestamp; // Latest timestamp for which price is applicable.
+    uint192 nativeFee; // Base cost to validate a transaction using the report, denominated in the chain’s native
+    // token (e.g., WETH/ETH).
+    uint192 linkFee; // Base cost to validate a transaction using the report, denominated in LINK.
+    uint32 expiresAt; // Latest timestamp where the report can be verified onchain.
+    int192 price; // DON consensus median price (8 or 18 decimals).
+    int192 bid; // Simulated price impact of a buy order up to the X% depth of liquidity utilisation (8 or 18 decimals).
+    // Note: not available for DEX State Price streams.
+    int192 ask; // Simulated price impact of a sell order up to the X% depth of liquidity utilisation (8 or 18
+    // decimals). Note: not available for DEX State Price streams.
+  }
+
+  /**
+   * @dev Represents a data report from a Data Streams stream for v4 schema (RWA streams).
+   * The `price` value is carried to either 8 or 18 decimal places, depending on the stream.
+   * The `marketStatus` indicates whether the market is currently open. Possible values: `0` (`Unknown`), `1`
+   * (`Closed`), `2` (`Open`).
+   * For more information, see https://docs.chain.link/data-streams/rwa-streams and
+   * https://docs.chain.link/data-streams/reference/report-schema-v4
+   */
+  struct ReportV4 {
+    bytes32 feedId; // The stream ID the report has data for.
+    uint32 validFromTimestamp; // Earliest timestamp for which price is applicable.
+    uint32 observationsTimestamp; // Latest timestamp for which price is applicable.
+    uint192 nativeFee; // Base cost to validate a transaction using the report, denominated in the chain’s native
+    // token (e.g., WETH/ETH).
+    uint192 linkFee; // Base cost to validate a transaction using the report, denominated in LINK.
+    uint32 expiresAt; // Latest timestamp where the report can be verified onchain.
+    int192 price; // DON consensus median benchmark price (8 or 18 decimals).
+    uint32 marketStatus; // The DON's consensus on whether the market is currently open.
+  }
+
+  struct Quote {
+    address quoteAddress;
+  }
+
+  IVerifierProxy public verifier;
+
+  address public FEE_ADDRESS;
+  string public constant DATASTREAMS_FEEDLABEL = "feedIDs";
+  string public constant DATASTREAMS_QUERYLABEL = "timestamp";
+  int192 public lastDecodedPrice;
+
+  // This example reads the ID for the ETH/USD report.
+  // Find a complete list of IDs at https://docs.chain.link/data-streams/crypto-streams.
+  string[] public feedIds = ["0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"];
+
+  constructor(
+    address _verifier
+  ) {
+    verifier = IVerifierProxy(_verifier);
+  }
+
+  // This function uses revert to convey call information.
+  // See https://eips.ethereum.org/EIPS/eip-3668#rationale for details.
+  function checkLog(
+    Log calldata log,
+    bytes memory
+  ) external returns (bool upkeepNeeded, bytes memory performData) {
+    revert StreamsLookup(DATASTREAMS_FEEDLABEL, feedIds, DATASTREAMS_QUERYLABEL, log.timestamp, "");
+  }
+
+  /**
+   * @notice this is a new, optional function in streams lookup. It is meant to surface streams lookup errors.
+   * @return upkeepNeeded boolean to indicate whether the keeper should call performUpkeep or not.
+   * @return performData bytes that the keeper should call performUpkeep with, if
+   * upkeep is needed. If you would like to encode data to decode later, try `abi.encode`.
+   */
+  function checkErrorHandler(
+    uint256, /*errCode*/
+    bytes memory /*extraData*/
+  ) external pure returns (bool upkeepNeeded, bytes memory performData) {
+    return (true, "0");
+    // Hardcoded to always perform upkeep.
+    // Read the StreamsLookup error handler guide for more information.
+    // https://docs.chain.link/chainlink-automation/guides/streams-lookup-error-handler
+  }
+
+  // The Data Streams report bytes is passed here.
+  // extraData is context data from stream lookup process.
+  // Your contract may include logic to further process this data.
+  // This method is intended only to be simulated offchain by Automation.
+  // The data returned will then be passed by Automation into performUpkeep
+  function checkCallback(
+    bytes[] calldata values,
+    bytes calldata extraData
+  ) external pure returns (bool, bytes memory) {
+    return (true, abi.encode(values, extraData));
+  }
+
+  // function will be performed onchain
+  function performUpkeep(
+    bytes calldata performData
+  ) external {
+    // Decode the performData bytes passed in by CL Automation.
+    // This contains the data returned by your implementation in checkCallback().
+    (bytes[] memory signedReports, bytes memory extraData) = abi.decode(performData, (bytes[], bytes));
+
+    bytes memory unverifiedReport = signedReports[0];
+
+    (, /* bytes32[3] reportContextData */ bytes memory reportData) = abi.decode(unverifiedReport, (bytes32[3], bytes));
+
+    // Extract report version from reportData
+    uint16 reportVersion = (uint16(uint8(reportData[0])) << 8) | uint16(uint8(reportData[1]));
+
+    // Validate report version
+    if (reportVersion != 3 && reportVersion != 4) {
+      revert InvalidReportVersion(uint8(reportVersion));
+    }
+
+    // Report verification fees
+    IFeeManager feeManager = IFeeManager(address(verifier.s_feeManager()));
+    IRewardManager rewardManager = IRewardManager(address(feeManager.i_rewardManager()));
+
+    address feeTokenAddress = feeManager.i_linkAddress();
+    (Common.Asset memory fee,,) = feeManager.getFeeAndReward(address(this), reportData, feeTokenAddress);
+
+    // Approve rewardManager to spend this contract's balance in fees
+    IERC20(feeTokenAddress).approve(address(rewardManager), fee.amount);
+
+    // Verify the report
+    bytes memory verifiedReportData = verifier.verify(unverifiedReport, abi.encode(feeTokenAddress));
+
+    // Decode verified report data into the appropriate Report struct based on reportVersion
+    if (reportVersion == 3) {
+      // v3 report schema
+      ReportV3 memory verifiedReport = abi.decode(verifiedReportData, (ReportV3));
+
+      // Store the price from the report
+      lastDecodedPrice = verifiedReport.price;
+    } else if (reportVersion == 4) {
+      // v4 report schema
+      ReportV4 memory verifiedReport = abi.decode(verifiedReportData, (ReportV4));
+
+      // Store the price from the report
+      lastDecodedPrice = verifiedReport.price;
+    }
+  }
+}
+```
+
 ---
 
 # Supported Networks
@@ -5610,7 +5909,7 @@ The table below lists all networks supported by Data Streams, each with verifier
 
 ## Streams Trade implementation (Onchain Lookup)
 
-[Streams Trade](streams-trade), the alternative implementation, allows smart contracts to access Data Streams onchain using the [`StreamsLookup`](/data-streams/getting-started) capability integrated with [Chainlink Automation](/chainlink-automation).
+[Streams Trade](/data-streams/streams-trade), the alternative implementation, allows smart contracts to access Data Streams onchain using the [`StreamsLookup`](/data-streams/getting-started) capability integrated with [Chainlink Automation](/chainlink-automation).
 
 Streams Trade is currently available on the following networks:
 
@@ -5621,6 +5920,17 @@ Streams Trade is currently available on the following networks:
 - Ethereum
 - Optimism
 - Polygon
+
+---
+
+# Tokenized Asset Data Streams
+Source: https://docs.chain.link/data-streams/tokenized-asset-streams
+
+<Aside type="danger" title="Weekend Usage Disclaimer">
+  **Users should not use these streams during weekends** due to limited exchange activity.
+
+  If usage is necessary, increase fees to mitigate risks. Developers are solely responsible for monitoring and mitigating market integrity risks, as outlined in the [Developer Responsibilities](/data-streams/developer-responsibilities) documentation.
+</Aside>
 
 ---
 
@@ -5650,6 +5960,228 @@ Make sure you understand how to fetch reports via the [REST API](/data-streams/r
 Deploy a `ClientReportsVerifier` contract on *Arbitrum Sepolia*. This contract is enabled to verify reports and pay the verification fee in LINK tokens.
 
 1. [Open the ClientReportsVerifier.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/DataStreams/ClientReportsVerifier.sol) contract in Remix.
+
+   ```sol
+   // SPDX-License-Identifier: MIT
+   pragma solidity ^0.8.20;
+
+   import {Common} from "@chainlink/contracts/src/v0.8/llo-feeds/libraries/Common.sol";
+   import {IVerifierFeeManager} from "@chainlink/contracts/src/v0.8/llo-feeds/v0.3.0/interfaces/IVerifierFeeManager.sol";
+   import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+   import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
+   using SafeERC20 for IERC20;
+
+   /**
+    * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE FOR DEMONSTRATION PURPOSES.
+    * DO NOT USE THIS CODE IN PRODUCTION.
+    *
+    *  This contract can verify Chainlink Data Streams reports onchain and pay
+    *  the verification fee in LINK (when required).
+    *
+    * - If `VerifierProxy.s_feeManager()` returns a non-zero address, the network
+    *   expects you to interact with that FeeManager for every verification call:
+    *   quote fees, approve the RewardManager, then call `verify()`.
+    *
+    * - If `s_feeManager()` returns the zero address, no FeeManager contract has
+    *   been deployed on that chain. In that case there is nothing to quote or pay
+    *   onchain, so the contract skips the fee logic entirely.
+    *
+    *  The `if (address(feeManager) != address(0))` check below chooses the
+    *  correct path automatically, making the same bytecode usable on any chain.
+    */
+
+   // ────────────────────────────────────────────────────────────────────────────
+   //  Interfaces
+   // ────────────────────────────────────────────────────────────────────────────
+
+   interface IVerifierProxy {
+     /**
+      * @notice Route a report to the correct verifier and (optionally) bill fees.
+      * @param payload           Full report payload (header + signed report).
+      * @param parameterPayload  ABI-encoded fee metadata.
+      */
+     function verify(
+       bytes calldata payload,
+       bytes calldata parameterPayload
+     ) external payable returns (bytes memory verifierResponse);
+
+     function verifyBulk(
+       bytes[] calldata payloads,
+       bytes calldata parameterPayload
+     ) external payable returns (bytes[] memory verifiedReports);
+
+     function s_feeManager() external view returns (IVerifierFeeManager);
+   }
+
+   interface IFeeManager {
+     /**
+      * @return fee, reward, totalDiscount
+      */
+     function getFeeAndReward(
+       address subscriber,
+       bytes memory unverifiedReport,
+       address quoteAddress
+     ) external returns (Common.Asset memory, Common.Asset memory, uint256);
+
+     function i_linkAddress() external view returns (address);
+
+     function i_nativeAddress() external view returns (address);
+
+     function i_rewardManager() external view returns (address);
+   }
+
+   // ────────────────────────────────────────────────────────────────────────────
+   //  Contract
+   // ────────────────────────────────────────────────────────────────────────────
+
+   /**
+    * @dev This contract implements functionality to verify Data Streams reports from
+    * the Data Streams API, with payment in LINK tokens.
+    */
+   contract ClientReportsVerifier {
+     // ----------------- Errors -----------------
+     error NothingToWithdraw();
+     error NotOwner(address caller);
+     error InvalidReportVersion(uint16 version);
+
+     // ----------------- Report schemas -----------------
+     // More info: https://docs.chain.link/data-streams/reference/report-schema-v3
+     /**
+      * @dev Data Streams report schema v3 (crypto streams).
+      *      Prices, bids and asks use 8 or 18 decimals depending on the stream.
+      */
+     struct ReportV3 {
+       bytes32 feedId;
+       uint32 validFromTimestamp;
+       uint32 observationsTimestamp;
+       uint192 nativeFee;
+       uint192 linkFee;
+       uint32 expiresAt;
+       int192 price;
+       int192 bid;
+       int192 ask;
+     }
+
+     /**
+      * @dev Data Streams report schema v8 (RWA streams).
+      */
+     struct ReportV8 {
+       bytes32 feedId;
+       uint32 validFromTimestamp;
+       uint32 observationsTimestamp;
+       uint192 nativeFee;
+       uint192 linkFee;
+       uint32 expiresAt;
+       uint64 lastUpdateTimestamp;
+       int192 midPrice;
+       uint32 marketStatus;
+     }
+
+     // ----------------- Storage -----------------
+     IVerifierProxy public immutable i_verifierProxy;
+     address private immutable i_owner;
+
+     int192 public lastDecodedPrice;
+
+     // ----------------- Events -----------------
+     event DecodedPrice(int192 price);
+
+     // ----------------- Constructor / modifier -----------------
+     /**
+      * @param _verifierProxy Address of the VerifierProxy on the target network.
+      *        Addresses: https://docs.chain.link/data-streams/crypto-streams
+      */
+     constructor(
+       address _verifierProxy
+     ) {
+       i_owner = msg.sender;
+       i_verifierProxy = IVerifierProxy(_verifierProxy);
+     }
+
+     modifier onlyOwner() {
+       if (msg.sender != i_owner) revert NotOwner(msg.sender);
+       _;
+     }
+
+     // ----------------- Public API -----------------
+
+     /**
+      * @notice Verify a Data Streams report (schema v3 or v8).
+      *
+      * @dev Steps:
+      *  1. Decode the unverified report to get `reportData`.
+      *  2. Read the first two bytes → schema version (`0x0003` or `0x0008`).
+      *     - Revert if the version is unsupported.
+      *  3. Fee handling:
+      *     - Query `s_feeManager()` on the proxy.
+      *       – Non-zero → quote the fee, approve the RewardManager,
+      *         ABI-encode the fee token address for `verify()`.
+      *       – Zero     → no FeeManager; skip quoting/approval and pass `""`.
+      *  4. Call `VerifierProxy.verify()`.
+      *  5. Decode the verified report into the correct struct and emit the price.
+      *
+      *  @param unverifiedReport Full payload returned by Streams Direct.
+      *  @custom:reverts InvalidReportVersion when schema ≠ v3/v8.
+      */
+     function verifyReport(
+       bytes memory unverifiedReport
+     ) external {
+       // ─── 1. & 2. Extract reportData and schema version ──
+       (, bytes memory reportData) = abi.decode(unverifiedReport, (bytes32[3], bytes));
+
+       uint16 reportVersion = (uint16(uint8(reportData[0])) << 8) | uint16(uint8(reportData[1]));
+       if (reportVersion != 3 && reportVersion != 8) {
+         revert InvalidReportVersion(reportVersion);
+       }
+
+       // ─── 3. Fee handling ──
+       IFeeManager feeManager = IFeeManager(address(i_verifierProxy.s_feeManager()));
+
+       bytes memory parameterPayload;
+       if (address(feeManager) != address(0)) {
+         // FeeManager exists — always quote & approve
+         address feeToken = feeManager.i_linkAddress();
+
+         (Common.Asset memory fee,,) = feeManager.getFeeAndReward(address(this), reportData, feeToken);
+
+         IERC20(feeToken).approve(feeManager.i_rewardManager(), fee.amount);
+         parameterPayload = abi.encode(feeToken);
+       } else {
+         // No FeeManager deployed on this chain
+         parameterPayload = bytes("");
+       }
+
+       // ─── 4. Verify through the proxy ──
+       bytes memory verified = i_verifierProxy.verify(unverifiedReport, parameterPayload);
+
+       // ─── 5. Decode & store price ──
+       if (reportVersion == 3) {
+         int192 price = abi.decode(verified, (ReportV3)).price;
+         lastDecodedPrice = price;
+         emit DecodedPrice(price);
+       } else {
+         int192 price = abi.decode(verified, (ReportV8)).midPrice;
+         lastDecodedPrice = price;
+         emit DecodedPrice(price);
+       }
+     }
+
+     /**
+      * @notice Withdraw all balance of an ERC-20 token held by this contract.
+      * @param _beneficiary Address that receives the tokens.
+      * @param _token       ERC-20 token address.
+      */
+     function withdrawToken(
+       address _beneficiary,
+       address _token
+     ) external onlyOwner {
+       uint256 amount = IERC20(_token).balanceOf(address(this));
+       if (amount == 0) revert NothingToWithdraw();
+       IERC20(_token).safeTransfer(_beneficiary, amount);
+     }
+   }
+   ```
 
 2. Select the `ClientReportsVerifier.sol` contract in the **Solidity Compiler** tab.
 
@@ -5694,6 +6226,228 @@ For this tutorial on *Arbitrum Sepolia*, fees are required, so you need to fund 
 
 The example code you deployed has all the interfaces and functions required to verify Data Streams reports onchain.
 
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import {Common} from "@chainlink/contracts/src/v0.8/llo-feeds/libraries/Common.sol";
+import {IVerifierFeeManager} from "@chainlink/contracts/src/v0.8/llo-feeds/v0.3.0/interfaces/IVerifierFeeManager.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
+using SafeERC20 for IERC20;
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE FOR DEMONSTRATION PURPOSES.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ *
+ *  This contract can verify Chainlink Data Streams reports onchain and pay
+ *  the verification fee in LINK (when required).
+ *
+ * - If `VerifierProxy.s_feeManager()` returns a non-zero address, the network
+ *   expects you to interact with that FeeManager for every verification call:
+ *   quote fees, approve the RewardManager, then call `verify()`.
+ *
+ * - If `s_feeManager()` returns the zero address, no FeeManager contract has
+ *   been deployed on that chain. In that case there is nothing to quote or pay
+ *   onchain, so the contract skips the fee logic entirely.
+ *
+ *  The `if (address(feeManager) != address(0))` check below chooses the
+ *  correct path automatically, making the same bytecode usable on any chain.
+ */
+
+// ────────────────────────────────────────────────────────────────────────────
+//  Interfaces
+// ────────────────────────────────────────────────────────────────────────────
+
+interface IVerifierProxy {
+  /**
+   * @notice Route a report to the correct verifier and (optionally) bill fees.
+   * @param payload           Full report payload (header + signed report).
+   * @param parameterPayload  ABI-encoded fee metadata.
+   */
+  function verify(
+    bytes calldata payload,
+    bytes calldata parameterPayload
+  ) external payable returns (bytes memory verifierResponse);
+
+  function verifyBulk(
+    bytes[] calldata payloads,
+    bytes calldata parameterPayload
+  ) external payable returns (bytes[] memory verifiedReports);
+
+  function s_feeManager() external view returns (IVerifierFeeManager);
+}
+
+interface IFeeManager {
+  /**
+   * @return fee, reward, totalDiscount
+   */
+  function getFeeAndReward(
+    address subscriber,
+    bytes memory unverifiedReport,
+    address quoteAddress
+  ) external returns (Common.Asset memory, Common.Asset memory, uint256);
+
+  function i_linkAddress() external view returns (address);
+
+  function i_nativeAddress() external view returns (address);
+
+  function i_rewardManager() external view returns (address);
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+//  Contract
+// ────────────────────────────────────────────────────────────────────────────
+
+/**
+ * @dev This contract implements functionality to verify Data Streams reports from
+ * the Data Streams API, with payment in LINK tokens.
+ */
+contract ClientReportsVerifier {
+  // ----------------- Errors -----------------
+  error NothingToWithdraw();
+  error NotOwner(address caller);
+  error InvalidReportVersion(uint16 version);
+
+  // ----------------- Report schemas -----------------
+  // More info: https://docs.chain.link/data-streams/reference/report-schema-v3
+  /**
+   * @dev Data Streams report schema v3 (crypto streams).
+   *      Prices, bids and asks use 8 or 18 decimals depending on the stream.
+   */
+  struct ReportV3 {
+    bytes32 feedId;
+    uint32 validFromTimestamp;
+    uint32 observationsTimestamp;
+    uint192 nativeFee;
+    uint192 linkFee;
+    uint32 expiresAt;
+    int192 price;
+    int192 bid;
+    int192 ask;
+  }
+
+  /**
+   * @dev Data Streams report schema v8 (RWA streams).
+   */
+  struct ReportV8 {
+    bytes32 feedId;
+    uint32 validFromTimestamp;
+    uint32 observationsTimestamp;
+    uint192 nativeFee;
+    uint192 linkFee;
+    uint32 expiresAt;
+    uint64 lastUpdateTimestamp;
+    int192 midPrice;
+    uint32 marketStatus;
+  }
+
+  // ----------------- Storage -----------------
+  IVerifierProxy public immutable i_verifierProxy;
+  address private immutable i_owner;
+
+  int192 public lastDecodedPrice;
+
+  // ----------------- Events -----------------
+  event DecodedPrice(int192 price);
+
+  // ----------------- Constructor / modifier -----------------
+  /**
+   * @param _verifierProxy Address of the VerifierProxy on the target network.
+   *        Addresses: https://docs.chain.link/data-streams/crypto-streams
+   */
+  constructor(
+    address _verifierProxy
+  ) {
+    i_owner = msg.sender;
+    i_verifierProxy = IVerifierProxy(_verifierProxy);
+  }
+
+  modifier onlyOwner() {
+    if (msg.sender != i_owner) revert NotOwner(msg.sender);
+    _;
+  }
+
+  // ----------------- Public API -----------------
+
+  /**
+   * @notice Verify a Data Streams report (schema v3 or v8).
+   *
+   * @dev Steps:
+   *  1. Decode the unverified report to get `reportData`.
+   *  2. Read the first two bytes → schema version (`0x0003` or `0x0008`).
+   *     - Revert if the version is unsupported.
+   *  3. Fee handling:
+   *     - Query `s_feeManager()` on the proxy.
+   *       – Non-zero → quote the fee, approve the RewardManager,
+   *         ABI-encode the fee token address for `verify()`.
+   *       – Zero     → no FeeManager; skip quoting/approval and pass `""`.
+   *  4. Call `VerifierProxy.verify()`.
+   *  5. Decode the verified report into the correct struct and emit the price.
+   *
+   *  @param unverifiedReport Full payload returned by Streams Direct.
+   *  @custom:reverts InvalidReportVersion when schema ≠ v3/v8.
+   */
+  function verifyReport(
+    bytes memory unverifiedReport
+  ) external {
+    // ─── 1. & 2. Extract reportData and schema version ──
+    (, bytes memory reportData) = abi.decode(unverifiedReport, (bytes32[3], bytes));
+
+    uint16 reportVersion = (uint16(uint8(reportData[0])) << 8) | uint16(uint8(reportData[1]));
+    if (reportVersion != 3 && reportVersion != 8) {
+      revert InvalidReportVersion(reportVersion);
+    }
+
+    // ─── 3. Fee handling ──
+    IFeeManager feeManager = IFeeManager(address(i_verifierProxy.s_feeManager()));
+
+    bytes memory parameterPayload;
+    if (address(feeManager) != address(0)) {
+      // FeeManager exists — always quote & approve
+      address feeToken = feeManager.i_linkAddress();
+
+      (Common.Asset memory fee,,) = feeManager.getFeeAndReward(address(this), reportData, feeToken);
+
+      IERC20(feeToken).approve(feeManager.i_rewardManager(), fee.amount);
+      parameterPayload = abi.encode(feeToken);
+    } else {
+      // No FeeManager deployed on this chain
+      parameterPayload = bytes("");
+    }
+
+    // ─── 4. Verify through the proxy ──
+    bytes memory verified = i_verifierProxy.verify(unverifiedReport, parameterPayload);
+
+    // ─── 5. Decode & store price ──
+    if (reportVersion == 3) {
+      int192 price = abi.decode(verified, (ReportV3)).price;
+      lastDecodedPrice = price;
+      emit DecodedPrice(price);
+    } else {
+      int192 price = abi.decode(verified, (ReportV8)).midPrice;
+      lastDecodedPrice = price;
+      emit DecodedPrice(price);
+    }
+  }
+
+  /**
+   * @notice Withdraw all balance of an ERC-20 token held by this contract.
+   * @param _beneficiary Address that receives the tokens.
+   * @param _token       ERC-20 token address.
+   */
+  function withdrawToken(
+    address _beneficiary,
+    address _token
+  ) external onlyOwner {
+    uint256 amount = IERC20(_token).balanceOf(address(this));
+    if (amount == 0) revert NothingToWithdraw();
+    IERC20(_token).safeTransfer(_beneficiary, amount);
+  }
+}
+```
+
 ### Initializing the contract
 
 When deploying the contract, you define the verifier proxy address for the stream you want to read from. You can find this address on the [Stream Addresses](/data-streams/crypto-streams) page. The verifier proxy address provides functions that are required for this example:
@@ -5712,7 +6466,7 @@ The `verifyReport` function is the core function that handles onchain report ver
     - Schema version `0x0003` corresponds to the [Crypto Advanced (v3)](/data-streams/reference/report-schema-v3).
     - Schema version `0x0008` corresponds to the [RWA Standard (v8)](/data-streams/reference/report-schema-v8).
     - Schema version `0x0007` corresponds to the [Redemption Rates (v7)](/data-streams/reference/report-schema-v7).
-    - Schema version `0x0009` corresponds to the [NAV (v9)](/data-streams/reference/report-schema-v9).
+    - Schema version `0x0009` corresponds to the [SmartData (v9)](/data-streams/reference/report-schema-v9).
     - Schema version `0x000A` corresponds to the [Tokenized Asset (v10)](/data-streams/reference/report-schema-v10).
     - Schema version `0x000B` corresponds to the [RWA Advanced (v11)](/data-streams/reference/report-schema-v11).
   - If the report version is unsupported, the function reverts with an InvalidReportVersion error.
@@ -6947,7 +7701,7 @@ You'll start with the set up of your Rust project, installing the SDK and pastin
    ).build()?;
    ```
 
-   This configuration also specifies the `rest_url`, which is the base URL for the API, along with the WebSocket endpoint [for subscribing to a streamed data report](rust-sdk-stream). In this example, both are set to the testnet URLs for Data Streams.
+   This configuration also specifies the `rest_url`, which is the base URL for the API, along with the WebSocket endpoint [for subscribing to a streamed data report](/data-streams/tutorials/rust-sdk-stream). In this example, both are set to the testnet URLs for Data Streams.
 
    See the [Rust SDK Reference](/data-streams/reference/data-streams-api/rust-sdk#configuration-reference) page for more configuration options.
 
@@ -7314,7 +8068,7 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
    ).build()?;
    ```
 
-   This configuration also specifies the `rest_url`, which is the base URL for the API, along with the WebSocket endpoint [for subscribing to a streamed data report](rust-sdk-stream). In this example, both are set to the testnet URLs for Data Streams.
+   This configuration also specifies the `rest_url`, which is the base URL for the API, along with the WebSocket endpoint for subscribing to a streamed data report. In this example, both are set to the testnet URLs for Data Streams.
 
    See the [Rust SDK Reference](/data-streams/reference/data-streams-api/rust-sdk#configuration-reference) page for more configuration options.
 

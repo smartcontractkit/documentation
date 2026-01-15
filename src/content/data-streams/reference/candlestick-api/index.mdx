@@ -82,9 +82,9 @@ curl -X POST \
 
 **`/api/v1/symbol_info`**
 
-| Type     | Description                                              | Parameter(s)                                                                                     |
-| :------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------- |
-| HTTP GET | Gets a list of all supported symbols on the environment. | <ul><li>`group` (optional): Filter symbols by group. Currently only supports "crypto".</li></ul> |
+| Type     | Description                                              | Parameter(s)                                                                                                                        |
+| :------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------- |
+| HTTP GET | Gets a list of all supported symbols on the environment. | <ul><li>`group` (optional): Filter symbols by group. See [`/groups`](#get-list-of-supported-groups) for available groups.</li></ul> |
 
 ##### Sample request
 
@@ -121,26 +121,85 @@ curl -X GET \
 | `401`       | `Unauthorized - Authorization header is required \|\| Invalid authorization header format \|\| token signature is invalid: signature is invalid \|\| ...` | The authorization header was missing or invalid. |
 | `500`       | `Error - Something went wrong`                                                                                                                            | An unexpected server error occurred.             |
 
+### Get list of supported groups
+
+##### Endpoint
+
+**`/api/v1/groups`**
+
+| Type     | Description                                                                                                                                   | Parameter(s) |
+| :------- | :-------------------------------------------------------------------------------------------------------------------------------------------- | :----------- |
+| HTTP GET | Gets a list of all supported symbol types on the environment. Any group name returned can be used as a filter in the `/symbol_info` endpoint. | None         |
+
+##### Sample request
+
+```bash
+curl -X GET \
+  -H "Authorization: Bearer {YOUR_ACCESS_TOKEN}" \
+  https://priceapi.testnet-dataengine.chain.link/api/v1/groups
+```
+
+##### Response
+
+- **Status**: `200`
+
+  ```json
+  {
+    "s": "ok",
+    "d": {
+      "groups": [{ "id": "crypto" }, { "id": "equities" }, { "id": "forex" }, { "id": "equity" }]
+    }
+  }
+  ```
+
+  | Field    | Type     | Description                        |
+  | :------- | :------- | :--------------------------------- |
+  | `s`      | `string` | The status of the request.         |
+  | `d`      | `object` | The data returned by the API call. |
+  | `groups` | `array`  | Array of supported groups.         |
+
+##### Error Responses
+
+| Status Code | Error Message                                                                                                                                             | Description                                      |
+| :---------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------- |
+| `401`       | `Unauthorized - Authorization header is required \|\| Invalid authorization header format \|\| token signature is invalid: signature is invalid \|\| ...` | The authorization header was missing or invalid. |
+| `500`       | `Error - Something went wrong`                                                                                                                            | An unexpected server error occurred.             |
+
 ### Get candlestick data (column format)
 
 ##### Endpoint
 
 **`/api/v1/history`**
 
-| Type     | Description                             | Parameter(s)                                                                                                                                                                                                                                                                      |
-| :------- | :-------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| HTTP GET | Gets candlestick data in column format. | <ul><li>`symbol`: The symbol to query.</li><li>`resolution`: Resolution of the data (required but not used, use "1m").</li><li>`from`: Unix timestamp of the leftmost required bar (inclusive).</li><li>`to`: Unix timestamp of the rightmost required bar (inclusive).</li></ul> |
+| Type     | Description                             | Parameter(s)                                                                                                                                                                                                                                                                                                            |
+| :------- | :-------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| HTTP GET | Gets candlestick data in column format. | <ul><li>`symbol`: The symbol to query.</li><li>`resolution`: Resolution of the data. E.g., "1m". Must match [supported resolutions](#supported-resolutions).</li><li>`from`: Unix timestamp of the leftmost required bar (inclusive).</li><li>`to`: Unix timestamp of the rightmost required bar (inclusive).</li></ul> |
 
-**Note**: The resolution of the data is currently based on the size of the time window:
+#### Supported resolutions
 
-| Max time window size | Resolution of candles |
-| :------------------- | :-------------------- |
-| \<= 24 hours         | 1 minute              |
-| \<= 5 days           | 5 minutes             |
-| \<= 30 days          | 30 minutes            |
-| \<= 90 days          | 1 hour                |
-| \<= 6 months         | 2 hours               |
-| > 6 months           | 1 day                 |
+The resolution you provide must be within the supported boundaries for the given time window size:
+
+| Time window size          | Supported resolutions            |
+| :------------------------ | :------------------------------- |
+| 1 min - 24 hours          | 1 minute - 24 hours (1m - 24h)   |
+| 1 - 5 days                | 5 minutes - 5 days (5m - 5d)     |
+| 5 - 30 days               | 30 minutes - 30 days (30m - 30d) |
+| 30 - 90 days              | 1 hour - 90 days (1h - 90d)      |
+| 90 - 180 days             | 2 hours - 180 days (2h - 6M)     |
+| 180 - 365 days            | 24 hours - 365 days (24h - 1y)   |
+| 365 - 1825 days (1-5 yrs) | 1 week - 5 years (1w - 5y)       |
+| Over 1825 days (> 5 yrs)  | Over 1 month                     |
+
+Resolutions can be provided in the following units:
+
+| Name    | Unit | Example |
+| :------ | :--- | :------ |
+| minutes | m    | 5m      |
+| hours   | h    | 3h      |
+| days    | d    | 1d      |
+| weeks   | w    | 2w      |
+| months  | M    | 6M      |
+| years   | y    | 2y      |
 
 ##### Sample request
 
@@ -193,9 +252,9 @@ curl -X GET \
 
 **`/api/v1/history/rows`**
 
-| Type     | Description                          | Parameter(s)                                                                                                                                                                                                                                                                      |
-| :------- | :----------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| HTTP GET | Gets candlestick data in row format. | <ul><li>`symbol`: The symbol to query.</li><li>`resolution`: Resolution of the data (required but not used, use "1m").</li><li>`from`: Unix timestamp of the leftmost required bar (inclusive).</li><li>`to`: Unix timestamp of the rightmost required bar (inclusive).</li></ul> |
+| Type     | Description                          | Parameter(s)                                                                                                                                                                                                                                                                                                            |
+| :------- | :----------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| HTTP GET | Gets candlestick data in row format. | <ul><li>`symbol`: The symbol to query.</li><li>`resolution`: Resolution of the data. E.g., "1m". Must match [supported resolutions](#supported-resolutions).</li><li>`from`: Unix timestamp of the leftmost required bar (inclusive).</li><li>`to`: Unix timestamp of the rightmost required bar (inclusive).</li></ul> |
 
 ##### Sample request
 
