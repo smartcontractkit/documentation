@@ -274,6 +274,11 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
     section: "Tutorials",
     contents: [
       {
+        title: "Beginner",
+        type: "separator",
+        chainTypes: ["evm"],
+      },
+      {
         title: "Acquire Test Tokens",
         url: "ccip/test-tokens",
         // Universal
@@ -281,6 +286,11 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
       {
         title: "Transfer Tokens",
         url: "ccip/tutorials/evm/transfer-tokens-from-contract",
+        chainTypes: ["evm"],
+      },
+      {
+        title: "Intermediate",
+        type: "separator",
         chainTypes: ["evm"],
       },
       {
@@ -301,6 +311,11 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
       {
         title: "Using the CCIP JavaScript SDK",
         url: "ccip/ccip-javascript-sdk",
+        chainTypes: ["evm"],
+      },
+      {
+        title: "Advanced",
+        type: "separator",
         chainTypes: ["evm"],
       },
       {
