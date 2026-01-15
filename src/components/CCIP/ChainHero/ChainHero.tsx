@@ -16,6 +16,7 @@ import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
 import { getChainTooltip } from "../Tooltip/index.ts"
 import { PoolProgramTooltip } from "../Tooltip/PoolProgramTooltip.tsx"
 import { ExplorerInfo, ChainType } from "@config/types.ts"
+import { getNetworkIconUrl } from "~/config/data/ccip/data.ts"
 
 interface ChainHeroProps {
   chains: {
@@ -149,7 +150,7 @@ function ChainHero({
         {(network || token) && (
           <div className="ccip-chain-hero__heading">
             <img
-              src={network?.logo || token?.logo}
+              src={getNetworkIconUrl(network?.name) || token?.logo}
               alt=""
               className={token?.logo ? "ccip-chain-hero__token-logo" : ""}
               onError={({ currentTarget }) => {
