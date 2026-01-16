@@ -176,25 +176,7 @@ npm install --save-dev @nomicfoundation/hardhat-viem @nomicfoundation/hardhat-ke
 
 </Aside>
 
-3. Configure your environment variables using the `hardhat-keystore` plugin.
-   If you have followed the tutorial you have already installed the required package.
-   You will need to run the following three commands in succession to configure the environment variables, Hardhat will ask you to enter the password for the keystore
-   for each of the variables:
-
-```bash filename="Terminal"
-npx hardhat keystore set SEPOLIA_RPC_URL
-npx hardhat keystore set FUJI_RPC_URL
-npx hardhat keystore set PRIVATE_KEY
-```
-
-The output of `npx hardhat keystore list ` should look like this:
-
-      <ClickToZoom
-        src="/images/ccip/tutorials/ccip-getting-started-evm-1.png"
-        alt="Hardhat keystore list command output"
-      />
-
-4. Update `hardhat.config.ts` to use your environment variables and the `hardhat-viem` plugin:
+3. Update `hardhat.config.ts` to use the `hardhat-viem` and `hardhat-keystore` plugins:
 
 ```typescript filename="hardhat.config.ts"
 import { configVariable, defineConfig } from "hardhat/config"
@@ -220,6 +202,24 @@ export default defineConfig({
   },
 })
 ```
+
+4. Finally, set the environment variables being referenced in the `hardhat.config.ts` file using `hardhat-keystore`. \
+   If you have followed the tutorial you have already installed the required package.
+   You will need to run the following three commands **in succession** to configure the environment variables, Hardhat will ask you to enter the password for the keystore
+   for each of the variables:
+
+```bash filename="Terminal"
+npx hardhat keystore set SEPOLIA_RPC_URL
+npx hardhat keystore set FUJI_RPC_URL
+npx hardhat keystore set PRIVATE_KEY
+```
+
+The output of `npx hardhat keystore list ` should look like this:
+
+      <ClickToZoom
+        src="/images/ccip/tutorials/ccip-getting-started-evm-1.png"
+        alt="Hardhat keystore list command output"
+      />
 
 </Accordion>
 
@@ -458,6 +458,7 @@ remappings = [
   "forge-std/=lib/forge-std/src/",
   "@chainlink/contracts-ccip/contracts/=lib/chainlink-ccip/chains/evm/contracts/",
   "@chainlink/contracts/=lib/chainlink-evm/contracts/",
+  "@openzeppelin/contracts@5.0.2/utils/introspection/=lib/forge-std/src/interfaces/"
 ]
 
 # RPC URLs will be fed to our script via Foundry's config file
