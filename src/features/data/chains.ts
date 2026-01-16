@@ -487,10 +487,9 @@ export const CHAINS: Chain[] = [
     networkStatusUrl: "https://uptime.megaeth.com/",
     tags: ["default"],
     supportedFeatures: ["feeds"],
-    l2SequencerFeed: true,
     networks: [
       {
-        name: "MegaETH Mainnet",
+        name: "MegaETH Mainnet (Private)",
         explorerUrl: "https://megaeth.blockscout.com/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-megaeth-mainnet.json",
