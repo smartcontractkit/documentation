@@ -14,6 +14,32 @@ import { Aside } from "@components"
 
 This page provides a reference for the core data structures and functions of the CRE TypeScript SDK. These are the fundamental building blocks that every workflow uses, regardless of trigger types or capabilities.
 
+## Import styles
+
+The CRE TypeScript SDK supports two import styles. Both are fully supported and can be used interchangeably:
+
+**Direct imports (recommended for SDK v1.0.2+):**
+
+```typescript
+import { Runner, HTTPClient, EVMClient, CronCapability } from "@chainlink/cre-sdk"
+
+// Use directly
+const httpClient = new HTTPClient()
+const evmClient = new EVMClient(chainSelector)
+```
+
+**Namespace imports:**
+
+```typescript
+import { cre, Runner } from "@chainlink/cre-sdk"
+
+// Access through cre namespace
+const httpClient = new cre.capabilities.HTTPClient()
+const evmClient = new cre.capabilities.EVMClient(chainSelector)
+```
+
+Both styles are supported for backward compatibility. Choose the style that works best for your codebase.
+
 ## Key concepts and components
 
 ### `cre.handler()`
@@ -187,16 +213,22 @@ export async function main() {
   // Run your workflow initialization function
   await runner.run(initWorkflow)
 }
-
-main()
 ```
+
+<Aside type="note" title="SDK v1.0.2+ Changes">
+  Starting with SDK v1.0.2:
+
+- **Calling `main()` is optional**: The SDK automatically executes the `main()` function during compilation. You no longer need to call `main()` at the end of your workflow file.
+- **Automatic error handling**: If you don't provide custom error handling (e.g., `main().catch(myHandler)`), the SDK automatically adds `.catch(sendErrorResponse)` to ensure errors are properly reported.
+- If you need custom error handling, you can still add your own: `main().catch(myCustomHandler)`. The SDK will respect your custom handler and not override it.
+
+</Aside>
 
 **Key points:**
 
 - Must be an `async` function
 - Must call `Runner.newRunner<Config>()` with an optional `configSchema` parameter for validation
 - Must call `runner.run(initWorkflow)` to execute your workflow
-- Must invoke `main()` at the end of your file
 
 ### `initWorkflow`
 
