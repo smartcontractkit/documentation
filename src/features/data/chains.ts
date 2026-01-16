@@ -998,6 +998,13 @@ export const ALL_CHAINS: Chain[] = [
         queryString: "polygon-zkevm-mainnet",
       },
       {
+        name: "Ronin Mainnet",
+        explorerUrl: "https://app.roninchain.com/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ronin-mainnet.json",
+        queryString: "ronin-mainnet",
+      },
+      {
         name: "Solana Mainnet",
         explorerUrl: "https://solscan.io/account/%s",
         networkType: "mainnet",

@@ -446,11 +446,38 @@ Last Updated: 2025-11-20
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
 
+## CLI v1.0.5 - January 13, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.0.5" target="_blank">CRE CLI version 1.0.5</a> is now available.** This release includes various small improvements and bug fixes.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+## CLI v1.0.4 - January 9, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.0.4" target="_blank">CRE CLI version 1.0.4</a> is now available.** This release includes various small improvements and bug fixes.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+## CLI v1.0.3 - December 12, 2025
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.0.3" target="_blank">CRE CLI version 1.0.3</a> is now available.** This release includes various small improvements and bug fixes.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
 ## CLI v1.0.2 - November 20, 2025
 
 **<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.0.2" target="_blank">CRE CLI version 1.0.2</a> is now available.** This release includes various improvements based on user feedback.
 
-### How to update
+**How to update:**
 
 - **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
 - **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
@@ -532,7 +559,7 @@ These guides explain how to install the Chainlink Developer Platform CLI (also r
 Source: https://docs.chain.link/cre/getting-started/cli-installation/macos-linux
 Last Updated: 2025-11-20
 
-This page explains how to install the CRE CLI on macOS or Linux. The recommended version at the time of writing is **v1.0.2**.
+This page explains how to install the CRE CLI on macOS or Linux. The recommended version at the time of writing is **v1.0.5**.
 
 ## Installation
 
@@ -563,7 +590,7 @@ After the script completes, verify the installation:
 cre version
 ```
 
-**Expected output:** `cre version v1.0.2`
+**Expected output:** `cre version v1.0.5`
 
 <Aside type="note" title="macOS Gatekeeper">
   If you see warnings about "unrecognized developer/source" on macOS, run:{" "}
@@ -581,9 +608,15 @@ The CRE CLI is publicly available on GitHub. Visit the releases page and downloa
   - On **macOS** (darwin), run <CopyText text="uname -m" code />:
     - `arm64` (Apple Silicon) → Download `cre_darwin_arm64.zip`
     - `x86_64` (Intel) → Download `cre_darwin_amd64.zip`
-  - On **Linux**, run <CopyText text="uname -m" code />:
-    - `aarch64` (ARM) → Download `cre_linux_arm64.tar.gz`
-    - `x86_64` (AMD/Intel) → Download `cre_linux_amd64.tar.gz`
+  - On **Linux**, the binary depends on both your architecture and OS version. First, run <CopyText text="uname -m" code /> to check your architecture, then <CopyText text="lsb_release -rs" code /> to check your Ubuntu version:
+    - **Ubuntu 22.04 or older**:
+      - `x86_64` (AMD/Intel) → Download `cre_linux_amd64_ldd2-35.tar.gz`
+      - `aarch64` (ARM) → Download `cre_linux_arm64_ldd2-35.tar.gz`
+    - **Ubuntu 24.04 or newer**:
+      - `x86_64` (AMD/Intel) → Download `cre_linux_amd64.tar.gz`
+      - `aarch64` (ARM) → Download `cre_linux_arm64.tar.gz`
+
+  **Note:** The `ldd2-35` binaries are compiled for older glibc versions (2.35 and below). If you're using a non-Ubuntu Linux distribution, check your glibc version with <CopyText text="ldd --version" code /> and use the `ldd2-35` binary if your version is 2.35 or lower.
 </Aside>
 
 After downloading the correct file from the releases page, move on to the next step to verify its integrity.
@@ -602,16 +635,21 @@ shasum -a 256 cre_darwin_arm64.zip
 
 **Verify against official checksums**
 
-Compare the output with the official checksum below:
+Compare the output with the official checksum from the [CRE CLI releases page](https://github.com/smartcontractkit/cre-cli/releases):
 
-| File                     | SHA-256 Checksum                                                 |
-| ------------------------ | ---------------------------------------------------------------- |
-| `cre_darwin_amd64.zip`   | 482e53d3a5f8471034d30c935196d2dca2ab09a5fe1ab2083ad336172565291b |
-| `cre_darwin_arm64.zip`   | 92b0409801dd4e44f90a85331615f3e4b8cf1fe9f90a8eab3ad8bb3458b4b6cf |
-| `cre_linux_amd64.tar.gz` | d3a8b9b999b4b8bf73b2235d27386acf4efbc8f05d86d9e6066abda23ee9ce9b |
-| `cre_linux_arm64.tar.gz` | f52d618727ccc8fb6ab4b1f9418b09424c8505428131a49c01bb33ca2bc86fe3 |
+1. Go to [https://github.com/smartcontractkit/cre-cli/releases](https://github.com/smartcontractkit/cre-cli/releases)
+2. Find the release version you downloaded (e.g., v1.0.5)
+3. Under the **Assets** section, locate your downloaded file
+4. Compare the SHA-256 checksum shown next to the file with your command output
 
-If the checksum doesn't match, do not proceed with installation. Contact your Chainlink point of contact for assistance.
+**Example:** For `cre_darwin_arm64.zip` in release v1.0.5, you'll see something like:
+
+```
+cre_darwin_arm64.zip
+sha256:1359415a1f1baee7643107b82b3a0589a3627aef71018644e5c488960a97e955
+```
+
+If the checksums match, the file is authentic and safe to install. If they don't match, do not proceed with installation and contact the Chainlink team for assistance.
 
 #### 2. Extract and install
 
@@ -634,7 +672,7 @@ If the checksum doesn't match, do not proceed with installation. Contact your Ch
 3. **Rename the extracted binary to `cre`**
 
    ```bash
-   mv cre_v1.0.2_darwin_arm64 cre
+   mv cre_v1.0.5_darwin_arm64 cre
    ```
 
 4. **Make it executable**:
@@ -707,7 +745,7 @@ cre version
 
 **Expected output:**
 
-You should see version information: `cre version v1.0.2`.
+You should see version information: `cre version v1.0.5`.
 
 **If it doesn't work:**
 
@@ -746,7 +784,7 @@ Once you're authenticated, you're ready to build your first workflow:
 Source: https://docs.chain.link/cre/getting-started/cli-installation/windows
 Last Updated: 2025-11-20
 
-This page explains how to install the Chainlink Developer Platform CLI (also referred to as the CRE CLI) on Windows. The recommended version at the time of writing is **v1.0.2**.
+This page explains how to install the Chainlink Developer Platform CLI (also referred to as the CRE CLI) on Windows. The recommended version at the time of writing is **v1.0.5**.
 
 ## Installation
 
@@ -776,7 +814,7 @@ After the script completes, **open a new PowerShell window** and verify the inst
 cre version
 ```
 
-**Expected output:** `cre version v1.0.2`
+**Expected output:** `cre version v1.0.5`
 
 ### Manual installation
 
@@ -800,20 +838,28 @@ Get-FileHash cre_windows_amd64.zip -Algorithm SHA256
 
 **Verify against the official checksum**
 
-Compare the `Hash` value in the output with the official checksum below:
+Compare the `Hash` value in the output with the official checksum from the [CRE CLI releases page](https://github.com/smartcontractkit/cre-cli/releases):
 
-| File                    | SHA-256 Checksum                                                 |
-| ----------------------- | ---------------------------------------------------------------- |
-| `cre_windows_amd64.zip` | 60fe65b74619c4164c0a9d6442611bf8537a04a6daf1ed3ecefc608cbbffdb01 |
+1. Go to [https://github.com/smartcontractkit/cre-cli/releases](https://github.com/smartcontractkit/cre-cli/releases)
+2. Find the release version you downloaded (e.g., v1.0.5)
+3. Under the **Assets** section, locate `cre_windows_amd64.zip`
+4. Compare the SHA-256 checksum shown next to the file with the `Hash` value from your PowerShell output
 
-If the checksum doesn't match, do not proceed with installation. Contact your Chainlink point of contact for assistance.
+**Example:** For `cre_windows_amd64.zip` in release v1.0.5, you'll see something like:
+
+```
+cre_windows_amd64.zip
+sha256:372d16566479ff6bbfe9eb1d5cebe0e1e2a3c67062c6f0439fc96c735ddeaa18
+```
+
+If the checksums match, the file is authentic and safe to install. If they don't match, do not proceed with installation and contact the Chainlink team for assistance.
 
 #### 2. Extract and install
 
 1. Navigate to the directory where you downloaded the archive.
 2. Right-click the `.zip` file and select **Extract All...**.
 3. Choose a permanent location for the extracted folder (e.g., `C:\Program Files\cre-cli`).
-4. Inside the extracted folder, rename the file `cre_v1.0.2_windows_amd64.exe` to `cre.exe`.
+4. Inside the extracted folder, rename the file `cre_v1.0.5_windows_amd64.exe` to `cre.exe`.
 
 #### 3. Add the CLI to your PATH
 
@@ -838,7 +884,7 @@ Open a new **PowerShell** or **Command Prompt** window and run:
 cre version
 ```
 
-You should see version information: `cre version v1.0.2`.
+You should see version information: `cre version v1.0.5`.
 
 ## Next steps
 
@@ -1046,8 +1092,9 @@ cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --htt
 ```
 
 <Aside type="note" title="Non-interactive requirements">
-  The `--http-payload` flag requires `--non-interactive` mode. You must also specify `--trigger-index` (0-based index of
-  your HTTP trigger). If your HTTP trigger is the only trigger or the first one defined, use `--trigger-index 0`.
+  The `--http-payload` flag requires `--non-interactive` mode. You must also specify `--trigger-index` to select which
+  handler to run. The index is 0-based: if the handler with your HTTP trigger is the first handler defined in your
+  `InitWorkflow` function, use `--trigger-index 0`; if it's the second, use `--trigger-index 1`, and so on.
 </Aside>
 
 <Aside type="note" title="Escaping quotes">
@@ -1630,7 +1677,7 @@ Manual JWT generation is complex and error-prone. For development and testing:
 
 # Testing with Local JWT Server
 Source: https://docs.chain.link/cre/guides/workflow/using-triggers/http-trigger/local-testing-tool
-Last Updated: 2025-11-04
+Last Updated: 2026-01-14
 
 The <a href="https://github.com/smartcontractkit/cre-sdk-typescript/tree/main/packages/cre-http-trigger" target="_blank" rel="noopener noreferrer">`cre-http-trigger` TypeScript package</a> simplifies testing deployed workflows with HTTP triggers by handling JWT generation, signing, and request formatting automatically. It provides a local HTTP server that acts as a proxy between your test requests and the CRE gateway.
 
@@ -1661,7 +1708,7 @@ The `cre-http-trigger` tool eliminates this complexity by:
 
 ## Prerequisites
 
-- **Bun runtime**: The tool requires <a href="https://bun.sh" target="_blank" rel="noopener noreferrer">Bun</a> version 1.2.21 or higher
+- **Bun runtime**: The tool requires <a href="https://bun.com" target="_blank" rel="noopener noreferrer">Bun</a> version 1.2.21 or higher
 - **Deployed workflow**: Your workflow must be deployed with an HTTP trigger
 - **Workflow ID**: Available from deployment output or the CRE UI
 - **Private key**: The private key corresponding to one of the `authorizedKeys` in your HTTP trigger configuration
@@ -4936,7 +4983,7 @@ Non-interactive mode allows you to run simulations without prompts, making it id
 **Requirements:**
 
 - Use the `--non-interactive` flag
-- Specify `--trigger-index` (0-based index of the trigger to run)
+- Specify `--trigger-index` to select which handler to run (0-based position: `0` = first handler, `1` = second, etc.)
 - Provide trigger-specific flags as needed (see [Trigger-specific configuration](#trigger-specific-configuration))
 
 **Example:**
@@ -4944,6 +4991,14 @@ Non-interactive mode allows you to run simulations without prompts, making it id
 ```bash
 cre workflow simulate my-workflow --non-interactive --trigger-index 0 --target staging-settings
 ```
+
+<Aside type="tip" title="Understanding trigger-index">
+  The `--trigger-index` flag selects **which handler** in your workflow to execute. Handlers are created in your
+  `InitWorkflow` function using `cre.Handler()`, where [each handler connects a trigger to a callback
+  function](/cre/key-terms#handler). If your workflow has only one handler, use `--trigger-index 0`. If you have
+  multiple handlers (e.g., one for an HTTP trigger and one for an EVM log trigger), use `0` for the first, `1` for the
+  second, etc., based on their order in your code.
+</Aside>
 
 ## The `--broadcast` flag
 
@@ -5051,6 +5106,20 @@ cre workflow simulate my-workflow \
   --evm-event-index 0 \
   --target staging-settings
 ```
+
+
+<Aside type="tip" title="Understanding the two different indexes">
+  **Two separate concepts:**
+
+  - **`--trigger-index`** selects **which handler** in your workflow to run (e.g., if the
+    handler with an EVM log trigger is the third handler defined, use `--trigger-index 2`)
+  - **`--evm-event-index`**
+    specifies **which log/event within the transaction** to use for testing (e.g., if the transaction emitted 3 events and
+    you want the first one, use `--evm-event-index 0`)
+
+  These are completely independent: one selects your workflow's
+  handler to execute, the other selects which event data from the blockchain to test with.
+</Aside>
 
 ## Additional flags
 
@@ -7587,8 +7656,8 @@ See the [repository README](https://github.com/smartcontractkit/cre-gcp-predicti
 Source: https://docs.chain.link/cre/reference/cli
 Last Updated: 2025-11-20
 
-<Aside type="note" title="Required CLI Version: v1.0.2">
-  To ensure compatibility with the guides and examples in this documentation, please use version `v1.0.2` of the CRE
+<Aside type="note" title="Required CLI Version: v1.0.5">
+  To ensure compatibility with the guides and examples in this documentation, please use version `v1.0.5` of the CRE
   CLI. You can check your installed version by running `cre version`. Refer to the [CLI
   Installation](/cre/getting-started/cli-installation/macos-linux) guide for more information.
 </Aside>
@@ -7962,15 +8031,15 @@ cre workflow simulate <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| Flag                      | Description                                                                                        |
-| ------------------------- | -------------------------------------------------------------------------------------------------- |
-| `--broadcast`             | Broadcast onchain write transactions (default: `false`). Without this flag, a dry run is performed |
-| `-g, --engine-logs`       | Enable non-fatal engine logging                                                                    |
-| `--non-interactive`       | Run without prompts; requires `--trigger-index` and inputs for the selected trigger type           |
-| `--trigger-index <int>`   | Index of the trigger to run (0-based). Required when using `--non-interactive`                     |
-| `--http-payload <string>` | HTTP trigger payload as JSON string or path to JSON file (with or without `@` prefix)              |
-| `--evm-tx-hash <string>`  | EVM trigger transaction hash (`0x...`). For EVM log triggers                                       |
-| `--evm-event-index <int>` | EVM trigger log index (0-based). For EVM log triggers                                              |
+| Flag                      | Description                                                                                                                                                                       |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--broadcast`             | Broadcast onchain write transactions (default: `false`). Without this flag, a dry run is performed                                                                                |
+| `-g, --engine-logs`       | Enable non-fatal engine logging                                                                                                                                                   |
+| `--non-interactive`       | Run without prompts; requires `--trigger-index` (see the line below) and inputs for the selected trigger type                                                                     |
+| `--trigger-index <int>`   | Selects which handler to run (0-based position). If your workflow has multiple handlers, `0` is the first, `1` is the second, etc. Required with `--non-interactive`              |
+| `--http-payload <string>` | HTTP trigger payload as JSON string or path to JSON file (with or without `@` prefix). For HTTP triggers only                                                                     |
+| `--evm-tx-hash <string>`  | Transaction hash (`0x...`) containing the event that triggered your workflow. For EVM log triggers only                                                                           |
+| `--evm-event-index <int>` | Which log/event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For EVM log triggers only |
 
 **Examples:**
 
@@ -7984,6 +8053,21 @@ cre workflow simulate <workflow-name-or-path> [flags]
 
   ```bash
   cre workflow simulate ./my-workflow --broadcast --target local-simulation
+  ```
+
+- Non-interactive mode with HTTP trigger
+
+  ```bash
+  # If your HTTP trigger handler is the first handler in your workflow, use --trigger-index 0
+  cre workflow simulate my-workflow --non-interactive --trigger-index 0 --http-payload '{"key":"value"}' --target staging-settings
+  ```
+
+- Non-interactive mode with EVM log trigger
+
+  ```bash
+  # If your EVM log trigger handler is the second handler in your workflow, use --trigger-index 1
+  # --evm-event-index 0 means you want the first event from that transaction
+  cre workflow simulate my-workflow --non-interactive --trigger-index 1 --evm-tx-hash 0x420721d7d00130a03c5b525b2dbfd42550906ddb3075e8377f9bb5d1a5992f8e --evm-event-index 0 --target staging-settings
   ```
 
 
@@ -8480,12 +8564,12 @@ cre version
 **Example output:**
 
 ```bash
-cre version v1.0.2
+cre version v1.0.5
 ```
 
 
 <Aside type="note" title="Version compatibility">
-  Always check that your CLI version matches the version recommended in the documentation. The current recommended version is **v1.0.2**. See the [CLI Installation guide](/cre/getting-started/cli-installation) for more information.
+  Always check that your CLI version matches the version recommended in the documentation. The current recommended version is **v1.0.5**. See the [CLI Installation guide](/cre/getting-started/cli-installation) for more information.
 </Aside>
 
 ## Learn more
@@ -8718,10 +8802,10 @@ Large Language Models (LLMs) generate different responses for the same prompt, e
 
 # Part 1: Project Setup & Simulation
 Source: https://docs.chain.link/cre/getting-started/part-1-project-setup-go
-Last Updated: 2025-11-04
+Last Updated: 2026-01-14
 
 <Aside type="note" title="SDK Language: Go">
-  You're viewing the **Go** version of this guide. If you prefer TypeScript, use the language selector in the right
+  You're viewing the **Go** version of this guide. If you prefer TypeScript, use the language selector in the left
   sidebar to switch to the TypeScript version.
 </Aside>
 
@@ -9602,18 +9686,18 @@ Here is the source code for the contract so you can see how it works:
   of how this works in a later guide.
 </Aside>
 
-```solidity
+```sol
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import { ReceiverTemplate } from "./ReceiverTemplate.sol";
+import {ReceiverTemplate} from "./ReceiverTemplate.sol";
 
 /**
  * @title CalculatorConsumer (Testing Version)
  * @notice This contract receives reports from a CRE workflow and stores the results of a calculation onchain.
- * @dev This version uses ReceiverTemplate without configuring any security checks, making it compatible
- * with the mock Forwarder used during simulation. All permission fields remain at their default zero
- * values (disabled).
+ * @dev Inherits from ReceiverTemplate which provides security checks. The forwarder address must be
+ * configured at deployment. Additional security checks (workflowId, workflowName, author) can be enabled via setter
+ * functions.
  */
 contract CalculatorConsumer is ReceiverTemplate {
   // Struct to hold the data sent in a report from the workflow
@@ -9632,16 +9716,22 @@ contract CalculatorConsumer is ReceiverTemplate {
   event ResultUpdated(uint256 indexed resultId, uint256 finalResult);
 
   /**
-   * @dev The constructor doesn't set any security checks.
-   * The ReceiverTemplate parent constructor will initialize all permission fields to zero (disabled).
+   * @notice Constructor requires the forwarder address for security
+   * @param _forwarderAddress The address of the Chainlink Forwarder contract (for testing: MockForwarder)
+   * @dev The forwarder address enables the first layer of security - only the forwarder can call onReport.
+   * Additional security checks can be configured after deployment using setter functions.
    */
-  constructor() {}
+  constructor(
+    address _forwarderAddress
+  ) ReceiverTemplate(_forwarderAddress) {}
 
   /**
    * @notice Implements the core business logic for processing reports.
    * @dev This is called automatically by ReceiverTemplate's onReport function after security checks.
    */
-  function _processReport(bytes calldata report) internal override {
+  function _processReport(
+    bytes calldata report
+  ) internal override {
     // Decode the report bytes into our CalculatorResult struct
     CalculatorResult memory calculatorResult = abi.decode(report, (CalculatorResult));
 
@@ -9657,7 +9747,9 @@ contract CalculatorConsumer is ReceiverTemplate {
   // This function is a "dry-run" utility. It allows an offchain system to check
   // if a prospective result is an outlier before submitting it for a real onchain update.
   // It is also used to guide the binding generator to create a method that accepts the CalculatorResult struct.
-  function isResultAnomalous(CalculatorResult memory _prospectiveResult) public view returns (bool) {
+  function isResultAnomalous(
+    CalculatorResult memory _prospectiveResult
+  ) public view returns (bool) {
     // A result is not considered anomalous if it's the first one.
     if (resultCount == 0) {
       return false;
@@ -9670,7 +9762,7 @@ contract CalculatorConsumer is ReceiverTemplate {
 }
 ```
 
-The contract is already deployed for you on Sepolia at the following address: <a href="https://sepolia.etherscan.io/address/0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52#code" target="_blank" rel="noopener noreferrer">`0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52`</a>. You will use this address in your configuration file.
+The contract is already deployed for you on Sepolia at the following address: <a href="https://sepolia.etherscan.io/address/0x95e10BaC2B89aB4D8508ccEC3f08494FcB3D23cb#code" target="_blank" rel="noopener noreferrer">`0x95e10BaC2B89aB4D8508ccEC3f08494FcB3D23cb`</a>. You will use this address in your configuration file.
 
 ## Step 2: Generate the consumer contract binding
 
@@ -9686,7 +9778,7 @@ You need to create a binding for the consumer contract so your workflow can inte
 
 
    ```json
-    [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[{"internalType":"address","name":"received","type":"address"},{"internalType":"address","name":"expected","type":"address"}],"name":"InvalidAuthor","type":"error"},{"inputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"address","name":"expected","type":"address"}],"name":"InvalidSender","type":"error"},{"inputs":[{"internalType":"bytes32","name":"received","type":"bytes32"},{"internalType":"bytes32","name":"expected","type":"bytes32"}],"name":"InvalidWorkflowId","type":"error"},{"inputs":[{"internalType":"bytes10","name":"received","type":"bytes10"},{"internalType":"bytes10","name":"expected","type":"bytes10"}],"name":"InvalidWorkflowName","type":"error"},{"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"OwnableInvalidOwner","type":"error"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"OwnableUnauthorizedAccount","type":"error"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"resultId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"finalResult","type":"uint256"}],"name":"ResultUpdated","type":"event"},{"inputs":[],"name":"expectedAuthor","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"expectedWorkflowId","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"expectedWorkflowName","outputs":[{"internalType":"bytes10","name":"","type":"bytes10"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"forwarderAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"components":[{"internalType":"uint256","name":"offchainValue","type":"uint256"},{"internalType":"int256","name":"onchainValue","type":"int256"},{"internalType":"uint256","name":"finalResult","type":"uint256"}],"internalType":"struct CalculatorConsumer.CalculatorResult","name":"_prospectiveResult","type":"tuple"}],"name":"isResultAnomalous","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"latestResult","outputs":[{"internalType":"uint256","name":"offchainValue","type":"uint256"},{"internalType":"int256","name":"onchainValue","type":"int256"},{"internalType":"uint256","name":"finalResult","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes","name":"metadata","type":"bytes"},{"internalType":"bytes","name":"report","type":"bytes"}],"name":"onReport","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"resultCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"results","outputs":[{"internalType":"uint256","name":"offchainValue","type":"uint256"},{"internalType":"int256","name":"onchainValue","type":"int256"},{"internalType":"uint256","name":"finalResult","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_author","type":"address"}],"name":"setExpectedAuthor","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_id","type":"bytes32"}],"name":"setExpectedWorkflowId","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes10","name":"_name","type":"bytes10"}],"name":"setExpectedWorkflowName","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_forwarder","type":"address"}],"name":"setForwarderAddress","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"}]
+    [{"inputs":[{"internalType":"address","name":"_forwarderAddress","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[{"internalType":"address","name":"received","type":"address"},{"internalType":"address","name":"expected","type":"address"}],"name":"InvalidAuthor","type":"error"},{"inputs":[],"name":"InvalidForwarderAddress","type":"error"},{"inputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"address","name":"expected","type":"address"}],"name":"InvalidSender","type":"error"},{"inputs":[{"internalType":"bytes32","name":"received","type":"bytes32"},{"internalType":"bytes32","name":"expected","type":"bytes32"}],"name":"InvalidWorkflowId","type":"error"},{"inputs":[{"internalType":"bytes10","name":"received","type":"bytes10"},{"internalType":"bytes10","name":"expected","type":"bytes10"}],"name":"InvalidWorkflowName","type":"error"},{"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"OwnableInvalidOwner","type":"error"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"OwnableUnauthorizedAccount","type":"error"},{"inputs":[],"name":"WorkflowNameRequiresAuthorValidation","type":"error"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousAuthor","type":"address"},{"indexed":true,"internalType":"address","name":"newAuthor","type":"address"}],"name":"ExpectedAuthorUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"previousId","type":"bytes32"},{"indexed":true,"internalType":"bytes32","name":"newId","type":"bytes32"}],"name":"ExpectedWorkflowIdUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes10","name":"previousName","type":"bytes10"},{"indexed":true,"internalType":"bytes10","name":"newName","type":"bytes10"}],"name":"ExpectedWorkflowNameUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousForwarder","type":"address"},{"indexed":true,"internalType":"address","name":"newForwarder","type":"address"}],"name":"ForwarderAddressUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"resultId","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"finalResult","type":"uint256"}],"name":"ResultUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"string","name":"message","type":"string"}],"name":"SecurityWarning","type":"event"},{"inputs":[],"name":"getExpectedAuthor","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getExpectedWorkflowId","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getExpectedWorkflowName","outputs":[{"internalType":"bytes10","name":"","type":"bytes10"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getForwarderAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"components":[{"internalType":"uint256","name":"offchainValue","type":"uint256"},{"internalType":"int256","name":"onchainValue","type":"int256"},{"internalType":"uint256","name":"finalResult","type":"uint256"}],"internalType":"struct CalculatorConsumer.CalculatorResult","name":"_prospectiveResult","type":"tuple"}],"name":"isResultAnomalous","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"latestResult","outputs":[{"internalType":"uint256","name":"offchainValue","type":"uint256"},{"internalType":"int256","name":"onchainValue","type":"int256"},{"internalType":"uint256","name":"finalResult","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes","name":"metadata","type":"bytes"},{"internalType":"bytes","name":"report","type":"bytes"}],"name":"onReport","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"resultCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"results","outputs":[{"internalType":"uint256","name":"offchainValue","type":"uint256"},{"internalType":"int256","name":"onchainValue","type":"int256"},{"internalType":"uint256","name":"finalResult","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"_author","type":"address"}],"name":"setExpectedAuthor","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_id","type":"bytes32"}],"name":"setExpectedWorkflowId","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"_name","type":"string"}],"name":"setExpectedWorkflowName","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"_forwarder","type":"address"}],"name":"setForwarderAddress","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"}]
    ```
 
 3. **Generate the bindings**: Run the binding generator to create Go bindings for all ABI files in your project. From your project root (`onchain-calculator/`), run:
@@ -9710,7 +9802,7 @@ Add the `CalculatorConsumer` contract address to your `config.staging.json`:
   "evms": [
     {
       "storageAddress": "0xa17CF997C28FF154eDBae1422e6a50BeF23927F4",
-      "calculatorConsumerAddress": "0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52",
+      "calculatorConsumerAddress": "0x95e10BaC2B89aB4D8508ccEC3f08494FcB3D23cb",
       "chainName": "ethereum-testnet-sepolia",
       "gasLimit": 500000
     }
@@ -9952,34 +10044,34 @@ Your workflow will now show the complete end-to-end execution, including the fin
 
 ```bash
 Workflow compiled
-2025-12-09T13:36:10Z [SIMULATION] Simulator Initialized
+2026-01-09T17:56:29Z [SIMULATION] Simulator Initialized
 
-2025-12-09T13:36:10Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
-2025-12-09T13:36:10Z [USER LOG] msg="Successfully fetched offchain value" result=77
-2025-12-09T13:36:10Z [USER LOG] msg="Successfully read onchain value" result=22
-2025-12-09T13:36:10Z [USER LOG] msg="Final calculated result" result=99
-2025-12-09T13:36:10Z [USER LOG] msg="Updating calculator result" consumerAddress=0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52
-2025-12-09T13:36:10Z [USER LOG] msg="Writing report to consumer contract" offchainValue=77 onchainValue=22 finalResult=99
-2025-12-09T13:36:10Z [USER LOG] msg="Waiting for write report response"
-2025-12-09T13:36:36Z [USER LOG] msg="Write report transaction succeeded" txHash=0xaf3a4bf742bac76361c0eb4bc4ea58290049a3d97e991fb80bf0a8f17719527c
-2025-12-09T13:36:36Z [USER LOG] msg="View transaction at" url=https://sepolia.etherscan.io/tx/0xaf3a4bf742bac76361c0eb4bc4ea58290049a3d97e991fb80bf0a8f17719527c
-2025-12-09T13:36:36Z [USER LOG] msg="Workflow finished successfully!" result="&{OffchainValue:+77 OnchainValue:+22 FinalResult:+99 TxHash:0xaf3a4bf742bac76361c0eb4bc4ea58290049a3d97e991fb80bf0a8f17719527c}"
+2026-01-09T17:56:29Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+2026-01-09T17:56:29Z [USER LOG] msg="Successfully fetched offchain value" result=29
+2026-01-09T17:56:30Z [USER LOG] msg="Successfully read onchain value" result=22
+2026-01-09T17:56:30Z [USER LOG] msg="Final calculated result" result=51
+2026-01-09T17:56:30Z [USER LOG] msg="Updating calculator result" consumerAddress=0x95e10BaC2B89aB4D8508ccEC3f08494FcB3D23cb
+2026-01-09T17:56:30Z [USER LOG] msg="Writing report to consumer contract" offchainValue=29 onchainValue=22 finalResult=51
+2026-01-09T17:56:30Z [USER LOG] msg="Waiting for write report response"
+2026-01-09T17:56:36Z [USER LOG] msg="Write report transaction succeeded" txHash=0xa9f69bdf80329d16e175e19bb007fdbbd4d8f028aacb67d43a2832d6618d8a24
+2026-01-09T17:56:36Z [USER LOG] msg="View transaction at" url=https://sepolia.etherscan.io/tx/0xa9f69bdf80329d16e175e19bb007fdbbd4d8f028aacb67d43a2832d6618d8a24
+2026-01-09T17:56:36Z [USER LOG] msg="Workflow finished successfully!" result="&{OffchainValue:+29 OnchainValue:+22 FinalResult:+51 TxHash:0xa9f69bdf80329d16e175e19bb007fdbbd4d8f028aacb67d43a2832d6618d8a24}"
 
 Workflow Simulation Result:
  {
-  "FinalResult": 99,
-  "OffchainValue": 77,
+  "FinalResult": 51,
+  "OffchainValue": 29,
   "OnchainValue": 22,
-  "TxHash": "0xaf3a4bf742bac76361c0eb4bc4ea58290049a3d97e991fb80bf0a8f17719527c"
+  "TxHash": "0xa9f69bdf80329d16e175e19bb007fdbbd4d8f028aacb67d43a2832d6618d8a24"
 }
 
-2025-12-09T13:36:36Z [SIMULATION] Execution finished signal received
-2025-12-09T13:36:36Z [SIMULATION] Skipping WorkflowEngineV2
+2026-01-09T17:56:36Z [SIMULATION] Execution finished signal received
+2026-01-09T17:56:36Z [SIMULATION] Skipping WorkflowEngineV2
 ```
 
-- **`[USER LOG]`**: You can see all of your `logger.Info()` calls showing the complete workflow execution, including the offchain value (`result=77`), onchain value (`result=22`), final calculation (`result=99`), and the transaction hash.
+- **`[USER LOG]`**: You can see all of your `logger.Info()` calls showing the complete workflow execution, including the offchain value (`result=29`), onchain value (`result=22`), final calculation (`result=51`), and the transaction hash.
 - **`[SIMULATION]`**: These are system-level messages from the simulator showing its internal state.
-- **`Workflow Simulation Result`**: This is the final return value of your workflow. The `MyResult` struct contains all the values (77 + 22 = 99) and the transaction hash confirming the write operation succeeded.
+- **`Workflow Simulation Result`**: This is the final return value of your workflow. The `MyResult` struct contains all the values (29 + 22 = 51) and the transaction hash confirming the write operation succeeded.
 
 ## Step 7: Verify the result onchain
 
@@ -10001,7 +10093,7 @@ You'll notice the transaction's `to` address is not the `CalculatorConsumer` con
 
 While your wallet interacted with the Forwarder, the `CalculatorConsumer` contract's state was still updated. You can verify this change directly on Etherscan:
 
-- Navigate to the `CalculatorConsumer` contract address: <a href="https://sepolia.etherscan.io/address/0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52#readContract" target="_blank" rel="noopener noreferrer">`0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52`</a>.
+- Navigate to the `CalculatorConsumer` contract address: <a href="https://sepolia.etherscan.io/address/0x95e10BaC2B89aB4D8508ccEC3f08494FcB3D23cb#readContract" target="_blank" rel="noopener noreferrer">`0x95e10BaC2B89aB4D8508ccEC3f08494FcB3D23cb`</a>.
 - Expand the `latestResult` function and click **Query**. The values should match the `finalResult`, `offchainValue`, and `onchainValue` from your workflow logs.
 
 This completes the end-to-end loop: triggering a workflow, fetching data, reading onchain state, and verifiably writing the result back to a public blockchain.

@@ -111,17 +111,6 @@ Automatic failover handles availability and traffic routing in the following sce
 
 ---
 
-# Tokenized Asset Data Streams
-Source: https://docs.chain.link/data-streams/backed-streams
-
-<Aside type="danger" title="Weekend Usage Disclaimer">
-  **Users should not use these streams during weekends** due to limited exchange activity.
-
-  If usage is necessary, increase fees to mitigate risks. Developers are solely responsible for monitoring and mitigating market integrity risks, as outlined in the [Developer Responsibilities](/data-streams/developer-responsibilities) documentation.
-</Aside>
-
----
-
 # Data Streams Billing
 Source: https://docs.chain.link/data-streams/billing
 
@@ -130,15 +119,14 @@ Source: https://docs.chain.link/data-streams/billing
   integrating Chainlink Data Streams with your applications.
 </Aside>
 
-Chainlink Data Streams offers two billing models:
-
-1. **Subscription model**: A subscription-based billing option.
-
-2. **Pay-per-report model**: You pay to verify reports from Data Streams onchain using the verifier contract. You pay per report verified. If you verify multiple reports in a batch, you pay for all of the reports included in that batch.
-
-   The verification price is 0.35 USD per report. Chainlink Data Streams supports fee payments in LINK and in alternative assets, which currently includes native blockchain gas tokens and their ERC20-wrapped version. Payments made in alternative assets have a 10% surcharge when compared to LINK payments.
+Chainlink Data Streams uses a subscription-based billing option.
 
 [Contact us](https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs) to learn more about Mainnet pricing and subscription options.
+
+<Aside type="caution" title="[Deprecated] Pay-per-verification model">
+  The pay-per-verification billing model has been deprecated. <br /> To learn more about the subscription model, please{" "}
+  <a href="https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs">contact us</a>.
+</Aside>
 
 ---
 
@@ -265,9 +253,9 @@ Positions may need to be manually adjusted if the DEX doesn't support tracking t
 #### Stock splits & reverse splits
 
 <Aside type="note" title="Tokenized Stocks Guidance">
-  Tokenized stocks such as [Backed xStock](/data-streams/reference/report-schema-v10) handle stock splits differently
-  using activation dates and staged multipliers to maintain price continuity. [Learn more about advanced stock split
-  handling](#handling-stock-splits-for-tokenized-assets).
+  Tokenized stocks such as [Tokenized Asset streams](/data-streams/reference/report-schema-v10) handle stock splits
+  differently using activation dates and staged multipliers to maintain price continuity. [Learn more about advanced
+  stock split handling](#handling-stock-splits-for-tokenized-assets).
 </Aside>
 
 A stock split increases the number of shares while reducing the price per share (e.g., 2-for-1 split), often making shares more accessible to investors. A reverse split does the opposite, consolidating shares to increase the price per share.
@@ -405,6 +393,166 @@ Treat any multiplier change (splits, dividends, etc) and `activationDateTime` as
 </Aside>
 
 For broader guidance around market hours and event handling, refer to the [Market Hours](#market-hours) guidance.
+
+---
+
+# Calculated Streams
+Source: https://docs.chain.link/data-streams/concepts/calculated-streams
+
+Calculated streams are Chainlink data streams whose values are derived by applying arithmetic expressions to multiple underlying inputs.
+
+All Data Streams use a [Decentralized Oracle Network (DON)](/data-streams/architecture) where nodes reach consensus and publish signed reports. Traditional Data Streams aggregate market data from multiple independent providers, ensuring no single data source can compromise the stream's integrity.
+
+Instead of aggregating only raw market data, calculated streams compute derived values using predefined formulas applied to various inputs, including existing data streams, onchain state, and offchain APIs. Some inputs are decentralized aggregates (for example, crypto price streams from multiple independent providers), while others may come from a single protocol or API (for example, a specific vault contract or yield provider). Because a calculated stream depends on all of these inputs, you should evaluate their dependencies and failure modes carefully before using it in a value-securing application.
+
+<Aside type="caution" title="Important Considerations">
+  Calculated streams behave differently from standard streams in important ways. Before integrating a calculated stream,
+  review the <a href="#key-differences-from-standard-streams">key differences</a> and{" "}
+  <a href="#risks-and-mitigation">risks and mitigation</a> sections to understand how these differences may affect your
+  application.
+</Aside>
+
+## Why use calculated streams?
+
+- **Simpler integrations**: Consume one stream instead of implementing calculation logic in your contracts or backend
+- **Canonical formulas**: All integrators use the same formula and inputs, ensuring consistency across protocols
+- **Managed infrastructure**: Chainlink handles RPC calls, API integrations, and the calculation pipeline
+
+## How to identify calculated streams
+
+Calculated streams are marked with a <span style="display: inline-block; font-size: 0.75rem; padding: 2px 6px; margin-left: 4px; border-radius: 4px; background: var(--blue-100); color: var(--blue-700); font-weight: 500; vertical-align: middle;">Calculated</span> badge in the Data Streams feed list.
+
+## How calculated streams work
+
+Calculated streams leverage existing Data Streams infrastructure. Data providers feed market data into the DON, which produces base streams. The DON then uses these base streams—along with onchain state and offchain APIs—as inputs to calculate derived values.
+
+### Architecture flow
+
+1. **Data collection**: The DON retrieves inputs specific to each calculated stream, which may include:
+   - Existing Data Streams (market prices from multiple independent data providers)
+   - Onchain state via RPC calls (vault balances, token supplies, contract data)
+   - Offchain data via APIs (yield rates, interest components, external reference data)
+2. **Calculation**: The DON applies the predefined formula to combine the inputs
+3. **Consensus and signing**: Nodes reach consensus on the calculated value and sign the report
+4. **Publication**: Calculated streams are published through the Data Streams Aggregation Network
+
+### Input sources
+
+The inputs for a calculated stream depend on what it's computing. A stream might use:
+
+#### Existing Data Streams
+
+Market prices already aggregated from multiple independent sources (3+ providers). Example: using individual crypto asset prices as inputs for an index calculation.
+
+#### Onchain state
+
+Protocol-specific data read via RPC, such as vault balances, token supplies, or smart contract state. May come from a single protocol's contracts.
+
+#### Offchain APIs
+
+External data from specific trusted providers, such as yield rates or reference values. May come from a single API endpoint.
+
+### Calculation and output
+
+The DON executes the predefined formula (weighted averages, ratios, sums, etc.) using the latest available inputs. The calculated value is packaged into a signed report with standard metadata (timestamps, fees) and published through the Data Streams Aggregation Network. You consume these reports using the same REST APIs, WebSocket connections, and onchain verification as traditional streams.
+
+## Example: Tokenized yield product
+
+A calculated stream for a tokenized yield-bearing vault might combine:
+
+- **Vault balance (onchain)**: Total assets in the vault contract
+- **Token supply (onchain)**: Circulating supply of vault shares
+- **Accrued yield (offchain)**: Interest from an external API
+
+**Formula:** `(vault balance + accrued yield) / token supply`
+
+**Result**: a price per share that reflects the vault's total value including pending yield.
+
+Without this stream, protocols accepting the vault token as collateral would need to query the vault contract, fetch accrued interest from the yield provider's API, perform the calculation themselves, and keep this logic synchronized across all integrators. A calculated stream helps ensure integrators apply the same pricing logic and update together when the underlying formula or yield source changes.
+
+## Key differences from standard streams
+
+While calculated streams use the same infrastructure and delivery mechanisms as standard streams, they have distinct behaviors you should understand before integrating. For mitigation strategies, see [Risks and mitigation](#risks-and-mitigation).
+
+### Report availability
+
+Standard streams aggregate data from multiple independent providers, so they remain available as long as enough providers are reporting. Calculated streams depend on **all** of their inputs being available. If any required input becomes unavailable or returns errors, the calculated **stream stops producing reports until all inputs recover**. This prevents potentially incorrect values from being published.
+
+### Input reliability
+
+Standard streams source data exclusively from decentralized aggregates of multiple independent data providers. Calculated streams may include a mix of:
+
+- **Decentralized aggregates**: Existing Data Streams with multiple independent sources (similar reliability to standard streams)
+- **Single-source inputs**: Specific protocol contracts or APIs where availability depends on a single system
+
+Single-source inputs carry higher risk. If that source experiences downtime, report production halts entirely until it recovers. Review the input sources for any calculated stream you plan to use.
+
+### Timing characteristics
+
+Standard streams reflect a single aggregated market price at a point in time. Calculated streams combine multiple inputs that may update at different frequencies and reflect slightly different timestamps. The calculated value is an approximation based on the latest available data from each input, not a single-block atomic snapshot.
+
+During rapid changes (large deposits, withdrawals, or sharp market moves), you may observe temporary differences between the calculated stream value and values from other sources like block explorers or protocol dashboards. These differences typically resolve as all inputs update to reflect the new state.
+
+***
+
+## Risks and mitigation
+
+Calculated streams inherit risks from their underlying inputs and introduce additional considerations. Use these strategies to mitigate potential issues.
+
+### Handling report gaps
+
+Because calculated streams stop producing reports when any input fails, your application must handle gaps in report availability.
+
+#### Mitigation
+
+- Design your protocol to handle report gaps gracefully (pause operations, use last-known values with appropriate staleness checks, or implement fallbacks based on your risk tolerance)
+- Implement staleness checks to detect when reports stop arriving and trigger appropriate protocol responses
+- Set alerts for report gaps to detect input source issues early
+
+### Single-source input reliability
+
+Single-source inputs (specific APIs or contracts) may have lower availability than decentralized aggregates.
+
+#### Mitigation
+
+- Understand your input sources and assess the reliability of each, particularly single-source APIs or contracts
+- For critical applications, consider independently monitoring the availability of single-source inputs
+- Define acceptable downtime thresholds and corresponding protocol responses
+
+### Timing discrepancies
+
+Temporary differences between the calculated stream and other data sources are expected during rapid changes.
+
+#### Mitigation
+
+- Implement max deviation checks against expected ranges
+- Use time-weighted averages or circuit breakers for extreme moves
+- Monitor trends over time rather than reacting to individual updates
+- Compare calculated values against market references when available (e.g., spot prices for index tokens)
+
+<Aside type="note" title="Developer Responsibilities">
+  When using calculated streams, you inherit all responsibilities associated with the underlying inputs plus additional
+  responsibilities for monitoring calculation health and managing time-sensitivity requirements. Review the{" "}
+  <a href="/data-streams/developer-responsibilities">Developer Responsibilities</a> page for comprehensive guidance on
+  risk assessment and mitigation techniques.
+</Aside>
+
+***
+
+## Best practices
+
+### Protocol design
+
+- Set deviation limits to cap price changes per update or time window
+- Define fallback behavior if the stream stops updating or jumps beyond thresholds
+- Test your protocol's behavior during report gaps before deploying to production
+
+### Monitoring
+
+- Set alerts for report gaps to detect when no new reports arrive within your expected update frequency
+- Track the calculated stream value over time to establish normal behavior patterns
+- Monitor key inputs independently when feasible (vault balances, token supplies, API availability) to identify which input may be causing issues
+- Alert on movements outside your expected range
 
 ---
 
@@ -860,13 +1008,6 @@ RWA markets operate during specific hours, with breaks for holidays and sometime
 ## User Recommendations
 
 For comprehensive guidance on managing risks related to market hours, market gaps, volatility, and corporate actions, see the [Best Practices](/data-streams/concepts/best-practices#market-hours) page.
-
----
-
-# Net Asset Value (NAV) Data Streams
-Source: https://docs.chain.link/data-streams/nav-streams
-
-<FeedPage dataFeedType="streamsNav" initialNetwork="arbitrum" allowNetworkTableExpansion={true} defaultNetworkTableExpanded={false} />
 
 ---
 
@@ -5194,21 +5335,21 @@ The [RWA Advanced (v11)](/data-streams/reference/report-schema-v11) report schem
 
 These advanced fields enable protocols to implement more sophisticated risk management and settlement logic. Where applicable, streams using this schema can provide coverage across extended trading sessions including pre-market, post-market, and overnight hours — though extended hours availability varies by stream. See individual [RWA stream details](/data-streams/rwa-streams?schema=v11) for specific coverage and the [RWA Advanced (v11) reference](/data-streams/reference/report-schema-v11) for complete field specifications.
 
-## Net Asset Value (NAV)
+## SmartData
 
-[Chainlink NAV streams](/data-streams/nav-streams) use the [NAV (v9)](/data-streams/reference/report-schema-v9) report schema to provide real-time, tamper-proof access to the Net Asset Value (`navPerShare`) of tokenized assets, funds, or portfolios. Each report includes NAV per share (`navPerShare`), NAV date (`navDate`), assets under management (`aum`), and ripcord status (`ripcord`). The ripcord is set to true (`1`) by the asset issuer when the consumer should ignore the value being sent (for cases such as maintenance, upstream data source outages, etc). The feed data will remain stale until the ripcord returns false (`0`).
+[Chainlink SmartData streams](/data-streams/smartdata-streams) use the [SmartData (v9)](/data-streams/reference/report-schema-v9) report schema to provide real-time, tamper-proof access to data such as Net Asset Value (`navPerShare`) of tokenized assets, funds, or portfolios, as well as Proof of Reserve data. Each report includes NAV per share (`navPerShare`), NAV date (`navDate`), assets under management (`aum`), and ripcord status (`ripcord`). The ripcord is set to true (`1`) by the asset issuer when the consumer should ignore the value being sent (for cases such as maintenance, upstream data source outages, etc). The feed data will remain stale until the ripcord returns false (`0`).
 
 NAV is a fundamental financial metric that represents the value of an investment vehicle such as a mutual fund or ETF and is calculated as the total assets minus the total liabilities.
 
-Data Streams ensures that any NAV update, whenever it occurs, is captured and made available immediately and at low latency, allowing for seamless integration with onchain applications alongside other real-time data streams. Although the NAV value may not change frequently, Data Streams provides the most recent NAV as soon as it is published by the source.
+Data Streams ensures that any SmartData update, whenever it occurs, is captured and made available immediately and at low latency, allowing for seamless integration with onchain applications alongside other real-time data streams. Although the values may not change frequently, Data Streams provides the most recent data as soon as it is published by the source.
 
 ## Tokenized Asset
 
-[Chainlink Tokenized Asset streams](/data-streams/backed-streams) use the [Tokenized Asset (v10)](/data-streams/reference/report-schema-v10) report schema to provide financial market data for tokenized equities such as [xStock](https://xstocks.com/us) assets. These streams combine data from US equity streams with data from the tokenization service to enable users to handle corporate actions affecting the underlying equities. Each report includes the staleness measure (`lastUpdateTimestamp`), consensus mid price (`price`), market status (`marketStatus`), current multiplier (`currentMultiplier`, the number of underlying shares each xStock is redeemable for), new multiplier (`newMultiplier`, the future number of shares after a scheduled corporate action), activation date/time of the corporate action (`activationDateTime`) and the tokenized price if available on primary or secondary markets (`tokenizedPrice`).
+[Chainlink Tokenized Asset streams](/data-streams/tokenized-asset-streams) use the [Tokenized Asset (v10)](/data-streams/reference/report-schema-v10) report schema to provide financial market data for tokenized equities. These streams combine data from US equity streams with data from tokenization services to enable users to handle corporate actions affecting the underlying equities. Each report includes the staleness measure (`lastUpdateTimestamp`), consensus mid price (`price`), market status (`marketStatus`), current multiplier (`currentMultiplier`, the number of underlying shares each tokenized asset is redeemable for), new multiplier (`newMultiplier`, the future number of shares after a scheduled corporate action), activation date/time of the corporate action (`activationDateTime`) and the tokenized price if available on primary or secondary markets (`tokenizedPrice`).
 
 The underlying US equities trade on traditional exchanges during [market hours](/data-streams/market-hours). These market hours depend per asset class and can be subject to unexpected halts, pauses and other behaviors affecting traditional markets. For this reason, this class of Data Streams contains a market hours flag and a staleness measure to equip our users to handle these events correctly. It is critical that users implement correct safeguards on their end to pause markets, add more conservative risk caps, or implement other measures appropriate for their application.
 
-[Tokenized Asset (v10)](/data-streams/reference/report-schema-v10) is designed specifically for tokenized equities such as xStocks and contains data from the Chainlink US equities streams, combined with data provided by the tokenizer to properly handle corporate actions. With this enhanced data users are able to handle expected and unexpected market events such as pauses, halts and market off hours. The tokenization provider layers in data around the `currentMultiplier`, the `newMultiplier` and the `activationDateTime` of the new multiplier to handle corporate actions.
+[Tokenized Asset (v10)](/data-streams/reference/report-schema-v10) is designed specifically for tokenized equities and contains data from the Chainlink US equities streams, combined with data provided by the tokenizer to properly handle corporate actions. With this enhanced data users are able to handle expected and unexpected market events such as pauses, halts and market off hours. The tokenization provider layers in data around the `currentMultiplier`, the `newMultiplier` and the `activationDateTime` of the new multiplier to handle corporate actions.
 
 ---
 
@@ -5217,7 +5358,7 @@ Source: https://docs.chain.link/data-streams/reference/report-schema-v10
 
 <DataStreams section="dsNotes" />
 
-Chainlink Backed xStock Data Streams adhere to the report schema outlined below.
+Chainlink Tokenized Asset Data Streams adhere to the report schema outlined below.
 
 ### Schema Fields
 
@@ -5246,7 +5387,7 @@ Chainlink Backed xStock Data Streams adhere to the report schema outlined below.
 
 **Notes:**
 
-- Future Backed xStock streams may use different report schemas.
+- Future Tokenized Asset streams may use different report schemas.
 - `price` updates in real time during market open, but may become stale during market closed periods.
 - `currentMultiplier` reflects all past corporate actions and is updated only when a new action is activated.
 - `activationDateTime` and `newMultiplier` provide advance notice of upcoming corporate actions, allowing protocols to prepare.
@@ -5444,12 +5585,12 @@ RWA streams adhere to the report schema outlined below.
 
 ---
 
-# Report Schema: NAV (v9)
+# Report Schema: SmartData (v9)
 Source: https://docs.chain.link/data-streams/reference/report-schema-v9
 
 <DataStreams section="dsNotes" />
 
-Chainlink NAV Data Streams streams adhere to the report schema outlined below.
+Chainlink SmartData streams adhere to the report schema outlined below.
 
 ### Schema Fields
 
@@ -5468,7 +5609,7 @@ Chainlink NAV Data Streams streams adhere to the report schema outlined below.
 
 **Notes:**
 
-- Future NAV streams may use different report schemas.
+- Future SmartData streams may use different report schemas.
 
 ##### `ripcord` Status
 
@@ -5481,6 +5622,13 @@ Chainlink NAV Data Streams streams adhere to the report schema outlined below.
 Source: https://docs.chain.link/data-streams/rwa-streams
 
 <FeedPage dataFeedType="streamsRwa" initialNetwork="arbitrum" allowNetworkTableExpansion={true} defaultNetworkTableExpanded={false} />
+
+---
+
+# SmartData Streams
+Source: https://docs.chain.link/data-streams/smartdata-streams
+
+<FeedPage dataFeedType="streamsNav" initialNetwork="arbitrum" allowNetworkTableExpansion={true} defaultNetworkTableExpanded={false} />
 
 ---
 
@@ -5771,6 +5919,17 @@ Streams Trade is currently available on the following networks:
 - Ethereum
 - Optimism
 - Polygon
+
+---
+
+# Tokenized Asset Data Streams
+Source: https://docs.chain.link/data-streams/tokenized-asset-streams
+
+<Aside type="danger" title="Weekend Usage Disclaimer">
+  **Users should not use these streams during weekends** due to limited exchange activity.
+
+  If usage is necessary, increase fees to mitigate risks. Developers are solely responsible for monitoring and mitigating market integrity risks, as outlined in the [Developer Responsibilities](/data-streams/developer-responsibilities) documentation.
+</Aside>
 
 ---
 
@@ -6306,7 +6465,7 @@ The `verifyReport` function is the core function that handles onchain report ver
     - Schema version `0x0003` corresponds to the [Crypto Advanced (v3)](/data-streams/reference/report-schema-v3).
     - Schema version `0x0008` corresponds to the [RWA Standard (v8)](/data-streams/reference/report-schema-v8).
     - Schema version `0x0007` corresponds to the [Redemption Rates (v7)](/data-streams/reference/report-schema-v7).
-    - Schema version `0x0009` corresponds to the [NAV (v9)](/data-streams/reference/report-schema-v9).
+    - Schema version `0x0009` corresponds to the [SmartData (v9)](/data-streams/reference/report-schema-v9).
     - Schema version `0x000A` corresponds to the [Tokenized Asset (v10)](/data-streams/reference/report-schema-v10).
     - Schema version `0x000B` corresponds to the [RWA Advanced (v11)](/data-streams/reference/report-schema-v11).
   - If the report version is unsupported, the function reverts with an InvalidReportVersion error.

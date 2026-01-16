@@ -446,11 +446,38 @@ Last Updated: 2025-11-20
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
 
+## CLI v1.0.5 - January 13, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.0.5" target="_blank">CRE CLI version 1.0.5</a> is now available.** This release includes various small improvements and bug fixes.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+## CLI v1.0.4 - January 9, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.0.4" target="_blank">CRE CLI version 1.0.4</a> is now available.** This release includes various small improvements and bug fixes.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+## CLI v1.0.3 - December 12, 2025
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.0.3" target="_blank">CRE CLI version 1.0.3</a> is now available.** This release includes various small improvements and bug fixes.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
 ## CLI v1.0.2 - November 20, 2025
 
 **<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.0.2" target="_blank">CRE CLI version 1.0.2</a> is now available.** This release includes various improvements based on user feedback.
 
-### How to update
+**How to update:**
 
 - **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
 - **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
@@ -532,7 +559,7 @@ These guides explain how to install the Chainlink Developer Platform CLI (also r
 Source: https://docs.chain.link/cre/getting-started/cli-installation/macos-linux
 Last Updated: 2025-11-20
 
-This page explains how to install the CRE CLI on macOS or Linux. The recommended version at the time of writing is **v1.0.2**.
+This page explains how to install the CRE CLI on macOS or Linux. The recommended version at the time of writing is **v1.0.5**.
 
 ## Installation
 
@@ -563,7 +590,7 @@ After the script completes, verify the installation:
 cre version
 ```
 
-**Expected output:** `cre version v1.0.2`
+**Expected output:** `cre version v1.0.5`
 
 <Aside type="note" title="macOS Gatekeeper">
   If you see warnings about "unrecognized developer/source" on macOS, run:{" "}
@@ -581,9 +608,15 @@ The CRE CLI is publicly available on GitHub. Visit the releases page and downloa
   - On **macOS** (darwin), run <CopyText text="uname -m" code />:
     - `arm64` (Apple Silicon) → Download `cre_darwin_arm64.zip`
     - `x86_64` (Intel) → Download `cre_darwin_amd64.zip`
-  - On **Linux**, run <CopyText text="uname -m" code />:
-    - `aarch64` (ARM) → Download `cre_linux_arm64.tar.gz`
-    - `x86_64` (AMD/Intel) → Download `cre_linux_amd64.tar.gz`
+  - On **Linux**, the binary depends on both your architecture and OS version. First, run <CopyText text="uname -m" code /> to check your architecture, then <CopyText text="lsb_release -rs" code /> to check your Ubuntu version:
+    - **Ubuntu 22.04 or older**:
+      - `x86_64` (AMD/Intel) → Download `cre_linux_amd64_ldd2-35.tar.gz`
+      - `aarch64` (ARM) → Download `cre_linux_arm64_ldd2-35.tar.gz`
+    - **Ubuntu 24.04 or newer**:
+      - `x86_64` (AMD/Intel) → Download `cre_linux_amd64.tar.gz`
+      - `aarch64` (ARM) → Download `cre_linux_arm64.tar.gz`
+
+  **Note:** The `ldd2-35` binaries are compiled for older glibc versions (2.35 and below). If you're using a non-Ubuntu Linux distribution, check your glibc version with <CopyText text="ldd --version" code /> and use the `ldd2-35` binary if your version is 2.35 or lower.
 </Aside>
 
 After downloading the correct file from the releases page, move on to the next step to verify its integrity.
@@ -602,16 +635,21 @@ shasum -a 256 cre_darwin_arm64.zip
 
 **Verify against official checksums**
 
-Compare the output with the official checksum below:
+Compare the output with the official checksum from the [CRE CLI releases page](https://github.com/smartcontractkit/cre-cli/releases):
 
-| File                     | SHA-256 Checksum                                                 |
-| ------------------------ | ---------------------------------------------------------------- |
-| `cre_darwin_amd64.zip`   | 482e53d3a5f8471034d30c935196d2dca2ab09a5fe1ab2083ad336172565291b |
-| `cre_darwin_arm64.zip`   | 92b0409801dd4e44f90a85331615f3e4b8cf1fe9f90a8eab3ad8bb3458b4b6cf |
-| `cre_linux_amd64.tar.gz` | d3a8b9b999b4b8bf73b2235d27386acf4efbc8f05d86d9e6066abda23ee9ce9b |
-| `cre_linux_arm64.tar.gz` | f52d618727ccc8fb6ab4b1f9418b09424c8505428131a49c01bb33ca2bc86fe3 |
+1. Go to [https://github.com/smartcontractkit/cre-cli/releases](https://github.com/smartcontractkit/cre-cli/releases)
+2. Find the release version you downloaded (e.g., v1.0.5)
+3. Under the **Assets** section, locate your downloaded file
+4. Compare the SHA-256 checksum shown next to the file with your command output
 
-If the checksum doesn't match, do not proceed with installation. Contact your Chainlink point of contact for assistance.
+**Example:** For `cre_darwin_arm64.zip` in release v1.0.5, you'll see something like:
+
+```
+cre_darwin_arm64.zip
+sha256:1359415a1f1baee7643107b82b3a0589a3627aef71018644e5c488960a97e955
+```
+
+If the checksums match, the file is authentic and safe to install. If they don't match, do not proceed with installation and contact the Chainlink team for assistance.
 
 #### 2. Extract and install
 
@@ -634,7 +672,7 @@ If the checksum doesn't match, do not proceed with installation. Contact your Ch
 3. **Rename the extracted binary to `cre`**
 
    ```bash
-   mv cre_v1.0.2_darwin_arm64 cre
+   mv cre_v1.0.5_darwin_arm64 cre
    ```
 
 4. **Make it executable**:
@@ -707,7 +745,7 @@ cre version
 
 **Expected output:**
 
-You should see version information: `cre version v1.0.2`.
+You should see version information: `cre version v1.0.5`.
 
 **If it doesn't work:**
 
@@ -746,7 +784,7 @@ Once you're authenticated, you're ready to build your first workflow:
 Source: https://docs.chain.link/cre/getting-started/cli-installation/windows
 Last Updated: 2025-11-20
 
-This page explains how to install the Chainlink Developer Platform CLI (also referred to as the CRE CLI) on Windows. The recommended version at the time of writing is **v1.0.2**.
+This page explains how to install the Chainlink Developer Platform CLI (also referred to as the CRE CLI) on Windows. The recommended version at the time of writing is **v1.0.5**.
 
 ## Installation
 
@@ -776,7 +814,7 @@ After the script completes, **open a new PowerShell window** and verify the inst
 cre version
 ```
 
-**Expected output:** `cre version v1.0.2`
+**Expected output:** `cre version v1.0.5`
 
 ### Manual installation
 
@@ -800,20 +838,28 @@ Get-FileHash cre_windows_amd64.zip -Algorithm SHA256
 
 **Verify against the official checksum**
 
-Compare the `Hash` value in the output with the official checksum below:
+Compare the `Hash` value in the output with the official checksum from the [CRE CLI releases page](https://github.com/smartcontractkit/cre-cli/releases):
 
-| File                    | SHA-256 Checksum                                                 |
-| ----------------------- | ---------------------------------------------------------------- |
-| `cre_windows_amd64.zip` | 60fe65b74619c4164c0a9d6442611bf8537a04a6daf1ed3ecefc608cbbffdb01 |
+1. Go to [https://github.com/smartcontractkit/cre-cli/releases](https://github.com/smartcontractkit/cre-cli/releases)
+2. Find the release version you downloaded (e.g., v1.0.5)
+3. Under the **Assets** section, locate `cre_windows_amd64.zip`
+4. Compare the SHA-256 checksum shown next to the file with the `Hash` value from your PowerShell output
 
-If the checksum doesn't match, do not proceed with installation. Contact your Chainlink point of contact for assistance.
+**Example:** For `cre_windows_amd64.zip` in release v1.0.5, you'll see something like:
+
+```
+cre_windows_amd64.zip
+sha256:372d16566479ff6bbfe9eb1d5cebe0e1e2a3c67062c6f0439fc96c735ddeaa18
+```
+
+If the checksums match, the file is authentic and safe to install. If they don't match, do not proceed with installation and contact the Chainlink team for assistance.
 
 #### 2. Extract and install
 
 1. Navigate to the directory where you downloaded the archive.
 2. Right-click the `.zip` file and select **Extract All...**.
 3. Choose a permanent location for the extracted folder (e.g., `C:\Program Files\cre-cli`).
-4. Inside the extracted folder, rename the file `cre_v1.0.2_windows_amd64.exe` to `cre.exe`.
+4. Inside the extracted folder, rename the file `cre_v1.0.5_windows_amd64.exe` to `cre.exe`.
 
 #### 3. Add the CLI to your PATH
 
@@ -838,7 +884,7 @@ Open a new **PowerShell** or **Command Prompt** window and run:
 cre version
 ```
 
-You should see version information: `cre version v1.0.2`.
+You should see version information: `cre version v1.0.5`.
 
 ## Next steps
 
@@ -1046,8 +1092,9 @@ cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --htt
 ```
 
 <Aside type="note" title="Non-interactive requirements">
-  The `--http-payload` flag requires `--non-interactive` mode. You must also specify `--trigger-index` (0-based index of
-  your HTTP trigger). If your HTTP trigger is the only trigger or the first one defined, use `--trigger-index 0`.
+  The `--http-payload` flag requires `--non-interactive` mode. You must also specify `--trigger-index` to select which
+  handler to run. The index is 0-based: if the handler with your HTTP trigger is the first handler defined in your
+  `InitWorkflow` function, use `--trigger-index 0`; if it's the second, use `--trigger-index 1`, and so on.
 </Aside>
 
 <Aside type="note" title="Escaping quotes">
@@ -1618,7 +1665,7 @@ Manual JWT generation is complex and error-prone. For development and testing:
 
 # Testing with Local JWT Server
 Source: https://docs.chain.link/cre/guides/workflow/using-triggers/http-trigger/local-testing-tool
-Last Updated: 2025-11-04
+Last Updated: 2026-01-14
 
 The <a href="https://github.com/smartcontractkit/cre-sdk-typescript/tree/main/packages/cre-http-trigger" target="_blank" rel="noopener noreferrer">`cre-http-trigger` TypeScript package</a> simplifies testing deployed workflows with HTTP triggers by handling JWT generation, signing, and request formatting automatically. It provides a local HTTP server that acts as a proxy between your test requests and the CRE gateway.
 
@@ -1649,7 +1696,7 @@ The `cre-http-trigger` tool eliminates this complexity by:
 
 ## Prerequisites
 
-- **Bun runtime**: The tool requires <a href="https://bun.sh" target="_blank" rel="noopener noreferrer">Bun</a> version 1.2.21 or higher
+- **Bun runtime**: The tool requires <a href="https://bun.com" target="_blank" rel="noopener noreferrer">Bun</a> version 1.2.21 or higher
 - **Deployed workflow**: Your workflow must be deployed with an HTTP trigger
 - **Workflow ID**: Available from deployment output or the CRE UI
 - **Private key**: The private key corresponding to one of the `authorizedKeys` in your HTTP trigger configuration
@@ -3853,7 +3900,7 @@ Non-interactive mode allows you to run simulations without prompts, making it id
 **Requirements:**
 
 - Use the `--non-interactive` flag
-- Specify `--trigger-index` (0-based index of the trigger to run)
+- Specify `--trigger-index` to select which handler to run (0-based position: `0` = first handler, `1` = second, etc.)
 - Provide trigger-specific flags as needed (see [Trigger-specific configuration](#trigger-specific-configuration))
 
 **Example:**
@@ -3861,6 +3908,14 @@ Non-interactive mode allows you to run simulations without prompts, making it id
 ```bash
 cre workflow simulate my-workflow --non-interactive --trigger-index 0 --target staging-settings
 ```
+
+<Aside type="tip" title="Understanding trigger-index">
+  The `--trigger-index` flag selects **which handler** in your workflow to execute. Handlers are created in your
+  `InitWorkflow` function using `cre.Handler()`, where [each handler connects a trigger to a callback
+  function](/cre/key-terms#handler). If your workflow has only one handler, use `--trigger-index 0`. If you have
+  multiple handlers (e.g., one for an HTTP trigger and one for an EVM log trigger), use `0` for the first, `1` for the
+  second, etc., based on their order in your code.
+</Aside>
 
 ## The `--broadcast` flag
 
@@ -3968,6 +4023,20 @@ cre workflow simulate my-workflow \
   --evm-event-index 0 \
   --target staging-settings
 ```
+
+
+<Aside type="tip" title="Understanding the two different indexes">
+  **Two separate concepts:**
+
+  - **`--trigger-index`** selects **which handler** in your workflow to run (e.g., if the
+    handler with an EVM log trigger is the third handler defined, use `--trigger-index 2`)
+  - **`--evm-event-index`**
+    specifies **which log/event within the transaction** to use for testing (e.g., if the transaction emitted 3 events and
+    you want the first one, use `--evm-event-index 0`)
+
+  These are completely independent: one selects your workflow's
+  handler to execute, the other selects which event data from the blockchain to test with.
+</Aside>
 
 ## Additional flags
 
@@ -6229,8 +6298,8 @@ See the [repository README](https://github.com/smartcontractkit/cre-gcp-predicti
 Source: https://docs.chain.link/cre/reference/cli
 Last Updated: 2025-11-20
 
-<Aside type="note" title="Required CLI Version: v1.0.2">
-  To ensure compatibility with the guides and examples in this documentation, please use version `v1.0.2` of the CRE
+<Aside type="note" title="Required CLI Version: v1.0.5">
+  To ensure compatibility with the guides and examples in this documentation, please use version `v1.0.5` of the CRE
   CLI. You can check your installed version by running `cre version`. Refer to the [CLI
   Installation](/cre/getting-started/cli-installation/macos-linux) guide for more information.
 </Aside>
@@ -6604,15 +6673,15 @@ cre workflow simulate <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| Flag                      | Description                                                                                        |
-| ------------------------- | -------------------------------------------------------------------------------------------------- |
-| `--broadcast`             | Broadcast onchain write transactions (default: `false`). Without this flag, a dry run is performed |
-| `-g, --engine-logs`       | Enable non-fatal engine logging                                                                    |
-| `--non-interactive`       | Run without prompts; requires `--trigger-index` and inputs for the selected trigger type           |
-| `--trigger-index <int>`   | Index of the trigger to run (0-based). Required when using `--non-interactive`                     |
-| `--http-payload <string>` | HTTP trigger payload as JSON string or path to JSON file (with or without `@` prefix)              |
-| `--evm-tx-hash <string>`  | EVM trigger transaction hash (`0x...`). For EVM log triggers                                       |
-| `--evm-event-index <int>` | EVM trigger log index (0-based). For EVM log triggers                                              |
+| Flag                      | Description                                                                                                                                                                       |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--broadcast`             | Broadcast onchain write transactions (default: `false`). Without this flag, a dry run is performed                                                                                |
+| `-g, --engine-logs`       | Enable non-fatal engine logging                                                                                                                                                   |
+| `--non-interactive`       | Run without prompts; requires `--trigger-index` (see the line below) and inputs for the selected trigger type                                                                     |
+| `--trigger-index <int>`   | Selects which handler to run (0-based position). If your workflow has multiple handlers, `0` is the first, `1` is the second, etc. Required with `--non-interactive`              |
+| `--http-payload <string>` | HTTP trigger payload as JSON string or path to JSON file (with or without `@` prefix). For HTTP triggers only                                                                     |
+| `--evm-tx-hash <string>`  | Transaction hash (`0x...`) containing the event that triggered your workflow. For EVM log triggers only                                                                           |
+| `--evm-event-index <int>` | Which log/event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For EVM log triggers only |
 
 **Examples:**
 
@@ -6626,6 +6695,21 @@ cre workflow simulate <workflow-name-or-path> [flags]
 
   ```bash
   cre workflow simulate ./my-workflow --broadcast --target local-simulation
+  ```
+
+- Non-interactive mode with HTTP trigger
+
+  ```bash
+  # If your HTTP trigger handler is the first handler in your workflow, use --trigger-index 0
+  cre workflow simulate my-workflow --non-interactive --trigger-index 0 --http-payload '{"key":"value"}' --target staging-settings
+  ```
+
+- Non-interactive mode with EVM log trigger
+
+  ```bash
+  # If your EVM log trigger handler is the second handler in your workflow, use --trigger-index 1
+  # --evm-event-index 0 means you want the first event from that transaction
+  cre workflow simulate my-workflow --non-interactive --trigger-index 1 --evm-tx-hash 0x420721d7d00130a03c5b525b2dbfd42550906ddb3075e8377f9bb5d1a5992f8e --evm-event-index 0 --target staging-settings
   ```
 
 
@@ -7122,12 +7206,12 @@ cre version
 **Example output:**
 
 ```bash
-cre version v1.0.2
+cre version v1.0.5
 ```
 
 
 <Aside type="note" title="Version compatibility">
-  Always check that your CLI version matches the version recommended in the documentation. The current recommended version is **v1.0.2**. See the [CLI Installation guide](/cre/getting-started/cli-installation) for more information.
+  Always check that your CLI version matches the version recommended in the documentation. The current recommended version is **v1.0.5**. See the [CLI Installation guide](/cre/getting-started/cli-installation) for more information.
 </Aside>
 
 ## Learn more
@@ -7464,10 +7548,10 @@ Large Language Models (LLMs) generate different responses for the same prompt, e
 
 # Part 1: Project Setup & Simulation
 Source: https://docs.chain.link/cre/getting-started/part-1-project-setup-ts
-Last Updated: 2025-11-04
+Last Updated: 2026-01-14
 
 <Aside type="note" title="SDK Language: TypeScript">
-  You're viewing the **TypeScript** version of this guide. If you prefer Go, use the language selector in the right
+  You're viewing the **TypeScript** version of this guide. If you prefer Go, use the language selector in the left
   sidebar to switch to the Go version.
 </Aside>
 
@@ -7486,7 +7570,7 @@ Before you begin, ensure you have the following:
 
 - **CRE CLI**: See the [Installation Guide](/cre/getting-started/cli-installation/macos-linux) for details.
 - **CRE account & authentication**: You must have a CRE account and be logged in with the CLI. See [Create your account](/cre/account/creating-account) and [Log in with the CLI](/cre/account/cli-login) for instructions.
-- **Bun**: You must have <a href="https://bun.com/docs" target="blank">Bun</a> version 1.2.21 or higher installed. Check your version with bun --version. See [Install Bun](https://bun.sh/) for instructions.
+- **Bun**: You must have <a href="https://bun.com/docs" target="blank">Bun</a> version 1.2.21 or higher installed. Check your version with bun --version. See [Install Bun](https://bun.com) for instructions.
 - **Funded Sepolia Account**: An account with Sepolia ETH to pay for transaction gas fees. Go to <a href="https://faucets.chain.link" target="blank">faucets.chain.link</a> to get some Sepolia ETH.
 
 ## Step 1: Verify your authentication
@@ -8374,18 +8458,18 @@ Here is the source code for the contract so you can see how it works:
   of how this works in a later guide.
 </Aside>
 
-```solidity
+```sol
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import { ReceiverTemplate } from "./ReceiverTemplate.sol";
+import {ReceiverTemplate} from "./ReceiverTemplate.sol";
 
 /**
  * @title CalculatorConsumer (Testing Version)
  * @notice This contract receives reports from a CRE workflow and stores the results of a calculation onchain.
- * @dev This version uses ReceiverTemplate without configuring any security checks, making it compatible
- * with the mock Forwarder used during simulation. All permission fields remain at their default zero
- * values (disabled).
+ * @dev Inherits from ReceiverTemplate which provides security checks. The forwarder address must be
+ * configured at deployment. Additional security checks (workflowId, workflowName, author) can be enabled via setter
+ * functions.
  */
 contract CalculatorConsumer is ReceiverTemplate {
   // Struct to hold the data sent in a report from the workflow
@@ -8404,16 +8488,22 @@ contract CalculatorConsumer is ReceiverTemplate {
   event ResultUpdated(uint256 indexed resultId, uint256 finalResult);
 
   /**
-   * @dev The constructor doesn't set any security checks.
-   * The ReceiverTemplate parent constructor will initialize all permission fields to zero (disabled).
+   * @notice Constructor requires the forwarder address for security
+   * @param _forwarderAddress The address of the Chainlink Forwarder contract (for testing: MockForwarder)
+   * @dev The forwarder address enables the first layer of security - only the forwarder can call onReport.
+   * Additional security checks can be configured after deployment using setter functions.
    */
-  constructor() {}
+  constructor(
+    address _forwarderAddress
+  ) ReceiverTemplate(_forwarderAddress) {}
 
   /**
    * @notice Implements the core business logic for processing reports.
    * @dev This is called automatically by ReceiverTemplate's onReport function after security checks.
    */
-  function _processReport(bytes calldata report) internal override {
+  function _processReport(
+    bytes calldata report
+  ) internal override {
     // Decode the report bytes into our CalculatorResult struct
     CalculatorResult memory calculatorResult = abi.decode(report, (CalculatorResult));
 
@@ -8429,7 +8519,9 @@ contract CalculatorConsumer is ReceiverTemplate {
   // This function is a "dry-run" utility. It allows an offchain system to check
   // if a prospective result is an outlier before submitting it for a real onchain update.
   // It is also used to guide the binding generator to create a method that accepts the CalculatorResult struct.
-  function isResultAnomalous(CalculatorResult memory _prospectiveResult) public view returns (bool) {
+  function isResultAnomalous(
+    CalculatorResult memory _prospectiveResult
+  ) public view returns (bool) {
     // A result is not considered anomalous if it's the first one.
     if (resultCount == 0) {
       return false;
@@ -8442,7 +8534,7 @@ contract CalculatorConsumer is ReceiverTemplate {
 }
 ```
 
-The contract is already deployed for you on Sepolia at the following address: <a href="https://sepolia.etherscan.io/address/0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52#code" target="_blank" rel="noopener noreferrer">`0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52`</a>. You will use this address in your configuration file.
+The contract is already deployed for you on Sepolia at the following address: <a href="https://sepolia.etherscan.io/address/0x95e10BaC2B89aB4D8508ccEC3f08494FcB3D23cb#code" target="_blank" rel="noopener noreferrer">`0x95e10BaC2B89aB4D8508ccEC3f08494FcB3D23cb`</a>. You will use this address in your configuration file.
 
 ## Step 2: Update your workflow configuration
 
@@ -8455,7 +8547,7 @@ Add the `CalculatorConsumer` contract address to your `config.staging.json`:
   "evms": [
     {
       "storageAddress": "0xa17CF997C28FF154eDBae1422e6a50BeF23927F4",
-      "calculatorConsumerAddress": "0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52",
+      "calculatorConsumerAddress": "0x95e10BaC2B89aB4D8508ccEC3f08494FcB3D23cb",
       "chainName": "ethereum-testnet-sepolia",
       "gasLimit": "500000"
     }
@@ -8744,34 +8836,34 @@ Your workflow will now show the complete end-to-end execution, including the fin
 
 ```bash
 Workflow compiled
-2025-12-09T13:31:18Z [SIMULATION] Simulator Initialized
+2026-01-09T17:52:05Z [SIMULATION] Simulator Initialized
 
-2025-12-09T13:31:18Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
-2025-12-09T13:31:18Z [USER LOG] Successfully fetched offchain value: 62
-2025-12-09T13:31:18Z [USER LOG] Successfully read onchain value: 22
-2025-12-09T13:31:18Z [USER LOG] Final calculated result: 84
-2025-12-09T13:31:18Z [USER LOG] Updating calculator result for consumer: 0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52
-2025-12-09T13:31:18Z [USER LOG] Writing report to consumer contract - offchainValue: 62, onchainValue: 22, finalResult: 84
-2025-12-09T13:31:48Z [USER LOG] Waiting for write report response
-2025-12-09T13:31:48Z [USER LOG] Write report transaction succeeded: 0x7e2e58613f4d8414826d2e6164e42b110fefb97137a1065ac69d1c3decd259f2
-2025-12-09T13:31:48Z [USER LOG] View transaction at https://sepolia.etherscan.io/tx/0x7e2e58613f4d8414826d2e6164e42b110fefb97137a1065ac69d1c3decd259f2
-2025-12-09T13:31:48Z [USER LOG] Workflow finished successfully! offchainValue: 62, onchainValue: 22, finalResult: 84, txHash: 0x7e2e58613f4d8414826d2e6164e42b110fefb97137a1065ac69d1c3decd259f2
+2026-01-09T17:52:05Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+2026-01-09T17:52:06Z [USER LOG] Successfully fetched offchain value: 68
+2026-01-09T17:52:06Z [USER LOG] Successfully read onchain value: 22
+2026-01-09T17:52:06Z [USER LOG] Final calculated result: 90
+2026-01-09T17:52:06Z [USER LOG] Updating calculator result for consumer: 0x95e10BaC2B89aB4D8508ccEC3f08494FcB3D23cb
+2026-01-09T17:52:06Z [USER LOG] Writing report to consumer contract - offchainValue: 68, onchainValue: 22, finalResult: 90
+2026-01-09T17:52:12Z [USER LOG] Waiting for write report response
+2026-01-09T17:52:12Z [USER LOG] Write report transaction succeeded: 0x6346d9eeca2f2875131d38aa9903a216f16e3cc7188f0ac6a1d5cd1fcbfbf9e6
+2026-01-09T17:52:12Z [USER LOG] View transaction at https://sepolia.etherscan.io/tx/0x6346d9eeca2f2875131d38aa9903a216f16e3cc7188f0ac6a1d5cd1fcbfbf9e6
+2026-01-09T17:52:12Z [USER LOG] Workflow finished successfully! offchainValue: 68, onchainValue: 22, finalResult: 90, txHash: 0x6346d9eeca2f2875131d38aa9903a216f16e3cc7188f0ac6a1d5cd1fcbfbf9e6
 
 Workflow Simulation Result:
  {
-  "finalResult": 84,
-  "offchainValue": 62,
+  "finalResult": 90,
+  "offchainValue": 68,
   "onchainValue": 22,
-  "txHash": "0x7e2e58613f4d8414826d2e6164e42b110fefb97137a1065ac69d1c3decd259f2"
+  "txHash": "0x6346d9eeca2f2875131d38aa9903a216f16e3cc7188f0ac6a1d5cd1fcbfbf9e6"
 }
 
-2025-12-09T13:31:48Z [SIMULATION] Execution finished signal received
-2025-12-09T13:31:48Z [SIMULATION] Skipping WorkflowEngineV2
+2026-01-09T17:52:12Z [SIMULATION] Execution finished signal received
+2026-01-09T17:52:12Z [SIMULATION] Skipping WorkflowEngineV2
 ```
 
-- **`[USER LOG]`**: You can see all of your `logger.info()` calls showing the complete workflow execution, including the offchain value (`62`), onchain value (`22`), final calculation (`84`), and the transaction hash.
+- **`[USER LOG]`**: You can see all of your `logger.info()` calls showing the complete workflow execution, including the offchain value (`68`), onchain value (`22`), final calculation (`90`), and the transaction hash.
 - **`[SIMULATION]`**: These are system-level messages from the simulator showing its internal state.
-- **`Workflow Simulation Result`**: This is the final return value of your workflow. The `MyResult` object contains all the values (62 + 22 = 84) and the transaction hash confirming the write operation succeeded.
+- **`Workflow Simulation Result`**: This is the final return value of your workflow. The `MyResult` object contains all the values (68 + 22 = 90) and the transaction hash confirming the write operation succeeded.
 
 ## Step 5: Verify the result onchain
 
@@ -8793,7 +8885,7 @@ You'll notice the transaction's `to` address is not the `CalculatorConsumer` con
 
 While your wallet interacted with the Forwarder, the `CalculatorConsumer` contract's state was still updated. You can verify this change directly on Etherscan:
 
-- Navigate to the `CalculatorConsumer` contract address: <a href="https://sepolia.etherscan.io/address/0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52#readContract" target="_blank" rel="noopener noreferrer">`0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52`</a>.
+- Navigate to the `CalculatorConsumer` contract address: <a href="https://sepolia.etherscan.io/address/0x95e10BaC2B89aB4D8508ccEC3f08494FcB3D23cb#readContract" target="_blank" rel="noopener noreferrer">`0x95e10BaC2B89aB4D8508ccEC3f08494FcB3D23cb`</a>.
 - Expand the `latestResult` function and click **Query**. The values should match the `finalResult`, `offchainValue`, and `onchainValue` from your workflow logs.
 
 This completes the end-to-end loop: triggering a workflow, fetching data, reading onchain state, and verifiably writing the result back to a public blockchain.
@@ -11434,12 +11526,19 @@ This guide explains the two key parts of working with log triggers:
 
 You create an EVM Log trigger by calling the `EVMClient.logTrigger()` method with a `FilterLogTriggerRequest` configuration. This configuration specifies which contract addresses and event topics to listen for.
 
+<Aside type="note" title="Base64 Encoding Required">
+  **All addresses and topic values must be base64 encoded** using the `hexToBase64()` helper function from the CRE SDK.
+  While the workflow simulator accepts raw hex strings for convenience during development, **deployed workflows require
+  base64 encoding**. Always use `hexToBase64()` on addresses and topic values to ensure your workflow works in both
+  simulation and production.
+</Aside>
+
 ### Basic configuration
 
 The simplest configuration listens for **all events** from specific contract addresses:
 
 ```typescript
-import { cre, getNetwork, type Runtime, type EVMLog, Runner, bytesToHex } from "@chainlink/cre-sdk"
+import { cre, getNetwork, type Runtime, type EVMLog, Runner, bytesToHex, hexToBase64 } from "@chainlink/cre-sdk"
 
 type Config = {
   chainSelectorName: string
@@ -11469,7 +11568,7 @@ const initWorkflow = (config: Config) => {
   return [
     cre.handler(
       evmClient.logTrigger({
-        addresses: [config.contractAddress],
+        addresses: [hexToBase64(config.contractAddress)],
       }),
       onLogTrigger
     ),
@@ -11486,10 +11585,11 @@ main()
 
 ### Filtering by event type
 
-To listen for **specific event types**, you need to provide the event's signature hash as the first topic (`Topics[0]`). You can compute this using viem's `keccak256` and `toHex` functions:
+To listen for **specific event types**, you need to provide the event's signature hash as the first topic (`Topics[0]`). You can compute this using viem's `keccak256` and `toBytes` functions:
 
 ```typescript
-import { keccak256, toHex } from "viem"
+import { keccak256, toBytes } from "viem"
+import { hexToBase64 } from "@chainlink/cre-sdk"
 
 const initWorkflow = (config: Config) => {
   const network = getNetwork({
@@ -11505,14 +11605,14 @@ const initWorkflow = (config: Config) => {
   const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
 
   // Compute the event signature hash for Transfer(address,address,uint256)
-  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
+  const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
 
   return [
     cre.handler(
       evmClient.logTrigger({
-        addresses: [config.contractAddress],
+        addresses: [hexToBase64(config.contractAddress)],
         topics: [
-          { values: [transferEventHash] }, // Listen only for Transfer events
+          { values: [hexToBase64(transferEventHash)] }, // Listen only for Transfer events
         ],
       }),
       onLogTrigger
@@ -11529,13 +11629,26 @@ EVM events can have up to 3 `indexed` parameters (in addition to the event signa
 
 - **`addresses`**: The trigger fires if the event is emitted from **any** contract in this list (**OR** logic).
 - **`topics`**: An event must match the conditions for **all** defined topic slots (**AND** logic between topics). Within a single topic, you can provide multiple values, and it will match if the event's topic is **any** of those values (**OR** logic within a topic).
+- **Wildcarding topics**: To skip filtering on a specific topic position, omit it from the topics array or provide an empty values array `{ values: [] }`. For example, to filter on topic 1 and topic 3 but not topic 2, you would provide `[topic0, topic1, { values: [] }, topic3]`.
+
+<Aside type="caution" title="Topic values must be padded to 32 bytes and base64 encoded">
+  EVM logs always store indexed parameters as **32-byte values**. When filtering on topics 1, 2, or 3:
+
+  1. **Pad your values to 32 bytes** using `padHex(value, { size: 32 })` (e.g., addresses are 20 bytes and must be padded)
+  2. **Convert to base64** using `hexToBase64()`
+
+  If you don't pad correctly, your filter won't match the actual log topics and the trigger will not fire.
+
+  Topic 0 (the event signature from `keccak256`) is already 32 bytes and doesn't need padding.
+</Aside>
 
 #### Example 1: Filtering on a single indexed parameter
 
 To trigger only on `Transfer` events where the `from` address is a specific value:
 
 ```typescript
-import { keccak256, toHex, pad } from "viem"
+import { keccak256, toBytes, padHex } from "viem"
+import { hexToBase64 } from "@chainlink/cre-sdk"
 
 const initWorkflow = (config: Config) => {
   const network = getNetwork({
@@ -11550,16 +11663,16 @@ const initWorkflow = (config: Config) => {
 
   const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
 
-  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
-  const aliceAddress = "0xAlice..."
+  const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
+  const aliceAddress = "0xAlice..." as `0x${string}`
 
   return [
     cre.handler(
       evmClient.logTrigger({
-        addresses: [config.contractAddress],
+        addresses: [hexToBase64(config.contractAddress)],
         topics: [
-          { values: [transferEventHash] }, // Topic 0: Event signature (Transfer)
-          { values: [pad(aliceAddress)] }, // Topic 1: from = Alice
+          { values: [hexToBase64(transferEventHash)] }, // Topic 0: Event signature (Transfer)
+          { values: [hexToBase64(padHex(aliceAddress, { size: 32 }))] }, // Topic 1: from = Alice
         ],
       }),
       onLogTrigger
@@ -11568,10 +11681,13 @@ const initWorkflow = (config: Config) => {
 }
 ```
 
+
 <Aside type="note" title="Indexed Parameters and Topics">
-  Only parameters marked as `indexed` in the Solidity event definition can be filtered using topics. The event signature
-  is always `Topics[0]`. Subsequent indexed parameters are `Topics[1]`, `Topics[2]`, and `Topics[3]`. Address values
-  must be padded to 32 bytes using viem's `pad()` function.
+  Only parameters marked as `indexed` in the Solidity event definition can be filtered using topics. The event signature is always `Topics[0]`. Subsequent indexed parameters are `Topics[1]`, `Topics[2]`, and `Topics[3]`. Encoding different types:
+
+  - **Addresses**: Cast as `` `0x${string}` ``, use `padHex(address, { size: 32 })` then `hexToBase64()`
+  - **uint256**: Use `padHex(numberToHex(value), { size: 32 })` then `hexToBase64()`
+  - **bytes32**: Ensure it's 32 bytes, then use `hexToBase64()` directly
 </Aside>
 
 #### Example 2: "AND" filtering
@@ -11579,7 +11695,8 @@ const initWorkflow = (config: Config) => {
 To trigger on `Transfer` events where `from` is Alice **AND** `to` is Bob:
 
 ```typescript
-import { keccak256, toHex, pad } from "viem"
+import { keccak256, toBytes, padHex } from "viem"
+import { hexToBase64 } from "@chainlink/cre-sdk"
 
 const initWorkflow = (config: Config) => {
   const network = getNetwork({
@@ -11594,18 +11711,18 @@ const initWorkflow = (config: Config) => {
 
   const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
 
-  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
-  const aliceAddress = "0xAlice..."
-  const bobAddress = "0xBob..."
+  const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
+  const aliceAddress = "0xAlice..." as `0x${string}`
+  const bobAddress = "0xBob..." as `0x${string}`
 
   return [
     cre.handler(
       evmClient.logTrigger({
-        addresses: [config.contractAddress],
+        addresses: [hexToBase64(config.contractAddress)],
         topics: [
-          { values: [transferEventHash] }, // Topic 0: Event signature (Transfer)
-          { values: [pad(aliceAddress)] }, // Topic 1: from = Alice
-          { values: [pad(bobAddress)] }, // Topic 2: to = Bob
+          { values: [hexToBase64(transferEventHash)] }, // Topic 0: Event signature (Transfer)
+          { values: [hexToBase64(padHex(aliceAddress, { size: 32 }))] }, // Topic 1: from = Alice
+          { values: [hexToBase64(padHex(bobAddress, { size: 32 }))] }, // Topic 2: to = Bob
         ],
       }),
       onLogTrigger
@@ -11619,7 +11736,8 @@ const initWorkflow = (config: Config) => {
 To trigger on `Transfer` events where `from` is **either** Alice **OR** Charlie:
 
 ```typescript
-import { keccak256, toHex, pad } from "viem"
+import { keccak256, toBytes, padHex } from "viem"
+import { hexToBase64 } from "@chainlink/cre-sdk"
 
 const initWorkflow = (config: Config) => {
   const network = getNetwork({
@@ -11634,17 +11752,22 @@ const initWorkflow = (config: Config) => {
 
   const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
 
-  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
-  const aliceAddress = "0xAlice..."
-  const charlieAddress = "0xCharlie..."
+  const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
+  const aliceAddress = "0xAlice..." as `0x${string}`
+  const charlieAddress = "0xCharlie..." as `0x${string}`
 
   return [
     cre.handler(
       evmClient.logTrigger({
-        addresses: [config.contractAddress],
+        addresses: [hexToBase64(config.contractAddress)],
         topics: [
-          { values: [transferEventHash] }, // Topic 0: Event signature (Transfer)
-          { values: [pad(aliceAddress), pad(charlieAddress)] }, // Topic 1: from = Alice OR Charlie
+          { values: [hexToBase64(transferEventHash)] }, // Topic 0: Event signature (Transfer)
+          {
+            values: [
+              hexToBase64(padHex(aliceAddress, { size: 32 })),
+              hexToBase64(padHex(charlieAddress, { size: 32 })),
+            ],
+          }, // Topic 1: from = Alice OR Charlie
         ],
       }),
       onLogTrigger
@@ -11658,7 +11781,8 @@ const initWorkflow = (config: Config) => {
 To listen for **multiple event types** from a single contract, provide multiple event signature hashes in `Topics[0]`:
 
 ```typescript
-import { keccak256, toHex } from "viem"
+import { keccak256, toBytes } from "viem"
+import { hexToBase64 } from "@chainlink/cre-sdk"
 
 const initWorkflow = (config: Config) => {
   const network = getNetwork({
@@ -11673,15 +11797,15 @@ const initWorkflow = (config: Config) => {
 
   const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
 
-  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
-  const approvalEventHash = keccak256(toHex("Approval(address,address,uint256)"))
+  const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
+  const approvalEventHash = keccak256(toBytes("Approval(address,address,uint256)"))
 
   return [
     cre.handler(
       evmClient.logTrigger({
-        addresses: [config.contractAddress],
+        addresses: [hexToBase64(config.contractAddress)],
         topics: [
-          { values: [transferEventHash, approvalEventHash] }, // Listen for Transfer OR Approval
+          { values: [hexToBase64(transferEventHash), hexToBase64(approvalEventHash)] }, // Listen for Transfer OR Approval
         ],
       }),
       onLogTrigger
@@ -11695,6 +11819,9 @@ const initWorkflow = (config: Config) => {
 To listen for the **same event from multiple contracts**, provide multiple addresses:
 
 ```typescript
+import { keccak256, toBytes } from "viem"
+import { hexToBase64 } from "@chainlink/cre-sdk"
+
 const initWorkflow = (config: Config) => {
   const network = getNetwork({
     chainFamily: "evm",
@@ -11708,14 +11835,14 @@ const initWorkflow = (config: Config) => {
 
   const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
 
-  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
+  const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
 
   return [
     cre.handler(
       evmClient.logTrigger({
-        addresses: ["0xTokenA...", "0xTokenB...", "0xTokenC..."],
+        addresses: [hexToBase64("0xTokenA..."), hexToBase64("0xTokenB..."), hexToBase64("0xTokenC...")],
         topics: [
-          { values: [transferEventHash] }, // Listen for Transfer events from any of these contracts
+          { values: [hexToBase64(transferEventHash)] }, // Listen for Transfer events from any of these contracts
         ],
       }),
       onLogTrigger
@@ -11724,13 +11851,61 @@ const initWorkflow = (config: Config) => {
 }
 ```
 
+#### Example 6: Filtering on uint256 indexed parameter
+
+To filter on indexed `uint256` or other numeric types, convert them to a 32-byte hex value:
+
+```typescript
+import { keccak256, toBytes, numberToHex, padHex } from "viem"
+import { hexToBase64 } from "@chainlink/cre-sdk"
+
+const initWorkflow = (config: Config) => {
+  const network = getNetwork({
+    chainFamily: "evm",
+    chainSelectorName: config.chainSelectorName,
+    isTestnet: true,
+  })
+
+  if (!network) {
+    throw new Error(`Network not found: ${config.chainSelectorName}`)
+  }
+
+  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+
+  // Example: event ValueChanged(address indexed user, uint256 indexed newValue)
+  const eventHash = keccak256(toBytes("ValueChanged(address,uint256)"))
+  const userAddress = padHex("0xUser..." as `0x${string}`, { size: 32 })
+  const targetValue = padHex(numberToHex(12345), { size: 32 })
+
+  return [
+    cre.handler(
+      evmClient.logTrigger({
+        addresses: [hexToBase64(config.contractAddress)],
+        topics: [
+          { values: [hexToBase64(eventHash)] }, // Topic 0: Event signature
+          { values: [hexToBase64(userAddress)] }, // Topic 1: user address
+          { values: [hexToBase64(targetValue)] }, // Topic 2: newValue = 12345
+        ],
+      }),
+      onLogTrigger
+    ),
+  ]
+}
+```
+
+<Aside type="note" title="Converting Numbers to Topics">
+  For indexed `uint256` parameters, use `numberToHex()` to convert the number to hex, then `padHex()` to ensure it's 32
+  bytes, and finally `hexToBase64()` to encode it for the trigger configuration. For `bytes32` parameters, ensure
+  they're already 32 bytes and apply `hexToBase64()` directly.
+</Aside>
+
 ### Confidence level
 
 You can set the block confirmation level by adding the `confidence` field to the trigger configuration:
 
 ```typescript
 evmClient.logTrigger({
-  addresses: [config.contractAddress],
+  addresses: [hexToBase64(config.contractAddress)],
   confidence: "CONFIDENCE_LEVEL_FINALIZED", // Wait for finalized blocks
 })
 ```
@@ -11844,7 +12019,7 @@ const onLogTrigger = (runtime: Runtime<Config>, log: EVMLog): string => {
   The type assertion
 
   ```
-  as [\`0x${string}\`, ...\`0x${string}\`[]]
+  as [`0x${string}`, ...`0x${string}`[]]
   ```
 
   tells TypeScript that `topics` is a non-empty array of
@@ -11883,8 +12058,8 @@ const onLogTrigger = (runtime: Runtime<Config>, log: EVMLog): string => {
 Here's a complete example that listens for ERC20 `Transfer` events and decodes them:
 
 ```typescript
-import { cre, getNetwork, type Runtime, type EVMLog, Runner, bytesToHex } from "@chainlink/cre-sdk"
-import { keccak256, toHex, decodeEventLog, parseAbi } from "viem"
+import { cre, getNetwork, type Runtime, type EVMLog, Runner, bytesToHex, hexToBase64 } from "@chainlink/cre-sdk"
+import { keccak256, toBytes, decodeEventLog, parseAbi } from "viem"
 
 type Config = {
   chainSelectorName: string
@@ -11921,13 +12096,13 @@ const initWorkflow = (config: Config) => {
   }
 
   const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
-  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
+  const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
 
   return [
     cre.handler(
       evmClient.logTrigger({
-        addresses: [config.tokenAddress],
-        topics: [{ values: [transferEventHash] }],
+        addresses: [hexToBase64(config.tokenAddress)],
+        topics: [{ values: [hexToBase64(transferEventHash)] }],
         confidence: "CONFIDENCE_LEVEL_FINALIZED",
       }),
       onLogTrigger
@@ -15214,7 +15389,7 @@ This section provides a reference for the built-in trigger capabilities of the C
 
 # Running a Demo Workflow
 Source: https://docs.chain.link/cre/templates/running-demo-workflow-ts
-Last Updated: 2025-11-04
+Last Updated: 2026-01-14
 
 This guide walks you through the core developer loop of CRE: initializing a project from a template and running it locally using the [simulator](/cre/guides/operations/simulating-workflows). By the end, you will have run the Custom Data Feed demo workflow and tested its two distinct behaviors: a **proactive** path where it fetches data from an API to write a result onchain, and a **reactive** path where it listens for onchain events to trigger new actions.
 
@@ -15231,7 +15406,7 @@ Before you begin, ensure you have the necessary tools installed:
 
 - **CRE CLI**: You must have the CRE CLI installed. See [Install the CLI](/cre/getting-started/cli-installation) for instructions.
 - **CRE account & authentication**: You must have a CRE account and be logged in with the CLI. Run cre whoami in your terminal to verify you're logged in, or run cre login to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging in with the CLI](/cre/account/cli-login) for instructions.
-- **Bun**: You must have Bun version 1.2.21 or higher installed. Check your version with bun --version. See [Install Bun](https://bun.sh/docs/installation) for instructions.
+- **Bun**: You must have Bun version 1.2.21 or higher installed. Check your version with bun --version. See [Install Bun](https://bun.com/docs/installation) for instructions.
 - **Sepolia Testnet Account**: You need a private key for an account funded with Sepolia ETH. This is required because the demo workflow performs a write transaction. Go to <a href="https://faucets.chain.link" target="blank">faucets.chain.link</a> to get some Sepolia ETH.
 
 ## 2. Initialize the demo project
