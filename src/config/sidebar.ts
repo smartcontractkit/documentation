@@ -950,6 +950,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/concepts/best-practices",
         },
         {
+          title: "Calculated Streams",
+          url: "data-streams/concepts/calculated-streams",
+        },
+        {
           title: "Liquidity-Weighted Bid and Ask prices",
           url: "data-streams/concepts/liquidity-weighted-prices",
         },
