@@ -454,6 +454,24 @@ export const CHAINS: Chain[] = [
     ],
   },
   {
+    page: "MegaETH",
+    label: "MegaETH",
+    title: "MegaETH Data Feeds",
+    img: "/assets/chains/megaeth.svg",
+    networkStatusUrl: "https://uptime.megaeth.com/",
+    tags: ["default"],
+    supportedFeatures: ["feeds"],
+    networks: [
+      {
+        name: "MegaETH Mainnet (Private)",
+        explorerUrl: "https://megaeth.blockscout.com/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-megaeth-mainnet.json",
+        queryString: "megaeth-mainnet",
+      },
+    ],
+  },
+  {
     page: "monad",
     title: "Monad Data Feeds",
     label: "Monad",
