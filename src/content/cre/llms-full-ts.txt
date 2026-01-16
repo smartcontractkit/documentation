@@ -446,11 +446,38 @@ Last Updated: 2025-11-20
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
 
+## CLI v1.0.5 - January 13, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.0.5" target="_blank">CRE CLI version 1.0.5</a> is now available.** This release includes various small improvements and bug fixes.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+## CLI v1.0.4 - January 9, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.0.4" target="_blank">CRE CLI version 1.0.4</a> is now available.** This release includes various small improvements and bug fixes.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+## CLI v1.0.3 - December 12, 2025
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.0.3" target="_blank">CRE CLI version 1.0.3</a> is now available.** This release includes various small improvements and bug fixes.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
 ## CLI v1.0.2 - November 20, 2025
 
 **<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.0.2" target="_blank">CRE CLI version 1.0.2</a> is now available.** This release includes various improvements based on user feedback.
 
-### How to update
+**How to update:**
 
 - **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
 - **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
@@ -532,7 +559,7 @@ These guides explain how to install the Chainlink Developer Platform CLI (also r
 Source: https://docs.chain.link/cre/getting-started/cli-installation/macos-linux
 Last Updated: 2025-11-20
 
-This page explains how to install the CRE CLI on macOS or Linux. The recommended version at the time of writing is **v1.0.2**.
+This page explains how to install the CRE CLI on macOS or Linux. The recommended version at the time of writing is **v1.0.5**.
 
 ## Installation
 
@@ -563,7 +590,7 @@ After the script completes, verify the installation:
 cre version
 ```
 
-**Expected output:** `cre version v1.0.2`
+**Expected output:** `cre version v1.0.5`
 
 <Aside type="note" title="macOS Gatekeeper">
   If you see warnings about "unrecognized developer/source" on macOS, run:{" "}
@@ -581,9 +608,15 @@ The CRE CLI is publicly available on GitHub. Visit the releases page and downloa
   - On **macOS** (darwin), run <CopyText text="uname -m" code />:
     - `arm64` (Apple Silicon) → Download `cre_darwin_arm64.zip`
     - `x86_64` (Intel) → Download `cre_darwin_amd64.zip`
-  - On **Linux**, run <CopyText text="uname -m" code />:
-    - `aarch64` (ARM) → Download `cre_linux_arm64.tar.gz`
-    - `x86_64` (AMD/Intel) → Download `cre_linux_amd64.tar.gz`
+  - On **Linux**, the binary depends on both your architecture and OS version. First, run <CopyText text="uname -m" code /> to check your architecture, then <CopyText text="lsb_release -rs" code /> to check your Ubuntu version:
+    - **Ubuntu 22.04 or older**:
+      - `x86_64` (AMD/Intel) → Download `cre_linux_amd64_ldd2-35.tar.gz`
+      - `aarch64` (ARM) → Download `cre_linux_arm64_ldd2-35.tar.gz`
+    - **Ubuntu 24.04 or newer**:
+      - `x86_64` (AMD/Intel) → Download `cre_linux_amd64.tar.gz`
+      - `aarch64` (ARM) → Download `cre_linux_arm64.tar.gz`
+
+  **Note:** The `ldd2-35` binaries are compiled for older glibc versions (2.35 and below). If you're using a non-Ubuntu Linux distribution, check your glibc version with <CopyText text="ldd --version" code /> and use the `ldd2-35` binary if your version is 2.35 or lower.
 </Aside>
 
 After downloading the correct file from the releases page, move on to the next step to verify its integrity.
@@ -602,16 +635,21 @@ shasum -a 256 cre_darwin_arm64.zip
 
 **Verify against official checksums**
 
-Compare the output with the official checksum below:
+Compare the output with the official checksum from the [CRE CLI releases page](https://github.com/smartcontractkit/cre-cli/releases):
 
-| File                     | SHA-256 Checksum                                                 |
-| ------------------------ | ---------------------------------------------------------------- |
-| `cre_darwin_amd64.zip`   | 482e53d3a5f8471034d30c935196d2dca2ab09a5fe1ab2083ad336172565291b |
-| `cre_darwin_arm64.zip`   | 92b0409801dd4e44f90a85331615f3e4b8cf1fe9f90a8eab3ad8bb3458b4b6cf |
-| `cre_linux_amd64.tar.gz` | d3a8b9b999b4b8bf73b2235d27386acf4efbc8f05d86d9e6066abda23ee9ce9b |
-| `cre_linux_arm64.tar.gz` | f52d618727ccc8fb6ab4b1f9418b09424c8505428131a49c01bb33ca2bc86fe3 |
+1. Go to [https://github.com/smartcontractkit/cre-cli/releases](https://github.com/smartcontractkit/cre-cli/releases)
+2. Find the release version you downloaded (e.g., v1.0.5)
+3. Under the **Assets** section, locate your downloaded file
+4. Compare the SHA-256 checksum shown next to the file with your command output
 
-If the checksum doesn't match, do not proceed with installation. Contact your Chainlink point of contact for assistance.
+**Example:** For `cre_darwin_arm64.zip` in release v1.0.5, you'll see something like:
+
+```
+cre_darwin_arm64.zip
+sha256:1359415a1f1baee7643107b82b3a0589a3627aef71018644e5c488960a97e955
+```
+
+If the checksums match, the file is authentic and safe to install. If they don't match, do not proceed with installation and contact the Chainlink team for assistance.
 
 #### 2. Extract and install
 
@@ -634,7 +672,7 @@ If the checksum doesn't match, do not proceed with installation. Contact your Ch
 3. **Rename the extracted binary to `cre`**
 
    ```bash
-   mv cre_v1.0.2_darwin_arm64 cre
+   mv cre_v1.0.5_darwin_arm64 cre
    ```
 
 4. **Make it executable**:
@@ -707,7 +745,7 @@ cre version
 
 **Expected output:**
 
-You should see version information: `cre version v1.0.2`.
+You should see version information: `cre version v1.0.5`.
 
 **If it doesn't work:**
 
@@ -746,7 +784,7 @@ Once you're authenticated, you're ready to build your first workflow:
 Source: https://docs.chain.link/cre/getting-started/cli-installation/windows
 Last Updated: 2025-11-20
 
-This page explains how to install the Chainlink Developer Platform CLI (also referred to as the CRE CLI) on Windows. The recommended version at the time of writing is **v1.0.2**.
+This page explains how to install the Chainlink Developer Platform CLI (also referred to as the CRE CLI) on Windows. The recommended version at the time of writing is **v1.0.5**.
 
 ## Installation
 
@@ -776,7 +814,7 @@ After the script completes, **open a new PowerShell window** and verify the inst
 cre version
 ```
 
-**Expected output:** `cre version v1.0.2`
+**Expected output:** `cre version v1.0.5`
 
 ### Manual installation
 
@@ -800,20 +838,28 @@ Get-FileHash cre_windows_amd64.zip -Algorithm SHA256
 
 **Verify against the official checksum**
 
-Compare the `Hash` value in the output with the official checksum below:
+Compare the `Hash` value in the output with the official checksum from the [CRE CLI releases page](https://github.com/smartcontractkit/cre-cli/releases):
 
-| File                    | SHA-256 Checksum                                                 |
-| ----------------------- | ---------------------------------------------------------------- |
-| `cre_windows_amd64.zip` | 60fe65b74619c4164c0a9d6442611bf8537a04a6daf1ed3ecefc608cbbffdb01 |
+1. Go to [https://github.com/smartcontractkit/cre-cli/releases](https://github.com/smartcontractkit/cre-cli/releases)
+2. Find the release version you downloaded (e.g., v1.0.5)
+3. Under the **Assets** section, locate `cre_windows_amd64.zip`
+4. Compare the SHA-256 checksum shown next to the file with the `Hash` value from your PowerShell output
 
-If the checksum doesn't match, do not proceed with installation. Contact your Chainlink point of contact for assistance.
+**Example:** For `cre_windows_amd64.zip` in release v1.0.5, you'll see something like:
+
+```
+cre_windows_amd64.zip
+sha256:372d16566479ff6bbfe9eb1d5cebe0e1e2a3c67062c6f0439fc96c735ddeaa18
+```
+
+If the checksums match, the file is authentic and safe to install. If they don't match, do not proceed with installation and contact the Chainlink team for assistance.
 
 #### 2. Extract and install
 
 1. Navigate to the directory where you downloaded the archive.
 2. Right-click the `.zip` file and select **Extract All...**.
 3. Choose a permanent location for the extracted folder (e.g., `C:\Program Files\cre-cli`).
-4. Inside the extracted folder, rename the file `cre_v1.0.2_windows_amd64.exe` to `cre.exe`.
+4. Inside the extracted folder, rename the file `cre_v1.0.5_windows_amd64.exe` to `cre.exe`.
 
 #### 3. Add the CLI to your PATH
 
@@ -838,7 +884,7 @@ Open a new **PowerShell** or **Command Prompt** window and run:
 cre version
 ```
 
-You should see version information: `cre version v1.0.2`.
+You should see version information: `cre version v1.0.5`.
 
 ## Next steps
 
@@ -1046,8 +1092,9 @@ cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --htt
 ```
 
 <Aside type="note" title="Non-interactive requirements">
-  The `--http-payload` flag requires `--non-interactive` mode. You must also specify `--trigger-index` (0-based index of
-  your HTTP trigger). If your HTTP trigger is the only trigger or the first one defined, use `--trigger-index 0`.
+  The `--http-payload` flag requires `--non-interactive` mode. You must also specify `--trigger-index` to select which
+  handler to run. The index is 0-based: if the handler with your HTTP trigger is the first handler defined in your
+  `InitWorkflow` function, use `--trigger-index 0`; if it's the second, use `--trigger-index 1`, and so on.
 </Aside>
 
 <Aside type="note" title="Escaping quotes">
@@ -1618,7 +1665,7 @@ Manual JWT generation is complex and error-prone. For development and testing:
 
 # Testing with Local JWT Server
 Source: https://docs.chain.link/cre/guides/workflow/using-triggers/http-trigger/local-testing-tool
-Last Updated: 2025-11-04
+Last Updated: 2026-01-14
 
 The <a href="https://github.com/smartcontractkit/cre-sdk-typescript/tree/main/packages/cre-http-trigger" target="_blank" rel="noopener noreferrer">`cre-http-trigger` TypeScript package</a> simplifies testing deployed workflows with HTTP triggers by handling JWT generation, signing, and request formatting automatically. It provides a local HTTP server that acts as a proxy between your test requests and the CRE gateway.
 
@@ -1649,7 +1696,7 @@ The `cre-http-trigger` tool eliminates this complexity by:
 
 ## Prerequisites
 
-- **Bun runtime**: The tool requires <a href="https://bun.sh" target="_blank" rel="noopener noreferrer">Bun</a> version 1.2.21 or higher
+- **Bun runtime**: The tool requires <a href="https://bun.com" target="_blank" rel="noopener noreferrer">Bun</a> version 1.2.21 or higher
 - **Deployed workflow**: Your workflow must be deployed with an HTTP trigger
 - **Workflow ID**: Available from deployment output or the CRE UI
 - **Private key**: The private key corresponding to one of the `authorizedKeys` in your HTTP trigger configuration
@@ -1932,12 +1979,13 @@ This guide explains how to build a consumer contract that can securely receive a
 
 **In this guide:**
 
-- [Core Concepts: The Onchain Data Flow](#1-core-concepts-the-onchain-data-flow)
-- [The IReceiver Standard](#2-the-ireceiver-standard)
-- [Using ReceiverTemplate](#3-using-receivertemplate)
-- [Working with Simulation](#4-working-with-simulation)
-- [Advanced Usage](#5-advanced-usage-optional)
-- [Complete Examples](#6-complete-examples)
+1. [Core Concepts: The Onchain Data Flow](#1-core-concepts-the-onchain-data-flow)
+2. [The IReceiver Standard](#2-the-ireceiver-standard)
+3. [Using ReceiverTemplate](#3-using-receivertemplate)
+4. [Working with Simulation](#4-working-with-simulation)
+5. [Advanced Usage](#5-advanced-usage-optional)
+6. [Complete Examples](#6-complete-examples)
+7. [Security Considerations](#7-security-considerations)
 
 ## 1. Core Concepts: The Onchain Data Flow
 
@@ -1954,9 +2002,24 @@ To be a valid target for the `KeystoneForwarder`, your consumer contract must sa
 
 The `KeystoneForwarder` needs a standardized function to call. This is defined by the `IReceiver` interface, which mandates an `onReport` function.
 
-```solidity
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import {IERC165} from "./IERC165.sol";
+
+/// @title IReceiver - receives keystone reports
+/// @notice Implementations must support the IReceiver interface through ERC165.
 interface IReceiver is IERC165 {
-  function onReport(bytes calldata metadata, bytes calldata report) external;
+  /// @notice Handles incoming keystone reports.
+  /// @dev If this function call reverts, it can be retried with a higher gas
+  /// limit. The receiver is responsible for discarding stale reports.
+  /// @param metadata Report's metadata.
+  /// @param report Workflow report.
+  function onReport(
+    bytes calldata metadata,
+    bytes calldata report
+  ) external;
 }
 ```
 
@@ -1967,6 +2030,8 @@ interface IReceiver is IERC165 {
 
 [ERC165](https://eips.ethereum.org/EIPS/eip-165) is a standard that allows contracts to publish the interfaces they support. The `KeystoneForwarder` uses this to check if your contract supports the `IReceiver` interface before sending a report.
 
+Link to the `IERC165` interface: [IERC165.sol](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/introspection/IERC165.sol)
+
 ## 3. Using `ReceiverTemplate`
 
 ### 3.1 Overview
@@ -1975,8 +2040,9 @@ While you can implement these standards manually, we provide an abstract contrac
 
 **Key features:**
 
-- **Optional Permission Controls**: Choose your security level—enable forwarder address checks, workflow ID validation, workflow owner verification, or any combination
-- **Flexible and Updatable**: All permission settings can be configured and updated via setter functions after deployment
+- **Secure by Default**: Requires forwarder address at deployment, ensuring your contract is protected from the start
+- **Layered Security**: Add optional workflow ID validation, workflow owner verification, or any combination for defense-in-depth
+- **Flexible Configuration**: All permission settings can be updated via setter functions after deployment
 - **Simplified Logic**: You only need to implement `_processReport(bytes calldata report)` with your business logic
 - **Built-in Access Control**: Includes OpenZeppelin's `Ownable` for secure permission management
 - **ERC165 Support**: Includes the necessary `supportsInterface` function
@@ -1984,7 +2050,7 @@ While you can implement these standards manually, we provide an abstract contrac
 
 ### 3.2 Contract Source Code
 
-```solidity
+```sol
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
@@ -1994,177 +2060,238 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @title ReceiverTemplate - Abstract receiver with optional permission controls
 /// @notice Provides flexible, updatable security checks for receiving workflow reports
-/// @dev All permission fields default to zero (disabled). Use setter functions to enable checks.
+/// @dev The forwarder address is required at construction time for security.
+///      Additional permission fields can be configured using setter functions.
 abstract contract ReceiverTemplate is IReceiver, Ownable {
-    // Optional permission fields (all default to zero = disabled)
-    address private s_forwarderAddress; // If set, only this address can call onReport
-    address private s_expectedAuthor; // If set, only reports from this workflow owner are accepted
-    bytes10 private s_expectedWorkflowName; // If set, only reports with this workflow name are accepted
-    bytes32 private s_expectedWorkflowId; // If set, only reports from this specific workflow ID are accepted
+  // Required permission field at deployment, configurable after
+  address private s_forwarderAddress; // If set, only this address can call onReport
 
-    // Hex character lookup table for bytes-to-hex conversion
-    bytes private constant HEX_CHARS = "0123456789abcdef";
+  // Optional permission fields (all default to zero = disabled)
+  address private s_expectedAuthor; // If set, only reports from this workflow owner are accepted
+  bytes10 private s_expectedWorkflowName; // Only validated when s_expectedAuthor is also set
+  bytes32 private s_expectedWorkflowId; // If set, only reports from this specific workflow ID are accepted
 
-    // Custom errors
-    error InvalidSender(address sender, address expected);
-    error InvalidAuthor(address received, address expected);
-    error InvalidWorkflowName(bytes10 received, bytes10 expected);
-    error InvalidWorkflowId(bytes32 received, bytes32 expected);
+  // Hex character lookup table for bytes-to-hex conversion
+  bytes private constant HEX_CHARS = "0123456789abcdef";
 
-    // Events
-    event ForwarderAddressUpdated(address indexed previousForwarder, address indexed newForwarder);
-    event ExpectedAuthorUpdated(address indexed previousAuthor, address indexed newAuthor);
-    event ExpectedWorkflowNameUpdated(bytes10 indexed previousName, bytes10 indexed newName);
-    event ExpectedWorkflowIdUpdated(bytes32 indexed previousId, bytes32 indexed newId);
+  // Custom errors
+  error InvalidForwarderAddress();
+  error InvalidSender(address sender, address expected);
+  error InvalidAuthor(address received, address expected);
+  error InvalidWorkflowName(bytes10 received, bytes10 expected);
+  error InvalidWorkflowId(bytes32 received, bytes32 expected);
+  error WorkflowNameRequiresAuthorValidation();
 
-    /// @notice Constructor sets msg.sender as the owner
-    /// @dev All permission fields are initialized to zero (disabled by default)
-    constructor() Ownable(msg.sender) {}
+  // Events
+  event ForwarderAddressUpdated(address indexed previousForwarder, address indexed newForwarder);
+  event ExpectedAuthorUpdated(address indexed previousAuthor, address indexed newAuthor);
+  event ExpectedWorkflowNameUpdated(bytes10 indexed previousName, bytes10 indexed newName);
+  event ExpectedWorkflowIdUpdated(bytes32 indexed previousId, bytes32 indexed newId);
+  event SecurityWarning(string message);
 
-    /// @notice Returns the configured forwarder address
-    /// @return The forwarder address (address(0) if not set)
-    function getForwarderAddress() external view returns (address) {
-        return s_forwarderAddress;
+  /// @notice Constructor sets msg.sender as the owner and configures the forwarder address
+  /// @param _forwarderAddress The address of the Chainlink Forwarder contract (cannot be address(0))
+  /// @dev The forwarder address is required for security - it ensures only verified reports are processed
+  constructor(
+    address _forwarderAddress
+  ) Ownable(msg.sender) {
+    if (_forwarderAddress == address(0)) {
+      revert InvalidForwarderAddress();
+    }
+    s_forwarderAddress = _forwarderAddress;
+    emit ForwarderAddressUpdated(address(0), _forwarderAddress);
+  }
+
+  /// @notice Returns the configured forwarder address
+  /// @return The forwarder address (address(0) if disabled)
+  function getForwarderAddress() external view returns (address) {
+    return s_forwarderAddress;
+  }
+
+  /// @notice Returns the expected workflow author address
+  /// @return The expected author address (address(0) if not set)
+  function getExpectedAuthor() external view returns (address) {
+    return s_expectedAuthor;
+  }
+
+  /// @notice Returns the expected workflow name
+  /// @return The expected workflow name (bytes10(0) if not set)
+  function getExpectedWorkflowName() external view returns (bytes10) {
+    return s_expectedWorkflowName;
+  }
+
+  /// @notice Returns the expected workflow ID
+  /// @return The expected workflow ID (bytes32(0) if not set)
+  function getExpectedWorkflowId() external view returns (bytes32) {
+    return s_expectedWorkflowId;
+  }
+
+  /// @inheritdoc IReceiver
+  /// @dev Performs optional validation checks based on which permission fields are set
+  function onReport(
+    bytes calldata metadata,
+    bytes calldata report
+  ) external override {
+    // Security Check 1: Verify caller is the trusted Chainlink Forwarder (if configured)
+    if (s_forwarderAddress != address(0) && msg.sender != s_forwarderAddress) {
+      revert InvalidSender(msg.sender, s_forwarderAddress);
     }
 
-    /// @notice Returns the expected workflow author address
-    /// @return The expected author address (address(0) if not set)
-    function getExpectedAuthor() external view returns (address) {
-        return s_expectedAuthor;
-    }
+    // Security Checks 2-4: Verify workflow identity - ID, owner, and/or name (if any are configured)
+    if (s_expectedWorkflowId != bytes32(0) || s_expectedAuthor != address(0) || s_expectedWorkflowName != bytes10(0)) {
+      (bytes32 workflowId, bytes10 workflowName, address workflowOwner) = _decodeMetadata(metadata);
 
-    /// @notice Returns the expected workflow name
-    /// @return The expected workflow name (bytes10(0) if not set)
-    function getExpectedWorkflowName() external view returns (bytes10) {
-        return s_expectedWorkflowName;
-    }
+      if (s_expectedWorkflowId != bytes32(0) && workflowId != s_expectedWorkflowId) {
+        revert InvalidWorkflowId(workflowId, s_expectedWorkflowId);
+      }
+      if (s_expectedAuthor != address(0) && workflowOwner != s_expectedAuthor) {
+        revert InvalidAuthor(workflowOwner, s_expectedAuthor);
+      }
 
-    /// @notice Returns the expected workflow ID
-    /// @return The expected workflow ID (bytes32(0) if not set)
-    function getExpectedWorkflowId() external view returns (bytes32) {
-        return s_expectedWorkflowId;
-    }
-
-    /// @inheritdoc IReceiver
-    /// @dev Performs optional validation checks based on which permission fields are set
-    function onReport(bytes calldata metadata, bytes calldata report) external override {
-        // Security Check 1: Verify caller is the trusted Chainlink Forwarder (if configured)
-        if (s_forwarderAddress != address(0) && msg.sender != s_forwarderAddress) {
-            revert InvalidSender(msg.sender, s_forwarderAddress);
+      // ================================================================
+      // WORKFLOW NAME VALIDATION - REQUIRES AUTHOR VALIDATION
+      // ================================================================
+      // Do not rely on workflow name validation alone. Workflow names are unique
+      // per owner, but not across owners.
+      // Furthermore, workflow names use 40-bit truncation (bytes10), making collisions possible.
+      // Therefore, workflow name validation REQUIRES author (workflow owner) validation.
+      // The code enforces this dependency at runtime.
+      // ================================================================
+      if (s_expectedWorkflowName != bytes10(0)) {
+        // Author must be configured if workflow name is used
+        if (s_expectedAuthor == address(0)) {
+          revert WorkflowNameRequiresAuthorValidation();
         }
-
-        // Security Checks 2-4: Verify workflow identity - ID, owner, and/or name (if any are configured)
-        if (s_expectedWorkflowId != bytes32(0) || s_expectedAuthor != address(0) || s_expectedWorkflowName != bytes10(0)) {
-            (bytes32 workflowId, bytes10 workflowName, address workflowOwner) = _decodeMetadata(metadata);
-
-            if (s_expectedWorkflowId != bytes32(0) && workflowId != s_expectedWorkflowId) {
-                revert InvalidWorkflowId(workflowId, s_expectedWorkflowId);
-            }
-            if (s_expectedAuthor != address(0) && workflowOwner != s_expectedAuthor) {
-                revert InvalidAuthor(workflowOwner, s_expectedAuthor);
-            }
-            if (s_expectedWorkflowName != bytes10(0) && workflowName != s_expectedWorkflowName) {
-                revert InvalidWorkflowName(workflowName, s_expectedWorkflowName);
-            }
+        // Validate workflow name matches (author already validated above)
+        if (workflowName != s_expectedWorkflowName) {
+          revert InvalidWorkflowName(workflowName, s_expectedWorkflowName);
         }
-
-        _processReport(report);
+      }
     }
 
-    /// @notice Updates the forwarder address that is allowed to call onReport
-    /// @param _forwarder The new forwarder address (use address(0) to disable this check)
-    function setForwarderAddress(address _forwarder) external onlyOwner {
-        address previousForwarder = s_forwarderAddress;
-        s_forwarderAddress = _forwarder;
-        emit ForwarderAddressUpdated(previousForwarder, _forwarder);
+    _processReport(report);
+  }
+
+  /// @notice Updates the forwarder address that is allowed to call onReport
+  /// @param _forwarder The new forwarder address
+  /// @dev WARNING: Setting to address(0) disables forwarder validation.
+  ///      This makes your contract INSECURE - anyone can call onReport() with arbitrary data.
+  ///      Only use address(0) if you fully understand the security implications.
+  function setForwarderAddress(
+    address _forwarder
+  ) external onlyOwner {
+    address previousForwarder = s_forwarderAddress;
+
+    // Emit warning if disabling forwarder check
+    if (_forwarder == address(0)) {
+      emit SecurityWarning("Forwarder address set to zero - contract is now INSECURE");
     }
 
-    /// @notice Updates the expected workflow owner address
-    /// @param _author The new expected author address (use address(0) to disable this check)
-    function setExpectedAuthor(address _author) external onlyOwner {
-        address previousAuthor = s_expectedAuthor;
-        s_expectedAuthor = _author;
-        emit ExpectedAuthorUpdated(previousAuthor, _author);
+    s_forwarderAddress = _forwarder;
+    emit ForwarderAddressUpdated(previousForwarder, _forwarder);
+  }
+
+  /// @notice Updates the expected workflow owner address
+  /// @param _author The new expected author address (use address(0) to disable this check)
+  function setExpectedAuthor(
+    address _author
+  ) external onlyOwner {
+    address previousAuthor = s_expectedAuthor;
+    s_expectedAuthor = _author;
+    emit ExpectedAuthorUpdated(previousAuthor, _author);
+  }
+
+  /// @notice Updates the expected workflow name from a plaintext string
+  /// @param _name The workflow name as a string (use empty string "" to disable this check)
+  /// @dev IMPORTANT: Workflow name validation REQUIRES author validation to be enabled.
+  ///      The workflow name uses only 40-bit truncation, making collision attacks feasible
+  ///      when used alone. However, since workflow names are unique per owner, validating
+  ///      both the name AND the author address provides adequate security.
+  ///      You must call setExpectedAuthor() before or after calling this function.
+  ///      The name is hashed using SHA256 and truncated to bytes10.
+  function setExpectedWorkflowName(
+    string calldata _name
+  ) external onlyOwner {
+    bytes10 previousName = s_expectedWorkflowName;
+
+    if (bytes(_name).length == 0) {
+      s_expectedWorkflowName = bytes10(0);
+      emit ExpectedWorkflowNameUpdated(previousName, bytes10(0));
+      return;
     }
 
-    /// @notice Updates the expected workflow name from a plaintext string
-    /// @param _name The workflow name as a string (use empty string "" to disable this check)
-    /// @dev The name is hashed using SHA256 and truncated
-    function setExpectedWorkflowName(string calldata _name) external onlyOwner {
-        bytes10 previousName = s_expectedWorkflowName;
+    // Convert workflow name to bytes10:
+    // SHA256 hash → hex encode → take first 10 chars → hex encode those chars
+    bytes32 hash = sha256(bytes(_name));
+    bytes memory hexString = _bytesToHexString(abi.encodePacked(hash));
+    bytes memory first10 = new bytes(10);
+    for (uint256 i = 0; i < 10; i++) {
+      first10[i] = hexString[i];
+    }
+    s_expectedWorkflowName = bytes10(first10);
+    emit ExpectedWorkflowNameUpdated(previousName, s_expectedWorkflowName);
+  }
 
-        if (bytes(_name).length == 0) {
-            s_expectedWorkflowName = bytes10(0);
-            emit ExpectedWorkflowNameUpdated(previousName, bytes10(0));
-            return;
-        }
+  /// @notice Updates the expected workflow ID
+  /// @param _id The new expected workflow ID (use bytes32(0) to disable this check)
+  function setExpectedWorkflowId(
+    bytes32 _id
+  ) external onlyOwner {
+    bytes32 previousId = s_expectedWorkflowId;
+    s_expectedWorkflowId = _id;
+    emit ExpectedWorkflowIdUpdated(previousId, _id);
+  }
 
-        // Convert workflow name to bytes10:
-        // SHA256 hash → hex encode → take first 10 chars → hex encode those chars
-        bytes32 hash = sha256(bytes(_name));
-        bytes memory hexString = _bytesToHexString(abi.encodePacked(hash));
-        bytes memory first10 = new bytes(10);
-        for (uint256 i = 0; i < 10; i++) {
-            first10[i] = hexString[i];
-        }
-        s_expectedWorkflowName = bytes10(first10);
-        emit ExpectedWorkflowNameUpdated(previousName, s_expectedWorkflowName);
+  /// @notice Helper function to convert bytes to hex string
+  /// @param data The bytes to convert
+  /// @return The hex string representation
+  function _bytesToHexString(
+    bytes memory data
+  ) private pure returns (bytes memory) {
+    bytes memory hexString = new bytes(data.length * 2);
+
+    for (uint256 i = 0; i < data.length; i++) {
+      hexString[i * 2] = HEX_CHARS[uint8(data[i] >> 4)];
+      hexString[i * 2 + 1] = HEX_CHARS[uint8(data[i] & 0x0f)];
     }
 
-    /// @notice Updates the expected workflow ID
-    /// @param _id The new expected workflow ID (use bytes32(0) to disable this check)
-    function setExpectedWorkflowId(bytes32 _id) external onlyOwner {
-        bytes32 previousId = s_expectedWorkflowId;
-        s_expectedWorkflowId = _id;
-        emit ExpectedWorkflowIdUpdated(previousId, _id);
+    return hexString;
+  }
+
+  /// @notice Extracts all metadata fields from the onReport metadata parameter
+  /// @param metadata The metadata bytes encoded using abi.encodePacked(workflowId, workflowName, workflowOwner)
+  /// @return workflowId The unique identifier of the workflow (bytes32)
+  /// @return workflowName The name of the workflow (bytes10)
+  /// @return workflowOwner The owner address of the workflow
+  function _decodeMetadata(
+    bytes memory metadata
+  ) internal pure returns (bytes32 workflowId, bytes10 workflowName, address workflowOwner) {
+    // Metadata structure (encoded using abi.encodePacked by the Forwarder):
+    // - First 32 bytes: length of the byte array (standard for dynamic bytes)
+    // - Offset 32, size 32: workflow_id (bytes32)
+    // - Offset 64, size 10: workflow_name (bytes10)
+    // - Offset 74, size 20: workflow_owner (address)
+    assembly {
+      workflowId := mload(add(metadata, 32))
+      workflowName := mload(add(metadata, 64))
+      workflowOwner := shr(mul(12, 8), mload(add(metadata, 74)))
     }
+    return (workflowId, workflowName, workflowOwner);
+  }
 
-    /// @notice Helper function to convert bytes to hex string
-    /// @param data The bytes to convert
-    /// @return The hex string representation
-    function _bytesToHexString(bytes memory data) private pure returns (bytes memory) {
-        bytes memory hexString = new bytes(data.length * 2);
+  /// @notice Abstract function to process the report data
+  /// @param report The report calldata containing your workflow's encoded data
+  /// @dev Implement this function with your contract's business logic
+  function _processReport(
+    bytes calldata report
+  ) internal virtual;
 
-        for (uint256 i = 0; i < data.length; i++) {
-            hexString[i * 2] = HEX_CHARS[uint8(data[i] >> 4)];
-            hexString[i * 2 + 1] = HEX_CHARS[uint8(data[i] & 0x0f)];
-        }
-
-        return hexString;
-    }
-
-    /// @notice Extracts all metadata fields from the onReport metadata parameter
-    /// @param metadata The metadata bytes encoded using abi.encodePacked(workflowId, workflowName, workflowOwner)
-    /// @return workflowId The unique identifier of the workflow (bytes32)
-    /// @return workflowName The name of the workflow (bytes10)
-    /// @return workflowOwner The owner address of the workflow
-    function _decodeMetadata(bytes memory metadata)
-        internal
-        pure
-        returns (bytes32 workflowId, bytes10 workflowName, address workflowOwner)
-    {
-        // Metadata structure (encoded using abi.encodePacked by the Forwarder):
-        // - First 32 bytes: length of the byte array (standard for dynamic bytes)
-        // - Offset 32, size 32: workflow_id (bytes32)
-        // - Offset 64, size 10: workflow_name (bytes10)
-        // - Offset 74, size 20: workflow_owner (address)
-        assembly {
-            workflowId := mload(add(metadata, 32))
-            workflowName := mload(add(metadata, 64))
-            workflowOwner := shr(mul(12, 8), mload(add(metadata, 74)))
-        }
-        return (workflowId, workflowName, workflowOwner);
-    }
-
-    /// @notice Abstract function to process the report data
-    /// @param report The report calldata containing your workflow's encoded data
-    /// @dev Implement this function with your contract's business logic
-    function _processReport(bytes calldata report) internal virtual;
-
-    /// @inheritdoc IERC165
-    function supportsInterface(bytes4 interfaceId) public pure virtual override returns (bool) {
-        return interfaceId == type(IReceiver).interfaceId || interfaceId == type(IERC165).interfaceId;
-    }
+  /// @inheritdoc IERC165
+  function supportsInterface(
+    bytes4 interfaceId
+  ) public pure virtual override returns (bool) {
+    return interfaceId == type(IReceiver).interfaceId || interfaceId == type(IERC165).interfaceId;
+  }
 }
 ```
 
@@ -2172,20 +2299,24 @@ abstract contract ReceiverTemplate is IReceiver, Ownable {
 
 The simplest way to use `ReceiverTemplate` is to inherit from it and implement the `_processReport` function:
 
-```solidity
+```sol
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
-import { ReceiverTemplate } from "./ReceiverTemplate.sol";
+import {ReceiverTemplate} from "./ReceiverTemplate.sol";
 
 contract MyConsumer is ReceiverTemplate {
   uint256 public s_storedValue;
   event ValueUpdated(uint256 newValue);
 
-  // Simple constructor - no parameters needed
-  constructor() ReceiverTemplate() {}
+  // Constructor requires forwarder address
+  constructor(
+    address _forwarderAddress
+  ) ReceiverTemplate(_forwarderAddress) {}
 
   // Implement your business logic here
-  function _processReport(bytes calldata report) internal override {
+  function _processReport(
+    bytes calldata report
+  ) internal override {
     uint256 newValue = abi.decode(report, (uint256));
     s_storedValue = newValue;
     emit ValueUpdated(newValue);
@@ -2195,7 +2326,7 @@ contract MyConsumer is ReceiverTemplate {
 
 ### 3.4 Configuring Permissions
 
-After deploying your contract, the owner can enable any combination of security checks using the setter functions.
+The forwarder address is configured at deployment via the constructor and provides your first line of defense. After deploying your contract, the owner can configure additional security checks or update the forwarder address if needed.
 
 
 <Aside type="caution" title="For simulation">
@@ -2204,21 +2335,23 @@ After deploying your contract, the owner can enable any combination of security 
 
 
 <Aside type="tip" title="Finding forwarder addresses">
-  For a complete list of `KeystoneForwarder` contract addresses on all supported networks, see [Supported Networks](/cre/guides/workflow/using-evm-client/supported-networks).
+  For a complete list of `KeystoneForwarder` and `MockForwarder` contract addresses on all supported networks, see [Supported Networks](/cre/guides/workflow/using-evm-client/supported-networks).
 </Aside>
 
 **Configuration examples:**
 
 ```solidity
-// Example: Enable forwarder check only
-myConsumer.setForwarderAddress(0xF8344CFd5c43616a4366C34E3EEE75af79a74482); // Ethereum Sepolia
+// Example: Update forwarder address (e.g., when moving from simulation to production)
+myConsumer.setForwarderAddress(0xF8344CFd5c43616a4366C34E3EEE75af79a74482); // Ethereum Sepolia KeystoneForwarder
 
-// Example: Enable workflow ID check
+// Example: Add workflow ID check for additional security
 myConsumer.setExpectedWorkflowId(0x1234...); // Your specific workflow ID
 
-// Example: Enable workflow owner and name checks
+// Example: Add workflow owner check
 myConsumer.setExpectedAuthor(0xYourAddress...);
-myConsumer.setExpectedWorkflowName("my_workflow"); // The plaintext workflow name
+
+// Example: Add workflow name check (requires author validation to be set)
+myConsumer.setExpectedWorkflowName("my_workflow");
 
 // Example: Disable a check later
 myConsumer.setExpectedWorkflowName(""); // Empty string disables the check
@@ -2226,23 +2359,27 @@ myConsumer.setExpectedWorkflowName(""); // Empty string disables the check
 
 
 <Aside type="tip" title="Recommended production setup">
-  For production contracts, we recommend enabling at minimum the `forwarderAddress` check. For highest security, combine it with `expectedWorkflowId` to ensure only your specific workflow can update the contract.
+  The forwarder address is required at deployment and provides basic security. For production contracts, we strongly recommend adding additional validation:
+
+  - Use `setExpectedWorkflowId()` if only one workflow writes to your contract (highest security)
+  - Use `setExpectedAuthor()` if multiple workflows from the same owner write to your contract
 </Aside>
 
 **What the template handles for you:**
 
-- Validates the caller address (if `forwarderAddress` is set)
-- Validates the workflow ID (if `expectedWorkflowId` is set)
-- Validates the workflow owner (if `expectedAuthor` is set)
-- Validates the workflow name (if `expectedWorkflowName` is set)
-- Validates the ERC165 interface detection
-- Validates the Access control via OpenZeppelin's `Ownable`
+- Validates the caller address against the configured forwarder (required at deployment)
+- Validates the workflow ID (if `expectedWorkflowId` is configured)
+- Validates the workflow owner (if `expectedAuthor` is configured)
+- Validates the workflow name (if both `expectedWorkflowName` AND `expectedAuthor` are configured)
+- Implements ERC165 interface detection
+- Provides access control via OpenZeppelin's `Ownable`
 - Calls your `_processReport` function with validated data
 
 **What you implement:**
 
+- Pass the forwarder address to the constructor during deployment
 - Your business logic in `_processReport`
-- (Optional) Configure permissions after deployment using setter functions
+- (Optional) Configure additional permissions after deployment using setter functions
 
 #### How workflow names are encoded
 
@@ -2257,14 +2394,22 @@ The `workflowName` field in the metadata uses the **`bytes10`** type rather than
 
 This encoding ensures consistent, fixed-size representation regardless of the original workflow name length.
 
+
+<Aside type="caution" title="Workflow name validation requires author validation">
+  Workflow name validation is **only performed when author validation is also configured**. The code enforces this at runtime: if you set `expectedWorkflowName`, you must also set `expectedAuthor`, otherwise the validation will revert with `WorkflowNameRequiresAuthorValidation()`. This prevents the 40-bit collision attack by ensuring workflow names are validated in combination with the owner address. See [Security Considerations](#7-security-considerations) for details.
+</Aside>
+
 **Usage:**
 
 ```solidity
-// Just use the plaintext workflow name - the interface handles the encoding automatically
+// Set the expected author first (required)
+myConsumer.setExpectedAuthor(0xYourAddress...);
+
+// Then set the expected workflow name (only works with author validation)
 myConsumer.setExpectedWorkflowName("my_workflow");
 
-// To disable the check later
-myConsumer.setExpectedWorkflowName(""); // Empty string disables the check
+// To disable the workflow name check
+myConsumer.setExpectedWorkflowName(""); // Empty string clears the stored value
 ```
 
 ## 4. Working with Simulation
@@ -2275,20 +2420,21 @@ When you run `cre workflow simulate`, your workflow interacts with a **`MockKeys
   This is a **temporary limitation** until the `MockKeystoneForwarder` is updated to provide full metadata.
 </Aside>
 
-### Forwarder address validation
+### Deploying for Simulation
 
-You **can** configure the forwarder address check during simulation using the **Mock Forwarder Address**:
+When deploying your consumer contract for simulation, pass the **Mock Forwarder address** to the constructor:
 
 ```solidity
-// Example: Use Mock Forwarder for Ethereum Sepolia simulation
-myConsumer.setForwarderAddress(0x15fC6ae953E024d975e77382eEeC56A9101f9F88);
+// Deploy with MockForwarder address for Ethereum Sepolia simulation
+address mockForwarder = 0x15fC6ae953E024d975e77382eEeC56A9101f9F88; // Ethereum Sepolia MockForwarder
+MyConsumer myConsumer = new MyConsumer(mockForwarder);
 ```
 
 Find Mock Forwarder addresses for all networks in the [Supported Networks](/cre/guides/workflow/using-evm-client/supported-networks) page.
 
 
 <Aside type="caution" title="Important: Different addresses for simulation vs production">
-  The `MockKeystoneForwarder` address used during simulation is **different** from the `KeystoneForwarder` address used by deployed workflows. If you configure the forwarder address for simulation, remember to update it to the production `KeystoneForwarder` address after deploying. See [Supported Networks](/cre/guides/workflow/using-evm-client/supported-networks) for forwarder addresses.
+  The `MockKeystoneForwarder` address used during simulation is **different** from the `KeystoneForwarder` address used by deployed workflows. After testing with simulation, deploy a new instance with the production `KeystoneForwarder` address, or update the forwarder address using `setForwarderAddress()`. See [Supported Networks](/cre/guides/workflow/using-evm-client/supported-networks) for forwarder addresses.
 </Aside>
 
 ### Metadata-based validation
@@ -2301,18 +2447,28 @@ Find Mock Forwarder addresses for all networks in the [Supported Networks](/cre/
 
 Setting any of these will cause your simulation to fail.
 
-### After deployment
+### Transitioning to Production
 
-Once you deploy your workflow:
+Once you're ready to deploy your workflow to production:
 
-1. Update the forwarder address to the real `KeystoneForwarder` (if you configured it for simulation)
-2. Configure additional metadata-based validation as needed
+**Option 1: Deploy a new contract instance**
 
 ```solidity
-// Update to production KeystoneForwarder address
-myConsumer.setForwarderAddress(0xF8344CFd5c43616a4366C34E3EEE75af79a74482); // Example: Ethereum Sepolia
+// Deploy with production KeystoneForwarder address
+address keystoneForwarder = 0xF8344CFd5c43616a4366C34E3EEE75af79a74482; // Ethereum Sepolia
+MyConsumer myConsumer = new MyConsumer(keystoneForwarder);
 
-// Now you can enable metadata-based validation
+// Configure additional security checks
+myConsumer.setExpectedWorkflowId(0xYourWorkflowId);
+```
+
+**Option 2: Update existing contract's forwarder**
+
+```solidity
+// Update forwarder to production KeystoneForwarder
+myConsumer.setForwarderAddress(0xF8344CFd5c43616a4366C34E3EEE75af79a74482); // Ethereum Sepolia
+
+// Add metadata-based validation
 myConsumer.setExpectedWorkflowId(0xYourWorkflowId);
 ```
 
@@ -2334,6 +2490,8 @@ contract AdvancedConsumer is ReceiverTemplate {
   error ReportTooFrequent(uint256 timeSinceLastReport, uint256 minInterval);
 
   event MinReportIntervalUpdated(uint256 previousInterval, uint256 newInterval);
+
+  constructor(address _forwarderAddress) ReceiverTemplate(_forwarderAddress) {}
 
   // Add custom validation before parent's checks
   function onReport(bytes calldata metadata, bytes calldata report) external override {
@@ -2384,6 +2542,8 @@ The `_decodeMetadata` helper function is available for use in your `_processRepo
 contract MetadataAwareConsumer is ReceiverTemplate {
   mapping(bytes32 => uint256) public s_reportCountByWorkflow;
 
+  constructor(address _forwarderAddress) ReceiverTemplate(_forwarderAddress) {}
+
   function _processReport(bytes calldata report) internal override {
     // Access the metadata to get workflow ID
     bytes calldata metadata = msg.data[4:]; // Skip function selector
@@ -2419,8 +2579,8 @@ contract TemperatureConsumer is ReceiverTemplate {
   int256 public s_currentTemperature;
   event TemperatureUpdated(int256 newTemperature);
 
-  // Simple constructor - no parameters needed
-  constructor() ReceiverTemplate() {}
+  // Constructor requires forwarder address
+  constructor(address _forwarderAddress) ReceiverTemplate(_forwarderAddress) {}
 
   function _processReport(bytes calldata report) internal override {
     int256 newTemperature = abi.decode(report, (int256));
@@ -2430,13 +2590,22 @@ contract TemperatureConsumer is ReceiverTemplate {
 }
 ```
 
-**Configuring permissions after deployment:**
+**Deployment:**
 
 ```solidity
-// Enable forwarder check for production
-temperatureConsumer.setForwarderAddress(0xF8344CFd5c43616a4366C34E3EEE75af79a74482); // Ethereum Sepolia
+// For simulation: Use MockForwarder address
+address mockForwarder = 0x15fC6ae953E024d975e77382eEeC56A9101f9F88; // e.g. Ethereum Sepolia
+TemperatureConsumer temperatureConsumer = new TemperatureConsumer(mockForwarder);
 
-// Enable workflow ID check for highest security
+// For production: Use KeystoneForwarder address
+address keystoneForwarder = 0xF8344CFd5c43616a4366C34E3EEE75af79a74482; // e.g. Ethereum Sepolia
+TemperatureConsumer temperatureConsumer = new TemperatureConsumer(keystoneForwarder);
+```
+
+**Adding additional security after deployment:**
+
+```solidity
+// Add workflow ID check for highest security
 temperatureConsumer.setExpectedWorkflowId(0xYourWorkflowId...);
 ```
 
@@ -2537,7 +2706,7 @@ import { ReceiverTemplate } from "./ReceiverTemplate.sol";
 contract UpdateReservesProxy is ReceiverTemplate {
   ReserveManager private s_reserveManager;
 
-  constructor(address reserveManagerAddress) {
+  constructor(address _forwarderAddress, address reserveManagerAddress) ReceiverTemplate(_forwarderAddress) {
     s_reserveManager = ReserveManager(reserveManagerAddress);
   }
 
@@ -2558,10 +2727,7 @@ contract UpdateReservesProxy is ReceiverTemplate {
 **Configuring permissions after deployment:**
 
 ```solidity
-// Enable forwarder check (recommended)
-updateReservesProxy.setForwarderAddress(0xF8344CFd5c43616a4366C34E3EEE75af79a74482); // Ethereum Sepolia
-
-// Enable workflow ID check for production (highest security)
+// Additional validation can be added after deployment
 updateReservesProxy.setExpectedWorkflowId(0xYourWorkflowId...);
 ```
 
@@ -2575,7 +2741,7 @@ updateReservesProxy.setExpectedWorkflowId(0xYourWorkflowId...);
 The deployment and configuration process involves these steps:
 
 1. **Deploy the Logic Contract**: Deploy `ReserveManager.sol`. The wallet that deploys this contract becomes its `owner`.
-2. **Deploy the Proxy Contract**: Deploy `UpdateReservesProxy.sol`, passing the address of the deployed `ReserveManager` contract to its constructor.
+2. **Deploy the Proxy Contract**: Deploy `UpdateReservesProxy.sol`, passing the forwarder address and the address of the deployed `ReserveManager` contract to its constructor.
 3. **Link the Contracts**: The `owner` of the `ReserveManager` contract must call its `setProxyAddress` function, passing in the address of the `UpdateReservesProxy` contract. This authorizes the proxy to call the logic contract.
 4. **Configure Permissions** (Recommended): The `owner` of the proxy should call setter functions to enable security checks:
    ```solidity
@@ -2585,15 +2751,67 @@ The deployment and configuration process involves these steps:
 5. **Configure Workflow**: In your workflow's `config.json`, use the address of the **Proxy Contract** as the receiver address.
 6. **Execution Flow**: When your workflow runs:
    - The Chainlink Forwarder calls `onReport` on your **Proxy**
-   - The Proxy validates the report (forwarder address, workflow ID, etc.)
+   - The Proxy validates the report (forwarder address is verified automatically; additional checks like workflow ID can be added)
    - The Proxy's `_processReport` function calls the `updateReserves` function on your **Logic Contract**
    - Because the caller is the trusted proxy, the `onlyProxy` check passes, and your state is securely updated
 7. **(Optional) Upgrade**: If you later need to deploy a new proxy, the owner can:
-   - Deploy the new proxy contract
+   - Deploy the new proxy contract with the appropriate forwarder address
    - Call `setProxyAddress` on the `ReserveManager` to point it to the new proxy's address
    - Update the workflow configuration to use the new proxy address
 
 #### End-to-End Sequence
+
+## 7. Security Considerations
+
+### Forwarder address
+
+**The forwarder address is the foundation of your contract's security.** The `KeystoneForwarder` contract performs cryptographic verification of DON signatures before calling your consumer. By requiring the forwarder address in the constructor, `ReceiverTemplate` ensures your contract is secure from deployment.
+
+
+<Aside type="caution" title="Never set forwarder to address(0) in production">
+  While the `setForwarderAddress()` function allows updating to `address(0)`, this disables the critical security check and allows **anyone** to call your `onReport()` function with arbitrary data. The function emits a `SecurityWarning` event if you attempt this. Only use `address(0)` for testing if you fully understand the implications.
+</Aside>
+
+### Replay protection
+
+The `KeystoneForwarder` contract includes built-in replay protection that prevents successful reports from being executed multiple times. By requiring the forwarder address at construction time, `ReceiverTemplate` ensures your consumer benefits from this protection automatically.
+
+
+<Aside type="note" title="Failed reports can be retried">
+  If a report fails (reverts), the forwarder's replay protection allows it to be retried. This is safe because reverts undo all state changes, ensuring no duplicate effects occur in your contract.
+</Aside>
+
+### Additional validation layers
+
+The forwarder address provides baseline security, but you can add additional validation for defense-in-depth:
+
+- **`expectedWorkflowId`**: Ensures only one specific workflow can update your contract. Use this when a single workflow writes to your consumer (highest security for single-workflow scenarios).
+- **`expectedAuthor`**: Restricts to workflows owned by a specific address. Use this when multiple workflows from the same owner should access your contract.
+- **`expectedWorkflowName`**: Can be used in combination with `expectedAuthor` for additional validation. Requires author validation to be configured. See [Workflow name validation](#workflow-name-validation) below.
+
+### Workflow name validation
+
+
+<Aside type="caution" title="Workflow name validation requires author validation">
+  The `expectedWorkflowName` check in `ReceiverTemplate.onReport()` **requires author validation** to be configured:
+
+  - **Collision Risk**: Workflow names use only 40-bit truncation (bytes10), making collision attacks computationally feasible when used alone
+  - **Unique per owner**: Workflow names are unique per owner but not across different owners
+  - **Runtime enforcement**: The code enforces that if `expectedWorkflowName` is set, `expectedAuthor` must also be set, otherwise it reverts with `WorkflowNameRequiresAuthorValidation()`
+
+  By combining workflow name (40-bit) with author validation (160-bit address), the contract achieves adequate collision resistance. You can safely use workflow name validation as long as author validation is also enabled.
+</Aside>
+
+### Best practices
+
+1. **Always deploy with a valid forwarder address** - The constructor requires this for security. Use `MockForwarder` for simulation, `KeystoneForwarder` for production. Forwarder addresses are available in the [Supported Networks](/cre/guides/workflow/using-evm-client/supported-networks) page.
+2. **Add additional validation for production**:
+   - **Single workflow**: Use `setExpectedWorkflowId()` to restrict to one specific workflow (highest security)
+   - **Multiple workflows from same owner**: Use `setExpectedAuthor()` to restrict to workflows you own
+   - **Multiple workflows from different owners**: Implement custom validation logic in your `onReport()` override
+3. **Keep your owner key secure** - The owner can update all permission settings
+4. **Test permission configurations** - Verify your security settings work as expected before production deployment
+5. **Workflow name validation** - Can be used with `setExpectedWorkflowName()` but requires `setExpectedAuthor()` to also be configured for security
 
 ---
 
@@ -3682,7 +3900,7 @@ Non-interactive mode allows you to run simulations without prompts, making it id
 **Requirements:**
 
 - Use the `--non-interactive` flag
-- Specify `--trigger-index` (0-based index of the trigger to run)
+- Specify `--trigger-index` to select which handler to run (0-based position: `0` = first handler, `1` = second, etc.)
 - Provide trigger-specific flags as needed (see [Trigger-specific configuration](#trigger-specific-configuration))
 
 **Example:**
@@ -3690,6 +3908,14 @@ Non-interactive mode allows you to run simulations without prompts, making it id
 ```bash
 cre workflow simulate my-workflow --non-interactive --trigger-index 0 --target staging-settings
 ```
+
+<Aside type="tip" title="Understanding trigger-index">
+  The `--trigger-index` flag selects **which handler** in your workflow to execute. Handlers are created in your
+  `InitWorkflow` function using `cre.Handler()`, where [each handler connects a trigger to a callback
+  function](/cre/key-terms#handler). If your workflow has only one handler, use `--trigger-index 0`. If you have
+  multiple handlers (e.g., one for an HTTP trigger and one for an EVM log trigger), use `0` for the first, `1` for the
+  second, etc., based on their order in your code.
+</Aside>
 
 ## The `--broadcast` flag
 
@@ -3797,6 +4023,20 @@ cre workflow simulate my-workflow \
   --evm-event-index 0 \
   --target staging-settings
 ```
+
+
+<Aside type="tip" title="Understanding the two different indexes">
+  **Two separate concepts:**
+
+  - **`--trigger-index`** selects **which handler** in your workflow to run (e.g., if the
+    handler with an EVM log trigger is the third handler defined, use `--trigger-index 2`)
+  - **`--evm-event-index`**
+    specifies **which log/event within the transaction** to use for testing (e.g., if the transaction emitted 3 events and
+    you want the first one, use `--evm-event-index 0`)
+
+  These are completely independent: one selects your workflow's
+  handler to execute, the other selects which event data from the blockchain to test with.
+</Aside>
 
 ## Additional flags
 
@@ -6058,8 +6298,8 @@ See the [repository README](https://github.com/smartcontractkit/cre-gcp-predicti
 Source: https://docs.chain.link/cre/reference/cli
 Last Updated: 2025-11-20
 
-<Aside type="note" title="Required CLI Version: v1.0.2">
-  To ensure compatibility with the guides and examples in this documentation, please use version `v1.0.2` of the CRE
+<Aside type="note" title="Required CLI Version: v1.0.5">
+  To ensure compatibility with the guides and examples in this documentation, please use version `v1.0.5` of the CRE
   CLI. You can check your installed version by running `cre version`. Refer to the [CLI
   Installation](/cre/getting-started/cli-installation/macos-linux) guide for more information.
 </Aside>
@@ -6433,15 +6673,15 @@ cre workflow simulate <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| Flag                      | Description                                                                                        |
-| ------------------------- | -------------------------------------------------------------------------------------------------- |
-| `--broadcast`             | Broadcast onchain write transactions (default: `false`). Without this flag, a dry run is performed |
-| `-g, --engine-logs`       | Enable non-fatal engine logging                                                                    |
-| `--non-interactive`       | Run without prompts; requires `--trigger-index` and inputs for the selected trigger type           |
-| `--trigger-index <int>`   | Index of the trigger to run (0-based). Required when using `--non-interactive`                     |
-| `--http-payload <string>` | HTTP trigger payload as JSON string or path to JSON file (with or without `@` prefix)              |
-| `--evm-tx-hash <string>`  | EVM trigger transaction hash (`0x...`). For EVM log triggers                                       |
-| `--evm-event-index <int>` | EVM trigger log index (0-based). For EVM log triggers                                              |
+| Flag                      | Description                                                                                                                                                                       |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--broadcast`             | Broadcast onchain write transactions (default: `false`). Without this flag, a dry run is performed                                                                                |
+| `-g, --engine-logs`       | Enable non-fatal engine logging                                                                                                                                                   |
+| `--non-interactive`       | Run without prompts; requires `--trigger-index` (see the line below) and inputs for the selected trigger type                                                                     |
+| `--trigger-index <int>`   | Selects which handler to run (0-based position). If your workflow has multiple handlers, `0` is the first, `1` is the second, etc. Required with `--non-interactive`              |
+| `--http-payload <string>` | HTTP trigger payload as JSON string or path to JSON file (with or without `@` prefix). For HTTP triggers only                                                                     |
+| `--evm-tx-hash <string>`  | Transaction hash (`0x...`) containing the event that triggered your workflow. For EVM log triggers only                                                                           |
+| `--evm-event-index <int>` | Which log/event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For EVM log triggers only |
 
 **Examples:**
 
@@ -6455,6 +6695,21 @@ cre workflow simulate <workflow-name-or-path> [flags]
 
   ```bash
   cre workflow simulate ./my-workflow --broadcast --target local-simulation
+  ```
+
+- Non-interactive mode with HTTP trigger
+
+  ```bash
+  # If your HTTP trigger handler is the first handler in your workflow, use --trigger-index 0
+  cre workflow simulate my-workflow --non-interactive --trigger-index 0 --http-payload '{"key":"value"}' --target staging-settings
+  ```
+
+- Non-interactive mode with EVM log trigger
+
+  ```bash
+  # If your EVM log trigger handler is the second handler in your workflow, use --trigger-index 1
+  # --evm-event-index 0 means you want the first event from that transaction
+  cre workflow simulate my-workflow --non-interactive --trigger-index 1 --evm-tx-hash 0x420721d7d00130a03c5b525b2dbfd42550906ddb3075e8377f9bb5d1a5992f8e --evm-event-index 0 --target staging-settings
   ```
 
 
@@ -6951,12 +7206,12 @@ cre version
 **Example output:**
 
 ```bash
-cre version v1.0.2
+cre version v1.0.5
 ```
 
 
 <Aside type="note" title="Version compatibility">
-  Always check that your CLI version matches the version recommended in the documentation. The current recommended version is **v1.0.2**. See the [CLI Installation guide](/cre/getting-started/cli-installation) for more information.
+  Always check that your CLI version matches the version recommended in the documentation. The current recommended version is **v1.0.5**. See the [CLI Installation guide](/cre/getting-started/cli-installation) for more information.
 </Aside>
 
 ## Learn more
@@ -7293,10 +7548,10 @@ Large Language Models (LLMs) generate different responses for the same prompt, e
 
 # Part 1: Project Setup & Simulation
 Source: https://docs.chain.link/cre/getting-started/part-1-project-setup-ts
-Last Updated: 2025-11-04
+Last Updated: 2026-01-14
 
 <Aside type="note" title="SDK Language: TypeScript">
-  You're viewing the **TypeScript** version of this guide. If you prefer Go, use the language selector in the right
+  You're viewing the **TypeScript** version of this guide. If you prefer Go, use the language selector in the left
   sidebar to switch to the Go version.
 </Aside>
 
@@ -7315,7 +7570,7 @@ Before you begin, ensure you have the following:
 
 - **CRE CLI**: See the [Installation Guide](/cre/getting-started/cli-installation/macos-linux) for details.
 - **CRE account & authentication**: You must have a CRE account and be logged in with the CLI. See [Create your account](/cre/account/creating-account) and [Log in with the CLI](/cre/account/cli-login) for instructions.
-- **Bun**: You must have <a href="https://bun.com/docs" target="blank">Bun</a> version 1.2.21 or higher installed. Check your version with bun --version. See [Install Bun](https://bun.sh/) for instructions.
+- **Bun**: You must have <a href="https://bun.com/docs" target="blank">Bun</a> version 1.2.21 or higher installed. Check your version with bun --version. See [Install Bun](https://bun.com) for instructions.
 - **Funded Sepolia Account**: An account with Sepolia ETH to pay for transaction gas fees. Go to <a href="https://faucets.chain.link" target="blank">faucets.chain.link</a> to get some Sepolia ETH.
 
 ## Step 1: Verify your authentication
@@ -8203,18 +8458,18 @@ Here is the source code for the contract so you can see how it works:
   of how this works in a later guide.
 </Aside>
 
-```solidity
+```sol
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import { ReceiverTemplate } from "./ReceiverTemplate.sol";
+import {ReceiverTemplate} from "./ReceiverTemplate.sol";
 
 /**
  * @title CalculatorConsumer (Testing Version)
  * @notice This contract receives reports from a CRE workflow and stores the results of a calculation onchain.
- * @dev This version uses ReceiverTemplate without configuring any security checks, making it compatible
- * with the mock Forwarder used during simulation. All permission fields remain at their default zero
- * values (disabled).
+ * @dev Inherits from ReceiverTemplate which provides security checks. The forwarder address must be
+ * configured at deployment. Additional security checks (workflowId, workflowName, author) can be enabled via setter
+ * functions.
  */
 contract CalculatorConsumer is ReceiverTemplate {
   // Struct to hold the data sent in a report from the workflow
@@ -8233,16 +8488,22 @@ contract CalculatorConsumer is ReceiverTemplate {
   event ResultUpdated(uint256 indexed resultId, uint256 finalResult);
 
   /**
-   * @dev The constructor doesn't set any security checks.
-   * The ReceiverTemplate parent constructor will initialize all permission fields to zero (disabled).
+   * @notice Constructor requires the forwarder address for security
+   * @param _forwarderAddress The address of the Chainlink Forwarder contract (for testing: MockForwarder)
+   * @dev The forwarder address enables the first layer of security - only the forwarder can call onReport.
+   * Additional security checks can be configured after deployment using setter functions.
    */
-  constructor() {}
+  constructor(
+    address _forwarderAddress
+  ) ReceiverTemplate(_forwarderAddress) {}
 
   /**
    * @notice Implements the core business logic for processing reports.
    * @dev This is called automatically by ReceiverTemplate's onReport function after security checks.
    */
-  function _processReport(bytes calldata report) internal override {
+  function _processReport(
+    bytes calldata report
+  ) internal override {
     // Decode the report bytes into our CalculatorResult struct
     CalculatorResult memory calculatorResult = abi.decode(report, (CalculatorResult));
 
@@ -8258,7 +8519,9 @@ contract CalculatorConsumer is ReceiverTemplate {
   // This function is a "dry-run" utility. It allows an offchain system to check
   // if a prospective result is an outlier before submitting it for a real onchain update.
   // It is also used to guide the binding generator to create a method that accepts the CalculatorResult struct.
-  function isResultAnomalous(CalculatorResult memory _prospectiveResult) public view returns (bool) {
+  function isResultAnomalous(
+    CalculatorResult memory _prospectiveResult
+  ) public view returns (bool) {
     // A result is not considered anomalous if it's the first one.
     if (resultCount == 0) {
       return false;
@@ -8271,7 +8534,7 @@ contract CalculatorConsumer is ReceiverTemplate {
 }
 ```
 
-The contract is already deployed for you on Sepolia at the following address: <a href="https://sepolia.etherscan.io/address/0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52#code" target="_blank" rel="noopener noreferrer">`0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52`</a>. You will use this address in your configuration file.
+The contract is already deployed for you on Sepolia at the following address: <a href="https://sepolia.etherscan.io/address/0x95e10BaC2B89aB4D8508ccEC3f08494FcB3D23cb#code" target="_blank" rel="noopener noreferrer">`0x95e10BaC2B89aB4D8508ccEC3f08494FcB3D23cb`</a>. You will use this address in your configuration file.
 
 ## Step 2: Update your workflow configuration
 
@@ -8284,7 +8547,7 @@ Add the `CalculatorConsumer` contract address to your `config.staging.json`:
   "evms": [
     {
       "storageAddress": "0xa17CF997C28FF154eDBae1422e6a50BeF23927F4",
-      "calculatorConsumerAddress": "0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52",
+      "calculatorConsumerAddress": "0x95e10BaC2B89aB4D8508ccEC3f08494FcB3D23cb",
       "chainName": "ethereum-testnet-sepolia",
       "gasLimit": "500000"
     }
@@ -8573,34 +8836,34 @@ Your workflow will now show the complete end-to-end execution, including the fin
 
 ```bash
 Workflow compiled
-2025-12-09T13:31:18Z [SIMULATION] Simulator Initialized
+2026-01-09T17:52:05Z [SIMULATION] Simulator Initialized
 
-2025-12-09T13:31:18Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
-2025-12-09T13:31:18Z [USER LOG] Successfully fetched offchain value: 62
-2025-12-09T13:31:18Z [USER LOG] Successfully read onchain value: 22
-2025-12-09T13:31:18Z [USER LOG] Final calculated result: 84
-2025-12-09T13:31:18Z [USER LOG] Updating calculator result for consumer: 0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52
-2025-12-09T13:31:18Z [USER LOG] Writing report to consumer contract - offchainValue: 62, onchainValue: 22, finalResult: 84
-2025-12-09T13:31:48Z [USER LOG] Waiting for write report response
-2025-12-09T13:31:48Z [USER LOG] Write report transaction succeeded: 0x7e2e58613f4d8414826d2e6164e42b110fefb97137a1065ac69d1c3decd259f2
-2025-12-09T13:31:48Z [USER LOG] View transaction at https://sepolia.etherscan.io/tx/0x7e2e58613f4d8414826d2e6164e42b110fefb97137a1065ac69d1c3decd259f2
-2025-12-09T13:31:48Z [USER LOG] Workflow finished successfully! offchainValue: 62, onchainValue: 22, finalResult: 84, txHash: 0x7e2e58613f4d8414826d2e6164e42b110fefb97137a1065ac69d1c3decd259f2
+2026-01-09T17:52:05Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+2026-01-09T17:52:06Z [USER LOG] Successfully fetched offchain value: 68
+2026-01-09T17:52:06Z [USER LOG] Successfully read onchain value: 22
+2026-01-09T17:52:06Z [USER LOG] Final calculated result: 90
+2026-01-09T17:52:06Z [USER LOG] Updating calculator result for consumer: 0x95e10BaC2B89aB4D8508ccEC3f08494FcB3D23cb
+2026-01-09T17:52:06Z [USER LOG] Writing report to consumer contract - offchainValue: 68, onchainValue: 22, finalResult: 90
+2026-01-09T17:52:12Z [USER LOG] Waiting for write report response
+2026-01-09T17:52:12Z [USER LOG] Write report transaction succeeded: 0x6346d9eeca2f2875131d38aa9903a216f16e3cc7188f0ac6a1d5cd1fcbfbf9e6
+2026-01-09T17:52:12Z [USER LOG] View transaction at https://sepolia.etherscan.io/tx/0x6346d9eeca2f2875131d38aa9903a216f16e3cc7188f0ac6a1d5cd1fcbfbf9e6
+2026-01-09T17:52:12Z [USER LOG] Workflow finished successfully! offchainValue: 68, onchainValue: 22, finalResult: 90, txHash: 0x6346d9eeca2f2875131d38aa9903a216f16e3cc7188f0ac6a1d5cd1fcbfbf9e6
 
 Workflow Simulation Result:
  {
-  "finalResult": 84,
-  "offchainValue": 62,
+  "finalResult": 90,
+  "offchainValue": 68,
   "onchainValue": 22,
-  "txHash": "0x7e2e58613f4d8414826d2e6164e42b110fefb97137a1065ac69d1c3decd259f2"
+  "txHash": "0x6346d9eeca2f2875131d38aa9903a216f16e3cc7188f0ac6a1d5cd1fcbfbf9e6"
 }
 
-2025-12-09T13:31:48Z [SIMULATION] Execution finished signal received
-2025-12-09T13:31:48Z [SIMULATION] Skipping WorkflowEngineV2
+2026-01-09T17:52:12Z [SIMULATION] Execution finished signal received
+2026-01-09T17:52:12Z [SIMULATION] Skipping WorkflowEngineV2
 ```
 
-- **`[USER LOG]`**: You can see all of your `logger.info()` calls showing the complete workflow execution, including the offchain value (`62`), onchain value (`22`), final calculation (`84`), and the transaction hash.
+- **`[USER LOG]`**: You can see all of your `logger.info()` calls showing the complete workflow execution, including the offchain value (`68`), onchain value (`22`), final calculation (`90`), and the transaction hash.
 - **`[SIMULATION]`**: These are system-level messages from the simulator showing its internal state.
-- **`Workflow Simulation Result`**: This is the final return value of your workflow. The `MyResult` object contains all the values (62 + 22 = 84) and the transaction hash confirming the write operation succeeded.
+- **`Workflow Simulation Result`**: This is the final return value of your workflow. The `MyResult` object contains all the values (68 + 22 = 90) and the transaction hash confirming the write operation succeeded.
 
 ## Step 5: Verify the result onchain
 
@@ -8622,7 +8885,7 @@ You'll notice the transaction's `to` address is not the `CalculatorConsumer` con
 
 While your wallet interacted with the Forwarder, the `CalculatorConsumer` contract's state was still updated. You can verify this change directly on Etherscan:
 
-- Navigate to the `CalculatorConsumer` contract address: <a href="https://sepolia.etherscan.io/address/0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52#readContract" target="_blank" rel="noopener noreferrer">`0x10785f51B1Fccd94b7e386FDc83b9d50C71C0e52`</a>.
+- Navigate to the `CalculatorConsumer` contract address: <a href="https://sepolia.etherscan.io/address/0x95e10BaC2B89aB4D8508ccEC3f08494FcB3D23cb#readContract" target="_blank" rel="noopener noreferrer">`0x95e10BaC2B89aB4D8508ccEC3f08494FcB3D23cb`</a>.
 - Expand the `latestResult` function and click **Query**. The values should match the `finalResult`, `offchainValue`, and `onchainValue` from your workflow logs.
 
 This completes the end-to-end loop: triggering a workflow, fetching data, reading onchain state, and verifiably writing the result back to a public blockchain.
@@ -11037,12 +11300,19 @@ This guide explains the two key parts of working with log triggers:
 
 You create an EVM Log trigger by calling the `EVMClient.logTrigger()` method with a `FilterLogTriggerRequest` configuration. This configuration specifies which contract addresses and event topics to listen for.
 
+<Aside type="note" title="Base64 Encoding Required">
+  **All addresses and topic values must be base64 encoded** using the `hexToBase64()` helper function from the CRE SDK.
+  While the workflow simulator accepts raw hex strings for convenience during development, **deployed workflows require
+  base64 encoding**. Always use `hexToBase64()` on addresses and topic values to ensure your workflow works in both
+  simulation and production.
+</Aside>
+
 ### Basic configuration
 
 The simplest configuration listens for **all events** from specific contract addresses:
 
 ```typescript
-import { cre, getNetwork, type Runtime, type EVMLog, Runner, bytesToHex } from "@chainlink/cre-sdk"
+import { cre, getNetwork, type Runtime, type EVMLog, Runner, bytesToHex, hexToBase64 } from "@chainlink/cre-sdk"
 
 type Config = {
   chainSelectorName: string
@@ -11072,7 +11342,7 @@ const initWorkflow = (config: Config) => {
   return [
     cre.handler(
       evmClient.logTrigger({
-        addresses: [config.contractAddress],
+        addresses: [hexToBase64(config.contractAddress)],
       }),
       onLogTrigger
     ),
@@ -11089,10 +11359,11 @@ main()
 
 ### Filtering by event type
 
-To listen for **specific event types**, you need to provide the event's signature hash as the first topic (`Topics[0]`). You can compute this using viem's `keccak256` and `toHex` functions:
+To listen for **specific event types**, you need to provide the event's signature hash as the first topic (`Topics[0]`). You can compute this using viem's `keccak256` and `toBytes` functions:
 
 ```typescript
-import { keccak256, toHex } from "viem"
+import { keccak256, toBytes } from "viem"
+import { hexToBase64 } from "@chainlink/cre-sdk"
 
 const initWorkflow = (config: Config) => {
   const network = getNetwork({
@@ -11108,14 +11379,14 @@ const initWorkflow = (config: Config) => {
   const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
 
   // Compute the event signature hash for Transfer(address,address,uint256)
-  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
+  const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
 
   return [
     cre.handler(
       evmClient.logTrigger({
-        addresses: [config.contractAddress],
+        addresses: [hexToBase64(config.contractAddress)],
         topics: [
-          { values: [transferEventHash] }, // Listen only for Transfer events
+          { values: [hexToBase64(transferEventHash)] }, // Listen only for Transfer events
         ],
       }),
       onLogTrigger
@@ -11132,13 +11403,26 @@ EVM events can have up to 3 `indexed` parameters (in addition to the event signa
 
 - **`addresses`**: The trigger fires if the event is emitted from **any** contract in this list (**OR** logic).
 - **`topics`**: An event must match the conditions for **all** defined topic slots (**AND** logic between topics). Within a single topic, you can provide multiple values, and it will match if the event's topic is **any** of those values (**OR** logic within a topic).
+- **Wildcarding topics**: To skip filtering on a specific topic position, omit it from the topics array or provide an empty values array `{ values: [] }`. For example, to filter on topic 1 and topic 3 but not topic 2, you would provide `[topic0, topic1, { values: [] }, topic3]`.
+
+<Aside type="caution" title="Topic values must be padded to 32 bytes and base64 encoded">
+  EVM logs always store indexed parameters as **32-byte values**. When filtering on topics 1, 2, or 3:
+
+  1. **Pad your values to 32 bytes** using `padHex(value, { size: 32 })` (e.g., addresses are 20 bytes and must be padded)
+  2. **Convert to base64** using `hexToBase64()`
+
+  If you don't pad correctly, your filter won't match the actual log topics and the trigger will not fire.
+
+  Topic 0 (the event signature from `keccak256`) is already 32 bytes and doesn't need padding.
+</Aside>
 
 #### Example 1: Filtering on a single indexed parameter
 
 To trigger only on `Transfer` events where the `from` address is a specific value:
 
 ```typescript
-import { keccak256, toHex, pad } from "viem"
+import { keccak256, toBytes, padHex } from "viem"
+import { hexToBase64 } from "@chainlink/cre-sdk"
 
 const initWorkflow = (config: Config) => {
   const network = getNetwork({
@@ -11153,16 +11437,16 @@ const initWorkflow = (config: Config) => {
 
   const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
 
-  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
-  const aliceAddress = "0xAlice..."
+  const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
+  const aliceAddress = "0xAlice..." as `0x${string}`
 
   return [
     cre.handler(
       evmClient.logTrigger({
-        addresses: [config.contractAddress],
+        addresses: [hexToBase64(config.contractAddress)],
         topics: [
-          { values: [transferEventHash] }, // Topic 0: Event signature (Transfer)
-          { values: [pad(aliceAddress)] }, // Topic 1: from = Alice
+          { values: [hexToBase64(transferEventHash)] }, // Topic 0: Event signature (Transfer)
+          { values: [hexToBase64(padHex(aliceAddress, { size: 32 }))] }, // Topic 1: from = Alice
         ],
       }),
       onLogTrigger
@@ -11171,10 +11455,13 @@ const initWorkflow = (config: Config) => {
 }
 ```
 
+
 <Aside type="note" title="Indexed Parameters and Topics">
-  Only parameters marked as `indexed` in the Solidity event definition can be filtered using topics. The event signature
-  is always `Topics[0]`. Subsequent indexed parameters are `Topics[1]`, `Topics[2]`, and `Topics[3]`. Address values
-  must be padded to 32 bytes using viem's `pad()` function.
+  Only parameters marked as `indexed` in the Solidity event definition can be filtered using topics. The event signature is always `Topics[0]`. Subsequent indexed parameters are `Topics[1]`, `Topics[2]`, and `Topics[3]`. Encoding different types:
+
+  - **Addresses**: Cast as `` `0x${string}` ``, use `padHex(address, { size: 32 })` then `hexToBase64()`
+  - **uint256**: Use `padHex(numberToHex(value), { size: 32 })` then `hexToBase64()`
+  - **bytes32**: Ensure it's 32 bytes, then use `hexToBase64()` directly
 </Aside>
 
 #### Example 2: "AND" filtering
@@ -11182,7 +11469,8 @@ const initWorkflow = (config: Config) => {
 To trigger on `Transfer` events where `from` is Alice **AND** `to` is Bob:
 
 ```typescript
-import { keccak256, toHex, pad } from "viem"
+import { keccak256, toBytes, padHex } from "viem"
+import { hexToBase64 } from "@chainlink/cre-sdk"
 
 const initWorkflow = (config: Config) => {
   const network = getNetwork({
@@ -11197,18 +11485,18 @@ const initWorkflow = (config: Config) => {
 
   const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
 
-  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
-  const aliceAddress = "0xAlice..."
-  const bobAddress = "0xBob..."
+  const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
+  const aliceAddress = "0xAlice..." as `0x${string}`
+  const bobAddress = "0xBob..." as `0x${string}`
 
   return [
     cre.handler(
       evmClient.logTrigger({
-        addresses: [config.contractAddress],
+        addresses: [hexToBase64(config.contractAddress)],
         topics: [
-          { values: [transferEventHash] }, // Topic 0: Event signature (Transfer)
-          { values: [pad(aliceAddress)] }, // Topic 1: from = Alice
-          { values: [pad(bobAddress)] }, // Topic 2: to = Bob
+          { values: [hexToBase64(transferEventHash)] }, // Topic 0: Event signature (Transfer)
+          { values: [hexToBase64(padHex(aliceAddress, { size: 32 }))] }, // Topic 1: from = Alice
+          { values: [hexToBase64(padHex(bobAddress, { size: 32 }))] }, // Topic 2: to = Bob
         ],
       }),
       onLogTrigger
@@ -11222,7 +11510,8 @@ const initWorkflow = (config: Config) => {
 To trigger on `Transfer` events where `from` is **either** Alice **OR** Charlie:
 
 ```typescript
-import { keccak256, toHex, pad } from "viem"
+import { keccak256, toBytes, padHex } from "viem"
+import { hexToBase64 } from "@chainlink/cre-sdk"
 
 const initWorkflow = (config: Config) => {
   const network = getNetwork({
@@ -11237,17 +11526,22 @@ const initWorkflow = (config: Config) => {
 
   const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
 
-  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
-  const aliceAddress = "0xAlice..."
-  const charlieAddress = "0xCharlie..."
+  const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
+  const aliceAddress = "0xAlice..." as `0x${string}`
+  const charlieAddress = "0xCharlie..." as `0x${string}`
 
   return [
     cre.handler(
       evmClient.logTrigger({
-        addresses: [config.contractAddress],
+        addresses: [hexToBase64(config.contractAddress)],
         topics: [
-          { values: [transferEventHash] }, // Topic 0: Event signature (Transfer)
-          { values: [pad(aliceAddress), pad(charlieAddress)] }, // Topic 1: from = Alice OR Charlie
+          { values: [hexToBase64(transferEventHash)] }, // Topic 0: Event signature (Transfer)
+          {
+            values: [
+              hexToBase64(padHex(aliceAddress, { size: 32 })),
+              hexToBase64(padHex(charlieAddress, { size: 32 })),
+            ],
+          }, // Topic 1: from = Alice OR Charlie
         ],
       }),
       onLogTrigger
@@ -11261,7 +11555,8 @@ const initWorkflow = (config: Config) => {
 To listen for **multiple event types** from a single contract, provide multiple event signature hashes in `Topics[0]`:
 
 ```typescript
-import { keccak256, toHex } from "viem"
+import { keccak256, toBytes } from "viem"
+import { hexToBase64 } from "@chainlink/cre-sdk"
 
 const initWorkflow = (config: Config) => {
   const network = getNetwork({
@@ -11276,15 +11571,15 @@ const initWorkflow = (config: Config) => {
 
   const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
 
-  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
-  const approvalEventHash = keccak256(toHex("Approval(address,address,uint256)"))
+  const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
+  const approvalEventHash = keccak256(toBytes("Approval(address,address,uint256)"))
 
   return [
     cre.handler(
       evmClient.logTrigger({
-        addresses: [config.contractAddress],
+        addresses: [hexToBase64(config.contractAddress)],
         topics: [
-          { values: [transferEventHash, approvalEventHash] }, // Listen for Transfer OR Approval
+          { values: [hexToBase64(transferEventHash), hexToBase64(approvalEventHash)] }, // Listen for Transfer OR Approval
         ],
       }),
       onLogTrigger
@@ -11298,6 +11593,9 @@ const initWorkflow = (config: Config) => {
 To listen for the **same event from multiple contracts**, provide multiple addresses:
 
 ```typescript
+import { keccak256, toBytes } from "viem"
+import { hexToBase64 } from "@chainlink/cre-sdk"
+
 const initWorkflow = (config: Config) => {
   const network = getNetwork({
     chainFamily: "evm",
@@ -11311,14 +11609,14 @@ const initWorkflow = (config: Config) => {
 
   const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
 
-  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
+  const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
 
   return [
     cre.handler(
       evmClient.logTrigger({
-        addresses: ["0xTokenA...", "0xTokenB...", "0xTokenC..."],
+        addresses: [hexToBase64("0xTokenA..."), hexToBase64("0xTokenB..."), hexToBase64("0xTokenC...")],
         topics: [
-          { values: [transferEventHash] }, // Listen for Transfer events from any of these contracts
+          { values: [hexToBase64(transferEventHash)] }, // Listen for Transfer events from any of these contracts
         ],
       }),
       onLogTrigger
@@ -11327,13 +11625,61 @@ const initWorkflow = (config: Config) => {
 }
 ```
 
+#### Example 6: Filtering on uint256 indexed parameter
+
+To filter on indexed `uint256` or other numeric types, convert them to a 32-byte hex value:
+
+```typescript
+import { keccak256, toBytes, numberToHex, padHex } from "viem"
+import { hexToBase64 } from "@chainlink/cre-sdk"
+
+const initWorkflow = (config: Config) => {
+  const network = getNetwork({
+    chainFamily: "evm",
+    chainSelectorName: config.chainSelectorName,
+    isTestnet: true,
+  })
+
+  if (!network) {
+    throw new Error(`Network not found: ${config.chainSelectorName}`)
+  }
+
+  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+
+  // Example: event ValueChanged(address indexed user, uint256 indexed newValue)
+  const eventHash = keccak256(toBytes("ValueChanged(address,uint256)"))
+  const userAddress = padHex("0xUser..." as `0x${string}`, { size: 32 })
+  const targetValue = padHex(numberToHex(12345), { size: 32 })
+
+  return [
+    cre.handler(
+      evmClient.logTrigger({
+        addresses: [hexToBase64(config.contractAddress)],
+        topics: [
+          { values: [hexToBase64(eventHash)] }, // Topic 0: Event signature
+          { values: [hexToBase64(userAddress)] }, // Topic 1: user address
+          { values: [hexToBase64(targetValue)] }, // Topic 2: newValue = 12345
+        ],
+      }),
+      onLogTrigger
+    ),
+  ]
+}
+```
+
+<Aside type="note" title="Converting Numbers to Topics">
+  For indexed `uint256` parameters, use `numberToHex()` to convert the number to hex, then `padHex()` to ensure it's 32
+  bytes, and finally `hexToBase64()` to encode it for the trigger configuration. For `bytes32` parameters, ensure
+  they're already 32 bytes and apply `hexToBase64()` directly.
+</Aside>
+
 ### Confidence level
 
 You can set the block confirmation level by adding the `confidence` field to the trigger configuration:
 
 ```typescript
 evmClient.logTrigger({
-  addresses: [config.contractAddress],
+  addresses: [hexToBase64(config.contractAddress)],
   confidence: "CONFIDENCE_LEVEL_FINALIZED", // Wait for finalized blocks
 })
 ```
@@ -11447,7 +11793,7 @@ const onLogTrigger = (runtime: Runtime<Config>, log: EVMLog): string => {
   The type assertion
 
   ```
-  as [\`0x${string}\`, ...\`0x${string}\`[]]
+  as [`0x${string}`, ...`0x${string}`[]]
   ```
 
   tells TypeScript that `topics` is a non-empty array of
@@ -11486,8 +11832,8 @@ const onLogTrigger = (runtime: Runtime<Config>, log: EVMLog): string => {
 Here's a complete example that listens for ERC20 `Transfer` events and decodes them:
 
 ```typescript
-import { cre, getNetwork, type Runtime, type EVMLog, Runner, bytesToHex } from "@chainlink/cre-sdk"
-import { keccak256, toHex, decodeEventLog, parseAbi } from "viem"
+import { cre, getNetwork, type Runtime, type EVMLog, Runner, bytesToHex, hexToBase64 } from "@chainlink/cre-sdk"
+import { keccak256, toBytes, decodeEventLog, parseAbi } from "viem"
 
 type Config = {
   chainSelectorName: string
@@ -11524,13 +11870,13 @@ const initWorkflow = (config: Config) => {
   }
 
   const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
-  const transferEventHash = keccak256(toHex("Transfer(address,address,uint256)"))
+  const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
 
   return [
     cre.handler(
       evmClient.logTrigger({
-        addresses: [config.tokenAddress],
-        topics: [{ values: [transferEventHash] }],
+        addresses: [hexToBase64(config.tokenAddress)],
+        topics: [{ values: [hexToBase64(transferEventHash)] }],
         confidence: "CONFIDENCE_LEVEL_FINALIZED",
       }),
       onLogTrigger
@@ -14812,7 +15158,7 @@ This section provides a reference for the built-in trigger capabilities of the C
 
 # Running a Demo Workflow
 Source: https://docs.chain.link/cre/templates/running-demo-workflow-ts
-Last Updated: 2025-11-04
+Last Updated: 2026-01-14
 
 This guide walks you through the core developer loop of CRE: initializing a project from a template and running it locally using the [simulator](/cre/guides/operations/simulating-workflows). By the end, you will have run the Custom Data Feed demo workflow and tested its two distinct behaviors: a **proactive** path where it fetches data from an API to write a result onchain, and a **reactive** path where it listens for onchain events to trigger new actions.
 
@@ -14829,7 +15175,7 @@ Before you begin, ensure you have the necessary tools installed:
 
 - **CRE CLI**: You must have the CRE CLI installed. See [Install the CLI](/cre/getting-started/cli-installation) for instructions.
 - **CRE account & authentication**: You must have a CRE account and be logged in with the CLI. Run cre whoami in your terminal to verify you're logged in, or run cre login to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging in with the CLI](/cre/account/cli-login) for instructions.
-- **Bun**: You must have Bun version 1.2.21 or higher installed. Check your version with bun --version. See [Install Bun](https://bun.sh/docs/installation) for instructions.
+- **Bun**: You must have Bun version 1.2.21 or higher installed. Check your version with bun --version. See [Install Bun](https://bun.com/docs/installation) for instructions.
 - **Sepolia Testnet Account**: You need a private key for an account funded with Sepolia ETH. This is required because the demo workflow performs a write transaction. Go to <a href="https://faucets.chain.link" target="blank">faucets.chain.link</a> to get some Sepolia ETH.
 
 ## 2. Initialize the demo project

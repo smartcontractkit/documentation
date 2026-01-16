@@ -22,12 +22,13 @@ async function cleanup() {
   console.log(`📦 Size before: ${sizeBefore}`)
 
   // Remove large files/directories that are served statically by CDN
+  // Note: public/samples is kept because the /api/page-markdown endpoint needs to read these files
   const itemsToRemove = [
     `${FUNCTION_DIR}/public/images`,
     `${FUNCTION_DIR}/public/search-index.json`,
     `${FUNCTION_DIR}/public/files`,
     `${FUNCTION_DIR}/public/default-og-image.png`,
-    `${FUNCTION_DIR}/public/samples`,
+    // `${FUNCTION_DIR}/public/samples`, // Kept for API route access
     `${FUNCTION_DIR}/public/changelog.json`,
   ]
 

@@ -578,6 +578,53 @@ async function transformMarkdown(markdown: string, mdxAbsPath: string, targetLan
           }
         }
 
+        // Handle CodeSample component - inline the code from public/{src}
+        if (
+          parent &&
+          typeof index === "number" &&
+          node.type === "mdxJsxFlowElement" &&
+          (node as MdxJsxNode).name === "CodeSample"
+        ) {
+          try {
+            const srcAttr = (node as MdxJsxNode).attributes?.find((a) => a.name === "src")
+            const langAttr = (node as MdxJsxNode).attributes?.find((a) => a.name === "lang")
+
+            if (srcAttr?.value) {
+              const srcValue = typeof srcAttr.value === "string" ? srcAttr.value : undefined
+
+              if (srcValue) {
+                const publicDir = path.resolve(process.cwd(), "public")
+                const codePath = path.join(publicDir, srcValue)
+
+                if (fsSync.existsSync(codePath)) {
+                  let codeContent = fsSync.readFileSync(codePath, "utf-8")
+
+                  // Strip highlighter comments
+                  codeContent = stripHighlightComments(codeContent)
+
+                  // Determine language from lang attribute or file extension
+                  let lang = typeof langAttr?.value === "string" ? langAttr.value : undefined
+                  if (!lang) {
+                    const ext = path.extname(codePath).slice(1)
+                    lang = ext || "text"
+                  }
+
+                  // Replace with code block
+                  parent.children[index] = {
+                    type: "code",
+                    lang,
+                    value: codeContent.trim(),
+                  } as Literal
+
+                  return
+                }
+              }
+            }
+          } catch (e) {
+            console.warn(`Failed to process CodeSample in ${mdxAbsPath}:`, e)
+          }
+        }
+
         // Handle CopyText inline component - extract the text attribute
         if (
           parent &&
