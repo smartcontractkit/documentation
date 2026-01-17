@@ -68,4 +68,3 @@ func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.Secre
 func main() {
 	wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
 }
-
