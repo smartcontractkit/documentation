@@ -442,9 +442,33 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2025-11-20
+Last Updated: 2026-01-16
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## TS SDK v1.0.3 - January 19, 2026
+
+- **Bug Fixes**: Fixed issue where workflows could execute twice during simulation
+
+- **Examples Updated**: All workflow examples in the SDK repository now use **direct imports** (e.g., `import { HTTPClient } from "@chainlink/cre-sdk"`) instead of the namespace pattern (e.g., `cre.capabilities.HTTPClient`). Both patterns remain fully supported—choose whichever fits your coding style.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.0.2...v1.0.3)
+
+## TS SDK v1.0.2 - January 16, 2026
+
+**TypeScript SDK version 1.0.2** introduces several improvements to developer experience:
+
+**New features:**
+
+- **Optional `main()` call**: You no longer need to call `main()` at the end of your workflow files. The SDK now automatically executes the `main()` function during compilation.
+- **Automatic error handling**: If you don't provide custom error handling, the SDK automatically adds `.catch(sendErrorResponse)` to your workflow's `main()` function. This ensures errors are properly reported instead of silently failing.
+- **Direct imports**: You can now import SDK components directly (e.g., `import { HTTPClient } from "@chainlink/cre-sdk"`) instead of accessing them through the `cre` namespace (e.g., `cre.capabilities.HTTPClient`). Both import styles remain supported for backward compatibility.
+
+**Migration notes:**
+
+- **Custom error handling**: If you need custom error handling, you can still add your own `.catch()` handler: `main().catch(myCustomHandler)`. The SDK will respect your custom handler and not override it.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.0.1...v1.0.2)
 
 ## CLI v1.0.5 - January 13, 2026
 
@@ -2289,7 +2313,7 @@ abstract contract ReceiverTemplate is IReceiver, Ownable {
   /// @inheritdoc IERC165
   function supportsInterface(
     bytes4 interfaceId
-  ) public pure virtual override returns (bool) {
+  ) public view virtual override returns (bool) {
     return interfaceId == type(IReceiver).interfaceId || interfaceId == type(IERC165).interfaceId;
   }
 }
@@ -3250,8 +3274,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## Working with complex types
@@ -7712,8 +7734,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 **Key components:**
@@ -8037,8 +8057,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 
@@ -8371,8 +8389,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 
@@ -8771,8 +8787,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 
@@ -9251,8 +9265,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## Understanding the components
@@ -9492,8 +9504,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ### Configuration file (`config.json`)
@@ -10003,8 +10013,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## 2. The `runInNodeMode` Pattern (Low-Level)
@@ -10101,8 +10109,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## Response helper functions
@@ -10334,8 +10340,6 @@ export async function main() {
   })
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 #### The complete workflow file
@@ -10439,8 +10443,6 @@ export async function main() {
   })
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ### Step 4: Run the simulation and verify
@@ -10572,8 +10574,6 @@ export async function main() {
   })
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## Learn more
@@ -11075,8 +11075,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ### Configuration file (`config.json`)
@@ -11240,8 +11238,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## Callback and payload
@@ -11353,8 +11349,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ### Filtering by event type
@@ -11888,8 +11882,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## Testing log triggers in simulation
@@ -11957,8 +11949,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 **About authorized keys:**
@@ -12690,8 +12680,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## Default Values
@@ -12711,6 +12699,32 @@ Source: https://docs.chain.link/cre/reference/sdk/core-ts
 Last Updated: 2025-11-04
 
 This page provides a reference for the core data structures and functions of the CRE TypeScript SDK. These are the fundamental building blocks that every workflow uses, regardless of trigger types or capabilities.
+
+## Import styles
+
+The CRE TypeScript SDK supports two import styles. Both are fully supported and can be used interchangeably:
+
+**Direct imports (recommended for SDK v1.0.2+):**
+
+```typescript
+import { Runner, HTTPClient, EVMClient, CronCapability } from "@chainlink/cre-sdk"
+
+// Use directly
+const httpClient = new HTTPClient()
+const evmClient = new EVMClient(chainSelector)
+```
+
+**Namespace imports:**
+
+```typescript
+import { cre, Runner } from "@chainlink/cre-sdk"
+
+// Access through cre namespace
+const httpClient = new cre.capabilities.HTTPClient()
+const evmClient = new cre.capabilities.EVMClient(chainSelector)
+```
+
+Both styles are supported for backward compatibility. Choose the style that works best for your codebase.
 
 ## Key concepts and components
 
@@ -12885,16 +12899,21 @@ export async function main() {
   // Run your workflow initialization function
   await runner.run(initWorkflow)
 }
-
-main()
 ```
+
+<Aside type="note" title="SDK v1.0.2+ Changes">
+  Starting with SDK v1.0.2:
+
+  - **Calling `main()` is optional**: The SDK automatically executes the `main()` function during compilation. You no longer need to call `main()` at the end of your workflow file.
+  - **Automatic error handling**: If you don't provide custom error handling (e.g., `main().catch(myHandler)`), the SDK automatically adds `.catch(sendErrorResponse)` to ensure errors are properly reported.
+  - If you need custom error handling, you can still add your own: `main().catch(myCustomHandler)`. The SDK will respect your custom handler and not override it.
+</Aside>
 
 **Key points:**
 
 - Must be an `async` function
 - Must call `Runner.newRunner<Config>()` with an optional `configSchema` parameter for validation
 - Must call `runner.run(initWorkflow)` to execute your workflow
-- Must invoke `main()` at the end of your file
 
 ### `initWorkflow`
 
@@ -14664,8 +14683,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ---
@@ -14909,8 +14926,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## Decoding Log Data
@@ -15124,8 +15139,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## Testing HTTP Triggers
