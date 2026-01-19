@@ -95,7 +95,7 @@ Non-interactive mode allows you to run simulations without prompts, making it id
 **Requirements:**
 
 - Use the `--non-interactive` flag
-- Specify `--trigger-index` (0-based index of the trigger to run)
+- Specify `--trigger-index` to select which handler to run (0-based position: `0` = first handler, `1` = second, etc.)
 - Provide trigger-specific flags as needed (see [Trigger-specific configuration](#trigger-specific-configuration))
 
 **Example:**
@@ -103,6 +103,14 @@ Non-interactive mode allows you to run simulations without prompts, making it id
 ```bash
 cre workflow simulate my-workflow --non-interactive --trigger-index 0 --target staging-settings
 ```
+
+<Aside type="tip" title="Understanding trigger-index">
+  The `--trigger-index` flag selects **which handler** in your workflow to execute. Handlers are created in your
+  `InitWorkflow` function using `cre.Handler()`, where [each handler connects a trigger to a callback
+  function](/cre/key-terms#handler). If your workflow has only one handler, use `--trigger-index 0`. If you have
+  multiple handlers (e.g., one for an HTTP trigger and one for an EVM log trigger), use `0` for the first, `1` for the
+  second, etc., based on their order in your code.
+</Aside>
 
 ## The `--broadcast` flag
 
@@ -210,6 +218,19 @@ cre workflow simulate my-workflow \
   --evm-event-index 0 \
   --target staging-settings
 ```
+
+{/* prettier-ignore */}
+<Aside type="tip" title="Understanding the two different indexes">
+  **Two separate concepts:**
+  - **`--trigger-index`** selects **which handler** in your workflow to run (e.g., if the
+  handler with an EVM log trigger is the third handler defined, use `--trigger-index 2`)
+  - **`--evm-event-index`**
+  specifies **which log/event within the transaction** to use for testing (e.g., if the transaction emitted 3 events and
+  you want the first one, use `--evm-event-index 0`)
+  <br />
+  These are completely independent: one selects your workflow's
+  handler to execute, the other selects which event data from the blockchain to test with.
+</Aside>
 
 ## Additional flags
 

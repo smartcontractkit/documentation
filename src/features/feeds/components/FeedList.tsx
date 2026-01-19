@@ -1425,6 +1425,24 @@ export const FeedList = ({
                           </ul>
                         </>
                       )}
+                      {network.name === "MegaETH Mainnet (Private)" && (
+                        <div className={tableStyles.infoCallout}>
+                          <div className={tableStyles.infoCalloutIcon}>
+                            <img src="/images/info-icon.svg" alt="Note" />
+                          </div>
+                          <div className={tableStyles.infoCalloutContent}>
+                            <p className={tableStyles.infoCalloutTitle}>Private Mainnet</p>
+                            <p>
+                              MegaETH currently operates a private mainnet. Your address must be on the whitelist to
+                              transact. For more information, visit{" "}
+                              <a href="https://www.megaeth.com/" target="_blank" rel="noopener noreferrer">
+                                megaeth.com
+                              </a>
+                              .
+                            </p>
+                          </div>
+                        </div>
+                      )}
                       <div className={feedList.tableFilters}>
                         {!isStreams && !isSmartData && (
                           <details class={feedList.filterDropdown_details}>

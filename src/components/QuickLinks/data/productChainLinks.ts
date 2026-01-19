@@ -137,6 +137,7 @@ export const productChainLinks: ProductChainLinks = {
       hyperevm: "/data-feeds/price-feeds/addresses?page=1&network=hyperevm#networks",
       linea: "/data-feeds/price-feeds/addresses?page=1&network=linea#networks",
       mantle: "/data-feeds/price-feeds/addresses?page=1&network=mantle#networks",
+      megaeth: "/data-feeds/price-feeds/addresses?page=1&network=megaeth#networks",
       metis: "/data-feeds/price-feeds/addresses?page=1&network=metis#networks",
       monad: "/data-feeds/price-feeds/addresses?page=1&network=monad#networks",
       moonbeam: "/data-feeds/price-feeds/addresses?page=1&network=moonbeam#networks",

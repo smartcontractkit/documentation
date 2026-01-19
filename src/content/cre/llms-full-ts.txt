@@ -442,9 +442,42 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2025-11-20
+Last Updated: 2026-01-16
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## TS SDK v1.0.3 - January 19, 2026
+
+- **Bug Fixes**: Fixed issue where workflows could execute twice during simulation
+
+- **Examples Updated**: All workflow examples in the SDK repository now use **direct imports** (e.g., `import { HTTPClient } from "@chainlink/cre-sdk"`) instead of the namespace pattern (e.g., `cre.capabilities.HTTPClient`). Both patterns remain fully supported—choose whichever fits your coding style.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.0.2...v1.0.3)
+
+## TS SDK v1.0.2 - January 16, 2026
+
+**TypeScript SDK version 1.0.2** introduces several improvements to developer experience:
+
+**New features:**
+
+- **Optional `main()` call**: You no longer need to call `main()` at the end of your workflow files. The SDK now automatically executes the `main()` function during compilation.
+- **Automatic error handling**: If you don't provide custom error handling, the SDK automatically adds `.catch(sendErrorResponse)` to your workflow's `main()` function. This ensures errors are properly reported instead of silently failing.
+- **Direct imports**: You can now import SDK components directly (e.g., `import { HTTPClient } from "@chainlink/cre-sdk"`) instead of accessing them through the `cre` namespace (e.g., `cre.capabilities.HTTPClient`). Both import styles remain supported for backward compatibility.
+
+**Migration notes:**
+
+- **Custom error handling**: If you need custom error handling, you can still add your own `.catch()` handler: `main().catch(myCustomHandler)`. The SDK will respect your custom handler and not override it.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.0.1...v1.0.2)
+
+## CLI v1.0.5 - January 13, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.0.5" target="_blank">CRE CLI version 1.0.5</a> is now available.** This release includes various small improvements and bug fixes.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
 
 ## CLI v1.0.4 - January 9, 2026
 
@@ -550,7 +583,7 @@ These guides explain how to install the Chainlink Developer Platform CLI (also r
 Source: https://docs.chain.link/cre/getting-started/cli-installation/macos-linux
 Last Updated: 2025-11-20
 
-This page explains how to install the CRE CLI on macOS or Linux. The recommended version at the time of writing is **v1.0.4**.
+This page explains how to install the CRE CLI on macOS or Linux. The recommended version at the time of writing is **v1.0.5**.
 
 ## Installation
 
@@ -581,7 +614,7 @@ After the script completes, verify the installation:
 cre version
 ```
 
-**Expected output:** `cre version v1.0.4`
+**Expected output:** `cre version v1.0.5`
 
 <Aside type="note" title="macOS Gatekeeper">
   If you see warnings about "unrecognized developer/source" on macOS, run:{" "}
@@ -599,9 +632,15 @@ The CRE CLI is publicly available on GitHub. Visit the releases page and downloa
   - On **macOS** (darwin), run <CopyText text="uname -m" code />:
     - `arm64` (Apple Silicon) → Download `cre_darwin_arm64.zip`
     - `x86_64` (Intel) → Download `cre_darwin_amd64.zip`
-  - On **Linux**, run <CopyText text="uname -m" code />:
-    - `aarch64` (ARM) → Download `cre_linux_arm64.tar.gz`
-    - `x86_64` (AMD/Intel) → Download `cre_linux_amd64.tar.gz`
+  - On **Linux**, the binary depends on both your architecture and OS version. First, run <CopyText text="uname -m" code /> to check your architecture, then <CopyText text="lsb_release -rs" code /> to check your Ubuntu version:
+    - **Ubuntu 22.04 or older**:
+      - `x86_64` (AMD/Intel) → Download `cre_linux_amd64_ldd2-35.tar.gz`
+      - `aarch64` (ARM) → Download `cre_linux_arm64_ldd2-35.tar.gz`
+    - **Ubuntu 24.04 or newer**:
+      - `x86_64` (AMD/Intel) → Download `cre_linux_amd64.tar.gz`
+      - `aarch64` (ARM) → Download `cre_linux_arm64.tar.gz`
+
+  **Note:** The `ldd2-35` binaries are compiled for older glibc versions (2.35 and below). If you're using a non-Ubuntu Linux distribution, check your glibc version with <CopyText text="ldd --version" code /> and use the `ldd2-35` binary if your version is 2.35 or lower.
 </Aside>
 
 After downloading the correct file from the releases page, move on to the next step to verify its integrity.
@@ -620,16 +659,21 @@ shasum -a 256 cre_darwin_arm64.zip
 
 **Verify against official checksums**
 
-Compare the output with the official checksum below:
+Compare the output with the official checksum from the [CRE CLI releases page](https://github.com/smartcontractkit/cre-cli/releases):
 
-| File                     | SHA-256 Checksum                                                 |
-| ------------------------ | ---------------------------------------------------------------- |
-| `cre_darwin_amd64.zip`   | 87f62d25ce0517473a97ff7e66220a2f0bbcc40ebe94309964c0bb29a267dcd1 |
-| `cre_darwin_arm64.zip`   | e21677d3f307aa63b4513b1bce597fb0d97e1f94e2094fdc85cc400084036a7c |
-| `cre_linux_amd64.tar.gz` | 58d682739e390c8046795ca2871fada94aa39dbea8e0062179000bed3b895913 |
-| `cre_linux_arm64.tar.gz` | 9826e1a3c46485b7f524e70da96aeac18a13570d0a2f5a660ff52e8b532fee51 |
+1. Go to [https://github.com/smartcontractkit/cre-cli/releases](https://github.com/smartcontractkit/cre-cli/releases)
+2. Find the release version you downloaded (e.g., v1.0.5)
+3. Under the **Assets** section, locate your downloaded file
+4. Compare the SHA-256 checksum shown next to the file with your command output
 
-If the checksum doesn't match, do not proceed with installation. Contact your Chainlink point of contact for assistance.
+**Example:** For `cre_darwin_arm64.zip` in release v1.0.5, you'll see something like:
+
+```
+cre_darwin_arm64.zip
+sha256:1359415a1f1baee7643107b82b3a0589a3627aef71018644e5c488960a97e955
+```
+
+If the checksums match, the file is authentic and safe to install. If they don't match, do not proceed with installation and contact the Chainlink team for assistance.
 
 #### 2. Extract and install
 
@@ -652,7 +696,7 @@ If the checksum doesn't match, do not proceed with installation. Contact your Ch
 3. **Rename the extracted binary to `cre`**
 
    ```bash
-   mv cre_v1.0.4_darwin_arm64 cre
+   mv cre_v1.0.5_darwin_arm64 cre
    ```
 
 4. **Make it executable**:
@@ -725,7 +769,7 @@ cre version
 
 **Expected output:**
 
-You should see version information: `cre version v1.0.4`.
+You should see version information: `cre version v1.0.5`.
 
 **If it doesn't work:**
 
@@ -764,7 +808,7 @@ Once you're authenticated, you're ready to build your first workflow:
 Source: https://docs.chain.link/cre/getting-started/cli-installation/windows
 Last Updated: 2025-11-20
 
-This page explains how to install the Chainlink Developer Platform CLI (also referred to as the CRE CLI) on Windows. The recommended version at the time of writing is **v1.0.4**.
+This page explains how to install the Chainlink Developer Platform CLI (also referred to as the CRE CLI) on Windows. The recommended version at the time of writing is **v1.0.5**.
 
 ## Installation
 
@@ -794,7 +838,7 @@ After the script completes, **open a new PowerShell window** and verify the inst
 cre version
 ```
 
-**Expected output:** `cre version v1.0.4`
+**Expected output:** `cre version v1.0.5`
 
 ### Manual installation
 
@@ -818,20 +862,28 @@ Get-FileHash cre_windows_amd64.zip -Algorithm SHA256
 
 **Verify against the official checksum**
 
-Compare the `Hash` value in the output with the official checksum below:
+Compare the `Hash` value in the output with the official checksum from the [CRE CLI releases page](https://github.com/smartcontractkit/cre-cli/releases):
 
-| File                    | SHA-256 Checksum                                                 |
-| ----------------------- | ---------------------------------------------------------------- |
-| `cre_windows_amd64.zip` | 372d16566479ff6bbfe9eb1d5cebe0e1e2a3c67062c6f0439fc96c735ddeaa18 |
+1. Go to [https://github.com/smartcontractkit/cre-cli/releases](https://github.com/smartcontractkit/cre-cli/releases)
+2. Find the release version you downloaded (e.g., v1.0.5)
+3. Under the **Assets** section, locate `cre_windows_amd64.zip`
+4. Compare the SHA-256 checksum shown next to the file with the `Hash` value from your PowerShell output
 
-If the checksum doesn't match, do not proceed with installation. Contact your Chainlink point of contact for assistance.
+**Example:** For `cre_windows_amd64.zip` in release v1.0.5, you'll see something like:
+
+```
+cre_windows_amd64.zip
+sha256:372d16566479ff6bbfe9eb1d5cebe0e1e2a3c67062c6f0439fc96c735ddeaa18
+```
+
+If the checksums match, the file is authentic and safe to install. If they don't match, do not proceed with installation and contact the Chainlink team for assistance.
 
 #### 2. Extract and install
 
 1. Navigate to the directory where you downloaded the archive.
 2. Right-click the `.zip` file and select **Extract All...**.
 3. Choose a permanent location for the extracted folder (e.g., `C:\Program Files\cre-cli`).
-4. Inside the extracted folder, rename the file `cre_v1.0.4_windows_amd64.exe` to `cre.exe`.
+4. Inside the extracted folder, rename the file `cre_v1.0.5_windows_amd64.exe` to `cre.exe`.
 
 #### 3. Add the CLI to your PATH
 
@@ -856,7 +908,7 @@ Open a new **PowerShell** or **Command Prompt** window and run:
 cre version
 ```
 
-You should see version information: `cre version v1.0.4`.
+You should see version information: `cre version v1.0.5`.
 
 ## Next steps
 
@@ -1064,8 +1116,9 @@ cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --htt
 ```
 
 <Aside type="note" title="Non-interactive requirements">
-  The `--http-payload` flag requires `--non-interactive` mode. You must also specify `--trigger-index` (0-based index of
-  your HTTP trigger). If your HTTP trigger is the only trigger or the first one defined, use `--trigger-index 0`.
+  The `--http-payload` flag requires `--non-interactive` mode. You must also specify `--trigger-index` to select which
+  handler to run. The index is 0-based: if the handler with your HTTP trigger is the first handler defined in your
+  `InitWorkflow` function, use `--trigger-index 0`; if it's the second, use `--trigger-index 1`, and so on.
 </Aside>
 
 <Aside type="note" title="Escaping quotes">
@@ -1636,7 +1689,7 @@ Manual JWT generation is complex and error-prone. For development and testing:
 
 # Testing with Local JWT Server
 Source: https://docs.chain.link/cre/guides/workflow/using-triggers/http-trigger/local-testing-tool
-Last Updated: 2025-11-04
+Last Updated: 2026-01-14
 
 The <a href="https://github.com/smartcontractkit/cre-sdk-typescript/tree/main/packages/cre-http-trigger" target="_blank" rel="noopener noreferrer">`cre-http-trigger` TypeScript package</a> simplifies testing deployed workflows with HTTP triggers by handling JWT generation, signing, and request formatting automatically. It provides a local HTTP server that acts as a proxy between your test requests and the CRE gateway.
 
@@ -1667,7 +1720,7 @@ The `cre-http-trigger` tool eliminates this complexity by:
 
 ## Prerequisites
 
-- **Bun runtime**: The tool requires <a href="https://bun.sh" target="_blank" rel="noopener noreferrer">Bun</a> version 1.2.21 or higher
+- **Bun runtime**: The tool requires <a href="https://bun.com" target="_blank" rel="noopener noreferrer">Bun</a> version 1.2.21 or higher
 - **Deployed workflow**: Your workflow must be deployed with an HTTP trigger
 - **Workflow ID**: Available from deployment output or the CRE UI
 - **Private key**: The private key corresponding to one of the `authorizedKeys` in your HTTP trigger configuration
@@ -2260,7 +2313,7 @@ abstract contract ReceiverTemplate is IReceiver, Ownable {
   /// @inheritdoc IERC165
   function supportsInterface(
     bytes4 interfaceId
-  ) public pure virtual override returns (bool) {
+  ) public view virtual override returns (bool) {
     return interfaceId == type(IReceiver).interfaceId || interfaceId == type(IERC165).interfaceId;
   }
 }
@@ -3221,8 +3274,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## Working with complex types
@@ -3871,7 +3922,7 @@ Non-interactive mode allows you to run simulations without prompts, making it id
 **Requirements:**
 
 - Use the `--non-interactive` flag
-- Specify `--trigger-index` (0-based index of the trigger to run)
+- Specify `--trigger-index` to select which handler to run (0-based position: `0` = first handler, `1` = second, etc.)
 - Provide trigger-specific flags as needed (see [Trigger-specific configuration](#trigger-specific-configuration))
 
 **Example:**
@@ -3879,6 +3930,14 @@ Non-interactive mode allows you to run simulations without prompts, making it id
 ```bash
 cre workflow simulate my-workflow --non-interactive --trigger-index 0 --target staging-settings
 ```
+
+<Aside type="tip" title="Understanding trigger-index">
+  The `--trigger-index` flag selects **which handler** in your workflow to execute. Handlers are created in your
+  `InitWorkflow` function using `cre.Handler()`, where [each handler connects a trigger to a callback
+  function](/cre/key-terms#handler). If your workflow has only one handler, use `--trigger-index 0`. If you have
+  multiple handlers (e.g., one for an HTTP trigger and one for an EVM log trigger), use `0` for the first, `1` for the
+  second, etc., based on their order in your code.
+</Aside>
 
 ## The `--broadcast` flag
 
@@ -3986,6 +4045,20 @@ cre workflow simulate my-workflow \
   --evm-event-index 0 \
   --target staging-settings
 ```
+
+
+<Aside type="tip" title="Understanding the two different indexes">
+  **Two separate concepts:**
+
+  - **`--trigger-index`** selects **which handler** in your workflow to run (e.g., if the
+    handler with an EVM log trigger is the third handler defined, use `--trigger-index 2`)
+  - **`--evm-event-index`**
+    specifies **which log/event within the transaction** to use for testing (e.g., if the transaction emitted 3 events and
+    you want the first one, use `--evm-event-index 0`)
+
+  These are completely independent: one selects your workflow's
+  handler to execute, the other selects which event data from the blockchain to test with.
+</Aside>
 
 ## Additional flags
 
@@ -6247,8 +6320,8 @@ See the [repository README](https://github.com/smartcontractkit/cre-gcp-predicti
 Source: https://docs.chain.link/cre/reference/cli
 Last Updated: 2025-11-20
 
-<Aside type="note" title="Required CLI Version: v1.0.4">
-  To ensure compatibility with the guides and examples in this documentation, please use version `v1.0.4` of the CRE
+<Aside type="note" title="Required CLI Version: v1.0.5">
+  To ensure compatibility with the guides and examples in this documentation, please use version `v1.0.5` of the CRE
   CLI. You can check your installed version by running `cre version`. Refer to the [CLI
   Installation](/cre/getting-started/cli-installation/macos-linux) guide for more information.
 </Aside>
@@ -6622,15 +6695,15 @@ cre workflow simulate <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| Flag                      | Description                                                                                        |
-| ------------------------- | -------------------------------------------------------------------------------------------------- |
-| `--broadcast`             | Broadcast onchain write transactions (default: `false`). Without this flag, a dry run is performed |
-| `-g, --engine-logs`       | Enable non-fatal engine logging                                                                    |
-| `--non-interactive`       | Run without prompts; requires `--trigger-index` and inputs for the selected trigger type           |
-| `--trigger-index <int>`   | Index of the trigger to run (0-based). Required when using `--non-interactive`                     |
-| `--http-payload <string>` | HTTP trigger payload as JSON string or path to JSON file (with or without `@` prefix)              |
-| `--evm-tx-hash <string>`  | EVM trigger transaction hash (`0x...`). For EVM log triggers                                       |
-| `--evm-event-index <int>` | EVM trigger log index (0-based). For EVM log triggers                                              |
+| Flag                      | Description                                                                                                                                                                       |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--broadcast`             | Broadcast onchain write transactions (default: `false`). Without this flag, a dry run is performed                                                                                |
+| `-g, --engine-logs`       | Enable non-fatal engine logging                                                                                                                                                   |
+| `--non-interactive`       | Run without prompts; requires `--trigger-index` (see the line below) and inputs for the selected trigger type                                                                     |
+| `--trigger-index <int>`   | Selects which handler to run (0-based position). If your workflow has multiple handlers, `0` is the first, `1` is the second, etc. Required with `--non-interactive`              |
+| `--http-payload <string>` | HTTP trigger payload as JSON string or path to JSON file (with or without `@` prefix). For HTTP triggers only                                                                     |
+| `--evm-tx-hash <string>`  | Transaction hash (`0x...`) containing the event that triggered your workflow. For EVM log triggers only                                                                           |
+| `--evm-event-index <int>` | Which log/event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For EVM log triggers only |
 
 **Examples:**
 
@@ -6644,6 +6717,21 @@ cre workflow simulate <workflow-name-or-path> [flags]
 
   ```bash
   cre workflow simulate ./my-workflow --broadcast --target local-simulation
+  ```
+
+- Non-interactive mode with HTTP trigger
+
+  ```bash
+  # If your HTTP trigger handler is the first handler in your workflow, use --trigger-index 0
+  cre workflow simulate my-workflow --non-interactive --trigger-index 0 --http-payload '{"key":"value"}' --target staging-settings
+  ```
+
+- Non-interactive mode with EVM log trigger
+
+  ```bash
+  # If your EVM log trigger handler is the second handler in your workflow, use --trigger-index 1
+  # --evm-event-index 0 means you want the first event from that transaction
+  cre workflow simulate my-workflow --non-interactive --trigger-index 1 --evm-tx-hash 0x420721d7d00130a03c5b525b2dbfd42550906ddb3075e8377f9bb5d1a5992f8e --evm-event-index 0 --target staging-settings
   ```
 
 
@@ -7140,12 +7228,12 @@ cre version
 **Example output:**
 
 ```bash
-cre version v1.0.4
+cre version v1.0.5
 ```
 
 
 <Aside type="note" title="Version compatibility">
-  Always check that your CLI version matches the version recommended in the documentation. The current recommended version is **v1.0.4**. See the [CLI Installation guide](/cre/getting-started/cli-installation) for more information.
+  Always check that your CLI version matches the version recommended in the documentation. The current recommended version is **v1.0.5**. See the [CLI Installation guide](/cre/getting-started/cli-installation) for more information.
 </Aside>
 
 ## Learn more
@@ -7482,10 +7570,10 @@ Large Language Models (LLMs) generate different responses for the same prompt, e
 
 # Part 1: Project Setup & Simulation
 Source: https://docs.chain.link/cre/getting-started/part-1-project-setup-ts
-Last Updated: 2025-11-04
+Last Updated: 2026-01-14
 
 <Aside type="note" title="SDK Language: TypeScript">
-  You're viewing the **TypeScript** version of this guide. If you prefer Go, use the language selector in the right
+  You're viewing the **TypeScript** version of this guide. If you prefer Go, use the language selector in the left
   sidebar to switch to the Go version.
 </Aside>
 
@@ -7504,7 +7592,7 @@ Before you begin, ensure you have the following:
 
 - **CRE CLI**: See the [Installation Guide](/cre/getting-started/cli-installation/macos-linux) for details.
 - **CRE account & authentication**: You must have a CRE account and be logged in with the CLI. See [Create your account](/cre/account/creating-account) and [Log in with the CLI](/cre/account/cli-login) for instructions.
-- **Bun**: You must have <a href="https://bun.com/docs" target="blank">Bun</a> version 1.2.21 or higher installed. Check your version with bun --version. See [Install Bun](https://bun.sh/) for instructions.
+- **Bun**: You must have <a href="https://bun.com/docs" target="blank">Bun</a> version 1.2.21 or higher installed. Check your version with bun --version. See [Install Bun](https://bun.com) for instructions.
 - **Funded Sepolia Account**: An account with Sepolia ETH to pay for transaction gas fees. Go to <a href="https://faucets.chain.link" target="blank">faucets.chain.link</a> to get some Sepolia ETH.
 
 ## Step 1: Verify your authentication
@@ -7646,8 +7734,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 **Key components:**
@@ -7971,8 +8057,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 
@@ -8305,8 +8389,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 
@@ -8705,8 +8787,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 
@@ -9185,8 +9265,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## Understanding the components
@@ -9426,8 +9504,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ### Configuration file (`config.json`)
@@ -9937,8 +10013,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## 2. The `runInNodeMode` Pattern (Low-Level)
@@ -10035,8 +10109,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## Response helper functions
@@ -10268,8 +10340,6 @@ export async function main() {
   })
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 #### The complete workflow file
@@ -10373,8 +10443,6 @@ export async function main() {
   })
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ### Step 4: Run the simulation and verify
@@ -10506,8 +10574,6 @@ export async function main() {
   })
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## Learn more
@@ -11009,8 +11075,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ### Configuration file (`config.json`)
@@ -11174,8 +11238,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## Callback and payload
@@ -11287,8 +11349,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ### Filtering by event type
@@ -11822,8 +11882,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## Testing log triggers in simulation
@@ -11891,8 +11949,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 **About authorized keys:**
@@ -12624,8 +12680,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## Default Values
@@ -12645,6 +12699,32 @@ Source: https://docs.chain.link/cre/reference/sdk/core-ts
 Last Updated: 2025-11-04
 
 This page provides a reference for the core data structures and functions of the CRE TypeScript SDK. These are the fundamental building blocks that every workflow uses, regardless of trigger types or capabilities.
+
+## Import styles
+
+The CRE TypeScript SDK supports two import styles. Both are fully supported and can be used interchangeably:
+
+**Direct imports (recommended for SDK v1.0.2+):**
+
+```typescript
+import { Runner, HTTPClient, EVMClient, CronCapability } from "@chainlink/cre-sdk"
+
+// Use directly
+const httpClient = new HTTPClient()
+const evmClient = new EVMClient(chainSelector)
+```
+
+**Namespace imports:**
+
+```typescript
+import { cre, Runner } from "@chainlink/cre-sdk"
+
+// Access through cre namespace
+const httpClient = new cre.capabilities.HTTPClient()
+const evmClient = new cre.capabilities.EVMClient(chainSelector)
+```
+
+Both styles are supported for backward compatibility. Choose the style that works best for your codebase.
 
 ## Key concepts and components
 
@@ -12819,16 +12899,21 @@ export async function main() {
   // Run your workflow initialization function
   await runner.run(initWorkflow)
 }
-
-main()
 ```
+
+<Aside type="note" title="SDK v1.0.2+ Changes">
+  Starting with SDK v1.0.2:
+
+  - **Calling `main()` is optional**: The SDK automatically executes the `main()` function during compilation. You no longer need to call `main()` at the end of your workflow file.
+  - **Automatic error handling**: If you don't provide custom error handling (e.g., `main().catch(myHandler)`), the SDK automatically adds `.catch(sendErrorResponse)` to ensure errors are properly reported.
+  - If you need custom error handling, you can still add your own: `main().catch(myCustomHandler)`. The SDK will respect your custom handler and not override it.
+</Aside>
 
 **Key points:**
 
 - Must be an `async` function
 - Must call `Runner.newRunner<Config>()` with an optional `configSchema` parameter for validation
 - Must call `runner.run(initWorkflow)` to execute your workflow
-- Must invoke `main()` at the end of your file
 
 ### `initWorkflow`
 
@@ -14598,8 +14683,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ---
@@ -14843,8 +14926,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## Decoding Log Data
@@ -15058,8 +15139,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## Testing HTTP Triggers
@@ -15092,7 +15171,7 @@ This section provides a reference for the built-in trigger capabilities of the C
 
 # Running a Demo Workflow
 Source: https://docs.chain.link/cre/templates/running-demo-workflow-ts
-Last Updated: 2025-11-04
+Last Updated: 2026-01-14
 
 This guide walks you through the core developer loop of CRE: initializing a project from a template and running it locally using the [simulator](/cre/guides/operations/simulating-workflows). By the end, you will have run the Custom Data Feed demo workflow and tested its two distinct behaviors: a **proactive** path where it fetches data from an API to write a result onchain, and a **reactive** path where it listens for onchain events to trigger new actions.
 
@@ -15109,7 +15188,7 @@ Before you begin, ensure you have the necessary tools installed:
 
 - **CRE CLI**: You must have the CRE CLI installed. See [Install the CLI](/cre/getting-started/cli-installation) for instructions.
 - **CRE account & authentication**: You must have a CRE account and be logged in with the CLI. Run cre whoami in your terminal to verify you're logged in, or run cre login to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging in with the CLI](/cre/account/cli-login) for instructions.
-- **Bun**: You must have Bun version 1.2.21 or higher installed. Check your version with bun --version. See [Install Bun](https://bun.sh/docs/installation) for instructions.
+- **Bun**: You must have Bun version 1.2.21 or higher installed. Check your version with bun --version. See [Install Bun](https://bun.com/docs/installation) for instructions.
 - **Sepolia Testnet Account**: You need a private key for an account funded with Sepolia ETH. This is required because the demo workflow performs a write transaction. Go to <a href="https://faucets.chain.link" target="blank">faucets.chain.link</a> to get some Sepolia ETH.
 
 ## 2. Initialize the demo project
