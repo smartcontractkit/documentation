@@ -236,7 +236,7 @@ abstract contract ReceiverTemplate is IReceiver, Ownable {
   /// @inheritdoc IERC165
   function supportsInterface(
     bytes4 interfaceId
-  ) public pure virtual override returns (bool) {
+  ) public view virtual override returns (bool) {
     return interfaceId == type(IReceiver).interfaceId || interfaceId == type(IERC165).interfaceId;
   }
 }
