@@ -909,7 +909,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             },
             {
               title: "Handling Stock Splits",
-              url: "data-streams/backed-streams/handling-stock-splits",
+              url: "data-streams/tokenized-asset-streams/handling-stock-splits",
             },
           ],
         },
