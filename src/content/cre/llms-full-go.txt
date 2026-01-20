@@ -2451,10 +2451,7 @@ interface IReceiver is IERC165 {
   /// limit. The receiver is responsible for discarding stale reports.
   /// @param metadata Report's metadata.
   /// @param report Workflow report.
-  function onReport(
-    bytes calldata metadata,
-    bytes calldata report
-  ) external;
+  function onReport(bytes calldata metadata, bytes calldata report) external;
 }
 ```
 
@@ -2563,10 +2560,7 @@ abstract contract ReceiverTemplate is IReceiver, Ownable {
 
   /// @inheritdoc IReceiver
   /// @dev Performs optional validation checks based on which permission fields are set
-  function onReport(
-    bytes calldata metadata,
-    bytes calldata report
-  ) external override {
+  function onReport(bytes calldata metadata, bytes calldata report) external override {
     // Security Check 1: Verify caller is the trusted Chainlink Forwarder (if configured)
     if (s_forwarderAddress != address(0) && msg.sender != s_forwarderAddress) {
       revert InvalidSender(msg.sender, s_forwarderAddress);
@@ -2737,10 +2731,12 @@ The simplest way to use `ReceiverTemplate` is to inherit from it and implement t
 ```sol
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
+
 import {ReceiverTemplate} from "./ReceiverTemplate.sol";
 
 contract MyConsumer is ReceiverTemplate {
   uint256 public s_storedValue;
+
   event ValueUpdated(uint256 newValue);
 
   // Constructor requires forwarder address
