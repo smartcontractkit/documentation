@@ -133,6 +133,7 @@ export const FeedList = ({
   initialCache,
   allowNetworkTableExpansion = false,
   defaultNetworkTableExpanded = false,
+  force24x5Only = false,
 }: {
   initialNetwork: string
   dataFeedType: DataFeedType
@@ -140,6 +141,7 @@ export const FeedList = ({
   initialCache?: Record<string, ChainMetadata>
   allowNetworkTableExpansion?: boolean
   defaultNetworkTableExpanded?: boolean
+  force24x5Only?: boolean
 }) => {
   const chains = ecosystem === "deprecating" ? ALL_CHAINS : CHAINS
   const isStreams =
@@ -322,9 +324,11 @@ export const FeedList = ({
   const [showOnlyDEXFeeds, setShowOnlyDEXFeeds] = useState(false)
   const [showOnlyDEXFeedsTestnet, setShowOnlyDEXFeedsTestnet] = useState(false)
   const [show24x5FeedsParam, setShow24x5FeedsParam] = useQueryString("show24x5")
-  const show24x5Feeds = show24x5FeedsParam === "true"
+  const show24x5Feeds = force24x5Only || show24x5FeedsParam === "true"
   const setShow24x5Feeds = (value: boolean) => {
-    setShow24x5FeedsParam(value ? "true" : [])
+    if (!force24x5Only) {
+      setShow24x5FeedsParam(value ? "true" : [])
+    }
   }
   const [tradingHoursFilterParam, setTradingHoursFilterParam] = useQueryString("tradingHours")
   const tradingHoursFilter =
@@ -349,9 +353,11 @@ export const FeedList = ({
     setTestnetRwaSchemaFilterParam(next === "all" ? [] : next)
   }
   const [show24x5FeedsTestnetParam, setShow24x5FeedsTestnetParam] = useQueryString("testnetShow24x5")
-  const show24x5FeedsTestnet = show24x5FeedsTestnetParam === "true"
+  const show24x5FeedsTestnet = force24x5Only || show24x5FeedsTestnetParam === "true"
   const setShow24x5FeedsTestnet = (value: boolean) => {
-    setShow24x5FeedsTestnetParam(value ? "true" : [])
+    if (!force24x5Only) {
+      setShow24x5FeedsTestnetParam(value ? "true" : [])
+    }
   }
   const [testnetTradingHoursFilterParam, setTestnetTradingHoursFilterParam] = useQueryString("testnetTradingHours")
   const testnetTradingHoursFilter =
@@ -1072,52 +1078,58 @@ export const FeedList = ({
             )}
             {dataFeedType === "streamsRwa" && (
               <>
-                <FilterDropdown
-                  isOpen={openDropdownId === "main-schema"}
-                  onToggle={(isOpen) => handleDropdownToggle("main-schema", isOpen)}
-                  onClose={closeAllDropdowns}
-                  label="Filter schema"
-                  options={schemaFilterOptions}
-                  value={rwaSchemaFilter}
-                  groupId="schema-main"
-                  onSelect={(next) => {
-                    setRwaSchemaFilter(next)
-                    setCurrentPage("1")
-                  }}
-                />
-                <FilterDropdown
-                  isOpen={openDropdownId === "main-feed-type"}
-                  onToggle={(isOpen) => handleDropdownToggle("main-feed-type", isOpen)}
-                  onClose={closeAllDropdowns}
-                  label="Filter category"
-                  options={feedTypeFilterOptions}
-                  value={streamCategoryFilter}
-                  groupId="feed-type-main"
-                  onSelect={(next) => {
-                    setStreamCategoryFilter(next)
-                    setCurrentPage("1")
-                  }}
-                />
-                <div className={feedList.checkboxContainer}>
-                  <label className={feedList.detailsLabel}>
-                    <input
-                      type="checkbox"
-                      style="width:15px;height:15px;display:inline;margin-right:8px;"
-                      checked={show24x5Feeds}
-                      onChange={() => {
-                        closeAllDropdowns()
-                        const newValue = !show24x5Feeds
-                        setShow24x5Feeds(newValue)
-                        if (newValue) {
-                          // Reset trading hours filter when enabling 24/5
-                          setTradingHoursFilter("all")
-                        }
+                {!show24x5Feeds && (
+                  <>
+                    <FilterDropdown
+                      isOpen={openDropdownId === "main-schema"}
+                      onToggle={(isOpen) => handleDropdownToggle("main-schema", isOpen)}
+                      onClose={closeAllDropdowns}
+                      label="Filter schema"
+                      options={schemaFilterOptions}
+                      value={rwaSchemaFilter}
+                      groupId="schema-main"
+                      onSelect={(next) => {
+                        setRwaSchemaFilter(next)
                         setCurrentPage("1")
                       }}
                     />
-                    Show only 24/5 Equity Streams
-                  </label>
-                </div>
+                    <FilterDropdown
+                      isOpen={openDropdownId === "main-feed-type"}
+                      onToggle={(isOpen) => handleDropdownToggle("main-feed-type", isOpen)}
+                      onClose={closeAllDropdowns}
+                      label="Filter category"
+                      options={feedTypeFilterOptions}
+                      value={streamCategoryFilter}
+                      groupId="feed-type-main"
+                      onSelect={(next) => {
+                        setStreamCategoryFilter(next)
+                        setCurrentPage("1")
+                      }}
+                    />
+                  </>
+                )}
+                {!force24x5Only && (
+                  <div className={feedList.checkboxContainer}>
+                    <label className={feedList.detailsLabel}>
+                      <input
+                        type="checkbox"
+                        style="width:15px;height:15px;display:inline;margin-right:8px;"
+                        checked={show24x5Feeds}
+                        onChange={() => {
+                          closeAllDropdowns()
+                          const newValue = !show24x5Feeds
+                          setShow24x5Feeds(newValue)
+                          if (newValue) {
+                            // Reset trading hours filter when enabling 24/5
+                            setTradingHoursFilter("all")
+                          }
+                          setCurrentPage("1")
+                        }}
+                      />
+                      Show only 24/5 Equity Streams
+                    </label>
+                  </div>
+                )}
                 {show24x5Feeds && (
                   <FilterDropdown
                     isOpen={openDropdownId === "main-trading-hours"}
@@ -1231,52 +1243,58 @@ export const FeedList = ({
             )}
             {dataFeedType === "streamsRwa" && (
               <>
-                <FilterDropdown
-                  isOpen={openDropdownId === "test-schema"}
-                  onToggle={(isOpen) => handleDropdownToggle("test-schema", isOpen)}
-                  onClose={closeAllDropdowns}
-                  label="Filter schema"
-                  options={schemaFilterOptions}
-                  value={testnetRwaSchemaFilter}
-                  groupId="schema-testnet"
-                  onSelect={(next) => {
-                    setTestnetRwaSchemaFilter(next)
-                    setTestnetCurrentPage("1")
-                  }}
-                />
-                <FilterDropdown
-                  isOpen={openDropdownId === "test-feed-type"}
-                  onToggle={(isOpen) => handleDropdownToggle("test-feed-type", isOpen)}
-                  onClose={closeAllDropdowns}
-                  label="Filter category"
-                  options={feedTypeFilterOptions}
-                  value={testnetStreamCategoryFilter}
-                  groupId="feed-type-testnet"
-                  onSelect={(next) => {
-                    setTestnetStreamCategoryFilter(next)
-                    setTestnetCurrentPage("1")
-                  }}
-                />
-                <div className={feedList.checkboxContainer}>
-                  <label className={feedList.detailsLabel}>
-                    <input
-                      type="checkbox"
-                      style="width:15px;height:15px;display:inline;margin-right:8px;"
-                      checked={show24x5FeedsTestnet}
-                      onChange={() => {
-                        closeAllDropdowns()
-                        const newValue = !show24x5FeedsTestnet
-                        setShow24x5FeedsTestnet(newValue)
-                        if (newValue) {
-                          // Reset trading hours filter when enabling 24/5
-                          setTestnetTradingHoursFilter("all")
-                        }
+                {!show24x5FeedsTestnet && (
+                  <>
+                    <FilterDropdown
+                      isOpen={openDropdownId === "test-schema"}
+                      onToggle={(isOpen) => handleDropdownToggle("test-schema", isOpen)}
+                      onClose={closeAllDropdowns}
+                      label="Filter schema"
+                      options={schemaFilterOptions}
+                      value={testnetRwaSchemaFilter}
+                      groupId="schema-testnet"
+                      onSelect={(next) => {
+                        setTestnetRwaSchemaFilter(next)
                         setTestnetCurrentPage("1")
                       }}
                     />
-                    Show only 24/5 Equity Streams
-                  </label>
-                </div>
+                    <FilterDropdown
+                      isOpen={openDropdownId === "test-feed-type"}
+                      onToggle={(isOpen) => handleDropdownToggle("test-feed-type", isOpen)}
+                      onClose={closeAllDropdowns}
+                      label="Filter category"
+                      options={feedTypeFilterOptions}
+                      value={testnetStreamCategoryFilter}
+                      groupId="feed-type-testnet"
+                      onSelect={(next) => {
+                        setTestnetStreamCategoryFilter(next)
+                        setTestnetCurrentPage("1")
+                      }}
+                    />
+                  </>
+                )}
+                {!force24x5Only && (
+                  <div className={feedList.checkboxContainer}>
+                    <label className={feedList.detailsLabel}>
+                      <input
+                        type="checkbox"
+                        style="width:15px;height:15px;display:inline;margin-right:8px;"
+                        checked={show24x5FeedsTestnet}
+                        onChange={() => {
+                          closeAllDropdowns()
+                          const newValue = !show24x5FeedsTestnet
+                          setShow24x5FeedsTestnet(newValue)
+                          if (newValue) {
+                            // Reset trading hours filter when enabling 24/5
+                            setTestnetTradingHoursFilter("all")
+                          }
+                          setTestnetCurrentPage("1")
+                        }}
+                      />
+                      Show only 24/5 Equity Streams
+                    </label>
+                  </div>
+                )}
                 {show24x5FeedsTestnet && (
                   <FilterDropdown
                     isOpen={openDropdownId === "test-trading-hours"}

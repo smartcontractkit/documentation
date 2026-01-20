@@ -14,6 +14,7 @@ whatsnext:
 
 import { Aside, ClickToZoom } from "@components"
 import { Tabs } from "@components/Tabs"
+import { FeedList } from "@features/feeds"
 
 Chainlink 24/5 U.S. Equities Streams provide real-time equity pricing data across all major U.S. single-name equities and ETFs spanning regular, pre-market, post-market, and overnight trading sessions. The [advanced RWA schema](/data-streams/reference/report-schema-v11) includes fields such as market status flags, best bid and ask prices, bid and ask volumes, staleness measures, and last traded prices to facilitate more advanced execution and risk management.
 
@@ -45,9 +46,17 @@ This advanced RWA schema is built to support 24/5 streams, including DON Consens
 
 Each instrument is exposed through three distinct data streams feeds, each corresponding to a specific trading phase: **Regular Hours**, **Extended Hours**, and **Overnight Hours**.
 
-[Click here to view a list of RWA streams that support 24-5 US equities](/data-streams/rwa-streams?page=1&testnetPage=1&show24x5=true). Use the filters to select your desired time segment.
+The table below shows all available 24/5 US Equities streams. Use the **Time segment** filter to view streams for specific trading sessions.
 
-For example, **TSLA** is available via the [following streams](/data-streams/rwa-streams?page=1&testnetPage=1&show24x5=true&search=tsla):
+<FeedList
+  client:idle
+  initialNetwork="arbitrum"
+  dataFeedType="streamsRwa"
+  force24x5Only={true}
+  allowNetworkTableExpansion={true}
+/>
+
+For example, **TSLA** is available via the following streams:
 
 - `TSLA/USD-Streams-ExtendedHours`
 - `TSLA/USD-Streams-OvernightHours`

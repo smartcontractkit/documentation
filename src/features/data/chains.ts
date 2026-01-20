@@ -82,7 +82,8 @@ export const CHAINS: Chain[] = [
         name: "Arbitrum Mainnet",
         explorerUrl: "https://arbiscan.io/address/%s",
         networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
+        rddUrl:
+          "https://gist.githubusercontent.com/dev-dist/340e088738251597efbeabafbc2b400b/raw/a618c812f53878c718e1b6a871eb502cb58027c4/24-5-test.json",
         queryString: "arbitrum-mainnet",
         tags: ["streams", "smartData", "usGovernmentMacroeconomicData"],
       },
