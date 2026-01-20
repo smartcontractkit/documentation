@@ -11,5 +11,8 @@ interface IReceiver is IERC165 {
   /// limit. The receiver is responsible for discarding stale reports.
   /// @param metadata Report's metadata.
   /// @param report Workflow report.
-  function onReport(bytes calldata metadata, bytes calldata report) external;
+  function onReport(
+    bytes calldata metadata,
+    bytes calldata report
+  ) external;
 }

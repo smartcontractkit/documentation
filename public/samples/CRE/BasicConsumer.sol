@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
-
 import {ReceiverTemplate} from "./ReceiverTemplate.sol";
 
 contract MyConsumer is ReceiverTemplate {
   uint256 public s_storedValue;
-
   event ValueUpdated(uint256 newValue);
 
   // Constructor requires forwarder address
