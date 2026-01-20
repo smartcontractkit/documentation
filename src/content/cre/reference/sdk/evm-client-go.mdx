@@ -69,10 +69,10 @@ func (c *Client) CallContract(runtime cre.Runtime, input *CallContractRequest) c
 
 This is the main input object for the `CallContract` function. It acts as a wrapper for the call message and an optional block number.
 
-| <div style="width:100px">Field</div> | <div style="width:110px">Type</div> | Description                                                                                                                                                                                                                     |
-| ------------------------------------ | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Call`                               | `*evm.CallMsg`                      | Contains the actual details of the function call you want to make.                                                                                                                                                              |
-| `BlockNumber`                        | `*pb.BigInt`                        | Optional. The block number to query. Defaults to `latest`. Use `-2` for `latest` (the most recent block, which may be subject to re-orgs) or `-3` for `finalized` (a block that is considered immutable and safe from re-orgs). |
+| <div style="width:100px">Field</div> | <div style="width:110px">Type</div> | Description                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| ------------------------------------ | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Call`                               | `*evm.CallMsg`                      | Contains the actual details of the function call you want to make.                                                                                                                                                                                                                                                                                                                                                                        |
+| `BlockNumber`                        | `*pb.BigInt`                        | Optional. The block number to query. Accepts:<br/>• `nil` or `-2` (default): `latest` — the most recent block<br/>• `-3`: `finalized` — an immutable block<br/>• **Any positive integer**: an explicit block height (see [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-go#custom-block-depths) for examples)<br/><br/>See [Finality and Confidence Levels](/cre/concepts/finality-go) for finality strategies. |
 
 #### `evm.CallMsg`
 
@@ -104,10 +104,10 @@ func (c *Client) BalanceAt(runtime cre.Runtime, input *BalanceAtRequest) cre.Pro
 
 #### `evm.BalanceAtRequest`
 
-| Field         | Type         | Description                                                |
-| ------------- | ------------ | ---------------------------------------------------------- |
-| `Account`     | `[]byte`     | The 20-byte address of the account to query.               |
-| `BlockNumber` | `*pb.BigInt` | Optional. The block number to query. Defaults to `latest`. |
+| Field         | Type         | Description                                                                                                                                                                                                                                                                                                                            |
+| ------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Account`     | `[]byte`     | The 20-byte address of the account to query.                                                                                                                                                                                                                                                                                           |
+| `BlockNumber` | `*pb.BigInt` | Optional. The block number to query. Accepts `nil` or `-2` for `latest` (default), `-3` for `finalized`, or any positive integer for an explicit block height (see [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-go#custom-block-depths)). See [Finality and Confidence Levels](/cre/concepts/finality-go). |
 
 #### `evm.BalanceAtReply`
 
@@ -193,9 +193,9 @@ func (c *Client) HeaderByNumber(runtime cre.Runtime, input *HeaderByNumberReques
 
 #### `evm.HeaderByNumberRequest`
 
-| Field         | Type         | Description                                                                |
-| ------------- | ------------ | -------------------------------------------------------------------------- |
-| `BlockNumber` | `*pb.BigInt` | The number of the block to retrieve. If `nil`, retrieves the latest block. |
+| Field         | Type         | Description                                                                                                                                                                                                                                                                                                                                       |
+| ------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BlockNumber` | `*pb.BigInt` | The number of the block to retrieve. Accepts `nil` for `latest` (default), `-2` for `latest`, `-3` for `finalized`, or any positive integer for an explicit block height (see [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-go#custom-block-depths)). See [Finality and Confidence Levels](/cre/concepts/finality-go). |
 
 #### `evm.HeaderByNumberReply`
 
@@ -259,10 +259,11 @@ func (c *Client) WriteReport(runtime cre.Runtime, input *WriteCreReportRequest) 
 
 A **chain selector** is a unique identifier for a blockchain network used throughout the CRE platform. The same chain can be referenced in three different ways depending on the context. All three formats are equivalent and refer to the same blockchain.
 
+{/* prettier-ignore */}
 <Aside type="note" title="Related resources">
   - **Forwarder addresses**: For network-specific forwarder contract addresses, see [Supported
-  Networks](/cre/guides/workflow/using-evm-client/supported-networks) - **RPC configuration**: For configuring RPC
-  endpoints in `project.yaml`, see [Project Configuration](/cre/reference/project-configuration)
+  Networks](/cre/guides/workflow/using-evm-client/supported-networks)
+  - **RPC configuration**: For configuring RPC endpoints in `project.yaml`, see [Project Configuration](/cre/reference/project-configuration)
 </Aside>
 
 ### Understanding the three formats

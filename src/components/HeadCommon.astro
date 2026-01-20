@@ -1,6 +1,7 @@
 ---
 import "../styles/theme.css"
 import "../styles/index.css"
+import "../styles/code-blocks.css"
 import "../styles/migrated.css"
 import "../styles/prism-darcula.css"
 import "@chainlink/design-system/global-styles.css"
@@ -74,6 +75,31 @@ const { title } = Astro.props
       window.dataLayer = window.dataLayer || []
       window.dataLayer.push({
         cre_sdk_language: language,
+      })
+    } catch (e) {
+      // localStorage unavailable, skip tracking
+    }
+  })()
+</script>
+
+<!-- Set CCIP Chain Family in dataLayer -->
+<script is:inline type="text/javascript">
+  ;(function () {
+    if (!window.location.pathname.startsWith("/ccip")) return
+
+    try {
+      var savedChain = localStorage.getItem("chainlink-docs-chain-type")
+      // Default to "evm" if not set or invalid
+      var chainFamily =
+        savedChain === "solana" || savedChain === '"solana"'
+          ? "solana"
+          : savedChain === "aptos" || savedChain === '"aptos"'
+            ? "aptos"
+            : "evm"
+
+      window.dataLayer = window.dataLayer || []
+      window.dataLayer.push({
+        ccip_chain_family: chainFamily,
       })
     } catch (e) {
       // localStorage unavailable, skip tracking

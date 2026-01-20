@@ -57,9 +57,9 @@ The `logTrigger()` method accepts a configuration object with the following fiel
 | `topics`                               | `TopicValues[]`                       | Optional. A fixed 4-element array to filter event topics. The first element contains event signatures, and the next three elements contain indexed argument values. An empty array element acts as a wildcard.                                                                                                                                                                                            |
 | `confidence`                           | `string`                              | Optional. The block confirmation level to monitor. Can be: <ul><li>**`"CONFIDENCE_LEVEL_LATEST"`**: The most recent block (fastest but least secure).</li><li>**`"CONFIDENCE_LEVEL_SAFE"` (default)**: A block unlikely to be reorged but not yet irreversible.</li><li>**`"CONFIDENCE_LEVEL_FINALIZED"`**: A block considered irreversible (safest, but requires waiting longer for finality).</li></ul> |
 
-{/* prettier-ignore */}
-<Aside type="caution" title="SAFE block tag fallback">
-  **Some chains do not support the SAFE block tag** (e.g., Shibarium). When you specify `"CONFIDENCE_LEVEL_SAFE"` on chains that don't support it, CRE automatically falls back to `"CONFIDENCE_LEVEL_FINALIZED"` for safety. Users are responsible for knowing which chains support the SAFE tag. If you need consistent behavior across all chains, explicitly use `"CONFIDENCE_LEVEL_FINALIZED"` or `"CONFIDENCE_LEVEL_LATEST"`.
+<Aside type="note" title="Finality details">
+  For details on how each confidence level maps to specific chains and estimated wait times, see [Finality and
+  Confidence Levels](/cre/concepts/finality).
 </Aside>
 
 ### `TopicValues`
@@ -247,8 +247,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## Decoding Log Data
@@ -274,10 +272,3 @@ const onLogTrigger = (runtime: Runtime<Config>, log: EVMLog): string => {
   return "Log decoded"
 }
 ```
-
-<Aside type="note" title="Using contract ABIs">
-  For type-safe event handling, organize your contract ABIs in separate TypeScript files (e.g.,
-  `contracts/abi/MyContract.ts`) as demonstrated in the [demo
-  workflow](https://github.com/smartcontractkit/cre-cli/tree/main/examples/proof-of-reserve). Define ABIs as `const`
-  arrays with full JSON ABI structures for optimal TypeScript type inference with viem.
-</Aside>

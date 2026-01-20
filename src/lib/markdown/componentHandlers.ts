@@ -424,7 +424,8 @@ export function handleCodeSample(
       } as Parent
     } else {
       // Try to inline the code
-      const possiblePaths = [path.resolve(`public/${src}`), path.resolve(src), path.resolve(`src/${src}`)]
+      const publicPath = path.join(process.cwd(), "public", src)
+      const possiblePaths = [publicPath, path.resolve(src), path.join(process.cwd(), "src", src)]
 
       let codeContent: string | null = null
       for (const p of possiblePaths) {

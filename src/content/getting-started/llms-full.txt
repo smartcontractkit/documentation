@@ -29,6 +29,32 @@ Some networks are not EVM-compatible and use languages other than Solidity for s
 
 The structure of a smart contract is similar to that of a class in Javascript, with a few differences. For example, the following `HelloWorld` contract is a simple smart contract that stores a single variable and includes a function to update the value of that variable.
 
+```sol
+// SPDX-License-Identifier: MIT
+
+pragma solidity 0.8.7;
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+contract HelloWorld {
+  string public message;
+
+  constructor(
+    string memory initialMessage
+  ) {
+    message = initialMessage;
+  }
+
+  function updateMessage(
+    string memory newMessage
+  ) public {
+    message = newMessage;
+  }
+}
+```
+
 ### Solidity versions
 
 The first thing that every Solidity file must have is the Solidity version definition. The `HelloWorld.sol` contract uses version `0.8.7`, which is defined in the contract as `pragma solidity 0.8.7;`
@@ -101,6 +127,38 @@ Functions use visibility modifiers to define the access level. Learn more about 
 ### Interfaces
 
 An **interface** is another concept that is familiar to programmers of other languages. Interfaces define functions without their implementation, which leaves inheriting contracts to define the actual implementation themselves. This makes it easier to know what functions to call in a contract. Here's an example of an interface:
+
+```sol
+// SPDX-License-Identifier: MIT
+
+pragma solidity 0.8.7;
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+interface numberComparison {
+  function isSameNum(
+    uint256 a,
+    uint256 b
+  ) external view returns (bool);
+}
+
+contract Test is numberComparison {
+  constructor() {}
+
+  function isSameNum(
+    uint256 a,
+    uint256 b
+  ) external pure override returns (bool) {
+    if (a == b) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+}
+```
 
 For this example, `override` is necessary in the `Test` contract function because it overrides the base function contained in the `numberComparison` interface. The contract uses `pure` instead of `view` because the `isSameNum` function in the `Test` contract does not return a storage variable.
 

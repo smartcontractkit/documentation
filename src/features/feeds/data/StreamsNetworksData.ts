@@ -283,12 +283,12 @@ export const StreamsNetworksData: NetworkData[] = [
     mainnet: {
       label: "HyperEVM Mainnet",
       verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
-      explorerUrl: "https://hyperliquid.cloud.blockscout.com/address/%s",
+      explorerUrl: "https://hyperevmscan.io/address/address/%s",
     },
     testnet: {
       label: "HyperEVM Testnet",
       verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
-      explorerUrl: "https://evm.hyperstats.xyz/address/%s",
+      explorerUrl: "https://testnet.purrsec.com/address/%s",
     },
   },
   {
@@ -391,10 +391,15 @@ export const StreamsNetworksData: NetworkData[] = [
     network: "MegaETH",
     logoUrl: "/assets/chains/megaeth.svg",
     networkStatus: "https://uptime.megaeth.com",
+    mainnet: {
+      label: "MegaETH Mainnet",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://megaeth.blockscout.com/address/%s",
+    },
     testnet: {
       label: "MegaETH Testnet",
-      verifierProxy: "0xfBFff08fE4169853F7B1b5Ac67eC10dc8806801d",
-      explorerUrl: "https://www.megaexplorer.xyz/address/%s",
+      verifierProxy: "0xa33c1F0561eECe58ee7b7349D5BE018dd94EC9B6",
+      explorerUrl: "https://megaeth-testnet-v2.blockscout.com/address/%s",
     },
   },
   {
