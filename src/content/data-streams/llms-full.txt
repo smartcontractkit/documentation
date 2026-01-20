@@ -5569,7 +5569,7 @@ Consumers must have fallback logic in place when the data is stale. Potential ac
 
 The following examples demonstrate how to implement a continuous price feed by dynamically switching between phase-specific streams. These examples use tokenized asset prices as the fallback strategy for edge cases (stale data, Unknown market status, and Closed). Developers may choose alternative mitigation strategies based on their protocol's risk requirements.
 
-Developers interested in using tokenized assets can find the list of supported assets and schema in the [Tokenized Assets documentation](/data-streams/backed-streams). Using tokenized assets carries its own risks, including liquidity limitations and price deviations from spot markets. Evaluate these factors carefully before integrating tokenized prices into your protocol.
+Developers interested in using tokenized assets can find the list of supported assets and schema in the [Tokenized Assets documentation](/data-streams/tokenized-asset-streams). Using tokenized assets carries its own risks, including liquidity limitations and price deviations from spot markets. Evaluate these factors carefully before integrating tokenized prices into your protocol.
 
 <Aside type="note" title="Note">
   Tokenized Assets are often Total Return Trackers (TRT). If used, the price should be normalized back to a non-TRT
@@ -5583,7 +5583,7 @@ To build a continuous price feed, follow this general decision flow. This is a s
 1. **Fetch and decode** the Regular Hours stream report to get `marketStatus` and `lastSeenTimestampNs`
 
 2. **Check staleness first:**
-   - **If data is stale** (timestamp older than your threshold) → **[Use Tokenized Asset stream](/data-streams/backed-streams)** or apply custom risk mitigation
+   - **If data is stale** (timestamp older than your threshold) → **[Use Tokenized Asset stream](/data-streams/tokenized-asset-streams)** or apply custom risk mitigation
    - **If data is fresh** → Continue to step 3
 
 3. **Route based on market status:**
