@@ -1,37 +1,54 @@
 ---
-import { getCollection, render, type CollectionEntry } from "astro:content"
-import TutorialLayout from "../../../layouts/TutorialLayout.astro"
-import DocsLayout from "../../../layouts/DocsLayout.astro"
+import { getCollection } from "astro:content"
 
 type Props = {
-  entry: CollectionEntry<"ccip">
+  to: string
 }
 
 export async function getStaticPaths() {
-  const entries = await getCollection("ccip", (entry) => entry.id.startsWith("tutorials/"))
+  const normalizeTutorialId = (entryId: string): string => {
+    let id = entryId.replace(/\.(md|mdx)$/, "")
+    id = id.replace(/\/index$/, "")
+    // Astro content slugs may collapse dots: v2.0 → v20
+    id = id.replace(/^(v2\.0|v20)\/tutorials\/?/, "")
+    return id
+  }
 
-  const paths: { params: { id: string }; props: Props }[] = []
+  const entries = await getCollection(
+    "ccip",
+    (entry) =>
+      entry.id === "v2.0/tutorials" ||
+      entry.id.startsWith("v2.0/tutorials/") ||
+      entry.id === "v20/tutorials" ||
+      entry.id.startsWith("v20/tutorials/")
+  )
+
+  const paths: { params: { id?: string }; props: Props }[] = []
 
   for (const entry of entries) {
-    const tutorialId = entry.id.replace(/^tutorials\//, "").replace(/\.(md|mdx)$/, "")
+    const tutorialId = normalizeTutorialId(entry.id)
 
+    // /ccip/tutorials → /ccip/v2.0/tutorials
+    if (!tutorialId) {
+      paths.push({
+        params: { id: undefined },
+        props: { to: "/ccip/v2.0/tutorials" },
+      })
+      continue
+    }
+
+    // /ccip/tutorials/* → /ccip/v2.0/tutorials/*
     paths.push({
       params: { id: tutorialId },
-      props: { entry },
+      props: { to: `/ccip/v2.0/tutorials/${tutorialId}` },
     })
   }
 
   return paths
 }
 
-const { entry } = Astro.props as Props
-
-const { Content, headings } = await render(entry)
-
-// Only use TutorialLayout for specific interactive tutorials
-const Layout = entry.id === "tutorials/evm/cross-chain-tokens/register-from-eoa-remix" ? TutorialLayout : DocsLayout
+const { to } = Astro.props as Props
 ---
 
-<Layout frontmatter={entry.data} headings={headings}>
-  <Content />
-</Layout>
+<meta name="robots" content="noindex, follow" />
+<meta http-equiv="refresh" content={`0; url=${to}`} />

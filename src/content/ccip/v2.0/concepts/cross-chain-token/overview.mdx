@@ -1,0 +1,158 @@
+---
+section: ccip
+date: Last Modified
+title: "Cross-Chain Token Standard - Overview"
+metadata:
+  description: "Overview of Chainlink's Cross-Chain Token (CCT) standard. Learn its motivations, benefits like self-service deployment, key concepts, and token handling mechanisms."
+  excerpt: "Cross-Chain Token CCT overview Self-service deployment Token liquidity Multi-chain assets Token pools Rate limits Burn and mint Lock and mint Zero-slippage transfers"
+  datePublished: "2025-05-19"
+  lastModified: "2025-05-19"
+---
+
+import { Aside, ClickToZoom } from "@components"
+import { AptosCCTCallout } from "~/components/CCIP/AptosCCTCallout.tsx"
+
+<AptosCCTCallout client:only="react" />
+
+<Aside type="note" title="Launch or upgrade your cross-chain token in just a few clicks">
+  Did you know about the [Token Manager](https://tokenmanager.chain.link/). This newly released app gives you the
+  ability to launch new tokens or upgrade existing tokens into CCTs, no code required. Read more about it
+  [here](/ccip/tools-resources/token-manager).
+</Aside>
+
+The Cross-Chain Token (CCT) standard offers a streamlined and decentralized approach to enabling token transfers across blockchains using Chainlink's Cross-Chain Interoperability Protocol (CCIP). Traditionally, token developers had a friction-laden and manual process to enable their tokens for cross-chain operations. This process required manual deployment of token pools, making it time-consuming. With the introduction of CCTs, token developers now have the power to deploy, configure, and manage their own token pools in CCIP via a simple interface. This self-service model not only accelerates the deployment process but also empowers token developers with greater autonomy and control over their cross-chain token operations. This guide will explore the motivations behind Cross-Chain Token (CCT) and provide an overview of the architectural components in enabling a compatible token in CCIP.
+
+## Motivations
+
+The motivation for Cross-Chain Token (CCT) originates from two primary challenges: liquidity fragmentation in a multi-chain ecosystem and the need for greater autonomy for token developers.
+
+### Liquidity Fragmentation
+
+[Hundreds](https://chainlist.org/) of blockchains exist, each with their own rules, consensus mechanisms, and liquidity. This expansion has created fragmented liquidity, where assets are siloed on individual blockchains, making it difficult for users and developers to access liquidity across different ecosystems. Token developers face the dilemma of choosing which blockchain to deploy on, often deciding between the blockchain with the most liquidity or a new, emerging chain with future potential. Each decision comes with risks, such as competing in a crowded market or dealing with trust assumptions on new blockchains.
+
+### Need for Greater Autonomy
+
+Another critical motivation behind Cross-Chain Token is to empower projects to enable their tokens for cross-chain operations without the support of third-parties. By providing a self-service model, Cross-Chain Token allows projects to take control of their cross-chain applications. This enables rapid expansion to other blockchains supported by CCIP.
+
+Cross-Chain Token (CCT) solves these challenges by allowing token developers to create assets that can move seamlessly across multiple blockchains without fragmenting liquidity. By deploying a token in multiple blockchain environments, token developers can maintain a consistent supply, manage liquidity efficiently, and reach users on different blockchains without introducing complex bridging processes. The CCT standard offers the following benefits:
+
+#### Self-service and Permissionless Deployment
+
+With CCT, token developers can launch a cross-chain token or enable an existing token in a self-service manner within minutes. The fully audited token pool contracts handle the complexities of burning/minting or locking/minting tokens across blockchains, all without requiring liquidity pools. This enables a streamlined and permissionless deployment process that significantly reduces the barriers to cross-chain expansion. Starting from v1.5.1, token pools support zero-downtime upgrades, allowing seamless transitions between pool versions while maintaining support for in-flight messages.
+
+#### Developer Control and Flexibility
+
+Token developers retain complete ownership of their token contracts, token pools, and implementation logic. This includes configuring rate limits across all blockchains, ensuring that token developers have full autonomy to manage their deployments. The CCT standard avoids vendor lock-in, hard-coded functions, and external dependencies, giving projects the flexibility they need to succeed.
+
+#### Defense-in-Depth Security
+
+The CCT standard leverages Chainlink's industry-standard oracle networks, which secure over $16 trillion in Total Value Enabled (TVE). This strong foundation is further enhanced by additional layers of protection, such as configurable transfer rate limits, providing comprehensive security for cross-chain operations.
+
+#### Programmable Token Transfers
+
+Cross-Chain Token (CCT) supports the simultaneous transfer of tokens and messages in a single transaction. This programmability allows for complex use cases, improving the overall efficiency of cross-chain transactions. For instance, a programmable token transfer could execute a function to stake tokens on the destination blockchain.
+
+#### No Liquidity Pools Required
+
+The fully audited token pool contracts provided by CCT eliminate the need for liquidity pools, simplifying cross-chain token management. By locking or burning tokens on the source chain and minting or unlocking them on the destination chain, token developers can maintain consistent liquidity without managing fragmented liquidity pools across multiple blockchains.
+
+#### Reduced Liquidity Fragmentation
+
+The CCT standard addresses liquidity fragmentation by allowing tokens to move seamlessly across multiple blockchains rather than requiring liquidity to be present on both source and destination chains. This unified approach ensures that liquidity remains consistent and accessible across all supported blockchains, reducing inefficiencies and improving the user experience.
+
+#### Zero-Slippage Transfers
+
+Token developers are provided access to pre-audited token pool contracts that enable zero-slippage cross-chain transfers of CCTs. The exact amount of tokens sent to the CCIP OnRamp on the source chain is always the exact amount of tokens received on the CCIP OffRamp on the destination chain.
+
+#### Ease of Cross-Chain Integration
+
+With CCT, existing compatible tokens can be easily extended to support cross-chain functionality. This makes it possible for token developers to extend their token's reach across multiple blockchains with minimal effort, avoiding the complexities associated with traditional bridging solutions.
+
+## Key Concepts
+
+### Token Developer
+
+The entity responsible for issuing and managing the token. Token developers decide which blockchains to deploy the token on, manage its lifecycle, and control its availability across different blockchains.
+
+### Token Owner
+
+The entity that owns the token contract. The token owner has the authority to manage the token contract, including upgrading the contract, changing the token administrator, or transferring ownership to another address.
+
+### Token Administrator
+
+A role assigned to manage cross-chain operations of a token. The token administrator is responsible for mapping a token to a token pool in the TokenAdminRegistry.. The token administrator can be the token owner or another designated entity assigned by the token owner. Technically, the token administrator can be an EOA or a smart account.
+
+### EOA (Externally Owned Account)
+
+A standard blockchain account controlled by a private key, typically used by individuals. EOAs do not have associated code, unlike smart accounts, and are used for directly signing transactions.
+
+### Smart Account
+
+A blockchain account represented by a smart contract, offering advanced functionality like multi-signature authorization or custom transaction logic. Smart accounts provide better security and flexibility compared to EOAs. For example, smart accounts can use multi-signature mechanisms to add an extra layer of security.
+
+### Compatible Token
+
+Cross-Chain tokens need to adhere to specific requirements to ensure interoperability across different blockchain ecosystems. Each blockchain family has its own requirements documentation. For example, you can read about [EVM token requirements](/ccip/concepts/cross-chain-token/evm/tokens) or visit the respective documentation pages for other blockchain families like SVM.
+
+### Token Pool
+
+Each token is associated with its own token pool, which acts as an abstraction layer over compatible tokens designed to facilitate token-related operations for OnRamping and OffRamping. Token pools provide rate limits, a security feature enabling token developers to set a maximum rate at which their token can be transferred per lane. Token pools are configured to `lock` or `burn` tokens on the source blockchain and `unlock` or `mint` tokens on the destination blockchain.
+
+## Token Pool rate limits
+
+Token administrators may set-up token pool rate limits. A token pool rate limit (TPRL) has a maximum capacity and a refill rate, which is the speed at which the maximum capacity is restored after a token transfer has consumed some or all of the available capacity.
+
+<ClickToZoom src="/images/ccip/ccip-refill-rate-v03.webp" alt="CCIP Token Pool Rate Limits" />
+
+You can find the complete list of CCIP supported tokens and their rate limits on the [CCIP Directory page](/ccip/directory).
+
+## Token Handling Mechanisms
+
+The setup of token pools on source and destination blockchain results in four primary token handling mechanisms:
+
+### Burn and Mint
+
+Tokens are burned on the source blockchain, and an equivalent amount of tokens are minted on the destination blockchain. This keeps the total supply of the token constant across blockchains.
+
+<ClickToZoom src="/images/ccip/cct/handling/burn-mint.jpg" alt="CCIP Burn and Mint mechanism" />
+
+### Lock and Mint
+
+This mechanism is suitable for projects with existing tokens on a single blockchain that have already been minted and lack functionality to control the supply via burn and mint functions on the source blockchain. In this approach, tokens are locked on the issuing blockchain, and fully collateralized "wrapped" tokens are minted on the destination blockchain. These wrapped tokens, which must support burn and mint functionality, can subsequently be transferred across other non-issuing blockchains using the Burn and Mint mechanism.
+
+<ClickToZoom src="/images/ccip/cct/handling/lock-mint.jpg" alt="CCIP Lock and Mint mechanism" />
+
+### Burn and Unlock
+
+Tokens are burned on the source blockchain (which is the non-issuing blockchain), and an equivalent amount of tokens are released on the destination blockchain (the issuing blockchain). This mechanism is the inverse of the Lock and Mint mechanism and applies when you send tokens back to their issuing source blockchain.
+
+<ClickToZoom src="/images/ccip/cct/handling/burn-unlock.jpg" alt="CCIP Burn and Unlock mechanism" />
+
+### Lock and Unlock
+
+Tokens are locked on the source blockchain, and an equivalent amount of tokens are released on the destination blockchain. For additional guidance on Lock and Unlock configuration, please review best practices.
+
+<ClickToZoom src="/images/ccip/cct/handling/lock-unlock.png" alt="CCIP Lock and Unlock mechanism" />
+
+### Token-Specific Transfer Mechanisms
+
+The mechanism for handling tokens varies depending on the characteristics of each token. Below are several examples to illustrate this:
+
+- LINK Token is minted on a single blockchain (Ethereum mainnet) and has a fixed total supply. Consequently, CCIP cannot natively mint it on another blockchain. For LINK, the token pool is configured to lock tokens on Ethereum mainnet (the issuing blockchain) and mint them on the destination blockchain. Conversely, when transferring from a non-issuing blockchain to Ethereum mainnet, the LINK token pool is set to burn the tokens on the source (non-issuing) blockchain and unlock them on Ethereum Mainnet (issuing). For example, transferring 10 LINK from Ethereum mainnet to Base mainnet involves the LINK token pool locking 10 LINK on Ethereum mainnet and minting 10 LINK on Base mainnet. Conversely, transferring 10 LINK from Base mainnet to Ethereum mainnet involves the LINK token pool burning 10 LINK on Base mainnet and unlocking 10 LINK on Ethereum mainnet.
+- Wrapped native Assets (e.g., WETH) use a Lock and Unlock mechanism. For instance, when transferring 10 WETH from Ethereum mainnet to Optimism mainnet, the WETH token pool will lock 10 WETH on Ethereum mainnet and unlock 10 WETH on Optimism mainnet. Conversely, transferring from Optimism mainnet back to Ethereum mainnet involves the WETH token pool locking 10 WETH on Optimism mainnet and unlocking 10 WETH on the Ethereum mainnet.
+- Stablecoins (e.g., USDC) can be minted natively on multiple blockchains. Their respective token pools employ a Burn and Mint mechanism, burning the token on the source blockchain and then minting it natively on the destination blockchain.
+- Tokens with a Proof Of Reserve (PoR) with a PoR feed on a specific blockchain present a challenge for the Burn and Mint mechanism when applied across other blockchains due to conflicts with the PoR feed. For such tokens, the Lock and Mint approach is preferred.
+
+<Aside type="note" title="Transferring Native Gas Tokens">
+
+Below is an example of transferring native gas tokens on EVM-based blockchains:
+
+To transfer **ETH**, from one blockchain to another, follow these steps:
+
+1. Wrap ETH into WETH: Users must first interact with the WETH contract or use a DEX to convert their ETH into Wrapped Ether (WETH).
+1. Send WETH via CCIP: Next, users call the CCIP Router to send WETH to the receiver account on the desired destination blockchain.
+1. Unwrap WETH back into ETH: Finally, on the destination blockchain, users call the WETH contract or use a DEX to convert the WETH into ETH.
+
+**Note:** You can use the [EthSenderContract.sol](https://github.com/smartcontractkit/chainlink-ccip/blob/release/contracts-ccip-1.6.2/chains/evm/contracts/applications/EtherSenderReceiver.sol) contract as a reference to transfer ETH across EVM-based blockchains using CCIP.
+
+</Aside>

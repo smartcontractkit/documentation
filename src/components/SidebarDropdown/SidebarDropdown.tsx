@@ -1,5 +1,5 @@
 /** @jsxImportSource react */
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, type ReactNode } from "react"
 import styles from "./SidebarDropdown.module.css"
 
 export interface DropdownItem {
@@ -16,6 +16,7 @@ interface SidebarDropdownProps {
   onSelect: (id: string) => void
   triggerId: string
   ariaLabel: string
+  rightSlot?: ReactNode
 }
 
 /**
@@ -30,7 +31,15 @@ interface SidebarDropdownProps {
  * - Keyboard accessible (ARIA compliant, Escape key)
  * - Mobile responsive
  */
-export function SidebarDropdown({ label, items, selectedId, onSelect, triggerId, ariaLabel }: SidebarDropdownProps) {
+export function SidebarDropdown({
+  label,
+  items,
+  selectedId,
+  onSelect,
+  triggerId,
+  ariaLabel,
+  rightSlot,
+}: SidebarDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -80,61 +89,67 @@ export function SidebarDropdown({ label, items, selectedId, onSelect, triggerId,
         <label className={styles.label} htmlFor={triggerId}>
           {label}
         </label>
-        <button
-          id={triggerId}
-          type="button"
-          className={styles.trigger}
-          onClick={handleToggle}
-          aria-expanded={isOpen}
-          aria-haspopup="true"
-          aria-label={ariaLabel}
-        >
-          <img src={selectedItem.icon} alt={selectedItem.label} className={styles.triggerIcon} />
-          <span className={styles.triggerText}>{selectedItem.label}</span>
-          <svg className={styles.arrow} width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path
-              d="M2.5 4.5L6 8L9.5 4.5"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
+        <div className={styles.controlsRow}>
+          <div className={styles.triggerWrap}>
+            <button
+              id={triggerId}
+              type="button"
+              className={styles.trigger}
+              onClick={handleToggle}
+              aria-expanded={isOpen}
+              aria-haspopup="true"
+              aria-label={ariaLabel}
+            >
+              <img src={selectedItem.icon} alt={selectedItem.label} className={styles.triggerIcon} />
+              <span className={styles.triggerText}>{selectedItem.label}</span>
+              <svg className={styles.arrow} width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path
+                  d="M2.5 4.5L6 8L9.5 4.5"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
 
-        {isOpen && (
-          <div className={styles.menu}>
-            <div className={styles.menuContent}>
-              {items.map((item) => {
-                const isActive = selectedId === item.id
+            {isOpen && (
+              <div className={styles.menu}>
+                <div className={styles.menuContent}>
+                  {items.map((item) => {
+                    const isActive = selectedId === item.id
 
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={`${styles.option} ${isActive ? styles.selected : ""}`}
-                    onClick={() => handleSelect(item.id)}
-                    title={item.description}
-                  >
-                    <img src={item.icon} alt={item.label} className={styles.optionIcon} />
-                    <span>{item.label}</span>
-                    {isActive && (
-                      <svg className={styles.checkmark} width="16" height="16" viewBox="0 0 16 16" fill="none">
-                        <path
-                          d="M13.5 4.5L6 12L2.5 8.5"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    )}
-                  </button>
-                )
-              })}
-            </div>
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className={`${styles.option} ${isActive ? styles.selected : ""}`}
+                        onClick={() => handleSelect(item.id)}
+                        title={item.description}
+                      >
+                        <img src={item.icon} alt={item.label} className={styles.optionIcon} />
+                        <span>{item.label}</span>
+                        {isActive && (
+                          <svg className={styles.checkmark} width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path
+                              d="M13.5 4.5L6 12L2.5 8.5"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
           </div>
-        )}
+
+          {rightSlot ? <div className={styles.rightSlot}>{rightSlot}</div> : null}
+        </div>
       </div>
     </div>
   )

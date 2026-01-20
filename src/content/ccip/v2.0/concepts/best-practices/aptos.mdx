@@ -1,0 +1,208 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP Best Practices (Aptos)"
+metadata:
+  description: "Best practices for building secure and reliable cross-chain dApps using CCIP on Aptos. Includes destination/source verification, message handling, gas configuration, monitoring, multisig guidance, and Aptos-specific considerations for building secure cross-chain applications."
+  image: "/images/ccip/ccip-hl-v1.6.gif"
+  excerpt: "ccip aptos best practices, sender verification, message handling, extraArgs usage, gas configuration, receiver module deployment, multisig security, monitoring, and auditing guidance, ccip receive extra args"
+  datePublished: "2025-09-03"
+  lastModified: "2025-09-03"
+  difficulty: "intermediate"
+  estimatedTime: "35 minutes"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="talkToExpert" />
+
+<Aside type="note" title="Interfaces and Applications">
+  Chainlink CCIP is a messaging protocol. Third parties may build user interfaces or other applications on top of CCIP.
+  Neither Chainlink Labs nor the Chainlink Foundation owns, controls, endorses, or assumes any responsibility for any
+  such interfaces or applications. You are solely responsible for your use of such interfaces or applications. Please
+  visit the Chainlink Foundation [Terms of Service](https://chain.link/terms) for more information.
+</Aside>
+
+Before you deploy your cross-chain dApps to mainnet, make sure that your dApps follow the best practices in this document. You are responsible for thoroughly reviewing your code and applying best practices to ensure that your cross-chain dApps are secure and reliable. If you have a unique use case for CCIP that might involve additional cross-chain risk, [contact the Chainlink Labs Team](https://chain.link/ccip-contact) before deploying your application to mainnet.
+
+## Verify destination chain
+
+Before calling the `router::ccip_send` entry function, your application should verify that the destination chain is supported. Sending messages to unsupported chains will fail and waste transaction fees.
+
+**Example**: You can programmatically check for support by calling the `onramp::is_chain_supported` view function. Here is a TypeScript example:
+
+```ts
+import { Aptos, AptosConfig, Network } from "@aptos-labs/ts-sdk"
+
+async function isDestinationChainSupported(
+  aptos: Aptos,
+  onRampAddress: string,
+  destinationChainSelector: string
+): Promise<boolean> {
+  const result = await aptos.view({
+    payload: {
+      function: `${onRampAddress}::onramp::is_chain_supported`,
+      functionArguments: [destinationChainSelector],
+    },
+  })
+  return result[0] as boolean
+}
+```
+
+## Verify source chain
+
+When implementing the `ccip_receive` entry function in your custom module, you should verify the `source_chain_selector` from the incoming `Any2AptosMessage`. This ensures your module only accepts messages from blockchains you trust.
+
+```rust
+use ccip::client;
+fun ccip_receive<ProofType: drop>(
+    _proof: ProofType,
+) {
+    let message = receiver_registry::get_receiver_input(module_address, _proof);
+    let source_chain = client::get_source_chain_selector(&message);
+
+    // Your allowlist logic
+    assert!(is_allowed_source_chain(source_chain), E_UNTRUSTED_SOURCE_CHAIN);
+
+    // ... rest of your logic
+}
+```
+
+## Verify sender
+
+Your `ccip_receive` implementation should also validate the sender address in the `Any2AptosMessage` if your application logic depends on messages coming from specific source addresses.
+
+**Note**: This verification may not be necessary for all use cases, such as an application that accepts messages from any sender.
+
+```rust
+// Inside your ccip_receive function
+let sender_bytes = client::get_sender(&message);
+assert!(is_trusted_sender(sender_bytes), E_UNTRUSTED_SENDER);
+```
+
+## Using `extraArgs`
+
+<Aside type="note">
+  The `extra_args` parameter enables forward compatibility with future CCIP upgrades. For maximum flexibility, implement
+  your application to build this parameter dynamically rather than hardcoding it. This approach lets you adapt to
+  protocol changes without updating your application code.
+</Aside>
+
+The `extra_args` parameter provides chain-specific configuration for cross-chain messaging. It controls execution parameters on the destination chain, including resource allocation and message ordering guarantees.
+
+<Aside type="note" title="EVM Destination Best Practices">
+  For sending messages to EVM-based blockchains, refer to the [EVM Best
+  Practices](/ccip/concepts/best-practices/evm#using-extraargs) guide.
+</Aside>
+
+### Setting `gasLimit`
+
+When sending a message from Aptos to an EVM chain, the `gasLimit` in `extraArgs` specifies the gas for the `ccipReceive` execution on the destination.
+
+- To transfer tokens directly to an EVM wallet (EOA), set the `gasLimit` to `0` because no contract execution is required.
+- To call a receiver contract on EVM, you must estimate the required gas and set an appropriate `gasLimit`. Unused gas is not refunded.
+- When sending a message from Aptos to another Aptos module, the `gasLimit` can be used to allocate a specific amount of gas for your `ccip_receive` function's execution.
+
+### Message Ordering (`allowOutOfOrderExecution` flag)
+
+- When sending a message **from EVM to Aptos**, the `extraArgs` on the EVM side contains an `allowOutOfOrderExecution: bool` parameter.
+
+- When sending a message **from Aptos**, the `extra_args` contains an `allow_out_of_order_execution: bool` parameter.
+
+<Aside type="caution" title="Important">
+  For Aptos, you **must** set `allowOutOfOrderExecution`/`allow_out_of_order_execution` to `true` regardless of whether
+  your chain is the source or destination.
+</Aside>
+
+## Decoupling CCIP Message Reception and Business Logic
+
+As a best practice, separate the logic for receiving a CCIP message from your core application logic. Your `ccip_receive` function should be lightweight, focusing on:
+
+- Verifying the caller and payload.
+- Storing the message data in an onchain resource.
+- Emitting an event.
+
+A separate function can then be called by a user or another process to consume the stored data and execute the main business logic. This pattern provides more control and allows for "escape hatches" to manage situations where the business logic encounters issues.
+
+## Key Concepts for Aptos Receivers
+
+When implementing a custom receiver module on Aptos to interact with CCIP, there are several key architectural patterns and constraints to understand.
+
+### Why must `ccip_receive` fetch its own data payload?
+
+The `ccip_receive` function in your module acts as a secure callback, triggered by the CCIP Off-Ramp, but it does not receive the message payload directly in its function arguments. Instead, the receiver module is responsible for actively retrieving the payload.
+
+- **Mechanism**: When a message arrives, the CCIP protocol temporarily stores the payload (the `Any2AptosMessage` struct) within the `ReceiverRegistry` module. Your `ccip_receive` function must then call `receiver_registry::get_receiver_input` to securely fetch this data within the same transaction.
+
+- **Rationale**: This design pattern ensures security. It confirms that only the correctly registered module at the designated receiver address can access the message payload, and only during the context of a valid CCIP execution initiated by the Off-Ramp. This prevents unauthorized access to message data.
+
+### When must a receiver module be deployed under a Resource Account?
+
+The choice between a **resource account** and a **user account** / **code object account** for deploying your receiver module depends entirely on whether the module will ever need to programmatically control assets.
+
+- **Modules That Handle Tokens**: If your module will receive tokens via CCIP and later needs to transfer them, it **must** be deployed under a **resource account**. This is because a resource account allows the module to generate a signer for its own address onchain, which is required to authorize the withdrawal or transfer of those assets. Without this signer capability, any tokens the module receives would be locked.
+
+- **Data-Only Modules**: Conversely, if your receiver module is designed **only to process arbitrary data** — for example, to update its own internal state or trigger an event—and will never hold or transfer assets, it can be deployed under a regular **user account** or **code object account** (the code object account is recommended). In this scenario, the module doesn't need to sign for any transactions on its own behalf, so the signer capability of a resource account is not necessary.
+
+### Why must each `ccip_receive` module be deployed under a unique account?
+
+The CCIP `ReceiverRegistry` is designed to map a single account address to a single, unique `ccip_receive` function.
+
+- **Constraint**: When a CCIP message arrives, it targets a specific receiver address. The protocol requires a deterministic way to find and invoke the correct function. Registering multiple `ccip_receive` functions at the same address would create an ambiguity that the protocol cannot resolve.
+
+- **Recommended Design Pattern**: While you are limited to one registered entry point per account, this does not limit your application's complexity. The recommended approach is to use your single `ccip_receive` function as a **dispatcher**.
+  - Your application can encode additional routing information inside the data payload of the CCIP message (e.g., using a function name or an action ID).
+  - Your single `ccip_receive` function then parses this data and calls the appropriate internal functions within your module to handle different logic paths.
+
+This pattern maintains a single, secure entry point for CCIP while allowing for flexible and sophisticated application logic.
+
+## Evaluate the security and reliability of the networks that you use
+
+Although CCIP has been thoroughly reviewed and audited, inherent risks might still exist based on your use case, the blockchain networks where you deploy your programs, and the network conditions on those blockchains.
+
+## Review and audit your code
+
+Before securing value with programs that implement CCIP interfaces and routers, ensure that your code is secure and reliable. If you have a unique use case for CCIP that might involve additional cross-chain risk, [contact the Chainlink Labs Team](https://chain.link/ccip-contact) before deploying your application to mainnet.
+
+## Soak test your dApps
+
+Be aware of the [Service Limits and Rate Limits for Supported Networks](/ccip/directory). Before you provide access to end users or secure value, soak test your cross-chain dApps. Ensure that your dApps can operate within these limits and operate correctly during usage spikes or unfavorable network conditions.
+
+## Monitor your dApps
+
+When you build applications that depend on CCIP, include monitoring and safeguards to protect against the negative impact of extreme market events, possible malicious activity on your dApp, potential delays, and outages.
+
+Create your own monitoring alerts based on deviations from normal activity. This will notify you when potential issues occur so you can respond to them.
+
+## Multi-Signature Authorities
+
+Multi-signature authorities enhance security by requiring multiple signatures to authorize transactions.
+
+### Threshold configuration
+
+Set an optimal threshold for signers based on the trust level of participants and the required security.
+
+### Role-based access control
+
+Assign roles with specific permissions to different signers, limiting access to critical operations to trusted individuals.
+
+### Hardware wallet integration
+
+Use hardware wallets for signers to safeguard private keys from online vulnerabilities. Ensure that these devices are secure and regularly updated.
+
+### Regular audits and updates
+
+Conduct periodic audits of signer access and authority settings. Update the multisig setup as necessary, especially when personnel changes occur.
+
+### Emergency recovery plans
+
+Implement procedures for recovering from lost keys or compromised accounts, such as a predefined recovery multisig or recovery key holders.
+
+### Transaction review process
+
+Establish a standard process for reviewing and approving transactions, which can include a waiting period for large transfers to mitigate risks.
+
+### Documentation and training
+
+Maintain thorough documentation of multisig operations and provide training for all signers to ensure familiarity with processes and security protocols.

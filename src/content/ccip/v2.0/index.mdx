@@ -1,0 +1,101 @@
+---
+section: ccip
+date: Last Modified
+title: "Chainlink CCIP - Cross-Chain Interoperability Protocol"
+metadata:
+  description: "Chainlink CCIP is a secure cross‑chain interoperability protocol for token transfers, messaging, and programmable token transfers."
+  excerpt: "Chainlink CCIP, blockchain interoperability, cross-chain protocol, token transfers, arbitrary messaging, programmable token transfer, defense-in-depth security, decentralized oracle network"
+  datePublished: "2023-08-03"
+  lastModified: "2025-05-19"
+isIndex: true
+whatsnext:
+  "Complete the Getting Started guide to learn the basics": "/ccip/getting-started"
+  "CCIP Directory": "/ccip/directory"
+  "Learn how to transfer tokens": "/ccip/tutorials/evm/transfer-tokens-from-contract"
+  "Learn more about CCIP architecture": "/ccip/concepts/architecture"
+---
+
+import { ClickToZoom, Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="talkToExpert" />
+
+Blockchain interoperability protocols are important for the Web3 ecosystem and traditional systems that need to interact with different blockchains. These protocols are the foundation for building blockchain abstraction layers, allowing traditional backends and dApps to interact with any blockchain network through a single middleware solution. Without a blockchain interoperability protocol, Web2 systems and dApps would need to build separate in-house implementations for each cross-chain interaction that they want to use, which is a time-consuming, resource-intensive, and complex process.
+
+Blockchain interoperability protocols provide the following capabilities:
+
+- You can transfer assets and information across multiple blockchains.
+- Application developers can leverage the strengths and benefits of different chains.
+- Collaboration between developers from diverse blockchain ecosystems enables the building of cross-chain applications to serve more users and provide additional features or products for them.
+
+The _Chainlink Cross-Chain Interoperability Protocol (CCIP)_ provides these capabilities and enables a variety of [use cases](#common-use-cases).
+
+## What is Chainlink CCIP?
+
+Chainlink CCIP is a blockchain interoperability protocol that enables developers to build secure applications that can transfer tokens, messages (data), or both tokens and messages across chains.
+
+Given the [inherent risks of cross-chain interoperability](/resources/bridge-risks), CCIP features [defense-in-depth security](https://blog.chain.link/five-levels-cross-chain-security/#level_5__defense-in-depth) and is powered by Chainlink's industry-standard oracle networks which have a proven track record of securing tens of billions of dollars and enabling over $14 trillion in onchain transaction value.
+
+CCIP's robust security framework is built upon several core components:
+
+- **Proven Decentralized Architecture**: CCIP leverages the same highly reliable infrastructure as Chainlink Data Feeds, which has enabled trillions in transaction value across hundreds of DeFi applications. Cross-chain transactions are validated by multiple decentralized oracle networks (DONs).
+- **Rate Limiting**: To mitigate risk, CCIP includes a rate limiting feature. This allows owners to establish and configure policies for Cross-Chain Tokens, which are then enforced on both the source and destination chains.
+- **Timelocked Upgrades**: All on-chain, security-critical configuration changes and core infrastructure upgrades must pass through a Role-based Access Control Timelock contract. This process provides a review period during which CCIP node operators can veto the upgrade, or, in time-sensitive situations, explicitly approve it.
+- **High-Quality, Sybil-Resistant Node Operators**: The system is secured by the same globally distributed, security-reviewed, public node operators that secure other Chainlink services, validate leading blockchain networks, and operate traditional Web2 infrastructure. Each independent CCIP node is run by a distinct organization with extensive DevOps expertise and rigorous private key management security practices.
+
+<ClickToZoom
+  src="/images/ccip/ccip-hl-v1.7.jpg"
+  alt="Chainlink CCIP Architecture"
+  style="display: block; margin: 2rem auto; max-height: 60vh; width: auto;"
+/>
+
+To understand how Chainlink CCIP works, refer to the [architecture](/ccip/concepts/architecture/overview) section. If you are new to using Chainlink CCIP, read these guides before you deploy any contracts that use CCIP.
+
+## Chainlink CCIP core capabilities
+
+Chainlink CCIP supports three main capabilities:
+
+### Arbitrary Messaging
+
+The ability to send arbitrary data (encoded as bytes) to a receiving smart contract on a different blockchain. The developer is free to encode any data they wish to send.
+
+Typically, developers use arbitrary messaging to trigger an informed action on the receiving smart contract, such as rebalancing an index, minting a specific NFT, or calling an arbitrary function with the sent data as custom parameters. Developers can encode multiple instructions in a single message, enabling them to orchestrate complex, multi-step, multi-chain tasks.
+
+### Token Transfer
+
+The ability to transfer tokens to an account on a different blockchain. This capability enables the seamless movement of assets across chains.
+
+### Programmable Token Transfer
+
+The ability to simultaneously transfer tokens and arbitrary data (encoded as bytes) within a single transaction. This mechanism allows users to transfer tokens and send instructions on what to do with those tokens.
+
+For example, a user could transfer tokens to a lending protocol with instructions to leverage those tokens as collateral for a loan, borrowing another asset to be sent back to the user.
+
+### Receiving account types
+
+With CCIP, you send transactions with data (arbitrary messaging), tokens, or both data and tokens (programmable token transfer). The receiver of a CCIP transaction varies by blockchain family:
+
+| CCIP capability             | What is sent    | Receiving account types                                                                                                                            |
+| --------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Arbitrary Messaging         | Data            | EVM: Smart contracts only<br />SVM: Programs only<br />Aptos: Modules only                                                                         |
+| Token Transfer              | Tokens          | EVM: Smart contracts and EOAs<br />SVM: User wallets or program-controlled PDAs<br />Aptos: User accounts or modules deployed to resource accounts |
+| Programmable Token Transfer | Data and tokens | EVM: Smart contracts only<br />SVM: Data to programs, tokens to program-controlled PDAs<br />Aptos: Modules deployed to resource accounts          |
+
+**Note**: On EVM chains, EOAs cannot receive messages. On Solana (SVM), programs work with Program Derived Addresses (PDAs) to manage token reception.
+
+## Common use cases
+
+Chainlink CCIP enables a variety of use cases:
+
+- **Cross-chain lending:** Chainlink CCIP enables users to lend and borrow a wide range of crypto assets across multiple DeFi platforms running on independent chains.
+- **Low-cost transaction computation:** Chainlink CCIP can help offload the computation of transaction data on cost-optimized chains.
+- **Optimizing cross-chain yield:** Users can leverage Chainlink CCIP to move collateral to new DeFi protocols to maximize yield across chains.
+- **Creating new kinds of dApps:** Chainlink CCIP enables users to take advantage of network effects on certain chains while harnessing compute and storage capabilities of other chains.
+
+Read [What Are Cross-Chain Smart Contracts](https://chain.link/education-hub/cross-chain-smart-contracts) to learn about cross-chain smart contracts and examples of use cases they enable.
+
+## CCIP Directory
+
+See the [CCIP Directory](/ccip/directory) page for a list of supported networks, tokens, and contract addresses.
+
+To learn about tokens, token pools, and the token onboarding process, see the [CCIP Architecture](/ccip/concepts/cross-chain-token/evm/token-pools) page.

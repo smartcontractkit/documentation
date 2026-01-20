@@ -1,6 +1,5 @@
 ---
 import CcipDirectoryLayout from "~/layouts/CcipDirectoryLayout.astro"
-import { getEntry, render } from "astro:content"
 import { Environment, DecommissionedNetwork, getAllDecommissionedNetworks } from "~/config/data/ccip"
 import Breadcrumb from "~/components/CCIP/Breadcrumb/Breadcrumb"
 import Aside from "~/components/Aside.astro"
@@ -14,12 +13,7 @@ interface Props {
 }
 const { environment, network } = Astro.props as Props
 
-const entry = await getEntry("ccip", "index")
-if (!entry) {
-  throw new Error('Could not find "ccip/index" doc. Check src/content/ccip/index.mdx!')
-}
-
-const { headings } = await render(entry)
+const headings = []
 
 // CCIP Explorer URL
 const ccipExplorerUrl = `https://ccip.chain.link/`

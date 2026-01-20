@@ -1,13 +1,11 @@
 ---
-import { Sections } from "~/content.config"
-import { SIDEBAR } from "../../config"
-import type { SectionEntry, SectionContent } from "../../config"
+import type { Sections } from "~/content.config.ts"
+import { SIDEBAR } from "../../config/index.ts"
+import type { SectionEntry, SectionContent } from "../../config/index.ts"
 import RecursiveSidebar from "./RecursiveSidebar.astro"
-import { LanguageSwitcherDropdown } from "~/components/LanguageSwitcherDropdown"
-import { ChainTypeSelector } from "~/components/ChainSelector"
-import { isChainAwareSection } from "~/config/chainTypes"
-import { filterContentByChainType } from "~/utils/chainType"
-import type { ChainType } from "~/config/types"
+import { LanguageSwitcherDropdown } from "~/components/LanguageSwitcherDropdown.js"
+import { ChainTypeSelector } from "~/components/ChainSelector/index.js"
+import { isChainAwareSection } from "~/config/chainTypes.js"
 import styles from "./leftSidebar.module.css"
 
 type SectionEntryWithParent = SectionEntry & { parentSection?: string }
@@ -21,6 +19,58 @@ const { currentPage, section } = Astro.props
 
 // Check if this section supports chain type filtering
 const showChainSelector = isChainAwareSection(section)
+
+type CcipDocVersion = "v1.6" | "v2.0"
+
+function getCcipDocVersionFromPath(pathname: string): CcipDocVersion | null {
+  const match = pathname.match(/^\/ccip\/(v1\.6|v2\.0)(\/|$)/)
+  return (match?.[1] as CcipDocVersion | undefined) ?? null
+}
+
+function isExternalUrl(url: string): boolean {
+  return url.startsWith("http://") || url.startsWith("https://")
+}
+
+function rewriteCcipUrl(url: string, version: CcipDocVersion): string {
+  if (!url || isExternalUrl(url)) return url
+
+  const [rawPath, rawQuery] = url.split("?", 2)
+  const query = rawQuery ? `?${rawQuery}` : ""
+
+  // Only rewrite CCIP links that come from the sidebar config
+  if (!rawPath.startsWith("ccip")) return url
+
+  // Keep CCIP Directory unversioned (the directory is a separate app/page route)
+  if (rawPath.startsWith("ccip/directory")) return url
+
+  // Remove the "ccip/" prefix (or "ccip" itself) so we can insert the version.
+  let remainder = rawPath === "ccip" ? "" : rawPath.replace(/^ccip\//, "")
+
+  // If the sidebar already has a version (future-proof), normalize it to the requested one.
+  remainder = remainder.replace(/^(v1\.6|v2\.0)(\/|$)/, "")
+
+  const rewritten = remainder ? `ccip/${version}/${remainder}` : `ccip/${version}`
+  return `${rewritten}${query}`
+}
+
+function rewriteCcipSidebarItems(items: SectionContent[], version: CcipDocVersion): SectionContent[] {
+  return items.map((item) => ({
+    ...item,
+    url: item.url ? rewriteCcipUrl(item.url, version) : item.url,
+    highlightAsCurrent: item.highlightAsCurrent?.map((url) => rewriteCcipUrl(url, version)),
+    children: item.children ? rewriteCcipSidebarItems(item.children, version) : item.children,
+  }))
+}
+
+function rewriteCcipSidebarSections(
+  sections: SectionEntryWithParent[],
+  version: CcipDocVersion
+): SectionEntryWithParent[] {
+  return sections.map((group) => ({
+    ...group,
+    contents: rewriteCcipSidebarItems(group.contents, version),
+  }))
+}
 
 // Return whichever sections we need
 function getSidebarSections(section?: Sections): SectionEntryWithParent[] {
@@ -79,7 +129,14 @@ function removeSlashes(url: string): string {
   return sanitizedUrl
 }
 
-const sidebarSections = getSidebarSections(section)
+const sidebarSections = (() => {
+  const base = getSidebarSections(section)
+
+  if (section !== "ccip") return base
+
+  const version = getCcipDocVersionFromPath(currentPage) ?? "v2.0"
+  return rewriteCcipSidebarSections(base, version)
+})()
 ---
 
 <nav aria-labelledby="grid-left" class={styles.nav}>

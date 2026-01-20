@@ -1,6 +1,5 @@
 ---
 import CcipDirectoryLayout from "~/layouts/CcipDirectoryLayout.astro"
-import { getEntry, render } from "astro:content"
 import {
   Environment,
   Network,
@@ -24,12 +23,7 @@ interface Props {
 }
 const { environment, network } = Astro.props as Props
 
-const entry = await getEntry("ccip", "index")
-if (!entry) {
-  throw new Error('Could not find "ccip/index" doc. Check src/content/ccip/index.mdx!')
-}
-
-const { headings } = await render(entry)
+const headings = []
 
 const networks = getAllNetworks({ filter: environment })
 const allTokens = getTokensOfChain({ chain: network?.chain || "", filter: environment })

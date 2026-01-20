@@ -22,7 +22,7 @@ export const ccipRedirects = {
       // Only create one redirect without trailing slash
       redirects[`/ccip/api-reference/evm/${file}`] = {
         status: 301,
-        destination: `/ccip/api-reference/evm/v1.5.1/${file}`,
+        destination: `/ccip/v2.0/api-reference/evm/v1.5.1/${file}`,
       }
       return redirects
     },
@@ -33,7 +33,7 @@ export const ccipRedirects = {
       // Only create one redirect without trailing slash
       redirects[`/ccip/api-reference/svm/${file}`] = {
         status: 301,
-        destination: `/ccip/api-reference/svm/v1.6.0/${file}`,
+        destination: `/ccip/v2.0/api-reference/svm/v1.6.0/${file}`,
       }
       return redirects
     },
@@ -44,7 +44,7 @@ export const ccipRedirects = {
       // Only create one redirect without trailing slash
       redirects[`/ccip/api-reference/aptos/${file}`] = {
         status: 301,
-        destination: `/ccip/api-reference/aptos/v1.6.0/${file}`,
+        destination: `/ccip/v2.0/api-reference/aptos/v1.6.0/${file}`,
       }
       return redirects
     },

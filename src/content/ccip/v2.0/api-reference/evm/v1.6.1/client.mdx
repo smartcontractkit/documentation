@@ -1,0 +1,347 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.6.1 Client Library API Reference"
+metadata:
+  description: "Complete API documentation for the Client library in Chainlink CCIP v1.6.1. Data structures and utilities for building and handling cross-chain messages."
+  excerpt: "ccip client library api reference v1.6.1 any2evmmessage evm2anymessage structs cross-chain message handling"
+  version: "1.6.1"
+  datePublished: "2024-12-05T18:15:43Z"
+  lastModified: "2025-09-08T15:38:00Z"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage161" />
+
+## Client
+
+A library that provides core data structures and utilities for building and handling cross-chain messages in CCIP.
+
+[Git Source](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v1.6.1/chains/evm/contracts/libraries/Client.sol)
+
+## Structs
+
+### Any2EVMMessage
+
+Structure representing a message received from any chain to an EVM chain.
+
+```solidity
+struct Any2EVMMessage {
+  bytes32 messageId;
+  uint64 sourceChainSelector;
+  bytes sender;
+  bytes data;
+  EVMTokenAmount[] destTokenAmounts;
+}
+```
+
+<Aside>
+
+Contains all necessary information about an incoming cross-chain message:
+
+- Message identification and source chain details
+- Sender information (can be decoded if from an EVM chain)
+- Custom message payload
+- Token transfer details in destination chain format
+
+</Aside>
+
+**Properties**
+
+| Name                  | Type                                  | Description                                       |
+| --------------------- | ------------------------------------- | ------------------------------------------------- |
+| `messageId`           | `bytes32`                             | Message ID corresponding to ccipSend on source    |
+| `sourceChainSelector` | `uint64`                              | Identifier of the source chain                    |
+| `sender`              | `bytes`                               | Sender address (use abi.decode if from EVM chain) |
+| `data`                | `bytes`                               | Custom payload from the original message          |
+| `destTokenAmounts`    | [`EVMTokenAmount[]`](#evmtokenamount) | Token amounts in destination chain representation |
+
+### EVM2AnyMessage
+
+Structure for sending a message from an EVM chain to any supported chain.
+
+```solidity
+struct EVM2AnyMessage {
+  bytes receiver;
+  bytes data;
+  EVMTokenAmount[] tokenAmounts;
+  address feeToken;
+  bytes extraArgs;
+}
+```
+
+<Aside>
+
+Defines the format for outgoing cross-chain messages:
+
+- Default gas limit is 200k if extraArgs is empty
+- Fee token can be set to address(0) to use native tokens (msg.value)
+- Extra arguments should be encoded using \_argsToBytes([`EVMExtraArgsV1`](#evmextraargsv1)), \_argsToBytes([`GenericExtraArgsV2`](#genericextraargsv2)), or \_svmArgsToBytes([`SVMExtraArgsV1`](#svmextraargsv1))
+
+</Aside>
+
+**Properties**
+
+| Name           | Type                                  | Description                                         |
+| -------------- | ------------------------------------- | --------------------------------------------------- |
+| `receiver`     | `bytes`                               | Encoded receiver address for destination EVM chains |
+| `data`         | `bytes`                               | Custom payload to send                              |
+| `tokenAmounts` | [`EVMTokenAmount[]`](#evmtokenamount) | Tokens and amounts to transfer                      |
+| `feeToken`     | `address`                             | Token used for fees (address(0) for native tokens)  |
+| `extraArgs`    | `bytes`                               | Additional arguments encoded with \_argsToBytes     |
+
+### EVMExtraArgsV1
+
+Structure for V1 extra arguments in cross-chain messages.
+
+```solidity
+struct EVMExtraArgsV1 {
+  uint256 gasLimit;
+}
+```
+
+<Aside>First version of extra arguments, supporting basic gas limit configuration.</Aside>
+
+**Properties**
+
+| Name       | Type      | Description                                  |
+| ---------- | --------- | -------------------------------------------- |
+| `gasLimit` | `uint256` | Gas limit for execution on destination chain |
+
+### GenericExtraArgsV2
+
+Structure for V2 extra arguments in cross-chain messages.
+
+```solidity
+struct GenericExtraArgsV2 {
+  uint256 gasLimit;
+  bool allowOutOfOrderExecution;
+}
+```
+
+<Aside>
+
+Enhanced version of extra arguments adding execution order control:
+
+- Includes configurable gas limit
+- Allows specifying out-of-order execution preference
+- Default value for allowOutOfOrderExecution varies by chain
+- Some chains enforce specific values and will revert if not set correctly
+- Compatible with multiple chain families (formerly EVMExtraArgsV2)
+
+</Aside>
+
+**Properties**
+
+| Name                       | Type      | Description                                   |
+| -------------------------- | --------- | --------------------------------------------- |
+| `gasLimit`                 | `uint256` | Gas limit for execution on destination chain  |
+| `allowOutOfOrderExecution` | `bool`    | Whether messages can be executed in any order |
+
+### SVMExtraArgsV1
+
+Structure for V1 extra arguments specific to Solana VM-based chains.
+
+```solidity
+struct SVMExtraArgsV1 {
+  uint32 computeUnits;
+  uint64 accountIsWritableBitmap;
+  bool allowOutOfOrderExecution;
+  bytes32 tokenReceiver;
+  bytes32[] accounts;
+}
+```
+
+<Aside>
+
+Solana VM-specific arguments for cross-chain messages:
+
+- Configures compute units (Solana's equivalent to gas)
+- Specifies which accounts are writable
+- Controls message execution order
+- Defines token receiver details
+- Lists additional accounts needed for CCIP receiver execution
+
+</Aside>
+
+**Properties**
+
+| Name                       | Type        | Description                                            |
+| -------------------------- | ----------- | ------------------------------------------------------ |
+| `computeUnits`             | `uint32`    | Compute units for execution on Solana                  |
+| `accountIsWritableBitmap`  | `uint64`    | Bitmap indicating which accounts are writable          |
+| `allowOutOfOrderExecution` | `bool`      | Whether messages can be executed in any order          |
+| `tokenReceiver`            | `bytes32`   | Address of the token receiver                          |
+| `accounts`                 | `bytes32[]` | Additional accounts needed for CCIP receiver execution |
+
+### EVMTokenAmount
+
+Structure representing token amounts in CCIP messages.
+
+```solidity
+struct EVMTokenAmount {
+  address token;
+  uint256 amount;
+}
+```
+
+<Aside>
+
+Core structure for token transfers used by the Risk Management Network (RMN):
+
+- Changes to this struct require RMN maintainer notification
+- Represents token amounts in their chain-specific format
+
+</Aside>
+
+**Properties**
+
+| Name     | Type      | Description                      |
+| -------- | --------- | -------------------------------- |
+| `token`  | `address` | Token address on the local chain |
+| `amount` | `uint256` | Amount of tokens to transfer     |
+
+## State Variables
+
+### EVM_EXTRA_ARGS_V1_TAG
+
+```solidity
+bytes4 public constant EVM_EXTRA_ARGS_V1_TAG = 0x97a657c9;
+```
+
+<Aside>The identifier tag for V1 extra arguments (bytes4(keccak256("CCIP EVMExtraArgsV1"))).</Aside>
+
+### GENERIC_EXTRA_ARGS_V2_TAG
+
+```solidity
+bytes4 public constant GENERIC_EXTRA_ARGS_V2_TAG = 0x181dcf10;
+```
+
+<Aside>
+  The identifier tag for V2 generic extra arguments, available for multiple chain families (formerly
+  EVM_EXTRA_ARGS_V2_TAG).
+</Aside>
+
+### SVM_EXTRA_ARGS_V1_TAG
+
+```solidity
+bytes4 public constant SVM_EXTRA_ARGS_V1_TAG = 0x1f3b3aba;
+```
+
+<Aside>The identifier tag for Solana VM extra arguments.</Aside>
+
+### SVM_EXTRA_ARGS_MAX_ACCOUNTS
+
+```solidity
+uint256 public constant SVM_EXTRA_ARGS_MAX_ACCOUNTS = 64;
+```
+
+<Aside>The maximum number of accounts that can be passed in SVMExtraArgs.</Aside>
+
+### SVM_TOKEN_TRANSFER_DATA_OVERHEAD
+
+```solidity
+uint256 public constant SVM_TOKEN_TRANSFER_DATA_OVERHEAD = (4 + 32) // source_pool
+  + 32 // token_address
+  + 4 // gas_amount
+  + 4 // extra_data overhead
+  + 32 // amount
+  + 32 // size of the token lookup table account
+  + 32 // token-related accounts in the lookup table, over-estimated to 32, typically between 11 - 13
+  + 32 // token account belonging to the token receiver, e.g ATA, not included in the token lookup table
+  + 32 // per-chain token pool config, not included in the token lookup table
+  + 32 // per-chain token billing config, not always included in the token lookup table
+  + 32; // OffRamp pool signer PDA, not included in the token lookup table
+```
+
+<Aside>
+  The expected static payload size of a token transfer when Borsh encoded and submitted to SVM. TokenPool extra data and
+  offchain data sizes are dynamic, and should be accounted for separately. Each component represents space required for
+  different parts of the token transfer operation on Solana.
+</Aside>
+
+### SVM_MESSAGING_ACCOUNTS_OVERHEAD
+
+```solidity
+uint256 public constant SVM_MESSAGING_ACCOUNTS_OVERHEAD = 2;
+```
+
+<Aside>Number of overhead accounts needed for message execution on SVM.</Aside>
+
+### SVM_ACCOUNT_BYTE_SIZE
+
+```solidity
+uint256 public constant SVM_ACCOUNT_BYTE_SIZE = 32;
+```
+
+<Aside>The size of each SVM account address in bytes.</Aside>
+
+## Functions
+
+### \_argsToBytes (V1)
+
+Encodes EVMExtraArgsV1 into bytes for message transmission.
+
+```solidity
+function _argsToBytes(EVMExtraArgsV1 memory extraArgs) internal pure returns (bytes memory bts);
+```
+
+<Aside>Serializes V1 extra arguments with the V1 tag identifier for cross-chain message processing.</Aside>
+
+**Parameters**
+
+| Name        | Type                                | Description                      |
+| ----------- | ----------------------------------- | -------------------------------- |
+| `extraArgs` | [`EVMExtraArgsV1`](#evmextraargsv1) | The V1 extra arguments to encode |
+
+**Returns**
+
+| Type    | Description                          |
+| ------- | ------------------------------------ |
+| `bytes` | The encoded extra arguments with tag |
+
+### \_argsToBytes (V2)
+
+Encodes GenericExtraArgsV2 into bytes for message transmission.
+
+```solidity
+function _argsToBytes(GenericExtraArgsV2 memory extraArgs) internal pure returns (bytes memory bts);
+```
+
+<Aside>Serializes V2 generic extra arguments with the V2 tag identifier for cross-chain message processing.</Aside>
+
+**Parameters**
+
+| Name        | Type                                        | Description                              |
+| ----------- | ------------------------------------------- | ---------------------------------------- |
+| `extraArgs` | [`GenericExtraArgsV2`](#genericextraargsv2) | The V2 generic extra arguments to encode |
+
+**Returns**
+
+| Type    | Description                          |
+| ------- | ------------------------------------ |
+| `bytes` | The encoded extra arguments with tag |
+
+### \_svmArgsToBytes
+
+Encodes SVMExtraArgsV1 into bytes for message transmission.
+
+```solidity
+function _svmArgsToBytes(SVMExtraArgsV1 memory extraArgs) internal pure returns (bytes memory bts);
+```
+
+<Aside>Serializes Solana VM extra arguments with the SVM tag identifier for cross-chain message processing.</Aside>
+
+**Parameters**
+
+| Name        | Type                                | Description                       |
+| ----------- | ----------------------------------- | --------------------------------- |
+| `extraArgs` | [`SVMExtraArgsV1`](#svmextraargsv1) | The SVM extra arguments to encode |
+
+**Returns**
+
+| Type    | Description                          |
+| ------- | ------------------------------------ |
+| `bytes` | The encoded extra arguments with tag |

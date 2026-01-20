@@ -1,0 +1,272 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP Best Practices (SVM)"
+metadata:
+  description: "Comprehensive security guide for CCIP on SVM chains covering message verification, compute optimization, token administration, liquidity management, multi-signature protection, and Solana-specific considerations for building secure cross-chain applications."
+  image: "/images/ccip/ccip-hl-v1.6.gif"
+  excerpt: "ccip svm best practices solana security message verification compute units optimization token receiver program derived addresses multi-signature authorities associated token accounts ccip receive extra args"
+  datePublished: "2025-05-19T11:22:47Z"
+  lastModified: "2025-05-19T11:22:47Z"
+  difficulty: "intermediate"
+  estimatedTime: "35 minutes"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="talkToExpert" />
+
+<Aside type="note" title="Interfaces and Applications">
+  Chainlink CCIP is a messaging protocol. Third parties may build user interfaces or other applications on top of CCIP.
+  Neither Chainlink Labs nor the Chainlink Foundation owns, controls, endorses, or assumes any responsibility for any
+  such interfaces or applications. You are solely responsible for your use of such interfaces or applications. Please
+  visit the Chainlink Foundation [Terms of Service](https://chain.link/terms) for more information.
+</Aside>
+
+Before you deploy your cross-chain dApps to mainnet, make sure that your dApps follow the best practices in this document. You are responsible for thoroughly reviewing your code and applying best practices to ensure that your cross-chain dApps are secure and reliable. If you have a unique use case for CCIP that might involve additional cross-chain risk, [contact the Chainlink Labs Team](https://chain.link/ccip-contact) before deploying your application to mainnet.
+
+## Verify destination chain
+
+Before calling the router's `ccip_send` [instruction](/ccip/api-reference/svm/v1.6.0/router#ccip_send), ensure your code verifies that the destination chain is supported by the CCIP Router. Sending messages to unsupported chains will fail and potentially waste transaction fees.
+
+You can programmatically verify destination chain support using Solana PDAs (Program Derived Addresses). Here below is a JavaScript example of how to verify destination chain support:
+
+```javascript
+import { Connection, PublicKey } from "@solana/web3.js"
+
+/**
+ * Verifies if a destination chain is supported by the CCIP Router
+ *
+ * @param {Connection} connection - Solana connection object
+ * @param {string} routerProgramId - The CCIP Router program ID
+ * @param {BigInt} destinationChainSelector - Chain selector to verify
+ * @returns {Promise<boolean>} - Whether the chain is supported
+ */
+async function isDestinationChainSupported(connection, routerProgramId, destinationChainSelector) {
+  // Convert chain selector to little-endian buffer (Solana standard)
+  const chainSelectorBuffer = Buffer.alloc(8)
+  chainSelectorBuffer.writeBigUInt64LE(BigInt(destinationChainSelector))
+
+  // Derive the PDA for this destination chain
+  // The Router stores chain state in PDAs with seed ["dest_chain_state", chainSelector]
+  const [destChainPda] = PublicKey.findProgramAddressSync(
+    [Buffer.from("dest_chain_state"), chainSelectorBuffer],
+    new PublicKey(routerProgramId)
+  )
+
+  // If the account exists, the chain is supported
+  const accountInfo = await connection.getAccountInfo(destChainPda)
+  return accountInfo !== null
+}
+```
+
+## Verify source chain
+
+When implementing the `ccip_receive` [method](/ccip/api-reference/svm/v1.6.0/receiver#ccip_receive) in a program residing on the destination chain, ensure to verify the source chain of the incoming CCIP message. This verification ensures that CCIP messages can only be received from trusted source chains.
+
+## Verify sender
+
+When implementing the [`ccip_receive`](/ccip/api-reference/svm/v1.6.0/receiver#ccip_receive) instruction in a program residing on the destination chain, it's important to validate the sender of the incoming CCIP message. This check ensures that CCIP messages are received only from trusted sender addresses.
+
+**Note**: Depending on your use case, this verification might not always be necessary.
+
+## Verify authority and allowed offramp
+
+When you implement the [`ccip_receive`](/ccip/api-reference/svm/v1.6.0/receiver#ccip_receive) instruction in the program residing on the destination chain, validate that the `authority` account is the correct Offramp CPI signer PDA and that `allowed_offramp` is the correct PDA owned by the router program. This verification ensures that only the authorized CCIP Offramp program can call the `ccip_receive` function.
+
+**Example in Rust**:
+
+```rust
+#[derive(Accounts)]
+#[instruction(message: Any2SVMMessage)]
+pub struct CcipReceive<'info> {
+    // Offramp CPI signer PDA must be first
+    #[account(
+        seeds = [EXTERNAL_EXECUTION_CONFIG_SEED, crate::ID.as_ref()],
+        bump,
+        seeds::program = offramp_program.key(),
+    )]
+    pub authority: Signer<'info>,
+
+    /// CHECK: Offramp program exists only to derive the allowed offramp PDA
+    pub offramp_program: UncheckedAccount<'info>,
+
+    /// CHECK: PDA owned by the router program verifying this is an allowed offramp
+    #[account(
+        owner = state.router @ CcipReceiverError::InvalidCaller,
+        seeds = [
+            ALLOWED_OFFRAMP,
+            message.source_chain_selector.to_le_bytes().as_ref(),
+            offramp_program.key().as_ref()
+        ],
+        bump,
+        seeds::program = state.router,
+    )]
+    pub allowed_offramp: UncheckedAccount<'info>,
+
+    // Your state account containing the router address
+    #[account(seeds = [STATE_SEED], bump)]
+    pub state: Account<'info, ProgramState>,
+
+    // Additional accounts as needed
+    // ...
+}
+```
+
+## Using `extra_args`
+
+<Aside type="note">
+  The `extra_args` parameter enables forward compatibility with future CCIP upgrades. For maximum flexibility, implement
+  your application to build this parameter dynamically rather than hardcoding it. This approach lets you adapt to
+  protocol changes without updating your application code.
+</Aside>
+
+The `extra_args` parameter provides chain-specific configuration for cross-chain messaging. It controls execution parameters on the destination chain, including resource allocation and message ordering guarantees.
+
+<Aside type="note" title="EVM Destination Best Practices">
+  For sending messages to EVM-based blockchains, refer to the [EVM Best
+  Practices](/ccip/concepts/best-practices/evm#using-extraargs) guide.
+</Aside>
+
+### Parameter Selection
+
+When sending a CCIP message, you must select the appropriate `extra_args` structure based on your destination chain:
+
+- `SVMExtraArgsV1`: For Solana and other SVM-based destinations
+- `EVMExtraArgsV2`: For Ethereum and other EVM-based destinations
+
+For the full parameter specification, refer to the [CCIP API Reference](/ccip/api-reference/svm/v1.6.0/messages#extra-args).
+
+### Setting `compute_units` (SVM destinations)
+
+The `compute_units` parameter specifies the maximum Solana compute budget (in units) that the CCIP OffRamp can use when executing the `ccip_receive()` instruction on the destination program. This parameter directly affects fee calculation since higher compute budgets require more resources.
+
+**Best Practices:**
+
+- **For Program Receivers**: Set sufficient compute units for your program logic execution; any unused units are not refunded.
+- **For Wallet Receivers**: When transferring tokens directly to a wallet with no `ccip_receive()` implementation, set `compute_units` to `0` since no program execution is needed.
+- **For Compute Unit Estimation**: Test your receiver program under varying conditions to determine optimal values. Consider:
+  - Message size and complexity
+  - Token transfer operations
+  - Program execution paths
+  - Additional accounts referenced
+
+### Setting `accountIsWritableBitmap`
+
+When using the `SVMExtraArgsV1` structure, the `accountIsWritableBitmap` field specifies which additional accounts in your message should be marked as writable:
+
+- This is a 64-bit bitmap where each bit position corresponds to an account in the `accounts` array.
+- Set the corresponding bit to `1` to mark an account as writable (bit 0 for the first account, bit 1 for the second, etc.).
+- Must be provided in little-endian format for Solana compatibility.
+
+### Setting `tokenReceiver`
+
+The `tokenReceiver` parameter in `SVMExtraArgsV1` specifies which Solana account will receive the tokens:
+
+#### When Receiving at Wallet Addresses
+
+When sending tokens to an end-user wallet:
+
+- Set `tokenReceiver` to the user's wallet address (base58 encoded)
+- Do NOT use an Associated Token Account (ATA) - use the wallet address directly
+- The CCIP infrastructure will automatically derive the proper ATA on the recipient's behalf
+
+```javascript
+// Example: Setting tokenReceiver to a user's wallet
+tokenReceiver: "EPUjBP3Xf76K1VKsDSc6GupBWE8uykNksCLJgXZn87CB" // Recipient wallet
+```
+
+#### When Receiving at Program Addresses
+
+When sending tokens to a Solana program:
+
+- Set `tokenReceiver` to a Program Derived Address (PDA) that the program has authority over
+- The PDA must be derived using seeds that the program recognizes
+- The program must include logic to handle and manage the received tokens
+
+```javascript
+// Example: Setting tokenReceiver to a PDA the program controls
+tokenReceiver: "57y3NXjkiAzP5Gw9WuUwzJMJbJQAHH6jUYBQfZdTE5zJ" // PDA with program authority
+```
+
+In Solana's security model, programs cannot directly control tokens unless they have authority over the token account:
+
+1. **Program Derived Addresses (PDAs)** must be derived from the program's ID using specified seeds
+1. Only the program that created the PDA can sign as that PDA
+1. Without proper authority, the program cannot transfer, burn, or otherwise manipulate the tokens
+
+<Aside type="caution" title="Important">
+  If you set `tokenReceiver` to an address the program doesn't have authority over (like a random wallet or incorrectly
+  derived PDA), **the tokens will be permanently locked**. The program will not be able to access or move those tokens,
+  effectively resulting in lost funds.
+</Aside>
+
+#### For Data-Only Messages
+
+When sending only data (no tokens):
+
+- Set `tokenReceiver` to the default Solana PublicKey (`11111111111111111111111111111111`)
+- This is required even though no tokens are being transferred
+
+### Setting `allowOutOfOrderExecution`
+
+The `allowOutOfOrderExecution` parameter controls message ordering guarantees:
+
+- `true`: Messages may be processed out of sequence relative to other messages from the same sender
+- `false`: Messages are processed in the exact sequence they were sent
+
+<Aside type="caution" title="Important">
+  For Solana (SVM) chains, you **must** set `allowOutOfOrderExecution` to `true` regardless of whether your chain is the
+  source or destination.
+</Aside>
+
+## Evaluate the security and reliability of the networks that you use
+
+Although CCIP has been thoroughly reviewed and audited, inherent risks might still exist based on your use case, the blockchain networks where you deploy your programs, and the network conditions on those blockchains.
+
+## Review and audit your code
+
+Before securing value with programs that implement CCIP interfaces and routers, ensure that your code is secure and reliable. If you have a unique use case for CCIP that might involve additional cross-chain risk, [contact the Chainlink Labs Team](https://chain.link/ccip-contact) before deploying your application to mainnet.
+
+## Soak test your dApps
+
+Be aware of the [Service Limits and Rate Limits for Supported Networks](/ccip/directory). Before you provide access to end users or secure value, soak test your cross-chain dApps. Ensure that your dApps can operate within these limits and operate correctly during usage spikes or unfavorable network conditions.
+
+## Monitor your dApps
+
+When you build applications that depend on CCIP, include monitoring and safeguards to protect against the negative impact of extreme market events, possible malicious activity on your dApp, potential delays, and outages.
+
+Create your own monitoring alerts based on deviations from normal activity. This will notify you when potential issues occur so you can respond to them.
+
+## Multi-Signature Authorities
+
+Multi-signature authorities enhance security by requiring multiple signatures to authorize transactions.
+
+### Threshold configuration
+
+Set an optimal threshold for signers based on the trust level of participants and the required security.
+
+### Role-based access control
+
+Assign roles with specific permissions to different signers, limiting access to critical operations to trusted individuals.
+
+### Hardware wallet integration
+
+Use hardware wallets for signers to safeguard private keys from online vulnerabilities. Ensure that these devices are secure and regularly updated.
+
+### Regular audits and updates
+
+Conduct periodic audits of signer access and authority settings. Update the multisig setup as necessary, especially when personnel changes occur.
+
+### Emergency recovery plans
+
+Implement procedures for recovering from lost keys or compromised accounts, such as a predefined recovery multisig or recovery key holders.
+
+### Transaction review process
+
+Establish a standard process for reviewing and approving transactions, which can include a waiting period for large transfers to mitigate risks.
+
+### Documentation and training
+
+Maintain thorough documentation of multisig operations and provide training for all signers to ensure familiarity with processes and security protocols.

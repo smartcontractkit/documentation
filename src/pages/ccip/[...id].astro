@@ -1,58 +1,128 @@
 ---
 import DocsLayout from "~/layouts/DocsLayout.astro"
-import { getCollection, render } from "astro:content"
+import TutorialLayout from "~/layouts/TutorialLayout.astro"
+import { getCollection, render, type CollectionEntry } from "astro:content"
+
+type ContentProps = {
+  kind: "content"
+  entry: CollectionEntry<"ccip">
+}
+
+type RedirectProps = {
+  kind: "redirect"
+  to: string
+}
+
+type Props = ContentProps | RedirectProps
 
 export async function getStaticPaths() {
+  const formatVersionSegment = (part: string): string => {
+    const match = part.match(/^v(\d+)$/)
+    if (!match) return part
+
+    const digits = match[1]
+
+    // v20  -> v2.0
+    if (digits.length === 2) {
+      return `v${digits[0]}.${digits[1]}`
+    }
+
+    // v161 -> v1.6.1
+    // v150 -> v1.5.0
+    if (digits.length === 3) {
+      return `v${digits[0]}.${digits[1]}.${digits[2]}`
+    }
+
+    return part
+  }
+
+  const normalizeUrlPath = (entryId: string): string => {
+    let urlPath = entryId.replace(/\.(md|mdx)$/, "")
+    urlPath = urlPath.replace(/\/index$/, "")
+    if (urlPath === "index") urlPath = ""
+
+    // Astro content slugs collapse dots in version segments:
+    // - v2.0   → v20
+    // - v1.6   → v16
+    // - v1.6.1 → v161
+    // Restore the dotted form so URLs match our docs structure.
+    urlPath = urlPath
+      .split("/")
+      .map((part) => formatVersionSegment(part))
+      .join("/")
+
+    return urlPath
+  }
+
   const ccipEntries = await getCollection("ccip")
-  const pathMap = new Map()
+  const paths: { params: { id: string }; props: Props }[] = []
+  const seen = new Set<string>()
 
-  // Process all entries to build URL path mapping
+  const addPath = (id: string, props: Props) => {
+    if (!id) return
+    if (seen.has(id)) return
+    seen.add(id)
+    paths.push({ params: { id }, props })
+  }
+
   for (const entry of ccipEntries) {
-    const urlPath = entry.id.replace(/\.(md|mdx)$/, "")
+    const urlPath = normalizeUrlPath(entry.id)
 
-    // Skip directory and tutorial entries (handled by dedicated routes)
-    if (urlPath.startsWith("directory/") || urlPath.startsWith("tutorials/")) {
+    // Only handle versioned CCIP docs here.
+    if (!urlPath.startsWith("v1.6") && !urlPath.startsWith("v2.0")) {
       continue
     }
 
-    // Handle API reference version format conversion (if needed)
-    if (urlPath.includes("/api-reference/") && urlPath.includes("/v")) {
-      const parts = urlPath.split("/")
-      const versionIndex = parts.findIndex((part) => part.startsWith("v") && /^v\d+$/.test(part))
+    // Versioned page (content)
+    addPath(urlPath, { kind: "content", entry })
 
-      if (versionIndex !== -1) {
-        const versionPart = parts[versionIndex]
-        // Convert version format if needed (v150 → v1.5.0)
-        if (versionPart.length === 4) {
-          const formattedVersion = `v${versionPart[1]}.${versionPart[2]}.${versionPart[3]}`
-          parts[versionIndex] = formattedVersion
-          pathMap.set(parts.join("/"), entry)
-        } else {
-          pathMap.set(urlPath, entry)
-        }
-      } else {
-        pathMap.set(urlPath, entry)
-      }
-    } else {
-      pathMap.set(urlPath, entry)
+    // Legacy /ccip/* URLs → /ccip/v2.0/* (except /ccip itself, handled by /ccip/index.astro)
+    if (urlPath === "v2.0") continue
+    if (urlPath.startsWith("v2.0/")) {
+      const legacyPath = urlPath.replace(/^v2\.0\//, "")
+      addPath(legacyPath, { kind: "redirect", to: `/ccip/v2.0/${legacyPath}` })
     }
   }
 
-  // Generate static paths
-  return Array.from(pathMap.entries()).map(([urlPath, entry]) => ({
-    params: { id: urlPath },
-    props: { entry },
-  }))
+  return paths
 }
 
-interface Props {
-  entry: Awaited<ReturnType<typeof getCollection<"ccip">>>[number]
-}
+const props = Astro.props as Props
 
-const { entry } = Astro.props
-const { Content, headings } = await render(entry)
+let Content: any
+let headings: any
+let frontmatter: any
+let Layout: any
+let redirectTo: string | undefined
+
+if (props.kind === "redirect") {
+  redirectTo = props.to
+} else {
+  const entry = props.entry
+  const renderResult = await render(entry)
+  Content = renderResult.Content
+  headings = renderResult.headings
+  frontmatter = entry.data
+
+  // Only use TutorialLayout for the interactive Remix tutorial
+  const isRemixTutorial =
+    entry.id === "v1.6/tutorials/evm/cross-chain-tokens/register-from-eoa-remix" ||
+    entry.id === "v2.0/tutorials/evm/cross-chain-tokens/register-from-eoa-remix" ||
+    entry.id.endsWith("/tutorials/evm/cross-chain-tokens/register-from-eoa-remix")
+
+  Layout = isRemixTutorial ? TutorialLayout : DocsLayout
+}
 ---
 
-<DocsLayout frontmatter={entry.data} {headings}>
-  <Content />
-</DocsLayout>
+{
+  redirectTo ? (
+    <>
+      <meta name="robots" content="noindex, follow" />
+      <meta http-equiv="refresh" content={`0; url=${redirectTo}`} />
+    </>
+  ) : (
+    <Layout frontmatter={frontmatter} headings={headings}>
+      <Content />
+    </Layout>
+  )
+}

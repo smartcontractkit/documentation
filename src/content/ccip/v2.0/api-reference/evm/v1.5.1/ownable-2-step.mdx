@@ -1,0 +1,222 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.5.1 Ownable2Step Contract API Reference"
+metadata:
+  description: "API documentation for the Ownable2Step contract in Chainlink CCIP v1.5.1"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage151" />
+
+## Ownable2Step
+
+A minimal contract that implements 2-step ownership transfer and nothing more. It's made to be minimal to reduce the impact of the bytecode size on any contract that inherits from it.
+
+[Git Source](https://github.com/smartcontractkit/ccip/blob/0df0625eea603ba8572d5382d72979a7f2b12bfb/contracts/src/v0.8/shared/access/Ownable2Step.sol)
+
+<Aside type="note">
+This contract implements a secure two-step ownership transfer process:
+
+1. Current owner initiates transfer using `transferOwnership`
+2. New owner must accept using `acceptOwnership`
+3. Transfer only completes after both steps
+
+This prevents accidental transfers to incorrect or inaccessible addresses.
+
+</Aside>
+
+## Events
+
+### OwnershipTransferRequested
+
+```solidity
+event OwnershipTransferRequested(address indexed from, address indexed to);
+```
+
+<Aside>Emitted when the current owner initiates an ownership transfer.</Aside>
+
+**Parameters**
+
+| Name   | Type      | Description                           |
+| ------ | --------- | ------------------------------------- |
+| `from` | `address` | Current owner initiating the transfer |
+| `to`   | `address` | Proposed new owner                    |
+
+### OwnershipTransferred
+
+```solidity
+event OwnershipTransferred(address indexed from, address indexed to);
+```
+
+<Aside>Emitted when an ownership transfer is completed.</Aside>
+
+**Parameters**
+
+| Name   | Type      | Description    |
+| ------ | --------- | -------------- |
+| `from` | `address` | Previous owner |
+| `to`   | `address` | New owner      |
+
+## Errors
+
+### CannotTransferToSelf
+
+```solidity
+error CannotTransferToSelf();
+```
+
+<Aside>Thrown when attempting to transfer ownership to the current owner.</Aside>
+
+### MustBeProposedOwner
+
+```solidity
+error MustBeProposedOwner();
+```
+
+<Aside>Thrown when someone other than the pending owner tries to accept ownership.</Aside>
+
+### OnlyCallableByOwner
+
+```solidity
+error OnlyCallableByOwner();
+```
+
+<Aside>Thrown when a restricted function is called by someone other than the owner.</Aside>
+
+### OwnerCannotBeZero
+
+```solidity
+error OwnerCannotBeZero();
+```
+
+<Aside>Thrown when attempting to set the owner to address(0).</Aside>
+
+## State Variables
+
+### s_owner
+
+The owner is the current owner of the contract.
+
+```solidity
+address private s_owner;
+```
+
+<Aside>
+  The owner is the second storage variable so any implementing contract could pack other state with it instead of the
+  much less used s_pendingOwner.
+</Aside>
+
+### s_pendingOwner
+
+The pending owner is the address to which ownership may be transferred.
+
+```solidity
+address private s_pendingOwner;
+```
+
+## Functions
+
+### acceptOwnership
+
+Allows an ownership transfer to be completed by the recipient.
+
+```solidity
+function acceptOwnership() external override;
+```
+
+<Aside>
+
+Reverts with `MustBeProposedOwner` if caller is not the pending owner.
+
+When successful:
+
+- Updates owner to the caller
+- Clears pending owner
+- Emits OwnershipTransferred event
+
+</Aside>
+
+### constructor
+
+Initializes the contract with an owner and optionally a pending owner.
+
+```solidity
+constructor(address newOwner, address pendingOwner);
+```
+
+<Aside>
+
+- Reverts with `OwnerCannotBeZero` if newOwner is address(0)
+- Sets newOwner as the initial owner
+- If pendingOwner is not address(0), initiates ownership transfer to pendingOwner
+
+</Aside>
+
+**Parameters**
+
+| Name           | Type      | Description                                        |
+| -------------- | --------- | -------------------------------------------------- |
+| `newOwner`     | `address` | The initial owner of the contract                  |
+| `pendingOwner` | `address` | Optional address to initiate ownership transfer to |
+
+### onlyOwner
+
+Modifier that restricts function access to the contract owner.
+
+```solidity
+modifier onlyOwner();
+```
+
+<Aside>Reverts with `OnlyCallableByOwner` if caller is not the current owner.</Aside>
+
+### owner
+
+Returns the current owner's address.
+
+```solidity
+function owner() public view override returns (address);
+```
+
+**Returns**
+
+| Type      | Description                      |
+| --------- | -------------------------------- |
+| `address` | The address of the current owner |
+
+### transferOwnership
+
+Allows an owner to begin transferring ownership to a new address.
+
+```solidity
+function transferOwnership(address to) public override onlyOwner;
+```
+
+<Aside>
+
+The new owner must call `acceptOwnership` to complete the transfer. No permissions are changed until acceptance.
+
+Reverts with:
+
+- `OnlyCallableByOwner` if caller is not the current owner
+- `CannotTransferToSelf` if attempting to transfer to current owner
+
+</Aside>
+
+**Parameters**
+
+| Name | Type      | Description                                        |
+| ---- | --------- | -------------------------------------------------- |
+| `to` | `address` | The address to which ownership will be transferred |
+
+### \_validateOwnership
+
+Internal function to validate access control.
+
+```solidity
+function _validateOwnership() internal view;
+```
+
+<Aside>Reverts with `OnlyCallableByOwner` if caller is not the current owner. Used by the onlyOwner modifier.</Aside>

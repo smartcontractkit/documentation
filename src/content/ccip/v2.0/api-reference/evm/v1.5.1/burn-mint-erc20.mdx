@@ -1,0 +1,414 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.5.1 BurnMintERC20 Contract API Reference"
+metadata:
+  description: "API documentation for the BurnMintERC20 contract in Chainlink CCIP v1.5.1"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage151" />
+
+## BurnMintERC20
+
+An ERC20-compliant token contract that extends the standard functionality with controlled minting and burning capabilities through role-based access control.
+
+[Git Source](https://github.com/smartcontractkit/ccip/blob/0df0625eea603ba8572d5382d72979a7f2b12bfb/contracts/src/v0.8/shared/token/ERC20/BurnMintERC20.sol)
+
+<Aside>
+
+Key features of this token contract:
+
+- Implements standard ERC20 functionality
+- Supports controlled token minting and burning through role assignments
+- Allows setting a maximum supply limit during deployment
+- Note: This contract is not yet audited or approved for production use
+
+</Aside>
+
+## Events
+
+### CCIPAdminTransferred
+
+```solidity
+event CCIPAdminTransferred(address indexed previousAdmin, address indexed newAdmin);
+```
+
+<Aside>
+  Logs when the CCIP administrator role changes hands. This event helps track administrative changes and provides
+  transparency for role transfers.
+</Aside>
+
+**Parameters**
+
+| Name            | Type      | Indexed | Description                    |
+| --------------- | --------- | ------- | ------------------------------ |
+| `previousAdmin` | `address` | Yes     | The address that held the role |
+| `newAdmin`      | `address` | Yes     | The address receiving the role |
+
+## Errors
+
+### InvalidRecipient
+
+```solidity
+error InvalidRecipient(address recipient);
+```
+
+<Aside>
+  Thrown when an operation attempts to interact with an invalid address: - When the recipient is the zero address
+  (`address(0)`) - When the recipient is the token contract itself (`address(this)`)
+</Aside>
+
+### MaxSupplyExceeded
+
+```solidity
+error MaxSupplyExceeded(uint256 supplyAfterMint);
+```
+
+<Aside>
+  Thrown when a minting operation would cause the total supply to exceed the maximum allowed supply. The error includes
+  the would-be total supply for debugging purposes.
+</Aside>
+
+## State Variables
+
+### BURNER_ROLE
+
+```solidity
+bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
+```
+
+<Aside>
+  A unique identifier for the role that permits token burning operations. This role must be explicitly granted to
+  addresses that need burning capabilities.
+</Aside>
+
+### MINTER_ROLE
+
+```solidity
+bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+```
+
+<Aside>
+  A unique identifier for the role that permits token minting operations. This role must be explicitly granted to
+  addresses that need minting capabilities.
+</Aside>
+
+## Functions
+
+### \_approve
+
+Internal function that manages token spending allowances with built-in safety checks.
+
+```solidity
+function _approve(address owner, address spender, uint256 amount) internal virtual override;
+```
+
+<Aside>
+
+Extends OpenZeppelin's ERC20 approve functionality with additional safety measures:
+
+- Prevents approvals to the zero address (`address(0)`)
+- Prevents approvals to the token contract itself (`address(this)`)
+
+</Aside>
+
+**Parameters**
+
+| Name      | Type      | Description                                      |
+| --------- | --------- | ------------------------------------------------ |
+| `owner`   | `address` | The address that currently owns the tokens       |
+| `spender` | `address` | The address that will be allowed to spend tokens |
+| `amount`  | `uint256` | The number of tokens to approve for spending     |
+
+### burn (with amount)
+
+Allows authorized addresses to burn (destroy) tokens from their own account.
+
+```solidity
+function burn(uint256 amount) public override(IBurnMintERC20, ERC20Burnable) onlyRole(BURNER_ROLE);
+```
+
+<Aside>
+Extends OpenZeppelin's ERC20 burn functionality with role-based restrictions:
+
+- Caller must have the `BURNER_ROLE`
+- Prevents burning from the zero address
+- Automatically reduces the total token supply
+
+</Aside>
+
+**Parameters**
+
+| Name     | Type      | Description                     |
+| -------- | --------- | ------------------------------- |
+| `amount` | `uint256` | The number of tokens to destroy |
+
+### burn (with account)
+
+Alternative burn function that allows burning tokens from a specified account.
+
+```solidity
+function burn(address account, uint256 amount) public virtual override;
+```
+
+<Aside>
+
+This function serves as a compatibility layer for older systems:
+
+- Internally calls `burnFrom` to handle the actual burning process
+- Maintains backward compatibility with systems using the older naming convention
+- Requires the same permissions as `burnFrom`
+
+</Aside>
+
+**Parameters**
+
+| Name      | Type      | Description                       |
+| --------- | --------- | --------------------------------- |
+| `account` | `address` | The account to remove tokens from |
+| `amount`  | `uint256` | The number of tokens to destroy   |
+
+### burnFrom
+
+Burns tokens from a specified account, requiring prior approval.
+
+```solidity
+function burnFrom(address account, uint256 amount) public override(IBurnMintERC20, ERC20Burnable) onlyRole(BURNER_ROLE);
+```
+
+<Aside>
+
+Enhanced burning functionality with multiple safety checks:
+
+- Caller must have the `BURNER_ROLE`
+- Requires prior approval from the token owner
+- Prevents burning from the zero address
+- Automatically reduces the total token supply
+
+</Aside>
+
+**Parameters**
+
+| Name      | Type      | Description                       |
+| --------- | --------- | --------------------------------- |
+| `account` | `address` | The account to remove tokens from |
+| `amount`  | `uint256` | The number of tokens to destroy   |
+
+### constructor
+
+```solidity
+constructor(
+  string memory name,
+  string memory symbol,
+  uint8 decimals_,
+  uint256 maxSupply_,
+  uint256 preMint
+) ERC20(name, symbol);
+```
+
+<Aside>
+
+Initializes a new token contract with the following setup:
+
+- Configures basic token properties (name, symbol, decimals)
+- Sets the maximum supply limit (if desired)
+- Mints initial tokens to the deployer (if specified)
+- Assigns the deployer as the default administrator
+
+</Aside>
+
+**Parameters**
+
+| Name         | Type      | Description                                        |
+| ------------ | --------- | -------------------------------------------------- |
+| `name`       | `string`  | The display name of the token                      |
+| `symbol`     | `string`  | The token's ticker symbol                          |
+| `decimals_`  | `uint8`   | The number of decimal places for token amounts     |
+| `maxSupply_` | `uint256` | The maximum allowed token supply (0 for unlimited) |
+| `preMint`    | `uint256` | The amount of tokens to mint to the deployer       |
+
+### decimals
+
+Returns the token's decimal precision.
+
+```solidity
+function decimals() public view virtual override returns (uint8);
+```
+
+<Aside>
+  Provides the number of decimal places used to represent token amounts. For example, if decimals is 18, then 1 token is
+  represented as 1000000000000000000.
+</Aside>
+
+**Returns**
+
+| Type    | Description                                         |
+| ------- | --------------------------------------------------- |
+| `uint8` | The number of decimal places used for token amounts |
+
+### getCCIPAdmin
+
+Retrieves the current CCIP administrator's address.
+
+```solidity
+function getCCIPAdmin() external view returns (address);
+```
+
+<Aside>
+  Returns the address that currently holds the CCIP administrator role. This role is used for CCIP token registry
+  management but has no other special permissions.
+</Aside>
+
+**Returns**
+
+| Type      | Description                              |
+| --------- | ---------------------------------------- |
+| `address` | The current CCIP administrator's address |
+
+### grantMintAndBurnRoles
+
+Assigns both minting and burning permissions to a single address.
+
+```solidity
+function grantMintAndBurnRoles(address burnAndMinter) external;
+```
+
+<Aside>
+A convenience function that:
+
+- Grants both `MINTER_ROLE` and `BURNER_ROLE` to the specified address
+- Uses existing role management functions for the actual permission assignment
+- Inherits access controls from the individual role granting functions
+
+</Aside>
+
+**Parameters**
+
+| Name            | Type      | Description                                              |
+| --------------- | --------- | -------------------------------------------------------- |
+| `burnAndMinter` | `address` | The address that will receive minting and burning rights |
+
+### maxSupply
+
+Returns the token's maximum supply limit.
+
+```solidity
+function maxSupply() public view virtual returns (uint256);
+```
+
+<Aside>
+  Provides the maximum number of tokens that can exist. A value of 0 indicates no maximum supply limit is enforced.
+</Aside>
+
+**Returns**
+
+| Type      | Description                                          |
+| --------- | ---------------------------------------------------- |
+| `uint256` | The maximum allowed token supply (0 means unlimited) |
+
+### mint
+
+Creates new tokens and assigns them to a specified address.
+
+```solidity
+function mint(address account, uint256 amount) external override onlyRole(MINTER_ROLE);
+```
+
+<Aside>
+Creates new tokens with multiple safety checks:
+
+- Caller must have the `MINTER_ROLE`
+- Prevents minting to invalid addresses (zero address or contract itself)
+- Enforces the maximum supply limit (if set)
+- Increases the total token supply
+
+</Aside>
+
+**Parameters**
+
+| Name      | Type      | Description                                  |
+| --------- | --------- | -------------------------------------------- |
+| `account` | `address` | The address that will receive the new tokens |
+| `amount`  | `uint256` | The number of new tokens to create           |
+
+### setCCIPAdmin
+
+Updates the CCIP administrator role.
+
+```solidity
+function setCCIPAdmin(address newAdmin) public onlyRole(DEFAULT_ADMIN_ROLE);
+```
+
+<Aside>
+Transfers the CCIP administrator role with the following rules:
+
+- Only the contract owner (`DEFAULT_ADMIN_ROLE`) can call this function
+- The current CCIP administrator cannot transfer their own role
+- Setting to `address(0)` effectively removes the role
+- Uses a single-step transfer process
+
+</Aside>
+
+**Parameters**
+
+| Name       | Type      | Description                                             |
+| ---------- | --------- | ------------------------------------------------------- |
+| `newAdmin` | `address` | The address that will become the new CCIP administrator |
+
+### supportsInterface
+
+Determines whether the contract implements a specific interface.
+
+```solidity
+function supportsInterface(bytes4 interfaceId) public pure virtual override(AccessControl, IERC165) returns (bool);
+```
+
+<Aside>
+Implements EIP-165 interface detection, supporting:
+
+- ERC20 interface
+- BurnMintERC20 interface
+- ERC165 interface
+- AccessControl interface
+- CCIP Admin interface
+
+</Aside>
+
+**Parameters**
+
+| Name          | Type     | Description                       |
+| ------------- | -------- | --------------------------------- |
+| `interfaceId` | `bytes4` | The interface identifier to check |
+
+**Returns**
+
+| Type   | Description                                               |
+| ------ | --------------------------------------------------------- |
+| `bool` | `true` if the contract implements the specified interface |
+
+### \_transfer
+
+Internal function that handles token transfers between addresses.
+
+```solidity
+function _transfer(address from, address to, uint256 amount) internal virtual override;
+```
+
+<Aside>
+Extends OpenZeppelin's ERC20 transfer functionality with additional safety measures:
+
+- Prevents transfers to the zero address (`address(0)`)
+- Prevents transfers to the token contract itself (`address(this)`)
+
+</Aside>
+
+**Parameters**
+
+| Name     | Type      | Description                      |
+| -------- | --------- | -------------------------------- |
+| `from`   | `address` | The address sending tokens       |
+| `to`     | `address` | The address receiving tokens     |
+| `amount` | `uint256` | The number of tokens to transfer |

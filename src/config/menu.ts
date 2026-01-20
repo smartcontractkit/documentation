@@ -25,7 +25,7 @@ export const MENU: MenuItems = {
     },
     {
       text: "CCIP",
-      link: "/ccip",
+      link: "/ccip/v2.0",
       section: "ccip",
     },
     {

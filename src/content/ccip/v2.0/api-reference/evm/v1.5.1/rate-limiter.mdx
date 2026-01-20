@@ -1,0 +1,361 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.5.1 RateLimiter Library API Reference"
+metadata:
+  description: "API documentation for the RateLimiter library in Chainlink CCIP v1.5.1, implementing Token Bucket rate limiting for cross-chain operations."
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage151" />
+
+## RateLimiter
+
+A library implementing the Token Bucket algorithm for rate limiting cross-chain operations.
+
+[Git Source](https://github.com/smartcontractkit/ccip/blob/0df0625eea603ba8572d5382d72979a7f2b12bfb/contracts/src/v0.8/ccip/libraries/RateLimiter.sol)
+
+<Aside>
+
+This library provides rate limiting functionality with the following features:
+
+- Uses uint128 for safe state management
+- Supports USD value rate limiting with 18 decimals precision
+- Handles ERC20 token amount rate limiting
+- Implements automatic token bucket refill
+- Provides configuration validation and safety checks through [`Config`](#config)
+- Includes overflow protection for exceptional scenarios
+
+</Aside>
+
+## Events
+
+### TokensConsumed
+
+```solidity
+event TokensConsumed(uint256 tokens);
+```
+
+<Aside>Emitted when tokens are successfully consumed from the [`TokenBucket`](#tokenbucket).</Aside>
+
+**Parameters**
+
+| Name     | Type      | Description                   |
+| -------- | --------- | ----------------------------- |
+| `tokens` | `uint256` | The number of tokens consumed |
+
+### ConfigChanged
+
+```solidity
+event ConfigChanged(Config config);
+```
+
+<Aside>Emitted when the rate limiter [`Config`](#config) is updated.</Aside>
+
+**Parameters**
+
+| Name     | Type                | Description                   |
+| -------- | ------------------- | ----------------------------- |
+| `config` | [`Config`](#config) | The new configuration applied |
+
+## Errors
+
+### BucketOverfilled
+
+```solidity
+error BucketOverfilled();
+```
+
+<Aside>Thrown when the [`TokenBucket`](#tokenbucket) contains more tokens than its capacity.</Aside>
+
+### OnlyCallableByAdminOrOwner
+
+```solidity
+error OnlyCallableByAdminOrOwner();
+```
+
+<Aside>Thrown when a restricted function is called by an unauthorized address.</Aside>
+
+### TokenMaxCapacityExceeded
+
+```solidity
+error TokenMaxCapacityExceeded(uint256 capacity, uint256 requested, address tokenAddress);
+```
+
+<Aside>Thrown when attempting to consume more tokens than the [`TokenBucket`](#tokenbucket)'s capacity.</Aside>
+
+### TokenRateLimitReached
+
+```solidity
+error TokenRateLimitReached(uint256 minWaitInSeconds, uint256 available, address tokenAddress);
+```
+
+<Aside>
+  Thrown when attempting to consume more tokens than currently available in the [`TokenBucket`](#tokenbucket).
+</Aside>
+
+### AggregateValueMaxCapacityExceeded
+
+```solidity
+error AggregateValueMaxCapacityExceeded(uint256 capacity, uint256 requested);
+```
+
+<Aside>Thrown when attempting to consume more aggregate value than the [`TokenBucket`](#tokenbucket)'s capacity.</Aside>
+
+### AggregateValueRateLimitReached
+
+```solidity
+error AggregateValueRateLimitReached(uint256 minWaitInSeconds, uint256 available);
+```
+
+<Aside>
+  Thrown when attempting to consume more aggregate value than currently available in the [`TokenBucket`](#tokenbucket).
+</Aside>
+
+### InvalidRateLimitRate
+
+```solidity
+error InvalidRateLimitRate(Config rateLimiterConfig);
+```
+
+<Aside>Thrown when the rate limit [`Config`](#config) is invalid (rate is zero or exceeds capacity).</Aside>
+
+### DisabledNonZeroRateLimit
+
+```solidity
+error DisabledNonZeroRateLimit(Config config);
+```
+
+<Aside>Thrown when a disabled [`Config`](#config) has non-zero rate or capacity values.</Aside>
+
+### RateLimitMustBeDisabled
+
+```solidity
+error RateLimitMustBeDisabled();
+```
+
+<Aside>Thrown when attempting to enable rate limiting in a context where it must be disabled.</Aside>
+
+## Structs
+
+### TokenBucket
+
+Represents the state and configuration of a token bucket rate limiter.
+
+```solidity
+struct TokenBucket {
+  uint128 tokens;
+  uint32 lastUpdated;
+  bool isEnabled;
+  uint128 capacity;
+  uint128 rate;
+}
+```
+
+<Aside>
+
+State management structure:
+
+- `tokens`: Current token balance in the bucket
+- `lastUpdated`: Timestamp of the last refill (in seconds, supports 100+ years)
+- `isEnabled`: Whether rate limiting is active
+- `capacity`: Maximum token capacity
+- `rate`: Tokens added per second during refill
+
+This struct uses the configuration parameters defined in [`Config`](#config).
+
+</Aside>
+
+### Config
+
+Configuration parameters for the rate limiter.
+
+```solidity
+struct Config {
+  bool isEnabled;
+  uint128 capacity;
+  uint128 rate;
+}
+```
+
+<Aside>
+
+Configuration structure used to configure [`TokenBucket`](#tokenbucket):
+
+- `isEnabled`: Activation state of the rate limiter
+- `capacity`: Maximum token capacity
+- `rate`: Token refill rate per second
+
+</Aside>
+
+## Functions
+
+### \_consume
+
+Removes tokens from the pool, reducing the available rate capacity for subsequent calls.
+
+```solidity
+function _consume(TokenBucket storage s_bucket, uint256 requestTokens, address tokenAddress) internal;
+```
+
+<Aside>
+
+Key behaviors:
+
+- Skips execution if rate limiting is disabled or requestTokens is zero
+- Automatically refills tokens based on elapsed time
+- Enforces capacity and rate limits
+- Emits [`TokensConsumed`](#tokensconsumed) event for non-zero consumption
+- Reverts with [`TokenMaxCapacityExceeded`](#tokenmaxcapacityexceeded) or [`TokenRateLimitReached`](#tokenratelimitreached) on violations
+
+</Aside>
+
+**Parameters**
+
+| Name            | Type                          | Description                                                     |
+| --------------- | ----------------------------- | --------------------------------------------------------------- |
+| `s_bucket`      | [`TokenBucket`](#tokenbucket) | The token bucket to consume from                                |
+| `requestTokens` | `uint256`                     | The number of tokens to consume                                 |
+| `tokenAddress`  | `address`                     | The token address (use address(0) for aggregate value capacity) |
+
+### \_currentTokenBucketState
+
+Retrieves the current state of a token bucket, including automatic refill calculations.
+
+```solidity
+function _currentTokenBucketState(TokenBucket memory bucket) internal view returns (TokenBucket memory);
+```
+
+<Aside>
+
+Updates the bucket state to reflect the current block timestamp:
+
+- Calculates token refill based on elapsed time
+- Updates the lastUpdated timestamp
+- Returns the current state without modifying storage
+
+</Aside>
+
+**Returns**
+
+| Type                          | Description                           |
+| ----------------------------- | ------------------------------------- |
+| [`TokenBucket`](#tokenbucket) | The current state of the token bucket |
+
+### \_setTokenBucketConfig
+
+Updates the rate limiter configuration.
+
+```solidity
+function _setTokenBucketConfig(TokenBucket storage s_bucket, Config memory config) internal;
+```
+
+<Aside>
+
+Configuration update process:
+
+- Updates bucket state with current refill before applying changes
+- Adjusts token amount to respect new capacity
+- Updates bucket parameters (enabled state, capacity, rate)
+- Emits [`ConfigChanged`](#configchanged) event
+
+</Aside>
+
+**Parameters**
+
+| Name       | Type                          | Description                    |
+| ---------- | ----------------------------- | ------------------------------ |
+| `s_bucket` | [`TokenBucket`](#tokenbucket) | The token bucket to configure  |
+| `config`   | [`Config`](#config)           | The new configuration to apply |
+
+### \_validateTokenBucketConfig
+
+Validates rate limiter configuration parameters.
+
+```solidity
+function _validateTokenBucketConfig(Config memory config, bool mustBeDisabled) internal pure;
+```
+
+<Aside>
+
+Validation rules:
+
+- For enabled configurations:
+  - Rate must be non-zero and less than capacity
+  - Validates against mustBeDisabled requirement
+- For disabled configurations:
+  - Rate and capacity must be zero
+- May throw [`InvalidRateLimitRate`](#invalidratelimitrate), [`DisabledNonZeroRateLimit`](#disablednonzeroratelimit), or [`RateLimitMustBeDisabled`](#ratelimitmustbedisabled)
+
+</Aside>
+
+**Parameters**
+
+| Name             | Type                | Description                                |
+| ---------------- | ------------------- | ------------------------------------------ |
+| `config`         | [`Config`](#config) | The configuration to validate              |
+| `mustBeDisabled` | `bool`              | Whether the configuration must be disabled |
+
+### \_calculateRefill
+
+Calculates the number of tokens to add during a refill operation.
+
+```solidity
+function _calculateRefill(
+  uint256 capacity,
+  uint256 tokens,
+  uint256 timeDiff,
+  uint256 rate
+) private pure returns (uint256);
+```
+
+<Aside>
+
+Refill calculation:
+
+- Computes tokens to add based on elapsed time and rate
+- Ensures result doesn't exceed bucket capacity
+- Returns the new token balance
+- Used internally by [`_currentTokenBucketState`](#_currenttokenbucketstate)
+
+</Aside>
+
+**Parameters**
+
+| Name       | Type      | Description                                 |
+| ---------- | --------- | ------------------------------------------- |
+| `capacity` | `uint256` | Maximum token capacity                      |
+| `tokens`   | `uint256` | Current token balance                       |
+| `timeDiff` | `uint256` | Time elapsed since last refill (in seconds) |
+| `rate`     | `uint256` | Tokens per second refill rate               |
+
+**Returns**
+
+| Type      | Description                        |
+| --------- | ---------------------------------- |
+| `uint256` | The new token balance after refill |
+
+### \_min
+
+Returns the smaller of two numbers.
+
+```solidity
+function _min(uint256 a, uint256 b) internal pure returns (uint256);
+```
+
+<Aside>Utility function for safe minimum value calculation.</Aside>
+
+**Parameters**
+
+| Name | Type      | Description   |
+| ---- | --------- | ------------- |
+| `a`  | `uint256` | First number  |
+| `b`  | `uint256` | Second number |
+
+**Returns**
+
+| Type      | Description                    |
+| --------- | ------------------------------ |
+| `uint256` | The smaller of the two numbers |

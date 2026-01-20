@@ -1,0 +1,114 @@
+---
+section: ccip
+date: Last Modified
+title: "Cross-Chain Token Standard - Tokens (SVM)"
+metadata:
+  description: "Essential guide for integrating SPL tokens with CCIP on SVM chains like Solana. Covers token compatibility requirements, decimal considerations, registration using mint authority, pool type selection (BurnMint vs LockRelease), and Token-2022 support."
+  excerpt: "CCIP, SPL tokens, SVM, Solana, Token-2022, mint authority, token administrator, registration, self-registration, BurnMint, LockRelease, pool selection, token pools, cross-chain transfers, compatibility, associated token accounts, decimals, token programs"
+  datePublished: "2025-05-19"
+  lastModified: "2025-05-19"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+This document provides essential guidance for integrating tokens with Chainlink CCIP on SVM-based blockchains, such as Solana, using the Cross-Chain Token (CCT) standard. It covers token compatibility requirements, decimal planning considerations, registration processes, and strategic guidance for selecting the right token pool type for your use case.
+
+<Aside type="note" title="New to CCIP Cross-Chain Tokens?">
+  If you're new to CCIP's Cross-Chain Token system, start with the [Architecture
+  Overview](/ccip/concepts/cross-chain-token/svm/architecture) to understand how all components work together before
+  diving into token-specific requirements.
+</Aside>
+
+## Compatibility
+
+Before implementing CCIP support for your token, it's crucial to understand the compatibility requirements. These requirements ensure proper functionality of your token within the CCIP ecosystem.
+
+### Mandatory Compatibility Requirements
+
+All tokens must meet these requirements for CCIP compatibility:
+
+1. **Supported Token Programs**: Must use either the standard SPL Token program or Token-2022 (Token Extensions) program
+1. **Interface Requirements**: Must support standard token interfaces:
+   - **Associated Token Accounts (ATA)**: Required for all CCIP operations
+   - **Decimals**: Must provide decimal precision via `mint.decimals`
+   - **Program Identification**: Must be correctly referenced through `mint.to_account_info().owner`
+
+### Decimal Planning
+
+When deploying your token across multiple blockchains, **decimal configuration is a critical strategic decision** that affects cross-chain transfer behavior and token supply management:
+
+**Key Decision:** Deploy your token with the **same number of decimals across all blockchains** whenever possible. This eliminates precision loss during cross-chain transfers.
+
+**Impact on Token Pools:**
+
+- **Different decimals**: Can result in precision loss and permanently locked/burned tokens
+- **Same decimals**: Enable perfect 1:1 cross-chain transfers
+
+For comprehensive guidance on decimal compatibility impacts, strategic recommendations, and technical implementation requirements, see [Decimal Compatibility Considerations](/ccip/concepts/cross-chain-token/svm/token-pools#decimal-compatibility-considerations).
+
+### Token Requirements by Pool Type
+
+Your token's requirements depend on which token pool type you'll deploy, determined by your chosen [token handling mechanism](/ccip/concepts/cross-chain-token/svm/token-pools#token-handling-mechanisms). Refer to the token handling mechanisms table to understand which pool type you need for your SVM chain deployment.
+
+#### BurnMint Pool
+
+**Token Requirements:**
+
+- Must support `mint_to` and `burn` instructions
+- **Mint authority** must be transferable (directly to pool signer PDA or via SPL Token Multisig). See [BurnMint Pool mint authority configuration](/ccip/concepts/cross-chain-token/svm/token-pools#mint-authority-management) for detailed multisig requirements
+
+#### LockRelease Pool
+
+**Token Requirements:**
+
+- Must support `transfer_checked` instruction
+- **No mint authority requirements** (pool operates through transfers only)
+
+For detailed pool implementation, deployment approaches, and configuration requirements, see [Token Pools documentation](/ccip/concepts/cross-chain-token/svm/token-pools).
+
+### Custom Token Pool Implementation
+
+Token developers can alternatively implement their own custom Token Pool Programs to support additional Token-2022 extensions not supported by the standard token pools. Custom implementations must adhere to CCIP's interface specifications while allowing developers to control which instructions are called when handling tokens.
+
+For technical requirements and implementation guidance for custom pools, see [Custom Token Pools](/ccip/concepts/cross-chain-token/svm/token-pools#custom-token-pools).
+
+## Registration
+
+To enable your token for CCIP cross-chain transfers, you must register it and establish a token administrator role. This process ensures secure assignment of administrative control over your token's CCIP integration.
+
+### Registration Requirements
+
+- **Self-Registration**: If you control the token's `mint_authority`, you can complete registration automatically
+- **Manual Registration**: If `mint_authority` is not accessible (e.g., set to `None` to cap supply), manual registration is available
+
+### Registration Process
+
+The registration follows a secure two-step process:
+
+1. **Propose Administrator**: Designate who will administer your token's CCIP integration
+1. **Accept Role**: The proposed administrator must explicitly accept the role to complete registration
+
+<Aside>
+
+If `mint_authority` is no longer accessible, use this [contact form](https://chain.link/ccip-contact?v=Tokens:%20Token%20admin%20registration) to request assistance with registration.
+
+</Aside>
+
+For comprehensive guidance including detailed instructions, sequence diagrams, and administrator role management, see [Registration & Administration](/ccip/concepts/cross-chain-token/svm/registration-administration).
+
+## Next Steps
+
+Once your token meets the compatibility requirements, you need to complete two key steps to enable cross-chain transfers:
+
+### Register Your Token
+
+Complete the token registration process to establish administrative control over your token's CCIP integration.
+
+For detailed instructions, sequence diagrams, and administrator role management, see [Registration & Administration](/ccip/concepts/cross-chain-token/svm/registration-administration).
+
+### Deploy and Configure Token Pool
+
+After registration, deploy and configure a token pool to enable cross-chain transfer operations.
+
+For comprehensive implementation guidance including deployment approaches (self-serve, self-deployed, custom), detailed architecture requirements, and step-by-step configuration instructions, see [Token Pools documentation](/ccip/concepts/cross-chain-token/svm/token-pools).

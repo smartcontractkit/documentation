@@ -4,7 +4,13 @@ import { selectedChainType, setChainType } from "~/stores/chainType.js"
 import { CHAIN_TYPE_CONFIGS, CCIP_SUPPORTED_CHAINS } from "~/config/chainTypes.js"
 import { CCIP_SIDEBAR_CONTENT } from "~/config/sidebar/ccip-dynamic.js"
 import { findEquivalentPageUrlWithFallback } from "~/utils/chainNavigation.js"
+import {
+  addCcipVersionToSidebarUrl,
+  getCcipVersionFromPathname,
+  stripCcipVersionFromPathname,
+} from "~/utils/ccipVersionToggle.js"
 import type { ChainType } from "~/config/types.js"
+import { CcipVersionToggle } from "~/components/CCIP/VersionToggle/CcipVersionToggle.js"
 import { SidebarDropdown, type DropdownItem } from "../SidebarDropdown/index.js"
 
 /**
@@ -34,10 +40,17 @@ export function ChainTypeSelector() {
     const chainType = chainId as ChainType
     setChainType(chainType)
 
-    // Find target URL with intelligent fallback: exact match → parent → section root
-    const targetUrl = findEquivalentPageUrlWithFallback(window.location.pathname, chainType, CCIP_SIDEBAR_CONTENT)
+    const currentPathname = window.location.pathname
+    const currentVersion = getCcipVersionFromPathname(currentPathname) ?? "v2.0"
 
-    window.location.href = `/${targetUrl}`
+    // Strip version before matching against CCIP_SIDEBAR_CONTENT (which is stored unversioned)
+    const versionlessPathname = stripCcipVersionFromPathname(currentPathname)
+
+    // Find target URL with intelligent fallback: exact match → parent → section root
+    const targetUrl = findEquivalentPageUrlWithFallback(versionlessPathname, chainType, CCIP_SIDEBAR_CONTENT)
+    const versionedTargetUrl = addCcipVersionToSidebarUrl(targetUrl, currentVersion)
+
+    window.location.href = `/${versionedTargetUrl}`
   }
 
   // Convert chain configs to dropdown items format
@@ -59,6 +72,7 @@ export function ChainTypeSelector() {
       onSelect={handleSelect}
       triggerId="chain-type-selector-trigger"
       ariaLabel="Select blockchain type"
+      rightSlot={<CcipVersionToggle />}
     />
   )
 }

@@ -37,7 +37,7 @@ export const evmProducts = [
   {
     title: "CCIP",
     description: "Global standard for building secure cross-chain applications.",
-    docsLandingLink: "/ccip",
+    docsLandingLink: "/ccip/v2.0",
     learnMoreLink: "https://dev.chain.link/products/ccip",
     image: ccipLogo,
     shape: ccipShape,

@@ -1,6 +1,6 @@
 ---
 import CcipDirectoryLayout from "~/layouts/CcipDirectoryLayout.astro"
-import { getEntry, render } from "astro:content"
+import type { BaseFrontmatter } from "~/content.config.ts"
 import Hero from "~/components/CCIP/Hero/Hero"
 import {
   Environment,
@@ -22,12 +22,16 @@ export type Props = {
 }
 const { environment } = Astro.props as Props
 
-const entry = await getEntry("ccip", "index")
-if (!entry) {
-  throw new Error('No "ccip/index" doc found! Please make sure it exists in src/content/ccip/index.mdx or .md.')
+const headings = []
+const frontmatter: BaseFrontmatter = {
+  section: "ccip",
+  title: "CCIP Directory",
+  metadata: {
+    description:
+      "Explore CCIP Directory: configuration data for supported blockchains and tokens, cross-chain lanes, contract addresses, rate limits, and operational status.",
+    image: "/files/ccip-directory.jpg",
+  },
 }
-
-const { headings } = await render(entry)
 
 const networks = getAllNetworks({ filter: environment })
 const supportedTokens = getAllSupportedTokens({
@@ -53,13 +57,13 @@ const directoryStructuredData = generateDirectoryStructuredData(environment, net
 ---
 
 <CcipDirectoryLayout
-  frontmatter={entry.data}
+  frontmatter={frontmatter}
   {headings}
   environment={environment}
   structuredData={directoryStructuredData}
   pageTitleOverride={`CCIP Directory - ${environment === Environment.Mainnet ? "Mainnet" : "Testnet"}`}
   metadataOverride={{
-    ...(entry.data.metadata || {}),
+    ...(frontmatter.metadata || {}),
     description: `Explore CCIP Directory for ${environment === Environment.Mainnet ? "Mainnet" : "Testnet"}: configuration data for supported blockchains and tokens, cross-chain lanes, contract addresses, rate limits, and operational status on ${environment === Environment.Mainnet ? "Mainnet" : "Testnet"}.`,
     image: "/files/ccip-directory.jpg",
   }}

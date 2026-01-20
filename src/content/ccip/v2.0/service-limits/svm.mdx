@@ -1,0 +1,40 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP Service Limits (SVM)"
+metadata:
+  description: "Explore Chainlink CCIP service limits for Solana and other SVM chains, including message size, compute units, token transfers, and execution parameters."
+  excerpt: "Chainlink CCIP, SVM service limits, Solana constraints, Compute units, Message size limits, Token transfers, Cross-chain execution, SVM parameters, EVM to SVM, SVM to EVM"
+  datePublished: "2025-05-19"
+  lastModified: "2025-05-19"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<Aside type="note" title="Contact for Exception Requests">
+  If you consistently need more gas/Compute Units for your use case, please reach out to your Chainlink Labs point of
+  contact or contact us via this [contact form](https://chain.link/ccip-contact).
+</Aside>
+
+## EVM to SVM
+
+| Item                                  | Description                                                                                                                       | Limit        |
+| :------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------- | :----------- |
+| Maximum message data length           | The total payload for the message (includes the user specified message.data as well as the accounts, Bitmap, token transfer data) | 1280 bytes   |
+| Message execution compute units limit | User specified compute units limit. Mandatory to be set                                                                           | 400,000 CU   |
+| Maximum number of tokens              | Maximum number of distinct tokens a user can transfer in a single transaction.                                                    | 1            |
+| Smart Execution time window           | Maximum duration CCIP will attempt automatic execution of message                                                                 | 8 hours      |
+| Token pool execution gas limit        | Default compute units for TokenPool execution at the destination, ie., Solana                                                     | 150,000 CU   |
+| Out of Order execution                | Parameter in the extraArgs of a CCIP message                                                                                      | Must be True |
+
+## SVM to EVM
+
+| Item                           | Description                                                                                         | Limit         |
+| :----------------------------- | :-------------------------------------------------------------------------------------------------- | :------------ |
+| Maximum message data length    | data payload sent within the [CCIP message](/ccip/api-reference/svm/v1.6.0/messages#svm2anymessage) | 400 bytes     |
+| Message execution gas limit    | User specified gas limit. Mandatory to be set                                                       | 3,000,000 gas |
+| Maximum number of tokens       | Maximum number of distinct tokens a user can transfer in a single transaction.                      | 1             |
+| Smart Execution time window    | Maximum duration for the execution of a CCIP message                                                | 8 hours       |
+| Token pool execution gas limit | Maximum gas for executing the combined steps in token pools during cross-chain transfers            | 90,000 gas    |
+| Out of Order execution         | Parameter in the extraArgs of a CCIP message                                                        | Must be True  |
