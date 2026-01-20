@@ -7,7 +7,7 @@ pageId: "running-demo-workflow"
 metadata:
   description: "Run the Custom Data Feed demo: explore a TypeScript workflow template with API calls, blockchain reads, and onchain writes."
   datePublished: "2025-11-04"
-  lastModified: "2026-01-14"
+  lastModified: "2026-01-20"
 ---
 
 import { Aside, CopyText } from "@components"
@@ -267,7 +267,7 @@ The `main.ts` file is a great example of how a single workflow can contain multi
 
 - **`main()` and `Runner`**: The entry point of the workflow. It creates a new `Runner` instance with your config schema using `Runner.newRunner()`, then calls `runner.run()` with the `initWorkflow` function. This is the standard pattern for initializing CRE workflows in the TypeScript SDK.
 
-- **`initWorkflow`**: This function initializes the trigger capabilities and returns an array of two handlers: one for the cron trigger and one for the EVM log trigger. Each handler is created using `cre.handler()`, which pairs a trigger configuration with a callback function.
+- **`initWorkflow`**: This function initializes the trigger capabilities and returns an array of two handlers: one for the cron trigger and one for the EVM log trigger. Each handler is created using `handler()`, which pairs a trigger configuration with a callback function.
 
 - **`onCronTrigger`**: The entry point for **Path A**. It's a lightweight callback that immediately delegates to the shared `doPOR` function, demonstrating how you can reuse core logic.
 
@@ -283,7 +283,7 @@ This demo showcases several important patterns and features of the TypeScript SD
 
 - **Runner Pattern**: The workflow uses the `Runner.newRunner()` pattern to initialize the workflow with a config schema and run it.
 - **Zod Schema Validation**: The workflow uses Zod to define and validate the configuration schema, ensuring type safety at runtime.
-- **Multiple Trigger Handlers**: A single workflow can register multiple handlers for different trigger types using `cre.handler()`.
+- **Multiple Trigger Handlers**: A single workflow can register multiple handlers for different trigger types using `handler()`.
 - **Viem Integration**: All EVM interactions use viem's `encodeFunctionData` and `decodeFunctionResult` for type-safe contract calls.
 - **Manual ABI Management**: TypeScript workflows use manually defined ABI constants from the `contracts/abi/` directory.
 - **Consensus Aggregation**: The HTTP capability uses `ConsensusAggregationByFields` to aggregate offchain data from multiple nodes.

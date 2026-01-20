@@ -7,7 +7,7 @@ pageId: "reference-sdk-evm-client"
 metadata:
   description: "Reference for TypeScript EVM Client: complete API for smart contract interactions, reads, writes, and report generation with Viem."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-01-20"
 ---
 
 import { Aside, CopyText } from "@components"
@@ -19,7 +19,7 @@ This page provides a reference for the `EVMClient`, the low-level tool for all i
 To use the client, you must instantiate it with the numeric `ChainSelector` ID for the blockchain you intend to interact with.
 
 ```typescript
-import { cre, getNetwork } from "@chainlink/cre-sdk"
+import { EVMClient, getNetwork } from "@chainlink/cre-sdk"
 
 // Get network information by chain selector name
 const network = getNetwork({
@@ -33,7 +33,7 @@ if (!network) {
 }
 
 // Instantiate a client for Ethereum Sepolia
-const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+const evmClient = new EVMClient(network.chainSelector.selector)
 ```
 
 <Aside type="note" title="What is a Chain Selector?">
@@ -56,9 +56,9 @@ const network = getNetwork({
 })
 
 // Access network properties
-console.log(network.chainSelector.selector) // 16015286601757825753n (bigint)
-console.log(network.chainSelector.name) // "ethereum-testnet-sepolia"
-console.log(network.family) // "evm"
+// network.chainSelector.selector → 16015286601757825753n (bigint)
+// network.chainSelector.name → "ethereum-testnet-sepolia"
+// network.family → "evm"
 ```
 
 ## Read & query methods
@@ -108,7 +108,7 @@ This is the object returned by `.result()` when the `callContract()` method succ
 #### Usage example
 
 ```typescript
-import { cre, getNetwork, encodeCallMsg, bytesToHex, LAST_FINALIZED_BLOCK_NUMBER } from "@chainlink/cre-sdk"
+import { EVMClient, getNetwork, encodeCallMsg, bytesToHex, LAST_FINALIZED_BLOCK_NUMBER } from "@chainlink/cre-sdk"
 import { encodeFunctionData, decodeFunctionResult, zeroAddress } from "viem"
 import { Storage } from "../contracts/abi"
 
@@ -118,7 +118,7 @@ const network = getNetwork({
   chainSelectorName: "ethereum-testnet-sepolia",
   isTestnet: true,
 })
-const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+const evmClient = new EVMClient(network.chainSelector.selector)
 
 // Encode the contract call data
 const callData = encodeFunctionData({
@@ -408,7 +408,7 @@ writeReport(
 #### Usage example
 
 ```typescript
-import { cre, getNetwork, hexToBase64, bytesToHex } from "@chainlink/cre-sdk"
+import { EVMClient, getNetwork, hexToBase64, bytesToHex } from "@chainlink/cre-sdk"
 import { encodeFunctionData } from "viem"
 import { ReserveManager } from "../contracts/abi"
 
@@ -589,8 +589,8 @@ const latestHeader = evmClient.headerByNumber(runtime, {}).result()
 const latestBlockNum = protoBigIntToBigint(latestHeader.header.blockNumber)
 const customBlock = latestBlockNum - 500n // Now you can do arithmetic
 
-console.log(`Latest block: ${latestBlockNum}`)
-console.log(`Custom block (500 blocks ago): ${customBlock}`)
+// latestBlockNum → e.g., 12345678n
+// customBlock → e.g., 12345178n (500 blocks earlier)
 ```
 
 See [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-ts#custom-block-depths) for a complete example.
@@ -772,7 +772,7 @@ if (!network) {
 }
 
 // Access the numeric chain selector (bigint)
-const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+const evmClient = new EVMClient(network.chainSelector.selector)
 // network.chainSelector.selector is 16015286601757825753n (bigint)
 ```
 
@@ -781,7 +781,7 @@ const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
 The `EVMClient` class includes a static `SUPPORTED_CHAINS` constant with all available chain selectors:
 
 ```typescript
-cre.capabilities.EVMClient.SUPPORTED_CHAINS
+EVMClient.SUPPORTED_CHAINS
 // Returns:
 // {
 //   'avalanche-mainnet': 6433500567565415381n,
@@ -859,5 +859,5 @@ if (!network) {
   throw new Error(`Network not found: ${config.evms[0].chainName}`)
 }
 
-const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+const evmClient = new EVMClient(network.chainSelector.selector)
 ```

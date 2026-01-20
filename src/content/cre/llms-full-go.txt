@@ -1,6 +1,6 @@
 # Chainlink Runtime Environment (CRE)
 Source: https://docs.chain.link/cre
-Last Updated: 2025-11-04
+Last Updated: 2026-01-20
 
 ## What is CRE?
 
@@ -51,7 +51,7 @@ Workflows use a **trigger-and-callback model** to provide a code-first developer
 
 1. **A Trigger**: An event source that starts a workflow execution (e.g., `cron.Trigger`). This is the "when" of your workflow.
 2. **A Callback**: A function that contains your business logic. It is inside this function that you will use the SDK's clients to invoke capabilities. This is the "what" of your workflow.
-3. **The `cre.handler()`**: The glue that connects a single trigger to a single callback.
+3. **The `handler()`**: The glue that connects a single trigger to a single callback.
 
 You can define multiple trigger and callback combinations in your workflow. You can also attach the same callback to multiple triggers for reusability.
 
@@ -102,7 +102,7 @@ Learn more about [Consensus Computing in CRE](/cre/concepts/consensus-computing)
 | Concept            | One-liner                                                         |
 | ------------------ | ----------------------------------------------------------------- |
 | **Workflow**       | Compiled WebAssembly (WASM) binary.                               |
-| **Handler**        | `cre.handler(trigger, callback)` pair; the atom of execution.     |
+| **Handler**        | `handler(trigger, callback)` pair; the atom of execution.         |
 | **Trigger**        | Event that starts an execution (cron, HTTP, EVM log, …).          |
 | **Callback**       | Function that runs when its trigger fires; contains your logic.   |
 | **Runtime**        | Object passed to a callback; used to invoke capabilities.         |
@@ -442,7 +442,7 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-01-16
+Last Updated: 2026-01-20
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
 
@@ -450,7 +450,7 @@ This page provides detailed release notes for CRE. It includes information on ne
 
 - **Bug Fixes**: Fixed issue where workflows could execute twice during simulation
 
-- **Examples Updated**: All workflow examples in the SDK repository now use **direct imports** (e.g., `import { HTTPClient } from "@chainlink/cre-sdk"`) instead of the namespace pattern (e.g., `cre.capabilities.HTTPClient`). Both patterns remain fully supported—choose whichever fits your coding style.
+- **Examples Updated**: All workflow examples in the SDK repository now use **direct imports** (e.g., `import { HTTPClient } from "@chainlink/cre-sdk"`) instead of the namespace pattern (e.g., `cre.capabilities.HTTPClient`). Both patterns remain fully supported—choose whichever fits your coding style. See [Import styles](/cre/reference/sdk/core-ts#import-styles) for details.
 
 [See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.0.2...v1.0.3)
 
@@ -460,13 +460,13 @@ This page provides detailed release notes for CRE. It includes information on ne
 
 **New features:**
 
-- **Optional `main()` call**: You no longer need to call `main()` at the end of your workflow files. The SDK now automatically executes the `main()` function during compilation.
+- **Optional `main()` call**: You no longer need to call `main()` at the end of your workflow files. The SDK now automatically executes the `main()` function during compilation. See [`main()` reference](/cre/reference/sdk/core-ts#main) for details.
 - **Automatic error handling**: If you don't provide custom error handling, the SDK automatically adds `.catch(sendErrorResponse)` to your workflow's `main()` function. This ensures errors are properly reported instead of silently failing.
-- **Direct imports**: You can now import SDK components directly (e.g., `import { HTTPClient } from "@chainlink/cre-sdk"`) instead of accessing them through the `cre` namespace (e.g., `cre.capabilities.HTTPClient`). Both import styles remain supported for backward compatibility.
+- **Direct imports**: You can now import SDK components directly (e.g., `import { HTTPClient } from "@chainlink/cre-sdk"`) instead of accessing them through the `cre` namespace (e.g., `cre.capabilities.HTTPClient`). Both import styles remain supported for backward compatibility. See [Import styles](/cre/reference/sdk/core-ts#import-styles) for details and guidance on when to use each pattern.
 
 **Migration notes:**
 
-- **Custom error handling**: If you need custom error handling, you can still add your own `.catch()` handler: `main().catch(myCustomHandler)`. The SDK will respect your custom handler and not override it.
+- **Custom error handling**: If you need custom error handling, you can still add your own `.catch()` handler: `main().catch(myCustomHandler)`. The SDK will respect your custom handler and not override it. See [`main()` reference](/cre/reference/sdk/core-ts#main) for examples.
 
 [See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.0.1...v1.0.2)
 
@@ -2451,7 +2451,10 @@ interface IReceiver is IERC165 {
   /// limit. The receiver is responsible for discarding stale reports.
   /// @param metadata Report's metadata.
   /// @param report Workflow report.
-  function onReport(bytes calldata metadata, bytes calldata report) external;
+  function onReport(
+    bytes calldata metadata,
+    bytes calldata report
+  ) external;
 }
 ```
 
@@ -2560,7 +2563,10 @@ abstract contract ReceiverTemplate is IReceiver, Ownable {
 
   /// @inheritdoc IReceiver
   /// @dev Performs optional validation checks based on which permission fields are set
-  function onReport(bytes calldata metadata, bytes calldata report) external override {
+  function onReport(
+    bytes calldata metadata,
+    bytes calldata report
+  ) external override {
     // Security Check 1: Verify caller is the trusted Chainlink Forwarder (if configured)
     if (s_forwarderAddress != address(0) && msg.sender != s_forwarderAddress) {
       revert InvalidSender(msg.sender, s_forwarderAddress);
@@ -2731,12 +2737,10 @@ The simplest way to use `ReceiverTemplate` is to inherit from it and implement t
 ```sol
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
-
 import {ReceiverTemplate} from "./ReceiverTemplate.sol";
 
 contract MyConsumer is ReceiverTemplate {
   uint256 public s_storedValue;
-
   event ValueUpdated(uint256 newValue);
 
   // Constructor requires forwarder address
@@ -4558,7 +4562,7 @@ For detailed CLI command documentation, see:
 
 # Using Secrets with Deployed Workflows
 Source: https://docs.chain.link/cre/guides/workflow/secrets/using-secrets-deployed
-Last Updated: 2025-11-04
+Last Updated: 2026-01-20
 
 When your workflow is deployed, it cannot access your local `.env` file or environment variables. Instead, secrets must be stored in the **Vault DON**—a decentralized, secure secret storage system that your deployed workflows can access at runtime.
 

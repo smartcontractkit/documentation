@@ -7,7 +7,7 @@ date: Last Modified
 metadata:
   description: "React to blockchain events in TypeScript: learn to trigger your workflow when smart contracts emit specific events on EVM chain."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-01-20"
 ---
 
 import { Aside } from "@components"
@@ -35,7 +35,16 @@ You create an EVM Log trigger by calling the `EVMClient.logTrigger()` method wit
 The simplest configuration listens for **all events** from specific contract addresses:
 
 ```typescript
-import { cre, getNetwork, type Runtime, type EVMLog, Runner, bytesToHex, hexToBase64 } from "@chainlink/cre-sdk"
+import {
+  EVMClient,
+  handler,
+  getNetwork,
+  type Runtime,
+  type EVMLog,
+  Runner,
+  bytesToHex,
+  hexToBase64,
+} from "@chainlink/cre-sdk"
 
 type Config = {
   chainSelectorName: string
@@ -60,10 +69,10 @@ const initWorkflow = (config: Config) => {
     throw new Error(`Network not found: ${config.chainSelectorName}`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   return [
-    cre.handler(
+    handler(
       evmClient.logTrigger({
         addresses: [hexToBase64(config.contractAddress)],
       }),
@@ -97,13 +106,13 @@ const initWorkflow = (config: Config) => {
     throw new Error(`Network not found: ${config.chainSelectorName}`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   // Compute the event signature hash for Transfer(address,address,uint256)
   const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
 
   return [
-    cre.handler(
+    handler(
       evmClient.logTrigger({
         addresses: [hexToBase64(config.contractAddress)],
         topics: [
@@ -157,13 +166,13 @@ const initWorkflow = (config: Config) => {
     throw new Error(`Network not found: ${config.chainSelectorName}`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
   const aliceAddress = "0xAlice..." as `0x${string}`
 
   return [
-    cre.handler(
+    handler(
       evmClient.logTrigger({
         addresses: [hexToBase64(config.contractAddress)],
         topics: [
@@ -204,14 +213,14 @@ const initWorkflow = (config: Config) => {
     throw new Error(`Network not found: ${config.chainSelectorName}`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
   const aliceAddress = "0xAlice..." as `0x${string}`
   const bobAddress = "0xBob..." as `0x${string}`
 
   return [
-    cre.handler(
+    handler(
       evmClient.logTrigger({
         addresses: [hexToBase64(config.contractAddress)],
         topics: [
@@ -245,14 +254,14 @@ const initWorkflow = (config: Config) => {
     throw new Error(`Network not found: ${config.chainSelectorName}`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
   const aliceAddress = "0xAlice..." as `0x${string}`
   const charlieAddress = "0xCharlie..." as `0x${string}`
 
   return [
-    cre.handler(
+    handler(
       evmClient.logTrigger({
         addresses: [hexToBase64(config.contractAddress)],
         topics: [
@@ -290,13 +299,13 @@ const initWorkflow = (config: Config) => {
     throw new Error(`Network not found: ${config.chainSelectorName}`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
   const approvalEventHash = keccak256(toBytes("Approval(address,address,uint256)"))
 
   return [
-    cre.handler(
+    handler(
       evmClient.logTrigger({
         addresses: [hexToBase64(config.contractAddress)],
         topics: [
@@ -328,12 +337,12 @@ const initWorkflow = (config: Config) => {
     throw new Error(`Network not found: ${config.chainSelectorName}`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
 
   return [
-    cre.handler(
+    handler(
       evmClient.logTrigger({
         addresses: [hexToBase64("0xTokenA..."), hexToBase64("0xTokenB..."), hexToBase64("0xTokenC...")],
         topics: [
@@ -365,7 +374,7 @@ const initWorkflow = (config: Config) => {
     throw new Error(`Network not found: ${config.chainSelectorName}`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   // Example: event ValueChanged(address indexed user, uint256 indexed newValue)
   const eventHash = keccak256(toBytes("ValueChanged(address,uint256)"))
@@ -373,7 +382,7 @@ const initWorkflow = (config: Config) => {
   const targetValue = padHex(numberToHex(12345), { size: 32 })
 
   return [
-    cre.handler(
+    handler(
       evmClient.logTrigger({
         addresses: [hexToBase64(config.contractAddress)],
         topics: [
@@ -553,7 +562,16 @@ const onLogTrigger = (runtime: Runtime<Config>, log: EVMLog): string => {
 Here's a complete example that listens for ERC20 `Transfer` events and decodes them:
 
 ```typescript
-import { cre, getNetwork, type Runtime, type EVMLog, Runner, bytesToHex, hexToBase64 } from "@chainlink/cre-sdk"
+import {
+  EVMClient,
+  handler,
+  getNetwork,
+  type Runtime,
+  type EVMLog,
+  Runner,
+  bytesToHex,
+  hexToBase64,
+} from "@chainlink/cre-sdk"
 import { keccak256, toBytes, decodeEventLog, parseAbi } from "viem"
 
 type Config = {
@@ -590,11 +608,11 @@ const initWorkflow = (config: Config) => {
     throw new Error(`Network not found: ${config.chainSelectorName}`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
   const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
 
   return [
-    cre.handler(
+    handler(
       evmClient.logTrigger({
         addresses: [hexToBase64(config.tokenAddress)],
         topics: [{ values: [hexToBase64(transferEventHash)] }],

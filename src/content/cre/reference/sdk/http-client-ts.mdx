@@ -7,7 +7,7 @@ pageId: "reference-sdk-http-client"
 metadata:
   description: "Reference for TypeScript HTTP Client: complete API for GET/POST requests, headers, authentication, and consensus aggregation."
   datePublished: "2025-11-04"
-  lastModified: "2025-12-16"
+  lastModified: "2026-01-20"
 ---
 
 import { Aside } from "@components"
@@ -50,7 +50,7 @@ A curried function that accepts your custom arguments and returns an object with
 **Example:**
 
 ```typescript
-import { cre, consensusMedianAggregation, type Runtime, type HTTPSendRequester } from "@chainlink/cre-sdk"
+import { HTTPClient, consensusMedianAggregation, type Runtime, type HTTPSendRequester } from "@chainlink/cre-sdk"
 
 interface Config {
   apiUrl: string
@@ -72,7 +72,7 @@ const fetchPrice = (sendRequester: HTTPSendRequester, url: string): number => {
 
 // In your workflow
 const workflow = (runtime: Runtime<Config>) => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   // Call the high-level sendRequest with your custom function
   const price = httpClient
@@ -180,11 +180,11 @@ An object with a `.result()` method that blocks until the HTTP request completes
 **Example:**
 
 ```typescript
-import { cre, consensusMedianAggregation, type Runtime, type NodeRuntime } from "@chainlink/cre-sdk"
+import { HTTPClient, consensusMedianAggregation, type Runtime, type NodeRuntime } from "@chainlink/cre-sdk"
 
 // Low-level usage with manual node mode
 const fetchPrice = (nodeRuntime: NodeRuntime<Config>): number => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   const response = httpClient
     .sendRequest(nodeRuntime, {
@@ -493,7 +493,7 @@ const manualData = JSON.parse(manualText)
 ### Simple GET request
 
 ```typescript
-import { cre, consensusMedianAggregation, ok, json, type HTTPSendRequester } from "@chainlink/cre-sdk"
+import { HTTPClient, consensusMedianAggregation, ok, json, type HTTPSendRequester } from "@chainlink/cre-sdk"
 
 const fetchData = (sendRequester: HTTPSendRequester, url: string): number => {
   const response = sendRequester.sendRequest({ url }).result()
@@ -507,14 +507,14 @@ const fetchData = (sendRequester: HTTPSendRequester, url: string): number => {
 }
 
 // In your workflow
-const httpClient = new cre.capabilities.HTTPClient()
+const httpClient = new HTTPClient()
 const result = httpClient.sendRequest(runtime, fetchData, consensusMedianAggregation<number>())(apiUrl).result()
 ```
 
 ### POST request with caching
 
 ```typescript
-import { cre, consensusIdenticalAggregation, ok, json, type HTTPSendRequester } from "@chainlink/cre-sdk"
+import { HTTPClient, consensusIdenticalAggregation, ok, json, type HTTPSendRequester } from "@chainlink/cre-sdk"
 
 const createResource = (sendRequester: HTTPSendRequester, payload: { name: string }): { id: string } => {
   // Encode the body as base64
@@ -545,7 +545,7 @@ const createResource = (sendRequester: HTTPSendRequester, payload: { name: strin
 }
 
 // In your workflow
-const httpClient = new cre.capabilities.HTTPClient()
+const httpClient = new HTTPClient()
 const resource = httpClient
   .sendRequest(runtime, createResource, consensusIdenticalAggregation<{ id: string }>())({ name: "My Resource" })
   .result()
@@ -557,7 +557,7 @@ For complex objects with multiple fields, use `ConsensusAggregationByFields()`:
 
 ```typescript
 import {
-  cre,
+  HTTPClient,
   ConsensusAggregationByFields,
   median,
   identical,
@@ -589,7 +589,7 @@ const fetchReserveInfo = (sendRequester: HTTPSendRequester, url: string): Reserv
 }
 
 // In your workflow
-const httpClient = new cre.capabilities.HTTPClient()
+const httpClient = new HTTPClient()
 const reserveInfo = httpClient
   .sendRequest(
     runtime,
