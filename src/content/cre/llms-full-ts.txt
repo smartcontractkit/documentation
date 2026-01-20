@@ -1,6 +1,6 @@
 # Chainlink Runtime Environment (CRE)
 Source: https://docs.chain.link/cre
-Last Updated: 2025-11-04
+Last Updated: 2026-01-20
 
 ## What is CRE?
 
@@ -51,14 +51,14 @@ Workflows use a **trigger-and-callback model** to provide a code-first developer
 
 1. **A Trigger**: An event source that starts a workflow execution (e.g., `cron.Trigger`). This is the "when" of your workflow.
 2. **A Callback**: A function that contains your business logic. It is inside this function that you will use the SDK's clients to invoke capabilities. This is the "what" of your workflow.
-3. **The `cre.handler()`**: The glue that connects a single trigger to a single callback.
+3. **The `handler()`**: The glue that connects a single trigger to a single callback.
 
 You can define multiple trigger and callback combinations in your workflow. You can also attach the same callback to multiple triggers for reusability.
 
 Here's what the trigger-and-callback pattern looks like:
 
 ```ts
-cre.handler(
+handler(
   cronTrigger.trigger({ schedule: "0 */10 * * * *" }), // trigger fires every 10 minutes
   onCronTrigger // your callback function
 )
@@ -102,7 +102,7 @@ Learn more about [Consensus Computing in CRE](/cre/concepts/consensus-computing)
 | Concept            | One-liner                                                         |
 | ------------------ | ----------------------------------------------------------------- |
 | **Workflow**       | Compiled WebAssembly (WASM) binary.                               |
-| **Handler**        | `cre.handler(trigger, callback)` pair; the atom of execution.     |
+| **Handler**        | `handler(trigger, callback)` pair; the atom of execution.         |
 | **Trigger**        | Event that starts an execution (cron, HTTP, EVM log, …).          |
 | **Callback**       | Function that runs when its trigger fires; contains your logic.   |
 | **Runtime**        | Object passed to a callback; used to invoke capabilities.         |
@@ -442,7 +442,7 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-01-16
+Last Updated: 2026-01-20
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
 
@@ -450,7 +450,7 @@ This page provides detailed release notes for CRE. It includes information on ne
 
 - **Bug Fixes**: Fixed issue where workflows could execute twice during simulation
 
-- **Examples Updated**: All workflow examples in the SDK repository now use **direct imports** (e.g., `import { HTTPClient } from "@chainlink/cre-sdk"`) instead of the namespace pattern (e.g., `cre.capabilities.HTTPClient`). Both patterns remain fully supported—choose whichever fits your coding style.
+- **Examples Updated**: All workflow examples in the SDK repository now use **direct imports** (e.g., `import { HTTPClient } from "@chainlink/cre-sdk"`) instead of the namespace pattern (e.g., `cre.capabilities.HTTPClient`). Both patterns remain fully supported—choose whichever fits your coding style. See [Import styles](/cre/reference/sdk/core-ts#import-styles) for details.
 
 [See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.0.2...v1.0.3)
 
@@ -460,13 +460,13 @@ This page provides detailed release notes for CRE. It includes information on ne
 
 **New features:**
 
-- **Optional `main()` call**: You no longer need to call `main()` at the end of your workflow files. The SDK now automatically executes the `main()` function during compilation.
+- **Optional `main()` call**: You no longer need to call `main()` at the end of your workflow files. The SDK now automatically executes the `main()` function during compilation. See [`main()` reference](/cre/reference/sdk/core-ts#main) for details.
 - **Automatic error handling**: If you don't provide custom error handling, the SDK automatically adds `.catch(sendErrorResponse)` to your workflow's `main()` function. This ensures errors are properly reported instead of silently failing.
-- **Direct imports**: You can now import SDK components directly (e.g., `import { HTTPClient } from "@chainlink/cre-sdk"`) instead of accessing them through the `cre` namespace (e.g., `cre.capabilities.HTTPClient`). Both import styles remain supported for backward compatibility.
+- **Direct imports**: You can now import SDK components directly (e.g., `import { HTTPClient } from "@chainlink/cre-sdk"`) instead of accessing them through the `cre` namespace (e.g., `cre.capabilities.HTTPClient`). Both import styles remain supported for backward compatibility. See [Import styles](/cre/reference/sdk/core-ts#import-styles) for details and guidance on when to use each pattern.
 
 **Migration notes:**
 
-- **Custom error handling**: If you need custom error handling, you can still add your own `.catch()` handler: `main().catch(myCustomHandler)`. The SDK will respect your custom handler and not override it.
+- **Custom error handling**: If you need custom error handling, you can still add your own `.catch()` handler: `main().catch(myCustomHandler)`. The SDK will respect your custom handler and not override it. See [`main()` reference](/cre/reference/sdk/core-ts#main) for examples.
 
 [See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.0.1...v1.0.2)
 
@@ -1186,7 +1186,7 @@ This configuration sets the minimum purchase amount to 10, which we'll test with
 **Workflow code:**
 
 ```ts
-import { cre, type Runtime, type HTTPPayload, Runner, decodeJson } from "@chainlink/cre-sdk"
+import { HTTPCapability, handler, type Runtime, type HTTPPayload, Runner, decodeJson } from "@chainlink/cre-sdk"
 
 type Config = {
   minimumAmount: number
@@ -1219,10 +1219,10 @@ const onHttpTrigger = (runtime: Runtime<Config>, payload: HTTPPayload): string =
 }
 
 const initWorkflow = (config: Config) => {
-  const http = new cre.capabilities.HTTPCapability()
+  const http = new HTTPCapability()
 
   return [
-    cre.handler(http.trigger({}), onHttpTrigger), // Empty config OK for simulation
+    handler(http.trigger({}), onHttpTrigger), // Empty config OK for simulation
   ]
 }
 
@@ -1230,8 +1230,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 **Run the simulation:**
@@ -2040,7 +2038,10 @@ interface IReceiver is IERC165 {
   /// limit. The receiver is responsible for discarding stale reports.
   /// @param metadata Report's metadata.
   /// @param report Workflow report.
-  function onReport(bytes calldata metadata, bytes calldata report) external;
+  function onReport(
+    bytes calldata metadata,
+    bytes calldata report
+  ) external;
 }
 ```
 
@@ -2149,7 +2150,10 @@ abstract contract ReceiverTemplate is IReceiver, Ownable {
 
   /// @inheritdoc IReceiver
   /// @dev Performs optional validation checks based on which permission fields are set
-  function onReport(bytes calldata metadata, bytes calldata report) external override {
+  function onReport(
+    bytes calldata metadata,
+    bytes calldata report
+  ) external override {
     // Security Check 1: Verify caller is the trusted Chainlink Forwarder (if configured)
     if (s_forwarderAddress != address(0) && msg.sender != s_forwarderAddress) {
       revert InvalidSender(msg.sender, s_forwarderAddress);
@@ -2320,12 +2324,10 @@ The simplest way to use `ReceiverTemplate` is to inherit from it and implement t
 ```sol
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.26;
-
 import {ReceiverTemplate} from "./ReceiverTemplate.sol";
 
 contract MyConsumer is ReceiverTemplate {
   uint256 public s_storedValue;
-
   event ValueUpdated(uint256 newValue);
 
   // Constructor requires forwarder address
@@ -2837,7 +2839,7 @@ The forwarder address provides baseline security, but you can add additional val
 
 # Writing Data Onchain
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/onchain-write/writing-data-onchain
-Last Updated: 2025-11-04
+Last Updated: 2026-01-20
 
 This guide shows you how to write data from your CRE workflow to a smart contract on the blockchain using the TypeScript SDK. You'll learn the complete two-step process with examples for both single values and structs.
 
@@ -2897,7 +2899,7 @@ This example shows how to write a single `uint256` value to your consumer contra
 ### Step 1: Set up your imports
 
 ```typescript
-import { cre, getNetwork, hexToBase64, bytesToHex, TxStatus, type Runtime } from "@chainlink/cre-sdk"
+import { EVMClient, getNetwork, hexToBase64, bytesToHex, TxStatus, type Runtime } from "@chainlink/cre-sdk"
 import { encodeAbiParameters, parseAbiParameters } from "viem"
 ```
 
@@ -3098,7 +3100,7 @@ export { CalculatorResultParams, type CalculatorResult } from "./ConsumerContrac
 Now you can import and use these definitions in your workflow:
 
 ```typescript
-import { cre, getNetwork, hexToBase64, bytesToHex, TxStatus, type Runtime } from "@chainlink/cre-sdk"
+import { EVMClient, getNetwork, hexToBase64, bytesToHex, TxStatus, type Runtime } from "@chainlink/cre-sdk"
 import { encodeAbiParameters } from "viem"
 import { CalculatorResultParams, type CalculatorResult } from "../contracts/abi"
 
@@ -3113,7 +3115,7 @@ const writeDataOnchain = (runtime: Runtime<Config>): string => {
     throw new Error(`Network not found`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   // Create type-safe data object
   const data: CalculatorResult = {
@@ -3185,7 +3187,7 @@ Here's a full workflow that writes a struct to a consumer contract:
 ### Workflow code (`main.ts`)
 
 ```typescript
-import { cre, getNetwork, hexToBase64, bytesToHex, TxStatus, type Runtime, Runner } from "@chainlink/cre-sdk"
+import { CronCapability, EVMClient, getNetwork, hexToBase64, bytesToHex, TxStatus, type Runtime, Runner } from "@chainlink/cre-sdk"
 import { encodeAbiParameters, parseAbiParameters } from "viem"
 import { z } from "zod"
 
@@ -3212,7 +3214,7 @@ const writeDataOnchain = (runtime: Runtime<Config>): string => {
   }
 
   // Create EVM client
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   // 1. Encode your data (struct with 3 fields)
   const reportData = encodeAbiParameters(
@@ -3256,9 +3258,10 @@ const writeDataOnchain = (runtime: Runtime<Config>): string => {
 }
 
 const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
   return [
-    cre.handler(
-      new cre.capabilities.CronCapability().trigger({
+    cron.handler(
+      cron.trigger({
         schedule: config.schedule,
       }),
       writeDataOnchain
@@ -3473,7 +3476,7 @@ For detailed CLI command documentation, see:
 
 # Using Secrets with Deployed Workflows
 Source: https://docs.chain.link/cre/guides/workflow/secrets/using-secrets-deployed
-Last Updated: 2025-11-04
+Last Updated: 2026-01-20
 
 When your workflow is deployed, it cannot access your local `.env` file or environment variables. Instead, secrets must be stored in the **Vault DON**—a decentralized, secure secret storage system that your deployed workflows can access at runtime.
 
@@ -7351,7 +7354,7 @@ By default, triggers use `SAFE` if no confidence level is specified. For details
 
 # Avoiding Non-Determinism in Workflows
 Source: https://docs.chain.link/cre/concepts/non-determinism-ts
-Last Updated: 2025-11-04
+Last Updated: 2026-01-20
 
 <Aside type="note" title="TL;DR">
   In DON mode, all nodes must execute identical code paths to reach consensus. Non-deterministic code causes nodes to
@@ -7386,7 +7389,7 @@ const obj = { b: 2, a: 1 }
 
 // Order may vary across runtimes or serialization
 for (const key in obj) {
-  console.log(key) // Could be "b", "a" or "a", "b"
+  // key could be "b", "a" or "a", "b" — non-deterministic!
 }
 ```
 
@@ -7397,7 +7400,7 @@ const obj = { b: 2, a: 1 }
 
 // Preserves insertion order
 for (const key of Object.keys(obj)) {
-  console.log(key, obj[key]) // "b", "a" (insertion order)
+  // key order: "b", "a" (insertion order)
 }
 ```
 
@@ -7408,7 +7411,7 @@ const obj = { b: 2, a: 1 }
 
 // Guaranteed alphabetical order
 for (const key of Object.keys(obj).sort()) {
-  console.log(key, obj[key]) // "a", "b" (alphabetically sorted)
+  // key order: "a", "b" (alphabetically sorted)
 }
 ```
 
@@ -7424,7 +7427,7 @@ map.set("b", 2)
 map.set("a", 1)
 
 for (const [key, value] of map) {
-  console.log(key, value) // Always "b", then "a"
+  // Order: ["b", 2], then ["a", 1] — guaranteed
 }
 ```
 
@@ -7434,7 +7437,7 @@ for (const [key, value] of map) {
 const set = new Set(["b", "a"])
 
 for (const value of set) {
-  console.log(value) // Always "b", then "a"
+  // Order: "b", then "a" — guaranteed
 }
 ```
 
@@ -7466,11 +7469,11 @@ const firstSuccess = await Promise.any([fetchFromAPI1(), fetchFromAPI2()])
 **Good: Deterministic order with `.result()`**
 
 ```typescript
-import { cre, type Runtime, type NodeRuntime, consensusMedianAggregation } from "@chainlink/cre-sdk"
+import { HTTPClient, type Runtime, type NodeRuntime, consensusMedianAggregation } from "@chainlink/cre-sdk"
 
 // Fetch from API 1, then API 2, in a fixed order
 const fetchPrice = (nodeRuntime: NodeRuntime<Config>): bigint => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   // Try first API
   const response1 = httpClient
@@ -7566,7 +7569,7 @@ Large Language Models (LLMs) generate different responses for the same prompt, e
 
 # Part 1: Project Setup & Simulation
 Source: https://docs.chain.link/cre/getting-started/part-1-project-setup-ts
-Last Updated: 2026-01-14
+Last Updated: 2026-01-20
 
 <Aside type="note" title="SDK Language: TypeScript">
   You're viewing the **TypeScript** version of this guide. If you prefer Go, use the language selector in the left
@@ -7709,7 +7712,7 @@ Open `onchain-calculator/my-calculator-workflow/main.ts` to see its contents:
 Code snippet for onchain-calculator/my-calculator-workflow/main.ts:
 
 ```typescript
-import { cre, Runner, type Runtime } from "@chainlink/cre-sdk"
+import { CronCapability, handler, Runner, type Runtime } from "@chainlink/cre-sdk"
 
 type Config = {
   schedule: string
@@ -7721,9 +7724,9 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 }
 
 const initWorkflow = (config: Config) => {
-  const cron = new cre.capabilities.CronCapability()
+  const cron = new CronCapability()
 
-  return [cre.handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
 }
 
 export async function main() {
@@ -7738,6 +7741,10 @@ export async function main() {
 - **`onCronTrigger`**: The callback function that executes when the cron trigger fires. It receives the `runtime` object and returns a string result. This is where you write your business logic.
 - **`initWorkflow`**: Creates the workflow by registering handlers (trigger-callback pairs). This is where you define what events your workflow responds to.
 - **`main`**: The entry point that creates a `Runner`, passes your config type, and runs the workflow.
+
+<Aside type="note" title="Automatic execution">
+  You don't need to call `main()` at the end of your file—the SDK automatically executes it during compilation. The SDK also handles error reporting automatically, so you don't need to add `.catch()` unless you need custom error handling. See the [Core SDK Reference](/cre/reference/sdk/core-ts#main) for details.
+</Aside>
 
 ## Step 4: Configure your workflow
 
@@ -7997,7 +8004,15 @@ Replace the entire content of `onchain-calculator/my-calculator-workflow/main.ts
 Code snippet for onchain-calculator/my-calculator-workflow/main.ts:
 
 ```typescript
-import { cre, consensusMedianAggregation, Runner, type NodeRuntime, type Runtime } from "@chainlink/cre-sdk"
+import {
+  CronCapability,
+  HTTPClient,
+  handler,
+  consensusMedianAggregation,
+  Runner,
+  type NodeRuntime,
+  type Runtime,
+} from "@chainlink/cre-sdk"
 
 type Config = {
   schedule: string
@@ -8009,15 +8024,15 @@ type MyResult = {
 }
 
 const initWorkflow = (config: Config) => {
-  const cron = new cre.capabilities.CronCapability()
+  const cron = new CronCapability()
 
-  return [cre.handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
 }
 
 // fetchMathResult is the function passed to the runInNodeMode helper.
 // It contains the logic for making the request and parsing the response.
 const fetchMathResult = (nodeRuntime: NodeRuntime<Config>): bigint => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   const req = {
     url: nodeRuntime.config.apiUrl,
@@ -8268,7 +8283,10 @@ Code snippet for onchain-calculator/my-calculator-workflow/main.ts:
 
 ```typescript
 import {
-  cre,
+  CronCapability,
+  HTTPClient,
+  EVMClient,
+  handler,
   consensusMedianAggregation,
   Runner,
   type NodeRuntime,
@@ -8300,14 +8318,14 @@ type MyResult = {
 }
 
 const initWorkflow = (config: Config) => {
-  const cron = new cre.capabilities.CronCapability()
+  const cron = new CronCapability()
 
-  return [cre.handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
 }
 
 // fetchMathResult is the function passed to the runInNodeMode helper.
 const fetchMathResult = (nodeRuntime: NodeRuntime<Config>): bigint => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   const req = {
     url: nodeRuntime.config.apiUrl,
@@ -8342,7 +8360,7 @@ const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
     throw new Error(`Unknown chain name: ${evmConfig.chainName}`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   // Encode the function call using the Storage ABI
   const callData = encodeFunctionData({
@@ -8590,7 +8608,10 @@ Code snippet for onchain-calculator/my-calculator-workflow/main.ts:
 
 ```typescript
 import {
-  cre,
+  CronCapability,
+  HTTPClient,
+  EVMClient,
+  handler,
   consensusMedianAggregation,
   Runner,
   type NodeRuntime,
@@ -8628,9 +8649,9 @@ type MyResult = {
 
 
 const initWorkflow = (config: Config) => {
-  const cron = new cre.capabilities.CronCapability()
+  const cron = new CronCapability()
 
-  return [cre.handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
 }
 
 const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
@@ -8652,7 +8673,7 @@ const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
   runtime.log(`Successfully fetched offchain value: ${offchainValue}`)
 
   // Step 2: Read onchain data using the EVM client
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   const callData = encodeFunctionData({
     abi: Storage,
@@ -8711,7 +8732,7 @@ const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
 
 
 const fetchMathResult = (nodeRuntime: NodeRuntime<Config>): bigint => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   const req = {
     url: nodeRuntime.config.apiUrl,
@@ -8737,7 +8758,7 @@ function updateCalculatorResult(
 ): string {
   runtime.log(`Updating calculator result for consumer: ${evmConfig.calculatorConsumerAddress}`)
 
-  const evmClient = new cre.capabilities.EVMClient(chainSelector)
+  const evmClient = new EVMClient(chainSelector)
 
   // Encode the CalculatorResult struct according to the contract's ABI
   const reportData = encodeAbiParameters(
@@ -9002,7 +9023,7 @@ The following code shows a complete, runnable workflow that triggers on a schedu
 Code snippet for Fetching Single Secret (TypeScript):
 
 ```typescript
-import { cre, Runner, type Runtime } from "@chainlink/cre-sdk"
+import { CronCapability, handler, Runner, type Runtime } from "@chainlink/cre-sdk"
 
 // Config can be an empty object if you don't need any parameters from config.json
 type Config = Record<string, never>
@@ -9026,9 +9047,9 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 
 // initWorkflow is the entry point for the workflow
 const initWorkflow = () => {
-  const cron = new cre.capabilities.CronCapability()
+  const cron = new CronCapability()
 
-  return [cre.handler(cron.trigger({ schedule: "0 */10 * * * *" }), onCronTrigger)]
+  return [handler(cron.trigger({ schedule: "0 */10 * * * *" }), onCronTrigger)]
 }
 
 // main is the entry point for the WASM binary
@@ -9036,8 +9057,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ### Step 4: Configure secrets path in `workflow.yaml`
@@ -9099,7 +9118,7 @@ Now you can fetch both secrets in your workflow code:
 Code snippet for Fetching Multiple Secrets (TypeScript):
 
 ```typescript
-import { cre, Runner, type Runtime } from "@chainlink/cre-sdk"
+import { CronCapability, handler, Runner, type Runtime } from "@chainlink/cre-sdk"
 
 // Config can be an empty object if you don't need any parameters from config.json
 type Config = Record<string, never>
@@ -9122,9 +9141,9 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 
 // initWorkflow is the entry point for the workflow
 const initWorkflow = () => {
-  const cron = new cre.capabilities.CronCapability()
+  const cron = new CronCapability()
 
-  return [cre.handler(cron.trigger({ schedule: "0 */10 * * * *" }), onCronTrigger)]
+  return [handler(cron.trigger({ schedule: "0 */10 * * * *" }), onCronTrigger)]
 }
 
 // main is the entry point for the WASM binary
@@ -9132,15 +9151,13 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ---
 
 # Onchain Read
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/onchain-read-ts
-Last Updated: 2025-12-10
+Last Updated: 2026-01-20
 
 This guide explains how to read data from a smart contract from within your CRE workflow. The TypeScript SDK uses [viem](https://viem.sh/) for ABI handling and the SDK's [`EVMClient`](/cre/reference/sdk/evm-client-ts) to create a type-safe developer experience.
 
@@ -9179,7 +9196,8 @@ Here's a complete example of reading from a Storage contract:
 
 ```typescript
 import {
-  cre,
+  CronCapability,
+  EVMClient,
   getNetwork,
   encodeCallMsg,
   bytesToHex,
@@ -9214,7 +9232,7 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
   }
 
   // Create EVM client with chain selector
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   // Encode the function call
   const callData = encodeFunctionData({
@@ -9247,9 +9265,10 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 }
 
 const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
   return [
-    cre.handler(
-      new cre.capabilities.CronCapability().trigger({
+    cron.handler(
+      cron.trigger({
         schedule: "*/10 * * * * *", // Every 10 seconds
       }),
       onCronTrigger
@@ -9425,7 +9444,8 @@ Here's a full runnable workflow with external configuration:
 
 ```typescript
 import {
-  cre,
+  CronCapability,
+  EVMClient,
   getNetwork,
   encodeCallMsg,
   bytesToHex,
@@ -9456,7 +9476,7 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
     throw new Error(`Network not found: ${runtime.config.chainSelectorName}`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   const callData = encodeFunctionData({
     abi: storageAbi,
@@ -9486,9 +9506,10 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 }
 
 const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
   return [
-    cre.handler(
-      new cre.capabilities.CronCapability().trigger({
+    cron.handler(
+      cron.trigger({
         schedule: "*/10 * * * * *",
       }),
       onCronTrigger
@@ -9769,7 +9790,7 @@ These `KeystoneForwarder` addresses are used by deployed workflows. Use these ad
 
 # Making GET Requests
 Source: https://docs.chain.link/cre/guides/workflow/using-http-client/get-request-ts
-Last Updated: 2025-12-16
+Last Updated: 2026-01-20
 
 The `HTTPClient` is the SDK's interface for the underlying [HTTP Capability](/cre/capabilities/http). It allows your workflow to fetch data from any external API.
 
@@ -9839,7 +9860,7 @@ Add the API URL to your `config.json` file.
 Define TypeScript types for the API response and your internal data model.
 
 ```typescript
-import { cre, type Runtime, type HTTPSendRequester, Runner } from "@chainlink/cre-sdk"
+import { HTTPClient, type Runtime, type HTTPSendRequester, Runner } from "@chainlink/cre-sdk"
 import { z } from "zod"
 
 // Config schema
@@ -9901,17 +9922,19 @@ const fetchAndParse = (sendRequester: HTTPSendRequester, config: Config): PriceD
 In your `onCronTrigger` handler, call `httpClient.sendRequest()`. This returns a function that you call with `runtime.config`.
 
 ```typescript
+import { HTTPClient, ConsensusAggregationByFields, median, type Runtime } from "@chainlink/cre-sdk"
+
 const onCronTrigger = (runtime: Runtime<Config>): string => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   // sendRequest returns a function that we call with runtime.config
   const result = httpClient
     .sendRequest(
       runtime,
       fetchAndParse,
-      new cre.consensus.ConsensusAggregationByFields<PriceData>({
-        price: cre.consensus.median<number>(),
-        lastUpdated: cre.consensus.median<Date>(),
+      ConsensusAggregationByFields<PriceData>({
+        price: median<number>(),
+        lastUpdated: median<Date>(),
       })
     )(runtime.config) // Call the returned function with config
     .result()
@@ -9927,7 +9950,16 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 Here's the full workflow code:
 
 ```typescript
-import { cre, type Runtime, type HTTPSendRequester, Runner } from "@chainlink/cre-sdk"
+import {
+  CronCapability,
+  HTTPClient,
+  handler,
+  ConsensusAggregationByFields,
+  median,
+  type Runtime,
+  type HTTPSendRequester,
+  Runner,
+} from "@chainlink/cre-sdk"
 import { z } from "zod"
 
 // Config schema
@@ -9975,15 +10007,15 @@ const fetchAndParse = (sendRequester: HTTPSendRequester, config: Config): PriceD
 
 // Main workflow handler
 const onCronTrigger = (runtime: Runtime<Config>): string => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   const result = httpClient
     .sendRequest(
       runtime,
       fetchAndParse,
-      new cre.consensus.ConsensusAggregationByFields<PriceData>({
-        price: cre.consensus.median<number>(),
-        lastUpdated: cre.consensus.median<Date>(),
+      ConsensusAggregationByFields<PriceData>({
+        price: median<number>(),
+        lastUpdated: median<Date>(),
       })
     )(runtime.config) // Call with config
     .result()
@@ -9996,8 +10028,8 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 // Initialize workflow
 const initWorkflow = (config: Config) => {
   return [
-    cre.handler(
-      new cre.capabilities.CronCapability().trigger({
+    handler(
+      new CronCapability().trigger({
         schedule: config.schedule,
       }),
       onCronTrigger
@@ -10023,7 +10055,16 @@ The pattern works like a "map-reduce" for the DON:
 The example below is functionally identical to the `sendRequest` example above, but implemented using the low-level pattern.
 
 ```typescript
-import { cre, type Runtime, type NodeRuntime, Runner } from "@chainlink/cre-sdk"
+import {
+  CronCapability,
+  HTTPClient,
+  handler,
+  ConsensusAggregationByFields,
+  median,
+  type Runtime,
+  type NodeRuntime,
+  Runner,
+} from "@chainlink/cre-sdk"
 import { z } from "zod"
 
 // Config and types (same as before)
@@ -10049,7 +10090,7 @@ type ExternalApiResponse = {
 // fetchPriceData is a function that runs on each individual node
 const fetchPriceData = (nodeRuntime: NodeRuntime<Config>): PriceData => {
   // 1. Create HTTP client and fetch raw data
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   const req = {
     url: nodeRuntime.config.apiUrl,
@@ -10077,9 +10118,9 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
   const result = runtime
     .runInNodeMode(
       fetchPriceData,
-      new cre.consensus.ConsensusAggregationByFields<PriceData>({
-        price: cre.consensus.median<number>(),
-        lastUpdated: cre.consensus.median<Date>(),
+      ConsensusAggregationByFields<PriceData>({
+        price: median<number>(),
+        lastUpdated: median<Date>(),
       })
     )()
     .result()
@@ -10092,8 +10133,8 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 // Initialize workflow (same as before)
 const initWorkflow = (config: Config) => {
   return [
-    cre.handler(
-      new cre.capabilities.CronCapability().trigger({
+    handler(
+      new CronCapability().trigger({
         schedule: config.schedule,
       }),
       onCronTrigger
@@ -10124,7 +10165,7 @@ The request object provides several fields to customize your HTTP call. See the 
 
 # Making POST Requests
 Source: https://docs.chain.link/cre/guides/workflow/using-http-client/post-request-ts
-Last Updated: 2025-12-16
+Last Updated: 2026-01-20
 
 This guide explains how to use the HTTP Client to send data to an external API using a `POST` request. Because POST requests typically create resources or trigger actions, this guide shows you how to ensure your request executes only once, even though multiple nodes in the DON run your workflow.
 
@@ -10221,7 +10262,7 @@ In your `main.ts`, define the TypeScript types for your configuration and the da
 
 ```typescript
 import {
-  cre,
+  HTTPClient,
   ok,
   consensusIdenticalAggregation,
   type Runtime,
@@ -10298,8 +10339,10 @@ const postData = (sendRequester: HTTPSendRequester, config: Config): PostRespons
 In your main `onCronTrigger` handler, call `httpClient.sendRequest()`, which returns a function that you call with `runtime.config`.
 
 ```typescript
+import { HTTPClient, consensusIdenticalAggregation, type Runtime } from "@chainlink/cre-sdk"
+
 const onCronTrigger = (runtime: Runtime<Config>): string => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   const result = httpClient
     .sendRequest(
@@ -10319,10 +10362,12 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 Finally, add the `initWorkflow` and `main` functions.
 
 ```typescript
+import { CronCapability, handler, Runner } from "@chainlink/cre-sdk"
+
 const initWorkflow = (config: Config) => {
   return [
-    cre.handler(
-      new cre.capabilities.CronCapability().trigger({
+    handler(
+      new CronCapability().trigger({
         schedule: config.schedule,
       }),
       onCronTrigger
@@ -10342,7 +10387,9 @@ export async function main() {
 
 ```typescript
 import {
-  cre,
+  CronCapability,
+  HTTPClient,
+  handler,
   ok,
   consensusIdenticalAggregation,
   type Runtime,
@@ -10408,7 +10455,7 @@ const postData = (sendRequester: HTTPSendRequester, config: Config): PostRespons
 }
 
 const onCronTrigger = (runtime: Runtime<Config>): string => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   const result = httpClient
     .sendRequest(
@@ -10424,8 +10471,8 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 
 const initWorkflow = (config: Config) => {
   return [
-    cre.handler(
-      new cre.capabilities.CronCapability().trigger({
+    handler(
+      new CronCapability().trigger({
         schedule: config.schedule,
       }),
       onCronTrigger
@@ -10479,7 +10526,16 @@ For more complex scenarios, you can use the lower-level `runtime.runInNodeMode()
 Here's how to make a POST request with an API key from secrets:
 
 ```typescript
-import { cre, ok, consensusIdenticalAggregation, type Runtime, type NodeRuntime, Runner } from "@chainlink/cre-sdk"
+import {
+  CronCapability,
+  HTTPClient,
+  handler,
+  ok,
+  consensusIdenticalAggregation,
+  type Runtime,
+  type NodeRuntime,
+  Runner,
+} from "@chainlink/cre-sdk"
 import { z } from "zod"
 
 // Config and types
@@ -10507,7 +10563,7 @@ const postData = (nodeRuntime: NodeRuntime<Config>): PostResponse => {
   // Use the secret value
   const apiKey = secret.value
 
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   // 2. Prepare the data
   const dataToSend: MyData = {
@@ -10555,8 +10611,8 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 
 const initWorkflow = (config: Config) => {
   return [
-    cre.handler(
-      new cre.capabilities.CronCapability().trigger({
+    handler(
+      new CronCapability().trigger({
         schedule: config.schedule,
       }),
       onCronTrigger
@@ -10582,7 +10638,7 @@ export async function main() {
 
 # Submitting Reports via HTTP
 Source: https://docs.chain.link/cre/guides/workflow/using-http-client/submitting-reports-http-ts
-Last Updated: 2025-11-04
+Last Updated: 2026-01-20
 
 This guide shows how to send a cryptographically signed report (generated by your workflow) to an external HTTP API. You'll learn how to write a transformation function that formats the report for your specific API's requirements.
 
@@ -10916,7 +10972,7 @@ Use the high-level `httpClient.sendRequest()` pattern with `sendRequester.sendRe
 
 ```typescript
 import {
-  cre,
+  HTTPClient,
   consensusIdenticalAggregation,
   ok,
   type Runtime,
@@ -10941,7 +10997,7 @@ const submitReportViaHTTP = (sendRequester: HTTPSendRequester, report: Report): 
 
 // In your trigger callback
 const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   // Assume 'report' was generated earlier in your workflow
 
@@ -10968,7 +11024,8 @@ This example shows a workflow that:
 
 ```typescript
 import {
-  cre,
+  CronCapability,
+  HTTPClient,
   Runner,
   consensusIdenticalAggregation,
   hexToBase64,
@@ -10994,9 +11051,9 @@ interface SubmitResponse {
 type MyResult = Record<string, never>
 
 const initWorkflow = (config: Config) => {
-  const cron = new cre.capabilities.CronCapability()
+  const cron = new CronCapability()
 
-  return [cre.handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+  return [cron.handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
 }
 
 // Transformation function: defines how the API expects the report
@@ -11053,7 +11110,7 @@ const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): MyResult
   runtime.log("Report generated successfully")
 
   // Step 2: Submit the report via HTTP
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   const submitResult = httpClient
     .sendRequest(
@@ -11097,14 +11154,14 @@ export async function main() {
 For complex scenarios where you need more control, use `clientCapability.sendReport()` with `runtime.runInNodeMode()`:
 
 ```typescript
-import { cre, consensusIdenticalAggregation, ok, type Runtime, type NodeRuntime, type Report } from "@chainlink/cre-sdk"
+import { HTTPClient, consensusIdenticalAggregation, ok, type Runtime, type NodeRuntime, type Report } from "@chainlink/cre-sdk"
 
 const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
   // Assume 'report' was generated earlier
 
   const result = runtime
     .runInNodeMode((nodeRuntime: NodeRuntime<Config>) => {
-      const httpClient = new cre.capabilities.HTTPClient()
+      const httpClient = new HTTPClient()
 
       const response = httpClient.sendReport(nodeRuntime, report, formatReportSimple).result()
 
@@ -11159,7 +11216,7 @@ const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
 
 # Cron Trigger
 Source: https://docs.chain.link/cre/guides/workflow/using-triggers/cron-trigger-ts
-Last Updated: 2025-11-04
+Last Updated: 2026-01-20
 
 The Cron trigger fires based on a time-based schedule, defined by a standard cron expression.
 
@@ -11201,7 +11258,7 @@ The timezone-aware scheduler automatically handles daylight saving time transiti
 </Aside>
 
 ```typescript
-import { cre, type Runtime, type CronPayload, Runner } from "@chainlink/cre-sdk"
+import { CronCapability, handler, type Runtime, type CronPayload, Runner } from "@chainlink/cre-sdk"
 
 type Config = {}
 
@@ -11217,17 +11274,17 @@ const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): string =
 
 const initWorkflow = (config: Config) => {
   // Create the trigger - fires every 30 seconds in UTC
-  const cronTrigger = new cre.capabilities.CronCapability().trigger({
+  const cronTrigger = new CronCapability().trigger({
     schedule: "*/30 * * * * *",
   })
 
   // Or use a timezone-aware schedule - fires daily at 9 AM Eastern Time
-  // const cronTrigger = new cre.capabilities.CronCapability().trigger({
+  // const cronTrigger = new CronCapability().trigger({
   //   schedule: "TZ=America/New_York 0 9 * * *",
   // })
 
   // Register a handler with the trigger and a callback function
-  return [cre.handler(cronTrigger, onCronTrigger)]
+  return [handler(cronTrigger, onCronTrigger)]
 }
 
 export async function main() {
@@ -11279,7 +11336,7 @@ For detailed instructions on simulating cron triggers, including interactive and
 
 # EVM Log Trigger
 Source: https://docs.chain.link/cre/guides/workflow/using-triggers/evm-log-trigger-ts
-Last Updated: 2025-11-04
+Last Updated: 2026-01-20
 
 The EVM Log trigger fires when a specific log (event) is emitted by a smart contract on an EVM-compatible blockchain. This capability allows you to build powerful, event-driven workflows that react to onchain activity.
 
@@ -11304,7 +11361,7 @@ You create an EVM Log trigger by calling the `EVMClient.logTrigger()` method wit
 The simplest configuration listens for **all events** from specific contract addresses:
 
 ```typescript
-import { cre, getNetwork, type Runtime, type EVMLog, Runner, bytesToHex, hexToBase64 } from "@chainlink/cre-sdk"
+import { EVMClient, handler, getNetwork, type Runtime, type EVMLog, Runner, bytesToHex, hexToBase64 } from "@chainlink/cre-sdk"
 
 type Config = {
   chainSelectorName: string
@@ -11329,10 +11386,10 @@ const initWorkflow = (config: Config) => {
     throw new Error(`Network not found: ${config.chainSelectorName}`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   return [
-    cre.handler(
+    handler(
       evmClient.logTrigger({
         addresses: [hexToBase64(config.contractAddress)],
       }),
@@ -11366,13 +11423,13 @@ const initWorkflow = (config: Config) => {
     throw new Error(`Network not found: ${config.chainSelectorName}`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   // Compute the event signature hash for Transfer(address,address,uint256)
   const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
 
   return [
-    cre.handler(
+    handler(
       evmClient.logTrigger({
         addresses: [hexToBase64(config.contractAddress)],
         topics: [
@@ -11425,13 +11482,13 @@ const initWorkflow = (config: Config) => {
     throw new Error(`Network not found: ${config.chainSelectorName}`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
   const aliceAddress = "0xAlice..." as `0x${string}`
 
   return [
-    cre.handler(
+    handler(
       evmClient.logTrigger({
         addresses: [hexToBase64(config.contractAddress)],
         topics: [
@@ -11473,14 +11530,14 @@ const initWorkflow = (config: Config) => {
     throw new Error(`Network not found: ${config.chainSelectorName}`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
   const aliceAddress = "0xAlice..." as `0x${string}`
   const bobAddress = "0xBob..." as `0x${string}`
 
   return [
-    cre.handler(
+    handler(
       evmClient.logTrigger({
         addresses: [hexToBase64(config.contractAddress)],
         topics: [
@@ -11514,14 +11571,14 @@ const initWorkflow = (config: Config) => {
     throw new Error(`Network not found: ${config.chainSelectorName}`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
   const aliceAddress = "0xAlice..." as `0x${string}`
   const charlieAddress = "0xCharlie..." as `0x${string}`
 
   return [
-    cre.handler(
+    handler(
       evmClient.logTrigger({
         addresses: [hexToBase64(config.contractAddress)],
         topics: [
@@ -11559,13 +11616,13 @@ const initWorkflow = (config: Config) => {
     throw new Error(`Network not found: ${config.chainSelectorName}`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
   const approvalEventHash = keccak256(toBytes("Approval(address,address,uint256)"))
 
   return [
-    cre.handler(
+    handler(
       evmClient.logTrigger({
         addresses: [hexToBase64(config.contractAddress)],
         topics: [
@@ -11597,12 +11654,12 @@ const initWorkflow = (config: Config) => {
     throw new Error(`Network not found: ${config.chainSelectorName}`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
 
   return [
-    cre.handler(
+    handler(
       evmClient.logTrigger({
         addresses: [hexToBase64("0xTokenA..."), hexToBase64("0xTokenB..."), hexToBase64("0xTokenC...")],
         topics: [
@@ -11634,7 +11691,7 @@ const initWorkflow = (config: Config) => {
     throw new Error(`Network not found: ${config.chainSelectorName}`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   // Example: event ValueChanged(address indexed user, uint256 indexed newValue)
   const eventHash = keccak256(toBytes("ValueChanged(address,uint256)"))
@@ -11642,7 +11699,7 @@ const initWorkflow = (config: Config) => {
   const targetValue = padHex(numberToHex(12345), { size: 32 })
 
   return [
-    cre.handler(
+    handler(
       evmClient.logTrigger({
         addresses: [hexToBase64(config.contractAddress)],
         topics: [
@@ -11822,7 +11879,7 @@ const onLogTrigger = (runtime: Runtime<Config>, log: EVMLog): string => {
 Here's a complete example that listens for ERC20 `Transfer` events and decodes them:
 
 ```typescript
-import { cre, getNetwork, type Runtime, type EVMLog, Runner, bytesToHex, hexToBase64 } from "@chainlink/cre-sdk"
+import { EVMClient, handler, getNetwork, type Runtime, type EVMLog, Runner, bytesToHex, hexToBase64 } from "@chainlink/cre-sdk"
 import { keccak256, toBytes, decodeEventLog, parseAbi } from "viem"
 
 type Config = {
@@ -11859,11 +11916,11 @@ const initWorkflow = (config: Config) => {
     throw new Error(`Network not found: ${config.chainSelectorName}`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
   const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
 
   return [
-    cre.handler(
+    handler(
       evmClient.logTrigger({
         addresses: [hexToBase64(config.tokenAddress)],
         topics: [{ values: [hexToBase64(transferEventHash)] }],
@@ -11890,7 +11947,7 @@ For detailed instructions on simulating EVM log triggers, including interactive 
 
 # HTTP Trigger: Configuration & Handler
 Source: https://docs.chain.link/cre/guides/workflow/using-triggers/http-trigger/configuration-ts
-Last Updated: 2025-11-10
+Last Updated: 2026-01-20
 
 The HTTP trigger fires when an external system makes an HTTP request to the trigger endpoint.
 
@@ -11910,7 +11967,7 @@ You create an HTTP trigger by calling the `HTTPCapability.trigger()` method. Its
 </Aside>
 
 ```typescript
-import { cre, type Runtime, type HTTPPayload, Runner } from "@chainlink/cre-sdk"
+import { HTTPCapability, handler, type Runtime, type HTTPPayload, Runner } from "@chainlink/cre-sdk"
 
 type Config = {
   authorizedEVMAddress: string
@@ -11924,10 +11981,10 @@ const onHttpTrigger = (runtime: Runtime<Config>, payload: HTTPPayload): string =
 }
 
 const initWorkflow = (config: Config) => {
-  const httpTrigger = new cre.capabilities.HTTPCapability()
+  const httpTrigger = new HTTPCapability()
 
   return [
-    cre.handler(
+    handler(
       httpTrigger.trigger({
         authorizedKeys: [
           {
@@ -12398,7 +12455,7 @@ When you run a CLI command with a target, e.g., `--target staging-settings`:
 
 # SDK Reference: Consensus & Aggregation
 Source: https://docs.chain.link/cre/reference/sdk/consensus-ts
-Last Updated: 2025-11-04
+Last Updated: 2026-01-20
 
 Aggregation is the process of taking many results from individual nodes and reducing them to a single, reliable value. This aggregated value is what the DON reaches consensus on. When you run code on individual nodes using [`runtime.runInNodeMode()`](/cre/reference/sdk/core-ts/#runtimeruninnodemode), you must provide an aggregation strategy to tell the DON how to produce this single, trustworthy outcome. This is achieved using a `ConsensusAggregation`.
 
@@ -12543,6 +12600,7 @@ Creates a consensus aggregation strategy by specifying how to aggregate each fie
 
 ```typescript
 import {
+  HTTPClient,
   ConsensusAggregationByFields,
   median,
   identical,
@@ -12568,7 +12626,7 @@ const fetchReserveData = (sendRequester: HTTPSendRequester, config: Config): Res
 }
 
 const onTrigger = (runtime: Runtime<Config>): string => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   const reserveInfo = httpClient
     .sendRequest(
@@ -12599,7 +12657,9 @@ Here's a complete example demonstrating both simple and field-based aggregation:
 
 ```typescript
 import {
-  cre,
+  CronCapability,
+  HTTPClient,
+  handler,
   Runner,
   consensusMedianAggregation,
   ConsensusAggregationByFields,
@@ -12623,7 +12683,7 @@ type PriceData = {
 
 // Simple aggregation example
 const fetchSimplePrice = (nodeRuntime: NodeRuntime<Config>): bigint => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
   const response = httpClient.sendRequest(nodeRuntime, { url: nodeRuntime.config.apiUrl }).result()
   const data = JSON.parse(response.body.toString())
   return BigInt(data.price)
@@ -12648,7 +12708,7 @@ const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): string =
   runtime.log(`Simple median price: ${simplePrice}`)
 
   // Example 2: Field-based aggregation
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
   const priceData = httpClient
     .sendRequest(
       runtime,
@@ -12667,9 +12727,9 @@ const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): string =
 }
 
 const initWorkflow = (config: Config) => {
-  const cron = new cre.capabilities.CronCapability()
+  const cron = new CronCapability()
 
-  return [cre.handler(cron.trigger({ schedule: "0 */5 * * * *" }), onCronTrigger)]
+  return [handler(cron.trigger({ schedule: "0 */5 * * * *" }), onCronTrigger)]
 }
 
 export async function main() {
@@ -12692,18 +12752,22 @@ If all nodes fail or consensus cannot be reached, the default value (`0n` in thi
 
 # SDK Reference: Core
 Source: https://docs.chain.link/cre/reference/sdk/core-ts
-Last Updated: 2025-11-04
+Last Updated: 2026-01-20
 
 This page provides a reference for the core data structures and functions of the CRE TypeScript SDK. These are the fundamental building blocks that every workflow uses, regardless of trigger types or capabilities.
 
 ## Import styles
 
-The CRE TypeScript SDK supports two import styles. Both are fully supported and can be used interchangeably:
+The CRE TypeScript SDK supports two equivalent import styles. **Both are fully supported**, produce identical behavior, and can be used interchangeably in your workflows.
 
-**Direct imports (recommended for SDK v1.0.2+):**
+<Aside type="tip" title="Choose the style that fits your codebase">
+  Both import patterns are **fully supported** and will continue to work. There are no plans to deprecate either style. Choose whichever approach better matches your team's conventions.
+</Aside>
+
+**Direct imports (recommended for new projects):**
 
 ```typescript
-import { Runner, HTTPClient, EVMClient, CronCapability } from "@chainlink/cre-sdk"
+import { Runner, HTTPClient, EVMClient, CronCapability, handler } from "@chainlink/cre-sdk"
 
 // Use directly
 const httpClient = new HTTPClient()
@@ -12720,22 +12784,27 @@ const httpClient = new cre.capabilities.HTTPClient()
 const evmClient = new cre.capabilities.EVMClient(chainSelector)
 ```
 
-Both styles are supported for backward compatibility. Choose the style that works best for your codebase.
+**When to use each style:**
+
+| Style                 | Best for                                                                     |
+| --------------------- | ---------------------------------------------------------------------------- |
+| **Direct imports**    | New projects, cleaner import statements, better tree-shaking                 |
+| **Namespace imports** | Existing codebases already using this pattern, preference for grouped access |
 
 ## Key concepts and components
 
-### `cre.handler()`
+### `handler()`
 
-The `cre.handler()` function is the cornerstone of every workflow. It registers a handler that links a specific trigger to a callback function containing your workflow logic. It is typically called within your [`initWorkflow`](#initworkflow) function.
+The `handler()` function is the cornerstone of every workflow. It registers a handler that links a specific trigger to a callback function containing your workflow logic. It is typically called within your [`initWorkflow`](#initworkflow) function.
 
 **Usage:**
 
 ```typescript
-import { cre, type Runtime } from "@chainlink/cre-sdk"
+import { handler, type Runtime } from "@chainlink/cre-sdk"
 
 const initWorkflow = (config: Config) => {
   return [
-    cre.handler(
+    handler(
       // 1. A configured trigger, e.g., cron.trigger(...)
       // This determines WHEN the workflow runs
       triggerInstance,
@@ -12772,7 +12841,7 @@ Both `Runtime` and `NodeRuntime` provide:
 
 - **`config`**: Access to your workflow's configuration
 - **`now()`**: Returns the current `Date` object
-- **`log(message: string)`**: Logs a message (accepts a single string argument)
+- **`log(message: string)`**: Logs a message (see [Logging](#logging) below)
 - **`callCapability(...)`**: Internal method for calling capabilities (used by generated code)
 
 `Runtime` additionally provides:
@@ -12780,6 +12849,35 @@ Both `Runtime` and `NodeRuntime` provide:
 - **`runInNodeMode(...)`**: Execute code on individual nodes with consensus aggregation
 - **`getSecret(...)`**: Access to workflow secrets
 - **`report(...)`**: Generate cryptographically signed reports
+
+### Logging
+
+Use `runtime.log()` to output messages from your workflow. This is the **only way** to produce visible logs—`console.log` does not work in the WASM environment.
+
+```typescript
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  runtime.log("Workflow started")
+  
+  const result = someOperation()
+  runtime.log(`Operation result: ${result}`)
+  
+  return "done"
+}
+```
+
+**Where logs appear:**
+
+| Environment           | Location                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------ |
+| **Simulation**        | Terminal output with `[USER LOG]` prefix                                             |
+| **Deployed workflow** | CRE UI → Workflows → select workflow → Execution tab → click an execution → Logs tab |
+
+See [Monitoring & Debugging Workflows](/cre/guides/operations/monitoring-workflows#logs-tab) for details on viewing logs for deployed workflows.
+
+**Important notes:**
+
+- `runtime.log()` accepts a **single string argument**—use template literals to include variables
+- Logs are only available inside callback functions where you have access to the `runtime` object
 
 ### Understanding the `.result()` Pattern
 
@@ -12800,11 +12898,11 @@ const response = request.result()
 **Common usage:** These steps are often chained together for simplicity:
 
 ```typescript
-import { cre, encodeCallMsg, LAST_FINALIZED_BLOCK_NUMBER, type Runtime } from "@chainlink/cre-sdk"
+import { EVMClient, encodeCallMsg, LAST_FINALIZED_BLOCK_NUMBER, type Runtime } from "@chainlink/cre-sdk"
 import { zeroAddress } from "viem"
 
 const onCronTrigger = (runtime: Runtime<Config>): string => {
-  const evmClient = new cre.capabilities.EVMClient(chainSelector)
+  const evmClient = new EVMClient(chainSelector)
 
   // Inline pattern: initiate and get result in one expression
   const contractCall = evmClient
@@ -12898,12 +12996,66 @@ export async function main() {
 ```
 
 <Aside type="note" title="SDK v1.0.2+ Changes">
-  Starting with SDK v1.0.2:
+  Starting with SDK v1.0.2, the SDK handles `main()` execution automatically:
 
   - **Calling `main()` is optional**: The SDK automatically executes the `main()` function during compilation. You no longer need to call `main()` at the end of your workflow file.
-  - **Automatic error handling**: If you don't provide custom error handling (e.g., `main().catch(myHandler)`), the SDK automatically adds `.catch(sendErrorResponse)` to ensure errors are properly reported.
-  - If you need custom error handling, you can still add your own: `main().catch(myCustomHandler)`. The SDK will respect your custom handler and not override it.
+  - **Automatic error handling**: If you don't provide custom error handling, the SDK automatically adds `.catch(sendErrorResponse)` to ensure errors are properly reported instead of silently failing.
 </Aside>
+
+**All of these patterns are valid:**
+
+- **Pattern 1: Let the SDK handle everything (recommended)**
+
+  ```typescript
+  export async function main() {
+    const runner = await Runner.newRunner<Config>()
+    await runner.run(initWorkflow)
+  }
+  // No need to call main() - the SDK automatically appends:
+  // main().catch(sendErrorResponse)
+  ```
+
+- **Pattern 2: Explicit call without `.catch()` - SDK adds error handling**
+
+  ```typescript
+  export async function main() {
+    const runner = await Runner.newRunner<Config>()
+    await runner.run(initWorkflow)
+  }
+
+  main() // SDK transforms this to: main().catch(sendErrorResponse)
+  ```
+
+- **Pattern 3: Custom error handling - SDK respects your handler**
+
+  ```typescript
+  import { sendErrorResponse } from "@chainlink/cre-sdk"
+
+  export async function main() {
+    const runner = await Runner.newRunner<Config>()
+    await runner.run(initWorkflow)
+  }
+
+  // If you provide .catch(), the SDK leaves it untouched
+  main().catch((error) => {
+    // Your custom error handling logic
+    // You should call sendErrorResponse to report the error
+    sendErrorResponse(error)
+  })
+  ```
+
+<Aside type="caution" title="No console access in workflows">
+  CRE workflows are compiled to WebAssembly (WASM), where `console.log` and `console.error` **produce no output**. Use `runtime.log()` for logging within your callback functions—these logs appear in simulation output with the `[USER LOG]` prefix and in the [CRE UI Logs tab](/cre/guides/operations/monitoring-workflows#logs-tab) for deployed workflows. For error reporting from `main()`, use the SDK's `sendErrorResponse` function.
+</Aside>
+
+<Aside type="tip" title="When to use custom error handling">
+  Most workflows don't need custom error handling—the SDK's default handler reports errors properly. Only add a custom `.catch()` handler if you need to transform errors, add context, or perform cleanup before reporting. If you provide a custom handler, remember to call `sendErrorResponse(error)` to ensure the error is properly reported.
+</Aside>
+
+`sendErrorResponse` reports the error to CRE and marks the execution as failed.
+
+- In **simulation**, the error appears in your terminal output.
+- For **deployed workflows**, you'll see it in the [Execution tab](/cre/guides/operations/monitoring-workflows#execution-history) with a `Failure` status and the error message in the Logs tab.
 
 **Key points:**
 
@@ -12918,7 +13070,7 @@ This is the second required entry point. The CRE runner calls this function to i
 **Required Signature:**
 
 ```typescript
-import { cre, type Runtime } from "@chainlink/cre-sdk"
+import { handler, type Runtime } from "@chainlink/cre-sdk"
 
 function initWorkflow(config: Config): Array<HandlerEntry<Config, any, any, any>>
 ```
@@ -12929,7 +13081,7 @@ function initWorkflow(config: Config): Array<HandlerEntry<Config, any, any, any>
 
 **Returns:**
 
-- An array of handlers created with `cre.handler()`
+- An array of handlers created with `handler()`
 
 <Aside type="note" title="Using secrets">
   If your workflow uses secrets, you can add a second parameter `secretsProvider: SecretsProvider` to access the
@@ -12939,7 +13091,7 @@ function initWorkflow(config: Config): Array<HandlerEntry<Config, any, any, any>
 **Example:**
 
 ```typescript
-import { cre, type Runtime, type CronPayload } from "@chainlink/cre-sdk"
+import { CronCapability, handler, type Runtime, type CronPayload } from "@chainlink/cre-sdk"
 
 // Callback function executed by the handler
 const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): string => {
@@ -12948,9 +13100,9 @@ const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): string =
 }
 
 const initWorkflow = (config: Config) => {
-  const cron = new cre.capabilities.CronCapability()
+  const cron = new CronCapability()
 
-  return [cre.handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
 }
 ```
 
@@ -12984,14 +13136,14 @@ This example uses `runInNodeMode` to fetch data from an API on each node, and th
 
 ```typescript
 import {
-  cre,
+  HTTPClient,
   consensusMedianAggregation,
   type Runtime,
   type NodeRuntime,
 } from "@chainlink/cre-sdk"
 
 const fetchPrice = (nodeRuntime: NodeRuntime<Config>): bigint => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
   // Fetch price from API using nodeRuntime
   return fetchOffchainPrice(nodeRuntime)
 }
@@ -13025,7 +13177,7 @@ const onTrigger = (runtime: Runtime<Config>, ...): string => {
 
 # SDK Reference: EVM Client
 Source: https://docs.chain.link/cre/reference/sdk/evm-client-ts
-Last Updated: 2025-11-04
+Last Updated: 2026-01-20
 
 This page provides a reference for the `EVMClient`, the low-level tool for all interactions with EVM-compatible blockchains. The client includes a comprehensive set of read, write, and utility methods for building chain-aware workflows.
 
@@ -13034,7 +13186,7 @@ This page provides a reference for the `EVMClient`, the low-level tool for all i
 To use the client, you must instantiate it with the numeric `ChainSelector` ID for the blockchain you intend to interact with.
 
 ```typescript
-import { cre, getNetwork } from "@chainlink/cre-sdk"
+import { EVMClient, getNetwork } from "@chainlink/cre-sdk"
 
 // Get network information by chain selector name
 const network = getNetwork({
@@ -13048,7 +13200,7 @@ if (!network) {
 }
 
 // Instantiate a client for Ethereum Sepolia
-const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+const evmClient = new EVMClient(network.chainSelector.selector)
 ```
 
 <Aside type="note" title="What is a Chain Selector?">
@@ -13071,9 +13223,9 @@ const network = getNetwork({
 })
 
 // Access network properties
-console.log(network.chainSelector.selector) // 16015286601757825753n (bigint)
-console.log(network.chainSelector.name) // "ethereum-testnet-sepolia"
-console.log(network.family) // "evm"
+// network.chainSelector.selector → 16015286601757825753n (bigint)
+// network.chainSelector.name → "ethereum-testnet-sepolia"
+// network.family → "evm"
 ```
 
 ## Read & query methods
@@ -13123,7 +13275,7 @@ This is the object returned by `.result()` when the `callContract()` method succ
 #### Usage example
 
 ```typescript
-import { cre, getNetwork, encodeCallMsg, bytesToHex, LAST_FINALIZED_BLOCK_NUMBER } from "@chainlink/cre-sdk"
+import { EVMClient, getNetwork, encodeCallMsg, bytesToHex, LAST_FINALIZED_BLOCK_NUMBER } from "@chainlink/cre-sdk"
 import { encodeFunctionData, decodeFunctionResult, zeroAddress } from "viem"
 import { Storage } from "../contracts/abi"
 
@@ -13133,7 +13285,7 @@ const network = getNetwork({
   chainSelectorName: "ethereum-testnet-sepolia",
   isTestnet: true,
 })
-const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+const evmClient = new EVMClient(network.chainSelector.selector)
 
 // Encode the contract call data
 const callData = encodeFunctionData({
@@ -13423,7 +13575,7 @@ writeReport(
 #### Usage example
 
 ```typescript
-import { cre, getNetwork, hexToBase64, bytesToHex } from "@chainlink/cre-sdk"
+import { EVMClient, getNetwork, hexToBase64, bytesToHex } from "@chainlink/cre-sdk"
 import { encodeFunctionData } from "viem"
 import { ReserveManager } from "../contracts/abi"
 
@@ -13604,8 +13756,8 @@ const latestHeader = evmClient.headerByNumber(runtime, {}).result()
 const latestBlockNum = protoBigIntToBigint(latestHeader.header.blockNumber)
 const customBlock = latestBlockNum - 500n // Now you can do arithmetic
 
-console.log(`Latest block: ${latestBlockNum}`)
-console.log(`Custom block (500 blocks ago): ${customBlock}`)
+// latestBlockNum → e.g., 12345678n
+// customBlock → e.g., 12345178n (500 blocks earlier)
 ```
 
 See [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-ts#custom-block-depths) for a complete example.
@@ -13787,7 +13939,7 @@ if (!network) {
 }
 
 // Access the numeric chain selector (bigint)
-const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+const evmClient = new EVMClient(network.chainSelector.selector)
 // network.chainSelector.selector is 16015286601757825753n (bigint)
 ```
 
@@ -13796,7 +13948,7 @@ const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
 The `EVMClient` class includes a static `SUPPORTED_CHAINS` constant with all available chain selectors:
 
 ```typescript
-cre.capabilities.EVMClient.SUPPORTED_CHAINS
+EVMClient.SUPPORTED_CHAINS
 // Returns:
 // {
 //   'avalanche-mainnet': 6433500567565415381n,
@@ -13874,14 +14026,14 @@ if (!network) {
   throw new Error(`Network not found: ${config.evms[0].chainName}`)
 }
 
-const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+const evmClient = new EVMClient(network.chainSelector.selector)
 ```
 
 ---
 
 # SDK Reference: HTTP Client
 Source: https://docs.chain.link/cre/reference/sdk/http-client-ts
-Last Updated: 2025-12-16
+Last Updated: 2026-01-20
 
 This page provides a reference for making offchain HTTP requests using the `HTTPClient`. This is a "node-level" action capability, meaning it executes on each individual node in the DON.
 
@@ -13921,7 +14073,7 @@ A curried function that accepts your custom arguments and returns an object with
 **Example:**
 
 ```typescript
-import { cre, consensusMedianAggregation, type Runtime, type HTTPSendRequester } from "@chainlink/cre-sdk"
+import { HTTPClient, consensusMedianAggregation, type Runtime, type HTTPSendRequester } from "@chainlink/cre-sdk"
 
 interface Config {
   apiUrl: string
@@ -13943,7 +14095,7 @@ const fetchPrice = (sendRequester: HTTPSendRequester, url: string): number => {
 
 // In your workflow
 const workflow = (runtime: Runtime<Config>) => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   // Call the high-level sendRequest with your custom function
   const price = httpClient
@@ -14051,11 +14203,11 @@ An object with a `.result()` method that blocks until the HTTP request completes
 **Example:**
 
 ```typescript
-import { cre, consensusMedianAggregation, type Runtime, type NodeRuntime } from "@chainlink/cre-sdk"
+import { HTTPClient, consensusMedianAggregation, type Runtime, type NodeRuntime } from "@chainlink/cre-sdk"
 
 // Low-level usage with manual node mode
 const fetchPrice = (nodeRuntime: NodeRuntime<Config>): number => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   const response = httpClient
     .sendRequest(nodeRuntime, {
@@ -14364,7 +14516,7 @@ const manualData = JSON.parse(manualText)
 ### Simple GET request
 
 ```typescript
-import { cre, consensusMedianAggregation, ok, json, type HTTPSendRequester } from "@chainlink/cre-sdk"
+import { HTTPClient, consensusMedianAggregation, ok, json, type HTTPSendRequester } from "@chainlink/cre-sdk"
 
 const fetchData = (sendRequester: HTTPSendRequester, url: string): number => {
   const response = sendRequester.sendRequest({ url }).result()
@@ -14378,14 +14530,14 @@ const fetchData = (sendRequester: HTTPSendRequester, url: string): number => {
 }
 
 // In your workflow
-const httpClient = new cre.capabilities.HTTPClient()
+const httpClient = new HTTPClient()
 const result = httpClient.sendRequest(runtime, fetchData, consensusMedianAggregation<number>())(apiUrl).result()
 ```
 
 ### POST request with caching
 
 ```typescript
-import { cre, consensusIdenticalAggregation, ok, json, type HTTPSendRequester } from "@chainlink/cre-sdk"
+import { HTTPClient, consensusIdenticalAggregation, ok, json, type HTTPSendRequester } from "@chainlink/cre-sdk"
 
 const createResource = (sendRequester: HTTPSendRequester, payload: { name: string }): { id: string } => {
   // Encode the body as base64
@@ -14416,7 +14568,7 @@ const createResource = (sendRequester: HTTPSendRequester, payload: { name: strin
 }
 
 // In your workflow
-const httpClient = new cre.capabilities.HTTPClient()
+const httpClient = new HTTPClient()
 const resource = httpClient
   .sendRequest(runtime, createResource, consensusIdenticalAggregation<{ id: string }>())({ name: "My Resource" })
   .result()
@@ -14428,7 +14580,7 @@ For complex objects with multiple fields, use `ConsensusAggregationByFields()`:
 
 ```typescript
 import {
-  cre,
+  HTTPClient,
   ConsensusAggregationByFields,
   median,
   identical,
@@ -14460,7 +14612,7 @@ const fetchReserveInfo = (sendRequester: HTTPSendRequester, url: string): Reserv
 }
 
 // In your workflow
-const httpClient = new cre.capabilities.HTTPClient()
+const httpClient = new HTTPClient()
 const reserveInfo = httpClient
   .sendRequest(
     runtime,
@@ -14478,7 +14630,7 @@ const reserveInfo = httpClient
 
 # SDK Reference
 Source: https://docs.chain.link/cre/reference/sdk/overview-ts
-Last Updated: 2025-11-04
+Last Updated: 2026-01-20
 
 <Aside type="note" title="Required SDK Version: v1.0.1">
   The CRE CLI automatically includes version `v1.0.1` of the `@chainlink/cre-sdk` package when you initialize a new
@@ -14491,11 +14643,11 @@ This section provides a detailed technical reference for the public interfaces o
 
 The SDK Reference is broken down into several pages, each corresponding to a core part of the SDK's functionality:
 
-- **[Core SDK](/cre/reference/sdk/core)**: Covers the fundamental building blocks of any workflow, including `cre.handler`, `Runtime`, and the `.result()` pattern for promise resolution.
-- **[Triggers](/cre/reference/sdk/triggers)**: Details the configuration and payload structures for all available trigger types (`Cron`, `HTTP`, `EVM Log`).
-- **[EVM Client](/cre/reference/sdk/evm-client)**: Provides a reference for the `cre.capabilities.EVMClient`, the primary tool for all EVM interactions, including reads and writes.
-- **[HTTP Client](/cre/reference/sdk/http-client)**: Provides a reference for the `cre.capabilities.HTTPClient`, used for making offchain API requests from individual nodes.
-- **[Consensus & Aggregation](/cre/reference/sdk/consensus)**: Describes how to use aggregators like `consensusMedianAggregation` and `ConsensusAggregationByFields` with `runtime.runInNodeMode()` to process and consolidate data from multiple nodes.
+- **[Core SDK](/cre/reference/sdk/core-ts)**: Covers the fundamental building blocks of any workflow, including `handler`, `Runtime`, and the `.result()` pattern for promise resolution.
+- **[Triggers](/cre/reference/sdk/triggers/overview-ts)**: Details the configuration and payload structures for all available trigger types (`Cron`, `HTTP`, `EVM Log`).
+- **[EVM Client](/cre/reference/sdk/evm-client-ts)**: Provides a reference for the `EVMClient`, the primary tool for all EVM interactions, including reads and writes.
+- **[HTTP Client](/cre/reference/sdk/http-client-ts)**: Provides a reference for the `HTTPClient`, used for making offchain API requests from individual nodes.
+- **[Consensus & Aggregation](/cre/reference/sdk/consensus-ts)**: Describes how to use aggregators like `consensusMedianAggregation` and `ConsensusAggregationByFields` with `runtime.runInNodeMode()` to process and consolidate data from multiple nodes.
 
 ## Package Structure
 
@@ -14503,17 +14655,30 @@ The TypeScript SDK is distributed as a single npm package `@chainlink/cre-sdk` t
 
 ```typescript
 import {
-  cre, // Main SDK namespace with capabilities
+  // Capabilities
+  CronCapability,
+  HTTPCapability,
+  HTTPClient,
+  EVMClient,
+  // Core functions
+  handler, // Register handlers
   Runner, // Workflow runner
   type Runtime, // Runtime interface
   type NodeRuntime, // Node-level runtime interface
-  consensusMedianAggregation, // Consensus aggregators
+  // Consensus
+  consensusMedianAggregation,
+  consensusIdenticalAggregation,
+  // Utilities
   getNetwork, // Chain selector utilities
   bytesToHex, // Data conversion utilities
   hexToBase64,
   // ... and more
 } from "@chainlink/cre-sdk"
 ```
+
+<Aside type="note" title="Import styles">
+  The SDK supports two import styles: **direct imports** (shown above) and **namespace imports** (e.g., `cre.capabilities.HTTPClient`). Both are fully supported and produce identical behavior. See the [Core SDK Reference](/cre/reference/sdk/core-ts#import-styles) for details on both patterns.
+</Aside>
 
 ## Understanding TypeScript Types
 
@@ -14561,16 +14726,16 @@ TypeScript workflows are compiled to WebAssembly (WASM) using Javy and QuickJS. 
 
 # SDK Reference: Cron Trigger
 Source: https://docs.chain.link/cre/reference/sdk/triggers/cron-trigger-ts
-Last Updated: 2025-11-04
+Last Updated: 2026-01-20
 
 The Cron Trigger fires at a specified schedule using standard cron expressions. It is ideal for workflows that need to run at regular intervals.
 
 ## Creating the trigger
 
 ```typescript
-import { cre } from "@chainlink/cre-sdk"
+import { CronCapability } from "@chainlink/cre-sdk"
 
-const cron = new cre.capabilities.CronCapability()
+const cron = new CronCapability()
 const trigger = cron.trigger({ schedule: "0 */10 * * * *" }) // Every 10 minutes
 ```
 
@@ -14658,7 +14823,7 @@ const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): string =
 ## Complete Example
 
 ```typescript
-import { cre, Runner, type Runtime, type CronPayload } from "@chainlink/cre-sdk"
+import { CronCapability, handler, Runner, type Runtime, type CronPayload } from "@chainlink/cre-sdk"
 
 type Config = {
   schedule: string
@@ -14670,9 +14835,9 @@ const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): string =
 }
 
 const initWorkflow = (config: Config) => {
-  const cron = new cre.capabilities.CronCapability()
+  const cron = new CronCapability()
 
-  return [cre.handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
 }
 
 export async function main() {
@@ -14685,14 +14850,14 @@ export async function main() {
 
 # SDK Reference: EVM Log Trigger
 Source: https://docs.chain.link/cre/reference/sdk/triggers/evm-log-trigger-ts
-Last Updated: 2025-11-04
+Last Updated: 2026-01-20
 
 The EVM Log Trigger fires when a specific log (event) is emitted by an onchain smart contract.
 
 ## Creating the trigger
 
 ```typescript
-import { cre } from "@chainlink/cre-sdk"
+import { EVMClient, getNetwork } from "@chainlink/cre-sdk"
 
 // Create an EVMClient instance with a chain selector
 const network = getNetwork({
@@ -14701,7 +14866,7 @@ const network = getNetwork({
   isTestnet: true,
 })
 
-const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+const evmClient = new EVMClient(network.chainSelector.selector)
 
 // Basic log trigger for a contract address
 const trigger = evmClient.logTrigger({
@@ -14871,7 +15036,7 @@ const onLogTrigger = (runtime: Runtime<Config>, log: EVMLog): string => {
 ## Complete Example
 
 ```typescript
-import { cre, bytesToHex, getNetwork, Runner, type Runtime, type EVMLog } from "@chainlink/cre-sdk"
+import { EVMClient, handler, bytesToHex, getNetwork, Runner, type Runtime, type EVMLog } from "@chainlink/cre-sdk"
 
 type Config = {
   chainSelectorName: string
@@ -14906,10 +15071,10 @@ const initWorkflow = (config: Config) => {
     throw new Error(`Network not found: ${config.chainSelectorName}`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   return [
-    cre.handler(
+    handler(
       evmClient.logTrigger({
         addresses: [config.contractAddress],
       }),
@@ -14952,16 +15117,16 @@ const onLogTrigger = (runtime: Runtime<Config>, log: EVMLog): string => {
 
 # SDK Reference: HTTP Trigger
 Source: https://docs.chain.link/cre/reference/sdk/triggers/http-trigger-ts
-Last Updated: 2025-11-04
+Last Updated: 2026-01-20
 
 The HTTP Trigger fires when an HTTP request is made to the workflow's designated endpoint. This allows you to start workflows from external systems.
 
 ## Creating the trigger
 
 ```typescript
-import { cre } from "@chainlink/cre-sdk"
+import { HTTPCapability } from "@chainlink/cre-sdk"
 
-const http = new cre.capabilities.HTTPCapability()
+const http = new HTTPCapability()
 
 // Basic trigger (no authorization)
 const trigger = http.trigger({})
@@ -15096,7 +15261,7 @@ const onHttpTrigger = (runtime: Runtime<Config>, payload: HTTPPayload): string =
 ## Complete Example
 
 ```typescript
-import { cre, decodeJson, Runner, type Runtime, type HTTPPayload } from "@chainlink/cre-sdk"
+import { HTTPCapability, handler, decodeJson, Runner, type Runtime, type HTTPPayload } from "@chainlink/cre-sdk"
 
 type Config = {
   publicKey: string
@@ -15114,10 +15279,10 @@ const onHttpTrigger = (runtime: Runtime<Config>, payload: HTTPPayload): string =
 }
 
 const initWorkflow = (config: Config) => {
-  const http = new cre.capabilities.HTTPCapability()
+  const http = new HTTPCapability()
 
   return [
-    cre.handler(
+    handler(
       http.trigger({
         authorizedKeys: [
           {
@@ -15167,7 +15332,7 @@ This section provides a reference for the built-in trigger capabilities of the C
 
 # Running a Demo Workflow
 Source: https://docs.chain.link/cre/templates/running-demo-workflow-ts
-Last Updated: 2026-01-14
+Last Updated: 2026-01-20
 
 This guide walks you through the core developer loop of CRE: initializing a project from a template and running it locally using the [simulator](/cre/guides/operations/simulating-workflows). By the end, you will have run the Custom Data Feed demo workflow and tested its two distinct behaviors: a **proactive** path where it fetches data from an API to write a result onchain, and a **reactive** path where it listens for onchain events to trigger new actions.
 
@@ -15426,7 +15591,7 @@ The `main.ts` file is a great example of how a single workflow can contain multi
 
 - **`main()` and `Runner`**: The entry point of the workflow. It creates a new `Runner` instance with your config schema using `Runner.newRunner()`, then calls `runner.run()` with the `initWorkflow` function. This is the standard pattern for initializing CRE workflows in the TypeScript SDK.
 
-- **`initWorkflow`**: This function initializes the trigger capabilities and returns an array of two handlers: one for the cron trigger and one for the EVM log trigger. Each handler is created using `cre.handler()`, which pairs a trigger configuration with a callback function.
+- **`initWorkflow`**: This function initializes the trigger capabilities and returns an array of two handlers: one for the cron trigger and one for the EVM log trigger. Each handler is created using `handler()`, which pairs a trigger configuration with a callback function.
 
 - **`onCronTrigger`**: The entry point for **Path A**. It's a lightweight callback that immediately delegates to the shared `doPOR` function, demonstrating how you can reuse core logic.
 
@@ -15442,7 +15607,7 @@ This demo showcases several important patterns and features of the TypeScript SD
 
 - **Runner Pattern**: The workflow uses the `Runner.newRunner()` pattern to initialize the workflow with a config schema and run it.
 - **Zod Schema Validation**: The workflow uses Zod to define and validate the configuration schema, ensuring type safety at runtime.
-- **Multiple Trigger Handlers**: A single workflow can register multiple handlers for different trigger types using `cre.handler()`.
+- **Multiple Trigger Handlers**: A single workflow can register multiple handlers for different trigger types using `handler()`.
 - **Viem Integration**: All EVM interactions use viem's `encodeFunctionData` and `decodeFunctionResult` for type-safe contract calls.
 - **Manual ABI Management**: TypeScript workflows use manually defined ABI constants from the `contracts/abi/` directory.
 - **Consensus Aggregation**: The HTTP capability uses `ConsensusAggregationByFields` to aggregate offchain data from multiple nodes.

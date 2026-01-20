@@ -7,7 +7,7 @@ date: Last Modified
 metadata:
   description: "Schedule workflows with Cron in TypeScript: learn to run your workflow at specific times or intervals using cron expressions."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-01-20"
 ---
 
 import { Aside } from "@components"
@@ -52,7 +52,7 @@ The timezone-aware scheduler automatically handles daylight saving time transiti
 </Aside>
 
 ```typescript
-import { cre, type Runtime, type CronPayload, Runner } from "@chainlink/cre-sdk"
+import { CronCapability, handler, type Runtime, type CronPayload, Runner } from "@chainlink/cre-sdk"
 
 type Config = {}
 
@@ -68,17 +68,17 @@ const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): string =
 
 const initWorkflow = (config: Config) => {
   // Create the trigger - fires every 30 seconds in UTC
-  const cronTrigger = new cre.capabilities.CronCapability().trigger({
+  const cronTrigger = new CronCapability().trigger({
     schedule: "*/30 * * * * *",
   })
 
   // Or use a timezone-aware schedule - fires daily at 9 AM Eastern Time
-  // const cronTrigger = new cre.capabilities.CronCapability().trigger({
+  // const cronTrigger = new CronCapability().trigger({
   //   schedule: "TZ=America/New_York 0 9 * * *",
   // })
 
   // Register a handler with the trigger and a callback function
-  return [cre.handler(cronTrigger, onCronTrigger)]
+  return [handler(cronTrigger, onCronTrigger)]
 }
 
 export async function main() {

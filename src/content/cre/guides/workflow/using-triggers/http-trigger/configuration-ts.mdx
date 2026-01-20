@@ -7,7 +7,7 @@ date: Last Modified
 metadata:
   description: "Configure HTTP triggers in TypeScript: learn to set up authorization, write handler functions, and process HTTP request payloads."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-10"
+  lastModified: "2026-01-20"
 ---
 
 import { Aside } from "@components"
@@ -30,7 +30,7 @@ You create an HTTP trigger by calling the `HTTPCapability.trigger()` method. Its
 </Aside>
 
 ```typescript
-import { cre, type Runtime, type HTTPPayload, Runner } from "@chainlink/cre-sdk"
+import { HTTPCapability, handler, type Runtime, type HTTPPayload, Runner } from "@chainlink/cre-sdk"
 
 type Config = {
   authorizedEVMAddress: string
@@ -44,10 +44,10 @@ const onHttpTrigger = (runtime: Runtime<Config>, payload: HTTPPayload): string =
 }
 
 const initWorkflow = (config: Config) => {
-  const httpTrigger = new cre.capabilities.HTTPCapability()
+  const httpTrigger = new HTTPCapability()
 
   return [
-    cre.handler(
+    handler(
       httpTrigger.trigger({
         authorizedKeys: [
           {

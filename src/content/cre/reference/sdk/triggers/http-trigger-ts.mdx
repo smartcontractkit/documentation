@@ -7,7 +7,7 @@ pageId: "reference-sdk-http-trigger"
 metadata:
   description: "Reference for TypeScript HTTP Trigger: Config interface, Payload fields, and authorization setup for request-based workflows."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-01-20"
 ---
 
 import { Aside } from "@components"
@@ -17,9 +17,9 @@ The HTTP Trigger fires when an HTTP request is made to the workflow's designated
 ## Creating the trigger
 
 ```typescript
-import { cre } from "@chainlink/cre-sdk"
+import { HTTPCapability } from "@chainlink/cre-sdk"
 
-const http = new cre.capabilities.HTTPCapability()
+const http = new HTTPCapability()
 
 // Basic trigger (no authorization)
 const trigger = http.trigger({})
@@ -154,7 +154,7 @@ const onHttpTrigger = (runtime: Runtime<Config>, payload: HTTPPayload): string =
 ## Complete Example
 
 ```typescript
-import { cre, decodeJson, Runner, type Runtime, type HTTPPayload } from "@chainlink/cre-sdk"
+import { HTTPCapability, handler, decodeJson, Runner, type Runtime, type HTTPPayload } from "@chainlink/cre-sdk"
 
 type Config = {
   publicKey: string
@@ -172,10 +172,10 @@ const onHttpTrigger = (runtime: Runtime<Config>, payload: HTTPPayload): string =
 }
 
 const initWorkflow = (config: Config) => {
-  const http = new cre.capabilities.HTTPCapability()
+  const http = new HTTPCapability()
 
   return [
-    cre.handler(
+    handler(
       http.trigger({
         authorizedKeys: [
           {

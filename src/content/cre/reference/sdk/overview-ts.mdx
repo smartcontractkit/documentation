@@ -7,13 +7,13 @@ pageId: "reference-sdk-overview"
 metadata:
   description: "Explore the TypeScript SDK API: complete technical reference for workflows, handlers, triggers, capabilities, and runtime methods."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-01-20"
 ---
 
 import { Aside } from "@components"
 
-<Aside type="note" title="Required SDK Version: v1.0.1">
-  The CRE CLI automatically includes version `v1.0.1` of the `@chainlink/cre-sdk` package when you initialize a new
+<Aside type="note" title="Required SDK Version: v1.0.3">
+  The CRE CLI automatically includes version `v1.0.3` of the `@chainlink/cre-sdk` package when you initialize a new
   TypeScript workflow with `cre init`.
 </Aside>
 
@@ -23,11 +23,11 @@ This section provides a detailed technical reference for the public interfaces o
 
 The SDK Reference is broken down into several pages, each corresponding to a core part of the SDK's functionality:
 
-- **[Core SDK](/cre/reference/sdk/core)**: Covers the fundamental building blocks of any workflow, including `cre.handler`, `Runtime`, and the `.result()` pattern for promise resolution.
-- **[Triggers](/cre/reference/sdk/triggers)**: Details the configuration and payload structures for all available trigger types (`Cron`, `HTTP`, `EVM Log`).
-- **[EVM Client](/cre/reference/sdk/evm-client)**: Provides a reference for the `cre.capabilities.EVMClient`, the primary tool for all EVM interactions, including reads and writes.
-- **[HTTP Client](/cre/reference/sdk/http-client)**: Provides a reference for the `cre.capabilities.HTTPClient`, used for making offchain API requests from individual nodes.
-- **[Consensus & Aggregation](/cre/reference/sdk/consensus)**: Describes how to use aggregators like `consensusMedianAggregation` and `ConsensusAggregationByFields` with `runtime.runInNodeMode()` to process and consolidate data from multiple nodes.
+- **[Core SDK](/cre/reference/sdk/core-ts)**: Covers the fundamental building blocks of any workflow, including `handler`, `Runtime`, and the `.result()` pattern for promise resolution.
+- **[Triggers](/cre/reference/sdk/triggers/overview-ts)**: Details the configuration and payload structures for all available trigger types (`Cron`, `HTTP`, `EVM Log`).
+- **[EVM Client](/cre/reference/sdk/evm-client-ts)**: Provides a reference for the `EVMClient`, the primary tool for all EVM interactions, including reads and writes.
+- **[HTTP Client](/cre/reference/sdk/http-client-ts)**: Provides a reference for the `HTTPClient`, used for making offchain API requests from individual nodes.
+- **[Consensus & Aggregation](/cre/reference/sdk/consensus-ts)**: Describes how to use aggregators like `consensusMedianAggregation` and `ConsensusAggregationByFields` with `runtime.runInNodeMode()` to process and consolidate data from multiple nodes.
 
 ## Package Structure
 
@@ -35,17 +35,32 @@ The TypeScript SDK is distributed as a single npm package `@chainlink/cre-sdk` t
 
 ```typescript
 import {
-  cre, // Main SDK namespace with capabilities
+  // Capabilities
+  CronCapability,
+  HTTPCapability,
+  HTTPClient,
+  EVMClient,
+  // Core functions
+  handler, // Register handlers
   Runner, // Workflow runner
   type Runtime, // Runtime interface
   type NodeRuntime, // Node-level runtime interface
-  consensusMedianAggregation, // Consensus aggregators
+  // Consensus
+  consensusMedianAggregation,
+  consensusIdenticalAggregation,
+  // Utilities
   getNetwork, // Chain selector utilities
   bytesToHex, // Data conversion utilities
   hexToBase64,
   // ... and more
 } from "@chainlink/cre-sdk"
 ```
+
+<Aside type="note" title="Import styles">
+  The SDK supports two import styles: **direct imports** (shown above) and **namespace imports** (e.g.,
+  `cre.capabilities.HTTPClient`). Both are fully supported and produce identical behavior. See the [Core SDK
+  Reference](/cre/reference/sdk/core-ts#import-styles) for details on both patterns.
+</Aside>
 
 ## Understanding TypeScript Types
 
