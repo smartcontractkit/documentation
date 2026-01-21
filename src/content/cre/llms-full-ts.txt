@@ -3187,7 +3187,16 @@ Here's a full workflow that writes a struct to a consumer contract:
 ### Workflow code (`main.ts`)
 
 ```typescript
-import { CronCapability, EVMClient, getNetwork, hexToBase64, bytesToHex, TxStatus, type Runtime, Runner } from "@chainlink/cre-sdk"
+import {
+  CronCapability,
+  EVMClient,
+  getNetwork,
+  hexToBase64,
+  bytesToHex,
+  TxStatus,
+  type Runtime,
+  Runner,
+} from "@chainlink/cre-sdk"
 import { encodeAbiParameters, parseAbiParameters } from "viem"
 import { z } from "zod"
 
@@ -5641,6 +5650,89 @@ To unlink a key:
 
 The CLI will submit an onchain transaction to remove the address from the Workflow Registry. After the transaction is confirmed, the address and all its associated workflows will be deleted.
 
+## Unlinking a key without the original private key
+
+If you need to unlink a key but no longer have access to the original private key (for example, the key owner left your organization), you can still complete the unlinking process using a different wallet.
+
+### How it works
+
+When you run `cre account unlink-key --unsigned` while logged into your CRE organization, the CLI generates:
+
+1. An authorization signature proving you have permission to unlink the key (through your CRE organization membership)
+2. Raw transaction data that any funded wallet can submit to the blockchain
+
+
+<Aside type="note" title="Security">
+  The authorization is tied to the **organization**, not to the individual who originally linked the key. Any authenticated member of the CRE organization can generate valid unlink authorization for keys linked to that organization.
+</Aside>
+
+### Prerequisites
+
+- **Logged in to CRE CLI**: You must be authenticated as a member of the CRE organization that owns the key
+- **`workflow-owner-address` configured**: Set this in your `project.yaml` to the address you want to unlink
+- **A funded wallet**: Any wallet with ETH on Ethereum Mainnet to submit the transaction and pay gas fees
+
+### Steps
+
+1. **Configure your `project.yaml`** with the address you want to unlink:
+
+   ```yaml
+   production-settings:
+     account:
+       workflow-owner-address: "<address_to_unlink>"
+     # ... other settings
+   ```
+
+2. **Generate the unsigned transaction**:
+
+   ```bash
+   cre account unlink-key --unsigned --target production-settings
+   ```
+
+   **Example output:**
+
+   ```bash
+   Unlinking web3 key from your CRE organization
+   Target :                 production-settings
+   ✔ Using Address :        0x....
+
+   Starting unlinking: owner=0x....
+   ✔ Yes
+   Contract address validation passed
+   --unsigned flag detected: transaction not sent on-chain.
+   Generating call data for offline signing and submission in your preferred tool:
+
+   Ownership unlinking initialized successfully!
+
+   Next steps:
+
+      1. Submit the following transaction on the target chain:
+
+         Chain:            ethereum-mainnet
+         Contract Address: 0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5
+
+      2. Use the following transaction data:
+
+         39d68c6a000000000000000000...
+
+   Unlinked successfully
+   ```
+
+3. **Submit the transaction** using any wallet that supports sending transactions with custom data. Here's an example using MetaMask:
+
+   1. In MetaMask, go to **Settings → Advanced** and enable **"Show hex data"**
+   2. Click **Send** and enter the contract address as the recipient 0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5
+   3. Set the amount to **0 ETH**
+   4. Paste the transaction data in the **Hex data** field (add `0x` prefix)
+   5. Review and confirm the transaction
+
+The unlink operation completes once the transaction is confirmed onchain. All workflows registered under that address will be permanently deleted.
+
+
+<Aside type="caution" title="Destructive operation">
+  This operation permanently deletes all workflows registered under the unlinked address. This action cannot be undone.
+</Aside>
+
 ## Non-interactive mode
 
 For automation or CI/CD pipelines, use the `--yes` flag to skip confirmation prompts:
@@ -7743,7 +7835,9 @@ export async function main() {
 - **`main`**: The entry point that creates a `Runner`, passes your config type, and runs the workflow.
 
 <Aside type="note" title="Automatic execution">
-  You don't need to call `main()` at the end of your file—the SDK automatically executes it during compilation. The SDK also handles error reporting automatically, so you don't need to add `.catch()` unless you need custom error handling. See the [Core SDK Reference](/cre/reference/sdk/core-ts#main) for details.
+  You don't need to call `main()` at the end of your file—the SDK automatically executes it during compilation. The SDK
+  also handles error reporting automatically, so you don't need to add `.catch()` unless you need custom error handling.
+  See the [Core SDK Reference](/cre/reference/sdk/core-ts#main) for details.
 </Aside>
 
 ## Step 4: Configure your workflow
@@ -11154,7 +11248,14 @@ export async function main() {
 For complex scenarios where you need more control, use `clientCapability.sendReport()` with `runtime.runInNodeMode()`:
 
 ```typescript
-import { HTTPClient, consensusIdenticalAggregation, ok, type Runtime, type NodeRuntime, type Report } from "@chainlink/cre-sdk"
+import {
+  HTTPClient,
+  consensusIdenticalAggregation,
+  ok,
+  type Runtime,
+  type NodeRuntime,
+  type Report,
+} from "@chainlink/cre-sdk"
 
 const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
   // Assume 'report' was generated earlier
@@ -11361,7 +11462,16 @@ You create an EVM Log trigger by calling the `EVMClient.logTrigger()` method wit
 The simplest configuration listens for **all events** from specific contract addresses:
 
 ```typescript
-import { EVMClient, handler, getNetwork, type Runtime, type EVMLog, Runner, bytesToHex, hexToBase64 } from "@chainlink/cre-sdk"
+import {
+  EVMClient,
+  handler,
+  getNetwork,
+  type Runtime,
+  type EVMLog,
+  Runner,
+  bytesToHex,
+  hexToBase64,
+} from "@chainlink/cre-sdk"
 
 type Config = {
   chainSelectorName: string
@@ -11879,7 +11989,16 @@ const onLogTrigger = (runtime: Runtime<Config>, log: EVMLog): string => {
 Here's a complete example that listens for ERC20 `Transfer` events and decodes them:
 
 ```typescript
-import { EVMClient, handler, getNetwork, type Runtime, type EVMLog, Runner, bytesToHex, hexToBase64 } from "@chainlink/cre-sdk"
+import {
+  EVMClient,
+  handler,
+  getNetwork,
+  type Runtime,
+  type EVMLog,
+  Runner,
+  bytesToHex,
+  hexToBase64,
+} from "@chainlink/cre-sdk"
 import { keccak256, toBytes, decodeEventLog, parseAbi } from "viem"
 
 type Config = {
@@ -12761,7 +12880,8 @@ This page provides a reference for the core data structures and functions of the
 The CRE TypeScript SDK supports two equivalent import styles. **Both are fully supported**, produce identical behavior, and can be used interchangeably in your workflows.
 
 <Aside type="tip" title="Choose the style that fits your codebase">
-  Both import patterns are **fully supported** and will continue to work. There are no plans to deprecate either style. Choose whichever approach better matches your team's conventions.
+  Both import patterns are **fully supported** and will continue to work. There are no plans to deprecate either style.
+  Choose whichever approach better matches your team's conventions.
 </Aside>
 
 **Direct imports (recommended for new projects):**
@@ -12857,10 +12977,10 @@ Use `runtime.log()` to output messages from your workflow. This is the **only wa
 ```typescript
 const onCronTrigger = (runtime: Runtime<Config>): string => {
   runtime.log("Workflow started")
-  
+
   const result = someOperation()
   runtime.log(`Operation result: ${result}`)
-  
+
   return "done"
 }
 ```
@@ -13045,11 +13165,16 @@ export async function main() {
   ```
 
 <Aside type="caution" title="No console access in workflows">
-  CRE workflows are compiled to WebAssembly (WASM), where `console.log` and `console.error` **produce no output**. Use `runtime.log()` for logging within your callback functions—these logs appear in simulation output with the `[USER LOG]` prefix and in the [CRE UI Logs tab](/cre/guides/operations/monitoring-workflows#logs-tab) for deployed workflows. For error reporting from `main()`, use the SDK's `sendErrorResponse` function.
+  CRE workflows are compiled to WebAssembly (WASM), where `console.log` and `console.error` **produce no output**. Use
+  `runtime.log()` for logging within your callback functions—these logs appear in simulation output with the `[USER
+    LOG]` prefix and in the [CRE UI Logs tab](/cre/guides/operations/monitoring-workflows#logs-tab) for deployed
+  workflows. For error reporting from `main()`, use the SDK's `sendErrorResponse` function.
 </Aside>
 
 <Aside type="tip" title="When to use custom error handling">
-  Most workflows don't need custom error handling—the SDK's default handler reports errors properly. Only add a custom `.catch()` handler if you need to transform errors, add context, or perform cleanup before reporting. If you provide a custom handler, remember to call `sendErrorResponse(error)` to ensure the error is properly reported.
+  Most workflows don't need custom error handling—the SDK's default handler reports errors properly. Only add a custom
+  `.catch()` handler if you need to transform errors, add context, or perform cleanup before reporting. If you provide a
+  custom handler, remember to call `sendErrorResponse(error)` to ensure the error is properly reported.
 </Aside>
 
 `sendErrorResponse` reports the error to CRE and marks the execution as failed.
@@ -14632,8 +14757,8 @@ const reserveInfo = httpClient
 Source: https://docs.chain.link/cre/reference/sdk/overview-ts
 Last Updated: 2026-01-20
 
-<Aside type="note" title="Required SDK Version: v1.0.1">
-  The CRE CLI automatically includes version `v1.0.1` of the `@chainlink/cre-sdk` package when you initialize a new
+<Aside type="note" title="Required SDK Version: v1.0.3">
+  The CRE CLI automatically includes version `v1.0.3` of the `@chainlink/cre-sdk` package when you initialize a new
   TypeScript workflow with `cre init`.
 </Aside>
 
@@ -14677,7 +14802,9 @@ import {
 ```
 
 <Aside type="note" title="Import styles">
-  The SDK supports two import styles: **direct imports** (shown above) and **namespace imports** (e.g., `cre.capabilities.HTTPClient`). Both are fully supported and produce identical behavior. See the [Core SDK Reference](/cre/reference/sdk/core-ts#import-styles) for details on both patterns.
+  The SDK supports two import styles: **direct imports** (shown above) and **namespace imports** (e.g.,
+  `cre.capabilities.HTTPClient`). Both are fully supported and produce identical behavior. See the [Core SDK
+  Reference](/cre/reference/sdk/core-ts#import-styles) for details on both patterns.
 </Aside>
 
 ## Understanding TypeScript Types
