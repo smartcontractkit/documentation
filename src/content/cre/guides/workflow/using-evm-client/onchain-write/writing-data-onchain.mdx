@@ -6,7 +6,7 @@ date: Last Modified
 metadata:
   description: "Write workflow results to the blockchain in TypeScript: complete guide to generating and submitting verified data to smart contracts."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-01-20"
 ---
 
 import { Aside } from "@components"
@@ -69,7 +69,7 @@ This example shows how to write a single `uint256` value to your consumer contra
 ### Step 1: Set up your imports
 
 ```typescript
-import { cre, getNetwork, hexToBase64, bytesToHex, TxStatus, type Runtime } from "@chainlink/cre-sdk"
+import { EVMClient, getNetwork, hexToBase64, bytesToHex, TxStatus, type Runtime } from "@chainlink/cre-sdk"
 import { encodeAbiParameters, parseAbiParameters } from "viem"
 ```
 
@@ -270,7 +270,7 @@ export { CalculatorResultParams, type CalculatorResult } from "./ConsumerContrac
 Now you can import and use these definitions in your workflow:
 
 ```typescript
-import { cre, getNetwork, hexToBase64, bytesToHex, TxStatus, type Runtime } from "@chainlink/cre-sdk"
+import { EVMClient, getNetwork, hexToBase64, bytesToHex, TxStatus, type Runtime } from "@chainlink/cre-sdk"
 import { encodeAbiParameters } from "viem"
 import { CalculatorResultParams, type CalculatorResult } from "../contracts/abi"
 
@@ -285,7 +285,7 @@ const writeDataOnchain = (runtime: Runtime<Config>): string => {
     throw new Error(`Network not found`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   // Create type-safe data object
   const data: CalculatorResult = {
@@ -357,7 +357,16 @@ Here's a full workflow that writes a struct to a consumer contract:
 ### Workflow code (`main.ts`)
 
 ```typescript
-import { cre, getNetwork, hexToBase64, bytesToHex, TxStatus, type Runtime, Runner } from "@chainlink/cre-sdk"
+import {
+  CronCapability,
+  EVMClient,
+  getNetwork,
+  hexToBase64,
+  bytesToHex,
+  TxStatus,
+  type Runtime,
+  Runner,
+} from "@chainlink/cre-sdk"
 import { encodeAbiParameters, parseAbiParameters } from "viem"
 import { z } from "zod"
 
@@ -384,7 +393,7 @@ const writeDataOnchain = (runtime: Runtime<Config>): string => {
   }
 
   // Create EVM client
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   // 1. Encode your data (struct with 3 fields)
   const reportData = encodeAbiParameters(
@@ -428,9 +437,10 @@ const writeDataOnchain = (runtime: Runtime<Config>): string => {
 }
 
 const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
   return [
-    cre.handler(
-      new cre.capabilities.CronCapability().trigger({
+    cron.handler(
+      cron.trigger({
         schedule: config.schedule,
       }),
       writeDataOnchain

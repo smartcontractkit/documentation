@@ -7,7 +7,7 @@ pageId: "reference-sdk-evm-log-trigger"
 metadata:
   description: "Reference for TypeScript EVM Log Trigger: Config interface, Payload fields, and topic filtering for event-driven workflows."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-01-20"
 ---
 
 import { Aside } from "@components"
@@ -17,7 +17,7 @@ The EVM Log Trigger fires when a specific log (event) is emitted by an onchain s
 ## Creating the trigger
 
 ```typescript
-import { cre } from "@chainlink/cre-sdk"
+import { EVMClient, getNetwork } from "@chainlink/cre-sdk"
 
 // Create an EVMClient instance with a chain selector
 const network = getNetwork({
@@ -26,7 +26,7 @@ const network = getNetwork({
   isTestnet: true,
 })
 
-const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+const evmClient = new EVMClient(network.chainSelector.selector)
 
 // Basic log trigger for a contract address
 const trigger = evmClient.logTrigger({
@@ -196,7 +196,7 @@ const onLogTrigger = (runtime: Runtime<Config>, log: EVMLog): string => {
 ## Complete Example
 
 ```typescript
-import { cre, bytesToHex, getNetwork, Runner, type Runtime, type EVMLog } from "@chainlink/cre-sdk"
+import { EVMClient, handler, bytesToHex, getNetwork, Runner, type Runtime, type EVMLog } from "@chainlink/cre-sdk"
 
 type Config = {
   chainSelectorName: string
@@ -231,10 +231,10 @@ const initWorkflow = (config: Config) => {
     throw new Error(`Network not found: ${config.chainSelectorName}`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   return [
-    cre.handler(
+    handler(
       evmClient.logTrigger({
         addresses: [config.contractAddress],
       }),

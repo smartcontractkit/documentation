@@ -7,7 +7,7 @@ date: Last Modified
 metadata:
   description: "Read data from smart contracts in TypeScript: learn to call view functions and fetch verified blockchain state in your workflows."
   datePublished: "2025-11-04"
-  lastModified: "2025-12-10"
+  lastModified: "2026-01-20"
 ---
 
 import { Aside } from "@components"
@@ -49,7 +49,8 @@ Here's a complete example of reading from a Storage contract:
 
 ```typescript
 import {
-  cre,
+  CronCapability,
+  EVMClient,
   getNetwork,
   encodeCallMsg,
   bytesToHex,
@@ -84,7 +85,7 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
   }
 
   // Create EVM client with chain selector
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   // Encode the function call
   const callData = encodeFunctionData({
@@ -117,9 +118,10 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 }
 
 const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
   return [
-    cre.handler(
-      new cre.capabilities.CronCapability().trigger({
+    cron.handler(
+      cron.trigger({
         schedule: "*/10 * * * * *", // Every 10 seconds
       }),
       onCronTrigger
@@ -295,7 +297,8 @@ Here's a full runnable workflow with external configuration:
 
 ```typescript
 import {
-  cre,
+  CronCapability,
+  EVMClient,
   getNetwork,
   encodeCallMsg,
   bytesToHex,
@@ -326,7 +329,7 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
     throw new Error(`Network not found: ${runtime.config.chainSelectorName}`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   const callData = encodeFunctionData({
     abi: storageAbi,
@@ -356,9 +359,10 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 }
 
 const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
   return [
-    cre.handler(
-      new cre.capabilities.CronCapability().trigger({
+    cron.handler(
+      cron.trigger({
         schedule: "*/10 * * * * *",
       }),
       onCronTrigger
