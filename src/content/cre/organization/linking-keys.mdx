@@ -221,6 +221,88 @@ To unlink a key:
 
 The CLI will submit an onchain transaction to remove the address from the Workflow Registry. After the transaction is confirmed, the address and all its associated workflows will be deleted.
 
+## Unlinking a key without the original private key
+
+If you need to unlink a key but no longer have access to the original private key (for example, the key owner left your organization), you can still complete the unlinking process using a different wallet.
+
+### How it works
+
+When you run `cre account unlink-key --unsigned` while logged into your CRE organization, the CLI generates:
+
+1. An authorization signature proving you have permission to unlink the key (through your CRE organization membership)
+1. Raw transaction data that any funded wallet can submit to the blockchain
+
+{/* prettier-ignore */}
+<Aside type="note" title="Security">
+  The authorization is tied to the **organization**, not to the individual who originally linked the key. Any authenticated member of the CRE organization can generate valid unlink authorization for keys linked to that organization.
+</Aside>
+
+### Prerequisites
+
+- **Logged in to CRE CLI**: You must be authenticated as a member of the CRE organization that owns the key
+- **`workflow-owner-address` configured**: Set this in your `project.yaml` to the address you want to unlink
+- **A funded wallet**: Any wallet with ETH on Ethereum Mainnet to submit the transaction and pay gas fees
+
+### Steps
+
+1. **Configure your `project.yaml`** with the address you want to unlink:
+
+   ```yaml
+   production-settings:
+     account:
+       workflow-owner-address: "<address_to_unlink>"
+     # ... other settings
+   ```
+
+1. **Generate the unsigned transaction**:
+
+   ```bash
+   cre account unlink-key --unsigned --target production-settings
+   ```
+
+   **Example output:**
+
+   ```bash
+   Unlinking web3 key from your CRE organization
+   Target :                 production-settings
+   ✔ Using Address :        0x....
+
+   Starting unlinking: owner=0x....
+   ✔ Yes
+   Contract address validation passed
+   --unsigned flag detected: transaction not sent on-chain.
+   Generating call data for offline signing and submission in your preferred tool:
+
+   Ownership unlinking initialized successfully!
+
+   Next steps:
+
+      1. Submit the following transaction on the target chain:
+
+         Chain:            ethereum-mainnet
+         Contract Address: 0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5
+
+      2. Use the following transaction data:
+
+         39d68c6a000000000000000000...
+
+   Unlinked successfully
+   ```
+
+1. **Submit the transaction** using any wallet that supports sending transactions with custom data. Here's an example using MetaMask:
+   1. In MetaMask, go to **Settings → Advanced** and enable **"Show hex data"**
+   1. Click **Send** and enter the contract address as the recipient <CopyText text="0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5" code />
+   1. Set the amount to **0 ETH**
+   1. Paste the transaction data in the **Hex data** field (add `0x` prefix)
+   1. Review and confirm the transaction
+
+The unlink operation completes once the transaction is confirmed onchain. All workflows registered under that address will be permanently deleted.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Destructive operation">
+  This operation permanently deletes all workflows registered under the unlinked address. This action cannot be undone.
+</Aside>
+
 ## Non-interactive mode
 
 For automation or CI/CD pipelines, use the `--yes` flag to skip confirmation prompts:
