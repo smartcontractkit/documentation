@@ -4,6 +4,7 @@ export type NetworkDetails = {
   accessController?: string
   explorerUrl: string
   label: string
+  note?: string
 }
 
 export type NetworkData = {
@@ -393,6 +394,7 @@ export const StreamsNetworksData: NetworkData[] = [
     networkStatus: "https://uptime.megaeth.com",
     mainnet: {
       label: "MegaETH Mainnet",
+      note: "Currently in private beta. Address whitelist required.",
       verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
       explorerUrl: "https://megaeth.blockscout.com/address/%s",
     },
