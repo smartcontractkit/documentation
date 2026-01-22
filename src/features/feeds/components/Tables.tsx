@@ -726,7 +726,15 @@ export const StreamsNetworkAddressesTable = ({
                           <span>{network.network}</span>
                         </div>
                       </td>
-                      <td>{network.mainnet?.label}</td>
+                      <td>
+                        {network.mainnet?.label}
+                        {network.mainnet?.note && (
+                          <div
+                            className={tableStyles.note}
+                            dangerouslySetInnerHTML={{ __html: network.mainnet.note }}
+                          />
+                        )}
+                      </td>
                       <td className={tableStyles.addressColumn}>
                         {network.isSolana ? (
                           <>
@@ -774,7 +782,15 @@ export const StreamsNetworkAddressesTable = ({
                           </div>
                         )}
                       </td>
-                      <td>{network.testnet?.label}</td>
+                      <td>
+                        {network.testnet?.label}
+                        {network.testnet?.note && (
+                          <div
+                            className={tableStyles.note}
+                            dangerouslySetInnerHTML={{ __html: network.testnet.note }}
+                          />
+                        )}
+                      </td>
                       <td className={tableStyles.addressColumn}>
                         {network.isSolana ? (
                           <>
