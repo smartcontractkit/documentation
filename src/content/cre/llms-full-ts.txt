@@ -5673,6 +5673,11 @@ The CLI will submit an onchain transaction to remove the address from the Workfl
 
 If you need to unlink a key but no longer have access to the original private key (for example, the key owner left your organization), you can still complete the unlinking process using a different wallet.
 
+
+<Aside type="caution" title="Destructive operation">
+  **Unlinking a key will permanently delete all workflows registered under that address.** This action cannot be undone. Make sure you want to permanently remove all associated workflows before proceeding.
+</Aside>
+
 ### How it works
 
 When you run `cre account unlink-key --unsigned` while logged into your CRE organization, the CLI generates:
@@ -5737,7 +5742,14 @@ When you run `cre account unlink-key --unsigned` while logged into your CRE orga
    Unlinked successfully
    ```
 
-3. **Submit the transaction** using any wallet that supports sending transactions with custom data. Here's an example using MetaMask:
+3. **Submit the transaction** using any wallet that supports sending transactions with custom data.
+
+
+   <Aside type="caution" title="Destructive operation">
+     **Unlinking a key will permanently delete all workflows registered under that address.** This action cannot be undone. Make sure you want to permanently remove all associated workflows before proceeding.
+   </Aside>
+
+   Here's an example using MetaMask:
 
    1. In MetaMask, go to **Settings → Advanced** and enable **"Show hex data"**
    2. Click **Send** and enter the contract address as the recipient 0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5
@@ -5745,12 +5757,7 @@ When you run `cre account unlink-key --unsigned` while logged into your CRE orga
    4. Paste the transaction data in the **Hex data** field (add `0x` prefix)
    5. Review and confirm the transaction
 
-The unlink operation completes once the transaction is confirmed onchain. All workflows registered under that address will be permanently deleted.
-
-
-<Aside type="caution" title="Destructive operation">
-  This operation permanently deletes all workflows registered under the unlinked address. This action cannot be undone.
-</Aside>
+   The unlink operation completes once the transaction is confirmed onchain. All workflows registered under that address will be permanently deleted.
 
 ## Non-interactive mode
 
