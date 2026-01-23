@@ -4511,7 +4511,7 @@ For complete setup instructions, configuration requirements, and step-by-step gu
 
 # Updating Deployed Workflows
 Source: https://docs.chain.link/cre/guides/operations/updating-deployed-workflows
-Last Updated: 2025-11-04
+Last Updated: 2026-01-23
 
 When you update a deployed workflow, you redeploy it with the same workflow name. The new deployment replaces the previous version in the Workflow Registry contract. Currently, CRE does not maintain version history—each deployment overwrites the previous one.
 
@@ -4539,6 +4539,12 @@ cre workflow deploy my-workflow --target production-settings
 2. **Upload**: The new binary and configuration files are uploaded to the CRE Storage Service
 3. **Registration**: A new registration transaction is sent to the Workflow Registry contract
 4. **Replacement**: The previous version is replaced with the new deployment
+5. **Status preserved**: The workflow's status (active or paused) is preserved from the previous deployment
+
+
+<Aside type="note" title="Workflow status is preserved">
+  When you update a workflow, the CLI matches the status of the previously deployed version. If your workflow was paused, the updated version will remain paused. If it was active, the updated version will be active and immediately start responding to triggers. To change the workflow status, see [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows).
+</Aside>
 
 
 <Aside type="caution" title="No version history">
@@ -5732,7 +5738,6 @@ When you run `cre account unlink-key --unsigned` while logged into your CRE orga
    ```
 
 3. **Submit the transaction** using any wallet that supports sending transactions with custom data. Here's an example using MetaMask:
-
    1. In MetaMask, go to **Settings → Advanced** and enable **"Show hex data"**
    2. Click **Send** and enter the contract address as the recipient 0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5
    3. Set the amount to **0 ETH**
