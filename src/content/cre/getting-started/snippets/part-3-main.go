@@ -31,6 +31,7 @@ type Config struct {
 	ApiUrl   string      `json:"apiUrl"`
 	Evms     []EvmConfig `json:"evms"`
 }
+
 // highlight-end
 
 type MyResult struct {
