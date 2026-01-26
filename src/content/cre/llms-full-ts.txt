@@ -446,12 +446,6 @@ Last Updated: 2026-01-21
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
 
-## ZKSync Era Support - January 21, 2026
-
-CRE now supports **ZKSync Era mainnet and testnet** for workflow simulation and production deployment. You can now build and test workflows that interact with ZKSync Era chains.
-
-See the [Supported Networks](/cre/guides/workflow/using-evm-client/supported-networks) page for chain names and forwarder addresses.
-
 ## CLI v1.0.6 - January 21, 2026
 
 **<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.0.6" target="_blank">CRE CLI version 1.0.6</a> is now available.**
@@ -4517,7 +4511,7 @@ For complete setup instructions, configuration requirements, and step-by-step gu
 
 # Updating Deployed Workflows
 Source: https://docs.chain.link/cre/guides/operations/updating-deployed-workflows
-Last Updated: 2025-11-04
+Last Updated: 2026-01-23
 
 When you update a deployed workflow, you redeploy it with the same workflow name. The new deployment replaces the previous version in the Workflow Registry contract. Currently, CRE does not maintain version history—each deployment overwrites the previous one.
 
@@ -4545,6 +4539,12 @@ cre workflow deploy my-workflow --target production-settings
 2. **Upload**: The new binary and configuration files are uploaded to the CRE Storage Service
 3. **Registration**: A new registration transaction is sent to the Workflow Registry contract
 4. **Replacement**: The previous version is replaced with the new deployment
+5. **Status preserved**: The workflow's status (active or paused) is preserved from the previous deployment
+
+
+<Aside type="note" title="Workflow status is preserved">
+  When you update a workflow, the CLI matches the status of the previously deployed version. If your workflow was paused, the updated version will remain paused. If it was active, the updated version will be active and immediately start responding to triggers. To change the workflow status, see [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows).
+</Aside>
 
 
 <Aside type="caution" title="No version history">
@@ -5673,11 +5673,6 @@ The CLI will submit an onchain transaction to remove the address from the Workfl
 
 If you need to unlink a key but no longer have access to the original private key (for example, the key owner left your organization), you can still complete the unlinking process using a different wallet.
 
-
-<Aside type="caution" title="Destructive operation">
-  **Unlinking a key will permanently delete all workflows registered under that address.** This action cannot be undone. Make sure you want to permanently remove all associated workflows before proceeding.
-</Aside>
-
 ### How it works
 
 When you run `cre account unlink-key --unsigned` while logged into your CRE organization, the CLI generates:
@@ -5742,22 +5737,19 @@ When you run `cre account unlink-key --unsigned` while logged into your CRE orga
    Unlinked successfully
    ```
 
-3. **Submit the transaction** using any wallet that supports sending transactions with custom data.
-
-
-   <Aside type="caution" title="Destructive operation">
-     **Unlinking a key will permanently delete all workflows registered under that address.** This action cannot be undone. Make sure you want to permanently remove all associated workflows before proceeding.
-   </Aside>
-
-   Here's an example using MetaMask:
-
+3. **Submit the transaction** using any wallet that supports sending transactions with custom data. Here's an example using MetaMask:
    1. In MetaMask, go to **Settings → Advanced** and enable **"Show hex data"**
    2. Click **Send** and enter the contract address as the recipient 0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5
    3. Set the amount to **0 ETH**
    4. Paste the transaction data in the **Hex data** field (add `0x` prefix)
    5. Review and confirm the transaction
 
-   The unlink operation completes once the transaction is confirmed onchain. All workflows registered under that address will be permanently deleted.
+The unlink operation completes once the transaction is confirmed onchain. All workflows registered under that address will be permanently deleted.
+
+
+<Aside type="caution" title="Destructive operation">
+  This operation permanently deletes all workflows registered under the unlinked address. This action cannot be undone.
+</Aside>
 
 ## Non-interactive mode
 
@@ -9821,7 +9813,7 @@ This approach gives you the flexibility of direct ABI handling with the type saf
 
 # Supported Networks
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/supported-networks-ts
-Last Updated: 2026-01-22
+Last Updated: 2025-11-20
 
 This page lists the EVM-compatible networks supported by CRE workflows, along with their chain names (for configuration) and forwarder contract addresses (for consumer contract validation).
 
@@ -9831,15 +9823,13 @@ This reference provides three key pieces of information for each network:
 
 1. **Network Name**: The human-readable network identifier (click to view the forwarder contract on the block explorer)
 2. **Chain Name**: The value to use in your [`project.yaml`](/cre/reference/project-configuration-ts#31-global-configuration-projectyaml) configuration and [EVM Client code](/cre/reference/sdk/evm-client-ts#chain-selectors)
-3. **Forwarder Address**: The contract address for optional consumer contract validation
+3. **Forwarder Address**: The contract address for optional consumer contract validation (click to copy)
 
 ## Understanding Forwarder Addresses
 
-Forwarder addresses identify the trusted Chainlink Forwarder contract that delivers verified workflow reports to your consumer contract. Your workflow code does not interact with forwarders directly—the EVM capability handles report delivery automatically. Learn more: [Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write/overview-ts).
+Forwarder addresses are relevant **only if you want to add security validation to your consumer contracts**. Your workflow code does not interact with forwarders directly—the EVM capability handles report delivery automatically. Learn more: [Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write/overview-ts).
 
-**Using the [ReceiverTemplate](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#3-using-receivertemplate) (recommended)**: If you use the [`ReceiverTemplate`](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#receivertemplate), the forwarder address is **required** in the constructor. This ensures your contract only accepts reports from the trusted Chainlink Forwarder.
-
-**Custom implementations**: If you implement the `IReceiver` interface directly without using `ReceiverTemplate`, you control your own security checks. See [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts) for details.
+**Optional security layer**: You can configure your consumer contract's `onReport()` function to accept calls only from the trusted forwarder address. See [Configuring Permissions](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#34-configuring-permissions) for implementation details.
 
 ### Simulation vs Production Addresses
 
@@ -9867,20 +9857,18 @@ These `MockKeystoneForwarder` addresses are used when running `cre workflow simu
 | <a href="https://etherscan.io/address/0xa3d1ad4ac559a6575a114998affb2fb2ec97a7d9" target="_blank" rel="noopener noreferrer">Ethereum Mainnet</a>      | ethereum-mainnet              | 0xa3d1ad4ac559a6575a114998affb2fb2ec97a7d9 |
 | <a href="https://optimistic.etherscan.io/address/0x9119a1501550ed94a3f2794038ed9258337afa18" target="_blank" rel="noopener noreferrer">OP Mainnet</a> | ethereum-mainnet-optimism-1   | 0x9119a1501550ed94a3f2794038ed9258337afa18 |
 | <a href="https://polygonscan.com/address/0xf458d621885e29a5003ea9bbba5280d54e19b1ce" target="_blank" rel="noopener noreferrer">Polygon</a>            | polygon-mainnet               | 0xf458d621885e29a5003ea9bbba5280d54e19b1ce |
-| <a href="https://explorer.zksync.io/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">ZKSync Era</a>      | ethereum-mainnet-zksync-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 
 ### Simulation Testnets
 
-| Network                                                                                                                                                          | Chain Name                          | Mock Forwarder Address                     |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------ |
-| <a href="https://sepolia.arbiscan.io/address/0xd41263567ddfead91504199b8c6c87371e83ca5d" target="_blank" rel="noopener noreferrer">Arbitrum Sepolia</a>          | ethereum-testnet-sepolia-arbitrum-1 | 0xd41263567ddfead91504199b8c6c87371e83ca5d |
-| <a href="https://testnet.snowscan.xyz/address/0x2e7371a5d032489e4f60216d8d898a4c10805963" target="_blank" rel="noopener noreferrer">Avalanche Fuji</a>           | avalanche-testnet-fuji              | 0x2e7371a5d032489e4f60216d8d898a4c10805963 |
-| <a href="https://sepolia.basescan.org/address/0x82300bd7c3958625581cc2f77bc6464dcecdf3e5" target="_blank" rel="noopener noreferrer">Base Sepolia</a>             | ethereum-testnet-sepolia-base-1     | 0x82300bd7c3958625581cc2f77bc6464dcecdf3e5 |
-| <a href="https://testnet.bscscan.com/address/0xa238e42cb8782808dbb2f37e19859244ec4779b0" target="_blank" rel="noopener noreferrer">BSC Testnet</a>               | binance_smart_chain-testnet       | 0xa238e42cb8782808dbb2f37e19859244ec4779b0 |
-| <a href="https://sepolia.etherscan.io/address/0x15fC6ae953E024d975e77382eEeC56A9101f9F88" target="_blank" rel="noopener noreferrer">Ethereum Sepolia</a>         | ethereum-testnet-sepolia            | 0x15fC6ae953E024d975e77382eEeC56A9101f9F88 |
-| <a href="https://sepolia-optimism.etherscan.io/address/0xa2888380dff3704a8ab6d1cd1a8f69c15fea5ee3" target="_blank" rel="noopener noreferrer">OP Sepolia</a>      | ethereum-testnet-sepolia-optimism-1 | 0xa2888380dff3704a8ab6d1cd1a8f69c15fea5ee3 |
-| <a href="https://amoy.polygonscan.com/address/0x3675a5eb2286a3f87e8278fc66edf458a2e3bb74" target="_blank" rel="noopener noreferrer">Polygon Amoy</a>             | polygon-testnet-amoy                | 0x3675a5eb2286a3f87e8278fc66edf458a2e3bb74 |
-| <a href="https://sepolia.explorer.zksync.io/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">ZKSync Era Sepolia</a> | ethereum-testnet-sepolia-zksync-1   | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Network                                                                                                                                                     | Chain Name                          | Mock Forwarder Address                     |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------ |
+| <a href="https://sepolia.arbiscan.io/address/0xd41263567ddfead91504199b8c6c87371e83ca5d" target="_blank" rel="noopener noreferrer">Arbitrum Sepolia</a>     | ethereum-testnet-sepolia-arbitrum-1 | 0xd41263567ddfead91504199b8c6c87371e83ca5d |
+| <a href="https://testnet.snowscan.xyz/address/0x2e7371a5d032489e4f60216d8d898a4c10805963" target="_blank" rel="noopener noreferrer">Avalanche Fuji</a>      | avalanche-testnet-fuji              | 0x2e7371a5d032489e4f60216d8d898a4c10805963 |
+| <a href="https://sepolia.basescan.org/address/0x82300bd7c3958625581cc2f77bc6464dcecdf3e5" target="_blank" rel="noopener noreferrer">Base Sepolia</a>        | ethereum-testnet-sepolia-base-1     | 0x82300bd7c3958625581cc2f77bc6464dcecdf3e5 |
+| <a href="https://testnet.bscscan.com/address/0xa238e42cb8782808dbb2f37e19859244ec4779b0" target="_blank" rel="noopener noreferrer">BSC Testnet</a>          | binance_smart_chain-testnet       | 0xa238e42cb8782808dbb2f37e19859244ec4779b0 |
+| <a href="https://sepolia.etherscan.io/address/0x15fC6ae953E024d975e77382eEeC56A9101f9F88" target="_blank" rel="noopener noreferrer">Ethereum Sepolia</a>    | ethereum-testnet-sepolia            | 0x15fC6ae953E024d975e77382eEeC56A9101f9F88 |
+| <a href="https://sepolia-optimism.etherscan.io/address/0xa2888380dff3704a8ab6d1cd1a8f69c15fea5ee3" target="_blank" rel="noopener noreferrer">OP Sepolia</a> | ethereum-testnet-sepolia-optimism-1 | 0xa2888380dff3704a8ab6d1cd1a8f69c15fea5ee3 |
+| <a href="https://amoy.polygonscan.com/address/0x3675a5eb2286a3f87e8278fc66edf458a2e3bb74" target="_blank" rel="noopener noreferrer">Polygon Amoy</a>        | polygon-testnet-amoy                | 0x3675a5eb2286a3f87e8278fc66edf458a2e3bb74 |
 
 ## Production Forwarders
 
@@ -9897,20 +9885,18 @@ These `KeystoneForwarder` addresses are used by deployed workflows. Use these ad
 | <a href="https://etherscan.io/address/0x0b93082D9b3C7C97fAcd250082899BAcf3af3885" target="_blank" rel="noopener noreferrer">Ethereum Mainnet</a>      | ethereum-mainnet              | 0x0b93082D9b3C7C97fAcd250082899BAcf3af3885 |
 | <a href="https://optimistic.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">OP Mainnet</a> | ethereum-mainnet-optimism-1   | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
 | <a href="https://polygonscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Polygon</a>            | polygon-mainnet               | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://explorer.zksync.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">ZKSync Era</a>      | ethereum-mainnet-zksync-1     | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 
 ### Testnets
 
-| Network                                                                                                                                                          | Chain Name                          | Forwarder Address                          |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------ |
-| <a href="https://sepolia.arbiscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Arbitrum Sepolia</a>          | ethereum-testnet-sepolia-arbitrum-1 | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://testnet.snowscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Avalanche Fuji</a>           | avalanche-testnet-fuji              | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://sepolia.basescan.org/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Base Sepolia</a>             | ethereum-testnet-sepolia-base-1     | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
-| <a href="https://testnet.bscscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">BSC Testnet</a>               | binance_smart_chain-testnet       | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://sepolia.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Ethereum Sepolia</a>         | ethereum-testnet-sepolia            | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
-| <a href="https://sepolia-optimism.etherscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">OP Sepolia</a>      | ethereum-testnet-sepolia-optimism-1 | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://amoy.polygonscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Polygon Amoy</a>             | polygon-testnet-amoy                | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://sepolia.explorer.zksync.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">ZKSync Era Sepolia</a> | ethereum-testnet-sepolia-zksync-1   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| Network                                                                                                                                                     | Chain Name                          | Forwarder Address                          |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------ |
+| <a href="https://sepolia.arbiscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Arbitrum Sepolia</a>     | ethereum-testnet-sepolia-arbitrum-1 | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://testnet.snowscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Avalanche Fuji</a>      | avalanche-testnet-fuji              | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://sepolia.basescan.org/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Base Sepolia</a>        | ethereum-testnet-sepolia-base-1     | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
+| <a href="https://testnet.bscscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">BSC Testnet</a>          | binance_smart_chain-testnet       | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://sepolia.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Ethereum Sepolia</a>    | ethereum-testnet-sepolia            | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
+| <a href="https://sepolia-optimism.etherscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">OP Sepolia</a> | ethereum-testnet-sepolia-optimism-1 | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://amoy.polygonscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Polygon Amoy</a>        | polygon-testnet-amoy                | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 
 ---
 
