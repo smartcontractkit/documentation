@@ -462,6 +462,20 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "Pharos",
+    logoUrl: "/assets/chains/pharos.svg",
+    mainnet: {
+      label: "Pharos Mainnet (Private)",
+      verifierProxy: "0xa094978891512268f4a4a4641B8da1A2a3E3BEB7",
+      explorerUrl: "https://pharos.socialscan.io/address/%s",
+    },
+    testnet: {
+      label: "Pharos  Atlantic Testnet",
+      verifierProxy: "0x72790f9eb82db492a7ddb6d2af22a270dcc3db64",
+      explorerUrl: "https://atlantic.pharosscan.xyz/address/%s",
+    },
+  },
+  {
     network: "Polygon",
     logoUrl: "/assets/chains/polygon.svg",
     networkStatus: "https://polygonscan.freshstatus.io/",

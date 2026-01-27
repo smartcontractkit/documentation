@@ -193,6 +193,7 @@ export const productChainLinks: ProductChainLinks = {
       monad: "/data-streams/crypto-streams",
       opbnb: "/data-streams/crypto-streams",
       optimism: "/data-streams/crypto-streams",
+      pharos: "/data-streams/crypto-streams",
       polygon: "/data-streams/crypto-streams",
       polygonkatana: "/data-streams/crypto-streams",
       plasma: "/data-streams/crypto-streams",
