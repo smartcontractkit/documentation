@@ -7,7 +7,7 @@ pageId: "reference-sdk-http-client"
 metadata:
   description: "Reference for TypeScript HTTP Client: complete API for GET/POST requests, headers, authentication, and consensus aggregation."
   datePublished: "2025-11-04"
-  lastModified: "2026-01-20"
+  lastModified: "2026-01-26"
 ---
 
 import { Aside } from "@components"
@@ -394,14 +394,60 @@ Defines the parameters for an outgoing HTTP request.
   HTTP requests to URLs that return redirects (3xx status codes) will fail. Ensure the URL you provide is the final destination and does not redirect to another URL.
 </Aside>
 
-| Field           | Type                                              | Description                                                     |
-| --------------- | ------------------------------------------------- | --------------------------------------------------------------- |
-| `url`           | `string`                                          | The URL of the API endpoint.                                    |
-| `method`        | `string` (optional)                               | The HTTP method (e.g., `"GET"`, `"POST"`). Defaults to `"GET"`. |
-| `headers`       | `{ [key: string]: string }` (optional)            | Optional HTTP headers.                                          |
-| `body`          | `string` (base64-encoded) (optional)              | Optional raw request body (must be base64-encoded).             |
-| `timeoutMs`     | `number` (optional)                               | Optional request timeout in milliseconds.                       |
-| `cacheSettings` | `CacheSettings` \| `CacheSettingsJson` (optional) | Optional caching behavior for the request.                      |
+| Field           | Type                                              | Description                                                                                                             |
+| --------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `url`           | `string`                                          | The URL of the API endpoint.                                                                                            |
+| `method`        | `string` (optional)                               | The HTTP method (e.g., `"GET"`, `"POST"`). Defaults to `"GET"`.                                                         |
+| `headers`       | `{ [key: string]: string }` (optional)            | Optional HTTP headers.                                                                                                  |
+| `body`          | `string` (base64-encoded) (optional)              | Optional raw request body (must be base64-encoded).                                                                     |
+| `timeout`       | `string` (optional)                               | Request timeout as a duration string (e.g., `"5s"`, `"8s"`). See [Request Timeout](#request-timeout) below for details. |
+| `cacheSettings` | `CacheSettings` \| `CacheSettingsJson` (optional) | Optional caching behavior for the request.                                                                              |
+
+### Request Timeout
+
+The `timeout` field specifies how long to wait for an HTTP request to complete before cancelling it.
+
+**Format:**
+
+- Specify timeout as a string ending with `"s"` (seconds)
+- Examples: `"5s"` (5 seconds), `"8s"` (8 seconds), `"3.5s"` (3.5 seconds)
+
+{/* prettier-ignore */}
+<Aside type="note" title="Protocol Buffers Duration">
+  Under the hood, `timeout` uses the [Protocol Buffers Duration type](https://protobuf.dev/reference/protobuf/google.protobuf/#duration). In JSON format, it's encoded as a string ending with "s", where fractional seconds can represent nanosecond precision if needed.
+</Aside>
+
+**Default and Limits:**
+
+- **Default**: If not specified, a default timeout of **5 seconds** is applied
+- **Maximum**: Default maximum is **10 seconds**. Requests exceeding this limit will error
+
+**Example:**
+
+```typescript
+type Config = {
+  apiUrl: string
+  requestTimeout: string
+}
+
+const httpClient = new HTTPClient()
+
+const req = {
+  method: "GET",
+  url: config.apiUrl,
+  timeout: config.requestTimeout, // e.g., "8s"
+}
+
+const response = httpClient.sendRequest(nodeRuntime, req).result()
+```
+
+**Example configuration:**
+
+```yaml
+# config.yaml
+apiUrl: "https://api.example.com/data"
+requestTimeout: "8s" # Max: 10s
+```
 
 ### `CacheSettings` / `CacheSettingsJson`
 
