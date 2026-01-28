@@ -409,6 +409,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Time in CRE",
           url: "cre/concepts/time-in-cre",
+          highlightAsCurrent: ["cre/concepts/time-in-cre-go", "cre/concepts/time-in-cre-ts"],
         },
         {
           title: "Random in CRE",
