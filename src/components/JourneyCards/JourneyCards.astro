@@ -102,21 +102,32 @@ const tabs = columns.map((column) => ({
     badge: item.badge,
   })),
 }))
+
+const rows = columns[0].items.map((_, rowIndex) => ({
+  items: columns.map((col) => col.items[rowIndex]),
+}))
 ---
 
 <section>
   <section class="desktop">
     <Typography variant="h4" className="section-title">Start your Chainlink journey</Typography>
-    <div class="journey-cards">
-      {
-        columns.map((column) => (
-          <div class="journey-column">
+
+    <div class="journey-rows">
+      <div class="journey-row journey-row--header">
+        {
+          columns.map((column) => (
             <header class="column-header">
               <Typography variant="h5" className="column-title">
                 {column.title}
               </Typography>
             </header>
-            {column.items.map((item) => (
+          ))
+        }
+      </div>
+      {
+        rows.map((row, i) => (
+          <div class="journey-row">
+            {row.items.map((item, j) => (
               <a href={item.href} class="journey-card">
                 <div class="card-content">
                   <Typography variant="body-semi">{item.title}</Typography>
@@ -152,18 +163,23 @@ const tabs = columns.map((column) => ({
     display: block;
   }
 
-  .journey-cards {
+  .journey-rows {
+    display: grid;
+    gap: 0;
+  }
+
+  .journey-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
   }
 
-  .journey-column {
-    display: flex;
-    flex-direction: column;
+  .journey-row:not(.journey-row--header) > * {
     border-left: 1px solid var(--border);
   }
 
   .journey-card {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
     gap: var(--space-6x);
     padding: var(--space-6x);
   }
@@ -188,7 +204,10 @@ const tabs = columns.map((column) => ({
     display: flex;
     flex-direction: column;
     gap: var(--space-2x);
-    margin-bottom: var(--space-8x);
+  }
+
+  .card-content > :last-child {
+    min-height: 3em;
   }
 
   .journey-footer {
