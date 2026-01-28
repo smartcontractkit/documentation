@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "CCIP Chains API",
-    "description": "API for retrieving CCIP chain information.\n\nTo get started quickly, you can download our [Postman Collection](/api/ccip/v1/postman-collection.json) which includes all endpoints and example requests.",
-    "version": "1.3.0",
+    "title": "CCIP Docs config API",
+    "description": "API for retrieving CCIP chain, token, and lane information.\n\nTo get started quickly, you can download our [Postman Collection](/api/ccip/v1/postman-collection.json) which includes all endpoints and example requests.",
+    "version": "1.5.0",
     "contact": {
       "name": "File issues",
       "url": "https://github.com/smartcontractkit/documentation/issues/new/choose"
@@ -31,6 +31,10 @@
     {
       "name": "tokens",
       "description": "Token information endpoints"
+    },
+    {
+      "name": "lanes",
+      "description": "Cross-chain lane information endpoints"
     }
   ],
   "paths": {
@@ -87,6 +91,16 @@
               "default": "chainId"
             },
             "description": "Key to use for organizing the response data"
+          },
+          {
+            "name": "enrichFeeTokens",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["true", "false"],
+              "default": "false"
+            },
+            "description": "When set to 'true', returns detailed fee token information including addresses, names, and decimals instead of just symbol strings"
           }
         ],
         "responses": {
@@ -97,47 +111,102 @@
                 "schema": {
                   "$ref": "#/components/schemas/ChainApiResponse"
                 },
-                "example": {
-                  "metadata": {
-                    "environment": "mainnet",
-                    "timestamp": "2024-03-14T12:00:00Z",
-                    "requestId": "123e4567-e89b-12d3-a456-426614174000",
-                    "ignoredChainCount": 0,
-                    "validChainCount": 2
-                  },
-                  "data": {
-                    "evm": {
-                      "1": {
-                        "chainId": 1,
-                        "displayName": "Ethereum",
-                        "selector": "5009297550715157269",
-                        "internalId": "ethereum-mainnet",
-                        "feeTokens": ["LINK", "WETH", "ETH"],
-                        "router": "0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D",
-                        "rmn": "0x411dE17f12D1A34ecC7F45f49844626267c75e81",
-                        "registryModule": "0x13022e3e6C77524308BD56AEd716E88311b2E533",
-                        "tokenAdminRegistry": "0xb22764f98dD05c789929716D677382Df22C05Cb6",
-                        "tokenPoolFactory": "0x17D8a409fE2ceF2d3808bcB61F14aBEFfc28876e",
-                        "chainType": "evm",
-                        "chainFamily": "evm"
-                      }
-                    },
-                    "svm": {
-                      "solana-devnet": {
-                        "chainId": "solana-devnet",
-                        "displayName": "Solana Devnet",
-                        "selector": "16015286601757825753",
-                        "internalId": "solana-devnet",
-                        "feeTokens": ["LINK", "SOL"],
-                        "router": "CCiPv7hcmEqNdMdJgmHDJmEJyCkBgLqxmcf87R1Gho6H",
-                        "rmn": "CRmNVnB7S6SqEPFG6m9dVp9fJJCjr3TC2TiAWB3RqNod",
-                        "feeQuoter": "FqbCVbS7a4ndxs9xZ8UmfL6LQsUhAJNkWxW3duJRrCWD",
-                        "chainType": "solana",
-                        "chainFamily": "svm"
-                      }
+                "examples": {
+                  "default": {
+                    "summary": "Default response (string array for feeTokens)",
+                    "value": {
+                      "metadata": {
+                        "environment": "mainnet",
+                        "timestamp": "2024-03-14T12:00:00Z",
+                        "requestId": "123e4567-e89b-12d3-a456-426614174000",
+                        "ignoredChainCount": 0,
+                        "validChainCount": 2
+                      },
+                      "data": {
+                        "evm": {
+                          "1": {
+                            "chainId": 1,
+                            "displayName": "Ethereum",
+                            "selector": "5009297550715157269",
+                            "internalId": "ethereum-mainnet",
+                            "feeTokens": ["LINK", "WETH", "GHO"],
+                            "router": "0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D",
+                            "rmn": "0x411dE17f12D1A34ecC7F45f49844626267c75e81",
+                            "registryModule": "0x13022e3e6C77524308BD56AEd716E88311b2E533",
+                            "tokenAdminRegistry": "0xb22764f98dD05c789929716D677382Df22C05Cb6",
+                            "tokenPoolFactory": "0x17D8a409fE2ceF2d3808bcB61F14aBEFfc28876e",
+                            "chainType": "evm",
+                            "chainFamily": "evm"
+                          }
+                        },
+                        "svm": {
+                          "solana-devnet": {
+                            "chainId": "solana-devnet",
+                            "displayName": "Solana Devnet",
+                            "selector": "16015286601757825753",
+                            "internalId": "solana-devnet",
+                            "feeTokens": ["LINK", "SOL"],
+                            "router": "CCiPv7hcmEqNdMdJgmHDJmEJyCkBgLqxmcf87R1Gho6H",
+                            "rmn": "CRmNVnB7S6SqEPFG6m9dVp9fJJCjr3TC2TiAWB3RqNod",
+                            "feeQuoter": "FqbCVbS7a4ndxs9xZ8UmfL6LQsUhAJNkWxW3duJRrCWD",
+                            "chainType": "solana",
+                            "chainFamily": "svm"
+                          }
+                        }
+                      },
+                      "ignored": []
                     }
                   },
-                  "ignored": []
+                  "enriched": {
+                    "summary": "Enriched response (detailed objects for feeTokens when enrichFeeTokens=true)",
+                    "value": {
+                      "metadata": {
+                        "environment": "mainnet",
+                        "timestamp": "2024-03-14T12:00:00Z",
+                        "requestId": "123e4567-e89b-12d3-a456-426614174000",
+                        "ignoredChainCount": 0,
+                        "validChainCount": 1
+                      },
+                      "data": {
+                        "evm": {
+                          "1": {
+                            "chainId": 1,
+                            "displayName": "Ethereum",
+                            "selector": "5009297550715157269",
+                            "internalId": "ethereum-mainnet",
+                            "feeTokens": [
+                              {
+                                "symbol": "GHO",
+                                "name": "Gho Token",
+                                "address": "0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f",
+                                "decimals": 18
+                              },
+                              {
+                                "symbol": "LINK",
+                                "name": "ChainLink Token",
+                                "address": "0x514910771AF9Ca656af840dff83E8264EcF986CA",
+                                "decimals": 18
+                              },
+                              {
+                                "symbol": "WETH",
+                                "name": "Wrapped Ether",
+                                "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+                                "decimals": 18
+                              }
+                            ],
+                            "router": "0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D",
+                            "rmn": "0x411dE17f12D1A34ecC7F45f49844626267c75e81",
+                            "registryModule": "0x13022e3e6C77524308BD56AEd716E88311b2E533",
+                            "tokenAdminRegistry": "0xb22764f98dD05c789929716D677382Df22C05Cb6",
+                            "tokenPoolFactory": "0x17D8a409fE2ceF2d3808bcB61F14aBEFfc28876e",
+                            "chainType": "evm",
+                            "chainFamily": "evm"
+                          }
+                        }
+                      },
+                      "ignored": []
+                    }
+                  }
                 }
               }
             }
@@ -291,6 +360,190 @@
           }
         }
       }
+    },
+    "/lanes": {
+      "get": {
+        "tags": ["lanes"],
+        "summary": "Retrieve CCIP lane information",
+        "description": "Returns information about Cross-Chain Interoperability Protocol (CCIP) lanes between supported chains. Each lane represents a unidirectional connection from a source chain to a destination chain, with associated onRamp and offRamp contracts and supported tokens.",
+        "operationId": "getLanes",
+        "parameters": [
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["mainnet", "testnet"]
+            },
+            "description": "The network environment to query"
+          },
+          {
+            "name": "sourceChainId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by source chain ID. Multiple chain IDs can be specified using comma-separated values",
+            "example": "1,56"
+          },
+          {
+            "name": "destinationChainId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by destination chain ID. Multiple chain IDs can be specified using comma-separated values",
+            "example": "137,42161"
+          },
+          {
+            "name": "sourceSelector",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by source chain CCIP selector. Multiple selectors can be specified using comma-separated values",
+            "example": "5009297550715157269"
+          },
+          {
+            "name": "destinationSelector",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by destination chain CCIP selector. Multiple selectors can be specified using comma-separated values",
+            "example": "4949039107694359620"
+          },
+          {
+            "name": "sourceInternalId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by source chain internal identifier. Multiple IDs can be specified using comma-separated values",
+            "example": "ethereum-mainnet"
+          },
+          {
+            "name": "destinationInternalId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by destination chain internal identifier. Multiple IDs can be specified using comma-separated values",
+            "example": "polygon-mainnet"
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by lane version. Only lanes where both onRamp and offRamp match the specified version will be returned",
+            "example": "1.6.0"
+          },
+          {
+            "name": "outputKey",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["chainId", "selector", "internalId"],
+              "default": "chainId"
+            },
+            "description": "Key format to use for organizing the lane keys in the response"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with lane data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LaneApiResponse"
+                },
+                "example": {
+                  "metadata": {
+                    "environment": "mainnet",
+                    "timestamp": "2024-01-15T10:30:00Z",
+                    "requestId": "123e4567-e89b-12d3-a456-426614174000",
+                    "ignoredLaneCount": 0,
+                    "validLaneCount": 2
+                  },
+                  "data": {
+                    "1_to_56": {
+                      "sourceChain": {
+                        "chainId": 1,
+                        "displayName": "Ethereum Mainnet",
+                        "selector": "5009297550715157269",
+                        "internalId": "ethereum-mainnet"
+                      },
+                      "destinationChain": {
+                        "chainId": 56,
+                        "displayName": "BNB Smart Chain",
+                        "selector": "13264668187771770619",
+                        "internalId": "bsc-mainnet"
+                      },
+                      "onRamp": {
+                        "address": "0x925228D7B82d883Dde340A55Fe8e6dA56244A22C",
+                        "version": "1.6.0",
+                        "enforceOutOfOrder": false
+                      },
+                      "offRamp": {
+                        "address": "0xdf85c8381954694E74abD07488f452b374A4B4cC",
+                        "version": "1.6.0"
+                      },
+                      "supportedTokens": ["LINK", "CCIP-BnM", "USDC"]
+                    },
+                    "1_to_137": {
+                      "sourceChain": {
+                        "chainId": 1,
+                        "displayName": "Ethereum Mainnet",
+                        "selector": "5009297550715157269",
+                        "internalId": "ethereum-mainnet"
+                      },
+                      "destinationChain": {
+                        "chainId": 137,
+                        "displayName": "Polygon Mainnet",
+                        "selector": "4051577828743386545",
+                        "internalId": "polygon-mainnet"
+                      },
+                      "onRamp": {
+                        "address": "0x3df8dAe2d123081c4D5E946E655F7c109B9Dd630",
+                        "version": "1.5.0"
+                      },
+                      "offRamp": {
+                        "address": "0x0af338C8545eb6265FedC01BEca4cAe0d94DA9Da",
+                        "version": "1.5.0"
+                      },
+                      "supportedTokens": ["LINK", "USDC"]
+                    }
+                  },
+                  "ignored": []
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - invalid parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -326,6 +579,30 @@
           }
         }
       },
+      "FeeTokenEnriched": {
+        "type": "object",
+        "required": ["symbol", "name", "address", "decimals"],
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "description": "Token symbol (e.g., LINK, WETH)"
+          },
+          "name": {
+            "type": "string",
+            "description": "Token name (e.g., Chainlink, Wrapped Ether)"
+          },
+          "address": {
+            "type": "string",
+            "description": "Token contract address on this chain"
+          },
+          "decimals": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 18,
+            "description": "Number of decimals for the token"
+          }
+        }
+      },
       "ChainDetails": {
         "type": "object",
         "required": [
@@ -357,11 +634,23 @@
             "description": "Internal identifier for the chain"
           },
           "feeTokens": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "List of supported fee tokens"
+            "oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "List of supported fee token symbols (when enrichFeeTokens=false)"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/FeeTokenEnriched"
+                },
+                "description": "Detailed fee token information (when enrichFeeTokens=true)"
+              }
+            ],
+            "description": "Fee tokens - either as string symbols or enriched objects with addresses"
           },
           "router": {
             "type": "string",
@@ -464,6 +753,170 @@
               "$ref": "#/components/schemas/ChainConfigError"
             },
             "description": "List of chains that could not be configured"
+          }
+        }
+      },
+      "LaneMetadata": {
+        "type": "object",
+        "required": ["environment", "timestamp", "requestId", "ignoredLaneCount", "validLaneCount"],
+        "properties": {
+          "environment": {
+            "type": "string",
+            "enum": ["mainnet", "testnet"],
+            "description": "The network environment"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO timestamp of the response"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the request"
+          },
+          "ignoredLaneCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of lanes ignored due to configuration issues"
+          },
+          "validLaneCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of valid lanes in the response"
+          }
+        }
+      },
+      "ChainInfo": {
+        "type": "object",
+        "required": ["chainId", "displayName", "selector", "internalId", "chainType", "chainFamily"],
+        "properties": {
+          "chainId": {
+            "oneOf": [{ "type": "integer" }, { "type": "string" }],
+            "description": "Identifier of the chain (numeric for EVM chains, string for Solana/Aptos chains)"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "Human-readable name of the chain"
+          },
+          "selector": {
+            "type": "string",
+            "description": "CCIP chain selector as a string"
+          },
+          "internalId": {
+            "type": "string",
+            "description": "Internal identifier used in configuration"
+          },
+          "chainType": {
+            "type": "string",
+            "enum": ["evm", "solana", "aptos", "sui"],
+            "description": "Type of blockchain"
+          },
+          "chainFamily": {
+            "type": "string",
+            "enum": ["evm", "mvm", "svm"],
+            "description": "Family of blockchain virtual machine"
+          }
+        }
+      },
+      "LaneDetails": {
+        "type": "object",
+        "required": ["sourceChain", "destinationChain", "onRamp", "offRamp", "supportedTokens"],
+        "properties": {
+          "sourceChain": {
+            "$ref": "#/components/schemas/ChainInfo"
+          },
+          "destinationChain": {
+            "$ref": "#/components/schemas/ChainInfo"
+          },
+          "onRamp": {
+            "type": "object",
+            "required": ["address", "version"],
+            "properties": {
+              "address": {
+                "type": "string",
+                "description": "OnRamp contract address"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^\\d+\\.\\d+\\.\\d+$",
+                "description": "Normalized semantic version of the OnRamp contract"
+              },
+              "enforceOutOfOrder": {
+                "type": "boolean",
+                "description": "Whether the OnRamp enforces out-of-order execution"
+              }
+            }
+          },
+          "offRamp": {
+            "type": "object",
+            "required": ["address", "version"],
+            "properties": {
+              "address": {
+                "type": "string",
+                "description": "OffRamp contract address"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^\\d+\\.\\d+\\.\\d+$",
+                "description": "Normalized semantic version of the OffRamp contract"
+              }
+            }
+          },
+          "supportedTokens": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of supported token keys (e.g., LINK, CCIP-BnM, USDC)"
+          }
+        }
+      },
+      "LaneConfigError": {
+        "type": "object",
+        "required": ["sourceChain", "destinationChain", "reason", "missingFields"],
+        "properties": {
+          "sourceChain": {
+            "type": "string",
+            "description": "Source chain identifier that failed configuration"
+          },
+          "destinationChain": {
+            "type": "string",
+            "description": "Destination chain identifier that failed configuration"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Human-readable reason for the configuration failure"
+          },
+          "missingFields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of missing or invalid configuration fields"
+          }
+        }
+      },
+      "LaneApiResponse": {
+        "type": "object",
+        "required": ["metadata", "data", "ignored"],
+        "properties": {
+          "metadata": {
+            "$ref": "#/components/schemas/LaneMetadata"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/LaneDetails"
+            },
+            "description": "Lane data organized by dynamic lane keys (e.g., '1_to_56', 'ethereum-mainnet_to_polygon-mainnet')"
+          },
+          "ignored": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LaneConfigError"
+            },
+            "description": "List of lanes that could not be configured"
           }
         }
       },

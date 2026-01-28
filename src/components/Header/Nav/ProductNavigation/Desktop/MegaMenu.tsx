@@ -6,34 +6,88 @@ import { useEffect } from "react"
 
 interface MegaMenuProps {
   cancel: () => void
+  id?: string
 }
 
-export const megaMenuSections = [
+interface BottomLink {
+  label: string
+  href: string
+}
+
+interface Link {
+  label: string
+  href?: string
+}
+
+interface MenuItem {
+  title?: string
+  image?: { src: string }
+  description?: string
+  learnMoreLink?: string
+  docsLandingLink?: string
+  links: Link[]
+}
+
+interface SubSection {
+  title: string
+  items: MenuItem[]
+  bottomLinks?: BottomLink[]
+}
+
+interface MegaMenuSection {
+  title: string
+  isMultiSection?: boolean
+  sections?: SubSection[]
+  items?: MenuItem[]
+  bottomLinks?: BottomLink[]
+}
+
+export const megaMenuSections: MegaMenuSection[] = [
   {
-    title: "Cross-Chain",
-    items: [
+    title: "Orchestration & Cross-Chain",
+    isMultiSection: true,
+    sections: [
       {
-        ...(evmProducts.find((product) => product.title === "CCIP") || {}),
-        links: [
+        title: "Orchestration",
+        items: [
           {
-            label: "Docs",
-            href: (evmProducts.find((product) => product.title === "CCIP") || {})?.docsLandingLink,
-          },
-          {
-            label: "Learn",
-            href: (evmProducts.find((product) => product.title === "CCIP") || {})?.learnMoreLink,
+            ...(evmProducts.find((product) => product.title === "CRE") || {}),
+            links: [
+              {
+                label: "Docs",
+                href: (evmProducts.find((product) => product.title === "CRE") || {})?.docsLandingLink,
+              },
+            ],
           },
         ],
       },
-    ],
-    bottomLinks: [
       {
-        label: "View all resources",
-        href: "https://dev.chain.link/resources",
-      },
-      {
-        label: "Learn about Chainlink",
-        href: "https://dev.chain.link/products/general",
+        title: "Cross-Chain",
+        items: [
+          {
+            ...(evmProducts.find((product) => product.title === "CCIP") || {}),
+            links: [
+              {
+                label: "Docs",
+                href: (evmProducts.find((product) => product.title === "CCIP") || {})?.docsLandingLink,
+              },
+              {
+                label: "Learn",
+                href: (evmProducts.find((product) => product.title === "CCIP") || {})?.learnMoreLink,
+              },
+            ],
+          },
+        ],
+        bottomLinks: [
+          {
+            label: "View all resources",
+            href: "https://dev.chain.link/resources",
+          },
+          {
+            label: "Learn about Chainlink",
+            href: "https://dev.chain.link/products/general",
+          },
+        ],
       },
     ],
   },
@@ -130,7 +184,7 @@ export const megaMenuSections = [
   },
 ]
 
-function MegaMenu({ cancel }: MegaMenuProps) {
+function MegaMenu({ cancel, id }: MegaMenuProps) {
   useEffect(() => {
     const onESC = (ev: KeyboardEvent) => {
       if (ev.key === "Escape") {
@@ -139,47 +193,90 @@ function MegaMenu({ cancel }: MegaMenuProps) {
     }
     window.addEventListener("keyup", onESC, false)
     return () => {
-      window.addEventListener("keyup", onESC, false)
+      window.removeEventListener("keyup", onESC, false)
     }
   }, [])
 
   return (
-    <div className={styles.megaMenuContainer}>
+    <div className={styles.megaMenuContainer} id={id}>
       <div className={styles.wrapper} onMouseLeave={cancel}>
         <div className={styles.resourcesMenuContentMain}>
           {megaMenuSections.map((section) => (
             <div className={styles.resourcesMenuContentRow} key={section.title}>
-              <h2 className="label">{section.title}</h2>
-              {section.items.map((item, index) => (
-                <Fragment key={index}>
-                  <div className={styles.megaMenuLink}>
-                    {item?.image?.src && <img src={item.image.src} alt={item.title} />}
-                    <h3 className="heading-100">{item.title}</h3>
-                  </div>
-                  <div className={styles.links}>
-                    <p className="paragraph-100">{item.description}</p>
-                    {item.links.map((link, index) => (
-                      <Fragment key={index}>
-                        <a href={link.href} className="text-100">
-                          {link.label}
-                        </a>
-                        {index < item.links.length - 1 && <span className={styles.verticalDivider}></span>}
-                      </Fragment>
-                    ))}
-                  </div>
-                </Fragment>
-              ))}
-              {section.bottomLinks && (
-                <div className={styles.bottomLinks}>
-                  {section.bottomLinks.map((link, index) => (
-                    <div className="label" key={index}>
-                      <a href={link.href} target="_blank" rel="noopener noreferrer">
-                        {link.label}
-                      </a>
-                      <img src="/images/tabler_arrow-up.svg" alt="" />
-                    </div>
+              {section.isMultiSection && section.sections ? (
+                <>
+                  {section.sections.map((subSection) => (
+                    <Fragment key={subSection.title}>
+                      <h2 className="label">{subSection.title}</h2>
+                      {subSection.items.map((item, index) => (
+                        <Fragment key={index}>
+                          <div className={styles.megaMenuLink}>
+                            {item?.image?.src && <img src={item.image.src} alt={item.title} />}
+                            <h3 className="heading-100">{item.title}</h3>
+                          </div>
+                          <div className={styles.links}>
+                            <p className="paragraph-100">{item.description}</p>
+                            {item.links.map((link, linkIndex) => (
+                              <Fragment key={linkIndex}>
+                                <a href={link.href} className="text-100">
+                                  {link.label}
+                                </a>
+                                {linkIndex < item.links.length - 1 && <span className={styles.verticalDivider}></span>}
+                              </Fragment>
+                            ))}
+                          </div>
+                        </Fragment>
+                      ))}
+                      {subSection.bottomLinks && (
+                        <div className={styles.bottomLinks}>
+                          {subSection.bottomLinks.map((link, linkIndex) => (
+                            <div className="label" key={linkIndex}>
+                              <a href={link.href} target="_blank" rel="noopener noreferrer">
+                                {link.label}
+                              </a>
+                              <img src="/images/tabler_arrow-up.svg" alt="" />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </Fragment>
                   ))}
-                </div>
+                </>
+              ) : (
+                <>
+                  <h2 className="label">{section.title}</h2>
+                  {section.items?.map((item, index) => (
+                    <Fragment key={index}>
+                      <div className={styles.megaMenuLink}>
+                        {item?.image?.src && <img src={item.image.src} alt={item.title} />}
+                        <h3 className="heading-100">{item.title}</h3>
+                      </div>
+                      <div className={styles.links}>
+                        <p className="paragraph-100">{item.description}</p>
+                        {item.links.map((link, linkIndex) => (
+                          <Fragment key={linkIndex}>
+                            <a href={link.href} className="text-100">
+                              {link.label}
+                            </a>
+                            {linkIndex < item.links.length - 1 && <span className={styles.verticalDivider}></span>}
+                          </Fragment>
+                        ))}
+                      </div>
+                    </Fragment>
+                  ))}
+                  {"bottomLinks" in section && section.bottomLinks && (
+                    <div className={styles.bottomLinks}>
+                      {section.bottomLinks.map((link, linkIndex) => (
+                        <div className="label" key={linkIndex}>
+                          <a href={link.href} target="_blank" rel="noopener noreferrer">
+                            {link.label}
+                          </a>
+                          <img src="/images/tabler_arrow-up.svg" alt="" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           ))}

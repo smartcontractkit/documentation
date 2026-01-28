@@ -1,0 +1,72 @@
+---
+section: dataStreams
+title: "DEX State Price Streams"
+whatsnext:
+  {
+    "Find the list of available Stream IDs.": "/data-streams/crypto-streams",
+    "Find the schema of data to expect from Data Streams reports.": "/data-streams/reference/report-schema-v3-dex",
+  }
+---
+
+import { Aside } from "@components"
+
+DEX State Price Streams are streams tailored for assets that derive most—if not all—of their liquidity from **decentralized exchanges (DEXs)**. While standard crypto price streams often incorporate centralized exchange (CEX) data and focus on assets with high trading volumes, these DEX-centric streams incorporate onchain market data to more accurately reflect the conditions under which certain "long-tail" or newly launched tokens trade.
+
+<Aside type="caution" title="Disclaimer">
+
+DEX state can introduce risks inherent to DeFi. Consumers of State Pricing must perform their own risk assessments, considering factors like market depth, underlying asset security, and bridge dependencies, and then adjust protocol parameters accordingly. You are responsible for auditing your code and applications prior to using DEX State Price Streams in a production environment and also ensuring that they meet the requirements for your use case. You are also responsible for implementing measures to mitigate risk factors inherent to DeFi. See [Risk Mitigation](#risk-mitigation) section below for more information. Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due to errors in code or failure to properly mitigate any dependencies or risk factors.
+
+</Aside>
+
+## Why a Separate Methodology?
+
+- **Liquidity Distribution**: Many emerging or specialized tokens have limited CEX listings but deep onchain liquidity in Automated Market Maker (AMM) pools.
+
+- **DEX-Specific Dynamics**: AMMs use liquidity pools rather than traditional order books, meaning trading volume and liquidity conditions are captured differently than in centralized order-book markets.
+
+- **Volume vs. Liquidity Mismatch**: Some assets may have relatively low trading volume but significant liquidity depth in DEXs. Traditional trade-based pricing algorithms are often not well optimized in these cases due to sparse activity and cannot provide continuous streaming prices. DEX State Price Streams address this by leveraging the current state of onchain liquidity to determine the execution price a trader would receive. This enables more accurate, real-time pricing even for low-volume assets.
+
+- **Mitigating Manipulation**: Observing onchain "end of block" states and applying filters to aggregated DEX data can significantly reduce the impact of block-level price manipulation.
+
+## High-Level Outline of the DEX State Price Methodology
+
+1. **Asset Selection**
+   - Focuses on DEX-dominant or DEX-exclusive assets, generally those where 80% or more of trading volume is on decentralized exchanges.
+   - Uses preliminary screens to identify relevant liquidity pools (e.g., top 95% of trading volume).
+
+1. **Onchain Pool Monitoring**
+   - Selects pools across multiple DEX protocols to capture an aggregate view of token price and liquidity.
+   - Gathers end-of-block state information (reserves, ticks, or pool-specific data) rather than raw trade-by-trade events to protect against temporary price swings or intra-block MEV.
+
+1. **Weighted Aggregation**
+   - Aggregates individual pool prices using a volume-based weighting scheme.
+   - Each pool's long-term trading volume or liquidity depth influences its weight, helping ensure more dominant pools have a proportionally greater impact on the final price.
+
+1. **Outlier & Time-Lag Filters**
+   - Applies outlier detection to remove anomalous values that deviate significantly from broader market activity.
+   - Introduces a mild time-lag filter to smooth short-term volatility and mitigate sudden spikes or dips due to low-liquidity trades.
+
+1. **Liquidity Metrics**
+   - Incorporates advanced liquidity metrics (e.g., market depth, liquidity distribution across pools) to refine the weighting and guard against abrupt liquidity shifts.
+   - An emergency pause mechanism can temporarily suspend price reporting if a severe liquidity drop is detected.
+
+1. **Final DEX State Price**
+   - The result is a price that reflects both onchain market activity and relevant liquidity conditions, providing a robust solution for DEX-based assets.
+
+## How to Use DEX State Price Streams
+
+You can use DEX State Price streams like other Chainlink Data streams. The key distinction lies in the report schema you need to configure, specifically the [Report Schema V3 (DEX)](/data-streams/reference/report-schema-v3-dex). In this schema, the `bid` and `ask` fields have the same value as the `price` field. This is due to DEX-based markets depending on continuous liquidity pools instead of order-book mechanics to establish the reference price. Aside from this difference, the integration process follows the same technical steps as any Chainlink Data stream.
+
+## Risk Mitigation
+
+Although DEX State Price Streams services are powered by Chainlink decentralized oracle networks—which have a long track record of being highly secure, reliable, and accurate—users must ensure that they understand each feed’s unique update parameters (and the liquidity/volume profiles of the corresponding assets) and implement relevant [risk mitigation techniques](/data-feeds/selecting-data-feeds#risk-mitigation) based on the intended use case.
+
+Utilizing DEX state introduces specific risks inherent to DeFi:
+
+- **Smart Contract Risk**: Smart contracts, operating on certain blockchains like Ethereum, are autonomous code segments designed to execute transactions in a decentralized manner without the need for intermediaries. Despite their simplicity and intended security, they remain susceptible to bugs and exploitations. A flaw within the smart contract code can be exploited by malicious entities to manipulate the state price or other liquidity metrics. Such occurrences may lead to oracle price abnormality and financial losses for lending protocols.
+
+- **Layer 2 and Cross-chain Bridge Hack Risk**: A bridge in the context of DeFi consists of smart contracts that enable the transfer of assets between different blockchains or layers. Bridges hold significant reserves of tokens to facilitate these transfers. However, they can become targets for hacks. An unauthorized withdrawal from the bridge depletes the reserves necessary for users to redeem their assets. This can lead to the implied price of the tokens—essentially the price that is expected based on available reserves and pool ratios—no longer accurately reflecting the true state or market price of the tokens.
+
+- **External Dependency Risk**: Some DEX pool state prices rely on external exchange rates, which can come from an oracle, a ratio of queryable balances, or another calculation method. Bad actors might attempt to manipulate these exchange rates to influence the outcome of the state price or profit from the price discrepancies. This can lead to unintended consequences, such as liquidations, loss of funds, or arbitrage opportunities for attackers.
+
+**Consumers of State Pricing must perform their own risk assessments**. They should consider factors like market depth, underlying asset security, and bridge dependencies, and then adjust protocol parameters (e.g., LTV, liquidation thresholds, supply caps) accordingly. The provided market depth metrics (when available) will aid in this assessment.

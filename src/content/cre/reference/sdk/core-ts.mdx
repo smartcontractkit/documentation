@@ -1,0 +1,439 @@
+---
+section: cre
+title: "SDK Reference: Core"
+date: Last Modified
+sdkLang: "ts"
+pageId: "reference-sdk-core"
+metadata:
+  description: "Reference for core TypeScript SDK: Workflow, Handler, Runtime, and essential functions every CRE workflow uses."
+  datePublished: "2025-11-04"
+  lastModified: "2026-01-20"
+---
+
+import { Aside } from "@components"
+
+This page provides a reference for the core data structures and functions of the CRE TypeScript SDK. These are the fundamental building blocks that every workflow uses, regardless of trigger types or capabilities.
+
+## Import styles
+
+The CRE TypeScript SDK supports two equivalent import styles. **Both are fully supported**, produce identical behavior, and can be used interchangeably in your workflows.
+
+<Aside type="tip" title="Choose the style that fits your codebase">
+  Both import patterns are **fully supported** and will continue to work. There are no plans to deprecate either style.
+  Choose whichever approach better matches your team's conventions.
+</Aside>
+
+**Direct imports (recommended for new projects):**
+
+```typescript
+import { Runner, HTTPClient, EVMClient, CronCapability, handler } from "@chainlink/cre-sdk"
+
+// Use directly
+const httpClient = new HTTPClient()
+const evmClient = new EVMClient(chainSelector)
+```
+
+**Namespace imports:**
+
+```typescript
+import { cre, Runner } from "@chainlink/cre-sdk"
+
+// Access through cre namespace
+const httpClient = new cre.capabilities.HTTPClient()
+const evmClient = new cre.capabilities.EVMClient(chainSelector)
+```
+
+**When to use each style:**
+
+| Style                 | Best for                                                                     |
+| --------------------- | ---------------------------------------------------------------------------- |
+| **Direct imports**    | New projects, cleaner import statements, better tree-shaking                 |
+| **Namespace imports** | Existing codebases already using this pattern, preference for grouped access |
+
+## Key concepts and components
+
+### `handler()`
+
+The `handler()` function is the cornerstone of every workflow. It registers a handler that links a specific trigger to a callback function containing your workflow logic. It is typically called within your [`initWorkflow`](#initworkflow) function.
+
+**Usage:**
+
+```typescript
+import { handler, type Runtime } from "@chainlink/cre-sdk"
+
+const initWorkflow = (config: Config) => {
+  return [
+    handler(
+      // 1. A configured trigger, e.g., cron.trigger(...)
+      // This determines WHEN the workflow runs
+      triggerInstance,
+
+      // 2. The callback function to execute when the trigger fires
+      // This is WHERE your workflow logic lives
+      myCallbackFunction
+    ),
+  ]
+}
+```
+
+- **The Trigger**: An instance of a trigger capability (e.g., `cron.trigger(...)`). This defines the event that will start your workflow. See the [Triggers reference](/cre/reference/sdk/triggers) for details.
+- **The Callback**: The function to be executed when the trigger fires. The signature of your callback function must match the output type of the trigger you are using.
+
+<Aside type="note" title="Callback Function Signatures">
+  Each trigger type requires a specific callback signature. See the [Triggers reference](/cre/reference/sdk/triggers)
+  for the exact signature required for each trigger type.
+</Aside>
+
+### `Runtime` and `NodeRuntime`
+
+These TypeScript interfaces provide access to capabilities and manage the execution context of your workflow. The key difference is who is responsible for creating a single, trusted result from the work of many nodes.
+
+- **`Runtime<C>` ("DON Mode")**: Passed to your main trigger callback, this represents the **DON's (Decentralized Oracle Network) execution context**. It is used for operations that are already guaranteed to be Byzantine Fault Tolerant (BFT). When you use the `Runtime`, you ask the network to execute something, and CRE handles the underlying complexity to ensure you get back one final, secure, and trustworthy result. Common use cases include writing transactions to a blockchain with the EVM client or accessing secrets.
+
+- **`NodeRuntime<C>` ("Node Mode")**: Represents an **individual node's execution context**. This is used when a BFT guarantee cannot be provided automatically (e.g., calling a third-party API). You tell each node to perform a task on its own, and each node returns its own individual answer. You are then responsible for telling the SDK how to combine them into a single, trusted result by providing a consensus and aggregation algorithm. It is used exclusively inside a [`runtime.runInNodeMode()`](#runtimeruninnodemode) block and is provided by that function—you do not receive this type directly in your handler's callback.
+
+To learn more about how to aggregate results from `NodeRuntime`, see the [Consensus & Aggregation](/cre/reference/sdk/consensus) reference.
+
+**Available Methods:**
+
+Both `Runtime` and `NodeRuntime` provide:
+
+- **`config`**: Access to your workflow's configuration
+- **`now()`**: Returns the current `Date` object. See [Time in CRE](/cre/concepts/time-in-cre-ts) for details.
+- **`log(message: string)`**: Logs a message (see [Logging](#logging) below)
+- **`callCapability(...)`**: Internal method for calling capabilities (used by generated code)
+
+`Runtime` additionally provides:
+
+- **`runInNodeMode(...)`**: Execute code on individual nodes with consensus aggregation
+- **`getSecret(...)`**: Access to workflow secrets
+- **`report(...)`**: Generate cryptographically signed reports
+
+### Logging
+
+Use `runtime.log()` to output messages from your workflow. This is the **only way** to produce visible logs—`console.log` does not work in the WASM environment.
+
+```typescript
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  runtime.log("Workflow started")
+
+  const result = someOperation()
+  runtime.log(`Operation result: ${result}`)
+
+  return "done"
+}
+```
+
+**Where logs appear:**
+
+| Environment           | Location                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------ |
+| **Simulation**        | Terminal output with `[USER LOG]` prefix                                             |
+| **Deployed workflow** | CRE UI → Workflows → select workflow → Execution tab → click an execution → Logs tab |
+
+See [Monitoring & Debugging Workflows](/cre/guides/operations/monitoring-workflows#logs-tab) for details on viewing logs for deployed workflows.
+
+**Important notes:**
+
+- `runtime.log()` accepts a **single string argument**—use template literals to include variables
+- Logs are only available inside callback functions where you have access to the `runtime` object
+
+### Understanding the `.result()` Pattern
+
+All SDK capabilities in the TypeScript SDK use a two-step pattern for asynchronous operations:
+
+**Step 1: Initiate the operation**
+
+```typescript
+const request = httpClient.sendRequest(runtime, { url: "https://api.example.com" })
+```
+
+**Step 2: Get the result**
+
+```typescript
+const response = request.result()
+```
+
+**Common usage:** These steps are often chained together for simplicity:
+
+```typescript
+import { EVMClient, encodeCallMsg, LAST_FINALIZED_BLOCK_NUMBER, type Runtime } from "@chainlink/cre-sdk"
+import { zeroAddress } from "viem"
+
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  const evmClient = new EVMClient(chainSelector)
+
+  // Inline pattern: initiate and get result in one expression
+  const contractCall = evmClient
+    .callContract(runtime, {
+      call: encodeCallMsg({
+        from: zeroAddress,
+        to: config.contractAddress,
+        data: encodedCallData,
+      }),
+      blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
+    })
+    .result()
+
+  return "Success"
+}
+```
+
+#### Why this pattern exists
+
+Traditional TypeScript `async/await` doesn't work with SDK capabilities in the WebAssembly environment where CRE workflows run. WASM execution is fundamentally synchronous—when you call a function, it runs to completion before anything else happens. The interaction between the WASM guest (your workflow) and the Go host (the CRE engine) uses simple, synchronous function calls.
+
+The `.result()` pattern is a custom solution to this limitation. It simulates asynchronous behavior using a pair of synchronous calls:
+
+1. The first call (e.g., `sendRequest()`) sends your request from the TypeScript code (compiled to WASM) to the CRE host
+1. The `.result()` call blocks your WASM code and waits for the host to complete the async operation and return the response
+
+This allows the host to handle I/O-bound tasks (like network requests) asynchronously without blocking the entire runtime, while providing a simple, blocking interface to your code inside the WASM module.
+
+<Aside type="note" title="Using async/await in your own functions">
+  While all SDK capabilities use the `.result()` pattern, you can still use `async/await` syntax in your own custom
+  functions within your workflow if needed. However, since all external operations (HTTP requests, blockchain
+  interactions, secrets access) must go through SDK capabilities, most workflow code will use the `.result()` pattern.
+</Aside>
+
+#### Preparing multiple operations
+
+You can initiate multiple operations before calling `.result()` on any of them:
+
+```typescript
+// Initiate two operations
+const request1 = httpClient.sendRequest(runtime, { url: "https://api1.example.com" })
+const request2 = httpClient.sendRequest(runtime, { url: "https://api2.example.com" })
+
+// Get results as needed
+const response1 = request1.result()
+const response2 = request2.result()
+```
+
+This pattern allows you to prepare operations and then collect their results in the order you need them.
+
+#### Operations that use `.result()`
+
+The `.result()` pattern applies to all SDK capabilities that perform asynchronous work:
+
+- **HTTP requests**: `httpClient.sendRequest(...).result()`
+- **EVM contract calls (read)**: `evmClient.callContract(...).result()`
+- **EVM contract calls (write)**: `evmClient.writeReport(...).result()`
+- **Secrets retrieval**: `runtime.getSecret(...).result()`
+- **Node-level execution**: `runtime.runInNodeMode(...)().result()`
+- **Report generation**: `runtime.report(...).result()`
+
+## Workflow entry points
+
+Your workflow code requires two specific functions to serve as entry points for compilation and execution.
+
+### `main()`
+
+This is the entry point of your workflow. You must define this async function to create a WASM runner and start your workflow.
+
+**Required Pattern:**
+
+```typescript
+import { Runner } from "@chainlink/cre-sdk"
+import { z } from "zod"
+
+// Define your config schema with Zod
+const configSchema = z.object({
+  schedule: z.string(),
+  apiUrl: z.string(),
+})
+
+type Config = z.infer<typeof configSchema>
+
+export async function main() {
+  // Create the runner with your config schema
+  const runner = await Runner.newRunner<Config>({ configSchema })
+
+  // Run your workflow initialization function
+  await runner.run(initWorkflow)
+}
+```
+
+<Aside type="note" title="SDK v1.0.2+ Changes">
+  Starting with SDK v1.0.2, the SDK handles `main()` execution automatically:
+
+- **Calling `main()` is optional**: The SDK automatically executes the `main()` function during compilation. You no longer need to call `main()` at the end of your workflow file.
+- **Automatic error handling**: If you don't provide custom error handling, the SDK automatically adds `.catch(sendErrorResponse)` to ensure errors are properly reported instead of silently failing.
+
+</Aside>
+
+**All of these patterns are valid:**
+
+- **Pattern 1: Let the SDK handle everything (recommended)**
+
+  ```typescript
+  export async function main() {
+    const runner = await Runner.newRunner<Config>()
+    await runner.run(initWorkflow)
+  }
+  // No need to call main() - the SDK automatically appends:
+  // main().catch(sendErrorResponse)
+  ```
+
+- **Pattern 2: Explicit call without `.catch()` - SDK adds error handling**
+
+  ```typescript
+  export async function main() {
+    const runner = await Runner.newRunner<Config>()
+    await runner.run(initWorkflow)
+  }
+
+  main() // SDK transforms this to: main().catch(sendErrorResponse)
+  ```
+
+- **Pattern 3: Custom error handling - SDK respects your handler**
+
+  ```typescript
+  import { sendErrorResponse } from "@chainlink/cre-sdk"
+
+  export async function main() {
+    const runner = await Runner.newRunner<Config>()
+    await runner.run(initWorkflow)
+  }
+
+  // If you provide .catch(), the SDK leaves it untouched
+  main().catch((error) => {
+    // Your custom error handling logic
+    // You should call sendErrorResponse to report the error
+    sendErrorResponse(error)
+  })
+  ```
+
+<Aside type="caution" title="No console access in workflows">
+  CRE workflows are compiled to WebAssembly (WASM), where `console.log` and `console.error` **produce no output**. Use
+  `runtime.log()` for logging within your callback functions—these logs appear in simulation output with the `[USER
+  LOG]` prefix and in the [CRE UI Logs tab](/cre/guides/operations/monitoring-workflows#logs-tab) for deployed
+  workflows. For error reporting from `main()`, use the SDK's `sendErrorResponse` function.
+</Aside>
+
+<Aside type="tip" title="When to use custom error handling">
+  Most workflows don't need custom error handling—the SDK's default handler reports errors properly. Only add a custom
+  `.catch()` handler if you need to transform errors, add context, or perform cleanup before reporting. If you provide a
+  custom handler, remember to call `sendErrorResponse(error)` to ensure the error is properly reported.
+</Aside>
+
+`sendErrorResponse` reports the error to CRE and marks the execution as failed.
+
+- In **simulation**, the error appears in your terminal output.
+- For **deployed workflows**, you'll see it in the [Execution tab](/cre/guides/operations/monitoring-workflows#execution-history) with a `Failure` status and the error message in the Logs tab.
+
+**Key points:**
+
+- Must be an `async` function
+- Must call `Runner.newRunner<Config>()` with an optional `configSchema` parameter for validation
+- Must call `runner.run(initWorkflow)` to execute your workflow
+
+### `initWorkflow`
+
+This is the second required entry point. The CRE runner calls this function to initialize your workflow and register all its handlers.
+
+**Required Signature:**
+
+```typescript
+import { handler, type Runtime } from "@chainlink/cre-sdk"
+
+function initWorkflow(config: Config): Array<HandlerEntry<Config, any, any, any>>
+```
+
+**Parameters:**
+
+- `config`: Your workflow's configuration object (validated against your Zod schema if provided)
+
+**Returns:**
+
+- An array of handlers created with `handler()`
+
+<Aside type="note" title="Using secrets">
+  If your workflow uses secrets, you can add a second parameter `secretsProvider: SecretsProvider` to access the
+  `getSecret()` method. See the [Secrets guide](/cre/guides/workflow/secrets) for details.
+</Aside>
+
+**Example:**
+
+```typescript
+import { CronCapability, handler, type Runtime, type CronPayload } from "@chainlink/cre-sdk"
+
+// Callback function executed by the handler
+const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): string => {
+  runtime.log("Workflow triggered!")
+  return "complete"
+}
+
+const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
+
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+}
+```
+
+## `runtime.runInNodeMode()`
+
+As explained in the [`Runtime` and `NodeRuntime`](#runtime-and-noderuntime) section, this method is the bridge between the DON-level execution context (`Runtime`) and the individual node-level context (`NodeRuntime`). It allows you to execute code on individual nodes and then aggregate their results back into a single, trusted outcome.
+
+**Signature:**
+
+```typescript
+runtime.runInNodeMode<TArgs extends unknown[], TOutput>(
+  fn: (nodeRuntime: NodeRuntime<C>, ...args: TArgs) => TOutput,
+  consensusAggregation: ConsensusAggregation<TOutput, true>,
+  unwrapOptions?: UnwrapOptions<TOutput>
+): (...args: TArgs) => { result: () => TOutput }
+```
+
+**Parameters:**
+
+- `fn`: A function that receives a `NodeRuntime` and executes on each individual node
+- `consensusAggregation`: An aggregation function (e.g., `consensusMedianAggregation<bigint>()`)
+- `unwrapOptions`: Optional configuration for how to unwrap complex return types
+
+**Returns:**
+
+A function that, when called with any additional arguments, returns an object with a `.result()` method.
+
+**Example:**
+
+This example uses `runInNodeMode` to fetch data from an API on each node, and then uses the DON-level `Runtime` to write the aggregated result onchain.
+
+```typescript
+import {
+  HTTPClient,
+  consensusMedianAggregation,
+  type Runtime,
+  type NodeRuntime,
+} from "@chainlink/cre-sdk"
+
+const fetchPrice = (nodeRuntime: NodeRuntime<Config>): bigint => {
+  const httpClient = new HTTPClient()
+  // Fetch price from API using nodeRuntime
+  return fetchOffchainPrice(nodeRuntime)
+}
+
+const onTrigger = (runtime: Runtime<Config>, ...): string => {
+  // 1. Run code on individual nodes using runInNodeMode
+  // The fetchPrice function receives a NodeRuntime
+  const price = runtime
+    .runInNodeMode(
+      fetchPrice,
+      consensusMedianAggregation<bigint>()
+    )()
+    .result()
+
+  // 2. Now, back in the DON context, use the top-level runtime
+  // to perform an action that requires consensus, like an onchain write
+  const tx = evmClient
+    .writeReport(runtime, { /* ... */ })
+    .result()
+
+  return "success"
+}
+```
+
+<Aside type="note" title="Notice the double function call">
+  The pattern `runInNodeMode(fn, aggregation)()` requires calling the returned function immediately with `()` before
+  calling `.result()`. This is because `runInNodeMode` returns a function that can accept additional arguments.
+</Aside>

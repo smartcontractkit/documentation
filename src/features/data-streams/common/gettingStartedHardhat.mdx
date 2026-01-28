@@ -5,7 +5,7 @@ This guide shows you how to read data from a Data Streams stream, verify the ans
 
 This example uses the _[Streams Trade](/data-streams/streams-trade) implementation_, with a [Chainlink Automation Log Trigger](/chainlink-automation/guides/log-trigger) to check for events that require data. For this example, the log trigger comes from a simple emitter contract. Chainlink Automation then uses `StreamsLookup` to retrieve a signed report from the Data Streams Aggregation Network, return the data in a callback, and run the [`performUpkeep` function](/chainlink-automation/reference/automation-interfaces#performupkeep-function-for-log-triggers) on your registered upkeep contract. The `performUpkeep` function calls the `verify` function on the verifier contract.
 
-Note: To learn how to use Data Streams with the REST API or WebSocket, see the [Fetch and decode reports via a REST API](/data-streams/tutorials/api-go) guide or the [Stream and decode reports via WebSocket](/data-streams/tutorials/ws-go) guide.
+Note: To learn how to use Data Streams with the REST API or WebSocket, see the [Fetch and decode reports via a REST API](/data-streams/tutorials/go-sdk-fetch) guide or the [Stream and decode reports via WebSocket](/data-streams/tutorials/go-sdk-stream) guide.
 
 <DataStreams section="asideDisclaimer" />
 
@@ -168,7 +168,6 @@ The code example uses `revert` with `StreamsLookup` to convey call information a
 When you deploy the contract, you define:
 
 1. The verifier proxy address that you can find on the [Data Stream Addresses](/data-streams/crypto-streams) page. The `IVerifierProxy` interface provides the following functions:
-
    - The `s_feeManager` function to estimate the verification fees.
    - The `verify` function to verify the report onchain.
 
@@ -210,7 +209,7 @@ The [`getLastRetrievedPrice`](https://github.com/smartcontractkit/smart-contract
 Chainlink Data Streams uses different data types for feed IDs at different stages of the process:
 
 - The [`StreamsLookup` error](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/automation/interfaces/StreamsLookupCompatibleInterface.sol#L6) requires feed IDs to be provided as an array of `string`,
-- The decoded reports within the contract use `bytes32` types for feed IDs (see the [Report Schemas](/data-streams/reference/report-schema) reference).
+- The decoded reports within the contract use `bytes32` types for feed IDs (see the [Report Schemas](/data-streams/reference/report-schema-v3) reference).
 
 If your application needs to compare the feed ID(s) sent in the `StreamsLookup` with those received in the report(s), you must convert between `string` and `bytes32` types.
 

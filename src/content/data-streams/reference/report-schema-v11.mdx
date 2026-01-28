@@ -1,0 +1,111 @@
+---
+section: dataStreams
+date: Last Modified
+title: "Report Schema: RWA Advanced (v11)"
+metadata:
+  title: "RWA Advanced (v11) | Chainlink Data Streams"
+  description: "Learn about Chainlink Data Streams RWA Advanced (v11) schema, including fields, encoding, and examples for integrating equity data with extended trading hours coverage in your applications."
+  keywords:
+    [
+      "Report Schema",
+      "v11 Schema",
+      "Data Format",
+      "Report Structure",
+      "Extended Hours",
+      "Pre-market",
+      "Post-market",
+      "Real World Assets",
+      "US Equities",
+    ]
+---
+
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+import ReportSchemaTabs from "@features/data-streams/common/ReportSchemaTabs.astro"
+
+import { Aside } from "@components"
+
+{/* Fix for the table cutting off/overflowing */}
+
+<style>{`
+  article table code {
+    white-space: nowrap;
+  }
+`}</style>
+
+<DataStreams section="dsNotes" />
+
+<ReportSchemaTabs />
+
+Chainlink Data Streams that use the RWA Advanced (v11) schema adhere to the structure outlined below.
+
+## Schema Fields
+
+| Field                   | Type      | Description                                                                                                                                          |
+| ----------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                                                                                                          |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                                                                                                 |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                                                                                                   |
+| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)                                                                                                         |
+| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                                                                                                                 |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                                                                                              |
+| `mid`                   | `int192`  | DON Consensus mid-price                                                                                                                              |
+| `lastSeenTimestampNs`   | `uint64`  | Reflects the timestamp of the last update for the **mid price only** (nanoseconds). See [Notes](#notes) below.                                       |
+| `bid`                   | `int192`  | Median bid price                                                                                                                                     |
+| `bidVolume`             | `int192`  | Volume at bid price. See [bid/ask volume note](#bidask-volume-note) below.                                                                           |
+| `ask`                   | `int192`  | Median ask price                                                                                                                                     |
+| `askVolume`             | `int192`  | Volume at ask price. See [bid/ask volume note](#bidask-volume-note) below.                                                                           |
+| `lastTradedPrice`       | `int192`  | Last traded price                                                                                                                                    |
+| `marketStatus`          | `uint32`  | Status of the real-world asset market. Values depend on the stream's supported hours. See [Market Status Values](#market-status-values) for details. |
+
+### Market Status Values
+
+The `marketStatus` field indicates the current state of the market. The possible values vary depending on the stream's supported trading hours:
+
+#### Standard RWA Streams
+
+For streams with standard market hours coverage. Unless a feed explicitly states extended hours support, it is assumed to follow this format:
+
+| Value | Status      | Description                        |
+| ----- | ----------- | ---------------------------------- |
+| `0`   | **Unknown** | Market status cannot be determined |
+| `1`   | **Closed**  | Market is closed                   |
+| `2`   | **Open**    | Market is open                     |
+
+#### 24/5 US Equities Streams
+
+For streams with 24/5 extended hours coverage (e.g., US Equities):
+
+| Value | Status            | Normal Hours (ET)                     | Description                                                |
+| ----- | ----------------- | ------------------------------------- | ---------------------------------------------------------- |
+| `0`   | **Unknown**       | —                                     | Market status cannot be determined                         |
+| `1`   | **Pre-market**    | 4:00am–9:30am Mon–Fri                 | Extended hours before regular trading session              |
+| `2`   | **Regular hours** | 9:30am–4:00pm Mon–Fri                 | Primary trading session with highest liquidity             |
+| `3`   | **Post-market**   | 4:00pm–8:00pm Mon–Fri                 | Extended hours after regular trading session               |
+| `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning | Overnight session with limited liquidity                   |
+| `5`   | **Closed**        | —                                     | Market closed (weekends, holidays, or unexpected closures) |
+
+Users should implement appropriate safeguards based on market status, such as pausing trading, adjusting risk parameters, or implementing staleness checks during non-regular hours or closed periods.
+
+<Aside type="note" title="Handling Unknown and Closed Status">
+  Consumers should implement logic to handle market status `0` (Unknown) and market status `5` (Closed), as these
+  periods imply no active feed and require a decision on fallback behavior (e.g., using a tokenized price, pausing the
+  market, etc.).
+</Aside>
+
+### Notes
+
+#### Last Seen Timestamp
+
+- `lastSeenTimestampNs` helps applications detect stale data for the mid price, especially important during market transitions and holidays.
+- **IMPORTANT**: The `lastSeenTimestampNs` field reflects the timestamp of the last update for the `mid` price only. Do not assume this timestamp applies to `bid`, `ask`, `bidVolume`, `askVolume`, or `lastTradedPrice`. Different fields may have been updated at different times.
+
+#### Bid/Ask Volume
+
+For U.S. equities, there is no single consolidated order book. Instead, multiple venues each maintain their own order books. Because data providers source from different markets, the `bidVolume` and `askVolume` reported at each update come from one specific order book at a time, not an aggregate across all venues.
+
+As a result, these volume fields should not be treated as a proxy for total market liquidity at the top of book. They are informational and not especially representative in fragmented markets like U.S. equities.
+
+#### Additional Notes
+
+- Future streams using this format may adopt different report schemas as needed.
+- Data availability and sourcing vary by session. Liquidity is typically highest during regular hours and lower during extended and overnight sessions.

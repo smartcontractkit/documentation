@@ -1,0 +1,127 @@
+---
+section: cre
+title: "Cron Trigger"
+sdkLang: "ts"
+pageId: "guides-workflow-cron-trigger"
+date: Last Modified
+metadata:
+  description: "Schedule workflows with Cron in TypeScript: learn to run your workflow at specific times or intervals using cron expressions."
+  datePublished: "2025-11-04"
+  lastModified: "2026-01-20"
+---
+
+import { Aside } from "@components"
+
+The Cron trigger fires based on a time-based schedule, defined by a standard cron expression.
+
+**Use case examples:**
+
+- Periodically fetching data from an API.
+- Regularly checking an onchain state.
+- Regularly writing data to an onchain contract.
+
+## Configuration and handler
+
+You create a Cron trigger by calling the `CronCapability.trigger()` method and register it with a handler inside your `initWorkflow` function.
+
+When you configure a Cron trigger, you must provide a `schedule` using a standard cron expression. The expression can contain 5 or 6 fields, where the optional 6th field represents seconds.
+
+For help understanding or creating cron expressions, see <a href="https://crontab.guru/" target="_blank" rel="noopener noreferrer">crontab.guru</a> (note: this tool supports 5-field expressions; add a seconds field at the beginning for 6-field expressions).
+
+**Examples:**
+
+- Every 30 seconds (6 fields): `*/30 * * * * *`
+- Every minute, at second 0 (6 fields): `0 * * * * *`
+- Every hour, at the top of the hour (6 fields): `0 0 * * * *`
+- Every 5 minutes from 08:00 to 08:59, Monday to Friday (5 fields): `*/5 8 * * 1-5`
+
+### Timezone support
+
+By default, cron expressions use UTC. To specify a different timezone, prefix your cron expression with `TZ=<timezone>`, where `<timezone>` is an <a href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones" target="_blank" rel="noopener noreferrer">IANA timezone identifier</a> (e.g., `America/New_York`, `Europe/London`, `Asia/Tokyo`).
+
+**Examples with timezones:**
+
+- Daily at midnight in New York: `TZ=America/New_York 0 0 * * *`
+- Every Sunday at 8 PM in Tokyo: `TZ=Asia/Tokyo 0 20 * * 0`
+- Every weekday at 9 AM in London: `TZ=Europe/London 0 9 * * 1-5`
+
+The timezone-aware scheduler automatically handles daylight saving time transitions, ensuring your workflows run at the correct local time throughout the year.
+
+<Aside type="note" title="Minimum Interval">
+  You cannot schedule a trigger to fire more frequently than once every 30 seconds.
+</Aside>
+
+```typescript
+import { CronCapability, handler, type Runtime, type CronPayload, Runner } from "@chainlink/cre-sdk"
+
+type Config = {}
+
+// Callback function that runs when the cron trigger fires
+const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): string => {
+  if (payload.scheduledExecutionTime) {
+    const seconds = payload.scheduledExecutionTime.seconds
+    runtime.log(`Cron trigger fired at ${seconds}`)
+  }
+  // Your logic here...
+  return "Trigger completed"
+}
+
+const initWorkflow = (config: Config) => {
+  // Create the trigger - fires every 30 seconds in UTC
+  const cronTrigger = new CronCapability().trigger({
+    schedule: "*/30 * * * * *",
+  })
+
+  // Or use a timezone-aware schedule - fires daily at 9 AM Eastern Time
+  // const cronTrigger = new CronCapability().trigger({
+  //   schedule: "TZ=America/New_York 0 9 * * *",
+  // })
+
+  // Register a handler with the trigger and a callback function
+  return [handler(cronTrigger, onCronTrigger)]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+```
+
+## Callback and payload
+
+When a Cron trigger fires, it passes a `CronPayload` object to your callback function. This payload contains the scheduled execution time.
+
+For the full type definition and all available fields, see the [Cron Trigger SDK Reference](/cre/reference/sdk/triggers/cron-trigger).
+
+The payload parameter is optional in the callback function signature. If you don't need access to the scheduled execution time, you can omit it:
+
+```typescript
+// Simple callback without payload
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  runtime.log("Cron trigger fired")
+  // Your logic here...
+  return "Cron trigger completed"
+}
+```
+
+If you need to access the scheduled execution time, include the `CronPayload` parameter:
+
+```typescript
+const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): string => {
+  if (payload.scheduledExecutionTime) {
+    // Convert timestamp to JavaScript Date (timestamp has 'seconds' and 'nanos' fields)
+    const scheduledTime = new Date(
+      Number(payload.scheduledExecutionTime.seconds) * 1000 + payload.scheduledExecutionTime.nanos / 1000000
+    )
+    runtime.log(`Cron trigger fired at ${scheduledTime.toISOString()}`)
+  }
+  // Your logic here...
+  return "Cron trigger completed"
+}
+```
+
+## Testing cron triggers in simulation
+
+To test your cron trigger during development, you can use the workflow simulator. The simulator executes cron triggers immediately when selected, allowing you to test your logic without waiting for the scheduled time.
+
+For detailed instructions on simulating cron triggers, including interactive and non-interactive modes, see the [Cron Trigger section in the Simulating Workflows guide](/cre/guides/operations/simulating-workflows#cron-trigger).

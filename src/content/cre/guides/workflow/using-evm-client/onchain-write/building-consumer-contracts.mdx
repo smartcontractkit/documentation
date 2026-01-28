@@ -1,0 +1,567 @@
+---
+section: cre
+title: "Building Consumer Contracts"
+date: Last Modified
+metadata:
+  description: "Build smart contracts that receive CRE data: learn to implement the IReceiver interface and safely handle verified workflow reports."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-20"
+---
+
+import { Aside, ClickToZoom, CodeSample } from "@components"
+
+When your workflow [writes data to the blockchain](/cre/guides/workflow/using-evm-client/onchain-write), it doesn't call your contract directly. Instead, it submits a signed report to a Chainlink `KeystoneForwarder` contract, which then calls your contract.
+
+This guide explains how to build a consumer contract that can securely receive and process data from a CRE workflow.
+
+**In this guide:**
+
+1. [Core Concepts: The Onchain Data Flow](#1-core-concepts-the-onchain-data-flow)
+1. [The IReceiver Standard](#2-the-ireceiver-standard)
+1. [Using ReceiverTemplate](#3-using-receivertemplate)
+1. [Working with Simulation](#4-working-with-simulation)
+1. [Advanced Usage](#5-advanced-usage-optional)
+1. [Complete Examples](#6-complete-examples)
+1. [Security Considerations](#7-security-considerations)
+
+## 1. Core Concepts: The Onchain Data Flow
+
+1. **Workflow Execution**: Your workflow [produces a final, signed report](/cre/guides/workflow/using-evm-client/onchain-write/writing-data-onchain).
+1. **EVM Write**: The EVM capability sends this report to the Chainlink-managed `KeystoneForwarder` contract.
+1. **Forwarder Validation**: The `KeystoneForwarder` validates the report's signatures.
+1. **Callback to Your Contract**: If the report is valid, the forwarder calls a designated function (`onReport`) on your consumer contract to deliver the data.
+
+## 2. The `IReceiver` Standard
+
+To be a valid target for the `KeystoneForwarder`, your consumer contract must satisfy two main requirements:
+
+### 2.1 Implement the `IReceiver` Interface
+
+The `KeystoneForwarder` needs a standardized function to call. This is defined by the `IReceiver` interface, which mandates an `onReport` function.
+
+<CodeSample src="samples/CRE/IReceiver.sol" />
+
+- `metadata`: Contains information about the workflow (ID, name, owner). This is encoded by the Forwarder using `abi.encodePacked` with the following structure: `bytes32 workflowId`, `bytes10 workflowName`, `address workflowOwner`.
+- `report`: The raw, ABI-encoded data payload from your workflow.
+
+### 2.2 Support ERC165 Interface Detection
+
+[ERC165](https://eips.ethereum.org/EIPS/eip-165) is a standard that allows contracts to publish the interfaces they support. The `KeystoneForwarder` uses this to check if your contract supports the `IReceiver` interface before sending a report.
+
+Link to the `IERC165` interface: [IERC165.sol](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/introspection/IERC165.sol)
+
+## 3. Using `ReceiverTemplate`
+
+### 3.1 Overview
+
+While you can implement these standards manually, we provide an abstract contract, `ReceiverTemplate.sol`, that does the heavy lifting for you. Inheriting from it is the recommended best practice.
+
+**Key features:**
+
+- **Secure by Default**: Requires forwarder address at deployment, ensuring your contract is protected from the start
+- **Layered Security**: Add optional workflow ID validation, workflow owner verification, or any combination for defense-in-depth
+- **Flexible Configuration**: All permission settings can be updated via setter functions after deployment
+- **Simplified Logic**: You only need to implement `_processReport(bytes calldata report)` with your business logic
+- **Built-in Access Control**: Includes OpenZeppelin's `Ownable` for secure permission management
+- **ERC165 Support**: Includes the necessary `supportsInterface` function
+- **Metadata Access**: Helper function to decode workflow ID, name, and owner for custom validation logic
+
+### 3.2 Contract Source Code
+
+<CodeSample src="samples/CRE/ReceiverTemplate.sol" />
+
+### 3.3 Quick Start
+
+The simplest way to use `ReceiverTemplate` is to inherit from it and implement the `_processReport` function:
+
+<CodeSample src="samples/CRE/BasicConsumer.sol" />
+
+### 3.4 Configuring Permissions
+
+The forwarder address is configured at deployment via the constructor and provides your first line of defense. After deploying your contract, the owner can configure additional security checks or update the forwarder address if needed.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="For simulation">
+  When using `cre workflow simulate`, **do not configure metadata-based validation checks** (`setExpectedWorkflowId`, `setExpectedAuthor`, `setExpectedWorkflowName`). The simulation uses a `MockForwarder` that doesn't provide this metadata. See [Working with Simulation](#4-working-with-simulation) for details.
+</Aside>
+
+{/* prettier-ignore */}
+<Aside type="tip" title="Finding forwarder addresses">
+  For a complete list of `KeystoneForwarder` and `MockForwarder` contract addresses on all supported networks, see [Supported Networks](/cre/guides/workflow/using-evm-client/supported-networks).
+</Aside>
+
+**Configuration examples:**
+
+```solidity
+// Example: Update forwarder address (e.g., when moving from simulation to production)
+myConsumer.setForwarderAddress(0xF8344CFd5c43616a4366C34E3EEE75af79a74482); // Ethereum Sepolia KeystoneForwarder
+
+// Example: Add workflow ID check for additional security
+myConsumer.setExpectedWorkflowId(0x1234...); // Your specific workflow ID
+
+// Example: Add workflow owner check
+myConsumer.setExpectedAuthor(0xYourAddress...);
+
+// Example: Add workflow name check (requires author validation to be set)
+myConsumer.setExpectedWorkflowName("my_workflow");
+
+// Example: Disable a check later
+myConsumer.setExpectedWorkflowName(""); // Empty string disables the check
+```
+
+{/* prettier-ignore */}
+<Aside type="tip" title="Recommended production setup">
+  The forwarder address is required at deployment and provides basic security. For production contracts, we strongly recommend adding additional validation:
+  - Use `setExpectedWorkflowId()` if only one workflow writes to your contract (highest security)
+  - Use `setExpectedAuthor()` if multiple workflows from the same owner write to your contract
+</Aside>
+
+**What the template handles for you:**
+
+- Validates the caller address against the configured forwarder (required at deployment)
+- Validates the workflow ID (if `expectedWorkflowId` is configured)
+- Validates the workflow owner (if `expectedAuthor` is configured)
+- Validates the workflow name (if both `expectedWorkflowName` AND `expectedAuthor` are configured)
+- Implements ERC165 interface detection
+- Provides access control via OpenZeppelin's `Ownable`
+- Calls your `_processReport` function with validated data
+
+**What you implement:**
+
+- Pass the forwarder address to the constructor during deployment
+- Your business logic in `_processReport`
+- (Optional) Configure additional permissions after deployment using setter functions
+
+#### How workflow names are encoded
+
+The `workflowName` field in the metadata uses the **`bytes10`** type rather than plaintext strings. When you call `setExpectedWorkflowName("my_workflow")`, the `ReceiverTemplate` automatically encodes it using the same algorithm as the CRE engine:
+
+1. Compute SHA256 hash of the workflow name
+1. Convert hash to hex string (64 characters)
+1. Take the first 10 hex characters (e.g., `"b76f3ae1de"`)
+1. Hex-encode those 10 ASCII characters to get `bytes10` (20 hex characters / 10 bytes)
+
+**Example:** `"my_workflow"` → SHA256 → `"b76f3ae1de..."` → hex-encode → `0x62373666336165316465`
+
+This encoding ensures consistent, fixed-size representation regardless of the original workflow name length.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Workflow name validation requires author validation">
+  Workflow name validation is **only performed when author validation is also configured**. The code enforces this at runtime: if you set `expectedWorkflowName`, you must also set `expectedAuthor`, otherwise the validation will revert with `WorkflowNameRequiresAuthorValidation()`. This prevents the 40-bit collision attack by ensuring workflow names are validated in combination with the owner address. See [Security Considerations](#7-security-considerations) for details.
+</Aside>
+
+**Usage:**
+
+```solidity
+// Set the expected author first (required)
+myConsumer.setExpectedAuthor(0xYourAddress...);
+
+// Then set the expected workflow name (only works with author validation)
+myConsumer.setExpectedWorkflowName("my_workflow");
+
+// To disable the workflow name check
+myConsumer.setExpectedWorkflowName(""); // Empty string clears the stored value
+```
+
+## 4. Working with Simulation
+
+When you run `cre workflow simulate`, your workflow interacts with a **`MockKeystoneForwarder`** contract that does not provide workflow metadata (`workflow_name`, `workflow_owner`).
+
+<Aside type="caution" title="Temporary limitation">
+  This is a **temporary limitation** until the `MockKeystoneForwarder` is updated to provide full metadata.
+</Aside>
+
+### Deploying for Simulation
+
+When deploying your consumer contract for simulation, pass the **Mock Forwarder address** to the constructor:
+
+```solidity
+// Deploy with MockForwarder address for Ethereum Sepolia simulation
+address mockForwarder = 0x15fC6ae953E024d975e77382eEeC56A9101f9F88; // Ethereum Sepolia MockForwarder
+MyConsumer myConsumer = new MyConsumer(mockForwarder);
+```
+
+Find Mock Forwarder addresses for all networks in the [Supported Networks](/cre/guides/workflow/using-evm-client/supported-networks) page.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Important: Different addresses for simulation vs production">
+  The `MockKeystoneForwarder` address used during simulation is **different** from the `KeystoneForwarder` address used by deployed workflows. After testing with simulation, deploy a new instance with the production `KeystoneForwarder` address, or update the forwarder address using `setForwarderAddress()`. See [Supported Networks](/cre/guides/workflow/using-evm-client/supported-networks) for forwarder addresses.
+</Aside>
+
+### Metadata-based validation
+
+**Do not configure these validation checks** during simulation - they require metadata that `MockKeystoneForwarder` doesn't provide:
+
+- `setExpectedWorkflowId()`
+- `setExpectedAuthor()`
+- `setExpectedWorkflowName()`
+
+Setting any of these will cause your simulation to fail.
+
+### Transitioning to Production
+
+Once you're ready to deploy your workflow to production:
+
+**Option 1: Deploy a new contract instance**
+
+```solidity
+// Deploy with production KeystoneForwarder address
+address keystoneForwarder = 0xF8344CFd5c43616a4366C34E3EEE75af79a74482; // Ethereum Sepolia
+MyConsumer myConsumer = new MyConsumer(keystoneForwarder);
+
+// Configure additional security checks
+myConsumer.setExpectedWorkflowId(0xYourWorkflowId);
+```
+
+**Option 2: Update existing contract's forwarder**
+
+```solidity
+// Update forwarder to production KeystoneForwarder
+myConsumer.setForwarderAddress(0xF8344CFd5c43616a4366C34E3EEE75af79a74482); // Ethereum Sepolia
+
+// Add metadata-based validation
+myConsumer.setExpectedWorkflowId(0xYourWorkflowId);
+```
+
+See [Configuring Permissions](#34-configuring-permissions) for complete details.
+
+## 5. Advanced Usage (Optional)
+
+### 5.1 Custom Validation Logic
+
+You can override `onReport` to add your own validation logic before or after the standard checks:
+
+```solidity
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
+
+contract AdvancedConsumer is ReceiverTemplate {
+  uint256 private s_minReportInterval = 1 hours;
+  uint256 private s_lastReportTime;
+
+  error ReportTooFrequent(uint256 timeSinceLastReport, uint256 minInterval);
+
+  event MinReportIntervalUpdated(uint256 previousInterval, uint256 newInterval);
+
+  constructor(address _forwarderAddress) ReceiverTemplate(_forwarderAddress) {}
+
+  // Add custom validation before parent's checks
+  function onReport(bytes calldata metadata, bytes calldata report) external override {
+    // Custom check: Rate limiting
+    if (block.timestamp < s_lastReportTime + s_minReportInterval) {
+      revert ReportTooFrequent(block.timestamp - s_lastReportTime, s_minReportInterval);
+    }
+
+    // Call parent implementation for standard permission checks
+    super.onReport(metadata, report);
+
+    s_lastReportTime = block.timestamp;
+  }
+
+  function _processReport(bytes calldata report) internal override {
+    // Your business logic here
+    uint256 value = abi.decode(report, (uint256));
+    // ... store or process the value ...
+  }
+
+  /// @notice Returns the minimum interval between reports
+  /// @return The minimum interval in seconds
+  function getMinReportInterval() external view returns (uint256) {
+    return s_minReportInterval;
+  }
+
+  /// @notice Returns the timestamp of the last report
+  /// @return The last report timestamp
+  function getLastReportTime() external view returns (uint256) {
+    return s_lastReportTime;
+  }
+
+  /// @notice Updates the minimum interval between reports
+  /// @param _interval The new minimum interval in seconds
+  function setMinReportInterval(uint256 _interval) external onlyOwner {
+    uint256 previousInterval = s_minReportInterval;
+    s_minReportInterval = _interval;
+    emit MinReportIntervalUpdated(previousInterval, _interval);
+  }
+}
+```
+
+### 5.2 Using Metadata Fields in Your Logic
+
+The `_decodeMetadata` helper function is available for use in your `_processReport` implementation. This allows you to access workflow metadata for custom business logic:
+
+```solidity
+contract MetadataAwareConsumer is ReceiverTemplate {
+  mapping(bytes32 => uint256) public s_reportCountByWorkflow;
+
+  constructor(address _forwarderAddress) ReceiverTemplate(_forwarderAddress) {}
+
+  function _processReport(bytes calldata report) internal override {
+    // Access the metadata to get workflow ID
+    bytes calldata metadata = msg.data[4:]; // Skip function selector
+    (bytes32 workflowId, , ) = _decodeMetadata(metadata);
+
+    // Use workflow ID in your business logic
+    s_reportCountByWorkflow[workflowId]++;
+
+    // Process the report data
+    uint256 value = abi.decode(report, (uint256));
+    // ... your logic here ...
+  }
+}
+```
+
+{/* prettier-ignore */}
+<Aside type="note" title="Advanced access control">
+  For production systems requiring even more sophisticated access control (such as role-based permissions or two-step ownership transfer), consider extending the template to use OpenZeppelin's `AccessControl` instead of `Ownable`, or implementing a custom ownership transfer pattern.
+</Aside>
+
+## 6. Complete Examples
+
+### Example 1: Simple Consumer Contract
+
+This example inherits from `ReceiverTemplate` to store a temperature value.
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
+
+contract TemperatureConsumer is ReceiverTemplate {
+  int256 public s_currentTemperature;
+  event TemperatureUpdated(int256 newTemperature);
+
+  // Constructor requires forwarder address
+  constructor(address _forwarderAddress) ReceiverTemplate(_forwarderAddress) {}
+
+  function _processReport(bytes calldata report) internal override {
+    int256 newTemperature = abi.decode(report, (int256));
+    s_currentTemperature = newTemperature;
+    emit TemperatureUpdated(newTemperature);
+  }
+}
+```
+
+**Deployment:**
+
+```solidity
+// For simulation: Use MockForwarder address
+address mockForwarder = 0x15fC6ae953E024d975e77382eEeC56A9101f9F88; // e.g. Ethereum Sepolia
+TemperatureConsumer temperatureConsumer = new TemperatureConsumer(mockForwarder);
+
+// For production: Use KeystoneForwarder address
+address keystoneForwarder = 0xF8344CFd5c43616a4366C34E3EEE75af79a74482; // e.g. Ethereum Sepolia
+TemperatureConsumer temperatureConsumer = new TemperatureConsumer(keystoneForwarder);
+```
+
+**Adding additional security after deployment:**
+
+```solidity
+// Add workflow ID check for highest security
+temperatureConsumer.setExpectedWorkflowId(0xYourWorkflowId...);
+```
+
+### Example 2: The Proxy Pattern
+
+For more complex scenarios, it's best to separate your Chainlink-aware code from your core business logic. The **Proxy Pattern** is a robust architecture that uses two contracts to achieve this:
+
+- **A Logic Contract**: Holds the state and the core functions of your application. It knows nothing about the Forwarder contract or the `onReport` function.
+- **A Proxy Contract**: Acts as the secure entry point. It inherits from `ReceiverTemplate` and forwards validated reports to the Logic Contract.
+
+This separation makes your business logic more modular and reusable.
+
+#### The Logic Contract (`ReserveManager.sol`)
+
+This contract, our "vault", holds the state and the `updateReserves` function. For security, it only accepts calls from its trusted Proxy. It also includes an owner-only function to update the proxy address, making the system upgradeable without requiring a migration.
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
+
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+
+contract ReserveManager is Ownable {
+  struct UpdateReserves {
+    uint256 ethPrice;
+    uint256 btcPrice;
+  }
+
+  address private s_proxyAddress;
+  uint256 private s_lastEthPrice;
+  uint256 private s_lastBtcPrice;
+  uint256 private s_lastUpdateTime;
+
+  event ReservesUpdated(uint256 ethPrice, uint256 btcPrice, uint256 updateTime);
+  event ProxyAddressUpdated(address indexed previousProxy, address indexed newProxy);
+
+  modifier onlyProxy() {
+    require(msg.sender == s_proxyAddress, "Caller is not the authorized proxy");
+    _;
+  }
+
+  constructor() Ownable(msg.sender) {}
+
+  /// @notice Returns the proxy address
+  /// @return The authorized proxy address
+  function getProxyAddress() external view returns (address) {
+    return s_proxyAddress;
+  }
+
+  /// @notice Returns the last ETH price
+  /// @return The last recorded ETH price
+  function getLastEthPrice() external view returns (uint256) {
+    return s_lastEthPrice;
+  }
+
+  /// @notice Returns the last BTC price
+  /// @return The last recorded BTC price
+  function getLastBtcPrice() external view returns (uint256) {
+    return s_lastBtcPrice;
+  }
+
+  /// @notice Returns the last update timestamp
+  /// @return The timestamp of the last update
+  function getLastUpdateTime() external view returns (uint256) {
+    return s_lastUpdateTime;
+  }
+
+  /// @notice Updates the authorized proxy address
+  /// @param _proxyAddress The new proxy address
+  function setProxyAddress(address _proxyAddress) external onlyOwner {
+    address previousProxy = s_proxyAddress;
+    s_proxyAddress = _proxyAddress;
+    emit ProxyAddressUpdated(previousProxy, _proxyAddress);
+  }
+
+  /// @notice Updates the reserve prices
+  /// @param data The new reserve data containing ETH and BTC prices
+  function updateReserves(UpdateReserves memory data) external onlyProxy {
+    s_lastEthPrice = data.ethPrice;
+    s_lastBtcPrice = data.btcPrice;
+    s_lastUpdateTime = block.timestamp;
+    emit ReservesUpdated(data.ethPrice, data.btcPrice, block.timestamp);
+  }
+}
+```
+
+#### The Proxy Contract (`UpdateReservesProxy.sol`)
+
+This contract, our "bouncer", is the only contract that interacts with the Chainlink platform. It inherits `ReceiverTemplate` to validate incoming reports and then calls the `ReserveManager`.
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
+
+import { ReserveManager } from "./ReserveManager.sol";
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
+
+contract UpdateReservesProxy is ReceiverTemplate {
+  ReserveManager private s_reserveManager;
+
+  constructor(address _forwarderAddress, address reserveManagerAddress) ReceiverTemplate(_forwarderAddress) {
+    s_reserveManager = ReserveManager(reserveManagerAddress);
+  }
+
+  /// @notice Returns the reserve manager contract address
+  /// @return The ReserveManager contract instance
+  function getReserveManager() external view returns (ReserveManager) {
+    return s_reserveManager;
+  }
+
+  /// @inheritdoc ReceiverTemplate
+  function _processReport(bytes calldata report) internal override {
+    ReserveManager.UpdateReserves memory updateReservesData = abi.decode(report, (ReserveManager.UpdateReserves));
+    s_reserveManager.updateReserves(updateReservesData);
+  }
+}
+```
+
+**Configuring permissions after deployment:**
+
+```solidity
+// Additional validation can be added after deployment
+updateReservesProxy.setExpectedWorkflowId(0xYourWorkflowId...);
+```
+
+{/* prettier-ignore */}
+<Aside type="note" title="KeystoneForwarder address shown">
+  The examples above use the Ethereum Sepolia forwarder address. For other networks, see [Supported Networks](/cre/guides/workflow/using-evm-client/supported-networks).
+</Aside>
+
+#### How it Works
+
+The deployment and configuration process involves these steps:
+
+1. **Deploy the Logic Contract**: Deploy `ReserveManager.sol`. The wallet that deploys this contract becomes its `owner`.
+1. **Deploy the Proxy Contract**: Deploy `UpdateReservesProxy.sol`, passing the forwarder address and the address of the deployed `ReserveManager` contract to its constructor.
+1. **Link the Contracts**: The `owner` of the `ReserveManager` contract must call its `setProxyAddress` function, passing in the address of the `UpdateReservesProxy` contract. This authorizes the proxy to call the logic contract.
+1. **Configure Permissions** (Recommended): The `owner` of the proxy should call setter functions to enable security checks:
+   ```solidity
+   updateReservesProxy.setForwarderAddress(0xF8344CFd5c43616a4366C34E3EEE75af79a74482);
+   updateReservesProxy.setExpectedWorkflowId(0xYourWorkflowId...);
+   ```
+1. **Configure Workflow**: In your workflow's `config.json`, use the address of the **Proxy Contract** as the receiver address.
+1. **Execution Flow**: When your workflow runs:
+   - The Chainlink Forwarder calls `onReport` on your **Proxy**
+   - The Proxy validates the report (forwarder address is verified automatically; additional checks like workflow ID can be added)
+   - The Proxy's `_processReport` function calls the `updateReserves` function on your **Logic Contract**
+   - Because the caller is the trusted proxy, the `onlyProxy` check passes, and your state is securely updated
+1. **(Optional) Upgrade**: If you later need to deploy a new proxy, the owner can:
+   - Deploy the new proxy contract with the appropriate forwarder address
+   - Call `setProxyAddress` on the `ReserveManager` to point it to the new proxy's address
+   - Update the workflow configuration to use the new proxy address
+
+#### End-to-End Sequence
+
+<ClickToZoom src="/images/cre/consumer-contracts-proxy-pattern.png" alt="Building Consumer Contracts: Proxy Pattern" />
+
+## 7. Security Considerations
+
+### Forwarder address
+
+**The forwarder address is the foundation of your contract's security.** The `KeystoneForwarder` contract performs cryptographic verification of DON signatures before calling your consumer. By requiring the forwarder address in the constructor, `ReceiverTemplate` ensures your contract is secure from deployment.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Never set forwarder to address(0) in production">
+  While the `setForwarderAddress()` function allows updating to `address(0)`, this disables the critical security check and allows **anyone** to call your `onReport()` function with arbitrary data. The function emits a `SecurityWarning` event if you attempt this. Only use `address(0)` for testing if you fully understand the implications.
+</Aside>
+
+### Replay protection
+
+The `KeystoneForwarder` contract includes built-in replay protection that prevents successful reports from being executed multiple times. By requiring the forwarder address at construction time, `ReceiverTemplate` ensures your consumer benefits from this protection automatically.
+
+{/* prettier-ignore */}
+<Aside type="note" title="Failed reports can be retried">
+  If a report fails (reverts), the forwarder's replay protection allows it to be retried. This is safe because reverts undo all state changes, ensuring no duplicate effects occur in your contract.
+</Aside>
+
+### Additional validation layers
+
+The forwarder address provides baseline security, but you can add additional validation for defense-in-depth:
+
+- **`expectedWorkflowId`**: Ensures only one specific workflow can update your contract. Use this when a single workflow writes to your consumer (highest security for single-workflow scenarios).
+- **`expectedAuthor`**: Restricts to workflows owned by a specific address. Use this when multiple workflows from the same owner should access your contract.
+- **`expectedWorkflowName`**: Can be used in combination with `expectedAuthor` for additional validation. Requires author validation to be configured. See [Workflow name validation](#workflow-name-validation) below.
+
+### Workflow name validation
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Workflow name validation requires author validation">
+  The `expectedWorkflowName` check in `ReceiverTemplate.onReport()` **requires author validation** to be configured:
+  
+  - **Collision Risk**: Workflow names use only 40-bit truncation (bytes10), making collision attacks computationally feasible when used alone
+  - **Unique per owner**: Workflow names are unique per owner but not across different owners
+  - **Runtime enforcement**: The code enforces that if `expectedWorkflowName` is set, `expectedAuthor` must also be set, otherwise it reverts with `WorkflowNameRequiresAuthorValidation()`
+  
+  By combining workflow name (40-bit) with author validation (160-bit address), the contract achieves adequate collision resistance. You can safely use workflow name validation as long as author validation is also enabled.
+</Aside>
+
+### Best practices
+
+1. **Always deploy with a valid forwarder address** - The constructor requires this for security. Use `MockForwarder` for simulation, `KeystoneForwarder` for production. Forwarder addresses are available in the [Supported Networks](/cre/guides/workflow/using-evm-client/supported-networks) page.
+1. **Add additional validation for production**:
+   - **Single workflow**: Use `setExpectedWorkflowId()` to restrict to one specific workflow (highest security)
+   - **Multiple workflows from same owner**: Use `setExpectedAuthor()` to restrict to workflows you own
+   - **Multiple workflows from different owners**: Implement custom validation logic in your `onReport()` override
+1. **Keep your owner key secure** - The owner can update all permission settings
+1. **Test permission configurations** - Verify your security settings work as expected before production deployment
+1. **Workflow name validation** - Can be used with `setExpectedWorkflowName()` but requires `setExpectedAuthor()` to also be configured for security

@@ -1,0 +1,302 @@
+---
+section: cre
+title: "Using WriteReportFrom Helpers"
+sdkLang: "go"
+date: Last Modified
+metadata:
+  description: "Simplify onchain writes in Go: learn to use WriteReportFrom helpers for the easiest way to send data to your smart contracts."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+This guide explains how to write data to a smart contract using the `WriteReportFrom<StructName>()` helper methods that are automatically generated from your contract's ABI. This is the recommended and simplest approach for most users.
+
+**Use this approach when:**
+
+- You're sending a **struct** to your consumer contract
+- The struct appears in a `public` or `external` function's signature (as a parameter or return value); this is required for the binding generator to detect it in your contract's ABI and create the helper method
+
+**Don't meet these requirements?** See the [Onchain Write](/cre/guides/workflow/using-evm-client/onchain-write/overview-go#choosing-your-approach-which-guide-should-you-follow) page to find the right approach for your scenario.
+
+## Prerequisites
+
+Before you begin, ensure you have:
+
+1. **A consumer contract** deployed that implements the `IReceiver` interface
+   - See [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts) if you need to create one
+1. **Generated bindings** from your consumer contract's ABI
+   - See [Generating Bindings](/cre/guides/workflow/using-evm-client/generating-bindings) if you haven't created them yet
+
+## What the helper does for you
+
+The `WriteReportFrom<StructName>()` helper method automates the entire onchain write process:
+
+1. **ABI-encodes your struct** into bytes
+1. **Generates a cryptographically signed report** via `runtime.GenerateReport()`
+1. **Submits the report to the blockchain** via `evm.Client.WriteReport()`
+1. **Returns a promise** with the transaction details
+
+All of this happens in a single method call, making your workflow code clean and simple.
+
+<Aside type="note" title="Familiar with the Getting Started tutorial?">
+  This is the same approach used in [Part 4 of the Getting Started
+  tutorial](/cre/getting-started/part-4-writing-onchain). If you completed that tutorial, you've already used this
+  pattern!
+</Aside>
+
+## The write pattern
+
+Writing to contracts using binding helpers follows this simple pattern:
+
+1. **Create an EVM client** with your target chain selector
+1. **Instantiate the contract binding** with the consumer contract's address
+1. **Prepare your data** using the generated struct type
+1. **Call the write helper** and await the result
+
+Let's walk through each step with a complete example.
+
+## Step-by-step example
+
+Assume you have a consumer contract with a struct that looks like this:
+
+```solidity
+struct UpdateReserves {
+  uint256 totalMinted;
+  uint256 totalReserve;
+}
+
+// This function makes the struct appear in the ABI
+function processReserveUpdate(UpdateReserves memory update) public {
+  // ... logic
+}
+```
+
+### Step 1: Create an EVM client
+
+First, create an EVM client configured for the chain where your consumer contract is deployed:
+
+```go
+import (
+    "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/evm"
+)
+
+func updateReserves(config *Config, runtime cre.Runtime, evmConfig EvmConfig, totalSupply *big.Int, totalReserveScaled *big.Int) error {
+    logger := runtime.Logger()
+
+    // Create EVM client with your target chain
+    evmClient := &evm.Client{
+        ChainSelector: evmConfig.ChainSelector, // e.g., 16015286601757825753 for Sepolia
+    }
+```
+
+### Step 2: Instantiate the contract binding
+
+Create an instance of your [generated binding](/cre/guides/workflow/using-evm-client/generating-bindings), pointing it at your consumer contract's address:
+
+```go
+    import (
+        "contracts/evm/src/generated/reserve_manager"
+        "github.com/ethereum/go-ethereum/common"
+    )
+
+    // Convert the address string from your config to common.Address
+    contractAddress := common.HexToAddress(evmConfig.ConsumerAddress)
+
+    // Create the binding instance
+    reserveManager, err := reserve_manager.NewReserveManager(evmClient, contractAddress, nil)
+    if err != nil {
+        return fmt.Errorf("failed to create reserve manager: %w", err)
+    }
+```
+
+### Step 3: Prepare your data
+
+Create an instance of the generated struct type with your data:
+
+```go
+    // Use the generated struct type from your bindings
+    updateData := reserve_manager.UpdateReserves{
+        TotalMinted:  totalSupply,      // *big.Int
+        TotalReserve: totalReserveScaled, // *big.Int
+    }
+
+    logger.Info("Prepared data for onchain write",
+        "totalMinted", totalSupply.String(),
+        "totalReserve", totalReserveScaled.String())
+```
+
+### Step 4: Call the write helper and await
+
+Call the generated `WriteReportFrom<StructName>()` method and await the result:
+
+```go
+    // Call the generated helper - it handles encoding, report generation, and submission
+    writePromise := reserveManager.WriteReportFromUpdateReserves(runtime, updateData, nil)
+
+    logger.Info("Waiting for write report response")
+
+    // Await the transaction result
+    resp, err := writePromise.Await()
+    if err != nil {
+        logger.Error("WriteReport failed", "error", err)
+        return fmt.Errorf("failed to write report: %w", err)
+    }
+
+    // Log the successful transaction
+    txHash := common.BytesToHash(resp.TxHash).Hex()
+    logger.Info("Write report transaction succeeded", "txHash", txHash)
+
+    return nil
+}
+```
+
+## Understanding the response
+
+The write helper returns an `evm.WriteReportReply` struct with comprehensive transaction details:
+
+```go
+type WriteReportReply struct {
+    TxStatus                        TxStatus                         // SUCCESS, REVERTED, or FATAL
+    ReceiverContractExecutionStatus *ReceiverContractExecutionStatus // Contract execution status
+    TxHash                          []byte                            // Transaction hash
+    TransactionFee                  *pb.BigInt                        // Fee paid in Wei
+    ErrorMessage                    *string                           // Error message if failed
+}
+```
+
+**Key fields to check:**
+
+- **`TxStatus`**: Indicates whether the transaction succeeded, reverted, or had a fatal error
+- **`TxHash`**: The transaction hash you can use to verify on a block explorer (e.g., Etherscan)
+- **`TransactionFee`**: The total gas cost paid for the transaction in Wei
+- **`ReceiverContractExecutionStatus`**: Whether your consumer contract's `onReport()` function executed successfully
+- **`ErrorMessage`**: If the transaction failed, this field contains details about what went wrong
+
+## Complete example
+
+Here's a complete, runnable workflow function that demonstrates the end-to-end pattern:
+
+```go
+package main
+
+import (
+    "contracts/evm/src/generated/reserve_manager"
+    "fmt"
+    "log/slog"
+    "math/big"
+
+    "github.com/ethereum/go-ethereum/common"
+    "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/evm"
+    "github.com/smartcontractkit/cre-sdk-go/cre"
+)
+
+type EvmConfig struct {
+    ConsumerAddress string `json:"consumerAddress"`
+    ChainSelector   uint64 `json:"chainSelector"`
+}
+
+type Config struct {
+    // Add other config fields from your workflow here
+}
+
+func updateReserves(config *Config, runtime cre.Runtime, evmConfig EvmConfig, totalSupply *big.Int, totalReserveScaled *big.Int) error {
+    logger := runtime.Logger()
+    logger.Info("Updating reserves", "totalSupply", totalSupply, "totalReserveScaled", totalReserveScaled)
+
+    // Create EVM client with chain selector
+    evmClient := &evm.Client{
+        ChainSelector: evmConfig.ChainSelector,
+    }
+
+    // Create contract binding
+    contractAddress := common.HexToAddress(evmConfig.ConsumerAddress)
+    reserveManager, err := reserve_manager.NewReserveManager(evmClient, contractAddress, nil)
+    if err != nil {
+        return fmt.Errorf("failed to create reserve manager: %w", err)
+    }
+
+    logger.Info("Writing report", "totalSupply", totalSupply, "totalReserveScaled", totalReserveScaled)
+
+    // Call the write method
+    writePromise := reserveManager.WriteReportFromUpdateReserves(runtime, reserve_manager.UpdateReserves{
+        TotalMinted:  totalSupply,
+        TotalReserve: totalReserveScaled,
+    }, nil)
+
+    logger.Info("Waiting for write report response")
+
+    // Await the transaction
+    resp, err := writePromise.Await()
+    if err != nil {
+        logger.Error("WriteReport await failed", "error", err, "errorType", fmt.Sprintf("%T", err))
+        return fmt.Errorf("failed to write report: %w", err)
+    }
+
+    logger.Info("Write report transaction succeeded", "txHash", common.BytesToHash(resp.TxHash).Hex())
+
+    return nil
+}
+
+// NOTE: This is a placeholder. You would need a full workflow with InitWorkflow,
+// a trigger, and a callback that calls this `updateReserves` function.
+func main() {
+    // wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
+}
+```
+
+## Configuring gas limits
+
+By default, the SDK automatically estimates gas limits for your transactions. However, for complex transactions or to ensure sufficient gas, you can explicitly set a gas limit:
+
+```go
+// Create a gas configuration
+gasConfig := &evm.GasConfig{
+    GasLimit: 1000000, // Adjust based on your contract's needs
+}
+
+// Pass it as the third argument to the write helper
+writePromise := reserveManager.WriteReportFromUpdateReserves(runtime, updateData, gasConfig)
+```
+
+{/* prettier-ignore */}
+<Aside type="note" title="When to set gas limits explicitly">
+  Explicitly setting a gas limit is recommended for:
+  - Complex contract logic that might exceed default estimates
+  - Debugging gas-related failures
+</Aside>
+
+## Best practices
+
+1. **Always check errors**: Both the write call and the `.Await()` can fail—handle both error paths
+1. **Log transaction details**: Include transaction hashes in your logs for debugging and monitoring
+1. **Validate response status**: Check the `TxStatus` field to ensure the transaction succeeded
+1. **Override gas limits when needed**: For complex transactions, set explicit gas limits higher than the automatic estimates to avoid "out of gas" errors
+1. **Monitor contract execution**: Check `ReceiverContractExecutionStatus` to ensure your consumer contract processed the data correctly
+
+## Troubleshooting
+
+**Transaction failed with "out of gas"**
+
+- Increase the `GasLimit` in your `GasConfig`
+- Check if your consumer contract's logic is more complex than expected
+
+**"WriteReport await failed" error**
+
+- Check that your consumer contract address is correct
+- Verify you're using the correct chain selector
+- Ensure your account has sufficient funds for gas
+
+**Transaction succeeded but contract didn't update**
+
+- Check the `ReceiverContractExecutionStatus` field
+- Review your consumer contract's `onReport()` logic for validation failures
+- Verify the struct fields match what your contract expects
+
+## Learn more
+
+- **[Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write)**: Understand all onchain write approaches
+- **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)**: Create secure consumer contracts
+- **[Generating Bindings](/cre/guides/workflow/using-evm-client/generating-bindings)**: Generate type-safe contract bindings
+- **[EVM Client Reference](/cre/reference/sdk/evm-client)**: Complete API documentation

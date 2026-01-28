@@ -1,0 +1,324 @@
+---
+section: cre
+title: "Running a Demo Workflow"
+date: Last Modified
+sdkLang: "go"
+pageId: "running-demo-workflow"
+metadata:
+  description: "Run the Custom Data Feed demo: explore a Go workflow template with API calls, blockchain reads, and onchain writes."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside, CopyText } from "@components"
+
+This guide walks you through the core developer loop of CRE: initializing a project from a template and running it locally using the [simulator](/cre/guides/operations/simulating-workflows). By the end, you will have run the Custom Data Feed demo workflow and tested its two distinct behaviors: a **proactive** path where it fetches data from an API to write a result onchain, and a **reactive** path where it listens for onchain events to trigger new actions.
+
+## What you'll do
+
+- **Initialize a project**: Use the `cre init` command to scaffold a complete project from the Custom Data Feed template.
+- **Configure your private key**: Add your funded Sepolia private key to the `.env` file.
+- **Generate bindings**: Use `cre generate-bindings` to create type-safe Go interfaces for the demo's smart contracts.
+- **Sync dependencies**: Use `go mod tidy` to download and sync your workflow's Go dependencies.
+- **Run the simulation**: Use `cre workflow simulate` to execute the end-to-end workflow and observe its output.
+
+## 1. Prerequisites
+
+Before you begin, ensure you have the necessary tools installed:
+
+- **CRE CLI**: You must have the CRE CLI installed. See [Install the CLI](/cre/getting-started/cli-installation) for instructions.
+- **CRE account & authentication**: You must have a CRE account and be logged in with the CLI. Run <CopyText text="cre whoami" code /> in your terminal to verify you're logged in, or run <CopyText text="cre login" code /> to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging in with the CLI](/cre/account/cli-login) for instructions.
+- **Go**: You must have Go version 1.25.3 or higher installed. Check your version with <CopyText text="go version" code />. See [Install Go](https://go.dev/doc/install) for instructions.
+- **Sepolia Testnet Account**: You need a private key for an account funded with Sepolia ETH. This is required because the demo workflow performs a write transaction. Go to <a href="https://faucets.chain.link" target="blank">faucets.chain.link</a> to get some Sepolia ETH.
+
+## 2. Initialize the demo project
+
+The `cre init` command scaffolds a new project from a template. The CLI will prompt you for configuration details during initialization.
+
+1. **In your terminal, navigate to where you want your project created.**
+
+1. **Run the init command:**
+
+   ```bash
+   cre init
+   ```
+
+1. **Provide the following details when prompted:**
+   - **Project name**: <CopyText text="demo" code/> (this becomes your project directory name)
+   - **Language**: Select `Golang` and press Enter.
+   - **Pick a workflow template**: Select `Custom data feed: Updating on-chain data periodically using offchain API data`
+   - **Sepolia RPC URL**: Press Enter to use the default public RPC (`https://ethereum-sepolia-rpc.publicnode.com`), or provide your own Sepolia RPC URL.
+   - **Workflow name**: <CopyText text="custom-data-feed" code/>
+
+**Result:** The CLI creates a new `demo` directory with all the necessary files and folders, including:
+
+- A `custom-data-feed` subdirectory containing your workflow code
+- A `contracts/evm/src/` directory with contract ABIs and a `keystone/` subdirectory
+- A pre-configured `project.yaml` with your RPC URL already set
+
+<Aside type="note" title="RPC URL is pre-configured">
+  The CLI now asks for your RPC URL during initialization and automatically adds it to `project.yaml`. You can change it
+  later if needed.
+</Aside>
+
+## 3. Configure your private key
+
+The demo workflow needs your funded Sepolia private key to sign and broadcast transactions.
+
+**Open the `.env` file** in your project root (`demo`) and replace the placeholder private key with your actual funded Sepolia private key:
+
+<Aside type="caution" title="Use the Raw Key">
+  Your private key must be the 64-character hexadecimal string. Do **not** include the `0x` prefix.
+</Aside>
+
+<Aside type="caution" title="Never Commit .env Files">
+  The `.gitignore` file included in the project already prevents `.env` files from being committed to version control.
+  **Never** share your private keys or commit them to Git.
+</Aside>
+
+<Aside type="note" title="Best Practices for Security">
+  Using a plaintext `.env` file is convenient for initial testing, but for better security, we recommend using a
+  dedicated secrets manager. See our guide on [Managing Secrets with 1Password
+  CLI](/cre/guides/workflow/secrets/managing-secrets-1password) to learn how to inject secrets securely at runtime.
+</Aside>
+
+## 4. Generate contract bindings
+
+To interact with the demo's smart contracts, you need to generate type-safe Go bindings from their ABIs.
+
+1. **Navigate into your project directory:**
+
+   ```bash
+   cd demo
+   ```
+
+1. **Run the `generate-bindings` command:**
+
+   ```bash
+   cre generate-bindings evm
+   ```
+
+   This command finds the contract ABIs inside the `contracts/evm/src/abi/` directory and generates Go packages in `contracts/evm/src/generated/`.
+
+## 5. Sync your dependencies
+
+Your workflow code imports SDK packages and the newly generated contract bindings. Run `go mod tidy` to automatically download and sync all the required dependencies for the entire project.
+
+```bash
+go mod tidy
+```
+
+## 6. Run the simulation
+
+Now you are ready to compile and run the workflow. The workflow code (`workflow.go` and `main.go`) is cleverly designed to demonstrate two distinct, powerful workflow patterns. We will run each one separately.
+
+- **Path A: End-to-End Custom Data Feed**: Triggered by a CRON schedule, this workflow performs the full offchain to onchain data feed check and writes the result to the blockchain.
+- **Path B: Reactive Event Handling**: Triggered by an onchain event log, this workflow demonstrates how to use data from one event to react and query another contract.
+
+1. **Ensure you are in the project root directory (`demo`).**
+
+1. **Run the `simulate` command**:
+
+   ```bash
+   cre workflow simulate custom-data-feed --broadcast --target staging-settings
+   ```
+
+   <Aside type="note" title="How configuration is discovered">
+     The CLI automatically discovers your workflow configuration from the `workflow.yaml` file in the `custom-data-feed`
+     directory. This file specifies paths to your workflow entry point (`main.go`) and config files
+     (`config.staging.json`, `config.production.json`). The template already configures these paths correctly.
+   </Aside>
+
+   <Aside type="note" title="Onchain Writes are Dry Runs by Default">
+     The `--broadcast` flag is included here because this workflow performs an onchain write. By default, the `simulate`
+     command performs a dry run and will not broadcast the transaction without this flag. For more details, see the `cre
+     workflow simulate` [reference](/cre/reference/cli/workflow#cre-workflow-simulate).
+   </Aside>
+
+   You will first see a `Workflow compiled` message, followed by the trigger selection menu.
+
+---
+
+### Path A: The end-to-end Custom Data Feed workflow
+
+This path executes the core functionality of the demo: fetching offchain reserve data and writing the result onchain. It is initiated by the CRON trigger.
+
+#### **Running with the CRON Trigger**
+
+1.  At the prompt, select the `cron-trigger` by pressing `1` and then `Enter`.
+
+    ```
+    Workflow compiled
+
+    🚀 Workflow simulation ready. Please select a trigger:
+    1. cron-trigger@1.0.0 Trigger
+    2. evm:ChainSelector:16015286601757825753@1.0.0 LogTrigger
+
+    Enter your choice (1-2): 1
+    ```
+
+1.  The simulator will execute the full end-to-end workflow. The final logs will show the transaction hash from the successful onchain write.
+
+    ```bash
+    Workflow compiled
+
+    🚀 Workflow simulation ready. Please select a trigger:
+    1. cron-trigger@1.0.0 Trigger
+    2. evm:ChainSelector:16015286601757825753@1.0.0 LogTrigger
+
+    Enter your choice (1-2): 1
+
+    2025-10-31T17:13:52Z [SIMULATION] Simulator Initialized
+
+    2025-10-31T17:13:52Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+    2025-10-31T17:13:52Z [USER LOG] msg="fetching por" url=https://api.real-time-reserves.verinumus.io/v1/chainlink/proof-of-reserves/TrueUSD evms="[{TokenAddress:0x4700A50d858Cb281847ca4Ee0938F80DEfB3F1dd ReserveManagerAddress:0x51933aD3A79c770cb6800585325649494120401a BalanceReaderAddress:0x4b0739c94C1389B55481cb7506c62430cA7211Cf MessageEmitterAddress:0x1d598672486ecB50685Da5497390571Ac4E93FDc ChainName:ethereum-testnet-sepolia GasLimit:1000000}]"
+    2025-10-31T17:13:53Z [USER LOG] msg=ReserveInfo reserveInfo="&{LastUpdated:2025-10-31 22:13:36.163 +0000 UTC TotalReserve:494515082.75}"
+    2025-10-31T17:13:53Z [USER LOG] msg=TotalSupply totalSupply=1000000000000000000000000
+    2025-10-31T17:13:53Z [USER LOG] msg=TotalReserveScaled totalReserveScaled=494515082750000000000000000
+    2025-10-31T17:13:53Z [USER LOG] msg="Getting native balances" address=0x4b0739c94C1389B55481cb7506c62430cA7211Cf tokenAddress=0x4700A50d858Cb281847ca4Ee0938F80DEfB3F1dd
+    2025-10-31T17:13:53Z [USER LOG] msg="Native token balance" token=0x4700A50d858Cb281847ca4Ee0938F80DEfB3F1dd balance=0
+    2025-10-31T17:13:53Z [USER LOG] msg="Updating reserves" totalSupply=1000000000000000000000000 totalReserveScaled=494515082750000000000000000
+    2025-10-31T17:13:53Z [USER LOG] msg="Writing report" totalSupply=1000000000000000000000000 totalReserveScaled=494515082750000000000000000
+    2025-10-31T17:14:00Z [USER LOG] msg="Write report succeeded" response="tx_status:TX_STATUS_SUCCESS receiver_contract_execution_status:RECEIVER_CONTRACT_EXECUTION_STATUS_SUCCESS tx_hash:\"E7\\xe6\\x8d5h\\x87b\\xfeZ\\x9b\\x81\\x86W\\xbcߩxaѬ\\xe3\\xb9\\xf0\\x0ewL\\xb1\\x1e\\x82g\\xa0\" transaction_fee:{abs_val:\"\\x11M)[@\" sign:1}"
+    2025-10-31T17:14:00Z [USER LOG] msg="Write report transaction succeeded at" txHash=0x4537e68d35688762fe5a9b818657bcdfa97861d1ace3b9f00e774cb11e8267a0
+
+    Workflow Simulation Result:
+    "494515082.75"
+
+    2025-10-31T17:14:00Z [SIMULATION] Execution finished signal received
+    2025-10-31T17:14:00Z [SIMULATION] Skipping WorkflowEngineV2
+    ```
+
+#### **Verifying the result onchain**
+
+1.  **Check the Transaction**: Copy the `txHash` from the logs in your terminal and paste it into the search bar on <a href="https://sepolia.etherscan.io/" target="_blank" rel="noopener noreferrer">Sepolia Etherscan</a>. You will see the full details of the transaction your workflow submitted.
+
+    <Aside type="note" title="What are you seeing on a blockchain explorer?">
+      You'll notice the transaction's `to` address is not the ReserveManager contract you intended to call. Instead,
+      it's to the Chainlink **Forwarder** contract. Your workflow sends the transaction to the Forwarder, which verifies
+      the cryptographic signatures and then delivers your data to the ReserveManager contract by calling its
+      `onReport()` function.
+      <br />
+      This is a core security pattern in CRE that ensures only verified, consensus-approved data reaches your smart
+      contracts. To learn more, see the [Onchain Write
+      guide](/cre/guides/workflow/using-evm-client/onchain-write/overview).
+    </Aside>
+
+1.  **Check the Contract State**: While your transaction went to the Forwarder, the underlying ReserveManager contract's state was still updated. You can verify this change directly on Etherscan in two ways:
+
+    **Option A: Read the contract state**
+    - Navigate to the ReserveManager contract address used in the demo: <a href="https://sepolia.etherscan.io/address/0x073671aE6EAa2468c203fDE3a79dEe0836adF032" target="_blank" rel="noopener noreferrer">`0x073671aE6EAa2468c203fDE3a79dEe0836adF032`</a>.
+    - Go to the `Read Contract` tab.
+    - Check the values for `lastTotalMinted` and `lastTotalReserve`. They should now reflect the data your workflow just wrote to the chain.
+
+    **Option B: Check the transaction events**
+    - Go to your transaction on Etherscan (using the `txHash` from your logs).
+    - Click on the `Logs` tab.
+    - You'll see events emitted during the transaction, including the event from the ReserveManager contract confirming the data update.
+
+This completes the end-to-end loop: triggering a workflow, fetching data, and verifiably writing the result to a public blockchain.
+
+---
+
+### Path B: The reactive event handler
+
+This path demonstrates a more advanced, reactive pattern. It uses an onchain event (a log) as a trigger, inspects the data within that event, and uses that data to make an onchain read call. This path does not write any data onchain.
+
+#### **Running with the log trigger**
+
+1.  From the trigger menu, select the EVM Log Trigger by pressing `2` and then `Enter`.
+
+1.  When prompted, provide the following details for a real <a href="https://sepolia.etherscan.io/tx/0x420721d7d00130a03c5b525b2dbfd42550906ddb3075e8377f9bb5d1a5992f8e#eventlog" target="_blank" rel="noopener noreferrer">transaction on the Sepolia testnet</a> that emitted a `MessageEmitted` event:
+    - **Transaction hash**: <CopyText text="0x420721d7d00130a03c5b525b2dbfd42550906ddb3075e8377f9bb5d1a5992f8e" code/>
+    - **Event index**: <CopyText text="0" code/>
+
+1.  The simulator will find the onchain event and use its payload to run the workflow. The final log will show the message it retrieved from the `MessageEmitter` contract.
+
+    <Aside type="caution" title="Historical Block State">
+      The current demo workflow attempts to read from the historical block number of the event log. If you're using a
+      public RPC node, this may fail with "historical state is not available" because public nodes typically only keep
+      recent state. The workflow would need to use `rpc.FinalizedBlockNumber` instead of `blockNumber` for the contract
+      read to work reliably with public RPCs.
+    </Aside>
+
+    ```bash
+    Workflow compiled
+
+    🚀 Workflow simulation ready. Please select a trigger:
+    1. cron-trigger@1.0.0 Trigger
+    2. evm:ChainSelector:16015286601757825753@1.0.0 LogTrigger
+
+    Enter your choice (1-2): 2
+
+
+    🔗 EVM Trigger Configuration:
+    Please provide the transaction hash and event index for the EVM log event.
+    Enter transaction hash (0x...): 0x420721d7d00130a03c5b525b2dbfd42550906ddb3075e8377f9bb5d1a5992f8e
+    Enter event index (0-based): 0
+    Fetching transaction receipt for transaction 0x420721d7d00130a03c5b525b2dbfd42550906ddb3075e8377f9bb5d1a5992f8e...
+    Found log event at index 0: contract=0x1d598672486ecB50685Da5497390571Ac4E93FDc, topics=3
+    Created EVM trigger log for transaction 0x420721d7d00130a03c5b525b2dbfd42550906ddb3075e8377f9bb5d1a5992f8e, event 0
+    2025-10-31T17:49:53Z [SIMULATION] Simulator Initialized
+
+    2025-10-31T17:49:53Z [SIMULATION] Running trigger trigger=evm:ChainSelector:16015286601757825753@1.0.0
+    2025-10-31T17:49:53Z [USER LOG] msg="Message retrieved from the event log" message="this is a test message"
+    2025-10-31T17:49:53Z [USER LOG] msg="Message retrieved from the contract" message="this is a test message"
+
+    Workflow Simulation Result:
+    "this is a test message"
+
+    2025-10-31T17:49:53Z [SIMULATION] Execution finished signal received
+    2025-10-31T17:49:53Z [SIMULATION] Skipping WorkflowEngineV2
+    ```
+
+#### **How it works: An event-driven pattern**
+
+What you just witnessed is a powerful event-driven capability. The workflow didn't just react to an event; it used the information _inside_ that event to drive its next action. Here's how it works:
+
+1. **You provide the event's "coordinates"**: By giving the simulator a transaction hash and a log index, you point it to a specific `MessageEmitted` event on the blockchain.
+
+1. **The workflow receives the decoded event data**: The simulator passes a decoded log payload into the `onLogTrigger` callback function in `workflow.go`. The Go SDK automatically decodes the event log into a strongly-typed structure, making it easy to access event fields.
+
+1. **The workflow extracts the emitter's address**: The code for `onLogTrigger` accesses `payload.Data.Emitter` to get the address of the entity that emitted the message. This is a decoded field from the event, not a raw topic.
+
+1. **The workflow makes a new onchain call**: This is the key step. The workflow now takes the `emitter` address it just extracted from the decoded event and uses it as an argument to call the `GetLastMessage` function on the `MessageEmitter` contract. It is effectively asking, "What was the last message from the specific emitter involved in the event that triggered me?"
+
+1. **The workflow logs the result**: Finally, it logs the message content it received from its `GetLastMessage` call and finishes.
+
+This pattern showcases how you can build sophisticated, interconnected institutional-grade smart contracts that react to onchain activity in real-time.
+
+## 7. Exploring the code
+
+The workflow code (`workflow.go`) is a great example of how a single workflow can contain multiple, independent handlers to perform different tasks. The `main.go` file serves as the entry point that initializes the workflow runner. Here is a high-level tour of the code to show how the two paths you just tested are implemented.
+
+- **`InitWorkflow`**: This is the entry point. It initializes the cron trigger and returns a workflow with two handlers: one for the cron trigger and one for the EVM log trigger. The EVM log trigger is configured to listen for `MessageEmitted` events from the MessageEmitter contract.
+
+- **`onPORCronTrigger`**: The entry point for **Path A**. It's a lightweight callback that immediately delegates to the shared `doPOR` function, demonstrating how you can reuse core logic.
+
+- **`onLogTrigger`**: This is the self-contained entry point for **Path B**. It contains its own unique logic to handle the reactive pattern: it's triggered by an event, extracts data from that event (the emitter address and message), and uses that data to make a new onchain query. It does **not** call `doPOR`.
+
+- **`doPOR`**: This is the engine for **Path A**. It contains the core business logic for the Custom Data Feed workflow, orchestrating the sequence of helper functions to fetch API data, read contract state, and finally write the result back onchain.
+
+- **`fetchPOR`, `getTotalSupply`, `fetchNativeTokenBalance`, `updateReserves`, and `prepareMessageEmitter`**: These are the helper functions that execute the specific steps for the Custom Data Feed and reactive event handling workflows. They contain the calls to the SDK clients (`http.Client`, `evm.Client`) and the generated contract bindings.
+
+## 8. Key Go SDK features in this demo
+
+This demo showcases several important patterns and features of the Go SDK:
+
+- **Generated Contract Bindings**: The workflow uses type-safe Go bindings generated from contract ABIs, providing compile-time safety for contract interactions.
+- **Multiple Trigger Handlers**: A single workflow can register multiple handlers for different trigger types using `cre.Handler()`.
+- **Consensus Aggregation from Tags**: The HTTP capability uses `cre.ConsensusAggregationFromTags[*ReserveInfo]()` to automatically aggregate offchain data based on struct field tags.
+- **Promise-Based Async Operations**: All SDK operations return promises that are awaited with `.Await()`, enabling both sequential and parallel execution patterns.
+- **Strongly-Typed Event Decoding**: EVM log triggers automatically decode event data into Go structs, eliminating manual topic parsing.
+- **Two-Step Write Pattern**: The workflow uses contract binding's `WriteReportFrom*` methods to generate a signed report and submit it onchain in one call.
+- **Chain Selector Management**: The SDK provides `evm.ChainSelectorFromName()` to convert human-readable chain names to chain selectors.
+- **Finalized Block Numbers**: Contract reads use `rpc.FinalizedBlockNumber` to ensure reading from finalized blockchain state.
+
+## Next steps
+
+You have successfully run the Custom Data Feed demo workflow. To understand how the different pieces of the workflow code work, explore these detailed guides:
+
+- **How are the Cron and EVM Log events handled?** Learn how to use different event sources to start your workflow in the **[Using Triggers](/cre/guides/workflow/using-triggers/overview)** guides.
+- **How does it fetch API data?** The demo uses the `http.Client` to fetch offchain reserve data. Learn more in the **[API Interactions](/cre/guides/workflow/using-http-client)** guide.
+- **How does it read from or write to the blockchain?** It uses the `evm.Client` for all onchain interactions. See the [**EVM Chain Interactions**](/cre/guides/workflow/using-evm-client/overview) guides for details.
+- **How does it use a contract binding?** The demo uses pre-built bindings to interact with the contracts safely. Learn how to create your own in the **[Generating Bindings](/cre/guides/workflow/using-evm-client/generating-bindings)** guide.

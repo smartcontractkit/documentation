@@ -6,16 +6,15 @@ import {
   handleApiError,
   successHeaders,
   commonHeaders,
-  LogLevel,
-  structuredLog,
   APIErrorType,
   createErrorResponse,
   CCIPError,
   loadChainConfiguration,
-} from "../utils.ts"
+} from "~/lib/ccip/utils.ts"
+import { logger } from "@lib/logging/index.js"
 
-import type { TokenFilterType, TokenApiResponse } from "../types/index.ts"
-import { TokenDataService } from "../../services/token-data.ts"
+import type { TokenFilterType, TokenApiResponse } from "~/lib/ccip/types/index.ts"
+import { TokenDataService } from "~/lib/ccip/services/token-data.ts"
 
 export const prerender = false
 
@@ -23,7 +22,7 @@ export const GET: APIRoute = async ({ request }) => {
   const requestId = crypto.randomUUID()
 
   try {
-    structuredLog(LogLevel.INFO, {
+    logger.info({
       message: "Processing CCIP tokens request",
       requestId,
       url: request.url,
@@ -34,7 +33,7 @@ export const GET: APIRoute = async ({ request }) => {
 
     // Validate environment
     const environment = validateEnvironment(params.get("environment") || undefined)
-    structuredLog(LogLevel.DEBUG, {
+    logger.debug({
       message: "Environment validated",
       requestId,
       environment,
@@ -46,7 +45,7 @@ export const GET: APIRoute = async ({ request }) => {
       chain_id: params.get("chain_id") || undefined,
     }
 
-    structuredLog(LogLevel.DEBUG, {
+    logger.debug({
       message: "Filter parameters parsed",
       requestId,
       filters,
@@ -54,14 +53,14 @@ export const GET: APIRoute = async ({ request }) => {
 
     // Validate output key - we'll still use this for formatting display options
     const outputKey = validateOutputKey(params.get("outputKey") || undefined)
-    structuredLog(LogLevel.DEBUG, {
+    logger.debug({
       message: "Output key validated",
       requestId,
       outputKey,
     })
 
     const config = await loadChainConfiguration(environment)
-    structuredLog(LogLevel.DEBUG, {
+    logger.debug({
       message: "Chain configuration loaded",
       requestId,
       environment,
@@ -75,7 +74,7 @@ export const GET: APIRoute = async ({ request }) => {
       metadata: serviceMetadata,
     } = await tokenDataService.getFilteredTokens(environment, filters, outputKey)
 
-    structuredLog(LogLevel.INFO, {
+    logger.info({
       message: "Token data retrieved successfully",
       requestId,
       validTokenCount: Object.keys(tokens).length,
@@ -94,7 +93,7 @@ export const GET: APIRoute = async ({ request }) => {
       ignored: errors,
     }
 
-    structuredLog(LogLevel.INFO, {
+    logger.info({
       message: "Sending successful response",
       requestId,
       metadata,
@@ -104,7 +103,7 @@ export const GET: APIRoute = async ({ request }) => {
       headers: { ...commonHeaders, ...successHeaders },
     })
   } catch (error) {
-    structuredLog(LogLevel.ERROR, {
+    logger.error({
       message: "Error processing tokens request",
       requestId,
       error: error instanceof Error ? error.message : "Unknown error",

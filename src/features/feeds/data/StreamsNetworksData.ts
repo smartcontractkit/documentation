@@ -4,6 +4,7 @@ export type NetworkDetails = {
   accessController?: string
   explorerUrl: string
   label: string
+  note?: string
 }
 
 export type NetworkData = {
@@ -18,6 +19,21 @@ export type NetworkData = {
 
 export const StreamsNetworksData: NetworkData[] = [
   {
+    network: "0G",
+    logoUrl: "/assets/chains/0g.svg",
+    networkStatus: "https://status.0g.ai/",
+    mainnet: {
+      label: "0G Aristotle (Mainnet)",
+      verifierProxy: "0x673Dd1aA4Dafe735135d00058042D6ee3e85eF81",
+      explorerUrl: "https://chainscan.0g.ai/address/%s",
+    },
+    testnet: {
+      label: "0G Galileo (Testnet)",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://chainscan-galileo.0g.ai/address/%s",
+    },
+  },
+  {
     network: "Apechain",
     logoUrl: "/assets/chains/apechain.svg",
     mainnet: {
@@ -29,6 +45,21 @@ export const StreamsNetworksData: NetworkData[] = [
       label: "Apechain Curtis (Testnet)",
       verifierProxy: "0x9D93c410AfDb41E8aEb1BA88B5Ff6DEAa09FF537",
       explorerUrl: "https://explorer.curtis.apechain.com/address/%s",
+    },
+  },
+  {
+    network: "Aptos",
+    logoUrl: "/assets/chains/aptos.svg",
+    networkStatus: "https://explorer.aptoslabs.com/?network=mainnet",
+    mainnet: {
+      label: "Aptos Mainnet",
+      verifierProxy: "0x5e6ee502816abcbe49b5bb670da4a1d5af520db11732e93f19ddd15b4608d01d",
+      explorerUrl: "https://explorer.aptoslabs.com/account/%s?network=mainnet",
+    },
+    testnet: {
+      label: "Aptos Testnet",
+      verifierProxy: "0x0c68769ae9efe2d02f10bc5baed793cfe0fe780c41e428d087d5d61286448090",
+      explorerUrl: "https://explorer.aptoslabs.com/account/%s?network=testnet",
     },
   },
   {
@@ -152,6 +183,11 @@ export const StreamsNetworksData: NetworkData[] = [
   {
     network: "Botanix",
     logoUrl: "/assets/chains/botanix.svg",
+    mainnet: {
+      label: "Botanix Mainnet",
+      verifierProxy: "0xC539169910DE08D237Df0d73BcDa9074c787A4a1",
+      explorerUrl: "https://botanixscan.io/address/%s",
+    },
     testnet: {
       label: "Botanix Testnet",
       verifierProxy: "0xfBFff08fE4169853F7B1b5Ac67eC10dc8806801d",
@@ -229,17 +265,31 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
-    network: "Hyperliquid",
-    logoUrl: "/assets/chains/hyperliquid.svg",
+    network: "Hedera",
+    logoUrl: "/assets/chains/hedera.svg",
     mainnet: {
-      label: "Hyperliquid Mainnet",
-      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
-      explorerUrl: "https://hyperliquid.cloud.blockscout.com/address/%s",
+      label: "Hedera Mainnet",
+      verifierProxy: "0x38818Ba0e01E7743F5c001e8Aae095dE56a137db",
+      explorerUrl: "https://hashscan.io/mainnet/contract/%s",
     },
     testnet: {
-      label: "Hyperliquid Testnet",
+      label: "Hedera Testnet",
+      verifierProxy: "0x57A97148C1fa50f35F0639f380077017D8893b6b",
+      explorerUrl: "https://hashscan.io/testnet/contract/%s",
+    },
+  },
+  {
+    network: "HyperEVM",
+    logoUrl: "/assets/chains/hyperliquid.svg",
+    mainnet: {
+      label: "HyperEVM Mainnet",
       verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
-      explorerUrl: "https://evm.hyperstats.xyz/address/%s",
+      explorerUrl: "https://hyperevmscan.io/address/address/%s",
+    },
+    testnet: {
+      label: "HyperEVM Testnet",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://testnet.purrsec.com/address/%s",
     },
   },
   {
@@ -255,6 +305,43 @@ export const StreamsNetworksData: NetworkData[] = [
       label: "Ink Sepolia Testnet",
       verifierProxy: "0x1f27392cC2394d54fFBA83B89C881200b5d5632C",
       explorerUrl: "https://explorer-sepolia.inkonchain.com/address/%s",
+    },
+  },
+  {
+    network: "Injective",
+    logoUrl: "/assets/chains/injective.svg",
+    mainnet: {
+      label: "Injective EVM Mainnet",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://injscan.com/account/inj1vra207kffxhnjt0usk84m9lramaq060t75latq/", // Note: Injective uses Bech32 address format, hardcoding here to avoid confusion
+    },
+  },
+  {
+    network: "Jovay",
+    logoUrl: "/assets/chains/jovay.svg",
+    mainnet: {
+      label: "Jovay Mainnet",
+      verifierProxy: "0xF1Ee15ecca3aD06edF9603a1ea6d19043804522A",
+      explorerUrl: "https://explorer.jovay.io/l2/address/%s",
+    },
+    testnet: {
+      label: "Jovay Sepolia Testnet",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://sepolia-explorer.jovay.io/l2/address/%s",
+    },
+  },
+  {
+    network: "Katana",
+    logoUrl: "/assets/chains/polygonkatana.svg",
+    mainnet: {
+      label: "Katana Mainnet",
+      verifierProxy: "0x2a644E5AC685112A7Eff0c4d73CD0260546D366F",
+      explorerUrl: "https://explorer.katanarpc.com/address/%s",
+    },
+    testnet: {
+      label: "Katana Testnet (Tatara)",
+      verifierProxy: "0x57A97148C1fa50f35F0639f380077017D8893b6b",
+      explorerUrl: "https://explorer.tatara.katana.network/address/%s",
     },
   },
   {
@@ -305,19 +392,44 @@ export const StreamsNetworksData: NetworkData[] = [
     network: "MegaETH",
     logoUrl: "/assets/chains/megaeth.svg",
     networkStatus: "https://uptime.megaeth.com",
+    mainnet: {
+      label: "MegaETH Mainnet",
+      note: "Currently in private beta. Address whitelist required.",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://megaeth.blockscout.com/address/%s",
+    },
     testnet: {
       label: "MegaETH Testnet",
-      verifierProxy: "0xfBFff08fE4169853F7B1b5Ac67eC10dc8806801d",
-      explorerUrl: "https://www.megaexplorer.xyz/address/%s",
+      verifierProxy: "0xa33c1F0561eECe58ee7b7349D5BE018dd94EC9B6",
+      explorerUrl: "https://megaeth-testnet-v2.blockscout.com/address/%s",
+    },
+  },
+  {
+    network: "Metis",
+    logoUrl: "/assets/chains/metis.svg",
+    mainnet: {
+      label: "Metis Andromeda Mainnet",
+      verifierProxy: "0xC539169910DE08D237Df0d73BcDa9074c787A4a1",
+      explorerUrl: "https://andromeda-explorer.metis.io/address/%s",
+    },
+    testnet: {
+      label: "Metis Sepolia Testnet",
+      verifierProxy: "0xcFC9A8Efad365B04253575326f6A9bcDD8131Eb7",
+      explorerUrl: "https://sepolia-explorer.metisdevops.link/address/%s",
     },
   },
   {
     network: "Monad",
     logoUrl: "/assets/chains/monad.svg",
+    mainnet: {
+      label: "Monad Mainnet",
+      verifierProxy: "0xEd813D895457907399E41D36Ec0bE103E32148c8",
+      explorerUrl: "https://monadvision.com/address/%s",
+    },
     testnet: {
       label: "Monad Testnet",
       verifierProxy: "0xC539169910DE08D237Df0d73BcDa9074c787A4a1",
-      explorerUrl: "https://testnet.monadexplorer.com/address/%s",
+      explorerUrl: "https://testnet.monadvision.com/address/%s",
     },
   },
   {
@@ -365,6 +477,21 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "Plasma",
+    logoUrl: "/assets/chains/plasma.svg",
+    networkStatus: "https://statuspage.incident.io/plasmanetwork",
+    mainnet: {
+      label: "Plasma Mainnet",
+      verifierProxy: "0xB4626C56c8d66b09adC57e38a5A15CcCd51BE082",
+      explorerUrl: "https://plasmascan.to/address/%s",
+    },
+    testnet: {
+      label: "Plasma Testnet",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://testnet.plasmascan.to/address/%s",
+    },
+  },
+  {
     network: "Ronin",
     logoUrl: "/assets/chains/ronin.svg",
     mainnet: {
@@ -391,6 +518,20 @@ export const StreamsNetworksData: NetworkData[] = [
       label: "Scroll Sepolia Testnet",
       verifierProxy: "0xE17A7C6A7c2eF0Cb859578aa1605f8Bc2434A365",
       explorerUrl: "https://sepolia.scrollscan.com/address/%s",
+    },
+  },
+  {
+    network: "Sei",
+    logoUrl: "/assets/chains/sei.svg",
+    mainnet: {
+      label: "Sei Mainnet",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://seitrace.com/address/%s",
+    },
+    testnet: {
+      label: "Sei Testnet",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://testnet.seitrace.com/address/%s",
     },
   },
   {

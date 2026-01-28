@@ -1,11 +1,15 @@
 ---
 title: "VRF-Enabled LootBox/Pack Contract"
 description: "Build a pack contract using VRF."
+excerpt: "vrf enabled lootbox pack contract chainlink verifiable random function smart contract gaming nft random rewards"
 githubSourceCodeUrl: "https://github.com/smartcontractkit/quickstarts-lootbox"
 image: "QuickStarts-VRF-Enabled-LootBox-Pack-Contract.webp"
 products: ["vrf"]
 time: "90 minutes"
 requires: "Wallet with gas token & ERC-677 LINK"
+datePublished: "2023-09-21"
+lastModified: "2025-06-17"
+difficulty: "intermediate"
 ---
 
 import { Accordion, Aside, CodeSample } from "@components"
@@ -58,8 +62,7 @@ Your _deployer account_ is the main account that you will use to deploy the loot
 - Ensure the deployer account owns all the assets you wish to distribute as rewards.
 - To deploy this contract on testnets, ensure the deployer account has testnet LINK and testnet ETH (Sepolia). Use the [LINK faucet](https://faucets.chain.link/) to retrieve 20 testnet LINK and 0.1 Sepolia ETH.
 - Ensure the deployer account has enough LINK to fund the [VRF subscription](/vrf/v2/subscription). If you don't already have a VRF subscription, the deployment script will create and fund one for you.
-
-  - [Estimate the minimum subscription balance](/vrf/v2/estimating-costs#estimate-minimum-subscription-balance) that VRF requires to process your randomness request. The minimum subscription balance provides a buffer against gas volatility, and only the actual cost of your request will be deducted from your account. If your subscription is underfunded, your VRF request will be [pending](/vrf/v2/subscription/ui#pending) for 24 hours. If that happens, check the [Subscription Manager](https://vrf.chain.link]) to see the additional balance needed.
+  - [Estimate the minimum subscription balance](/vrf/v2/estimating-costs#estimate-minimum-subscription-balance) that VRF requires to process your randomness request. The minimum subscription balance provides a buffer against gas volatility, and only the actual cost of your request will be deducted from your account. If your subscription is underfunded, your VRF request will be [pending](/vrf/v2/subscription/ui#pending) for 24 hours. If that happens, check the [Subscription Manager](https://vrf.chain.link) to see the additional balance needed.
   - The initial funding amount is set to 10 LINK. Optionally, you can modify the initial funding amount in [`network-config.ts`](https://github.com/smartcontractkit/quickstarts-lootbox/blob/main/network-config.ts).
 
 - [Create a second account in your MetaMask wallet](https://support.metamask.io/hc/en-us/articles/360015289452-How-to-create-an-additional-account-in-your-wallet). This account is called the _receiving account_ in this tutorial, and its address is called the _opener address_. You will use this receiving account to open a test lootbox and receive the rewards as a user. [Configure the account](https://support.metamask.io/hc/en-us/articles/360015489031-How-to-display-tokens-in-MetaMask) to display the rewards that you want to distribute from the lootbox.
@@ -233,7 +236,7 @@ The [deploy script](https://github.com/smartcontractkit/quickstarts-lootbox/blob
 
     [Estimate the minimum subscription balance](/vrf/v2/estimating-costs#estimate-minimum-subscription-balance) that VRF requires to process your randomness request. The minimum subscription balance provides a buffer against gas volatility, and only the actual cost of your request will be deducted from your account.
 
-    If your subscription is underfunded, your VRF request will be [pending](/vrf/v2/subscription/ui#pending) for 24 hours. If this happens, check the [Subscription Manager](https://vrf.chain.link]) to see the additional balance needed.
+    If your subscription is underfunded, your VRF request will be [pending](/vrf/v2/subscription/ui#pending) for 24 hours. If this happens, check the [Subscription Manager](https://vrf.chain.link) to see the additional balance needed.
 
     </Aside>
 
@@ -254,7 +257,6 @@ Once the contract is deployed and the start timestamp is reached, users can star
 1. Switch to your receiving account to act as a test user and copy its address for the next steps.
 
 1. Open the lootbox. In Sepolia Etherscan:
-
    - Call the `publicOpen()` function if you initialized the contract with an empty allowlist.
    - Call the `privateOpen()` function if you set up an allowlist. Generate the Merkle proof locally using [merkletreejs](https://github.com/merkletreejs/merkletreejs), and pass in the opener address:
 

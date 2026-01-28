@@ -1,12 +1,34 @@
 import { MetaMaskInpageProvider } from "@metamask/providers"
-import detectEthereumProvider from "@metamask/detect-provider"
 import { BrowserProvider, ethers, toQuantity } from "ethers"
-import LinkToken from "@chainlink/contracts/abi/v0.8/LinkToken.json" with { type: "json" }
+import LinkToken from "@chainlink/contracts/abi/v0.8/shared/LinkToken.abi.json" with { type: "json" }
 import chains from "./reference/chains.json" with { type: "json" }
 import linkNameSymbol from "./reference/linkNameSymbol.json" with { type: "json" }
 import buttonStyles from "@chainlink/design-system/button.module.css"
 
 const chainlinkLogo = "https://docs.chain.link/images/logo.png"
+
+// EIP-6963 types
+interface EIP6963ProviderInfo {
+  uuid: string
+  name: string
+  icon: string
+  rdns: string
+}
+
+interface EIP6963ProviderDetail {
+  info: EIP6963ProviderInfo
+  provider: MetaMaskInpageProvider
+}
+
+interface EIP6963AnnounceProviderEvent extends CustomEvent {
+  type: "eip6963:announceProvider"
+  detail: EIP6963ProviderDetail
+}
+
+interface ExtendedEthereumProvider extends MetaMaskInpageProvider {
+  isPhantom?: boolean
+  isRabby?: boolean
+}
 
 const separator = "_"
 const addressPattern = "0x[0-9a-fA-F]{40}"
@@ -91,6 +113,55 @@ const defaultWalletParameters: AddToWalletParameters = {
   symbol: linkToken.symbol,
   decimals: linkToken.decimals,
   image: chainlinkLogo,
+}
+
+/**
+ * Detect MetaMask specifically using EIP-6963
+ * @returns Promise<MetaMaskInpageProvider | null>
+ */
+const detectMetaMaskViaEIP6963 = (): Promise<MetaMaskInpageProvider | null> => {
+  return new Promise((resolve) => {
+    let resolved = false
+
+    const handleAnnouncement = (event: Event) => {
+      const providerEvent = event as EIP6963AnnounceProviderEvent
+      const { info, provider } = providerEvent.detail
+
+      // Check for MetaMask specifically by RDNS
+      if (info.rdns === "io.metamask" || info.rdns === "io.metamask.flask") {
+        if (!resolved) {
+          resolved = true
+          window.removeEventListener("eip6963:announceProvider", handleAnnouncement)
+          resolve(provider)
+        }
+      }
+    }
+
+    // Listen for provider announcements
+    window.addEventListener("eip6963:announceProvider", handleAnnouncement)
+
+    // Request providers to announce themselves
+    window.dispatchEvent(new Event("eip6963:requestProvider"))
+
+    // Timeout after 3 seconds if no MetaMask found
+    setTimeout(() => {
+      if (!resolved) {
+        resolved = true
+        window.removeEventListener("eip6963:announceProvider", handleAnnouncement)
+
+        // Fallback: Check if window.ethereum is actually MetaMask
+        // This is less reliable but provides backward compatibility
+        const ethereum = (window as { ethereum?: MetaMaskInpageProvider }).ethereum
+        const extendedEthereum = ethereum as ExtendedEthereumProvider
+        if (ethereum?.isMetaMask && !extendedEthereum.isPhantom && !extendedEthereum.isRabby) {
+          console.warn("Using fallback MetaMask detection. Please update MetaMask for better compatibility.")
+          resolve(ethereum)
+        } else {
+          resolve(null)
+        }
+      }
+    }, 3000)
+  })
 }
 
 /**
@@ -303,8 +374,29 @@ const validateLinkAddress = async (address: string, provider: BrowserProvider) =
  * @returns void
  */
 const handleWalletError = (error: unknown, context: string): void => {
-  const errorMessage = error instanceof Error ? error.message : "Unknown error"
-  console.error(`${context}:`, errorMessage)
+  // Provide more specific error messages for common issues
+  if (error && typeof error === "object" && "code" in error) {
+    const err = error as ProviderRpcError
+    switch (err.code) {
+      case 4001:
+        console.log(`${context}: User rejected the request`)
+        break
+      case 4902:
+        console.log(`${context}: Unrecognized chain. Please add it to MetaMask.`)
+        break
+      case -32002:
+        console.log(`${context}: Request already pending. Please check MetaMask.`)
+        break
+      case -32603:
+        console.log(`${context}: Internal error. Please try again.`)
+        break
+      default:
+        console.error(`${context}: Error code ${err.code} - ${err.message}`)
+    }
+  } else {
+    const errorMessage = error instanceof Error ? error.message : "Unknown error"
+    console.error(`${context}:`, errorMessage)
+  }
 }
 
 /**
@@ -381,21 +473,51 @@ const validateAndAddToken = async (
   parameters: AddToWalletParameters
 ): Promise<boolean> => {
   try {
+    // Validate the LINK token contract
+    console.log(`Validating LINK token at address ${address}...`)
     await validateLinkAddress(address, provider)
+
+    // Add to wallet
+    console.log(`Adding LINK token to MetaMask...`)
     await addAssetToWallet(ethereum, parameters)
+
+    console.log(`Successfully added LINK token (${address}) to MetaMask`)
     return true
   } catch (error) {
-    handleWalletError(error, "Failed to validate/add token")
+    if (error && typeof error === "object" && "code" in error) {
+      const err = error as ProviderRpcError
+      if (err.code === 4001) {
+        console.log("User declined to add the token to MetaMask")
+        return false
+      }
+    }
+    handleWalletError(error, "Failed to add LINK token")
     return false
   }
 }
 
 const handleWalletTokenManagement = async () => {
   try {
-    const ethereum = (await detectEthereumProvider()) as MetaMaskInpageProvider
-    if (!ethereum?.isMetaMask) {
-      throw new Error("MetaMask not detected")
+    // Use EIP-6963 to detect MetaMask specifically
+    const ethereum = await detectMetaMaskViaEIP6963()
+
+    if (!ethereum) {
+      console.log("MetaMask not found. Wallet features will not be available.")
+      console.log("Please install MetaMask to use the 'Add to Wallet' feature.")
+      return // Exit gracefully if MetaMask is not found
     }
+
+    console.log("MetaMask detected via EIP-6963")
+
+    // Check if already connected
+    let accounts: string[] = []
+    try {
+      accounts = (await ethereum.request({ method: "eth_accounts" })) as string[]
+    } catch (error) {
+      console.error("Failed to check MetaMask connection status:", error)
+    }
+
+    const isConnected = accounts && accounts.length > 0
 
     const provider = new BrowserProvider(ethereum)
 
@@ -453,32 +575,98 @@ const handleWalletTokenManagement = async () => {
           address,
         }
 
-        if (chainId === detectedChainId) {
-          button.innerText = addToWalletText
-          button.onclick = async () => {
-            await validateAndAddToken(address, provider, ethereum, parameters)
+        // Create a function to handle token addition
+        const handleAddToken = async () => {
+          // First check if connected
+          const accounts = (await ethereum.request({ method: "eth_accounts" })) as string[]
+          if (!accounts || accounts.length === 0) {
+            // Not connected, request connection first
+            try {
+              button.innerText = "Connecting..."
+              button.disabled = true
+
+              await ethereum.request({ method: "eth_requestAccounts" })
+
+              // After connection, proceed with the original action
+              button.disabled = false
+            } catch (error) {
+              button.disabled = false
+              if ((error as ProviderRpcError).code === 4001) {
+                console.log("User rejected connection request")
+                button.innerText = chainId === detectedChainId ? addToWalletText : switchToNetworkText
+                return
+              }
+              console.error("Failed to connect to MetaMask:", error)
+              button.innerText = "Connection failed"
+              setTimeout(() => {
+                button.innerText = chainId === detectedChainId ? addToWalletText : switchToNetworkText
+              }, 2000)
+              return
+            }
           }
-        } else {
-          button.innerText = switchToNetworkText
-          button.title = `Switch to network ${chainId} before adding the Link token`
-          button.onclick = async () => {
+
+          // Now handle the token addition
+          if (chainId === detectedChainId) {
+            button.innerText = "Adding token..."
+            button.disabled = true
+            const success = await validateAndAddToken(address, provider, ethereum, parameters)
+            button.disabled = false
+            if (success) {
+              button.innerText = "✓ Added"
+              setTimeout(() => {
+                button.innerText = addToWalletText
+              }, 2000)
+            } else {
+              button.innerText = "Failed to add"
+              setTimeout(() => {
+                button.innerText = addToWalletText
+              }, 2000)
+            }
+          } else {
+            // Need to switch network first
             window.dispatchEvent(
               new CustomEvent(initChainChangeEventName, {
                 detail: { chainId },
               })
             )
 
+            button.innerText = "Switching network..."
+            button.disabled = true
             const switchSuccess = await handleChainSwitch(chainId, ethereum)
+            button.disabled = false
+
             if (switchSuccess) {
               // Get a fresh provider after network change
               const updatedProvider = new BrowserProvider(ethereum)
+              button.innerText = "Adding token..."
               const addSuccess = await validateAndAddToken(address, updatedProvider, ethereum, parameters)
               if (addSuccess) {
-                window.location.reload()
+                button.innerText = "✓ Added"
+                // Keep the success state visible - no need to reload
+              } else {
+                button.innerText = "Failed to add"
+                setTimeout(() => {
+                  button.innerText = switchToNetworkText
+                }, 2000)
               }
+            } else {
+              button.innerText = "Network switch failed"
+              setTimeout(() => {
+                button.innerText = switchToNetworkText
+              }, 2000)
             }
           }
         }
+
+        if (chainId === detectedChainId) {
+          button.innerText = isConnected ? addToWalletText : "Connect & Add to Wallet"
+          button.onclick = handleAddToken
+        } else {
+          button.innerText = isConnected ? switchToNetworkText : "Connect, Switch & Add"
+          button.title = `Switch to network ${chainId} before adding the Link token`
+          button.onclick = handleAddToken
+        }
+
         element.insertAdjacentElement("afterend", button)
       } catch (error) {
         handleWalletError(error, "Failed to process element")

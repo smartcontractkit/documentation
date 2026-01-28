@@ -3,7 +3,13 @@ section: ccip
 date: Last Modified
 title: "Transfer USDC with Data"
 metadata:
-  description: "Learn how Chainlink CCIP enables native & bridged USDC transfers. Tutorial: Transfer USDC & data from Avalanche Fuji to Ethereum Sepolia using CCIP."
+  description: "Transfer USDC and data with CCIP. Learn native vs bridged USDC (CCTP), architecture, and how to send USDC from Avalanche Fuji to Ethereum Sepolia."
+  image: "/images/ccip/usdc-diagram.png"
+  excerpt: "USDC, CCTP, native, bridged, CCIP, Avalanche Fuji, Ethereum Sepolia"
+  datePublished: "2024-04-12"
+  lastModified: "2025-05-19"
+  estimatedTime: "40 minutes"
+  difficulty: "advanced"
 ---
 
 import { Aside, ClickToZoom, CodeSample, CopyText } from "@components"
@@ -35,12 +41,12 @@ Projects using Bridged USDC can easily migrate to Native USDC once their blockch
 
 ### How CCIP Works with USDC
 
-Chainlink CCIP maintains a consistent [API](/ccip/api-reference/evm/v1.6.0/i-router-client) regardless of whether the transfer involves Native USDC or Bridged USDC. Here's how it operates in both scenarios:
+Chainlink CCIP maintains a consistent [API](/ccip/api-reference/evm/v1.6.1/i-router-client) regardless of whether the transfer involves Native USDC or Bridged USDC. Here's how it operates in both scenarios:
 
 - The sender has to interact with the CCIP router to initiate a cross-chain transaction, similar to the process for any other token transfers. See the [Transfer Tokens](/ccip/tutorials/evm/transfer-tokens-from-contract) guide to learn more.
 - The process uses the same onchain components including the Router, OnRamp, Commit Store, OffRamp, and Token Pool.
 - The process uses the same offchain components including the Committing DON, Executing DON, and the Risk Management Network.
-- USDC transfers also benefit from CCIP additional security provided by the [Risk Management Network](/ccip/concepts/architecture/key-concepts#risk-management-network).
+- USDC transfers also benefit from CCIP additional security provided by the Risk Management Network.
 
 #### Native USDC (CCTP-enabled)
 
@@ -115,11 +121,9 @@ Deploy the Sender contract on _Avalanche Fuji_:
 
 1. Compile your contract.
 1. Deploy, fund your sender contract on _Avalanche Fuji_ and enable sending messages to _Ethereum Sepolia_:
-
    1. Open MetaMask and select the network _Avalanche Fuji_.
    1. In Remix IDE, click on _Deploy & Run Transactions_ and select _Injected Provider - MetaMask_ from the environment list. Remix will then interact with your MetaMask wallet to communicate with _Avalanche Fuji_.
    1. Fill in your blockchain's router, LINK, and USDC contract addresses. The router and USDC addresses can be found on the [CCIP Directory](/ccip/directory) and the LINK contract address on the [LINK token contracts page](/resources/link-token-contracts). For Avalanche Fuji, the addresses are:
-
       - Router address: <CopyText text="0xf694e193200268f9a4868e4aa017a0118c9a8177" code/>
       - LINK contract address: <CopyText text="0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" code/>
       - USDC contract address: <CopyText text="0x5425890298aed601595a70AB815c96711a31Bc65" code/>
@@ -135,7 +139,6 @@ Deploy the Sender contract on _Avalanche Fuji_:
 Deploy the Staker and Receiver contracts on _Ethereum Sepolia_. Configure the Receiver contract to receive CCIP messages from the Sender contract:
 
 1. Deploy the Staker contract:
-
    1. Open MetaMask and select the network _Ethereum Sepolia_.
    1. [Open the Staker contract in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/CCIP/usdc/Staker.sol&autoCompile=true).
 
@@ -148,19 +151,16 @@ Deploy the Staker and Receiver contracts on _Ethereum Sepolia_. Configure the Re
    Note your contract address.
 
 1. Deploy the Receiver contract:
-
    1. [Open the Receiver contract in Remix](https://remix.ethereum.org/#url=https://docs.chain.link/samples/CCIP/usdc/Receiver.sol&autoCompile=true).
 
    1. Compile your contract.
    1. In Remix IDE, under _Deploy & Run Transactions_, make sure the environment is still _Injected Provider - MetaMask_ and that you are still connected to _Ethereum Sepolia_.
    1. Fill in your blockchain's router, LINK, and Staker contract addresses. The router and usdc addresses can be found on the [CCIP Directory](/ccip/directory) and the Staker contract address from the previous step. For _Ethereum Sepolia_, the addresses are:
-
       - Router address: <CopyText text="0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59" code/>
       - USDC contract address: <CopyText text="0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238" code/>
       - Staker address: Copied from the previous step
 
 1. Configure the Receiver contract to receive CCIP messages from the Sender contract:
-
    1. In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your Receiver contract deployed on _Ethereum Sepolia_.
    1. Fill in the arguments of the _**setSenderForSourceChain**_ function:
 
@@ -174,7 +174,6 @@ Deploy the Staker and Receiver contracts on _Ethereum Sepolia_. Configure the Re
    1. Click on `transact` and confirm the transaction on MetaMask.
 
 1. Configure the Sender contract on _Avalanche Fuji_:
-
    1. Open MetaMask and select the network _Avalanche Fuji_.
    1. In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your Sender contract deployed on _Avalanche Fuji_.
    1. Fill in the arguments of the _**setReceiverForDestinationChain**_ function:
@@ -208,7 +207,6 @@ At this point:
 You will transfer _1 USDC_ and arbitrary data, which contains the encoded stake function name and parameters for calling Staker's stake function on the destination chain. The parameters contain the amount of staked tokens and the beneficiary address. The CCIP fees for using CCIP will be paid in LINK.
 
 1.  Transfer tokens and data from _Avalanche Fuji_:
-
     1.  Open MetaMask and select the network _Avalanche Fuji_.
     1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Avalanche Fuji_.
     1.  Fill in the arguments of the _**sendMessagePayLINK**_ function:
@@ -243,7 +241,6 @@ You will transfer _1 USDC_ and arbitrary data, which contains the encoded stake 
           />
 
 1.  Check the balance of the beneficiary on the destination chain:
-
     1.  Open MetaMask and select the network _Ethereum Sepolia_.
     1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your Staker contract deployed on _Ethereum Sepolia_.
     1.  Call the `balanceOf` function with the beneficiary address.
@@ -258,7 +255,6 @@ You will transfer _1 USDC_ and arbitrary data, which contains the encoded stake 
     1.  Notice that the balance of the beneficiary is 1,000,000 Staker tokens. The Staker contract has the same number of decimals as the USDC token, which is 6. This means the beneficiary has 1 USDC staked and can redeem it by providing the same amount of Staker tokens.
 
 1.  Redeem the staked tokens:
-
     1.  Open MetaMask and make sure the network is _Ethereum Sepolia_.
     1.  Make sure you are connected with the beneficiary account.
     1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your Staker contract deployed on _Ethereum Sepolia_.
@@ -293,12 +289,10 @@ The smart contracts featured in this tutorial are designed to interact with CCIP
 The Sender contract is responsible for initiating the transfer of USDC tokens and data. Here's how it works:
 
 1. Initializing the contract:
-
    - When deploying the contract, you define the router address, LINK contract address, and USDC contract address.
    - These addresses are essential for interacting with the CCIP router and handling token transfers.
 
 1. `sendMessagePayLINK` function:
-
    - This function sends USDC tokens, the encoded function signature of the `stake` function, and arguments (beneficiary address and amount) to the Receiver contract on the destination chain.
    - Constructs a CCIP message using the `EVM2AnyMessage` struct.
    - Computes the necessary fees using the router's `getFee` function.
@@ -315,17 +309,14 @@ The Sender contract is responsible for initiating the transfer of USDC tokens an
 The Staker contract manages the staking and redemption of USDC tokens. Here's how it works:
 
 1. Initializing the contract:
-
    - When deploying the contract, you define the USDC token address.
    - This address is essential for interacting with the USDC token contract.
 
 1. `stake` function:
-
    - Allows staking of USDC tokens on behalf of a beneficiary.
    - Transfers USDC from the caller (`msg.sender`) to the contract, then mints an equivalent amount of staking tokens to the beneficiary.
 
 1. `redeem` function:
-
    - Allows beneficiaries to redeem their staked tokens for USDC.
    - Burns the staked tokens and transfers the equivalent USDC to the beneficiary.
 
@@ -336,40 +327,33 @@ The Staker contract manages the staking and redemption of USDC tokens. Here's ho
 The Receiver contract handles incoming cross-chain messages, processes them, and interacts with the Staker contract to stake USDC on behalf of the beneficiary. Here's how it works:
 
 1. Initializing the Contract:
-
    - When deploying the contract, you define the router address, USDC token address, and staker contract address.
    - These addresses are essential for interacting with the CCIP router, USDC token, and Staker contracts.
 
 1. `ccipReceive` function:
-
    - The entry point for the CCIP router to deliver messages to the contract.
    - Validates the sender and processes the message, ensuring it comes from the correct sender contract on the source chain.
 
 1. Processing Message:
-
    - Calls the `processMessage` function, which is external to leverage Solidity's try/catch error handling mechanism.
    - Inside `processMessage`, it calls the `_ccipReceive` function for further message processing.
 
 1. `_ccipReceive` function:
-
    - Checks if the received token is USDC. If not, it reverts.
    - Makes a low-level call to the `stake` function of the Staker contract using the encoded function signature and arguments from the received data.
    - Emits a `MessageReceived` event upon successful processing.
 
 1. Error Handling:
-
    - If an error occurs during processing, the catch block within ccipReceive is executed.
    - The `messageId` of the failed message is added to `s_failedMessages`, and the message content is stored in `s_messageContents`.
    - A `MessageFailed` event is emitted, allowing for later identification and reprocessing of failed messages.
 
 1. `retryFailedMessage` function:
-
    - Allows the contract owner to retry a failed message and recover the associated tokens.
    - Updates the error code for the message to `RESOLVED` to prevent multiple retries.
    - Transfers the locked tokens associated with the failed message to the specified beneficiary as an escape hatch.
 
 1. `getFailedMessages` function:
-
    - Retrieves a paginated list of failed messages for inspection.
 
 <CcipCommon callout="educationalDisclaimer" />

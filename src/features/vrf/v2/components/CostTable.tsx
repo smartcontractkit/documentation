@@ -4,7 +4,7 @@ import "./costTable.css"
 import { useCallback, useEffect, useReducer } from "preact/hooks"
 import { parseUnits, formatUnits, parseEther } from "ethers"
 import button from "@chainlink/design-system/button.module.css"
-import { commify } from "~/utils/index.js"
+import { commify } from "~/utils/number.ts"
 
 interface Props {
   method: "vrfSubscription" | "vrfDirectFunding"

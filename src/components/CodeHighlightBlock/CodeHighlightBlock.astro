@@ -1,0 +1,628 @@
+---
+import type { HTMLAttributes } from "astro/types"
+import fileIconSVG from "./assets/file-icon.svg?raw"
+import copyIconSVG from "./assets/copy-icon.svg?raw"
+import checkmarkIconSVG from "./assets/checkmark-icon.svg?raw"
+import "./CodeHighlightBlock.css"
+
+/**
+ * CodeHighlightBlock - Single language code display component
+ *
+ * This component provides an enhanced code block with:
+ * - Syntax highlighting (custom lightweight engine, no external dependencies)
+ * - Line numbers in left column
+ * - Line highlighting capabilities (both manual and automatic)
+ * - File title header with file icon
+ * - Copy to clipboard functionality with visual feedback
+ * - Complete isolation from global styles (won't affect backticks on the page)
+ *
+ * For multi-language support with dropdown selector, use CodeHighlightBlockMulti instead.
+ *
+ * USAGE EXAMPLES:
+ *
+ * 1. Basic code block:
+ * <CodeHighlightBlock
+ *   lang="go"
+ *   code={myGoCode}
+ *   title="main.go"
+ * />
+ *
+ * 2. With imported code from external file:
+ * import myCode from './snippets/example.go?raw'
+ * <CodeHighlightBlock
+ *   lang="go"
+ *   code={myCode}
+ *   title="example.go"
+ * />
+ *
+ * 3. With explicit line highlighting:
+ * <CodeHighlightBlock
+ *   lang="go"
+ *   code={myCode}
+ *   title="main.go"
+ *   highlightLines="5,10-12,20"
+ * />
+ *
+ * 4. With inline highlight markers in the code:
+ * Your imported code can include these special comments:
+ * - `// highlight-line` at the end of a line to highlight that line
+ * - `// highlight-start` and `// highlight-end` to highlight blocks
+ * - These comments are automatically detected and removed from display
+ * - You can combine both prop-based and marker-based highlighting
+ *
+ * 5. With line tooltips/comments:
+ * <CodeHighlightBlock
+ *   lang="go"
+ *   code={myCode}
+ *   title="main.go"
+ *   lineComments={{
+ *     5: "This initializes the HTTP client",
+ *     12: "Error handling is crucial for production code",
+ *     "20": "This sends the request to the API"
+ *   }}
+ * />
+ *
+ * 6. With segment tooltips for external files:
+ * <CodeHighlightBlock
+ *   lang="go"
+ *   code={externalCode}
+ *   title="main.go"
+ *   segmentTooltips={{
+ *     "3:main": "Entry point of the Go program",
+ *     "5:import": "Imports external packages",
+ *     "10:http.Client": "HTTP client for API requests"
+ *   }}
+ * />
+ * // Format: "lineNumber:segment" → tooltip text
+ *
+ * SUPPORTED LANGUAGES:
+ * - go: Full Go syntax highlighting (keywords, types, strings, comments, functions)
+ * - typescript: Basic TypeScript support
+ * - bash/shell: Basic shell command highlighting
+ * - json, yaml: Basic structure highlighting
+ * - Other languages: Basic highlighting (easily extensible)
+ */
+
+type SupportedLanguage = "go" | "ts" | "typescript" | "bash" | "shell" | "json" | "yaml" | "sol" | "plaintext"
+
+interface Props extends HTMLAttributes<"div"> {
+  /**
+   * The code content to display
+   */
+  code: string
+
+  /**
+   * The language used for syntax highlighting (e.g., "go", "typescript", "bash").
+   * This determines which syntax highlighting rules are applied.
+   * Default: "plaintext"
+   */
+  lang?: SupportedLanguage
+
+  /**
+   * Optional title displayed at the top of the code block.
+   * Usually the filename (e.g., "main.go", "config.yaml")
+   */
+  title?: string
+
+  /**
+   * A comma-separated string of lines or ranges to highlight.
+   * Example: "5, 10-12, 20"
+   */
+  highlightLines?: string
+
+  /**
+   * Optional comments/tooltips for specific code lines.
+   */
+  lineComments?: Record<string, string>
+
+  /**
+   * Segment-specific tooltips for external files.
+   * Format: "lineNumber:segment" → tooltip text
+   */
+  segmentTooltips?: Record<string, string>
+}
+
+const {
+  code,
+  lang = "plaintext",
+  title,
+  highlightLines,
+  lineComments = {},
+  segmentTooltips = {},
+  ...rest
+} = Astro.props
+
+const linesToHighlight = new Set<number>()
+
+// Parse explicit highlightLines prop
+if (highlightLines) {
+  const ranges = highlightLines.split(",")
+  for (const range of ranges) {
+    const trimmedRange = range.trim()
+    if (trimmedRange.includes("-")) {
+      const [startStr, endStr] = trimmedRange.split("-")
+      const start = parseInt(startStr.trim(), 10)
+      const end = parseInt(endStr.trim(), 10)
+      if (!isNaN(start) && !isNaN(end) && start <= end) {
+        for (let i = start; i <= end; i++) {
+          linesToHighlight.add(i)
+        }
+      }
+    } else {
+      const lineNumber = parseInt(trimmedRange, 10)
+      if (!isNaN(lineNumber)) {
+        linesToHighlight.add(lineNumber)
+      }
+    }
+  }
+}
+
+// Parse inline highlight markers from the code
+const originalLines = code.split(/\r?\n/)
+let inHighlightBlock = false
+const linesToHighlightInOriginal = new Set<number>()
+
+for (let i = 0; i < originalLines.length; i++) {
+  const line = originalLines[i]
+  const lineNumber = i + 1
+
+  // Check for highlight markers
+  const hasHighlightLine = line.includes("highlight-line")
+  const hasHighlightStart = line.includes("highlight-start")
+  const hasHighlightEnd = line.includes("highlight-end")
+
+  // Track lines to highlight
+  if (hasHighlightLine) {
+    linesToHighlightInOriginal.add(lineNumber)
+  }
+
+  if (hasHighlightStart) {
+    inHighlightBlock = true
+  } else if (inHighlightBlock && !hasHighlightEnd) {
+    linesToHighlightInOriginal.add(lineNumber)
+  }
+
+  if (hasHighlightEnd) {
+    inHighlightBlock = false
+  }
+}
+
+// Parse segment tooltips from props (for external files)
+const segmentTooltipsList: Array<{ line: number; segment: string; text: string }> = []
+Object.entries(segmentTooltips).forEach(([key, text]) => {
+  const [lineStr, segment] = key.split(":")
+  const lineNumber = parseInt(lineStr, 10)
+  if (!isNaN(lineNumber) && segment) {
+    segmentTooltipsList.push({ line: lineNumber, segment: segment.trim(), text })
+  }
+})
+
+// Parse segment tooltips from inline markers (for inline code)
+const inlineSegmentTooltips: Array<{ text: string; segment: string; fullMatch: string }> = []
+let cleanCode = code
+
+// Extract inline segment tooltips first
+const tooltipRegex = /<tooltip="([^"]+)">([^<]+)<\/tooltip>/g
+let match
+while ((match = tooltipRegex.exec(cleanCode)) !== null) {
+  inlineSegmentTooltips.push({
+    text: match[1],
+    segment: match[2],
+    fullMatch: match[0],
+  })
+}
+
+// Remove tooltip markers from code
+cleanCode = cleanCode.replace(/<tooltip="[^"]+">([^<]+)<\/tooltip>/g, "$1")
+
+// Remove highlight markers and build mapping simultaneously
+const lineMapping = new Map<number, number>() // original line -> clean line
+let cleanLineNumber = 0
+
+const processedLines = originalLines.map((line, index) => {
+  const originalLineNumber = index + 1
+
+  // Remove highlight marker comments from the line
+  let processedLine = line.replace(/\s*(\/\/|#|<!--|\/\*)\s*highlight-line.*?(\*\/|-->)?$/gm, "")
+  processedLine = processedLine.replace(/\s*(\/\/|#|<!--|\/\*)\s*highlight-start.*?(\*\/|-->)?$/gm, "")
+  processedLine = processedLine.replace(/\s*(\/\/|#|<!--|\/\*)\s*highlight-end.*?(\*\/|-->)?$/gm, "")
+
+  // If after removing markers the line is empty or only whitespace, skip it entirely
+  if (processedLine.trim() === "") {
+    // Check if original line was ONLY a marker (not real code that became empty)
+    const wasOnlyMarker = line.match(
+      /^\s*(\/\/|#|<!--|\/\*)\s*(highlight-line|highlight-start|highlight-end).*?(\*\/|-->)?\s*$/
+    )
+    if (wasOnlyMarker) {
+      return null // This line will be filtered out
+    }
+  }
+
+  // This line will be kept, so map it
+  cleanLineNumber++
+  lineMapping.set(originalLineNumber, cleanLineNumber)
+  return processedLine
+})
+
+// Filter out null entries (removed lines)
+const cleanLinesArray = processedLines.filter((line) => line !== null)
+cleanCode = cleanLinesArray.join("\n")
+
+const codeLines = cleanCode.split(/\r?\n/)
+
+// Map the highlighted lines from original to clean line numbers
+linesToHighlightInOriginal.forEach((originalLine) => {
+  const cleanLine = lineMapping.get(originalLine)
+  if (cleanLine !== undefined) {
+    linesToHighlight.add(cleanLine)
+  }
+})
+
+// Generate unique ID for this instance to avoid contamination
+const blockId = `code-block-${Math.random().toString(36).substring(2, 15)}`
+
+function getLanguageDisplayName(langCode: string): string {
+  const langMap: Record<string, string> = {
+    js: "JavaScript",
+    ts: "TypeScript",
+    go: "Go",
+    bash: "Shell",
+    yaml: "YAML",
+    json: "JSON",
+    sol: "Solidity",
+  }
+  return langMap[langCode.toLowerCase()] || langCode.charAt(0).toUpperCase() + langCode.slice(1)
+}
+
+const languageDisplay = getLanguageDisplayName(lang)
+---
+
+<div class="code-block-container" id={blockId} data-lang={lang} data-clean-code={JSON.stringify(cleanCode)} {...rest}>
+  <div class="code-width-wrapper">
+    <div class="code-block-header">
+      {
+        title ? (
+          <div class="code-title">
+            <span set:html={fileIconSVG} class="file-icon" />
+            <span>{title}</span>
+          </div>
+        ) : (
+          <div class="code-title empty" />
+        )
+      }
+
+      <div class="code-header-right">
+        <div class="language-label">{languageDisplay}</div>
+        <button class="copy-button" aria-label="Copy code to clipboard" data-tooltip="Copy code">
+          <span set:html={copyIconSVG} />
+        </button>
+      </div>
+    </div>
+
+    <div class="code-block-content">
+      <table class="code-table">
+        <tbody>
+          {
+            codeLines.map((line, index) => {
+              const lineNumber = index + 1
+              const isHighlighted = linesToHighlight.has(lineNumber)
+              const hasComment = lineComments[lineNumber] || lineComments[lineNumber.toString()]
+              const commentText = hasComment ? lineComments[lineNumber] || lineComments[lineNumber.toString()] : null
+
+              return (
+                <tr
+                  class={`${isHighlighted ? "line-highlighted" : ""} ${hasComment ? "has-comment" : ""}`}
+                  data-line-number={lineNumber}
+                >
+                  <td class="line-number">
+                    <span class="number-text">{lineNumber}</span>
+                  </td>
+                  <td class="line-content">
+                    {hasComment ? (
+                      <span class="line" data-comment={commentText}>
+                        {line || "\u200b"}
+                      </span>
+                    ) : (
+                      <span class="line">{line || "\u200b"}</span>
+                    )}
+                  </td>
+                </tr>
+              )
+            })
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script
+  type="module"
+  define:vars={{
+    copyIconSVG,
+    checkmarkIconSVG,
+    lang,
+    lineComments,
+    segmentTooltipsList,
+    inlineSegmentTooltips,
+    blockId,
+  }}
+>
+  document.addEventListener("DOMContentLoaded", () => {
+    // Only process THIS specific container to avoid contamination
+    const container = document.getElementById(blockId)
+    if (!container) return
+
+    const allLineElements = container.querySelectorAll(".line")
+    if (allLineElements.length === 0) return
+
+    // Simple syntax highlighting function
+    function highlightInIsolation(code, language) {
+      // First, HTML-escape the code to prevent code parts from being interpreted as tags
+      const escapeHtml = (text) => {
+        const div = document.createElement("div")
+        div.textContent = text
+        return div.innerHTML
+      }
+
+      const goKeywords = ["package", "import", "func", "type", "struct", "if", "else", "for", "return", "var", "const"]
+      const goTypes = ["string", "int", "bool", "error", "interface{}"]
+
+      const tsKeywords = [
+        "interface",
+        "function",
+        "const",
+        "let",
+        "var",
+        "type",
+        "class",
+        "extends",
+        "implements",
+        "return",
+        "if",
+        "else",
+        "for",
+        "while",
+        "import",
+        "export",
+        "default",
+      ]
+      const tsTypes = ["string", "number", "boolean", "void", "any", "unknown", "object", "Array"]
+
+      let highlighted = escapeHtml(code)
+
+      if (language === "go") {
+        // Highlight strings
+        highlighted = highlighted.replace(/"([^"]*)"/g, '<span class="token string">"$1"</span>')
+        highlighted = highlighted.replace(/`([^`]*)`/g, '<span class="token string">`$1`</span>')
+
+        // Highlight comments
+        highlighted = highlighted.replace(/(\/\/.*$)/gm, '<span class="token comment">$1</span>')
+        highlighted = highlighted.replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="token comment">$1</span>')
+
+        // Highlight keywords
+        goKeywords.forEach((keyword) => {
+          const regex = new RegExp(`\\b(${keyword})\\b(?![^<]*>)`, "g")
+          highlighted = highlighted.replace(regex, '<span class="token keyword">$1</span>')
+        })
+
+        // Highlight types
+        goTypes.forEach((type) => {
+          const regex = new RegExp(`\\b(${type})\\b(?![^<]*>)`, "g")
+          highlighted = highlighted.replace(regex, '<span class="token builtin">$1</span>')
+        })
+
+        // Highlight functions
+        highlighted = highlighted.replace(/\b(\w+)\(/g, '<span class="token function">$1</span>(')
+      }
+
+      if (language === "ts" || language === "typescript") {
+        // Highlight strings
+        highlighted = highlighted.replace(/"([^"]*)"/g, '<span class="token string">"$1"</span>')
+        highlighted = highlighted.replace(/'([^']*)'/g, "<span class=\"token string\">'$1'</span>")
+        highlighted = highlighted.replace(/`([^`]*)`/g, '<span class="token string">`$1`</span>')
+
+        // Highlight comments
+        highlighted = highlighted.replace(/(\/\/.*$)/gm, '<span class="token comment">$1</span>')
+        highlighted = highlighted.replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="token comment">$1</span>')
+
+        // Highlight keywords
+        tsKeywords.forEach((keyword) => {
+          const regex = new RegExp(`\\b(${keyword})\\b(?![^<]*>)`, "g")
+          highlighted = highlighted.replace(regex, '<span class="token keyword">$1</span>')
+        })
+
+        // Highlight types
+        tsTypes.forEach((type) => {
+          const regex = new RegExp(`\\b(${type})\\b(?![^<]*>)`, "g")
+          highlighted = highlighted.replace(regex, '<span class="token builtin">$1</span>')
+        })
+
+        // Highlight functions and methods
+        highlighted = highlighted.replace(/\b(\w+)\(/g, '<span class="token function">$1</span>(')
+
+        // Highlight type annotations
+        highlighted = highlighted.replace(
+          /:\s*([A-Za-z][A-Za-z0-9]*(?:\[\])?)/g,
+          ': <span class="token builtin">$1</span>'
+        )
+      }
+
+      return highlighted
+    }
+
+    const language = container.dataset.lang || lang || "plaintext"
+
+    // Fix initial highlighting for server-rendered content (ensure full width)
+    const existingHighlightedRows = container.querySelectorAll("tr.line-highlighted")
+    existingHighlightedRows.forEach((tr) => {
+      const lineContent = tr.querySelector("td.line-content")
+      if (lineContent) {
+        // Apply the same styling as CodeHighlightBlockMulti
+        lineContent.style.backgroundColor = "rgba(38, 166, 154, 0.15)"
+        lineContent.style.borderLeft = "3px solid #2ecc71"
+        lineContent.style.paddingLeft = "12px"
+        lineContent.style.width = "100%"
+        lineContent.style.boxSizing = "border-box"
+        lineContent.style.position = "relative"
+      }
+
+      const lineNumber = tr.querySelector("td.line-number")
+      if (lineNumber) {
+        lineNumber.style.backgroundColor = "#2b2b2b"
+        const numberSpan = lineNumber.querySelector(".number-text")
+        if (numberSpan) {
+          numberSpan.style.color = "#2ecc71"
+        }
+      }
+    })
+
+    // Apply highlighting to each line
+    allLineElements.forEach((lineElement, index) => {
+      const lineText = lineElement.textContent || ""
+      const currentLineNumber = index + 1
+
+      if (lineText.trim()) {
+        let highlighted = highlightInIsolation(lineText, language)
+
+        // Process inline segment tooltips (from <tooltip> markers)
+        inlineSegmentTooltips.forEach((tooltip) => {
+          const segmentRegex = new RegExp(`\\b(${tooltip.segment.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})\\b`, "g")
+          highlighted = highlighted.replace(
+            segmentRegex,
+            `<span class="segment-highlight" data-tooltip="${tooltip.text}">$1</span>`
+          )
+        })
+
+        // Process prop-based segment tooltips (for external files)
+        segmentTooltipsList.forEach((tooltip) => {
+          if (tooltip.line === currentLineNumber) {
+            const segmentRegex = new RegExp(`\\b(${tooltip.segment.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})\\b`, "g")
+            highlighted = highlighted.replace(
+              segmentRegex,
+              `<span class="segment-highlight" data-tooltip="${tooltip.text}">$1</span>`
+            )
+          }
+        })
+
+        lineElement.innerHTML = highlighted
+      } else {
+        lineElement.innerHTML = "&#8203;"
+      }
+    })
+
+    // Add segment tooltips
+    const segmentHighlights = container.querySelectorAll(".segment-highlight")
+    segmentHighlights.forEach((segment) => {
+      const tooltipText = segment.getAttribute("data-tooltip")
+      if (!tooltipText) return
+
+      // Style the segment (subtle highlight)
+      segment.style.background = "rgba(79, 150, 255, 0.1)"
+      segment.style.borderRadius = "3px"
+      segment.style.padding = "1px 3px"
+      segment.style.margin = "0 1px"
+      segment.style.cursor = "help"
+      segment.style.transition = "all 0.2s ease"
+
+      // Create tooltip
+      const tooltip = document.createElement("div")
+      tooltip.className = "smart-tooltip"
+      tooltip.style.position = "absolute"
+      tooltip.style.zIndex = "10000"
+      tooltip.style.opacity = "0"
+      tooltip.style.visibility = "hidden"
+      tooltip.style.transition = "opacity 0.2s ease, visibility 0.2s ease"
+      tooltip.style.transform = "translate(-50%, -100%)"
+      tooltip.style.top = "-12px"
+      tooltip.style.left = "50%"
+
+      tooltip.innerHTML = `<div class="smart-tooltip-content">${tooltipText}</div>`
+
+      // Position relative to the segment
+      segment.style.position = "relative"
+      segment.appendChild(tooltip)
+
+      // Hover functionality
+      segment.addEventListener("mouseenter", () => {
+        segment.style.background = "rgba(79, 150, 255, 0.2)"
+        tooltip.style.opacity = "1"
+        tooltip.style.visibility = "visible"
+      })
+
+      segment.addEventListener("mouseleave", () => {
+        segment.style.background = "rgba(79, 150, 255, 0.1)"
+        tooltip.style.opacity = "0"
+        tooltip.style.visibility = "hidden"
+      })
+    })
+
+    // Line-level tooltips (simplified)
+    allLineElements.forEach((lineElement, index) => {
+      const lineNumber = index + 1
+      const commentText = lineComments[lineNumber] || lineComments[lineNumber.toString()]
+
+      if (commentText) {
+        // More subtle line-level indication
+        lineElement.style.background = "rgba(79, 150, 255, 0.05)"
+        lineElement.style.borderLeft = "3px solid rgba(79, 150, 255, 0.3)"
+        lineElement.style.paddingLeft = "8px"
+        lineElement.style.cursor = "help"
+        lineElement.style.transition = "all 0.2s ease"
+
+        // Create centered tooltip
+        const tooltip = document.createElement("div")
+        tooltip.className = "smart-tooltip"
+        tooltip.style.position = "absolute"
+        tooltip.style.zIndex = "10000"
+        tooltip.style.opacity = "0"
+        tooltip.style.visibility = "hidden"
+        tooltip.style.transform = "translate(-50%, -100%)"
+        tooltip.style.top = "-12px"
+        tooltip.style.left = "50%"
+        tooltip.style.transition = "opacity 0.2s ease, visibility 0.2s ease"
+
+        tooltip.innerHTML = `<div class="smart-tooltip-content">${commentText}</div>`
+
+        const lineContent = lineElement.closest(".line-content")
+        if (lineContent) {
+          lineContent.style.position = "relative"
+          lineContent.appendChild(tooltip)
+
+          lineElement.addEventListener("mouseenter", () => {
+            lineElement.style.background = "rgba(79, 150, 255, 0.1)"
+            tooltip.style.opacity = "1"
+            tooltip.style.visibility = "visible"
+          })
+
+          lineElement.addEventListener("mouseleave", () => {
+            lineElement.style.background = "rgba(79, 150, 255, 0.05)"
+            tooltip.style.opacity = "0"
+            tooltip.style.visibility = "hidden"
+          })
+        }
+      }
+    })
+
+    // Setup copy button
+    const copyButton = container.querySelector(".copy-button")
+    if (copyButton) {
+      copyButton.addEventListener("click", async () => {
+        try {
+          // Parse the JSON-encoded clean code from the data attribute
+          const codeToCopy = JSON.parse(container.dataset.cleanCode || '""')
+
+          await navigator.clipboard.writeText(codeToCopy)
+          copyButton.innerHTML = checkmarkIconSVG
+          copyButton.setAttribute("data-tooltip", "Copied!")
+          setTimeout(() => {
+            copyButton.innerHTML = copyIconSVG
+            copyButton.setAttribute("data-tooltip", "Copy code")
+          }, 2000)
+        } catch (err) {
+          copyButton.setAttribute("data-tooltip", "Error copying")
+        }
+      })
+    }
+  })
+</script>

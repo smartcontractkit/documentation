@@ -2,7 +2,7 @@ import Address from "~/components/AddressReact.tsx"
 import "../Tables/Table.css"
 import { Environment, LaneConfig, LaneFilter, Version } from "~/config/data/ccip/types.ts"
 import { getNetwork, getTokenData } from "~/config/data/ccip/data.ts"
-import { displayCapacity, determineTokenMechanism } from "~/config/data/ccip/utils.ts"
+import { displayCapacity, determineTokenMechanism, isTokenPaused } from "~/config/data/ccip/utils.ts"
 import { useState } from "react"
 import LaneDetailsHero from "../ChainHero/LaneDetailsHero.tsx"
 import { getExplorerAddressUrl, getTokenIconUrl, fallbackTokenIconUrl } from "~/features/utils/index.ts"
@@ -45,7 +45,6 @@ function LaneDrawer({
           logo: sourceNetwork.logo,
           name: sourceNetwork.name,
           chainType: sourceNetwork.chainType,
-          rmnPermeable: sourceNetworkDetails?.rmnPermeable,
         }}
         destinationNetwork={{
           logo: destinationNetwork.logo,
@@ -58,7 +57,6 @@ function LaneDrawer({
         explorer={explorer}
         destinationAddress={destinationNetworkDetails?.chainSelector || ""}
         inOutbound={inOutbound}
-        laneRmnPermeable={lane.rmnPermeable}
       />
 
       <div className="ccip-table__drawer-container">
@@ -96,7 +94,7 @@ function LaneDrawer({
                   Rate limit capacity
                   <Tooltip
                     label=""
-                    tip="Rate limit data is currently unavailable. You can find this Token Pool rate limit by reading the Token Pool contract directly on the relevant blockchain."
+                    tip="Maximum amount per transaction"
                     labelStyle={{
                       marginRight: "5px",
                     }}
@@ -136,11 +134,22 @@ function LaneDrawer({
                     })
                     if (!Object.keys(data).length) return null
                     const logo = getTokenIconUrl(token)
+
+                    // Check if token is paused
+                    const tokenPaused = isTokenPaused(
+                      data[sourceNetwork.key].decimals,
+                      lane.supportedTokens?.[token]?.rateLimiterConfig?.[
+                        inOutbound === LaneFilter.Inbound ? "in" : "out"
+                      ]
+                    )
+
                     return (
-                      <tr key={index}>
+                      <tr key={index} className={tokenPaused ? "ccip-table__row--paused" : ""}>
                         <td>
                           <a href={`/ccip/directory/${environment}/token/${token}`}>
-                            <div className="ccip-table__network-name">
+                            <div
+                              className={`ccip-table__network-name ${tokenPaused ? "ccip-table__network-name--paused" : ""}`}
+                            >
                               <img
                                 src={logo}
                                 alt={`${token} logo`}
@@ -151,6 +160,11 @@ function LaneDrawer({
                                 }}
                               />
                               {token}
+                              {tokenPaused && (
+                                <span className="ccip-table__paused-badge" title="Transfers are currently paused">
+                                  ⏸️
+                                </span>
+                              )}
                             </div>
                           </a>
                         </td>

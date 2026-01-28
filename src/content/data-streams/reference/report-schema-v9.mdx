@@ -1,0 +1,53 @@
+---
+section: dataStreams
+date: Last Modified
+title: "Report Schema: SmartData (v9)"
+metadata:
+  title: "SmartData (v9) | Chainlink Data Streams"
+  description: "Learn about Chainlink Data Streams SmartData (v9) schema, including fields, encoding, and examples for integrating NAV and POR data in your applications."
+  keywords:
+    [
+      "Report Schema",
+      "SmartData",
+      "NAV",
+      "POR",
+      "Net Asset Value",
+      "Proof of Reserve",
+      "v9 Schema",
+      "Data Format",
+      "Report Structure",
+    ]
+---
+
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+import ReportSchemaTabs from "@features/data-streams/common/ReportSchemaTabs.astro"
+
+<DataStreams section="dsNotes" />
+
+<ReportSchemaTabs />
+
+Chainlink SmartData streams adhere to the report schema outlined below.
+
+### Schema Fields
+
+| Value                   | Type      | Description                                                                                                                                   |
+| ----------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `feedID`                | `bytes32` | Unique identifier for the Data Streams feed                                                                                                   |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                                                                                          |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                                                                                            |
+| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)                                                                                                  |
+| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                                                                                                          |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                                                                                       |
+| `navPerShare`           | `int192`  | DON consensus NAV Per Share value as reported by the Fund Manager                                                                             |
+| `navDate`               | `uint64`  | Timestamp for the date the publication of NAV Report (nanoseconds)                                                                            |
+| `aum`                   | `int192`  | DON consensus Total USD value of Assets Under Management                                                                                      |
+| `ripcord`               | `uint32`  | Whether the provider paused NAV reporting <br/> Possible values: `0` (normal state), `1` (paused state) <br/> [More details](#ripcord-status) |
+
+**Notes:**
+
+- Future SmartData streams may use different report schemas.
+
+##### `ripcord` Status
+
+- 0 (false) - **Data Provider is OK**. This indicates that the Fund’s data provider and data accuracy is reporting as expected.
+- 1 (true) - **Data Provider is flagging a Pause**. This indicates that the Fund’s data provider detected outliers, deviated thresholds, management or operational related pause. **During `ripcord=1`, do not consume any NAV data**.

@@ -1,9 +1,12 @@
 ---
 section: ccip
 date: Last Modified
-title: "Chainlink CCIP Service Responsibility"
+title: "CCIP Service Responsibility - Shared Accountability Model"
 metadata:
-  description: "Understand the shared responsibilities in Chainlink CCIP between application devs, blockchain teams, token devs, and node operators for secure cross-chain ops."
+  description: "Comprehensive guide to CCIP shared responsibilities: application developer duties, blockchain team obligations, token developer requirements, and node operator roles."
+  excerpt: "CCIP service responsibility, shared accountability, application developer duties, blockchain team responsibilities, token developer requirements, node operator roles, security audits"
+  datePublished: "2024-03-09"
+  lastModified: "2025-06-27"
 ---
 
 import { Aside } from "@components"
@@ -29,7 +32,6 @@ Application developers are responsible for the correctness, security, and reliab
 - **Token risk assessment:** Developers are responsible for the risk assessment of any tokens they choose to support or list in their application and expose to their users.
 - **Risk communication:** Developers must clearly articulate and communicate identified risks to their users.
 - **Manual execution:** Developers must monitor their CCIP transactions and take action when transactions require manual execution. For example, informing their users and directing them to the appropriate page on the [CCIP Explorer](https://ccip.chain.link).
-- **Risk Management Network coverage:** Developers must check the deployment status of the Risk Management Network on the chains they build on, such as via the [CCIP Directory](/ccip/directory). If the Risk Management Network is not yet active on a chain, developers must validate that its absence conforms to the requirements of their application's specific use case.
 
 ## Blockchain Development Team Responsibilities
 
@@ -56,18 +58,15 @@ Token Developers may enable token transfers on CCIP for the tokens that they adm
 - **Authorization**: Token Developers must verify that they are authorized to create token pools for a given token. Although anyone may create a token pool, the token developer must properly register that token with Chainlink CCIP. Token Developers must also properly configure the TokenAdminRegistry.
 - **Token pool configurations for [Rebasable Tokens](/ccip/concepts/cross-chain-token/evm/token-pools#tokens-with-rebasing-or-fee-on-transfer-mechanisms)**: Token Developers must properly write the logic in their token pool for burning and minting tokens based on the rebasing mechanism.
 - **Token transfer rate limits**: Token DeveloperToken Owners must select and configure appropriate token transfer rate limits for tokens on each lane where they choose to enable their token.
-- **Token transfer types**: Token Developers must select appropriate token transfer type for their tokens; either [Burn and Mint](/ccip/concepts/cross-chain-token/overview#burn-and-mint), [Lock and Mint](/ccip/concepts/cross-chain-token/overview#lock-and-mint), or [Lock and Unlock](/ccip/concepts/cross-chain-token/overview#lock-and-unlock). Token Developers are responsible for implementing the burn and mint functions, lock and mint functions or lock and unlock functions in their token contracts correctly on all applicable chains.
+- **Token transfer types**: Token Developers must select appropriate token transfer type for their tokens; either [Burn and Mint](/ccip/concepts/cross-chain-token/overview#burn-and-mint), [Lock and Mint](/ccip/concepts/cross-chain-token/overview#lock-and-mint), or [Lock and Unlock](/ccip/concepts/cross-chain-token/overview#lock-and-unlock). Token Developers are responsible for implementing the burn / mint / transfer functions in their token contracts correctly on all applicable chains.
 - **Migration between CCIP versions**: Token Developers who wish to adopt future versions of CCIP are responsible for all migration tasks required to adopt new features and functionality.
 - **Best Practices**: Token Developers are responsible for following the appropriate best practices for creating, managing, and enabling transfers of their tokens on Chainlink CCIP.
-- **Risk Management Network coverage**: Token Developers must check the deployment status of the Risk Management Network on the chains they build on, which can be found on the [CCIP Directory](/ccip/directory) page. If the Risk Management Network is not yet active on a chain, Token Developers must validate that its absence conforms to their requirements.
 - **Token Developer Attestation**: Token Developers are responsible for ensuring the quality, reliability, and security of their associated attestation endpoint(s). Token Developers are responsible for adhering to Chainlink-defined specifications and maintaining an up-to-date implementation. Neither Chainlink Labs nor the Chainlink Foundation are responsible for the development, maintenance, or operation of Token Developer Attestation endpoints.
-
   - **Following implementation specifications**: Failure to adhere to design specifications for the Chainlink-defined Token Developer Attestation endpoint can result in stuck or failed transactions for users, incorrect accounting of token supply, and/or potential loss of tokens.
   - **Maintenance**: Failure to maintain up-to-date compatibility with the Chainlink-defined design specifications may result in downtime or unreliable attestations.
   - **Reliability**: Attestation endpoints must be built to handle user demand, both in terms of transactional capacity and uptime. Failure to respond to attestation requests may result in stuck or failed transactions for users and/or potential loss of tokens.
 
 - **Liquidity Management**: Token Developers who choose the **Lock and Mint** or **Lock and Unlock** mechanism must ensure their token pools have sufficient liquidity when releasing tokens. Failure to maintain adequate liquidity can result in stalled or failed cross-chain transfers, causing a degraded user experience. Token Developers are responsible for:
-
   - **Ensuring sufficient liquidity**: Continuously monitor transaction volumes and add liquidity to the pool before it is depleted to avoid having user funds stuck in transit.
   - **Avoiding fragmented liquidity**: Where possible, minimize the use of **Lock and Unlock** across multiple blockchains to reduce operational complexity and prevent liquidity from being split across multiple pools.
   - **Monitoring liquidity health and automating alerts**: Implement monitoring and alerting systems that notify Token Developers when liquidity drops below certain thresholds, allowing for proactive liquidity management before user transfers fail.

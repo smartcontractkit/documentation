@@ -5,10 +5,8 @@
 
 import { Sections } from "../content.config.ts"
 import { SIDEBAR_SECTIONS } from "./sidebarSections.ts"
-import evmCcipV150Contents from "./sidebar/ccip/api-reference/evm/v1_5_0.json" with { type: "json" }
-import evmCcipV151Contents from "./sidebar/ccip/api-reference/evm/v1_5_1.json" with { type: "json" }
-import evmCcipV160Contents from "./sidebar/ccip/api-reference/evm/v1_6_0.json" with { type: "json" }
-import svmCcipV160Contents from "./sidebar/ccip/api-reference/svm/v1_6_0.json" with { type: "json" }
+import { CCIP_SIDEBAR_CONTENT } from "./sidebar/ccip-dynamic.ts"
+import type { ChainType } from "./types.js"
 import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" with { type: "json" }
 import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" with { type: "json" }
 import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/v0_2_3.json" with { type: "json" }
@@ -22,13 +20,15 @@ import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/
  * @property highlightAsCurrent - Optional array of URLs that should highlight this item as current
  * @property children - Optional array of nested navigation items
  * @property isCollapsible - Optional flag to control if a section can be collapsed
+ * @property chainTypes - Optional array of chain types this item belongs to (for chain-aware sections like CCIP)
  */
 export type SectionContent = {
   title: string
-  url: string
+  url?: string
   highlightAsCurrent?: string[]
   children?: SectionContent[]
   isCollapsible?: boolean
+  chainTypes?: ChainType[]
 }
 
 /**
@@ -65,6 +65,475 @@ export type SectionEntry = {
  * }
  */
 export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
+  [SIDEBAR_SECTIONS.CRE]: [
+    {
+      section: "Chainlink CRE",
+      contents: [
+        {
+          title: "About CRE",
+          url: "cre",
+        },
+        {
+          title: "Key Terms and Concepts",
+          url: "cre/key-terms",
+        },
+        {
+          title: "Service Quotas",
+          url: "cre/service-quotas",
+        },
+        {
+          title: "Support & Feedback",
+          url: "cre/support-feedback",
+        },
+        {
+          title: "Release Notes",
+          url: "cre/release-notes",
+        },
+      ],
+    },
+    {
+      section: "Getting Started",
+      contents: [
+        { title: "Overview", url: "cre/getting-started/overview" },
+        {
+          title: "CLI Installation",
+          url: "cre/getting-started/cli-installation",
+          children: [
+            { title: "macOS / Linux", url: "cre/getting-started/cli-installation/macos-linux" },
+            { title: "Windows", url: "cre/getting-started/cli-installation/windows" },
+          ],
+        },
+        {
+          title: "Part 1: Project Setup & Simulation",
+          url: "cre/getting-started/part-1-project-setup",
+          highlightAsCurrent: [
+            "cre/getting-started/part-1-project-setup-ts",
+            "cre/getting-started/part-1-project-setup-go",
+          ],
+        },
+        {
+          title: "Part 2: Fetching Offchain Data",
+          url: "cre/getting-started/part-2-fetching-data",
+          highlightAsCurrent: [
+            "cre/getting-started/part-2-fetching-data-ts",
+            "cre/getting-started/part-2-fetching-data-go",
+          ],
+        },
+        {
+          title: "Part 3: Reading Onchain",
+          url: "cre/getting-started/part-3-reading-onchain-value",
+          highlightAsCurrent: [
+            "cre/getting-started/part-3-reading-onchain-value-ts",
+            "cre/getting-started/part-3-reading-onchain-value-go",
+          ],
+        },
+        {
+          title: "Part 4: Writing Onchain",
+          url: "cre/getting-started/part-4-writing-onchain",
+          highlightAsCurrent: [
+            "cre/getting-started/part-4-writing-onchain-ts",
+            "cre/getting-started/part-4-writing-onchain-go",
+          ],
+        },
+        { title: "Conclusion & Next Steps", url: "cre/getting-started/conclusion" },
+      ],
+    },
+    {
+      section: "Workflow Guides",
+      contents: [
+        {
+          title: "Triggers",
+          url: "cre/guides/workflow/using-triggers/overview",
+          children: [
+            {
+              title: "Cron Trigger",
+              url: "cre/guides/workflow/using-triggers/cron-trigger",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-triggers/cron-trigger-ts",
+                "cre/guides/workflow/using-triggers/cron-trigger-go",
+              ],
+            },
+            {
+              title: "EVM Log Trigger",
+              url: "cre/guides/workflow/using-triggers/evm-log-trigger",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-triggers/evm-log-trigger-ts",
+                "cre/guides/workflow/using-triggers/evm-log-trigger-go",
+              ],
+            },
+            {
+              title: "HTTP Trigger",
+              url: "cre/guides/workflow/using-triggers/http-trigger/overview",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-triggers/http-trigger/overview-ts",
+                "cre/guides/workflow/using-triggers/http-trigger/overview-go",
+              ],
+              children: [
+                {
+                  title: "Configuration & Handler",
+                  url: "cre/guides/workflow/using-triggers/http-trigger/configuration",
+                  highlightAsCurrent: [
+                    "cre/guides/workflow/using-triggers/http-trigger/configuration-ts",
+                    "cre/guides/workflow/using-triggers/http-trigger/configuration-go",
+                  ],
+                },
+                {
+                  title: "Testing in Simulation",
+                  url: "cre/guides/workflow/using-triggers/http-trigger/testing-in-simulation",
+                },
+                {
+                  title: "Triggering Deployed Workflows",
+                  url: "cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows",
+                },
+                {
+                  title: "Testing deployed workflows with Local JWT Server",
+                  url: "cre/guides/workflow/using-triggers/http-trigger/local-testing-tool",
+                },
+              ],
+            },
+          ],
+        },
+        {
+          title: "EVM Chain Interactions",
+          url: "cre/guides/workflow/using-evm-client/overview",
+          highlightAsCurrent: [
+            "cre/guides/workflow/using-evm-client/overview-ts",
+            "cre/guides/workflow/using-evm-client/overview-go",
+          ],
+          children: [
+            {
+              title: "Generating Bindings",
+              url: "cre/guides/workflow/using-evm-client/generating-bindings",
+            },
+            {
+              title: "Onchain Read",
+              url: "cre/guides/workflow/using-evm-client/onchain-read",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-evm-client/onchain-read-ts",
+                "cre/guides/workflow/using-evm-client/onchain-read-go",
+              ],
+            },
+            {
+              title: "Onchain Write",
+              url: "cre/guides/workflow/using-evm-client/onchain-write/overview",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-evm-client/onchain-write/overview-ts",
+                "cre/guides/workflow/using-evm-client/onchain-write/overview-go",
+              ],
+              children: [
+                {
+                  title: "Building Consumer Contracts",
+                  url: "cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts",
+                },
+                {
+                  title: "Writing Data Onchain",
+                  url: "cre/guides/workflow/using-evm-client/onchain-write/writing-data-onchain",
+                },
+                {
+                  title: "Using WriteReportFrom Helpers",
+                  url: "cre/guides/workflow/using-evm-client/onchain-write/using-write-report-helpers",
+                },
+                {
+                  title: "Generating Reports: Single Values",
+                  url: "cre/guides/workflow/using-evm-client/onchain-write/generating-reports-single-values",
+                },
+                {
+                  title: "Generating Reports: Structs",
+                  url: "cre/guides/workflow/using-evm-client/onchain-write/generating-reports-structs",
+                },
+                {
+                  title: "Submitting Reports Onchain",
+                  url: "cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain",
+                },
+              ],
+            },
+            {
+              title: "Supported Networks",
+              url: "cre/guides/workflow/using-evm-client/supported-networks",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-evm-client/supported-networks-ts",
+                "cre/guides/workflow/using-evm-client/supported-networks-go",
+              ],
+            },
+          ],
+        },
+        {
+          title: "API Interactions",
+          url: "cre/guides/workflow/using-http-client",
+          children: [
+            {
+              title: "Making GET Requests",
+              url: "cre/guides/workflow/using-http-client/get-request",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-http-client/get-request-ts",
+                "cre/guides/workflow/using-http-client/get-request-go",
+              ],
+            },
+            {
+              title: "Making POST Requests",
+              url: "cre/guides/workflow/using-http-client/post-request",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-http-client/post-request-ts",
+                "cre/guides/workflow/using-http-client/post-request-go",
+              ],
+            },
+            {
+              title: "Submitting Reports via HTTP",
+              url: "cre/guides/workflow/using-http-client/submitting-reports-http",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-http-client/submitting-reports-http-ts",
+                "cre/guides/workflow/using-http-client/submitting-reports-http-go",
+              ],
+            },
+          ],
+        },
+        {
+          title: "Secrets",
+          url: "cre/guides/workflow/secrets",
+          children: [
+            {
+              title: "Using Secrets in Simulation",
+              url: "cre/guides/workflow/secrets/using-secrets-simulation",
+              highlightAsCurrent: [
+                "cre/guides/workflow/secrets/using-secrets-simulation-ts",
+                "cre/guides/workflow/secrets/using-secrets-simulation-go",
+              ],
+            },
+            {
+              title: "Using Secrets with Deployed Workflows",
+              url: "cre/guides/workflow/secrets/using-secrets-deployed",
+            },
+            {
+              title: "Managing Secrets with 1Password",
+              url: "cre/guides/workflow/secrets/managing-secrets-1password",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      section: "Workflow Operations",
+      contents: [
+        {
+          title: "Simulating Workflows",
+          url: "cre/guides/operations/simulating-workflows",
+        },
+        {
+          title: "Deploying Workflows",
+          url: "cre/guides/operations/deploying-workflows",
+        },
+        {
+          title: "Activating & Pausing Workflows",
+          url: "cre/guides/operations/activating-pausing-workflows",
+        },
+        {
+          title: "Updating Deployed Workflows",
+          url: "cre/guides/operations/updating-deployed-workflows",
+        },
+        {
+          title: "Deleting Workflows",
+          url: "cre/guides/operations/deleting-workflows",
+        },
+        {
+          title: "Using Multi-sig Wallets",
+          url: "cre/guides/operations/using-multisig-wallets",
+        },
+        {
+          title: "Monitoring & Debugging Workflows",
+          url: "cre/guides/operations/monitoring-workflows",
+        },
+      ],
+    },
+    {
+      section: "Account & Organization",
+      contents: [
+        {
+          title: "Account",
+          url: "cre/account",
+          children: [
+            {
+              title: "Creating Your Account",
+              url: "cre/account/creating-account",
+            },
+            {
+              title: "Logging in with the CLI",
+              url: "cre/account/cli-login",
+            },
+            {
+              title: "Managing Authentication",
+              url: "cre/account/managing-auth",
+            },
+          ],
+        },
+        {
+          title: "Organization",
+          url: "cre/organization",
+          children: [
+            {
+              title: "Understanding Organizations",
+              url: "cre/organization/understanding-organizations",
+            },
+            {
+              title: "Linking Wallet Keys",
+              url: "cre/organization/linking-keys",
+            },
+            {
+              title: "Inviting Team Members",
+              url: "cre/organization/inviting-members",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      section: "Capabilities",
+      contents: [
+        { title: "Overview", url: "cre/capabilities" },
+        { title: "Triggers", url: "cre/capabilities/triggers" },
+        { title: "HTTP", url: "cre/capabilities/http" },
+        { title: "EVM Read & Write", url: "cre/capabilities/evm-read-write" },
+      ],
+    },
+    {
+      section: "Concepts",
+      contents: [
+        {
+          title: "Consensus Computing",
+          url: "cre/concepts/consensus-computing",
+        },
+        {
+          title: "Non-Determinism in Workflows",
+          url: "cre/concepts/non-determinism",
+          highlightAsCurrent: ["cre/concepts/non-determinism-go", "cre/concepts/non-determinism-ts"],
+        },
+        {
+          title: "Time in CRE",
+          url: "cre/concepts/time-in-cre",
+          highlightAsCurrent: ["cre/concepts/time-in-cre-go", "cre/concepts/time-in-cre-ts"],
+        },
+        {
+          title: "Random in CRE",
+          url: "cre/concepts/random-in-cre",
+        },
+        {
+          title: "TypeScript Runtime Environment",
+          url: "cre/concepts/typescript-wasm-runtime",
+        },
+        {
+          title: "Finality & Confidence Levels",
+          url: "cre/concepts/finality",
+          highlightAsCurrent: ["cre/concepts/finality-go", "cre/concepts/finality-ts"],
+        },
+      ],
+    },
+    {
+      section: "Templates",
+      contents: [
+        {
+          title: "Overview",
+          url: "cre/templates",
+        },
+        {
+          title: "Custom Data Feed Template",
+          url: "cre/templates/running-demo-workflow",
+          highlightAsCurrent: ["cre/templates/running-demo-workflow-ts", "cre/templates/running-demo-workflow-go"],
+        },
+      ],
+    },
+    {
+      section: "Demos",
+      contents: [
+        {
+          title: "AI-Powered Prediction Market",
+          url: "cre/demos/prediction-market",
+        },
+      ],
+    },
+    {
+      section: "Reference",
+      contents: [
+        {
+          title: "Project Configuration",
+          url: "cre/reference/project-configuration",
+          highlightAsCurrent: ["cre/reference/project-configuration-ts", "cre/reference/project-configuration-go"],
+        },
+        {
+          title: "CLI Reference",
+          url: "cre/reference/cli",
+          children: [
+            { title: "Authentication", url: "cre/reference/cli/authentication" },
+            {
+              title: "Project Setup",
+              url: "cre/reference/cli/project-setup",
+              highlightAsCurrent: ["cre/reference/cli/project-setup-ts", "cre/reference/cli/project-setup-go"],
+            },
+            { title: "Account Management", url: "cre/reference/cli/account" },
+            { title: "Workflow Commands", url: "cre/reference/cli/workflow" },
+            { title: "Secrets Management", url: "cre/reference/cli/secrets" },
+            { title: "Utilities", url: "cre/reference/cli/utilities" },
+          ],
+        },
+        {
+          title: "SDK Reference",
+          url: "cre/reference/sdk/overview",
+          highlightAsCurrent: ["cre/reference/sdk/overview-ts", "cre/reference/sdk/overview-go"],
+          children: [
+            {
+              title: "Core SDK",
+              url: "cre/reference/sdk/core",
+              highlightAsCurrent: ["cre/reference/sdk/core-ts", "cre/reference/sdk/core-go"],
+            },
+            {
+              title: "Triggers",
+              url: "cre/reference/sdk/triggers/overview",
+              highlightAsCurrent: ["cre/reference/sdk/triggers/overview-ts", "cre/reference/sdk/triggers/overview-go"],
+              children: [
+                {
+                  title: "Cron Trigger",
+                  url: "cre/reference/sdk/triggers/cron-trigger",
+                  highlightAsCurrent: [
+                    "cre/reference/sdk/triggers/cron-trigger-ts",
+                    "cre/reference/sdk/triggers/cron-trigger-go",
+                  ],
+                },
+                {
+                  title: "HTTP Trigger",
+                  url: "cre/reference/sdk/triggers/http-trigger",
+                  highlightAsCurrent: [
+                    "cre/reference/sdk/triggers/http-trigger-ts",
+                    "cre/reference/sdk/triggers/http-trigger-go",
+                  ],
+                },
+                {
+                  title: "EVM Log Trigger",
+                  url: "cre/reference/sdk/triggers/evm-log-trigger",
+                  highlightAsCurrent: [
+                    "cre/reference/sdk/triggers/evm-log-trigger-ts",
+                    "cre/reference/sdk/triggers/evm-log-trigger-go",
+                  ],
+                },
+              ],
+            },
+            {
+              title: "EVM Client",
+              url: "cre/reference/sdk/evm-client",
+              highlightAsCurrent: ["cre/reference/sdk/evm-client-ts", "cre/reference/sdk/evm-client-go"],
+            },
+            {
+              title: "HTTP Client",
+              url: "cre/reference/sdk/http-client",
+              highlightAsCurrent: ["cre/reference/sdk/http-client-ts", "cre/reference/sdk/http-client-go"],
+            },
+            {
+              title: "Consensus & Aggregation",
+              url: "cre/reference/sdk/consensus",
+              highlightAsCurrent: ["cre/reference/sdk/consensus-ts", "cre/reference/sdk/consensus-go"],
+            },
+          ],
+        },
+      ],
+    },
+  ],
   [SIDEBAR_SECTIONS.DATA_FEEDS]: [
     {
       section: "Chainlink Data Feeds",
@@ -82,28 +551,27 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-feeds/developer-responsibilities",
         },
         {
-          title: "Price Feeds",
-          url: "data-feeds/price-feeds",
-        },
-        {
-          title: "SmartData",
-          url: "data-feeds/smartdata",
-        },
-        {
-          title: "SVR Feeds",
-          url: "data-feeds/svr-feeds",
-        },
-        {
-          title: "Rate and Volatility Feeds",
-          url: "data-feeds/rates-feeds",
-        },
-        {
-          title: "L2 Sequencer Uptime Feeds",
-          url: "data-feeds/l2-sequencer-feeds",
+          title: "Feed Types",
+          url: "data-feeds/feed-types",
+          children: [
+            { title: "Price Feeds", url: "data-feeds/price-feeds" },
+            {
+              title: "SmartData",
+              url: "data-feeds/smartdata",
+              children: [{ title: "Multiple-Variable Response (MVR) Feeds", url: "data-feeds/mvr-feeds" }],
+            },
+            { title: "Smart Value Recapture (SVR) Feeds", url: "data-feeds/svr-feeds" },
+            { title: "Rate and Volatility Feeds", url: "data-feeds/rates-feeds" },
+            { title: "L2 Sequencer Uptime Feeds", url: "data-feeds/l2-sequencer-feeds" },
+          ],
         },
         {
           title: "Flags Contract Registry",
           url: "data-feeds/contract-registry",
+        },
+        {
+          title: "Data Sources",
+          url: "data-feeds/data-sources",
         },
         {
           title: "Release Notes",
@@ -115,20 +583,28 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Feed Addresses",
       contents: [
         {
-          title: "Price Feed Addresses",
+          title: "Price Feeds",
           url: "data-feeds/price-feeds/addresses",
         },
         {
-          title: "SmartData Feed Addresses",
+          title: "U.S. Government Macroeconomic Data Feeds",
+          url: "data-feeds/us-government-macroeconomic/addresses",
+        },
+        {
+          title: "SmartData Feeds",
           url: "data-feeds/smartdata/addresses",
         },
         {
-          title: "Rate and Volatility Feed Addresses",
+          title: "Rate and Volatility Feeds",
           url: "data-feeds/rates-feeds/addresses",
         },
         {
           title: "Selecting Quality Data Feeds",
           url: "data-feeds/selecting-data-feeds",
+        },
+        {
+          title: "Deprecating Feeds",
+          url: "data-feeds/deprecating-feeds",
         },
       ],
     },
@@ -138,6 +614,24 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Using Data Feeds",
           url: "data-feeds/using-data-feeds",
+        },
+        {
+          title: "Using MVR Feeds",
+          url: "data-feeds/mvr-feeds/guides",
+          children: [
+            {
+              title: "Using MVR Feeds on EVM Chains (Solidity)",
+              url: "data-feeds/mvr-feeds/guides/evm-solidity",
+            },
+            {
+              title: "Using MVR Feeds with ethers.js (JS)",
+              url: "data-feeds/mvr-feeds/guides/ethersjs",
+            },
+            {
+              title: "Using MVR Feeds with Viem (TS)",
+              url: "data-feeds/mvr-feeds/guides/viem",
+            },
+          ],
         },
         {
           title: "Getting Historical Data",
@@ -218,6 +712,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Data Feeds API Reference",
           url: "data-feeds/api-reference",
         },
+        {
+          title: "MVR Feeds API Reference",
+          url: "data-feeds/mvr-feeds/api-reference",
+        },
       ],
     },
     {
@@ -248,6 +746,28 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Bridges and Associated Risks",
           url: "resources/bridge-risks?parent=dataFeeds",
+        },
+        {
+          title: "Chainlink Oracle Platform",
+          url: "oracle-platform/overview?parent=dataFeeds",
+          children: [
+            {
+              title: "Data Standard",
+              url: "oracle-platform/data-standard?parent=dataFeeds",
+            },
+            {
+              title: "Interoperability Standard",
+              url: "oracle-platform/interoperability-standard?parent=dataFeeds",
+            },
+            {
+              title: "Compliance Standard",
+              url: "oracle-platform/compliance-standard?parent=dataFeeds",
+            },
+            {
+              title: "Privacy Standard",
+              url: "oracle-platform/privacy-standard?parent=dataFeeds",
+            },
+          ],
         },
         {
           title: "Chainlink Architecture",
@@ -307,6 +827,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/billing",
         },
         {
+          title: "Data Sources",
+          url: "data-streams/data-sources",
+        },
+        {
           title: "Release Notes",
           url: "https://dev.chain.link/changelog?product=Data+Streams",
         },
@@ -316,28 +840,87 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Streams & Report Schemas",
       contents: [
         {
-          title: "Cryptocurrency Streams",
+          title: "Overview",
+          url: "data-streams/reference/report-schema-overview",
+        },
+        {
+          title: "Cryptocurrency",
           url: "data-streams/crypto-streams",
           children: [
             {
-              title: "Report Schema v3",
-              url: "data-streams/reference/report-schema",
+              title: "Report Schema v3 (Crypto Advanced)",
+              url: "data-streams/reference/report-schema-v3",
+            },
+            {
+              title: "Report Schema v3 (DEX State Price)",
+              url: "data-streams/reference/report-schema-v3-dex",
             },
           ],
         },
         {
-          title: "Real World Asset (RWA) Streams",
+          title: "Exchange Rate",
+          url: "data-streams/exchange-rate-streams",
+          children: [
+            {
+              title: "Report Schema v7 (Redemption Rates)",
+              url: "data-streams/reference/report-schema-v7",
+            },
+          ],
+        },
+        {
+          title: "Real World Asset (RWA)",
           url: "data-streams/rwa-streams",
           children: [
             {
-              title: "Report Schema v4",
-              url: "data-streams/reference/report-schema-v4",
+              title: "Report Schema v8 (RWA Standard)",
+              url: "data-streams/reference/report-schema-v8",
+            },
+            {
+              title: "Report Schema v11 (RWA Advanced)",
+              url: "data-streams/reference/report-schema-v11",
+            },
+            {
+              title: "Handling Market Events",
+              url: "data-streams/rwa-streams/handling-market-events",
+              highlightAsCurrent: ["data-streams/rwa-streams/handling-market-events-v11"],
+            },
+            {
+              title: "24/5 US Equities User Guide",
+              url: "data-streams/rwa-streams/24-5-us-equities-user-guide",
+            },
+          ],
+        },
+        {
+          title: "SmartData",
+          url: "data-streams/smartdata-streams",
+          children: [
+            {
+              title: "Report Schema v9 (SmartData)",
+              url: "data-streams/reference/report-schema-v9",
+            },
+          ],
+        },
+        {
+          title: "Tokenized Asset",
+          url: "data-streams/tokenized-asset-streams",
+          children: [
+            {
+              title: "Report Schema v10 (Tokenized Asset)",
+              url: "data-streams/reference/report-schema-v10",
+            },
+            {
+              title: "Handling Stock Splits",
+              url: "data-streams/tokenized-asset-streams/handling-stock-splits",
             },
           ],
         },
         {
           title: "Market Hours",
           url: "data-streams/market-hours",
+        },
+        {
+          title: "Deprecating Streams",
+          url: "data-streams/deprecating-streams",
         },
       ],
     },
@@ -350,21 +933,13 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Fetch and decode reports",
-          url: "data-streams/tutorials/api-go",
-          highlightAsCurrent: [
-            "data-streams/tutorials/api-rust",
-            "data-streams/tutorials/api-rwa-go",
-            "data-streams/tutorials/api-rwa-rust",
-          ],
+          url: "data-streams/tutorials/go-sdk-fetch",
+          highlightAsCurrent: ["data-streams/tutorials/rust-sdk-fetch", "data-streams/tutorials/ts-sdk-fetch"],
         },
         {
           title: "Stream and decode reports (WebSocket)",
-          url: "data-streams/tutorials/ws-go",
-          highlightAsCurrent: [
-            "data-streams/tutorials/ws-rust",
-            "data-streams/tutorials/ws-rwa-go",
-            "data-streams/tutorials/ws-rwa-rust",
-          ],
+          url: "data-streams/tutorials/go-sdk-stream",
+          highlightAsCurrent: ["data-streams/tutorials/rust-sdk-stream", "data-streams/tutorials/ts-sdk-stream"],
         },
         {
           title: "Verify report data (EVM)",
@@ -385,8 +960,20 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/architecture",
         },
         {
+          title: "Best Practices",
+          url: "data-streams/concepts/best-practices",
+        },
+        {
+          title: "Calculated Streams",
+          url: "data-streams/concepts/calculated-streams",
+        },
+        {
           title: "Liquidity-Weighted Bid and Ask prices",
           url: "data-streams/concepts/liquidity-weighted-prices",
+        },
+        {
+          title: "DEX State Price Streams",
+          url: "data-streams/concepts/dex-state-price-streams",
         },
       ],
     },
@@ -398,43 +985,56 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/reference/overview",
         },
         {
-          title: "REST API",
-          url: "data-streams/reference/interface-api",
-        },
-        {
-          title: "WebSocket",
-          url: "data-streams/reference/interface-ws",
-        },
-        {
-          title: "Authentication",
-          url: "data-streams/reference/authentication",
+          title: "Data Streams Reference",
+          url: "data-streams/reference/data-streams-api",
           children: [
             {
-              title: "JavaScript examples",
-              url: "data-streams/reference/authentication/javascript-examples",
+              title: "Authentication",
+              url: "data-streams/reference/data-streams-api/authentication",
+              children: [
+                {
+                  title: "JavaScript examples",
+                  url: "data-streams/reference/data-streams-api/authentication/javascript-examples",
+                },
+                {
+                  title: "TypeScript examples",
+                  url: "data-streams/reference/data-streams-api/authentication/typescript-examples",
+                },
+                {
+                  title: "Go examples",
+                  url: "data-streams/reference/data-streams-api/authentication/go-examples",
+                },
+                {
+                  title: "Rust examples",
+                  url: "data-streams/reference/data-streams-api/authentication/rust-examples",
+                },
+              ],
             },
             {
-              title: "TypeScript examples",
-              url: "data-streams/reference/authentication/typescript-examples",
+              title: "API Reference",
+              url: "data-streams/reference/data-streams-api/interface-api",
             },
             {
-              title: "Go examples",
-              url: "data-streams/reference/authentication/go-examples",
+              title: "WebSocket Reference",
+              url: "data-streams/reference/data-streams-api/interface-ws",
             },
             {
-              title: "Rust examples",
-              url: "data-streams/reference/authentication/rust-examples",
+              title: "SDK References",
+              url: "data-streams/reference/data-streams-api/go-sdk",
+              highlightAsCurrent: [
+                "data-streams/reference/data-streams-api/rust-sdk",
+                "data-streams/reference/data-streams-api/ts-sdk",
+              ],
+            },
+            {
+              title: "Onchain report verification (EVM chains)",
+              url: "data-streams/reference/data-streams-api/onchain-verification",
             },
           ],
         },
         {
-          title: "SDK References",
-          url: "data-streams/reference/go-sdk",
-          highlightAsCurrent: ["data-streams/reference/rust-sdk"],
-        },
-        {
-          title: "Onchain report verification (EVM chains)",
-          url: "data-streams/reference/onchain-verification",
+          title: "Candlestick API",
+          url: "data-streams/reference/candlestick-api",
         },
       ],
     },
@@ -494,6 +1094,28 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Bridges and Associated Risks",
           url: "resources/bridge-risks?parent=dataStreams",
+        },
+        {
+          title: "Chainlink Oracle Platform",
+          url: "oracle-platform/overview?parent=dataStreams",
+          children: [
+            {
+              title: "Data Standard",
+              url: "oracle-platform/data-standard?parent=dataStreams",
+            },
+            {
+              title: "Interoperability Standard",
+              url: "oracle-platform/interoperability-standard?parent=dataStreams",
+            },
+            {
+              title: "Compliance Standard",
+              url: "oracle-platform/compliance-standard?parent=dataStreams",
+            },
+            {
+              title: "Privacy Standard",
+              url: "oracle-platform/privacy-standard?parent=dataStreams",
+            },
+          ],
         },
         {
           title: "Chainlink Architecture",
@@ -677,6 +1299,28 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Bridges and Associated Risks",
           url: "resources/bridge-risks?parent=automation",
+        },
+        {
+          title: "Chainlink Oracle Platform",
+          url: "oracle-platform/overview?parent=automation",
+          children: [
+            {
+              title: "Data Standard",
+              url: "oracle-platform/data-standard?parent=automation",
+            },
+            {
+              title: "Interoperability Standard",
+              url: "oracle-platform/interoperability-standard?parent=automation",
+            },
+            {
+              title: "Compliance Standard",
+              url: "oracle-platform/compliance-standard?parent=automation",
+            },
+            {
+              title: "Privacy Standard",
+              url: "oracle-platform/privacy-standard?parent=automation",
+            },
+          ],
         },
         {
           title: "Chainlink Architecture",
@@ -870,6 +1514,28 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "resources/bridge-risks?parent=chainlinkFunctions",
         },
         {
+          title: "Chainlink Oracle Platform",
+          url: "oracle-platform/overview?parent=chainlinkFunctions",
+          children: [
+            {
+              title: "Data Standard",
+              url: "oracle-platform/data-standard?parent=chainlinkFunctions",
+            },
+            {
+              title: "Interoperability Standard",
+              url: "oracle-platform/interoperability-standard?parent=chainlinkFunctions",
+            },
+            {
+              title: "Compliance Standard",
+              url: "oracle-platform/compliance-standard?parent=chainlinkFunctions",
+            },
+            {
+              title: "Privacy Standard",
+              url: "oracle-platform/privacy-standard?parent=chainlinkFunctions",
+            },
+          ],
+        },
+        {
           title: "Chainlink Architecture",
           url: "architecture-overview/architecture-overview?parent=chainlinkFunctions",
           children: [
@@ -987,7 +1653,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "VRF V2 [Legacy]",
+      section: "VRF V2 [DEPRECATED]",
       contents: [
         {
           title: "VRF V2 Subscription Method",
@@ -1029,6 +1695,28 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "resources/bridge-risks?parent=vrf",
         },
         {
+          title: "Chainlink Oracle Platform",
+          url: "oracle-platform/overview?parent=vrf",
+          children: [
+            {
+              title: "Data Standard",
+              url: "oracle-platform/data-standard?parent=vrf",
+            },
+            {
+              title: "Interoperability Standard",
+              url: "oracle-platform/interoperability-standard?parent=vrf",
+            },
+            {
+              title: "Compliance Standard",
+              url: "oracle-platform/compliance-standard?parent=vrf",
+            },
+            {
+              title: "Privacy Standard",
+              url: "oracle-platform/privacy-standard?parent=vrf",
+            },
+          ],
+        },
+        {
           title: "Chainlink Architecture",
           url: "architecture-overview/architecture-overview?parent=vrf",
           children: [
@@ -1065,467 +1753,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  [SIDEBAR_SECTIONS.CCIP]: [
-    {
-      section: "Chainlink CCIP",
-      contents: [
-        {
-          title: "About CCIP",
-          url: "ccip",
-        },
-        {
-          title: "Getting Started",
-          url: "ccip/getting-started",
-          children: [
-            {
-              title: "EVM",
-              url: "ccip/getting-started/evm",
-            },
-          ],
-        },
-        {
-          title: "CCIP Directory",
-          url: "ccip/directory",
-          children: [
-            {
-              title: "Mainnet",
-              url: "ccip/directory/mainnet",
-            },
-            {
-              title: "Testnet",
-              url: "ccip/directory/testnet",
-            },
-          ],
-        },
-        {
-          title: "Service Limits",
-          url: "ccip/service-limits",
-          children: [
-            {
-              title: "EVM",
-              url: "ccip/service-limits/evm",
-            },
-            {
-              title: "SVM",
-              url: "ccip/service-limits/svm",
-            },
-            {
-              title: "Network Specific",
-              url: "ccip/service-limits/network-specific-limits",
-            },
-          ],
-        },
-        {
-          title: "Service Responsibility",
-          url: "ccip/service-responsibility",
-        },
-        {
-          title: "Execution Latency",
-          url: "ccip/ccip-execution-latency",
-        },
-        {
-          title: "Billing",
-          url: "ccip/billing",
-        },
-        {
-          title: "Release Notes",
-          url: "https://dev.chain.link/changelog?product=CCIP",
-        },
-      ],
-    },
-    {
-      section: "Concepts",
-      contents: [
-        {
-          title: "Architecture",
-          url: "ccip/concepts/architecture",
-          children: [
-            {
-              title: "Overview",
-              url: "ccip/concepts/architecture/overview",
-            },
-            {
-              title: "Key Concepts",
-              url: "ccip/concepts/architecture/key-concepts",
-            },
-            {
-              title: "Onchain Architecture",
-              url: "ccip/concepts/architecture/onchain",
-              children: [
-                {
-                  title: "EVM",
-                  url: "ccip/concepts/architecture/onchain/evm",
-                  children: [
-                    {
-                      title: "Overview",
-                      url: "ccip/concepts/architecture/onchain/evm/overview",
-                    },
-                    {
-                      title: "Components",
-                      url: "ccip/concepts/architecture/onchain/evm/components",
-                    },
-                    {
-                      title: "Upgradability",
-                      url: "ccip/concepts/architecture/onchain/evm/upgradability",
-                    },
-                  ],
-                },
-                {
-                  title: "SVM",
-                  url: "ccip/concepts/architecture/onchain/svm",
-                  children: [
-                    {
-                      title: "Overview",
-                      url: "ccip/concepts/architecture/onchain/svm/overview",
-                    },
-                    {
-                      title: "Components",
-                      url: "ccip/concepts/architecture/onchain/svm/components",
-                    },
-                    {
-                      title: "Upgradability",
-                      url: "ccip/concepts/architecture/onchain/svm/upgradability",
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              title: "Offchain Architecture",
-              url: "ccip/concepts/architecture/offchain",
-              children: [
-                {
-                  title: "Overview",
-                  url: "ccip/concepts/architecture/offchain/overview",
-                },
-                {
-                  title: "Risk Management Network",
-                  url: "ccip/concepts/architecture/offchain/risk-management-network",
-                },
-              ],
-            },
-          ],
-        },
-        {
-          title: "Cross-Chain Token (CCT) Standard",
-          url: "ccip/concepts/cross-chain-token",
-          children: [
-            {
-              title: "Overview",
-              url: "ccip/concepts/cross-chain-token/overview",
-            },
-            {
-              title: "EVM",
-              url: "ccip/concepts/cross-chain-token/evm",
-              children: [
-                {
-                  title: "Tokens",
-                  url: "ccip/concepts/cross-chain-token/evm/tokens",
-                },
-                {
-                  title: "Token Pools",
-                  url: "ccip/concepts/cross-chain-token/evm/token-pools",
-                },
-                {
-                  title: "Architecture",
-                  url: "ccip/concepts/cross-chain-token/evm/architecture",
-                },
-                {
-                  title: "Registration and Administration",
-                  url: "ccip/concepts/cross-chain-token/evm/registration-administration",
-                },
-                {
-                  title: "Upgradability",
-                  url: "ccip/concepts/cross-chain-token/evm/upgradability",
-                },
-              ],
-            },
-            {
-              title: "SVM",
-              url: "ccip/concepts/cross-chain-token/svm",
-              children: [
-                {
-                  title: "Tokens",
-                  url: "ccip/concepts/cross-chain-token/svm/tokens",
-                },
-                {
-                  title: "Token Pools",
-                  url: "ccip/concepts/cross-chain-token/svm/token-pools",
-                },
-                {
-                  title: "Architecture",
-                  url: "ccip/concepts/cross-chain-token/svm/architecture",
-                },
-                {
-                  title: "Registration and Administration",
-                  url: "ccip/concepts/cross-chain-token/svm/registration-administration",
-                },
-                {
-                  title: "Upgradability",
-                  url: "ccip/concepts/cross-chain-token/svm/upgradability",
-                },
-              ],
-            },
-          ],
-        },
-        {
-          title: "Manual execution",
-          url: "ccip/concepts/manual-execution",
-        },
-        {
-          title: "Best Practices",
-          url: "ccip/concepts/best-practices",
-          children: [
-            {
-              title: "EVM",
-              url: "ccip/concepts/best-practices/evm",
-            },
-            {
-              title: "SVM",
-              url: "ccip/concepts/best-practices/svm",
-            },
-          ],
-        },
-      ],
-    },
-    {
-      section: "Tutorials",
-      contents: [
-        {
-          title: "EVM",
-          url: "ccip/tutorials/evm",
-          children: [
-            {
-              title: "Transfer Tokens",
-              url: "ccip/tutorials/evm/transfer-tokens-from-contract",
-            },
-            {
-              title: "Transfer Tokens with Data",
-              url: "ccip/tutorials/evm/programmable-token-transfers",
-            },
-            {
-              title: "Transfer Tokens with Data - Defensive Example",
-              url: "ccip/tutorials/evm/programmable-token-transfers-defensive",
-            },
-            {
-              title: "Using the Token Manager",
-              url: "ccip/tutorials/evm/token-manager",
-            },
-            {
-              title: "Using the CCIP JavaScript SDK",
-              url: "ccip/ccip-javascript-sdk",
-            },
-            {
-              title: "Offchain",
-              url: "ccip/tutorials/evm/offchain",
-              children: [
-                {
-                  title: "Transfer Tokens between EOAs",
-                  url: "ccip/tutorials/evm/offchain/transfer-tokens-from-eoa",
-                },
-                {
-                  title: "Checking CCIP Message Status",
-                  url: "ccip/tutorials/evm/offchain/get-status-offchain",
-                },
-                {
-                  title: "Using CCIP CLI",
-                  url: "ccip/tutorials/evm/offchain/ccip-tools",
-                  children: [
-                    {
-                      title: "Transfer Tokens between EOAs",
-                      url: "ccip/tutorials/evm/offchain/ccip-tools/transfer-tokens-from-eoa",
-                    },
-                    {
-                      title: "Checking CCIP Message Status",
-                      url: "ccip/tutorials/evm/offchain/ccip-tools/get-status-offchain",
-                    },
-                    {
-                      title: "Get Supported Tokens",
-                      url: "ccip/tutorials/evm/offchain/ccip-tools/get-supported-tokens",
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              title: "Cross-Chain Token (CCT) standard",
-              url: "ccip/tutorials/evm/cross-chain-tokens",
-              children: [
-                {
-                  title: "Deploy and Register Using Remix IDE",
-                  url: "ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-remix",
-                },
-                {
-                  title: "Register from an EOA (Burn & Mint)",
-                  url: "ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-hardhat",
-                  highlightAsCurrent: ["ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-foundry"],
-                },
-                {
-                  title: "Register from an EOA (Lock & Mint)",
-                  url: "ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-lock-mint-hardhat",
-                  highlightAsCurrent: ["ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-lock-mint-foundry"],
-                },
-                {
-                  title: "Set Token Pool rate limits",
-                  url: "ccip/tutorials/evm/cross-chain-tokens/update-rate-limiters-hardhat",
-                  highlightAsCurrent: ["ccip/tutorials/evm/cross-chain-tokens/update-rate-limiters-foundry"],
-                },
-                {
-                  title: "Register from a Safe Smart Account (Burn & Mint)",
-                  url: "ccip/tutorials/evm/cross-chain-tokens/register-from-safe-burn-mint-hardhat",
-                },
-              ],
-            },
-            {
-              title: "Test CCIP Locally",
-              url: "ccip/tutorials/evm/test-ccip-locally",
-            },
-            {
-              title: "Transfer USDC with Data",
-              url: "ccip/tutorials/evm/usdc",
-            },
-            {
-              title: "Send Arbitrary Data",
-              url: "ccip/tutorials/evm/send-arbitrary-data",
-            },
-            {
-              title: "Send Arbitrary Data and Receive Transfer Confirmation: A -> B -> A",
-              url: "ccip/tutorials/evm/send-arbitrary-data-receipt-acknowledgment",
-            },
-            {
-              title: "Manual Execution",
-              url: "ccip/tutorials/evm/manual-execution",
-            },
-            {
-              title: "Optimizing Gas Limit Settings in CCIP Messages",
-              url: "ccip/tutorials/evm/ccipreceive-gaslimit",
-            },
-            {
-              title: "Acquire Test Tokens",
-              url: "ccip/test-tokens",
-            },
-          ],
-        },
-        {
-          title: "SVM",
-          url: "ccip/tutorials/svm",
-          children: [
-            {
-              title: "Implement CCIP Receiver",
-              url: "ccip/tutorials/svm/receivers",
-            },
-            {
-              title: "SVM as Source",
-              url: "ccip/tutorials/svm/source",
-              children: [
-                {
-                  title: "Build CCIP Messages",
-                  url: "ccip/tutorials/svm/source/build-messages",
-                },
-                {
-                  title: "Prerequisites",
-                  url: "ccip/tutorials/svm/source/prerequisites",
-                },
-                {
-                  title: "Token Transfers",
-                  url: "ccip/tutorials/svm/source/token-transfers",
-                },
-              ],
-            },
-            {
-              title: "SVM as Destination",
-              url: "ccip/tutorials/svm/destination",
-              children: [
-                {
-                  title: "Build CCIP Messages",
-                  url: "ccip/tutorials/svm/destination/build-messages",
-                },
-                {
-                  title: "Token Transfers",
-                  url: "ccip/tutorials/svm/destination/token-transfers",
-                },
-                {
-                  title: "Arbitrary Messaging",
-                  url: "ccip/tutorials/svm/destination/arbitrary-messaging",
-                },
-              ],
-            },
-            {
-              title: "Cross-Chain Token (CCT) standard",
-              url: "ccip/tutorials/svm/cross-chain-tokens",
-            },
-          ],
-        },
-      ],
-    },
-    {
-      section: "Tools and Resources",
-      contents: [
-        {
-          title: "CCIP Explorer",
-          url: "ccip/tools-resources/ccip-explorer",
-        },
-        {
-          title: "Token Manager",
-          url: "ccip/tools-resources/token-manager",
-        },
-        {
-          title: "API Reference",
-          url: "ccip/api-reference",
-          children: [
-            {
-              title: "EVM",
-              url: "ccip/api-reference/evm",
-              children: [
-                {
-                  title: "v1.6.0 (Latest)",
-                  url: "ccip/api-reference/evm/v1.6.0",
-                  isCollapsible: true,
-                  children: evmCcipV160Contents,
-                },
-                {
-                  title: "v1.5.1",
-                  url: "ccip/api-reference/evm/v1.5.1",
-                  isCollapsible: true,
-                  children: evmCcipV151Contents,
-                },
-                {
-                  title: "v1.5.0",
-                  url: "ccip/api-reference/evm/v1.5.0",
-                  isCollapsible: true,
-                  children: evmCcipV150Contents,
-                },
-              ],
-            },
-            {
-              title: "SVM",
-              url: "ccip/api-reference/svm",
-              children: [
-                {
-                  title: "v1.6.0 (Latest)",
-                  url: "ccip/api-reference/svm/v1.6.0",
-                  isCollapsible: true,
-                  children: svmCcipV160Contents,
-                },
-              ],
-            },
-          ],
-        },
-        {
-          title: "SDK",
-          url: "ccip/tools-resources/sdk",
-        },
-        {
-          title: "Tools",
-          url: "ccip/tools-resources/tools",
-        },
-        {
-          title: "Cross-chain Examples",
-          url: "ccip/examples",
-        },
-      ],
-    },
-  ],
+  [SIDEBAR_SECTIONS.CCIP]: CCIP_SIDEBAR_CONTENT,
   [SIDEBAR_SECTIONS.CHAINLINK_LOCAL]: [
     {
       section: "Chainlink Local",
@@ -1863,6 +2091,28 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "resources/bridge-risks",
         },
         {
+          title: "Chainlink Oracle Platform",
+          url: "oracle-platform/overview",
+          children: [
+            {
+              title: "Data Standard",
+              url: "oracle-platform/data-standard",
+            },
+            {
+              title: "Interoperability Standard",
+              url: "oracle-platform/interoperability-standard",
+            },
+            {
+              title: "Compliance Standard",
+              url: "oracle-platform/compliance-standard",
+            },
+            {
+              title: "Privacy Standard",
+              url: "oracle-platform/privacy-standard",
+            },
+          ],
+        },
+        {
           title: "Chainlink Architecture",
           url: "architecture-overview/architecture-overview",
           children: [
@@ -1901,7 +2151,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
   ],
   [SIDEBAR_SECTIONS.LEGACY]: [
     {
-      section: "VRF V2 Subscription Method [Legacy]",
+      section: "VRF V2 Subscription Method [DEPRECATED]",
       contents: [
         {
           title: "Migrate to VRF V2.5",
@@ -1938,7 +2188,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
     {
-      section: "VRF V2 Direct Funding Method [Legacy]",
+      section: "VRF V2 Direct Funding Method [DEPRECATED]",
       contents: [
         {
           title: "Migrate to VRF V2.5",
@@ -1978,6 +2228,159 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         { title: "Best Practices", url: "vrf/v1/best-practices" },
         { title: "Supported Networks", url: "vrf/v1/supported-networks" },
         { title: "API Reference", url: "vrf/v1/api-reference" },
+      ],
+    },
+  ],
+  [SIDEBAR_SECTIONS.DTA_TECHNICAL_STANDARD]: [
+    {
+      section: "DTA Technical Standard",
+      contents: [
+        {
+          title: "About DTA",
+          url: "dta-technical-standard",
+        },
+        {
+          title: "How It Works",
+          url: "dta-technical-standard/how-it-works",
+        },
+        {
+          title: "Actors",
+          url: "dta-technical-standard/actors",
+        },
+      ],
+    },
+    {
+      section: "Concepts",
+      contents: [
+        {
+          title: "Architecture",
+          url: "dta-technical-standard/concepts/architecture",
+        },
+        {
+          title: "Payment Modes",
+          url: "dta-technical-standard/concepts/payment-modes",
+        },
+        {
+          title: "Request Lifecycle",
+          url: "dta-technical-standard/concepts/request-lifecycle",
+        },
+      ],
+    },
+    {
+      section: "Reference",
+      contents: [
+        {
+          title: "Glossary",
+          url: "dta-technical-standard/reference/glossary",
+        },
+      ],
+    },
+  ],
+  [SIDEBAR_SECTIONS.DATALINK]: [
+    {
+      section: "DataLink",
+      contents: [
+        {
+          title: "Overview",
+          url: "datalink",
+        },
+        {
+          title: "Data Quality, Responsibility & Trust Model",
+          url: "datalink/data-quality-responsibility",
+        },
+        {
+          title: "Billing",
+          url: "datalink/billing",
+        },
+      ],
+    },
+    {
+      section: "Provider Catalog",
+      contents: [
+        {
+          title: "DataLink Providers",
+          url: "datalink/provider-catalog",
+        },
+      ],
+    },
+    {
+      section: "Pull Delivery",
+      contents: [
+        {
+          title: "Overview",
+          url: "datalink/pull-delivery/overview",
+        },
+        {
+          title: "Supported Networks",
+          url: "datalink/pull-delivery/supported-networks",
+          children: [
+            {
+              title: "Verifier Proxy Addresses",
+              url: "datalink/pull-delivery/verifier-proxy-addresses",
+            },
+          ],
+        },
+        {
+          title: "Tutorials",
+          url: "datalink/pull-delivery/tutorials",
+          children: [
+            {
+              title: "Fetch and Decode reports",
+              url: "datalink/pull-delivery/tutorials/fetch-decode/api-go",
+              highlightAsCurrent: ["datalink/pull-delivery/tutorials/fetch-decode/api-rust"],
+            },
+            {
+              title: "Stream and Decode reports (WebSocket)",
+              url: "datalink/pull-delivery/tutorials/stream-decode/ws-go",
+              highlightAsCurrent: ["datalink/pull-delivery/tutorials/stream-decode/ws-rust"],
+            },
+            {
+              title: "Verify report data (EVM)",
+              url: "datalink/pull-delivery/tutorials/onchain-verification-evm",
+            },
+          ],
+        },
+        {
+          title: "Architecture",
+          url: "datalink/pull-delivery/architecture",
+        },
+        {
+          title: "Reference",
+          url: "datalink/pull-delivery/reference",
+          children: [
+            {
+              title: "API, SDKs, Onchain Verification",
+              url: "datalink/pull-delivery/reference/api-sdk-onchain-verification",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      section: "Push Delivery",
+      contents: [
+        {
+          title: "Overview",
+          url: "datalink/push-delivery/overview",
+        },
+        {
+          title: "Tutorials",
+          url: "datalink/push-delivery/tutorials",
+          children: [
+            {
+              title: "Using DataLink Feeds",
+              url: "datalink/push-delivery/tutorials/using-datalink-feeds",
+            },
+          ],
+        },
+        {
+          title: "Architecture",
+          url: "datalink/push-delivery/architecture",
+        },
+        {
+          title: "API Reference",
+          url: "datalink/push-delivery/api-reference",
+        },
       ],
     },
   ],

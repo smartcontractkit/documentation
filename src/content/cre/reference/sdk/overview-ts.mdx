@@ -1,0 +1,105 @@
+---
+section: cre
+title: "SDK Reference"
+date: Last Modified
+sdkLang: "ts"
+pageId: "reference-sdk-overview"
+metadata:
+  description: "Explore the TypeScript SDK API: complete technical reference for workflows, handlers, triggers, capabilities, and runtime methods."
+  datePublished: "2025-11-04"
+  lastModified: "2026-01-28"
+---
+
+import { Aside } from "@components"
+
+<Aside type="note" title="Required SDK Version: v1.0.5">
+  The CRE CLI automatically includes version `v1.0.5` of the `@chainlink/cre-sdk` package when you initialize a new
+  TypeScript workflow with `cre init`.
+</Aside>
+
+This section provides a detailed technical reference for the public interfaces of the CRE TypeScript SDK. Use this reference for quick lookups of specific functions, types, and method signatures.
+
+## How to read this section
+
+The SDK Reference is broken down into several pages, each corresponding to a core part of the SDK's functionality:
+
+- **[Core SDK](/cre/reference/sdk/core-ts)**: Covers the fundamental building blocks of any workflow, including `handler`, `Runtime`, and the `.result()` pattern for promise resolution.
+- **[Triggers](/cre/reference/sdk/triggers/overview-ts)**: Details the configuration and payload structures for all available trigger types (`Cron`, `HTTP`, `EVM Log`).
+- **[EVM Client](/cre/reference/sdk/evm-client-ts)**: Provides a reference for the `EVMClient`, the primary tool for all EVM interactions, including reads and writes.
+- **[HTTP Client](/cre/reference/sdk/http-client-ts)**: Provides a reference for the `HTTPClient`, used for making offchain API requests from individual nodes.
+- **[Consensus & Aggregation](/cre/reference/sdk/consensus-ts)**: Describes how to use aggregators like `consensusMedianAggregation` and `ConsensusAggregationByFields` with `runtime.runInNodeMode()` to process and consolidate data from multiple nodes.
+
+## Package Structure
+
+The TypeScript SDK is distributed as a single npm package `@chainlink/cre-sdk` that exports all necessary functionality:
+
+```typescript
+import {
+  // Capabilities
+  CronCapability,
+  HTTPCapability,
+  HTTPClient,
+  EVMClient,
+  // Core functions
+  handler, // Register handlers
+  Runner, // Workflow runner
+  type Runtime, // Runtime interface
+  type NodeRuntime, // Node-level runtime interface
+  // Consensus
+  consensusMedianAggregation,
+  consensusIdenticalAggregation,
+  // Utilities
+  getNetwork, // Chain selector utilities
+  bytesToHex, // Data conversion utilities
+  hexToBase64,
+  // ... and more
+} from "@chainlink/cre-sdk"
+```
+
+<Aside type="note" title="Import styles">
+  The SDK supports two import styles: **direct imports** (shown above) and **namespace imports** (e.g.,
+  `cre.capabilities.HTTPClient`). Both are fully supported and produce identical behavior. See the [Core SDK
+  Reference](/cre/reference/sdk/core-ts#import-styles) for details on both patterns.
+</Aside>
+
+## Understanding TypeScript Types
+
+The TypeScript SDK uses Protocol Buffers for type definitions, which generates two type representations for each message:
+
+- **`Type`** (e.g., `CallMsg`): Runtime types using `Uint8Array`, protobuf `BigInt`, and protobuf `Message` objects. These are efficient for in-memory processing.
+- **`TypeJson`** (e.g., `CallMsgJson`): JSON-serializable types using `string`, `number`, and plain objects. These are used for serialization and I/O operations.
+
+**As a developer, you always use JSON types.** The SDK automatically converts between representations when crossing WASM boundaries.
+
+```typescript
+// You write (JSON types - convenient):
+evmClient.callContract(runtime, {
+  call: {
+    from: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb", // string (hex)
+    to: "0x123...",
+    data: "0xabc...",
+  },
+  blockNumber: "12345", // string representation
+})
+
+// SDK handles internally (native types - efficient):
+// - Converts strings to Uint8Array
+// - Processes with protobuf types
+// - Converts results back to JSON types for your callback
+```
+
+In this reference documentation, type tables show **JSON types only**, as these are what you'll use when writing workflows.
+
+## Working with Contract ABIs
+
+The TypeScript SDK integrates with <a href="https://viem.sh/" target="_blank" rel="noopener noreferrer">viem</a> for type-safe contract interactions. You define ABIs directly in TypeScript files and use viem's functions for encoding and decoding. For detailed examples and best practices, see the [Onchain Read guide](/cre/guides/workflow/using-evm-client/onchain-read).
+
+## Runtime Environment
+
+TypeScript workflows are compiled to WebAssembly (WASM) using Javy and QuickJS. This compilation process has implications for library compatibility and available Node.js APIs. See [TypeScript Runtime Environment](/cre/concepts/typescript-wasm-runtime) for details on the compilation pipeline, QuickJS compatibility, and how to verify library compatibility.
+
+## Runtime Requirements
+
+- **Bun**: >= 1.2.21
+- **TypeScript**: >= 5.9
+- **Dependencies**: `viem` (`^2.34.0`), `zod` (`^3.25.76`)

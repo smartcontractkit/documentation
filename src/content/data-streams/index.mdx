@@ -8,9 +8,10 @@ metadata:
   keywords: ["Chainlink", "Data Streams", "Oracle", "DeFi", "Market Data", "Low Latency", "High Frequency"]
 whatsnext:
   {
-    "Learn how to fetch and decode Data Streams reports with the API": "/data-streams/tutorials/api-go",
+    "Learn how to fetch and decode Data Streams reports with the API": "/data-streams/tutorials/go-sdk-fetch",
     "Find the list of available Stream IDs": "/data-streams/crypto-streams",
-    "Find the schema of data to expect from Data Streams reports": "/data-streams/reference/report-schema",
+    "Find the schema of data to expect from Data Streams reports: Crypto": "/data-streams/reference/report-schema-v3",
+    "Find the schema of data to expect from Data Streams reports: RWA": "/data-streams/reference/report-schema-v8",
   }
 ---
 
@@ -22,6 +23,10 @@ import DataStreams from "@features/data-streams/common/DataStreams.astro"
 Chainlink Data Streams delivers low-latency market data offchain, which you can verify onchain. This approach provides decentralized applications (dApps) with on-demand access to high-frequency market data backed by decentralized, fault-tolerant, and transparent infrastructure.
 
 Traditional push-based oracles update onchain data at set intervals or when certain price thresholds are met. In contrast, Chainlink Data Streams uses a pull-based design that preserves trust-minimization with onchain verification.
+
+Data Streams are offered in [several report formats](/data-streams/reference/report-schema-overview), each designed for distinct asset classes.
+
+See data sourcing details in the [Data Sources](/data-streams/data-sources) page.
 
 ## Sub-Second Data and Commit-and-Reveal
 
@@ -46,6 +51,15 @@ Chainlink Data Streams offers price points such as mid prices and [Liquidity-Wei
 ## High availability and resilient infrastructure
 
 Data Streams API services use an [active-active multi-site deployment](/data-streams/architecture#active-active-multi-site-deployment) model across multiple distributed and isolated origins. This architecture ensures continuous operations even if one origin fails, delivering robust fault tolerance and high availability.
+
+For real-time streaming applications, the SDKs support **High Availability (HA) mode** that establishes multiple simultaneous connections for zero-downtime operation. When enabled, HA mode provides:
+
+- **Automatic failover** between connections
+- **Report deduplication** across connections
+- **Automatic origin discovery** to find available endpoints
+- **Per-connection monitoring** and statistics
+
+**Learn more:** [Go SDK](/data-streams/reference/data-streams-api/go-sdk#high-availability-ha-mode) | [Rust SDK](/data-streams/reference/data-streams-api/rust-sdk#high-availability-mode) | [TypeScript SDK](/data-streams/reference/data-streams-api/ts-sdk#high-availability-mode)
 
 ## Example use cases
 
@@ -77,19 +91,20 @@ You can access Chainlink Data Streams through SDKs and APIs, allowing you to bui
 
 Access data directly through REST APIs or WebSocket connections using our SDKs:
 
-- **[Go SDK](/data-streams/reference/go-sdk)** - Full-featured SDK with comprehensive examples
-- **[Rust SDK](/data-streams/reference/rust-sdk)** - High-performance SDK for Rust applications
-- **[REST API](/data-streams/reference/interface-api)** or **[WebSocket](/data-streams/reference/interface-ws)** - Direct access to Data Streams endpoints
+- **[Go SDK](/data-streams/reference/data-streams-api/go-sdk)** - Full-featured SDK with comprehensive examples
+- **[Rust SDK](/data-streams/reference/data-streams-api/rust-sdk)** - High-performance SDK for Rust applications
+- **[TypeScript SDK](/data-streams/reference/data-streams-api/ts-sdk)** - Type-safe SDK for TypeScript applications
+- **[REST API](/data-streams/reference/data-streams-api/interface-api)** or **[WebSocket](/data-streams/reference/data-streams-api/interface-ws)** - Direct access to Data Streams endpoints
 
 ### Getting started
 
 1. Understand the Architecture: Review the [system components and data flow](/data-streams/architecture) to understand how Data Streams works.
 
-1. Explore Available Data: Browse [available Stream IDs](/data-streams/crypto-streams) and [report schemas](/data-streams/reference/report-schema) to see what data is available.
+1. Explore Available Data: Browse [available reports and associated schemas](/data-streams/reference/report-schema-overview) to see what data is available.
 
-1. Try the API: Follow our [hands-on tutorial](/data-streams/tutorials/api-go) to fetch and decode your first report.
+1. Try the API: Follow our [hands-on tutorial](/data-streams/tutorials/go-sdk-fetch) to fetch and decode your first report.
 
-1. Implement Verification: Add [onchain verification](/data-streams/reference/onchain-verification) to ensure data authenticity in your smart contracts.
+1. Implement Verification: Add [onchain verification](/data-streams/reference/data-streams-api/onchain-verification) to ensure data authenticity in your smart contracts.
 
 ### Streams Trade: An alternative implementation
 

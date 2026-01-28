@@ -1,0 +1,218 @@
+---
+section: cre
+title: "Making GET Requests"
+date: Last Modified
+sdkLang: "go"
+pageId: "guides-workflow-http-get-request"
+metadata:
+  description: "Fetch data from APIs in Go: learn to make GET requests with consensus validation to bring offchain data into your workflow."
+  datePublished: "2025-11-04"
+  lastModified: "2025-12-16"
+---
+
+import { Aside } from "@components"
+
+The `http.Client` is the SDK's interface for the underlying [HTTP Capability](/cre/capabilities/http). It allows your workflow to fetch data from any external API.
+
+All HTTP requests are wrapped in a consensus mechanism to provide a single, reliable result. The SDK provides two ways to do this:
+
+- **[`http.SendRequest`](#1-the-httpsendrequest-pattern-recommended):** (Recommended) A high-level helper function that simplifies making requests.
+- **[`cre.RunInNodeMode`](#2-the-creruninnodemode-pattern-low-level):** The lower-level pattern for more complex scenarios.
+
+## Prerequisites
+
+This guide assumes you have a basic understanding of CRE. If you are new, we strongly recommend completing the [Getting Started tutorial](/cre/getting-started/overview) first.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Redirects are not supported">
+  HTTP requests to URLs that return redirects (3xx status codes) will fail. Ensure the URL you provide is the final destination and does not redirect to another URL.
+</Aside>
+
+## Choosing your approach
+
+### Use `http.SendRequest` (Section 1) when:
+
+- Making a **single HTTP GET request**
+- Your logic is straightforward: make request → parse response → return result
+- You want **simple, clean code** with minimal boilerplate
+
+This is the recommended approach for most use cases.
+
+### Use `cre.RunInNodeMode` (Section 2) when:
+
+- You need **multiple HTTP requests** with logic between them
+- You need **conditional execution** (if/else based on runtime conditions)
+- You need **custom retry logic** or complex error handling
+- You need **complex data transformation** (fetching from multiple APIs and combining results)
+
+If you're unsure, start with Section 1. You can always migrate to Section 2 later if your requirements become more complex.
+
+## 1. The `http.SendRequest` Pattern (Recommended)
+
+The `http.SendRequest` helper function is the simplest and recommended way to make HTTP calls. It automatically handles the `cre.RunInNodeMode` pattern for you.
+
+### How it works
+
+The pattern involves two key functions:
+
+1. **A Fetching Function**: You create a function (e.g., `fetchAndParse`) that contains your core logic—making the request, parsing the response, and returning a clean data struct. This function receives a `sendRequester` object to make the actual API call.
+1. **Your Main Handler**: Your main trigger callback (e.g., `onCronTrigger`) calls the `http.SendRequest` helper, passing it your fetching function and a consensus method. For a full list of supported tags and methods, see the [Consensus & Aggregation reference](/cre/reference/sdk/consensus).
+
+This separation keeps your code clean and focused.
+
+### Step-by-step example
+
+This example shows a complete workflow that fetches the price of an asset, parses it into a struct with consensus tags, and aggregates the results.
+
+#### Step 1: Configure your workflow
+
+Add the API URL to your `config.json` file.
+
+```json
+{
+  "apiUrl": "https://some-price-api.com/price?ids=ethereum"
+}
+```
+
+#### Step 2: Define the response structs with tags
+
+Define Go structs for the API response and your internal data model. Add `consensus_aggregation` tags to the fields of your internal struct.
+
+```go
+import (
+    "time"
+    "github.com/shopspring/decimal"
+)
+
+// PriceData is the clean, internal struct that our workflow will use.
+// The tags tell the DON how to aggregate the results from multiple nodes.
+type PriceData struct {
+	Price       decimal.Decimal   `json:"price" consensus_aggregation:"median"`
+	LastUpdated time.Time         `json:"lastUpdated" consensus_aggregation:"median"`
+}
+
+// ExternalApiResponse is used to parse the nested JSON from the external API.
+type ExternalApiResponse struct {
+	Ethereum struct {
+		USD           decimal.Decimal `json:"usd"`
+		LastUpdatedAt int64           `json:"last_updated_at"`
+	} `json:"ethereum"`
+}
+```
+
+#### Step 3: Implement the fetch and parse logic
+
+Create the function that will be passed to `http.SendRequest`. It takes the `config`, a `logger`, and the `sendRequester` as arguments.
+
+```go
+import (
+    "encoding/json"
+    "fmt"
+    "log/slog"
+    "time"
+    "github.com/shopspring/decimal"
+)
+
+func fetchAndParse(config *Config, logger *slog.Logger, sendRequester *http.SendRequester) (*PriceData, error) {
+	// 1. Construct the request
+	req := &http.Request{
+		Url:    config.ApiUrl,
+		Method: "GET",
+	}
+
+	// 2. Send the request using the provided sendRequester
+	resp, err := sendRequester.SendRequest(req).Await()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get API response: %w", err)
+	}
+
+	// 3. Parse the raw JSON into our ExternalApiResponse struct
+	var externalResp ExternalApiResponse
+	if err = json.Unmarshal(resp.Body, &externalResp); err != nil {
+		return nil, fmt.Errorf("failed to parse API response: %w", err)
+	}
+
+	// 4. Transform into our internal PriceData struct and return
+	priceData := &PriceData{
+		Price:       externalResp.Ethereum.USD,
+		LastUpdated: time.Unix(externalResp.Ethereum.LastUpdatedAt, 0),
+	}
+	return priceData, nil
+}
+```
+
+#### Step 4: Call `http.SendRequest` from your handler
+
+In your main `onCronTrigger` handler, call the `http.SendRequest` helper, passing it your `fetchAndParse` function and `cre.ConsensusAggregationFromTags`.
+
+```go
+func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*MyResult, error) {
+    logger := runtime.Logger()
+    client := &http.Client{}
+
+    pricePromise := http.SendRequest(config, runtime, client,
+        fetchAndParse,
+        // The SDK inspects the PriceData struct tags to determine the aggregation strategy.
+        cre.ConsensusAggregationFromTags[*PriceData](),
+    )
+
+    result, err := pricePromise.Await()
+    if err != nil {
+        return nil, err
+    }
+
+    logger.Info("Successfully fetched and aggregated price data", "price", result.Price, "timestamp", result.LastUpdated)
+    return &MyResult{}, nil
+}
+```
+
+## 2. The `cre.RunInNodeMode` Pattern (Low-Level)
+
+For more complex scenarios, you can use the lower-level `cre.RunInNodeMode` function directly. This gives you more control but requires more boilerplate code.
+
+The pattern works like a "map-reduce" for the DON:
+
+1. **Map**: You provide a function (e.g., `fetchPriceData`) that executes on every node.
+1. **Reduce**: You provide a consensus algorithm (e.g., `ConsensusAggregationFromTags`) to reduce the individual results into a single outcome. For a full list of supported tags and methods, see the [Consensus & Aggregation reference](/cre/reference/sdk/consensus).
+
+The example below is functionally identical to the `http.SendRequest` example above, but implemented using the low-level pattern.
+
+```go
+// fetchPriceData is a function that runs on each individual node.
+func fetchPriceData(config *Config, nodeRuntime cre.NodeRuntime) (*PriceData, error) {
+	// 1. Fetch raw data from the API
+	client := &http.Client{}
+	req := &http.Request{
+		Url:    config.ApiUrl,
+		Method: "GET",
+	}
+	resp, err := client.SendRequest(nodeRuntime, req).Await()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get API response: %w", err)
+	}
+
+	// 2. Parse and transform the response (same as before)
+	// ...
+	return priceData, nil
+}
+
+func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*MyResult, error) {
+    logger := runtime.Logger()
+    pricePromise := cre.RunInNodeMode(config, runtime,
+        fetchPriceData,
+        cre.ConsensusAggregationFromTags[*PriceData](),
+    )
+
+    result, err := pricePromise.Await()
+    if err != nil {
+        return nil, err
+    }
+
+    logger.Info("Successfully fetched and aggregated price data", "price", result.Price, "timestamp", result.LastUpdated)
+    return &MyResult{}, nil
+}
+```
+
+## Customizing your requests
+
+The `http.Request` struct provides several fields to customize your request. See the [HTTP Client SDK Reference](/cre/reference/sdk/http-client) for a full list of options.

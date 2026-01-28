@@ -1,0 +1,102 @@
+---
+section: cre
+title: "Onchain Write"
+sdkLang: "ts"
+pageId: "guides-workflow-evm-onchain-write-overview"
+date: Last Modified
+metadata:
+  description: "Write workflow results to the blockchain in TypeScript: learn to generate verified reports and submit them securely to smart contracts."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+This overview explains how writing data onchain works in CRE and how the TypeScript SDK handles it.
+
+- [Understanding how CRE writes work](#understanding-how-cre-writes-work) - The secure write flow
+- [What you need: A consumer contract](#what-you-need-a-consumer-contract) - Contract requirements
+- [The TypeScript write process](#the-typescript-write-process) - Two-step approach overview
+- [Next steps](#next-steps) - Where to go from here
+
+## Understanding how CRE writes work
+
+Before diving into code, it's important to understand how CRE handles onchain writes differently than traditional web3 applications.
+
+### Why CRE doesn't write directly to your contract
+
+In a traditional web3 app, you'd create a transaction and send it directly to your smart contract. **CRE uses a different, more secure approach** for three key reasons:
+
+1. **Decentralization**: Multiple nodes in the Decentralized Oracle Network (DON) need to agree on what data to write
+1. **Verification**: The blockchain needs cryptographic proof that the data came from a trusted Chainlink network
+1. **Accountability**: There must be a verifiable trail showing which workflow and owner created the data
+
+### The secure write flow (4 steps)
+
+Here's the journey your workflow's data takes to reach the blockchain:
+
+1. **Report generation**: Your workflow generates a _**report**_—your data is ABI-encoded and wrapped in a cryptographically signed "package"
+1. **DON consensus**: The DON reaches consensus on the report's contents
+1. **Forwarder submission**: A designated node submits the report to a Chainlink `KeystoneForwarder` contract
+1. **Delivery to your contract**: The Forwarder validates the report's signatures and calls your consumer contract's `onReport()` function with the data
+
+In your workflow code, this process involves two steps: calling `runtime.report()` to generate the signed report, then calling `evmClient.writeReport()` to submit it to the blockchain.
+
+## What you need: A consumer contract
+
+Before you can write data onchain, you need a **consumer contract**. This is the smart contract that will receive your workflow's data.
+
+**What is a consumer contract?**
+
+A consumer contract is **your smart contract** that implements the `IReceiver` interface. This interface defines an `onReport()` function that the Chainlink Forwarder calls to deliver your workflow's data.
+
+Think of it as a mailbox that's designed to receive packages (reports) from Chainlink's secure delivery service (the Forwarder contract).
+
+**Key requirement:**
+
+Your contract must implement the `IReceiver` interface. This single requirement ensures your contract has the necessary `onReport(bytes metadata, bytes report)` function that the Chainlink Forwarder calls to deliver data.
+
+**Getting started:**
+
+- **Don't have a consumer contract yet?** Follow the [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts) guide to create one.
+- **Already have one deployed?** Great! Make sure you have its address and ABI ready for encoding your data.
+
+## The TypeScript write process
+
+The TypeScript SDK uses a simple, two-step process for writing data onchain:
+
+### Step 1: Generate a signed report
+
+Use `runtime.report()` to:
+
+1. ABI-encode your data using <a href="https://viem.sh/docs/abi/encodeAbiParameters" target="_blank">viem's `encodeAbiParameters()`</a>
+1. Convert the encoded data to base64 format
+1. Generate a cryptographically signed report
+
+### Step 2: Submit the report
+
+Use `evmClient.writeReport()` to submit the signed report to your consumer contract address.
+
+**Key features:**
+
+- **Use viem** directly for ABI operations
+- **Manual but flexible** - Full control over encoding and submission
+- **Type-safe** - TypeScript and viem ensure compile-time safety
+- **Works for any data** - Single values, structs, arrays, etc.
+
+<Aside type="note" title="Already familiar with the Getting Started tutorial?">
+  The approach covered in [Part 4: Writing Onchain](/cre/getting-started/part-4-writing-onchain) uses this same two-step
+  pattern. This section provides the conceptual foundation for that tutorial.
+</Aside>
+
+## Next steps
+
+Now that you understand the concepts, follow these guides to implement onchain writes:
+
+1. **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)** - Create a Solidity contract to receive your workflow's data
+1. **[Writing Data Onchain](/cre/guides/workflow/using-evm-client/onchain-write/writing-data-onchain)** - Complete step-by-step guide with examples for single values and structs
+
+**Additional resources:**
+
+- **[EVM Client Reference](/cre/reference/sdk/evm-client-ts)** - Complete API documentation
+- **[Onchain Read](/cre/guides/workflow/using-evm-client/onchain-read-ts)** - Reading data from smart contracts

@@ -1,0 +1,1120 @@
+---
+import type { HTMLAttributes } from "astro/types"
+import fileIconSVG from "../CodeHighlightBlock/assets/file-icon.svg?raw"
+import copyIconSVG from "../CodeHighlightBlock/assets/copy-icon.svg?raw"
+import checkmarkIconSVG from "../CodeHighlightBlock/assets/checkmark-icon.svg?raw"
+import "../CodeHighlightBlock/CodeHighlightBlock.css"
+
+/**
+ * CodeHighlightBlockMulti - Multi-language code display component
+ *
+ * This component provides a multi-language code block with:
+ * - Adaptive UI: Toggle buttons (2 languages) or dropdown (3+ languages)
+ * - Syntax highlighting for multiple languages
+ * - Line numbers and line highlighting
+ * - Global state synchronization with sidebar switcher
+ * - Copy to clipboard functionality
+ *
+ * USAGE EXAMPLES:
+ *
+ * 1. Basic multi-language code block (shows toggle for 2 languages):
+ * <CodeHighlightBlockMulti
+ *   languages={{
+ *     go: { code: goCode, title: "main.go" },
+ *     ts: { code: tsCode, title: "main.ts" }
+ *   }}
+ * />
+ *
+ * 2. With language-specific line highlighting:
+ * <CodeHighlightBlockMulti
+ *   languages={{
+ *     go: {
+ *       code: goCode,
+ *       title: "main.go",
+ *       highlightLines: "6,19,34-56" // Go-specific highlights
+ *     },
+ *     ts: {
+ *       code: tsCode,
+ *       title: "main.ts",
+ *       highlightLines: "3,12,25-30" // TS-specific highlights
+ *     }
+ *   }}
+ * />
+ *
+ * 3. With language-specific tooltips:
+ * <CodeHighlightBlockMulti
+ *   languages={{
+ *     go: {
+ *       code: goCode,
+ *       title: "main.go",
+ *       lineComments: {
+ *         5: "Initializes the HTTP client",
+ *         12: "Go-specific error handling"
+ *       },
+ *       segmentTooltips: {
+ *         "19:Config": "Go struct definition"
+ *       }
+ *     },
+ *     ts: {
+ *       code: tsCode,
+ *       title: "main.ts",
+ *       lineComments: {
+ *         3: "TypeScript interface definition",
+ *         15: "TS-specific async handling"
+ *       },
+ *       segmentTooltips: {
+ *         "5:interface": "TypeScript interface keyword"
+ *       }
+ *     }
+ *   }}
+ * />
+ *
+ * 4. Global fallback (legacy compatibility):
+ * <CodeHighlightBlockMulti
+ *   languages={{
+ *     go: { code: goCode, title: "main.go" },
+ *     ts: { code: tsCode, title: "main.ts" }
+ *   }}
+ *   highlightLines="9,10" // Applied to ALL languages if no language-specific
+ * />
+ *
+ * 5. Multiple languages (shows dropdown for 3+ languages):
+ * <CodeHighlightBlockMulti
+ *   languages={{
+ *     go: { code: goCode, title: "main.go" },
+ *     ts: { code: tsCode, title: "main.ts" },
+ *     js: { code: jsCode, title: "main.js" }
+ *   }}
+ * />
+ */
+
+type SupportedLanguage = "go" | "ts" | "typescript" | "bash" | "shell" | "json" | "yaml" | "sol" | "plaintext"
+
+interface LanguageOption {
+  code: string
+  title?: string
+  /**
+   * Lines to highlight for this specific language.
+   * Example: "5,10-12,20"
+   */
+  highlightLines?: string
+  /**
+   * Line-specific tooltips for this language.
+   */
+  lineComments?: Record<string, string>
+  /**
+   * Segment tooltips for this language.
+   */
+  segmentTooltips?: Record<string, string>
+}
+
+interface Props extends HTMLAttributes<"div"> {
+  /**
+   * Multi-language support with automatic dropdown selector.
+   * Creates a dropdown to switch between languages.
+   *
+   * Example:
+   * languages={{
+   *   go: { code: goCode, title: "main.go" },
+   *   ts: { code: tsCode, title: "main.ts" }
+   * }}
+   */
+  languages: Record<SupportedLanguage, LanguageOption>
+
+  /**
+   * A comma-separated string of lines or ranges to highlight.
+   * Example: "5, 10-12, 20"
+   */
+  highlightLines?: string
+
+  /**
+   * Optional comments/tooltips for specific code lines.
+   */
+  lineComments?: Record<string, string>
+
+  /**
+   * Segment-specific tooltips for external files.
+   * Format: "lineNumber:segment" → tooltip text
+   */
+  segmentTooltips?: Record<string, string>
+}
+
+const { languages, highlightLines, lineComments = {}, segmentTooltips = {}, ...rest } = Astro.props
+
+// Validation
+if (!languages || Object.keys(languages).length === 0) {
+  throw new Error("CodeHighlightBlockMulti: 'languages' prop must be provided with at least one language.")
+}
+
+if (Object.keys(languages).length === 1) {
+  console.warn("CodeHighlightBlockMulti: Only one language provided. Consider using CodeHighlightBlock instead.")
+}
+
+// Determine current language and code for initial rendering
+const availableLanguages = Object.keys(languages) as SupportedLanguage[]
+const currentLang = availableLanguages[0] // Will be updated by client-side logic
+const currentCode = languages[currentLang].code
+const currentTitle = languages[currentLang].title
+
+// Function to parse highlight lines from string
+function parseHighlightLines(highlightLinesStr: string): Set<number> {
+  const linesToHighlight = new Set<number>()
+
+  if (highlightLinesStr) {
+    const ranges = highlightLinesStr.split(",")
+    for (const range of ranges) {
+      const trimmedRange = range.trim()
+      if (trimmedRange.includes("-")) {
+        const [startStr, endStr] = trimmedRange.split("-")
+        const start = parseInt(startStr.trim(), 10)
+        const end = parseInt(endStr.trim(), 10)
+        if (!isNaN(start) && !isNaN(end) && start <= end) {
+          for (let i = start; i <= end; i++) {
+            linesToHighlight.add(i)
+          }
+        }
+      } else {
+        const lineNumber = parseInt(trimmedRange, 10)
+        if (!isNaN(lineNumber)) {
+          linesToHighlight.add(lineNumber)
+        }
+      }
+    }
+  }
+
+  return linesToHighlight
+}
+
+// Parse highlight lines for current language (with fallback to global)
+const currentLanguageData = languages[currentLang]
+const currentHighlightLines = currentLanguageData?.highlightLines || highlightLines || ""
+const linesToHighlight = parseHighlightLines(currentHighlightLines)
+
+// Parse inline highlight markers from the code
+const originalLines = currentCode.split(/\r?\n/)
+let inHighlightBlock = false
+
+for (let i = 0; i < originalLines.length; i++) {
+  const line = originalLines[i]
+  const lineNumber = i + 1
+
+  // Check for highlight-line marker
+  if (line.includes("highlight-line")) {
+    linesToHighlight.add(lineNumber)
+  }
+
+  // Check for highlight-start/end blocks
+  if (line.includes("highlight-start")) {
+    inHighlightBlock = true
+  }
+  if (inHighlightBlock) {
+    linesToHighlight.add(lineNumber)
+  }
+  if (line.includes("highlight-end")) {
+    inHighlightBlock = false
+  }
+}
+
+// Parse segment tooltips from props (for external files)
+const segmentTooltipsList: Array<{ line: number; segment: string; text: string }> = []
+Object.entries(segmentTooltips).forEach(([key, text]) => {
+  const [lineStr, segment] = key.split(":")
+  const lineNumber = parseInt(lineStr, 10)
+  if (!isNaN(lineNumber) && segment) {
+    segmentTooltipsList.push({ line: lineNumber, segment: segment.trim(), text })
+  }
+})
+
+// Parse segment tooltips from inline markers (for inline code)
+const inlineSegmentTooltips: Array<{ text: string; segment: string; fullMatch: string }> = []
+let cleanCode = currentCode
+
+// Extract inline segment tooltips first
+const tooltipRegex = /<tooltip="([^"]+)">([^<]+)<\/tooltip>/g
+let match
+while ((match = tooltipRegex.exec(cleanCode)) !== null) {
+  inlineSegmentTooltips.push({
+    text: match[1],
+    segment: match[2],
+    fullMatch: match[0],
+  })
+}
+
+// Remove tooltip markers from code
+cleanCode = cleanCode.replace(/<tooltip="[^"]+">([^<]+)<\/tooltip>/g, "$1")
+
+// Remove highlight markers
+cleanCode = cleanCode.replace(/\s*(\/\/|#|<!--|\/\*)\s*highlight-line.*?(\*\/|-->)?$/gm, "")
+cleanCode = cleanCode.replace(/\s*(\/\/|#|<!--|\/\*)\s*highlight-start.*?(\*\/|-->)?$/gm, "")
+cleanCode = cleanCode.replace(/\s*(\/\/|#|<!--|\/\*)\s*highlight-end.*?(\*\/|-->)?$/gm, "")
+
+const codeLines = cleanCode.split(/\r?\n/)
+
+// Generate unique ID for this instance to avoid contamination
+const blockId = `code-block-multi-${Math.random().toString(36).substring(2, 15)}`
+
+function getLanguageDisplayName(langCode: string): string {
+  const langMap: Record<string, string> = {
+    js: "JavaScript",
+    ts: "TypeScript",
+    go: "Go",
+    bash: "Shell",
+    yaml: "YAML",
+    json: "JSON",
+    sol: "Solidity",
+  }
+  return langMap[langCode.toLowerCase()] || langCode.charAt(0).toUpperCase() + langCode.slice(1)
+}
+
+const languageDisplay = getLanguageDisplayName(currentLang)
+---
+
+<div class="code-block-container" id={blockId} data-lang={currentLang} {...rest}>
+  <div class="code-width-wrapper">
+    <div class="code-block-header">
+      {
+        currentTitle ? (
+          <div class="code-title">
+            <span set:html={fileIconSVG} class="file-icon" />
+            <span>{currentTitle}</span>
+          </div>
+        ) : (
+          <div class="code-title empty" />
+        )
+      }
+
+      <div class="code-header-right">
+        {
+          availableLanguages.length === 2 ? (
+            <div class="language-toggle">
+              {Object.entries(languages).map(([langKey, langData]) => {
+                const langDisplay = getLanguageDisplayName(langKey as SupportedLanguage)
+                const isActive = langKey === currentLang
+                return (
+                  <button
+                    class={`language-toggle-button ${isActive ? "active" : ""}`}
+                    data-language={langKey}
+                    aria-pressed={isActive ? "true" : "false"}
+                    aria-label={`Switch to ${langDisplay}`}
+                  >
+                    <span class="language-name">{langDisplay}</span>
+                  </button>
+                )
+              })}
+            </div>
+          ) : (
+            <div class="language-dropdown">
+              <button class="language-dropdown-trigger" aria-haspopup="true" aria-expanded="false">
+                <span class="selected-language">{languageDisplay}</span>
+                <svg
+                  class="chevron-dropdown"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M2.5 4.5L6 8L9.5 4.5"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+              <div class="language-dropdown-menu" role="menu">
+                {Object.entries(languages).map(([langKey, langData]) => {
+                  const langDisplay = getLanguageDisplayName(langKey as SupportedLanguage)
+                  const isActive = langKey === currentLang
+                  return (
+                    <button
+                      class={`language-option ${isActive ? "active" : ""}`}
+                      role="menuitem"
+                      data-language={langKey}
+                      aria-current={isActive ? "true" : "false"}
+                    >
+                      <span class="language-name">{langDisplay}</span>
+                      {isActive && (
+                        <svg
+                          class="check-icon"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 16 16"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M13.5 4.5L6 12L2.5 8.5"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        }
+        <button class="copy-button" aria-label="Copy code to clipboard" data-tooltip="Copy code">
+          <span set:html={copyIconSVG} />
+        </button>
+      </div>
+    </div>
+
+    <div class="code-block-content">
+      <table class="code-table">
+        <tbody>
+          {
+            codeLines.map((line, index) => {
+              const lineNumber = index + 1
+              const isHighlighted = linesToHighlight.has(lineNumber)
+              const hasComment = lineComments[lineNumber] || lineComments[lineNumber.toString()]
+              const commentText = hasComment ? lineComments[lineNumber] || lineComments[lineNumber.toString()] : null
+
+              return (
+                <tr
+                  class={`${isHighlighted ? "line-highlighted" : ""} ${hasComment ? "has-comment" : ""}`}
+                  data-line-number={lineNumber}
+                >
+                  <td class="line-number">
+                    <span class="number-text">{lineNumber}</span>
+                  </td>
+                  <td class="line-content">
+                    {hasComment ? (
+                      <span class="line" data-comment={commentText}>
+                        {line || "\u200b"}
+                      </span>
+                    ) : (
+                      <span class="line">{line || "\u200b"}</span>
+                    )}
+                  </td>
+                </tr>
+              )
+            })
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script
+  type="module"
+  define:vars={{
+    copyIconSVG,
+    checkmarkIconSVG,
+    currentLang,
+    lineComments,
+    segmentTooltipsList,
+    inlineSegmentTooltips,
+    languages,
+    linesToHighlight: Array.from(linesToHighlight),
+    blockId,
+  }}
+>
+  // Direct localStorage access (no imports needed)
+  function getLanguageFromStorage() {
+    const stored = localStorage.getItem("docs-language-preference") || "go"
+    return stored === '"ts"' ? "ts" : stored === "ts" ? "ts" : "go"
+  }
+
+  function setLanguageInStorage(lang) {
+    localStorage.setItem("docs-language-preference", lang)
+    // Also dispatch event for other components
+    window.dispatchEvent(new CustomEvent("languageChanged", { detail: { language: lang } }))
+  }
+
+  // Simple polling approach for better reliability
+  let lastKnownLanguage = getLanguageFromStorage()
+
+  const syncCheck = () => {
+    const currentLanguage = getLanguageFromStorage()
+    if (currentLanguage !== lastKnownLanguage) {
+      lastKnownLanguage = currentLanguage
+
+      // Update ONLY this specific container
+      const container = document.getElementById(blockId)
+      if (container && container._updateFromGlobal && typeof container._updateFromGlobal === "function") {
+        container._updateFromGlobal(currentLanguage)
+      }
+    }
+  }
+
+  // Check every 200ms for language changes (lightweight)
+  setInterval(syncCheck, 200)
+
+  document.addEventListener("DOMContentLoaded", () => {
+    // Only process THIS specific container to avoid contamination
+    const container = document.getElementById(blockId)
+    if (!container) return
+
+    // Language switch handler
+    function handleLanguageSwitch(newLanguage, container) {
+      // Update global state
+      setLanguageInStorage(newLanguage)
+
+      // Update component display only (no page redirection for single-file pages)
+      updateCodeDisplay(container, newLanguage)
+    }
+
+    // Code display update function
+    function updateCodeDisplay(container, newLanguage) {
+      if (!languages || !languages[newLanguage]) {
+        return
+      }
+
+      const languageData = languages[newLanguage]
+
+      // Update the container's language attribute
+      container.dataset.lang = newLanguage
+
+      // Update title
+      const titleElement = container.querySelector(".code-title span:last-child")
+      if (titleElement && languageData.title) {
+        titleElement.textContent = languageData.title
+      }
+
+      // Update selected language in dropdown (if dropdown exists)
+      const selectedLangElement = container.querySelector(".selected-language")
+      if (selectedLangElement) {
+        const langMap = {
+          js: "JavaScript",
+          ts: "TypeScript",
+          go: "Go",
+          bash: "Shell",
+          yaml: "YAML",
+          json: "JSON",
+          sol: "Solidity",
+        }
+        const displayName =
+          langMap[newLanguage.toLowerCase()] || newLanguage.charAt(0).toUpperCase() + newLanguage.slice(1)
+        selectedLangElement.textContent = displayName
+      }
+
+      // Update active states in dropdown menu (if dropdown exists)
+      const languageOptions = container.querySelectorAll(".language-option")
+      languageOptions.forEach((option) => {
+        const isActive = option.dataset.language === newLanguage
+        option.classList.toggle("active", isActive)
+        option.setAttribute("aria-current", isActive ? "true" : "false")
+
+        // Handle check indicator - uniform blue dot for all languages
+        let checkIcon = option.querySelector(".check-icon")
+
+        if (isActive) {
+          // Remove existing SVG if any and replace with uniform blue dot
+          if (checkIcon && checkIcon.tagName === "SVG") {
+            checkIcon.remove()
+            checkIcon = null
+          }
+
+          if (!checkIcon) {
+            // Create uniform blue dot indicator
+            checkIcon = document.createElement("div")
+            checkIcon.className = "check-icon"
+
+            // Uniform blue dot styling
+            checkIcon.style.width = "8px"
+            checkIcon.style.height = "8px"
+            checkIcon.style.backgroundColor = "#4f96ff"
+            checkIcon.style.borderRadius = "50%"
+            checkIcon.style.marginLeft = "12px"
+            checkIcon.style.flexShrink = "0"
+            checkIcon.style.display = "block"
+
+            option.appendChild(checkIcon)
+          }
+          checkIcon.style.display = "block"
+        } else if (checkIcon) {
+          checkIcon.style.display = "none"
+        }
+      })
+
+      // Update active states in toggle buttons (if toggle exists)
+      const toggleButtons = container.querySelectorAll(".language-toggle-button")
+      toggleButtons.forEach((button) => {
+        const isActive = button.dataset.language === newLanguage
+        button.classList.toggle("active", isActive)
+        button.setAttribute("aria-pressed", isActive ? "true" : "false")
+      })
+
+      // Re-apply syntax highlighting with new code and language-specific highlighting
+      applyHighlighting(container, languageData.code, newLanguage)
+    }
+
+    // Apply syntax highlighting to container by recreating the table
+    function applyHighlighting(container, code, language) {
+      const codeLines = code.split(/\r?\n/)
+
+      // Find the table body
+      const tbody = container.querySelector(".code-table tbody")
+      if (!tbody) {
+        return
+      }
+
+      // Clear existing content
+      tbody.innerHTML = ""
+
+      // Get highlight lines for this specific language
+      const languageData = languages[language]
+      const highlightLinesStr = languageData?.highlightLines || ""
+      const linesToHighlight = parseHighlightLinesInJS(highlightLinesStr, code)
+
+      // Recreate all rows
+      codeLines.forEach((lineText, index) => {
+        const lineNumber = index + 1
+        const tr = document.createElement("tr")
+        tr.setAttribute("data-line-number", lineNumber.toString())
+
+        // Check if this line should be highlighted
+        const isHighlighted = linesToHighlight.has(lineNumber)
+        if (isHighlighted) {
+          tr.classList.add("line-highlighted")
+          // Ensure full width background
+          tr.style.backgroundColor = "rgba(38, 166, 154, 0.15)"
+          tr.style.width = "100%"
+        }
+
+        // Line number cell
+        const tdNumber = document.createElement("td")
+        tdNumber.className = "line-number"
+
+        // Apply highlighted styling to line numbers too
+        if (isHighlighted) {
+          tdNumber.style.backgroundColor = "#2b2b2b" // --code-bg
+          const numberSpan = document.createElement("span")
+          numberSpan.className = "number-text"
+          numberSpan.textContent = lineNumber.toString()
+          numberSpan.style.color = "#2ecc71" // --code-highlight-border
+          tdNumber.appendChild(numberSpan)
+        } else {
+          const numberSpan = document.createElement("span")
+          numberSpan.className = "number-text"
+          numberSpan.textContent = lineNumber.toString()
+          tdNumber.appendChild(numberSpan)
+        }
+
+        // Line content cell
+        const tdContent = document.createElement("td")
+        tdContent.className = "line-content"
+
+        // Apply highlighted styling manually for dynamic content
+        if (isHighlighted) {
+          tdContent.style.backgroundColor = "rgba(38, 166, 154, 0.15)" // --code-highlight
+          tdContent.style.borderLeft = "3px solid #2ecc71" // --code-highlight-border
+          tdContent.style.paddingLeft = "12px"
+          tdContent.style.paddingTop = "0"
+          tdContent.style.paddingBottom = "0"
+          tdContent.style.margin = "0"
+
+          // Ensure background extends full width
+          tdContent.style.width = "100%"
+          tdContent.style.boxSizing = "border-box"
+        }
+
+        const lineSpan = document.createElement("span")
+        lineSpan.className = "line"
+
+        if (lineText.trim()) {
+          let highlighted = highlightInIsolation(lineText, language)
+
+          // Apply language-specific segment tooltips
+          const languageData = languages[language]
+          if (languageData?.segmentTooltips) {
+            Object.entries(languageData.segmentTooltips).forEach(([key, text]) => {
+              const [lineStr, segment] = key.split(":")
+              const targetLineNumber = parseInt(lineStr, 10)
+              if (targetLineNumber === lineNumber && segment) {
+                const segmentRegex = new RegExp(`\\b(${segment.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})\\b`, "g")
+                highlighted = highlighted.replace(
+                  segmentRegex,
+                  `<span class="segment-highlight" data-tooltip="${text}">$1</span>`
+                )
+              }
+            })
+          }
+
+          lineSpan.innerHTML = highlighted
+        } else {
+          lineSpan.innerHTML = "&#8203;"
+        }
+
+        // Apply language-specific line comments
+        const languageData = languages[language]
+        const hasComment =
+          languageData?.lineComments?.[lineNumber] || languageData?.lineComments?.[lineNumber.toString()]
+        if (hasComment) {
+          tr.classList.add("has-comment")
+          lineSpan.setAttribute("data-comment", hasComment)
+        }
+
+        tdContent.appendChild(lineSpan)
+        tr.appendChild(tdNumber)
+        tr.appendChild(tdContent)
+        tbody.appendChild(tr)
+      })
+    }
+
+    // Initialize language dropdown interactions
+    function initializeLanguageDropdown(container) {
+      const trigger = container.querySelector(".language-dropdown-trigger")
+      const menu = container.querySelector(".language-dropdown-menu")
+      const options = container.querySelectorAll(".language-option")
+
+      if (!trigger || !menu) return
+
+      // Dropdown toggle
+      trigger.addEventListener("click", (e) => {
+        e.stopPropagation()
+        const isExpanded = trigger.getAttribute("aria-expanded") === "true"
+
+        // Close other dropdowns first
+        document.querySelectorAll(".language-dropdown-trigger").forEach((otherTrigger) => {
+          if (otherTrigger !== trigger) {
+            otherTrigger.setAttribute("aria-expanded", "false")
+            const otherMenu = otherTrigger.closest(".language-dropdown").querySelector(".language-dropdown-menu")
+            if (otherMenu) otherMenu.setAttribute("data-visible", "false")
+          }
+        })
+
+        // Toggle current dropdown
+        trigger.setAttribute("aria-expanded", (!isExpanded).toString())
+        menu.setAttribute("data-visible", (!isExpanded).toString())
+      })
+
+      // Language option clicks
+      options.forEach((option, index) => {
+        option.addEventListener("click", async (e) => {
+          e.stopPropagation()
+          const newLanguage = option.dataset.language
+          if (newLanguage && newLanguage !== container.dataset.lang) {
+            await handleLanguageSwitch(newLanguage, container)
+          }
+
+          // Close dropdown
+          trigger.setAttribute("aria-expanded", "false")
+          menu.setAttribute("data-visible", "false")
+        })
+      })
+
+      // Close dropdown when clicking outside
+      document.addEventListener("click", () => {
+        trigger.setAttribute("aria-expanded", "false")
+        menu.setAttribute("data-visible", "false")
+      })
+
+      // Store cleanup function for potential future use
+      container._cleanupLanguageDropdown = () => {
+        // Cleanup handled by global event listener now
+      }
+    }
+
+    // Initialize language toggle interactions (for 2 languages)
+    function initializeLanguageToggle(container) {
+      const toggleButtons = container.querySelectorAll(".language-toggle-button")
+
+      if (!toggleButtons || toggleButtons.length === 0) return
+
+      // Toggle button clicks
+      toggleButtons.forEach((button) => {
+        button.addEventListener("click", async (e) => {
+          e.stopPropagation()
+          const newLanguage = button.dataset.language
+          if (newLanguage && newLanguage !== container.dataset.lang) {
+            await handleLanguageSwitch(newLanguage, container)
+          }
+        })
+      })
+    }
+
+    // Parse highlight lines from string + inline markers
+    function parseHighlightLinesInJS(highlightLinesStr, code) {
+      const linesToHighlight = new Set()
+
+      // Parse explicit highlight lines prop
+      if (highlightLinesStr) {
+        const ranges = highlightLinesStr.split(",")
+        for (const range of ranges) {
+          const trimmedRange = range.trim()
+          if (trimmedRange.includes("-")) {
+            const [startStr, endStr] = trimmedRange.split("-")
+            const start = parseInt(startStr.trim(), 10)
+            const end = parseInt(endStr.trim(), 10)
+            if (!isNaN(start) && !isNaN(end) && start <= end) {
+              for (let i = start; i <= end; i++) {
+                linesToHighlight.add(i)
+              }
+            }
+          } else {
+            const lineNumber = parseInt(trimmedRange, 10)
+            if (!isNaN(lineNumber)) {
+              linesToHighlight.add(lineNumber)
+            }
+          }
+        }
+      }
+
+      // Parse inline highlight markers from the code
+      const originalLines = code.split(/\r?\n/)
+      let inHighlightBlock = false
+
+      for (let i = 0; i < originalLines.length; i++) {
+        const line = originalLines[i]
+        const lineNumber = i + 1
+
+        // Check for highlight-line marker
+        if (line.includes("highlight-line")) {
+          linesToHighlight.add(lineNumber)
+        }
+
+        // Check for highlight-start/end blocks
+        if (line.includes("highlight-start")) {
+          inHighlightBlock = true
+        }
+        if (inHighlightBlock) {
+          linesToHighlight.add(lineNumber)
+        }
+        if (line.includes("highlight-end")) {
+          inHighlightBlock = false
+        }
+      }
+
+      return linesToHighlight
+    }
+
+    // Simple syntax highlighting function
+    function highlightInIsolation(code, language) {
+      // First, HTML-escape the code to prevent code parts from being interpreted as tags
+      const escapeHtml = (text) => {
+        const div = document.createElement("div")
+        div.textContent = text
+        return div.innerHTML
+      }
+
+      const goKeywords = ["package", "import", "func", "type", "struct", "if", "else", "for", "return", "var", "const"]
+      const goTypes = ["string", "int", "bool", "error", "interface{}"]
+
+      const tsKeywords = [
+        "interface",
+        "function",
+        "const",
+        "let",
+        "var",
+        "type",
+        "class",
+        "extends",
+        "implements",
+        "return",
+        "if",
+        "else",
+        "for",
+        "while",
+        "import",
+        "export",
+        "default",
+      ]
+      const tsTypes = ["string", "number", "boolean", "void", "any", "unknown", "object", "Array"]
+
+      let highlighted = escapeHtml(code)
+
+      if (language === "go") {
+        // Highlight strings
+        highlighted = highlighted.replace(/"([^"]*)"/g, '<span class="token string">"$1"</span>')
+        highlighted = highlighted.replace(/`([^`]*)`/g, '<span class="token string">`$1`</span>')
+
+        // Highlight comments
+        highlighted = highlighted.replace(/(\/\/.*$)/gm, '<span class="token comment">$1</span>')
+        highlighted = highlighted.replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="token comment">$1</span>')
+
+        // Highlight keywords
+        goKeywords.forEach((keyword) => {
+          const regex = new RegExp(`\\b(${keyword})\\b(?![^<]*>)`, "g")
+          highlighted = highlighted.replace(regex, '<span class="token keyword">$1</span>')
+        })
+
+        // Highlight types
+        goTypes.forEach((type) => {
+          const regex = new RegExp(`\\b(${type})\\b(?![^<]*>)`, "g")
+          highlighted = highlighted.replace(regex, '<span class="token builtin">$1</span>')
+        })
+
+        // Highlight functions
+        highlighted = highlighted.replace(/\b(\w+)\(/g, '<span class="token function">$1</span>(')
+      }
+
+      if (language === "ts" || language === "typescript") {
+        // Highlight strings
+        highlighted = highlighted.replace(/"([^"]*)"/g, '<span class="token string">"$1"</span>')
+        highlighted = highlighted.replace(/'([^']*)'/g, "<span class=\"token string\">'$1'</span>")
+        highlighted = highlighted.replace(/`([^`]*)`/g, '<span class="token string">`$1`</span>')
+
+        // Highlight comments
+        highlighted = highlighted.replace(/(\/\/.*$)/gm, '<span class="token comment">$1</span>')
+        highlighted = highlighted.replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="token comment">$1</span>')
+
+        // Highlight keywords
+        tsKeywords.forEach((keyword) => {
+          const regex = new RegExp(`\\b(${keyword})\\b(?![^<]*>)`, "g")
+          highlighted = highlighted.replace(regex, '<span class="token keyword">$1</span>')
+        })
+
+        // Highlight types
+        tsTypes.forEach((type) => {
+          const regex = new RegExp(`\\b(${type})\\b(?![^<]*>)`, "g")
+          highlighted = highlighted.replace(regex, '<span class="token builtin">$1</span>')
+        })
+
+        // Highlight functions and methods
+        highlighted = highlighted.replace(/\b(\w+)\(/g, '<span class="token function">$1</span>(')
+
+        // Highlight type annotations
+        highlighted = highlighted.replace(
+          /:\s*([A-Za-z][A-Za-z0-9]*(?:\[\])?)/g,
+          ': <span class="token builtin">$1</span>'
+        )
+      }
+
+      return highlighted
+    }
+
+    const language = container.dataset.lang || currentLang || "plaintext"
+    const allLineElements = container.querySelectorAll(".line")
+    if (allLineElements.length === 0) return
+
+    // Store highlighted lines info in container
+    container._highlightedLines = new Set(linesToHighlight)
+
+    // Initialize dropdown OR toggle based on what's present
+    initializeLanguageDropdown(container)
+    initializeLanguageToggle(container)
+
+    // Store the languages data in the container
+    container._languagesData = languages
+
+    // Store callback function for global events (using localStorage)
+    container._updateFromGlobal = (newLang) => {
+      if (newLang && languages && languages[newLang] && newLang !== container.dataset.lang) {
+        updateCodeDisplay(container, newLang)
+      }
+    }
+
+    // Convert ALL SVG ticks to uniform blue dots at startup
+    const allOptions = container.querySelectorAll(".language-option")
+    allOptions.forEach((option) => {
+      const existingSVG = option.querySelector("svg.check-icon")
+      if (existingSVG) {
+        // Replace SVG with blue dot
+        existingSVG.remove()
+
+        const blueDot = document.createElement("div")
+        blueDot.className = "check-icon"
+        blueDot.style.width = "8px"
+        blueDot.style.height = "8px"
+        blueDot.style.backgroundColor = "#4f96ff"
+        blueDot.style.borderRadius = "50%"
+        blueDot.style.marginLeft = "12px"
+        blueDot.style.flexShrink = "0"
+        blueDot.style.display = "block"
+
+        option.appendChild(blueDot)
+      }
+    })
+
+    // Set initial language based on global state
+    const globalLang = getLanguageFromStorage()
+    if (globalLang && languages[globalLang] && globalLang !== container.dataset.lang) {
+      updateCodeDisplay(container, globalLang)
+    }
+
+    // Fix initial highlighting for server-rendered content
+    const existingHighlightedRows = container.querySelectorAll("tr.line-highlighted")
+    existingHighlightedRows.forEach((tr) => {
+      const lineContent = tr.querySelector("td.line-content")
+      if (lineContent) {
+        // Apply the same styling as dynamic content
+        lineContent.style.backgroundColor = "rgba(38, 166, 154, 0.15)"
+        lineContent.style.borderLeft = "3px solid #2ecc71"
+        lineContent.style.paddingLeft = "12px"
+        lineContent.style.width = "100%"
+        lineContent.style.boxSizing = "border-box"
+        lineContent.style.position = "relative"
+      }
+
+      const lineNumber = tr.querySelector("td.line-number")
+      if (lineNumber) {
+        lineNumber.style.backgroundColor = "#2b2b2b"
+        const numberSpan = lineNumber.querySelector(".number-text")
+        if (numberSpan) {
+          numberSpan.style.color = "#2ecc71"
+        }
+      }
+    })
+
+    // Apply highlighting to each line
+    allLineElements.forEach((lineElement, index) => {
+      const lineText = lineElement.textContent || ""
+      const currentLineNumber = index + 1
+
+      if (lineText.trim()) {
+        let highlighted = highlightInIsolation(lineText, language)
+
+        // Process inline segment tooltips (from <tooltip> markers)
+        inlineSegmentTooltips.forEach((tooltip) => {
+          const segmentRegex = new RegExp(`\\b(${tooltip.segment.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})\\b`, "g")
+          highlighted = highlighted.replace(
+            segmentRegex,
+            `<span class="segment-highlight" data-tooltip="${tooltip.text}">$1</span>`
+          )
+        })
+
+        // Process prop-based segment tooltips (for external files)
+        segmentTooltipsList.forEach((tooltip) => {
+          if (tooltip.line === currentLineNumber) {
+            const segmentRegex = new RegExp(`\\b(${tooltip.segment.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})\\b`, "g")
+            highlighted = highlighted.replace(
+              segmentRegex,
+              `<span class="segment-highlight" data-tooltip="${tooltip.text}">$1</span>`
+            )
+          }
+        })
+
+        lineElement.innerHTML = highlighted
+      } else {
+        lineElement.innerHTML = "&#8203;"
+      }
+    })
+
+    // Add segment tooltips
+    const segmentHighlights = container.querySelectorAll(".segment-highlight")
+    segmentHighlights.forEach((segment) => {
+      const tooltipText = segment.getAttribute("data-tooltip")
+      if (!tooltipText) return
+
+      // Style the segment (subtle highlight)
+      segment.style.background = "rgba(79, 150, 255, 0.1)"
+      segment.style.borderRadius = "3px"
+      segment.style.padding = "1px 3px"
+      segment.style.margin = "0 1px"
+      segment.style.cursor = "help"
+      segment.style.transition = "all 0.2s ease"
+
+      // Create tooltip
+      const tooltip = document.createElement("div")
+      tooltip.className = "smart-tooltip"
+      tooltip.style.position = "absolute"
+      tooltip.style.zIndex = "10000"
+      tooltip.style.opacity = "0"
+      tooltip.style.visibility = "hidden"
+      tooltip.style.transition = "opacity 0.2s ease, visibility 0.2s ease"
+      tooltip.style.transform = "translate(-50%, -100%)"
+      tooltip.style.top = "-12px"
+      tooltip.style.left = "50%"
+
+      tooltip.innerHTML = `<div class="smart-tooltip-content">${tooltipText}</div>`
+
+      // Position relative to the segment
+      segment.style.position = "relative"
+      segment.appendChild(tooltip)
+
+      // Hover functionality
+      segment.addEventListener("mouseenter", () => {
+        segment.style.background = "rgba(79, 150, 255, 0.2)"
+        tooltip.style.opacity = "1"
+        tooltip.style.visibility = "visible"
+      })
+
+      segment.addEventListener("mouseleave", () => {
+        segment.style.background = "rgba(79, 150, 255, 0.1)"
+        tooltip.style.opacity = "0"
+        tooltip.style.visibility = "hidden"
+      })
+    })
+
+    // Line-level tooltips (simplified)
+    allLineElements.forEach((lineElement, index) => {
+      const lineNumber = index + 1
+      const commentText = lineComments[lineNumber] || lineComments[lineNumber.toString()]
+
+      if (commentText) {
+        // More subtle line-level indication
+        lineElement.style.background = "rgba(79, 150, 255, 0.05)"
+        lineElement.style.borderLeft = "3px solid rgba(79, 150, 255, 0.3)"
+        lineElement.style.paddingLeft = "8px"
+        lineElement.style.cursor = "help"
+        lineElement.style.transition = "all 0.2s ease"
+
+        // Create centered tooltip
+        const tooltip = document.createElement("div")
+        tooltip.className = "smart-tooltip"
+        tooltip.style.position = "absolute"
+        tooltip.style.zIndex = "10000"
+        tooltip.style.opacity = "0"
+        tooltip.style.visibility = "hidden"
+        tooltip.style.transform = "translate(-50%, -100%)"
+        tooltip.style.top = "-12px"
+        tooltip.style.left = "50%"
+        tooltip.style.transition = "opacity 0.2s ease, visibility 0.2s ease"
+
+        tooltip.innerHTML = `<div class="smart-tooltip-content">${commentText}</div>`
+
+        const lineContent = lineElement.closest(".line-content")
+        if (lineContent) {
+          lineContent.style.position = "relative"
+          lineContent.appendChild(tooltip)
+
+          lineElement.addEventListener("mouseenter", () => {
+            lineElement.style.background = "rgba(79, 150, 255, 0.1)"
+            tooltip.style.opacity = "1"
+            tooltip.style.visibility = "visible"
+          })
+
+          lineElement.addEventListener("mouseleave", () => {
+            lineElement.style.background = "rgba(79, 150, 255, 0.05)"
+            tooltip.style.opacity = "0"
+            tooltip.style.visibility = "hidden"
+          })
+        }
+      }
+    })
+
+    // Setup copy button
+    const copyButton = container.querySelector(".copy-button")
+    if (copyButton) {
+      copyButton.addEventListener("click", async () => {
+        try {
+          // Get the current language and code for this specific container
+          const currentLang = container.dataset.lang
+          let codeToCopy = ""
+
+          if (languages[currentLang]) {
+            codeToCopy = languages[currentLang].code
+            // Clean the code (remove highlight markers)
+            codeToCopy = codeToCopy.replace(/\s*(\/\/|#|<!--|\/\*)\s*highlight-line.*?(\*\/|-->)?$/gm, "")
+            codeToCopy = codeToCopy.replace(/\s*(\/\/|#|<!--|\/\*)\s*highlight-start.*?(\*\/|-->)?$/gm, "")
+            codeToCopy = codeToCopy.replace(/\s*(\/\/|#|<!--|\/\*)\s*highlight-end.*?(\*\/|-->)?$/gm, "")
+          } else {
+            // Fallback: read from DOM
+            const lineElements = container.querySelectorAll(".line")
+            const codeLines = Array.from(lineElements).map((el) => el.textContent || "")
+            codeToCopy = codeLines.join("\n")
+          }
+
+          await navigator.clipboard.writeText(codeToCopy)
+          copyButton.innerHTML = checkmarkIconSVG
+          copyButton.setAttribute("data-tooltip", "Copied!")
+          setTimeout(() => {
+            copyButton.innerHTML = copyIconSVG
+            copyButton.setAttribute("data-tooltip", "Copy code")
+          }, 2000)
+        } catch (err) {
+          copyButton.setAttribute("data-tooltip", "Error copying")
+        }
+      })
+    }
+  })
+</script>

@@ -1,0 +1,215 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "Using MVR Feeds on EVM Chains"
+whatsnext:
+  {
+    "Learn more about the MVR Feeds": "/data-feeds/mvr-feeds",
+    "Find contract addresses and data structure for MVR Feeds": "/data-feeds/smartdata/addresses",
+    "MVR Feeds API Reference": "/data-feeds/mvr-feeds/api-reference",
+  }
+---
+
+import { CodeSample, Aside } from "@components"
+
+This guide explains how to use [Multiple-Variable Response (MVR) feeds](/data-feeds/mvr-feeds) data in your consumer contracts on EVM chains using Solidity.
+
+MVR feeds store multiple data points in a single byte array onchain. To consume this data in your contract:
+
+1. **Obtain the proxy address and data structure**:
+   - Find the `BundleAggregatorProxy` address for the specific MVR feed you want to read on the [SmartData Addresses](/data-feeds/smartdata/addresses?page=1#networks) page
+   - Expand the "MVR Bundle Info" section to see the exact data structure, field types, and decimals
+   - Note these details as you'll need to match this structure exactly in your code
+1. **Call [`latestBundle()`](/data-feeds/mvr-feeds/api-reference#latestbundle)**: Retrieve the feed's latest onchain data as a bytes array.
+1. **Check data staleness**: Use [`latestBundleTimestamp()`](/data-feeds/mvr-feeds/api-reference#latestbundletimestamp) to compare against current time and verify it hasn't exceeded your maximum acceptable staleness threshold.
+1. **Decode the data**: Convert the bytes array into the known struct type (as documented for each feed).
+1. **Apply decimals** (if needed): For numeric fields, scale the raw values by dividing by `10^decimals[i]` to get the true numerical values.
+1. **Use in your dApp**: Store or process the decoded values as required by your application.
+
+<Aside type="caution" title="Disclaimer">
+  This guide represents an example of using a Chainlink product or service and is provided to help you understand how to
+  interact with Chainlink's systems and services so that you can integrate them into your own. This template is provided
+  "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key checks or
+  error handling to make the usage of the product more clear. Do not use the code in this example in a production
+  environment without completing your own audits and application of best practices. Neither Chainlink Labs, the
+  Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due to
+  errors in code.
+</Aside>
+
+## Step-by-Step Example
+
+Below is a step-by-step explanation, followed by a full example contract that ties everything together.
+
+### 1. Define a Data Structure
+
+<Aside type="note" title="Data Structure">
+  Find the exact data structure for your specific MVR feed on the [SmartData
+  Addresses](/data-feeds/smartdata/addresses?page=1#networks) page. Click on the feed entry and expand the "MVR Bundle
+  Info" section to see all fields, their types, and decimals.
+</Aside>
+
+Each MVR feed publishes data in a specific layout. For example, imagine an investment feed that reports:
+
+```solidity
+struct Data {
+    uint256 netAssetValue;          // e.g., 8 decimal places
+    uint256 assetsUnderManagement;  // e.g., 8 decimal places
+    uint256 outstandingShares;      // e.g., 2 decimal places
+    uint256 netIncomeExpenses;      // e.g., 2 decimal places
+    bool openToNewInvestors;        // boolean, no decimals
+}
+```
+
+Your consumer contract must replicate this structure in the **exact same order** and with the same data types to decode the feed data correctly.
+
+### 2. Import the IBundleAggregatorProxy Interface
+
+Your contract will need to interact with the MVR feed's proxy contract. The [`IBundleAggregatorProxy`](/data-feeds/mvr-feeds/api-reference#ibundleaggregatorproxy) interface provides the necessary functions:
+
+- [`latestBundle()`](/data-feeds/mvr-feeds/api-reference#latestbundle): Retrieves the raw data bundle.
+- [`bundleDecimals()`](/data-feeds/mvr-feeds/api-reference#bundledecimals): Retrieves the decimal places for numeric fields.
+- [`latestBundleTimestamp()`](/data-feeds/mvr-feeds/api-reference#latestbundletimestamp): Retrieves the timestamp of the last update.
+
+Import it directly from the `@chainlink/contracts` library:
+
+```solidity
+import {IBundleAggregatorProxy} from "@chainlink/contracts/src/v0.8/data-feeds/interfaces/IBundleAggregatorProxy.sol";
+```
+
+You will then use this interface to create an instance of the proxy in your consumer contract.
+
+### 3. Validate Data Staleness
+
+Before using the data, it's best practice to verify it has not become stale by checking the timestamp of the latest update against the current time. Stale data can lead to incorrect business decisions or vulnerabilities in your application.
+
+Staleness checking examples:
+
+**Option 1: Simple boolean check (recommended)**
+
+```solidity
+function isDataFresh() public view returns (bool) {
+    uint256 lastUpdateTime = s_proxy.latestBundleTimestamp();
+    return (block.timestamp - lastUpdateTime) <= STALENESS_THRESHOLD;
+}
+
+// In your main function:
+if (!isDataFresh()) {
+    revert StaleData(lastUpdateTime, block.timestamp, STALENESS_THRESHOLD);
+}
+```
+
+**Option 2: Direct validation**
+
+```solidity
+uint256 lastUpdateTime = s_proxy.latestBundleTimestamp();
+require(block.timestamp - lastUpdateTime <= stalenessThreshold, "MVR feed data is stale");
+```
+
+**Important**: Don't use arbitrary values for staleness thresholds. The appropriate threshold should be determined by:
+
+1. Find the feed's **heartbeat interval** on the [MVR Feeds Addresses](/data-feeds/smartdata/addresses?page=1#networks) page (click "Show more details")
+1. Set a threshold that aligns with this interval, usually the heartbeat plus a small buffer
+1. Consider your specific use case requirements (some applications may need very fresh data)
+
+### 4. Add Error Handling and Safety Checks
+
+For production contracts, include proper error handling with custom errors and safety checks:
+
+```solidity
+// Custom errors for better debugging
+error StaleData(uint256 lastUpdateTimestamp, uint256 blockTimestamp, uint256 threshold);
+error InsufficientDecimals(uint256 expected, uint256 actual);
+
+// Check that the decimals array has enough elements before accessing by index
+if (decimals.length < 4) {
+    revert InsufficientDecimals(4, decimals.length);
+}
+```
+
+**Helper functions for testing and debugging:**
+
+- `isDataFresh()`: Returns a simple true/false for data freshness (excellent for block explorer testing)
+- `getLatestBundleTimestamp()`: Returns the timestamp of the most recent update
+- `storeDecimals()`: Fetches and stores the decimals array for repeated use
+
+### 5. Read and Decode the Feed Data
+
+Use `abi.decode` to convert the returned `bytes` array into your `Data` struct:
+
+```solidity
+bytes memory rawBundle = s_proxy.latestBundle();
+Data memory decodedData = abi.decode(rawBundle, (Data));
+```
+
+This will populate each field in `decodedData` according to your struct definition.
+
+### 6. Handle Decimals (if applicable)
+
+Similar to how ETH has 18 decimals, numeric fields in MVR feeds are typically stored with fixed-point precision. This means you need to divide raw values by a power of 10 to get their true numerical values for accurate calculations.
+
+The [`bundleDecimals()`](/data-feeds/mvr-feeds/api-reference#bundledecimals) function returns an array that tells you how many decimal places each field uses. Each index in this array corresponds to a field in your struct (in the same order).
+
+- **Raw Value**: What you get directly from the feed (e.g., `1850000000` for a value that represents `18.5`)
+- **Actual Value**: What the number actually represents mathematically after proper decimal scaling
+- **Conversion**: `actualValue = rawValue / (10 ^ decimals)`
+
+For example, if your MVR feed has the following fields and decimals:
+
+| Field                   | Raw Value    | Decimals | Actual Value         |
+| ----------------------- | ------------ | -------- | -------------------- |
+| `netAssetValue`         | `1850000000` | 8        | `18.5`               |
+| `assetsUnderManagement` | `5000000000` | 8        | `50.0`               |
+| `outstandingShares`     | `12500`      | 2        | `125.0`              |
+| `netIncomeExpenses`     | `7540`       | 2        | `75.4`               |
+| `openToNewInvestors`    | `true`       | 0        | `true` (no decimals) |
+
+Then [`bundleDecimals()`](/data-feeds/mvr-feeds/api-reference#bundledecimals) would return an array like `[8, 8, 2, 2, 0]`.
+
+In your code, you would convert the values like this:
+
+```solidity
+// For netAssetValue with 8 decimals
+uint256 scaledValue = rawValue / 10**8; // 1850000000 / 10^8 = 18 (decimals truncated)
+```
+
+**Important**:
+
+- In Solidity, division with `uint256` results in integer division with truncation of any fractional part. If your application needs to maintain decimal precision, store the raw values and perform decimal conversion in your frontend application.
+- Always confirm the actual decimal configuration from the feed's documentation (see [MVR Feeds Addresses](/data-feeds/smartdata/addresses?page=1#networks)). Different feeds may use different decimal patterns or skip them entirely for non-numeric fields.
+
+### 7. Store or Use the Decoded Values
+
+Finally, you can store the decoded values in your contract state or process them right away.
+
+## Full Example: Consumer Contract
+
+Below is a full example that demonstrates how to:
+
+- Initialize the proxy in the constructor
+- Validate data staleness
+- Retrieve and decode the latest bundle
+- Adjust numeric fields by the correct decimal factor
+- Store both the raw onchain values and the scaled values
+
+<Aside type="note" title="Adapt the Data Structure">
+  The example below uses a generic Data struct for demonstration. You **must** modify this structure to match the exact fields, types, and order of your specific MVR feed:
+  
+  1. Navigate to the [SmartData Addresses](/data-feeds/smartdata/addresses?page=1#networks) page
+  1. Find and click on your specific MVR feed
+  1. Expand the "MVR Bundle Info" section to see all fields and their types
+  1. Create your Data struct with exactly the same fields, types, and order
+  1. Update the field names in `consumeData()` to match your struct
+
+</Aside>
+
+<CodeSample src="samples/DataFeeds/MVR/MVRDataConsumer.sol" />
+
+**Key Points**:
+
+- **Exact Order Matters**: The struct fields and their types must match the feed's definition.
+- **Decimals**: Use [`bundleDecimals()`](/data-feeds/mvr-feeds/api-reference#bundledecimals) to learn how to scale the numeric fields. Non-numeric fields (e.g., bool) do not need scaling.
+- **Timestamps**: [`latestBundleTimestamp()`](/data-feeds/mvr-feeds/api-reference#latestbundletimestamp) returns the block timestamp of the last report and should be used to validate data staleness.
+- **Staleness Threshold**: Set appropriate staleness thresholds based on each feed's documented heartbeat interval, not arbitrary values.
+- **Error Handling**: Use custom errors (`StaleData`, `InsufficientDecimals`) for better debugging and include safety checks for array bounds.
+- **Testing Functions**: Implement helper functions like `isDataFresh()` for easy testing and debugging.
+- **No Historical Data**: MVR feeds typically only store the latest data onchain. If you need historical data, you must capture it in your own contract or via an offchain indexer.

@@ -1,0 +1,113 @@
+---
+section: cre
+title: "HTTP Trigger: Configuration & Handler"
+sdkLang: "go"
+pageId: "guides-workflow-http-trigger-configuration"
+date: Last Modified
+metadata:
+  description: "Configure HTTP triggers in Go: learn to set up authorization, write handler functions, and process HTTP request payloads."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-10"
+---
+
+import { Aside } from "@components"
+
+The HTTP trigger fires when an external system makes an HTTP request to the trigger endpoint.
+
+**Use case examples:**
+
+- Integrating with existing web services or webhooks.
+- Allowing an external system to initiate a workflow on demand.
+- Creating a user-facing endpoint to run a specific piece of logic.
+
+## Configuration and handler
+
+You create an HTTP trigger by calling the [`http.Trigger`](/cre/reference/sdk/triggers#httptrigger) function. Its configuration ([`http.Config`](/cre/reference/sdk/triggers#httpconfig)) requires a set of authorized public keys to validate incoming request signatures.
+
+{/* prettier-ignore */}
+<Aside type="note" title="Authorization required for deployment">
+  When you deploy your workflow, HTTP triggers **must** include `AuthorizedKeys`. An empty configuration `&http.Config{}` is only valid for simulation and testing—deployed workflows will reject HTTP triggers without authorization keys.
+</Aside>
+
+```go
+import (
+	"encoding/json"
+	"fmt"
+	"log/slog"
+
+	"github.com/smartcontractkit/cre-sdk-go/cre"
+	"github.com/smartcontractkit/cre-sdk-go/capabilities/networking/http"
+)
+
+// Callback function that runs when an HTTP request is received
+func onHttpTrigger(config *Config, runtime cre.Runtime, payload *http.Payload) (*MyResult, error) {
+    logger := runtime.Logger()
+
+    // Unmarshal the JSON input from bytes
+    var requestData map[string]any
+    if err := json.Unmarshal(payload.Input, &requestData); err != nil {
+        return nil, fmt.Errorf("failed to unmarshal input: %w", err)
+    }
+
+    logger.Info("HTTP trigger received", "data", requestData)
+    // Your logic here...
+    return &MyResult{Message: "Request processed"}, nil
+}
+
+func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+    authorizedKeys := []*http.AuthorizedKey{
+        {
+            Type:      http.KeyType_KEY_TYPE_ECDSA_EVM,
+            PublicKey: config.AuthorizedEVMAddress,
+        },
+    }
+
+    httpTrigger := http.Trigger(&http.Config{
+        AuthorizedKeys: authorizedKeys,
+    })
+
+    return cre.Workflow[*Config]{
+        cre.Handler(httpTrigger, onHttpTrigger),
+    }, nil
+}
+```
+
+**About authorized keys:**
+
+- **`PublicKey`**: An EVM address (e.g., `"0xb08E004bd2b5aFf1F5F950d141f449B1c05800eb"`) that is authorized to trigger the workflow
+- **`Type`**: Must be `http.KeyType_KEY_TYPE_ECDSA_EVM` (currently the only supported authentication method)
+- **Multiple keys**: You can include multiple authorized addresses in the slice
+
+When an HTTP request is made to trigger your workflow, CRE verifies that the request was signed by a private key corresponding to one of the authorized addresses.
+
+## Callback and payload
+
+The HTTP trigger passes a [`*http.Payload`](/cre/reference/sdk/triggers/http-trigger#httppayload) to your callback. This object contains the request body (`Input`) and the signing key (`Key`) from the incoming HTTP request.
+
+For the full type definition and all available fields, see the [HTTP Trigger SDK Reference](/cre/reference/sdk/triggers/http-trigger).
+
+```go
+func onHttpTrigger(config *Config, runtime cre.Runtime, payload *http.Payload) (*MyResult, error) {
+    logger := runtime.Logger()
+
+    // The payload.Input is []byte containing JSON data.
+    // Unmarshal it into a map or a custom struct.
+    var requestData map[string]any
+    if err := json.Unmarshal(payload.Input, &requestData); err != nil {
+        return nil, fmt.Errorf("failed to unmarshal input: %w", err)
+    }
+
+    logger.Info("Received HTTP request", "data", requestData)
+
+    // Your logic here...
+    // The value returned from your callback will be sent back as the HTTP response.
+    return &MyResult{Message: "Request processed"}, nil
+}
+```
+
+<Aside type="note" title="For local simulation only">
+  During local simulation with `cre workflow simulate`, you can use an empty configuration `&http.Config{}` to test your
+  workflow without setting up authorization keys. This is convenient for rapid development, but remember to add
+  `AuthorizedKeys` before deploying. See [Testing in
+  Simulation](/cre/guides/workflow/using-triggers/http-trigger/testing-in-simulation) for details.
+</Aside>

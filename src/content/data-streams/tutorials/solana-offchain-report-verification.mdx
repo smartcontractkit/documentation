@@ -147,6 +147,7 @@ borsh = "0.10.3"
 Create `programs/example_verify/src/lib.rs` with the verification function:
 
 ```rust
+// NOTE: Adjust for your desired report
 use data_streams_report::report::v3::ReportDataV3;
 use sdk_off_chain::VerificationClient;
 use solana_client::rpc_client::RpcClient;
@@ -168,6 +169,7 @@ pub fn verify_report(
     signed_report: &[u8],
     program_id: &str,
     access_controller: &str
+// NOTE: Adjust for your desired report
 ) -> Result<ReportDataV3, Box<dyn std::error::Error>> {
     // Initialize RPC client with confirmed commitment level
     let rpc_client = RpcClient::new_with_commitment(
@@ -202,12 +204,13 @@ pub fn verify_report(
 
     // Decode the returned data into a ReportDataV3 struct
     let return_data = result.return_data.ok_or("No return data")?;
+    // NOTE: Adjust for your desired report
     let report = ReportDataV3::decode(&return_data)?;
     Ok(report)
 }
 ```
 
-> This example uses the [V3 schema](/data-streams/reference/report-schema) for [crypto streams](/data-streams/crypto-streams) to decode the report. If you verify reports for [RWA streams](/data-streams/rwa-streams), import and use the [V4 schema](/data-streams/reference/report-schema-v4) from the [report crate](https://github.com/smartcontractkit/data-streams-sdk/tree/main/rust/crates/report) instead.
+> This example uses the [V3 schema](/data-streams/reference/report-schema-v3) for [crypto streams](/data-streams/crypto-streams) to decode the report. If you verify reports for [RWA streams](/data-streams/rwa-streams), import and use the [V8 schema](/data-streams/reference/report-schema-v8) from the [report crate](https://github.com/smartcontractkit/data-streams-sdk/tree/main/rust/crates/report) instead.
 
 #### 4. Create the command-line interface
 
@@ -292,7 +295,6 @@ fn main() {
    ```
 
    Replace the placeholders with:
-
    - `<program-id>`: The Verifier Program ID (find it on the [Stream Addresses](/data-streams/crypto-streams) page)
    - `<access-controller>`: The Access Controller Account (find it on the [Stream Addresses](/data-streams/crypto-streams) page)
    - `<hex-encoded-signed-report>`: Your hex-encoded signed report (without the '0x' prefix)
@@ -326,19 +328,57 @@ fn main() {
 When implementing verification in production:
 
 1. **Error Handling**:
-
    - Implement robust error handling for network issues
    - Add proper logging and monitoring
    - Handle report expiration gracefully
 
 1. **Security**:
-
    - Securely manage keypairs and never expose them
    - Validate all input parameters
    - Implement rate limiting for verification requests
 
 1. **Performance**:
-
    - Cache verified reports when appropriate
    - Implement retry mechanisms with backoff
    - Use connection pooling for RPC clients
+
+## Adapting code for different report schema versions
+
+When working with different versions of [Data Stream reports](/data-streams/reference/report-schema-overview), you'll need to adapt your code to handle the specific report schema version they use:
+
+1. **Import the correct schema version module.** Examples:
+   - For v3 schema (as used in this example):
+
+     ```rust
+     use data_streams_report::report::v3::ReportDataV3;
+     ```
+
+   - For v8 schema:
+
+     ```rust
+     use data_streams_report::report::v8::ReportDataV8;
+     ```
+
+1. **Update the function return type and decode function to use the correct schema version.** Examples:
+   - For v3 schema (as used in this example):
+
+     ```rust
+     // Function signature
+     fn verify_report(...) -> Result<ReportDataV3, Box<dyn std::error::Error>> { ... }
+     // Decoding
+     let report = ReportDataV3::decode(&return_data)?;
+     ```
+
+   - For v8 schema:
+
+     ```rust
+     // Function signature
+     fn verify_report(...) -> Result<ReportDataV8, Box<dyn std::error::Error>> { ... }
+     // Decoding
+     let report = ReportDataV8::decode(&return_data)?;
+     ```
+
+1. **Adjust report field access and logic for the schema version.**
+   - The fields you access and log (e.g., `feed_id`, `benchmark_price`, `bid`, `ask`, etc.) must match the schema version's structure and available fields.
+
+Refer to the [Report Schemas](/data-streams/reference/report-schema-overview) documentation for details on each version's fields and usage.

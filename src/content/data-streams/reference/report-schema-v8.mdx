@@ -1,0 +1,39 @@
+---
+section: dataStreams
+date: Last Modified
+title: "Report Schema: RWA Standard (v8)"
+metadata:
+  title: "RWA Standard (v8) | Chainlink Data Streams"
+  description: "Learn about Chainlink Data Streams RWA Standard (v8) schema, including fields, encoding, and examples for integrating RWA data in your applications."
+  keywords: ["Report Schema", "RWA", "Real World Assets", "v8 Schema", "Data Format", "Report Structure"]
+---
+
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+import ReportSchemaTabs from "@features/data-streams/common/ReportSchemaTabs.astro"
+
+<DataStreams section="dsNotes" />
+
+<ReportSchemaTabs />
+
+RWA streams adhere to the report schema outlined below.
+
+### Schema Fields
+
+| Value                   | Type      | Description                                                                                                 |
+| ----------------------- | --------- | ----------------------------------------------------------------------------------------------------------- |
+| `feedID`                | `bytes32` | Unique identifier for the Data Streams feed                                                                 |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                                                        |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                                                          |
+| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)                                                                |
+| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                                                                        |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                                                     |
+| `lastUpdateTimestamp`   | `uint64`  | Timestamp of the last valid price update (nanoseconds)                                                      |
+| `midPrice`              | `int192`  | DON's consensus median price                                                                                |
+| `marketStatus`          | `uint32`  | [Market status](/data-streams/market-hours). Possible values: `0` (`Unknown`), `1` (`Closed`), `2` (`Open`) |
+
+**Notes**:
+
+- `marketStatus`:
+  - Users are responsible for handling market status changes in their applications.
+  - For further guidance, refer to the [Handling Market Events](/data-streams/rwa-streams/handling-market-events) documentation.
+- Future RWA streams may use different report schemas.

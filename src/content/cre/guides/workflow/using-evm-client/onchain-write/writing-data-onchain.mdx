@@ -1,0 +1,555 @@
+---
+section: cre
+title: "Writing Data Onchain"
+sdkLang: "ts"
+date: Last Modified
+metadata:
+  description: "Write workflow results to the blockchain in TypeScript: complete guide to generating and submitting verified data to smart contracts."
+  datePublished: "2025-11-04"
+  lastModified: "2026-01-20"
+---
+
+import { Aside } from "@components"
+
+This guide shows you how to write data from your CRE workflow to a smart contract on the blockchain using the TypeScript SDK. You'll learn the complete two-step process with examples for both single values and structs.
+
+**What you'll learn:**
+
+- How to ABI-encode data using viem
+- How to generate signed reports with `runtime.report()`
+- How to submit reports with `evmClient.writeReport()`
+- How to handle single values, structs, and complex types
+
+## Prerequisites
+
+Before you begin, ensure you have:
+
+1. **A consumer contract** deployed that implements the `IReceiver` interface
+   - See [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts) if you need to create one
+1. **The contract's address** where you want to send data
+1. **Basic familiarity** with the [Getting Started tutorial](/cre/getting-started/part-1-project-setup)
+
+<Aside type="note" title="Follow along with Part 4">
+  This guide provides detailed explanations for the concepts covered in [Part 4: Writing
+  Onchain](/cre/getting-started/part-4-writing-onchain-ts) of the Getting Started tutorial. If you prefer a hands-on
+  tutorial, start there!
+</Aside>
+
+## Understanding what happens behind the scenes
+
+Before we dive into the code, here's what happens when you call `evmClient.writeReport()`:
+
+1. **Your workflow** generates a signed report containing your ABI-encoded data (via `runtime.report()`)
+1. **The EVM Write capability** submits this report to a Chainlink-managed `KeystoneForwarder` contract
+1. **The forwarder** validates the report's cryptographic signatures to ensure it came from a trusted DON
+1. **The forwarder** calls your consumer contract's `onReport(bytes metadata, bytes report)` function to deliver the data
+
+This is why your consumer contract must implement the `IReceiver` interface—it's not receiving data directly from your workflow, but from the Chainlink Forwarder as an intermediary that provides security and verification.
+
+<Aside type="note" title="Want more details?">
+  For a deeper explanation of the secure write flow and why CRE uses this architecture, see the [Onchain Write
+  Overview](/cre/guides/workflow/using-evm-client/onchain-write/overview-ts).
+</Aside>
+
+## The write pattern
+
+Writing data onchain with the TypeScript SDK follows this pattern:
+
+1. **ABI-encode your data** using viem's `encodeAbiParameters()`
+1. **Generate a signed report** using `runtime.report()`
+1. **Submit the report** using `evmClient.writeReport()`
+1. **Check the transaction status** and handle the result
+
+Let's see how this works for different types of data.
+
+## Writing a single value
+
+This example shows how to write a single `uint256` value to your consumer contract.
+
+### Step 1: Set up your imports
+
+```typescript
+import { EVMClient, getNetwork, hexToBase64, bytesToHex, TxStatus, type Runtime } from "@chainlink/cre-sdk"
+import { encodeAbiParameters, parseAbiParameters } from "viem"
+```
+
+### Step 2: ABI-encode your value
+
+Use viem's `encodeAbiParameters()` to encode a single value:
+
+```typescript
+// For a single uint256
+const reportData = encodeAbiParameters(parseAbiParameters("uint256"), [12345n])
+
+// For a single address
+const reportData = encodeAbiParameters(parseAbiParameters("address"), ["0x1234567890123456789012345678901234567890"])
+
+// For a single bool
+const reportData = encodeAbiParameters(parseAbiParameters("bool"), [true])
+```
+
+<Aside type="note" title="BigInt literals">
+  Use the `n` suffix for integer literals to create `bigint` values in TypeScript. This is required for **all** Solidity
+  integer types (`uint8`, `uint256`, `int8`, `int256`, etc.) when using viem: `12345n`, `1000000000000000000n`, etc.
+</Aside>
+
+### Step 3: Generate the signed report
+
+Convert the encoded data to base64 and generate a report:
+
+```typescript
+const reportResponse = runtime
+  .report({
+    encodedPayload: hexToBase64(reportData),
+    encoderName: "evm",
+    signingAlgo: "ecdsa",
+    hashingAlgo: "keccak256",
+  })
+  .result()
+```
+
+**Report parameters:**
+
+- `encodedPayload`: Your ABI-encoded data converted to base64
+- `encoderName`: Always `"evm"` for EVM chains
+- `signingAlgo`: Always `"ecdsa"` for EVM chains
+- `hashingAlgo`: Always `"keccak256"` for EVM chains
+
+### Step 4: Submit to the blockchain
+
+```typescript
+const writeResult = evmClient
+  .writeReport(runtime, {
+    receiver: config.consumerAddress,
+    report: reportResponse,
+    gasConfig: {
+      gasLimit: config.gasLimit,
+    },
+  })
+  .result()
+```
+
+**WriteReport parameters:**
+
+- `receiver`: The address of your consumer contract (must implement `IReceiver`)
+- `report`: The signed report from `runtime.report()`
+- `gasConfig.gasLimit`: Gas limit for the transaction (as a string, e.g., `"500000"`)
+
+### Step 5: Check the transaction status
+
+```typescript
+if (writeResult.txStatus === TxStatus.SUCCESS) {
+  const txHash = bytesToHex(writeResult.txHash || new Uint8Array(32))
+  runtime.log(`Transaction successful: ${txHash}`)
+  return txHash
+}
+
+throw new Error(`Transaction failed with status: ${writeResult.txStatus}`)
+```
+
+## Writing a struct
+
+This example shows how to write multiple values as a struct to your consumer contract.
+
+### Your consumer contract
+
+Let's say your consumer contract expects data in this format:
+
+```solidity
+struct CalculatorResult {
+  uint256 offchainValue;
+  int256 onchainValue;
+  uint256 finalResult;
+}
+```
+
+### Step 1: ABI-encode the struct
+
+Use viem to encode all fields as a tuple:
+
+```typescript
+const reportData = encodeAbiParameters(
+  parseAbiParameters("uint256 offchainValue, int256 onchainValue, uint256 finalResult"),
+  [100n, 50n, 150n]
+)
+```
+
+<Aside type="note" title="Struct encoding">
+  In viem, structs are encoded as tuples. List all fields with their types and names, then provide the values in the
+  same order. The field names help with readability but don't affect encoding.
+</Aside>
+
+### Step 2: Generate and submit
+
+The rest of the process is identical to writing a single value:
+
+```typescript
+// Generate signed report
+const reportResponse = runtime
+  .report({
+    encodedPayload: hexToBase64(reportData),
+    encoderName: "evm",
+    signingAlgo: "ecdsa",
+    hashingAlgo: "keccak256",
+  })
+  .result()
+
+// Submit to blockchain
+const writeResult = evmClient
+  .writeReport(runtime, {
+    receiver: config.consumerAddress,
+    report: reportResponse,
+    gasConfig: {
+      gasLimit: config.gasLimit,
+    },
+  })
+  .result()
+
+// Check status
+if (writeResult.txStatus === TxStatus.SUCCESS) {
+  runtime.log(`Successfully wrote struct to contract`)
+}
+```
+
+## Organizing ABIs for reusable data structures
+
+For workflows that interact with consumer contracts multiple times or use complex data structures, organizing your ABI definitions in dedicated files improves code maintainability and type safety.
+
+### Why organize ABIs?
+
+- **Reusability**: Define data structures once, use them across multiple workflows
+- **Type safety**: TypeScript can infer types from your ABI definitions
+- **Maintainability**: Update contract interfaces in one place
+- **Consistency**: Match the pattern used for [reading from contracts](/cre/guides/workflow/using-evm-client/onchain-read-ts)
+
+### File structure
+
+Create a `contracts/abi/` directory in your project root to store ABI definitions:
+
+```
+my-cre-project/
+├── contracts/
+│   └── abi/
+│       ├── ConsumerContract.ts    # Consumer contract data structures
+│       └── index.ts                # Export all ABIs
+├── my-workflow/
+│   └── main.ts
+└── project.yaml
+```
+
+### Creating an ABI file
+
+Let's say your consumer contract expects a `CalculatorResult` struct. Create `contracts/abi/ConsumerContract.ts`:
+
+```typescript
+import { parseAbiParameters } from "viem"
+
+// Define the ABI parameters for your struct
+export const CalculatorResultParams = parseAbiParameters(
+  "uint256 offchainValue, int256 onchainValue, uint256 finalResult"
+)
+
+// Define the TypeScript type for type safety
+export type CalculatorResult = {
+  offchainValue: bigint
+  onchainValue: bigint
+  finalResult: bigint
+}
+```
+
+### Creating an index file
+
+For cleaner imports, create `contracts/abi/index.ts`:
+
+```typescript
+export { CalculatorResultParams, type CalculatorResult } from "./ConsumerContract"
+```
+
+### Using the organized ABI
+
+Now you can import and use these definitions in your workflow:
+
+```typescript
+import { EVMClient, getNetwork, hexToBase64, bytesToHex, TxStatus, type Runtime } from "@chainlink/cre-sdk"
+import { encodeAbiParameters } from "viem"
+import { CalculatorResultParams, type CalculatorResult } from "../contracts/abi"
+
+const writeDataOnchain = (runtime: Runtime<Config>): string => {
+  const network = getNetwork({
+    chainFamily: "evm",
+    chainSelectorName: runtime.config.chainSelectorName,
+    isTestnet: true,
+  })
+
+  if (!network) {
+    throw new Error(`Network not found`)
+  }
+
+  const evmClient = new EVMClient(network.chainSelector.selector)
+
+  // Create type-safe data object
+  const data: CalculatorResult = {
+    offchainValue: 100n,
+    onchainValue: 50n,
+    finalResult: 150n,
+  }
+
+  // Encode using imported ABI parameters
+  const reportData = encodeAbiParameters(CalculatorResultParams, [
+    data.offchainValue,
+    data.onchainValue,
+    data.finalResult,
+  ])
+
+  // Generate and submit report (same as before)
+  const reportResponse = runtime
+    .report({
+      encodedPayload: hexToBase64(reportData),
+      encoderName: "evm",
+      signingAlgo: "ecdsa",
+      hashingAlgo: "keccak256",
+    })
+    .result()
+
+  const writeResult = evmClient
+    .writeReport(runtime, {
+      receiver: runtime.config.consumerAddress,
+      report: reportResponse,
+      gasConfig: { gasLimit: runtime.config.gasLimit },
+    })
+    .result()
+
+  if (writeResult.txStatus === TxStatus.SUCCESS) {
+    const txHash = bytesToHex(writeResult.txHash || new Uint8Array(32))
+    return txHash
+  }
+
+  throw new Error(`Transaction failed`)
+}
+```
+
+### When to use this pattern
+
+Use organized ABI files when:
+
+- You have **multiple workflows** writing to the same consumer contract
+- Your data structures are **complex** (nested structs, arrays, multiple parameters)
+- You want **type checking** when constructing data objects
+- Your project has **multiple consumer contracts** with different interfaces
+
+For simple, one-off workflows with single values, inline `parseAbiParameters()` is sufficient.
+
+## Complete code example
+
+Here's a full workflow that writes a struct to a consumer contract:
+
+### Configuration (`config.json`)
+
+```json
+{
+  "schedule": "0 */5 * * * *",
+  "chainSelectorName": "ethereum-testnet-sepolia",
+  "consumerAddress": "0xYourConsumerContractAddress",
+  "gasLimit": "500000"
+}
+```
+
+### Workflow code (`main.ts`)
+
+```typescript
+import {
+  CronCapability,
+  EVMClient,
+  getNetwork,
+  hexToBase64,
+  bytesToHex,
+  TxStatus,
+  type Runtime,
+  Runner,
+} from "@chainlink/cre-sdk"
+import { encodeAbiParameters, parseAbiParameters } from "viem"
+import { z } from "zod"
+
+// Config schema
+const configSchema = z.object({
+  schedule: z.string(),
+  chainSelectorName: z.string(),
+  consumerAddress: z.string(),
+  gasLimit: z.string(),
+})
+
+type Config = z.infer<typeof configSchema>
+
+const writeDataOnchain = (runtime: Runtime<Config>): string => {
+  // Get network info
+  const network = getNetwork({
+    chainFamily: "evm",
+    chainSelectorName: runtime.config.chainSelectorName,
+    isTestnet: true,
+  })
+
+  if (!network) {
+    throw new Error(`Network not found: ${runtime.config.chainSelectorName}`)
+  }
+
+  // Create EVM client
+  const evmClient = new EVMClient(network.chainSelector.selector)
+
+  // 1. Encode your data (struct with 3 fields)
+  const reportData = encodeAbiParameters(
+    parseAbiParameters("uint256 offchainValue, int256 onchainValue, uint256 finalResult"),
+    [100n, 50n, 150n]
+  )
+
+  runtime.log(`Encoded data for consumer contract`)
+
+  // 2. Generate signed report
+  const reportResponse = runtime
+    .report({
+      encodedPayload: hexToBase64(reportData),
+      encoderName: "evm",
+      signingAlgo: "ecdsa",
+      hashingAlgo: "keccak256",
+    })
+    .result()
+
+  runtime.log(`Generated signed report`)
+
+  // 3. Submit to blockchain
+  const writeResult = evmClient
+    .writeReport(runtime, {
+      receiver: runtime.config.consumerAddress,
+      report: reportResponse,
+      gasConfig: {
+        gasLimit: runtime.config.gasLimit,
+      },
+    })
+    .result()
+
+  // 4. Check status and return
+  if (writeResult.txStatus === TxStatus.SUCCESS) {
+    const txHash = bytesToHex(writeResult.txHash || new Uint8Array(32))
+    runtime.log(`Transaction successful: ${txHash}`)
+    return txHash
+  }
+
+  throw new Error(`Transaction failed with status: ${writeResult.txStatus}`)
+}
+
+const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
+  return [
+    cron.handler(
+      cron.trigger({
+        schedule: config.schedule,
+      }),
+      writeDataOnchain
+    ),
+  ]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+```
+
+## Working with complex types
+
+### Arrays
+
+```typescript
+// Array of uint256
+const reportData = encodeAbiParameters(parseAbiParameters("uint256[]"), [[100n, 200n, 300n]])
+
+// Array of addresses
+const reportData = encodeAbiParameters(parseAbiParameters("address[]"), [["0xAddress1", "0xAddress2", "0xAddress3"]])
+```
+
+### Nested structs
+
+```typescript
+// Struct with nested struct: ReserveData { uint256 total, Asset { address token, uint256 balance } }
+const reportData = encodeAbiParameters(parseAbiParameters("uint256 total, (address token, uint256 balance) asset"), [
+  1000n,
+  ["0xTokenAddress", 500n],
+])
+```
+
+### Multiple parameters with mixed types
+
+```typescript
+// address recipient, uint256 amount, bool isActive
+const reportData = encodeAbiParameters(parseAbiParameters("address recipient, uint256 amount, bool isActive"), [
+  "0xRecipientAddress",
+  42000n,
+  true,
+])
+```
+
+## Type conversions
+
+### JavaScript/TypeScript to Solidity
+
+| Solidity Type            | TypeScript Type            | Example                                |
+| ------------------------ | -------------------------- | -------------------------------------- |
+| `uint256`, `uint8`, etc. | `bigint`                   | `12345n`                               |
+| `int256`, `int8`, etc.   | `bigint`                   | `-12345n`                              |
+| `address`                | `string` (hex)             | `"0x1234..."`                          |
+| `bool`                   | `boolean`                  | `true`                                 |
+| `bytes`, `bytes32`       | `Uint8Array` or hex string | `new Uint8Array(...)` or `"0xabcd..."` |
+| `string`                 | `string`                   | `"Hello"`                              |
+| Arrays                   | `Array`                    | `[100n, 200n]`                         |
+| Struct                   | Tuple                      | `[100n, "0x...", true]`                |
+
+### Helper functions
+
+The SDK provides utilities for data conversion:
+
+```typescript
+import { hexToBase64, bytesToHex } from "@chainlink/cre-sdk"
+
+// Convert hex string to base64 (for report generation)
+const base64 = hexToBase64(hexString)
+
+// Convert Uint8Array to hex string (for logging, display)
+const hex = bytesToHex(uint8Array)
+```
+
+## Handling errors
+
+Always check the transaction status and handle potential failures:
+
+```typescript
+const writeResult = evmClient
+  .writeReport(runtime, {
+    receiver: config.consumerAddress,
+    report: reportResponse,
+    gasConfig: {
+      gasLimit: config.gasLimit,
+    },
+  })
+  .result()
+
+// Check for success
+if (writeResult.txStatus === TxStatus.SUCCESS) {
+  runtime.log(`Success! TxHash: ${bytesToHex(writeResult.txHash || new Uint8Array(32))}`)
+} else if (writeResult.txStatus === TxStatus.REVERTED) {
+  runtime.log(`Transaction reverted: ${writeResult.errorMessage || "Unknown error"}`)
+  throw new Error(`Write failed: ${writeResult.errorMessage}`)
+} else if (writeResult.txStatus === TxStatus.FATAL) {
+  runtime.log(`Fatal error: ${writeResult.errorMessage || "Unknown error"}`)
+  throw new Error(`Fatal write error: ${writeResult.errorMessage}`)
+}
+```
+
+<Aside type="caution" title="Gas limit configuration">
+  Make sure your `gasLimit` is sufficient for your transaction. If it's too low, the transaction will run out of gas and
+  revert.
+</Aside>
+
+## Next steps
+
+- **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)** - Learn how to create contracts that receive workflow data
+- **[EVM Client Reference](/cre/reference/sdk/evm-client-ts)** - Complete API documentation for `EVMClient`
+- **[Part 4: Writing Onchain](/cre/getting-started/part-4-writing-onchain-ts)** - Hands-on tutorial

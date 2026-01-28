@@ -1,0 +1,447 @@
+---
+section: dataStreams
+date: Last Modified
+title: "Stream and decode Data Streams reports via WebSocket using the TypeScript SDK"
+metadata:
+  title: "Stream Real-time Data Streams Reports with TypeScript SDK | WebSocket Tutorial"
+  description: "Learn how to use the TypeScript SDK to stream and decode real-time data streams reports via WebSocket connections from Chainlink Data Streams."
+  keywords: ["WebSocket", "TypeScript SDK", "JavaScript", "Real-time", "Streaming", "Data Streams"]
+whatsnext:
+  {
+    "Learn how to verify your data onchain": "/data-streams/reference/data-streams-api/onchain-verification",
+    "Find the list of available Streams and view their schemas": "/data-streams/reference/report-schema-overview",
+  }
+---
+
+import { Aside, CopyText, PageTabs } from "@components"
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+
+<DataStreams section="dsNotes" />
+
+<PageTabs
+  pages={[
+    {
+      name: "Go SDK",
+      url: "/data-streams/tutorials/go-sdk-stream",
+      icon: "/images/tutorial-icons/go_logo_black.png",
+    },
+    {
+      name: "Rust SDK",
+      url: "/data-streams/tutorials/rust-sdk-stream",
+      icon: "/images/tutorial-icons/rust_logo_blk.svg",
+    },
+    {
+      name: "TypeScript SDK",
+      url: "/data-streams/tutorials/ts-sdk-stream",
+      icon: "/images/tutorial-icons/ts_logo_black.svg",
+    },
+  ]}
+/>
+
+In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/reference/data-streams-api/ts-sdk) for TypeScript to subscribe to real-time [reports](/data-streams/reference/report-schema-overview) via a [WebSocket connection](/data-streams/reference/data-streams-api/interface-ws). You'll set up your TypeScript project, listen for real-time reports from the Data Streams Aggregation Network, decode the report data, and log their attributes to your terminal.
+
+<DataStreams section="asideDisclaimer" />
+
+## Requirements
+
+- **Git**: Make sure you have Git installed. You can check your current version by running <CopyText text="git --version" code/> in your terminal and download the latest version from the official [Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if necessary.
+- **Node.js**: Make sure you have Node.js 20.0 or higher. You can check your current version by running <CopyText text="node --version" code/> in your terminal and download the latest version from the official [Node.js website](https://nodejs.org/) if necessary.
+- **TypeScript**: Make sure you have TypeScript 5.3 or higher. You can check your current version by running <CopyText text="npx tsc --version" code/> in your terminal and install or update TypeScript by running <CopyText text="npm install -g typescript" code/> if necessary.
+- **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to request mainnet or testnet access.
+
+## Tutorial
+
+First, you'll set up a basic TypeScript project, installing the SDK and pasting example code. This will let you stream reports for [streams](/data-streams/crypto-streams), logging their attributes to your terminal.
+
+### Set up your TypeScript project
+
+1. Create a new directory for your project and navigate to it:
+
+   ```bash
+   mkdir my-data-streams-project
+   cd my-data-streams-project
+   ```
+
+1. Initialize a new Node.js project:
+
+   ```bash
+   npm init -y
+   ```
+
+1. Install the TypeScript SDK and other required packages:
+
+   ```bash
+    npm install @chainlink/data-streams-sdk dotenv
+    npm install -D tsx
+   ```
+
+1. Set your API credentials:
+
+   Option 1 - Environment variables:
+
+   ```bash
+   export API_KEY="your_api_key_here"
+   export USER_SECRET="your_user_secret_here"
+   ```
+
+   Option 2 - `.env` file:
+
+   ```bash
+   # Create .env file
+   touch .env
+
+   # Add your credentials
+   API_KEY="your_api_key_here"
+   USER_SECRET="your_user_secret_here"
+   ```
+
+### Establish a WebSocket connection and listen for real-time reports
+
+1.  Create a new TypeScript file, `stream.ts`, in your project directory:
+
+    ```bash
+    touch stream.ts
+    ```
+
+1.  Insert the following code example and save your `stream.ts` file:
+
+    ```typescript
+    import { createClient, LogLevel, decodeReport, getReportVersion, formatReport } from "@chainlink/data-streams-sdk"
+    import "dotenv/config"
+
+    async function main() {
+      if (process.argv.length < 3) {
+        console.error("Please provide one or more feed IDs as arguments")
+        console.error("\nExamples:")
+        console.error("  Single feed:")
+        console.error("    npx tsx stream.ts 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782")
+        console.error("  Multiple feeds:")
+        console.error(
+          "    npx tsx stream.ts 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782,0x00036fe43f87884450b4c7e093cd5ed99cac6640d8c2000e6afc02c8838d0265"
+        )
+        process.exit(1)
+      }
+
+      const feedIds = process.argv[2].split(",")
+
+      console.log("Chainlink Data Streams - Report Streaming")
+      console.log("=".repeat(60))
+      console.log(`📊 Feeds: ${feedIds.length} feed(s)`)
+      console.log("=".repeat(60))
+
+      try {
+        const client = createClient({
+          apiKey: process.env.API_KEY || "YOUR_API_KEY",
+          userSecret: process.env.USER_SECRET || "YOUR_USER_SECRET",
+          endpoint: "https://api.testnet-dataengine.chain.link",
+          wsEndpoint: "wss://ws.testnet-dataengine.chain.link",
+
+          // Comment to disable SDK logging:
+          logging: {
+            logger: console,
+            logLevel: LogLevel.INFO,
+            enableConnectionDebug: false, // Enable WebSocket ping/pong and connection state logs (logLevel should be DEBUG)
+          },
+        })
+
+        let reportCount = 0
+
+        // Create stream with custom options
+        const stream = client.createStream(feedIds, {
+          maxReconnectAttempts: 10,
+          reconnectInterval: 3000,
+        })
+
+        // Event: Process incoming reports
+        stream.on("report", (report) => {
+          reportCount++
+
+          try {
+            console.log(`\n📈 Report #${reportCount} - ${new Date().toISOString()}`)
+
+            // Show raw report blob
+            console.log(`\nRaw Report Blob: ${report.fullReport}`)
+
+            // Decode the report
+            const decodedData = decodeReport(report.fullReport, report.feedID)
+            const version = getReportVersion(report.feedID)
+
+            // Combine decoded data with report metadata
+            const decodedReport = {
+              ...decodedData,
+              feedID: report.feedID,
+              validFromTimestamp: report.validFromTimestamp,
+              observationsTimestamp: report.observationsTimestamp,
+            }
+
+            console.log(formatReport(decodedReport, version))
+          } catch (error) {
+            console.error(`❌ Error processing report: ${error instanceof Error ? error.message : error}`)
+          }
+
+          // Display stats every 5 reports
+          if (reportCount % 5 === 0) {
+            const stats = stream.getMetrics()
+            console.log(
+              `\n📊 Stats: ${stats.accepted} reports | ${stats.activeConnections}/${stats.configuredConnections} connections`
+            )
+          }
+        })
+
+        // Event: Handle errors
+        stream.on("error", (error) => {
+          console.error(`\n❌ Error: ${error.message}`)
+
+          if (error.message.includes("authentication")) {
+            console.error("💡 Check your API_KEY and USER_SECRET environment variables")
+          }
+        })
+
+        // Event: Handle disconnections
+        stream.on("disconnected", () => {
+          console.log("\n🔴 Stream disconnected - reconnecting...")
+        })
+
+        // Event: Monitor reconnections
+        stream.on("reconnecting", (info: { attempt: number; delayMs: number; origin?: string; host?: string }) => {
+          console.log(
+            `🔄 Reconnecting... attempt ${info.attempt} in ~${info.delayMs}ms${info.host ? ` (${info.host})` : ""}`
+          )
+        })
+
+        console.log("⏳ Connecting...\n")
+        await stream.connect()
+        console.log("✅ Connected! Listening for reports...\n")
+
+        // Graceful shutdown
+        const shutdown = async () => {
+          console.log("\n🛑 Shutting down...")
+          await stream.close()
+          console.log("✅ Shutdown complete")
+          process.exit(0)
+        }
+
+        process.on("SIGINT", shutdown)
+        process.on("SIGTERM", shutdown)
+      } catch (error) {
+        console.error("❌ Failed to start stream:", error instanceof Error ? error.message : error)
+        process.exit(1)
+      }
+    }
+
+    main()
+    ```
+
+    <Aside type="note" title="Report detection">
+      The TypeScript SDK automatically detects the report version based on the provided feed ID and handles decoding
+      accordingly.
+    </Aside>
+
+1.  Subscribe to a [testnet crypto stream](/data-streams/crypto-streams#testnet-crypto-streams). The below example executes the application, subscribing to the `ETH/USD` crypto stream:
+
+    ```bash
+    npx tsx stream.ts 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+    ```
+
+    Expect output similar to the following in your terminal:
+
+    ```bash
+    Chainlink Data Streams - Report Streaming
+    ============================================================
+    📊 Feeds: 1 feed(s)
+    ============================================================
+    [2025-09-24T01:52:36.464Z] [DataStreams] Data Streams client initialized
+    [2025-09-24T01:52:36.465Z] [DataStreams] Initializing stream in single mode
+    [2025-09-24T01:52:36.465Z] [DataStreams] Stream created successfully for 1 feed(s)
+    ⏳ Connecting...
+
+    [2025-09-24T01:52:36.465Z] [DataStreams] Connecting stream in single mode
+    [2025-09-24T01:52:36.465Z] [DataStreams] Initializing in single connection mode { origin: 'ws.testnet-dataengine.chain.link' }
+    [2025-09-24T01:52:36.919Z] [DataStreams] Connection conn-0 established to ws.testnet-dataengine.chain.link {
+      connectionId: 'conn-0',
+      host: 'ws.testnet-dataengine.chain.link',
+      oldState: 'connecting',
+      newState: 'connected',
+      reason: 'WebSocket connection established'
+    }
+    [2025-09-24T01:52:36.921Z] [DataStreams] Stream connected successfully with 1 origins: wss://ws.testnet-dataengine.chain.link
+    ✅ Connected! Listening for reports...
+
+
+    📈 Report #1 - 2025-09-24T01:52:37.639Z
+
+    Raw Report Blob: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de70cf179baa632f18313e54bd690000000000000000000000000000000000000000000000000000000001fb0b3d000000000000000000000000000000000000000000000000000000030000000100000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba7820000000000000000000000000000000000000000000000000000000068d34ee50000000000000000000000000000000000000000000000000000000068d34ee500000000000000000000000000000000000000000000000000004566c7d15bf000000000000000000000000000000000000000000000000000346f5bdd1b7f7f0000000000000000000000000000000000000000000000000000000068fadbe50000000000000000000000000000000000000000000000e3535f4d688742fe400000000000000000000000000000000000000000000000e35216a3ce81ab00000000000000000000000000000000000000000000000000e355718e650ceb8c00000000000000000000000000000000000000000000000000000000000000000264deb1e4d7485843f79f802f8ffd29fa395c45a8f4c10d7771d91fb5c6c7f55bdf3b496949277bdba413cf9a07adf62d4ffac8d04572455c8707a578eec7988f000000000000000000000000000000000000000000000000000000000000000221d03f390a3a8bf14406a5026bca8a569908abd0e3bfc1152e0ee94cf8087b29648cffd6e505f392678ad3c2488862dc6016755aec3076e64fa68d13705a5980
+
+    Report Metadata:
+    Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+    Valid From: 1758678757
+    Observations: 1758678757
+
+    Decoded Data:
+    Native Fee: 76307741367280
+    LINK Fee: 14759139131228031
+    Expires At: 1761270757
+    Price: 4193418510271345000000
+    Bid Price: 4193326000000000000000
+    Ask Price: 4193567763462320000000
+    --------------------------------------------------
+
+    📈 Report #2 - 2025-09-24T01:52:38.352Z
+
+    Raw Report Blob: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de70cf179baa632f18313e54bd690000000000000000000000000000000000000000000000000000000001fb0b3f000000000000000000000000000000000000000000000000000000030000000100000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba7820000000000000000000000000000000000000000000000000000000068d34ee60000000000000000000000000000000000000000000000000000000068d34ee600000000000000000000000000000000000000000000000000004567035aadb500000000000000000000000000000000000000000000000000346f5006b572370000000000000000000000000000000000000000000000000000000068fadbe60000000000000000000000000000000000000000000000e354601f8dd7842d400000000000000000000000000000000000000000000000e35343330ef5aa80000000000000000000000000000000000000000000000000e3576b7b7e0d95bc0000000000000000000000000000000000000000000000000000000000000000029bbebb9390dfd84074ef0078b3b354a8c3f53915d24b664095b4360b20e495cfc1ee156fb32ffae29390a891b905b96fec0e949dbca19b7eded60a2178a0b7570000000000000000000000000000000000000000000000000000000000000002119306af79fb631fe3d281475b32e9e2c293fd6b544d4f5d44d74d9827d8897729c2bc6d5df3033d6b90aeb22df31f484f5ed7da9602c790213d3e12144544e1
+
+    Report Metadata:
+    Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+    Valid From: 1758678758
+    Observations: 1758678758
+
+    Decoded Data:
+    Native Fee: 76308740222389
+    LINK Fee: 14759088289575479
+    Expires At: 1761270758
+    Price: 4193490798923085000000
+    Bid Price: 4193410600000000000000
+    Ask Price: 4193710169017200000000
+    --------------------------------------------------
+
+    📈 Report #3 - 2025-09-24T01:52:39.274Z
+
+    Raw Report Blob: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de70cf179baa632f18313e54bd690000000000000000000000000000000000000000000000000000000001fb0b42000000000000000000000000000000000000000000000000000000030000000100000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000220000000000000000000000000000000000000000000000000000000000000028000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba7820000000000000000000000000000000000000000000000000000000068d34ee70000000000000000000000000000000000000000000000000000000068d34ee70000000000000000000000000000000000000000000000000000456689e0e86300000000000000000000000000000000000000000000000000346d7b2d006b3a0000000000000000000000000000000000000000000000000000000068fadbe70000000000000000000000000000000000000000000000e355ee07f0ab7f00000000000000000000000000000000000000000000000000e353c9352421f6e2000000000000000000000000000000000000000000000000e3565e1f7be6e49700000000000000000000000000000000000000000000000000000000000000000245ddf834b20cdd13c559fdd131c27f3c52d38ba6a456d6064a64269b703bc2012d0ffbb4ab3df623c0bdfba83004ef4db50ea351314b648153d2f6002f78cb4e00000000000000000000000000000000000000000000000000000000000000026a6bbed7e57969d56e6485682afc481f8f8127f292e4bd300f6bb0a57b77b21a2ca0e3338ba16b0afbbae567fc4a728c4b95c2092169f412ae7b8fc53c81342a
+
+    Report Metadata:
+    Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+    Valid From: 1758678759
+    Observations: 1758678759
+
+    Decoded Data:
+    Native Fee: 76306702198883
+    LINK Fee: 14757074592361274
+    Expires At: 1761270759
+    Price: 4193602800000000000000
+    Bid Price: 4193448319936840000000
+    Ask Price: 4193634351084156000000
+    --------------------------------------------------
+    [...additional reports...]
+    ```
+
+    Your application has successfully subscribed to the report data.
+
+    [Learn more about the decoded report details](#decoded-report-details).
+
+### Decoded report details
+
+The decoded report details include:
+
+| Attribute                | Value                                                                | Description                                                                                                                                                                                                                                                                                                                          |
+| ------------------------ | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Stream ID`              | `0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782` | The unique identifier for the stream. In this example, the stream is for ETH/USD.                                                                                                                                                                                                                                                    |
+| `Observations Timestamp` | `1758588884`                                                         | The timestamp indicating when the data was captured.                                                                                                                                                                                                                                                                                 |
+| `Benchmark Price`        | `4195298740000000000000`                                             | The observed price in the report, with 18 decimals. For readability: `4,195.29874` USD per ETH.                                                                                                                                                                                                                                      |
+| `Bid`                    | `4194910430000000000000`                                             | The highest price a buyer is willing to pay for an asset, with 18 decimals. For readability: `4,194.91043` USD per ETH. Learn more about the [Bid price](/data-streams/concepts/liquidity-weighted-prices). (For [DEX State Price streams](/data-streams/concepts/dex-state-price-streams), this value equals `Benchmark Price`.)    |
+| `Ask`                    | `4195448050000000000000`                                             | The lowest price a seller is willing to accept for an asset, with 18 decimals. For readability: `4,195.44805` USD per ETH. Learn more about the [Ask price](/data-streams/concepts/liquidity-weighted-prices). (For [DEX State Price streams](/data-streams/concepts/dex-state-price-streams), this value equals `Benchmark Price`.) |
+| `Valid From Timestamp`   | `1758588884`                                                         | The start validity timestamp for the report, indicating when the data becomes relevant.                                                                                                                                                                                                                                              |
+| `Expires At`             | `1761180884`                                                         | The expiration timestamp of the report, indicating the point at which the data becomes outdated.                                                                                                                                                                                                                                     |
+| `Link Fee`               | `14805490063735767`                                                  | The fee to pay in LINK tokens for the onchain verification of the report data, with 18 decimals. For readability: `0.014805490063735767` LINK. **Note:** This example fee is not indicative of actual fees.                                                                                                                          |
+| `Native Fee`             | `76275680556912`                                                     | The fee to pay in the native blockchain token (e.g., ETH on Ethereum) for the onchain verification of the report data, with 18 decimals. **Note:** This example fee is not indicative of actual fees.                                                                                                                                |
+
+For descriptions and data types of other report schemas, see the [Report Schema Overview](/data-streams/reference/report-schema-overview).
+
+### Subscribing to multiple streams
+
+You can subscribe to multiple streams by providing additional stream IDs as command-line arguments:
+
+```bash
+npx tsx stream.ts 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782,0x00036fe43f87884450b4c7e093cd5ed99cac6640d8c2000e6afc02c8838d0265
+```
+
+This will subscribe to both ETH/USD and BTC/USD streams.
+
+### High Availability (HA) mode
+
+<Aside type="note" title="Mainnet only">
+  HA mode is only available on mainnet endpoints, not testnet.
+</Aside>
+
+The example above demonstrates streaming data from a single crypto stream. For production environments, especially when subscribing to multiple streams, it's recommended to enable [High Availability (HA) mode](/data-streams/reference/data-streams-api/ts-sdk#high-availability-mode).
+
+High Availability (HA) mode creates multiple WebSocket connections to different origin endpoints for improved reliability. When HA mode is enabled, the Stream will maintain at least 2 concurrent connections to different instances to ensure high availability, fault tolerance and minimize the risk of report gaps.
+
+#### Enabling HA mode
+
+To enable HA mode in your streaming application, make these changes to the basic example:
+
+```typescript
+// ... existing code ...
+
+const client = createClient({
+  apiKey: process.env.API_KEY || "YOUR_API_KEY",
+  userSecret: process.env.USER_SECRET || "YOUR_USER_SECRET",
+  endpoint: "https://api.dataengine.chain.link", // Mainnet endpoint
+  wsEndpoint: "wss://ws.dataengine.chain.link", // Single endpoint (mainnet only)
+  haMode: true, // Enable High Availability mode
+
+  // Optional: Advanced connection monitoring with origin tracking
+  connectionStatusCallback: (isConnected, host, origin) => {
+    const timestamp = new Date().toISOString().substring(11, 19)
+    const status = isConnected ? "🟢 UP" : "🔴 DOWN"
+    console.log(`[${timestamp}] ${status} ${host}${origin || ""}`)
+
+    // Example: Send alerts for specific origins
+    if (!isConnected && origin) {
+      console.warn(`⚠️ Alert: Origin ${origin} on ${host} went offline`)
+    }
+  },
+
+  logging: {
+    logger: console,
+    logLevel: LogLevel.INFO,
+  },
+})
+
+// ... existing code ...
+```
+
+When `haMode` is `true`, the SDK automatically discovers multiple origin endpoints behind the single URL and establishes separate connections to each origin. You also must use a mainnet endpoint, as HA mode is not currently supported on testnet.
+
+The optional `connectionStatusCallback` can be used to integrate with external monitoring systems. The SDK already provides comprehensive connection logs, so this callback is primarily useful for custom alerting or metrics collection.
+
+See more details about HA mode in the [SDK Reference](/data-streams/reference/data-streams-api/ts-sdk#high-availability-mode).
+
+### Payload for onchain verification
+
+In this tutorial, you logged and decoded the `full_report` payloads to extract the report data. However, in a production environment, you should verify the data to ensure its integrity and authenticity.
+
+Refer to the [Verify report data onchain](/data-streams/tutorials/evm-onchain-report-verification) tutorial to learn more.
+
+## Explanation
+
+### Establishing a WebSocket connection and listening for reports
+
+Your application uses the `createClient` function from the [Data Streams SDK](/data-streams/reference/data-streams-api/ts-sdk) to create a client, then uses `client.createStream()` to establish a real-time WebSocket connection with the Data Streams Aggregation Network.
+
+Once the WebSocket connection is established, your application subscribes to one or more streams by passing an array of feed IDs to the `createStream` function. This subscription lets the client receive real-time updates whenever new report data is available for the specified streams.
+
+Fore further reference, see the [WebSocket Interface](/data-streams/reference/data-streams-api/interface-ws) section of the SDK Reference.
+
+### Event-driven streaming
+
+The TypeScript SDK uses an event-driven approach for handling streaming data:
+
+- **Connection events**: The [stream emits `connected`, `disconnected`, and `reconnecting` events](/data-streams/reference/data-streams-api/ts-sdk#streaming) to track connection status.
+- **Report events**: When new reports arrive, the `report` [event is triggered](/data-streams/reference/data-streams-api/ts-sdk#streaming) with the decoded report data.
+- **Error handling**: The stream [emits `error` events](/data-streams/reference/data-streams-api/ts-sdk#error-handling) for any issues that occur during streaming.
+- **Metrics**: [The `getMetrics()` method provides](/data-streams/reference/data-streams-api/ts-sdk#metrics-streamgetmetrics) real-time statistics about the stream performance.
+
+### Decoding and processing reports
+
+As data reports arrive via the established WebSocket connection, they are processed in real-time:
+
+- **Automatic decoding**: The SDK's `decodeReport` function automatically [detects the report version](/data-streams/reference/data-streams-api/ts-sdk#report-format) and parses the raw data into a structured format.
+- **Real-time processing**: Each received report triggers the `report` event handler, where you can process, log, or store the decoded data.
+- **Error resilience**: Individual report processing errors don't interrupt the stream, allowing continuous operation.
+
+### Handling the decoded data
+
+In this example, the application logs the structured report data to the terminal. However, this data can be used for further processing, analysis, or display in your own application. The decoded data includes essential information such as benchmark prices, bid/ask spreads, and fee data for onchain verification.
+
+For more information about SDK streaming configuration and advanced options, see the [SDK Reference](/data-streams/reference/data-streams-api/ts-sdk).

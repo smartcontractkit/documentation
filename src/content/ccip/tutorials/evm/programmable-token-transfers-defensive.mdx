@@ -3,14 +3,18 @@ section: ccip
 date: Last Modified
 title: "Transfer Tokens with Data - Defensive Example"
 metadata:
-  description: "Learn defensive coding for Chainlink CCIP. Tutorial covers handling errors, locking tokens on failure, and recovering locked tokens in cross-chain transfers."
+  description: "Defensive CCIP patterns for ERC-20 token + data transfers. Detect errors, lock tokens safely, and recover assets with robust receiver logic and best practices."
+  image: "/images/ccip/basic-architecture.png"
+  excerpt: "defensive coding, error handling, token recovery, CCIP failures, ERC-20, ERC20, token + data, token transfers, Solidity, Remix, security"
+  datePublished: "2024-03-25"
+  lastModified: "2025-05-19"
+  estimatedTime: "30 minutes"
+  difficulty: "intermediate"
 whatsnext:
-  {
-    "Transfer Tokens Between EOAs": "/ccip/tutorials/evm/offchain/transfer-tokens-from-eoa",
-    "See example cross-chain dApps and tools": "/ccip/examples",
-    "CCIP Directory": "/ccip/directory",
-    "Learn CCIP best practices": "/ccip/concepts/best-practices/evm",
-  }
+  "Transfer Tokens Between EOAs": "/ccip/tutorials/evm/offchain/transfer-tokens-from-eoa"
+  "See example cross-chain dApps and tools": "/ccip/examples"
+  "CCIP Directory": "/ccip/directory"
+  "Learn CCIP best practices": "/ccip/concepts/best-practices/evm"
 ---
 
 import { CodeSample, ClickToZoom, CopyText, Aside } from "@components"
@@ -30,7 +34,7 @@ This tutorial extends the [programmable token transfers example](/ccip/tutorials
 1. You should understand how to write, compile, deploy, and fund a smart contract. If you need to brush up on the basics, read this [tutorial](/quickstarts/deploy-your-first-contract), which will guide you through using the [Solidity programming language](https://soliditylang.org/), interacting with the [MetaMask wallet](https://metamask.io) and working within the [Remix Development Environment](https://remix.ethereum.org/).
 1. Your account must have some AVAX and LINK tokens on _Avalanche Fuji_ and ETH tokens on _Ethereum Sepolia_. Learn how to [Acquire testnet LINK](/resources/acquire-link).
 1. Check the [CCIP Directory](/ccip/directory) to confirm that the tokens you will transfer are supported for your lane. In this example, you will transfer tokens from _Avalanche Fuji_ to _Ethereum Sepolia_ so check the list of supported tokens [here](/ccip/directory/testnet/chain/avalanche-fuji-testnet).
-1. Learn how to [acquire CCIP test tokens](/ccip/test-tokens#mint-test-tokens). Following this guide, you should have CCIP-BnM tokens, and CCIP-BnM should appear in the list of your tokens in MetaMask.
+1. Learn how to [acquire CCIP test tokens](/ccip/test-tokens#evm-chains). Following this guide, you should have CCIP-BnM tokens, and CCIP-BnM should appear in the list of your tokens in MetaMask.
 1. Learn how to [fund your contract](/resources/fund-your-contract). This guide shows how to fund your contract in LINK, but you can use the same guide for funding your contract with any ERC20 tokens as long as they appear in the list of tokens in MetaMask.
 1. Follow the previous tutorial: [_Transfer Tokens with Data_](/ccip/tutorials/evm/programmable-token-transfers) to learn how to make programmable token transfers using CCIP.
 
@@ -46,7 +50,10 @@ In this guide, you'll initiate a transaction from a smart contract on _Avalanche
   that for successful scenarios.
 </Aside>
 
-<CodeSample src="samples/CCIP/ProgrammableDefensiveTokenTransfers.sol" />
+<CodeSample
+  src="samples/CCIP/ProgrammableDefensiveTokenTransfers.sol"
+  filename="ProgrammableDefensiveTokenTransfers.sol"
+/>
 
 ### Deploy your contracts
 
@@ -56,7 +63,6 @@ To use this contract:
 
 1. Compile your contract.
 1. Deploy, fund your sender contract on _Avalanche Fuji_ and enable sending messages to _Ethereum Sepolia_:
-
    1. Open MetaMask and select the network _Avalanche Fuji_.
    1. In Remix IDE, click on _Deploy & Run Transactions_ and select _Injected Provider - MetaMask_ from the environment list. Remix will then interact with your MetaMask wallet to communicate with _Avalanche Fuji_.
    1. Fill in your blockchain's router and LINK contract addresses. The router address can be found on the [CCIP Directory](/ccip/directory) and the LINK contract address on the [LINK token contracts page](/resources/link-token-contracts). For _Avalanche Fuji_:
@@ -70,7 +76,6 @@ To use this contract:
       1. Call the `allowlistDestinationChain` with <CopyText text="16015286601757825753" code/> as the destination chain selector, and <CopyText text="true" code/> as allowed. Each chain selector is found on the [CCIP Directory](/ccip/directory).
 
 1. Deploy your receiver contract on _Ethereum Sepolia_ and enable receiving messages from your sender contract:
-
    1. Open MetaMask and select the network _Ethereum Sepolia_.
    1. In Remix IDE, under _Deploy & Run Transactions_, make sure the environment is still _Injected Provider - MetaMask_.
    1. Fill in your blockchain's router and LINK contract addresses. The router address can be found on the [CCIP Directory](/ccip/directory) and the LINK contract address on the [LINK token contracts page](/resources/link-token-contracts). For _Ethereum Sepolia_:
@@ -100,7 +105,6 @@ You will transfer _0.001 CCIP-BnM_ and a text. The CCIP fees for using CCIP will
     from [faucets.chain.link](https://faucets.chain.link) or use a supported testnet other than Sepolia.
 
 1.  Send a string data with tokens from _Avalanche Fuji_:
-
     1.  Open MetaMask and select the network _Avalanche Fuji_.
     1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of functions of your smart contract deployed on _Avalanche Fuji_.
     1.  Fill in the arguments of the _**sendMessagePayLINK**_ function:
@@ -139,7 +143,6 @@ You will transfer _0.001 CCIP-BnM_ and a text. The CCIP fees for using CCIP will
           />
 
 1.  Check the receiver contract on the destination chain:
-
     1.  Open MetaMask and select the network _Ethereum Sepolia_.
     1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of functions of your smart contract deployed on _Ethereum Sepolia_.
     1.  Call the `getFailedMessages` function with an _offset_ of <CopyText text="0" code/> and a _limit_ of <CopyText text="1" code/> to retrieve the first failed message.
@@ -206,18 +209,15 @@ Upon receiving a message on the destination blockchain, the `ccipReceive` functi
 Here's the step-by-step breakdown of the process:
 
 1. Entrance through `ccipReceive`:
-
-   - The `ccipReceive` function is invoked with an `Any2EVMMessage` [struct](/ccip/api-reference/evm/v1.6.0/client#any2evmmessage) containing the message to be processed.
+   - The `ccipReceive` function is invoked with an `Any2EVMMessage` [struct](/ccip/api-reference/evm/v1.6.1/client#any2evmmessage) containing the message to be processed.
    - Security checks ensure the call is from the authorized router, an allowlisted source chain, and an allowlisted sender.
 
 1. Processing Message:
-
    - `ccipReceive` calls the `processMessage` function, which is external to leverage Solidity's try/catch error handling mechanism. **Note**: The `onlySelf` modifier ensures that only the contract can call this function.
    - Inside `processMessage`, a check is performed for a simulated revert condition using the `s_simRevert` state variable. This simulation is toggled by the `setSimRevert` function, callable only by the contract owner.
    - If `s_simRevert` is false, `processMessage` calls the `_ccipReceive` function for further message processing.
 
 1. Message Processing in `_ccipReceive`:
-
    - `_ccipReceive` extracts and stores various information from the message, such as the `messageId`, decoded `sender` address, token amounts, and data.
    - It then emits a `MessageReceived` event, signaling the successful processing of the message.
 
@@ -231,19 +231,15 @@ Here's the step-by-step breakdown of the process:
 The `retryFailedMessage` function provides a mechanism to recover assets if a CCIP message processing fails. It's specifically designed to handle scenarios where message data issues prevent entire processing yet allow for token recovery:
 
 1. Initiation:
-
    - Only the contract owner can call this function, providing the `messageId` of the failed message and the `tokenReceiver` address for token recovery.
 
 1. Validation:
-
    - It checks if the message has failed using `s_failedMessages.get(messageId)`. If not, it reverts the transaction.
 
 1. Status Update:
-
    - The error code for the message is updated to `RESOLVED` to prevent reentry and multiple retries.
 
 1. Token Recovery:
-
    - Retrieves the failed message content using `s_messageContents[messageId]`.
    - Transfers the locked tokens associated with the failed message to the specified `tokenReceiver` as an escape hatch without processing the entire message again.
 

@@ -4,6 +4,12 @@ date: Last Modified
 title: "Onchain Architecture - Components (EVM)"
 metadata:
   description: "Explore the onchain components of CCIP architecture on EVM chains: Sender/Receiver, Router, OnRamp, OffRamp, FeeQuoter, NonceManager, Token Admin Registry, Tokens, Token Pools, and RMN Contract."
+  image: "/images/ccip/concepts/architecture/onchain-evm-architecture.jpg"
+  excerpt: "ccip evm components smart contract architecture router contract onramp offramp contracts fee quoter nonce manager token admin registry token pools rmn contract ccip receiver interface"
+  datePublished: "2025-05-19T11:22:47Z"
+  lastModified: "2025-05-19T11:22:47Z"
+  difficulty: "advanced"
+  estimatedTime: "30 minutes"
 ---
 
 import { Aside } from "@components"
@@ -48,7 +54,7 @@ This section provides more detail on the Onchain components. The [API Reference 
 
 **Additional Resources:**
 
-- CCIP provides smart contract examples for a Sender/Receiver in the [Applications folder](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-release/1.6.0/chains/evm/contracts/applications). For most use cases, consider implementing try-catch mechanisms using a defensive receiver. More details are available [here](https://github.com/smartcontractkit/chainlink-ccip/blob/contracts-ccip-release/1.6.0/chains/evm/contracts/applications/DefensiveExample.sol).
+- CCIP provides smart contract examples for a Sender/Receiver in the [Applications folder](https://github.com/smartcontractkit/chainlink-ccip/tree/release/contracts-ccip-1.6.2/chains/evm/contracts/applications). For most use cases, consider implementing try-catch mechanisms using a defensive receiver. More details are available [here](https://github.com/smartcontractkit/chainlink-ccip/blob/release/contracts-ccip-1.6.2/chains/evm/contracts/applications/DefensiveExample.sol).
 
 ## Router
 
@@ -75,7 +81,7 @@ When the Router forwards a `ccipSend()` request to the OnRamp, the contract perf
    - If the message involves token transfers, it retrieves the correct Token Pool from the Token Admin Registry.
    - Initiates calls to lock or burn the token, based on the token handling mechanism.
 1. **Nonce Management**
-   - Uses the Nonce Manager to ensure messages requiring in-order execution are processed in the correct order.
+   - Uses the Nonce Manager to ensure messages requiring in-order execution are processed in the correct order. Note: In-Order enforcement using Nonce Manager will be deprecated in early 2026.
 1. **Message ID Generation**
    - Returns a unique message ID to the Router.
 1. **Event Emission**
@@ -96,9 +102,6 @@ During the **Commit Phase**, the following steps occur:
 
 1. **Commit Report Submission**
    - The Committing DON calls the `commit()` function on the OffRamp with a Commit Report that includes messages and/or price reports.
-1. **Validation of RMN Blessing**
-   - If the Commit Report includes blessed merkle roots from RMN-enabled source chains, the OffRamp verifies the RMN node signatures onchain via the `RMNRemote` contract.
-   - If the Commit Report does not include RMN signatures, the OffRamp validates that all unblessed merkle roots originate from source chains where RMN is disabled.
 1. **Price Report Staleness Check**
    - The OffRamp validates the staleness of price reports before forwarding the price to the FeeQuoter.
 1. **Cursed Source Chain Check**
@@ -135,32 +138,18 @@ In the **Execution Phase**, the OffRamp processes the message for final executio
 The FeeQuoter is an internal CCIP smart contract that calculates and returns CCIP fees on the source chain.
 
 - **Fee Calculation**
-
   - When the Router's `getFee()` function is called, the request is forwarded to the FeeQuoter, which estimates and returns the CCIP fee.
 
 - **Price Management**
-
   - Maintains token and gas prices in USD
   - Enforces price staleness rules
   - Calculates all cross-chain fees based on current pricing data
   - Stores token-specific fee configurations
 
 - **Price Updates**
-
   - When a Commit Report contains price updates, the FeeQuoter on the destination chain is updated accordingly.
 
 For additional details on how CCIP fees are calculated, refer to the [CCIP Billing page](/ccip/billing).
-
-## NonceManager
-
-The NonceManager helps order messages in CCIP by tracking outbound nonces on the source blockchain and inbound nonces on the destination blockchain. It ensures strict ordering when the message's extraArgs parameter requires ordering, thus providing a flexible design.
-
-1. **Ordered Messages**
-   - **Non-zero Nonces:** When an OnRamp identifies a message that must preserve ordering, it increments and assigns a non-zero outbound nonce.
-   - **Inbound Validation:** On the destination blockchain, the OffRamp checks that the incoming message's nonce matches the expected inbound nonce. If there is a mismatch, the message is skipped or deferred for later retry.
-1. **Out-of-Order Messages**
-   - **Zero Nonces:** For messages marked "out of order," the OnRamp sets the nonce to **0**.
-   - **No Sequence Checks:** Because `nonce == 0` indicates no ordering, the OffRamp does not validate or increment inbound nonces. These messages can execute immediately without waiting for earlier messages.
 
 ## Token Admin Registry
 
@@ -186,21 +175,8 @@ The `setPool()` method can be invoked by a registered CCIP token administrator v
 
 ## RMN Contract
 
-Risk management in CCIP is performed by a separate, independent network that continuously monitors and validates cross-chain operations for anomalous activity, thereby providing an additional layer of security.
+The RMN Contract is deployed on every chain where CCIP is integrated. Its key functions include:
 
-With the latest CCIP release, the Risk Management Network (RMN) blessing occurs offchain. In this process, the Committing DON interacts offchain with RMN nodes to obtain a blessing, and the resulting RMN node signatures are included in the Commit Report posted on the OffRamp at the destination chain.
-The RMN Contract is deployed on every chain where CCIP is integrated, even on chains where RMN is not enabled. Its key functions include:
-
-1. **Blessing Verification**
-   - **Verify function**: The RMNRemote contract's `verify()` function is used by the OffRamp to verify RMN signatures for messages originating from RMN-enabled source chains.
 1. **Cursing Mechanism**
    - **Curse Initiation**: When the CCIP Owner manually initiates a curse, the `curse()` function is invoked to mark the appropriate subjects as cursed.
    - **Curse Detection**: Onchain components (such as the Router, OnRamp, OffRamp, and TokenPool) call the `isCursed()` function on the RMNRemote contract to detect global curses or curses targeting a remote chain.
-
-<Aside type="caution" title="Phased Deployments">
-  Certain blockchains may be integrated with CCIP in a phased approach, with the Committing and Executing DONs deployed
-  first and the Risk Management Network (RMN) added in a later update. In cases of a phased deployment, merkle roots in
-  relevant Commit Stores are always considered blessed until the Risk Management Network has been deployed for that
-  blockchain. Please see the [CCIP Directory](/ccip/directory) for which integrations utilize a phased approach. Please
-  review [CCIP Service Responsibility](/ccip/service-responsibility) for more information.
-</Aside>

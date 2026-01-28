@@ -1,3 +1,4 @@
+import { config } from "dotenv"
 import { defineConfig } from "astro/config"
 import vercel from "@astrojs/vercel"
 import preact from "@astrojs/preact"
@@ -12,6 +13,11 @@ import yaml from "@rollup/plugin-yaml"
 import { ccipRedirects } from "./src/config/redirects/ccip"
 import trailingSlashMiddleware from "./src/integrations/trailing-slash-middleware"
 import redirectsJson from "./src/features/redirects/redirects.json"
+import { extractCanonicalUrlsWithLanguageVariants } from "./src/utils/sidebar"
+import remarkCodeFenceFilename from "./src/lib/markdown/remarkCodeFenceFilename"
+import rehypeCodeSampleFences from "./src/lib/markdown/rehypeCodeSampleFences"
+
+config() // Load .env file
 
 // Prepare set of redirect source URLs to exclude from sitemap
 // This prevents duplicate entries and ensures only canonical URLs are indexed
@@ -25,9 +31,15 @@ const redirectSources = new Set(
     })
 )
 
+// Extract canonical URLs that have language-specific variants from sidebar config
+// These redirect pages should NOT be in the sitemap
+// Only the actual content pages (-go, -ts) are indexed
+const canonicalUrlsWithLanguageVariants = extractCanonicalUrlsWithLanguageVariants()
+
 // https://astro.build/config
 export default defineConfig({
   site: "https://docs.chain.link",
+  trailingSlash: "never",
   redirects: {
     "/ccip/directory": "/ccip/directory/mainnet",
     "/ccip/supported-networks": "/ccip/directory/mainnet",
@@ -47,10 +59,14 @@ export default defineConfig({
       changefreq: "daily",
       customPages: [
         "https://docs.chain.link/llms.txt",
+        "https://docs.chain.link/cre/llms-full-go.txt",
+        "https://docs.chain.link/cre/llms-full-ts.txt",
         "https://docs.chain.link/vrf/llms-full.txt",
         "https://docs.chain.link/ccip/llms-full.txt",
         "https://docs.chain.link/data-feeds/llms-full.txt",
         "https://docs.chain.link/data-streams/llms-full.txt",
+        "https://docs.chain.link/dta-technical-standard/llms-full.txt",
+        "https://docs.chain.link/datalink/llms-full.txt",
         "https://docs.chain.link/chainlink-functions/llms-full.txt",
         "https://docs.chain.link/chainlink-automation/llms-full.txt",
         "https://docs.chain.link/resources/llms-full.txt",
@@ -71,6 +87,11 @@ export default defineConfig({
           return false
         }
 
+        // Exclude canonical URLs that have language-specific variants (from sidebar config)
+        if (canonicalUrlsWithLanguageVariants.has(cleanPath)) {
+          return false
+        }
+
         return !redirectSources.has(cleanPath)
       },
       serialize(item) {
@@ -84,9 +105,13 @@ export default defineConfig({
         return item
       },
     }),
-    mdx(),
+    // Ensure our fence-meta parser runs for `.mdx` pages (in addition to `markdown.remarkPlugins`).
+    mdx({
+      remarkPlugins: [remarkCodeFenceFilename],
+    }),
   ],
   markdown: {
+    remarkPlugins: [remarkCodeFenceFilename],
     rehypePlugins: [
       rehypeSlug, // Required for autolink to work properly
       [
@@ -97,6 +122,7 @@ export default defineConfig({
       ],
       // Wrap tables in div with overflow supported
       [rehypeWrapAll, { selector: "table", wrapper: "div.overflow-wrapper" }],
+      rehypeCodeSampleFences,
     ] as RehypePlugins,
     syntaxHighlight: "prism",
     smartypants: false,
@@ -106,6 +132,25 @@ export default defineConfig({
   adapter: vercel(),
   vite: {
     plugins: [yaml()],
+    build: {
+      target: "esnext", // Use latest ES features, no transpilation for modern browsers
+      // Optimize CSS delivery
+      cssMinify: true,
+      // Increase the threshold for inlining assets to reduce render-blocking CSS
+      assetsInlineLimit: 20000, // Inline CSS files up to 20KB to eliminate render-blocking
+      // Removed manual chunking to prevent serverless function bloat
+      // rollupOptions: {
+      //   output: {
+      //     manualChunks: ...
+      //   }
+      // },
+    },
+    esbuild: {
+      target: "esnext", // Match build target for consistency
+    },
+    css: {
+      devSourcemap: false,
+    },
   },
   legacy: {
     collections: false,

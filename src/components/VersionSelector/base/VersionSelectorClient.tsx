@@ -104,7 +104,7 @@ export const VersionSelectorClient = <T extends string>({
         // 2. Extended: /{product}/api-reference/{vm_type}/v{version}/{page}
         const standardPathMatch = currentPath.match(new RegExp(`/${config.product.name}/api-reference/v[^/]+/(.+?)/?$`))
         const extendedPathMatch = currentPath.match(
-          new RegExp(`/${config.product.name}/api-reference/(?:evm|svm)/v[^/]+/(.+?)/?$`)
+          new RegExp(`/${config.product.name}/api-reference/(?:evm|svm|aptos)/v[^/]+/(.+?)/?$`)
         )
 
         const pagePath = extendedPathMatch?.[1] || standardPathMatch?.[1]
@@ -207,6 +207,7 @@ export const VersionSelectorClient = <T extends string>({
             disabled={isChanging}
             aria-label="Select API Version"
             aria-invalid={!!error}
+            aria-describedby={error ? "version-error" : undefined}
           >
             {config.versions.all.map((version) => (
               <option
@@ -223,7 +224,7 @@ export const VersionSelectorClient = <T extends string>({
       </div>
 
       {error && (
-        <div role="alert" className={classes.warning}>
+        <div id="version-error" role="alert" className={classes.warning}>
           <span className={styles.warningIcon} aria-hidden="true" />
           <p className={styles.warningText}>{error}</p>
         </div>

@@ -1,0 +1,263 @@
+---
+section: cre
+date: Last Modified
+title: "Workflow Commands"
+metadata:
+  description: "Manage workflows with CLI: complete command reference for simulating, deploying, activating, pausing, and deleting workflows."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+The `cre workflow` commands manage workflows throughout their entire lifecycle, from local testing to deployment and ongoing management.
+
+## `cre workflow simulate`
+
+<Aside type="note" title="Authentication required">
+  Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
+  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
+  in with the CLI](/cre/account/cli-login) for further details.
+</Aside>
+
+Compiles your workflow to WASM and executes it in a local simulation environment. This is the core command for testing and debugging your workflow.
+
+**Usage:**
+
+```bash
+cre workflow simulate <workflow-name-or-path> [flags]
+```
+
+**Arguments:**
+
+- `<workflow-name-or-path>` — (Required) Workflow folder name (e.g., `my-workflow`) or path (e.g., `./my-workflow`). When run from the project root, you can use just the folder name. The CLI looks for a `workflow.yaml` file in the workflow directory.
+
+**Flags:**
+
+| <div style={{ width: "200px" }}>Flag</div> | Description                                                                                                                                                                       |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--broadcast`                              | Broadcast onchain write transactions (default: `false`). Without this flag, a dry run is performed                                                                                |
+| `-g, --engine-logs`                        | Enable non-fatal engine logging                                                                                                                                                   |
+| `--non-interactive`                        | Run without prompts; requires `--trigger-index` (see the line below) and inputs for the selected trigger type                                                                     |
+| `--trigger-index <int>`                    | Selects which handler to run (0-based position). If your workflow has multiple handlers, `0` is the first, `1` is the second, etc. Required with `--non-interactive`              |
+| `--http-payload <string>`                  | HTTP trigger payload as JSON string or path to JSON file (with or without `@` prefix). For HTTP triggers only                                                                     |
+| `--evm-tx-hash <string>`                   | Transaction hash (`0x...`) containing the event that triggered your workflow. For EVM log triggers only                                                                           |
+| `--evm-event-index <int>`                  | Which log/event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For EVM log triggers only |
+
+**Examples:**
+
+- Basic simulation
+
+  ```bash
+  cre workflow simulate ./my-workflow --target local-simulation
+  ```
+
+- Broadcast real onchain transactions
+
+  ```bash
+  cre workflow simulate ./my-workflow --broadcast --target local-simulation
+  ```
+
+- Non-interactive mode with HTTP trigger
+
+  ```bash
+  # If your HTTP trigger handler is the first handler in your workflow, use --trigger-index 0
+  cre workflow simulate my-workflow --non-interactive --trigger-index 0 --http-payload '{"key":"value"}' --target staging-settings
+  ```
+
+- Non-interactive mode with EVM log trigger
+
+  ```bash
+  # If your EVM log trigger handler is the second handler in your workflow, use --trigger-index 1
+  # --evm-event-index 0 means you want the first event from that transaction
+  cre workflow simulate my-workflow --non-interactive --trigger-index 1 --evm-tx-hash 0x420721d7d00130a03c5b525b2dbfd42550906ddb3075e8377f9bb5d1a5992f8e --evm-event-index 0 --target staging-settings
+  ```
+
+{/* prettier-ignore */}
+<Aside type="note" title="Dry run by default">
+  By default, `cre workflow simulate` performs a **dry run** for onchain write operations. It simulates the transaction to confirm it would succeed, but does not broadcast it to the network. This results in a successful log with an empty transaction hash (`0x`). To send a real transaction, use the `--broadcast` flag.
+</Aside>
+
+## `cre workflow deploy`
+
+{/* prettier-ignore */}
+<Aside type="note" title="Deployment access required">
+  Deploying workflows requires Early Access approval. If you don't have deployment access yet, <a href="https://cre.chain.link/request-access" target="_blank" rel="noopener noreferrer">request it here</a>.
+  
+  **While you wait:** Continue building and simulating workflows using [`cre workflow simulate`](/cre/guides/operations/simulating-workflows).
+</Aside>
+
+<Aside type="note" title="Authentication required">
+  Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
+  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
+  in with the CLI](/cre/account/cli-login) for further details.
+</Aside>
+
+Deploys a workflow to the Workflow Registry contract. This command compiles your workflow, uploads the artifacts to the CRE Storage Service, and registers the workflow onchain.
+
+**Usage:**
+
+```bash
+cre workflow deploy <workflow-name-or-path> [flags]
+```
+
+**Arguments:**
+
+- `<workflow-name-or-path>` — (Required) Workflow folder name (e.g., `my-workflow`) or path (e.g., `./my-workflow`)
+
+**Flags:**
+
+| <div style={{ width: "150px" }}>Flag</div> | Description                                                                                    |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| `-o, --output`                             | Output file for the compiled WASM binary encoded in base64 (default: `"./binary.wasm.br.b64"`) |
+| `--unsigned`                               | Return the raw transaction instead of sending it to the network                                |
+| `--yes`                                    | Skip the confirmation prompt and proceed with the operation                                    |
+
+**Examples:**
+
+- Deploy workflow
+
+  ```bash
+  cre workflow deploy my-workflow --target production-settings
+  ```
+
+- Deploy and save the compiled binary to a custom location
+
+  ```bash
+  cre workflow deploy my-workflow --output ./dist/workflow.wasm.br.b64
+  ```
+
+For more details, see [Deploying Workflows](/cre/guides/operations/deploying-workflows).
+
+## `cre workflow activate`
+
+<Aside type="note" title="Authentication required">
+  Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
+  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
+  in with the CLI](/cre/account/cli-login) for further details.
+</Aside>
+
+Changes the workflow status to active on the Workflow Registry contract. Active workflows can respond to their configured triggers.
+
+**Usage:**
+
+```bash
+cre workflow activate <workflow-name-or-path> [flags]
+```
+
+**Arguments:**
+
+- `<workflow-name-or-path>` — (Required) Workflow folder name (e.g., `my-workflow`) or path (e.g., `./my-workflow`)
+
+**Flags:**
+
+| Flag         | Description                                                     |
+| ------------ | --------------------------------------------------------------- |
+| `--unsigned` | Return the raw transaction instead of sending it to the network |
+| `--yes`      | Skip the confirmation prompt and proceed with the operation     |
+
+**Example:**
+
+```bash
+cre workflow activate ./my-workflow --target production-settings
+```
+
+For more details, see [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows).
+
+## `cre workflow pause`
+
+<Aside type="note" title="Authentication required">
+  Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
+  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
+  in with the CLI](/cre/account/cli-login) for further details.
+</Aside>
+
+Changes the workflow status to paused on the Workflow Registry contract. Paused workflows will not respond to triggers.
+
+**Usage:**
+
+```bash
+cre workflow pause <workflow-name-or-path> [flags]
+```
+
+**Arguments:**
+
+- `<workflow-name-or-path>` — (Required) Workflow folder name (e.g., `my-workflow`) or path (e.g., `./my-workflow`)
+
+**Flags:**
+
+| Flag         | Description                                                     |
+| ------------ | --------------------------------------------------------------- |
+| `--unsigned` | Return the raw transaction instead of sending it to the network |
+| `--yes`      | Skip the confirmation prompt and proceed with the operation     |
+
+**Example:**
+
+```bash
+cre workflow pause ./my-workflow --target production-settings
+```
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Pausing stops trigger execution">
+  When you pause a workflow, it will no longer respond to any triggers. Ensure this is intentional before pausing production workflows.
+</Aside>
+
+For more details, see [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows).
+
+## `cre workflow delete`
+
+<Aside type="note" title="Authentication required">
+  Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
+  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
+  in with the CLI](/cre/account/cli-login) for further details.
+</Aside>
+
+Deletes a workflow from the Workflow Registry.
+
+**Usage:**
+
+```bash
+cre workflow delete <workflow-name-or-path> [flags]
+```
+
+**Arguments:**
+
+- `<workflow-name-or-path>` — (Required) Workflow folder name (e.g., `my-workflow`) or path (e.g., `./my-workflow`)
+
+**Flags:**
+
+| Flag         | Description                                                     |
+| ------------ | --------------------------------------------------------------- |
+| `--unsigned` | Return the raw transaction instead of sending it to the network |
+| `--yes`      | Skip the confirmation prompt and proceed with the operation     |
+
+**Example:**
+
+```bash
+cre workflow delete ./my-workflow --target production-settings
+```
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Destructive operation">
+  This command **permanently deletes the workflow**. The `--yes` flag bypasses the confirmation prompt for this destructive operation. Use with caution.
+</Aside>
+
+For more details, see [Deleting Workflows](/cre/guides/operations/deleting-workflows).
+
+## Workflow lifecycle
+
+The typical workflow lifecycle uses these commands in sequence:
+
+1. **Develop locally** — Write and iterate on your workflow code
+1. **`cre workflow simulate`** — Test your workflow in a local simulation environment
+1. **`cre workflow deploy`** — Deploy your workflow to the registry
+1. **`cre workflow pause`** / **`cre workflow activate`** — Control workflow execution as needed
+1. **`cre workflow deploy`** (again) — Deploy updates (replaces the existing workflow)
+1. **`cre workflow delete`** — Remove the workflow when no longer needed
+
+## Learn more
+
+- [Deploying Workflows](/cre/guides/operations/deploying-workflows) — Detailed deployment guide
+- [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows) — Managing workflow state
+- [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows) — Version management
+- [Deleting Workflows](/cre/guides/operations/deleting-workflows) — Cleanup and removal

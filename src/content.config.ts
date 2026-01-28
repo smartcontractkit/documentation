@@ -3,6 +3,7 @@ import { glob } from "astro/loaders"
 import { sectionValues } from "./config/sidebarSections.js"
 
 enum Products {
+  CRE = "cre",
   CCIP = "ccip",
   AUTOMATION = "automation",
   FUNCTIONS = "functions",
@@ -10,9 +11,12 @@ enum Products {
   FEEDS = "feeds",
   GENERAL = "general",
   CHAINLINK_LOCAL = "chainlink-local",
+  DTA_TECHNICAL_STANDARD = "dta-technical-standard",
+  DATALINK = "datalink",
 }
 
 export const productsInfo: Record<Products, { name: string; slug: string }> = {
+  cre: { name: "CRE", slug: "cre" },
   ccip: { name: "CCIP", slug: "ccip" },
   automation: { name: "Automation", slug: "chainlink-automation" },
   functions: { name: "Functions", slug: "chainlink-functions" },
@@ -20,6 +24,8 @@ export const productsInfo: Record<Products, { name: string; slug: string }> = {
   feeds: { name: "Data Feeds", slug: "data-feeds" },
   general: { name: "General", slug: "/" },
   "chainlink-local": { name: "Chainlink Local", slug: "chainlink-local" },
+  "dta-technical-standard": { name: "DTA", slug: "dta-technical-standard" },
+  datalink: { name: "DataLink", slug: "datalink" },
 }
 
 const productEnum = z.preprocess((val) => (val as string).toLowerCase(), z.nativeEnum(Products))
@@ -27,7 +33,7 @@ const productEnum = z.preprocess((val) => (val as string).toLowerCase(), z.nativ
 const sectionEnum = z.enum(sectionValues)
 export type Sections = z.infer<typeof sectionEnum>
 
-/** metadata object */
+/** metadata object with enhanced fields for JSON-LD structured data */
 const metadata = z
   .object({
     title: z.string().optional(),
@@ -36,6 +42,12 @@ const metadata = z
     linkToWallet: z.boolean().optional(),
     canonical: z.string().optional(),
     excerpt: z.string().optional(),
+    // Enhanced fields for structured data (all optional for backward compatibility)
+    estimatedTime: z.string().optional(), // e.g., "30 minutes", "1 hour"
+    difficulty: z.enum(["beginner", "intermediate", "advanced"]).optional(),
+    datePublished: z.string().optional(), // ISO date string
+    lastModified: z.string().optional(), // ISO date string
+    version: z.string().optional(), // For API references
   })
   .optional()
 
@@ -51,6 +63,8 @@ const baseFrontmatter = z
     metadata,
     datafeedtype: z.string().optional(),
     fileExtension: z.string().optional(),
+    sdkLang: z.enum(["go", "ts"]).optional(),
+    pageId: z.string().optional(),
   })
   .strict()
 
@@ -65,6 +79,10 @@ const quickstartsFrontmatter = z
     products: z.array(productEnum),
     time: z.string(),
     requires: z.string().optional(),
+    // Enhanced fields for structured data (optional for backward compatibility)
+    datePublished: z.string().optional(), // ISO date string
+    lastModified: z.string().optional(), // ISO date string
+    difficulty: z.enum(["beginner", "intermediate", "advanced"]).optional(),
   })
   .strict()
 
@@ -149,6 +167,30 @@ const chainlinkLocalCollection = defineCollection({
   schema: baseFrontmatter,
 })
 
+const dtaTechnicalStandardCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/dta-technical-standard",
+    pattern: "**/*.md?(x)",
+  }),
+  schema: baseFrontmatter,
+})
+
+const datalinkCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/datalink",
+    pattern: "**/*.md?(x)",
+  }),
+  schema: baseFrontmatter,
+})
+
+const creCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/cre",
+    pattern: "**/*.md?(x)",
+  }),
+  schema: baseFrontmatter,
+})
+
 /** Quickstarts collection uses a different schema */
 const quickstartsCollection = defineCollection({
   loader: glob({
@@ -161,6 +203,14 @@ const quickstartsCollection = defineCollection({
 const architectureOverviewCollection = defineCollection({
   loader: glob({
     base: "./src/content/architecture-overview",
+    pattern: "**/*.md?(x)",
+  }),
+  schema: baseFrontmatter,
+})
+
+const oraclePlatformCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/oracle-platform",
     pattern: "**/*.md?(x)",
   }),
   schema: baseFrontmatter,
@@ -193,6 +243,9 @@ export const collections = {
   "chainlink-functions": chainlinkFunctionsCollection,
   "chainlink-nodes": chainlinkNodesCollection,
   "data-streams": dataStreamsCollection,
+  "dta-technical-standard": dtaTechnicalStandardCollection,
+  datalink: datalinkCollection,
+  cre: creCollection,
   resources: resourcesCollection,
   vrf: vrfCollection,
   "chainlink-local": chainlinkLocalCollection,
@@ -200,6 +253,7 @@ export const collections = {
   "architecture-overview": architectureOverviewCollection,
   "getting-started": gettingStartedCollection,
   "any-api": anyApiCollection,
+  "oracle-platform": oraclePlatformCollection,
 }
 
 export type Collection = keyof typeof collections

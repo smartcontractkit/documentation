@@ -8,8 +8,9 @@ import {
   ChainType,
   ChainFamily,
 } from "@config/index.ts"
+import { CCIP_TOKEN_ICON_MAPPINGS } from "@config/data/ccip/tokenIconMappings.ts"
 import { toQuantity } from "ethers"
-import referenceChains from "src/scripts/reference/chains.json" with { type: "json" }
+import referenceChains from "~/scripts/reference/chains.json" with { type: "json" }
 
 interface AddEthereumChainParameter {
   chainId: string
@@ -62,8 +63,23 @@ export const getNativeCurrency = (supportedChain: SupportedChain) => {
   return chains[technology]?.chains[supportedChain]?.nativeCurrency
 }
 
-export const getExplorerAddressUrl = (explorer: ExplorerInfo) => (contractAddress: string) => {
-  const url = `${explorer.baseUrl}/address/${contractAddress}`
+export const getExplorerAddressUrl =
+  (explorer: ExplorerInfo, chainType: ChainType = "evm") =>
+  (contractAddress: string) => {
+    // Use appropriate path segment based on chain type
+    const pathSegment = chainType === "aptos" ? "object" : "address"
+    const url = `${explorer.baseUrl}/${pathSegment}/${contractAddress}`
+    if (!explorer.queryParameters) return url
+
+    const queryString = Object.entries(explorer.queryParameters)
+      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+      .join("&")
+
+    return queryString ? `${url}?${queryString}` : url
+  }
+
+export const getExplorerTransactionUrl = (explorer: ExplorerInfo) => (transactionSignature: string) => {
+  const url = `${explorer.baseUrl}/tx/${transactionSignature}`
   if (!explorer.queryParameters) return url
 
   const queryString = Object.entries(explorer.queryParameters)
@@ -132,9 +148,15 @@ const transformTokenName = (token: string): string => {
     .replace(/\+/g, "%2B") // Step 3: Replace plus signs with %2B
 }
 
-export const getTokenIconUrl = (token: string) => {
+export const getTokenIconUrl = (token: string, size = 40) => {
   if (!token) return ""
-  return `https://d2f70xi62kby8n.cloudfront.net/tokens/${transformTokenName(token)}.webp?auto=compress%2Cformat`
+
+  // Resolve icon identifier, fallback to original token name
+  const iconIdentifier = CCIP_TOKEN_ICON_MAPPINGS[token] ?? token
+
+  // Request appropriately sized images from CloudFront
+  // For 40x40 display, request 80x80 for retina displays (2x)
+  return `https://d2f70xi62kby8n.cloudfront.net/tokens/${transformTokenName(iconIdentifier)}.webp?auto=compress%2Cformat&q=60&w=${size}&h=${size}&fit=cover`
 }
 
 export const fallbackTokenIconUrl = "/assets/icons/generic-token.svg"
@@ -254,6 +276,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "SONEIUM_MINATO"
     case "ethereum-testnet-holesky":
       return "ETHEREUM_HOLESKY"
+    case "ethereum-testnet-hoodi":
+      return "ETHEREUM_HOODI"
     case "polkadot-mainnet-astar":
       return "ASTAR_MAINNET"
     case "polkadot-testnet-astar-shibuya":
@@ -339,9 +363,9 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
     case "berachain-testnet-bartio":
       return "BERACHAIN_BARTIO"
     case "hyperliquid-mainnet":
-      return "HYPERLIQUID_MAINNET"
+      return "HYPEREVM_MAINNET"
     case "hyperliquid-testnet":
-      return "HYPERLIQUID_TESTNET"
+      return "HYPEREVM_TESTNET"
     case "bitcoin-testnet-merlin":
       return "MERLIN_TESTNET"
     case "bitcoin-merlin-mainnet":
@@ -376,8 +400,12 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "CRONOS_ZKEVM_MAINNET"
     case "0g-testnet-galileo":
       return "0G_GALILEO_TESTNET"
+    case "0g-mainnet":
+      return "0G_MAINNET"
     case "megaeth-testnet":
       return "MEGAETH_TESTNET"
+    case "megaeth-mainnet":
+      return "MEGAETH_MAINNET"
     case "mind-testnet":
       return "MIND_NETWORK_TESTNET"
     case "mind-mainnet":
@@ -448,8 +476,60 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "NEO_X_MAINNET"
     case "neox-testnet-t4":
       return "NEO_X_TESTNET"
+    case "polygon-mainnet-katana":
+      return "KATANA_MAINNET"
     case "polygon-testnet-tatara":
       return "KATANA_TATARA"
+    case "bitcoin-mainnet-botanix":
+      return "BOTANIX_MAINNET"
+    case "aptos-mainnet":
+      return "APTOS_MAINNET"
+    case "aptos-testnet":
+      return "APTOS_TESTNET"
+    case "kaia-mainnet":
+      return "KAIA_MAINNET"
+    case "kaia-testnet-kairos":
+      return "KAIA_TESTNET_KAIROS"
+    case "tac-mainnet":
+      return "TAC_MAINNET"
+    case "tac-testnet":
+      return "TAC_TESTNET"
+    case "plasma-mainnet":
+      return "PLASMA_MAINNET"
+    case "plasma-testnet":
+      return "PLASMA_TESTNET"
+    case "memento-mainnet":
+      return "MEMENTO_MAINNET"
+    case "memento-testnet":
+      return "MEMENTO_TESTNET"
+    case "xdc-mainnet":
+      return "XDC_MAINNET"
+    case "xdc-testnet":
+      return "XDC_TESTNET"
+    case "bittensor-mainnet":
+      return "BITTENSOR_MAINNET"
+    case "everclear-mainnet":
+      return "EVERCLEAR_MAINNET"
+    case "ab-mainnet":
+      return "AB_CHAIN_MAINNET"
+    case "monad-mainnet":
+      return "MONAD_MAINNET"
+    case "nexon-mainnet-henesys":
+      return "NEXON_HENESYS_MAINNET"
+    case "pharos-atlantic-testnet":
+      return "PHAROS_ATLANTIC_TESTNET"
+    case "morph-mainnet":
+      return "MORPH_MAINNET"
+    case "ethereum-testnet-hoodi-morph":
+      return "MORPH_HOODI_TESTNET"
+    case "jovay-mainnet":
+      return "JOVAY_MAINNET"
+    case "jovay-testnet":
+      return "JOVAY_TESTNET"
+    case "stable-mainnet":
+      return "STABLE_MAINNET"
+    case "tempo-testnet":
+      return "TEMPO_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -531,6 +611,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-testnet-sepolia-soneium-1"
     case "ETHEREUM_HOLESKY":
       return "ethereum-testnet-holesky"
+    case "ETHEREUM_HOODI":
+      return "ethereum-testnet-hoodi"
     case "ASTAR_MAINNET":
       return "polkadot-mainnet-astar"
     case "ASTAR_SHIBUYA":
@@ -611,9 +693,9 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "berachain-mainnet"
     case "BERACHAIN_BARTIO":
       return "berachain-testnet-bartio"
-    case "HYPERLIQUID_MAINNET":
+    case "HYPEREVM_MAINNET":
       return "hyperliquid-mainnet"
-    case "HYPERLIQUID_TESTNET":
+    case "HYPEREVM_TESTNET":
       return "hyperliquid-testnet"
     case "MERLIN_TESTNET":
       return "bitcoin-testnet-merlin"
@@ -649,8 +731,12 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "cronos-zkevm-mainnet"
     case "0G_GALILEO_TESTNET":
       return "0g-testnet-galileo"
+    case "0G_MAINNET":
+      return "0g-mainnet"
     case "MEGAETH_TESTNET":
       return "megaeth-testnet"
+    case "MEGAETH_MAINNET":
+      return "megaeth-mainnet"
     case "MIND_NETWORK_TESTNET":
       return "mind-testnet"
     case "MIND_NETWORK_MAINNET":
@@ -719,8 +805,60 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "neox-mainnet"
     case "NEO_X_TESTNET":
       return "neox-testnet-t4"
+    case "KATANA_MAINNET":
+      return "polygon-mainnet-katana"
     case "KATANA_TATARA":
       return "polygon-testnet-tatara"
+    case "BOTANIX_MAINNET":
+      return "bitcoin-mainnet-botanix"
+    case "APTOS_MAINNET":
+      return "aptos-mainnet"
+    case "APTOS_TESTNET":
+      return "aptos-testnet"
+    case "KAIA_MAINNET":
+      return "kaia-mainnet"
+    case "KAIA_TESTNET_KAIROS":
+      return "kaia-testnet-kairos"
+    case "TAC_MAINNET":
+      return "tac-mainnet"
+    case "TAC_TESTNET":
+      return "tac-testnet"
+    case "PLASMA_MAINNET":
+      return "plasma-mainnet"
+    case "PLASMA_TESTNET":
+      return "plasma-testnet"
+    case "MEMENTO_MAINNET":
+      return "memento-mainnet"
+    case "MEMENTO_TESTNET":
+      return "memento-testnet"
+    case "XDC_MAINNET":
+      return "xdc-mainnet"
+    case "XDC_TESTNET":
+      return "xdc-testnet"
+    case "BITTENSOR_MAINNET":
+      return "bittensor-mainnet"
+    case "EVERCLEAR_MAINNET":
+      return "everclear-mainnet"
+    case "AB_CHAIN_MAINNET":
+      return "ab-mainnet"
+    case "MONAD_MAINNET":
+      return "monad-mainnet"
+    case "NEXON_HENESYS_MAINNET":
+      return "nexon-mainnet-henesys"
+    case "PHAROS_ATLANTIC_TESTNET":
+      return "pharos-atlantic-testnet"
+    case "MORPH_MAINNET":
+      return "morph-mainnet"
+    case "MORPH_HOODI_TESTNET":
+      return "ethereum-testnet-hoodi-morph"
+    case "JOVAY_MAINNET":
+      return "jovay-mainnet"
+    case "JOVAY_TESTNET":
+      return "jovay-testnet"
+    case "STABLE_MAINNET":
+      return "stable-mainnet"
+    case "TEMPO_TESTNET":
+      return "tempo-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

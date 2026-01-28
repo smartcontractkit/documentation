@@ -1,0 +1,371 @@
+---
+section: cre
+title: "Part 1: Project Setup & Simulation"
+date: Last Modified
+sdkLang: "ts"
+pageId: "getting-started-part-1"
+metadata:
+  description: "Getting started Part 1 (TypeScript): set up your first CRE project, explore the structure, and run a successful workflow simulation."
+  datePublished: "2025-11-04"
+  lastModified: "2026-01-20"
+---
+
+import { Aside, CopyText, CodeHighlightBlock } from "@components"
+import part1Code from "./snippets/part-1-main.ts?raw"
+
+<Aside type="note" title="SDK Language: TypeScript">
+  You're viewing the **TypeScript** version of this guide. If you prefer Go, use the language selector in the left
+  sidebar to switch to the Go version.
+</Aside>
+
+In this first part, you'll go from an empty directory to a fully initialized CRE project and [simulate](/cre/guides/operations/simulating-workflows) your first, minimal workflow. The goal is to get a quick "win" and familiarize yourself with the core project structure and development loop.
+
+## What you'll do
+
+- Initialize a new project using `cre init`.
+- Explore the generated project structure and workflow code.
+- Configure your workflow for simulation.
+- Run your first local simulation with `cre workflow simulate`.
+
+## Prerequisites
+
+Before you begin, ensure you have the following:
+
+- **CRE CLI**: See the [Installation Guide](/cre/getting-started/cli-installation/macos-linux) for details.
+- **CRE account & authentication**: You must have a CRE account and be logged in with the CLI. See [Create your account](/cre/account/creating-account) and [Log in with the CLI](/cre/account/cli-login) for instructions.
+- **Bun**: You must have <a href="https://bun.com/docs" target="blank">Bun</a> version 1.2.21 or higher installed. Check your version with <CopyText text="bun --version" code />. See [Install Bun](https://bun.com) for instructions.
+- **Funded Sepolia Account**: An account with Sepolia ETH to pay for transaction gas fees. Go to <a href="https://faucets.chain.link" target="blank">faucets.chain.link</a> to get some Sepolia ETH.
+
+## Step 1: Verify your authentication
+
+Before initializing your project, verify that you're logged in to the CRE CLI:
+
+```bash
+cre whoami
+```
+
+**Expected output:**
+
+- If you're authenticated, you'll see your account details:
+
+  ```bash
+  Account details retrieved:
+
+  Email:           email@domain.com
+  Organization ID: org_AbCdEfGhIjKlMnOp
+  ```
+
+- If you're not logged in, you'll receive an error message prompting you to run `cre login`:
+
+  ```bash
+  Error: failed to attach credentials: failed to load credentials: you are not logged in, try running cre login
+  ```
+
+  Run the login command and follow the prompts:
+
+  ```bash
+  cre login
+  ```
+
+  See [Logging in with the CLI](/cre/account/cli-login) for detailed instructions if you need help.
+
+## Step 2: Initialize your project
+
+The CRE CLI provides an `init` command to scaffold a new project. It's an interactive process that will ask you for a project name, a workflow template, and a name for your first workflow.
+
+1. **In your terminal, navigate to a parent directory where you want your new CRE project to live.**
+
+1. **Run the `init` command.** The CLI will guide you through the setup process:
+
+   ```bash
+   cre init
+   ```
+
+1. **Provide the following details when prompted:**
+   - **Project name**: <CopyText text="onchain-calculator" code/>
+   - **Language**: Select `Typescript` and press Enter.
+   - **Pick a workflow template**: Use the arrow keys to select `Helloworld: Typescript Hello World example` and press Enter. We are starting from scratch to learn all the configuration steps.
+   - **Workflow name**: <CopyText text="my-calculator-workflow" code/>
+
+The CLI will then create a new `onchain-calculator` directory and initialize your first workflow within it.
+
+## Step 3: Explore the generated files
+
+The `init` command creates a directory with a standard structure and generates your first workflow code. Let's explore what was created.
+
+### Project structure
+
+Your new project has the following structure:
+
+```
+onchain-calculator/
+├── my-calculator-workflow/
+│   ├── config.production.json
+│   ├── config.staging.json
+│   ├── main.ts
+│   ├── package.json
+│   ├── README.md
+│   ├── tsconfig.json
+│   └── workflow.yaml
+├── .env
+├── .gitignore
+├── project.yaml
+└── secrets.yaml
+```
+
+- **Project**: The top-level directory (e.g., `onchain-calculator/`).
+  - It contains project-wide files like `project.yaml`, which holds shared configurations for all workflows within the project.
+  - A project can contain multiple workflows, each in its own subdirectory.
+- **Workflow**: A subdirectory (e.g., `my-calculator-workflow/`) that contains the source code and configuration for a single workflow.
+  - Each workflow has its own `package.json` and `tsconfig.json`, making workflows independent and portable.
+
+Here are the key files and their roles:
+
+| <div style="width: 230px;">File</div> | Role                                                                                                                                                                                                                                    |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `project.yaml`                        | The global configuration file. Contains shared settings like RPC URLs for different environments (called `targets`).                                                                                                                    |
+| `secrets.yaml`                        | Stores references to secrets.                                                                                                                                                                                                           |
+| `.env`                                | Stores secrets and environment variables, like your private key. Never commit this file to version control.                                                                                                                             |
+| `.gitignore`                          | Prevents sensitive files (like `.env`) from being committed to version control.                                                                                                                                                         |
+| `my-calculator-workflow/`             | A directory containing the source code and configuration for a single workflow.                                                                                                                                                         |
+| `├── main.ts`                         | The heart of your workflow where you'll write your TypeScript logic. This is the entry point that gets compiled to WASM.                                                                                                                |
+| `├── package.json`                    | Manages dependencies for this specific workflow. Each workflow can have its own dependencies, allowing for flexibility and isolation.                                                                                                   |
+| `├── tsconfig.json`                   | TypeScript configuration for this workflow. Controls how TypeScript compiles your code.                                                                                                                                                 |
+| `├── workflow.yaml`                   | Contains configurations specific to this workflow, such as its name and workflow artifacts (entry point path, config file path, secrets file path). The `workflow-artifacts` section tells the CLI where to find your workflow's files. |
+| `├── config.staging.json`             | Contains parameters for your workflow when using the `staging-settings` target, which can be accessed in your code via the `config` object.                                                                                             |
+| `└── config.production.json`          | Contains parameters for your workflow when using the `production-settings` target, which can be accessed in your code via the `config` object.                                                                                          |
+
+<Aside type="note" title="Learn More About Configuration">
+  For a comprehensive guide on how `project.yaml`, `workflow.yaml`, targets, and secrets work together, see [**Project
+  Configuration**](/cre/reference/project-configuration).
+</Aside>
+
+You don't need to understand every file and directory right now—this guide is designed to introduce each concept when
+you actually need it. For now, let's look at the workflow code that was generated.
+
+### The workflow code
+
+The `init` command created a `main.ts` file with a minimal "Hello World!" workflow. Let's examine and understand this code.
+
+This code defines a `Config` type to hold parameters from our config file. It then configures a [cron trigger](/cre/reference/sdk/triggers/cron-trigger) to run on the schedule provided in the config, and registers a simple callback that logs a message.
+
+Open `onchain-calculator/my-calculator-workflow/main.ts` to see its contents:
+
+<CodeHighlightBlock lang="typescript" code={part1Code} title="onchain-calculator/my-calculator-workflow/main.ts" />
+
+**Key components:**
+
+- **`Config` type**: Defines the shape of your configuration. TypeScript ensures type safety throughout your workflow.
+- **`onCronTrigger`**: The callback function that executes when the cron trigger fires. It receives the `runtime` object and returns a string result. This is where you write your business logic.
+- **`initWorkflow`**: Creates the workflow by registering handlers (trigger-callback pairs). This is where you define what events your workflow responds to.
+- **`main`**: The entry point that creates a `Runner`, passes your config type, and runs the workflow.
+
+<Aside type="note" title="Automatic execution">
+  You don't need to call `main()` at the end of your file—the SDK automatically executes it during compilation. The SDK
+  also handles error reporting automatically, so you don't need to add `.catch()` unless you need custom error handling.
+  See the [Core SDK Reference](/cre/reference/sdk/core-ts#main) for details.
+</Aside>
+
+## Step 4: Configure your workflow
+
+Now that you've explored the generated files, let's configure your workflow for simulation. You'll need to adjust a few configuration files.
+
+### Review config files
+
+The CLI generates separate config files for each target environment. Your workflow code can access the parameters from whichever config file corresponds to the target you're using.
+
+The `cre init` command already created these files with a schedule. Open `my-calculator-workflow/config.staging.json` to see its contents:
+
+```json
+{
+  "schedule": "*/30 * * * * *"
+}
+```
+
+This cron schedule means "run every 30 seconds". No changes are needed here for now. Since we'll be using the `staging-settings` target for this guide, you only need to be aware of `config.staging.json`. The `config.production.json` file contains the same schedule but is used when targeting the production environment.
+
+### Review `workflow.yaml`
+
+This file tells the CLI where to find your workflow files. The `cre init` command created this file with default values. Open `my-calculator-workflow/workflow.yaml` and you'll see:
+
+```yaml
+# ==========================================================================
+staging-settings:
+  user-workflow:
+    workflow-name: "my-calculator-workflow-staging"
+  workflow-artifacts:
+    workflow-path: "./main.ts"
+    config-path: "./config.staging.json"
+    secrets-path: ""
+# ==========================================================================
+production-settings:
+  user-workflow:
+    workflow-name: "my-calculator-workflow-production"
+  workflow-artifacts:
+    workflow-path: "./main.ts"
+    config-path: "./config.production.json"
+    secrets-path: ""
+```
+
+**Understanding the sections:**
+
+- **Target names** (`staging-settings`, `production-settings`): These are environment configuration sets. The `cre init` command pre-populates your `workflow.yaml` with these two common targets as a starting point, but you can name targets whatever you want (e.g., `dev`, `test`, `prod`). When running CLI commands, you specify which target to use with the `--target` flag.
+- **`workflow-name`**: Each target has its own workflow name with a suffix (e.g., `-staging`, `-production`). This allows you to deploy the same workflow to different environments with distinct identities.
+- **`workflow-path: "./main.ts"`**: The entry point for your TypeScript code
+- **`config-path`**: Each target points to its own config file (`config.staging.json` or `config.production.json`)
+- **`secrets-path: ""`**: The location of your secrets file (empty for now; you'll learn about secrets in more advanced guides)
+
+For this guide, we'll use `staging-settings` for local simulation. When you run `cre workflow simulate my-calculator-workflow --target staging-settings`, the CLI reads the configuration from the `staging-settings` section of this file.
+
+### Set up your private key
+
+The simulator requires a private key to initialize its environment, even for workflows that don't interact with the blockchain yet. This key will be used in later parts of this guide to read from and send transactions to the Sepolia testnet.
+
+1. Open the `.env` file located in your `onchain-calculator/` directory.
+1. Add your funded Sepolia account's private key:
+
+   ```bash
+   # Replace with your own private key for your funded Sepolia account
+   CRE_ETH_PRIVATE_KEY=YOUR_64_CHARACTER_PRIVATE_KEY_HERE
+   ```
+
+   <Aside type="caution" title="Use the Raw Key">
+     Your private key must be the 64-character hexadecimal string. Do **not** include the `0x` prefix.
+   </Aside>
+
+<Aside type="caution" title="Never Commit .env Files">
+  The `.gitignore` file included in the project already prevents `.env` files from being committed to version control.
+  **Never** share your private keys or commit them to Git.
+</Aside>
+
+<Aside type="note" title="Best Practice: Use a Secrets Manager">
+  While using a plaintext `.env` file is convenient for initial testing, the recommended best practice is to use a
+  dedicated secrets manager. See our guide on [Managing Secrets with 1Password
+  CLI](/cre/guides/workflow/secrets/managing-secrets-1password) to learn how to inject secrets securely at runtime.
+</Aside>
+
+## Step 5: Install dependencies
+
+Before you can simulate the workflow, you need to install the workflow's dependencies.
+
+1. Navigate to your workflow directory:
+
+   ```bash
+   cd onchain-calculator/my-calculator-workflow
+   ```
+
+1. Install the dependencies:
+
+   ```bash
+   bun install
+   ```
+
+   This command reads your `package.json` and installs all required dependencies, including the CRE SDK. The template comes with a `postinstall` script that automatically runs `bunx cre-setup` to set up the WebAssembly compilation tools.
+
+   **Expected output:**
+
+   ```bash
+   bun install v1.2.23 (cf136713)
+
+   $ bunx cre-setup
+   [cre-sdk-javy-plugin] Detected platform: darwin, arch: arm64
+   [cre-sdk-javy-plugin] Using cached binary: /Users/<user>/.cache/javy/v5.0.4/darwin-arm64/javy
+   ✅ CRE TS SDK is ready to use.
+
+   + @types/bun@1.2.21
+   + @chainlink/cre-sdk@1.0.0
+
+   30 packages installed [4.71s]
+   ```
+
+1. Return to the project root:
+
+   ```bash
+   cd ..
+   ```
+
+<Aside type="note" title="Per-Workflow Dependencies">
+
+Each TypeScript workflow has its own `package.json`, allowing you to have different SDK versions or additional dependencies per workflow. This makes workflows portable and easier to manage in large projects.
+
+</Aside>
+
+## Step 6: Run your first simulation
+
+Now that your workflow is configured and dependencies are installed, you can run the simulation. [Workflow simulation](/cre/guides/operations/simulating-workflows) is a local execution environment that compiles your code to WebAssembly and runs it on your machine, allowing you to test and debug before deploying to a live network.
+
+Run the `simulate` command from your project root directory (the `onchain-calculator/` folder):
+
+```bash
+cre workflow simulate my-calculator-workflow --target staging-settings
+```
+
+This command compiles your TypeScript code to WebAssembly, uses the `staging-settings` target configuration from `workflow.yaml`, and spins up a local simulation environment.
+
+## Step 7: Review the output
+
+After the workflow compiles, the simulator detects the single trigger you defined in your code and immediately runs the workflow.
+
+```bash
+Workflow compiled
+2025-11-03T19:04:21Z [SIMULATION] Simulator Initialized
+
+2025-11-03T19:04:21Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+2025-11-03T19:04:21Z [USER LOG] Hello world! Workflow triggered.
+
+Workflow Simulation Result:
+ "Hello world!"
+
+2025-11-03T19:04:21Z [SIMULATION] Execution finished signal received
+2025-11-03T19:04:21Z [SIMULATION] Skipping WorkflowEngineV2
+```
+
+- **`[USER LOG]`**: This is the output from your own code—in this case, the `runtime.log()` call. This is where you will look for your custom log messages.
+- **`[SIMULATION]`**: These are system-level messages from the simulator, showing its internal state (initialization, trigger execution, completion).
+- **`Workflow Simulation Result: "Hello world!"`**: This is the final return value of your workflow. In TypeScript, the workflow returns whatever your handler function returns.
+
+Congratulations! You've built and simulated your first CRE workflow in TypeScript.
+
+## Key TypeScript concepts
+
+Before moving to the next part, let's review some key TypeScript-specific concepts:
+
+### Type safety with TypeScript
+
+The TypeScript SDK provides full type safety:
+
+```typescript
+type Config = {
+  schedule: string
+}
+
+const runner = await Runner.newRunner<Config>()
+```
+
+By passing the `Config` type to `Runner.newRunner<Config>()`, TypeScript ensures your workflow receives the correct configuration shape.
+
+### Optional: Runtime validation
+
+For runtime validation of your configuration, you can use schema validation libraries. The CRE SDK supports any library that implements the [Standard Schema](https://github.com/standard-schema/standard-schema) interface, such as [Zod](https://zod.dev/) or [ArkType](https://arktype.io/).
+
+Here's an example using Zod:
+
+```typescript
+import { z } from "zod"
+
+const configSchema = z.object({
+  schedule: z.string(),
+})
+
+type Config = z.infer<typeof configSchema>
+
+const runner = await Runner.newRunner<Config>({ configSchema })
+```
+
+This provides both compile-time type checking and runtime validation. We'll use Zod in later parts of this guide.
+
+## Next steps
+
+In the next section, you'll build on this foundation by modifying the workflow to fetch real data from an external API.
+
+- **[Part 2: Fetching Offchain Data](/cre/getting-started/part-2-fetching-data)**
