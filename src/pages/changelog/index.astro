@@ -1,0 +1,103 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro"
+import * as CONFIG from "../../config"
+import { Typography } from "@chainlink/blocks"
+
+import { getSecret } from "astro:env/server"
+import { searchClient, SearchClient } from "@algolia/client-search"
+import { ChangelogItem } from "~/components/ChangelogSnippet/types"
+import ChangelogCard from "~/components/ChangelogSnippet/ChangelogCard.astro"
+const formattedContentTitle = `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.title}`
+
+const appId = getSecret("ALGOLIA_APP_ID")
+const apiKey = getSecret("PUBLIC_ALGOLIA_SEARCH_PUBLIC_API_KEY")
+
+let client: SearchClient
+let logs: ChangelogItem[] | undefined = undefined
+
+// Initialize client if appId and apiKey are available to avoid needing to update
+// the github actions with the new keys (satisfies linkcheck-internal)
+if (appId && apiKey) {
+  client = searchClient(appId, apiKey)
+
+  const req = await client.search({
+    requests: [
+      {
+        indexName: "Changelog",
+        restrictSearchableAttributes: ["topic"],
+      },
+    ],
+  })
+
+  const firstResult = req.results[0]
+  const results = "hits" in firstResult ? (firstResult.hits as ChangelogItem[]) : []
+  console.log(results[1])
+  // logs are returned sorted by created_at DESC
+  logs = results
+}
+---
+
+<BaseLayout title={formattedContentTitle}>
+  <main class="wrapper">
+    <header class="header">
+      <Typography className="tag">Changelog</Typography>
+      <Typography variant="h1" className="title">Never miss an update</Typography>
+    </header>
+
+    <section class="changelog-list">
+      {logs?.map((log) => <ChangelogCard showNetworksAndTopic showBorder={false} item={log} />)}
+    </section>
+  </main>
+</BaseLayout>
+
+<style is:global>
+  .changelog-list {
+    display: flex;
+    flex-direction: column;
+    gap: 60px;
+  }
+  .wrapper {
+    max-width: 1064px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 100px var(--space-6x);
+  }
+
+  .tag {
+    font-weight: 500;
+    letter-spacing: 1.28px;
+    color: var(--grey-600);
+    margin-bottom: var(--space-4x);
+    text-transform: uppercase;
+  }
+
+  .header {
+    margin-bottom: var(--space-16x);
+  }
+
+  @media screen and (max-width: 428px) {
+    .title {
+      font-size: 2rem !important;
+    }
+  }
+
+  @media screen and (max-width: 768px) {
+    .changelog-list {
+      gap: var(--space-12x);
+    }
+    .tag {
+      font-size: 12px;
+      margin-bottom: var(--space-3x);
+    }
+    .title {
+      font-size: 2.5rem;
+    }
+    .header {
+      margin-bottom: var(--space-10x);
+    }
+
+    .wrapper {
+      padding: 60px var(--space-6x);
+    }
+  }
+</style>
