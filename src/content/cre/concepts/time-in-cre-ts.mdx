@@ -1,20 +1,21 @@
 ---
 section: cre
 title: "Time in CRE"
-sdkLang: "go"
+sdkLang: "ts"
+pageId: "time-in-cre"
 date: Last Modified
 metadata:
-  description: "Understand DON Time in CRE: learn why all nodes need the same timestamp and how to use runtime.Now() for deterministic workflows."
-  datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  description: "Understand DON Time in CRE: learn why all nodes need the same timestamp and how to use runtime.now() for deterministic workflows."
+  datePublished: "2026-01-28"
+  lastModified: "2026-01-28"
 ---
 
 import { Aside } from "@components"
 
 <Aside type="note" title="TL;DR">
   CRE provides **DON Time**: a consensus-derived timestamp so different nodes see the _same time_. Use the SDK's runtime
-  call, `runtime.Now()`, whenever your workflow logic depends on time. Do **not** read local system clocks or other
-  ad-hoc time sources in DON Mode — they introduce non-determinism.
+  call, `runtime.now()`, whenever your workflow logic depends on time. Do **not** use `Date.now()` or other local time
+  sources in DON Mode — they introduce non-determinism.
 </Aside>
 
 ## The problem: Why time needs consensus
@@ -29,7 +30,7 @@ Workflows often rely on time for decisions (market-hours checks), scheduling (re
 
 ## The solution: DON time
 
-**DON Time** is a timestamp computed by an <a href="https://docs.chain.link/architecture-overview/off-chain-reporting" target="_blank" rel="noopener noreferrer">OCR (Off-Chain Reporting)</a> plugin and agreed upon by the nodes participating in CRE. You access it through the SDK's runtime call, `runtime.Now()`, not via an OS/System clock. The `runtime.Now()` function returns a standard Go `time.Time` object.
+**DON Time** is a timestamp computed by an <a href="https://docs.chain.link/architecture-overview/off-chain-reporting" target="_blank" rel="noopener noreferrer">OCR (Off-Chain Reporting)</a> plugin and agreed upon by the nodes participating in CRE. You access it through the SDK's runtime call, `runtime.now()`, not via JavaScript's `Date.now()`. The `runtime.now()` method returns a standard JavaScript `Date` object.
 
 **Key properties:**
 
@@ -46,7 +47,7 @@ Workflows often rely on time for decisions (market-hours checks), scheduling (re
 
 ## How it works: A high-level view
 
-1. Your workflow calls **`runtime.Now()`**.
+1. Your workflow calls **`runtime.now()`**.
 1. **The Chainlink network takes this request**: The Workflow Engine's **TimeProvider** assigns that call a **sequence number** and enqueues it in the **DON Time Store**.
 1. **All the nodes agree on a single time (the DON Time)**: The **OCR Time Plugin** on each node reaches consensus on a new DON timestamp (the median of observed times).
 1. Each node **returns** the newest DON timestamp to every pending request and updates its **last observed DON time** cache.
@@ -68,8 +69,8 @@ Because requests are sequenced, _Call 1_ for a workflow instance will always ret
 ### Node mode (advanced / special cases)
 
 - Workflow authors handle consensus themselves.
-- `runtime.Now()` in Node Mode is a non-blocking call that returns the **last generated DON timestamp** from the local node's cache. This is the same mechanism used by standard Go `time.Now()` calls within the Wasm environment.
-- Useful in situation where you already expect non-determinism (e.g., inherently variable HTTP responses).
+- `runtime.now()` in Node Mode is a non-blocking call that returns the **last generated DON timestamp** from the local node's cache.
+- Useful in situations where you already expect non-determinism (e.g., inherently variable HTTP responses).
 
 <Aside type="caution" title="Use DON Mode">
   Unless you have a specific reason and understand the trade-offs, **always use DON Mode** for time-dependent logic.
@@ -81,22 +82,24 @@ When running in DON Mode, you get determinism **if and only if** you base time-d
 
 **Avoid** these patterns:
 
-- **Reading host/system time** (`time.Now()`, etc.). Always use `runtime.Now()` from the CRE SDK.
+- **Reading local time** (`Date.now()`, `new Date()`, etc.). Always use `runtime.now()` from the CRE SDK.
 - **Mixing time sources** in the same control path.
 - **Per-node "sleeps" based on local time** that gate deterministic decisions.
 
 **Deterministic patterns:**
 
 - ✅ Gate behavior with:
-  ```go
-  now := runtime.Now()
-  if market.IsOpenAt(now):
-      // proceed
+  ```typescript
+  const now = runtime.now()
+  if (isMarketOpen(now)) {
+    // proceed
+  }
   ```
 - ✅ Compute windows from DON Time:
-  ```go
-  now := runtime.Now()
-  windowStart := now.Add(-15 * time.Minute)
+  ```typescript
+  const now = runtime.now()
+  const fifteenMinutesMs = 15 * 60 * 1000
+  const windowStart = new Date(now.getTime() - fifteenMinutesMs)
   fetchData(windowStart, now)
   ```
 
@@ -109,3 +112,7 @@ It's the **median of node observations** per round. It closely tracks real time 
 **What is the resolution?**
 
 New DON timestamps are produced continuously (multiple per second). Treat it as coarse-grained real time suitable for gating and logging, not sub-millisecond measurement.
+
+**Why can't I use `Date.now()`?**
+
+`Date.now()` reads the local system clock, which differs slightly on each node. This breaks consensus—nodes may execute different code paths and fail to agree on the workflow result.
