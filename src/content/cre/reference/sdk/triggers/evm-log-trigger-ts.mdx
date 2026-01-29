@@ -7,7 +7,7 @@ pageId: "reference-sdk-evm-log-trigger"
 metadata:
   description: "Reference for TypeScript EVM Log Trigger: Config interface, Payload fields, and topic filtering for event-driven workflows."
   datePublished: "2025-11-04"
-  lastModified: "2026-01-26"
+  lastModified: "2026-01-28"
 ---
 
 import { Aside } from "@components"
@@ -36,12 +36,7 @@ const network = getNetwork({
 
 const evmClient = new EVMClient(network.chainSelector.selector)
 
-// Basic log trigger for a contract address
-const trigger = evmClient.logTrigger({
-  addresses: [hexToBase64("0x123...abc")],
-})
-
-// With topics for event filtering
+// Create a log trigger with address and event signature
 const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
 
 const trigger = evmClient.logTrigger({
@@ -61,7 +56,7 @@ The `logTrigger()` method accepts a configuration object with the following fiel
 | <div style="width: 100px;">Field</div> | <div style="width: 140px;">Type</div> | Description                                                                                                                                                                                                                                                                                                                                                                                               |
 | -------------------------------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `addresses`                            | `string[]`                            | **Required.** A list of contract addresses to monitor. **Must be base64 encoded** using `hexToBase64()`. At least one address is required.                                                                                                                                                                                                                                                                |
-| `topics`                               | `TopicValues[]`                       | Optional. An array to filter event topics. The first element contains event signatures, and the next three elements contain indexed argument values. An empty array element acts as a wildcard. **All topic values must be base64 encoded** using `hexToBase64()`.                                                                                                                                        |
+| `topics`                               | `TopicValues[]`                       | **Required.** An array to filter event topics. The first element must contain at least one event signature. The next three elements can contain indexed argument values (optional). An empty array element acts as a wildcard for indexed arguments. **All topic values must be base64 encoded** using `hexToBase64()`.                                                                                   |
 | `confidence`                           | `string`                              | Optional. The block confirmation level to monitor. Can be: <ul><li>**`"CONFIDENCE_LEVEL_LATEST"`**: The most recent block (fastest but least secure).</li><li>**`"CONFIDENCE_LEVEL_SAFE"` (default)**: A block unlikely to be reorged but not yet irreversible.</li><li>**`"CONFIDENCE_LEVEL_FINALIZED"`**: A block considered irreversible (safest, but requires waiting longer for finality).</li></ul> |
 
 <Aside type="note" title="Finality details">
