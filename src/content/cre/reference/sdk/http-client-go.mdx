@@ -7,7 +7,7 @@ pageId: "reference-sdk-http-client"
 metadata:
   description: "Reference for Go HTTP Client: complete API for GET/POST requests, headers, authentication, and consensus aggregation methods."
   datePublished: "2025-11-04"
-  lastModified: "2025-12-16"
+  lastModified: "2026-01-26"
 ---
 
 import { Aside } from "@components"
@@ -40,14 +40,95 @@ Defines the parameters for an outgoing HTTP request.
   HTTP requests to URLs that return redirects (3xx status codes) will fail. Ensure the URL you provide is the final destination and does not redirect to another URL.
 </Aside>
 
-| <div style="width: 120px;">Field</div> | <div style="width: 200px;">Type</div> | Description                                                                                                               |
-| -------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `Url`                                  | `string`                              | The URL of the API endpoint.                                                                                              |
-| `Method`                               | `string`                              | The HTTP method (e.g., `"GET"`, `"POST"`).                                                                                |
-| `Headers`                              | `map[string]string`                   | Optional HTTP headers.                                                                                                    |
-| `Body`                                 | `[]byte`                              | Optional raw request body.                                                                                                |
-| `Timeout`                              | `*durationpb.Duration`                | Optional request timeout duration. Set using `durationpb.New()`, e.g., `durationpb.New(30 * time.Second)` for 30 seconds. |
-| `CacheSettings`                        | `*CacheSettings`                      | Optional caching behavior for the request.                                                                                |
+| <div style="width: 120px;">Field</div> | <div style="width: 200px;">Type</div> | Description                                                                                              |
+| -------------------------------------- | ------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `Url`                                  | `string`                              | The URL of the API endpoint.                                                                             |
+| `Method`                               | `string`                              | The HTTP method (e.g., `"GET"`, `"POST"`).                                                               |
+| `Headers`                              | `map[string]string`                   | Optional HTTP headers.                                                                                   |
+| `Body`                                 | `[]byte`                              | Optional raw request body.                                                                               |
+| `Timeout`                              | `*durationpb.Duration`                | Optional request timeout. See [Request Timeout](#request-timeout) below for usage, defaults, and limits. |
+| `CacheSettings`                        | `*CacheSettings`                      | Optional caching behavior for the request.                                                               |
+
+### Request Timeout
+
+The `Timeout` field specifies how long to wait for an HTTP request to complete before cancelling it.
+
+**Format:**
+
+- Use `*durationpb.Duration` from the [`google.golang.org/protobuf/types/known/durationpb` package](https://pkg.go.dev/google.golang.org/protobuf/types/known/durationpb)
+- Create using `durationpb.New()` with a `time.Duration` value
+- Or manually construct with `&durationpb.Duration{Seconds: int64}`
+
+**Default and Limits:**
+
+- **Default**: If not specified, a default timeout of **5 seconds** is applied.
+- **Maximum**: Default maximum is **10 seconds**. Requests exceeding this limit will error.
+
+**Pattern 1: Using `durationpb.New()`:**
+
+```go
+import (
+    "time"
+    "google.golang.org/protobuf/types/known/durationpb"
+)
+
+resp, err := sendRequester.SendRequest(&http.Request{
+    Url:     config.ApiUrl,
+    Method:  "GET",
+    Timeout: durationpb.New(8 * time.Second), // 8 second timeout
+}).Await()
+```
+
+**Pattern 2: Parsing from config:**
+
+```go
+import (
+    "time"
+    "fmt"
+    "google.golang.org/protobuf/types/known/durationpb"
+)
+
+type Config struct {
+    ApiUrl    string `yaml:"apiUrl"`
+    TimeoutMs string `yaml:"timeout"` // e.g., "5s", "10s"
+}
+
+func fetchData(config *Config, logger *slog.Logger, sendRequester *http.SendRequester) (string, error) {
+    // Parse duration string from config
+    t, err := time.ParseDuration(config.TimeoutMs)
+    if err != nil {
+        return "", fmt.Errorf("failed to parse duration (%s): %w", config.TimeoutMs, err)
+    }
+
+    logger.Info("parsed timeout", "seconds", t.Seconds(), "raw", config.TimeoutMs)
+
+    // Create Duration from parsed time
+    timeout := &durationpb.Duration{
+        Seconds: int64(t.Seconds()),
+    }
+
+    resp, err := sendRequester.SendRequest(&http.Request{
+        Url:     config.ApiUrl,
+        Method:  "GET",
+        Timeout: timeout,
+    }).Await()
+
+    if err != nil {
+        logger.Info("http request failed", "error", err)
+        return "", err
+    }
+
+    return string(resp.Body), nil
+}
+```
+
+**Example configuration:**
+
+```yaml
+# config.yaml
+apiUrl: "https://api.example.com/data"
+timeout: "8s" # Go's time.ParseDuration format (max: 10s)
+```
 
 ### `http.Response`
 

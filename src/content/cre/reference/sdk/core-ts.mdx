@@ -7,27 +7,63 @@ pageId: "reference-sdk-core"
 metadata:
   description: "Reference for core TypeScript SDK: Workflow, Handler, Runtime, and essential functions every CRE workflow uses."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-01-20"
 ---
 
 import { Aside } from "@components"
 
 This page provides a reference for the core data structures and functions of the CRE TypeScript SDK. These are the fundamental building blocks that every workflow uses, regardless of trigger types or capabilities.
 
+## Import styles
+
+The CRE TypeScript SDK supports two equivalent import styles. **Both are fully supported**, produce identical behavior, and can be used interchangeably in your workflows.
+
+<Aside type="tip" title="Choose the style that fits your codebase">
+  Both import patterns are **fully supported** and will continue to work. There are no plans to deprecate either style.
+  Choose whichever approach better matches your team's conventions.
+</Aside>
+
+**Direct imports (recommended for new projects):**
+
+```typescript
+import { Runner, HTTPClient, EVMClient, CronCapability, handler } from "@chainlink/cre-sdk"
+
+// Use directly
+const httpClient = new HTTPClient()
+const evmClient = new EVMClient(chainSelector)
+```
+
+**Namespace imports:**
+
+```typescript
+import { cre, Runner } from "@chainlink/cre-sdk"
+
+// Access through cre namespace
+const httpClient = new cre.capabilities.HTTPClient()
+const evmClient = new cre.capabilities.EVMClient(chainSelector)
+```
+
+**When to use each style:**
+
+| Style                 | Best for                                                                     |
+| --------------------- | ---------------------------------------------------------------------------- |
+| **Direct imports**    | New projects, cleaner import statements, better tree-shaking                 |
+| **Namespace imports** | Existing codebases already using this pattern, preference for grouped access |
+
 ## Key concepts and components
 
-### `cre.handler()`
+### `handler()`
 
-The `cre.handler()` function is the cornerstone of every workflow. It registers a handler that links a specific trigger to a callback function containing your workflow logic. It is typically called within your [`initWorkflow`](#initworkflow) function.
+The `handler()` function is the cornerstone of every workflow. It registers a handler that links a specific trigger to a callback function containing your workflow logic. It is typically called within your [`initWorkflow`](#initworkflow) function.
 
 **Usage:**
 
 ```typescript
-import { cre, type Runtime } from "@chainlink/cre-sdk"
+import { handler, type Runtime } from "@chainlink/cre-sdk"
 
 const initWorkflow = (config: Config) => {
   return [
-    cre.handler(
+    handler(
       // 1. A configured trigger, e.g., cron.trigger(...)
       // This determines WHEN the workflow runs
       triggerInstance,
@@ -63,8 +99,8 @@ To learn more about how to aggregate results from `NodeRuntime`, see the [Consen
 Both `Runtime` and `NodeRuntime` provide:
 
 - **`config`**: Access to your workflow's configuration
-- **`now()`**: Returns the current `Date` object
-- **`log(message: string)`**: Logs a message (accepts a single string argument)
+- **`now()`**: Returns the current `Date` object. See [Time in CRE](/cre/concepts/time-in-cre-ts) for details.
+- **`log(message: string)`**: Logs a message (see [Logging](#logging) below)
 - **`callCapability(...)`**: Internal method for calling capabilities (used by generated code)
 
 `Runtime` additionally provides:
@@ -72,6 +108,35 @@ Both `Runtime` and `NodeRuntime` provide:
 - **`runInNodeMode(...)`**: Execute code on individual nodes with consensus aggregation
 - **`getSecret(...)`**: Access to workflow secrets
 - **`report(...)`**: Generate cryptographically signed reports
+
+### Logging
+
+Use `runtime.log()` to output messages from your workflow. This is the **only way** to produce visible logs—`console.log` does not work in the WASM environment.
+
+```typescript
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  runtime.log("Workflow started")
+
+  const result = someOperation()
+  runtime.log(`Operation result: ${result}`)
+
+  return "done"
+}
+```
+
+**Where logs appear:**
+
+| Environment           | Location                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------ |
+| **Simulation**        | Terminal output with `[USER LOG]` prefix                                             |
+| **Deployed workflow** | CRE UI → Workflows → select workflow → Execution tab → click an execution → Logs tab |
+
+See [Monitoring & Debugging Workflows](/cre/guides/operations/monitoring-workflows#logs-tab) for details on viewing logs for deployed workflows.
+
+**Important notes:**
+
+- `runtime.log()` accepts a **single string argument**—use template literals to include variables
+- Logs are only available inside callback functions where you have access to the `runtime` object
 
 ### Understanding the `.result()` Pattern
 
@@ -92,11 +157,11 @@ const response = request.result()
 **Common usage:** These steps are often chained together for simplicity:
 
 ```typescript
-import { cre, encodeCallMsg, LAST_FINALIZED_BLOCK_NUMBER, type Runtime } from "@chainlink/cre-sdk"
+import { EVMClient, encodeCallMsg, LAST_FINALIZED_BLOCK_NUMBER, type Runtime } from "@chainlink/cre-sdk"
 import { zeroAddress } from "viem"
 
 const onCronTrigger = (runtime: Runtime<Config>): string => {
-  const evmClient = new cre.capabilities.EVMClient(chainSelector)
+  const evmClient = new EVMClient(chainSelector)
 
   // Inline pattern: initiate and get result in one expression
   const contractCall = evmClient
@@ -187,16 +252,81 @@ export async function main() {
   // Run your workflow initialization function
   await runner.run(initWorkflow)
 }
-
-main()
 ```
+
+<Aside type="note" title="SDK v1.0.2+ Changes">
+  Starting with SDK v1.0.2, the SDK handles `main()` execution automatically:
+
+- **Calling `main()` is optional**: The SDK automatically executes the `main()` function during compilation. You no longer need to call `main()` at the end of your workflow file.
+- **Automatic error handling**: If you don't provide custom error handling, the SDK automatically adds `.catch(sendErrorResponse)` to ensure errors are properly reported instead of silently failing.
+
+</Aside>
+
+**All of these patterns are valid:**
+
+- **Pattern 1: Let the SDK handle everything (recommended)**
+
+  ```typescript
+  export async function main() {
+    const runner = await Runner.newRunner<Config>()
+    await runner.run(initWorkflow)
+  }
+  // No need to call main() - the SDK automatically appends:
+  // main().catch(sendErrorResponse)
+  ```
+
+- **Pattern 2: Explicit call without `.catch()` - SDK adds error handling**
+
+  ```typescript
+  export async function main() {
+    const runner = await Runner.newRunner<Config>()
+    await runner.run(initWorkflow)
+  }
+
+  main() // SDK transforms this to: main().catch(sendErrorResponse)
+  ```
+
+- **Pattern 3: Custom error handling - SDK respects your handler**
+
+  ```typescript
+  import { sendErrorResponse } from "@chainlink/cre-sdk"
+
+  export async function main() {
+    const runner = await Runner.newRunner<Config>()
+    await runner.run(initWorkflow)
+  }
+
+  // If you provide .catch(), the SDK leaves it untouched
+  main().catch((error) => {
+    // Your custom error handling logic
+    // You should call sendErrorResponse to report the error
+    sendErrorResponse(error)
+  })
+  ```
+
+<Aside type="caution" title="No console access in workflows">
+  CRE workflows are compiled to WebAssembly (WASM), where `console.log` and `console.error` **produce no output**. Use
+  `runtime.log()` for logging within your callback functions—these logs appear in simulation output with the `[USER
+  LOG]` prefix and in the [CRE UI Logs tab](/cre/guides/operations/monitoring-workflows#logs-tab) for deployed
+  workflows. For error reporting from `main()`, use the SDK's `sendErrorResponse` function.
+</Aside>
+
+<Aside type="tip" title="When to use custom error handling">
+  Most workflows don't need custom error handling—the SDK's default handler reports errors properly. Only add a custom
+  `.catch()` handler if you need to transform errors, add context, or perform cleanup before reporting. If you provide a
+  custom handler, remember to call `sendErrorResponse(error)` to ensure the error is properly reported.
+</Aside>
+
+`sendErrorResponse` reports the error to CRE and marks the execution as failed.
+
+- In **simulation**, the error appears in your terminal output.
+- For **deployed workflows**, you'll see it in the [Execution tab](/cre/guides/operations/monitoring-workflows#execution-history) with a `Failure` status and the error message in the Logs tab.
 
 **Key points:**
 
 - Must be an `async` function
 - Must call `Runner.newRunner<Config>()` with an optional `configSchema` parameter for validation
 - Must call `runner.run(initWorkflow)` to execute your workflow
-- Must invoke `main()` at the end of your file
 
 ### `initWorkflow`
 
@@ -205,7 +335,7 @@ This is the second required entry point. The CRE runner calls this function to i
 **Required Signature:**
 
 ```typescript
-import { cre, type Runtime } from "@chainlink/cre-sdk"
+import { handler, type Runtime } from "@chainlink/cre-sdk"
 
 function initWorkflow(config: Config): Array<HandlerEntry<Config, any, any, any>>
 ```
@@ -216,7 +346,7 @@ function initWorkflow(config: Config): Array<HandlerEntry<Config, any, any, any>
 
 **Returns:**
 
-- An array of handlers created with `cre.handler()`
+- An array of handlers created with `handler()`
 
 <Aside type="note" title="Using secrets">
   If your workflow uses secrets, you can add a second parameter `secretsProvider: SecretsProvider` to access the
@@ -226,7 +356,7 @@ function initWorkflow(config: Config): Array<HandlerEntry<Config, any, any, any>
 **Example:**
 
 ```typescript
-import { cre, type Runtime, type CronPayload } from "@chainlink/cre-sdk"
+import { CronCapability, handler, type Runtime, type CronPayload } from "@chainlink/cre-sdk"
 
 // Callback function executed by the handler
 const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): string => {
@@ -235,9 +365,9 @@ const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): string =
 }
 
 const initWorkflow = (config: Config) => {
-  const cron = new cre.capabilities.CronCapability()
+  const cron = new CronCapability()
 
-  return [cre.handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
 }
 ```
 
@@ -271,14 +401,14 @@ This example uses `runInNodeMode` to fetch data from an API on each node, and th
 
 ```typescript
 import {
-  cre,
+  HTTPClient,
   consensusMedianAggregation,
   type Runtime,
   type NodeRuntime,
 } from "@chainlink/cre-sdk"
 
 const fetchPrice = (nodeRuntime: NodeRuntime<Config>): bigint => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
   // Fetch price from API using nodeRuntime
   return fetchOffchainPrice(nodeRuntime)
 }

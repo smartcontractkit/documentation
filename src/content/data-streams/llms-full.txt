@@ -119,15 +119,14 @@ Source: https://docs.chain.link/data-streams/billing
   integrating Chainlink Data Streams with your applications.
 </Aside>
 
-Chainlink Data Streams offers two billing models:
-
-1. **Subscription model**: A subscription-based billing option.
-
-2. **Pay-per-report model**: You pay to verify reports from Data Streams onchain using the verifier contract. You pay per report verified. If you verify multiple reports in a batch, you pay for all of the reports included in that batch.
-
-   The verification price is 0.35 USD per report. Chainlink Data Streams supports fee payments in LINK and in alternative assets, which currently includes native blockchain gas tokens and their ERC20-wrapped version. Payments made in alternative assets have a 10% surcharge when compared to LINK payments.
+Chainlink Data Streams uses a subscription-based billing option.
 
 [Contact us](https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs) to learn more about Mainnet pricing and subscription options.
+
+<Aside type="caution" title="[Deprecated] Pay-per-verification model">
+  The pay-per-verification billing model has been deprecated. <br /> To learn more about the subscription model, please{" "}
+  <a href="https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs">contact us</a>.
+</Aside>
 
 ---
 
@@ -145,255 +144,174 @@ This page provides best practices and recommendations for using Chainlink Data S
 
 ## Real-World Assets (RWA)
 
-Apply these RWA best practices when integrating or operating markets that use tokenized real-world assets. Developers and operators are responsible for assessing market integrity, implementing mitigations, and managing application-level risks — see the [Developer Responsibilities](/data-streams/developer-responsibilities) guidance for details.
+For best practices regarding RWA streams:
 
-### Market Hours
+- **24/5 US Equities**: See the [24/5 US Equities User Guide](/data-streams/rwa-streams/24-5-us-equities-user-guide) for continuous price feed construction, edge cases, and risk management.
+- **Market Events**: See the [Handling Market Events](/data-streams/rwa-streams/handling-market-events) guide for market hours, volatility, and corporate actions.
 
-Markets for Real-World Assets (RWA) operate during specific hours and are subject to various market conditions that can create risks for applications. The following sections outline common market issues and how to mitigate them.
+## Tokenized Assets
 
-<Aside type="note" title="Market Hours Overview">
-  For detailed market hours and trading schedules, see the <a href="/data-streams/market-hours">Market Hours</a> page.
+For best practices regarding stock splits and reverse splits for tokenized assets, please see the [Handling Stock Splits](/data-streams/tokenized-asset-streams/handling-stock-splits) guide.
+
+---
+
+# Calculated Streams
+Source: https://docs.chain.link/data-streams/concepts/calculated-streams
+
+Calculated streams are Chainlink data streams whose values are derived by applying arithmetic expressions to multiple underlying inputs.
+
+All Data Streams use a [Decentralized Oracle Network (DON)](/data-streams/architecture) where nodes reach consensus and publish signed reports. Traditional Data Streams aggregate market data from multiple independent providers, ensuring no single data source can compromise the stream's integrity.
+
+Instead of aggregating only raw market data, calculated streams compute derived values using predefined formulas applied to various inputs, including existing data streams, onchain state, and offchain APIs. Some inputs are decentralized aggregates (for example, crypto price streams from multiple independent providers), while others may come from a single protocol or API (for example, a specific vault contract or yield provider). Because a calculated stream depends on all of these inputs, you should evaluate their dependencies and failure modes carefully before using it in a value-securing application.
+
+<Aside type="caution" title="Important Considerations">
+  Calculated streams behave differently from standard streams in important ways. Before integrating a calculated stream,
+  review the <a href="#key-differences-from-standard-streams">key differences</a> and{" "}
+  <a href="#risks-and-mitigation">risks and mitigation</a> sections to understand how these differences may affect your
+  application.
 </Aside>
 
-#### Market gaps
+## Why use calculated streams?
 
-Market gaps occur when there are interruptions in trading or price discovery, leading to periods where the last available price may not reflect current market conditions. These gaps can create risks, particularly around market opens, closures, and unexpected disruptions.
+- **Simpler integrations**: Consume one stream instead of implementing calculation logic in your contracts or backend
+- **Canonical formulas**: All integrators use the same formula and inputs, ensuring consistency across protocols
+- **Managed infrastructure**: Chainlink handles RPC calls, API integrations, and the calculation pipeline
 
-#### Market close
+## How to identify calculated streams
 
-Large price jumps between trading sessions due to after-hours news.
+Calculated streams are marked with a <span style="display: inline-block; font-size: 0.75rem; padding: 2px 6px; margin-left: 4px; border-radius: 4px; background: var(--blue-100); color: var(--blue-700); font-weight: 500; vertical-align: middle;">Calculated</span> badge in the Data Streams feed list.
 
-A large price jump at market open could cause sudden liquidations, potentially leaving the perpetual DEX with bad debt if a trader's collateral is insufficient to cover the losses.
+## How calculated streams work
 
-| Data Stream behavior                                                                                                                                                                                     | User guidance                                                                                                                                                                                                                                                  |
-| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <ul><li>`midPrice`: Closing price is repeated until market open.</li><li>`marketStatus`: 1 = Market Closed.</li><li>`lastUpdateTimestamp`: Timestamp of the closing price of the last session.</li></ul> | Keep markets closed while `marketStatus = 1` to prevent users trading at unfair prices.<br /><br /> Leverage available should be set in line with the asset average volatility to avoid bad debt if a trader's collateral is insufficient to cover the losses. |
+Calculated streams leverage existing Data Streams infrastructure. Data providers feed market data into the DON, which produces base streams. The DON then uses these base streams—along with onchain state and offchain APIs—as inputs to calculate derived values.
 
-#### Price formation at open/close
+### Architecture flow
 
-Certain assets (e.g., FX open on Sunday afternoon) experience gradual price discovery due to fragmented liquidity and delayed trading activity.
+1. **Data collection**: The DON retrieves inputs specific to each calculated stream, which may include:
+   - Existing Data Streams (market prices from multiple independent data providers)
+   - Onchain state via RPC calls (vault balances, token supplies, contract data)
+   - Offchain data via APIs (yield rates, interest components, external reference data)
+2. **Calculation**: The DON applies the predefined formula to combine the inputs
+3. **Consensus and signing**: Nodes reach consensus on the calculated value and sign the report
+4. **Publication**: Calculated streams are published through the Data Streams Aggregation Network
 
-The perpetual DEX should avoid opening their market with the last close price.
+### Input sources
 
-| Data Stream behavior                                                                                                                                                                                                                             | User guidance                                                                                                   |
-| :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
-| <ul><li>`midPrice`: Closing price is repeated until a bid/ask becomes available or a transaction occurs.</li><li>`marketStatus`: `2` (Market Open).</li><li>`lastUpdateTimestamp`: Timestamp of the closing price of the last session.</li></ul> | Wait until `lastUpdateTimestamp` is current before opening the market so traders don't execute on stale quotes. |
+The inputs for a calculated stream depend on what it's computing. A stream might use:
 
-#### Sudden failures
+#### Existing Data Streams
 
-Unexpected system outages, order execution failures, or data feed disruptions can occur.
+Market prices already aggregated from multiple independent sources (3+ providers). Example: using individual crypto asset prices as inputs for an index calculation.
 
-The price will be flat during that period, meaning if a perp DEX lacks a mechanism to handle halts, it may struggle to determine fair prices thus leading to unpredictable liquidations.
+#### Onchain state
 
-| Data Stream behavior                                                                                                                                                                                | User guidance                                                                                                     |
-| :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
-| <ul><li>`midPrice`: Last mid-price is repeated until a new price is available.</li><li>`marketStatus`: `2` (Market Open).</li><li>`lastUpdateTimestamp`: Timestamp of the last mid-price.</li></ul> | Decide whether to allow users to open/close positions when `marketStatus = 2` but `lastUpdateTimestamp` is stale. |
+Protocol-specific data read via RPC, such as vault balances, token supplies, or smart contract state. May come from a single protocol's contracts.
 
-#### Trading halts
+#### Offchain APIs
 
-Stocks can be halted due to extreme volatility (e.g., limit up/down rules) or regulatory actions.
+External data from specific trusted providers, such as yield rates or reference values. May come from a single API endpoint.
 
-The price will be flat during that period, meaning if a perp DEX lacks a mechanism to handle halts, it may struggle to determine fair prices thus leading to unpredictable liquidations.
+### Calculation and output
 
-| Data Stream behavior                                                                                                                                                                                | User guidance                                                                                                     |
-| :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
-| <ul><li>`midPrice`: Last mid-price is repeated until a new price is available.</li><li>`marketStatus`: `2` (Market Open).</li><li>`lastUpdateTimestamp`: Timestamp of the last mid-price.</li></ul> | Decide whether to allow users to open/close positions when `marketStatus = 2` but `lastUpdateTimestamp` is stale. |
+The DON executes the predefined formula (weighted averages, ratios, sums, etc.) using the latest available inputs. The calculated value is packaged into a signed report with standard metadata (timestamps, fees) and published through the Data Streams Aggregation Network. You consume these reports using the same REST APIs, WebSocket connections, and onchain verification as traditional streams.
+
+## Example: Tokenized yield product
+
+A calculated stream for a tokenized yield-bearing vault might combine:
+
+- **Vault balance (onchain)**: Total assets in the vault contract
+- **Token supply (onchain)**: Circulating supply of vault shares
+- **Accrued yield (offchain)**: Interest from an external API
+
+**Formula:** `(vault balance + accrued yield) / token supply`
+
+**Result**: a price per share that reflects the vault's total value including pending yield.
+
+Without this stream, protocols accepting the vault token as collateral would need to query the vault contract, fetch accrued interest from the yield provider's API, perform the calculation themselves, and keep this logic synchronized across all integrators. A calculated stream helps ensure integrators apply the same pricing logic and update together when the underlying formula or yield source changes.
+
+## Key differences from standard streams
+
+While calculated streams use the same infrastructure and delivery mechanisms as standard streams, they have distinct behaviors you should understand before integrating. For mitigation strategies, see [Risks and mitigation](#risks-and-mitigation).
+
+### Report availability
+
+Standard streams aggregate data from multiple independent providers, so they remain available as long as enough providers are reporting. Calculated streams depend on **all** of their inputs being available. If any required input becomes unavailable or returns errors, the calculated **stream stops producing reports until all inputs recover**. This prevents potentially incorrect values from being published.
+
+### Input reliability
+
+Standard streams source data exclusively from decentralized aggregates of multiple independent data providers. Calculated streams may include a mix of:
+
+- **Decentralized aggregates**: Existing Data Streams with multiple independent sources (similar reliability to standard streams)
+- **Single-source inputs**: Specific protocol contracts or APIs where availability depends on a single system
+
+Single-source inputs carry higher risk. If that source experiences downtime, report production halts entirely until it recovers. Review the input sources for any calculated stream you plan to use.
+
+### Timing characteristics
+
+Standard streams reflect a single aggregated market price at a point in time. Calculated streams combine multiple inputs that may update at different frequencies and reflect slightly different timestamps. The calculated value is an approximation based on the latest available data from each input, not a single-block atomic snapshot.
+
+During rapid changes (large deposits, withdrawals, or sharp market moves), you may observe temporary differences between the calculated stream value and values from other sources like block explorers or protocol dashboards. These differences typically resolve as all inputs update to reflect the new state.
 
 ***
 
-### Volatility & low liquidity
+## Risks and mitigation
 
-During periods of high volatility or low liquidity, price movements can become unpredictable and exaggerated. These conditions can increase the risk of sudden liquidations and bad debt accumulation, requiring careful risk management strategies.
+Calculated streams inherit risks from their underlying inputs and introduce additional considerations. Use these strategies to mitigate potential issues.
 
-#### Algorithmic & HFT activity
+### Handling report gaps
 
-Rapid-fire trading by algos can create unpredictable price movements.
+Because calculated streams stop producing reports when any input fails, your application must handle gaps in report availability.
 
-High volatility can lead to liquidation and potential bad debt accumulation.
+#### Mitigation
 
-| Data Stream behavior                                                                                                                          | User guidance                                                            |
-| :-------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
-| <ul><li>`midPrice`: Current mid price.</li><li>`marketStatus`: `2` (Market Open).</li><li>`lastUpdateTimestamp`: Current timestamp.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
+- Design your protocol to handle report gaps gracefully (pause operations, use last-known values with appropriate staleness checks, or implement fallbacks based on your risk tolerance)
+- Implement staleness checks to detect when reports stop arriving and trigger appropriate protocol responses
+- Set alerts for report gaps to detect input source issues early
 
-#### Low liquidity at open/close
+### Single-source input reliability
 
-Reduced market depth at trading session transitions can lead to higher volatility and spreads.
+Single-source inputs (specific APIs or contracts) may have lower availability than decentralized aggregates.
 
-High volatility can lead to liquidation and potential bad debt accumulation.
+#### Mitigation
 
-| Data Stream behavior                                                                                                                          | User guidance                                                            |
-| :-------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
-| <ul><li>`midPrice`: Current mid price.</li><li>`marketStatus`: `2` (Market Open).</li><li>`lastUpdateTimestamp`: Current timestamp.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
+- Understand your input sources and assess the reliability of each, particularly single-source APIs or contracts
+- For critical applications, consider independently monitoring the availability of single-source inputs
+- Define acceptable downtime thresholds and corresponding protocol responses
+
+### Timing discrepancies
+
+Temporary differences between the calculated stream and other data sources are expected during rapid changes.
+
+#### Mitigation
+
+- Implement max deviation checks against expected ranges
+- Use time-weighted averages or circuit breakers for extreme moves
+- Monitor trends over time rather than reacting to individual updates
+- Compare calculated values against market references when available (e.g., spot prices for index tokens)
+
+<Aside type="note" title="Developer Responsibilities">
+  When using calculated streams, you inherit all responsibilities associated with the underlying inputs plus additional
+  responsibilities for monitoring calculation health and managing time-sensitivity requirements. Review the{" "}
+  <a href="/data-streams/developer-responsibilities">Developer Responsibilities</a> page for comprehensive guidance on
+  risk assessment and mitigation techniques.
+</Aside>
 
 ***
 
-### Corporate actions
+## Best practices
 
-Corporate actions are events initiated by publicly traded companies that can significantly impact stock prices and trading behavior. These actions are usually announced outside regular trading hours and can cause substantial price movements when markets reopen. Users should monitor these events closely as they can lead to sudden price adjustments that may trigger unexpected liquidations or require position modifications.
+### Protocol design
 
-#### Bankruptcy & delisting
+- Set deviation limits to cap price changes per update or time window
+- Define fallback behavior if the stream stops updating or jumps beyond thresholds
+- Test your protocol's behavior during report gaps before deploying to production
 
-Bankruptcy can lead to delisting or complete loss of equity value.
+### Monitoring
 
-Delisting will zero out prices for the asset.
-
-| Data Stream behavior                                                                                                                                                                                       | User guidance                                                                                    |
-| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------- |
-| <ul><li>`midPrice`: Closing price is repeated until a new price is available.</li><li>`marketStatus`: `1` (Market Closed).</li><li>`lastUpdateTimestamp`: Closing timestamp of the last session.</li></ul> | Monitor delisting news during `marketStatus` = `1` and close markets permanently once confirmed. |
-
-#### Spin-offs
-
-When a company spins off a business unit into a separate publicly traded entity, the parent company's stock may adjust accordingly, while the spun-off company's shares begin trading independently.
-
-Positions may need to be manually adjusted if the DEX doesn't support tracking the new entity.
-
-| Data Stream behavior                                                                                                                                                             | User guidance                                                                                                                                                                                                                                                                                                                            |
-| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <ul><li>`midPrice`: Closing price is repeated until the first post-spin trade.</li><li>`marketStatus`: `1` (Market Closed).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor spin-off and split announcements while `marketStatus = 1`.<br /><br />Auto-pause the market if the first post-event price moves by more than X% from the prior close, update positions, then reopen.<br /><br />If automatic adjustment isn't possible, disable leverage during the event window to prevent unfair liquidations. |
-
-#### Stock splits & reverse splits
-
-<Aside type="note" title="Tokenized Stocks Guidance">
-  Tokenized stocks such as [Tokenized Asset streams](/data-streams/reference/report-schema-v10) handle stock splits
-  differently using activation dates and staged multipliers to maintain price continuity. [Learn more about advanced
-  stock split handling](#handling-stock-splits-for-tokenized-assets).
-</Aside>
-
-A stock split increases the number of shares while reducing the price per share (e.g., 2-for-1 split), often making shares more accessible to investors. A reverse split does the opposite, consolidating shares to increase the price per share.
-
-A 2-for-1 split would reduce the price by 50% from the previous trading session, any leveraged user could get liquidated.
-
-| Data Stream behavior                                                                                                                                                                   | User guidance                                                                                                                                                                                                                                                                                                                            |
-| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <ul><li>`midPrice`: Closing price is repeated until the split-adjusted price prints.</li><li>`marketStatus`: `1` (Market Closed).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor spin-off and split announcements while `marketStatus = 1`.<br /><br />Auto-pause the market if the first post-event price moves by more than X% from the prior close, update positions, then reopen.<br /><br />If automatic adjustment isn't possible, disable leverage during the event window to prevent unfair liquidations. |
-
-#### Mergers & acquisitions (M\&A)
-
-If a company is being acquired, its stock price may rise to reflect the acquisition premium. The acquiring company's stock might fluctuate based on investor sentiment regarding the deal's financial and strategic impact.
-
-Announcements can cause sharp price spikes or sustained moves.
-
-| Data Stream behavior                                                                                                                                                      | User guidance                                                            |
-| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------- |
-| <ul><li>`midPrice`: Closing price is repeated until a new price prints.</li><li>`marketStatus`: `1` (Market Closed).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
-
-#### Share buybacks & stock issuance
-
-Reduced share supply from a buyback can drive stock prices higher, while an increase in share supply can lead to price dilution.
-
-Announcements can cause sharp price spikes or sustained moves.
-
-| Data Stream behavior                                                                                                                                                      | User guidance                                                            |
-| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------- |
-| <ul><li>`midPrice`: Closing price is repeated until a new price prints.</li><li>`marketStatus`: `1` (Market Closed).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
-
-#### Dividends
-
-A company's stock price typically adjusts to reflect dividend payments. For example, when a company declares a 10% dividend, its stock price often drops by a similar amount on the ex-dividend date, as new buyers are no longer entitled to that dividend.
-
-Announcements can cause sharp price spikes or sustained moves.
-
-| Data Stream behavior                                                                                                                                                            | User guidance                                                            |
-| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------- |
-| <ul><li>`midPrice`: Closing price is repeated until the ex-date trade prints.</li><li>`marketStatus`: `1` (Market Closed).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
-
-***
-
-### Handling stock splits for tokenized assets
-
-Corporate actions, such as stock splits and reverse splits, require precise handling for tokenized assets to ensure price continuity and avoid disruptions. These events alter per‑share pricing while leaving the underlying economic exposure unchanged. They can produce abrupt per‑share price moves and must be handled carefully to avoid incorrect onchain price computations and unexpected liquidations.
-
-In the [v10 report schema](/data-streams/reference/report-schema-v10), continuity is preserved by staging a multiplier change with a scheduled `activationDateTime` so the Theoretical Price (`price` \* `currentMultiplier`) remains continuous. Split ratios are typically known in advance, but activation may occur while markets are closed, so some external price sources may not reflect the split until trading resumes.
-
-<Aside type="note" title="Note">
-  This guidance is designed for multiplier handling in the [v10 report
-  schema](/data-streams/reference/report-schema-v10) and what integrators should expect around activation windows and
-  protocol behavior. Similar principles may apply to future schemas that host tokenized stocks, but applicability and
-  exact behavior will depend on each schema's design and are not guaranteed.
-</Aside>
-
-#### Guiding principle
-
-Follow these principles when handling multiplier changes during corporate actions:
-
-1. The protocol considers the Theoretical Price as `price` \* `currentMultiplier`.
-2. Ahead of the event, `newMultiplier` and `activationDateTime` are staged.
-3. At `activationDateTime` (Unix), `currentMultiplier` becomes `newMultiplier`.
-   - The underlying `price` from traditional markets should start reflecting the split the next time trading opens, so at the next `price` update, the Theoretical Price should remain continuous.
-
-#### Example (10:1 split, AAPL)
-
-The following hypothetical scenario demonstrates how a 10:1 AAPL stock split is handled through the staged multiplier system, showing the progression from announcement through protocol reopening with proper price continuity maintained throughout.
-
-The following timeline outlines the key events and actions taken at each stage:
-
-- **T-2**: [Split announcement and multiplier staging](#announcement-t-2)
-- **T-1**: [Protocol preparation and monitoring setup](#protocol-engagement-t-1)
-- **T0**: [Multiplier activation (split effective date)](#activation-t0)
-- **T+1**: [Market reopening with adjusted prices](#market-reopening-t1)
-- **T+2**: [Protocol resumption after verification](#protocol-reopening-t2)
-
-##### Announcement (T-2)
-
-A 10:1 AAPL stock split is announced. [The report](/data-streams/reference/report-schema-v10) updates to stage the split:
-
-- `newMultiplier` is set to 10x the value of `currentMultiplier`.
-- `activationDateTime` is set to the Unix timestamp of the split.
-- `currentMultiplier` is unaffected until activation.
-
-##### Protocol engagement (T-1)
-
-At this stage, users are advised to monitor for changes in `activationDateTime` and inspect the upcoming change to prepare appropriate action, such as preparing the protocol for a pause around the `activationDateTime` in order to ensure appropriate handling of the stock split.
-
-##### Activation (T0)
-
-When the provider applies the split, [the report](/data-streams/reference/report-schema-v10) updates:
-
-- `newMultiplier` remains the current value.
-- `activationDateTime` is set to `0`.
-- `currentMultiplier` is updated to the same value as `newMultiplier`.
-
-<Aside type="danger" title="Important">
-  If activation occurs while the underlying market is closed, prices may still show the pre‑event last trade. Do not
-  compute the Theoretical Price during this pre-adjustment window. Monitor `marketStatus` and keep the protocol paused
-  until the first post‑event trade prints and the Theoretical Price is continuous.
-</Aside>
-
-If activation occurs while the underlying market is closed, prices may still show the pre‑event last trade. Do not compute the Theoretical Price during this pre-adjustment window. Monitor `marketStatus` and keep the protocol paused until the first post‑event trade prints and the Theoretical Price is continuous.
-
-##### Market reopening (T1)
-
-The stock split has taken effect. Generally, this occurs after the market closes or over the weekend, meaning `price` may not yet reflect the new economic value per share. Upon the market reopening, `price` should start reflecting the split-adjusted value.
-
-##### Protocol reopening (T2)
-
-Users should pause markets before `activationDateTime` and keep them paused until:
-
-- The market has reopened (monitor `marketStatus`)
-- `price` has updated in line with the split ratio (e.g., 10:1)
-- You have confirmed that the Theoretical Price matches expectations
-
-After all the above checks have been confirmed, users can unpause their protocol and continue and resume normal operation.
-
-#### Activation-time convention
-
-Each tokenized asset issuer sets its own activation time. For example, the xStocks default `activationDateTime` is 00:00 UTC on the effective date. Once `activationDateTime` is reached, `currentMultiplier` becomes `newMultiplier`.
-
-Because underlying venues may be closed at activation, some external price sources may not reflect the split immediately. If `activationDateTime` occurs while the underlying market is closed, the report’s `currentMultiplier` will become `newMultiplier`; however, `price` can remain at the pre-event level until the market reopens. During this post-activation, pre-adjustment interval (after the multiplier has changed but before the underlying `price` updates), the Theoretical Price can be incorrect. Use `marketStatus` to pause until `price` reflects the event.
-
-#### Integrator risk & handling
-
-Computing `price` \* `currentMultiplier` when the price has not adjusted (e.g., market closed) can produce large errors. It is critical to ensure that the Theoretical Price is again reflective of actual market conditions before allowing live trading.
-
-Treat any multiplier change (splits, dividends, etc) and `activationDateTime` as a maintenance window; pause/guard the protocol, then verify post-activation conditions before resuming.
-
-<Aside type="caution" title="Integrator Responsibility">
-  It is the integrator's responsibility to perform proper handling and risk management. Failure to follow these best
-  practices may result in significant financial losses. Ensure that all multiplier changes, activation windows, and
-  post-activation conditions are verified before resuming operations.
-</Aside>
-
-For broader guidance around market hours and event handling, refer to the [Market Hours](#market-hours) guidance.
+- Set alerts for report gaps to detect when no new reports arrive within your expected update frequency
+- Track the calculated stream value over time to establish normal behavior patterns
+- Monitor key inputs independently when feasible (vault balances, token supplies, API availability) to identify which input may be causing issues
+- Alert on movements outside your expected range
 
 ---
 
@@ -840,6 +758,23 @@ RWA markets operate during specific hours, with breaks for holidays and sometime
 | **FX Majors**<br />(G10 + KRW, SGD, HKD, CNH …)             | **17:00 Sun** | **17:00 Fri** | —                   | Jan 1, Dec 25                                                                          |
 | **Precious Metals (Spot)**<br />(XAU, XAG)                  | **18:00 Sun** | **17:00 Fri** | 17:00–18:00 Mon-Thu | Jan 1, Good Fri, Dec 25                                                                |
 | **Commodities** <br /> (WTI Synthetic Spot)                 | **18:00 Sun** | **17:00 Fri** | 17:00–18:00 Mon-Thu | [NYMEX holiday calendar](https://www.cmegroup.com/tools-information/holiday-calendar/) |
+
+### US Equities 24/5 Trading Sessions
+
+For feeds using the [RWA Advanced (v11) schema](/data-streams/reference/report-schema-v11), US Equities are available across three distinct trading sessions, providing 24/5 coverage:
+
+| Session             | Hours (ET)                            | `marketStatus` Value                 | Description                                    |
+| ------------------- | ------------------------------------- | ------------------------------------ | ---------------------------------------------- |
+| **Regular Hours**   | 9:30am–4:00pm Mon–Fri                 | `2` (Regular hours)                  | Primary trading session with highest liquidity |
+| **Extended Hours**  | 4:00am–9:30am & 4:00pm–8:00pm Mon–Fri | `1` (Pre-market) & `3` (Post-market) | Pre-market and post-market sessions            |
+| **Overnight Hours** | 8:00pm–4:00am Sun evening–Fri morning | `4` (Overnight)                      | Overnight session with limited liquidity       |
+
+**Additional `marketStatus` values:**
+
+- `0` (Unknown) — Market status cannot be determined
+- `5` (Weekend) — Weekend period: 8:00pm Fri–8:00pm Sun
+
+See the [24/5 US Equities User Guide](/data-streams/rwa-streams/24-5-us-equities-user-guide) for detailed information on building continuous price feeds and managing session transitions.
 
 \* Times shown as **HH:MM ET**.\
 \*\* Half-day trading may apply on the eve of certain U.S. holidays (e.g., Jul 3, Nov 28). Consult the linked exchange calendars for exact cut-off times.
@@ -5232,12 +5167,16 @@ Chainlink Tokenized Asset Data Streams adhere to the report schema outlined belo
 - `price` updates in real time during market open, but may become stale during market closed periods.
 - `currentMultiplier` reflects all past corporate actions and is updated only when a new action is activated.
 - `activationDateTime` and `newMultiplier` provide advance notice of upcoming corporate actions, allowing protocols to prepare.
-- See more detailed guidance for handling stock splits in the [Best Practices](/data-streams/concepts/best-practices#handling-stock-splits-for-tokenized-assets) documentation.
+- See more detailed guidance for handling stock splits in the [Handling Stock Splits](/data-streams/tokenized-asset-streams/handling-stock-splits) documentation.
 
 ---
 
 # Report Schema: RWA Advanced (v11)
 Source: https://docs.chain.link/data-streams/reference/report-schema-v11
+
+import { Aside } from "@components"
+
+{/* Fix for the table cutting off/overflowing */}
 
 <DataStreams section="dsNotes" />
 
@@ -5245,43 +5184,74 @@ Chainlink Data Streams that use the RWA Advanced (v11) schema adhere to the stru
 
 ## Schema Fields
 
-| Field                   | Type      | Description                                                                                                                                                                                                                                                                         |
-| ----------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                                                                                                                                                                                                                                         |
-| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                                                                                                                                                                                                                                |
-| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                                                                                                                                                                                                                                  |
-| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)                                                                                                                                                                                                                                        |
-| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                                                                                                                                                                                                                                                |
-| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                                                                                                                                                                                                                             |
-| `mid`                   | `int192`  | Liquidity-weighted mid price                                                                                                                                                                                                                                                        |
-| `lastSeenTimestampNs`   | `uint64`  | Staleness indicator based on mid price (nanoseconds)                                                                                                                                                                                                                                |
-| `bid`                   | `int192`  | Median bid price                                                                                                                                                                                                                                                                    |
-| `bidVolume`             | `int192`  | Volume at bid price                                                                                                                                                                                                                                                                 |
-| `ask`                   | `int192`  | Median ask price                                                                                                                                                                                                                                                                    |
-| `askVolume`             | `int192`  | Volume at ask price                                                                                                                                                                                                                                                                 |
-| `lastTradedPrice`       | `int192`  | Last traded price                                                                                                                                                                                                                                                                   |
-| `marketStatus`          | `uint32`  | Status of the real-world equity market. <br /> Possible values: <br /> `0` (Unknown), <br /> `1` (Pre-market extended hours), <br /> `2` (Regular hours), <br /> `3` (Post-market hours), <br /> `4` (Overnight), <br /> `5` (Weekend) <br /> [More details](#market-status-values) |
+| Field                   | Type      | Description                                                                                                                                          |
+| ----------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                                                                                                          |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                                                                                                 |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                                                                                                   |
+| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)                                                                                                         |
+| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                                                                                                                 |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                                                                                              |
+| `mid`                   | `int192`  | DON Consensus mid-price                                                                                                                              |
+| `lastSeenTimestampNs`   | `uint64`  | Reflects the timestamp of the last update for the **mid price only** (nanoseconds). See [Notes](#notes) below.                                       |
+| `bid`                   | `int192`  | Median bid price                                                                                                                                     |
+| `bidVolume`             | `int192`  | Volume at bid price. See [bid/ask volume note](#bidask-volume-note) below.                                                                           |
+| `ask`                   | `int192`  | Median ask price                                                                                                                                     |
+| `askVolume`             | `int192`  | Volume at ask price. See [bid/ask volume note](#bidask-volume-note) below.                                                                           |
+| `lastTradedPrice`       | `int192`  | Last traded price                                                                                                                                    |
+| `marketStatus`          | `uint32`  | Status of the real-world asset market. Values depend on the stream's supported hours. See [Market Status Values](#market-status-values) for details. |
 
 ### Market Status Values
 
-The `marketStatus` field reflects the current state of the equity market:
+The `marketStatus` field indicates the current state of the market. The possible values vary depending on the stream's supported trading hours:
 
-| Value | Status            | Hours (ET)                            | Description                                    |
-| ----- | ----------------- | ------------------------------------- | ---------------------------------------------- |
-| `0`   | **Unknown**       | —                                     | Market status cannot be determined             |
-| `1`   | **Pre-market**    | 4:00am–9:30am Mon–Fri                 | Extended hours before regular trading session  |
-| `2`   | **Regular hours** | 9:30am–4:00pm Mon–Fri                 | Primary trading session with highest liquidity |
-| `3`   | **Post-market**   | 4:00pm–8:00pm Mon–Fri                 | Extended hours after regular trading session   |
-| `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning | Overnight session with limited liquidity       |
-| `5`   | **Weekend**       | 8:00pm Fri–8:00pm Sun                 | Weekend period when primary markets are closed |
+#### Standard RWA Streams
 
-Users should implement appropriate safeguards based on market status, such as pausing trading, adjusting risk parameters, or implementing staleness checks during non-regular hours.
+For streams with standard market hours coverage. Unless a feed explicitly states extended hours support, it is assumed to follow this format:
+
+| Value | Status      | Description                        |
+| ----- | ----------- | ---------------------------------- |
+| `0`   | **Unknown** | Market status cannot be determined |
+| `1`   | **Closed**  | Market is closed                   |
+| `2`   | **Open**    | Market is open                     |
+
+#### 24/5 US Equities Streams
+
+For streams with 24/5 extended hours coverage (e.g., US Equities):
+
+| Value | Status            | Normal Hours (ET)                     | Description                                                |
+| ----- | ----------------- | ------------------------------------- | ---------------------------------------------------------- |
+| `0`   | **Unknown**       | —                                     | Market status cannot be determined                         |
+| `1`   | **Pre-market**    | 4:00am–9:30am Mon–Fri                 | Extended hours before regular trading session              |
+| `2`   | **Regular hours** | 9:30am–4:00pm Mon–Fri                 | Primary trading session with highest liquidity             |
+| `3`   | **Post-market**   | 4:00pm–8:00pm Mon–Fri                 | Extended hours after regular trading session               |
+| `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning | Overnight session with limited liquidity                   |
+| `5`   | **Closed**        | —                                     | Market closed (weekends, holidays, or unexpected closures) |
+
+Users should implement appropriate safeguards based on market status, such as pausing trading, adjusting risk parameters, or implementing staleness checks during non-regular hours or closed periods.
+
+<Aside type="note" title="Handling Unknown and Closed Status">
+  Consumers should implement logic to handle market status `0` (Unknown) and market status `5` (Closed), as these
+  periods imply no active feed and require a decision on fallback behavior (e.g., using a tokenized price, pausing the
+  market, etc.).
+</Aside>
 
 ### Notes
 
+#### Last Seen Timestamp
+
+- `lastSeenTimestampNs` helps applications detect stale data for the mid price, especially important during market transitions and holidays.
+- **IMPORTANT**: The `lastSeenTimestampNs` field reflects the timestamp of the last update for the `mid` price only. Do not assume this timestamp applies to `bid`, `ask`, `bidVolume`, `askVolume`, or `lastTradedPrice`. Different fields may have been updated at different times.
+
+#### Bid/Ask Volume
+
+For U.S. equities, there is no single consolidated order book. Instead, multiple venues each maintain their own order books. Because data providers source from different markets, the `bidVolume` and `askVolume` reported at each update come from one specific order book at a time, not an aggregate across all venues.
+
+As a result, these volume fields should not be treated as a proxy for total market liquidity at the top of book. They are informational and not especially representative in fragmented markets like U.S. equities.
+
+#### Additional Notes
+
 - Future streams using this format may adopt different report schemas as needed.
-- `lastSeenTimestampNs` helps applications detect stale data, especially important during market transitions and holidays.
-- Market status cannot detect public holidays. See [Market Hours](/data-streams/market-hours) for major holiday periods.
 - Data availability and sourcing vary by session. Liquidity is typically highest during regular hours and lower during extended and overnight sessions.
 
 ---
@@ -5421,7 +5391,7 @@ RWA streams adhere to the report schema outlined below.
 
 - `marketStatus`:
   - Users are responsible for handling market status changes in their applications.
-  - For further guidance, refer to the [Market Hours Best Practices](/data-streams/concepts/best-practices#market-hours) documentation.
+  - For further guidance, refer to the [Handling Market Events](/data-streams/rwa-streams/handling-market-events) documentation.
 - Future RWA streams may use different report schemas.
 
 ---
@@ -5456,6 +5426,592 @@ Chainlink SmartData streams adhere to the report schema outlined below.
 
 - 0 (false) - **Data Provider is OK**. This indicates that the Fund’s data provider and data accuracy is reporting as expected.
 - 1 (true) - **Data Provider is flagging a Pause**. This indicates that the Fund’s data provider detected outliers, deviated thresholds, management or operational related pause. **During `ripcord=1`, do not consume any NAV data**.
+
+---
+
+# 24/5 US Equities User Guide
+Source: https://docs.chain.link/data-streams/rwa-streams/24-5-us-equities-user-guide
+
+Chainlink 24/5 U.S. Equities Streams provide real-time equity pricing data across all major U.S. single-name equities and ETFs spanning regular, pre-market, post-market, and overnight trading sessions. The [advanced RWA schema](/data-streams/reference/report-schema-v11) includes fields such as market status flags, best bid and ask prices, bid and ask volumes, staleness measures, and last traded prices to facilitate more advanced execution and risk management.
+
+The data referenced in this document covers 24/5 trading hours in US equities on a range of traditional venues. While there is currently no trading activity in traditional markets over the weekend on any venue, protocols can extend their pricing coverage to 24/7 in multiple ways, such as leveraging the pricing of [tokenized stocks](#stream-switching-example-logic) on secondary markets such as CEXes and DEXes.
+
+Developers are responsible for choosing the appropriate feed and ensuring that the operation and performance of their choice matches expectations. For more information, please visit the Chainlink [documentation](/data-streams/developer-responsibilities).
+
+## Schema
+
+The data is delivered using the [RWA Advanced (v11) schema](/data-streams/reference/report-schema-v11).
+
+This advanced RWA schema is built to support 24/5 streams, including DON Consensus `mid` price (with its corresponding timestamp `lastSeenTimestampNs` for staleness tracking), order book depth (`bid`, `ask`, `bidVolume`, `askVolume`), execution data (`lastTradedPrice`), and granular market phases (`marketStatus` values for Pre-market, Regular hours, Post-market, Overnight, and Closed).
+
+<Aside type="caution" title="Important: Timestamp Scope">
+  The `lastSeenTimestampNs` field reflects the timestamp of the last update for the `mid` price only. This timestamp
+  does **not** apply to other fields in the report such as `bid`, `ask`, `bidVolume`, `askVolume`, or `lastTradedPrice`.
+  Different fields may have been updated at different times.
+</Aside>
+
+<Aside type="note" title="Bid/Ask Volume Interpretation">
+  For U.S. equities, there is no single consolidated order book—multiple venues each maintain their own. The `bidVolume`
+  and `askVolume` reported come from one specific order book at a time, not an aggregate across all venues. These values
+  should not be treated as a proxy for total market liquidity and are primarily informational.
+</Aside>
+
+## Feeds
+
+Each instrument is exposed through three distinct data streams feeds, each corresponding to a specific trading phase: **Regular Hours**, **Extended Hours**, and **Overnight Hours**.
+
+You can view all available 24/5 US Equities streams in the [stream table viewer](/data-streams/stream-ids) or see the [complete list below](#available-streams).
+
+For example, **TSLA** is available via the following streams:
+
+- `TSLA/USD-Streams-ExtendedHours`
+- `TSLA/USD-Streams-OvernightHours`
+- `TSLA/USD-Streams-RegularHours`
+
+To construct a **continuous price feed**, users must **dynamically switch** between these individual streams based on the value of `marketStatus`. The mapping logic is as follows:
+
+| Market Status     | Stream                            |
+| ----------------- | --------------------------------- |
+| `1` (Pre-market)  | `TSLA/USD-Streams-ExtendedHours`  |
+| `2` (Regular)     | `TSLA/USD-Streams-RegularHours`   |
+| `3` (Post-market) | `TSLA/USD-Streams-ExtendedHours`  |
+| `4` (Overnight)   | `TSLA/USD-Streams-OvernightHours` |
+
+<Aside type="note" title="Note">
+  Market status `0` (Unknown) and `5` (Closed) require custom handling. See the [Building a Continuous Price
+  Feed](#building-a-continuous-price-feed) section below.
+</Aside>
+
+## Building a Continuous Price Feed
+
+Building a continuous price feed by dynamically switching streams requires robust exception handling to manage edge cases effectively. Because different protocols have unique risk profiles and design requirements, Data Streams allows you to implement custom logic tailored to your specific needs.
+
+There is no one-size-fits-all solution to integrating 24/5 streams. The sections below outline edge cases you will encounter when building a continuous price feed along with recommended mitigation strategies. For information on structural risks and protocol-specific considerations, see the [Risks](#risks) section.
+
+If you wish to jump ahead to view an example of switching logic, jump to [Stream Switching Example Logic](#stream-switching-example-logic).
+
+### Edge Cases and Mitigation
+
+#### Price Jumps at Session Transition Boundaries
+
+When transitioning between Regular ↔ Extended ↔ Overnight sessions, noticeable price dislocations can occur.
+
+These differences are expected and normal due to unique liquidity conditions, venues, participants, and pricing sources per session. These are not bad data; they are true market microstructure effects.
+
+Typical jumps are **1–2%**, but **larger spikes (10–20%+)** are possible during low-liquidity environments or impactful news cycles.
+
+##### Mitigation
+
+**Phase-specific streams are provided intentionally** to give users control over when and how transitions occur. Optional safeguards:
+
+- Pause or lock market activity during transition windows
+- Delay feed switching until price convergence or stability threshold is met
+- Apply price smoothing (EMA/VWAP/TWAP) across transition windows
+- Temporarily reference [tokenized asset](#stream-switching-example-logic) price (where available)
+
+#### Market Status Unknown/Unavailable (`marketStatus = 0`)
+
+The system may return `marketStatus = 0` (Unknown). **If your implementation relies on automated feed switching based on market status, you must account for this scenario.**
+
+Market status is sourced from several independent providers configured as primary/fallback. While resilient, multiple providers can fail simultaneously.
+
+##### Mitigation
+
+Consumers must treat `marketStatus = 0` (Unknown) as a valid state and define deterministic behaviors when it is returned. Potential actions include:
+
+- Pause or lock market activity
+- Allow restricted trading within a bounded range (e.g., last-valid price ± threshold)
+- Temporarily reference [tokenized asset](#stream-switching-example-logic) price (where available)
+
+#### Closed (`marketStatus = 5`)
+
+Market status `5` indicates the market is closed, which includes weekends, public holidays, and unexpected market closures. During these periods, all three feeds will carry stale values. This reflects true underlying market inactivity rather than an outage or failure.
+
+##### Mitigation
+
+Consumers must treat `marketStatus = 5` (Closed) as a valid state and define deterministic behaviors when it is returned. Potential actions include:
+
+- Pause or lock market activity
+- Allow restricted trading within a bounded range (e.g., last-valid price ± threshold)
+- Temporarily reference [tokenized asset](#stream-switching-example-logic) price (where available)
+
+#### Stale Data Detection
+
+Markets may stop updating due to exchange outages, circuit breakers, trading halts, or corporate actions. The `marketStatus` field will continue reflecting the status that it normally would. Use the `lastSeenTimestampNs` field (which reflects the timestamp of the last update for the `mid` price only) to detect staleness by comparing it against the current time. When this timestamp stops advancing, it indicates the underlying venue has stopped providing updates.
+
+Phase-specific feeds can introduce unique behavior due to venue-specific operational characteristics and market microstructure. The following are some examples of scenarios that may occur during session transitions or under specific market conditions:
+
+##### Regular Hours Session: Delayed Quote Availability at Market Open
+
+During the first 10–20 seconds after regular hours open (9:30am ET), bid/ask quotes may not yet be available from the regular hours venue. In those cases, the reported price may still reflect the previous regular hours close rather than live market data.
+
+Users should factor this transition period into their switching logic and consider alternative strategies during the first \~20 seconds of regular hours, such as:
+
+- Pause or lock market activity
+- Continue using the pre-market (Extended Hours) stream until fresh regular hours quotes are available
+- Temporarily reference [tokenized asset](#stream-switching-example-logic) price (where available)
+
+##### Overnight Session: Stale Bid/Ask at Session Start
+
+During the early overnight session -- before the overnight venue begins publishing data -- the feed may display the last bid/ask prices and volumes from the previous regular session. This occurs because no new quotes are available yet from the overnight venue.
+
+Once the overnight venue starts publishing its own quotes, the data will update to reflect current overnight market conditions. This behavior is normal market microstructure, not a data quality issue. It reflects the actual state of the market during the transition period when overnight liquidity has not yet begun.
+
+Users relying on bid/ask data during early overnight hours should be aware of this carryover behavior and implement appropriate safeguards, such as checking `lastSeenTimestampNs` for staleness or widening risk parameters during overnight session transitions.
+
+##### Mitigation
+
+Consumers must have fallback logic in place when the data is stale. Potential actions include:
+
+- Pause or lock market activity
+- Use last-valid price as reference
+- Allow bounded-range trading based on last-valid price
+- Temporarily reference [tokenized asset](#stream-switching-example-logic) price (where available)
+
+### Stream Switching Example Logic
+
+The following examples demonstrate how to implement a continuous price feed by dynamically switching between phase-specific streams. These examples use tokenized asset prices as the fallback strategy for edge cases (stale data, Unknown market status, and Closed). Developers may choose alternative mitigation strategies based on their protocol's risk requirements.
+
+Developers interested in using tokenized assets can find the list of supported assets and schema in the [Tokenized Assets documentation](/data-streams/tokenized-asset-streams). Using tokenized assets carries its own risks, including liquidity limitations and price deviations from spot markets. Evaluate these factors carefully before integrating tokenized prices into your protocol.
+
+<Aside type="note" title="Note">
+  Tokenized Assets are often Total Return Trackers (TRT). If used, the price should be normalized back to a non-TRT
+  price: `Spot_RWA_Price = Tokenized_RWA_Price / TRT_Multiplier`
+</Aside>
+
+#### Decision Flow
+
+To build a continuous price feed, follow this general decision flow. This is a simplified outline that leverages tokenized asset prices as fallback; your implementation must account for all risks outlined above and in the [Risks](#risks) section below.
+
+1. **Fetch and decode** the Regular Hours stream report to get `marketStatus` and `lastSeenTimestampNs`
+
+2. **Check staleness first:**
+   - **If data is stale** (timestamp older than your threshold) → **[Use Tokenized Asset stream](/data-streams/tokenized-asset-streams)** or apply custom risk mitigation
+   - **If data is fresh** → Continue to step 3
+
+3. **Route based on market status:**
+   - **`marketStatus = 0`** (Unknown) → **Use Tokenized Asset stream** or apply custom risk mitigation
+   - **`marketStatus = 1`** (Pre-market) → **Use Extended Hours stream**
+   - **`marketStatus = 2`** (Regular) → **Use Regular Hours stream**
+   - **`marketStatus = 3`** (Post-market) → **Use Extended Hours stream**
+   - **`marketStatus = 4`** (Overnight) → **Use Overnight Hours stream**
+   - **`marketStatus = 5`** (Closed) → **Use Tokenized Asset stream** or apply custom risk mitigation
+
+4. **Apply additional safeguards** as needed for your protocol (e.g., price jump checks, circuit breakers, holiday calendars, bounded trading ranges)
+
+5. **Return the `mid` price** from the selected stream
+
+<Aside type="caution" title="Important">
+  This is a simplified decision flow. Your implementation must account for all risks outlined in the [Risks](#risks)
+  section below, including price jumps at transition boundaries, corporate actions, public holidays, and
+  protocol-specific edge cases. Each protocol has unique risk requirements—design your switching logic accordingly.
+</Aside>
+
+#### Example Implementation Logic
+
+This example demonstrates switching logic with tokenized asset prices as fallback. View examples in different SDK languages.
+
+Please note that these code snippets are illustrative and may require adaptation to fit your specific environment, SDK versions, and error handling practices. Refer to the guide to [fetch](/data-streams/tutorials/go-sdk-fetch) and [stream](/data-streams/tutorials/go-sdk-stream) decoded reports in your chosen SDK.
+
+
+<Aside type="caution" title="Disclaimer">
+  This guide represents an example of using a Chainlink product or service and is provided to help you understand how to
+  interact with Chainlink's systems and services so that you can integrate them into your own. This template is provided
+  "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key checks or
+  error handling to make the usage of the product more clear. Do not use the code in this example in a production
+  environment without completing your own audits and application of best practices. Neither Chainlink Labs, the
+  Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due to
+  errors in code.
+</Aside>
+
+## Risks
+
+While 24/5 streams provide extended market coverage, they introduce specific risks related to liquidity, volatility, and data sourcing. Users must understand these factors and implement appropriate safeguards.
+
+In the following sections, we outline key risks and recommended mitigation strategies.
+
+### Single Provider for Extended & Overnight Data
+
+Extended and overnight session price feeds are currently sourced from a single data provider, making these sessions less reliable than the regular hours price feed which is multi-sourced.
+
+If the provider experiences downtime, technical failures, or connectivity disruption, the feed may flatline or report highly inaccurate figures, preventing users from reacting to real price movements. Such issues may lead to mispricing, failed liquidations, and potential bad debt accumulation.
+
+##### Mitigation
+
+The feed includes a staleness indicator, allowing consumers to detect when data stops updating. Users are strongly recommended to implement fallback logic within their protocol risk framework, which may include:
+
+- Pause or lock market activity
+- Restrict to narrow price bands
+- Temporarily switch to the tokenized price feed (understanding that it also carries liquidity limitations)
+
+### Structural Illiquidity and Volatility in Extended & Overnight Hours
+
+Pre-market and post-market sessions are typically thinly traded, with fragmented liquidity and higher spreads, leading to stale ticks, price gaps, and elevated volatility. These conditions are inherent to the market, not to the feed, and will be visible in the published data.
+
+##### Mitigation
+
+Users should evaluate whether the full 24/5 price coverage is appropriate for their use case. Consider the following:
+
+- Configure risk thresholds, circuit breakers, or mode switching aligned with your risk appetite
+- Validate these configurations during integration and simulation, not post-deployment
+
+### Corporate Actions
+
+Traditional equities are subject to corporate actions which can dramatically change the price of an asset overnight, especially in the case of stock splits and reverse stock splits. These actions are usually announced outside regular trading hours and can cause substantial price movements when markets reopen.
+
+Additionally, the overnight session data provider may disable trading for individual symbols during pending corporate actions such as dividends, splits, or mergers. When this occurs, there will be no overnight session data available for that specific symbol, and this closure will not be reflected in the `marketStatus` field. The overnight feed may continue to display stale data from the previous session, or the data may flatline, making it critical to monitor `lastSeenTimestampNs` for staleness detection.
+
+##### Mitigation
+
+Consumers should:
+
+- Actively monitor corporate action announcements
+- Adjust pricing logic, risk parameters, and open positions accordingly
+- Consider pausing markets during corporate action windows to prevent unfair liquidations
+- Implement staleness checks on `lastSeenTimestampNs` to detect when overnight session data stops updating due to symbol-specific trading halts
+
+### Trading Halts Are Not Explicitly Flagged
+
+Trading halts can occur for various reasons including regulatory actions, pending news announcements, volatility circuit breakers, or operational issues. When the underlying market is halted, this will not be reflected in the `marketStatus` field.
+
+Automated switching logic that relies only on `marketStatus` or staleness signals can incorrectly interpret halt inactivity as an outage or unexpected feed degradation, leading to unnecessary fallbacks, paused markets, or erroneous risk decisions.
+
+##### Mitigation
+
+Consumers must:
+
+- Monitor exchange halt notifications and adjust protocol behavior accordingly
+- Implement appropriate safeguards when trading halts are detected to prevent unfair liquidations or trades at stale prices
+
+For detailed market hours and trading schedules, see the [Market Hours](/data-streams/market-hours) documentation.
+
+## Available Streams
+
+The table below shows all available 24/5 US Equities streams. Use the **Time segment** filter to view streams for specific trading sessions.
+
+---
+
+# Handling Market Events (v11)
+Source: https://docs.chain.link/data-streams/rwa-streams/handling-market-events-v11
+
+<MarketEventsTabs />
+
+<Aside type="note" title="Market Status Values">
+  The `marketStatus` field values vary depending on the stream's supported hours. Refer to the [RWA Advanced (v11)
+  schema documentation](/data-streams/reference/report-schema-v11#market-status-values) to understand which values apply
+  to your specific stream. This guide uses generic "Open" and "Closed" terminology that applies across all v11 streams.
+</Aside>
+
+Apply these best practices when integrating or operating markets that use tokenized real-world assets during standard market hours. Developers and operators are responsible for assessing market integrity, implementing mitigations, and managing application-level risks — see the [Developer Responsibilities](/data-streams/developer-responsibilities) guidance for details.
+
+## Market Hours
+
+Markets for Real-World Assets (RWA) operate during specific hours and are subject to various market conditions that can create risks for applications. The following sections outline common market issues and how to mitigate them.
+
+<Aside type="note" title="Market Hours Overview">
+  For detailed market hours and trading schedules, see the <a href="/data-streams/market-hours">Market Hours</a> page.
+</Aside>
+
+### Market gaps
+
+Market gaps occur when there are interruptions in trading or price discovery, leading to periods where the last available price may not reflect current market conditions. These gaps can create risks, particularly around market opens, closures, and unexpected disruptions.
+
+#### Market close
+
+The following guidance applies to streams during non-trading hours. Check your stream's specific `marketStatus` values in the [schema documentation](/data-streams/reference/report-schema-v11#market-status-values).
+
+Around market close, large price jumps may occur due to after-hours news. This can create a large pricing gap between the close of the last session and the open of the new session. Such a price jump can cause issues for protocols by triggering sudden liquidations.
+
+| Data Stream behavior                                                                                                                                                                                                 | User guidance                                                                                                                                                                                                                                                             |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <ul><li>`midPrice`: Closing price is repeated until market open.</li><li>`marketStatus`: Market Closed status value(s).</li><li>`lastUpdateTimestamp`: Timestamp of the closing price of the last session.</li></ul> | Keep markets closed while `marketStatus` indicates closed to prevent users trading at unfair prices.<br /><br /> Leverage available should be set in line with the asset average volatility to avoid bad debt if a user's collateral is insufficient to cover the losses. |
+
+#### Price formation at open/close
+
+Certain assets (e.g., FX open on Sunday afternoon) experience gradual price discovery due to fragmented liquidity and delayed trading activity.
+
+Integrating protocols should avoid opening their market with the last close price.
+
+| Data Stream behavior                                                                                                                                                                                                                                    | User guidance                                                                                                   |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until a bid/ask becomes available or a transaction occurs.</li><li>`marketStatus`: Market Open status value.</li><li>`lastUpdateTimestamp`: Timestamp of the closing price of the last session.</li></ul> | Wait until `lastUpdateTimestamp` is current before opening the market so traders don't execute on stale quotes. |
+
+#### Sudden failures
+
+Unexpected system outages, order execution failures, or data feed disruptions can occur in traditional data brokers and trading systems.
+
+The price will be flat during that period, meaning if an integrating protocol lacks a mechanism to handle halts, it may struggle to determine fair prices thus leading to unpredictable liquidations.
+
+| Data Stream behavior                                                                                                                                                                                       | User guidance                                                                                                                |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Last mid-price is repeated until a new price is available.</li><li>`marketStatus`: Market Open status value.</li><li>`lastUpdateTimestamp`: Timestamp of the last mid-price.</li></ul> | Decide whether to allow users to open/close positions when `marketStatus` indicates open but `lastUpdateTimestamp` is stale. |
+
+#### Trading halts
+
+Stocks can be halted due to extreme volatility (e.g., limit up/down rules) or regulatory actions.
+
+The price will be flat during that period, meaning if an integrating protocol lacks a mechanism to handle halts, it may struggle to determine fair prices thus leading to unpredictable liquidations.
+
+| Data Stream behavior                                                                                                                                                                                       | User guidance                                                                                                                |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Last mid-price is repeated until a new price is available.</li><li>`marketStatus`: Market Open status value.</li><li>`lastUpdateTimestamp`: Timestamp of the last mid-price.</li></ul> | Decide whether to allow users to open/close positions when `marketStatus` indicates open but `lastUpdateTimestamp` is stale. |
+
+***
+
+## Volatility & low liquidity
+
+During periods of high volatility or low liquidity, price movements can become unpredictable and exaggerated. These conditions can increase the risk of sudden liquidations and bad debt accumulation, requiring careful risk management strategies.
+
+### Algorithmic & HFT activity
+
+Rapid-fire trading by algos can create unpredictable price movements.
+
+High volatility can lead to liquidation and potential bad debt accumulation.
+
+| Data Stream behavior                                                                                                                                 | User guidance                                                            |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Current mid price.</li><li>`marketStatus`: Market Open status value.</li><li>`lastUpdateTimestamp`: Current timestamp.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
+
+### Low liquidity at open/close
+
+Reduced market depth at trading session transitions can lead to higher volatility and spreads.
+
+High volatility can lead to liquidation and potential bad debt accumulation.
+
+| Data Stream behavior                                                                                                                                 | User guidance                                                            |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Current mid price.</li><li>`marketStatus`: Market Open status value.</li><li>`lastUpdateTimestamp`: Current timestamp.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
+
+***
+
+## Corporate actions
+
+Corporate actions are events initiated by publicly traded companies that can significantly impact stock prices and trading behavior. These actions are usually announced outside regular trading hours and can cause substantial price movements when markets reopen. Users should monitor these events closely as they can lead to sudden price adjustments that may trigger unexpected liquidations or require position modifications.
+
+### Bankruptcy & delisting
+
+Bankruptcy can lead to delisting or complete loss of equity value.
+
+Delisting will zero out prices for the asset.
+
+| Data Stream behavior                                                                                                                                                                                                 | User guidance                                                                                     |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------ |
+| <ul><li>`midPrice`: Closing price is repeated until a new price is available.</li><li>`marketStatus`: Market Closed status value(s).</li><li>`lastUpdateTimestamp`: Closing timestamp of the last session.</li></ul> | Monitor delisting news during market closed periods and close markets permanently once confirmed. |
+
+### Spin-offs
+
+When a company spins off a business unit into a separate publicly traded entity, the parent company's stock may adjust accordingly, while the spun-off company's shares begin trading independently.
+
+Positions may need to be manually adjusted if the integrating protocol doesn't support tracking the new entity.
+
+| Data Stream behavior                                                                                                                                                                       | User guidance                                                                                                                                                                                                                                                                                                                                |
+| :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until the first post-spin trade.</li><li>`marketStatus`: Market Closed status value(s).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor spin-off and split announcements during market closed periods.<br /><br />Auto-pause the market if the first post-event price moves by more than X% from the prior close, update positions, then reopen.<br /><br />If automatic adjustment isn't possible, disable leverage during the event window to prevent unfair liquidations. |
+
+### Stock splits & reverse splits
+
+<Aside type="note" title="Tokenized Stocks Guidance">
+  Tokenized stocks such as [Backed xStock](/data-streams/reference/report-schema-v10) handle stock splits differently
+  using activation dates and staged multipliers to maintain price continuity. [Learn more about advanced stock split
+  handling](/data-streams/tokenized-asset-streams/handling-stock-splits).
+</Aside>
+
+A stock split increases the number of shares while reducing the price per share (e.g., 2-for-1 split), often making shares more accessible to investors. A reverse split does the opposite, consolidating shares to increase the price per share.
+
+A 2-for-1 split would reduce the price by 50% from the previous trading session, any leveraged user could get liquidated.
+
+| Data Stream behavior                                                                                                                                                                             | User guidance                                                                                                                                                                                                                                                                                                                                |
+| :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until the split-adjusted price prints.</li><li>`marketStatus`: Market Closed status value(s).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor spin-off and split announcements during market closed periods.<br /><br />Auto-pause the market if the first post-event price moves by more than X% from the prior close, update positions, then reopen.<br /><br />If automatic adjustment isn't possible, disable leverage during the event window to prevent unfair liquidations. |
+
+### Mergers & acquisitions (M\&A)
+
+If a company is being acquired, its stock price may rise to reflect the acquisition premium. The acquiring company's stock might fluctuate based on investor sentiment regarding the deal's financial and strategic impact.
+
+Announcements can cause sharp price spikes or sustained moves.
+
+| Data Stream behavior                                                                                                                                                                | User guidance                                                            |
+| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until a new price prints.</li><li>`marketStatus`: Market Closed status value(s).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
+
+### Share buybacks & stock issuance
+
+Reduced share supply from a buyback can drive stock prices higher, while an increase in share supply can lead to price dilution.
+
+Announcements can cause sharp price spikes or sustained moves.
+
+| Data Stream behavior                                                                                                                                                                | User guidance                                                            |
+| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until a new price prints.</li><li>`marketStatus`: Market Closed status value(s).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
+
+### Dividends
+
+A company's stock price typically adjusts to reflect dividend payments. For example, when a company declares a 10% dividend, its stock price often drops by a similar amount on the ex-dividend date, as new buyers are no longer entitled to that dividend.
+
+Announcements can cause sharp price spikes or sustained moves.
+
+| Data Stream behavior                                                                                                                                                                      | User guidance                                                            |
+| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until the ex-date trade prints.</li><li>`marketStatus`: Market Closed status value(s).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
+
+---
+
+# Handling Market Events
+Source: https://docs.chain.link/data-streams/rwa-streams/handling-market-events
+
+<MarketEventsTabs />
+
+Apply these best practices when integrating or operating markets that use tokenized real-world assets. Developers and operators are responsible for assessing market integrity, implementing mitigations, and managing application-level risks — see the [Developer Responsibilities](/data-streams/developer-responsibilities) guidance for details.
+
+## Market Hours
+
+Markets for Real-World Assets (RWA) operate during specific hours and are subject to various market conditions that can create risks for applications. The following sections outline common market issues and how to mitigate them.
+
+<Aside type="note" title="Market Hours Overview">
+  For detailed market hours and trading schedules, see the <a href="/data-streams/market-hours">Market Hours</a> page.
+</Aside>
+
+### Market gaps
+
+Market gaps occur when there are interruptions in trading or price discovery, leading to periods where the last available price may not reflect current market conditions. These gaps can create risks, particularly around market opens, closures, and unexpected disruptions.
+
+#### Market close
+
+Large price jumps between trading sessions due to after-hours news.
+
+A large price jump at market open could cause sudden liquidations, potentially leaving an integrating protocol with bad debt if a trader's collateral is insufficient to cover the losses.
+
+| Data Stream behavior                                                                                                                                                                                     | User guidance                                                                                                                                                                                                                                                  |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until market open.</li><li>`marketStatus`: 1 = Market Closed.</li><li>`lastUpdateTimestamp`: Timestamp of the closing price of the last session.</li></ul> | Keep markets closed while `marketStatus = 1` to prevent users trading at unfair prices.<br /><br /> Leverage available should be set in line with the asset average volatility to avoid bad debt if a trader's collateral is insufficient to cover the losses. |
+
+#### Price formation at open/close
+
+Certain assets (e.g., FX open on Sunday afternoon) experience gradual price discovery due to fragmented liquidity and delayed trading activity.
+
+Integrating protocols should avoid opening their market with the last close price.
+
+| Data Stream behavior                                                                                                                                                                                                                             | User guidance                                                                                                   |
+| :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until a bid/ask becomes available or a transaction occurs.</li><li>`marketStatus`: `2` (Market Open).</li><li>`lastUpdateTimestamp`: Timestamp of the closing price of the last session.</li></ul> | Wait until `lastUpdateTimestamp` is current before opening the market so traders don't execute on stale quotes. |
+
+#### Sudden failures
+
+Unexpected system outages, order execution failures, or data feed disruptions can occur in traditional data brokers and trading systems.
+
+The price will be flat during that period, meaning if an integrating protocol lacks a mechanism to handle halts, it may struggle to determine fair prices thus leading to unpredictable liquidations.
+
+| Data Stream behavior                                                                                                                                                                                | User guidance                                                                                                     |
+| :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Last mid-price is repeated until a new price is available.</li><li>`marketStatus`: `2` (Market Open).</li><li>`lastUpdateTimestamp`: Timestamp of the last mid-price.</li></ul> | Decide whether to allow users to open/close positions when `marketStatus = 2` but `lastUpdateTimestamp` is stale. |
+
+#### Trading halts
+
+Stocks can be halted due to extreme volatility (e.g., limit up/down rules) or regulatory actions.
+
+The price will be flat during that period, meaning if an integrating protocol lacks a mechanism to handle halts, it may struggle to determine fair prices thus leading to unpredictable liquidations.
+
+| Data Stream behavior                                                                                                                                                                                | User guidance                                                                                                     |
+| :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Last mid-price is repeated until a new price is available.</li><li>`marketStatus`: `2` (Market Open).</li><li>`lastUpdateTimestamp`: Timestamp of the last mid-price.</li></ul> | Decide whether to allow users to open/close positions when `marketStatus = 2` but `lastUpdateTimestamp` is stale. |
+
+***
+
+## Volatility & low liquidity
+
+During periods of high volatility or low liquidity, price movements can become unpredictable and exaggerated. These conditions can increase the risk of sudden liquidations and bad debt accumulation, requiring careful risk management strategies.
+
+### Algorithmic & HFT activity
+
+Rapid-fire trading by algos can create unpredictable price movements.
+
+High volatility can lead to liquidation and potential bad debt accumulation.
+
+| Data Stream behavior                                                                                                                          | User guidance                                                            |
+| :-------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Current mid price.</li><li>`marketStatus`: `2` (Market Open).</li><li>`lastUpdateTimestamp`: Current timestamp.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
+
+### Low liquidity at open/close
+
+Reduced market depth at trading session transitions can lead to higher volatility and spreads.
+
+High volatility can lead to liquidation and potential bad debt accumulation.
+
+| Data Stream behavior                                                                                                                          | User guidance                                                            |
+| :-------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Current mid price.</li><li>`marketStatus`: `2` (Market Open).</li><li>`lastUpdateTimestamp`: Current timestamp.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
+
+***
+
+## Corporate actions
+
+Corporate actions are events initiated by publicly traded companies that can significantly impact stock prices and trading behavior. These actions are usually announced outside regular trading hours and can cause substantial price movements when markets reopen. Users should monitor these events closely as they can lead to sudden price adjustments that may trigger unexpected liquidations or require position modifications.
+
+### Bankruptcy & delisting
+
+Bankruptcy can lead to delisting or complete loss of equity value.
+
+Delisting will zero out prices for the asset.
+
+| Data Stream behavior                                                                                                                                                                                       | User guidance                                                                                    |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until a new price is available.</li><li>`marketStatus`: `1` (Market Closed).</li><li>`lastUpdateTimestamp`: Closing timestamp of the last session.</li></ul> | Monitor delisting news during `marketStatus` = `1` and close markets permanently once confirmed. |
+
+### Spin-offs
+
+When a company spins off a business unit into a separate publicly traded entity, the parent company's stock may adjust accordingly, while the spun-off company's shares begin trading independently.
+
+Positions may need to be manually adjusted if the integrating protocol doesn't support tracking the new entity.
+
+| Data Stream behavior                                                                                                                                                             | User guidance                                                                                                                                                                                                                                                                                                                            |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until the first post-spin trade.</li><li>`marketStatus`: `1` (Market Closed).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor spin-off and split announcements while `marketStatus = 1`.<br /><br />Auto-pause the market if the first post-event price moves by more than X% from the prior close, update positions, then reopen.<br /><br />If automatic adjustment isn't possible, disable leverage during the event window to prevent unfair liquidations. |
+
+### Stock splits & reverse splits
+
+<Aside type="note" title="Tokenized Stocks Guidance">
+  Tokenized stocks such as [Backed xStock](/data-streams/reference/report-schema-v10) handle stock splits differently
+  using activation dates and staged multipliers to maintain price continuity. [Learn more about advanced stock split
+  handling](/data-streams/tokenized-asset-streams/handling-stock-splits).
+</Aside>
+
+A stock split increases the number of shares while reducing the price per share (e.g., 2-for-1 split), often making shares more accessible to investors. A reverse split does the opposite, consolidating shares to increase the price per share.
+
+A 2-for-1 split would reduce the price by 50% from the previous trading session, any leveraged user could get liquidated.
+
+| Data Stream behavior                                                                                                                                                                   | User guidance                                                                                                                                                                                                                                                                                                                            |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until the split-adjusted price prints.</li><li>`marketStatus`: `1` (Market Closed).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor spin-off and split announcements while `marketStatus = 1`.<br /><br />Auto-pause the market if the first post-event price moves by more than X% from the prior close, update positions, then reopen.<br /><br />If automatic adjustment isn't possible, disable leverage during the event window to prevent unfair liquidations. |
+
+### Mergers & acquisitions (M\&A)
+
+If a company is being acquired, its stock price may rise to reflect the acquisition premium. The acquiring company's stock might fluctuate based on investor sentiment regarding the deal's financial and strategic impact.
+
+Announcements can cause sharp price spikes or sustained moves.
+
+| Data Stream behavior                                                                                                                                                      | User guidance                                                            |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until a new price prints.</li><li>`marketStatus`: `1` (Market Closed).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
+
+### Share buybacks & stock issuance
+
+Reduced share supply from a buyback can drive stock prices higher, while an increase in share supply can lead to price dilution.
+
+Announcements can cause sharp price spikes or sustained moves.
+
+| Data Stream behavior                                                                                                                                                      | User guidance                                                            |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until a new price prints.</li><li>`marketStatus`: `1` (Market Closed).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
+
+### Dividends
+
+A company's stock price typically adjusts to reflect dividend payments. For example, when a company declares a 10% dividend, its stock price often drops by a similar amount on the ex-dividend date, as new buyers are no longer entitled to that dividend.
+
+Announcements can cause sharp price spikes or sustained moves.
+
+| Data Stream behavior                                                                                                                                                            | User guidance                                                            |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------- |
+| <ul><li>`midPrice`: Closing price is repeated until the ex-date trade prints.</li><li>`marketStatus`: `1` (Market Closed).</li><li>`lastUpdateTimestamp`: Last close.</li></ul> | Monitor liquidation thresholds closely to prevent accumulating bad debt. |
 
 ---
 
@@ -5760,6 +6316,105 @@ Streams Trade is currently available on the following networks:
 - Ethereum
 - Optimism
 - Polygon
+
+---
+
+# Handling Stock Splits
+Source: https://docs.chain.link/data-streams/tokenized-asset-streams/handling-stock-splits
+
+Corporate actions, such as stock splits and reverse splits, require precise handling for tokenized assets to ensure price continuity and avoid disruptions. These events alter per‑share pricing while leaving the underlying economic exposure unchanged. They can produce abrupt per‑share price moves and must be handled carefully to avoid incorrect onchain price computations and unexpected liquidations.
+
+In the [v10 report schema](/data-streams/reference/report-schema-v10), continuity is preserved by staging a multiplier change with a scheduled `activationDateTime` so the Theoretical Price (`price` \* `currentMultiplier`) remains continuous. Split ratios are typically known in advance, but activation may occur while markets are closed, so some external price sources may not reflect the split until trading resumes.
+
+<Aside type="note" title="Note">
+  This guidance is designed for multiplier handling in the [v10 report
+  schema](/data-streams/reference/report-schema-v10) and what integrators should expect around activation windows and
+  protocol behavior. Similar principles may apply to future schemas that host tokenized stocks, but applicability and
+  exact behavior will depend on each schema's design and are not guaranteed.
+</Aside>
+
+## Guiding principle
+
+Follow these principles when handling multiplier changes during corporate actions:
+
+1. The protocol considers the Theoretical Price as `price` \* `currentMultiplier`.
+2. Ahead of the event, `newMultiplier` and `activationDateTime` are staged.
+3. At `activationDateTime` (Unix), `currentMultiplier` becomes `newMultiplier`.
+   - The underlying `price` from traditional markets should start reflecting the split the next time trading opens, so at the next `price` update, the Theoretical Price should remain continuous.
+
+## Example (10:1 split, AAPL)
+
+The following hypothetical scenario demonstrates how a 10:1 AAPL stock split is handled through the staged multiplier system, showing the progression from announcement through protocol reopening with proper price continuity maintained throughout.
+
+The following timeline outlines the key events and actions taken at each stage:
+
+- **T-2**: [Split announcement and multiplier staging](#announcement-t-2)
+- **T-1**: [Protocol preparation and monitoring setup](#protocol-engagement-t-1)
+- **T0**: [Multiplier activation (split effective date)](#activation-t0)
+- **T+1**: [Market reopening with adjusted prices](#market-reopening-t1)
+- **T+2**: [Protocol resumption after verification](#protocol-reopening-t2)
+
+### Announcement (T-2)
+
+A 10:1 AAPL stock split is announced. [The report](/data-streams/reference/report-schema-v10) updates to stage the split:
+
+- `newMultiplier` is set to 10x the value of `currentMultiplier`.
+- `activationDateTime` is set to the Unix timestamp of the split.
+- `currentMultiplier` is unaffected until activation.
+
+### Protocol engagement (T-1)
+
+At this stage, users are advised to monitor for changes in `activationDateTime` and inspect the upcoming change to prepare appropriate action, such as preparing the protocol for a pause around the `activationDateTime` in order to ensure appropriate handling of the stock split.
+
+### Activation (T0)
+
+When the provider applies the split, [the report](/data-streams/reference/report-schema-v10) updates:
+
+- `newMultiplier` remains the current value.
+- `activationDateTime` is set to `0`.
+- `currentMultiplier` is updated to the same value as `newMultiplier`.
+
+<Aside type="danger" title="Important">
+  If activation occurs while the underlying market is closed, prices may still show the pre‑event last trade. Do not
+  compute the Theoretical Price during this pre-adjustment window. Monitor `marketStatus` and keep the protocol paused
+  until the first post‑event trade prints and the Theoretical Price is continuous.
+</Aside>
+
+If activation occurs while the underlying market is closed, prices may still show the pre‑event last trade. Do not compute the Theoretical Price during this pre-adjustment window. Monitor `marketStatus` and keep the protocol paused until the first post‑event trade prints and the Theoretical Price is continuous.
+
+### Market reopening (T1)
+
+The stock split has taken effect. Generally, this occurs after the market closes or over the weekend, meaning `price` may not yet reflect the new economic value per share. Upon the market reopening, `price` should start reflecting the split-adjusted value.
+
+### Protocol reopening (T2)
+
+Users should pause markets before `activationDateTime` and keep them paused until:
+
+- The market has reopened (monitor `marketStatus`)
+- `price` has updated in line with the split ratio (e.g., 10:1)
+- You have confirmed that the Theoretical Price matches expectations
+
+After all the above checks have been confirmed, users can unpause their protocol and continue and resume normal operation.
+
+## Activation-time convention
+
+Each tokenized asset issuer sets its own activation time. For example, the xStocks default `activationDateTime` is 00:00 UTC on the effective date. Once `activationDateTime` is reached, `currentMultiplier` becomes `newMultiplier`.
+
+Because underlying venues may be closed at activation, some external price sources may not reflect the split immediately. If `activationDateTime` occurs while the underlying market is closed, the report’s `currentMultiplier` will become `newMultiplier`; however, `price` can remain at the pre-event level until the market reopens. During this post-activation, pre-adjustment interval (after the multiplier has changed but before the underlying `price` updates), the Theoretical Price can be incorrect. Use `marketStatus` to pause until `price` reflects the event.
+
+## Integrator risk & handling
+
+Computing `price` \* `currentMultiplier` when the price has not adjusted (e.g., market closed) can produce large errors. It is critical to ensure that the Theoretical Price is again reflective of actual market conditions before allowing live trading.
+
+Treat any multiplier change (splits, dividends, etc) and `activationDateTime` as a maintenance window; pause/guard the protocol, then verify post-activation conditions before resuming.
+
+<Aside type="caution" title="Integrator Responsibility">
+  It is the integrator's responsibility to perform proper handling and risk management. Failure to follow these best
+  practices may result in significant financial losses. Ensure that all multiplier changes, activation windows, and
+  post-activation conditions are verified before resuming operations.
+</Aside>
+
+For broader guidance around market hours and event handling, refer to the [Market Hours](/data-streams/market-hours) guidance.
 
 ---
 

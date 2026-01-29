@@ -7,7 +7,7 @@ pageId: "guides-workflow-http-get-request"
 metadata:
   description: "Fetch data from APIs in TypeScript: learn to make GET requests with consensus validation to bring offchain data into your workflow."
   datePublished: "2025-11-04"
-  lastModified: "2025-12-16"
+  lastModified: "2026-01-20"
 ---
 
 import { Aside } from "@components"
@@ -80,7 +80,7 @@ Add the API URL to your `config.json` file.
 Define TypeScript types for the API response and your internal data model.
 
 ```typescript
-import { cre, type Runtime, type HTTPSendRequester, Runner } from "@chainlink/cre-sdk"
+import { HTTPClient, type Runtime, type HTTPSendRequester, Runner } from "@chainlink/cre-sdk"
 import { z } from "zod"
 
 // Config schema
@@ -142,17 +142,19 @@ const fetchAndParse = (sendRequester: HTTPSendRequester, config: Config): PriceD
 In your `onCronTrigger` handler, call `httpClient.sendRequest()`. This returns a function that you call with `runtime.config`.
 
 ```typescript
+import { HTTPClient, ConsensusAggregationByFields, median, type Runtime } from "@chainlink/cre-sdk"
+
 const onCronTrigger = (runtime: Runtime<Config>): string => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   // sendRequest returns a function that we call with runtime.config
   const result = httpClient
     .sendRequest(
       runtime,
       fetchAndParse,
-      new cre.consensus.ConsensusAggregationByFields<PriceData>({
-        price: cre.consensus.median<number>(),
-        lastUpdated: cre.consensus.median<Date>(),
+      ConsensusAggregationByFields<PriceData>({
+        price: median<number>(),
+        lastUpdated: median<Date>(),
       })
     )(runtime.config) // Call the returned function with config
     .result()
@@ -168,7 +170,16 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 Here's the full workflow code:
 
 ```typescript
-import { cre, type Runtime, type HTTPSendRequester, Runner } from "@chainlink/cre-sdk"
+import {
+  CronCapability,
+  HTTPClient,
+  handler,
+  ConsensusAggregationByFields,
+  median,
+  type Runtime,
+  type HTTPSendRequester,
+  Runner,
+} from "@chainlink/cre-sdk"
 import { z } from "zod"
 
 // Config schema
@@ -216,15 +227,15 @@ const fetchAndParse = (sendRequester: HTTPSendRequester, config: Config): PriceD
 
 // Main workflow handler
 const onCronTrigger = (runtime: Runtime<Config>): string => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   const result = httpClient
     .sendRequest(
       runtime,
       fetchAndParse,
-      new cre.consensus.ConsensusAggregationByFields<PriceData>({
-        price: cre.consensus.median<number>(),
-        lastUpdated: cre.consensus.median<Date>(),
+      ConsensusAggregationByFields<PriceData>({
+        price: median<number>(),
+        lastUpdated: median<Date>(),
       })
     )(runtime.config) // Call with config
     .result()
@@ -237,8 +248,8 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 // Initialize workflow
 const initWorkflow = (config: Config) => {
   return [
-    cre.handler(
-      new cre.capabilities.CronCapability().trigger({
+    handler(
+      new CronCapability().trigger({
         schedule: config.schedule,
       }),
       onCronTrigger
@@ -250,8 +261,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## 2. The `runInNodeMode` Pattern (Low-Level)
@@ -266,7 +275,16 @@ The pattern works like a "map-reduce" for the DON:
 The example below is functionally identical to the `sendRequest` example above, but implemented using the low-level pattern.
 
 ```typescript
-import { cre, type Runtime, type NodeRuntime, Runner } from "@chainlink/cre-sdk"
+import {
+  CronCapability,
+  HTTPClient,
+  handler,
+  ConsensusAggregationByFields,
+  median,
+  type Runtime,
+  type NodeRuntime,
+  Runner,
+} from "@chainlink/cre-sdk"
 import { z } from "zod"
 
 // Config and types (same as before)
@@ -292,7 +310,7 @@ type ExternalApiResponse = {
 // fetchPriceData is a function that runs on each individual node
 const fetchPriceData = (nodeRuntime: NodeRuntime<Config>): PriceData => {
   // 1. Create HTTP client and fetch raw data
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   const req = {
     url: nodeRuntime.config.apiUrl,
@@ -320,9 +338,9 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
   const result = runtime
     .runInNodeMode(
       fetchPriceData,
-      new cre.consensus.ConsensusAggregationByFields<PriceData>({
-        price: cre.consensus.median<number>(),
-        lastUpdated: cre.consensus.median<Date>(),
+      ConsensusAggregationByFields<PriceData>({
+        price: median<number>(),
+        lastUpdated: median<Date>(),
       })
     )()
     .result()
@@ -335,8 +353,8 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 // Initialize workflow (same as before)
 const initWorkflow = (config: Config) => {
   return [
-    cre.handler(
-      new cre.capabilities.CronCapability().trigger({
+    handler(
+      new CronCapability().trigger({
         schedule: config.schedule,
       }),
       onCronTrigger
@@ -348,8 +366,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## Response helper functions

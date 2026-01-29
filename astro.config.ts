@@ -14,6 +14,8 @@ import { ccipRedirects } from "./src/config/redirects/ccip"
 import trailingSlashMiddleware from "./src/integrations/trailing-slash-middleware"
 import redirectsJson from "./src/features/redirects/redirects.json"
 import { extractCanonicalUrlsWithLanguageVariants } from "./src/utils/sidebar"
+import remarkCodeFenceFilename from "./src/lib/markdown/remarkCodeFenceFilename"
+import rehypeCodeSampleFences from "./src/lib/markdown/rehypeCodeSampleFences"
 
 config() // Load .env file
 
@@ -103,9 +105,13 @@ export default defineConfig({
         return item
       },
     }),
-    mdx(),
+    // Ensure our fence-meta parser runs for `.mdx` pages (in addition to `markdown.remarkPlugins`).
+    mdx({
+      remarkPlugins: [remarkCodeFenceFilename],
+    }),
   ],
   markdown: {
+    remarkPlugins: [remarkCodeFenceFilename],
     rehypePlugins: [
       rehypeSlug, // Required for autolink to work properly
       [
@@ -116,6 +122,7 @@ export default defineConfig({
       ],
       // Wrap tables in div with overflow supported
       [rehypeWrapAll, { selector: "table", wrapper: "div.overflow-wrapper" }],
+      rehypeCodeSampleFences,
     ] as RehypePlugins,
     syntaxHighlight: "prism",
     smartypants: false,

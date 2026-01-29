@@ -1,6 +1,6 @@
 # Chainlink Runtime Environment (CRE)
 Source: https://docs.chain.link/cre
-Last Updated: 2025-11-04
+Last Updated: 2026-01-20
 
 ## What is CRE?
 
@@ -51,7 +51,7 @@ Workflows use a **trigger-and-callback model** to provide a code-first developer
 
 1. **A Trigger**: An event source that starts a workflow execution (e.g., `cron.Trigger`). This is the "when" of your workflow.
 2. **A Callback**: A function that contains your business logic. It is inside this function that you will use the SDK's clients to invoke capabilities. This is the "what" of your workflow.
-3. **The `cre.handler()`**: The glue that connects a single trigger to a single callback.
+3. **The `handler()`**: The glue that connects a single trigger to a single callback.
 
 You can define multiple trigger and callback combinations in your workflow. You can also attach the same callback to multiple triggers for reusability.
 
@@ -102,7 +102,7 @@ Learn more about [Consensus Computing in CRE](/cre/concepts/consensus-computing)
 | Concept            | One-liner                                                         |
 | ------------------ | ----------------------------------------------------------------- |
 | **Workflow**       | Compiled WebAssembly (WASM) binary.                               |
-| **Handler**        | `cre.handler(trigger, callback)` pair; the atom of execution.     |
+| **Handler**        | `handler(trigger, callback)` pair; the atom of execution.         |
 | **Trigger**        | Event that starts an execution (cron, HTTP, EVM log, …).          |
 | **Callback**       | Function that runs when its trigger fires; contains your logic.   |
 | **Runtime**        | Object passed to a callback; used to invoke capabilities.         |
@@ -442,15 +442,99 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2025-11-20
+Last Updated: 2026-01-28
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## TS SDK v1.0.5 - January 28, 2026
+
+- **Bug Fix**: Fixed an issue with `runtime.now()` returning incorrect timestamps
+
+For details on using time in workflows, see [Time in CRE](/cre/concepts/time-in-cre).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.0.4...v1.0.5)
+
+## ZKSync Era Support - January 26, 2026
+
+CRE now supports **ZKSync Era mainnet and testnet** for workflow simulation and production deployment. You can now build and test workflows that interact with ZKSync Era chains.
+
+See the [Supported Networks](/cre/guides/workflow/using-evm-client/supported-networks) page for chain names and forwarder addresses.
+
+## TS SDK v1.0.4 - January 26, 2026
+
+**TypeScript SDK version 1.0.4** includes internal improvements.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.0.3...v1.0.4)
+
+## CLI v1.0.6 - January 21, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.0.6" target="_blank">CRE CLI version 1.0.6</a> is now available.**
+
+- **ZKSync Era support**: Added ZKSync Era testnet and mainnet to the simulator
+
+This release also includes various small improvements and bug fixes, such as better error messages when hitting workflow limits.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+## TS SDK v1.0.3 - January 19, 2026
+
+- **Bug Fixes**: Fixed issue where workflows could execute twice during simulation
+
+- **Examples Updated**: All workflow examples in the SDK repository now use **direct imports** (e.g., `import { HTTPClient } from "@chainlink/cre-sdk"`) instead of the namespace pattern (e.g., `cre.capabilities.HTTPClient`). Both patterns remain fully supported—choose whichever fits your coding style. See [Import styles](/cre/reference/sdk/core-ts#import-styles) for details.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.0.2...v1.0.3)
+
+## TS SDK v1.0.2 - January 16, 2026
+
+**TypeScript SDK version 1.0.2** introduces several improvements to developer experience:
+
+**New features:**
+
+- **Optional `main()` call**: You no longer need to call `main()` at the end of your workflow files. The SDK now automatically executes the `main()` function during compilation. See [`main()` reference](/cre/reference/sdk/core-ts#main) for details.
+- **Automatic error handling**: If you don't provide custom error handling, the SDK automatically adds `.catch(sendErrorResponse)` to your workflow's `main()` function. This ensures errors are properly reported instead of silently failing.
+- **Direct imports**: You can now import SDK components directly (e.g., `import { HTTPClient } from "@chainlink/cre-sdk"`) instead of accessing them through the `cre` namespace (e.g., `cre.capabilities.HTTPClient`). Both import styles remain supported for backward compatibility. See [Import styles](/cre/reference/sdk/core-ts#import-styles) for details and guidance on when to use each pattern.
+
+**Migration notes:**
+
+- **Custom error handling**: If you need custom error handling, you can still add your own `.catch()` handler: `main().catch(myCustomHandler)`. The SDK will respect your custom handler and not override it. See [`main()` reference](/cre/reference/sdk/core-ts#main) for examples.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.0.1...v1.0.2)
+
+## CLI v1.0.5 - January 13, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.0.5" target="_blank">CRE CLI version 1.0.5</a> is now available.** This release includes various small improvements and bug fixes.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+## CLI v1.0.4 - January 9, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.0.4" target="_blank">CRE CLI version 1.0.4</a> is now available.** This release includes various small improvements and bug fixes.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+## CLI v1.0.3 - December 12, 2025
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.0.3" target="_blank">CRE CLI version 1.0.3</a> is now available.** This release includes various small improvements and bug fixes.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
 
 ## CLI v1.0.2 - November 20, 2025
 
 **<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.0.2" target="_blank">CRE CLI version 1.0.2</a> is now available.** This release includes various improvements based on user feedback.
 
-### How to update
+**How to update:**
 
 - **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
 - **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
@@ -530,9 +614,9 @@ These guides explain how to install the Chainlink Developer Platform CLI (also r
 
 # Installing the CRE CLI on macOS and Linux
 Source: https://docs.chain.link/cre/getting-started/cli-installation/macos-linux
-Last Updated: 2025-11-20
+Last Updated: 2026-01-21
 
-This page explains how to install the CRE CLI on macOS or Linux. The recommended version at the time of writing is **v1.0.2**.
+This page explains how to install the CRE CLI on macOS or Linux. The recommended version at the time of writing is **v1.0.6**.
 
 ## Installation
 
@@ -563,7 +647,7 @@ After the script completes, verify the installation:
 cre version
 ```
 
-**Expected output:** `cre version v1.0.2`
+**Expected output:** `cre version v1.0.6`
 
 <Aside type="note" title="macOS Gatekeeper">
   If you see warnings about "unrecognized developer/source" on macOS, run:{" "}
@@ -581,9 +665,15 @@ The CRE CLI is publicly available on GitHub. Visit the releases page and downloa
   - On **macOS** (darwin), run <CopyText text="uname -m" code />:
     - `arm64` (Apple Silicon) → Download `cre_darwin_arm64.zip`
     - `x86_64` (Intel) → Download `cre_darwin_amd64.zip`
-  - On **Linux**, run <CopyText text="uname -m" code />:
-    - `aarch64` (ARM) → Download `cre_linux_arm64.tar.gz`
-    - `x86_64` (AMD/Intel) → Download `cre_linux_amd64.tar.gz`
+  - On **Linux**, the binary depends on both your architecture and OS version. First, run <CopyText text="uname -m" code /> to check your architecture, then <CopyText text="lsb_release -rs" code /> to check your Ubuntu version:
+    - **Ubuntu 22.04 or older**:
+      - `x86_64` (AMD/Intel) → Download `cre_linux_amd64_ldd2-35.tar.gz`
+      - `aarch64` (ARM) → Download `cre_linux_arm64_ldd2-35.tar.gz`
+    - **Ubuntu 24.04 or newer**:
+      - `x86_64` (AMD/Intel) → Download `cre_linux_amd64.tar.gz`
+      - `aarch64` (ARM) → Download `cre_linux_arm64.tar.gz`
+
+  **Note:** The `ldd2-35` binaries are compiled for older glibc versions (2.35 and below). If you're using a non-Ubuntu Linux distribution, check your glibc version with <CopyText text="ldd --version" code /> and use the `ldd2-35` binary if your version is 2.35 or lower.
 </Aside>
 
 After downloading the correct file from the releases page, move on to the next step to verify its integrity.
@@ -602,16 +692,21 @@ shasum -a 256 cre_darwin_arm64.zip
 
 **Verify against official checksums**
 
-Compare the output with the official checksum below:
+Compare the output with the official checksum from the [CRE CLI releases page](https://github.com/smartcontractkit/cre-cli/releases):
 
-| File                     | SHA-256 Checksum                                                 |
-| ------------------------ | ---------------------------------------------------------------- |
-| `cre_darwin_amd64.zip`   | 482e53d3a5f8471034d30c935196d2dca2ab09a5fe1ab2083ad336172565291b |
-| `cre_darwin_arm64.zip`   | 92b0409801dd4e44f90a85331615f3e4b8cf1fe9f90a8eab3ad8bb3458b4b6cf |
-| `cre_linux_amd64.tar.gz` | d3a8b9b999b4b8bf73b2235d27386acf4efbc8f05d86d9e6066abda23ee9ce9b |
-| `cre_linux_arm64.tar.gz` | f52d618727ccc8fb6ab4b1f9418b09424c8505428131a49c01bb33ca2bc86fe3 |
+1. Go to [https://github.com/smartcontractkit/cre-cli/releases](https://github.com/smartcontractkit/cre-cli/releases)
+2. Find the release version you downloaded (e.g., v1.0.6)
+3. Under the **Assets** section, locate your downloaded file
+4. Compare the SHA-256 checksum shown next to the file with your command output
 
-If the checksum doesn't match, do not proceed with installation. Contact your Chainlink point of contact for assistance.
+**Example:** For `cre_darwin_arm64.zip` in release v1.0.6, you'll see something like:
+
+```
+cre_darwin_arm64.zip
+sha256:1359415a1f1baee7643107b82b3a0589a3627aef71018644e5c488960a97e955
+```
+
+If the checksums match, the file is authentic and safe to install. If they don't match, do not proceed with installation and contact the Chainlink team for assistance.
 
 #### 2. Extract and install
 
@@ -634,7 +729,7 @@ If the checksum doesn't match, do not proceed with installation. Contact your Ch
 3. **Rename the extracted binary to `cre`**
 
    ```bash
-   mv cre_v1.0.2_darwin_arm64 cre
+   mv cre_v1.0.6_darwin_arm64 cre
    ```
 
 4. **Make it executable**:
@@ -707,7 +802,7 @@ cre version
 
 **Expected output:**
 
-You should see version information: `cre version v1.0.2`.
+You should see version information: `cre version v1.0.6`.
 
 **If it doesn't work:**
 
@@ -744,9 +839,9 @@ Once you're authenticated, you're ready to build your first workflow:
 
 # Installing the CRE CLI on Windows
 Source: https://docs.chain.link/cre/getting-started/cli-installation/windows
-Last Updated: 2025-11-20
+Last Updated: 2026-01-21
 
-This page explains how to install the Chainlink Developer Platform CLI (also referred to as the CRE CLI) on Windows. The recommended version at the time of writing is **v1.0.2**.
+This page explains how to install the Chainlink Developer Platform CLI (also referred to as the CRE CLI) on Windows. The recommended version at the time of writing is **v1.0.6**.
 
 ## Installation
 
@@ -776,7 +871,7 @@ After the script completes, **open a new PowerShell window** and verify the inst
 cre version
 ```
 
-**Expected output:** `cre version v1.0.2`
+**Expected output:** `cre version v1.0.6`
 
 ### Manual installation
 
@@ -800,20 +895,28 @@ Get-FileHash cre_windows_amd64.zip -Algorithm SHA256
 
 **Verify against the official checksum**
 
-Compare the `Hash` value in the output with the official checksum below:
+Compare the `Hash` value in the output with the official checksum from the [CRE CLI releases page](https://github.com/smartcontractkit/cre-cli/releases):
 
-| File                    | SHA-256 Checksum                                                 |
-| ----------------------- | ---------------------------------------------------------------- |
-| `cre_windows_amd64.zip` | 60fe65b74619c4164c0a9d6442611bf8537a04a6daf1ed3ecefc608cbbffdb01 |
+1. Go to [https://github.com/smartcontractkit/cre-cli/releases](https://github.com/smartcontractkit/cre-cli/releases)
+2. Find the release version you downloaded (e.g., v1.0.6)
+3. Under the **Assets** section, locate `cre_windows_amd64.zip`
+4. Compare the SHA-256 checksum shown next to the file with the `Hash` value from your PowerShell output
 
-If the checksum doesn't match, do not proceed with installation. Contact your Chainlink point of contact for assistance.
+**Example:** For `cre_windows_amd64.zip` in release v1.0.6, you'll see something like:
+
+```
+cre_windows_amd64.zip
+sha256:372d16566479ff6bbfe9eb1d5cebe0e1e2a3c67062c6f0439fc96c735ddeaa18
+```
+
+If the checksums match, the file is authentic and safe to install. If they don't match, do not proceed with installation and contact the Chainlink team for assistance.
 
 #### 2. Extract and install
 
 1. Navigate to the directory where you downloaded the archive.
 2. Right-click the `.zip` file and select **Extract All...**.
 3. Choose a permanent location for the extracted folder (e.g., `C:\Program Files\cre-cli`).
-4. Inside the extracted folder, rename the file `cre_v1.0.2_windows_amd64.exe` to `cre.exe`.
+4. Inside the extracted folder, rename the file `cre_v1.0.6_windows_amd64.exe` to `cre.exe`.
 
 #### 3. Add the CLI to your PATH
 
@@ -838,7 +941,7 @@ Open a new **PowerShell** or **Command Prompt** window and run:
 cre version
 ```
 
-You should see version information: `cre version v1.0.2`.
+You should see version information: `cre version v1.0.6`.
 
 ## Next steps
 
@@ -1046,8 +1149,9 @@ cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --htt
 ```
 
 <Aside type="note" title="Non-interactive requirements">
-  The `--http-payload` flag requires `--non-interactive` mode. You must also specify `--trigger-index` (0-based index of
-  your HTTP trigger). If your HTTP trigger is the only trigger or the first one defined, use `--trigger-index 0`.
+  The `--http-payload` flag requires `--non-interactive` mode. You must also specify `--trigger-index` to select which
+  handler to run. The index is 0-based: if the handler with your HTTP trigger is the first handler defined in your
+  `InitWorkflow` function, use `--trigger-index 0`; if it's the second, use `--trigger-index 1`, and so on.
 </Aside>
 
 <Aside type="note" title="Escaping quotes">
@@ -1630,7 +1734,7 @@ Manual JWT generation is complex and error-prone. For development and testing:
 
 # Testing with Local JWT Server
 Source: https://docs.chain.link/cre/guides/workflow/using-triggers/http-trigger/local-testing-tool
-Last Updated: 2025-11-04
+Last Updated: 2026-01-14
 
 The <a href="https://github.com/smartcontractkit/cre-sdk-typescript/tree/main/packages/cre-http-trigger" target="_blank" rel="noopener noreferrer">`cre-http-trigger` TypeScript package</a> simplifies testing deployed workflows with HTTP triggers by handling JWT generation, signing, and request formatting automatically. It provides a local HTTP server that acts as a proxy between your test requests and the CRE gateway.
 
@@ -1661,7 +1765,7 @@ The `cre-http-trigger` tool eliminates this complexity by:
 
 ## Prerequisites
 
-- **Bun runtime**: The tool requires <a href="https://bun.sh" target="_blank" rel="noopener noreferrer">Bun</a> version 1.2.21 or higher
+- **Bun runtime**: The tool requires <a href="https://bun.com" target="_blank" rel="noopener noreferrer">Bun</a> version 1.2.21 or higher
 - **Deployed workflow**: Your workflow must be deployed with an HTTP trigger
 - **Workflow ID**: Available from deployment output or the CRE UI
 - **Private key**: The private key corresponding to one of the `authorizedKeys` in your HTTP trigger configuration
@@ -2653,7 +2757,7 @@ abstract contract ReceiverTemplate is IReceiver, Ownable {
   /// @inheritdoc IERC165
   function supportsInterface(
     bytes4 interfaceId
-  ) public pure virtual override returns (bool) {
+  ) public view virtual override returns (bool) {
     return interfaceId == type(IReceiver).interfaceId || interfaceId == type(IERC165).interfaceId;
   }
 }
@@ -4491,7 +4595,7 @@ For detailed CLI command documentation, see:
 
 # Using Secrets with Deployed Workflows
 Source: https://docs.chain.link/cre/guides/workflow/secrets/using-secrets-deployed
-Last Updated: 2025-11-04
+Last Updated: 2026-01-20
 
 When your workflow is deployed, it cannot access your local `.env` file or environment variables. Instead, secrets must be stored in the **Vault DON**—a decentralized, secure secret storage system that your deployed workflows can access at runtime.
 
@@ -4936,7 +5040,7 @@ Non-interactive mode allows you to run simulations without prompts, making it id
 **Requirements:**
 
 - Use the `--non-interactive` flag
-- Specify `--trigger-index` (0-based index of the trigger to run)
+- Specify `--trigger-index` to select which handler to run (0-based position: `0` = first handler, `1` = second, etc.)
 - Provide trigger-specific flags as needed (see [Trigger-specific configuration](#trigger-specific-configuration))
 
 **Example:**
@@ -4944,6 +5048,14 @@ Non-interactive mode allows you to run simulations without prompts, making it id
 ```bash
 cre workflow simulate my-workflow --non-interactive --trigger-index 0 --target staging-settings
 ```
+
+<Aside type="tip" title="Understanding trigger-index">
+  The `--trigger-index` flag selects **which handler** in your workflow to execute. Handlers are created in your
+  `InitWorkflow` function using `cre.Handler()`, where [each handler connects a trigger to a callback
+  function](/cre/key-terms#handler). If your workflow has only one handler, use `--trigger-index 0`. If you have
+  multiple handlers (e.g., one for an HTTP trigger and one for an EVM log trigger), use `0` for the first, `1` for the
+  second, etc., based on their order in your code.
+</Aside>
 
 ## The `--broadcast` flag
 
@@ -5051,6 +5163,20 @@ cre workflow simulate my-workflow \
   --evm-event-index 0 \
   --target staging-settings
 ```
+
+
+<Aside type="tip" title="Understanding the two different indexes">
+  **Two separate concepts:**
+
+  - **`--trigger-index`** selects **which handler** in your workflow to run (e.g., if the
+    handler with an EVM log trigger is the third handler defined, use `--trigger-index 2`)
+  - **`--evm-event-index`**
+    specifies **which log/event within the transaction** to use for testing (e.g., if the transaction emitted 3 events and
+    you want the first one, use `--evm-event-index 0`)
+
+  These are completely independent: one selects your workflow's
+  handler to execute, the other selects which event data from the blockchain to test with.
+</Aside>
 
 ## Additional flags
 
@@ -5482,7 +5608,7 @@ For complete setup instructions, configuration requirements, and step-by-step gu
 
 # Updating Deployed Workflows
 Source: https://docs.chain.link/cre/guides/operations/updating-deployed-workflows
-Last Updated: 2025-11-04
+Last Updated: 2026-01-23
 
 When you update a deployed workflow, you redeploy it with the same workflow name. The new deployment replaces the previous version in the Workflow Registry contract. Currently, CRE does not maintain version history—each deployment overwrites the previous one.
 
@@ -5510,6 +5636,12 @@ cre workflow deploy my-workflow --target production-settings
 2. **Upload**: The new binary and configuration files are uploaded to the CRE Storage Service
 3. **Registration**: A new registration transaction is sent to the Workflow Registry contract
 4. **Replacement**: The previous version is replaced with the new deployment
+5. **Status preserved**: The workflow's status (active or paused) is preserved from the previous deployment
+
+
+<Aside type="note" title="Workflow status is preserved">
+  When you update a workflow, the CLI matches the status of the previously deployed version. If your workflow was paused, the updated version will remain paused. If it was active, the updated version will be active and immediately start responding to triggers. To change the workflow status, see [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows).
+</Aside>
 
 
 <Aside type="caution" title="No version history">
@@ -6634,6 +6766,96 @@ To unlink a key:
 
 The CLI will submit an onchain transaction to remove the address from the Workflow Registry. After the transaction is confirmed, the address and all its associated workflows will be deleted.
 
+## Unlinking a key without the original private key
+
+If you need to unlink a key but no longer have access to the original private key (for example, the key owner left your organization), you can still complete the unlinking process using a different wallet.
+
+
+<Aside type="caution" title="Destructive operation">
+  **Unlinking a key will permanently delete all workflows registered under that address.** This action cannot be undone. Make sure you want to permanently remove all associated workflows before proceeding.
+</Aside>
+
+### How it works
+
+When you run `cre account unlink-key --unsigned` while logged into your CRE organization, the CLI generates:
+
+1. An authorization signature proving you have permission to unlink the key (through your CRE organization membership)
+2. Raw transaction data that any funded wallet can submit to the blockchain
+
+
+<Aside type="note" title="Security">
+  The authorization is tied to the **organization**, not to the individual who originally linked the key. Any authenticated member of the CRE organization can generate valid unlink authorization for keys linked to that organization.
+</Aside>
+
+### Prerequisites
+
+- **Logged in to CRE CLI**: You must be authenticated as a member of the CRE organization that owns the key
+- **`workflow-owner-address` configured**: Set this in your `project.yaml` to the address you want to unlink
+- **A funded wallet**: Any wallet with ETH on Ethereum Mainnet to submit the transaction and pay gas fees
+
+### Steps
+
+1. **Configure your `project.yaml`** with the address you want to unlink:
+
+   ```yaml
+   production-settings:
+     account:
+       workflow-owner-address: "<address_to_unlink>"
+     # ... other settings
+   ```
+
+2. **Generate the unsigned transaction**:
+
+   ```bash
+   cre account unlink-key --unsigned --target production-settings
+   ```
+
+   **Example output:**
+
+   ```bash
+   Unlinking web3 key from your CRE organization
+   Target :                 production-settings
+   ✔ Using Address :        0x....
+
+   Starting unlinking: owner=0x....
+   ✔ Yes
+   Contract address validation passed
+   --unsigned flag detected: transaction not sent on-chain.
+   Generating call data for offline signing and submission in your preferred tool:
+
+   Ownership unlinking initialized successfully!
+
+   Next steps:
+
+      1. Submit the following transaction on the target chain:
+
+         Chain:            ethereum-mainnet
+         Contract Address: 0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5
+
+      2. Use the following transaction data:
+
+         39d68c6a000000000000000000...
+
+   Unlinked successfully
+   ```
+
+3. **Submit the transaction** using any wallet that supports sending transactions with custom data.
+
+
+   <Aside type="caution" title="Destructive operation">
+     **Unlinking a key will permanently delete all workflows registered under that address.** This action cannot be undone. Make sure you want to permanently remove all associated workflows before proceeding.
+   </Aside>
+
+   Here's an example using MetaMask:
+
+   1. In MetaMask, go to **Settings → Advanced** and enable **"Show hex data"**
+   2. Click **Send** and enter the contract address as the recipient 0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5
+   3. Set the amount to **0 ETH**
+   4. Paste the transaction data in the **Hex data** field (add `0x` prefix)
+   5. Review and confirm the transaction
+
+   The unlink operation completes once the transaction is confirmed onchain. All workflows registered under that address will be permanently deleted.
+
 ## Non-interactive mode
 
 For automation or CI/CD pipelines, use the `--yes` flag to skip confirmation prompts:
@@ -7047,111 +7269,6 @@ Learn more about how to use CRE capabilities with built-in consensus:
 - **[Capabilities Overview](/cre/capabilities)**: Explore all available capabilities
 - **[API Interactions](/cre/guides/workflow/using-http-client)**: Learn how to use the HTTP capability with built-in consensus
 - **[EVM Chain Interactions](/cre/guides/workflow/using-evm-client/overview)**: Learn how to use the EVM capability with built-in consensus
-
----
-
-# Time in CRE
-Source: https://docs.chain.link/cre/concepts/time-in-cre
-Last Updated: 2025-11-04
-
-<Aside type="note" title="TL;DR">
-  CRE provides **DON Time**: a consensus-derived timestamp so different nodes see the *same time*. Use the SDK's runtime
-  call, `runtime.Now()`, whenever your workflow logic depends on time. Do **not** read local system clocks or other
-  ad-hoc time sources in DON Mode — they introduce non-determinism.
-</Aside>
-
-## The problem: Why time needs consensus
-
-Workflows often rely on time for decisions (market-hours checks), scheduling (retries/backoffs), and observability (log timestamps). In a decentralized network, nodes do not share an identical clock—clock drift, resource contention, and OS scheduling can skew each node's local time. If each node consults its own clock:
-
-- Different nodes may take **different branches** of your logic (e.g., one thinks the market is open, another does not).
-- Logs across nodes become **hard to correlate**.
-- Data fetched using time (e.g., "fetch price at timestamp N") can be **inconsistent**.
-
-**DON Time** removes these divergences by making time **deterministic in the DON**.
-
-## The solution: DON time
-
-**DON Time** is a timestamp computed by an <a href="https://docs.chain.link/architecture-overview/off-chain-reporting" target="_blank" rel="noopener noreferrer">OCR (Off-Chain Reporting)</a> plugin and agreed upon by the nodes participating in CRE. You access it through the SDK's runtime call, `runtime.Now()`, not via an OS/System clock. The `runtime.Now()` function returns a standard Go `time.Time` object.
-
-**Key properties:**
-
-- **Deterministic across nodes**: nodes see the same timestamp.
-- **Sequenced per workflow**: time responses are associated with a **time-call sequence number** inside each workflow execution (1st call, 2nd call, …). Node execution timing might be slightly off, but a given call will resolve to the **same DON timestamp**.
-- **Low latency**: the plugin runs continuously with **delta round = 0**, and each node **transmits** results back to outstanding requests at the end of every round.
-- **Tamper-resistant**: workflows don't expose host machine time, reducing timing-attack surface.
-
-<Aside type="note" title="A Note on Accuracy">
-  DON Time is computed as the **median of nodes' local observations** in each round. It is designed for **consistency**
-  across the DON rather than exact alignment to an external UTC source. Think of it as a highly reliable clock for your
-  workflows. Do not treat it as a high-precision clock.
-</Aside>
-
-## How it works: A high-level view
-
-1. Your workflow calls **`runtime.Now()`**.
-2. **The Chainlink network takes this request**: The Workflow Engine's **TimeProvider** assigns that call a **sequence number** and enqueues it in the **DON Time Store**.
-3. **All the nodes agree on a single time (the DON Time)**: The **OCR Time Plugin** on each node reaches consensus on a new DON timestamp (the median of observed times).
-4. Each node **returns** the newest DON timestamp to every pending request and updates its **last observed DON time** cache.
-5. The result is written back into the WebAssembly execution, and your workflow continues.
-
-Because requests are sequenced, *Call 1* for a workflow instance will always return the same DON timestamp on every node. If Node A hits *Call 2* before Node B, A will block until the DON timestamp for *Call 2* is produced; when B reaches *Call 2*, it immediately reuses that value.
-
-## Execution modes: DON mode vs. Node mode
-
-### DON mode (default for workflows)
-
-- Time is **consensus-based** and **deterministic**.
-- Use for **any** logic where different outcomes across nodes would be a bug. Examples:
-  - Market-hours gates
-  - Time-windowed queries ("last 15 minutes")
-  - Retry/backoff logic that must align across nodes
-  - Timestamps used for cross-node correlation (logging, audit trails)
-
-### Node mode (advanced / special cases)
-
-- Workflow authors handle consensus themselves.
-- `runtime.Now()` in Node Mode is a non-blocking call that returns the **last generated DON timestamp** from the local node's cache. This is the same mechanism used by standard Go `time.Now()` calls within the Wasm environment.
-- Useful in situation where you already expect non-determinism (e.g., inherently variable HTTP responses).
-
-<Aside type="caution" title="Use DON Mode">
-  Unless you have a specific reason and understand the trade-offs, **always use DON Mode** for time-dependent logic.
-</Aside>
-
-## Best practices: Avoiding non-determinism in DON mode
-
-When running in DON Mode, you get determinism **if and only if** you base time-dependent logic on DON Time.
-
-**Avoid** these patterns:
-
-- **Reading host/system time** (`time.Now()`, etc.). Always use `runtime.Now()` from the CRE SDK.
-- **Mixing time sources** in the same control path.
-- **Per-node "sleeps" based on local time** that gate deterministic decisions.
-
-**Deterministic patterns:**
-
-- ✅ Gate behavior with:
-  ```go
-  now := runtime.Now()
-  if market.IsOpenAt(now):
-      // proceed
-  ```
-- ✅ Compute windows from DON Time:
-  ```go
-  now := runtime.Now()
-  windowStart := now.Add(-15 * time.Minute)
-  fetchData(windowStart, now)
-  ```
-
-## FAQ
-
-**Is DON Time "real UTC time"?**
-
-It's the **median of node observations** per round. It closely tracks real time but prioritizes **consistency** over absolute accuracy.
-
-**What is the resolution?**
-
-New DON timestamps are produced continuously (multiple per second). Treat it as coarse-grained real time suitable for gating and logging, not sub-millisecond measurement.
 
 ---
 
@@ -7585,10 +7702,10 @@ See the [repository README](https://github.com/smartcontractkit/cre-gcp-predicti
 
 # CLI Reference
 Source: https://docs.chain.link/cre/reference/cli
-Last Updated: 2025-11-20
+Last Updated: 2026-01-21
 
-<Aside type="note" title="Required CLI Version: v1.0.2">
-  To ensure compatibility with the guides and examples in this documentation, please use version `v1.0.2` of the CRE
+<Aside type="note" title="Required CLI Version: v1.0.6">
+  To ensure compatibility with the guides and examples in this documentation, please use version `v1.0.6` of the CRE
   CLI. You can check your installed version by running `cre version`. Refer to the [CLI
   Installation](/cre/getting-started/cli-installation/macos-linux) guide for more information.
 </Aside>
@@ -7962,15 +8079,15 @@ cre workflow simulate <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| Flag                      | Description                                                                                        |
-| ------------------------- | -------------------------------------------------------------------------------------------------- |
-| `--broadcast`             | Broadcast onchain write transactions (default: `false`). Without this flag, a dry run is performed |
-| `-g, --engine-logs`       | Enable non-fatal engine logging                                                                    |
-| `--non-interactive`       | Run without prompts; requires `--trigger-index` and inputs for the selected trigger type           |
-| `--trigger-index <int>`   | Index of the trigger to run (0-based). Required when using `--non-interactive`                     |
-| `--http-payload <string>` | HTTP trigger payload as JSON string or path to JSON file (with or without `@` prefix)              |
-| `--evm-tx-hash <string>`  | EVM trigger transaction hash (`0x...`). For EVM log triggers                                       |
-| `--evm-event-index <int>` | EVM trigger log index (0-based). For EVM log triggers                                              |
+| Flag                      | Description                                                                                                                                                                       |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--broadcast`             | Broadcast onchain write transactions (default: `false`). Without this flag, a dry run is performed                                                                                |
+| `-g, --engine-logs`       | Enable non-fatal engine logging                                                                                                                                                   |
+| `--non-interactive`       | Run without prompts; requires `--trigger-index` (see the line below) and inputs for the selected trigger type                                                                     |
+| `--trigger-index <int>`   | Selects which handler to run (0-based position). If your workflow has multiple handlers, `0` is the first, `1` is the second, etc. Required with `--non-interactive`              |
+| `--http-payload <string>` | HTTP trigger payload as JSON string or path to JSON file (with or without `@` prefix). For HTTP triggers only                                                                     |
+| `--evm-tx-hash <string>`  | Transaction hash (`0x...`) containing the event that triggered your workflow. For EVM log triggers only                                                                           |
+| `--evm-event-index <int>` | Which log/event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For EVM log triggers only |
 
 **Examples:**
 
@@ -7984,6 +8101,21 @@ cre workflow simulate <workflow-name-or-path> [flags]
 
   ```bash
   cre workflow simulate ./my-workflow --broadcast --target local-simulation
+  ```
+
+- Non-interactive mode with HTTP trigger
+
+  ```bash
+  # If your HTTP trigger handler is the first handler in your workflow, use --trigger-index 0
+  cre workflow simulate my-workflow --non-interactive --trigger-index 0 --http-payload '{"key":"value"}' --target staging-settings
+  ```
+
+- Non-interactive mode with EVM log trigger
+
+  ```bash
+  # If your EVM log trigger handler is the second handler in your workflow, use --trigger-index 1
+  # --evm-event-index 0 means you want the first event from that transaction
+  cre workflow simulate my-workflow --non-interactive --trigger-index 1 --evm-tx-hash 0x420721d7d00130a03c5b525b2dbfd42550906ddb3075e8377f9bb5d1a5992f8e --evm-event-index 0 --target staging-settings
   ```
 
 
@@ -8435,7 +8567,7 @@ For details, see [Using Multi-sig Wallets](/cre/guides/operations/using-multisig
 
 # Utility Commands
 Source: https://docs.chain.link/cre/reference/cli/utilities
-Last Updated: 2025-11-20
+Last Updated: 2026-01-21
 
 Utility commands provide helpful information and troubleshooting capabilities.
 
@@ -8480,12 +8612,12 @@ cre version
 **Example output:**
 
 ```bash
-cre version v1.0.2
+cre version v1.0.6
 ```
 
 
 <Aside type="note" title="Version compatibility">
-  Always check that your CLI version matches the version recommended in the documentation. The current recommended version is **v1.0.2**. See the [CLI Installation guide](/cre/getting-started/cli-installation) for more information.
+  Always check that your CLI version matches the version recommended in the documentation. The current recommended version is **v1.0.6**. See the [CLI Installation guide](/cre/getting-started/cli-installation) for more information.
 </Aside>
 
 ## Learn more
@@ -8716,12 +8848,117 @@ Large Language Models (LLMs) generate different responses for the same prompt, e
 
 ---
 
-# Part 1: Project Setup & Simulation
-Source: https://docs.chain.link/cre/getting-started/part-1-project-setup-go
+# Time in CRE
+Source: https://docs.chain.link/cre/concepts/time-in-cre-go
 Last Updated: 2025-11-04
 
+<Aside type="note" title="TL;DR">
+  CRE provides **DON Time**: a consensus-derived timestamp so different nodes see the *same time*. Use the SDK's runtime
+  call, `runtime.Now()`, whenever your workflow logic depends on time. Do **not** read local system clocks or other
+  ad-hoc time sources in DON Mode — they introduce non-determinism.
+</Aside>
+
+## The problem: Why time needs consensus
+
+Workflows often rely on time for decisions (market-hours checks), scheduling (retries/backoffs), and observability (log timestamps). In a decentralized network, nodes do not share an identical clock—clock drift, resource contention, and OS scheduling can skew each node's local time. If each node consults its own clock:
+
+- Different nodes may take **different branches** of your logic (e.g., one thinks the market is open, another does not).
+- Logs across nodes become **hard to correlate**.
+- Data fetched using time (e.g., "fetch price at timestamp N") can be **inconsistent**.
+
+**DON Time** removes these divergences by making time **deterministic in the DON**.
+
+## The solution: DON time
+
+**DON Time** is a timestamp computed by an <a href="https://docs.chain.link/architecture-overview/off-chain-reporting" target="_blank" rel="noopener noreferrer">OCR (Off-Chain Reporting)</a> plugin and agreed upon by the nodes participating in CRE. You access it through the SDK's runtime call, `runtime.Now()`, not via an OS/System clock. The `runtime.Now()` function returns a standard Go `time.Time` object.
+
+**Key properties:**
+
+- **Deterministic across nodes**: nodes see the same timestamp.
+- **Sequenced per workflow**: time responses are associated with a **time-call sequence number** inside each workflow execution (1st call, 2nd call, …). Node execution timing might be slightly off, but a given call will resolve to the **same DON timestamp**.
+- **Low latency**: the plugin runs continuously with **delta round = 0**, and each node **transmits** results back to outstanding requests at the end of every round.
+- **Tamper-resistant**: workflows don't expose host machine time, reducing timing-attack surface.
+
+<Aside type="note" title="A Note on Accuracy">
+  DON Time is computed as the **median of nodes' local observations** in each round. It is designed for **consistency**
+  across the DON rather than exact alignment to an external UTC source. Think of it as a highly reliable clock for your
+  workflows. Do not treat it as a high-precision clock.
+</Aside>
+
+## How it works: A high-level view
+
+1. Your workflow calls **`runtime.Now()`**.
+2. **The Chainlink network takes this request**: The Workflow Engine's **TimeProvider** assigns that call a **sequence number** and enqueues it in the **DON Time Store**.
+3. **All the nodes agree on a single time (the DON Time)**: The **OCR Time Plugin** on each node reaches consensus on a new DON timestamp (the median of observed times).
+4. Each node **returns** the newest DON timestamp to every pending request and updates its **last observed DON time** cache.
+5. The result is written back into the WebAssembly execution, and your workflow continues.
+
+Because requests are sequenced, *Call 1* for a workflow instance will always return the same DON timestamp on every node. If Node A hits *Call 2* before Node B, A will block until the DON timestamp for *Call 2* is produced; when B reaches *Call 2*, it immediately reuses that value.
+
+## Execution modes: DON mode vs. Node mode
+
+### DON mode (default for workflows)
+
+- Time is **consensus-based** and **deterministic**.
+- Use for **any** logic where different outcomes across nodes would be a bug. Examples:
+  - Market-hours gates
+  - Time-windowed queries ("last 15 minutes")
+  - Retry/backoff logic that must align across nodes
+  - Timestamps used for cross-node correlation (logging, audit trails)
+
+### Node mode (advanced / special cases)
+
+- Workflow authors handle consensus themselves.
+- `runtime.Now()` in Node Mode is a non-blocking call that returns the **last generated DON timestamp** from the local node's cache. This is the same mechanism used by standard Go `time.Now()` calls within the Wasm environment.
+- Useful in situation where you already expect non-determinism (e.g., inherently variable HTTP responses).
+
+<Aside type="caution" title="Use DON Mode">
+  Unless you have a specific reason and understand the trade-offs, **always use DON Mode** for time-dependent logic.
+</Aside>
+
+## Best practices: Avoiding non-determinism in DON mode
+
+When running in DON Mode, you get determinism **if and only if** you base time-dependent logic on DON Time.
+
+**Avoid** these patterns:
+
+- **Reading host/system time** (`time.Now()`, etc.). Always use `runtime.Now()` from the CRE SDK.
+- **Mixing time sources** in the same control path.
+- **Per-node "sleeps" based on local time** that gate deterministic decisions.
+
+**Deterministic patterns:**
+
+- ✅ Gate behavior with:
+  ```go
+  now := runtime.Now()
+  if market.IsOpenAt(now):
+      // proceed
+  ```
+- ✅ Compute windows from DON Time:
+  ```go
+  now := runtime.Now()
+  windowStart := now.Add(-15 * time.Minute)
+  fetchData(windowStart, now)
+  ```
+
+## FAQ
+
+**Is DON Time "real UTC time"?**
+
+It's the **median of node observations** per round. It closely tracks real time but prioritizes **consistency** over absolute accuracy.
+
+**What is the resolution?**
+
+New DON timestamps are produced continuously (multiple per second). Treat it as coarse-grained real time suitable for gating and logging, not sub-millisecond measurement.
+
+---
+
+# Part 1: Project Setup & Simulation
+Source: https://docs.chain.link/cre/getting-started/part-1-project-setup-go
+Last Updated: 2026-01-14
+
 <Aside type="note" title="SDK Language: Go">
-  You're viewing the **Go** version of this guide. If you prefer TypeScript, use the language selector in the right
+  You're viewing the **Go** version of this guide. If you prefer TypeScript, use the language selector in the left
   sidebar to switch to the TypeScript version.
 </Aside>
 
@@ -9612,7 +9849,8 @@ import {ReceiverTemplate} from "./ReceiverTemplate.sol";
  * @title CalculatorConsumer (Testing Version)
  * @notice This contract receives reports from a CRE workflow and stores the results of a calculation onchain.
  * @dev Inherits from ReceiverTemplate which provides security checks. The forwarder address must be
- * configured at deployment. Additional security checks (workflowId, workflowName, author) can be enabled via setter functions.
+ * configured at deployment. Additional security checks (workflowId, workflowName, author) can be enabled via setter
+ * functions.
  */
 contract CalculatorConsumer is ReceiverTemplate {
   // Struct to hold the data sent in a report from the workflow
@@ -10840,7 +11078,7 @@ This approach gives you IDE autocompletion, compile-time type checking, and elim
 
 # Supported Networks
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/supported-networks-go
-Last Updated: 2025-11-20
+Last Updated: 2026-01-22
 
 This page lists the EVM-compatible networks supported by CRE workflows, along with their chain names (for configuration) and forwarder contract addresses (for consumer contract validation).
 
@@ -10854,9 +11092,11 @@ This reference provides three key pieces of information for each network:
 
 ## Understanding Forwarder Addresses
 
-Forwarder addresses are relevant **only if you want to add security validation to your consumer contracts**. Your workflow code does not interact with forwarders directly—the EVM capability handles report delivery automatically. Learn more: [Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write/overview-go).
+Forwarder addresses identify the trusted Chainlink Forwarder contract that delivers verified workflow reports to your consumer contract. Your workflow code does not interact with forwarders directly—the EVM capability handles report delivery automatically. Learn more: [Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write/overview-go).
 
-**Optional security layer**: You can configure your consumer contract's `onReport()` function to accept calls only from the trusted forwarder address. See [Configuring Permissions](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#34-configuring-permissions) for implementation details.
+**Using the [ReceiverTemplate](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#3-using-receivertemplate) (recommended)**: If you use the [`ReceiverTemplate`](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#receivertemplate), the forwarder address is **required** in the constructor. This ensures your contract only accepts reports from the trusted Chainlink Forwarder.
+
+**Custom implementations**: If you implement the `IReceiver` interface directly without using `ReceiverTemplate`, you control your own security checks. See [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts) for details.
 
 ### Simulation vs Production Addresses
 
@@ -10884,18 +11124,20 @@ These `MockKeystoneForwarder` addresses are used when running `cre workflow simu
 | <a href="https://etherscan.io/address/0xa3d1ad4ac559a6575a114998affb2fb2ec97a7d9" target="_blank" rel="noopener noreferrer">Ethereum Mainnet</a>      | ethereum-mainnet              | 0xa3d1ad4ac559a6575a114998affb2fb2ec97a7d9 |
 | <a href="https://optimistic.etherscan.io/address/0x9119a1501550ed94a3f2794038ed9258337afa18" target="_blank" rel="noopener noreferrer">OP Mainnet</a> | ethereum-mainnet-optimism-1   | 0x9119a1501550ed94a3f2794038ed9258337afa18 |
 | <a href="https://polygonscan.com/address/0xf458d621885e29a5003ea9bbba5280d54e19b1ce" target="_blank" rel="noopener noreferrer">Polygon</a>            | polygon-mainnet               | 0xf458d621885e29a5003ea9bbba5280d54e19b1ce |
+| <a href="https://explorer.zksync.io/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">ZKSync Era</a>      | ethereum-mainnet-zksync-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 
 ### Simulation Testnets
 
-| Network                                                                                                                                                     | Chain Name                          | Mock Forwarder Address                     |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------ |
-| <a href="https://sepolia.arbiscan.io/address/0xd41263567ddfead91504199b8c6c87371e83ca5d" target="_blank" rel="noopener noreferrer">Arbitrum Sepolia</a>     | ethereum-testnet-sepolia-arbitrum-1 | 0xd41263567ddfead91504199b8c6c87371e83ca5d |
-| <a href="https://testnet.snowscan.xyz/address/0x2e7371a5d032489e4f60216d8d898a4c10805963" target="_blank" rel="noopener noreferrer">Avalanche Fuji</a>      | avalanche-testnet-fuji              | 0x2e7371a5d032489e4f60216d8d898a4c10805963 |
-| <a href="https://sepolia.basescan.org/address/0x82300bd7c3958625581cc2f77bc6464dcecdf3e5" target="_blank" rel="noopener noreferrer">Base Sepolia</a>        | ethereum-testnet-sepolia-base-1     | 0x82300bd7c3958625581cc2f77bc6464dcecdf3e5 |
-| <a href="https://testnet.bscscan.com/address/0xa238e42cb8782808dbb2f37e19859244ec4779b0" target="_blank" rel="noopener noreferrer">BNB Chain Testnet</a>    | binance_smart_chain-testnet       | 0xa238e42cb8782808dbb2f37e19859244ec4779b0 |
-| <a href="https://sepolia.etherscan.io/address/0x15fC6ae953E024d975e77382eEeC56A9101f9F88" target="_blank" rel="noopener noreferrer">Ethereum Sepolia</a>    | ethereum-testnet-sepolia            | 0x15fC6ae953E024d975e77382eEeC56A9101f9F88 |
-| <a href="https://sepolia-optimism.etherscan.io/address/0xa2888380dff3704a8ab6d1cd1a8f69c15fea5ee3" target="_blank" rel="noopener noreferrer">OP Sepolia</a> | ethereum-testnet-sepolia-optimism-1 | 0xa2888380dff3704a8ab6d1cd1a8f69c15fea5ee3 |
-| <a href="https://amoy.polygonscan.com/address/0x3675a5eb2286a3f87e8278fc66edf458a2e3bb74" target="_blank" rel="noopener noreferrer">Polygon Amoy</a>        | polygon-testnet-amoy                | 0x3675a5eb2286a3f87e8278fc66edf458a2e3bb74 |
+| Network                                                                                                                                                          | Chain Name                          | Mock Forwarder Address                     |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------ |
+| <a href="https://sepolia.arbiscan.io/address/0xd41263567ddfead91504199b8c6c87371e83ca5d" target="_blank" rel="noopener noreferrer">Arbitrum Sepolia</a>          | ethereum-testnet-sepolia-arbitrum-1 | 0xd41263567ddfead91504199b8c6c87371e83ca5d |
+| <a href="https://testnet.snowscan.xyz/address/0x2e7371a5d032489e4f60216d8d898a4c10805963" target="_blank" rel="noopener noreferrer">Avalanche Fuji</a>           | avalanche-testnet-fuji              | 0x2e7371a5d032489e4f60216d8d898a4c10805963 |
+| <a href="https://sepolia.basescan.org/address/0x82300bd7c3958625581cc2f77bc6464dcecdf3e5" target="_blank" rel="noopener noreferrer">Base Sepolia</a>             | ethereum-testnet-sepolia-base-1     | 0x82300bd7c3958625581cc2f77bc6464dcecdf3e5 |
+| <a href="https://testnet.bscscan.com/address/0xa238e42cb8782808dbb2f37e19859244ec4779b0" target="_blank" rel="noopener noreferrer">BNB Chain Testnet</a>         | binance_smart_chain-testnet       | 0xa238e42cb8782808dbb2f37e19859244ec4779b0 |
+| <a href="https://sepolia.etherscan.io/address/0x15fC6ae953E024d975e77382eEeC56A9101f9F88" target="_blank" rel="noopener noreferrer">Ethereum Sepolia</a>         | ethereum-testnet-sepolia            | 0x15fC6ae953E024d975e77382eEeC56A9101f9F88 |
+| <a href="https://sepolia-optimism.etherscan.io/address/0xa2888380dff3704a8ab6d1cd1a8f69c15fea5ee3" target="_blank" rel="noopener noreferrer">OP Sepolia</a>      | ethereum-testnet-sepolia-optimism-1 | 0xa2888380dff3704a8ab6d1cd1a8f69c15fea5ee3 |
+| <a href="https://amoy.polygonscan.com/address/0x3675a5eb2286a3f87e8278fc66edf458a2e3bb74" target="_blank" rel="noopener noreferrer">Polygon Amoy</a>             | polygon-testnet-amoy                | 0x3675a5eb2286a3f87e8278fc66edf458a2e3bb74 |
+| <a href="https://sepolia.explorer.zksync.io/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">ZKSync Era Sepolia</a> | ethereum-testnet-sepolia-zksync-1   | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 
 ## Production Forwarders
 
@@ -10912,18 +11154,20 @@ These `KeystoneForwarder` addresses are used by deployed workflows. Use these ad
 | <a href="https://etherscan.io/address/0x0b93082D9b3C7C97fAcd250082899BAcf3af3885" target="_blank" rel="noopener noreferrer">Ethereum Mainnet</a>      | ethereum-mainnet              | 0x0b93082D9b3C7C97fAcd250082899BAcf3af3885 |
 | <a href="https://optimistic.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">OP Mainnet</a> | ethereum-mainnet-optimism-1   | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
 | <a href="https://polygonscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Polygon</a>            | polygon-mainnet               | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://explorer.zksync.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">ZKSync Era</a>      | ethereum-mainnet-zksync-1     | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 
 ### Testnets
 
-| Network                                                                                                                                                     | Chain Name                          | Forwarder Address                          |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------ |
-| <a href="https://sepolia.arbiscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Arbitrum Sepolia</a>     | ethereum-testnet-sepolia-arbitrum-1 | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://testnet.snowscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Avalanche Fuji</a>      | avalanche-testnet-fuji              | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://sepolia.basescan.org/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Base Sepolia</a>        | ethereum-testnet-sepolia-base-1     | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
-| <a href="https://testnet.bscscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">BNB Chain Testnet</a>    | binance_smart_chain-testnet       | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://sepolia.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Ethereum Sepolia</a>    | ethereum-testnet-sepolia            | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
-| <a href="https://sepolia-optimism.etherscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">OP Sepolia</a> | ethereum-testnet-sepolia-optimism-1 | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://amoy.polygonscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Polygon Amoy</a>        | polygon-testnet-amoy                | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| Network                                                                                                                                                          | Chain Name                          | Forwarder Address                          |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------ |
+| <a href="https://sepolia.arbiscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Arbitrum Sepolia</a>          | ethereum-testnet-sepolia-arbitrum-1 | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://testnet.snowscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Avalanche Fuji</a>           | avalanche-testnet-fuji              | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://sepolia.basescan.org/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Base Sepolia</a>             | ethereum-testnet-sepolia-base-1     | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
+| <a href="https://testnet.bscscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">BNB Chain Testnet</a>         | binance_smart_chain-testnet       | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://sepolia.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Ethereum Sepolia</a>         | ethereum-testnet-sepolia            | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
+| <a href="https://sepolia-optimism.etherscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">OP Sepolia</a>      | ethereum-testnet-sepolia-optimism-1 | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://amoy.polygonscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Polygon Amoy</a>             | polygon-testnet-amoy                | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://sepolia.explorer.zksync.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">ZKSync Era Sepolia</a> | ethereum-testnet-sepolia-zksync-1   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 
 ---
 
@@ -14124,7 +14368,7 @@ if err != nil {
 
 # SDK Reference: HTTP Client
 Source: https://docs.chain.link/cre/reference/sdk/http-client-go
-Last Updated: 2025-12-16
+Last Updated: 2026-01-26
 
 The HTTP Client lets you make requests to external APIs from your workflow. Each node in the DON executes the request independently, and the SDK uses consensus to provide a single, reliable result.
 
@@ -14154,14 +14398,95 @@ Defines the parameters for an outgoing HTTP request.
   HTTP requests to URLs that return redirects (3xx status codes) will fail. Ensure the URL you provide is the final destination and does not redirect to another URL.
 </Aside>
 
-| Field           | Type                   | Description                                                                                                               |
-| --------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `Url`           | `string`               | The URL of the API endpoint.                                                                                              |
-| `Method`        | `string`               | The HTTP method (e.g., `"GET"`, `"POST"`).                                                                                |
-| `Headers`       | `map[string]string`    | Optional HTTP headers.                                                                                                    |
-| `Body`          | `[]byte`               | Optional raw request body.                                                                                                |
-| `Timeout`       | `*durationpb.Duration` | Optional request timeout duration. Set using `durationpb.New()`, e.g., `durationpb.New(30 * time.Second)` for 30 seconds. |
-| `CacheSettings` | `*CacheSettings`       | Optional caching behavior for the request.                                                                                |
+| Field           | Type                   | Description                                                                                              |
+| --------------- | ---------------------- | -------------------------------------------------------------------------------------------------------- |
+| `Url`           | `string`               | The URL of the API endpoint.                                                                             |
+| `Method`        | `string`               | The HTTP method (e.g., `"GET"`, `"POST"`).                                                               |
+| `Headers`       | `map[string]string`    | Optional HTTP headers.                                                                                   |
+| `Body`          | `[]byte`               | Optional raw request body.                                                                               |
+| `Timeout`       | `*durationpb.Duration` | Optional request timeout. See [Request Timeout](#request-timeout) below for usage, defaults, and limits. |
+| `CacheSettings` | `*CacheSettings`       | Optional caching behavior for the request.                                                               |
+
+### Request Timeout
+
+The `Timeout` field specifies how long to wait for an HTTP request to complete before cancelling it.
+
+**Format:**
+
+- Use `*durationpb.Duration` from the [`google.golang.org/protobuf/types/known/durationpb` package](https://pkg.go.dev/google.golang.org/protobuf/types/known/durationpb)
+- Create using `durationpb.New()` with a `time.Duration` value
+- Or manually construct with `&durationpb.Duration{Seconds: int64}`
+
+**Default and Limits:**
+
+- **Default**: If not specified, a default timeout of **5 seconds** is applied.
+- **Maximum**: Default maximum is **10 seconds**. Requests exceeding this limit will error.
+
+**Pattern 1: Using `durationpb.New()`:**
+
+```go
+import (
+    "time"
+    "google.golang.org/protobuf/types/known/durationpb"
+)
+
+resp, err := sendRequester.SendRequest(&http.Request{
+    Url:     config.ApiUrl,
+    Method:  "GET",
+    Timeout: durationpb.New(8 * time.Second), // 8 second timeout
+}).Await()
+```
+
+**Pattern 2: Parsing from config:**
+
+```go
+import (
+    "time"
+    "fmt"
+    "google.golang.org/protobuf/types/known/durationpb"
+)
+
+type Config struct {
+    ApiUrl    string `yaml:"apiUrl"`
+    TimeoutMs string `yaml:"timeout"` // e.g., "5s", "10s"
+}
+
+func fetchData(config *Config, logger *slog.Logger, sendRequester *http.SendRequester) (string, error) {
+    // Parse duration string from config
+    t, err := time.ParseDuration(config.TimeoutMs)
+    if err != nil {
+        return "", fmt.Errorf("failed to parse duration (%s): %w", config.TimeoutMs, err)
+    }
+
+    logger.Info("parsed timeout", "seconds", t.Seconds(), "raw", config.TimeoutMs)
+
+    // Create Duration from parsed time
+    timeout := &durationpb.Duration{
+        Seconds: int64(t.Seconds()),
+    }
+
+    resp, err := sendRequester.SendRequest(&http.Request{
+        Url:     config.ApiUrl,
+        Method:  "GET",
+        Timeout: timeout,
+    }).Await()
+
+    if err != nil {
+        logger.Info("http request failed", "error", err)
+        return "", err
+    }
+
+    return string(resp.Body), nil
+}
+```
+
+**Example configuration:**
+
+```yaml
+# config.yaml
+apiUrl: "https://api.example.com/data"
+timeout: "8s" # Go's time.ParseDuration format (max: 10s)
+```
 
 ### `http.Response`
 

@@ -5,13 +5,13 @@ title: "Installing the CRE CLI on macOS and Linux"
 metadata:
   description: "Install the CRE CLI on macOS or Linux: choose automatic script or manual setup, verify integrity, and get ready to build workflows."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-20"
+  lastModified: "2026-01-21"
 ---
 
 import { Aside, CopyText, PageTabs } from "@components"
 import { DownloadButton } from "~/components/DownloadButton.tsx"
 
-This page explains how to install the CRE CLI on macOS or Linux. The recommended version at the time of writing is **v1.0.2**.
+This page explains how to install the CRE CLI on macOS or Linux. The recommended version at the time of writing is **v1.0.6**.
 
 <PageTabs
   pages={[
@@ -66,7 +66,7 @@ After the script completes, verify the installation:
 cre version
 ```
 
-**Expected output:** `cre version v1.0.2`
+**Expected output:** `cre version v1.0.6`
 
 <Aside type="note" title="macOS Gatekeeper">
   If you see warnings about "unrecognized developer/source" on macOS, run:{" "}
@@ -89,9 +89,15 @@ The file you need depends on your operating system and CPU architecture:
 - On **macOS** (darwin), run <CopyText text="uname -m" code />:
   - `arm64` (Apple Silicon) → Download `cre_darwin_arm64.zip`
   - `x86_64` (Intel) → Download `cre_darwin_amd64.zip`
-- On **Linux**, run <CopyText text="uname -m" code />:
-  - `aarch64` (ARM) → Download `cre_linux_arm64.tar.gz`
-  - `x86_64` (AMD/Intel) → Download `cre_linux_amd64.tar.gz`
+- On **Linux**, the binary depends on both your architecture and OS version. First, run <CopyText text="uname -m" code /> to check your architecture, then <CopyText text="lsb_release -rs" code /> to check your Ubuntu version:
+  - **Ubuntu 22.04 or older**:
+    - `x86_64` (AMD/Intel) → Download `cre_linux_amd64_ldd2-35.tar.gz`
+    - `aarch64` (ARM) → Download `cre_linux_arm64_ldd2-35.tar.gz`
+  - **Ubuntu 24.04 or newer**:
+    - `x86_64` (AMD/Intel) → Download `cre_linux_amd64.tar.gz`
+    - `aarch64` (ARM) → Download `cre_linux_arm64.tar.gz`
+
+**Note:** The `ldd2-35` binaries are compiled for older glibc versions (2.35 and below). If you're using a non-Ubuntu Linux distribution, check your glibc version with <CopyText text="ldd --version" code /> and use the `ldd2-35` binary if your version is 2.35 or lower.
 
 </Aside>
 
@@ -111,16 +117,21 @@ shasum -a 256 cre_darwin_arm64.zip
 
 **Verify against official checksums**
 
-Compare the output with the official checksum below:
+Compare the output with the official checksum from the [CRE CLI releases page](https://github.com/smartcontractkit/cre-cli/releases):
 
-| <div style="width: 200px;">File</div> | SHA-256 Checksum                                                                          |
-| ------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `cre_darwin_amd64.zip`                | <CopyText text="482e53d3a5f8471034d30c935196d2dca2ab09a5fe1ab2083ad336172565291b" code /> |
-| `cre_darwin_arm64.zip`                | <CopyText text="92b0409801dd4e44f90a85331615f3e4b8cf1fe9f90a8eab3ad8bb3458b4b6cf" code /> |
-| `cre_linux_amd64.tar.gz`              | <CopyText text="d3a8b9b999b4b8bf73b2235d27386acf4efbc8f05d86d9e6066abda23ee9ce9b" code /> |
-| `cre_linux_arm64.tar.gz`              | <CopyText text="f52d618727ccc8fb6ab4b1f9418b09424c8505428131a49c01bb33ca2bc86fe3" code /> |
+1. Go to https://github.com/smartcontractkit/cre-cli/releases
+2. Find the release version you downloaded (e.g., v1.0.6)
+3. Under the **Assets** section, locate your downloaded file
+4. Compare the SHA-256 checksum shown next to the file with your command output
 
-If the checksum doesn't match, do not proceed with installation. Contact your Chainlink point of contact for assistance.
+**Example:** For `cre_darwin_arm64.zip` in release v1.0.6, you'll see something like:
+
+```
+cre_darwin_arm64.zip
+sha256:1359415a1f1baee7643107b82b3a0589a3627aef71018644e5c488960a97e955
+```
+
+If the checksums match, the file is authentic and safe to install. If they don't match, do not proceed with installation and contact the Chainlink team for assistance.
 
 #### 2. Extract and install
 
@@ -143,7 +154,7 @@ If the checksum doesn't match, do not proceed with installation. Contact your Ch
 1. **Rename the extracted binary to `cre`**
 
    ```bash
-   mv cre_v1.0.2_darwin_arm64 cre
+   mv cre_v1.0.6_darwin_arm64 cre
    ```
 
 1. **Make it executable**:
@@ -216,7 +227,7 @@ cre version
 
 **Expected output:**
 
-You should see version information: `cre version v1.0.2`.
+You should see version information: `cre version v1.0.6`.
 
 **If it doesn't work:**
 

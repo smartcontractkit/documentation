@@ -7,7 +7,7 @@ pageId: "guides-workflow-http-submit-reports"
 metadata:
   description: "Send verified reports to external systems in TypeScript: learn to submit cryptographically signed workflow results via HTTP APIs."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-01-20"
 ---
 
 import { Aside } from "@components"
@@ -344,7 +344,7 @@ Use the high-level `httpClient.sendRequest()` pattern with `sendRequester.sendRe
 
 ```typescript
 import {
-  cre,
+  HTTPClient,
   consensusIdenticalAggregation,
   ok,
   type Runtime,
@@ -369,7 +369,7 @@ const submitReportViaHTTP = (sendRequester: HTTPSendRequester, report: Report): 
 
 // In your trigger callback
 const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   // Assume 'report' was generated earlier in your workflow
 
@@ -396,7 +396,8 @@ This example shows a workflow that:
 
 ```typescript
 import {
-  cre,
+  CronCapability,
+  HTTPClient,
   Runner,
   consensusIdenticalAggregation,
   hexToBase64,
@@ -422,9 +423,9 @@ interface SubmitResponse {
 type MyResult = Record<string, never>
 
 const initWorkflow = (config: Config) => {
-  const cron = new cre.capabilities.CronCapability()
+  const cron = new CronCapability()
 
-  return [cre.handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+  return [cron.handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
 }
 
 // Transformation function: defines how the API expects the report
@@ -481,7 +482,7 @@ const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): MyResult
   runtime.log("Report generated successfully")
 
   // Step 2: Submit the report via HTTP
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   const submitResult = httpClient
     .sendRequest(
@@ -499,8 +500,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ### Configuration file (`config.json`)
@@ -527,14 +526,21 @@ main()
 For complex scenarios where you need more control, use `clientCapability.sendReport()` with `runtime.runInNodeMode()`:
 
 ```typescript
-import { cre, consensusIdenticalAggregation, ok, type Runtime, type NodeRuntime, type Report } from "@chainlink/cre-sdk"
+import {
+  HTTPClient,
+  consensusIdenticalAggregation,
+  ok,
+  type Runtime,
+  type NodeRuntime,
+  type Report,
+} from "@chainlink/cre-sdk"
 
 const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
   // Assume 'report' was generated earlier
 
   const result = runtime
     .runInNodeMode((nodeRuntime: NodeRuntime<Config>) => {
-      const httpClient = new cre.capabilities.HTTPClient()
+      const httpClient = new HTTPClient()
 
       const response = httpClient.sendReport(nodeRuntime, report, formatReportSimple).result()
 
