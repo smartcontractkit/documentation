@@ -116,6 +116,7 @@ export const productChainLinks: ProductChainLinks = {
       ethereum: "/cre/guides/workflow/using-evm-client/supported-networks",
       optimism: "/cre/guides/workflow/using-evm-client/supported-networks",
       polygon: "/cre/guides/workflow/using-evm-client/supported-networks",
+      zksync: "/cre/guides/workflow/using-evm-client/supported-networks",
     },
   },
   "Data Feeds": {

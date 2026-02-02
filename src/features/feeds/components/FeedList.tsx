@@ -920,8 +920,8 @@ export const FeedList = ({
                   <div className={tableStyles.pagination} role="navigation" aria-label="Table pagination">
                     <button
                       className={button.secondary}
-                      disabled={Number(currentPage) === 1}
-                      onClick={() => paginate(Number(currentPage) - 1)}
+                      disabled={currentPageNum === 1}
+                      onClick={() => paginate(currentPageNum - 1)}
                     >
                       Prev
                     </button>
@@ -933,7 +933,7 @@ export const FeedList = ({
                     <button
                       className={button.secondary}
                       disabled={lastAddr >= filteredMainnetStreams.length}
-                      onClick={() => paginate(Number(currentPage) + 1)}
+                      onClick={() => paginate(currentPageNum + 1)}
                     >
                       Next
                     </button>
@@ -974,8 +974,8 @@ export const FeedList = ({
                   <div className={tableStyles.pagination} role="navigation" aria-label="Table pagination">
                     <button
                       className={button.secondary}
-                      disabled={Number(testnetCurrentPage) === 1}
-                      onClick={() => testnetPaginate(Number(testnetCurrentPage) - 1)}
+                      disabled={testnetPageNum === 1}
+                      onClick={() => testnetPaginate(testnetPageNum - 1)}
                     >
                       Prev
                     </button>
@@ -989,7 +989,7 @@ export const FeedList = ({
                     <button
                       className={button.secondary}
                       disabled={testnetLastAddr >= filteredTestnetStreams.length}
-                      onClick={() => testnetPaginate(Number(testnetCurrentPage) + 1)}
+                      onClick={() => testnetPaginate(testnetPageNum + 1)}
                     >
                       Next
                     </button>
