@@ -314,6 +314,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             },
           ],
         },
+        {
+          title: "Using Time in Workflows",
+          url: "cre/guides/workflow/time-in-workflows",
+          highlightAsCurrent: ["cre/guides/workflow/time-in-workflows-ts", "cre/guides/workflow/time-in-workflows-go"],
+        },
       ],
     },
     {
@@ -410,11 +415,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Non-Determinism in Workflows",
           url: "cre/concepts/non-determinism",
           highlightAsCurrent: ["cre/concepts/non-determinism-go", "cre/concepts/non-determinism-ts"],
-        },
-        {
-          title: "Time in CRE",
-          url: "cre/concepts/time-in-cre",
-          highlightAsCurrent: ["cre/concepts/time-in-cre-go", "cre/concepts/time-in-cre-ts"],
         },
         {
           title: "Random in CRE",

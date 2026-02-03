@@ -482,7 +482,7 @@ CRE now supports additional testnets for workflow simulation and production depl
 
 - **Bug Fix**: Fixed an issue with `runtime.now()` returning incorrect timestamps
 
-For details on using time in workflows, see [Time in CRE](/cre/concepts/time-in-cre).
+For details on using time in workflows, see [Time in CRE](/cre/guides/workflow/time-in-workflows-ts).
 
 [See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.0.4...v1.0.5)
 
@@ -4530,9 +4530,14 @@ See the [CLI Reference](/cre/reference/cli/workflow#cre-workflow-simulate) for m
 
 # API Interactions
 Source: https://docs.chain.link/cre/guides/workflow/using-http-client
-Last Updated: 2025-11-04
+Last Updated: 2026-02-03
 
 The CRE SDK provides an HTTP client that allows your workflows to interact with external APIs. Use it to fetch offchain data, send results to other systems, or trigger external events.
+
+
+<Aside type="caution" title="Using timestamps in requests">
+  If your HTTP request includes timestamps (e.g., for authentication headers or time-based queries), use `runtime.now()` instead of `Date.now()`. This ensures all nodes use the same timestamp and reach consensus. See [Using Time in Workflows](/cre/guides/workflow/time-in-workflows) for details.
+</Aside>
 
 These guides will walk you through the common use cases for the HTTP client.
 
@@ -8781,7 +8786,7 @@ By default, triggers use `SAFE` if no confidence level is specified. For details
 
 # Avoiding Non-Determinism in Workflows
 Source: https://docs.chain.link/cre/concepts/non-determinism-go
-Last Updated: 2025-11-04
+Last Updated: 2026-02-03
 
 <Aside type="note" title="TL;DR">
   In DON mode, all nodes must execute identical code paths to reach consensus. Non-deterministic code causes nodes to
@@ -8842,7 +8847,7 @@ Never use Go's `time` package functions in DON mode. Nodes have different system
 
 **The problem:** Using `time.Now()` returns different values on each node.
 
-**The solution:** Use `runtime.Now()` from the CRE SDK, which provides DON Time—a consensus-derived timestamp that all nodes agree on. See [Time in CRE](/cre/concepts/time-in-cre) for details.
+**The solution:** Use `runtime.Now()` from the CRE SDK, which provides DON Time—a consensus-derived timestamp that all nodes agree on. See [Time in CRE](/cre/guides/workflow/time-in-workflows-go) for details.
 
 ## 5. Random number generation
 
@@ -8884,114 +8889,9 @@ Large Language Models (LLMs) generate different responses for the same prompt, e
 
 ## Related concepts
 
-- **[Time in CRE](/cre/concepts/time-in-cre)**: Learn about DON Time and why `runtime.Now()` is required
+- **[Time in CRE](/cre/guides/workflow/time-in-workflows-go)**: Learn about DON Time and why `runtime.Now()` is required
 - **[Random in CRE](/cre/concepts/random-in-cre)**: Understand consensus-safe random number generation
 - **[Consensus Computing](/cre/concepts/consensus-computing)**: Deep dive into how nodes reach agreement
-
----
-
-# Time in CRE
-Source: https://docs.chain.link/cre/concepts/time-in-cre-go
-Last Updated: 2025-11-04
-
-<Aside type="note" title="TL;DR">
-  CRE provides **DON Time**: a consensus-derived timestamp so different nodes see the *same time*. Use the SDK's runtime
-  call, `runtime.Now()`, whenever your workflow logic depends on time. Do **not** read local system clocks or other
-  ad-hoc time sources in DON Mode — they introduce non-determinism.
-</Aside>
-
-## The problem: Why time needs consensus
-
-Workflows often rely on time for decisions (market-hours checks), scheduling (retries/backoffs), and observability (log timestamps). In a decentralized network, nodes do not share an identical clock—clock drift, resource contention, and OS scheduling can skew each node's local time. If each node consults its own clock:
-
-- Different nodes may take **different branches** of your logic (e.g., one thinks the market is open, another does not).
-- Logs across nodes become **hard to correlate**.
-- Data fetched using time (e.g., "fetch price at timestamp N") can be **inconsistent**.
-
-**DON Time** removes these divergences by making time **deterministic in the DON**.
-
-## The solution: DON time
-
-**DON Time** is a timestamp computed by an <a href="https://docs.chain.link/architecture-overview/off-chain-reporting" target="_blank" rel="noopener noreferrer">OCR (Off-Chain Reporting)</a> plugin and agreed upon by the nodes participating in CRE. You access it through the SDK's runtime call, `runtime.Now()`, not via an OS/System clock. The `runtime.Now()` function returns a standard Go `time.Time` object.
-
-**Key properties:**
-
-- **Deterministic across nodes**: nodes see the same timestamp.
-- **Sequenced per workflow**: time responses are associated with a **time-call sequence number** inside each workflow execution (1st call, 2nd call, …). Node execution timing might be slightly off, but a given call will resolve to the **same DON timestamp**.
-- **Low latency**: the plugin runs continuously with **delta round = 0**, and each node **transmits** results back to outstanding requests at the end of every round.
-- **Tamper-resistant**: workflows don't expose host machine time, reducing timing-attack surface.
-
-<Aside type="note" title="A Note on Accuracy">
-  DON Time is computed as the **median of nodes' local observations** in each round. It is designed for **consistency**
-  across the DON rather than exact alignment to an external UTC source. Think of it as a highly reliable clock for your
-  workflows. Do not treat it as a high-precision clock.
-</Aside>
-
-## How it works: A high-level view
-
-1. Your workflow calls **`runtime.Now()`**.
-2. **The Chainlink network takes this request**: The Workflow Engine's **TimeProvider** assigns that call a **sequence number** and enqueues it in the **DON Time Store**.
-3. **All the nodes agree on a single time (the DON Time)**: The **OCR Time Plugin** on each node reaches consensus on a new DON timestamp (the median of observed times).
-4. Each node **returns** the newest DON timestamp to every pending request and updates its **last observed DON time** cache.
-5. The result is written back into the WebAssembly execution, and your workflow continues.
-
-Because requests are sequenced, *Call 1* for a workflow instance will always return the same DON timestamp on every node. If Node A hits *Call 2* before Node B, A will block until the DON timestamp for *Call 2* is produced; when B reaches *Call 2*, it immediately reuses that value.
-
-## Execution modes: DON mode vs. Node mode
-
-### DON mode (default for workflows)
-
-- Time is **consensus-based** and **deterministic**.
-- Use for **any** logic where different outcomes across nodes would be a bug. Examples:
-  - Market-hours gates
-  - Time-windowed queries ("last 15 minutes")
-  - Retry/backoff logic that must align across nodes
-  - Timestamps used for cross-node correlation (logging, audit trails)
-
-### Node mode (advanced / special cases)
-
-- Workflow authors handle consensus themselves.
-- `runtime.Now()` in Node Mode is a non-blocking call that returns the **last generated DON timestamp** from the local node's cache. This is the same mechanism used by standard Go `time.Now()` calls within the Wasm environment.
-- Useful in situation where you already expect non-determinism (e.g., inherently variable HTTP responses).
-
-<Aside type="caution" title="Use DON Mode">
-  Unless you have a specific reason and understand the trade-offs, **always use DON Mode** for time-dependent logic.
-</Aside>
-
-## Best practices: Avoiding non-determinism in DON mode
-
-When running in DON Mode, you get determinism **if and only if** you base time-dependent logic on DON Time.
-
-**Avoid** these patterns:
-
-- **Reading host/system time** (`time.Now()`, etc.). Always use `runtime.Now()` from the CRE SDK.
-- **Mixing time sources** in the same control path.
-- **Per-node "sleeps" based on local time** that gate deterministic decisions.
-
-**Deterministic patterns:**
-
-- ✅ Gate behavior with:
-  ```go
-  now := runtime.Now()
-  if market.IsOpenAt(now):
-      // proceed
-  ```
-- ✅ Compute windows from DON Time:
-  ```go
-  now := runtime.Now()
-  windowStart := now.Add(-15 * time.Minute)
-  fetchData(windowStart, now)
-  ```
-
-## FAQ
-
-**Is DON Time "real UTC time"?**
-
-It's the **median of node observations** per round. It closely tracks real time but prioritizes **consistency** over absolute accuracy.
-
-**What is the resolution?**
-
-New DON timestamps are produced continuously (multiple per second). Treat it as coarse-grained real time suitable for gating and logging, not sub-millisecond measurement.
 
 ---
 
@@ -10590,6 +10490,111 @@ func main() {
 
 ---
 
+# Using Time in Workflows
+Source: https://docs.chain.link/cre/guides/workflow/time-in-workflows-go
+Last Updated: 2026-02-03
+
+<Aside type="note" title="TL;DR">
+  CRE provides **DON Time**: a consensus-derived timestamp so different nodes see the *same time*. Use the SDK's runtime
+  call, `runtime.Now()`, whenever your workflow logic depends on time. Do **not** read local system clocks or other
+  ad-hoc time sources in DON Mode — they introduce non-determinism.
+</Aside>
+
+## The problem: Why time needs consensus
+
+Workflows often rely on time for decisions (market-hours checks), scheduling (retries/backoffs), and observability (log timestamps). In a decentralized network, nodes do not share an identical clock—clock drift, resource contention, and OS scheduling can skew each node's local time. If each node consults its own clock:
+
+- Different nodes may take **different branches** of your logic (e.g., one thinks the market is open, another does not).
+- Logs across nodes become **hard to correlate**.
+- Data fetched using time (e.g., "fetch price at timestamp N") can be **inconsistent**.
+
+**DON Time** removes these divergences by making time **deterministic in the DON**.
+
+## The solution: DON time
+
+**DON Time** is a timestamp computed by an <a href="https://docs.chain.link/architecture-overview/off-chain-reporting" target="_blank" rel="noopener noreferrer">OCR (Off-Chain Reporting)</a> plugin and agreed upon by the nodes participating in CRE. You access it through the SDK's runtime call, `runtime.Now()`, not via an OS/System clock. The `runtime.Now()` function returns a standard Go `time.Time` object.
+
+**Key properties:**
+
+- **Deterministic across nodes**: nodes see the same timestamp.
+- **Sequenced per workflow**: time responses are associated with a **time-call sequence number** inside each workflow execution (1st call, 2nd call, …). Node execution timing might be slightly off, but a given call will resolve to the **same DON timestamp**.
+- **Low latency**: the plugin runs continuously with **delta round = 0**, and each node **transmits** results back to outstanding requests at the end of every round.
+- **Tamper-resistant**: workflows don't expose host machine time, reducing timing-attack surface.
+
+<Aside type="note" title="A Note on Accuracy">
+  DON Time is computed as the **median of nodes' local observations** in each round. It is designed for **consistency**
+  across the DON rather than exact alignment to an external UTC source. Think of it as a highly reliable clock for your
+  workflows. Do not treat it as a high-precision clock.
+</Aside>
+
+## How it works: A high-level view
+
+1. Your workflow calls **`runtime.Now()`**.
+2. **The Chainlink network takes this request**: The Workflow Engine's **TimeProvider** assigns that call a **sequence number** and enqueues it in the **DON Time Store**.
+3. **All the nodes agree on a single time (the DON Time)**: The **OCR Time Plugin** on each node reaches consensus on a new DON timestamp (the median of observed times).
+4. Each node **returns** the newest DON timestamp to every pending request and updates its **last observed DON time** cache.
+5. The result is written back into the WebAssembly execution, and your workflow continues.
+
+Because requests are sequenced, *Call 1* for a workflow instance will always return the same DON timestamp on every node. If Node A hits *Call 2* before Node B, A will block until the DON timestamp for *Call 2* is produced; when B reaches *Call 2*, it immediately reuses that value.
+
+## Execution modes: DON mode vs. Node mode
+
+### DON mode (default for workflows)
+
+- Time is **consensus-based** and **deterministic**.
+- Use for **any** logic where different outcomes across nodes would be a bug. Examples:
+  - Market-hours gates
+  - Time-windowed queries ("last 15 minutes")
+  - Retry/backoff logic that must align across nodes
+  - Timestamps used for cross-node correlation (logging, audit trails)
+
+### Node mode (advanced / special cases)
+
+- Workflow authors handle consensus themselves.
+- `runtime.Now()` in Node Mode is a non-blocking call that returns the **last generated DON timestamp** from the local node's cache. This is the same mechanism used by standard Go `time.Now()` calls within the Wasm environment.
+- Useful in situation where you already expect non-determinism (e.g., inherently variable HTTP responses).
+
+<Aside type="caution" title="Use DON Mode">
+  Unless you have a specific reason and understand the trade-offs, **always use DON Mode** for time-dependent logic.
+</Aside>
+
+## Best practices: Avoiding non-determinism in DON mode
+
+When running in DON Mode, you get determinism **if and only if** you base time-dependent logic on DON Time.
+
+**Avoid** these patterns:
+
+- **Reading host/system time** (`time.Now()`, etc.). Always use `runtime.Now()` from the CRE SDK.
+- **Mixing time sources** in the same control path.
+- **Per-node "sleeps" based on local time** that gate deterministic decisions.
+
+**Deterministic patterns:**
+
+- ✅ Gate behavior with:
+  ```go
+  now := runtime.Now()
+  if market.IsOpenAt(now):
+      // proceed
+  ```
+- ✅ Compute windows from DON Time:
+  ```go
+  now := runtime.Now()
+  windowStart := now.Add(-15 * time.Minute)
+  fetchData(windowStart, now)
+  ```
+
+## FAQ
+
+**Is DON Time "real UTC time"?**
+
+It's the **median of node observations** per round. It closely tracks real time but prioritizes **consistency** over absolute accuracy.
+
+**What is the resolution?**
+
+New DON timestamps are produced continuously (multiple per second). Treat it as coarse-grained real time suitable for gating and logging, not sub-millisecond measurement.
+
+---
+
 # Forwarder Directory
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory-go
 Last Updated: 2026-02-03
@@ -11234,7 +11239,7 @@ This approach gives you IDE autocompletion, compile-time type checking, and elim
 
 # Making GET Requests
 Source: https://docs.chain.link/cre/guides/workflow/using-http-client/get-request-go
-Last Updated: 2025-12-16
+Last Updated: 2026-02-03
 
 The `http.Client` is the SDK's interface for the underlying [HTTP Capability](/cre/capabilities/http). It allows your workflow to fetch data from any external API.
 
@@ -11250,6 +11255,11 @@ This guide assumes you have a basic understanding of CRE. If you are new, we str
 
 <Aside type="caution" title="Redirects are not supported">
   HTTP requests to URLs that return redirects (3xx status codes) will fail. Ensure the URL you provide is the final destination and does not redirect to another URL.
+</Aside>
+
+
+<Aside type="caution" title="Using timestamps in requests">
+  If your HTTP request includes timestamps (e.g., for authentication headers or time-based queries), use `runtime.Now()` instead of `time.Now()`. This ensures all nodes use the same timestamp and reach consensus. See [Using Time in Workflows](/cre/guides/workflow/time-in-workflows) for details.
 </Aside>
 
 ## Choosing your approach
@@ -11445,7 +11455,7 @@ The `http.Request` struct provides several fields to customize your request. See
 
 # Making POST Requests
 Source: https://docs.chain.link/cre/guides/workflow/using-http-client/post-request-go
-Last Updated: 2025-12-16
+Last Updated: 2026-02-03
 
 This guide explains how to use the HTTP Client to send data to an external API using a `POST` request. Because POST requests typically create resources or trigger actions, this guide shows you how to ensure your request executes only once, even though multiple nodes in the DON run your workflow.
 
@@ -11460,6 +11470,11 @@ All HTTP requests are wrapped in a consensus mechanism. The SDK provides two way
 
 - **[`http.SendRequest`](#1-the-httpsendrequest-pattern-recommended):** A high-level helper function that simplifies making requests. This is the recommended approach for most use cases.
 - **[`cre.RunInNodeMode`](#2-the-cre-runinnodemode-pattern-low-level):** The lower-level pattern for more complex scenarios.
+
+
+<Aside type="caution" title="Using timestamps in requests">
+  If your HTTP request includes timestamps (e.g., for authentication headers or time-based queries), use `runtime.Now()` instead of `time.Now()`. This ensures all nodes use the same timestamp and reach consensus. See [Using Time in Workflows](/cre/guides/workflow/time-in-workflows) for details.
+</Aside>
 
 ## Choosing your approach
 
@@ -14862,7 +14877,7 @@ For complete examples of including signatures in different formats (body, header
 
 # SDK Reference
 Source: https://docs.chain.link/cre/reference/sdk/overview-go
-Last Updated: 2025-11-04
+Last Updated: 2026-02-03
 
 This section provides a detailed technical reference for the public interfaces of the CRE Go SDK. Use this reference for quick lookups of specific functions, types, and method signatures.
 
