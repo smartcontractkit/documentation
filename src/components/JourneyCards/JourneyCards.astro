@@ -1,6 +1,6 @@
 ---
-import { Tag, Typography } from "@chainlink/blocks"
-import { JourneyTabGrid } from "./JourneyTabGrid"
+import { JourneyCardsDesktop } from "./JourneyCardsDesktop.tsx"
+import { JourneyTabGrid } from "./JourneyTabGrid.tsx"
 
 const columns = [
   {
@@ -102,52 +102,11 @@ const tabs = columns.map((column) => ({
     badge: item.badge,
   })),
 }))
-
-const rows = columns[0].items.map((_, rowIndex) => ({
-  items: columns.map((col) => col.items[rowIndex]),
-}))
 ---
 
 <section>
   <section class="desktop">
-    <Typography variant="h4" className="section-title">Start your Chainlink journey</Typography>
-
-    <div class="journey-rows">
-      <div class="journey-row journey-row--header">
-        {
-          columns.map((column) => (
-            <header class="column-header">
-              <Typography variant="h5" className="column-title">
-                {column.title}
-              </Typography>
-            </header>
-          ))
-        }
-      </div>
-      {
-        rows.map((row, i) => (
-          <div class="journey-row">
-            {row.items.map((item, j) => (
-              <a href={item.href} class="journey-card">
-                <div class="card-content">
-                  <Typography variant="body-semi">{item.title}</Typography>
-                  <Typography variant="body-s" color="muted">
-                    {item.description}
-                  </Typography>
-                </div>
-
-                <footer class="journey-footer">
-                  <Tag size="sm" className="footer-tag">
-                    <Typography variant="code-s">{item.badge}</Typography>
-                  </Tag>
-                  <img src="/assets/icons/upper-right-arrow.svg" class="footer-icon" />
-                </footer>
-              </a>
-            ))}
-          </div>
-        ))
-      }
-    </div>
+    <JourneyCardsDesktop columns={columns} client:load />
   </section>
   <section class="mobile">
     <JourneyTabGrid header="Start your Chainlink journey" tabs={tabs} client:only="react" />
@@ -163,92 +122,6 @@ const rows = columns[0].items.map((_, rowIndex) => ({
     display: block;
   }
 
-  .journey-rows {
-    display: grid;
-    gap: 0;
-  }
-
-  .journey-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .journey-row:not(.journey-row--header) > * {
-    border-left: 1px solid var(--border);
-  }
-
-  .journey-card {
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-    gap: var(--space-6x);
-    padding: var(--space-6x);
-  }
-
-  .footer-tag {
-    text-transform: uppercase;
-  }
-
-  .journey-card:hover {
-    background-color: var(--muted);
-
-    .footer-tag {
-      background-color: var(--background) !important;
-    }
-
-    .footer-icon {
-      opacity: 1;
-    }
-  }
-
-  .card-content {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2x);
-  }
-
-  .card-content > :last-child {
-    min-height: 3em;
-  }
-
-  .journey-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .section-title {
-    font-size: 28px;
-    margin-bottom: var(--space-10x);
-  }
-
-  .footer {
-    padding-top: var(--space-1x);
-  }
-  .footer-icon {
-    height: 12px;
-    width: 12px;
-    opacity: 0;
-  }
-
-  .card-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: var(--space-1x) var(--space-2x);
-    background-color: var(--gray-100);
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 500;
-    text-transform: uppercase;
-    color: var(--gray-600);
-    letter-spacing: 0.5px;
-    align-self: flex-start;
-  }
-
-  .column-header {
-    padding: var(--space-2x) var(--space-6x);
-    border-left: 3px solid var(--brand);
-  }
-
   @media (min-width: 769px) {
     .desktop {
       display: block;
@@ -256,22 +129,6 @@ const rows = columns[0].items.map((_, rowIndex) => ({
 
     .mobile {
       display: none;
-    }
-
-    .column-title {
-      font-size: 22px;
-      line-height: 26px;
-    }
-
-    .journey-card h4 {
-      font-size: 16px;
-      line-height: 22px;
-    }
-  }
-
-  @media screen and (min-width: 62em) {
-    .section-title {
-      font-size: 32px;
     }
   }
 </style>
