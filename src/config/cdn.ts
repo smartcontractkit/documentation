@@ -8,7 +8,8 @@ export const CLOUDFRONT_CDN_BASE = "https://d2f70xi62kby8n.cloudfront.net"
 
 // Asset-specific paths
 export const TOKEN_ICONS_PATH = `${CLOUDFRONT_CDN_BASE}/tokens`
-export const VERIFIER_LOGOS_PATH = `${CLOUDFRONT_CDN_BASE}/verifiers`
+export const VERIFIER_ICON_PATH = `${CLOUDFRONT_CDN_BASE}/verifiers`
+export const NETWORK_ICON_PATH = `${CLOUDFRONT_CDN_BASE}/bridge/icons/networks`
 
 // Other CDNs (for future centralization if needed)
 export const IMGIX_CDN_BASE = "https://smartcontract.imgix.net"

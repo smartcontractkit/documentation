@@ -10,11 +10,13 @@
   gap: var(--space-2x);
   line-height: 1.4;
   font-size: 14px;
-  color: var(--gray-500, #858a95);
+  color: var(--muted-foreground);
   padding: var(--space-2x) var(--space-6x) var(--space-2x) var(--space-4x);
   transition: color 100ms ease-in;
-  border-radius: 4px;
-  margin-right: var(--space-2x);
+  border-left: 1px solid var(--border);
+
+  padding-right: var(--space-2x);
+  margin-bottom: 0;
   position: relative;
 }
 
@@ -39,7 +41,7 @@ details summary.navLink.nested a {
 details summary.navLink:has(a.active),
 details summary.navLink:has(a[aria-current="page"]),
 details summary.navLink.active {
-  color: var(--color-text-link);
+  color: var(--foreground);
 }
 
 .navLink:hover,
@@ -47,15 +49,19 @@ details summary.navLink.active {
 details summary.navLink:hover,
 details summary.navLink:focus {
   text-decoration: none;
+  background-color: var(--muted);
+
+  color: var(--muted-foreground);
 }
 
 .navLink[aria-current="page"],
 details summary.navLink:has(a[aria-current="page"]),
 details summary.navLink.active,
 details summary.navLink:has(a.active) {
-  font-weight: 600;
-  background-color: rgba(28, 100, 242, 0.08);
-  color: var(--color-text-link);
+  color: var(--foreground);
+  border-left: 2px solid var(--brand);
+  font-weight: 500;
+  background-color: var(--muted);
 }
 
 .navLink.nested {
@@ -75,14 +81,15 @@ details summary.navLink a {
   margin: 0;
 }
 
-details summary.navLink:hover a {
-  color: var(--color-text-link);
+details summary.navLink:hover {
+  background-color: var(--muted);
+  color: var(--muted-foreground);
 }
 
 details summary.navLink a.active,
 details summary.navLink a[aria-current="page"] {
-  font-weight: 600;
-  color: var(--color-text-link);
+  font-weight: 500;
+  color: var(--foreground);
 }
 
 .navGroupEntries {
@@ -109,9 +116,6 @@ details summary.navLink a[aria-current="page"] {
 
 .navGroupEntries.nested {
   margin-left: 0;
-  margin-top: var(--space-1x);
-  padding-left: var(--space-4x);
-  margin-bottom: var(--space-1x);
   position: relative;
 }
 
@@ -123,6 +127,10 @@ details summary.navLink a[aria-current="page"] {
   bottom: 0;
   width: 1px;
   background-color: var(--gray-200);
+}
+
+.navGroupEntries.nested .navLink {
+  padding-left: 28px;
 }
 
 details summary::-webkit-details-marker {
@@ -139,7 +147,7 @@ details > summary.navLink {
   padding-left: var(--space-4x);
 }
 
-details > summary.navLink::before {
+details > summary.navLink::after {
   content: "";
   width: 6px;
   height: 6px;
@@ -150,14 +158,18 @@ details > summary.navLink::before {
   transition: transform 0.15s ease;
   position: absolute;
   top: calc(50% - 4px);
-  left: 0;
+  right: var(--space-2x);
 }
 
-details[open] > summary.navLink::before {
+details[open] > summary.navLink::after {
   transform: rotate(45deg);
   top: calc(50% - 5px);
 }
 
-details:hover > summary.navLink::before {
-  border-color: var(--color-text-link);
+.container ul {
+  overflow-y: auto;
+  padding: var(--space-4x);
+  line-height: 1.5;
+  list-style-type: none;
+  word-break: break-word;
 }
