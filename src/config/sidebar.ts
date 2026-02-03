@@ -82,6 +82,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "cre/service-quotas",
         },
         {
+          title: "Supported Networks",
+          url: "cre/supported-networks",
+          highlightAsCurrent: ["cre/supported-networks-ts", "cre/supported-networks-go"],
+        },
+        {
           title: "Support & Feedback",
           url: "cre/support-feedback",
         },
@@ -248,11 +253,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               ],
             },
             {
-              title: "Supported Networks",
-              url: "cre/guides/workflow/using-evm-client/supported-networks",
+              title: "Forwarder Directory",
+              url: "cre/guides/workflow/using-evm-client/forwarder-directory",
               highlightAsCurrent: [
-                "cre/guides/workflow/using-evm-client/supported-networks-ts",
-                "cre/guides/workflow/using-evm-client/supported-networks-go",
+                "cre/guides/workflow/using-evm-client/forwarder-directory-ts",
+                "cre/guides/workflow/using-evm-client/forwarder-directory-go",
               ],
             },
           ],

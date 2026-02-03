@@ -7,7 +7,7 @@ date: Last Modified
 metadata:
   description: "Configure your Go project: learn to manage project.yaml, workflow.yaml, and targets for different environments."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-02-03"
 ---
 
 import { ClickToZoom, Aside } from "@components"
@@ -94,9 +94,9 @@ production-settings:
 ```
 
 <Aside type="note" title="Available chain names">
-  For a complete list of supported networks and their chain names, see [Supported
-  Networks](/cre/guides/workflow/using-evm-client/supported-networks). For details on using chain selectors in your
-  workflow code, see [Chain Selectors](/cre/reference/sdk/evm-client-go#chain-selectors).
+  For a complete list of supported networks and their chain names, see [Supported Networks](/cre/supported-networks).
+  For details on using chain selectors in your workflow code, see [Chain
+  Selectors](/cre/reference/sdk/evm-client-go#chain-selectors).
 </Aside>
 
 #### Configuration fields
@@ -231,3 +231,34 @@ When you run a CLI command with a target, e.g., `--target staging-settings`:
   If your workflow directory contains a `workflow.yaml`, the target you specify must exist in both `project.yaml` and
   `workflow.yaml`. A mismatch causes the CLI to abort with a clear error message.
 </Aside>
+
+## 5. Updating dependencies
+
+When new networks or SDK features are released, you may need to update your project dependencies.
+
+### Updating the CLI
+
+Run [cre update](/cre/reference/cli/utilities#cre-update) to download and install the latest CLI version:
+
+```bash
+cre update
+```
+
+New projects created with an updated CLI automatically use compatible SDK versions.
+
+### Updating the SDK (existing projects)
+
+If you created your project with an older CLI version, update the SDK in your `go.mod`:
+
+```bash
+go get github.com/smartcontractkit/cre-sdk-go@v1.1.4
+```
+
+Then run `go mod tidy` to clean up dependencies.
+
+### Checking your versions
+
+- **CLI version:** Run `cre version`
+- **SDK version:** Check `go.mod` for the `cre-sdk-go` dependency version
+
+For a list of which versions support which networks, see [Supported Networks](/cre/supported-networks).
