@@ -31,7 +31,7 @@ import {
   getTokenIconUrl,
   getNativeCurrency,
 } from "@features/utils/index.ts"
-import { normalizeTechnologyName } from "src/features/utils/networkIcons.ts"
+import { normalizeTechnologyName } from "@features/utils/networkIcons.ts"
 
 // For mainnet
 import chainsMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/chains.json" with { type: "json" }

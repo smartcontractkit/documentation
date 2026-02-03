@@ -68,9 +68,6 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
           onChange={(key) => setInOutbound(key as LaneFilter)}
         />
         <div className="ccip-table__filters__actions">
-          <div className="ccip-table__filters__search-container">
-            <TableSearchInput search={search} setSearch={setSearch} />
-          </div>
           <a
             className="button secondary ccip-table__filters__external-button"
             href="https://ccip.chain.link/status"
@@ -85,6 +82,9 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
             />
             View lane status
           </a>
+          <div className="ccip-table__filters__search-container">
+            <TableSearchInput search={search} setSearch={setSearch} />
+          </div>
         </div>
       </div>
       <div className="ccip-table__wrapper">

@@ -49,7 +49,7 @@ export default function NetworkIcons() {
 
       // Create the icon element
       const icon = document.createElement("img")
-      icon.src = iconPath
+      icon.src = iconPath || ""
       icon.alt = `${technology} icon`
       icon.style.width = "24px"
       icon.style.height = "24px"

@@ -2,12 +2,13 @@
 export interface Props {
   href: string
   text: string
+  urlClass?: string
 }
 
-const { href, text } = Astro.props
+const { href, text, urlClass } = Astro.props
 ---
 
-<a class="add-button" href={href}>
+<a class={`add-button ${urlClass || ""}`} href={href}>
   <img src="/assets/icons/add.svg" alt="Add" class="add-button-icon" />
   {text}
 </a>
@@ -38,5 +39,9 @@ const { href, text } = Astro.props
   .add-button-icon {
     width: var(--space-3x);
     height: var(--space-3x);
+  }
+
+  :global(.chain-add-button) {
+    /* Styles will be applied from parent component */
   }
 </style>

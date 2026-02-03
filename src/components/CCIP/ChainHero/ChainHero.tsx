@@ -1,5 +1,5 @@
 import { Environment, LaneConfig, Network, Version } from "~/config/data/ccip/types.ts"
-import { getTokenData } from "~/config/data/ccip/data.ts"
+import { getTokenData, getNetworkIconUrl } from "~/config/data/ccip/data.ts"
 import Address from "~/components/AddressReact.tsx"
 import Breadcrumb from "../Breadcrumb/Breadcrumb.tsx"
 import Search from "../Search/Search.tsx"
@@ -16,7 +16,6 @@ import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
 import { getChainTooltip } from "../Tooltip/index.ts"
 import { PoolProgramTooltip } from "../Tooltip/PoolProgramTooltip.tsx"
 import { ExplorerInfo, ChainType } from "@config/types.ts"
-import { getNetworkIconUrl } from "~/config/data/ccip/data.ts"
 
 interface ChainHeroProps {
   chains: {

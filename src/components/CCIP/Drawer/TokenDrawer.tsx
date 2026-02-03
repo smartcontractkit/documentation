@@ -26,6 +26,7 @@ import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
 import { useMultiLaneRateLimits } from "~/hooks/useMultiLaneRateLimits.ts"
 import { RateLimitCell } from "~/components/CCIP/RateLimitCell.tsx"
 import { realtimeDataService } from "~/lib/ccip/services/realtime-data-instance.ts"
+import { Typography } from "@chainlink/blocks"
 
 enum TokenTab {
   Outbound = "outbound",
@@ -202,17 +203,25 @@ function TokenDrawer({
             <table className="ccip-table">
               <thead>
                 <tr>
-                  <th>Verifier</th>
-                  <th>Verifier address</th>
-                  <th>Verifier type</th>
-                  <th>Threshold amount</th>
+                  <th>
+                    <Typography variant="body-semi-s">Verifier name</Typography>
+                  </th>
+                  <th>
+                    <Typography variant="body-semi-s">Verifier address</Typography>
+                  </th>
+                  <th>
+                    <Typography variant="body-semi-s">Verifier type</Typography>
+                  </th>
+                  <th>
+                    <Typography variant="body-semi-s">Threshold amount</Typography>
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {verifiers.length === 0 ? (
                   <tr>
                     <td colSpan={4} style={{ textAlign: "center", padding: "20px" }}>
-                      No verifiers configured
+                      <Typography variant="body">No verifiers found for this network.</Typography>
                     </td>
                   </tr>
                 ) : (
@@ -226,7 +235,7 @@ function TokenDrawer({
                             className="ccip-table__logo"
                             style={{ width: "24px", height: "24px" }}
                           />
-                          {verifier.name}
+                          <Typography variant="body">{verifier.name}</Typography>
                         </div>
                       </td>
                       <td>
@@ -236,8 +245,12 @@ function TokenDrawer({
                           endLength={4}
                         />
                       </td>
-                      <td>{getVerifierTypeDisplay(verifier.type)}</td>
-                      <td>N/A</td>
+                      <td>
+                        <Typography variant="body">{getVerifierTypeDisplay(verifier.type)}</Typography>
+                      </td>
+                      <td>
+                        <Typography variant="body">N/A</Typography>
+                      </td>
                     </tr>
                   ))
                 )}

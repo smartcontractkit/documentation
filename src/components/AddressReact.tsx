@@ -40,6 +40,7 @@ const AddressComponent = ({ contractUrl, address, endLength, urlClass, urlId }: 
           padding: 1px 0px;
           border-radius: var(--border-radius-10);
           word-break: break-word;
+          color: var(--blue-600);
         }
 
         .addressContainer {
