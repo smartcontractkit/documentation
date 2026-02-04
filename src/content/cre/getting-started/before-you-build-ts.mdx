@@ -5,7 +5,7 @@ date: Last Modified
 pageId: "getting-started-before-you-build"
 sdkLang: "ts"
 metadata:
-  description: "Essential tips before building your own CRE workflows: library compatibility, working with time, and next steps for production deployment."
+  description: "Essential tips before building your own CRE workflows: library compatibility, Solidity integers, working with time, and next steps for production deployment."
   datePublished: "2026-02-04"
   lastModified: "2026-02-04"
 ---
@@ -28,6 +28,24 @@ Your TypeScript code compiles to WebAssembly and runs in a QuickJS environment, 
 {/* prettier-ignore */}
 <Aside type="tip" title="Learn more">
   See [TypeScript Runtime Environment](/cre/concepts/typescript-wasm-runtime) for details on QuickJS compatibility and how to [verify library support](/cre/concepts/typescript-wasm-runtime#checking-library-compatibility).
+</Aside>
+
+## Working with Solidity integers
+
+When sending values to smart contracts, always use `bigint` (with the `n` suffix) in your workflow code. JavaScript `number` loses precision for large values, causing **silent precision loss**.
+
+```typescript
+// WRONG - silent precision loss
+const amount = 10000000000000001 // 10 quadrillion + 1
+// Silently becomes 10000000000000000 (the +1 vanishes)
+
+// CORRECT - use bigint
+const amount = 10000000000000001n // Stays exactly 10000000000000001
+```
+
+{/* prettier-ignore */}
+<Aside type="tip" title="Learn more">
+  See [Writing Data Onchain](/cre/guides/workflow/using-evm-client/onchain-write/writing-data-onchain#step-2-abi-encode-your-value) for the complete Solidity-to-TypeScript type mapping.
 </Aside>
 
 ## Working with time
