@@ -140,7 +140,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             "cre/getting-started/part-4-writing-onchain-go",
           ],
         },
-        { title: "Conclusion & Next Steps", url: "cre/getting-started/conclusion" },
+        {
+          title: "Before You Build",
+          url: "cre/getting-started/before-you-build",
+          highlightAsCurrent: ["cre/getting-started/before-you-build-ts", "cre/getting-started/before-you-build-go"],
+        },
       ],
     },
     {
