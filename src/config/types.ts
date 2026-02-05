@@ -81,6 +81,7 @@ export type SupportedTechnology =
   | "JOVAY"
   | "STABLE"
   | "TEMPO"
+  | "ARC_NETWORK"
 
 export type ChainType = "evm" | "solana" | "aptos"
 
@@ -144,7 +145,7 @@ export type SupportedChain =
   | "SHIBARIUM_MAINNET"
   | "SHIBARIUM_PUPPYNET"
   | "SONIC_MAINNET"
-  | "SONIC_BLAZE"
+  | "SONIC_TESTNET"
   | "BOB_MAINNET"
   | "BOB_SEPOLIA"
   | "WORLD_MAINNET"
@@ -254,6 +255,7 @@ export type SupportedChain =
   | "JOVAY_TESTNET"
   | "STABLE_MAINNET"
   | "TEMPO_TESTNET"
+  | "ARC_NETWORK_TESTNET"
 
 export type ExplorerInfo = {
   baseUrl: string

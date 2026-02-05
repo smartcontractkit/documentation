@@ -304,8 +304,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "SHIBARIUM_PUPPYNET"
     case "sonic-mainnet":
       return "SONIC_MAINNET"
-    case "sonic-testnet-blaze":
-      return "SONIC_BLAZE"
+    case "sonic-testnet":
+      return "SONIC_TESTNET"
     case "bitcoin-mainnet-bob-1":
       return "BOB_MAINNET"
     case "bitcoin-testnet-sepolia-bob-1":
@@ -530,6 +530,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "STABLE_MAINNET"
     case "tempo-testnet":
       return "TEMPO_TESTNET"
+    case "arc-network-testnet":
+      return "ARC_NETWORK_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -639,8 +641,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "shibarium-testnet-puppynet"
     case "SONIC_MAINNET":
       return "sonic-mainnet"
-    case "SONIC_BLAZE":
-      return "sonic-testnet-blaze"
+    case "SONIC_TESTNET":
+      return "sonic-testnet"
     case "BOB_MAINNET":
       return "bitcoin-mainnet-bob-1"
     case "BOB_SEPOLIA":
@@ -859,6 +861,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "stable-mainnet"
     case "TEMPO_TESTNET":
       return "tempo-testnet"
+    case "ARC_NETWORK_TESTNET":
+      return "arc-network-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
