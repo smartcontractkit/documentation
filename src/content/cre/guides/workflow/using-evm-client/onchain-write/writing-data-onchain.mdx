@@ -88,9 +88,21 @@ const reportData = encodeAbiParameters(parseAbiParameters("address"), ["0x123456
 const reportData = encodeAbiParameters(parseAbiParameters("bool"), [true])
 ```
 
-<Aside type="note" title="BigInt literals">
-  Use the `n` suffix for integer literals to create `bigint` values in TypeScript. This is required for **all** Solidity
-  integer types (`uint8`, `uint256`, `int8`, `int256`, etc.) when using viem: `12345n`, `1000000000000000000n`, etc.
+{/* prettier-ignore */}
+<Aside type="caution" title="Always use bigint for Solidity integers">
+  JavaScript `number` loses precision for values above ~9 quadrillion (<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER" target="_blank" rel="noopener noreferrer">Number.MAX_SAFE_INTEGER</a>). This causes **silent precision loss** — your workflow sends the wrong value without any error.
+
+**Always use `bigint`** (with the `n` suffix) for all Solidity integer types: `12345n`, `1000000000000000000n`, etc.
+
+```typescript
+// WRONG - silent precision loss
+const amount = 10000000000000001 // 10 quadrillion + 1
+// Silently becomes 10000000000000000 (the +1 vanishes)
+
+// CORRECT - use bigint
+const amount = 10000000000000001n // Stays exactly 10000000000000001
+```
+
 </Aside>
 
 ### Step 3: Generate the signed report
