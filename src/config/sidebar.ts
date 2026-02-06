@@ -82,6 +82,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "cre/service-quotas",
         },
         {
+          title: "Supported Networks",
+          url: "cre/supported-networks",
+          highlightAsCurrent: ["cre/supported-networks-ts", "cre/supported-networks-go"],
+        },
+        {
           title: "Support & Feedback",
           url: "cre/support-feedback",
         },
@@ -135,7 +140,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             "cre/getting-started/part-4-writing-onchain-go",
           ],
         },
-        { title: "Conclusion & Next Steps", url: "cre/getting-started/conclusion" },
+        {
+          title: "Before You Build",
+          url: "cre/getting-started/before-you-build",
+          highlightAsCurrent: ["cre/getting-started/before-you-build-ts", "cre/getting-started/before-you-build-go"],
+        },
       ],
     },
     {
@@ -256,11 +265,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               ],
             },
             {
-              title: "Supported Networks",
-              url: "cre/guides/workflow/using-evm-client/supported-networks",
+              title: "Forwarder Directory",
+              url: "cre/guides/workflow/using-evm-client/forwarder-directory",
               highlightAsCurrent: [
-                "cre/guides/workflow/using-evm-client/supported-networks-ts",
-                "cre/guides/workflow/using-evm-client/supported-networks-go",
+                "cre/guides/workflow/using-evm-client/forwarder-directory-ts",
+                "cre/guides/workflow/using-evm-client/forwarder-directory-go",
               ],
             },
           ],
@@ -316,6 +325,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "cre/guides/workflow/secrets/managing-secrets-1password",
             },
           ],
+        },
+        {
+          title: "Using Time in Workflows",
+          url: "cre/guides/workflow/time-in-workflows",
+          highlightAsCurrent: ["cre/guides/workflow/time-in-workflows-ts", "cre/guides/workflow/time-in-workflows-go"],
+        },
+        {
+          title: "Using Randomness in Workflows",
+          url: "cre/guides/workflow/using-randomness",
         },
       ],
     },
@@ -413,14 +431,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Non-Determinism in Workflows",
           url: "cre/concepts/non-determinism",
           highlightAsCurrent: ["cre/concepts/non-determinism-go", "cre/concepts/non-determinism-ts"],
-        },
-        {
-          title: "Time in CRE",
-          url: "cre/concepts/time-in-cre",
-        },
-        {
-          title: "Random in CRE",
-          url: "cre/concepts/random-in-cre",
         },
         {
           title: "TypeScript Runtime Environment",
@@ -886,6 +896,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Report Schema v11 (RWA Advanced)",
               url: "data-streams/reference/report-schema-v11",
             },
+            {
+              title: "Handling Market Events",
+              url: "data-streams/rwa-streams/handling-market-events",
+              highlightAsCurrent: ["data-streams/rwa-streams/handling-market-events-v11"],
+            },
+            {
+              title: "24/5 US Equities User Guide",
+              url: "data-streams/rwa-streams/24-5-us-equities-user-guide",
+            },
           ],
         },
         {
@@ -905,6 +924,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Report Schema v10 (Tokenized Asset)",
               url: "data-streams/reference/report-schema-v10",
+            },
+            {
+              title: "Handling Stock Splits",
+              url: "data-streams/tokenized-asset-streams/handling-stock-splits",
             },
           ],
         },

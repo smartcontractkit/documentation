@@ -1,6 +1,30 @@
 import { DataFeedType } from "../components/FeedList.tsx"
 
 /**
+ * Helper function to extract schema version from feed metadata
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getSchemaVersion(feed: any): string | undefined {
+  // First try to get from docs.schema
+  if (feed.docs?.schema) {
+    return feed.docs.schema
+  }
+
+  // Fallback: parse from clicProductName
+  const clicProductName = feed.docs?.clicProductName
+  if (clicProductName) {
+    const match = clicProductName.match(/-0(\d{2})$/)
+    if (match) {
+      const version = match[1]
+      if (version === "04" || version === "08") return "v8"
+      if (version === "11") return "v11"
+    }
+  }
+
+  return undefined
+}
+
+/**
  * Determines if a feed should be visible based on:
  * - Hidden flags (feedCategory === "hidden" or docs.hidden)
  * - Data feed type filtering (streams, smartdata, rates, etc.)
@@ -120,8 +144,9 @@ export function isFeedVisible(
     if (options.streamCategoryFilter === "equities" && feed.docs.feedType !== "Equities") return false
     if (options.streamCategoryFilter === "forex" && feed.docs.feedType !== "Forex") return false
 
-    if (options.rwaSchemaFilter === "v8" && feed.docs?.schema === "v11") return false
-    if (options.rwaSchemaFilter === "v11" && feed.docs?.schema !== "v11") return false
+    const schemaVersion = getSchemaVersion(feed)
+    if (options.rwaSchemaFilter === "v8" && schemaVersion !== "v8") return false
+    if (options.rwaSchemaFilter === "v11" && schemaVersion !== "v11") return false
   }
 
   // Filter: Show only MVR feeds (SmartData)

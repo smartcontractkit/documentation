@@ -1,4 +1,4 @@
-import { cre, Runner, type Runtime } from "@chainlink/cre-sdk"
+import { CronCapability, handler, Runner, type Runtime } from "@chainlink/cre-sdk"
 
 // Config can be an empty object if you don't need any parameters from config.json
 type Config = Record<string, never>
@@ -21,9 +21,9 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 
 // initWorkflow is the entry point for the workflow
 const initWorkflow = () => {
-  const cron = new cre.capabilities.CronCapability()
+  const cron = new CronCapability()
 
-  return [cre.handler(cron.trigger({ schedule: "0 */10 * * * *" }), onCronTrigger)]
+  return [handler(cron.trigger({ schedule: "0 */10 * * * *" }), onCronTrigger)]
 }
 
 // main is the entry point for the WASM binary
@@ -31,5 +31,3 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()

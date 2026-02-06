@@ -5185,6 +5185,76 @@ UnauthenticatedPeriod = '20s' # Default
 
 UnauthenticatedPeriod defines the period to which unauthenticated requests get limited.
 
+## WebServer.OIDC
+
+```toml
+[WebServer.OIDC]
+ClientID = "abc123" # Example
+ProviderURL = "https://id.example.com/oauth2/default" # Example
+RedirectURL = "https://your-node.example.com/signin" # Default
+ClaimName = 'groups' # Default
+AdminClaim = 'NodeAdmins' # Default
+EditClaim = 'NodeEditors' # Default
+RunClaim = 'NodeRunners' # Default
+ReadClaim = 'NodeReadOnly' # Default
+SessionTimeout = '15m0s' # Default
+UserApiTokenEnabled = false # Default
+UserAPITokenDuration = '240h0m0s' # Default
+```
+
+Optional OIDC configuration (when `WebServer.AuthenticationMethod` is set to `oidc`) enables SSO via OpenID Connect. Register a new OIDC application with your identity provider to get a Client ID and Secret for the TOML fields. When OIDC is enabled, the chainlink node will redirect users to the provider and use the returned ID token for authentication and role assignment. The Client Secret should be populated in the your `secrets.toml` as follows:
+
+```toml
+[WebServer.OIDC]
+clientSecret = "secret" # Example
+```
+
+### ClientID
+
+`ClientID` is the identifier issued by your OIDC provider when registering the Chainlink node application. It represents the expected audience of the ID token. **Required**.
+
+### ProviderURL
+
+`ProviderURL` is the base issuer or discovery URL for your OIDC provider (e.g., the `.well-known/openid-configuration` endpoint). **Required**.
+
+### RedirectURL
+
+`RedirectURL` is the callback URL on the Chainlink node (this should be path: `/signin`) to which the IdP redirects after login. This must match the allowed redirect URIs configured in your IdP. **Required**.
+
+### ClaimName
+
+`ClaimName` specifies the JWT claim containing group or role information (default: `groups`). Change if your provider uses a different claim name.
+
+### AdminClaim
+
+`AdminClaim` is the claim value (within `ClaimName`) that maps to the Chainlink **Admin** role (default: `NodeAdmins`).
+
+### EditClaim
+
+`EditClaim` is the claim value that maps to the **Edit** role (default: `NodeEditors`).
+
+### RunClaim
+
+`RunClaim` is the claim value that maps to the **Run** role (default: `NodeRunners`).
+
+### ReadClaim
+
+`ReadClaim` is the claim value that maps to the **Read-Only** role (default: `NodeReadOnly`).
+
+### SessionTimeout
+
+`SessionTimeout` defines how long an OIDC session can remain idle before timing out (default: `15m0s`).
+
+### UserApiTokenEnabled
+
+`UserApiTokenEnabled` enables OIDC users to generate API tokens with the same permissions as their role (default: `false`).
+
+### UserAPITokenDuration
+
+`UserAPITokenDuration` sets the lifespan of API tokens issued by OIDC users (default: `240h0m0s`).
+
+> **Note:** Configure the OIDC client’s secret (`WebServer.OIDC.ClientSecret`) via the node’s secret management (e.g., environment variable `CL_WEB_SERVER_OIDC_CLIENT_SECRET`). Keep the client secret secure and do not expose it in plaintext configuration.
+
 ## WebServer.MFA
 
 ```toml

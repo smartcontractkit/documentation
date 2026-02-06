@@ -7,7 +7,7 @@ pageId: "reference-sdk-consensus"
 metadata:
   description: "Reference for TypeScript consensus methods: explore median, mode, and custom aggregation algorithms for multi-node workflows."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-01-20"
 ---
 
 import { Aside } from "@components"
@@ -155,6 +155,7 @@ Creates a consensus aggregation strategy by specifying how to aggregate each fie
 
 ```typescript
 import {
+  HTTPClient,
   ConsensusAggregationByFields,
   median,
   identical,
@@ -180,7 +181,7 @@ const fetchReserveData = (sendRequester: HTTPSendRequester, config: Config): Res
 }
 
 const onTrigger = (runtime: Runtime<Config>): string => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   const reserveInfo = httpClient
     .sendRequest(
@@ -211,7 +212,9 @@ Here's a complete example demonstrating both simple and field-based aggregation:
 
 ```typescript
 import {
-  cre,
+  CronCapability,
+  HTTPClient,
+  handler,
   Runner,
   consensusMedianAggregation,
   ConsensusAggregationByFields,
@@ -235,7 +238,7 @@ type PriceData = {
 
 // Simple aggregation example
 const fetchSimplePrice = (nodeRuntime: NodeRuntime<Config>): bigint => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
   const response = httpClient.sendRequest(nodeRuntime, { url: nodeRuntime.config.apiUrl }).result()
   const data = JSON.parse(response.body.toString())
   return BigInt(data.price)
@@ -260,7 +263,7 @@ const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): string =
   runtime.log(`Simple median price: ${simplePrice}`)
 
   // Example 2: Field-based aggregation
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
   const priceData = httpClient
     .sendRequest(
       runtime,
@@ -279,17 +282,15 @@ const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): string =
 }
 
 const initWorkflow = (config: Config) => {
-  const cron = new cre.capabilities.CronCapability()
+  const cron = new CronCapability()
 
-  return [cre.handler(cron.trigger({ schedule: "0 */5 * * * *" }), onCronTrigger)]
+  return [handler(cron.trigger({ schedule: "0 */5 * * * *" }), onCronTrigger)]
 }
 
 export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## Default Values

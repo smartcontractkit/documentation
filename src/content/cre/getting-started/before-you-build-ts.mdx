@@ -1,0 +1,120 @@
+---
+section: cre
+title: "Before You Build"
+date: Last Modified
+pageId: "getting-started-before-you-build"
+sdkLang: "ts"
+metadata:
+  description: "Essential tips before building your own CRE workflows: library compatibility, Solidity integers, working with time, and next steps for production deployment."
+  datePublished: "2026-02-04"
+  lastModified: "2026-02-04"
+---
+
+import { Aside } from "@components"
+
+You've completed the Getting Started guide and built a workflow that fetches offchain data, reads from a smart contract, performs calculations, and writes results onchain. You're ready to build your own workflows.
+
+Before you do, take two minutes to understand how CRE differs from typical development. These tips will save you debugging time.
+
+## Library compatibility
+
+Your TypeScript code compiles to WebAssembly and runs in a QuickJS environment, **not Node.js**. Some NPM packages won't work if they rely on Node.js-specific APIs like `node:crypto` or `node:fs`.
+
+**Before using a third-party package:**
+
+1. Check if it relies on Node.js built-in modules
+1. Test with `cre workflow simulate` — simulation uses the same WASM environment as production, so compatibility issues surface immediately
+
+{/* prettier-ignore */}
+<Aside type="tip" title="Cryptography libraries">
+  If you need cryptographic functions, <a href="https://paulmillr.com/noble/" target="_blank" rel="noopener noreferrer">Noble</a> is a popular JavaScript cryptography library that works well with QuickJS. Always verify any third-party library in simulation before deploying.
+</Aside>
+
+{/* prettier-ignore */}
+<Aside type="tip" title="Learn more">
+  See [TypeScript Runtime Environment](/cre/concepts/typescript-wasm-runtime) for details on QuickJS compatibility and how to [verify library support](/cre/concepts/typescript-wasm-runtime#checking-library-compatibility).
+</Aside>
+
+## Working with Solidity integers
+
+When sending values to smart contracts, always use `bigint` (with the `n` suffix) in your workflow code. JavaScript `number` loses precision for large values, causing **silent precision loss**.
+
+```typescript
+// WRONG - silent precision loss
+const amount = 10000000000000001 // 10 quadrillion + 1
+// Silently becomes 10000000000000000 (the +1 vanishes)
+
+// CORRECT - use bigint
+const amount = 10000000000000001n // Stays exactly 10000000000000001
+```
+
+{/* prettier-ignore */}
+<Aside type="tip" title="Learn more">
+  See [Writing Data Onchain](/cre/guides/workflow/using-evm-client/onchain-write/writing-data-onchain#step-2-abi-encode-your-value) for the complete Solidity-to-TypeScript type mapping.
+</Aside>
+
+## Working with time
+
+If your workflow uses timestamps (e.g., for API authentication or time-based queries), use `runtime.now()` instead of `Date.now()`. This ensures all nodes in the DON use the same timestamp and can reach consensus.
+
+{/* prettier-ignore */}
+<Aside type="tip" title="Learn more">
+  See [Using Time in Workflows](/cre/guides/workflow/time-in-workflows) for details on DON time and best practices.
+</Aside>
+
+{/* prettier-ignore */}
+<Aside type="note" title="Going deeper">
+  These are the most common cases. For a complete guide to non-determinism (object iteration, Promise handling, and more), see [Avoiding Non-Determinism in Workflows](/cre/concepts/non-determinism).
+</Aside>
+
+## What's next?
+
+Here are resources to help you go from simulation to production.
+
+### Learn from examples
+
+- **[Run the Custom Data Feed Demo](/cre/templates/running-demo-workflow)** — A starter template you can run locally and customize
+- **[Browse all Templates](/cre/templates)** — Building blocks for specific patterns (secrets, HTTP auth, streams) and starter templates
+- **[AI-Powered Prediction Market](/cre/demos/prediction-market)** — Full end-to-end demo integrating CRE with Gemini AI and Firebase
+
+### Deploy to production
+
+{/* prettier-ignore */}
+<Aside type="note" title="Deployment access required">
+  Deploying requires Early Access approval. <a href="https://cre.chain.link/request-access" target="_blank" rel="noopener noreferrer">Request access here</a>. While you wait, continue building and simulating workflows.
+</Aside>
+
+1. **[Link a Wallet Key](/cre/organization/linking-keys)** — Connect your wallet to your organization
+1. **[Deploy Your Workflow](/cre/guides/operations/deploying-workflows)** — Push your workflow live
+1. **[Monitor Your Workflow](/cre/guides/operations/monitoring-workflows)** — Watch it execute and debug issues
+
+### Explore different triggers
+
+You used a Cron trigger. Most production workflows react to events:
+
+- **[HTTP Trigger](/cre/guides/workflow/using-triggers/http-trigger/overview)** — Trigger via API calls
+- **[EVM Log Trigger](/cre/guides/workflow/using-triggers/evm-log-trigger)** — React to onchain events
+
+### Add secrets
+
+Real workflows need API keys and sensitive data:
+
+- **[Using Secrets in Simulation](/cre/guides/workflow/secrets/using-secrets-simulation)** — Local development
+- **[Using Secrets with Deployed Workflows](/cre/guides/workflow/secrets/using-secrets-deployed)** — Store secrets in the Vault DON for production
+- **[Managing Secrets with 1Password](/cre/guides/workflow/secrets/managing-secrets-1password)** — Best practice: inject secrets at runtime
+
+### Build your own consumer contract
+
+- **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)** — Create contracts that receive CRE data
+
+## Reference
+
+Dive deeper into concepts from this guide:
+
+| Topic                    | Resources                                                                                                                                                                                                                |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Workflow structure**   | [Core SDK](/cre/reference/sdk/core), [Triggers Overview](/cre/guides/workflow/using-triggers/overview)                                                                                                                   |
+| **HTTP & offchain data** | [API Interactions](/cre/guides/workflow/using-http-client), [Consensus & Aggregation](/cre/reference/sdk/consensus)                                                                                                      |
+| **EVM interactions**     | [EVM Client Overview](/cre/guides/workflow/using-evm-client/overview), [Onchain Read](/cre/guides/workflow/using-evm-client/onchain-read), [Onchain Write](/cre/guides/workflow/using-evm-client/onchain-write/overview) |
+| **Configuration**        | [Project Configuration](/cre/reference/project-configuration), [Secrets Guide](/cre/guides/workflow/secrets)                                                                                                             |
+| **All capabilities**     | [Capabilities Overview](/cre/capabilities)                                                                                                                                                                               |

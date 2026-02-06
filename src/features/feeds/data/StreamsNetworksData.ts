@@ -4,6 +4,7 @@ export type NetworkDetails = {
   accessController?: string
   explorerUrl: string
   label: string
+  note?: string
 }
 
 export type NetworkData = {
@@ -393,6 +394,7 @@ export const StreamsNetworksData: NetworkData[] = [
     networkStatus: "https://uptime.megaeth.com",
     mainnet: {
       label: "MegaETH Mainnet",
+      note: "Currently in private beta. Address whitelist required.",
       verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
       explorerUrl: "https://megaeth.blockscout.com/address/%s",
     },
@@ -457,6 +459,20 @@ export const StreamsNetworksData: NetworkData[] = [
       label: "OP Sepolia",
       verifierProxy: "0x5f64394a2Ab3AcE9eCC071568Fc552489a8de7AF",
       explorerUrl: "https://sepolia-optimism.etherscan.io/address/%s",
+    },
+  },
+  {
+    network: "Pharos",
+    logoUrl: "/assets/chains/pharos.svg",
+    mainnet: {
+      label: "Pharos Mainnet (Private)",
+      verifierProxy: "0xa094978891512268f4a4a4641B8da1A2a3E3BEB7",
+      explorerUrl: "https://pharos.socialscan.io/address/%s",
+    },
+    testnet: {
+      label: "Pharos  Atlantic Testnet",
+      verifierProxy: "0x72790f9eb82db492a7ddb6d2af22a270dcc3db64",
+      explorerUrl: "https://atlantic.pharosscan.xyz/address/%s",
     },
   },
   {

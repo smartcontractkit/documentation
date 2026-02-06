@@ -7,7 +7,7 @@ pageId: "reference-sdk-evm-client"
 metadata:
   description: "Reference for TypeScript EVM Client: complete API for smart contract interactions, reads, writes, and report generation with Viem."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-02-03"
 ---
 
 import { Aside, CopyText } from "@components"
@@ -19,7 +19,7 @@ This page provides a reference for the `EVMClient`, the low-level tool for all i
 To use the client, you must instantiate it with the numeric `ChainSelector` ID for the blockchain you intend to interact with.
 
 ```typescript
-import { cre, getNetwork } from "@chainlink/cre-sdk"
+import { EVMClient, getNetwork } from "@chainlink/cre-sdk"
 
 // Get network information by chain selector name
 const network = getNetwork({
@@ -33,7 +33,7 @@ if (!network) {
 }
 
 // Instantiate a client for Ethereum Sepolia
-const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+const evmClient = new EVMClient(network.chainSelector.selector)
 ```
 
 <Aside type="note" title="What is a Chain Selector?">
@@ -56,9 +56,9 @@ const network = getNetwork({
 })
 
 // Access network properties
-console.log(network.chainSelector.selector) // 16015286601757825753n (bigint)
-console.log(network.chainSelector.name) // "ethereum-testnet-sepolia"
-console.log(network.family) // "evm"
+// network.chainSelector.selector → 16015286601757825753n (bigint)
+// network.chainSelector.name → "ethereum-testnet-sepolia"
+// network.family → "evm"
 ```
 
 ## Read & query methods
@@ -108,7 +108,7 @@ This is the object returned by `.result()` when the `callContract()` method succ
 #### Usage example
 
 ```typescript
-import { cre, getNetwork, encodeCallMsg, bytesToHex, LAST_FINALIZED_BLOCK_NUMBER } from "@chainlink/cre-sdk"
+import { EVMClient, getNetwork, encodeCallMsg, bytesToHex, LAST_FINALIZED_BLOCK_NUMBER } from "@chainlink/cre-sdk"
 import { encodeFunctionData, decodeFunctionResult, zeroAddress } from "viem"
 import { Storage } from "../contracts/abi"
 
@@ -118,7 +118,7 @@ const network = getNetwork({
   chainSelectorName: "ethereum-testnet-sepolia",
   isTestnet: true,
 })
-const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+const evmClient = new EVMClient(network.chainSelector.selector)
 
 // Encode the contract call data
 const callData = encodeFunctionData({
@@ -413,7 +413,7 @@ writeReport(
 #### Usage example
 
 ```typescript
-import { cre, getNetwork, hexToBase64, bytesToHex } from "@chainlink/cre-sdk"
+import { EVMClient, getNetwork, hexToBase64, bytesToHex } from "@chainlink/cre-sdk"
 import { encodeFunctionData } from "viem"
 import { ReserveManager } from "../contracts/abi"
 
@@ -594,8 +594,8 @@ const latestHeader = evmClient.headerByNumber(runtime, {}).result()
 const latestBlockNum = protoBigIntToBigint(latestHeader.header.blockNumber)
 const customBlock = latestBlockNum - 500n // Now you can do arithmetic
 
-console.log(`Latest block: ${latestBlockNum}`)
-console.log(`Custom block (500 blocks ago): ${customBlock}`)
+// latestBlockNum → e.g., 12345678n
+// customBlock → e.g., 12345178n (500 blocks earlier)
 ```
 
 See [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-ts#custom-block-depths) for a complete example.
@@ -777,7 +777,7 @@ if (!network) {
 }
 
 // Access the numeric chain selector (bigint)
-const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+const evmClient = new EVMClient(network.chainSelector.selector)
 // network.chainSelector.selector is 16015286601757825753n (bigint)
 ```
 
@@ -786,7 +786,7 @@ const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
 The `EVMClient` class includes a static `SUPPORTED_CHAINS` constant with all available chain selectors:
 
 ```typescript
-cre.capabilities.EVMClient.SUPPORTED_CHAINS
+EVMClient.SUPPORTED_CHAINS
 // Returns:
 // {
 //   'avalanche-mainnet': 6433500567565415381n,
@@ -800,28 +800,38 @@ cre.capabilities.EVMClient.SUPPORTED_CHAINS
 
 This table shows the chain selector names and their numeric IDs. In your configuration files (`project.yaml`, `config.staging.json`, `config.production.json`, etc.), you always use the **String Name**. The numeric ID is used internally by the SDK and is returned by the `getNetwork()` helper function.
 
+{/* prettier-ignore */}
 <Aside type="note" title="Related resources">
-  - **Forwarder addresses**: For network-specific forwarder contract addresses, see [Supported
-  Networks](/cre/guides/workflow/using-evm-client/supported-networks) - **RPC configuration**: For configuring RPC
-  endpoints in `project.yaml`, see [Project Configuration](/cre/reference/project-configuration)
+  - **Forwarder addresses**: For network-specific forwarder contract addresses, see [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory)
+  - **RPC configuration**: For configuring RPC endpoints in `project.yaml`, see [Project Configuration](/cre/reference/project-configuration)
 </Aside>
 
-| <div style="width: 220px;">Chain</div> | String Name                                                  | <div style="width: 100px;">Numeric ID</div>   |
-| -------------------------------------- | ------------------------------------------------------------ | --------------------------------------------- |
-| Arbitrum One                           | <CopyText text="ethereum-mainnet-arbitrum-1" code />         | <CopyText text="4949039107694359620" code />  |
-| Arbitrum Sepolia                       | <CopyText text="ethereum-testnet-sepolia-arbitrum-1" code /> | <CopyText text="3478487238524512106" code />  |
-| Avalanche Mainnet                      | <CopyText text="avalanche-mainnet" code />                   | <CopyText text="6433500567565415381" code />  |
-| Avalanche Fuji                         | <CopyText text="avalanche-testnet-fuji" code />              | <CopyText text="14767482510784806043" code /> |
-| Base Mainnet                           | <CopyText text="ethereum-mainnet-base-1" code />             | <CopyText text="15971525489660198786" code /> |
-| Base Sepolia                           | <CopyText text="ethereum-testnet-sepolia-base-1" code />     | <CopyText text="10344971235874465080" code /> |
-| BNB Chain Mainnet                      | <CopyText text="binance_smart_chain-mainnet" code />         | <CopyText text="11344663589394136015" code /> |
-| BNB Chain Testnet                      | <CopyText text="binance_smart_chain-testnet" code />         | <CopyText text="5142893604156789321" code />  |
-| Ethereum Mainnet                       | <CopyText text="ethereum-mainnet" code />                    | <CopyText text="5009297550715157269" code />  |
-| Ethereum Sepolia                       | <CopyText text="ethereum-testnet-sepolia" code />            | <CopyText text="16015286601757825753" code /> |
-| OP Mainnet                             | <CopyText text="ethereum-mainnet-optimism-1" code />         | <CopyText text="3734403246176062136" code />  |
-| OP Sepolia                             | <CopyText text="ethereum-testnet-sepolia-optimism-1" code /> | <CopyText text="5224473277236331295" code />  |
-| Polygon Mainnet                        | <CopyText text="polygon-mainnet" code />                     | <CopyText text="4051577828743386545" code />  |
-| Polygon Amoy                           | <CopyText text="polygon-testnet-amoy" code />                | <CopyText text="16281711391670634445" code /> |
+| <div style="width: 220px;">Chain</div> | String Name                                                    | <div style="width: 100px;">Numeric ID</div>   |
+| -------------------------------------- | -------------------------------------------------------------- | --------------------------------------------- |
+| Apechain Curtis                        | <CopyText text="apechain-testnet-curtis" code />               | <CopyText text="9900119385908781505" code />  |
+| Arc Testnet                            | <CopyText text="arc-testnet" code />                           | <CopyText text="3034092155422581607" code />  |
+| Arbitrum One                           | <CopyText text="ethereum-mainnet-arbitrum-1" code />           | <CopyText text="4949039107694359620" code />  |
+| Arbitrum Sepolia                       | <CopyText text="ethereum-testnet-sepolia-arbitrum-1" code />   | <CopyText text="3478487238524512106" code />  |
+| Avalanche Mainnet                      | <CopyText text="avalanche-mainnet" code />                     | <CopyText text="6433500567565415381" code />  |
+| Avalanche Fuji                         | <CopyText text="avalanche-testnet-fuji" code />                | <CopyText text="14767482510784806043" code /> |
+| Base Mainnet                           | <CopyText text="ethereum-mainnet-base-1" code />               | <CopyText text="15971525489660198786" code /> |
+| Base Sepolia                           | <CopyText text="ethereum-testnet-sepolia-base-1" code />       | <CopyText text="10344971235874465080" code /> |
+| BNB Chain Mainnet                      | <CopyText text="binance_smart_chain-mainnet" code />           | <CopyText text="11344663589394136015" code /> |
+| BNB Chain Testnet                      | <CopyText text="binance_smart_chain-testnet" code />           | <CopyText text="13264668187771770619" code /> |
+| Ethereum Mainnet                       | <CopyText text="ethereum-mainnet" code />                      | <CopyText text="5009297550715157269" code />  |
+| Ethereum Sepolia                       | <CopyText text="ethereum-testnet-sepolia" code />              | <CopyText text="16015286601757825753" code /> |
+| Hyperliquid Testnet                    | <CopyText text="hyperliquid-testnet" code />                   | <CopyText text="4286062357653186312" code />  |
+| Ink Sepolia                            | <CopyText text="ink-testnet-sepolia" code />                   | <CopyText text="9763904284804119144" code />  |
+| Jovay Testnet                          | <CopyText text="jovay-testnet" code />                         | <CopyText text="945045181441419236" code />   |
+| Linea Sepolia                          | <CopyText text="ethereum-testnet-sepolia-linea-1" code />      | <CopyText text="5719461335882077547" code />  |
+| OP Mainnet                             | <CopyText text="ethereum-mainnet-optimism-1" code />           | <CopyText text="3734403246176062136" code />  |
+| OP Sepolia                             | <CopyText text="ethereum-testnet-sepolia-optimism-1" code />   | <CopyText text="5224473277236331295" code />  |
+| Plasma Testnet                         | <CopyText text="plasma-testnet" code />                        | <CopyText text="3967220077692964309" code />  |
+| Polygon Mainnet                        | <CopyText text="polygon-mainnet" code />                       | <CopyText text="4051577828743386545" code />  |
+| Polygon Amoy                           | <CopyText text="polygon-testnet-amoy" code />                  | <CopyText text="16281711391670634445" code /> |
+| World Chain Sepolia                    | <CopyText text="ethereum-testnet-sepolia-worldchain-1" code /> | <CopyText text="5299555114858065850" code />  |
+| ZKSync Era                             | <CopyText text="ethereum-mainnet-zksync-1" code />             | <CopyText text="1562403441176082196" code />  |
+| ZKSync Era Sepolia                     | <CopyText text="ethereum-testnet-sepolia-zksync-1" code />     | <CopyText text="6898391096552792247" code />  |
 
 ### Usage in configuration files
 
@@ -864,5 +874,5 @@ if (!network) {
   throw new Error(`Network not found: ${config.evms[0].chainName}`)
 }
 
-const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+const evmClient = new EVMClient(network.chainSelector.selector)
 ```
