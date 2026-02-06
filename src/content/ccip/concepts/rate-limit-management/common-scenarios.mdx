@@ -1,0 +1,109 @@
+---
+section: ccip
+date: Last Modified
+title: "Common Scenarios"
+---
+
+This page provides worked configuration scenarios for common rate limit use cases. These examples illustrate how capacity and refill values are calculated and applied for different token types and operational goals.
+
+All scenarios assume:
+
+- you have the `rateLimitAdmin` role
+- you have inspected the current configuration
+- you have validated token units and decimals
+
+These scenarios are examples, not defaults. Values must always be recalculated for the specific token, lane, and risk tolerance.
+
+## Scenario: 18-decimal tokens
+
+This scenario applies to tokens with **18 decimals**, such as LINK or ETH.
+
+### When to use this
+
+Use this pattern when managing rate limits for an 18-decimal token and you want to allow a bounded amount of value to flow steadily between two chains.
+
+### Example configuration
+
+Assumptions:
+
+- desired inbound capacity: 20 tokens
+- desired outbound capacity: 10 tokens
+- refill rate: 0.1 tokens per second
+
+Converted to base units:
+
+- inbound capacity: `20 × 10^18 = 20000000000000000000`
+- outbound capacity (90% of inbound): `10 × 10^18 = 10000000000000000000`
+- refill rate: `0.1 × 10^18 = 100000000000000000`
+
+Inbound and outbound limits are configured separately for each token pool, with values swapped appropriately on each side of the lane.
+
+## Scenario: 6-decimal tokens
+
+This scenario applies to tokens with **6 decimals**, such as USDC or USDT.
+
+### When to use this
+
+Use this pattern when configuring rate limits for stablecoins or other low-decimal tokens.
+
+### Example configuration
+
+Assumptions:
+
+- desired inbound capacity: 2000 tokens
+- desired outbound capacity: 1000 tokens
+- inbound refill rate: 5 tokens per second
+- outbound refill rate: 10 tokens per second
+
+Converted to base units:
+
+- inbound capacity: `2000 × 10^6 = 2000000000`
+- outbound capacity (90% of inbound): `1000 × 10^6 = 1000000000`
+- inbound refill rate: `5 × 10^6 = 5000000`
+- outbound refill rate: `10 × 10^6 = 10000000`
+
+As with 18-decimal tokens, inbound and outbound configurations must be applied on both sides of the lane.
+
+## Scenario: pausing a lane
+
+This scenario demonstrates how to effectively pause transfers on a specific lane using rate limits.
+
+### When to use this
+
+Use this pattern during incidents, investigations, or maintenance when transfers must be temporarily halted.
+
+### Configuration pattern
+
+To lock down a lane:
+
+- enable the rate limit
+- set capacity to `1`
+- set refill rate to `1`
+
+Apply this configuration to **both inbound and outbound** limits for the lane.
+
+This allows only a negligible transfer before capacity is exhausted, causing subsequent transfers to fail.
+
+## Scenario: removing rate limits
+
+This scenario demonstrates how to remove rate limits entirely for a lane.
+
+### When to use this
+
+Use this pattern only when you intentionally want transfers to be unconstrained by rate limits.
+
+### Configuration pattern
+
+To remove rate limits:
+
+- set `isEnabled` to `false`
+- set `capacity` to `0`
+- set `rate` to `0`
+
+Apply this configuration to both inbound and outbound limits.
+
+## Important notes
+
+- Scenario values must always be recalculated for the specific token and lane
+- Do not copy example values without adjusting for decimals and desired behavior
+- Changes take effect immediately once the transaction is confirmed

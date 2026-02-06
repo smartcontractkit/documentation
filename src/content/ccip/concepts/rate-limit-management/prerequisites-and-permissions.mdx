@@ -1,0 +1,66 @@
+---
+section: ccip
+date: Last Modified
+title: "Prerequisites and Permissions"
+---
+
+Managing CCIP rate limits is a privileged, operator-level action. Before attempting to inspect or modify any rate limit configuration, you must meet the prerequisites described on this page.
+
+## Required permissions
+
+To manage rate limits, your wallet must be granted the **`rateLimitAdmin`** role on the relevant token pool contracts.
+
+This role allows the wallet to update inbound and outbound rate limit configurations for specific cross-chain lanes. Without it, you can read on-chain data but cannot make changes.
+
+In most cases, the `rateLimitAdmin` role is assigned to a **multisig wallet** rather than to an individual externally owned account.
+
+## How admin access is granted
+
+Admin access is not self-assigned.
+
+To receive the `rateLimitAdmin` role:
+
+- You provide the address of your designated wallet (typically a multisig)
+- Chainlink Labs assigns that address as the rate limit administrator on the relevant token pool contracts
+
+Once the on-chain transaction granting this role is confirmed, the wallet can update rate limit configurations.
+
+## Scope of admin authority
+
+The `rateLimitAdmin` role applies:
+
+- per token pool
+- across inbound and outbound directions
+- per connected chain
+
+This means:
+
+- you can manage rate limits only for token pools where your wallet has been granted access
+- changes affect only the specified token and lane
+- core CCIP configuration outside of rate limits is not affected
+
+## Operational expectations
+
+Before making any changes, you should ensure that:
+
+- you understand the token’s decimal precision and smallest unit
+- you have reviewed the current inbound and outbound configurations
+- you are prepared to validate values carefully before submitting transactions
+
+Rate limit changes are applied on-chain and take effect immediately.
+
+## Responsibility boundary
+
+By managing rate limits, you take responsibility for the availability of cross-chain transfers for the affected token and lane.
+
+Incorrect configuration can:
+
+- unintentionally block transfers
+- allow more volume than intended
+- create operational or user-facing disruption
+
+For this reason, rate limit management should follow a deliberate review process and use a multisig workflow where possible.
+
+## What’s next
+
+If you meet these prerequisites, the next step is to [inspect the current inbound and outbound rate limit](/ccip/concepts/rate-limit-management/inspect-current-rate-limits) configuration before making any changes.

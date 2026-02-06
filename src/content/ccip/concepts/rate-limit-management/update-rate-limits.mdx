@@ -1,0 +1,86 @@
+---
+section: ccip
+date: Last Modified
+title: "Update Rate Limits"
+---
+
+Once you understand the current configuration and have validated token units and decimals, you can update inbound and outbound rate limits for a specific token pool and lane.
+
+Rate limit updates are applied on-chain and take effect immediately. Changes should be made deliberately and reviewed carefully before submission.
+
+## Function used to update rate limits
+
+Rate limits are updated by calling the `setChainRateLimiterConfig` function on the token pool contract.
+
+This function updates both the inbound and outbound rate limit configuration for a given remote chain.
+
+## Required parameters
+
+The `setChainRateLimiterConfig` function takes three parameters:
+
+1. **remoteChainSelector (uint64)**
+   Identifies the remote chain for the lane being configured.
+
+2. **outboundConfig (tuple)**
+   Configuration for transfers leaving the current chain.
+
+3. **inboundConfig (tuple)**
+   Configuration for transfers entering the current chain.
+
+Each configuration tuple contains:
+
+- **isEnabled**: whether the rate limit is active
+- **capacity**: maximum bucket size (in base units)
+- **rate**: refill rate in tokens per second (in base units)
+
+## Inbound and outbound configuration guidance
+
+Inbound and outbound limits are configured independently, but they are related.
+
+A common operational pattern is:
+
+- configure **outbound capacity** to be lower than inbound capacity
+- set outbound capacity to approximately **90% of the inbound value**
+
+This provides buffer room and reduces the likelihood of in-flight congestion.
+
+## Example interaction (conceptual)
+
+Rate limit updates are typically executed using a web3-enabled client or a multisig wallet.
+
+At a high level, updating a rate limit involves:
+
+- selecting the token pool contract address
+- providing the remote chain selector
+- supplying outbound and inbound configuration tuples
+- submitting the transaction from a wallet with the `rateLimitAdmin` role
+
+The exact tooling used does not change the on-chain behavior.
+
+## Verifying before submission
+
+Before submitting a rate limit update:
+
+- re-check all values are expressed in the token’s smallest unit
+- confirm inbound and outbound directions are not swapped
+- verify the correct remote chain selector is used
+- review existing values to ensure changes are intentional
+
+## After the update
+
+Once the transaction is confirmed:
+
+- the new rate limits apply immediately
+- transfers are accepted or rejected based on the updated configuration
+
+You should monitor behavior after changes to confirm the limits behave as expected.
+
+## What this page does not cover
+
+This page does not cover:
+
+- emergency actions such as locking down a lane
+- worked examples for specific token decimals
+- tool-specific execution steps
+
+Those topics are covered in the following pages.

@@ -253,6 +253,57 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
         url: "ccip/concepts/manual-execution",
         // Universal
       },
+      // NEW: Rate Limit Management folder + children (Universal)
+      {
+        title: "Rate Limit Management",
+        children: [
+          {
+            title: "Overview",
+            url: "ccip/concepts/rate-limit-management/overview",
+            // Universal
+          },
+          {
+            title: "How Rate Limits Work",
+            url: "ccip/concepts/rate-limit-management/how-rate-limits-work",
+            // Universal
+          },
+          {
+            title: "Prerequisites and Permissions",
+            url: "ccip/concepts/rate-limit-management/prerequisites-and-permissions",
+            // Universal
+          },
+          {
+            title: "Inspect Current Rate Limits",
+            url: "ccip/concepts/rate-limit-management/inspect-current-rate-limits",
+            // Universal
+          },
+          {
+            title: "Token Units and Decimals",
+            url: "ccip/concepts/rate-limit-management/token-units-and-decimals",
+            // Universal
+          },
+          {
+            title: "Update Rate Limits",
+            url: "ccip/concepts/rate-limit-management/update-rate-limits",
+            // Universal
+          },
+          {
+            title: "Emergency Actions",
+            url: "ccip/concepts/rate-limit-management/emergency-actions",
+            // Universal
+          },
+          {
+            title: "Common Scenarios",
+            url: "ccip/concepts/rate-limit-management/common-scenarios",
+            // Universal
+          },
+          {
+            title: "Executing with a Multisig",
+            url: "ccip/concepts/rate-limit-management/executing-with-a-multisig",
+            // Universal
+          },
+        ],
+      },
       {
         title: "Best Practices",
         url: "ccip/concepts/best-practices/evm",
