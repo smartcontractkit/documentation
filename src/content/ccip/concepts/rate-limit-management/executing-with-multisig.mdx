@@ -1,0 +1,151 @@
+---
+section: ccip
+date: Last Modified
+title: "Executing with a Multisig"
+---
+
+Rate limit changes are commonly executed from a **multisig wallet** to reduce operational risk and ensure changes are reviewed before being applied on-chain.
+
+This page describes the high-level execution model for multisig-based updates and points to tooling that can be used to submit transactions safely.
+
+## Why use a multisig
+
+Managing CCIP rate limits directly affects cross-chain transfer availability. Using a multisig helps:
+
+- require multiple reviewers before changes are executed
+- reduce the risk of accidental misconfiguration
+- provide an auditable record of approvals
+
+For this reason, the `rateLimitAdmin` role is typically assigned to a multisig wallet rather than to an individual account.
+
+## What the multisig submits
+
+Regardless of the interface used, a multisig ultimately submits a transaction that calls:
+
+- the token pool contract address
+- the `setChainRateLimiterConfig` function
+- the selected remote chain selector
+- inbound and outbound configuration tuples
+
+The multisig does not change how rate limits work on-chain; it only controls how the transaction is approved and submitted.
+
+## Building the transaction
+
+To build a rate limit update transaction using a multisig:
+
+- identify the correct token pool contract address
+- prepare the `setChainRateLimiterConfig` function call
+- supply the remote chain selector
+- enter the inbound and outbound configuration values as tuples
+
+Configuration tuples must be entered as arrays containing:
+
+- `isEnabled`
+- `capacity`
+- `rate`
+
+All numeric values must be expressed in the token’s smallest unit.
+
+## Tooling options
+
+Common tooling options for executing multisig transactions include:
+
+- Safe transaction builder
+- custom scripts that submit transactions to the multisig
+- internal operator tooling built on top of web3 libraries
+
+The specific interface used does not affect the on-chain outcome.
+
+## Verification before submission
+
+Before submitting a multisig transaction:
+
+- confirm the token pool contract address
+- verify the remote chain selector
+- recheck inbound and outbound directions
+- validate capacity and rate values in base units
+
+Because rate limit changes take effect immediately, careful review is essential.
+
+## After execution
+
+Once the multisig transaction is executed and confirmed on-chain:
+
+- the updated rate limits apply immediately
+- transfers follow the new configuration
+
+Monitor behavior after execution to confirm the expected outcome.
+
+## setChainRateLimiterConfig ABI
+
+The following ABI is provided to support multisig and transaction builder workflows where the function interface must be supplied manually. This is a direct representation of the function used to update CCIP rate limits.
+
+```json
+[
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "remoteChainSelector",
+        "type": "uint64"
+      },
+      {
+        "components": [
+          {
+            "internalType": "bool",
+            "name": "isEnabled",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint128",
+            "name": "capacity",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "rate",
+            "type": "uint128"
+          }
+        ],
+        "internalType": "struct RateLimiter.Config",
+        "name": "outboundConfig",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "bool",
+            "name": "isEnabled",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint128",
+            "name": "capacity",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "rate",
+            "type": "uint128"
+          }
+        ],
+        "internalType": "struct RateLimiter.Config",
+        "name": "inboundConfig",
+        "type": "tuple"
+      }
+    ],
+    "name": "setChainRateLimiterConfig",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]
+```
+
+## Related references
+
+- Inspect Current Rate Limits
+- Update Rate Limits
+- Common Scenarios
+
+For tool-specific walkthroughs, refer to the Token Manager and multisig documentation linked from the Tools section.

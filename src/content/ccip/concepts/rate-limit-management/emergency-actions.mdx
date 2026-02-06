@@ -1,0 +1,65 @@
+---
+section: ccip
+date: Last Modified
+title: "Emergency Actions (Incident Response Only)"
+---
+
+This page describes emergency actions that can be taken to **contain or halt cross-chain transfers on a specific CCIP lane** using rate limit configuration.
+
+These actions are intended for **incident response, maintenance, or risk containment** scenarios. They should not be used for routine configuration.
+
+## When to use emergency actions
+
+You may need to take emergency action if:
+
+- abnormal or unexpected transfer activity is detected
+- a misconfiguration or incident is under investigation
+- maintenance requires temporarily stopping transfers on a lane
+
+Emergency actions are scoped to a **specific token pool and lane**. They do not pause CCIP globally.
+
+## Locking down a lane with minimal values
+
+To effectively stop bridging activity on a lane, you can configure rate limits with **very small capacity and refill values**.
+
+Because rate limits cannot be set to zero while enabled, the practical approach is to set:
+
+- **capacity** to the smallest transferable unit (for example, `1`)
+- **rate** to `1`
+
+This configuration allows only a negligible transfer before the bucket is depleted, causing subsequent transfers to fail.
+
+## Example configuration
+
+Conceptually, a lane can be locked down by calling `setChainRateLimiterConfig` with the following values:
+
+- outboundConfig: `[true, "1", "1"]`
+- inboundConfig: `[true, "1", "1"]`
+
+Both inbound and outbound limits should be set to ensure transfers are blocked in both directions.
+
+## Important considerations
+
+When locking down a lane:
+
+- transfers may still succeed for a minimal amount before capacity is exhausted
+- behavior depends on the token’s smallest unit
+- the change takes effect immediately after the transaction is confirmed
+
+This approach is intended to **contain activity**, not to permanently disable rate limits.
+
+## Restoring normal operation
+
+To resume normal transfers, update the inbound and outbound rate limit configuration with appropriate capacity and refill values.
+
+Always revalidate token units and existing configuration before restoring service.
+
+## What this page does not cover
+
+This page does not cover:
+
+- routine rate limit tuning
+- worked examples for different token decimals
+- fully removing rate limits
+
+Those topics are covered in the common scenarios section.

@@ -1,0 +1,89 @@
+---
+section: ccip
+date: Last Modified
+title: "Token Units and Decimals"
+---
+
+When configuring CCIP rate limits, **all values are specified in the token’s smallest unit**, not in whole tokens. Understanding token decimals is critical to setting correct capacity and refill rates.
+
+Incorrect unit handling can result in rate limits that are orders of magnitude larger or smaller than intended.
+
+## Smallest unit vs human-readable amounts
+
+Every ERC-20 token defines a number of decimal places that determine its smallest unit:
+
+- An 18-decimal token (for example, LINK or ETH) uses `10^18` base units per token
+- A 6-decimal token (for example, USDC or USDT) uses `10^6` base units per token
+
+Rate limit parameters such as **capacity** and **rate** must always be provided in these base units.
+
+## Converting values for on-chain configuration
+
+To convert a human-readable token amount into the value used on-chain, apply the following formula:
+
+```
+On-chain value = human-readable amount × (10 ^ token decimals)
+```
+
+This conversion applies to:
+
+- capacity values
+- refill rate values
+
+## Example: 18-decimal token
+
+Token:
+
+- Decimals: 18
+- Desired capacity: 100 tokens
+
+Calculation:
+
+```
+100 × 10^18 = 100000000000000000000
+```
+
+The capacity value passed to the token pool contract must be `100000000000000000000`.
+
+## Example: 6-decimal token
+
+Token:
+
+- Decimals: 6
+- Desired capacity: 500 tokens
+
+Calculation:
+
+```
+500 × 10^6 = 500000000
+```
+
+The capacity value passed to the token pool contract must be `500000000`.
+
+## Common failure modes
+
+The most common causes of misconfiguration include:
+
+- assuming values are specified in whole tokens
+- applying the wrong decimal precision
+- copying example values without recalculating for the target token
+
+Any of these mistakes can:
+
+- unintentionally block transfers
+- allow far more volume than expected
+- create operational risk that is difficult to detect immediately
+
+## Before updating rate limits
+
+Before submitting any transaction that updates rate limits:
+
+- verify the token’s decimal precision
+- recompute capacity and rate values from first principles
+- double-check values in base units
+
+Once values are submitted on-chain, they take effect immediately.
+
+## What’s next
+
+After validating units and conversions, you can proceed to updating inbound and outbound rate limits for the selected token pool and lane.
