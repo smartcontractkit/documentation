@@ -82,6 +82,7 @@ export type SupportedTechnology =
   | "STABLE"
   | "TEMPO"
   | "ARC_NETWORK"
+  | "DOGE_OS"
 
 export type ChainType = "evm" | "solana" | "aptos"
 
@@ -256,6 +257,7 @@ export type SupportedChain =
   | "STABLE_MAINNET"
   | "TEMPO_TESTNET"
   | "ARC_NETWORK_TESTNET"
+  | "DOGE_OS_CHIKYU_TESTNET"
 
 export type ExplorerInfo = {
   baseUrl: string

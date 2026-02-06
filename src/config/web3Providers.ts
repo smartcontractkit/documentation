@@ -173,6 +173,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   STABLE_MAINNET: () => new JsonRpcProvider("https://rpc.stable.xyz"),
   TEMPO_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.tempo.xyz"),
   ARC_NETWORK_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.arc.network"),
+  DOGE_OS_CHIKYU_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.dogeos.com/"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {
