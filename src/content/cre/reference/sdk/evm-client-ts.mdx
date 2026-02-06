@@ -391,19 +391,24 @@ writeReport(
 
 #### `WriteReportReply`
 
-| <div style="width:110px">Field</div> | <div style="width:110px">Type</div> | Description                                                                                                                                                |
-| ------------------------------------ | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `txStatus`                           | `TxStatus`                          | The final status of the transaction: `TX_STATUS_SUCCESS`, `TX_STATUS_REVERTED`, or `TX_STATUS_FATAL`.                                                      |
-| `receiverContractExecutionStatus`    | `ReceiverContractExecutionStatus`   | The status of the receiver contract's execution: `RECEIVER_CONTRACT_EXECUTION_STATUS_SUCCESS` or `RECEIVER_CONTRACT_EXECUTION_STATUS_REVERTED` (optional). |
-| `txHash`                             | `Uint8Array`                        | The 32-byte transaction hash of the onchain submission (optional).                                                                                         |
-| `transactionFee`                     | `bigint`                            | The total fee paid for the transaction in Wei (optional).                                                                                                  |
-| `errorMessage`                       | `string`                            | An error message if the transaction failed (optional).                                                                                                     |
+| <div style="width:110px">Field</div> | <div style="width:110px">Type</div> | Description                                                                                                                                          |
+| ------------------------------------ | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `txStatus`                           | `TxStatus`                          | The final status of the transaction: `TxStatus.SUCCESS`, `TxStatus.REVERTED`, or `TxStatus.FATAL`.                                                   |
+| `receiverContractExecutionStatus`    | `ReceiverContractExecutionStatus`   | The status of the receiver contract's execution: `ReceiverContractExecutionStatus.SUCCESS` or `ReceiverContractExecutionStatus.REVERTED` (optional). |
+| `txHash`                             | `Uint8Array`                        | The 32-byte transaction hash of the onchain submission (optional).                                                                                   |
+| `transactionFee`                     | `bigint`                            | The total fee paid for the transaction in Wei (optional).                                                                                            |
+| `errorMessage`                       | `string`                            | An error message if the transaction failed (optional).                                                                                               |
 
 #### `TxStatus` enum
 
-- `TX_STATUS_SUCCESS`: The transaction was successful.
-- `TX_STATUS_REVERTED`: The transaction reverted.
-- `TX_STATUS_FATAL`: A fatal error occurred.
+- `TxStatus.SUCCESS` (value: `2`): The transaction was successful.
+- `TxStatus.REVERTED` (value: `1`): The transaction reverted.
+- `TxStatus.FATAL` (value: `0`): A fatal error occurred.
+
+#### `ReceiverContractExecutionStatus` enum
+
+- `ReceiverContractExecutionStatus.SUCCESS` (value: `0`): The receiver contract executed successfully.
+- `ReceiverContractExecutionStatus.REVERTED` (value: `1`): The receiver contract execution reverted.
 
 #### Usage example
 
