@@ -45,7 +45,6 @@ export type SupportedTechnology =
   | "MERLIN"
   | "FRAXTAL"
   | "HEDERA"
-  | "UNICHAIN"
   | "HEMI"
   | "APECHAIN"
   | "CRONOS"
