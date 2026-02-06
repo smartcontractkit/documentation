@@ -323,6 +323,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "cre/guides/workflow/time-in-workflows",
           highlightAsCurrent: ["cre/guides/workflow/time-in-workflows-ts", "cre/guides/workflow/time-in-workflows-go"],
         },
+        {
+          title: "Using Randomness in Workflows",
+          url: "cre/guides/workflow/using-randomness",
+        },
       ],
     },
     {
@@ -419,10 +423,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Non-Determinism in Workflows",
           url: "cre/concepts/non-determinism",
           highlightAsCurrent: ["cre/concepts/non-determinism-go", "cre/concepts/non-determinism-ts"],
-        },
-        {
-          title: "Random in CRE",
-          url: "cre/concepts/random-in-cre",
         },
         {
           title: "TypeScript Runtime Environment",
