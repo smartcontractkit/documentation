@@ -463,7 +463,7 @@ export const CHAINS: Chain[] = [
     supportedFeatures: ["feeds"],
     networks: [
       {
-        name: "MegaETH Mainnet (Private)",
+        name: "MegaETH Mainnet",
         explorerUrl: "https://megaeth.blockscout.com/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-megaeth-mainnet.json",
