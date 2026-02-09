@@ -34,8 +34,16 @@ Chain selectors are represented as `uint64` values. You can find the correct sel
 
 Most token pool contracts expose public getter functions similar to:
 
-- `getCurrentInboundRateLimiterState`
-- `getCurrentOutboundRateLimiterState`
+```solidity
+function getCurrentInboundRateLimiterState(
+  uint64 remoteChainSelector
+) external view returns (TokenBucket memory);
+
+function getCurrentOutboundRateLimiterState(
+  uint64 remoteChainSelector
+) external view returns (TokenBucket memory);
+
+```
 
 These functions take a remote chain selector as input and return the current **TokenBucket** state for that lane.
 
@@ -48,13 +56,24 @@ You can call these functions using:
 
 A typical rate limiter state includes the following fields:
 
-- **tokens**: the current number of tokens available in the bucket
-- **lastUpdated**: the timestamp of the last refill
-- **isEnabled**: whether the rate limit is active
-- **capacity**: the maximum bucket size
-- **rate**: the refill rate in tokens per second
+```solidity
+struct TokenBucket {
+  uint128 tokens;
+  uint32 lastUpdated;
+  bool isEnabled;
+  uint128 capacity;
+  uint128 rate;
+}
+```
 
-All numeric values are expressed in the token’s **smallest unit**, not in whole tokens.
+Where:
+
+- tokens (uint128): the current number of tokens available in the bucket
+- lastUpdated (uint32): the timestamp of the last refill
+- isEnabled (bool): whether the rate limit is active
+- capacity (uint128): the maximum bucket size
+- rate (uint128): the refill rate in tokens per second
+- All numeric values are expressed in the token’s **smallest unit**, not in whole tokens.
 
 ## Inbound vs outbound inspection
 

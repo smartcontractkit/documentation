@@ -18,16 +18,23 @@ This function updates both the inbound and outbound rate limit configuration for
 
 The `setChainRateLimiterConfig` function takes three parameters:
 
-1. **remoteChainSelector (uint64)**
-   Identifies the remote chain for the lane being configured.
-
-2. **outboundConfig (tuple)**
-   Configuration for transfers leaving the current chain.
-
-3. **inboundConfig (tuple)**
-   Configuration for transfers entering the current chain.
+```solidity
+function setChainRateLimiterConfig(
+  uint64 remoteChainSelector,
+  RateLimiter.Config outboundConfig,
+  RateLimiter.Config inboundConfig
+) external;
+```
 
 Each configuration tuple contains:
+
+```solidity
+struct Config {
+  bool isEnabled;
+  uint128 capacity;
+  uint128 rate;
+}
+```
 
 - **isEnabled**: whether the rate limit is active
 - **capacity**: maximum bucket size (in base units)
