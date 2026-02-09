@@ -4612,6 +4612,823 @@ If your token pool's combined execution—including the `balanceOf` function cal
 
 ---
 
+# Rate Limit Management Overview
+Source: https://docs.chain.link/ccip/concepts/rate-limit-management/overview
+
+CCIP rate limits are an **operator-level control** that apply to token pools used for cross-chain transfers. They are designed to limit the volume of tokens that can move across a specific CCIP lane over time, reducing the blast radius of unexpected behavior and helping manage operational risk.
+
+This documentation is intended for **CCIP operators, token issuers, and administrators** who have been granted permission to manage rate limits on their token pool contracts. Most CCIP users do **not** need to interact with rate limits as part of a standard integration.
+
+Rate limit changes are applied on-chain, take effect immediately, and directly affect user-facing transfer availability.
+
+## What rate limits are
+
+Rate limits in CCIP act as **capacity buckets** that refill over time. Each token pool maintains two independent limits for every connected chain:
+
+- **Outbound rate limits**: how much of a token can be sent *from* the current chain to a remote chain
+- **Inbound rate limits**: how much of a token can be received *from* a remote chain into the current chain
+
+Each limit is defined by:
+
+- whether it is enabled
+- a maximum capacity
+- a refill rate (tokens per second)
+
+Together, these parameters control how much value can flow through a CCIP lane within a given time window.
+
+## Why rate limits exist
+
+Rate limits are a defensive mechanism. They help:
+
+- prevent large, single transfers from draining liquidity unexpectedly
+- limit exposure during misconfiguration, incidents, or active investigations
+- give operators time to react if abnormal activity is detected
+
+Inbound and outbound limits are intentionally separate so that operators can tune risk asymmetrically depending on the direction of flow.
+
+## Who this applies to
+
+You should only interact with CCIP rate limits if **all** of the following are true:
+
+- You operate or administer a CCIP token pool
+- Your wallet (typically a multisig) has been granted the `rateLimitAdmin` role
+- You understand the decimal precision and units used by the token
+- You are prepared to take responsibility for the operational impact of changes
+
+If these conditions are not met, you should not attempt to modify rate limits.
+
+## Responsibility and risk
+
+Managing rate limits directly affects the availability of cross-chain transfers for a token. Incorrect configuration can:
+
+- unintentionally halt bridging
+- allow more volume than intended
+- create congestion or stuck transfers
+
+Changes are applied on-chain and take effect immediately. Always review parameters carefully, verify units, and use a multisig workflow where possible.
+
+## What this section covers
+
+The pages in this section walk through:
+
+- how CCIP rate limits work
+- required permissions and prerequisites
+- inspecting current inbound and outbound configurations
+- accounting for token decimals and units
+- updating rate limits safely
+- emergency actions such as locking down a lane
+- common configuration scenarios
+
+This content focuses on **operational control**, not on basic CCIP integration or application development.
+
+---
+
+# How Rate Limits Work
+Source: https://docs.chain.link/ccip/concepts/rate-limit-management/how-rate-limits-work
+
+This page explains how CCIP rate limits function at a conceptual level. It focuses on *what the system does* and *how the parameters interact*, without covering how to make changes on-chain.
+
+## Rate limits as capacity buckets
+
+CCIP rate limits are implemented as **capacity buckets** that refill over time. Each bucket starts with a defined maximum capacity and refills continuously at a fixed rate.
+
+Transfers draw down capacity from the relevant bucket. If insufficient capacity is available, the transfer is rejected until enough capacity has refilled.
+
+This model limits how much value can move through a CCIP lane within a given time window, even if many transfers are attempted.
+
+## Inbound and outbound rate limits
+
+Each token pool maintains **two independent rate limits per connected chain**:
+
+- **Outbound rate limit**: limits transfers *from* the local chain *to* a remote chain
+- **Inbound rate limit**: limits transfers *from* a remote chain *into* the local chain
+
+Inbound and outbound limits are configured separately and can differ in capacity and refill rate. This allows operators to tune risk asymmetrically depending on the direction of flow.
+
+In practice, outbound limits are often configured to be slightly lower than inbound limits to provide buffer room and reduce the risk of in-flight congestion.
+
+## Core rate limit parameters
+
+Each inbound or outbound rate limit is defined by three parameters:
+
+- **isEnabled**: whether the rate limit is active
+- **capacity**: the maximum amount of tokens that can be transferred before the bucket is depleted
+- **rate**: the speed at which capacity refills, measured in tokens per second
+
+All values are expressed in the token’s **smallest unit**, not in whole tokens.
+
+## Token bucket state
+
+At any moment, a rate limiter tracks the current state of its bucket, including:
+
+- the remaining number of tokens available
+- the timestamp of the last refill
+- whether the limiter is enabled
+- the configured capacity and refill rate
+
+This state determines whether a transfer can proceed and how quickly capacity becomes available again after use.
+
+## Enabled vs disabled behavior
+
+When a rate limit is **enabled**, transfers are constrained by the configured capacity and refill rate.
+
+When a rate limit is **disabled**, transfers are not subject to any volume limits for that lane.
+
+Disabling rate limits removes an important safety mechanism and should only be done intentionally and with a clear understanding of the associated risk.
+
+## Scope and granularity
+
+Rate limits are applied:
+
+- per token pool
+- per remote chain
+- independently for inbound and outbound directions
+
+This means changes to a rate limit affect only a specific token and lane, not all CCIP traffic.
+
+## What this page does not cover
+
+This page does not cover:
+
+- required permissions to manage rate limits
+- how to inspect current configurations
+- how to update or disable rate limits
+- emergency or incident response actions
+
+Those topics are covered in the subsequent pages of this section.
+
+---
+
+# Prerequisites and Permissions
+Source: https://docs.chain.link/ccip/concepts/rate-limit-management/prerequisites-and-permissions
+
+Managing CCIP rate limits is a privileged, operator-level action. Before attempting to inspect or modify any rate limit configuration, you must meet the prerequisites described on this page.
+
+## Required permissions
+
+To manage rate limits, your wallet must be granted the **`rateLimitAdmin`** role on the relevant token pool contracts.
+
+This role allows the wallet to update inbound and outbound rate limit configurations for specific cross-chain lanes. Without it, you can read on-chain data but cannot make changes.
+
+In most cases, the `rateLimitAdmin` role is assigned to a **multisig wallet** rather than to an individual externally owned account.
+
+## How admin access is granted
+
+Admin access is not self-assigned.
+
+To receive the `rateLimitAdmin` role:
+
+- You provide the address of your designated wallet (typically a multisig)
+- Chainlink Labs assigns that address as the rate limit administrator on the relevant token pool contracts
+
+Once the on-chain transaction granting this role is confirmed, the wallet can update rate limit configurations.
+
+## Scope of admin authority
+
+The `rateLimitAdmin` role applies:
+
+- per token pool
+- across inbound and outbound directions
+- per connected chain
+
+This means:
+
+- you can manage rate limits only for token pools where your wallet has been granted access
+- changes affect only the specified token and lane
+- core CCIP configuration outside of rate limits is not affected
+
+## Operational expectations
+
+Before making any changes, you should ensure that:
+
+- you understand the token’s decimal precision and smallest unit
+- you have reviewed the current inbound and outbound configurations
+- you are prepared to validate values carefully before submitting transactions
+
+Rate limit changes are applied on-chain and take effect immediately.
+
+## Responsibility boundary
+
+By managing rate limits, you take responsibility for the availability of cross-chain transfers for the affected token and lane.
+
+Incorrect configuration can:
+
+- unintentionally block transfers
+- allow more volume than intended
+- create operational or user-facing disruption
+
+For this reason, rate limit management should follow a deliberate review process and use a multisig workflow where possible.
+
+## What’s next
+
+If you meet these prerequisites, the next step is to [inspect the current inbound and outbound rate limit](/ccip/concepts/rate-limit-management/inspect-current-rate-limits) configuration before making any changes.
+
+---
+
+# Inspect Current Rate Limits
+Source: https://docs.chain.link/ccip/concepts/rate-limit-management/inspect-current-rate-limits
+
+Before updating any rate limit configuration, you should inspect the **current inbound and outbound settings** for the token pool and lane you are managing. This ensures you understand the existing capacity, refill rate, and enabled state before making changes.
+
+## What you can inspect
+
+Each token pool exposes read-only functions that return the current rate limiter state for a given remote chain. These values describe:
+
+- whether the inbound or outbound rate limit is enabled
+- the configured capacity
+- the configured refill rate
+- the current number of tokens available in the bucket
+- the timestamp of the last refill
+
+Together, these values determine whether transfers are currently allowed and how quickly capacity becomes available.
+
+## Identify the token pool contract
+
+To inspect rate limits, you first need the **token pool contract address** for the token you are managing.
+
+You can find token pool addresses using the Token Manager or by searching for the token contract address in the token manager search interface.
+
+## Select the remote chain
+
+Rate limits are configured per remote chain. When querying a rate limiter, you must provide the **remote chain selector** that identifies the cross-chain lane you want to inspect.
+
+Chain selectors are represented as `uint64` values. You can find the correct selector for each supported network in the CCIP directory.
+
+## Query inbound and outbound limiter state
+
+Most token pool contracts expose public getter functions similar to:
+
+```solidity
+function getCurrentInboundRateLimiterState(
+  uint64 remoteChainSelector
+) external view returns (TokenBucket memory);
+
+function getCurrentOutboundRateLimiterState(
+  uint64 remoteChainSelector
+) external view returns (TokenBucket memory);
+
+```
+
+These functions take a remote chain selector as input and return the current **TokenBucket** state for that lane.
+
+You can call these functions using:
+
+- a block explorer’s “Read Contract” interface
+- a web3-enabled script or client
+
+## Interpreting the TokenBucket state
+
+A typical rate limiter state includes the following fields:
+
+```solidity
+struct TokenBucket {
+  uint128 tokens;
+  uint32 lastUpdated;
+  bool isEnabled;
+  uint128 capacity;
+  uint128 rate;
+}
+```
+
+Where:
+
+- tokens (uint128): the current number of tokens available in the bucket
+- lastUpdated (uint32): the timestamp of the last refill
+- isEnabled (bool): whether the rate limit is active
+- capacity (uint128): the maximum bucket size
+- rate (uint128): the refill rate in tokens per second
+- All numeric values are expressed in the token’s **smallest unit**, not in whole tokens.
+
+## Inbound vs outbound inspection
+
+Inbound and outbound configurations should be inspected **independently**:
+
+- outbound limits control transfers leaving the current chain
+- inbound limits control transfers entering the current chain
+
+Although these values are often similar, they may intentionally differ based on risk tolerance and traffic patterns.
+
+## Before proceeding
+
+After inspecting the current configuration:
+
+- record the existing values
+- confirm token decimals and unit conversions
+- identify which direction and lane you intend to modify
+
+Only proceed to updating rate limits once you fully understand the current state.
+
+---
+
+# Token Units and Decimals
+Source: https://docs.chain.link/ccip/concepts/rate-limit-management/token-units-and-decimals
+
+When configuring CCIP rate limits, **all values are specified in the token’s smallest unit**, not in whole tokens. Understanding token decimals is critical to setting correct capacity and refill rates.
+
+Incorrect unit handling can result in rate limits that are orders of magnitude larger or smaller than intended.
+
+## Smallest unit vs human-readable amounts
+
+Every ERC-20 token defines a number of decimal places that determine its smallest unit:
+
+- An 18-decimal token (for example, LINK or ETH) uses `10^18` base units per token
+- A 6-decimal token (for example, USDC or USDT) uses `10^6` base units per token
+
+Rate limit parameters such as **capacity** and **rate** must always be provided in these base units.
+
+## Converting values for on-chain configuration
+
+To convert a human-readable token amount into the value used on-chain, apply the following formula:
+
+```
+On-chain value = human-readable amount × (10 ^ token decimals)
+```
+
+This conversion applies to:
+
+- capacity values
+- refill rate values
+
+## Example: 18-decimal token
+
+Token:
+
+- Decimals: 18
+- Desired capacity: 100 tokens
+
+Calculation:
+
+```
+100 × 10^18 = 100000000000000000000
+```
+
+The capacity value passed to the token pool contract must be `100000000000000000000`.
+
+## Example: 6-decimal token
+
+Token:
+
+- Decimals: 6
+- Desired capacity: 500 tokens
+
+Calculation:
+
+```
+500 × 10^6 = 500000000
+```
+
+The capacity value passed to the token pool contract must be `500000000`.
+
+## Common failure modes
+
+The most common causes of misconfiguration include:
+
+- assuming values are specified in whole tokens
+- applying the wrong decimal precision
+- copying example values without recalculating for the target token
+
+Any of these mistakes can:
+
+- unintentionally block transfers
+- allow far more volume than expected
+- create operational risk that is difficult to detect immediately
+
+## Before updating rate limits
+
+Before submitting any transaction that updates rate limits:
+
+- verify the token’s decimal precision
+- recompute capacity and rate values from first principles
+- double-check values in base units
+
+Once values are submitted on-chain, they take effect immediately.
+
+## What’s next
+
+After validating units and conversions, you can proceed to [updating inbound and outbound rate limits](/ccip/concepts/rate-limit-management/update-rate-limits) for the selected token pool and lane.
+
+---
+
+# Update Rate Limits
+Source: https://docs.chain.link/ccip/concepts/rate-limit-management/update-rate-limits
+
+Once you understand the current configuration and have validated token units and decimals, you can update inbound and outbound rate limits for a specific token pool and lane.
+
+Rate limit updates are applied on-chain and take effect immediately. Changes should be made deliberately and reviewed carefully before submission.
+
+## Function used to update rate limits
+
+Rate limits are updated by calling the `setChainRateLimiterConfig` function on the token pool contract.
+
+This function updates both the inbound and outbound rate limit configuration for a given remote chain.
+
+## Required parameters
+
+The `setChainRateLimiterConfig` function takes three parameters:
+
+```solidity
+function setChainRateLimiterConfig(
+  uint64 remoteChainSelector,
+  RateLimiter.Config outboundConfig,
+  RateLimiter.Config inboundConfig
+) external;
+```
+
+Each configuration tuple contains:
+
+```solidity
+struct Config {
+  bool isEnabled;
+  uint128 capacity;
+  uint128 rate;
+}
+```
+
+- **isEnabled**: whether the rate limit is active
+- **capacity**: maximum bucket size (in base units)
+- **rate**: refill rate in tokens per second (in base units)
+
+## Inbound and outbound configuration guidance
+
+Inbound and outbound limits are configured independently, but they are related.
+
+A common operational pattern is:
+
+- configure **outbound capacity** to be lower than inbound capacity
+- set outbound capacity to approximately **90% of the inbound value**
+
+This provides buffer room and reduces the likelihood of in-flight congestion.
+
+## Example interaction (conceptual)
+
+Rate limit updates are typically executed using a web3-enabled client or a multisig wallet.
+
+At a high level, updating a rate limit involves:
+
+- selecting the token pool contract address
+- providing the remote chain selector
+- supplying outbound and inbound configuration tuples
+- submitting the transaction from a wallet with the `rateLimitAdmin` role
+
+The exact tooling used does not change the on-chain behavior.
+
+## Verifying before submission
+
+Before submitting a rate limit update:
+
+- re-check all values are expressed in the token’s smallest unit
+- confirm inbound and outbound directions are not swapped
+- verify the correct remote chain selector is used
+- review existing values to ensure changes are intentional
+
+## After the update
+
+Once the transaction is confirmed:
+
+- the new rate limits apply immediately
+- transfers are accepted or rejected based on the updated configuration
+
+You should monitor behavior after changes to confirm the limits behave as expected.
+
+## What this page does not cover
+
+This page does not cover:
+
+- emergency actions such as locking down a lane
+- worked examples for specific token decimals
+- tool-specific execution steps
+
+Those topics are covered in the following pages.
+
+---
+
+# Emergency Actions (Incident Response Only)
+Source: https://docs.chain.link/ccip/concepts/rate-limit-management/emergency-actions
+
+This page describes emergency actions that can be taken to **contain or halt cross-chain transfers on a specific CCIP lane** using rate limit configuration.
+
+These actions are intended for **incident response, maintenance, or risk containment** scenarios. They should not be used for routine configuration.
+
+## When to use emergency actions
+
+You may need to take emergency action if:
+
+- abnormal or unexpected transfer activity is detected
+- a misconfiguration or incident is under investigation
+- maintenance requires temporarily stopping transfers on a lane
+
+Emergency actions are scoped to a **specific token pool and lane**. They do not pause CCIP globally.
+
+## Locking down a lane with minimal values
+
+To effectively stop bridging activity on a lane, you can configure rate limits with **very small capacity and refill values**.
+
+Because rate limits cannot be set to zero while enabled, the practical approach is to set:
+
+- **capacity** to the smallest transferable unit (for example, `1`)
+- **rate** to `1`
+
+This configuration allows only a negligible transfer before the bucket is depleted, causing subsequent transfers to fail.
+
+## Example configuration
+
+Conceptually, a lane can be locked down by calling `setChainRateLimiterConfig` with the following values:
+
+```solidity
+outboundConfig = [true, 1, 1];
+inboundConfig  = [true, 1, 1];
+```
+
+Both inbound and outbound limits should be set to ensure transfers are blocked in both directions.
+
+## Important considerations
+
+When locking down a lane:
+
+- transfers may still succeed for a minimal amount before capacity is exhausted
+- behavior depends on the token’s smallest unit
+- the change takes effect immediately after the transaction is confirmed
+
+This approach is intended to **contain activity**, not to permanently disable rate limits.
+
+## Restoring normal operation
+
+To resume normal transfers, update the inbound and outbound rate limit configuration with appropriate capacity and refill values.
+
+Always revalidate token units and existing configuration before restoring service.
+
+## What this page does not cover
+
+This page does not cover:
+
+- routine rate limit tuning
+- worked examples for different token decimals
+- fully removing rate limits
+
+Those topics are covered in the [common scenarios](/ccip/concepts/rate-limit-management/common-scenarios) section.
+
+---
+
+# Common Scenarios
+Source: https://docs.chain.link/ccip/concepts/rate-limit-management/common-scenarios
+
+This page provides worked configuration scenarios for common rate limit use cases. These examples illustrate how capacity and refill values are calculated and applied for different token types and operational goals.
+
+All scenarios assume:
+
+- you have the `rateLimitAdmin` role
+- you have inspected the current configuration
+- you have validated token units and decimals
+
+These scenarios are examples, not defaults. Values must always be recalculated for the specific token, lane, and risk tolerance.
+
+## Scenario: 18-decimal tokens
+
+This scenario applies to tokens with **18 decimals**, such as LINK or ETH.
+
+### When to use this
+
+Use this pattern when managing rate limits for an 18-decimal token and you want to allow a bounded amount of value to flow steadily between two chains.
+
+### Example configuration
+
+Assumptions:
+
+- desired inbound capacity: 20 tokens
+- desired outbound capacity: 10 tokens
+- refill rate: 0.1 tokens per second
+
+Converted to base units:
+
+- inbound capacity: `20 × 10^18 = 20000000000000000000`
+- outbound capacity (90% of inbound): `10 × 10^18 = 10000000000000000000`
+- refill rate: `0.1 × 10^18 = 100000000000000000`
+
+Inbound and outbound limits are configured separately for each token pool, with values swapped appropriately on each side of the lane.
+
+## Scenario: 6-decimal tokens
+
+This scenario applies to tokens with **6 decimals**, such as USDC or USDT.
+
+### When to use this
+
+Use this pattern when configuring rate limits for stablecoins or other low-decimal tokens.
+
+### Example configuration
+
+Assumptions:
+
+- desired inbound capacity: 2000 tokens
+- desired outbound capacity: 1000 tokens
+- inbound refill rate: 5 tokens per second
+- outbound refill rate: 10 tokens per second
+
+Converted to base units:
+
+- inbound capacity: `2000 × 10^6 = 2000000000`
+- outbound capacity (90% of inbound): `1000 × 10^6 = 1000000000`
+- inbound refill rate: `5 × 10^6 = 5000000`
+- outbound refill rate: `10 × 10^6 = 10000000`
+
+As with 18-decimal tokens, inbound and outbound configurations must be applied on both sides of the lane.
+
+## Scenario: pausing a lane
+
+This scenario demonstrates how to effectively pause transfers on a specific lane using rate limits.
+
+### When to use this
+
+Use this pattern during incidents, investigations, or maintenance when transfers must be temporarily halted.
+
+### Configuration pattern
+
+To lock down a lane:
+
+- enable the rate limit
+- set capacity to `1`
+- set refill rate to `1`
+
+Apply this configuration to **both inbound and outbound** limits for the lane.
+
+This allows only a negligible transfer before capacity is exhausted, causing subsequent transfers to fail.
+
+## Scenario: removing rate limits
+
+This scenario demonstrates how to remove rate limits entirely for a lane.
+
+### When to use this
+
+Use this pattern only when you intentionally want transfers to be unconstrained by rate limits.
+
+### Configuration pattern
+
+To remove rate limits:
+
+- set `isEnabled` to `false`
+- set `capacity` to `0`
+- set `rate` to `0`
+
+Apply this configuration to both inbound and outbound limits.
+
+## Important notes
+
+- Scenario values must always be recalculated for the specific token and lane
+- Do not copy example values without adjusting for decimals and desired behavior
+- Changes take effect immediately once the transaction is confirmed
+
+---
+
+# Executing with a Multisig
+Source: https://docs.chain.link/ccip/concepts/rate-limit-management/executing-with-a-multisig
+
+Rate limit changes are commonly executed from a **multisig wallet** to reduce operational risk and ensure changes are reviewed before being applied on-chain.
+
+This page describes the high-level execution model for multisig-based updates and points to tooling that can be used to submit transactions safely.
+
+## Why use a multisig
+
+Managing CCIP rate limits directly affects cross-chain transfer availability. Using a multisig helps:
+
+- require multiple reviewers before changes are executed
+- reduce the risk of accidental misconfiguration
+- provide an auditable record of approvals
+
+For this reason, the `rateLimitAdmin` role is typically assigned to a multisig wallet rather than to an individual account.
+
+## What the multisig submits
+
+Regardless of the interface used, a multisig ultimately submits a transaction that calls:
+
+- the token pool contract address
+- the `setChainRateLimiterConfig` function
+- the selected remote chain selector
+- inbound and outbound configuration tuples
+
+The multisig does not change how rate limits work on-chain; it only controls how the transaction is approved and submitted.
+
+## Building the transaction
+
+To build a rate limit update transaction using a multisig:
+
+- identify the correct token pool contract address
+- prepare the `setChainRateLimiterConfig` function call
+- supply the remote chain selector
+- enter the inbound and outbound configuration values as tuples
+
+Configuration tuples must be entered as arrays containing:
+
+- `isEnabled`
+- `capacity`
+- `rate`
+
+All numeric values must be expressed in the token’s smallest unit.
+
+## Tooling options
+
+Common tooling options for executing multisig transactions include:
+
+- Safe transaction builder
+- custom scripts that submit transactions to the multisig
+- internal operator tooling built on top of web3 libraries
+
+The specific interface used does not affect the on-chain outcome.
+
+## Verification before submission
+
+Before submitting a multisig transaction:
+
+- confirm the token pool contract address
+- verify the remote chain selector
+- recheck inbound and outbound directions
+- validate capacity and rate values in base units
+
+Because rate limit changes take effect immediately, careful review is essential.
+
+## After execution
+
+Once the multisig transaction is executed and confirmed on-chain:
+
+- the updated rate limits apply immediately
+- transfers follow the new configuration
+
+Monitor behavior after execution to confirm the expected outcome.
+
+## setChainRateLimiterConfig ABI
+
+The following ABI is provided to support multisig and transaction builder workflows where the function interface must be supplied manually. This is a direct representation of the function used to update CCIP rate limits.
+
+```json
+[
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "remoteChainSelector",
+        "type": "uint64"
+      },
+      {
+        "components": [
+          {
+            "internalType": "bool",
+            "name": "isEnabled",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint128",
+            "name": "capacity",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "rate",
+            "type": "uint128"
+          }
+        ],
+        "internalType": "struct RateLimiter.Config",
+        "name": "outboundConfig",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "bool",
+            "name": "isEnabled",
+            "type": "bool"
+          },
+          {
+            "internalType": "uint128",
+            "name": "capacity",
+            "type": "uint128"
+          },
+          {
+            "internalType": "uint128",
+            "name": "rate",
+            "type": "uint128"
+          }
+        ],
+        "internalType": "struct RateLimiter.Config",
+        "name": "inboundConfig",
+        "type": "tuple"
+      }
+    ],
+    "name": "setChainRateLimiterConfig",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]
+```
+
+## Related references
+
+- [Inspect Current Rate Limits](/ccip/concepts/rate-limit-management/inspect-current-rate-limits)
+- [Update Rate Limits](/ccip/concepts/rate-limit-management/update-rate-limits)
+- [Common Scenarios](/ccip/concepts/rate-limit-management/common-scenarios)
+
+For tool-specific walkthroughs, refer to the Token Manager and multisig documentation linked from the Tools section.
+
+---
+
 # CCIP Best Practices (EVM)
 Source: https://docs.chain.link/ccip/concepts/best-practices/evm
 Last Updated: 2025-05-19
