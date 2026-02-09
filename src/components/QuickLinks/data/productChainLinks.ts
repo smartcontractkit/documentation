@@ -72,7 +72,7 @@ export const productChainLinks: ProductChainLinks = {
       hedera: "/ccip/directory/mainnet/chain/hedera-mainnet",
       hemi: "/ccip/directory/mainnet/chain/hemi-mainnet",
       mindnetwork: "/ccip/directory/mainnet/chain/mind-mainnet",
-      megaeth: "/ccip/directory/testnet/chain/megaeth-testnet",
+      megaeth: "/ccip/directory/mainnet/chain/megaeth-mainnet",
       solana: "/ccip/directory/mainnet/chain/solana-mainnet",
       lisk: "/ccip/directory/mainnet/chain/lisk-mainnet",
       zora: "/ccip/directory/mainnet/chain/zora-mainnet",
