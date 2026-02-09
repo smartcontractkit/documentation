@@ -45,7 +45,6 @@ export type SupportedTechnology =
   | "MERLIN"
   | "FRAXTAL"
   | "HEDERA"
-  | "UNICHAIN"
   | "HEMI"
   | "APECHAIN"
   | "CRONOS"
@@ -81,6 +80,8 @@ export type SupportedTechnology =
   | "JOVAY"
   | "STABLE"
   | "TEMPO"
+  | "ARC_NETWORK"
+  | "DOGE_OS"
 
 export type ChainType = "evm" | "solana" | "aptos"
 
@@ -144,7 +145,8 @@ export type SupportedChain =
   | "SHIBARIUM_MAINNET"
   | "SHIBARIUM_PUPPYNET"
   | "SONIC_MAINNET"
-  | "SONIC_BLAZE"
+  | "SONIC_TESTNET"
+  | "SONIC_TESTNET_BLAZE"
   | "BOB_MAINNET"
   | "BOB_SEPOLIA"
   | "WORLD_MAINNET"
@@ -254,6 +256,8 @@ export type SupportedChain =
   | "JOVAY_TESTNET"
   | "STABLE_MAINNET"
   | "TEMPO_TESTNET"
+  | "ARC_NETWORK_TESTNET"
+  | "DOGE_OS_CHIKYU_TESTNET"
 
 export type ExplorerInfo = {
   baseUrl: string
