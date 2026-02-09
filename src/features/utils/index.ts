@@ -306,6 +306,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "SONIC_MAINNET"
     case "sonic-testnet":
       return "SONIC_TESTNET"
+    case "sonic-testnet-blaze":
+      return "SONIC_TESTNET_BLAZE"
     case "bitcoin-mainnet-bob-1":
       return "BOB_MAINNET"
     case "bitcoin-testnet-sepolia-bob-1":
@@ -645,6 +647,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "sonic-mainnet"
     case "SONIC_TESTNET":
       return "sonic-testnet"
+    case "SONIC_TESTNET_BLAZE":
+      return "sonic-testnet-blaze"
     case "BOB_MAINNET":
       return "bitcoin-mainnet-bob-1"
     case "BOB_SEPOLIA":

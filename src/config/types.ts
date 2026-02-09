@@ -146,6 +146,7 @@ export type SupportedChain =
   | "SHIBARIUM_PUPPYNET"
   | "SONIC_MAINNET"
   | "SONIC_TESTNET"
+  | "SONIC_TESTNET_BLAZE"
   | "BOB_MAINNET"
   | "BOB_SEPOLIA"
   | "WORLD_MAINNET"

@@ -63,6 +63,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   SHIBARIUM_PUPPYNET: () => new JsonRpcProvider("https://puppynet.shibrpc.com"),
   SONIC_MAINNET: () => new JsonRpcProvider("https://rpc.ankr.com/sonic_mainnet"),
   SONIC_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.soniclabs.com"),
+  SONIC_TESTNET_BLAZE: () => new JsonRpcProvider("https://rpc.blaze.soniclabs.com"),
   BOB_MAINNET: () => new JsonRpcProvider("https://rpc.gobob.xyz"),
   BOB_SEPOLIA: () => new JsonRpcProvider("https://bob-sepolia.rpc.gobob.xyz"),
   WORLD_MAINNET: () => new JsonRpcProvider("https://worldchain.drpc.org"),
