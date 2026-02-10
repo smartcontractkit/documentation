@@ -1,0 +1,76 @@
+---
+section: ccip
+date: Last Modified
+title: "How Rate Limits Work"
+---
+
+This page explains how CCIP rate limits function at a conceptual level. It focuses on _what the system does_ and _how the parameters interact_, without covering how to make changes on-chain.
+
+## Rate limits as capacity buckets
+
+CCIP rate limits are implemented as **capacity buckets** that refill over time. Each bucket starts with a defined maximum capacity and refills continuously at a fixed rate.
+
+Transfers draw down capacity from the relevant bucket. If insufficient capacity is available, the transfer is rejected until enough capacity has refilled.
+
+This model limits how much value can move through a CCIP lane within a given time window, even if many transfers are attempted.
+
+## Inbound and outbound rate limits
+
+Each token pool maintains **two independent rate limits per connected chain**:
+
+- **Outbound rate limit**: limits transfers _from_ the local chain _to_ a remote chain
+- **Inbound rate limit**: limits transfers _from_ a remote chain _into_ the local chain
+
+Inbound and outbound limits are configured separately and can differ in capacity and refill rate. This allows operators to tune risk asymmetrically depending on the direction of flow.
+
+In practice, outbound limits are often configured to be slightly lower than inbound limits to provide buffer room and reduce the risk of in-flight congestion.
+
+## Core rate limit parameters
+
+Each inbound or outbound rate limit is defined by three parameters:
+
+- **isEnabled**: whether the rate limit is active
+- **capacity**: the maximum amount of tokens that can be transferred before the bucket is depleted
+- **rate**: the speed at which capacity refills, measured in tokens per second
+
+All values are expressed in the token’s **smallest unit**, not in whole tokens.
+
+## Token bucket state
+
+At any moment, a rate limiter tracks the current state of its bucket, including:
+
+- the remaining number of tokens available
+- the timestamp of the last refill
+- whether the limiter is enabled
+- the configured capacity and refill rate
+
+This state determines whether a transfer can proceed and how quickly capacity becomes available again after use.
+
+## Enabled vs disabled behavior
+
+When a rate limit is **enabled**, transfers are constrained by the configured capacity and refill rate.
+
+When a rate limit is **disabled**, transfers are not subject to any volume limits for that lane.
+
+Disabling rate limits removes an important safety mechanism and should only be done intentionally and with a clear understanding of the associated risk.
+
+## Scope and granularity
+
+Rate limits are applied:
+
+- per token pool
+- per remote chain
+- independently for inbound and outbound directions
+
+This means changes to a rate limit affect only a specific token and lane, not all CCIP traffic.
+
+## What this page does not cover
+
+This page does not cover:
+
+- required permissions to manage rate limits
+- how to inspect current configurations
+- how to update or disable rate limits
+- emergency or incident response actions
+
+Those topics are covered in the subsequent pages of this section.

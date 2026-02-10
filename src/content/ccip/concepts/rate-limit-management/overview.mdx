@@ -1,0 +1,71 @@
+---
+section: ccip
+date: Last Modified
+title: "Rate Limit Management Overview"
+---
+
+CCIP rate limits are an **operator-level control** that apply to token pools used for cross-chain transfers. They are designed to limit the volume of tokens that can move across a specific CCIP lane over time, reducing the blast radius of unexpected behavior and helping manage operational risk.
+
+This documentation is intended for **CCIP operators, token issuers, and administrators** who have been granted permission to manage rate limits on their token pool contracts. Most CCIP users do **not** need to interact with rate limits as part of a standard integration.
+
+Rate limit changes are applied on-chain, take effect immediately, and directly affect user-facing transfer availability.
+
+## What rate limits are
+
+Rate limits in CCIP act as **capacity buckets** that refill over time. Each token pool maintains two independent limits for every connected chain:
+
+- **Outbound rate limits**: how much of a token can be sent _from_ the current chain to a remote chain
+- **Inbound rate limits**: how much of a token can be received _from_ a remote chain into the current chain
+
+Each limit is defined by:
+
+- whether it is enabled
+- a maximum capacity
+- a refill rate (tokens per second)
+
+Together, these parameters control how much value can flow through a CCIP lane within a given time window.
+
+## Why rate limits exist
+
+Rate limits are a defensive mechanism. They help:
+
+- prevent large, single transfers from draining liquidity unexpectedly
+- limit exposure during misconfiguration, incidents, or active investigations
+- give operators time to react if abnormal activity is detected
+
+Inbound and outbound limits are intentionally separate so that operators can tune risk asymmetrically depending on the direction of flow.
+
+## Who this applies to
+
+You should only interact with CCIP rate limits if **all** of the following are true:
+
+- You operate or administer a CCIP token pool
+- Your wallet (typically a multisig) has been granted the `rateLimitAdmin` role
+- You understand the decimal precision and units used by the token
+- You are prepared to take responsibility for the operational impact of changes
+
+If these conditions are not met, you should not attempt to modify rate limits.
+
+## Responsibility and risk
+
+Managing rate limits directly affects the availability of cross-chain transfers for a token. Incorrect configuration can:
+
+- unintentionally halt bridging
+- allow more volume than intended
+- create congestion or stuck transfers
+
+Changes are applied on-chain and take effect immediately. Always review parameters carefully, verify units, and use a multisig workflow where possible.
+
+## What this section covers
+
+The pages in this section walk through:
+
+- how CCIP rate limits work
+- required permissions and prerequisites
+- inspecting current inbound and outbound configurations
+- accounting for token decimals and units
+- updating rate limits safely
+- emergency actions such as locking down a lane
+- common configuration scenarios
+
+This content focuses on **operational control**, not on basic CCIP integration or application development.
