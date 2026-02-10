@@ -103,6 +103,8 @@ export const productChainLinks: ProductChainLinks = {
       morph: "/ccip/directory/mainnet/chain/morph-mainnet",
       jovay: "/ccip/directory/mainnet/chain/jovay-mainnet",
       stable: "/ccip/directory/mainnet/chain/stable-mainnet",
+      arcnetwork: "/ccip/directory/testnet/chain/arc-testnet",
+      dogeos: "/ccip/directory/testnet/chain/dogeos-testnet-chikyu",
     },
   },
   CRE: {

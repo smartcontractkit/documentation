@@ -532,9 +532,10 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "STABLE_MAINNET"
     case "tempo-testnet":
       return "TEMPO_TESTNET"
-    case "arc-network-testnet":
+    case "arc-testnet":
       return "ARC_NETWORK_TESTNET"
     case "doge-os-chikyu-testnet":
+    case "dogeos-testnet-chikyu":
       return "DOGE_OS_CHIKYU_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
@@ -868,9 +869,9 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
     case "TEMPO_TESTNET":
       return "tempo-testnet"
     case "ARC_NETWORK_TESTNET":
-      return "arc-network-testnet"
+      return "arc-testnet"
     case "DOGE_OS_CHIKYU_TESTNET":
-      return "doge-os-chikyu-testnet"
+      return "dogeos-testnet-chikyu"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
