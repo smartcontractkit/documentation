@@ -1,0 +1,321 @@
+---
+section: cre
+title: "SDK Reference: Confidential HTTP Client"
+date: Last Modified
+sdkLang: "ts"
+pageId: "reference-sdk-confidential-http-client"
+metadata:
+  description: "Reference for TypeScript Confidential HTTP Client: complete API for privacy-preserving requests with enclave execution, secret injection, and response encryption."
+  datePublished: "2026-02-10"
+  lastModified: "2026-02-10"
+---
+
+import { Aside } from "@components"
+
+<Aside type="caution" title="Experimental — Simulation only">
+  Confidential HTTP is an **experimental** capability available for `cre workflow simulate` only. It cannot be used with
+  `cre workflow deploy` at this time.
+</Aside>
+
+The [Confidential HTTP](/cre/capabilities/confidential-http-ts) Client lets you make privacy-preserving requests to external APIs from your workflow. Unlike the regular [`HTTPClient`](/cre/reference/sdk/http-client), the request executes inside a secure enclave, secrets are injected via templates, and responses can be optionally encrypted.
+
+- For use cases and a conceptual overview, see [The Confidential HTTP Capability](/cre/capabilities/confidential-http-ts)
+- **Guide:** [Making Confidential Requests](/cre/guides/workflow/using-confidential-http-client/making-requests-ts)
+
+## Quick reference
+
+| Method                                              | Description                                                                            |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| [`sendRequest` (high-level)](#sendrequest)          | **Recommended.** Makes a confidential HTTP request with built-in consensus and typing. |
+| [`sendRequest` (low-level)](#low-level-sendrequest) | Makes a confidential HTTP request manually inside a `runInNodeMode` block.             |
+
+## Core types
+
+{/* prettier-ignore */}
+<Aside type="note" title="Runtime types vs JSON types">
+  Each core type has a corresponding `Json` variant (e.g., `ConfidentialHTTPRequest` and `ConfidentialHTTPRequestJson`). The `Json` variant is the plain JSON-serializable form of the protobuf message. Both forms are accepted wherever a type is required.
+</Aside>
+
+### `ConfidentialHTTPRequest` / `ConfidentialHTTPRequestJson`
+
+The top-level request type that combines an HTTP request with Vault DON secrets and encryption settings.
+
+| <div style="width: 140px;">Field</div> | <div style="width: 230px;">Type</div>            | Description                                                                                                                                       |
+| -------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `request`                              | `HTTPRequest` \| `HTTPRequestJson`               | The HTTP request to execute inside the enclave. See [`HTTPRequest`](#httprequest--httprequestjson).                                               |
+| `vaultDonSecrets`                      | `SecretIdentifier[]` \| `SecretIdentifierJson[]` | List of secrets to fetch from the Vault DON and make available in the enclave. See [`SecretIdentifier`](#secretidentifier--secretidentifierjson). |
+| `encryptOutput`                        | `boolean`                                        | If `true`, encrypts the response body before it leaves the enclave. See [Response encryption](#response-encryption). Default: `false`.            |
+
+### `HTTPRequest` / `HTTPRequestJson`
+
+Defines the HTTP request that will be executed inside the enclave.
+
+| <div style="width: 170px;">Field</div> | <div style="width: 250px;">Type</div>        | Description                                                                                               |
+| -------------------------------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `url`                                  | `string`                                     | The URL of the API endpoint.                                                                              |
+| `method`                               | `string`                                     | The HTTP method (e.g., `"GET"`, `"POST"`).                                                                |
+| `bodyString`                           | `string` (optional)                          | The request body as a string template. Use this for secret injection with `{{.secretName}}` placeholders. |
+| `bodyBytes`                            | `Uint8Array` \| `string` (optional)          | The request body as raw bytes (base64-encoded in JSON format).                                            |
+| `multiHeaders`                         | `{ [key: string]: HeaderValues }` (optional) | Request headers. Supports multiple values per key and template syntax for secret injection.               |
+| `templatePublicValues`                 | `{ [key: string]: string }` (optional)       | Public (non-secret) values used to fill template placeholders in the body and headers.                    |
+| `customRootCaCertPem`                  | `Uint8Array` \| `string` (optional)          | Optional custom root CA certificate (PEM format) for verifying the external server's TLS certificate.     |
+| `timeout`                              | `Duration` \| `DurationJson` (optional)      | Optional request timeout (e.g., `"5s"`).                                                                  |
+
+{/* prettier-ignore */}
+<Aside type="note" title="bodyString vs bodyBytes">
+  The request body is a `oneof` field. Use `bodyString` for string templates with secret injection, or `bodyBytes` for raw binary data. Only one should be provided.
+</Aside>
+
+### `HTTPResponse` / `HTTPResponseJson`
+
+The response returned from the enclave after the HTTP request completes.
+
+| <div style="width: 130px;">Field</div> | <div style="width: 260px;">Type</div> | Description                                                                                                                          |
+| -------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `statusCode`                           | `number`                              | The HTTP status code.                                                                                                                |
+| `body`                                 | `Uint8Array` \| `string` (base64)     | The response body. If `encryptOutput` is `true`, this contains the encrypted body (see [Response encryption](#response-encryption)). |
+| `multiHeaders`                         | `{ [key: string]: HeaderValues }`     | The HTTP response headers.                                                                                                           |
+
+### `SecretIdentifier` / `SecretIdentifierJson`
+
+Identifies a secret stored in the Vault DON.
+
+| Field       | Type                | Description                                                                                                       |
+| ----------- | ------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `key`       | `string`            | The logical name of the secret. Must match the template placeholder (e.g., `"myApiKey"` matches `{{.myApiKey}}`). |
+| `namespace` | `string`            | The secret namespace.                                                                                             |
+| `owner`     | `string` (optional) | Optional. The owner address for the secret.                                                                       |
+
+### `HeaderValues` / `HeaderValuesJson`
+
+Represents multiple values for a single HTTP header key.
+
+| <div style="width: 130px;">Field</div> | <div style="width: 130px;">Type</div> | Description                                                                                      |
+| -------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `values`                               | `string[]`                            | The header values. Supports template syntax for secret injection (e.g., `"Basic {{.myToken}}"`). |
+
+### `ConfidentialHTTPSendRequester`
+
+The object passed to your fetch function when using the [high-level `sendRequest`](#sendrequest) pattern. It wraps the low-level client and provides a single method:
+
+| Method                                                                                                       | Description                                                 |
+| ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| `sendRequest(input: ConfidentialHTTPRequest \| ConfidentialHTTPRequestJson): { result: () => HTTPResponse }` | Sends a confidential HTTP request and returns the response. |
+
+You don't create this object yourself — it is provided by the SDK when your function is called.
+
+## Making requests
+
+### `sendRequest()`
+
+**Recommended.** The high-level `sendRequest` method handles `runInNodeMode` wrapping and consensus for you. You provide a function that receives a `ConfidentialHTTPSendRequester` and your arguments, and the SDK takes care of the rest.
+
+**Signature:**
+
+```typescript
+sendRequest<TArgs extends unknown[], TOutput>(
+  runtime: Runtime<unknown>,
+  fn: (sendRequester: ConfidentialHTTPSendRequester, ...args: TArgs) => TOutput,
+  consensusAggregation: ConsensusAggregation<TOutput, true>,
+  unwrapOptions?: UnwrapOptions<TOutput>,
+): (...args: TArgs) => { result: () => TOutput }
+```
+
+**Parameters:**
+
+- `runtime`: The `Runtime` instance from your trigger handler.
+- `fn`: A function that receives a `ConfidentialHTTPSendRequester` plus any additional arguments you pass. Use the `sendRequester` to make the confidential request and return the parsed result.
+- `consensusAggregation`: The consensus strategy (e.g., `consensusIdenticalAggregation()`, `consensusMedianAggregation()`).
+- `unwrapOptions` (optional): Advanced option for controlling how complex (non-primitive) output types are unwrapped during consensus. Not needed for most use cases.
+
+**Returns:**
+
+A curried function that accepts `...args` and returns an object with a `.result()` method.
+
+**Example:**
+
+```typescript
+import {
+  ConfidentialHTTPClient,
+  consensusIdenticalAggregation,
+  ok,
+  json,
+  type ConfidentialHTTPSendRequester,
+  type Runtime,
+} from "@chainlink/cre-sdk"
+
+type Config = { url: string; owner: string }
+type APIResult = { data: string }
+
+// 1. Define your fetch function
+const fetchData = (sendRequester: ConfidentialHTTPSendRequester, config: Config): APIResult => {
+  const response = sendRequester
+    .sendRequest({
+      request: {
+        url: config.url,
+        method: "GET",
+        multiHeaders: {
+          Authorization: { values: ["Basic {{.apiKey}}"] },
+        },
+      },
+      vaultDonSecrets: [{ key: "apiKey", owner: config.owner }],
+    })
+    .result()
+
+  if (!ok(response)) {
+    throw new Error(`Request failed: ${response.statusCode}`)
+  }
+
+  return json(response) as APIResult
+}
+
+// 2. Call sendRequest in your trigger handler
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  const confHTTPClient = new ConfidentialHTTPClient()
+
+  const result = confHTTPClient
+    .sendRequest(runtime, fetchData, consensusIdenticalAggregation<APIResult>())(runtime.config)
+    .result()
+
+  return result.data
+}
+```
+
+### Low-level `sendRequest()`
+
+The low-level overload gives you direct access to the client within a `runtime.runInNodeMode()` block. For Confidential HTTP, this offers minimal practical advantages over the high-level pattern because the API call already executes as a single request inside the enclave. Use this only if you have a specific reason to manage the `runInNodeMode` wrapping manually.
+
+**Signature:**
+
+```typescript
+sendRequest(
+  runtime: NodeRuntime<unknown>,
+  input: ConfidentialHTTPRequest | ConfidentialHTTPRequestJson
+): { result: () => HTTPResponse }
+```
+
+**Parameters:**
+
+- `runtime`: A `NodeRuntime` instance provided by `runtime.runInNodeMode()`.
+- `input`: A `ConfidentialHTTPRequest` or `ConfidentialHTTPRequestJson` object containing the request, secrets, and encryption settings.
+
+**Returns:**
+
+An object with a `.result()` method that blocks until the request completes and returns the `HTTPResponse`.
+
+**Example:**
+
+```typescript
+import {
+  ConfidentialHTTPClient,
+  consensusIdenticalAggregation,
+  type Runtime,
+  type NodeRuntime,
+} from "@chainlink/cre-sdk"
+
+type Config = { url: string }
+
+const fetchData = (nodeRuntime: NodeRuntime<Config>): string => {
+  const client = new ConfidentialHTTPClient()
+
+  const resp = client
+    .sendRequest(nodeRuntime, {
+      request: {
+        url: nodeRuntime.config.url,
+        method: "GET",
+        multiHeaders: {
+          Authorization: { values: ["Basic {{.apiKey}}"] },
+        },
+      },
+      vaultDonSecrets: [{ key: "apiKey" }],
+      encryptOutput: false,
+    })
+    .result()
+
+  if (resp.statusCode !== 200) {
+    throw new Error(`Request failed with status: ${resp.statusCode}`)
+  }
+
+  const bodyText = new TextDecoder().decode(resp.body)
+  return bodyText
+}
+
+// In your workflow
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  const result = runtime.runInNodeMode(fetchData, consensusIdenticalAggregation<string>())().result()
+
+  runtime.log(`Result: ${result}`)
+  return result
+}
+```
+
+## Template syntax
+
+Secrets are injected into the request body and headers using Go template syntax: `{{.secretName}}`. The placeholder name must match the `key` field in the corresponding `SecretIdentifier`.
+
+**Body template:**
+
+```typescript
+bodyString: '{"apiKey": "{{.myApiKey}}", "method": "{{.method}}", "params": []}',
+```
+
+**Header template:**
+
+```typescript
+multiHeaders: {
+  "Authorization": { values: ["Basic {{.myCredential}}"] },
+},
+```
+
+### `templatePublicValues` (optional)
+
+Every `{{.placeholder}}` in your body or headers is resolved inside the enclave. By default, placeholders are filled with **secrets** from `vaultDonSecrets`. But sometimes you have a placeholder value that isn't secret — for example, an RPC method name or a public parameter. That's what `templatePublicValues` is for: it lets you inject **non-secret** values into the same template.
+
+This is purely a convenience. You could always hardcode the value directly in the body string instead:
+
+```typescript
+// These two are equivalent:
+
+// Option 1: hardcoded in the body string
+bodyString: '{"method": "eth_blockNumber", "auth": "{{.apiKey}}"}'
+
+// Option 2: using templatePublicValues
+bodyString: '{"method": "{{.method}}", "auth": "{{.apiKey}}"}'
+templatePublicValues: {
+  method: "eth_blockNumber"
+}
+```
+
+`templatePublicValues` is useful when you want to keep the template generic and pass in dynamic values (e.g., from config) without string concatenation.
+
+**Example with both secret and public values:**
+
+```typescript
+request: {
+  url: config.url,
+  method: "POST",
+  bodyString: '{"method": "{{.rpcMethod}}", "auth": "{{.apiKey}}"}',
+  templatePublicValues: {
+    rpcMethod: config.rpcMethod,   // dynamic value from config, not a secret
+  },
+},
+vaultDonSecrets: [{ key: "apiKey", owner: config.owner }],  // secret, from Vault DON
+```
+
+In this example, `{{.rpcMethod}}` is resolved from `templatePublicValues` (a dynamic, non-secret value from your workflow config) and `{{.apiKey}}` is resolved from the Vault DON (a secret). Both are resolved inside the enclave.
+
+## Response encryption
+
+The `encryptOutput` field controls whether the response body is encrypted before leaving the enclave.
+
+| encryptOutput     | Secret key provided                                      | Behavior                                                      |
+| ----------------- | -------------------------------------------------------- | ------------------------------------------------------------- |
+| `false` (default) | —                                                        | Response returned unencrypted.                                |
+| `true`            | `san_marino_aes_gcm_encryption_key` in `vaultDonSecrets` | Response AES-GCM encrypted with your symmetric key.           |
+| `true`            | No key provided                                          | Response TDH2 encrypted with the Vault DON master public key. |
+
+**AES-GCM encryption** is the recommended approach. Store a 256-bit (32-byte) AES key as a Vault DON secret with the identifier `san_marino_aes_gcm_encryption_key`, then decrypt the response in your own backend.
+
+The encrypted response body is structured as `nonce || ciphertext || tag`.
+
+For a complete example with response encryption, see the [Making Confidential Requests guide](/cre/guides/workflow/using-confidential-http-client/making-requests-ts#response-encryption).
