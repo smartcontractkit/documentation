@@ -3,7 +3,7 @@ import { ChainMetadata } from "./api/index.ts"
 // Cross-networks
 export const POR_MVR_FEEDS_URL = "https://reference-data-directory.vercel.app/por-data-feeds.json"
 
-type ChainTags = ("default" | "smartData" | "rates" | "streams" | "usGovernmentMacroeconomicData")[]
+type ChainTags = ("default" | "smartData" | "rates" | "streams" | "usGovernmentMacroeconomicData" | "tokenizedEquity")[]
 export interface ChainNetwork {
   name: string
   explorerUrl: string
@@ -254,17 +254,19 @@ export const CHAINS: Chain[] = [
     title: "Data Feeds",
     img: "/assets/chains/ethereum.svg",
     networkStatusUrl: "https://ethstats.dev/",
-    tags: ["default", "smartData", "rates", "usGovernmentMacroeconomicData"],
+    tags: ["default", "smartData", "rates", "usGovernmentMacroeconomicData", "tokenizedEquity"],
     supportedFeatures: ["vrfSubscription", "vrfDirectFunding", "feeds"],
     networks: [
       {
         name: "Ethereum Mainnet",
         explorerUrl: "https://etherscan.io/address/%s",
         networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
+        // TODO: Change this to non-test URL: https://reference-data-directory.vercel.app/feeds-mainnet.json
+        rddUrl:
+          "https://gist.githubusercontent.com/dev-dist/89fc2f73f3df5f2a27ec9712733700c9/raw/dd63b3422e1d49a804224165eb5b9d51c4a35f52/tk-eq-2.json",
         rddBundleUrl: "https://reference-data-directory.vercel.app/bundle-proxies-mainnet.json",
         queryString: "ethereum-mainnet",
-        tags: ["smartData", "usGovernmentMacroeconomicData"],
+        tags: ["smartData", "usGovernmentMacroeconomicData", "tokenizedEquity"],
       },
       {
         name: "Sepolia Testnet",
