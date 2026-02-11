@@ -297,6 +297,20 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "Confidential API Interactions (Experimental)",
+          url: "cre/guides/workflow/using-confidential-http-client",
+          children: [
+            {
+              title: "Making Confidential Requests",
+              url: "cre/guides/workflow/using-confidential-http-client/making-requests",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-confidential-http-client/making-requests-ts",
+                "cre/guides/workflow/using-confidential-http-client/making-requests-go",
+              ],
+            },
+          ],
+        },
+        {
           title: "Secrets",
           url: "cre/guides/workflow/secrets",
           children: [
@@ -409,6 +423,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         { title: "Overview", url: "cre/capabilities" },
         { title: "Triggers", url: "cre/capabilities/triggers" },
         { title: "HTTP", url: "cre/capabilities/http" },
+        {
+          title: "Confidential HTTP (Experimental)",
+          url: "cre/capabilities/confidential-http",
+          highlightAsCurrent: ["cre/capabilities/confidential-http-ts", "cre/capabilities/confidential-http-go"],
+        },
         { title: "EVM Read & Write", url: "cre/capabilities/evm-read-write" },
       ],
     },
@@ -532,6 +551,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "HTTP Client",
               url: "cre/reference/sdk/http-client",
               highlightAsCurrent: ["cre/reference/sdk/http-client-ts", "cre/reference/sdk/http-client-go"],
+            },
+            {
+              title: "Confidential HTTP Client (Experimental)",
+              url: "cre/reference/sdk/confidential-http-client",
+              highlightAsCurrent: [
+                "cre/reference/sdk/confidential-http-client-ts",
+                "cre/reference/sdk/confidential-http-client-go",
+              ],
             },
             {
               title: "Consensus & Aggregation",
