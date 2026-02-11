@@ -103,6 +103,8 @@ export const productChainLinks: ProductChainLinks = {
       morph: "/ccip/directory/mainnet/chain/morph-mainnet",
       jovay: "/ccip/directory/mainnet/chain/jovay-mainnet",
       stable: "/ccip/directory/mainnet/chain/stable-mainnet",
+      arc: "/ccip/directory/testnet/chain/arc-testnet",
+      dogeos: "/ccip/directory/testnet/chain/dogeos-testnet-chikyu",
     },
   },
   CRE: {
@@ -264,7 +266,7 @@ export const productChainLinks: ProductChainLinks = {
     abstract: "/resources/link-token-contracts#abstract",
     apechain: "/resources/link-token-contracts#apechain",
     arbitrum: "/resources/link-token-contracts#arbitrum",
-    arcnetwork: "/resources/link-token-contracts#arc-network",
+    arc: "/resources/link-token-contracts#arc-network",
     astar: "/resources/link-token-contracts#astar",
     avalanche: "/resources/link-token-contracts#avalanche",
     base: "/resources/link-token-contracts#base",
@@ -435,6 +437,6 @@ export const chainNames: Record<string, string> = {
   jovay: "Jovay",
   stable: "Stable",
   tempo: "Tempo",
-  arcnetwork: "Arc Network",
+  arc: "Arc Network",
   dogeos: "DogeOS",
 }
