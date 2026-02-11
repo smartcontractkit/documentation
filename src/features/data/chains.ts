@@ -261,9 +261,7 @@ export const CHAINS: Chain[] = [
         name: "Ethereum Mainnet",
         explorerUrl: "https://etherscan.io/address/%s",
         networkType: "mainnet",
-        // TODO: Change this to non-test URL: https://reference-data-directory.vercel.app/feeds-mainnet.json
-        rddUrl:
-          "https://gist.githubusercontent.com/dev-dist/89fc2f73f3df5f2a27ec9712733700c9/raw/dd63b3422e1d49a804224165eb5b9d51c4a35f52/tk-eq-2.json",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
         rddBundleUrl: "https://reference-data-directory.vercel.app/bundle-proxies-mainnet.json",
         queryString: "ethereum-mainnet",
         tags: ["smartData", "usGovernmentMacroeconomicData", "tokenizedEquity"],
@@ -465,7 +463,7 @@ export const CHAINS: Chain[] = [
     supportedFeatures: ["feeds"],
     networks: [
       {
-        name: "MegaETH Mainnet",
+        name: "MegaETH Mainnet (Private)",
         explorerUrl: "https://megaeth.blockscout.com/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-megaeth-mainnet.json",
