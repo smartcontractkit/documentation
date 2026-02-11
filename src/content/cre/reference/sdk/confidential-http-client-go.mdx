@@ -1,0 +1,284 @@
+---
+section: cre
+title: "SDK Reference: Confidential HTTP Client"
+date: Last Modified
+sdkLang: "go"
+pageId: "reference-sdk-confidential-http-client"
+metadata:
+  description: "Reference for Go Confidential HTTP Client: complete API for privacy-preserving requests with enclave execution, secret injection, and response encryption."
+  datePublished: "2026-02-10"
+  lastModified: "2026-02-10"
+---
+
+import { Aside } from "@components"
+
+<Aside type="caution" title="Experimental — Simulation only">
+  Confidential HTTP is an **experimental** capability available for `cre workflow simulate` only. It cannot be used with
+  `cre workflow deploy` at this time.
+</Aside>
+
+The [Confidential HTTP](/cre/capabilities/confidential-http-go) Client lets you make privacy-preserving requests to external APIs from your workflow. Unlike the regular [`http.Client`](/cre/reference/sdk/http-client), the request executes inside a secure enclave, secrets are injected via templates, and responses can be optionally encrypted.
+
+- For use cases and a conceptual overview, see [The Confidential HTTP Capability](/cre/capabilities/confidential-http-go)
+- **Guide:** [Making Confidential Requests](/cre/guides/workflow/using-confidential-http-client/making-requests-go)
+
+## Quick reference
+
+| Method                                                         | Description                                                |
+| -------------------------------------------------------------- | ---------------------------------------------------------- |
+| [`confidentialhttp.SendRequest`](#confidentialhttpsendrequest) | High-level helper with automatic `RunInNodeMode` wrapping  |
+| [`client.SendRequest`](#clientsendrequest)                     | Low-level method requiring manual `RunInNodeMode` wrapping |
+
+## Core types
+
+### `confidentialhttp.ConfidentialHTTPRequest`
+
+The top-level request type that combines an HTTP request with Vault DON secrets and encryption settings.
+
+| <div style="width: 140px;">Field</div> | <div style="width: 200px;">Type</div> | Description                                                                                                                                 |
+| -------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Request`                              | `*HTTPRequest`                        | The HTTP request to execute inside the enclave. See [`HTTPRequest`](#confidentialhttphttprequest).                                          |
+| `VaultDonSecrets`                      | `[]*SecretIdentifier`                 | List of secrets to fetch from the Vault DON and make available in the enclave. See [`SecretIdentifier`](#confidentialhttpsecretidentifier). |
+| `EncryptOutput`                        | `bool`                                | If `true`, encrypts the response body before it leaves the enclave. See [Response encryption](#response-encryption). Default: `false`.      |
+
+### `confidentialhttp.HTTPRequest`
+
+Defines the HTTP request that will be executed inside the enclave.
+
+| <div style="width: 150px;">Field</div> | <div style="width: 250px;">Type</div> | Description                                                                                                   |
+| -------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `Url`                                  | `string`                              | The URL of the API endpoint.                                                                                  |
+| `Method`                               | `string`                              | The HTTP method (e.g., `"GET"`, `"POST"`).                                                                    |
+| `Body`                                 | `isHTTPRequest_Body`                  | The request body. Use `HTTPRequest_BodyString` for string templates or `HTTPRequest_BodyBytes` for raw bytes. |
+| `MultiHeaders`                         | `map[string]*HeaderValues`            | Request headers. Supports multiple values per key and template syntax for secret injection.                   |
+| `TemplatePublicValues`                 | `map[string]string`                   | Public (non-secret) values used to fill template placeholders in the body and headers.                        |
+| `CustomRootCaCertPem`                  | `[]byte`                              | Optional custom root CA certificate (PEM format) for verifying the external server's TLS certificate.         |
+| `Timeout`                              | `*durationpb.Duration`                | Optional request timeout.                                                                                     |
+
+#### Setting the request body
+
+The `Body` field is a `oneof` type with two options:
+
+**String template (recommended for secret injection):**
+
+```go
+Body: &confidentialhttp.HTTPRequest_BodyString{
+	BodyString: `{"auth": "{{.myApiKey}}", "action": "getData"}`,
+},
+```
+
+**Raw bytes:**
+
+```go
+Body: &confidentialhttp.HTTPRequest_BodyBytes{
+	BodyBytes: []byte(`{"action": "getData"}`),
+},
+```
+
+### `confidentialhttp.HTTPResponse`
+
+The response returned from the enclave after the HTTP request completes.
+
+| Field          | Type                       | Description                                                                                                                          |
+| -------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `StatusCode`   | `uint32`                   | The HTTP status code.                                                                                                                |
+| `Body`         | `[]byte`                   | The response body. If `EncryptOutput` is `true`, this contains the encrypted body (see [Response encryption](#response-encryption)). |
+| `MultiHeaders` | `map[string]*HeaderValues` | The HTTP response headers.                                                                                                           |
+
+### `confidentialhttp.SecretIdentifier`
+
+Identifies a secret stored in the Vault DON.
+
+| Field       | Type      | Description                                                                                                       |
+| ----------- | --------- | ----------------------------------------------------------------------------------------------------------------- |
+| `Key`       | `string`  | The logical name of the secret. Must match the template placeholder (e.g., `"myApiKey"` matches `{{.myApiKey}}`). |
+| `Namespace` | `string`  | The secret namespace.                                                                                             |
+| `Owner`     | `*string` | Optional. The owner address for the secret.                                                                       |
+
+### `confidentialhttp.HeaderValues`
+
+Represents multiple values for a single HTTP header key.
+
+| Field    | Type       | Description                                                                                      |
+| -------- | ---------- | ------------------------------------------------------------------------------------------------ |
+| `Values` | `[]string` | The header values. Supports template syntax for secret injection (e.g., `"Basic {{.myToken}}"`). |
+
+## Making requests
+
+### `confidentialhttp.SendRequest`
+
+The high-level helper function for making confidential HTTP requests. Automatically handles the `cre.RunInNodeMode` pattern.
+
+**Signature:**
+
+```go
+func SendRequest[C, T any](
+	config C,
+	runtime cre.Runtime,
+	client *Client,
+	fn func(config C, logger *slog.Logger, sendRequester *SendRequester) (T, error),
+	ca cre.ConsensusAggregation[T],
+) cre.Promise[T]
+```
+
+**Parameters:**
+
+- `config`: Your workflow's configuration struct, passed to `fn`.
+- `runtime`: The top-level `cre.Runtime` from your trigger callback.
+- `client`: An initialized `*confidentialhttp.Client`.
+- `fn`: Your request logic function that receives `config`, `logger`, and `sendRequester`.
+- `ca`: The [consensus aggregation method](/cre/reference/sdk/consensus).
+
+**Example:**
+
+```go
+func fetchData(config *Config, logger *slog.Logger, sendRequester *confidentialhttp.SendRequester) (*Result, error) {
+	resp, err := sendRequester.SendRequest(&confidentialhttp.ConfidentialHTTPRequest{
+		Request: &confidentialhttp.HTTPRequest{
+			Url:    config.URL,
+			Method: "GET",
+			MultiHeaders: map[string]*confidentialhttp.HeaderValues{
+				"Authorization": {Values: []string{"Basic {{.apiKey}}"}},
+			},
+		},
+		VaultDonSecrets: []*confidentialhttp.SecretIdentifier{
+			{Key: "apiKey"},
+		},
+	}).Await()
+	if err != nil {
+		return nil, err
+	}
+	// Parse resp.Body...
+	return &Result{}, nil
+}
+
+// In your trigger callback
+client := &confidentialhttp.Client{}
+result, err := confidentialhttp.SendRequest(config, runtime, client,
+	fetchData,
+	cre.ConsensusIdenticalAggregation[*Result](),
+).Await()
+```
+
+### `client.SendRequest`
+
+The lower-level method for making confidential HTTP requests. Must be manually wrapped in `cre.RunInNodeMode`.
+
+**Signature:**
+
+```go
+func (c *Client) SendRequest(runtime cre.NodeRuntime, input *ConfidentialHTTPRequest) cre.Promise[*HTTPResponse]
+```
+
+**Parameters:**
+
+- `runtime`: A `cre.NodeRuntime` provided by `cre.RunInNodeMode`.
+- `input`: A `*ConfidentialHTTPRequest` containing the request, secrets, and encryption settings.
+
+**Returns:**
+
+- `cre.Promise[*HTTPResponse]`
+
+**Example:**
+
+```go
+result, err := cre.RunInNodeMode(config, runtime,
+	func(config Config, nodeRuntime cre.NodeRuntime) (Result, error) {
+		client := confidentialhttp.Client{}
+		resp, err := client.SendRequest(nodeRuntime, &confidentialhttp.ConfidentialHTTPRequest{
+			Request: &confidentialhttp.HTTPRequest{
+				Url:    config.URL,
+				Method: "POST",
+				Body:   &confidentialhttp.HTTPRequest_BodyString{BodyString: `{"auth": "{{.apiKey}}"}`},
+				MultiHeaders: map[string]*confidentialhttp.HeaderValues{
+					"Content-Type": {Values: []string{"application/json"}},
+				},
+			},
+			VaultDonSecrets: []*confidentialhttp.SecretIdentifier{
+				{Key: "apiKey"},
+			},
+		}).Await()
+		if err != nil {
+			return Result{}, err
+		}
+		// Parse and return...
+		return Result{}, nil
+	},
+	cre.ConsensusIdenticalAggregation[Result](),
+).Await()
+```
+
+**Guide:** [Making Confidential Requests](/cre/guides/workflow/using-confidential-http-client/making-requests-go)
+
+## Template syntax
+
+Secrets are injected into the request body and headers using Go template syntax: `{{.secretName}}`. The placeholder name must match the `Key` field in the corresponding `SecretIdentifier`.
+
+**Body template:**
+
+```go
+Body: &confidentialhttp.HTTPRequest_BodyString{
+	BodyString: `{"apiKey": "{{.myApiKey}}", "method": "{{.method}}", "params": []}`,
+},
+```
+
+**Header template:**
+
+```go
+MultiHeaders: map[string]*confidentialhttp.HeaderValues{
+	"Authorization": {Values: []string{"Basic {{.myCredential}}"}},
+},
+```
+
+### `TemplatePublicValues` (optional)
+
+Every `{{.placeholder}}` in your body or headers is resolved inside the enclave. By default, placeholders are filled with **secrets** from `VaultDonSecrets`. But sometimes you have a placeholder value that isn't secret — for example, an RPC method name or a public parameter. That's what `TemplatePublicValues` is for: it lets you inject **non-secret** values into the same template.
+
+This is purely a convenience. You could always hardcode the value directly in the body string instead:
+
+```go
+// These two are equivalent:
+
+// Option 1: hardcoded in the body string
+Body: &confidentialhttp.HTTPRequest_BodyString{BodyString: `{"method": "eth_blockNumber", "auth": "{{.apiKey}}"}`}
+
+// Option 2: using TemplatePublicValues
+Body: &confidentialhttp.HTTPRequest_BodyString{BodyString: `{"method": "{{.method}}", "auth": "{{.apiKey}}"}`}
+TemplatePublicValues: map[string]string{"method": "eth_blockNumber"}
+```
+
+`TemplatePublicValues` is useful when you want to keep the template generic and pass in dynamic values (e.g., from config) without string concatenation.
+
+**Example with both secret and public values:**
+
+```go
+Request: &confidentialhttp.HTTPRequest{
+	Url:    config.URL,
+	Method: "POST",
+	Body:   &confidentialhttp.HTTPRequest_BodyString{BodyString: `{"method": "{{.rpcMethod}}", "auth": "{{.apiKey}}"}`},
+	TemplatePublicValues: map[string]string{
+		"rpcMethod": config.RPCMethod,   // dynamic value from config, not a secret
+	},
+},
+VaultDonSecrets: []*confidentialhttp.SecretIdentifier{
+	{Key: "apiKey"},   // secret, from Vault DON
+},
+```
+
+In this example, `{{.rpcMethod}}` is resolved from `TemplatePublicValues` (a dynamic, non-secret value from your workflow config) and `{{.apiKey}}` is resolved from the Vault DON (a secret). Both are resolved inside the enclave.
+
+## Response encryption
+
+The `EncryptOutput` field controls whether the response body is encrypted before leaving the enclave.
+
+| `EncryptOutput`   | Secret key provided                                      | Behavior                                                      |
+| ----------------- | -------------------------------------------------------- | ------------------------------------------------------------- |
+| `false` (default) | —                                                        | Response returned unencrypted.                                |
+| `true`            | `san_marino_aes_gcm_encryption_key` in `VaultDonSecrets` | Response AES-GCM encrypted with your symmetric key.           |
+| `true`            | No key provided                                          | Response TDH2 encrypted with the Vault DON master public key. |
+
+**AES-GCM encryption** is the recommended approach. Store a 256-bit (32-byte) AES key as a Vault DON secret with the identifier `san_marino_aes_gcm_encryption_key`, then decrypt the response in your own secure backend.
+
+The encrypted response body is structured as `nonce || ciphertext || tag`.
+
+For a complete decryption example, see the [Making Confidential Requests guide](/cre/guides/workflow/using-confidential-http-client/making-requests-go#response-encryption).
