@@ -228,7 +228,6 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
 
   // Feed type checks
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
-  const isTokenizedEquity = dataFeedType === "tokenizedEquity"
   // Detect tokenized equity feeds by metadata so the badge shows on any page (e.g., standard price feeds)
   const isTokenizedEquityFeed = metadata.docs?.assetClass === "Equities" && metadata.contractType !== "verifier"
 
@@ -306,7 +305,7 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                 </dt>
               )}
               <dd>
-                {isTokenizedEquity ? (
+                {isTokenizedEquityFeed ? (
                   // Tokenized equity feeds show a contact email instead of proxy address
                   <span>
                     Contact us:{" "}
@@ -381,7 +380,7 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                     <span className="label">{isAaveSVR(metadata) ? "AAVE SVR Proxy:" : "SVR Proxy:"}</span>
                   </dt>
                   <dd>
-                    {isTokenizedEquity ? (
+                    {isTokenizedEquityFeed ? (
                       // Tokenized equity feeds show a contact email instead of SVR proxy address
                       <span>
                         Contact us:{" "}
@@ -417,7 +416,7 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                     )}
                   </dd>
                 </div>
-                {isAaveSVR(metadata) && !isTokenizedEquity && (
+                {isAaveSVR(metadata) && !isTokenizedEquityFeed && (
                   <div className={clsx(tableStyles.aaveCallout)}>
                     <strong>⚠️ Aave Dedicated Feed:</strong> This SVR proxy feed is dedicated exclusively for use by the
                     Aave protocol. Learn more about{" "}
@@ -427,7 +426,7 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                     .
                   </div>
                 )}
-                {isSharedSVR(metadata) && !isTokenizedEquity && (
+                {isSharedSVR(metadata) && !isTokenizedEquityFeed && (
                   <div className={clsx(tableStyles.sharedCallout)}>
                     <strong>🔗 SVR Feed:</strong> This SVR proxy feed is usable by any protocol. Learn more about{" "}
                     <a href="/data-feeds/svr-feeds" target="_blank">
