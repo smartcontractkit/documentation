@@ -563,7 +563,21 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Feed Types",
           url: "data-feeds/feed-types",
           children: [
-            { title: "Price Feeds", url: "data-feeds/price-feeds" },
+            {
+              title: "Price Feeds",
+              url: "data-feeds/price-feeds",
+            },
+            {
+              title: "Tokenized Equity Feeds",
+              url: "data-feeds/tokenized-equity-feeds",
+              children: [
+                {
+                  title: "Provider Catalog",
+                  url: "data-feeds/tokenized-equity-feeds/providers",
+                  children: [{ title: "Ondo Finance", url: "data-feeds/tokenized-equity-feeds/ondo" }],
+                },
+              ],
+            },
             {
               title: "SmartData",
               url: "data-feeds/smartdata",
