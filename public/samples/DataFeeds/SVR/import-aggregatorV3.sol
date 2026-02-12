@@ -1,4 +1,4 @@
-import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 
 contract SVRConsumer {
   AggregatorV3Interface internal svrFeed;
