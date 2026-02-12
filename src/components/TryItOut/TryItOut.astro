@@ -11,12 +11,18 @@ interface CTA {
   variant?: "primary" | "secondary"
 }
 
-interface Props {
-  accordionTabs: Array<{ title: string; text: string; codeSampleSrc: string }>
-  ctas: CTA[]
+interface Tab {
+  title: string
+  text: string
+  codeSampleSrc: string
+  ctas?: CTA[]
 }
 
-const { accordionTabs, ctas } = Astro.props
+interface Props {
+  accordionTabs: Tab[]
+}
+
+const { accordionTabs } = Astro.props
 ---
 
 <div class={styles.container}>
@@ -27,21 +33,31 @@ const { accordionTabs, ctas } = Astro.props
       <div class={styles.contentLeft}>
         <TryItOutAccordion client:load tabs={accordionTabs} />
 
+        {/* Desktop CTAs (dynamic per active tab) */}
         <footer class={styles.contentFooter}>
           {
-            ctas.map((cta) => (
-              <a
-                href={cta.href}
-                class={clsx(
-                  buttonVariants({
-                    variant: cta.variant === "secondary" ? "tertiary" : "primary",
-                    size: "default",
-                  }),
-                  cta.variant === "secondary" && styles.secondaryBtn
-                )}
+            accordionTabs.map((tab, index) => (
+              <div
+                class="cta-item"
+                data-cta-index={index}
+                style={index === 0 ? "" : "display: none;"}
+                aria-hidden={index === 0 ? "false" : "true"}
               >
-                {cta.text}
-              </a>
+                {(tab.ctas ?? []).map((cta) => (
+                  <a
+                    href={cta.href}
+                    class={clsx(
+                      buttonVariants({
+                        variant: cta.variant === "secondary" ? "tertiary" : "primary",
+                        size: "default",
+                      }),
+                      cta.variant === "secondary" && styles.secondaryBtn
+                    )}
+                  >
+                    {cta.text}
+                  </a>
+                ))}
+              </div>
             ))
           }
         </footer>
@@ -62,21 +78,31 @@ const { accordionTabs, ctas } = Astro.props
         }
       </section>
 
+      {/* Mobile CTAs (dynamic per active tab) */}
       <footer class={styles.contentFooterMobile}>
         {
-          ctas.map((cta) => (
-            <a
-              href={cta.href}
-              class={clsx(
-                buttonVariants({
-                  variant: cta.variant === "secondary" ? "tertiary" : "primary",
-                  size: "default",
-                }),
-                cta.variant === "secondary" && styles.secondaryBtn
-              )}
+          accordionTabs.map((tab, index) => (
+            <div
+              class="cta-item-mobile"
+              data-cta-index={index}
+              style={index === 0 ? "" : "display: none;"}
+              aria-hidden={index === 0 ? "false" : "true"}
             >
-              {cta.text}
-            </a>
+              {(tab.ctas ?? []).map((cta) => (
+                <a
+                  href={cta.href}
+                  class={clsx(
+                    buttonVariants({
+                      variant: cta.variant === "secondary" ? "tertiary" : "primary",
+                      size: "default",
+                    }),
+                    cta.variant === "secondary" && styles.secondaryBtn
+                  )}
+                >
+                  {cta.text}
+                </a>
+              ))}
+            </div>
           ))
         }
       </footer>
@@ -102,5 +128,20 @@ const { accordionTabs, ctas } = Astro.props
       ;(activeCodeSample as HTMLElement).style.display = "block"
       ;(activeCodeSample as HTMLElement).setAttribute("aria-hidden", "false")
     }
+
+    // Hide all CTA groups
+    const allCtas = document.querySelectorAll("[data-cta-index]")
+    allCtas.forEach((el) => {
+      ;(el as HTMLElement).style.display = "none"
+      ;(el as HTMLElement).setAttribute("aria-hidden", "true")
+    })
+
+    // Show the active CTA group(s)
+    // IMPORTANT: remove inline display so CSS (flex) can apply
+    const activeCtas = document.querySelectorAll(`[data-cta-index="${newIndex}"]`)
+    activeCtas.forEach((el) => {
+      ;(el as HTMLElement).style.removeProperty("display") // ✅ key fix
+      ;(el as HTMLElement).setAttribute("aria-hidden", "false")
+    })
   })
 </script>
