@@ -47,6 +47,11 @@ document.addEventListener("DOMContentLoaded", () => {
         return // Skip if already initialized
       }
 
+      // Skip if element has data-no-copy-button attribute
+      if (codeBlock.hasAttribute("data-no-copy-button")) {
+        return
+      }
+
       const copyButtonContainer = document.createElement("div")
       copyButtonContainer.className = styles.copyCodeButtonWrapper
 

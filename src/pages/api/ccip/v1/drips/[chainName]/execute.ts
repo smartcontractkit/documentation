@@ -1,11 +1,12 @@
 import type { APIRoute } from "astro"
-import { APIErrorType, createErrorResponse, commonHeaders, CCIPError } from "@api/ccip/utils.ts"
+import { APIErrorType, createErrorResponse, CCIPError } from "~/lib/ccip/utils.ts"
+import { commonHeaders } from "@lib/api/cacheHeaders.ts"
 import { logger } from "@lib/logging/index.js"
-import { FaucetService } from "../../../../services/faucet-service.ts"
-import { SvmDripAdapter } from "@api/ccip/faucet/adapters/svm-drip.ts"
-import { resolveFaucetChain } from "@api/ccip/faucet/chain-resolver.ts"
-import { handleFaucetError } from "@api/ccip/services/faucet/error-handler.ts"
-import { ChainConfigurationService } from "@api/ccip/services/chain-config.ts"
+import { FaucetService } from "~/lib/ccip/services/faucet-service.ts"
+import { SvmDripAdapter } from "~/lib/ccip/faucet/adapters/svm-drip.ts"
+import { resolveFaucetChain } from "~/lib/ccip/faucet/chain-resolver.ts"
+import { handleFaucetError } from "~/lib/ccip/services-api/faucet/error-handler.ts"
+import { ChainConfigurationService } from "~/lib/ccip/services-api/chain-config.ts"
 
 export const prerender = false
 export const runtime = "nodejs"
