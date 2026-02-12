@@ -8,6 +8,8 @@ import TableSearchInput from "./TableSearchInput.tsx"
 import { useState } from "react"
 import { getExplorerAddressUrl, fallbackTokenIconUrl } from "~/features/utils/index.ts"
 import TokenDrawer from "../Drawer/TokenDrawer.tsx"
+import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
+import { useTokenFinality } from "~/hooks/useTokenFinality.ts"
 
 interface TableProps {
   networks: {
@@ -42,6 +44,10 @@ interface TableProps {
 
 function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
   const [search, setSearch] = useState("")
+
+  // Fetch finality data using custom hook
+  const { finalityData, isLoading: loading } = useTokenFinality(token.id, environment, "internal_id")
+
   return (
     <>
       <div className="ccip-table__filters">
@@ -129,7 +135,7 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                       <Address
                         contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.tokenAddress)}
                         address={network.tokenAddress}
-                        endLength={6}
+                        endLength={4}
                       />
                     </td>
                     <td>{tokenPoolDisplay(network.tokenPoolType)}</td>
@@ -140,20 +146,43 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                           network.chainType
                         )(network.tokenPoolAddress)}
                         address={network.tokenPoolAddress}
-                        endLength={6}
+                        endLength={4}
                       />
                     </td>
                     <td>{network.tokenPoolVersion}</td>
                     <td>
-                      {/* TODO: Fetch from API - GET /api/ccip/v1/tokens/{tokenCanonicalSymbol}/finality?environment={environment}
-                          Custom finality is derived from minBlockConfirmation > 0
-                          Display: "Yes" | "No" | "N/A" (with tooltip for unavailable) */}
-                      -
+                      {loading ? (
+                        "-"
+                      ) : finalityData[network.key] ? (
+                        finalityData[network.key].hasCustomFinality === null ? (
+                          <Tooltip
+                            label="N/A"
+                            tip="Custom finality data is currently unavailable. You can find the custom finality settings by reading the Token Pool contract directly on the relevant blockchain."
+                            labelStyle={{ marginRight: "5px" }}
+                            style={{ display: "inline-block", verticalAlign: "middle" }}
+                          />
+                        ) : finalityData[network.key].hasCustomFinality ? (
+                          "Yes"
+                        ) : (
+                          "No"
+                        )
+                      ) : (
+                        <Tooltip
+                          label="N/A"
+                          tip="Custom finality data is currently unavailable. You can find the custom finality settings by reading the Token Pool contract directly on the relevant blockchain."
+                          labelStyle={{ marginRight: "5px" }}
+                          style={{ display: "inline-block", verticalAlign: "middle" }}
+                        />
+                      )}
                     </td>
                     <td>
-                      {/* TODO: Fetch from API - GET /api/ccip/v1/tokens/{tokenCanonicalSymbol}/finality?environment={environment}
-                          Display minBlockConfirmation value or "-" if custom finality is disabled/unavailable */}
-                      -
+                      {loading
+                        ? "-"
+                        : finalityData[network.key]
+                          ? finalityData[network.key].minBlockConfirmation === null
+                            ? "-"
+                            : finalityData[network.key].minBlockConfirmation
+                          : "-"}
                     </td>
                   </tr>
                 )

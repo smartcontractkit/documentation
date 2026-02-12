@@ -13,6 +13,7 @@ import yaml from "@rollup/plugin-yaml"
 import { ccipRedirects } from "./src/config/redirects/ccip"
 import trailingSlashMiddleware from "./src/integrations/trailing-slash-middleware"
 import redirectsJson from "./src/features/redirects/redirects.json"
+import tailwind from "@astrojs/tailwind"
 import { extractCanonicalUrlsWithLanguageVariants } from "./src/utils/sidebar"
 
 config() // Load .env file
@@ -46,6 +47,7 @@ export default defineConfig({
     ...ccipRedirects,
   },
   integrations: [
+    tailwind(),
     trailingSlashMiddleware(),
     preact({
       include: ["**/preact/*"],

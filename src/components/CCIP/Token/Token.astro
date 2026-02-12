@@ -5,6 +5,7 @@ import {
   getAllNetworks,
   getAllSupportedTokens,
   getAllTokenLanes,
+  getAllUniqueVerifiers,
   getChainsOfToken,
   getSearchLanes,
   getTokenData,
@@ -76,6 +77,11 @@ const tokenLanes = getAllTokenLanes({
 
 const searchLanes = getSearchLanes({ environment })
 
+const allVerifiers = getAllUniqueVerifiers({
+  environment,
+  version: Version.V1_2_0,
+})
+
 // Generate dynamic metadata for this specific token
 const environmentText = environment === Environment.Mainnet ? "Mainnet" : "Testnet"
 const tokenMetadata = {
@@ -117,6 +123,7 @@ const tokenStructuredData = generateTokenStructuredData(token, environment, chai
     tokens={allTokens}
     client:load
     lanes={searchLanes}
+    verifiers={allVerifiers}
     token={{
       id: token,
       name: data[firstSupportedChain]?.name || "",
@@ -172,9 +179,8 @@ const tokenStructuredData = generateTokenStructuredData(token, environment, chai
 
 <style scoped="false">
   .layout {
-    --doc-padding: var(--space-6x);
-    margin: var(--space-8x) auto;
-    padding: var(--doc-padding);
+    margin: 0 auto;
+    padding: var(--space-6x);
   }
 
   .layout h2 {
@@ -206,8 +212,13 @@ const tokenStructuredData = generateTokenStructuredData(token, environment, chai
 
   @media (min-width: 50em) {
     .layout {
-      max-width: min(calc(1440px - 2 * var(--space-16x)), calc(100% - 2 * var(--space-16x)));
-      padding: 0;
+      max-width: 1500px;
+    }
+  }
+
+  @media (min-width: 992px) {
+    .layout {
+      padding: var(--space-10x) var(--space-8x);
     }
   }
 </style>
