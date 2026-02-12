@@ -1,12 +1,11 @@
 /** @jsxImportSource react */
 import { useStore } from "@nanostores/react"
-import { useState, useRef, useEffect } from "react"
 import { selectedChainType, setChainType } from "~/stores/chainType.js"
 import { CHAIN_TYPE_CONFIGS, CCIP_SUPPORTED_CHAINS } from "~/config/chainTypes.js"
 import { CCIP_SIDEBAR_CONTENT } from "~/config/sidebar/ccip-dynamic.js"
 import { findEquivalentPageUrlWithFallback } from "~/utils/chainNavigation.js"
 import type { ChainType } from "~/config/types.js"
-import styles from "./ChainTypeSelector.module.css"
+import { SidebarDropdown, type DropdownItem } from "../SidebarDropdown/index.js"
 
 /**
  * Chain Type Dropdown Selector Component
@@ -30,13 +29,9 @@ import styles from "./ChainTypeSelector.module.css"
  */
 export function ChainTypeSelector() {
   const activeChain = useStore(selectedChainType)
-  const [isOpen, setIsOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const activeConfig = CHAIN_TYPE_CONFIGS[activeChain]
-
-  const handleSelect = (chainType: ChainType) => {
-    setIsOpen(false)
+  const handleSelect = (chainId: string) => {
+    const chainType = chainId as ChainType
     setChainType(chainType)
 
     // Find target URL with intelligent fallback: exact match → parent → section root
@@ -45,110 +40,25 @@ export function ChainTypeSelector() {
     window.location.href = `/${targetUrl}`
   }
 
-  const handleToggle = () => {
-    setIsOpen(!isOpen)
-  }
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
-      }
+  // Convert chain configs to dropdown items format
+  const chainItems: DropdownItem[] = CCIP_SUPPORTED_CHAINS.map((chainId) => {
+    const config = CHAIN_TYPE_CONFIGS[chainId]
+    return {
+      id: chainId,
+      label: config.displayName,
+      icon: config.icon,
+      description: config.description,
     }
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsOpen(false)
-      }
-    }
-
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside)
-      document.addEventListener("keydown", handleEscape)
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-      document.removeEventListener("keydown", handleEscape)
-    }
-  }, [isOpen])
+  })
 
   return (
-    <div className={styles.selector} ref={dropdownRef}>
-      <div className={styles.dropdown}>
-        <button
-          type="button"
-          className={styles.dropdownButton}
-          onClick={handleToggle}
-          aria-expanded={isOpen}
-          aria-haspopup="listbox"
-          aria-label="Select blockchain type"
-          style={{ "--chain-color": activeConfig.color } as React.CSSProperties}
-        >
-          <img src={activeConfig.icon} alt="" className={styles.icon} width="20" height="20" aria-hidden="true" />
-          <span className={styles.name}>{activeConfig.displayName}</span>
-          <svg
-            className={`${styles.arrow} ${isOpen ? styles.arrowOpen : ""}`}
-            width="12"
-            height="12"
-            viewBox="0 0 12 12"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
-            <path
-              d="M2.5 4.5L6 8L9.5 4.5"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-
-        {isOpen && (
-          <ul className={styles.dropdownMenu} role="listbox" aria-label="Blockchain options">
-            {CCIP_SUPPORTED_CHAINS.map((chainId) => {
-              const config = CHAIN_TYPE_CONFIGS[chainId]
-              const isActive = activeChain === chainId
-
-              return (
-                <li key={chainId} role="option" aria-selected={isActive}>
-                  <button
-                    type="button"
-                    className={`${styles.dropdownItem} ${isActive ? styles.dropdownItemActive : ""}`}
-                    onClick={() => handleSelect(chainId)}
-                    style={{ "--chain-color": config.color } as React.CSSProperties}
-                    title={config.description}
-                  >
-                    <img src={config.icon} alt="" className={styles.icon} width="20" height="20" aria-hidden="true" />
-                    <span className={styles.name}>{config.displayName}</span>
-                    {isActive && (
-                      <svg
-                        className={styles.checkmark}
-                        width="16"
-                        height="16"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        aria-hidden="true"
-                      >
-                        <path
-                          d="M13.5 4.5L6 12L2.5 8.5"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    )}
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
-        )}
-      </div>
-    </div>
+    <SidebarDropdown
+      label="Chain Family"
+      items={chainItems}
+      selectedId={activeChain}
+      onSelect={handleSelect}
+      triggerId="chain-type-selector-trigger"
+      ariaLabel="Select blockchain type"
+    />
   )
 }

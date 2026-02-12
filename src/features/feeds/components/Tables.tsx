@@ -13,6 +13,7 @@ import { FEED_CATEGORY_CONFIG } from "../../../db/feedCategories.js"
 import { useBatchedFeedCategories, getFeedCategoryFromBatch, getNetworkIdentifier } from "./useBatchedFeedCategories.ts"
 import { isSharedSVR, isAaveSVR } from "~/features/feeds/utils/svrDetection.ts"
 import { ExpandableTableWrapper } from "./ExpandableTableWrapper.tsx"
+import { isFeedVisible } from "~/features/feeds/utils/feedVisibility.ts"
 
 const feedItems = monitoredFeeds.mainnet
 
@@ -192,19 +193,9 @@ const DefaultTHead = ({
 }
 
 const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, dataFeedType }) => {
-  // Risk categorization logic
-  const contractAddress = metadata.contractAddress || metadata.proxyAddress
-  const networkIdentifier = getNetworkIdentifier(network)
-  let finalTier =
-    contractAddress && batchedCategoryData?.size
-      ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)
-          ?.final ?? metadata.feedCategory)
-      : metadata.feedCategory
-
-  // Override with deprecating category if feed has shutdown date
-  if (metadata.docs?.shutdownDate) {
-    finalTier = "deprecating"
-  }
+  // Use the pre-computed finalCategory from enriched metadata
+  // (already includes deprecating status and Supabase risk tier)
+  const finalTier = metadata.finalCategory || metadata.feedCategory
 
   // US Government Macroeconomic Data logic
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
@@ -408,19 +399,9 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
   // Only show MVR badge if explicitly flagged as MVR
   const finalIsMVRFeed = isMVRFlagSet && hasDecoding
 
-  // Resolve final category from batch (fallback to metadata)
-  const contractAddress = metadata.contractAddress || metadata.proxyAddress
-  const networkIdentifier = getNetworkIdentifier(network)
-  let finalTier =
-    contractAddress && batchedCategoryData?.size
-      ? (getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier, metadata.feedCategory)
-          ?.final ?? metadata.feedCategory)
-      : metadata.feedCategory
-
-  // Override with deprecating category if feed has shutdown date
-  if (metadata.docs?.shutdownDate) {
-    finalTier = "deprecating"
-  }
+  // Use the pre-computed finalCategory from enriched metadata
+  // (already includes deprecating status and Supabase risk tier)
+  const finalTier = metadata.finalCategory || metadata.feedCategory
 
   return (
     <tr>
@@ -841,7 +822,7 @@ export const StreamsNetworkAddressesTable = ({
   )
 }
 
-const StreamsTHead = () => (
+export const StreamsTHead = () => (
   <thead>
     <tr>
       <th className={tableStyles.heading}>Stream</th>
@@ -861,204 +842,214 @@ const streamsCategoryMap = {
   },
 }
 
-const StreamsTr = ({ metadata, isMainnet }) => (
-  <tr>
-    <td className={tableStyles.pairCol}>
-      <div className={tableStyles.assetPair}>
-        {metadata.pair[0]}/{metadata.pair[1]}
-        {metadata.feedType === "Crypto-DEX" && (
-          <a
-            href="/data-streams/concepts/dex-state-price-streams"
-            target="_blank"
-            className={tableStyles.feedVariantBadge}
-          >
-            DEX State Price
-          </a>
-        )}
-      </div>
-      {metadata.docs.shutdownDate && (
-        <div className={clsx(feedList.shutDate)}>
-          <hr />
-          Deprecating:
-          <br />
-          {metadata.docs.shutdownDate}
-        </div>
-      )}
-    </td>
-    <td style="width:80%;">
-      <div className={tableStyles.assetAddress}>
-        <span className={tableStyles.streamAddress}>{metadata.feedId}</span>
-        <button
-          className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-          style={{ height: "16px", width: "16px" }}
-          data-clipboard-text={metadata.feedId}
-          onClick={(e) =>
-            handleClick(e, {
-              product: "STREAMS",
-              action: "feedId_copied",
-              extraInfo1: isMainnet ? "Mainnet" : "Testnet",
-              extraInfo2: metadata.pair[0],
-              extraInfo3: metadata.feedId,
-            })
-          }
-        >
-          <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
-        </button>
-      </div>
-      <div>
-        <dl className={tableStyles.listContainer}>
-          {isMainnet && metadata.docs.clicProductName && metadata.feedType !== "Tokenized Equities" && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Full name:</span>
-              </dt>
-              <dd>{metadata.docs.clicProductName}</dd>
-            </div>
-          )}
-          {metadata.assetName && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Asset name:</span>
-              </dt>
-              <dd>{metadata.assetName}</dd>
-            </div>
-          )}
-          {metadata.docs.assetClass ? (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Asset class:</span>
-              </dt>
-              <dd>
-                {metadata.docs.assetClass}
-                {metadata.docs.assetSubClass &&
-                metadata.docs.assetSubClass !== "Crypto" &&
-                metadata.docs.assetSubClass !== "Equities"
-                  ? " - " + metadata.docs.assetSubClass
-                  : ""}
-              </dd>
-            </div>
-          ) : null}
-          {metadata.docs.marketHours ? (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Market hours:</span>
-              </dt>
-              <dd>
-                <a href="/data-streams/market-hours" target="_blank">
-                  {metadata.docs.marketHours}
-                </a>
-              </dd>
-            </div>
-          ) : null}
-          {streamsCategoryMap[metadata.feedCategory] ? (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Category:</span>
-              </dt>
-              <dd>
-                <a href={streamsCategoryMap[metadata.feedCategory].link}>
-                  {streamsCategoryMap[metadata.feedCategory].text}
-                </a>
-              </dd>
-            </div>
-          ) : null}
-          {metadata.decimals ? (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Decimals:</span>
-              </dt>
-              <dd>{metadata.decimals}</dd>
-            </div>
-          ) : null}
+export const StreamsTr = ({ metadata, isMainnet }) => {
+  // Determine if stream is deprecating
+  const isDeprecating = !!metadata.docs?.shutdownDate
+
+  return (
+    <tr>
+      <td className={tableStyles.pairCol}>
+        <div className={tableStyles.assetPair}>
+          {metadata.pair[0]}/{metadata.pair[1]}
           {metadata.feedType === "Crypto-DEX" && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Report Schema:</span>
-              </dt>
-              <dd>
-                <a href="/data-streams/reference/report-schema-v3-dex" rel="noreferrer" target="_blank">
-                  Report Schema v3 (Crypto DEX)
-                </a>
-              </dd>
-            </div>
+            <a
+              href="/data-streams/concepts/dex-state-price-streams"
+              target="_blank"
+              className={tableStyles.feedVariantBadge}
+            >
+              DEX State Price
+            </a>
           )}
-          {metadata.feedType === "Crypto" && metadata.docs?.productTypeCode !== "ExRate" && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Report Schema:</span>
-              </dt>
-              <dd>
-                <a href="/data-streams/reference/report-schema-v3" rel="noreferrer" target="_blank">
-                  Report Schema v3 (Crypto)
-                </a>
-              </dd>
-            </div>
-          )}
-          {(metadata.feedType === "Equities" || metadata.feedType === "Forex") && metadata.docs?.schema !== "v11" && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Report Schema:</span>
-              </dt>
-              <dd>
-                <a href="/data-streams/reference/report-schema-v8" rel="noreferrer" target="_blank">
-                  Report Schema v8 (RWA)
-                </a>
-              </dd>
-            </div>
-          )}
-          {metadata.docs?.productTypeCode === "ExRate" && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Report Schema:</span>
-              </dt>
-              <dd>
-                <a href="/data-streams/reference/report-schema-v7" rel="noreferrer" target="_blank">
-                  Report Schema v7 (Redemption Rates)
-                </a>
-              </dd>
-            </div>
-          )}
-          {metadata.feedType === "Net Asset Value" && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Report Schema:</span>
-              </dt>
-              <dd>
-                <a href="/data-streams/reference/report-schema-v9" rel="noreferrer" target="_blank">
-                  Report Schema v9 (NAV)
-                </a>
-              </dd>
-            </div>
-          )}
-          {metadata.feedType === "Tokenized Equities" && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Report Schema:</span>
-              </dt>
-              <dd>
-                <a href="/data-streams/reference/report-schema-v10" rel="noreferrer" target="_blank">
-                  Report Schema v10 (Tokenized Assets)
-                </a>
-              </dd>
-            </div>
-          )}
-          {metadata.docs?.schema === "v11" && (
-            <div className={tableStyles.definitionGroup}>
-              <dt>
-                <span className="label">Report Schema:</span>
-              </dt>
-              <dd>
-                <a href="/data-streams/reference/report-schema-v11" rel="noreferrer" target="_blank">
-                  RWA Advanced (v11)
-                </a>
-              </dd>
-            </div>
-          )}
-        </dl>
-      </div>
-    </td>
-  </tr>
-)
+        </div>
+        {metadata.docs.shutdownDate && (
+          <div className={clsx(feedList.shutDate)}>
+            <hr />
+            <a
+              href="/data-streams/deprecating-streams"
+              style={{ color: "inherit", textDecoration: "underline dotted" }}
+            >
+              Deprecating:
+            </a>
+            <br />
+            {metadata.docs.shutdownDate}
+          </div>
+        )}
+      </td>
+      <td style="width:80%;">
+        <div className={tableStyles.assetAddress}>
+          <span className={tableStyles.streamAddress}>{metadata.feedId}</span>
+          <button
+            className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+            style={{ height: "16px", width: "16px" }}
+            data-clipboard-text={metadata.feedId}
+            onClick={(e) =>
+              handleClick(e, {
+                product: "STREAMS",
+                action: "feedId_copied",
+                extraInfo1: isMainnet ? "Mainnet" : "Testnet",
+                extraInfo2: metadata.pair[0],
+                extraInfo3: metadata.feedId,
+              })
+            }
+          >
+            <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+          </button>
+        </div>
+        <div>
+          <dl className={tableStyles.listContainer}>
+            {isMainnet && metadata.docs.clicProductName && metadata.feedType !== "Tokenized Equities" && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Full name:</span>
+                </dt>
+                <dd>{metadata.docs.clicProductName}</dd>
+              </div>
+            )}
+            {metadata.assetName && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Asset name:</span>
+                </dt>
+                <dd>{metadata.assetName}</dd>
+              </div>
+            )}
+            {metadata.docs.assetClass ? (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Asset class:</span>
+                </dt>
+                <dd>
+                  {metadata.docs.assetClass}
+                  {metadata.docs.assetSubClass &&
+                  metadata.docs.assetSubClass !== "Crypto" &&
+                  metadata.docs.assetSubClass !== "Equities"
+                    ? " - " + metadata.docs.assetSubClass
+                    : ""}
+                </dd>
+              </div>
+            ) : null}
+            {metadata.docs.marketHours ? (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Market hours:</span>
+                </dt>
+                <dd>
+                  <a href="/data-streams/market-hours" target="_blank">
+                    {metadata.docs.marketHours}
+                  </a>
+                </dd>
+              </div>
+            ) : null}
+            {streamsCategoryMap[metadata.feedCategory] ? (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Category:</span>
+                </dt>
+                <dd>
+                  <a href={streamsCategoryMap[metadata.feedCategory].link}>
+                    {streamsCategoryMap[metadata.feedCategory].text}
+                  </a>
+                </dd>
+              </div>
+            ) : null}
+            {metadata.decimals ? (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Decimals:</span>
+                </dt>
+                <dd>{metadata.decimals}</dd>
+              </div>
+            ) : null}
+            {metadata.feedType === "Crypto-DEX" && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Report Schema:</span>
+                </dt>
+                <dd>
+                  <a href="/data-streams/reference/report-schema-v3-dex" rel="noreferrer" target="_blank">
+                    Report Schema v3 (Crypto DEX)
+                  </a>
+                </dd>
+              </div>
+            )}
+            {metadata.feedType === "Crypto" && metadata.docs?.productTypeCode !== "ExRate" && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Report Schema:</span>
+                </dt>
+                <dd>
+                  <a href="/data-streams/reference/report-schema-v3" rel="noreferrer" target="_blank">
+                    Report Schema v3 (Crypto)
+                  </a>
+                </dd>
+              </div>
+            )}
+            {(metadata.feedType === "Equities" || metadata.feedType === "Forex") && metadata.docs?.schema !== "v11" && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Report Schema:</span>
+                </dt>
+                <dd>
+                  <a href="/data-streams/reference/report-schema-v8" rel="noreferrer" target="_blank">
+                    Report Schema v8 (RWA)
+                  </a>
+                </dd>
+              </div>
+            )}
+            {metadata.docs?.productTypeCode === "ExRate" && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Report Schema:</span>
+                </dt>
+                <dd>
+                  <a href="/data-streams/reference/report-schema-v7" rel="noreferrer" target="_blank">
+                    Report Schema v7 (Redemption Rates)
+                  </a>
+                </dd>
+              </div>
+            )}
+            {metadata.feedType === "Net Asset Value" && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Report Schema:</span>
+                </dt>
+                <dd>
+                  <a href="/data-streams/reference/report-schema-v9" rel="noreferrer" target="_blank">
+                    Report Schema v9 (NAV)
+                  </a>
+                </dd>
+              </div>
+            )}
+            {metadata.feedType === "Tokenized Equities" && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Report Schema:</span>
+                </dt>
+                <dd>
+                  <a href="/data-streams/reference/report-schema-v10" rel="noreferrer" target="_blank">
+                    Report Schema v10 (Tokenized Assets)
+                  </a>
+                </dd>
+              </div>
+            )}
+            {metadata.docs?.schema === "v11" && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Report Schema:</span>
+                </dt>
+                <dd>
+                  <a href="/data-streams/reference/report-schema-v11" rel="noreferrer" target="_blank">
+                    RWA Advanced (v11)
+                  </a>
+                </dd>
+              </div>
+            )}
+          </dl>
+        </div>
+      </td>
+    </tr>
+  )
+}
 
 export const MainnetTable = ({
   network,
@@ -1110,122 +1101,57 @@ export const MainnetTable = ({
   const isDefault = !isStreams && !isSmartData && !isUSGovernmentMacroeconomicData
   const isDeprecating = ecosystem === "deprecating"
 
-  const filteredMetadata = network.metadata
+  // Enrich metadata with final category (combining RDD and Supabase data)
+  // Priority: deprecating status from RDD > Supabase risk tier > RDD category fallback
+  const enrichedMetadata = network.metadata.map((metadata) => {
+    // Check for deprecating status from RDD first (has shutdown date)
+    if (metadata.docs?.shutdownDate) {
+      return { ...metadata, finalCategory: "deprecating" }
+    }
+
+    // Otherwise, get risk category from Supabase (or fall back to RDD)
+    const contractAddress = metadata.contractAddress || metadata.proxyAddress
+    const networkIdentifier = getNetworkIdentifier(network)
+    let finalCategory = metadata.feedCategory
+
+    if (contractAddress && batchedCategoryData?.size) {
+      const categoryResult = getFeedCategoryFromBatch(
+        batchedCategoryData,
+        contractAddress,
+        networkIdentifier,
+        metadata.feedCategory
+      )
+      const supabaseCategory = categoryResult?.final ?? null
+
+      if (supabaseCategory) {
+        finalCategory = supabaseCategory
+      }
+    }
+
+    return { ...metadata, finalCategory }
+  })
+
+  const filteredMetadata = enrichedMetadata
     .sort((a, b) => (a.name.toUpperCase() < b.name.toUpperCase() ? -1 : 1))
     .filter((metadata) => {
-      // ---
-      // Categorization logic:
-      // 1. Try to get the risk category for this feed from Supabase (batchedCategoryData).
-      //    - Uses contractAddress and networkIdentifier as lookup keys.
-      //    - If found, use the DB value; if not, fall back to the default from metadata.
-      // 2. If the risk category is 'hidden', exclude this feed from the docs.
-      // ---
-      const contractAddress = metadata.contractAddress || metadata.proxyAddress
-      const networkIdentifier = getNetworkIdentifier(network)
-      let batchCategory = metadata.feedCategory
-
-      if (contractAddress && batchedCategoryData?.size) {
-        const categoryResult = getFeedCategoryFromBatch(
-          batchedCategoryData,
-          contractAddress,
-          networkIdentifier,
-          metadata.feedCategory
-        )
-        const finalCategory = categoryResult?.final ?? null
-
-        if (finalCategory) {
-          batchCategory = finalCategory
-        }
-      }
-
-      if (batchCategory === "hidden") return false
+      // Filter out hidden feeds (from Supabase)
+      if (metadata.finalCategory === "hidden") return false
       if (showOnlySVR && !metadata.secondaryProxyAddress) {
         return false
       }
 
-      if (isDeprecating) return !!metadata.docs.shutdownDate
-
-      if (dataFeedType === "streamsCrypto") {
-        const isValidStreamsFeed =
-          metadata.contractType === "verifier" &&
-          (metadata.docs.feedType === "Crypto" || metadata.docs.feedType === "Crypto-DEX")
-
-        if (showOnlyDEXFeeds) {
-          return isValidStreamsFeed && metadata.docs.feedType === "Crypto-DEX"
-        }
-
-        return isValidStreamsFeed
-      }
-      if (dataFeedType === "streamsRwa") {
-        const isRwaFeed =
-          metadata.contractType === "verifier" &&
-          (metadata.docs.feedType === "Equities" ||
-            metadata.docs.feedType === "Forex" ||
-            metadata.docs.feedType === "Datalink")
-
-        if (!isRwaFeed) return false
-
-        // Apply feed type filter
-        if (streamCategoryFilter === "datalink") {
-          if (metadata.docs.feedType !== "Datalink") return false
-        } else if (streamCategoryFilter === "equities") {
-          if (metadata.docs.feedType !== "Equities") return false
-        } else if (streamCategoryFilter === "forex") {
-          if (metadata.docs.feedType !== "Forex") return false
-        }
-
-        // Apply schema filter
-        if (rwaSchemaFilter === "v8") {
-          return metadata.docs?.schema === "v8" || !metadata.docs?.schema
-        }
-        if (rwaSchemaFilter === "v11") {
-          return metadata.docs?.schema === "v11"
-        }
-
-        return true
+      if (isDeprecating) {
+        // Only show feeds (not streams) with shutdown dates
+        return !!metadata.docs.shutdownDate && !(metadata.contractType === "verifier" && metadata.feedId)
       }
 
-      if (dataFeedType === "streamsNav") {
-        return metadata.contractType === "verifier" && metadata.docs.feedType === "Net Asset Value"
-      }
-
-      if (dataFeedType === "streamsExRate") {
-        return metadata.contractType === "verifier" && metadata.docs?.productTypeCode === "ExRate"
-      }
-
-      if (dataFeedType === "streamsBacked") {
-        return metadata.contractType === "verifier" && metadata.docs.feedType === "Tokenized Equities"
-      }
-
-      if (isSmartData) {
-        if (showOnlyMVRFeeds) {
-          return !metadata.docs?.hidden && metadata.docs?.isMVR === true && metadata.docs?.deliveryChannelCode !== "DS"
-        }
-
-        return (
-          !metadata.docs?.hidden &&
-          metadata.docs?.deliveryChannelCode !== "DS" &&
-          (metadata.docs?.productType === "Proof of Reserve" ||
-            metadata.docs?.productType === "NAVLink" ||
-            metadata.docs?.productType === "SmartAUM" ||
-            metadata.docs?.isMVR === true)
-        )
-      }
-
-      if (isUSGovernmentMacroeconomicData) {
-        const isMacro = metadata.docs?.productTypeCode === "RefMacro"
-        return isMacro
-      }
-
-      // Exclude MVR feeds from default view
-      return (
-        !metadata.docs.porType &&
-        metadata.contractType !== "verifier" &&
-        metadata.docs.productType !== "Proof of Reserve" &&
-        metadata.docs.productType !== "NAVLink" &&
-        metadata.docs.productType !== "SmartAUM" &&
-        metadata.docs?.productTypeCode !== "RefMacro"
-      )
+      // Use shared visibility logic with filters
+      return isFeedVisible(metadata, dataFeedType as any, ecosystem, {
+        showOnlyDEXFeeds,
+        streamCategoryFilter,
+        rwaSchemaFilter,
+        showOnlyMVRFeeds,
+      })
     })
     .filter((metadata) => {
       if (isSmartData) {
@@ -1241,9 +1167,10 @@ export const MainnetTable = ({
 
         return included
       }
+      // Filter by final category (Supabase risk tier takes precedence over RDD)
       return (
         selectedFeedCategories.length === 0 ||
-        selectedFeedCategories.map((cat) => cat.toLowerCase()).includes(metadata.feedCategory?.toLowerCase())
+        selectedFeedCategories.map((cat) => cat.toLowerCase()).includes(metadata.finalCategory?.toLowerCase())
       )
     })
     .filter(
@@ -1399,127 +1326,48 @@ export const TestnetTable = ({
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
   const isDefault = !isSmartData && !isRates && !isStreams && !isUSGovernmentMacroeconomicData
 
-  const filteredMetadata = network.metadata
+  // Enrich metadata with final category (combining RDD and Supabase data)
+  // Priority: deprecating status from RDD > Supabase risk tier > RDD category fallback
+  const enrichedMetadata = network.metadata.map((metadata) => {
+    // Check for deprecating status from RDD first (has shutdown date)
+    if (metadata.docs?.shutdownDate) {
+      return { ...metadata, finalCategory: "deprecating" }
+    }
+
+    // Otherwise, get risk category from Supabase (or fall back to RDD)
+    const contractAddress = metadata.contractAddress || metadata.proxyAddress
+    const networkIdentifier = getNetworkIdentifier(network)
+    let finalCategory = metadata.feedCategory
+
+    if (contractAddress && batchedCategoryData?.size) {
+      const categoryResult = getFeedCategoryFromBatch(
+        batchedCategoryData,
+        contractAddress,
+        networkIdentifier,
+        metadata.feedCategory
+      )
+      const supabaseCategory = categoryResult?.final ?? null
+
+      if (supabaseCategory) {
+        finalCategory = supabaseCategory
+      }
+    }
+
+    return { ...metadata, finalCategory }
+  })
+
+  const filteredMetadata = enrichedMetadata
     .sort((a, b) => (a.name.toUpperCase() < b.name.toUpperCase() ? -1 : 1))
     .filter((metadata) => {
-      // ---
-      // Categorization logic:
-      // 1. Try to get the risk category for this feed from Supabase (batchedCategoryData).
-      //    - Uses contractAddress and networkIdentifier as lookup keys.
-      //    - If found, use the DB value; if not, fall back to the default from metadata.
-      // 2. If the risk category is 'hidden', exclude this feed from the docs.
-      // ---
-      const contractAddress = metadata.contractAddress || metadata.proxyAddress
-      const networkIdentifier = getNetworkIdentifier(network)
-      let batchCategory = metadata.feedCategory
-
-      if (contractAddress && batchedCategoryData?.size) {
-        const categoryResult = getFeedCategoryFromBatch(
-          batchedCategoryData,
-          contractAddress,
-          networkIdentifier,
-          metadata.feedCategory
-        )
-        const finalCategory = categoryResult?.final ?? null
-
-        if (finalCategory) {
-          batchCategory = finalCategory
-        }
-      }
-
-      if (batchCategory === "hidden") return false
-      if (isStreams) {
-        if (dataFeedType === "streamsCrypto") {
-          const isValidStreamsFeed =
-            metadata.contractType === "verifier" &&
-            (metadata.feedType === "Crypto" || metadata.feedType === "Crypto-DEX")
-
-          if (showOnlyDEXFeeds) {
-            return isValidStreamsFeed && metadata.feedType === "Crypto-DEX"
-          }
-
-          return isValidStreamsFeed
-        }
-
-        if (dataFeedType === "streamsRwa") {
-          const isRwaFeed =
-            metadata.contractType === "verifier" &&
-            (metadata.docs.feedType === "Equities" ||
-              metadata.docs.feedType === "Forex" ||
-              metadata.docs.feedType === "Datalink")
-
-          if (!isRwaFeed) return false
-
-          // Apply feed type filter
-          if (streamCategoryFilter === "datalink") {
-            if (metadata.docs.feedType !== "Datalink") return false
-          } else if (streamCategoryFilter === "equities") {
-            if (metadata.docs.feedType !== "Equities") return false
-          } else if (streamCategoryFilter === "forex") {
-            if (metadata.docs.feedType !== "Forex") return false
-          }
-
-          // Apply schema filter
-          if (rwaSchemaFilter === "v8") {
-            return metadata.docs?.schema === "v8" || !metadata.docs?.schema
-          }
-          if (rwaSchemaFilter === "v11") {
-            return metadata.docs?.schema === "v11"
-          }
-
-          return true
-        }
-
-        if (dataFeedType === "streamsExRate") {
-          return metadata.contractType === "verifier" && metadata.docs?.productTypeCode === "ExRate"
-        }
-
-        if (dataFeedType === "streamsNav") {
-          return metadata.contractType === "verifier" && metadata.docs.feedType === "Net Asset Value"
-        }
-
-        if (dataFeedType === "streamsBacked") {
-          return metadata.contractType === "verifier" && metadata.docs.feedType === "Tokenized Equities"
-        }
-
-        // If we're in streams mode but didn't match any specific stream type, exclude this feed
-        return false
-      }
-
-      if (isSmartData) {
-        if (showOnlyMVRFeeds) {
-          return !metadata.docs?.hidden && metadata.docs?.isMVR === true && metadata.docs?.deliveryChannelCode !== "DS"
-        }
-
-        // Otherwise, include all SmartData feeds (MVR, PoR, NAVLink, SmartAUM)
-        return (
-          !metadata.docs?.hidden &&
-          metadata.docs?.deliveryChannelCode !== "DS" &&
-          (metadata.docs?.productType === "Proof of Reserve" ||
-            metadata.docs?.productType === "NAVLink" ||
-            metadata.docs?.productType === "SmartAUM" ||
-            metadata.docs?.isMVR === true)
-        )
-      }
-
-      if (isRates)
-        return !!(metadata.docs.productType === "Rates" || metadata.docs.productSubType === "Realized Volatility")
-
-      if (isUSGovernmentMacroeconomicData) {
-        return metadata.docs?.productTypeCode === "RefMacro"
-      }
-
-      // Exclude MVR feeds from default view
-      return (
-        !metadata.feedId &&
-        !metadata.docs.porType &&
-        metadata.docs.productType !== "Rates" &&
-        metadata.docs.productSubType !== "Realized Volatility" &&
-        metadata.docs.productType !== "Proof of Reserve" &&
-        metadata.docs.productType !== "NAVLink" &&
-        metadata.docs.productType !== "SmartAUM" &&
-        metadata.docs?.productTypeCode !== "RefMacro"
-      )
+      // Filter out hidden feeds (from Supabase)
+      if (metadata.finalCategory === "hidden") return false
+      // Use shared visibility logic with filters
+      return isFeedVisible(metadata, dataFeedType as any, undefined, {
+        showOnlyDEXFeeds,
+        streamCategoryFilter,
+        rwaSchemaFilter,
+        showOnlyMVRFeeds,
+      })
     })
     .filter((metadata) => {
       if (isSmartData) {
@@ -1534,9 +1382,10 @@ export const TestnetTable = ({
 
         return included
       }
+      // Filter by final category (Supabase risk tier takes precedence over RDD)
       return (
         selectedFeedCategories.length === 0 ||
-        selectedFeedCategories.map((cat) => cat.toLowerCase()).includes(metadata.feedCategory?.toLowerCase())
+        selectedFeedCategories.map((cat) => cat.toLowerCase()).includes(metadata.finalCategory?.toLowerCase())
       )
     })
     .filter(

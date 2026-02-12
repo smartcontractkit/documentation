@@ -99,6 +99,9 @@ export const productChainLinks: ProductChainLinks = {
       abchain: "/ccip/directory/mainnet/chain/ab-mainnet",
       henesys: "/ccip/directory/mainnet/chain/nexon-mainnet-henesys",
       pharos: "/ccip/directory/testnet/chain/pharos-atlantic-testnet",
+      morph: "/ccip/directory/mainnet/chain/morph-mainnet",
+      jovay: "/ccip/directory/mainnet/chain/jovay-mainnet",
+      stable: "/ccip/directory/mainnet/chain/stable-mainnet",
     },
   },
   CRE: {
@@ -415,7 +418,6 @@ export const chainNames: Record<string, string> = {
   tac: "Tac",
   kaia: "Kaia",
   plasma: "Plasma",
-  jovay: "Jovay",
   memento: "Memento",
   xdc: "XDC",
   bittensor: "Bittensor EVM",
@@ -423,4 +425,7 @@ export const chainNames: Record<string, string> = {
   abchain: "AB Chain",
   henesys: "Henesys",
   pharos: "Pharos",
+  morph: "Morph",
+  jovay: "Jovay",
+  stable: "Stable",
 }

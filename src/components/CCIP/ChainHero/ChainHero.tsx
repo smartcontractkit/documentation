@@ -1,5 +1,5 @@
 import { Environment, LaneConfig, Network, Version } from "~/config/data/ccip/types.ts"
-import { getTokenData } from "~/config/data/ccip/data.ts"
+import { getTokenData, getNetworkIconUrl } from "~/config/data/ccip/data.ts"
 import Address from "~/components/AddressReact.tsx"
 import Breadcrumb from "../Breadcrumb/Breadcrumb.tsx"
 import Search from "../Search/Search.tsx"
@@ -46,6 +46,13 @@ interface ChainHeroProps {
     }
     lane: LaneConfig
   }[]
+  verifiers?: {
+    id: string
+    name: string
+    type: string
+    logo: string
+    totalNetworks: number
+  }[]
   network?: Network
   token?: {
     id: string
@@ -54,9 +61,22 @@ interface ChainHeroProps {
     symbol: string
   }
   environment: Environment
+  breadcrumbItems?: Array<{
+    name: string
+    url: string
+  }>
 }
 
-function ChainHero({ chains, tokens, network, token, environment, lanes }: ChainHeroProps) {
+function ChainHero({
+  chains,
+  tokens,
+  network,
+  token,
+  environment,
+  lanes,
+  verifiers = [],
+  breadcrumbItems,
+}: ChainHeroProps) {
   // Get chain-specific tooltip configuration
   const chainTooltipConfig = network?.chain ? getChainTooltip(network.chain) : null
 
@@ -99,55 +119,58 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
       <div className="ccip-chain-hero__content">
         <div className="ccip-chain-hero__top">
           <Breadcrumb
-            items={[
-              {
-                name: "CCIP Directory",
-                url: `/ccip/directory/${environment}`,
-              },
-              {
-                name: network?.name || token?.id || "Current",
-                url: network
-                  ? `/ccip/directory/${environment}/chain/${network.chain}`
-                  : `/ccip/directory/${environment}/token/${token?.id}`,
-              },
-            ]}
+            items={
+              breadcrumbItems || [
+                {
+                  name: "CCIP Directory",
+                  url: `/ccip/directory/${environment}`,
+                },
+                {
+                  name: network?.name || token?.id || "Current",
+                  url: network
+                    ? `/ccip/directory/${environment}/chain/${network.chain}`
+                    : `/ccip/directory/${environment}/token/${token?.id}`,
+                },
+              ]
+            }
           />
           <div className="ccip-chain-hero__chainSearch">
-            <Search chains={chains} tokens={tokens} small environment={environment} lanes={lanes} />
+            <Search
+              chains={chains}
+              tokens={tokens}
+              small
+              environment={environment}
+              lanes={lanes}
+              verifiers={verifiers}
+            />
           </div>
         </div>
 
-        <div className="ccip-chain-hero__heading">
-          <img
-            src={network?.logo || token?.logo}
-            alt=""
-            className={token?.logo ? "ccip-chain-hero__token-logo" : ""}
-            onError={({ currentTarget }) => {
-              currentTarget.onerror = null // prevents looping
-              currentTarget.src = fallbackTokenIconUrl
-            }}
-          />
-          <h1
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              position: "relative",
-              overflow: "visible",
-            }}
-          >
-            {network?.name || token?.id}
-            <span className="ccip-chain-hero__token-logo__symbol">{token?.name}</span>
+        {(network || token) && (
+          <div className="ccip-chain-hero__heading">
+            <img
+              src={getNetworkIconUrl(network?.name) || token?.logo}
+              alt=""
+              className={token?.logo ? "ccip-chain-hero__token-logo" : ""}
+              onError={({ currentTarget }) => {
+                currentTarget.onerror = null // prevents looping
+                currentTarget.src = fallbackTokenIconUrl
+              }}
+            />
+            <h1>
+              {network?.name || token?.name}
+              <span className="ccip-chain-hero__token-logo__symbol">{token?.id}</span>
 
-            {chainTooltipConfig && (
-              <Tooltip
-                tip={chainTooltipConfig.content}
-                hoverable={chainTooltipConfig.hoverable}
-                hideDelay={chainTooltipConfig.hideDelay}
-              />
-            )}
-          </h1>
-        </div>
+              {chainTooltipConfig && (
+                <Tooltip
+                  tip={chainTooltipConfig.content}
+                  hoverable={chainTooltipConfig.hoverable}
+                  hideDelay={chainTooltipConfig.hideDelay}
+                />
+              )}
+            </h1>
+          </div>
+        )}
         {network && (
           <div className="ccip-chain-hero__details">
             <div className="ccip-chain-hero__details__item">
@@ -189,7 +212,7 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 RMN
                 <Tooltip
                   label=""
-                  tip="The RMN contract verifies RMN blessings, and is used to curse."
+                  tip="The RMN contract is used to curse."
                   labelStyle={{
                     marginRight: "8px",
                   }}
