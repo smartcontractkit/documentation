@@ -341,29 +341,8 @@ function TokenDrawer({
                     return (
                       <tr key={networkDetails.name} className={tokenPaused ? "ccip-table__row--paused" : ""}>
                         <td>
-                          <button
-                            type="button"
+                          <div
                             className={`ccip-table__network-name ${tokenPaused ? "ccip-table__network-name--paused" : ""}`}
-                            onClick={() => {
-                              drawerWidthStore.set(DrawerWidth.Wide)
-                              drawerContentStore.set(() => (
-                                <LaneDrawer
-                                  environment={environment}
-                                  lane={laneData}
-                                  sourceNetwork={network}
-                                  destinationNetwork={{
-                                    name: networkDetails?.name || "",
-                                    logo: networkDetails?.logo || "",
-                                    key: destinationChain,
-                                  }}
-                                  inOutbound={
-                                    activeTab === TokenTab.Outbound ? LaneFilter.Outbound : LaneFilter.Inbound
-                                  }
-                                  explorer={network.explorer}
-                                />
-                              ))
-                            }}
-                            aria-label={`View lane details for ${networkDetails?.name}`}
                           >
                             <img
                               src={networkDetails?.logo}
@@ -376,7 +355,7 @@ function TokenDrawer({
                                 ⏸️
                               </span>
                             )}
-                          </button>
+                          </div>
                         </td>
                         <td>
                           <RateLimitCell
