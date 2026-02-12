@@ -1,5 +1,4 @@
 import "../Tables/Table.css"
-import { drawerContentStore, drawerWidthStore, DrawerWidth } from "../Drawer/drawerStore.ts"
 import TokenDetailsHero from "../ChainHero/TokenDetailsHero.tsx"
 import {
   Environment,
@@ -7,7 +6,6 @@ import {
   getNetwork,
   SupportedTokenConfig,
   Version,
-  LaneFilter,
   determineTokenMechanism,
   PoolType,
   getTokenData,
@@ -19,7 +17,6 @@ import { useState, useMemo } from "react"
 import { ChainType, ExplorerInfo, SupportedChain } from "~/config/index.ts"
 import { getExplorerAddressUrl } from "~/features/utils/index.ts"
 import Address from "~/components/AddressReact.tsx"
-import LaneDrawer from "../Drawer/LaneDrawer.tsx"
 import TableSearchInput from "../Tables/TableSearchInput.tsx"
 import Tabs from "../Tables/Tabs.tsx"
 import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
@@ -68,6 +65,17 @@ function TokenDrawer({
 }) {
   const [search, setSearch] = useState("")
   const [activeTab, setActiveTab] = useState<TokenTab>(TokenTab.Outbound)
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+
+  const toggleRowExpansion = (networkName: string) => {
+    const newExpandedRows = new Set(expandedRows)
+    if (newExpandedRows.has(networkName)) {
+      newExpandedRows.delete(networkName)
+    } else {
+      newExpandedRows.add(networkName)
+    }
+    setExpandedRows(newExpandedRows)
+  }
 
   // Get verifiers for the current network
   const verifiers = getVerifiersByNetwork({
@@ -220,8 +228,8 @@ function TokenDrawer({
               <tbody>
                 {verifiers.length === 0 ? (
                   <tr>
-                    <td colSpan={4} style={{ textAlign: "center", padding: "20px" }}>
-                      <Typography variant="body">No verifiers found for this network.</Typography>
+                    <td colSpan={4} style={{ textAlign: "center", padding: "20px", verticalAlign: "middle" }}>
+                      No verifiers found for this network.
                     </td>
                   </tr>
                 ) : (
@@ -259,11 +267,25 @@ function TokenDrawer({
           </div>
         ) : (
           <div className="ccip-table__wrapper">
-            {" "}
             <table className="ccip-table">
               <thead>
                 <tr>
                   <th>{activeTab === TokenTab.Inbound ? "Source" : "Destination"} network</th>
+                  <th>
+                    Mechanism
+                    <Tooltip
+                      label=""
+                      tip="Token handling mechanism: Lock & Mint, Burn & Mint, Lock & Unlock, Burn & Unlock."
+                      labelStyle={{
+                        marginRight: "5px",
+                      }}
+                      style={{
+                        display: "inline-block",
+                        verticalAlign: "middle",
+                        marginBottom: "2px",
+                      }}
+                    />
+                  </th>
                   <th>
                     Rate limit capacity
                     <Tooltip
@@ -296,22 +318,7 @@ function TokenDrawer({
                   </th>
                   <th>FTF Rate limit capacity</th>
                   <th>FTF Rate limit refill rate</th>
-                  <th>
-                    Mechanism
-                    <Tooltip
-                      label=""
-                      tip="Token handling mechanism: Lock & Mint, Burn & Mint, Lock & Unlock, Burn & Unlock."
-                      labelStyle={{
-                        marginRight: "5px",
-                      }}
-                      style={{
-                        display: "inline-block",
-                        verticalAlign: "middle",
-                        marginBottom: "2px",
-                      }}
-                    />
-                  </th>
-                  {/* <th>Status</th> */}
+                  <th>Verifiers</th>
                 </tr>
               </thead>
               <tbody>
@@ -338,58 +345,165 @@ function TokenDrawer({
                     // Token is paused if standard rate limit capacity is 0
                     const tokenPaused = allLimits.standard?.capacity === "0"
 
+                    // Get verifiers for the destination network
+                    const destinationVerifiers = getVerifiersByNetwork({
+                      networkId: destinationChain,
+                      environment,
+                      version: Version.V1_2_0,
+                    })
+
+                    const isExpanded = expandedRows.has(networkDetails.name)
+
                     return (
-                      <tr key={networkDetails.name} className={tokenPaused ? "ccip-table__row--paused" : ""}>
-                        <td>
-                          <div
-                            className={`ccip-table__network-name ${tokenPaused ? "ccip-table__network-name--paused" : ""}`}
-                          >
-                            <img
-                              src={networkDetails?.logo}
-                              alt={`${networkDetails?.name} blockchain logo`}
-                              className="ccip-table__logo"
+                      <>
+                        <tr
+                          key={networkDetails.name}
+                          className={`ccip-table__accordion-row ${tokenPaused ? "ccip-table__row--paused" : ""} ${isExpanded ? "ccip-table__accordion-row--expanded" : ""}`}
+                          onClick={() => toggleRowExpansion(networkDetails.name)}
+                          role="button"
+                          tabIndex={0}
+                          aria-expanded={isExpanded}
+                          aria-label={`${isExpanded ? "Hide" : "Show"} verifiers for ${networkDetails?.name}`}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault()
+                              toggleRowExpansion(networkDetails.name)
+                            }
+                          }}
+                        >
+                          <td>
+                            <div
+                              className={`ccip-table__network-name ${tokenPaused ? "ccip-table__network-name--paused" : ""}`}
+                            >
+                              <img
+                                src={networkDetails?.logo}
+                                alt={`${networkDetails?.name} blockchain logo`}
+                                className="ccip-table__logo"
+                              />
+                              {networkDetails?.name}
+                              {tokenPaused && (
+                                <span className="ccip-table__paused-badge" title="Transfers are currently paused">
+                                  ⏸️
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td>
+                            {activeTab === TokenTab.Outbound
+                              ? determineTokenMechanism(network.tokenPoolType, destinationPoolType)
+                              : determineTokenMechanism(destinationPoolType, network.tokenPoolType)}
+                          </td>
+                          <td>
+                            <RateLimitCell
+                              isLoading={isLoadingRateLimits}
+                              rateLimit={allLimits.standard}
+                              type="capacity"
                             />
-                            {networkDetails?.name}
-                            {tokenPaused && (
-                              <span className="ccip-table__paused-badge" title="Transfers are currently paused">
-                                ⏸️
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td>
-                          <RateLimitCell
-                            isLoading={isLoadingRateLimits}
-                            rateLimit={allLimits.standard}
-                            type="capacity"
-                          />
-                        </td>
-                        <td>
-                          <RateLimitCell isLoading={isLoadingRateLimits} rateLimit={allLimits.standard} type="rate" />
-                        </td>
-                        <td>
-                          <RateLimitCell isLoading={isLoadingRateLimits} rateLimit={allLimits.ftf} type="capacity" />
-                        </td>
-                        <td>
-                          <RateLimitCell isLoading={isLoadingRateLimits} rateLimit={allLimits.ftf} type="rate" />
-                        </td>
-                        <td>
-                          {activeTab === TokenTab.Outbound
-                            ? determineTokenMechanism(network.tokenPoolType, destinationPoolType)
-                            : determineTokenMechanism(destinationPoolType, network.tokenPoolType)}
-                        </td>
-                        {/* <td>
-                      <span className="ccip-table__status">
-                        <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path
-                            d="M4.83329 8.49996L7.16663 10.8333L11.1666 5.83329M0.666626 8.49996C0.666626 10.4449 1.43925 12.3102 2.81451 13.6854C4.18978 15.0607 6.05504 15.8333 7.99996 15.8333C9.94489 15.8333 11.8102 15.0607 13.1854 13.6854C14.5607 12.3102 15.3333 10.4449 15.3333 8.49996C15.3333 6.55504 14.5607 4.68978 13.1854 3.31451C11.8102 1.93925 9.94489 1.16663 7.99996 1.16663C6.05504 1.16663 4.18978 1.93925 2.81451 3.31451C1.43925 4.68978 0.666626 6.55504 0.666626 8.49996Z"
-                            stroke="#267E46"
-                          />
-                        </svg>
-                        Operational
-                      </span>
-                    </td> */}
-                      </tr>
+                          </td>
+                          <td>
+                            <RateLimitCell isLoading={isLoadingRateLimits} rateLimit={allLimits.standard} type="rate" />
+                          </td>
+                          <td>
+                            <RateLimitCell isLoading={isLoadingRateLimits} rateLimit={allLimits.ftf} type="capacity" />
+                          </td>
+                          <td>
+                            <RateLimitCell isLoading={isLoadingRateLimits} rateLimit={allLimits.ftf} type="rate" />
+                          </td>
+                          <td>
+                            <div className="ccip-table__verifier-toggle">
+                              <svg
+                                className={`ccip-table__expand-icon ${isExpanded ? "ccip-table__expand-icon--expanded" : ""}`}
+                                width="16"
+                                height="16"
+                                viewBox="0 0 16 16"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M4 6L8 10L12 6"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            </div>
+                          </td>
+                        </tr>
+                        {isExpanded && (
+                          <tr className="ccip-table__verifier-row">
+                            <td colSpan={7} style={{ padding: 0 }}>
+                              <div className="ccip-table__verifier-content">
+                                {destinationVerifiers.length === 0 ? (
+                                  <div
+                                    style={{
+                                      textAlign: "center",
+                                      padding: "20px",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      minHeight: "60px",
+                                    }}
+                                  >
+                                    <Typography variant="body">No verifiers found for this network.</Typography>
+                                  </div>
+                                ) : (
+                                  <table className="ccip-table ccip-table--verifiers">
+                                    <thead>
+                                      <tr>
+                                        <th>Verifier</th>
+                                        <th>Source verifier address</th>
+                                        <th>Destination verifier address</th>
+                                        <th>Threshold amount</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {destinationVerifiers.map((verifier) => (
+                                        <tr key={verifier.address}>
+                                          <td>
+                                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                              <img
+                                                src={verifier.logo}
+                                                alt={`${verifier.name} logo`}
+                                                className="ccip-table__logo"
+                                                style={{ width: "24px", height: "24px" }}
+                                              />
+                                              <Typography variant="body">{verifier.name}</Typography>
+                                            </div>
+                                          </td>
+                                          <td>
+                                            <Address
+                                              contractUrl={getExplorerAddressUrl(
+                                                network.explorer,
+                                                network.chainType
+                                              )(verifier.address)}
+                                              address={verifier.address}
+                                              endLength={4}
+                                            />
+                                          </td>
+                                          <td>
+                                            <Address
+                                              contractUrl={getExplorerAddressUrl(
+                                                network.explorer,
+                                                network.chainType
+                                              )(verifier.address)}
+                                              address={verifier.address}
+                                              endLength={4}
+                                            />
+                                          </td>
+                                          <td>
+                                            <Typography variant="body">150,000</Typography>
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
                     )
                   })}
               </tbody>
