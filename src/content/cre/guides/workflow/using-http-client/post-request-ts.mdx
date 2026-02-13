@@ -7,7 +7,7 @@ pageId: "guides-workflow-http-post-request"
 metadata:
   description: "Send data to external APIs in TypeScript: learn to make POST requests from your workflow with authentication and custom headers."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-02-03"
 ---
 
 import { Aside } from "@components"
@@ -25,6 +25,11 @@ All HTTP requests are wrapped in a consensus mechanism. The SDK provides two way
 
 - **[High-level `sendRequest`](#1-the-high-level-sendrequest-pattern-recommended):** A high-level helper method that simplifies making requests. This is the recommended approach for most use cases.
 - **[Low-level `runInNodeMode`](#2-the-low-level-runinnodemode-pattern):** The lower-level pattern for more complex scenarios.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Using timestamps in requests">
+  If your HTTP request includes timestamps (e.g., for authentication headers or time-based queries), use `runtime.now()` instead of `Date.now()`. This ensures all nodes use the same timestamp and reach consensus. See [Using Time in Workflows](/cre/guides/workflow/time-in-workflows) for details.
+</Aside>
 
 ## Choosing your approach
 
@@ -51,6 +56,11 @@ For this example, we will use <a href="https://webhook.site/" target="_blank">**
 ## Prerequisites
 
 This guide assumes you have a basic understanding of CRE. If you are new, we strongly recommend completing the [Getting Started tutorial](/cre/getting-started/overview) first.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Redirects are not supported">
+  HTTP requests to URLs that return redirects (3xx status codes) will fail. Ensure the URL you provide is the final destination and does not redirect to another URL.
+</Aside>
 
 ## 1. The High-Level `sendRequest` Pattern (recommended)
 
@@ -102,7 +112,7 @@ In your `main.ts`, define the TypeScript types for your configuration and the da
 
 ```typescript
 import {
-  cre,
+  HTTPClient,
   ok,
   consensusIdenticalAggregation,
   type Runtime,
@@ -179,8 +189,10 @@ const postData = (sendRequester: HTTPSendRequester, config: Config): PostRespons
 In your main `onCronTrigger` handler, call `httpClient.sendRequest()`, which returns a function that you call with `runtime.config`.
 
 ```typescript
+import { HTTPClient, consensusIdenticalAggregation, type Runtime } from "@chainlink/cre-sdk"
+
 const onCronTrigger = (runtime: Runtime<Config>): string => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   const result = httpClient
     .sendRequest(
@@ -200,10 +212,12 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 Finally, add the `initWorkflow` and `main` functions.
 
 ```typescript
+import { CronCapability, handler, Runner } from "@chainlink/cre-sdk"
+
 const initWorkflow = (config: Config) => {
   return [
-    cre.handler(
-      new cre.capabilities.CronCapability().trigger({
+    handler(
+      new CronCapability().trigger({
         schedule: config.schedule,
       }),
       onCronTrigger
@@ -217,15 +231,15 @@ export async function main() {
   })
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 #### The complete workflow file
 
 ```typescript
 import {
-  cre,
+  CronCapability,
+  HTTPClient,
+  handler,
   ok,
   consensusIdenticalAggregation,
   type Runtime,
@@ -291,7 +305,7 @@ const postData = (sendRequester: HTTPSendRequester, config: Config): PostRespons
 }
 
 const onCronTrigger = (runtime: Runtime<Config>): string => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   const result = httpClient
     .sendRequest(
@@ -307,8 +321,8 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 
 const initWorkflow = (config: Config) => {
   return [
-    cre.handler(
-      new cre.capabilities.CronCapability().trigger({
+    handler(
+      new CronCapability().trigger({
         schedule: config.schedule,
       }),
       onCronTrigger
@@ -322,8 +336,6 @@ export async function main() {
   })
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ### Step 4: Run the simulation and verify
@@ -364,7 +376,16 @@ For more complex scenarios, you can use the lower-level `runtime.runInNodeMode()
 Here's how to make a POST request with an API key from secrets:
 
 ```typescript
-import { cre, ok, consensusIdenticalAggregation, type Runtime, type NodeRuntime, Runner } from "@chainlink/cre-sdk"
+import {
+  CronCapability,
+  HTTPClient,
+  handler,
+  ok,
+  consensusIdenticalAggregation,
+  type Runtime,
+  type NodeRuntime,
+  Runner,
+} from "@chainlink/cre-sdk"
 import { z } from "zod"
 
 // Config and types
@@ -392,7 +413,7 @@ const postData = (nodeRuntime: NodeRuntime<Config>): PostResponse => {
   // Use the secret value
   const apiKey = secret.value
 
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   // 2. Prepare the data
   const dataToSend: MyData = {
@@ -440,8 +461,8 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 
 const initWorkflow = (config: Config) => {
   return [
-    cre.handler(
-      new cre.capabilities.CronCapability().trigger({
+    handler(
+      new CronCapability().trigger({
         schedule: config.schedule,
       }),
       onCronTrigger
@@ -455,8 +476,6 @@ export async function main() {
   })
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## Learn more

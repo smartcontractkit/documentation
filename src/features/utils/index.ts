@@ -278,6 +278,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "SONEIUM_MINATO"
     case "ethereum-testnet-holesky":
       return "ETHEREUM_HOLESKY"
+    case "ethereum-testnet-hoodi":
+      return "ETHEREUM_HOODI"
     case "polkadot-mainnet-astar":
       return "ASTAR_MAINNET"
     case "polkadot-testnet-astar-shibuya":
@@ -304,8 +306,10 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "SHIBARIUM_PUPPYNET"
     case "sonic-mainnet":
       return "SONIC_MAINNET"
+    case "sonic-testnet":
+      return "SONIC_TESTNET"
     case "sonic-testnet-blaze":
-      return "SONIC_BLAZE"
+      return "SONIC_TESTNET_BLAZE"
     case "bitcoin-mainnet-bob-1":
       return "BOB_MAINNET"
     case "bitcoin-testnet-sepolia-bob-1":
@@ -404,6 +408,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "0G_MAINNET"
     case "megaeth-testnet":
       return "MEGAETH_TESTNET"
+    case "megaeth-mainnet":
+      return "MEGAETH_MAINNET"
     case "mind-testnet":
       return "MIND_NETWORK_TESTNET"
     case "mind-mainnet":
@@ -526,6 +532,13 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "JOVAY_TESTNET"
     case "stable-mainnet":
       return "STABLE_MAINNET"
+    case "tempo-testnet":
+      return "TEMPO_TESTNET"
+    case "arc-testnet":
+      return "ARC_NETWORK_TESTNET"
+    case "doge-os-chikyu-testnet":
+    case "dogeos-testnet-chikyu":
+      return "DOGE_OS_CHIKYU_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -607,6 +620,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ethereum-testnet-sepolia-soneium-1"
     case "ETHEREUM_HOLESKY":
       return "ethereum-testnet-holesky"
+    case "ETHEREUM_HOODI":
+      return "ethereum-testnet-hoodi"
     case "ASTAR_MAINNET":
       return "polkadot-mainnet-astar"
     case "ASTAR_SHIBUYA":
@@ -633,7 +648,9 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "shibarium-testnet-puppynet"
     case "SONIC_MAINNET":
       return "sonic-mainnet"
-    case "SONIC_BLAZE":
+    case "SONIC_TESTNET":
+      return "sonic-testnet"
+    case "SONIC_TESTNET_BLAZE":
       return "sonic-testnet-blaze"
     case "BOB_MAINNET":
       return "bitcoin-mainnet-bob-1"
@@ -729,6 +746,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "0g-mainnet"
     case "MEGAETH_TESTNET":
       return "megaeth-testnet"
+    case "MEGAETH_MAINNET":
+      return "megaeth-mainnet"
     case "MIND_NETWORK_TESTNET":
       return "mind-testnet"
     case "MIND_NETWORK_MAINNET":
@@ -849,6 +868,12 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "jovay-testnet"
     case "STABLE_MAINNET":
       return "stable-mainnet"
+    case "TEMPO_TESTNET":
+      return "tempo-testnet"
+    case "ARC_NETWORK_TESTNET":
+      return "arc-testnet"
+    case "DOGE_OS_CHIKYU_TESTNET":
+      return "dogeos-testnet-chikyu"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

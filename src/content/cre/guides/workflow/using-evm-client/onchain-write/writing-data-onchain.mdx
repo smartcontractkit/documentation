@@ -6,7 +6,7 @@ date: Last Modified
 metadata:
   description: "Write workflow results to the blockchain in TypeScript: complete guide to generating and submitting verified data to smart contracts."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-01-20"
 ---
 
 import { Aside } from "@components"
@@ -69,7 +69,7 @@ This example shows how to write a single `uint256` value to your consumer contra
 ### Step 1: Set up your imports
 
 ```typescript
-import { cre, getNetwork, hexToBase64, bytesToHex, TxStatus, type Runtime } from "@chainlink/cre-sdk"
+import { EVMClient, getNetwork, hexToBase64, bytesToHex, TxStatus, type Runtime } from "@chainlink/cre-sdk"
 import { encodeAbiParameters, parseAbiParameters } from "viem"
 ```
 
@@ -88,9 +88,21 @@ const reportData = encodeAbiParameters(parseAbiParameters("address"), ["0x123456
 const reportData = encodeAbiParameters(parseAbiParameters("bool"), [true])
 ```
 
-<Aside type="note" title="BigInt literals">
-  Use the `n` suffix for integer literals to create `bigint` values in TypeScript. This is required for **all** Solidity
-  integer types (`uint8`, `uint256`, `int8`, `int256`, etc.) when using viem: `12345n`, `1000000000000000000n`, etc.
+{/* prettier-ignore */}
+<Aside type="caution" title="Always use bigint for Solidity integers">
+  JavaScript `number` loses precision for values above ~9 quadrillion (<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER" target="_blank" rel="noopener noreferrer">Number.MAX_SAFE_INTEGER</a>). This causes **silent precision loss** — your workflow sends the wrong value without any error.
+
+**Always use `bigint`** (with the `n` suffix) for all Solidity integer types: `12345n`, `1000000000000000000n`, etc.
+
+```typescript
+// WRONG - silent precision loss
+const amount = 10000000000000001 // 10 quadrillion + 1
+// Silently becomes 10000000000000000 (the +1 vanishes)
+
+// CORRECT - use bigint
+const amount = 10000000000000001n // Stays exactly 10000000000000001
+```
+
 </Aside>
 
 ### Step 3: Generate the signed report
@@ -270,7 +282,7 @@ export { CalculatorResultParams, type CalculatorResult } from "./ConsumerContrac
 Now you can import and use these definitions in your workflow:
 
 ```typescript
-import { cre, getNetwork, hexToBase64, bytesToHex, TxStatus, type Runtime } from "@chainlink/cre-sdk"
+import { EVMClient, getNetwork, hexToBase64, bytesToHex, TxStatus, type Runtime } from "@chainlink/cre-sdk"
 import { encodeAbiParameters } from "viem"
 import { CalculatorResultParams, type CalculatorResult } from "../contracts/abi"
 
@@ -285,7 +297,7 @@ const writeDataOnchain = (runtime: Runtime<Config>): string => {
     throw new Error(`Network not found`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   // Create type-safe data object
   const data: CalculatorResult = {
@@ -357,7 +369,16 @@ Here's a full workflow that writes a struct to a consumer contract:
 ### Workflow code (`main.ts`)
 
 ```typescript
-import { cre, getNetwork, hexToBase64, bytesToHex, TxStatus, type Runtime, Runner } from "@chainlink/cre-sdk"
+import {
+  CronCapability,
+  EVMClient,
+  getNetwork,
+  hexToBase64,
+  bytesToHex,
+  TxStatus,
+  type Runtime,
+  Runner,
+} from "@chainlink/cre-sdk"
 import { encodeAbiParameters, parseAbiParameters } from "viem"
 import { z } from "zod"
 
@@ -384,7 +405,7 @@ const writeDataOnchain = (runtime: Runtime<Config>): string => {
   }
 
   // Create EVM client
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   // 1. Encode your data (struct with 3 fields)
   const reportData = encodeAbiParameters(
@@ -428,9 +449,10 @@ const writeDataOnchain = (runtime: Runtime<Config>): string => {
 }
 
 const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
   return [
-    cre.handler(
-      new cre.capabilities.CronCapability().trigger({
+    cron.handler(
+      cron.trigger({
         schedule: config.schedule,
       }),
       writeDataOnchain
@@ -442,8 +464,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## Working with complex types

@@ -135,6 +135,8 @@ jobs:
   linkcheck-internal:
     needs: setup
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v6
@@ -159,9 +161,22 @@ jobs:
             echo "node_modules not found, installing dependencies..."
             npm ci --prefer-offline --no-audit
           fi
+
+      - name: Build Site
+        run: npm run build
+        env:
+          NODE_OPTIONS: '--max-old-space-size=8192'
       
       - name: Check Internal Links
-        run: npm run linkcheck-internal
+        uses: lycheeverse/lychee-action@a8c4c7cb88f0c7386610c35eb25108e448569cb0 # v2.7.0
+        with:
+          args: >-
+            --root-dir $GITHUB_WORKSPACE/.vercel/output/static
+            --config lychee.toml
+            '.vercel/output/static/**/*.html'
+          fail: true
+          format: markdown
+          jobSummary: true
 
   # Job 4: Check Types
   typecheck:

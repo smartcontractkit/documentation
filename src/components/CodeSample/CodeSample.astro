@@ -1,20 +1,30 @@
 ---
-import { Prism } from "@astrojs/prism"
+import { runHighlighterWithAstro } from "@astrojs/prism/dist/highlighter"
 
 import fs from "node:fs/promises"
 import path from "node:path"
 
+import { getLanguageIconSrc, languageBadge } from "../../lib/codeSample/language.js"
+
 export type Props = {
   src: string
   lang?: string
+  filename?: string
   showButtonOnly?: boolean
   optimize?: boolean
   runs?: number
   showButtons?: boolean
 }
-const { src, lang, showButtonOnly, optimize, runs, showButtons = true } = Astro.props as Props
+const { src, lang, filename, showButtonOnly, optimize, runs, showButtons = true } = Astro.props as Props
 
 const data = (await fs.readFile(path.join(process.cwd(), "public", src), "utf-8")).toString()
+
+const prismLang = lang ?? "solidity"
+const headerFilename = filename?.trim() || undefined
+const { classLanguage, html } = runHighlighterWithAstro(prismLang, data)
+const languageKey = prismLang.toLowerCase()
+const languageIconSrc = getLanguageIconSrc(languageKey)
+const preInnerHtml = `<code class="${classLanguage}">${html}</code>`
 
 const isSolidityFile = src.match(/\.sol/)
 const isSample = isSolidityFile && (src.indexOf("samples/") === 0 || src.indexOf("/samples/") === 0)
@@ -30,9 +40,40 @@ const remixUrl = `https://remix.ethereum.org/#url=https://docs.chain.link/${clea
 }`
 ---
 
-{!showButtonOnly && <Prism code={data} lang={lang ?? "solidity"} />}
 {
-  isSample && showButtons && (
+  !showButtonOnly &&
+    (headerFilename ? (
+      <div class="code-sample" data-language={languageKey}>
+        <div class="code-sample__header">
+          <div class="code-sample__header-left">
+            <span class={`code-sample__lang ${languageIconSrc ? "code-sample__lang--icon" : ""}`} aria-hidden="true">
+              {languageIconSrc ? (
+                <img class="code-sample__lang-icon" src={languageIconSrc} alt="" />
+              ) : (
+                languageBadge(prismLang)
+              )}
+            </span>
+            <span class="code-sample__filename" title={headerFilename}>
+              {headerFilename}
+            </span>
+          </div>
+          <button type="button" class="code-sample__copy-button" aria-label="Copy code">
+            <img src="/assets/icons/copyIcon.svg" alt="Copy code" width="16" height="16" />
+          </button>
+        </div>
+        <pre
+          class={`code-sample__pre code-sample__pre--with-header ${classLanguage}`}
+          data-no-copy-button
+          set:html={preInnerHtml}
+        />
+      </div>
+    ) : (
+      <pre class={classLanguage} set:html={preInnerHtml} />
+    ))
+}
+
+{
+  isSample && (
     <div class="remix-callout">
       <a href={remixUrl} target="_blank">
         Open in Remix

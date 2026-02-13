@@ -1,0 +1,118 @@
+---
+section: cre
+title: "Using Time in Workflows"
+sdkLang: "ts"
+pageId: "time-in-workflows"
+date: Last Modified
+metadata:
+  description: "Understand DON Time in CRE: learn why all nodes need the same timestamp and how to use runtime.now() for deterministic workflows."
+  datePublished: "2026-02-03"
+  lastModified: "2026-02-03"
+---
+
+import { Aside } from "@components"
+
+<Aside type="note" title="TL;DR">
+  CRE provides **DON Time**: a consensus-derived timestamp so different nodes see the _same time_. Use the SDK's runtime
+  call, `runtime.now()`, whenever your workflow logic depends on time. Do **not** use `Date.now()` or other local time
+  sources in DON Mode — they introduce non-determinism.
+</Aside>
+
+## The problem: Why time needs consensus
+
+Workflows often rely on time for decisions (market-hours checks), scheduling (retries/backoffs), and observability (log timestamps). In a decentralized network, nodes do not share an identical clock—clock drift, resource contention, and OS scheduling can skew each node's local time. If each node consults its own clock:
+
+- Different nodes may take **different branches** of your logic (e.g., one thinks the market is open, another does not).
+- Logs across nodes become **hard to correlate**.
+- Data fetched using time (e.g., "fetch price at timestamp N") can be **inconsistent**.
+
+**DON Time** removes these divergences by making time **deterministic in the DON**.
+
+## The solution: DON time
+
+**DON Time** is a timestamp computed by an <a href="https://docs.chain.link/architecture-overview/off-chain-reporting" target="_blank" rel="noopener noreferrer">OCR (Off-Chain Reporting)</a> plugin and agreed upon by the nodes participating in CRE. You access it through the SDK's runtime call, `runtime.now()`, not via JavaScript's `Date.now()`. The `runtime.now()` method returns a standard JavaScript `Date` object.
+
+**Key properties:**
+
+- **Deterministic across nodes**: nodes see the same timestamp.
+- **Sequenced per workflow**: time responses are associated with a **time-call sequence number** inside each workflow execution (1st call, 2nd call, …). Node execution timing might be slightly off, but a given call will resolve to the **same DON timestamp**.
+- **Low latency**: the plugin runs continuously with **delta round = 0**, and each node **transmits** results back to outstanding requests at the end of every round.
+- **Tamper-resistant**: workflows don't expose host machine time, reducing timing-attack surface.
+
+<Aside type="note" title="A Note on Accuracy">
+  DON Time is computed as the **median of nodes' local observations** in each round. It is designed for **consistency**
+  across the DON rather than exact alignment to an external UTC source. Think of it as a highly reliable clock for your
+  workflows. Do not treat it as a high-precision clock.
+</Aside>
+
+## How it works: A high-level view
+
+1. Your workflow calls **`runtime.now()`**.
+1. **The Chainlink network takes this request**: The Workflow Engine's **TimeProvider** assigns that call a **sequence number** and enqueues it in the **DON Time Store**.
+1. **All the nodes agree on a single time (the DON Time)**: The **OCR Time Plugin** on each node reaches consensus on a new DON timestamp (the median of observed times).
+1. Each node **returns** the newest DON timestamp to every pending request and updates its **last observed DON time** cache.
+1. The result is written back into the WebAssembly execution, and your workflow continues.
+
+Because requests are sequenced, _Call 1_ for a workflow instance will always return the same DON timestamp on every node. If Node A hits _Call 2_ before Node B, A will block until the DON timestamp for _Call 2_ is produced; when B reaches _Call 2_, it immediately reuses that value.
+
+## Execution modes: DON mode vs. Node mode
+
+### DON mode (default for workflows)
+
+- Time is **consensus-based** and **deterministic**.
+- Use for **any** logic where different outcomes across nodes would be a bug. Examples:
+  - Market-hours gates
+  - Time-windowed queries ("last 15 minutes")
+  - Retry/backoff logic that must align across nodes
+  - Timestamps used for cross-node correlation (logging, audit trails)
+
+### Node mode (advanced / special cases)
+
+- Workflow authors handle consensus themselves.
+- `runtime.now()` in Node Mode is a non-blocking call that returns the **last generated DON timestamp** from the local node's cache.
+- Useful in situations where you already expect non-determinism (e.g., inherently variable HTTP responses).
+
+<Aside type="caution" title="Use DON Mode">
+  Unless you have a specific reason and understand the trade-offs, **always use DON Mode** for time-dependent logic.
+</Aside>
+
+## Best practices: Avoiding non-determinism in DON mode
+
+When running in DON Mode, you get determinism **if and only if** you base time-dependent logic on DON Time.
+
+**Avoid** these patterns:
+
+- **Reading local time** (`Date.now()`, `new Date()`, etc.). Always use `runtime.now()` from the CRE SDK.
+- **Mixing time sources** in the same control path.
+- **Per-node "sleeps" based on local time** that gate deterministic decisions.
+
+**Deterministic patterns:**
+
+- ✅ Gate behavior with:
+  ```typescript
+  const now = runtime.now()
+  if (isMarketOpen(now)) {
+    // proceed
+  }
+  ```
+- ✅ Compute windows from DON Time:
+  ```typescript
+  const now = runtime.now()
+  const fifteenMinutesMs = 15 * 60 * 1000
+  const windowStart = new Date(now.getTime() - fifteenMinutesMs)
+  fetchData(windowStart, now)
+  ```
+
+## FAQ
+
+**Is DON Time "real UTC time"?**
+
+It's the **median of node observations** per round. It closely tracks real time but prioritizes **consistency** over absolute accuracy.
+
+**What is the resolution?**
+
+New DON timestamps are produced continuously (multiple per second). Treat it as coarse-grained real time suitable for gating and logging, not sub-millisecond measurement.
+
+**Why can't I use `Date.now()`?**
+
+`Date.now()` reads the local system clock, which differs slightly on each node. This breaks consensus—nodes may execute different code paths and fail to agree on the workflow result.

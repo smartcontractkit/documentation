@@ -1,6 +1,30 @@
 import { DataFeedType } from "../components/FeedList.tsx"
 
 /**
+ * Helper function to extract schema version from feed metadata
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getSchemaVersion(feed: any): string | undefined {
+  // First try to get from docs.schema
+  if (feed.docs?.schema) {
+    return feed.docs.schema
+  }
+
+  // Fallback: parse from clicProductName
+  const clicProductName = feed.docs?.clicProductName
+  if (clicProductName) {
+    const match = clicProductName.match(/-0(\d{2})$/)
+    if (match) {
+      const version = match[1]
+      if (version === "04" || version === "08") return "v8"
+      if (version === "11") return "v11"
+    }
+  }
+
+  return undefined
+}
+
+/**
  * Determines if a feed should be visible based on:
  * - Hidden flags (feedCategory === "hidden" or docs.hidden)
  * - Data feed type filtering (streams, smartdata, rates, etc.)
@@ -13,6 +37,7 @@ export interface FeedVisibilityOptions {
   streamCategoryFilter?: string
   rwaSchemaFilter?: string
   showOnlyMVRFeeds?: boolean
+  tokenizedEquityProvider?: string // Filter tokenized equity feeds by provider (e.g., "ondo")
 }
 
 /**
@@ -34,8 +59,10 @@ export function isFeedVisible(
   // ===========================================================================
   // 1. Universal Exclusions
   // ===========================================================================
-  // Always hide feeds marked as hidden in metadata or docs
-  if (feed.feedCategory === "hidden" || feed.docs?.hidden) return false
+  // Tokenized equity feeds are allowed to bypass the hidden flag since they are
+  // marked hidden in the general feed list but should show on their dedicated page
+  const isTokenizedEquity = dataFeedType === "tokenizedEquity"
+  if (feed.docs?.hidden && !isTokenizedEquity) return false
 
   const isDeprecating = ecosystem === "deprecating"
   const isStreams =
@@ -89,6 +116,10 @@ export function isFeedVisible(
     isVisible = feed.docs?.productTypeCode === "RefMacro"
   } else if (isRates) {
     isVisible = feed.docs?.productType === "Rates" || feed.docs?.productSubType === "Realized Volatility"
+  } else if (isTokenizedEquity) {
+    // Tokenized equity feeds (Ondo and other providers)
+    // Filter by assetClass "Equities" for Data Feeds (not Streams verifier contracts)
+    isVisible = feed.docs?.assetClass === "Equities" && feed.contractType !== "verifier"
   } else {
     // Default data feeds (Standard Price Feeds)
     // Exclude all special types to leave only the standard feeds
@@ -121,13 +152,31 @@ export function isFeedVisible(
     if (options.streamCategoryFilter === "equities" && feed.docs.feedType !== "Equities") return false
     if (options.streamCategoryFilter === "forex" && feed.docs.feedType !== "Forex") return false
 
-    if (options.rwaSchemaFilter === "v8" && feed.docs?.schema === "v11") return false
-    if (options.rwaSchemaFilter === "v11" && feed.docs?.schema !== "v11") return false
+    const schemaVersion = getSchemaVersion(feed)
+    if (options.rwaSchemaFilter === "v8" && schemaVersion !== "v8") return false
+    if (options.rwaSchemaFilter === "v11" && schemaVersion !== "v11") return false
   }
 
   // Filter: Show only MVR feeds (SmartData)
   if (isSmartData && options.showOnlyMVRFeeds) {
     if (feed.docs?.isMVR !== true) return false
+  }
+
+  // Filter: Tokenized equity feeds by provider
+  if (isTokenizedEquity && options.tokenizedEquityProvider) {
+    const provider = options.tokenizedEquityProvider.toLowerCase()
+
+    if (provider === "ondo") {
+      // Ondo tokenized equity feeds are identified by BOTH:
+      //   1. "Ondo" in assetName — distinguishes from other tokenized equity providers
+      //   2. productTypeCode "primaryTokenizedPrice" — distinguishes from ONDO token feeds
+      // Neither signal alone is sufficient: other providers may share the productTypeCode,
+      // and ONDO governance token feeds may contain "Ondo" in the asset name.
+      const assetName = (feed.assetName || "").toLowerCase()
+      const isOndoFeed = assetName.includes("ondo") && feed.docs?.productTypeCode === "primaryTokenizedPrice"
+      if (!isOndoFeed) return false
+    }
+    // Add more provider patterns here as needed
   }
 
   return true

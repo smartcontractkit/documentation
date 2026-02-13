@@ -180,7 +180,7 @@ export const events: VersionedEvents = {
 export const networkFees: NetworkFees = {
   tokenTransfers: {
     [TokenMechanism.LockAndUnlock]: {
-      allLanes: { gasTokenFee: "0.07 %", linkFee: "0.063 %" },
+      allLanes: { gasTokenFee: "0.05 %", linkFee: "0.063 %" },
     },
     [TokenMechanism.LockAndMint]: {
       fromEthereum: { gasTokenFee: "0.50 USD", linkFee: "0.45 USD" },

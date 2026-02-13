@@ -5,7 +5,7 @@ title: "Report Schema: Tokenized Asset (v10)"
 metadata:
   title: "Tokenized Asset (v10) | Chainlink Data Streams"
   description: "Learn about Chainlink Data Streams Tokenized Asset (v10) schema, including fields, encoding, and examples for integrating tokenized asset data in your applications."
-  keywords: ["Report Schema", "Tokenized Assets", "Backed xStock", "v10 Schema", "Data Format", "Report Structure"]
+  keywords: ["Report Schema", "Tokenized Assets", "Tokenized Equities", "v10 Schema", "Data Format", "Report Structure"]
 ---
 
 import DataStreams from "@features/data-streams/common/DataStreams.astro"
@@ -16,7 +16,7 @@ import Aside from "@components/Aside.astro"
 
 <ReportSchemaTabs />
 
-Chainlink Backed xStock Data Streams adhere to the report schema outlined below.
+Chainlink Tokenized Asset Data Streams adhere to the report schema outlined below.
 
 ### Schema Fields
 
@@ -38,15 +38,17 @@ Chainlink Backed xStock Data Streams adhere to the report schema outlined below.
 
 {/* prettier-ignore */}
 <Aside type="danger" title="Weekend Usage Disclaimer">
-  **Users should not use these streams during weekends** due to limited exchange activity.
+  **The `price` field does not update during weekends** because the underlying real-world equity market is closed.
   
-  If usage is necessary, increase fees to mitigate risks. Developers are solely responsible for monitoring and mitigating market integrity risks, as outlined in the [Developer Responsibilities](/data-streams/developer-responsibilities) documentation.
+  However, the `tokenizedPrice` field continues to update as it reflects trading activity on centralized exchanges (CEXs). Weekend liquidity tends to be thin, so users should implement guardrails against unexpected volatility.
+  
+  Developers are solely responsible for monitoring and mitigating market integrity risks, as outlined in the [Developer Responsibilities](/data-streams/developer-responsibilities) documentation.
 </Aside>
 
 **Notes:**
 
-- Future Backed xStock streams may use different report schemas.
+- Future Tokenized Asset streams may use different report schemas.
 - `price` updates in real time during market open, but may become stale during market closed periods.
 - `currentMultiplier` reflects all past corporate actions and is updated only when a new action is activated.
 - `activationDateTime` and `newMultiplier` provide advance notice of upcoming corporate actions, allowing protocols to prepare.
-- See more detailed guidance for handling stock splits in the [Best Practices](/data-streams/concepts/best-practices#handling-stock-splits-for-tokenized-assets) documentation.
+- See more detailed guidance for handling stock splits in the [Handling Stock Splits](/data-streams/tokenized-asset-streams/handling-stock-splits) documentation.

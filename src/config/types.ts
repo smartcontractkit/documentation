@@ -45,7 +45,6 @@ export type SupportedTechnology =
   | "MERLIN"
   | "FRAXTAL"
   | "HEDERA"
-  | "UNICHAIN"
   | "HEMI"
   | "APECHAIN"
   | "CRONOS"
@@ -80,6 +79,9 @@ export type SupportedTechnology =
   | "MORPH"
   | "JOVAY"
   | "STABLE"
+  | "TEMPO"
+  | "ARC_NETWORK"
+  | "DOGE_OS"
 
 export type ChainType = "evm" | "solana" | "aptos"
 
@@ -89,6 +91,7 @@ export type SupportedChain =
   | "ETHEREUM_MAINNET"
   | "ETHEREUM_SEPOLIA"
   | "ETHEREUM_HOLESKY"
+  | "ETHEREUM_HOODI"
   | "BNB_MAINNET"
   | "BNB_TESTNET"
   | "POLYGON_MAINNET"
@@ -142,7 +145,8 @@ export type SupportedChain =
   | "SHIBARIUM_MAINNET"
   | "SHIBARIUM_PUPPYNET"
   | "SONIC_MAINNET"
-  | "SONIC_BLAZE"
+  | "SONIC_TESTNET"
+  | "SONIC_TESTNET_BLAZE"
   | "BOB_MAINNET"
   | "BOB_SEPOLIA"
   | "WORLD_MAINNET"
@@ -192,6 +196,7 @@ export type SupportedChain =
   | "MIND_NETWORK_TESTNET"
   | "MIND_NETWORK_MAINNET"
   | "MEGAETH_TESTNET"
+  | "MEGAETH_MAINNET"
   | "TAIKO_MAINNET"
   | "TAIKO_HEKLA"
   | "PLUME_MAINNET"
@@ -250,6 +255,9 @@ export type SupportedChain =
   | "JOVAY_MAINNET"
   | "JOVAY_TESTNET"
   | "STABLE_MAINNET"
+  | "TEMPO_TESTNET"
+  | "ARC_NETWORK_TESTNET"
+  | "DOGE_OS_CHIKYU_TESTNET"
 
 export type ExplorerInfo = {
   baseUrl: string

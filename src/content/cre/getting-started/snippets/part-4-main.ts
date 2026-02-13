@@ -1,5 +1,8 @@
 import {
-  cre,
+  CronCapability,
+  HTTPClient,
+  EVMClient,
+  handler,
   consensusMedianAggregation,
   Runner,
   type NodeRuntime,
@@ -37,9 +40,9 @@ type MyResult = {
 // highlight-end
 
 const initWorkflow = (config: Config) => {
-  const cron = new cre.capabilities.CronCapability()
+  const cron = new CronCapability()
 
-  return [cre.handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
 }
 
 const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
@@ -61,7 +64,7 @@ const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
   runtime.log(`Successfully fetched offchain value: ${offchainValue}`)
 
   // Step 2: Read onchain data using the EVM client
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   const callData = encodeFunctionData({
     abi: Storage,
@@ -120,7 +123,7 @@ const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
 // highlight-end
 
 const fetchMathResult = (nodeRuntime: NodeRuntime<Config>): bigint => {
-  const httpClient = new cre.capabilities.HTTPClient()
+  const httpClient = new HTTPClient()
 
   const req = {
     url: nodeRuntime.config.apiUrl,
@@ -146,7 +149,7 @@ function updateCalculatorResult(
 ): string {
   runtime.log(`Updating calculator result for consumer: ${evmConfig.calculatorConsumerAddress}`)
 
-  const evmClient = new cre.capabilities.EVMClient(chainSelector)
+  const evmClient = new EVMClient(chainSelector)
 
   // Encode the CalculatorResult struct according to the contract's ABI
   const reportData = encodeAbiParameters(
@@ -192,5 +195,3 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()

@@ -5,12 +5,17 @@ title: "Updating Deployed Workflows"
 metadata:
   description: "Update your live workflows: learn how to safely deploy new versions and replace your running workflows without downtime."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-01-23"
 ---
 
 import { Aside } from "@components"
 
 When you update a deployed workflow, you redeploy it with the same workflow name. The new deployment replaces the previous version in the Workflow Registry contract. Currently, CRE does not maintain version history—each deployment overwrites the previous one.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Workflow ID changes on update">
+  The workflow ID changes each time you update a workflow. This is because the workflow ID is a hash derived from the workflow binary and configuration. If your consumer contract uses the workflow ID for validation, make sure to update the expected workflow ID after each update. See [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#34-configuring-permissions) for details.
+</Aside>
 
 ## Prerequisites
 
@@ -36,6 +41,12 @@ cre workflow deploy my-workflow --target production-settings
 1. **Upload**: The new binary and configuration files are uploaded to the CRE Storage Service
 1. **Registration**: A new registration transaction is sent to the Workflow Registry contract
 1. **Replacement**: The previous version is replaced with the new deployment
+1. **Status preserved**: The workflow's status (active or paused) is preserved from the previous deployment
+
+{/* prettier-ignore */}
+<Aside type="note" title="Workflow status is preserved">
+  When you update a workflow, the CLI matches the status of the previously deployed version. If your workflow was paused, the updated version will remain paused. If it was active, the updated version will be active and immediately start responding to triggers. To change the workflow status, see [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows).
+</Aside>
 
 {/* prettier-ignore */}
 <Aside type="caution" title="No version history">

@@ -1,0 +1,95 @@
+---
+section: ccip
+date: Last Modified
+title: "Inspect Current Rate Limits"
+---
+
+Before updating any rate limit configuration, you should inspect the **current inbound and outbound settings** for the token pool and lane you are managing. This ensures you understand the existing capacity, refill rate, and enabled state before making changes.
+
+## What you can inspect
+
+Each token pool exposes read-only functions that return the current rate limiter state for a given remote chain. These values describe:
+
+- whether the inbound or outbound rate limit is enabled
+- the configured capacity
+- the configured refill rate
+- the current number of tokens available in the bucket
+- the timestamp of the last refill
+
+Together, these values determine whether transfers are currently allowed and how quickly capacity becomes available.
+
+## Identify the token pool contract
+
+To inspect rate limits, you first need the **token pool contract address** for the token you are managing.
+
+You can find token pool addresses using the Token Manager or by searching for the token contract address in the token manager search interface.
+
+## Select the remote chain
+
+Rate limits are configured per remote chain. When querying a rate limiter, you must provide the **remote chain selector** that identifies the cross-chain lane you want to inspect.
+
+Chain selectors are represented as `uint64` values. You can find the correct selector for each supported network in the CCIP directory.
+
+## Query inbound and outbound limiter state
+
+Most token pool contracts expose public getter functions similar to:
+
+```solidity
+function getCurrentInboundRateLimiterState(
+  uint64 remoteChainSelector
+) external view returns (TokenBucket memory);
+
+function getCurrentOutboundRateLimiterState(
+  uint64 remoteChainSelector
+) external view returns (TokenBucket memory);
+
+```
+
+These functions take a remote chain selector as input and return the current **TokenBucket** state for that lane.
+
+You can call these functions using:
+
+- a block explorer’s “Read Contract” interface
+- a web3-enabled script or client
+
+## Interpreting the TokenBucket state
+
+A typical rate limiter state includes the following fields:
+
+```solidity
+struct TokenBucket {
+  uint128 tokens;
+  uint32 lastUpdated;
+  bool isEnabled;
+  uint128 capacity;
+  uint128 rate;
+}
+```
+
+Where:
+
+- tokens (uint128): the current number of tokens available in the bucket
+- lastUpdated (uint32): the timestamp of the last refill
+- isEnabled (bool): whether the rate limit is active
+- capacity (uint128): the maximum bucket size
+- rate (uint128): the refill rate in tokens per second
+- All numeric values are expressed in the token’s **smallest unit**, not in whole tokens.
+
+## Inbound vs outbound inspection
+
+Inbound and outbound configurations should be inspected **independently**:
+
+- outbound limits control transfers leaving the current chain
+- inbound limits control transfers entering the current chain
+
+Although these values are often similar, they may intentionally differ based on risk tolerance and traffic patterns.
+
+## Before proceeding
+
+After inspecting the current configuration:
+
+- record the existing values
+- confirm token decimals and unit conversions
+- identify which direction and lane you intend to modify
+
+Only proceed to updating rate limits once you fully understand the current state.

@@ -7,7 +7,7 @@ date: Last Modified
 metadata:
   description: "Read data from smart contracts in TypeScript: learn to call view functions and fetch verified blockchain state in your workflows."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-01-20"
 ---
 
 import { Aside } from "@components"
@@ -49,7 +49,8 @@ Here's a complete example of reading from a Storage contract:
 
 ```typescript
 import {
-  cre,
+  CronCapability,
+  EVMClient,
   getNetwork,
   encodeCallMsg,
   bytesToHex,
@@ -84,7 +85,7 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
   }
 
   // Create EVM client with chain selector
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   // Encode the function call
   const callData = encodeFunctionData({
@@ -117,9 +118,10 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 }
 
 const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
   return [
-    cre.handler(
-      new cre.capabilities.CronCapability().trigger({
+    cron.handler(
+      cron.trigger({
         schedule: "*/10 * * * * *", // Every 10 seconds
       }),
       onCronTrigger
@@ -131,8 +133,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ## Understanding the components
@@ -168,7 +168,7 @@ When calling `callContract()`, you can specify which block to read from:
 
 - **`LAST_FINALIZED_BLOCK_NUMBER`**: Read from the last finalized block (recommended for production)
 - **`LATEST_BLOCK_NUMBER`**: Read from the latest block
-- **Specific block**: Use an object with `{ absVal: "base64EncodedNumber", sign: "1" }` format
+- **Custom block number**: Use a `BigIntJson` object for custom finality depths or historical queries
 
 ```typescript
 import { LAST_FINALIZED_BLOCK_NUMBER, LATEST_BLOCK_NUMBER } from "@chainlink/cre-sdk"
@@ -185,6 +185,54 @@ const contractCall = evmClient.callContract(runtime, {
   blockNumber: LATEST_BLOCK_NUMBER,
 }).result()
 ```
+
+#### Custom block depths
+
+For use cases requiring fixed confirmation thresholds (e.g., regulatory compliance) or historical state verification, you can specify an exact block number.
+
+**Example 1 - Read from a specific historical block**:
+
+```typescript
+import { blockNumber } from '@chainlink/cre-sdk'
+
+const historicalBlock = 9767655n
+const contractCall = evmClient.callContract(runtime, {
+  call: encodeCallMsg({...}),
+  blockNumber: blockNumber(historicalBlock),
+}).result()
+```
+
+**Example 2 - Read from 500 blocks ago for custom finality**:
+
+```typescript
+import { protoBigIntToBigint, blockNumber } from '@chainlink/cre-sdk'
+
+// Get the latest block number
+const latestHeader = evmClient.headerByNumber(runtime, {}).result()
+if (!latestHeader.header?.blockNumber) {
+  throw new Error("Failed to get latest block number")
+}
+
+// Convert protobuf BigInt to native bigint and calculate custom block
+const latestBlockNum = protoBigIntToBigint(latestHeader.header.blockNumber)
+const customBlock = latestBlockNum - 500n
+
+// Call the contract at the custom block height
+const contractCall = evmClient.callContract(runtime, {
+  call: encodeCallMsg({...}),
+  blockNumber: blockNumber(customBlock),
+}).result()
+```
+
+**Helper functions:**
+
+The SDK provides two helper functions for working with block numbers:
+
+- **`protoBigIntToBigint(pb)`** — Converts a protobuf `BigInt` (returned by SDK methods like `headerByNumber`) to a native JavaScript `bigint`. Use this when you need to perform arithmetic on block numbers.
+
+- **`blockNumber(n)`** — Converts a native `bigint`, `number`, or `string` to the protobuf `BigInt` JSON format required by SDK methods. This is an alias for `bigintToProtoBigInt`.
+
+See [Finality and Confidence Levels](/cre/concepts/finality-ts) for more details on when to use custom block depths.
 
 ### Encoding call messages with `encodeCallMsg()`
 
@@ -249,7 +297,8 @@ Here's a full runnable workflow with external configuration:
 
 ```typescript
 import {
-  cre,
+  CronCapability,
+  EVMClient,
   getNetwork,
   encodeCallMsg,
   bytesToHex,
@@ -280,7 +329,7 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
     throw new Error(`Network not found: ${runtime.config.chainSelectorName}`)
   }
 
-  const evmClient = new cre.capabilities.EVMClient(network.chainSelector.selector)
+  const evmClient = new EVMClient(network.chainSelector.selector)
 
   const callData = encodeFunctionData({
     abi: storageAbi,
@@ -310,9 +359,10 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 }
 
 const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
   return [
-    cre.handler(
-      new cre.capabilities.CronCapability().trigger({
+    cron.handler(
+      cron.trigger({
         schedule: "*/10 * * * * *",
       }),
       onCronTrigger
@@ -324,8 +374,6 @@ export async function main() {
   const runner = await Runner.newRunner<Config>()
   await runner.run(initWorkflow)
 }
-
-main()
 ```
 
 ### Configuration file (`config.json`)

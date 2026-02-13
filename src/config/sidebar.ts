@@ -82,6 +82,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "cre/service-quotas",
         },
         {
+          title: "Supported Networks",
+          url: "cre/supported-networks",
+          highlightAsCurrent: ["cre/supported-networks-ts", "cre/supported-networks-go"],
+        },
+        {
           title: "Support & Feedback",
           url: "cre/support-feedback",
         },
@@ -135,7 +140,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             "cre/getting-started/part-4-writing-onchain-go",
           ],
         },
-        { title: "Conclusion & Next Steps", url: "cre/getting-started/conclusion" },
+        {
+          title: "Before You Build",
+          url: "cre/getting-started/before-you-build",
+          highlightAsCurrent: ["cre/getting-started/before-you-build-ts", "cre/getting-started/before-you-build-go"],
+        },
       ],
     },
     {
@@ -248,11 +257,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               ],
             },
             {
-              title: "Supported Networks",
-              url: "cre/guides/workflow/using-evm-client/supported-networks",
+              title: "Forwarder Directory",
+              url: "cre/guides/workflow/using-evm-client/forwarder-directory",
               highlightAsCurrent: [
-                "cre/guides/workflow/using-evm-client/supported-networks-ts",
-                "cre/guides/workflow/using-evm-client/supported-networks-go",
+                "cre/guides/workflow/using-evm-client/forwarder-directory-ts",
+                "cre/guides/workflow/using-evm-client/forwarder-directory-go",
               ],
             },
           ],
@@ -288,6 +297,20 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "Confidential API Interactions (Experimental)",
+          url: "cre/guides/workflow/using-confidential-http-client",
+          children: [
+            {
+              title: "Making Confidential Requests",
+              url: "cre/guides/workflow/using-confidential-http-client/making-requests",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-confidential-http-client/making-requests-ts",
+                "cre/guides/workflow/using-confidential-http-client/making-requests-go",
+              ],
+            },
+          ],
+        },
+        {
           title: "Secrets",
           url: "cre/guides/workflow/secrets",
           children: [
@@ -308,6 +331,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "cre/guides/workflow/secrets/managing-secrets-1password",
             },
           ],
+        },
+        {
+          title: "Using Time in Workflows",
+          url: "cre/guides/workflow/time-in-workflows",
+          highlightAsCurrent: ["cre/guides/workflow/time-in-workflows-ts", "cre/guides/workflow/time-in-workflows-go"],
+        },
+        {
+          title: "Using Randomness in Workflows",
+          url: "cre/guides/workflow/using-randomness",
         },
       ],
     },
@@ -391,6 +423,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         { title: "Overview", url: "cre/capabilities" },
         { title: "Triggers", url: "cre/capabilities/triggers" },
         { title: "HTTP", url: "cre/capabilities/http" },
+        {
+          title: "Confidential HTTP (Experimental)",
+          url: "cre/capabilities/confidential-http",
+          highlightAsCurrent: ["cre/capabilities/confidential-http-ts", "cre/capabilities/confidential-http-go"],
+        },
         { title: "EVM Read & Write", url: "cre/capabilities/evm-read-write" },
       ],
     },
@@ -407,16 +444,13 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           highlightAsCurrent: ["cre/concepts/non-determinism-go", "cre/concepts/non-determinism-ts"],
         },
         {
-          title: "Time in CRE",
-          url: "cre/concepts/time-in-cre",
-        },
-        {
-          title: "Random in CRE",
-          url: "cre/concepts/random-in-cre",
-        },
-        {
           title: "TypeScript Runtime Environment",
           url: "cre/concepts/typescript-wasm-runtime",
+        },
+        {
+          title: "Finality & Confidence Levels",
+          url: "cre/concepts/finality",
+          highlightAsCurrent: ["cre/concepts/finality-go", "cre/concepts/finality-ts"],
         },
       ],
     },
@@ -519,6 +553,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               highlightAsCurrent: ["cre/reference/sdk/http-client-ts", "cre/reference/sdk/http-client-go"],
             },
             {
+              title: "Confidential HTTP Client (Experimental)",
+              url: "cre/reference/sdk/confidential-http-client",
+              highlightAsCurrent: [
+                "cre/reference/sdk/confidential-http-client-ts",
+                "cre/reference/sdk/confidential-http-client-go",
+              ],
+            },
+            {
               title: "Consensus & Aggregation",
               url: "cre/reference/sdk/consensus",
               highlightAsCurrent: ["cre/reference/sdk/consensus-ts", "cre/reference/sdk/consensus-go"],
@@ -548,7 +590,21 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Feed Types",
           url: "data-feeds/feed-types",
           children: [
-            { title: "Price Feeds", url: "data-feeds/price-feeds" },
+            {
+              title: "Price Feeds",
+              url: "data-feeds/price-feeds",
+            },
+            {
+              title: "Tokenized Equity Feeds",
+              url: "data-feeds/tokenized-equity-feeds",
+              children: [
+                {
+                  title: "Provider Catalog",
+                  url: "data-feeds/tokenized-equity-feeds/providers",
+                  children: [{ title: "Ondo Finance", url: "data-feeds/tokenized-equity-feeds/ondo" }],
+                },
+              ],
+            },
             {
               title: "SmartData",
               url: "data-feeds/smartdata",
@@ -873,25 +929,38 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Report Schema v11 (RWA Advanced)",
               url: "data-streams/reference/report-schema-v11",
             },
+            {
+              title: "Handling Market Events",
+              url: "data-streams/rwa-streams/handling-market-events",
+              highlightAsCurrent: ["data-streams/rwa-streams/handling-market-events-v11"],
+            },
+            {
+              title: "24/5 US Equities User Guide",
+              url: "data-streams/rwa-streams/24-5-us-equities-user-guide",
+            },
           ],
         },
         {
-          title: "Net Asset Value (NAV)",
-          url: "data-streams/nav-streams",
+          title: "SmartData",
+          url: "data-streams/smartdata-streams",
           children: [
             {
-              title: "Report Schema v9 (NAV)",
+              title: "Report Schema v9 (SmartData)",
               url: "data-streams/reference/report-schema-v9",
             },
           ],
         },
         {
           title: "Tokenized Asset",
-          url: "data-streams/backed-streams",
+          url: "data-streams/tokenized-asset-streams",
           children: [
             {
               title: "Report Schema v10 (Tokenized Asset)",
               url: "data-streams/reference/report-schema-v10",
+            },
+            {
+              title: "Handling Stock Splits",
+              url: "data-streams/tokenized-asset-streams/handling-stock-splits",
             },
           ],
         },
@@ -943,6 +1012,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Best Practices",
           url: "data-streams/concepts/best-practices",
+        },
+        {
+          title: "Calculated Streams",
+          url: "data-streams/concepts/calculated-streams",
         },
         {
           title: "Liquidity-Weighted Bid and Ask prices",

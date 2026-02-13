@@ -7,7 +7,7 @@ pageId: "running-demo-workflow"
 metadata:
   description: "Run the Custom Data Feed demo: explore a TypeScript workflow template with API calls, blockchain reads, and onchain writes."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-01-20"
 ---
 
 import { Aside, CopyText } from "@components"
@@ -27,7 +27,7 @@ Before you begin, ensure you have the necessary tools installed:
 
 - **CRE CLI**: You must have the CRE CLI installed. See [Install the CLI](/cre/getting-started/cli-installation) for instructions.
 - **CRE account & authentication**: You must have a CRE account and be logged in with the CLI. Run <CopyText text="cre whoami" code /> in your terminal to verify you're logged in, or run <CopyText text="cre login" code /> to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging in with the CLI](/cre/account/cli-login) for instructions.
-- **Bun**: You must have Bun version 1.2.21 or higher installed. Check your version with <CopyText text="bun --version" code />. See [Install Bun](https://bun.sh/docs/installation) for instructions.
+- **Bun**: You must have Bun version 1.2.21 or higher installed. Check your version with <CopyText text="bun --version" code />. See [Install Bun](https://bun.com/docs/installation) for instructions.
 - **Sepolia Testnet Account**: You need a private key for an account funded with Sepolia ETH. This is required because the demo workflow performs a write transaction. Go to <a href="https://faucets.chain.link" target="blank">faucets.chain.link</a> to get some Sepolia ETH.
 
 ## 2. Initialize the demo project
@@ -123,7 +123,7 @@ Now you are ready to compile and run the workflow. The single `main.ts` file you
    <Aside type="note" title="Onchain Writes are Dry Runs by Default">
      The `--broadcast` flag is included here because this workflow performs an onchain write. By default, the `simulate`
      command performs a dry run and will not broadcast the transaction without this flag. For more details, see the `cre
-     workflow simulate` [reference](/cre/reference/cli#cre-workflow-simulate).
+     workflow simulate` [reference](/cre/reference/cli/workflow#cre-workflow-simulate).
    </Aside>
 
    You will first see a `Workflow compiled` message, followed by the trigger selection menu.
@@ -267,7 +267,7 @@ The `main.ts` file is a great example of how a single workflow can contain multi
 
 - **`main()` and `Runner`**: The entry point of the workflow. It creates a new `Runner` instance with your config schema using `Runner.newRunner()`, then calls `runner.run()` with the `initWorkflow` function. This is the standard pattern for initializing CRE workflows in the TypeScript SDK.
 
-- **`initWorkflow`**: This function initializes the trigger capabilities and returns an array of two handlers: one for the cron trigger and one for the EVM log trigger. Each handler is created using `cre.handler()`, which pairs a trigger configuration with a callback function.
+- **`initWorkflow`**: This function initializes the trigger capabilities and returns an array of two handlers: one for the cron trigger and one for the EVM log trigger. Each handler is created using `handler()`, which pairs a trigger configuration with a callback function.
 
 - **`onCronTrigger`**: The entry point for **Path A**. It's a lightweight callback that immediately delegates to the shared `doPOR` function, demonstrating how you can reuse core logic.
 
@@ -283,7 +283,7 @@ This demo showcases several important patterns and features of the TypeScript SD
 
 - **Runner Pattern**: The workflow uses the `Runner.newRunner()` pattern to initialize the workflow with a config schema and run it.
 - **Zod Schema Validation**: The workflow uses Zod to define and validate the configuration schema, ensuring type safety at runtime.
-- **Multiple Trigger Handlers**: A single workflow can register multiple handlers for different trigger types using `cre.handler()`.
+- **Multiple Trigger Handlers**: A single workflow can register multiple handlers for different trigger types using `handler()`.
 - **Viem Integration**: All EVM interactions use viem's `encodeFunctionData` and `decodeFunctionResult` for type-safe contract calls.
 - **Manual ABI Management**: TypeScript workflows use manually defined ABI constants from the `contracts/abi/` directory.
 - **Consensus Aggregation**: The HTTP capability uses `ConsensusAggregationByFields` to aggregate offchain data from multiple nodes.

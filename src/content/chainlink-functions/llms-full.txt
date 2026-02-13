@@ -397,6 +397,8 @@ const myArr = new Uint8Array(ARRAY_LENGTH)
 # Getting Started
 Source: https://docs.chain.link/chainlink-functions/getting-started
 
+<ChainlinkFunctions callout="cre" />
+
 Learn how to make requests to the Chainlink Functions Decentralized Oracle Network (DON) and make any computation or API calls offchain. Chainlink Functions is available on several blockchains (see the [supported networks page](/chainlink-functions/supported-networks)), but this guide uses Sepolia to simplify access to testnet funds. Complete the following tasks to get started with Chainlink Functions:
 
 - Set up your web3 wallet and fund it with testnet tokens.
@@ -412,6 +414,18 @@ Before making a Chainlink Functions request from your smart contract, it is alwa
 1. Open the [Functions playground](https://functions.chain.link/playground).
 
 2. Copy and paste the following source code into the playground's code block.
+
+   ```javascript
+   const characterId = args[0];
+   const apiResponse = await Functions.makeHttpRequest({
+     url: `https://swapi.info/api/people/${characterId}/`,
+   });
+   if (apiResponse.error) {
+     throw Error("Request failed");
+   }
+   const { data } = apiResponse;
+   return Functions.encodeString(data.name);
+   ```
 
 3. Under *Argument*, set the first argument to 1. You are going to fetch the name of the first Star Wars character.
 
@@ -433,6 +447,112 @@ You will test on Sepolia, so you must have an Ethereum web3 wallet with enough t
 ### Deploy a Functions consumer contract on Sepolia
 
 1. Open the [GettingStartedFunctionsConsumer.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/GettingStartedFunctionsConsumer.sol) contract in Remix.
+
+   ```sol
+   // SPDX-License-Identifier: MIT
+   pragma solidity ^0.8.20;
+
+   import {FunctionsClient} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/FunctionsClient.sol";
+
+   import {FunctionsRequest} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/libraries/FunctionsRequest.sol";
+   import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
+
+   /**
+    * Request testnet LINK and ETH here: https://faucets.chain.link/
+    * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here:
+    * https://docs.chain.link/resources/link-token-contracts/
+    */
+
+   /**
+    * @title GettingStartedFunctionsConsumer
+    * @notice This is an example contract to show how to make HTTP requests using Chainlink
+    * @dev This contract uses hardcoded values and should not be used in production.
+    */
+   contract GettingStartedFunctionsConsumer is FunctionsClient, ConfirmedOwner {
+     using FunctionsRequest for FunctionsRequest.Request;
+
+     // State variables to store the last request ID, response, and error
+     bytes32 public s_lastRequestId;
+     bytes public s_lastResponse;
+     bytes public s_lastError;
+
+     // Custom error type
+     error UnexpectedRequestID(bytes32 requestId);
+
+     // Event to log responses
+     event Response(bytes32 indexed requestId, string character, bytes response, bytes err);
+
+     // Router address - Hardcoded for Sepolia
+     // Check to get the router address for your supported network
+     // https://docs.chain.link/chainlink-functions/supported-networks
+     address router = 0xb83E47C2bC239B3bf370bc41e1459A34b41238D0;
+
+     // JavaScript source code
+     // Fetch character name from the Star Wars API.
+     // Documentation: https://swapi.info/people
+     string source = "const characterId = args[0];" "const apiResponse = await Functions.makeHttpRequest({"
+       "url: `https://swapi.info/api/people/${characterId}/`" "});" "if (apiResponse.error) {"
+       "throw Error('Request failed');" "}" "const { data } = apiResponse;" "return Functions.encodeString(data.name);";
+
+     //Callback gas limit
+     uint32 gasLimit = 300_000;
+
+     // donID - Hardcoded for Sepolia
+     // Check to get the donID for your supported network https://docs.chain.link/chainlink-functions/supported-networks
+     bytes32 donID = 0x66756e2d657468657265756d2d7365706f6c69612d3100000000000000000000;
+
+     // State variable to store the returned character information
+     string public character;
+
+     /**
+      * @notice Initializes the contract with the Chainlink router address and sets the contract owner
+      */
+     constructor() FunctionsClient(router) ConfirmedOwner(msg.sender) {}
+
+     /**
+      * @notice Sends an HTTP request for character information
+      * @param subscriptionId The ID for the Chainlink subscription
+      * @param args The arguments to pass to the HTTP request
+      * @return requestId The ID of the request
+      */
+     function sendRequest(
+       uint64 subscriptionId,
+       string[] calldata args
+     ) external onlyOwner returns (bytes32 requestId) {
+       FunctionsRequest.Request memory req;
+       req.initializeRequestForInlineJavaScript(source); // Initialize the request with JS code
+       if (args.length > 0) req.setArgs(args); // Set the arguments for the request
+
+       // Send the request and store the request ID
+       s_lastRequestId = _sendRequest(req.encodeCBOR(), subscriptionId, gasLimit, donID);
+
+       return s_lastRequestId;
+     }
+
+     /**
+      * @notice Callback function for fulfilling a request
+      * @param requestId The ID of the request to fulfill
+      * @param response The HTTP response data
+      * @param err Any errors from the Functions request
+      */
+     function fulfillRequest(
+       bytes32 requestId,
+       bytes memory response,
+       bytes memory err
+     ) internal override {
+       if (s_lastRequestId != requestId) {
+         revert UnexpectedRequestID(requestId); // Check if request IDs match
+       }
+       // Update the contract's state variables with the response and any errors
+       s_lastResponse = response;
+       character = string(response);
+       s_lastError = err;
+
+       // Emit an event to log the response
+       emit Response(requestId, character, s_lastResponse, s_lastError);
+     }
+   }
+   ```
 
 2. Compile the contract.
 
@@ -505,6 +625,112 @@ Chainlink Functions is capable of much more than just retrieving data. Try one o
 ## Examine the code
 
 ### Solidity code
+
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import {FunctionsClient} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/FunctionsClient.sol";
+
+import {FunctionsRequest} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/libraries/FunctionsRequest.sol";
+import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
+
+/**
+ * Request testnet LINK and ETH here: https://faucets.chain.link/
+ * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here:
+ * https://docs.chain.link/resources/link-token-contracts/
+ */
+
+/**
+ * @title GettingStartedFunctionsConsumer
+ * @notice This is an example contract to show how to make HTTP requests using Chainlink
+ * @dev This contract uses hardcoded values and should not be used in production.
+ */
+contract GettingStartedFunctionsConsumer is FunctionsClient, ConfirmedOwner {
+  using FunctionsRequest for FunctionsRequest.Request;
+
+  // State variables to store the last request ID, response, and error
+  bytes32 public s_lastRequestId;
+  bytes public s_lastResponse;
+  bytes public s_lastError;
+
+  // Custom error type
+  error UnexpectedRequestID(bytes32 requestId);
+
+  // Event to log responses
+  event Response(bytes32 indexed requestId, string character, bytes response, bytes err);
+
+  // Router address - Hardcoded for Sepolia
+  // Check to get the router address for your supported network
+  // https://docs.chain.link/chainlink-functions/supported-networks
+  address router = 0xb83E47C2bC239B3bf370bc41e1459A34b41238D0;
+
+  // JavaScript source code
+  // Fetch character name from the Star Wars API.
+  // Documentation: https://swapi.info/people
+  string source = "const characterId = args[0];" "const apiResponse = await Functions.makeHttpRequest({"
+    "url: `https://swapi.info/api/people/${characterId}/`" "});" "if (apiResponse.error) {"
+    "throw Error('Request failed');" "}" "const { data } = apiResponse;" "return Functions.encodeString(data.name);";
+
+  //Callback gas limit
+  uint32 gasLimit = 300_000;
+
+  // donID - Hardcoded for Sepolia
+  // Check to get the donID for your supported network https://docs.chain.link/chainlink-functions/supported-networks
+  bytes32 donID = 0x66756e2d657468657265756d2d7365706f6c69612d3100000000000000000000;
+
+  // State variable to store the returned character information
+  string public character;
+
+  /**
+   * @notice Initializes the contract with the Chainlink router address and sets the contract owner
+   */
+  constructor() FunctionsClient(router) ConfirmedOwner(msg.sender) {}
+
+  /**
+   * @notice Sends an HTTP request for character information
+   * @param subscriptionId The ID for the Chainlink subscription
+   * @param args The arguments to pass to the HTTP request
+   * @return requestId The ID of the request
+   */
+  function sendRequest(
+    uint64 subscriptionId,
+    string[] calldata args
+  ) external onlyOwner returns (bytes32 requestId) {
+    FunctionsRequest.Request memory req;
+    req.initializeRequestForInlineJavaScript(source); // Initialize the request with JS code
+    if (args.length > 0) req.setArgs(args); // Set the arguments for the request
+
+    // Send the request and store the request ID
+    s_lastRequestId = _sendRequest(req.encodeCBOR(), subscriptionId, gasLimit, donID);
+
+    return s_lastRequestId;
+  }
+
+  /**
+   * @notice Callback function for fulfilling a request
+   * @param requestId The ID of the request to fulfill
+   * @param response The HTTP response data
+   * @param err Any errors from the Functions request
+   */
+  function fulfillRequest(
+    bytes32 requestId,
+    bytes memory response,
+    bytes memory err
+  ) internal override {
+    if (s_lastRequestId != requestId) {
+      revert UnexpectedRequestID(requestId); // Check if request IDs match
+    }
+    // Update the contract's state variables with the response and any errors
+    s_lastResponse = response;
+    character = string(response);
+    s_lastError = err;
+
+    // Emit an event to log the response
+    emit Response(requestId, character, s_lastResponse, s_lastError);
+  }
+}
+```
 
 - To write a Chainlink Functions consumer contract, your contract must import [FunctionsClient.sol](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/functions/v1_0_0/FunctionsClient.sol) and [FunctionsRequest.sol](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/functions/v1_0_0/libraries/FunctionsRequest.sol). You can read the API references: [FunctionsClient](/chainlink-functions/api-reference/functions-client) and [FunctionsRequest](/chainlink-functions/api-reference/functions-request).
 
@@ -582,6 +808,18 @@ Chainlink Functions is capable of much more than just retrieving data. Try one o
 
 ### JavaScript code
 
+```javascript
+const characterId = args[0];
+const apiResponse = await Functions.makeHttpRequest({
+  url: `https://swapi.info/api/people/${characterId}/`,
+});
+if (apiResponse.error) {
+  throw Error("Request failed");
+}
+const { data } = apiResponse;
+return Functions.encodeString(data.name);
+```
+
 This JavaScript source code uses [Functions.makeHttpRequest](/chainlink-functions/api-reference/javascript-source#http-requests) to make HTTP requests. The source code calls the `https://swapi.info/` API to request a Star Wars character name. If you read the [Functions.makeHttpRequest](/chainlink-functions/api-reference/javascript-source#http-requests) documentation and the [Star Wars API documentation](https://swapi.info/people), you notice that URL has the following format where `$characterId` is provided as parameter when making the HTTP request:
 
 ```
@@ -637,6 +875,8 @@ Now that you understand the structure of the API. Let's delve into the JavaScrip
 
 # Chainlink Functions
 Source: https://docs.chain.link/chainlink-functions
+
+<ChainlinkFunctions callout="cre" />
 
 Chainlink Functions provides your smart contracts access to trust-minimized compute infrastructure, allowing you to fetch data from APIs and perform custom computation. Your smart contract sends source code in a request to a [Decentralized Oracle Network (DON)](/chainlink-functions/resources/concepts), and each node in the DON executes the code in a serverless environment. The DON then aggregates all the independent return values from each execution and sends the final result back to your smart contract.
 
@@ -1697,6 +1937,147 @@ In this tutorial, you will use a different Chainlink Functions consumer contract
 
 1. [Open the FunctionsConsumerDecoder.sol contract](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/FunctionsConsumerDecoder.sol) in Remix.
 
+   ```sol
+   // SPDX-License-Identifier: MIT
+   pragma solidity ^0.8.20;
+
+   import {FunctionsClient} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/FunctionsClient.sol";
+
+   import {FunctionsRequest} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/libraries/FunctionsRequest.sol";
+   import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
+
+   /**
+    * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+    * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+    * DO NOT USE THIS CODE IN PRODUCTION.
+    */
+   contract FunctionsConsumerDecoder is FunctionsClient, ConfirmedOwner {
+     using FunctionsRequest for FunctionsRequest.Request;
+
+     bytes32 public s_lastRequestId;
+     bytes public s_lastResponse;
+     bytes public s_lastError;
+
+     uint256 public s_answer;
+     uint256 public s_updatedAt;
+     uint8 public s_decimals;
+     string public s_description;
+
+     error UnexpectedRequestID(bytes32 requestId);
+
+     event Response(bytes32 indexed requestId, bytes response, bytes err);
+
+     event DecodedResponse(
+       bytes32 indexed requestId, uint256 answer, uint256 updatedAt, uint8 decimals, string description
+     );
+
+     constructor(
+       address router
+     ) FunctionsClient(router) ConfirmedOwner(msg.sender) {}
+
+     /**
+      * @notice Send a simple request
+      * @param source JavaScript source code
+      * @param encryptedSecretsUrls Encrypted URLs where to fetch user secrets
+      * @param donHostedSecretsSlotID Don hosted secrets slotId
+      * @param donHostedSecretsVersion Don hosted secrets version
+      * @param args List of arguments accessible from within the source code
+      * @param bytesArgs Array of bytes arguments, represented as hex strings
+      * @param subscriptionId Billing ID
+      */
+     function sendRequest(
+       string memory source,
+       bytes memory encryptedSecretsUrls,
+       uint8 donHostedSecretsSlotID,
+       uint64 donHostedSecretsVersion,
+       string[] memory args,
+       bytes[] memory bytesArgs,
+       uint64 subscriptionId,
+       uint32 gasLimit,
+       bytes32 donID
+     ) external onlyOwner returns (bytes32 requestId) {
+       FunctionsRequest.Request memory req;
+       req.initializeRequestForInlineJavaScript(source);
+       if (encryptedSecretsUrls.length > 0) {
+         req.addSecretsReference(encryptedSecretsUrls);
+       } else if (donHostedSecretsVersion > 0) {
+         req.addDONHostedSecrets(donHostedSecretsSlotID, donHostedSecretsVersion);
+       }
+       if (args.length > 0) req.setArgs(args);
+       if (bytesArgs.length > 0) req.setBytesArgs(bytesArgs);
+       s_lastRequestId = _sendRequest(req.encodeCBOR(), subscriptionId, gasLimit, donID);
+       return s_lastRequestId;
+     }
+
+     /**
+      * @notice Send a pre-encoded CBOR request
+      * @param request CBOR-encoded request data
+      * @param subscriptionId Billing ID
+      * @param gasLimit The maximum amount of gas the request can consume
+      * @param donID ID of the job to be invoked
+      * @return requestId The ID of the sent request
+      */
+     function sendRequestCBOR(
+       bytes memory request,
+       uint64 subscriptionId,
+       uint32 gasLimit,
+       bytes32 donID
+     ) external onlyOwner returns (bytes32 requestId) {
+       s_lastRequestId = _sendRequest(request, subscriptionId, gasLimit, donID);
+       return s_lastRequestId;
+     }
+
+     /**
+      * @dev Internal function to process the outcome of a data request. It stores the latest response or error and updates
+      * the contract state accordingly. This function is designed to handle only one of `response` or `err` at a time, not
+      * both. It decodes the response if present and emits events to log both raw and decoded data.
+      *
+      * @param requestId The unique identifier of the request, originally returned by `sendRequest`. Used to match
+      * responses with requests.
+      * @param response The raw aggregated response data from the external source. This data is ABI-encoded and is expected
+      * to contain specific information (e.g., answer, updatedAt) if no error occurred. The function attempts to decode
+      * this data if `response` is not empty.
+      * @param err The raw aggregated error information, indicating an issue either from the user's code or within the
+      * execution of the user Chainlink Function.
+      *
+      * Emits a `DecodedResponse` event if the `response` is successfully decoded, providing detailed information about the
+      * data received.
+      * Emits a `Response` event for every call to log the raw response and error data.
+      *
+      * Requirements:
+      * - The `requestId` must match the last stored request ID to ensure the response corresponds to the latest request
+      * sent.
+      * - Only one of `response` or `err` should contain data for a given call; the other should be empty.
+      */
+     function fulfillRequest(
+       bytes32 requestId,
+       bytes memory response,
+       bytes memory err
+     ) internal override {
+       if (s_lastRequestId != requestId) {
+         revert UnexpectedRequestID(requestId);
+       }
+
+       s_lastError = err;
+       s_lastResponse = response;
+
+       if (response.length > 0) {
+         (uint256 answer, uint256 updatedAt, uint8 decimals, string memory description) =
+           abi.decode(response, (uint256, uint256, uint8, string));
+
+         s_answer = answer;
+         s_updatedAt = updatedAt;
+         s_decimals = decimals;
+         s_description = description;
+
+         emit DecodedResponse(requestId, answer, updatedAt, decimals, description);
+       }
+
+       emit Response(requestId, response, err);
+     }
+   }
+   ```
+
 2. Compile the contract.
 
 3. Open MetaMask and select the *Ethereum Sepolia* network.
@@ -1792,6 +2173,147 @@ To run the example:
 ## Examine the code
 
 ### FunctionsConsumerDecoder.sol
+
+```sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import {FunctionsClient} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/FunctionsClient.sol";
+
+import {FunctionsRequest} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/libraries/FunctionsRequest.sol";
+import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
+
+/**
+ * THIS IS AN EXAMPLE CONTRACT THAT USES HARDCODED VALUES FOR CLARITY.
+ * THIS IS AN EXAMPLE CONTRACT THAT USES UN-AUDITED CODE.
+ * DO NOT USE THIS CODE IN PRODUCTION.
+ */
+contract FunctionsConsumerDecoder is FunctionsClient, ConfirmedOwner {
+  using FunctionsRequest for FunctionsRequest.Request;
+
+  bytes32 public s_lastRequestId;
+  bytes public s_lastResponse;
+  bytes public s_lastError;
+
+  uint256 public s_answer;
+  uint256 public s_updatedAt;
+  uint8 public s_decimals;
+  string public s_description;
+
+  error UnexpectedRequestID(bytes32 requestId);
+
+  event Response(bytes32 indexed requestId, bytes response, bytes err);
+
+  event DecodedResponse(
+    bytes32 indexed requestId, uint256 answer, uint256 updatedAt, uint8 decimals, string description
+  );
+
+  constructor(
+    address router
+  ) FunctionsClient(router) ConfirmedOwner(msg.sender) {}
+
+  /**
+   * @notice Send a simple request
+   * @param source JavaScript source code
+   * @param encryptedSecretsUrls Encrypted URLs where to fetch user secrets
+   * @param donHostedSecretsSlotID Don hosted secrets slotId
+   * @param donHostedSecretsVersion Don hosted secrets version
+   * @param args List of arguments accessible from within the source code
+   * @param bytesArgs Array of bytes arguments, represented as hex strings
+   * @param subscriptionId Billing ID
+   */
+  function sendRequest(
+    string memory source,
+    bytes memory encryptedSecretsUrls,
+    uint8 donHostedSecretsSlotID,
+    uint64 donHostedSecretsVersion,
+    string[] memory args,
+    bytes[] memory bytesArgs,
+    uint64 subscriptionId,
+    uint32 gasLimit,
+    bytes32 donID
+  ) external onlyOwner returns (bytes32 requestId) {
+    FunctionsRequest.Request memory req;
+    req.initializeRequestForInlineJavaScript(source);
+    if (encryptedSecretsUrls.length > 0) {
+      req.addSecretsReference(encryptedSecretsUrls);
+    } else if (donHostedSecretsVersion > 0) {
+      req.addDONHostedSecrets(donHostedSecretsSlotID, donHostedSecretsVersion);
+    }
+    if (args.length > 0) req.setArgs(args);
+    if (bytesArgs.length > 0) req.setBytesArgs(bytesArgs);
+    s_lastRequestId = _sendRequest(req.encodeCBOR(), subscriptionId, gasLimit, donID);
+    return s_lastRequestId;
+  }
+
+  /**
+   * @notice Send a pre-encoded CBOR request
+   * @param request CBOR-encoded request data
+   * @param subscriptionId Billing ID
+   * @param gasLimit The maximum amount of gas the request can consume
+   * @param donID ID of the job to be invoked
+   * @return requestId The ID of the sent request
+   */
+  function sendRequestCBOR(
+    bytes memory request,
+    uint64 subscriptionId,
+    uint32 gasLimit,
+    bytes32 donID
+  ) external onlyOwner returns (bytes32 requestId) {
+    s_lastRequestId = _sendRequest(request, subscriptionId, gasLimit, donID);
+    return s_lastRequestId;
+  }
+
+  /**
+   * @dev Internal function to process the outcome of a data request. It stores the latest response or error and updates
+   * the contract state accordingly. This function is designed to handle only one of `response` or `err` at a time, not
+   * both. It decodes the response if present and emits events to log both raw and decoded data.
+   *
+   * @param requestId The unique identifier of the request, originally returned by `sendRequest`. Used to match
+   * responses with requests.
+   * @param response The raw aggregated response data from the external source. This data is ABI-encoded and is expected
+   * to contain specific information (e.g., answer, updatedAt) if no error occurred. The function attempts to decode
+   * this data if `response` is not empty.
+   * @param err The raw aggregated error information, indicating an issue either from the user's code or within the
+   * execution of the user Chainlink Function.
+   *
+   * Emits a `DecodedResponse` event if the `response` is successfully decoded, providing detailed information about the
+   * data received.
+   * Emits a `Response` event for every call to log the raw response and error data.
+   *
+   * Requirements:
+   * - The `requestId` must match the last stored request ID to ensure the response corresponds to the latest request
+   * sent.
+   * - Only one of `response` or `err` should contain data for a given call; the other should be empty.
+   */
+  function fulfillRequest(
+    bytes32 requestId,
+    bytes memory response,
+    bytes memory err
+  ) internal override {
+    if (s_lastRequestId != requestId) {
+      revert UnexpectedRequestID(requestId);
+    }
+
+    s_lastError = err;
+    s_lastResponse = response;
+
+    if (response.length > 0) {
+      (uint256 answer, uint256 updatedAt, uint8 decimals, string memory description) =
+        abi.decode(response, (uint256, uint256, uint8, string));
+
+      s_answer = answer;
+      s_updatedAt = updatedAt;
+      s_decimals = decimals;
+      s_description = description;
+
+      emit DecodedResponse(requestId, answer, updatedAt, decimals, description);
+    }
+
+    emit Response(requestId, response, err);
+  }
+}
+```
 
 This Solidity contract is similar to the [FunctionsConsumer.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/FunctionsConsumer.sol) contract used in the [Using Imports with Functions](/chainlink-functions/tutorials/importing-packages) tutorial. The main difference is the processing of the response in the `fulfillRequest` function:
 
@@ -3331,6 +3853,130 @@ The consumer contract for Custom Automated Functions is different from the consu
 
 1. Open the [CustomAutomatedFunctionsConsumerExample.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/CustomAutomatedFunctionsConsumerExample.sol) in Remix.
 
+   ```sol
+   // SPDX-License-Identifier: MIT
+   pragma solidity ^0.8.20;
+
+   import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
+   import {FunctionsClient} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/FunctionsClient.sol";
+
+   import {FunctionsRequest} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/libraries/FunctionsRequest.sol";
+   import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
+
+   /**
+    * @title Functions contract used for Automation.
+    * @notice This contract is a demonstration of using Functions and Automation.
+    * @notice NOT FOR PRODUCTION USE
+    */
+   contract CustomAutomatedFunctionsConsumerExample is FunctionsClient, AutomationCompatibleInterface, ConfirmedOwner {
+     uint256 public lastBlockNumber;
+     bytes public request;
+     uint64 public subscriptionId;
+     uint32 public gasLimit;
+     bytes32 public donID;
+     bytes32 public s_lastRequestId;
+     bytes public s_lastResponse;
+     bytes public s_lastError;
+     uint256 public s_upkeepCounter;
+     uint256 public s_requestCounter;
+     uint256 public s_responseCounter;
+
+     error UnexpectedRequestID(bytes32 requestId);
+
+     event Response(bytes32 indexed requestId, bytes response, bytes err);
+     event RequestRevertedWithErrorMsg(string reason);
+     event RequestRevertedWithoutErrorMsg(bytes data);
+
+     constructor(
+       address router
+     ) FunctionsClient(router) ConfirmedOwner(msg.sender) {}
+
+     /**
+      * @notice Checks if upkeep is needed based on the difference between the current and the last block number.
+      * @dev This function checks if the current block number has incremented since the last recorded block number and
+      * returns a boolean indicating if upkeep is needed.
+      * @return upkeepNeeded A boolean indicating if upkeep is needed (true if the current block number has incremented
+      * since the last recorded block number).
+      * @return performData An empty bytes value since no additional data is needed for the upkeep in this implementation.
+      */
+     function checkUpkeep(
+       bytes calldata /* checkData */
+     ) external view override returns (bool upkeepNeeded, bytes memory performData) {
+       upkeepNeeded = block.number - lastBlockNumber > 0; // Check if the current block number has incremented since the
+       // last recorded block number
+       // We don't use the checkData in this example. The checkData is defined when the Upkeep was registered.
+       return (upkeepNeeded, ""); // Return an empty bytes value for performData
+     }
+
+     /**
+      * @notice Send a pre-encoded CBOR request if the current block number has incremented since the last recorded block
+      * number.
+      */
+     function performUpkeep(
+       bytes calldata /* performData */
+     ) external override {
+       if (block.number - lastBlockNumber > 0) {
+         lastBlockNumber = block.number;
+         s_upkeepCounter = s_upkeepCounter + 1;
+         try i_router.sendRequest(
+           subscriptionId, request, FunctionsRequest.REQUEST_DATA_VERSION, gasLimit, donID
+         ) returns (
+           bytes32 requestId
+         ) {
+           s_lastRequestId = requestId;
+           s_requestCounter = s_requestCounter + 1;
+           emit RequestSent(requestId);
+         } catch Error(string memory reason) {
+           emit RequestRevertedWithErrorMsg(reason);
+         } catch (bytes memory data) {
+           emit RequestRevertedWithoutErrorMsg(data);
+         }
+       }
+       // We don't use the performData in this example. The performData is generated by the Automation Node's call to your
+       // checkUpkeep function
+     }
+
+     /// @notice Update the request settings
+     /// @dev Only callable by the owner of the contract
+     /// @param _request The new encoded CBOR request to be set. The request is encoded offchain
+     /// @param _subscriptionId The new subscription ID to be set
+     /// @param _gasLimit The new gas limit to be set
+     /// @param _donID The new job ID to be set
+     function updateRequest(
+       bytes memory _request,
+       uint64 _subscriptionId,
+       uint32 _gasLimit,
+       bytes32 _donID
+     ) external onlyOwner {
+       request = _request;
+       subscriptionId = _subscriptionId;
+       gasLimit = _gasLimit;
+       donID = _donID;
+     }
+
+     /**
+      * @notice Store latest result/error
+      * @param requestId The request ID, returned by sendRequest()
+      * @param response Aggregated response from the user code
+      * @param err Aggregated error from the user code or from the execution pipeline
+      * Either response or error parameter will be set, but never both
+      */
+     function fulfillRequest(
+       bytes32 requestId,
+       bytes memory response,
+       bytes memory err
+     ) internal override {
+       if (s_lastRequestId != requestId) {
+         revert UnexpectedRequestID(requestId);
+       }
+       s_lastResponse = response;
+       s_lastError = err;
+       s_responseCounter = s_responseCounter + 1;
+       emit Response(requestId, s_lastResponse, s_lastError);
+     }
+   }
+   ```
+
 2. Compile the contract.
 
 3. Open MetaMask and select the *Ethereum Sepolia* network.
@@ -3483,6 +4129,103 @@ You can locate the scripts used in this tutorial in the [*examples/10-automate-f
 The consumer contract for Automated Functions is different from the consumer in other tutorials. Deploy the `AutomatedFunctionsConsumerExample` contract on *Ethereum Sepolia*:
 
 1. Open the [AutomatedFunctionsConsumerExample.sol](https://remix.ethereum.org/#url=https://docs.chain.link/samples/ChainlinkFunctions/AutomatedFunctionsConsumerExample.sol) in Remix.
+
+   ```sol
+   // SPDX-License-Identifier: MIT
+   pragma solidity ^0.8.20;
+
+   import {FunctionsClient} from "@chainlink/contracts/src/v0.8/functions/v1_0_0/FunctionsClient.sol";
+   import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
+
+   /**
+    * @title Functions contract used for Automation.
+    * @notice This contract is a demonstration of using Functions and Automation.
+    * @notice You may need to add a Forwarder for additional security.
+    * @notice NOT FOR PRODUCTION USE
+    */
+   contract AutomatedFunctionsConsumerExample is FunctionsClient, ConfirmedOwner {
+     address public upkeepContract;
+     bytes public request;
+     uint64 public subscriptionId;
+     uint32 public gasLimit;
+     bytes32 public donID;
+     bytes32 public s_lastRequestId;
+     bytes public s_lastResponse;
+     bytes public s_lastError;
+
+     error NotAllowedCaller(address caller, address owner, address automationRegistry);
+     error UnexpectedRequestID(bytes32 requestId);
+
+     event Response(bytes32 indexed requestId, bytes response, bytes err);
+
+     constructor(
+       address router
+     ) FunctionsClient(router) ConfirmedOwner(msg.sender) {}
+
+     /**
+      * @notice Reverts if called by anyone other than the contract owner or automation registry.
+      */
+     modifier onlyAllowed() {
+       if (msg.sender != owner() && msg.sender != upkeepContract) {
+         revert NotAllowedCaller(msg.sender, owner(), upkeepContract);
+       }
+       _;
+     }
+
+     function setAutomationCronContract(
+       address _upkeepContract
+     ) external onlyOwner {
+       upkeepContract = _upkeepContract;
+     }
+
+     /// @notice Update the request settings
+     /// @dev Only callable by the owner of the contract
+     /// @param _request The new encoded CBOR request to be set. The request is encoded offchain
+     /// @param _subscriptionId The new subscription ID to be set
+     /// @param _gasLimit The new gas limit to be set
+     /// @param _donID The new job ID to be set
+     function updateRequest(
+       bytes memory _request,
+       uint64 _subscriptionId,
+       uint32 _gasLimit,
+       bytes32 _donID
+     ) external onlyOwner {
+       request = _request;
+       subscriptionId = _subscriptionId;
+       gasLimit = _gasLimit;
+       donID = _donID;
+     }
+
+     /**
+      * @notice Send a pre-encoded CBOR request
+      * @return requestId The ID of the sent request
+      */
+     function sendRequestCBOR() external onlyAllowed returns (bytes32 requestId) {
+       s_lastRequestId = _sendRequest(request, subscriptionId, gasLimit, donID);
+       return s_lastRequestId;
+     }
+
+     /**
+      * @notice Store latest result/error
+      * @param requestId The request ID, returned by sendRequest()
+      * @param response Aggregated response from the user code
+      * @param err Aggregated error from the user code or from the execution pipeline
+      * Either response or error parameter will be set, but never both
+      */
+     function fulfillRequest(
+       bytes32 requestId,
+       bytes memory response,
+       bytes memory err
+     ) internal override {
+       if (s_lastRequestId != requestId) {
+         revert UnexpectedRequestID(requestId);
+       }
+       s_lastResponse = response;
+       s_lastError = err;
+       emit Response(requestId, s_lastResponse, s_lastError);
+     }
+   }
+   ```
 
 2. Compile the contract.
 

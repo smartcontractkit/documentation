@@ -7,7 +7,7 @@ pageId: "reference-sdk-evm-client"
 metadata:
   description: "Reference for Go EVM Client: complete API for smart contract interactions, reads, writes, report generation, and chain configuration."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-02-03"
 ---
 
 import { Aside, CopyText } from "@components"
@@ -69,10 +69,10 @@ func (c *Client) CallContract(runtime cre.Runtime, input *CallContractRequest) c
 
 This is the main input object for the `CallContract` function. It acts as a wrapper for the call message and an optional block number.
 
-| <div style="width:100px">Field</div> | <div style="width:110px">Type</div> | Description                                                                                                                                                                                                                     |
-| ------------------------------------ | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Call`                               | `*evm.CallMsg`                      | Contains the actual details of the function call you want to make.                                                                                                                                                              |
-| `BlockNumber`                        | `*pb.BigInt`                        | Optional. The block number to query. Defaults to `latest`. Use `-2` for `latest` (the most recent block, which may be subject to re-orgs) or `-3` for `finalized` (a block that is considered immutable and safe from re-orgs). |
+| <div style="width:100px">Field</div> | <div style="width:110px">Type</div> | Description                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| ------------------------------------ | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Call`                               | `*evm.CallMsg`                      | Contains the actual details of the function call you want to make.                                                                                                                                                                                                                                                                                                                                                                        |
+| `BlockNumber`                        | `*pb.BigInt`                        | Optional. The block number to query. Accepts:<br/>• `nil` or `-2` (default): `latest` — the most recent block<br/>• `-3`: `finalized` — an immutable block<br/>• **Any positive integer**: an explicit block height (see [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-go#custom-block-depths) for examples)<br/><br/>See [Finality and Confidence Levels](/cre/concepts/finality-go) for finality strategies. |
 
 #### `evm.CallMsg`
 
@@ -104,10 +104,10 @@ func (c *Client) BalanceAt(runtime cre.Runtime, input *BalanceAtRequest) cre.Pro
 
 #### `evm.BalanceAtRequest`
 
-| Field         | Type         | Description                                                |
-| ------------- | ------------ | ---------------------------------------------------------- |
-| `Account`     | `[]byte`     | The 20-byte address of the account to query.               |
-| `BlockNumber` | `*pb.BigInt` | Optional. The block number to query. Defaults to `latest`. |
+| Field         | Type         | Description                                                                                                                                                                                                                                                                                                                            |
+| ------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Account`     | `[]byte`     | The 20-byte address of the account to query.                                                                                                                                                                                                                                                                                           |
+| `BlockNumber` | `*pb.BigInt` | Optional. The block number to query. Accepts `nil` or `-2` for `latest` (default), `-3` for `finalized`, or any positive integer for an explicit block height (see [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-go#custom-block-depths)). See [Finality and Confidence Levels](/cre/concepts/finality-go). |
 
 #### `evm.BalanceAtReply`
 
@@ -193,9 +193,9 @@ func (c *Client) HeaderByNumber(runtime cre.Runtime, input *HeaderByNumberReques
 
 #### `evm.HeaderByNumberRequest`
 
-| Field         | Type         | Description                                                                |
-| ------------- | ------------ | -------------------------------------------------------------------------- |
-| `BlockNumber` | `*pb.BigInt` | The number of the block to retrieve. If `nil`, retrieves the latest block. |
+| Field         | Type         | Description                                                                                                                                                                                                                                                                                                                                       |
+| ------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BlockNumber` | `*pb.BigInt` | The number of the block to retrieve. Accepts `nil` for `latest` (default), `-2` for `latest`, `-3` for `finalized`, or any positive integer for an explicit block height (see [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-go#custom-block-depths)). See [Finality and Confidence Levels](/cre/concepts/finality-go). |
 
 #### `evm.HeaderByNumberReply`
 
@@ -259,10 +259,10 @@ func (c *Client) WriteReport(runtime cre.Runtime, input *WriteCreReportRequest) 
 
 A **chain selector** is a unique identifier for a blockchain network used throughout the CRE platform. The same chain can be referenced in three different ways depending on the context. All three formats are equivalent and refer to the same blockchain.
 
+{/* prettier-ignore */}
 <Aside type="note" title="Related resources">
-  - **Forwarder addresses**: For network-specific forwarder contract addresses, see [Supported
-  Networks](/cre/guides/workflow/using-evm-client/supported-networks) - **RPC configuration**: For configuring RPC
-  endpoints in `project.yaml`, see [Project Configuration](/cre/reference/project-configuration)
+  - **Forwarder addresses**: For network-specific forwarder contract addresses, see [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory)
+  - **RPC configuration**: For configuring RPC endpoints in `project.yaml`, see [Project Configuration](/cre/reference/project-configuration)
 </Aside>
 
 ### Understanding the three formats
@@ -283,22 +283,32 @@ A **chain selector** is a unique identifier for a blockchain network used throug
 
 This table shows all three equivalent formats for each supported chain:
 
-| <div style="width: 180px;">Chain</div> | String Name                                                  | <div style="width: 110px;">Go Constant</div>                 | <div style="width: 100px;">Numeric ID</div>   |
-| -------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | --------------------------------------------- |
-| Arbitrum One                           | <CopyText text="ethereum-mainnet-arbitrum-1" code />         | <CopyText text="evm.EthereumMainnetArbitrum1" code />        | <CopyText text="4949039107694359620" code />  |
-| Arbitrum Sepolia                       | <CopyText text="ethereum-testnet-sepolia-arbitrum-1" code /> | <CopyText text="evm.EthereumTestnetSepoliaArbitrum1" code /> | <CopyText text="3478487238524512106" code />  |
-| Avalanche Mainnet                      | <CopyText text="avalanche-mainnet" code />                   | <CopyText text="evm.AvalancheMainnet" code />                | <CopyText text="6433500567565415381" code />  |
-| Avalanche Fuji                         | <CopyText text="avalanche-testnet-fuji" code />              | <CopyText text="evm.AvalancheTestnetFuji" code />            | <CopyText text="14767482510784806043" code /> |
-| Base Mainnet                           | <CopyText text="ethereum-mainnet-base-1" code />             | <CopyText text="evm.EthereumMainnetBase1" code />            | <CopyText text="15971525489660198786" code /> |
-| Base Sepolia                           | <CopyText text="ethereum-testnet-sepolia-base-1" code />     | <CopyText text="evm.EthereumTestnetSepoliaBase1" code />     | <CopyText text="10344971235874465080" code /> |
-| BNB Chain Mainnet                      | <CopyText text="binance_smart_chain-mainnet" code />         | <CopyText text="evm.BinanceSmartChainMainnet" code />        | <CopyText text="11344663589394136015" code /> |
-| BNB Chain Testnet                      | <CopyText text="binance_smart_chain-testnet" code />         | <CopyText text="evm.BinanceSmartChainTestnet" code />        | <CopyText text="5142893604156789321" code />  |
-| Ethereum Mainnet                       | <CopyText text="ethereum-mainnet" code />                    | <CopyText text="evm.EthereumMainnet" code />                 | <CopyText text="5009297550715157269" code />  |
-| Ethereum Sepolia                       | <CopyText text="ethereum-testnet-sepolia" code />            | <CopyText text="evm.EthereumTestnetSepolia" code />          | <CopyText text="16015286601757825753" code /> |
-| OP Mainnet                             | <CopyText text="ethereum-mainnet-optimism-1" code />         | <CopyText text="evm.EthereumMainnetOptimism1" code />        | <CopyText text="3734403246176062136" code />  |
-| OP Sepolia                             | <CopyText text="ethereum-testnet-sepolia-optimism-1" code /> | <CopyText text="evm.EthereumTestnetSepoliaOptimism1" code /> | <CopyText text="5224473277236331295" code />  |
-| Polygon Mainnet                        | <CopyText text="polygon-mainnet" code />                     | <CopyText text="evm.PolygonMainnet" code />                  | <CopyText text="4051577828743386545" code />  |
-| Polygon Amoy                           | <CopyText text="polygon-testnet-amoy" code />                | <CopyText text="evm.PolygonTestnetAmoy" code />              | <CopyText text="16281711391670634445" code /> |
+| <div style="width: 180px;">Chain</div> | String Name                                                    | <div style="width: 110px;">Go Constant</div>                   | <div style="width: 100px;">Numeric ID</div>   |
+| -------------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------- | --------------------------------------------- |
+| Apechain Curtis                        | <CopyText text="apechain-testnet-curtis" code />               | <CopyText text="evm.ApechainTestnetCurtis" code />             | <CopyText text="9900119385908781505" code />  |
+| Arc Testnet                            | <CopyText text="arc-testnet" code />                           | <CopyText text="evm.ArcTestnet" code />                        | <CopyText text="3034092155422581607" code />  |
+| Arbitrum One                           | <CopyText text="ethereum-mainnet-arbitrum-1" code />           | <CopyText text="evm.EthereumMainnetArbitrum1" code />          | <CopyText text="4949039107694359620" code />  |
+| Arbitrum Sepolia                       | <CopyText text="ethereum-testnet-sepolia-arbitrum-1" code />   | <CopyText text="evm.EthereumTestnetSepoliaArbitrum1" code />   | <CopyText text="3478487238524512106" code />  |
+| Avalanche Mainnet                      | <CopyText text="avalanche-mainnet" code />                     | <CopyText text="evm.AvalancheMainnet" code />                  | <CopyText text="6433500567565415381" code />  |
+| Avalanche Fuji                         | <CopyText text="avalanche-testnet-fuji" code />                | <CopyText text="evm.AvalancheTestnetFuji" code />              | <CopyText text="14767482510784806043" code /> |
+| Base Mainnet                           | <CopyText text="ethereum-mainnet-base-1" code />               | <CopyText text="evm.EthereumMainnetBase1" code />              | <CopyText text="15971525489660198786" code /> |
+| Base Sepolia                           | <CopyText text="ethereum-testnet-sepolia-base-1" code />       | <CopyText text="evm.EthereumTestnetSepoliaBase1" code />       | <CopyText text="10344971235874465080" code /> |
+| BNB Chain Mainnet                      | <CopyText text="binance_smart_chain-mainnet" code />           | <CopyText text="evm.BinanceSmartChainMainnet" code />          | <CopyText text="11344663589394136015" code /> |
+| BNB Chain Testnet                      | <CopyText text="binance_smart_chain-testnet" code />           | <CopyText text="evm.BinanceSmartChainTestnet" code />          | <CopyText text="13264668187771770619" code /> |
+| Ethereum Mainnet                       | <CopyText text="ethereum-mainnet" code />                      | <CopyText text="evm.EthereumMainnet" code />                   | <CopyText text="5009297550715157269" code />  |
+| Ethereum Sepolia                       | <CopyText text="ethereum-testnet-sepolia" code />              | <CopyText text="evm.EthereumTestnetSepolia" code />            | <CopyText text="16015286601757825753" code /> |
+| Hyperliquid Testnet                    | <CopyText text="hyperliquid-testnet" code />                   | <CopyText text="evm.HyperliquidTestnet" code />                | <CopyText text="4286062357653186312" code />  |
+| Ink Sepolia                            | <CopyText text="ink-testnet-sepolia" code />                   | <CopyText text="evm.InkTestnetSepolia" code />                 | <CopyText text="9763904284804119144" code />  |
+| Jovay Testnet                          | <CopyText text="jovay-testnet" code />                         | <CopyText text="evm.JovayTestnet" code />                      | <CopyText text="945045181441419236" code />   |
+| Linea Sepolia                          | <CopyText text="ethereum-testnet-sepolia-linea-1" code />      | <CopyText text="evm.EthereumTestnetSepoliaLinea1" code />      | <CopyText text="5719461335882077547" code />  |
+| OP Mainnet                             | <CopyText text="ethereum-mainnet-optimism-1" code />           | <CopyText text="evm.EthereumMainnetOptimism1" code />          | <CopyText text="3734403246176062136" code />  |
+| OP Sepolia                             | <CopyText text="ethereum-testnet-sepolia-optimism-1" code />   | <CopyText text="evm.EthereumTestnetSepoliaOptimism1" code />   | <CopyText text="5224473277236331295" code />  |
+| Plasma Testnet                         | <CopyText text="plasma-testnet" code />                        | <CopyText text="evm.PlasmaTestnet" code />                     | <CopyText text="3967220077692964309" code />  |
+| Polygon Mainnet                        | <CopyText text="polygon-mainnet" code />                       | <CopyText text="evm.PolygonMainnet" code />                    | <CopyText text="4051577828743386545" code />  |
+| Polygon Amoy                           | <CopyText text="polygon-testnet-amoy" code />                  | <CopyText text="evm.PolygonTestnetAmoy" code />                | <CopyText text="16281711391670634445" code /> |
+| World Chain Sepolia                    | <CopyText text="ethereum-testnet-sepolia-worldchain-1" code /> | <CopyText text="evm.EthereumTestnetSepoliaWorldchain1" code /> | <CopyText text="5299555114858065850" code />  |
+| ZKSync Era                             | <CopyText text="ethereum-mainnet-zksync-1" code />             | <CopyText text="evm.EthereumMainnetZksync1" code />            | <CopyText text="1562403441176082196" code />  |
+| ZKSync Era Sepolia                     | <CopyText text="ethereum-testnet-sepolia-zksync-1" code />     | <CopyText text="evm.EthereumTestnetSepoliaZksync1" code />     | <CopyText text="6898391096552792247" code />  |
 
 ### Usage examples
 

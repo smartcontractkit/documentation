@@ -22,6 +22,7 @@ export type DataFeedType =
   | "smartdata"
   | "rates"
   | "usGovernmentMacroeconomicData"
+  | "tokenizedEquity"
   | "streamsCrypto"
   | "streamsRwa"
   | "streamsNav"
@@ -30,6 +31,7 @@ export type DataFeedType =
 
 type SchemaFilterValue = "all" | "v8" | "v11"
 type StreamsRwaFeedTypeValue = "all" | "datalink" | "equities" | "forex"
+type TradingHoursFilterValue = "all" | "regular" | "extended" | "overnight"
 
 type FilterOption<T extends string> = {
   label: string
@@ -60,10 +62,19 @@ const feedTypeFilterOptions: FilterOption<StreamsRwaFeedTypeValue>[] = [
   { label: "Forex Streams", value: "forex" },
 ]
 
+const tradingHoursFilterOptions: FilterOption<TradingHoursFilterValue>[] = [
+  { label: "All Time Segments", value: "all" },
+  { label: "Regular Hours", value: "regular" },
+  { label: "Extended Hours", value: "extended" },
+  { label: "Overnight Hours", value: "overnight" },
+]
+
 const isSchemaFilterValue = (value: unknown): value is SchemaFilterValue =>
   value === "all" || value === "v8" || value === "v11"
 const isStreamsRwaFeedTypeValue = (value: unknown): value is StreamsRwaFeedTypeValue =>
   value === "all" || value === "datalink" || value === "equities" || value === "forex"
+const isTradingHoursFilterValue = (value: unknown): value is TradingHoursFilterValue =>
+  value === "all" || value === "regular" || value === "extended" || value === "overnight"
 
 const FilterDropdown = <T extends string>({
   label,
@@ -123,6 +134,8 @@ export const FeedList = ({
   initialCache,
   allowNetworkTableExpansion = false,
   defaultNetworkTableExpanded = false,
+  force24x5Only = false,
+  tokenizedEquityProvider,
 }: {
   initialNetwork: string
   dataFeedType: DataFeedType
@@ -130,6 +143,8 @@ export const FeedList = ({
   initialCache?: Record<string, ChainMetadata>
   allowNetworkTableExpansion?: boolean
   defaultNetworkTableExpanded?: boolean
+  force24x5Only?: boolean
+  tokenizedEquityProvider?: string
 }) => {
   const chains = ecosystem === "deprecating" ? ALL_CHAINS : CHAINS
   const isStreams =
@@ -311,6 +326,21 @@ export const FeedList = ({
   const [showOnlyMVRFeedsTestnet, setShowOnlyMVRFeedsTestnet] = useState(false)
   const [showOnlyDEXFeeds, setShowOnlyDEXFeeds] = useState(false)
   const [showOnlyDEXFeedsTestnet, setShowOnlyDEXFeedsTestnet] = useState(false)
+  const [show24x5FeedsParam, setShow24x5FeedsParam] = useQueryString("show24x5")
+  const show24x5Feeds = force24x5Only || show24x5FeedsParam === "true"
+  const setShow24x5Feeds = (value: boolean) => {
+    if (!force24x5Only) {
+      setShow24x5FeedsParam(value ? "true" : [])
+    }
+  }
+  const [tradingHoursFilterParam, setTradingHoursFilterParam] = useQueryString("tradingHours")
+  const tradingHoursFilter =
+    typeof tradingHoursFilterParam === "string" && isTradingHoursFilterValue(tradingHoursFilterParam)
+      ? tradingHoursFilterParam
+      : "all"
+  const setTradingHoursFilter = (next: TradingHoursFilterValue) => {
+    setTradingHoursFilterParam(next === "all" ? [] : next)
+  }
   const [rwaSchemaFilterParam, setRwaSchemaFilterParam] = useQueryString("schema")
   const rwaSchemaFilter =
     typeof rwaSchemaFilterParam === "string" && isSchemaFilterValue(rwaSchemaFilterParam) ? rwaSchemaFilterParam : "all"
@@ -324,6 +354,21 @@ export const FeedList = ({
       : "all"
   const setTestnetRwaSchemaFilter = (next: SchemaFilterValue) => {
     setTestnetRwaSchemaFilterParam(next === "all" ? [] : next)
+  }
+  const [show24x5FeedsTestnetParam, setShow24x5FeedsTestnetParam] = useQueryString("testnetShow24x5")
+  const show24x5FeedsTestnet = force24x5Only || show24x5FeedsTestnetParam === "true"
+  const setShow24x5FeedsTestnet = (value: boolean) => {
+    if (!force24x5Only) {
+      setShow24x5FeedsTestnetParam(value ? "true" : [])
+    }
+  }
+  const [testnetTradingHoursFilterParam, setTestnetTradingHoursFilterParam] = useQueryString("testnetTradingHours")
+  const testnetTradingHoursFilter =
+    typeof testnetTradingHoursFilterParam === "string" && isTradingHoursFilterValue(testnetTradingHoursFilterParam)
+      ? testnetTradingHoursFilterParam
+      : "all"
+  const setTestnetTradingHoursFilter = (next: TradingHoursFilterValue) => {
+    setTestnetTradingHoursFilterParam(next === "all" ? [] : next)
   }
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null)
   const handleDropdownToggle = (dropdownId: string, isOpen: boolean) => {
@@ -362,6 +407,7 @@ export const FeedList = ({
     { key: "low", name: "Low Market Risk" },
     { key: "medium", name: "Medium Market Risk" },
     { key: "high", name: "High Market Risk" },
+    { key: "veryhigh", name: "Very High Market Risk" },
     { key: "custom", name: "Custom" },
     { key: "new", name: "New Token" },
     { key: "deprecating", name: "Deprecating" },
@@ -387,7 +433,20 @@ export const FeedList = ({
   const [streamsChain] = useState(initialNetwork)
   const activeChain = isStreams ? streamsChain : currentNetwork
 
-  // Find the selected chain from available chains
+  // Filter chains by dataFeedType tag to get only chains that support this feed type
+  const filteredChainsByTag = useMemo(() => {
+    return chains.filter((chain) => {
+      if (dataFeedType.includes("streams")) return chain.tags?.includes("streams") ?? false
+      if (dataFeedType === "smartdata") return chain.tags?.includes("smartData") ?? false
+      if (dataFeedType === "rates") return chain.tags?.includes("rates") ?? false
+      if (dataFeedType === "usGovernmentMacroeconomicData")
+        return chain.tags?.includes("usGovernmentMacroeconomicData") ?? false
+      if (dataFeedType === "tokenizedEquity") return chain.tags?.includes("tokenizedEquity") ?? false
+      return chain.tags?.includes("default") ?? false
+    })
+  }, [chains, dataFeedType])
+
+  // Find the selected chain from available chains (filtered by dataFeedType)
   const selectedChain = useMemo(() => {
     // During SSR, try to find the chain from URL param if activeChain is not available
     if (!activeChain) {
@@ -396,21 +455,21 @@ export const FeedList = ({
         const urlParams = new URLSearchParams(window.location.search)
         const networkParam = urlParams.get("network")
         if (networkParam) {
-          const foundFromUrl = chains.find((c) => c.page === networkParam)
+          const foundFromUrl = filteredChainsByTag.find((c) => c.page === networkParam)
           if (foundFromUrl) {
             return foundFromUrl
           }
         }
       }
-      return chains[0] // fallback only if no activeChain
+      return filteredChainsByTag[0] || chains[0] // fallback to first filtered chain
     }
 
-    const foundChain = chains.find((c) => c.page === activeChain)
+    const foundChain = filteredChainsByTag.find((c) => c.page === activeChain)
     if (!foundChain) {
-      return chains[0]
+      return filteredChainsByTag[0] || chains[0]
     }
     return foundChain
-  }, [activeChain, chains])
+  }, [activeChain, filteredChainsByTag, chains])
   const chainMetadata = useGetChainMetadata(selectedChain, initialCache && initialCache[selectedChain.page])
   const wrapperRef = useRef(null)
 
@@ -644,7 +703,7 @@ export const FeedList = ({
           // A deprecating network is relevant only if it still has at least one non-hidden deprecating feed
           if (!foundDeprecated) return false
           const hasVisible = network.metadata?.some(
-            (feed: any) => feed.feedCategory === "deprecating" && feed.feedCategory !== "hidden" && !feed.docs?.hidden
+            (feed: any) => feed.feedCategory === "deprecating" && !feed.docs?.hidden
           )
           return !!hasVisible
         }
@@ -659,7 +718,7 @@ export const FeedList = ({
       .filter((network) => {
         // Ensure the network has at least one visible feed for the current dataFeedType
         const feeds = network.metadata || []
-        return feeds.some((feed: any) => isFeedVisible(feed, dataFeedType, ecosystem))
+        return feeds.some((feed: any) => isFeedVisible(feed, dataFeedType, ecosystem, { tokenizedEquityProvider }))
       })
 
     // Check available network types
@@ -726,7 +785,7 @@ export const FeedList = ({
     dataFeedType === "streamsCrypto"
       ? "Mainnet Crypto Streams"
       : dataFeedType === "streamsNav"
-        ? "Mainnet NAV Streams"
+        ? "Mainnet SmartData Streams"
         : dataFeedType === "streamsExRate"
           ? "Mainnet Exchange Rate Streams"
           : dataFeedType === "streamsBacked"
@@ -736,7 +795,7 @@ export const FeedList = ({
     dataFeedType === "streamsCrypto"
       ? "Testnet Crypto Streams"
       : dataFeedType === "streamsNav"
-        ? "Testnet NAV Streams"
+        ? "Testnet SmartData Streams"
         : dataFeedType === "streamsExRate"
           ? "Testnet Exchange Rate Streams"
           : dataFeedType === "streamsBacked"
@@ -877,8 +936,8 @@ export const FeedList = ({
                   <div className={tableStyles.pagination} role="navigation" aria-label="Table pagination">
                     <button
                       className={button.secondary}
-                      disabled={Number(currentPage) === 1}
-                      onClick={() => paginate(Number(currentPage) - 1)}
+                      disabled={currentPageNum === 1}
+                      onClick={() => paginate(currentPageNum - 1)}
                     >
                       Prev
                     </button>
@@ -890,7 +949,7 @@ export const FeedList = ({
                     <button
                       className={button.secondary}
                       disabled={lastAddr >= filteredMainnetStreams.length}
-                      onClick={() => paginate(Number(currentPage) + 1)}
+                      onClick={() => paginate(currentPageNum + 1)}
                     >
                       Next
                     </button>
@@ -931,8 +990,8 @@ export const FeedList = ({
                   <div className={tableStyles.pagination} role="navigation" aria-label="Table pagination">
                     <button
                       className={button.secondary}
-                      disabled={Number(testnetCurrentPage) === 1}
-                      onClick={() => testnetPaginate(Number(testnetCurrentPage) - 1)}
+                      disabled={testnetPageNum === 1}
+                      onClick={() => testnetPaginate(testnetPageNum - 1)}
                     >
                       Prev
                     </button>
@@ -946,7 +1005,7 @@ export const FeedList = ({
                     <button
                       className={button.secondary}
                       disabled={testnetLastAddr >= filteredTestnetStreams.length}
-                      onClick={() => testnetPaginate(Number(testnetCurrentPage) + 1)}
+                      onClick={() => testnetPaginate(testnetPageNum + 1)}
                     >
                       Next
                     </button>
@@ -1035,33 +1094,74 @@ export const FeedList = ({
             )}
             {dataFeedType === "streamsRwa" && (
               <>
-                <FilterDropdown
-                  isOpen={openDropdownId === "main-schema"}
-                  onToggle={(isOpen) => handleDropdownToggle("main-schema", isOpen)}
-                  onClose={closeAllDropdowns}
-                  label="Filter schema"
-                  options={schemaFilterOptions}
-                  value={rwaSchemaFilter}
-                  groupId="schema-main"
-                  onSelect={(next) => {
-                    setRwaSchemaFilter(next)
-                    setCurrentPage("1")
-                  }}
-                />
-                <FilterDropdown
-                  isOpen={openDropdownId === "main-feed-type"}
-                  onToggle={(isOpen) => handleDropdownToggle("main-feed-type", isOpen)}
-                  onClose={closeAllDropdowns}
-                  label="Filter category"
-                  options={feedTypeFilterOptions}
-                  value={streamCategoryFilter}
-                  groupId="feed-type-main"
-                  onSelect={(next) => {
-                    setStreamCategoryFilter(next)
-                    setCurrentPage("1")
-                  }}
-                />
-                {(searchValue || rwaSchemaFilter !== "all" || streamCategoryFilter !== "all") && (
+                {!show24x5Feeds && (
+                  <>
+                    <FilterDropdown
+                      isOpen={openDropdownId === "main-schema"}
+                      onToggle={(isOpen) => handleDropdownToggle("main-schema", isOpen)}
+                      onClose={closeAllDropdowns}
+                      label="Filter schema"
+                      options={schemaFilterOptions}
+                      value={rwaSchemaFilter}
+                      groupId="schema-main"
+                      onSelect={(next) => {
+                        setRwaSchemaFilter(next)
+                        setCurrentPage("1")
+                      }}
+                    />
+                    <FilterDropdown
+                      isOpen={openDropdownId === "main-feed-type"}
+                      onToggle={(isOpen) => handleDropdownToggle("main-feed-type", isOpen)}
+                      onClose={closeAllDropdowns}
+                      label="Filter category"
+                      options={feedTypeFilterOptions}
+                      value={streamCategoryFilter}
+                      groupId="feed-type-main"
+                      onSelect={(next) => {
+                        setStreamCategoryFilter(next)
+                        setCurrentPage("1")
+                      }}
+                    />
+                  </>
+                )}
+                {!force24x5Only && (
+                  <div className={feedList.checkboxContainer}>
+                    <label className={feedList.detailsLabel}>
+                      <input
+                        type="checkbox"
+                        style="width:15px;height:15px;display:inline;margin-right:8px;"
+                        checked={show24x5Feeds}
+                        onChange={() => {
+                          closeAllDropdowns()
+                          const newValue = !show24x5Feeds
+                          setShow24x5Feeds(newValue)
+                          if (newValue) {
+                            // Reset trading hours filter when enabling 24/5
+                            setTradingHoursFilter("all")
+                          }
+                          setCurrentPage("1")
+                        }}
+                      />
+                      Show only 24/5 Equity Streams
+                    </label>
+                  </div>
+                )}
+                {show24x5Feeds && (
+                  <FilterDropdown
+                    isOpen={openDropdownId === "main-trading-hours"}
+                    onToggle={(isOpen) => handleDropdownToggle("main-trading-hours", isOpen)}
+                    onClose={closeAllDropdowns}
+                    label="Time segment"
+                    options={tradingHoursFilterOptions}
+                    value={tradingHoursFilter}
+                    groupId="trading-hours-main"
+                    onSelect={(next) => {
+                      setTradingHoursFilter(next)
+                      setCurrentPage("1")
+                    }}
+                  />
+                )}
+                {(searchValue || rwaSchemaFilter !== "all" || streamCategoryFilter !== "all" || show24x5Feeds) && (
                   <button
                     type="button"
                     className={clsx(button.secondary, feedList.clearFilterBtn)}
@@ -1070,6 +1170,8 @@ export const FeedList = ({
                       setSearchValue("")
                       setRwaSchemaFilter("all")
                       setStreamCategoryFilter("all")
+                      setShow24x5Feeds(false)
+                      setTradingHoursFilter("all")
                       setCurrentPage("1")
                       const inputElement = document.getElementById("search") as HTMLInputElement
                       if (inputElement) {
@@ -1103,6 +1205,8 @@ export const FeedList = ({
                 showOnlyDEXFeeds={showOnlyDEXFeeds}
                 rwaSchemaFilter={rwaSchemaFilter}
                 streamCategoryFilter={streamCategoryFilter}
+                show24x5Feeds={show24x5Feeds}
+                tradingHoursFilter={tradingHoursFilter}
                 dataFeedType={dataFeedType}
                 ecosystem={ecosystem}
                 lastAddr={lastAddr}
@@ -1111,6 +1215,7 @@ export const FeedList = ({
                 currentPage={currentPageNum}
                 paginate={paginate}
                 searchValue={typeof searchValue === "string" ? searchValue : ""}
+                tokenizedEquityProvider={tokenizedEquityProvider}
               />
             ))
           ) : (
@@ -1155,33 +1260,77 @@ export const FeedList = ({
             )}
             {dataFeedType === "streamsRwa" && (
               <>
-                <FilterDropdown
-                  isOpen={openDropdownId === "test-schema"}
-                  onToggle={(isOpen) => handleDropdownToggle("test-schema", isOpen)}
-                  onClose={closeAllDropdowns}
-                  label="Filter schema"
-                  options={schemaFilterOptions}
-                  value={testnetRwaSchemaFilter}
-                  groupId="schema-testnet"
-                  onSelect={(next) => {
-                    setTestnetRwaSchemaFilter(next)
-                    setTestnetCurrentPage("1")
-                  }}
-                />
-                <FilterDropdown
-                  isOpen={openDropdownId === "test-feed-type"}
-                  onToggle={(isOpen) => handleDropdownToggle("test-feed-type", isOpen)}
-                  onClose={closeAllDropdowns}
-                  label="Filter category"
-                  options={feedTypeFilterOptions}
-                  value={testnetStreamCategoryFilter}
-                  groupId="feed-type-testnet"
-                  onSelect={(next) => {
-                    setTestnetStreamCategoryFilter(next)
-                    setTestnetCurrentPage("1")
-                  }}
-                />
-                {(testnetSearchValue || testnetRwaSchemaFilter !== "all" || testnetStreamCategoryFilter !== "all") && (
+                {!show24x5FeedsTestnet && (
+                  <>
+                    <FilterDropdown
+                      isOpen={openDropdownId === "test-schema"}
+                      onToggle={(isOpen) => handleDropdownToggle("test-schema", isOpen)}
+                      onClose={closeAllDropdowns}
+                      label="Filter schema"
+                      options={schemaFilterOptions}
+                      value={testnetRwaSchemaFilter}
+                      groupId="schema-testnet"
+                      onSelect={(next) => {
+                        setTestnetRwaSchemaFilter(next)
+                        setTestnetCurrentPage("1")
+                      }}
+                    />
+                    <FilterDropdown
+                      isOpen={openDropdownId === "test-feed-type"}
+                      onToggle={(isOpen) => handleDropdownToggle("test-feed-type", isOpen)}
+                      onClose={closeAllDropdowns}
+                      label="Filter category"
+                      options={feedTypeFilterOptions}
+                      value={testnetStreamCategoryFilter}
+                      groupId="feed-type-testnet"
+                      onSelect={(next) => {
+                        setTestnetStreamCategoryFilter(next)
+                        setTestnetCurrentPage("1")
+                      }}
+                    />
+                  </>
+                )}
+                {!force24x5Only && (
+                  <div className={feedList.checkboxContainer}>
+                    <label className={feedList.detailsLabel}>
+                      <input
+                        type="checkbox"
+                        style="width:15px;height:15px;display:inline;margin-right:8px;"
+                        checked={show24x5FeedsTestnet}
+                        onChange={() => {
+                          closeAllDropdowns()
+                          const newValue = !show24x5FeedsTestnet
+                          setShow24x5FeedsTestnet(newValue)
+                          if (newValue) {
+                            // Reset trading hours filter when enabling 24/5
+                            setTestnetTradingHoursFilter("all")
+                          }
+                          setTestnetCurrentPage("1")
+                        }}
+                      />
+                      Show only 24/5 Equity Streams
+                    </label>
+                  </div>
+                )}
+                {show24x5FeedsTestnet && (
+                  <FilterDropdown
+                    isOpen={openDropdownId === "test-trading-hours"}
+                    onToggle={(isOpen) => handleDropdownToggle("test-trading-hours", isOpen)}
+                    onClose={closeAllDropdowns}
+                    label="Time segment"
+                    options={tradingHoursFilterOptions}
+                    value={testnetTradingHoursFilter}
+                    groupId="trading-hours-testnet"
+                    onSelect={(next) => {
+                      setTestnetTradingHoursFilter(next)
+                      setTestnetCurrentPage("1")
+                    }}
+                  />
+                )}
+                {(testnetSearchValue ||
+                  testnetRwaSchemaFilter !== "all" ||
+                  testnetStreamCategoryFilter !== "all" ||
+                  show24x5FeedsTestnet) && (
                   <button
                     type="button"
                     className={clsx(button.secondary, feedList.clearFilterBtn)}
@@ -1190,6 +1339,8 @@ export const FeedList = ({
                       setTestnetSearchValue("")
                       setTestnetRwaSchemaFilter("all")
                       setTestnetStreamCategoryFilter("all")
+                      setShow24x5FeedsTestnet(false)
+                      setTestnetTradingHoursFilter("all")
                       setTestnetCurrentPage("1")
                       const inputElement = document.getElementById("testnetSearch") as HTMLInputElement
                       if (inputElement) {
@@ -1224,12 +1375,15 @@ export const FeedList = ({
                 showOnlyDEXFeeds={showOnlyDEXFeedsTestnet}
                 rwaSchemaFilter={testnetRwaSchemaFilter}
                 streamCategoryFilter={testnetStreamCategoryFilter}
+                show24x5Feeds={show24x5FeedsTestnet}
+                tradingHoursFilter={testnetTradingHoursFilter}
                 firstAddr={testnetFirstAddr}
                 lastAddr={testnetLastAddr}
                 addrPerPage={testnetAddrPerPage}
                 currentPage={testnetPageNum}
                 paginate={testnetPaginate}
                 searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
+                tokenizedEquityProvider={tokenizedEquityProvider}
               />
             ))
           ) : (
@@ -1323,6 +1477,7 @@ export const FeedList = ({
                   currentPage={currentPageNum}
                   paginate={paginate}
                   searchValue={typeof searchValue === "string" ? searchValue : ""}
+                  tokenizedEquityProvider={tokenizedEquityProvider}
                 />
               </SectionWrapper>
             ))
@@ -1566,6 +1721,7 @@ export const FeedList = ({
                         currentPage={currentPageNum}
                         paginate={paginate}
                         searchValue={typeof searchValue === "string" ? searchValue : ""}
+                        tokenizedEquityProvider={tokenizedEquityProvider}
                       />
                     </>
                   ) : (
@@ -1743,6 +1899,7 @@ export const FeedList = ({
                         currentPage={testnetPageNum}
                         paginate={testnetPaginate}
                         searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
+                        tokenizedEquityProvider={tokenizedEquityProvider}
                       />
                     </>
                   )}

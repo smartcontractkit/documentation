@@ -7,14 +7,14 @@ pageId: "getting-started-part-1"
 metadata:
   description: "Getting started Part 1 (TypeScript): set up your first CRE project, explore the structure, and run a successful workflow simulation."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-01-20"
 ---
 
 import { Aside, CopyText, CodeHighlightBlock } from "@components"
 import part1Code from "./snippets/part-1-main.ts?raw"
 
 <Aside type="note" title="SDK Language: TypeScript">
-  You're viewing the **TypeScript** version of this guide. If you prefer Go, use the language selector in the right
+  You're viewing the **TypeScript** version of this guide. If you prefer Go, use the language selector in the left
   sidebar to switch to the Go version.
 </Aside>
 
@@ -33,7 +33,7 @@ Before you begin, ensure you have the following:
 
 - **CRE CLI**: See the [Installation Guide](/cre/getting-started/cli-installation/macos-linux) for details.
 - **CRE account & authentication**: You must have a CRE account and be logged in with the CLI. See [Create your account](/cre/account/creating-account) and [Log in with the CLI](/cre/account/cli-login) for instructions.
-- **Bun**: You must have <a href="https://bun.com/docs" target="blank">Bun</a> version 1.2.21 or higher installed. Check your version with <CopyText text="bun --version" code />. See [Install Bun](https://bun.sh/) for instructions.
+- **Bun**: You must have <a href="https://bun.com/docs" target="blank">Bun</a> version 1.2.21 or higher installed. Check your version with <CopyText text="bun --version" code />. See [Install Bun](https://bun.com) for instructions.
 - **Funded Sepolia Account**: An account with Sepolia ETH to pay for transaction gas fees. Go to <a href="https://faucets.chain.link" target="blank">faucets.chain.link</a> to get some Sepolia ETH.
 
 ## Step 1: Verify your authentication
@@ -159,6 +159,12 @@ Open `onchain-calculator/my-calculator-workflow/main.ts` to see its contents:
 - **`onCronTrigger`**: The callback function that executes when the cron trigger fires. It receives the `runtime` object and returns a string result. This is where you write your business logic.
 - **`initWorkflow`**: Creates the workflow by registering handlers (trigger-callback pairs). This is where you define what events your workflow responds to.
 - **`main`**: The entry point that creates a `Runner`, passes your config type, and runs the workflow.
+
+<Aside type="note" title="Automatic execution">
+  You don't need to call `main()` at the end of your file—the SDK automatically executes it during compilation. The SDK
+  also handles error reporting automatically, so you don't need to add `.catch()` unless you need custom error handling.
+  See the [Core SDK Reference](/cre/reference/sdk/core-ts#main) for details.
+</Aside>
 
 ## Step 4: Configure your workflow
 
