@@ -476,7 +476,7 @@ export const getTokensOfChain = ({ chain, filter }: { chain: string; filter: Env
   return Object.keys(tokensData).filter((token) => {
     const tokenData = tokensData[token]
     // Check if tokenData for the given chain exists and isn't 'feeTokenOnly'
-    if (tokenData[chain] && tokenData[chain].pool.type !== "feeTokenOnly") {
+    if (tokenData[chain] && tokenData[chain].pool && tokenData[chain].pool.type !== "feeTokenOnly") {
       const lanes = getAllTokenLanes({ token, environment: filter })
       // Ensure there is at least one lane and that the lane exists for the given chain
       return Object.keys(lanes).length > 0 && lanes[chain] && Object.keys(lanes[chain]).length > 0
@@ -595,7 +595,7 @@ export const getChainsOfToken = ({ token, filter }: { token: string; filter: Env
 
   // Get all valid chains for the given token
   return Object.entries(tokensData[token])
-    .filter(([, tokenData]) => tokenData.pool.type !== "feeTokenOnly")
+    .filter(([, tokenData]) => tokenData.pool && tokenData.pool.type !== "feeTokenOnly")
     .filter(([chain]) => {
       const lanes = getAllTokenLanes({ token, environment: filter })
       return Object.keys(lanes).length > 0 && lanes[chain] && Object.keys(lanes[chain]).length > 0
