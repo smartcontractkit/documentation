@@ -8,9 +8,9 @@ import WhatsNext from "~/components/PageContent/WhatsNext.astro"
 import type { MarkdownHeading } from "astro"
 import StickyHeader from "~/components/StickyHeader/StickyHeader"
 import BaseLayout from "./BaseLayout.astro"
-import DocsNavigation from "~/components/DocsNavigation"
 import { VersionSelector } from "~/components/VersionSelector/index.js"
 import { detectApiReference } from "@components/VersionSelector/utils/versions"
+import CardsWrapper from "~/components/Cards/CardsWrapper.astro"
 import { LanguageSwitcherDropdown } from "~/components/LanguageSwitcherDropdown"
 import { ChainTypeSelector } from "~/components/ChainSelector"
 import { isChainAwareSection } from "~/config/chainTypes"
@@ -67,7 +67,6 @@ const howToSteps = initialHeadings
 >
   <slot name="head-scripts" slot="head-scripts" />
   <StickyHeader client:media="(max-width: 50em)" {initialHeadings} />
-  <DocsNavigation client:load pathname={currentPage} />
   <main>
     <div id="left-bg"></div>
     <div class="layout">
@@ -96,12 +95,7 @@ const howToSteps = initialHeadings
         {whatsNext && <WhatsNext content={whatsNext} />}
       </div>
       <aside id="grid-right">
-        <RightSidebar
-          {githubEditUrl}
-          headings={initialHeadings}
-          showLanguageSwitcher={frontmatter.section === "cre"}
-          frontmatter={frontmatter}
-        />
+        <RightSidebar {githubEditUrl} headings={initialHeadings} frontmatter={frontmatter} />
       </aside>
     </div>
   </main>
@@ -143,11 +137,6 @@ const howToSteps = initialHeadings
         gap: var(--gutter);
         width: 100vw;
         max-width: 1505px;
-      }
-
-      #grid-left,
-      #left-bg {
-        background: #fafbfd;
       }
 
       #grid-left,
