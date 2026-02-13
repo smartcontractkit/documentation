@@ -1,0 +1,32 @@
+---
+import { SvgArrowRight2, Typography } from "@chainlink/blocks"
+import type { CommunityEvent } from "./types"
+import styles from "./EventCard.module.css"
+
+interface Props {
+  event: CommunityEvent
+}
+
+const { event } = Astro.props
+---
+
+<a href={event.eventUrl} target="_blank" class={styles.eventCardLink}>
+  <div class={styles.eventDate}>
+    <Typography className={styles.eventMonth} color="muted">{event.month}</Typography>
+    <Typography variant="body-semi-l" className={styles.eventDay}>{event.day}</Typography>
+  </div>
+  <div class={styles.eventCardDesc}>
+    <div class={styles.eventCardCountry}>
+      <div class={styles.eventCardFlag}>
+        <img src={event.flagUrl} loading="lazy" alt={`${event.country} flag`} class={styles.coverImg} />
+      </div>
+      <Typography variant="code-s" className={styles.eventCardCountryName}>{event.location}</Typography>
+    </div>
+    <div class={styles.eventCardHWrap}>
+      <Typography variant="body-semi-l" className={styles.eventCardH}>
+        {event.title}
+      </Typography>
+      <img src="/assets/icons/upper-right-arrow.svg" alt="arrow" class={styles.linkArr} />
+    </div>
+  </div>
+</a>

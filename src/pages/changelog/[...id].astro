@@ -1,0 +1,153 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro"
+import * as CONFIG from "../../config"
+import { getSecret } from "astro:env/server"
+import { searchClient } from "@algolia/client-search"
+import { ChangelogItem } from "~/components/ChangelogSnippet/types"
+import ChangelogCard from "~/components/ChangelogSnippet/ChangelogCard.astro"
+import { SvgArrowLeft2, Typography } from "@chainlink/blocks"
+
+export async function getStaticPaths() {
+  const appId = getSecret("ALGOLIA_APP_ID")
+  const apiKey = getSecret("PUBLIC_ALGOLIA_SEARCH_PUBLIC_API_KEY")
+
+  // Return empty array if credentials are not available (CI/CD environments)
+  if (!appId || !apiKey) {
+    console.warn("Algolia credentials not available, skipping changelog static generation")
+    return []
+  }
+
+  const client = searchClient(appId, apiKey)
+
+  try {
+    const records: ChangelogItem[] = []
+    let currentPage = 0
+    let nbPages = 1
+    const hitsPerPage = 1000 // Maximum allowed by Algolia
+
+    // Fetch all changelog items from Algolia with pagination
+    while (currentPage < nbPages) {
+      const req = await client.search({
+        requests: [
+          {
+            indexName: "Changelog",
+            hitsPerPage,
+            page: currentPage,
+          },
+        ],
+      })
+
+      const firstResult = req.results[0]
+
+      if ("hits" in firstResult) {
+        // Add hits from current page to records
+        const hits = firstResult.hits as ChangelogItem[]
+        records.push(...hits)
+
+        // Update nbPages from the response
+        if ("nbPages" in firstResult) {
+          nbPages = firstResult.nbPages as number
+        }
+      }
+
+      currentPage++
+    }
+
+    // Generate static paths for each changelog item
+    return records.map((log) => ({
+      params: { id: log.slug },
+      props: { log },
+    }))
+  } catch (error) {
+    console.error("Error fetching changelog items:", error)
+    return []
+  }
+}
+
+interface Props {
+  log: ChangelogItem
+}
+
+const { log } = Astro.props
+
+const pageTitle = `Changelog and Releases | ${CONFIG.SITE.title}`
+---
+
+<BaseLayout title={pageTitle}>
+  <main class="wrapper changelog-page">
+    <div class="changelog-header">
+      <a href="/changelog" class="back-link">
+        <SvgArrowLeft2 color="link" />
+        <span>Back to Changelog</span>
+      </a>
+
+      <Typography variant="h1" className="header-title">Integration</Typography>
+    </div>
+
+    <div class="changelog-content">
+      <ChangelogCard
+        showNetworksAndTopic
+        item={log}
+        showBorder={false}
+        autoExpand={true}
+        showCopyButton={false}
+        disableHover={true}
+      />
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .changelog-page {
+    max-width: 1264px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 100px var(--space-6x);
+  }
+
+  .changelog-header {
+    margin-bottom: var(--space-16x);
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2x);
+    color: var(--link);
+    text-decoration: none;
+
+    font-weight: 500;
+    transition: color 0.2s ease;
+
+    & span {
+      font-size: 16px !important;
+    }
+  }
+
+  .header-title {
+    margin-top: var(--space-4x);
+    font-size: 2.5rem;
+    font-weight: 500;
+  }
+
+  @media screen and (max-width: 425px) {
+    .header-title {
+      font-size: 1.75rem !important;
+    }
+  }
+
+  @media screen and (max-width: 768px) {
+    .header-title {
+      font-size: 2rem;
+    }
+
+    .changelog-page {
+      padding: 60px 0;
+    }
+
+    .changelog-header {
+      padding: 0 var(--space-6x);
+      margin-bottom: 0;
+    }
+  }
+</style>

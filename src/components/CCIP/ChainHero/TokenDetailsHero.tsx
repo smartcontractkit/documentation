@@ -4,6 +4,7 @@ import { PoolType } from "~/config/data/ccip/types.ts"
 import { tokenPoolDisplay } from "~/config/data/ccip/utils.ts"
 import "./ChainHero.css"
 import { ExplorerInfo, ChainType } from "~/config/types.ts"
+import { getNetworkIconUrl } from "~/config/data/ccip/data.ts"
 
 interface TokenDetailsHeroProps {
   network: {
@@ -30,7 +31,7 @@ function TokenDetailsHero({ network, token }: TokenDetailsHeroProps) {
       <div className="ccip-chain-hero__content">
         <div className="ccip-chain-hero__heading">
           <div className="ccip-chain-hero__heading__images">
-            <img src={network?.logo} alt="" />
+            <img src={getNetworkIconUrl(network.name)} alt="" />
             <img
               src={token?.logo}
               alt=""

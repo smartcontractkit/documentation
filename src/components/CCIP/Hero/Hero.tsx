@@ -2,6 +2,7 @@ import { Environment, LaneConfig } from "~/config/data/ccip/index.ts"
 import Search from "../Search/Search.tsx"
 import "./Hero.css"
 import { ChainType, ExplorerInfo } from "~/config/types.ts"
+import { Typography } from "@chainlink/blocks"
 
 interface HeroProps {
   chains: {
@@ -32,15 +33,24 @@ interface HeroProps {
     }
     lane: LaneConfig
   }[]
+  verifiers?: {
+    id: string
+    name: string
+    type: string
+    logo: string
+    totalNetworks: number
+  }[]
   environment: Environment
 }
 
-function Hero({ chains, tokens, environment, lanes }: HeroProps) {
+function Hero({ chains, tokens, environment, lanes, verifiers = [] }: HeroProps) {
   return (
     <section className="ccip-hero">
       <div className="ccip-hero__content">
-        <h1 className="ccip-hero__heading">CCIP Directory</h1>
-        <Search chains={chains} tokens={tokens} environment={environment} lanes={lanes} />
+        <Typography variant="h1" className="ccip-hero__heading">
+          CCIP Directory
+        </Typography>
+        <Search chains={chains} tokens={tokens} environment={environment} lanes={lanes} verifiers={verifiers} />
       </div>
     </section>
   )
