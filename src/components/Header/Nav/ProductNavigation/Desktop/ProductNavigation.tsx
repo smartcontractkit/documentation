@@ -6,7 +6,6 @@ import { extendRadixComponent } from "../extendRadixComponent.ts"
 import styles from "./productNavigation.module.css"
 import { CaretIcon } from "../CaretIcon.tsx"
 import MegaMenu from "./MegaMenu.tsx"
-import MegaMenuContainer from "./MegaMenuContainer.tsx"
 
 type Props = {
   setNavMenuOpen: (navMenuOpen: boolean) => void
@@ -43,19 +42,26 @@ export const ProductNavigation = ({ setNavMenuOpen, showMegaMenu, isMegamenuOpen
     <>
       <Root className={clsx(styles.root, styles.alignLeft)}>
         <List className={styles.list}>
-          <Item onMouseEnter={exitMegamenu}>
+          <Item>
             <a
-              className={clsx(styles.navLink)}
+              className={clsx(styles.navLink, {
+                [styles.megaMenu]: isMegamenuOpen,
+              })}
               onMouseEnter={showMegaMenu}
               role="button"
               aria-expanded={isMegamenuOpen}
               aria-controls="mega-menu"
-              aria-label="Docs menu"
+              aria-label="Resources menu"
               tabIndex={0}
               onKeyDown={handleKeyDown}
             >
-              Docs <CaretIcon aria-hidden />
+              Resources <CaretIcon aria-hidden />
             </a>
+          </Item>
+          <Item onMouseEnter={exitMegamenu}>
+            <NavigationMenu.Link className={clsx(styles.navLink, styles.active)} href="/">
+              Docs
+            </NavigationMenu.Link>
           </Item>
           <Item>
             <NavigationMenu.Link className={styles.navLink} href="https://dev.chain.link/demos">
@@ -68,21 +74,17 @@ export const ProductNavigation = ({ setNavMenuOpen, showMegaMenu, isMegamenuOpen
             </NavigationMenu.Link>
           </Item>
           <Item>
-            <NavigationMenu.Link className={styles.navLink} href="/changelog">
+            <NavigationMenu.Link className={styles.navLink} href="https://dev.chain.link/changelog">
               Changelog
             </NavigationMenu.Link>
           </Item>
           <Item>
-            <NavigationMenu.Link className={styles.navLink} href="/certification">
+            <NavigationMenu.Link className={styles.navLink} href="https://dev.chain.link/certification">
               Get Certified
             </NavigationMenu.Link>
           </Item>
         </List>
-        {isMegamenuOpen && (
-          <MegaMenuContainer id="mega-menu" cancel={exitMegamenu}>
-            <MegaMenu cancel={exitMegamenu} />
-          </MegaMenuContainer>
-        )}
+        {isMegamenuOpen && <MegaMenu id="mega-menu" cancel={exitMegamenu} />}
       </Root>
     </>
   )
