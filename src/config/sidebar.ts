@@ -458,13 +458,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Templates",
       contents: [
         {
-          title: "Overview",
-          url: "cre/templates",
-        },
-        {
-          title: "Custom Data Feed Template",
-          url: "cre/templates/running-demo-workflow",
-          highlightAsCurrent: ["cre/templates/running-demo-workflow-ts", "cre/templates/running-demo-workflow-go"],
+          title: "CRE Templates Hub",
+          url: "https://docs.chain.link/cre-templates",
         },
       ],
     },
