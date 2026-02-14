@@ -57,6 +57,10 @@ export const megaMenuSections: MegaMenuSection[] = [
                 label: "Docs",
                 href: (evmProducts.find((product) => product.title === "CRE") || {})?.docsLandingLink,
               },
+              {
+                label: "CRE Templates Hub",
+                href: "/cre-templates",
+              },
             ],
           },
         ],

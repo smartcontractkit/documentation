@@ -1,0 +1,63 @@
+---
+title: "Read Data Feeds"
+description: "A set of minimal examples that read from Chainlink Data Feeds using the CRE chain reader on a cron schedule."
+excerpt: "Learn how to read onchain data via contract calls using Chainlink Data Feeds."
+author: "Chainlink Labs"
+image: "thumbnail.jpg"
+githubUrl: "https://github.com/smartcontractkit/cre-templates/tree/main/building-blocks/read-data-feeds"
+githubRepoLinks:
+  - label: "Go"
+    url: "https://github.com/smartcontractkit/cre-templates/tree/main/building-blocks/read-data-feeds/read-data-feeds-go"
+  - label: "TypeScript"
+    url: "https://github.com/smartcontractkit/cre-templates/tree/main/building-blocks/read-data-feeds/read-data-feeds-ts"
+  - label: "Go (MVR)"
+    url: "https://github.com/smartcontractkit/cre-templates/tree/main/building-blocks/read-data-feeds/read-mvr-data-feeds-go"
+  - label: "TypeScript (MVR)"
+    url: "https://github.com/smartcontractkit/cre-templates/tree/main/building-blocks/read-data-feeds/read-mvr-data-feeds-ts"
+datePublished: "2026-02-13"
+lastModified: "2026-02-13"
+---
+
+import { Aside, Accordion } from "@components"
+
+A set of minimal examples that, on a cron schedule (every 10 minutes), read from Chainlink Data Feeds using the CRE chain reader.
+
+There are **two types of examples**:
+
+## 1. Regular (single-value) price feeds
+
+Reads `decimals()` and `latestAnswer()` from Chainlink Data Feeds (e.g. BTC/USD, ETH/USD), logs the scaled values, and returns a JSON array of results.
+
+- Example network: **Arbitrum One (mainnet)**.
+
+Production contracts:
+
+- BTC/USD on Arbitrum One: [0x6ce185860a4963106506C203335A2910413708e9](https://arbiscan.io/address/0x6ce185860a4963106506C203335A2910413708e9#code)
+- ETH/USD on Arbitrum One: [0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612](https://arbiscan.io/address/0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612#code)
+
+## 2. MVR (Multiple Variable Response) bundle feeds
+
+Reads `latestBundle()` and `bundleDecimals()` from a Chainlink **BundleAggregatorProxy**, decodes the returned bytes into multiple typed fields, and returns a structured JSON object (including scaled numeric values).
+
+- Example network: **Base mainnet**.
+- Example MVR feed: **S&P Global SSA EURC**.
+
+References:
+
+- Production MVR feed overview (S&P Global SSA EURC on Base): [data.chain.link/feeds/base/base/sp-global-ssa-eurc](https://data.chain.link/feeds/base/base/sp-global-ssa-eurc)
+- BundleAggregatorProxy contract on Base: [basescan.org/address/0xcF99622B5440a338f45daEE134d531A4BE64251F](https://basescan.org/address/0xcF99622B5440a338f45daEE134d531A4BE64251F#code)
+- [MVR decoding guide (Solidity / EVM)](/data-feeds/mvr-feeds/guides/evm-solidity)
+
+---
+
+## Get Started
+
+Language-specific examples (both regular and MVR) live under the `building-blocks/read-data-feeds` directory.
+
+- To get started with **Go (regular data feeds)**, see the [Go README](https://github.com/smartcontractkit/cre-templates/blob/main/building-blocks/read-data-feeds/read-data-feeds-go/README.md).
+
+- To get started with **TypeScript (regular data feeds)**, see the [TypeScript README](https://github.com/smartcontractkit/cre-templates/blob/main/building-blocks/read-data-feeds/read-data-feeds-ts/README.md).
+
+- To get started with **Go MVR bundle feeds**, use the Go example that reads `latestBundle()` / `bundleDecimals()` from the S&P Global SSA EURC feed on Base (see the corresponding Go README in the MVR example directory).
+
+- To get started with **TypeScript MVR bundle feeds**, use the TypeScript example that reads and decodes the same MVR feed on Base (see the corresponding TypeScript README in the MVR example directory).
