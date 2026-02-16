@@ -1,0 +1,173 @@
+---
+import type { MarkdownHeading } from "astro"
+import BaseLayout from "~/layouts/BaseLayout.astro"
+import CRETemplateOverview from "~/components/CRETemplate/CRETemplateOverview.astro"
+import CRETemplatePanel from "~/components/CRETemplate/CRETemplatePanel.astro"
+import CRETemplate from "~/components/CRETemplate/CRETemplate.astro"
+import { CRETemplatesFrontmatter } from "~/content.config.ts"
+
+interface Props {
+  frontmatter: CRETemplatesFrontmatter
+  headings: MarkdownHeading[]
+  templateSlug: string
+}
+
+const { frontmatter, headings, templateSlug } = Astro.props
+---
+
+<BaseLayout
+  title={frontmatter.title}
+  metadata={{
+    description: frontmatter.description,
+    image: frontmatter.image,
+  }}
+>
+  <main class="template-page">
+    <!-- Hero Section (full width background) -->
+    <div class="hero-section">
+      <div class="hero-bg"></div>
+      <div class="hero-container">
+        <!-- Back link - Ghost Pill style -->
+        <a class="back-link" href="/cre-templates">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M19 12H5M12 19l-7-7 7-7"></path>
+          </svg>
+          <span>Back to Hub</span>
+        </a>
+        <CRETemplateOverview {frontmatter} {templateSlug} />
+      </div>
+    </div>
+
+    <!-- Main Content Grid (inside container) -->
+    <div class="template-container">
+      <div class="content-grid">
+        <!-- Main Content Card -->
+        <div class="main-content-card">
+          <CRETemplate>
+            <slot />
+          </CRETemplate>
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+          <CRETemplatePanel {frontmatter} {headings} />
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <style>
+    .template-page {
+      background-color: white;
+      min-height: 100vh;
+      padding-bottom: var(--space-10x);
+      margin-bottom: 0 !important;
+    }
+
+    .template-container {
+      max-width: var(--max-width, 90rem);
+      margin: 0 auto;
+      padding: var(--space-6x) var(--doc-padding, 2rem);
+    }
+
+    .back-link {
+      position: absolute;
+      top: var(--space-4x);
+      left: var(--doc-padding, 2rem);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px 20px;
+      background: #f7f7f770;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      color: #0b101c;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      z-index: 10;
+    }
+
+    .back-link:hover {
+      background: #f7f7f7c6;
+      border-color: #9ca3af;
+    }
+
+    .back-link svg {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+    }
+
+    .back-link span {
+      white-space: nowrap;
+    }
+
+    .hero-section {
+      position: relative;
+      overflow: hidden;
+      margin-bottom: var(--space-6x);
+    }
+
+    .hero-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url("/images/cre-templates/single-template-hero-bg.png");
+      background-size: cover;
+      background-position: right center;
+      filter: grayscale(100%) brightness(2.5) contrast(0.6);
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hero-container {
+      max-width: var(--max-width, 90rem);
+      margin: 0 auto;
+      padding: var(--space-20x) var(--doc-padding, 2rem) var(--space-6x);
+      position: relative;
+      z-index: 1;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-6x);
+    }
+
+    .main-content-card {
+      background: white;
+      padding: 0 var(--space-4x) var(--space-8x) 0;
+      min-width: 0;
+    }
+
+    .sidebar {
+      order: -1;
+    }
+
+    @media (min-width: 50em) {
+      .hero-container {
+        padding: var(--space-20x) var(--doc-padding, 2rem) var(--space-8x);
+      }
+
+      .content-grid {
+        grid-template-columns: 2fr 1fr;
+      }
+
+      .main-content-card {
+        padding: 0 var(--space-6x) var(--space-10x) 0;
+      }
+
+      .sidebar {
+        order: 0;
+      }
+    }
+  </style>
+</BaseLayout>
