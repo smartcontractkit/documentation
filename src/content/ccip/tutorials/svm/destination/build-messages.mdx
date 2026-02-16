@@ -476,9 +476,17 @@ Use this configuration when sending both tokens and data in a single message:
 
 <Aside type="note" title="Key Requirements">
 
-- `tokenReceiver` must be a PDA the program has authority over
-- `accounts` must include all accounts required by the receiver program
-- The program must contain logic to handle the received data and tokens
+- **Token Security**: The `tokenReceiver` must be an Associated Token Account (ATA) that the receiver program has authority over. Since the program cannot verify that tokens were sent to a specific address, it should validate it received the expected tokens at its own ATA, then forward them to the final destination.
+
+- **Account References**: The `accounts` array must include:
+  - The program's own ATA (for validation that tokens were received)
+  - The final token destination ATA (to forward tokens to)
+  - Any other accounts required by the receiver program's `ccip_receive` instruction
+
+- **Validation Pattern**: The receiver program should:
+  1. Check that it received the expected tokens at its controlled ATA
+  2. Forward the tokens to the final destination
+
 - `allowOutOfOrderExecution` **MUST** be set to `true`
 
 </Aside>
