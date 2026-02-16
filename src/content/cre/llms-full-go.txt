@@ -5499,7 +5499,7 @@ Despite these limitations, simulation is an essential tool for catching bugs, va
 
 # Deploying Workflows
 Source: https://docs.chain.link/cre/guides/operations/deploying-workflows
-Last Updated: 2025-11-04
+Last Updated: 2026-02-12
 
 <Aside type="note" title="Early Access required">
   Workflow deployment is currently in Early Access. To <a href="https://cre.chain.link/request-access" target="_blank" rel="noopener noreferrer">request Early Access</a>, please share details about your project and use case—this helps us provide better support as you build with CRE.
@@ -5514,7 +5514,7 @@ When you deploy a workflow, you take your locally tested code and register it wi
 Before you can deploy a workflow, you must have:
 
 - **Early Access approval**: Workflow deployment is currently in Early Access. <a href="https://cre.chain.link/request-access" target="_blank" rel="noopener noreferrer">Request access here</a> if you haven't already.
-- **[Logged in](/cre/reference/cli/authentication#cre-login)**: Authenticated with the platform by running `cre login`. To check if you are logged in, run `cre whoami`.
+- **[Authenticated](/cre/reference/cli/authentication)**: Logged in via `cre login` or using an [API key](/cre/reference/cli/authentication#api-key-authentication) (`CRE_API_KEY`). To verify, run `cre whoami`.
 - **[Linked your key](/cre/reference/cli/account#cre-account-link-key)**: Linked your EOA or multi-sig wallet to your account by running `cre account link-key`.
 - **A funded wallet**: The account you are deploying from must be funded with ETH on Ethereum Mainnet to pay the gas fees for the onchain registration transaction to the Workflow Registry contract.
 
@@ -6392,9 +6392,11 @@ time=2025-10-26T13:19:57.055Z level=INFO msg="Waiting for write report response"
 
 # Account
 Source: https://docs.chain.link/cre/account
-Last Updated: 2025-11-04
+Last Updated: 2026-02-12
 
-Your CRE account is required to use the CRE CLI. You must be logged in to run any CLI commands, including simulating workflows, deploying workflows, and managing deployed workflows. This section covers everything you need to know about creating and managing your account.
+Your CRE account is required to use the CRE CLI. You must be authenticated to run CLI commands, including simulating workflows, deploying workflows, and managing deployed workflows. You can authenticate using the browser-based `cre login` flow or an [API key](/cre/reference/cli/authentication#api-key-authentication) for CI/CD and headless environments(\*). This section covers everything you need to know about creating and managing your account.
+
+(\*) API key authentication requires your account to have <a href="https://cre.chain.link/request-access" target="_blank" rel="noopener noreferrer">Early Access</a> approval.
 
 ## What you'll need
 
@@ -6402,7 +6404,7 @@ To use CRE, you need:
 
 1. **A CRE account** - Created through the web interface at <a href="https://cre.chain.link" target="_blank" rel="noopener noreferrer">cre.chain.link</a> (to create a new organization) or via an invitation link from an organization Owner (to join an existing organization)
 2. **Two-factor authentication** - Set up during account creation for security
-3. **CLI authentication** - Connect your CLI to your account using `cre login`
+3. **CLI authentication** - Connect your CLI to your account using `cre login` or an [API key](/cre/reference/cli/authentication#api-key-authentication)
 
 ## Account guides
 
@@ -6555,9 +6557,14 @@ Once your account is created:
 
 # Logging in with the CLI
 Source: https://docs.chain.link/cre/account/cli-login
-Last Updated: 2025-11-04
+Last Updated: 2026-02-12
 
-To deploy and manage workflows with the CRE CLI, you need to authenticate your CLI session with your CRE account. This guide walks you through the login process.
+To deploy and manage workflows with the CRE CLI, you need to authenticate your CLI session with your CRE account. This guide walks you through the browser-based login process.
+
+
+<Aside type="tip" title="CI/CD or headless environment?">
+  If you need to authenticate without a browser (e.g., in a CI/CD pipeline), use [API key authentication](/cre/reference/cli/authentication#api-key-authentication) instead.
+</Aside>
 
 ## Prerequisites
 
@@ -6615,15 +6622,31 @@ Your CLI session is authenticated and ready to use.
 
 # Managing Authentication
 Source: https://docs.chain.link/cre/account/managing-auth
-Last Updated: 2025-11-04
+Last Updated: 2026-02-12
 
-This guide covers how to manage your CLI authentication session, including logging in, checking your status, handling session expiration, and logging out.
+This guide covers how to manage your CLI authentication, including browser-based login, API key authentication, checking your status, handling session expiration, and logging out.
 
 ## Logging in
 
 To authenticate your CLI with your CRE account, use the `cre login` command. This opens a browser window where you'll enter your credentials and complete two-factor authentication.
 
 For detailed login instructions, see the [Logging in with the CLI](/cre/account/cli-login) guide.
+
+## API key authentication
+
+
+<Aside type="note" title="Deploy access required">
+  API key authentication requires your account to have Early Access approval for deployment. To <a href="https://cre.chain.link/request-access" target="_blank" rel="noopener noreferrer">request Early Access</a>, please share details about your project and use case—this helps us provide better support as you build with CRE.
+</Aside>
+
+For CI/CD pipelines or headless environments where a browser is not available, you can authenticate using the `CRE_API_KEY` environment variable. When set, the CLI uses the API key automatically — no `cre login` required.
+
+```bash
+export CRE_API_KEY="your-api-key"
+cre whoami
+```
+
+API keys are created in the **APIs** tab of the **Organization** page in the <a href="https://cre.chain.link" target="_blank" rel="noopener noreferrer">CRE platform</a>. For full details, see [API Key Authentication](/cre/reference/cli/authentication#api-key-authentication).
 
 ## Session expiration
 
@@ -7486,117 +7509,6 @@ Learn more about how to use CRE capabilities with built-in consensus:
 
 ---
 
-# CRE Templates
-Source: https://docs.chain.link/cre/templates
-Last Updated: 2025-11-21
-
-Templates are workflow examples you can copy and customize for your own projects. They are curated and maintained by Chainlink, offering patterns you can use as references or starting points for your own workflows.
-
-
-<Aside type="caution" title="Educational Example Disclaimer">
-  This page includes educational examples to use a Chainlink system, product, or service and is provided to
-  demonstrate how to interact with Chainlink's systems, products, and services to integrate them into your own. This
-  template is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, it has not been audited, and it may be
-  missing key checks or error handling to make the usage of the system, product or service more clear. Do not use the
-  code in this example in a production environment without completing your own audits and application of best practices.
-  Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs
-  that are generated due to errors in code.
-</Aside>
-
-## Building Blocks and Starter Templates
-
-Templates are organized into two categories:
-
-### 1. Building Blocks
-
-[Building Blocks](https://github.com/smartcontractkit/cre-templates/tree/main/building-blocks) are small, focused examples that teach **one concept at a time**. Each Building Block is self-contained and demonstrates a specific CRE capability or pattern. They feature minimal code, clear configuration, and are runnable locally with `cre workflow simulate`.
-
-**Available Building Blocks:**
-
-1. **`kv-store`** (Key-Value Store with AWS S3)
-   - Reads a value from an AWS S3 object, increments it, and writes it back
-   - Demonstrates: SigV4-signed HTTP requests, CRE secrets (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`), and consensus read → single write flow
-   - Use case: Learn offchain write patterns with secrets and consensus
-
-2. **`read-data-feeds`** (Chainlink Data Feeds)
-   - Reads `decimals()` and `latestAnswer()` from <a href="https://docs.chain.link/data-feeds" target="_blank" rel="noopener noreferrer">Chainlink Data Feeds</a> on a cron schedule
-   - Demonstrates: Contract ABIs, Go bindings generation, RPC configuration, and onchain reads
-   - Use case: Learn how to read onchain data via contract calls
-
-**When to use Building Blocks:**
-
-- You want to learn a specific feature quickly (e.g., secrets + HTTP signing, reading a data feed, cron triggers)
-- You need a focused code snippet to copy into your project
-- You're exploring a new capability before integrating it into a larger workflow
-
-### 2. Starter Templates
-
-[Starter Templates](https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates) are complete, end-to-end workflows that combine multiple capabilities and mirror real-world use cases. These templates are more comprehensive than Building Blocks and include production-like configuration, optional precompiled smart contracts, and generated bindings. They can be adapted directly into your own projects.
-
-**Available Starter Templates:**
-
-1. **`custom-data-feed`** (Custom Data Feed)
-   - Periodically fetches offchain data via HTTP and pushes updates onchain
-   - Demonstrates: Cron scheduling, secrets management, contract bindings, and blockchain writes
-   - Use case: Build data feeds that combine offchain APIs with onchain smart contracts
-
-2. **`bring-your-own-data`** (BYOD - NAV & PoR)
-   - End-to-end examples for publishing Net Asset Value (NAV) and Proof of Reserve (PoR) data onchain
-   - Demonstrates: Complete workflow with demo contracts for publishing institutional data
-   - Use case: Publish verified financial or reserve data to smart contracts
-
-3. **`multi-chain-token-manager`** (Multi-Chain Token Manager)
-   - Orchestrates token operations and state across multiple blockchain networks
-   - Demonstrates: Multi-chain RPC configuration, bindings, and cross-chain coordination patterns
-   - Use case: Manage token operations across different EVM chains from a single workflow
-
-**When to use Starter Templates:**
-
-- You want a runnable reference architecture that shows production-ready patterns
-- You're starting a new project and need a solid foundation
-- You want to see how multiple CRE capabilities integrate in a real workflow
-
-### How to access templates
-
-All templates are available on GitHub at [github.com/smartcontractkit/cre-templates](https://github.com/smartcontractkit/cre-templates)
-
-- Browse all Building Blocks and Starter Templates
-- Clone or fork templates to customize them for your use case
-- View individual READMEs for detailed usage instructions
-
-<Aside type="tip" title="Quick Start: Custom Data Feed via CLI">
-  The **Custom Data Feed** starter template is also available through `cre init` for a guided, interactive setup
-  experience. We provide a step-by-step guide: [Running a Demo Workflow](/cre/templates/running-demo-workflow).
-</Aside>
-
-## When to use what
-
-Choose the right template based on where you are in your CRE journey:
-
-| Your Situation                                                           | Recommended Action                                                               |
-| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
-| Just finished the [Getting Started guide](/cre/getting-started/overview) | Run the **Custom Data Feed** template to see a more complex, real-world example  |
-| Want to learn offchain writes with secrets and consensus                 | Clone the **`kv-store`** Building Block (AWS S3 example)                         |
-| Need to read Chainlink Data Feeds in your workflow                       | Clone the **`read-data-feeds`** Building Block (onchain reads with ABIs)         |
-| Building a custom data feed for your protocol                            | Fork the **`custom-data-feed`** Starter Template and customize it                |
-| Publishing NAV or PoR data onchain                                       | Fork the **`bring-your-own-data`** Starter Template (includes demo contracts)    |
-| Managing tokens across multiple chains                                   | Fork the **`multi-chain-token-manager`** Starter Template (cross-chain patterns) |
-
-## Next steps
-
-Ready to explore templates?
-
-- **[Run the Custom Data Feed Template](/cre/templates/running-demo-workflow)** - Walk through this template with our step-by-step guide (available in Go and TypeScript)
-
-- **[Browse all templates on GitHub](https://github.com/smartcontractkit/cre-templates)** - Explore the full collection of Building Blocks and Starter Templates
-
-<Aside type="note" title="Contributing">
-  The CRE Templates repository is open source under the MIT license. If you've built a useful workflow pattern and want
-  to share it with the community, consider contributing.
-</Aside>
-
----
-
 # AI-Powered Prediction Market
 Source: https://docs.chain.link/cre/demos/prediction-market
 Last Updated: 2025-11-21
@@ -7811,18 +7723,18 @@ The typical workflow development process uses these commands in sequence:
 
 # Authentication Commands
 Source: https://docs.chain.link/cre/reference/cli/authentication
-Last Updated: 2025-11-04
+Last Updated: 2026-02-12
 
-The authentication commands manage your CRE credentials and account information.
+The CRE CLI supports two authentication methods:
 
-<Aside type="note" title="Global flags">
-  All `cre` commands support [global flags](/cre/reference/cli#global-flags) like `--env`, `--target`, `--project-root`,
-  and `--verbose`.
-</Aside>
+- **Browser-based login** (`cre login`) — Interactive login for local development
+- **API key** (`CRE_API_KEY` environment variable) — Non-interactive authentication for CI/CD pipelines and headless environments
 
-## `cre login`
+## Browser-based authentication
 
-Starts the authentication flow. This command opens your browser for user login and saves your credentials locally.
+### `cre login`
+
+Starts the interactive authentication flow. This command opens your browser for user login and saves your credentials locally.
 
 **Usage:**
 
@@ -7838,7 +7750,9 @@ cre login
 4. Enter your one-time password (OTP) from your authenticator app
 5. The CLI automatically captures and saves your credentials locally
 
-## `cre logout`
+For a detailed walkthrough with screenshots, see [Logging in with the CLI](/cre/account/cli-login).
+
+### `cre logout`
 
 Revokes authentication tokens and removes local credentials. This invalidates the current authentication tokens and deletes stored credentials from your machine.
 
@@ -7848,9 +7762,9 @@ Revokes authentication tokens and removes local credentials. This invalidates th
 cre logout
 ```
 
-## `cre whoami`
+### `cre whoami`
 
-Shows your current account details. This command fetches and displays your account information, including your email and organization ID.
+Shows your current account details. This command fetches and displays your account information, including your email and organization ID. This works with both browser-based login and API key authentication.
 
 **Usage:**
 
@@ -7858,23 +7772,59 @@ Shows your current account details. This command fetches and displays your accou
 cre whoami
 ```
 
+
 <Aside type="note" title="Verify authentication">
-  Use `cre whoami` to verify you're logged in and check which account is currently active. This is useful before
-  deploying workflows or performing other authenticated operations.
+  Use `cre whoami` to verify you're authenticated and check which account is currently active. This is useful before deploying workflows or performing other authenticated operations.
 </Aside>
 
-## Authentication workflow
+## API key authentication
 
-The typical authentication flow:
 
-1. **`cre login`** — Authenticate with the CRE UI (browser-based)
-2. **`cre whoami`** — Verify your authentication and account details
-3. **Perform CLI operations** — Deploy, manage workflows, etc.
-4. **`cre logout`** — (Optional) Revoke credentials when done
+<Aside type="note" title="Deploy access required">
+  API key authentication requires your account to have Early Access approval for deployment. To <a href="https://cre.chain.link/request-access" target="_blank" rel="noopener noreferrer">request Early Access</a>, please share details about your project and use case—this helps us provide better support as you build with CRE.
+</Aside>
+
+For CI/CD pipelines, automated scripts, or any environment where a browser is not available, you can authenticate using an API key. When the `CRE_API_KEY` environment variable is set, the CLI uses it automatically — no `cre login` required.
+
+### Creating an API key
+
+1. Log in to the <a href="https://cre.chain.link" target="_blank" rel="noopener noreferrer">CRE platform</a>
+2. Navigate to the **Organization** page
+3. Select the **APIs** tab
+4. Click **+ Organization API**
+5. Give your key a name and confirm
+
+
+<Aside type="caution" title="Keep your API key secure">
+  Treat your API key like a password. Do not commit it to version control or share it in plain text. Use your CI/CD platform's secret management to store it securely.
+</Aside>
+
+### Using the API key
+
+Set the `CRE_API_KEY` environment variable before running CLI commands:
+
+```bash
+export CRE_API_KEY="your-api-key"
+cre whoami
+```
+
+When `CRE_API_KEY` is set, the CLI skips the browser-based login flow entirely. All commands that require authentication (deploying, managing workflows, etc.) will use the API key.
+
+In a CI/CD pipeline, configure `CRE_API_KEY` as a secret environment variable in your platform and run CLI commands as usual.
+
+## Authentication methods summary
+
+| Method        | Best for                              | How it works                                         |
+| ------------- | ------------------------------------- | ---------------------------------------------------- |
+| `cre login`   | Local development                     | Opens a browser for interactive login with 2FA       |
+| `CRE_API_KEY` | CI/CD, scripts, headless environments | Set the environment variable — no browser needed(\*) |
+
+(\*) API key authentication requires your account to have <a href="https://cre.chain.link/request-access" target="_blank" rel="noopener noreferrer">Early Access</a> approval.
 
 ## Learn more
 
-- [Getting Started](/cre/getting-started) — Includes authentication setup in the initial steps
+- [Logging in with the CLI](/cre/account/cli-login) — Step-by-step browser login guide with screenshots
+- [Managing Authentication](/cre/account/managing-auth) — Session management, expiration, and logout
 - [Account Management](/cre/reference/cli/account) — Link keys after authentication
 - [Deploying Workflows](/cre/guides/operations/deploying-workflows) — Requires authentication
 
@@ -15992,6 +15942,117 @@ Network support depends on your CLI and SDK versions. The tables below show the 
 ## Forwarder Addresses
 
 For forwarder contract addresses and chain names, see the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory). Forwarder addresses are used when building consumer contracts that receive workflow reports onchain. Learn more about [Onchain Write](/cre/guides/workflow/using-evm-client/onchain-write/overview).
+
+---
+
+# CRE Templates
+Source: https://docs.chain.link/cre/templates
+Last Updated: 2025-11-21
+
+Templates are workflow examples you can copy and customize for your own projects. They are curated and maintained by Chainlink, offering patterns you can use as references or starting points for your own workflows.
+
+
+<Aside type="caution" title="Educational Example Disclaimer">
+  This page includes educational examples to use a Chainlink system, product, or service and is provided to
+  demonstrate how to interact with Chainlink's systems, products, and services to integrate them into your own. This
+  template is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, it has not been audited, and it may be
+  missing key checks or error handling to make the usage of the system, product or service more clear. Do not use the
+  code in this example in a production environment without completing your own audits and application of best practices.
+  Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs
+  that are generated due to errors in code.
+</Aside>
+
+## Building Blocks and Starter Templates
+
+Templates are organized into two categories:
+
+### 1. Building Blocks
+
+[Building Blocks](https://github.com/smartcontractkit/cre-templates/tree/main/building-blocks) are small, focused examples that teach **one concept at a time**. Each Building Block is self-contained and demonstrates a specific CRE capability or pattern. They feature minimal code, clear configuration, and are runnable locally with `cre workflow simulate`.
+
+**Available Building Blocks:**
+
+1. **`kv-store`** (Key-Value Store with AWS S3)
+   - Reads a value from an AWS S3 object, increments it, and writes it back
+   - Demonstrates: SigV4-signed HTTP requests, CRE secrets (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`), and consensus read → single write flow
+   - Use case: Learn offchain write patterns with secrets and consensus
+
+2. **`read-data-feeds`** (Chainlink Data Feeds)
+   - Reads `decimals()` and `latestAnswer()` from <a href="https://docs.chain.link/data-feeds" target="_blank" rel="noopener noreferrer">Chainlink Data Feeds</a> on a cron schedule
+   - Demonstrates: Contract ABIs, Go bindings generation, RPC configuration, and onchain reads
+   - Use case: Learn how to read onchain data via contract calls
+
+**When to use Building Blocks:**
+
+- You want to learn a specific feature quickly (e.g., secrets + HTTP signing, reading a data feed, cron triggers)
+- You need a focused code snippet to copy into your project
+- You're exploring a new capability before integrating it into a larger workflow
+
+### 2. Starter Templates
+
+[Starter Templates](https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates) are complete, end-to-end workflows that combine multiple capabilities and mirror real-world use cases. These templates are more comprehensive than Building Blocks and include production-like configuration, optional precompiled smart contracts, and generated bindings. They can be adapted directly into your own projects.
+
+**Available Starter Templates:**
+
+1. **`custom-data-feed`** (Custom Data Feed)
+   - Periodically fetches offchain data via HTTP and pushes updates onchain
+   - Demonstrates: Cron scheduling, secrets management, contract bindings, and blockchain writes
+   - Use case: Build data feeds that combine offchain APIs with onchain smart contracts
+
+2. **`bring-your-own-data`** (BYOD - NAV & PoR)
+   - End-to-end examples for publishing Net Asset Value (NAV) and Proof of Reserve (PoR) data onchain
+   - Demonstrates: Complete workflow with demo contracts for publishing institutional data
+   - Use case: Publish verified financial or reserve data to smart contracts
+
+3. **`multi-chain-token-manager`** (Multi-Chain Token Manager)
+   - Orchestrates token operations and state across multiple blockchain networks
+   - Demonstrates: Multi-chain RPC configuration, bindings, and cross-chain coordination patterns
+   - Use case: Manage token operations across different EVM chains from a single workflow
+
+**When to use Starter Templates:**
+
+- You want a runnable reference architecture that shows production-ready patterns
+- You're starting a new project and need a solid foundation
+- You want to see how multiple CRE capabilities integrate in a real workflow
+
+### How to access templates
+
+All templates are available on GitHub at [github.com/smartcontractkit/cre-templates](https://github.com/smartcontractkit/cre-templates)
+
+- Browse all Building Blocks and Starter Templates
+- Clone or fork templates to customize them for your use case
+- View individual READMEs for detailed usage instructions
+
+<Aside type="tip" title="Quick Start: Custom Data Feed via CLI">
+  The **Custom Data Feed** starter template is also available through `cre init` for a guided, interactive setup
+  experience. We provide a step-by-step guide: [Running a Demo Workflow](/cre/templates/running-demo-workflow).
+</Aside>
+
+## When to use what
+
+Choose the right template based on where you are in your CRE journey:
+
+| Your Situation                                                           | Recommended Action                                                               |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| Just finished the [Getting Started guide](/cre/getting-started/overview) | Run the **Custom Data Feed** template to see a more complex, real-world example  |
+| Want to learn offchain writes with secrets and consensus                 | Clone the **`kv-store`** Building Block (AWS S3 example)                         |
+| Need to read Chainlink Data Feeds in your workflow                       | Clone the **`read-data-feeds`** Building Block (onchain reads with ABIs)         |
+| Building a custom data feed for your protocol                            | Fork the **`custom-data-feed`** Starter Template and customize it                |
+| Publishing NAV or PoR data onchain                                       | Fork the **`bring-your-own-data`** Starter Template (includes demo contracts)    |
+| Managing tokens across multiple chains                                   | Fork the **`multi-chain-token-manager`** Starter Template (cross-chain patterns) |
+
+## Next steps
+
+Ready to explore templates?
+
+- **[Run the Custom Data Feed Template](/cre/templates/running-demo-workflow)** - Walk through this template with our step-by-step guide (available in Go and TypeScript)
+
+- **[Browse all templates on GitHub](https://github.com/smartcontractkit/cre-templates)** - Explore the full collection of Building Blocks and Starter Templates
+
+<Aside type="note" title="Contributing">
+  The CRE Templates repository is open source under the MIT license. If you've built a useful workflow pattern and want
+  to share it with the community, consider contributing.
+</Aside>
 
 ---
 
