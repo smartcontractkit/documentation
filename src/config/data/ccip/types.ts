@@ -48,7 +48,9 @@ type Pool = {
 type PoolInfo = {
   tokenAddress: string
   allowListEnabled: boolean
-  pool: Pool
+  pool?: Pool
+  poolAddress?: string
+  poolType?: string
   name?: string
   symbol: string
   decimals: number

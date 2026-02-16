@@ -133,7 +133,7 @@ function TokenDrawer({
         console.error(`No token data found for ${token.id} on ${network.key} -> ${destinationChain}`)
         return null
       }
-      const destinationPoolType = destinationTokenData.pool.type
+      const destinationPoolType = destinationTokenData.pool?.type || destinationTokenData.poolType
       if (!destinationPoolType) {
         console.error(`No pool type found for ${token.id} on ${network.key} -> ${destinationChain}`)
         return null

@@ -16,6 +16,7 @@ import {
   VerifiersConfig,
   Verifier,
   VerifierType,
+  PoolType,
 } from "./types.ts"
 import { determineTokenMechanism } from "./utils.ts"
 import { ExplorerInfo, SupportedChain, ChainType } from "@config/types.ts"
@@ -318,8 +319,9 @@ export const getTokenMechanism = (params: {
   const tokenConfig = tokensReferenceData[params.token]
   const sourceChainPoolInfo = tokenConfig[sourceChainRdd]
   const destinationChainPoolInfo = tokenConfig[destinationChainRdd]
-  const sourceChainPoolType = sourceChainPoolInfo.pool.type
-  const destinationChainPoolType = destinationChainPoolInfo.pool.type
+  const sourceChainPoolType = (sourceChainPoolInfo.pool?.type || sourceChainPoolInfo.poolType) as PoolType
+  const destinationChainPoolType = (destinationChainPoolInfo.pool?.type ||
+    destinationChainPoolInfo.poolType) as PoolType
   const tokenMechanism = determineTokenMechanism(sourceChainPoolType, destinationChainPoolType)
   return tokenMechanism
 }
@@ -594,7 +596,13 @@ export const getChainsOfToken = ({ token, filter }: { token: string; filter: Env
   })()
 
   // Get all valid chains for the given token
-  return Object.entries(tokensData[token])
+  const tokenData = tokensData[token]
+  if (!tokenData) {
+    console.warn(`No token data found for ${token} in ${filter} environment`)
+    return []
+  }
+
+  return Object.entries(tokenData)
     .filter(([, tokenData]) => tokenData.pool && tokenData.pool.type !== "feeTokenOnly")
     .filter(([chain]) => {
       const lanes = getAllTokenLanes({ token, environment: filter })
@@ -618,6 +626,11 @@ export const getAllNetworkLanes = async ({
   })
 
   const allLanes = lanesReferenceData[chain]
+
+  // Handle chains with no outbound lanes (e.g., newly added chains)
+  if (!allLanes) {
+    return []
+  }
 
   const lanesData: {
     name: string

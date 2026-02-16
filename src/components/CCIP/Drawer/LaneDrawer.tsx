@@ -1,6 +1,6 @@
 import Address from "~/components/AddressReact.tsx"
 import "../Tables/Table.css"
-import { Environment, LaneConfig, LaneFilter } from "~/config/data/ccip/types.ts"
+import { Environment, LaneConfig, LaneFilter, PoolType } from "~/config/data/ccip/types.ts"
 import { getNetwork } from "~/config/data/ccip/data.ts"
 import { determineTokenMechanism } from "~/config/data/ccip/utils.ts"
 import { useState } from "react"
@@ -228,12 +228,16 @@ function LaneDrawer({
                   <td>
                     {inOutbound === LaneFilter.Outbound
                       ? determineTokenMechanism(
-                          token.data[sourceNetwork.key].pool.type,
-                          token.data[destinationNetwork.key].pool.type
+                          (token.data[sourceNetwork.key].pool?.type ||
+                            token.data[sourceNetwork.key].poolType) as PoolType,
+                          (token.data[destinationNetwork.key].pool?.type ||
+                            token.data[destinationNetwork.key].poolType) as PoolType
                         )
                       : determineTokenMechanism(
-                          token.data[destinationNetwork.key].pool.type,
-                          token.data[sourceNetwork.key].pool.type
+                          (token.data[destinationNetwork.key].pool?.type ||
+                            token.data[destinationNetwork.key].poolType) as PoolType,
+                          (token.data[sourceNetwork.key].pool?.type ||
+                            token.data[sourceNetwork.key].poolType) as PoolType
                         )}
                   </td>
 
