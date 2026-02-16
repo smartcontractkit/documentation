@@ -23,11 +23,12 @@ interface TokenDetailsHeroProps {
     poolType: PoolType
     poolAddress: string
   }
+  inDrawer?: boolean
 }
 
-function TokenDetailsHero({ network, token }: TokenDetailsHeroProps) {
+function TokenDetailsHero({ network, token, inDrawer = false }: TokenDetailsHeroProps) {
   return (
-    <section className="ccip-chain-hero">
+    <section className={`ccip-chain-hero ${inDrawer ? "ccip-chain-hero--drawer" : ""}`}>
       <div className="ccip-chain-hero__content">
         <div className="ccip-chain-hero__heading">
           <div className="ccip-chain-hero__heading__images">

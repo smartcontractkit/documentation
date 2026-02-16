@@ -76,9 +76,10 @@ function LaneDrawer({
         sourceAddress={sourceNetworkDetails?.chainSelector || ""}
         destinationAddress={destinationNetworkDetails?.chainSelector || ""}
         inOutbound={inOutbound}
+        inDrawer={true}
       />
 
-      <div className="ccip-table__drawer-container">
+      <div className="ccip-table__drawer-container ccip-table__drawer-container--lane">
         <div className="ccip-table__filters">
           <div>
             <div className="ccip-table__filters-title">
@@ -125,9 +126,7 @@ function LaneDrawer({
                       }}
                     />
                   </div>
-                  <div style={{ color: "var(--muted-more-foreground)", fontSize: "0.875rem", fontWeight: "normal" }}>
-                    (Tokens)
-                  </div>
+                  <span className="ccip-table__header-sublabel">(Tokens)</span>
                 </th>
                 <th style={{ width: "180px" }}>
                   <div>
@@ -145,9 +144,7 @@ function LaneDrawer({
                       }}
                     />
                   </div>
-                  <div style={{ color: "var(--muted-more-foreground)", fontSize: "0.875rem", fontWeight: "normal" }}>
-                    (Tokens/sec)
-                  </div>
+                  <span className="ccip-table__header-sublabel">(Tokens/sec)</span>
                 </th>
                 <th style={{ width: "150px" }}>
                   <div>
@@ -165,9 +162,7 @@ function LaneDrawer({
                       }}
                     />
                   </div>
-                  <div style={{ color: "var(--muted-more-foreground)", fontSize: "0.875rem", fontWeight: "normal" }}>
-                    (Tokens)
-                  </div>
+                  <span className="ccip-table__header-sublabel">(Tokens)</span>
                 </th>
                 <th style={{ width: "180px" }}>
                   <div>
@@ -185,9 +180,7 @@ function LaneDrawer({
                       }}
                     />
                   </div>
-                  <div style={{ color: "var(--muted-more-foreground)", fontSize: "0.875rem", fontWeight: "normal" }}>
-                    (Tokens/sec)
-                  </div>
+                  <span className="ccip-table__header-sublabel">(Tokens/sec)</span>
                 </th>
               </tr>
             </thead>

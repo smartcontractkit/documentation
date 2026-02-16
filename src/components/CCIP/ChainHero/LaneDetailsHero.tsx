@@ -23,6 +23,7 @@ interface LaneDetailsHeroProps {
   destinationAddress: string
   explorer: ExplorerInfo
   inOutbound: LaneFilter
+  inDrawer?: boolean
 }
 
 // Arrow component to avoid duplication
@@ -87,9 +88,10 @@ function LaneDetailsHero({
   destinationAddress,
   explorer,
   inOutbound,
+  inDrawer = false,
 }: LaneDetailsHeroProps) {
   return (
-    <div className="lane-details-hero">
+    <div className={`lane-details-hero ${inDrawer ? "lane-details-hero--drawer" : ""}`}>
       {/* Display networks with direction based on lane type */}
       <div className="lane-details-hero__networks">
         {inOutbound === LaneFilter.Inbound ? (

@@ -1,6 +1,6 @@
 import Address from "~/components/AddressReact.tsx"
 import "./Table.css"
-import { drawerContentStore } from "../Drawer/drawerStore.ts"
+import { drawerContentStore, DrawerWidth, drawerWidthStore } from "../Drawer/drawerStore.ts"
 import { Environment, SupportedTokenConfig, tokenPoolDisplay, PoolType } from "~/config/data/ccip/index.ts"
 import { areAllLanesPaused } from "~/config/data/ccip/utils.ts"
 import { ChainType, ExplorerInfo } from "~/config/types.ts"
@@ -86,6 +86,7 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                         type="button"
                         className={`ccip-table__network-name ${allLanesPaused ? "ccip-table__network-name--paused" : ""}`}
                         onClick={() => {
+                          drawerWidthStore.set(DrawerWidth.Wide)
                           drawerContentStore.set(() => (
                             <TokenDrawer
                               token={token}

@@ -10,41 +10,82 @@
   width: 15% !important;
 }
 
-/* Column width specifications for main accordion table only */
-.ccip-table thead th:nth-child(1) {
-  /* Destination/Source network */
+/* Column width specifications for lanes accordion table in drawer only */
+.ccip-table__drawer-container--token .ccip-table thead th:nth-child(1) {
+  /* Destination/Source network in TokenDrawer */
   width: 25%;
 }
 
-.ccip-table thead th:nth-child(2) {
-  /* Mechanism */
+.ccip-table__drawer-container--lane .ccip-table thead th:nth-child(1) {
+  /* Ticker column in LaneDrawer */
+  width: 100px;
+}
+
+.ccip-table__drawer-container--token .ccip-table thead th:nth-child(2) {
+  /* Mechanism in TokenDrawer */
   width: 15%;
 }
 
-.ccip-table thead th:nth-child(3) {
-  /* Rate limit capacity */
+.ccip-table__drawer-container--token .ccip-table thead th:nth-child(3) {
+  /* Rate limit capacity in TokenDrawer */
   width: 15%;
 }
 
-.ccip-table thead th:nth-child(4) {
-  /* Rate limit refill rate */
+.ccip-table__drawer-container--token .ccip-table thead th:nth-child(4) {
+  /* Rate limit refill rate in TokenDrawer */
   width: 15%;
 }
 
-.ccip-table thead th:nth-child(5) {
-  /* FTF Rate limit capacity */
+.ccip-table__drawer-container--token .ccip-table thead th:nth-child(5) {
+  /* FTF Rate limit capacity in TokenDrawer */
   width: 15%;
 }
 
-.ccip-table thead th:nth-child(6) {
-  /* FTF Rate limit refill rate */
+.ccip-table__drawer-container--token .ccip-table thead th:nth-child(6) {
+  /* FTF Rate limit refill rate in TokenDrawer */
   width: 15%;
 }
 
-.ccip-table thead th:nth-child(7) {
-  /* Verifiers */
+.ccip-table__drawer-container--lane .ccip-table thead th:nth-child(2) {
+  /* Source token address in LaneDrawer */
+  width: 150px;
+}
+
+.ccip-table__drawer-container--lane .ccip-table thead th:nth-child(3) {
+  /* Decimals in LaneDrawer */
+  width: 80px;
+}
+
+.ccip-table__drawer-container--lane .ccip-table thead th:nth-child(4) {
+  /* Mechanism in LaneDrawer */
+  width: 100px;
+}
+
+.ccip-table__drawer-container--lane .ccip-table thead th:nth-child(5) {
+  /* Rate limit capacity in LaneDrawer */
+  width: 150px;
+}
+
+.ccip-table__drawer-container--lane .ccip-table thead th:nth-child(6) {
+  /* Rate limit refill rate in LaneDrawer */
+  width: 180px;
+}
+
+.ccip-table__drawer-container--lane .ccip-table thead th:nth-child(8) {
+  /* FTF Rate limit refill rate in LaneDrawer (8th column) */
+  width: 180px;
+}
+
+.ccip-table__drawer-container--token .ccip-table thead th:nth-child(7) {
+  /* Verifiers column in TokenDrawer */
   width: 10%;
-  text-align: center !important;
+  text-align: right !important;
+}
+
+.ccip-table__drawer-container--lane .ccip-table thead th:nth-child(7) {
+  /* FTF Rate limit capacity column in LaneDrawer */
+  width: 15%;
+  text-align: left;
 }
 
 .ccip-table tbody tr:first-child {
@@ -76,10 +117,15 @@
   background-color: transparent;
   color: var(--gray-700);
   align-content: baseline;
+  padding-left: 0;
 }
 
-.ccip-table thead th:first-child {
+.ccip-table__drawer-container .ccip-table thead th:first-child:not(.ccip-table__verifier-name-header) {
   padding-left: var(--space-6x);
+}
+
+.ccip-table__verifier-name-header {
+  padding-left: 0 !important;
 }
 
 .ccip-table tbody td {
@@ -383,8 +429,8 @@
   pointer-events: none;
 }
 
-/* Align verifiers column content to the right - main table only */
-.ccip-table:not(.ccip-table--verifiers) tbody td:nth-child(7) {
+/* Align verifiers column content to the right - drawer lanes table only */
+.ccip-table__drawer-container .ccip-table:not(.ccip-table--verifiers) tbody td:nth-child(7) {
   text-align: right;
 }
 
@@ -467,4 +513,167 @@
 .ccip-table__paused-badge {
   margin-left: var(--space-2x);
   font-size: 12px;
+}
+
+.ccip-table__header-sublabel {
+  font-size: 0.875em;
+  margin-top: var(--space-1x);
+  display: block;
+  color: var(--muted-more-foreground, #9fa7b2);
+  font-weight: 600;
+  line-height: 22px;
+}
+
+/* Mobile responsive styles for Token Drawer tables */
+@media (max-width: 768px) {
+  .ccip-table__drawer-container {
+    padding: var(--space-4x);
+  }
+
+  .ccip-table {
+    font-size: 12px;
+    table-layout: auto;
+  }
+
+  /* Override fixed widths on mobile for drawer tables */
+  .ccip-table__drawer-container .ccip-table thead th {
+    width: auto !important;
+    min-width: 80px;
+    padding: var(--space-2x) var(--space-2x) var(--space-2x) 0;
+    font-size: 12px;
+  }
+
+  .ccip-table__drawer-container .ccip-table thead th:first-child {
+    padding-left: var(--space-3x);
+    min-width: 120px;
+  }
+
+  .ccip-table__drawer-container .ccip-table thead th:nth-child(7) {
+    min-width: 60px;
+  }
+
+  .ccip-table tbody td {
+    padding: var(--space-3x) var(--space-2x) var(--space-3x) 0;
+    font-size: 12px;
+  }
+
+  .ccip-table__accordion-row td {
+    padding-left: var(--space-3x);
+  }
+
+  .ccip-table__accordion-row td:first-child {
+    padding-left: var(--space-3x);
+  }
+
+  .ccip-table__network-name {
+    font-size: 12px;
+  }
+
+  .ccip-table tbody td .ccip-table__logo {
+    width: 20px;
+    height: 20px;
+    margin-right: var(--space-2x);
+  }
+
+  /* Hide sublabels on mobile to save vertical space */
+  .ccip-table__header-sublabel {
+    display: none;
+  }
+
+  /* Make mechanism column more compact */
+  .ccip-table__drawer-container .ccip-table thead th:nth-child(2) {
+    font-size: 11px;
+  }
+
+  /* Reduce verifier content padding */
+  .ccip-table__verifier-content {
+    padding: 0;
+  }
+
+  .ccip-table--verifiers thead th,
+  .ccip-table--verifiers tbody td {
+    padding: var(--space-2x) var(--space-3x);
+    font-size: 11px;
+  }
+
+  .ccip-table--verifiers thead th:first-child,
+  .ccip-table--verifiers tbody td:first-child {
+    padding-left: var(--space-3x);
+  }
+
+  .ccip-table--verifiers .ccip-table__logo {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Adjust tooltip positioning on mobile */
+  .rate-tooltip-cell {
+    min-width: 80px;
+  }
+
+  /* Make paused badge smaller on mobile */
+  .ccip-table__paused-badge {
+    font-size: 10px;
+    margin-left: var(--space-1x);
+  }
+
+  /* Verifiers tab table mobile styles */
+  .ccip-table__verifier-name-header {
+    min-width: 80px !important;
+    width: auto !important;
+  }
+
+  /* Make all verifier table columns responsive */
+  .ccip-table:not(.ccip-table--verifiers) thead th {
+    white-space: nowrap;
+    font-size: 10px !important;
+    padding: var(--space-2x) var(--space-1x) !important;
+  }
+
+  /* Compact the standalone verifiers table (in Verifiers tab) */
+  .ccip-table__wrapper > .ccip-table {
+    font-size: 11px;
+  }
+
+  .ccip-table__wrapper > .ccip-table thead th {
+    padding: var(--space-2x) var(--space-1x);
+    font-size: 10px;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .ccip-table__wrapper > .ccip-table tbody td {
+    padding: var(--space-2x) var(--space-1x);
+    font-size: 10px;
+    vertical-align: middle;
+  }
+
+  .ccip-table__wrapper > .ccip-table tbody td > div {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1x);
+  }
+
+  .ccip-table__wrapper > .ccip-table .ccip-table__logo {
+    width: 16px !important;
+    height: 16px !important;
+    margin-right: 0 !important;
+    flex-shrink: 0;
+  }
+
+  /* Make verifier name column slightly wider */
+  .ccip-table__wrapper > .ccip-table thead th:nth-child(1) {
+    min-width: 90px;
+  }
+
+  /* Compress address column */
+  .ccip-table__wrapper > .ccip-table thead th:nth-child(2) {
+    min-width: 70px;
+  }
+
+  /* Make type and threshold columns narrower */
+  .ccip-table__wrapper > .ccip-table thead th:nth-child(3),
+  .ccip-table__wrapper > .ccip-table thead th:nth-child(4) {
+    min-width: 60px;
+  }
 }

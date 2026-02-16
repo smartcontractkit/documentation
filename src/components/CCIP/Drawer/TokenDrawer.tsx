@@ -182,8 +182,9 @@ function TokenDrawer({
           explorer: network.explorer,
           chainType: network.chainType,
         }}
+        inDrawer={true}
       />
-      <div className="ccip-table__drawer-container">
+      <div className="ccip-table__drawer-container ccip-table__drawer-container--token">
         <div className="ccip-table__filters">
           <div>
             <Tabs
@@ -211,7 +212,7 @@ function TokenDrawer({
             <table className="ccip-table">
               <thead>
                 <tr>
-                  <th>
+                  <th className="ccip-table__verifier-name-header">
                     <Typography variant="body-semi-s">Verifier name</Typography>
                   </th>
                   <th>
@@ -287,37 +288,49 @@ function TokenDrawer({
                     />
                   </th>
                   <th>
-                    Rate limit capacity
-                    <Tooltip
-                      label=""
-                      tip="Maximum amount per transaction"
-                      labelStyle={{
-                        marginRight: "5px",
-                      }}
-                      style={{
-                        display: "inline-block",
-                        verticalAlign: "middle",
-                        marginBottom: "2px",
-                      }}
-                    />
+                    <div>
+                      Rate limit capacity
+                      <Tooltip
+                        label=""
+                        tip="Maximum amount per transaction"
+                        labelStyle={{
+                          marginRight: "5px",
+                        }}
+                        style={{
+                          display: "inline-block",
+                          verticalAlign: "middle",
+                          marginBottom: "2px",
+                        }}
+                      />
+                    </div>
+                    <span className="ccip-table__header-sublabel">(Tokens)</span>
                   </th>
                   <th>
-                    Rate limit refill rate
-                    <Tooltip
-                      label=""
-                      tip="Rate at which available capacity is replenished"
-                      labelStyle={{
-                        marginRight: "5px",
-                      }}
-                      style={{
-                        display: "inline-block",
-                        verticalAlign: "middle",
-                        marginBottom: "2px",
-                      }}
-                    />
+                    <div>
+                      Rate limit refill rate
+                      <Tooltip
+                        label=""
+                        tip="Rate at which available capacity is replenished"
+                        labelStyle={{
+                          marginRight: "5px",
+                        }}
+                        style={{
+                          display: "inline-block",
+                          verticalAlign: "middle",
+                          marginBottom: "2px",
+                        }}
+                      />
+                    </div>
+                    <span className="ccip-table__header-sublabel">(Tokens/sec)</span>
                   </th>
-                  <th>FTF Rate limit capacity</th>
-                  <th>FTF Rate limit refill rate</th>
+                  <th>
+                    <div>FTF Rate limit capacity</div>
+                    <span className="ccip-table__header-sublabel">(Tokens)</span>
+                  </th>
+                  <th>
+                    <div>FTF Rate limit refill rate</div>
+                    <span className="ccip-table__header-sublabel">(Tokens/sec)</span>
+                  </th>
                   <th>Verifiers</th>
                 </tr>
               </thead>
