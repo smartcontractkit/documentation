@@ -5,7 +5,7 @@ date: Last Modified
 pageId: "getting-started-before-you-build"
 sdkLang: "ts"
 metadata:
-  description: "Essential tips before building your own CRE workflows: library compatibility, Solidity integers, working with time, and next steps for production deployment."
+  description: "Essential tips before building your own CRE workflows: library compatibility, Solidity integers, safe decimal scaling, working with time, and next steps for production deployment."
   datePublished: "2026-02-04"
   lastModified: "2026-02-04"
 ---
@@ -51,6 +51,44 @@ const amount = 10000000000000001n // Stays exactly 10000000000000001
 {/* prettier-ignore */}
 <Aside type="tip" title="Learn more">
   See [Writing Data Onchain](/cre/guides/workflow/using-evm-client/onchain-write/writing-data-onchain#step-2-abi-encode-your-value) for the complete Solidity-to-TypeScript type mapping.
+</Aside>
+
+## Safe decimal scaling
+
+Smart contracts use fixed-point integers (e.g., 18 decimals for ERC-20 tokens). When converting between human-readable values and their onchain representations, avoid floating-point arithmetic — it causes **silent precision loss**.
+
+Use <a href="https://viem.sh/docs/utilities/parseUnits" target="_blank">viem's `parseUnits()`</a> to scale up and <a href="https://viem.sh/docs/utilities/formatUnits" target="_blank">`formatUnits()`</a> to scale down. Both operate on strings, so no floating-point math is involved.
+
+### Scaling up (human-readable to onchain)
+
+```typescript
+import { parseUnits } from "viem"
+
+// WRONG - floating-point precision loss
+const amount = BigInt(0.1 * 1e18)
+// Result: 99999999999999984n (off by 16)
+
+// CORRECT - string-based, no precision loss
+const amount = parseUnits("0.1", 18)
+// Result: 100000000000000000n (exact)
+```
+
+### Scaling down (onchain to human-readable)
+
+```typescript
+import { formatUnits } from "viem"
+
+// WRONG - precision loss for large bigints
+const display = Number(totalSupply) / 1e18
+
+// CORRECT - string-based, no precision loss
+const display = formatUnits(totalSupply, 18)
+// Returns "1.5" for 1500000000000000000n
+```
+
+{/* prettier-ignore */}
+<Aside type="tip" title="Works with any decimal count">
+  Both functions accept any decimal count, not just 18. For example, USDC uses 6 decimals: `parseUnits("100.50", 6)` returns `100500000n`.
 </Aside>
 
 ## Working with time
