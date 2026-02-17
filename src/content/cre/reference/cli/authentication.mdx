@@ -3,23 +3,23 @@ section: cre
 date: Last Modified
 title: "Authentication Commands"
 metadata:
-  description: "Manage your CLI authentication: reference for login, logout, and whoami commands to control your CRE sessions."
+  description: "Manage your CLI authentication: browser-based login, API key authentication for CI/CD, and session management commands."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-02-12"
 ---
 
 import { Aside } from "@components"
 
-The authentication commands manage your CRE credentials and account information.
+The CRE CLI supports two authentication methods:
 
-<Aside type="note" title="Global flags">
-  All `cre` commands support [global flags](/cre/reference/cli#global-flags) like `--env`, `--target`, `--project-root`,
-  and `--verbose`.
-</Aside>
+- **Browser-based login** (`cre login`) — Interactive login for local development
+- **API key** (`CRE_API_KEY` environment variable) — Non-interactive authentication for CI/CD pipelines and headless environments
 
-## `cre login`
+## Browser-based authentication
 
-Starts the authentication flow. This command opens your browser for user login and saves your credentials locally.
+### `cre login`
+
+Starts the interactive authentication flow. This command opens your browser for user login and saves your credentials locally.
 
 **Usage:**
 
@@ -35,7 +35,9 @@ cre login
 1. Enter your one-time password (OTP) from your authenticator app
 1. The CLI automatically captures and saves your credentials locally
 
-## `cre logout`
+For a detailed walkthrough with screenshots, see [Logging in with the CLI](/cre/account/cli-login).
+
+### `cre logout`
 
 Revokes authentication tokens and removes local credentials. This invalidates the current authentication tokens and deletes stored credentials from your machine.
 
@@ -45,9 +47,9 @@ Revokes authentication tokens and removes local credentials. This invalidates th
 cre logout
 ```
 
-## `cre whoami`
+### `cre whoami`
 
-Shows your current account details. This command fetches and displays your account information, including your email and organization ID.
+Shows your current account details. This command fetches and displays your account information, including your email and organization ID. This works with both browser-based login and API key authentication.
 
 **Usage:**
 
@@ -55,22 +57,58 @@ Shows your current account details. This command fetches and displays your accou
 cre whoami
 ```
 
+{/* prettier-ignore */}
 <Aside type="note" title="Verify authentication">
-  Use `cre whoami` to verify you're logged in and check which account is currently active. This is useful before
-  deploying workflows or performing other authenticated operations.
+  Use `cre whoami` to verify you're authenticated and check which account is currently active. This is useful before deploying workflows or performing other authenticated operations.
 </Aside>
 
-## Authentication workflow
+## API key authentication
 
-The typical authentication flow:
+{/* prettier-ignore */}
+<Aside type="note" title="Deploy access required">
+  API key authentication requires your account to have Early Access approval for deployment. To <a href="https://cre.chain.link/request-access" target="_blank" rel="noopener noreferrer">request Early Access</a>, please share details about your project and use case—this helps us provide better support as you build with CRE.
+</Aside>
 
-1. **`cre login`** — Authenticate with the CRE UI (browser-based)
-1. **`cre whoami`** — Verify your authentication and account details
-1. **Perform CLI operations** — Deploy, manage workflows, etc.
-1. **`cre logout`** — (Optional) Revoke credentials when done
+For CI/CD pipelines, automated scripts, or any environment where a browser is not available, you can authenticate using an API key. When the `CRE_API_KEY` environment variable is set, the CLI uses it automatically — no `cre login` required.
+
+### Creating an API key
+
+1. Log in to the <a href="https://cre.chain.link" target="_blank" rel="noopener noreferrer">CRE platform</a>
+1. Navigate to the **Organization** page
+1. Select the **APIs** tab
+1. Click **+ Organization API**
+1. Give your key a name and confirm
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Keep your API key secure">
+  Treat your API key like a password. Do not commit it to version control or share it in plain text. Use your CI/CD platform's secret management to store it securely.
+</Aside>
+
+### Using the API key
+
+Set the `CRE_API_KEY` environment variable before running CLI commands:
+
+```bash
+export CRE_API_KEY="your-api-key"
+cre whoami
+```
+
+When `CRE_API_KEY` is set, the CLI skips the browser-based login flow entirely. All commands that require authentication (deploying, managing workflows, etc.) will use the API key.
+
+In a CI/CD pipeline, configure `CRE_API_KEY` as a secret environment variable in your platform and run CLI commands as usual.
+
+## Authentication methods summary
+
+| <div style="width: 100px;">Method</div> | Best for                              | How it works                                         |
+| --------------------------------------- | ------------------------------------- | ---------------------------------------------------- |
+| `cre login`                             | Local development                     | Opens a browser for interactive login with 2FA       |
+| `CRE_API_KEY`                           | CI/CD, scripts, headless environments | Set the environment variable — no browser needed(\*) |
+
+(\*) API key authentication requires your account to have <a href="https://cre.chain.link/request-access" target="_blank" rel="noopener noreferrer">Early Access</a> approval.
 
 ## Learn more
 
-- [Getting Started](/cre/getting-started) — Includes authentication setup in the initial steps
+- [Logging in with the CLI](/cre/account/cli-login) — Step-by-step browser login guide with screenshots
+- [Managing Authentication](/cre/account/managing-auth) — Session management, expiration, and logout
 - [Account Management](/cre/reference/cli/account) — Link keys after authentication
 - [Deploying Workflows](/cre/guides/operations/deploying-workflows) — Requires authentication

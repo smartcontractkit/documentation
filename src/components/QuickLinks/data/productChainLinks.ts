@@ -118,6 +118,7 @@ export const productChainLinks: ProductChainLinks = {
       ethereum: "/cre/supported-networks",
       optimism: "/cre/supported-networks",
       polygon: "/cre/supported-networks",
+      worldchain: "/cre/supported-networks",
       zksync: "/cre/supported-networks",
     },
   },
