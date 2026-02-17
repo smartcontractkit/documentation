@@ -5,18 +5,34 @@ title: "Managing Authentication"
 metadata:
   description: "Manage your CRE CLI sessions: check if you're logged in, handle expired sessions, and securely log out when needed."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-02-12"
 ---
 
 import { Aside } from "@components"
 
-This guide covers how to manage your CLI authentication session, including logging in, checking your status, handling session expiration, and logging out.
+This guide covers how to manage your CLI authentication, including browser-based login, API key authentication, checking your status, handling session expiration, and logging out.
 
 ## Logging in
 
 To authenticate your CLI with your CRE account, use the `cre login` command. This opens a browser window where you'll enter your credentials and complete two-factor authentication.
 
 For detailed login instructions, see the [Logging in with the CLI](/cre/account/cli-login) guide.
+
+## API key authentication
+
+{/* prettier-ignore */}
+<Aside type="note" title="Deploy access required">
+  API key authentication requires your account to have Early Access approval for deployment. To <a href="https://cre.chain.link/request-access" target="_blank" rel="noopener noreferrer">request Early Access</a>, please share details about your project and use case—this helps us provide better support as you build with CRE.
+</Aside>
+
+For CI/CD pipelines or headless environments where a browser is not available, you can authenticate using the `CRE_API_KEY` environment variable. When set, the CLI uses the API key automatically — no `cre login` required.
+
+```bash
+export CRE_API_KEY="your-api-key"
+cre whoami
+```
+
+API keys are created in the **APIs** tab of the **Organization** page in the <a href="https://cre.chain.link" target="_blank" rel="noopener noreferrer">CRE platform</a>. For full details, see [API Key Authentication](/cre/reference/cli/authentication#api-key-authentication).
 
 ## Session expiration
 
