@@ -13,7 +13,7 @@ const FUSE_OPTIONS: IFuseOptions<ChainDetails> = {
     { name: "chainFamily", weight: 0.2 },
     { name: "chainId", weight: 0.15 },
   ],
-  threshold: 0.4,
+  threshold: 0.3, // Stricter matching - 0.4 was too relaxed
   ignoreLocation: true,
   minMatchCharLength: 2,
 }
