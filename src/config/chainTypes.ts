@@ -38,6 +38,48 @@ export const CHAIN_TYPE_CONFIGS: Record<ChainType, ChainTypeConfig> = {
     color: "#00D4AA", // Aptos teal
     description: "Aptos Move blockchain",
   },
+  sui: {
+    id: "sui",
+    displayName: "Sui",
+    icon: "/assets/chains/sui.svg",
+    color: "#6FBCF0", // Sui blue
+    description: "Sui Move blockchain",
+  },
+  canton: {
+    id: "canton",
+    displayName: "Canton",
+    icon: "/assets/chains/canton.svg",
+    color: "#1E1E1E", // Canton dark
+    description: "Canton Network blockchain",
+  },
+  ton: {
+    id: "ton",
+    displayName: "TON",
+    icon: "/assets/chains/ton.svg",
+    color: "#0088CC", // TON blue
+    description: "The Open Network blockchain",
+  },
+  tron: {
+    id: "tron",
+    displayName: "TRON",
+    icon: "/assets/chains/tron.svg",
+    color: "#FF0013", // TRON red
+    description: "TRON blockchain",
+  },
+  stellar: {
+    id: "stellar",
+    displayName: "Stellar",
+    icon: "/assets/chains/stellar.svg",
+    color: "#000000", // Stellar black
+    description: "Stellar blockchain",
+  },
+  starknet: {
+    id: "starknet",
+    displayName: "Starknet",
+    icon: "/assets/chains/starknet.svg",
+    color: "#EC796B", // Starknet coral
+    description: "Starknet blockchain",
+  },
 }
 
 /**
