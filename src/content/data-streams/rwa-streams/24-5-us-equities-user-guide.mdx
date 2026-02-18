@@ -338,15 +338,22 @@ In the following sections, we outline key risks and recommended mitigation strat
 
 Extended and overnight session price feeds are currently sourced from a single data provider, making these sessions less reliable than the regular hours price feed which is multi-sourced.
 
-If the provider experiences downtime, technical failures, or connectivity disruption, the feed may flatline or report highly inaccurate figures, preventing users from reacting to real price movements. Such issues may lead to mispricing, failed liquidations, and potential bad debt accumulation.
+Unlike regular hours where multiple independent sources cross-validate each other, a single provider means there is no redundant check on individual quote quality. This creates two distinct risks:
+
+- **Provider outage or disruption:** If the provider experiences downtime, technical failures, or connectivity disruption, the feed may flatline or report highly inaccurate figures, which can prevent users from reacting to real price movements. Such issues may lead to mispricing, failed liquidations, and potential bad debt accumulation.
+- **Erroneous individual quotes:** Even when the provider is operational, it may publish a single bid or ask quote that is significantly off from the prevailing market price — for example, a bid price printing far below the previous in-session price. Because there is no second source to cross-validate against, this outlier quote directly distorts the mid-price calculation, creating a large artificial price move. This danger is exacerbated during extended and overnight sessions where the erroneous price can persist for an extended period of time with no corrective market activity to resolve it.
 
 ##### Mitigation
 
-The feed includes a staleness indicator, allowing consumers to detect when data stops updating. Users are strongly recommended to implement fallback logic within their protocol risk framework, which may include:
+Consumers should not rely on the staleness indicator alone. A feed can be actively updating with a technically fresh timestamp while still publishing an incorrect mid price derived from a single outlier quote. Recommended safeguards include:
 
-- Pause or lock market activity
-- Restrict to narrow price bands
-- Temporarily switch to the tokenized price feed (understanding that it also carries liquidity limitations)
+- **Monitor bid/ask spread:** A sudden, significant widening of the spread between `bid` and `ask` is a strong indicator that a single outlier quote has distorted the mid-price. Implement a maximum spread threshold — for example, if `(ask - bid) / mid` exceeds a percentage beyond a configured threshold, treat the price as unreliable and restrict or pause exposure accordingly.
+- **Implement price deviation checks:** Compare the current mid-price against a reference (e.g., the previous valid price or a short-term moving average) and trigger a circuit breaker if the move exceeds a configured threshold.
+- **Apply heightened caution during closed market periods:** During extended and overnight sessions, there is no active market to correct erroneous quotes. Consider applying stricter spread and deviation thresholds, or pausing activity entirely, during these windows.
+- **Check staleness via `lastSeenTimestampNs`:** Detect when data stops updating entirely, which is a separate but complementary signal to the above.
+- **Pause or lock market activity** when any of the above conditions are triggered.
+- **Restrict to narrow price bands** based on a recent valid reference price.
+- **Temporarily switch to the [tokenized asset](#stream-switching-example-logic) feed** (understanding that it also carries liquidity limitations).
 
 ### Structural Illiquidity and Volatility in Extended & Overnight Hours
 
