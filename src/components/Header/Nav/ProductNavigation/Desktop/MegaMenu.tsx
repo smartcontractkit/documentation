@@ -1,305 +1,244 @@
-import { evmProducts } from "~/features/landing/data/index.ts"
 import styles from "./megaMenu.module.css"
-import resourcesLogo from "../../../../../assets/product-logos/data-resources-logo.svg"
-import { Fragment } from "react/jsx-runtime"
-import { useEffect } from "react"
+import ccipLogo from "../../../../../assets/product-logos/ccip-logo.svg"
+import dataFeedsLogo from "../../../../../assets/product-logos/data-feeds-logo.svg"
+import dataStreamsLogo from "../../../../../assets/product-logos/data-streams-logo.svg"
+import dataLinkLogo from "../../../../../assets/product-logos/datalink-logo.svg"
+import functionsLogo from "../../../../../assets/product-logos/functions-logo.svg"
+import automationLogo from "../../../../../assets/product-logos/automation-logo.svg"
+import vrfLogo from "../../../../../assets/product-logos/vrf-logo.svg"
+import dtaLogo from "../../../../../assets/product-logos/dta-logo.svg"
+import generalGlobeLogo from "../../../../../assets/product-logos/general-globe-logo.svg"
+import nodesLogo from "../../../../../assets/product-logos/nodes-logo.svg"
+import chainlinkLocalLogo from "../../../../../assets/product-logos/chainlink-local-2-logo.svg"
+import creLogo from "../../../../../assets/product-logos/cre-logo.svg"
+import { Typography } from "@chainlink/blocks"
+import { clsx } from "../../utils.ts"
 
-interface MegaMenuProps {
-  cancel: () => void
-  id?: string
+const BlueSquare = () => {
+  return (
+    <div
+      style={{
+        background: "var(--brand)",
+        height: "5px",
+        width: "5px",
+        display: "block",
+      }}
+    ></div>
+  )
 }
 
-interface BottomLink {
-  label: string
-  href: string
-}
-
-interface Link {
-  label: string
-  href?: string
-}
-
-interface MenuItem {
-  title?: string
-  image?: { src: string }
-  description?: string
-  learnMoreLink?: string
-  docsLandingLink?: string
-  links: Link[]
-}
-
-interface SubSection {
+interface GroupItem {
   title: string
-  items: MenuItem[]
-  bottomLinks?: BottomLink[]
+  description: string
+  icon: ImageMetadata
+  link: string
 }
 
-interface MegaMenuSection {
-  title: string
-  isMultiSection?: boolean
-  sections?: SubSection[]
-  items?: MenuItem[]
-  bottomLinks?: BottomLink[]
+const GroupItem = ({ data }: { data: GroupItem }) => {
+  return (
+    <a href={data.link} className={styles.groupItem}>
+      <img src={data.icon.src} alt={data.title} className={styles.groupItemIcon} />
+      <div>
+        <Typography variant="body-semi" className={styles.groupItemTitle}>
+          {data.title}
+        </Typography>
+        <Typography color="muted" variant="body-s" className={styles.groupItemDescription}>
+          {data.description}
+        </Typography>
+      </div>
+    </a>
+  )
 }
 
-export const megaMenuSections: MegaMenuSection[] = [
-  {
-    title: "Orchestration & Cross-Chain",
-    isMultiSection: true,
-    sections: [
+const GroupTitle = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <Typography
+      variant="code-s"
+      color="muted"
+      style={{ textTransform: "uppercase", lineHeight: "12px", letterSpacing: "0.6px" }}
+    >
+      {children}
+    </Typography>
+  )
+}
+
+export const megaMenuSections = {
+  interoperability: {
+    title: "Interoperability",
+    items: [
       {
-        title: "Orchestration",
-        items: [
-          {
-            ...(evmProducts.find((product) => product.title === "CRE") || {}),
-            links: [
-              {
-                label: "Docs",
-                href: (evmProducts.find((product) => product.title === "CRE") || {})?.docsLandingLink,
-              },
-            ],
-          },
-        ],
-      },
-      {
-        title: "Cross-Chain",
-        items: [
-          {
-            ...(evmProducts.find((product) => product.title === "CCIP") || {}),
-            links: [
-              {
-                label: "Docs",
-                href: (evmProducts.find((product) => product.title === "CCIP") || {})?.docsLandingLink,
-              },
-              {
-                label: "Learn",
-                href: (evmProducts.find((product) => product.title === "CCIP") || {})?.learnMoreLink,
-              },
-            ],
-          },
-        ],
-        bottomLinks: [
-          {
-            label: "View all resources",
-            href: "https://dev.chain.link/resources",
-          },
-          {
-            label: "Learn about Chainlink",
-            href: "https://dev.chain.link/products/general",
-          },
-        ],
+        icon: ccipLogo,
+        title: "Cross-Chain Communication",
+        description: "Move data and value across any blockchain",
+        link: "/ccip",
       },
     ],
   },
-  {
+  data: {
     title: "Data",
     items: [
       {
-        ...evmProducts.find((product) => product.title === "Data Feeds"),
-        title: "Data Feeds",
-        links: [
-          {
-            label: "Docs",
-            href: (evmProducts.find((product) => product.title === "Data Feeds") || {})?.docsLandingLink,
-          },
-          {
-            label: "Learn",
-            href: (evmProducts.find((product) => product.title === "Data Feeds") || {})?.learnMoreLink,
-          },
-        ],
-      },
-
-      {
-        ...evmProducts.find((product) => product.title === "Data Streams"),
+        icon: dataStreamsLogo,
         title: "Data Streams",
-        links: [
-          {
-            label: "Docs",
-            href: (evmProducts.find((product) => product.title === "Data Streams") || {})?.docsLandingLink,
-          },
-          {
-            label: "Learn",
-            href: (evmProducts.find((product) => product.title === "Data Streams") || {})?.learnMoreLink,
-          },
-        ],
+        description: "Access high-frequency market data for next-gen DeFi",
+        link: "/data-streams",
       },
-
       {
-        title: "Data resources",
-        image: resourcesLogo,
-        description: "Global standard for building secure cross-chain applications.",
-        learnMoreLink: "data-feeds",
-        links: [
-          {
-            label: "Learn",
-            href: "https://dev.chain.link/products/data",
-          },
-        ],
+        icon: dataFeedsLogo,
+        title: "Market and Data Feeds",
+        description: "Utilize ultra-secure onchain data for smart contracts",
+        link: "/data-feeds",
+      },
+      {
+        icon: dataLinkLogo,
+        title: "DataLink",
+        description: "Publish and commercialize institutional data across...",
+        link: "/datalink",
       },
     ],
   },
-  {
+  assetManagement: {
+    title: "Asset Management",
+    items: [
+      {
+        icon: dtaLogo,
+        title: "Digital Transfer Agent (DTA) Technical Standard",
+        description: "Unlock streamlined tokenized fund operations",
+        link: "/dta-technical-standard",
+      },
+    ],
+  },
+  compute: {
     title: "Compute",
     items: [
       {
-        ...evmProducts.find((product) => product.title === "Automation"),
-        links: [
-          {
-            label: "Docs",
-            href: (evmProducts.find((product) => product.title === "Automation") || {})?.docsLandingLink,
-          },
-          {
-            label: "Learn",
-            href: (evmProducts.find((product) => product.title === "Automation") || {})?.learnMoreLink,
-          },
-        ],
+        icon: functionsLogo,
+        title: "Functions",
+        description: "Connect smart contracts to any API",
+        link: "/chainlink-functions",
       },
       {
-        ...evmProducts.find((product) => product.title === "Functions"),
-        links: [
-          {
-            label: "Docs",
-            href: (evmProducts.find((product) => product.title === "Functions") || {})?.docsLandingLink,
-          },
-          {
-            label: "Learn",
-            href: (evmProducts.find((product) => product.title === "Functions") || {})?.learnMoreLink,
-          },
-        ],
+        icon: automationLogo,
+        title: "Automation",
+        description: "Automate smart contracts via decentralized triggers",
+        link: "/chainlink-automation",
       },
       {
-        ...evmProducts.find((product) => product.title === "VRF"),
-        links: [
-          {
-            label: "Docs",
-            href: (evmProducts.find((product) => product.title === "VRF") || {})?.docsLandingLink,
-          },
-          {
-            label: "Learn",
-            href: (evmProducts.find((product) => product.title === "VRF") || {})?.learnMoreLink,
-          },
-        ],
+        icon: vrfLogo,
+        title: "VRF",
+        description: "Ensure fair outcomes in games, NFTs, and more",
+        link: "/vrf",
       },
     ],
   },
-]
+  orchestration: {
+    title: "Orchestration",
+    items: [
+      {
+        icon: creLogo,
+        title: "Chainlink Runtime Environment (CRE)",
+        description: "The global orchestration layer",
+        link: "/cre",
+      },
+    ],
+  },
+  other: {
+    title: "More",
+    items: [
+      {
+        icon: generalGlobeLogo,
+        title: "General",
+        description: "Foundational Chainlink knowledge",
+        link: "/getting-started/conceptual-overview",
+      },
+      {
+        icon: nodesLogo,
+        title: "Nodes",
+        description: "Be part of the Chainlink Network",
+        link: "/",
+      },
+      {
+        icon: chainlinkLocalLogo,
+        title: "Chainlink local",
+        description: "Run services locally before transitioning to a testnet",
+        link: "/chainlink-local",
+      },
+    ],
+  },
+}
 
-function MegaMenu({ cancel, id }: MegaMenuProps) {
-  useEffect(() => {
-    const onESC = (ev: KeyboardEvent) => {
-      if (ev.key === "Escape") {
-        cancel()
-      }
-    }
-    window.addEventListener("keyup", onESC, false)
-    return () => {
-      window.removeEventListener("keyup", onESC, false)
-    }
-  }, [])
-
+function MegaMenu({ cancel, isMobile }: { cancel?: () => void; isMobile?: boolean }) {
   return (
-    <div className={styles.megaMenuContainer} id={id}>
-      <div className={styles.wrapper} onMouseLeave={cancel}>
-        <div className={styles.resourcesMenuContentMain}>
-          {megaMenuSections.map((section) => (
-            <div className={styles.resourcesMenuContentRow} key={section.title}>
-              {section.isMultiSection && section.sections ? (
-                <>
-                  {section.sections.map((subSection) => (
-                    <Fragment key={subSection.title}>
-                      <h2 className="label">{subSection.title}</h2>
-                      {subSection.items.map((item, index) => (
-                        <Fragment key={index}>
-                          <div className={styles.megaMenuLink}>
-                            {item?.image?.src && <img src={item.image.src} alt={item.title} />}
-                            <h3 className="heading-100">{item.title}</h3>
-                          </div>
-                          <div className={styles.links}>
-                            <p className="paragraph-100">{item.description}</p>
-                            {item.links.map((link, linkIndex) => (
-                              <Fragment key={linkIndex}>
-                                <a href={link.href} className="text-100">
-                                  {link.label}
-                                </a>
-                                {linkIndex < item.links.length - 1 && <span className={styles.verticalDivider}></span>}
-                              </Fragment>
-                            ))}
-                          </div>
-                        </Fragment>
-                      ))}
-                      {subSection.bottomLinks && (
-                        <div className={styles.bottomLinks}>
-                          {subSection.bottomLinks.map((link, linkIndex) => (
-                            <div className="label" key={linkIndex}>
-                              <a href={link.href} target="_blank" rel="noopener noreferrer">
-                                {link.label}
-                              </a>
-                              <img src="/images/tabler_arrow-up.svg" alt="" />
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </Fragment>
-                  ))}
-                </>
-              ) : (
-                <>
-                  <h2 className="label">{section.title}</h2>
-                  {section.items?.map((item, index) => (
-                    <Fragment key={index}>
-                      <div className={styles.megaMenuLink}>
-                        {item?.image?.src && <img src={item.image.src} alt={item.title} />}
-                        <h3 className="heading-100">{item.title}</h3>
-                      </div>
-                      <div className={styles.links}>
-                        <p className="paragraph-100">{item.description}</p>
-                        {item.links.map((link, linkIndex) => (
-                          <Fragment key={linkIndex}>
-                            <a href={link.href} className="text-100">
-                              {link.label}
-                            </a>
-                            {linkIndex < item.links.length - 1 && <span className={styles.verticalDivider}></span>}
-                          </Fragment>
-                        ))}
-                      </div>
-                    </Fragment>
-                  ))}
-                  {"bottomLinks" in section && section.bottomLinks && (
-                    <div className={styles.bottomLinks}>
-                      {section.bottomLinks.map((link, linkIndex) => (
-                        <div className="label" key={linkIndex}>
-                          <a href={link.href} target="_blank" rel="noopener noreferrer">
-                            {link.label}
-                          </a>
-                          <img src="/images/tabler_arrow-up.svg" alt="" />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          ))}
+    <div className={clsx(styles.wrapper, isMobile && styles.mobile)} onMouseLeave={cancel}>
+      <div className={styles.row}>
+        <div className={styles.section}>
+          <header>
+            <BlueSquare />
+            <GroupTitle>{megaMenuSections.orchestration.title}</GroupTitle>
+          </header>
+          <li className={styles.itemList}>
+            {megaMenuSections.orchestration.items.map((link) => (
+              <GroupItem key={link.title} data={link} />
+            ))}
+          </li>
         </div>
-        <div className={styles.resourcesMenuContentFeatured}>
-          <h2 className="label">Featured</h2>
-          <a href="/chainlink-local">
-            <img src="/images/megamenu-featured.jpg" alt="" className={styles.featuredImage} />
-          </a>
-          <div className={styles.divider}></div>
+        <div className={styles.section}>
+          <header>
+            <BlueSquare />
+            <GroupTitle>{megaMenuSections.interoperability.title}</GroupTitle>
+          </header>
+          <li className={styles.itemList}>
+            {megaMenuSections.interoperability.items.map((link) => (
+              <GroupItem key={link.title} data={link} />
+            ))}
+          </li>
+        </div>
+        <div className={styles.section}>
+          <header>
+            <BlueSquare />
+            <GroupTitle>{megaMenuSections.assetManagement.title}</GroupTitle>
+          </header>
+          <li className={styles.itemList}>
+            {megaMenuSections.assetManagement.items.map((link) => (
+              <GroupItem key={link.title} data={link} />
+            ))}
+          </li>
+        </div>
+      </div>
 
-          <h3 className="heading-100">Hardhat CLI for Data Streams</h3>
-          <div className={styles.links}>
-            <a href="/data-streams/getting-started-hardhat" className="text-100">
-              Docs
-            </a>
-          </div>
-          <h3 className="heading-100">Try out Chainlink Automation</h3>
-          <div className={styles.links}>
-            <a href="/chainlink-automation/overview/getting-started" className="text-100">
-              Docs
-            </a>
-          </div>
+      <div className={styles.row}>
+        <div className={styles.section}>
+          <header>
+            <BlueSquare />
+            <GroupTitle>{megaMenuSections.data.title}</GroupTitle>
+          </header>
+          <li className={styles.itemList}>
+            {megaMenuSections.data.items.map((link) => (
+              <GroupItem key={link.title} data={link} />
+            ))}
+          </li>
+        </div>
+        <div className={styles.section}>
+          <header>
+            <BlueSquare />
+            <GroupTitle>{megaMenuSections.compute.title}</GroupTitle>
+          </header>
+          <li className={styles.itemList}>
+            {megaMenuSections.compute.items.map((link) => (
+              <GroupItem key={link.title} data={link} />
+            ))}
+          </li>
+        </div>
+        <div className={styles.section}>
+          <header>
+            <BlueSquare />
+            <GroupTitle>{megaMenuSections.other.title}</GroupTitle>
+          </header>
+          <li className={styles.itemList}>
+            {megaMenuSections.other.items.map((link) => (
+              <GroupItem key={link.title} data={link} />
+            ))}
+          </li>
         </div>
       </div>
     </div>

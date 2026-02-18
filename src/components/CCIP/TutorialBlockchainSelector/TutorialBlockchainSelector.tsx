@@ -32,9 +32,9 @@ export const TutorialBlockchainSelector = () => {
     const currentState = laneStore.get()
     const bothChainsSelected = Boolean(
       currentState.sourceChain &&
-      currentState.destinationChain &&
-      currentState.sourceNetwork &&
-      currentState.destinationNetwork
+        currentState.destinationChain &&
+        currentState.sourceNetwork &&
+        currentState.destinationNetwork
     )
     updateStepProgress("setup", "blockchains-selected", bothChainsSelected)
   }

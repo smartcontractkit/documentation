@@ -8,94 +8,304 @@ metadata:
   datePublished: "2023-08-03"
   lastModified: "2025-05-19"
 isIndex: true
-whatsnext:
-  "Complete the Getting Started guide to learn the basics": "/ccip/getting-started"
-  "CCIP Directory": "/ccip/directory"
-  "Learn how to transfer tokens": "/ccip/tutorials/evm/transfer-tokens-from-contract"
-  "Learn more about CCIP architecture": "/ccip/concepts/architecture"
+disableDefaultStyles: true
+hideTitle: true
 ---
 
-import { ClickToZoom, Aside } from "@components"
-import CcipCommon from "@features/ccip/CcipCommon.astro"
+import LayoutHero from "@components/LayoutHero/LayoutHero.astro"
+import { TabGrid } from "@components/TabGrid/TabGrid.tsx"
+import ResourceSection from "@components/Resource/ResourceSection.astro"
+import QuickLinkCard from "@components/QuickLinkCard/QuickLinkCard.astro"
+import ToolsUtilitiesGrid from "@components/ToolsUtilitiesGrid/ToolsUtilitiesGrid.astro"
+import MediaSection from "@components/MediaSection/MediaSection.astro"
+import CardsWrapper from "@components/Cards/CardsWrapper.astro"
+import OverviewWrapper from "@components/OverviewWrapper.astro"
+import ChangelogSnippet from "@components/ChangelogSnippet/ChangelogSnippet.astro"
+import {
+  SvgEyeOptic,
+  SvgTransactionRepeatRecurring,
+  SvgWaveSignal,
+  SvgStartup,
+  SvgCrossChain,
+  SvgBulletList,
+} from "@chainlink/blocks"
 
-<CcipCommon callout="talkToExpert" />
+export const toolsAndUtilities = [
+  {
+    image: "/images/ccip-logo.svg",
+    imageAlt: "CCIP API icon",
+    label: "CCIP API",
+    link: "/ccip/api-reference",
+    description: "An API for message retrieval and lane latency information.",
+  },
+  {
+    image: "/images/js-logo.svg",
+    imageAlt: "JavaScript SDK icon",
+    label: "Javascript SDK",
+    link: "https://github.com/smartcontractkit/ccip-javascript-sdk",
+    description: "Integrate CCIP functionality directly into your web applications for EVM-compatible chains.",
+  },
+  {
+    image: "/images/ts-logo.svg",
+    imageAlt: "CLI icon",
+    label: "CLI",
+    link: "https://github.com/smartcontractkit/ccip-tools-ts",
+    description: "TypeScript command-line interface and library designed for interacting with deployed CCIP contracts.",
+  },
+  {
+    image: "/images/hardhat-logo.svg",
+    imageAlt: "Hardhat icon",
+    label: "Hardhat Starter Kit",
+    link: "https://github.com/smartcontractkit/hardhat-starter-kit",
+    description:
+      "Ready-to-go boilerplate for basic CCIP use cases that help you get started building quickly with Hardhat.",
+  },
+  {
+    image: "/images/foundry-logo.svg",
+    imageAlt: "Foundry icon",
+    label: "Foundry Starter Kit",
+    link: "https://github.com/smartcontractkit/foundry-starter-kit",
+    description:
+      "Ready-to-go boilerplate for basic CCIP use cases that help you get started building quickly with Foundry.",
+  },
+  {
+    image: "/images/npm-logo.png",
+    imageAlt: "NPM icon",
+    label: "CCIP Contracts NPM",
+    link: "https://www.npmjs.com/package/@chainlink/contracts-ccip",
+    description:
+      "An npm package providing Solidity smart contract implementations to integrate CCIP into your EVM-based project.",
+  },
+  {
+    image: "/images/direct-stacking-logo.svg",
+    imageAlt: "Direct Staking icon",
+    label: "Direct Staking",
+    link: "https://github.com/Aphyla/chainlink-csr",
+    description:
+      "Stake native tokens on supported L2 networks and receive liquid staked tokens directly on the same chain.",
+  },
+]
 
-Blockchain interoperability protocols are important for the Web3 ecosystem and traditional systems that need to interact with different blockchains. These protocols are the foundation for building blockchain abstraction layers, allowing traditional backends and dApps to interact with any blockchain network through a single middleware solution. Without a blockchain interoperability protocol, Web2 systems and dApps would need to build separate in-house implementations for each cross-chain interaction that they want to use, which is a time-consuming, resource-intensive, and complex process.
+export const exampleResources = [
+  {
+    label: "Token Pool Types",
+    description:
+      "Explore the various token pool types supported by the Cross-Chain Token (CCT) standard with Chainlink Labs. Explore the various token pool types supported by the Cross-Chain Token (CCT) standard with Chainlink Labs...",
+    link: "/",
+    type: "article",
+  },
+  {
+    label: "Token Pool Types",
+    description:
+      "Explore the various token pool types supported by the Cross-Chain Token (CCT) standard with Chainlink Labs. Explore the various token pool types supported by the Cross-Chain Token (CCT) standard with Chainlink Labs...",
+    link: "/",
+    type: "article",
+  },
+  {
+    label: "Token Pool Types",
+    description:
+      "Explore the various token pool types supported by the Cross-Chain Token (CCT) standard with Chainlink Labs. Explore the various token pool types supported by the Cross-Chain Token (CCT) standard with Chainlink Labs...",
+    link: "/",
+    type: "article",
+  },
+]
 
-Blockchain interoperability protocols provide the following capabilities:
+export const exampleTutorials = [
+  {
+    name: "EVM",
+    links: [
+      {
+        title: "Acquire Test Tokens",
+        description: "Get test tokens in minutes; build and test cross-chain apps with zero friction.",
+        link: "/ccip/test-tokens",
+      },
+      {
+        title: "Transfer Tokens",
+        description: "Unlock seamless token transfers from contracts; learn, code, and deploy.",
+        link: "/ccip/tutorials/evm/transfer-tokens-from-contract",
+      },
+      {
+        title: "Transfer Tokens with Data",
+        description: "Go beyond basic transfers with logic-infused token movements in your EVM contracts.",
+        link: "/ccip/tutorials/evm/programmable-token-transfers",
+      },
+      {
+        title: "Using the Token Manager",
+        description: "Effortlessly manage CCTs by tracking, importing and organizing tokens from your dashboard.",
+        link: "/ccip/tutorials/evm/token-manager",
+      },
+      {
+        title: "Using the JS SDK",
+        description: "Integrate CCIP in your frontend or backend effortlessly with JavaScript SDK.",
+        link: "/ccip/ccip-javascript-sdk",
+      },
+      {
+        title: "Check Message Status",
+        description: "Retrieve real-time status of your offchain transaction from EVM.",
+        link: "/ccip/tutorials/evm/offchain/get-status-offchain",
+      },
+      {
+        title: "Transfer Tokens Between EOAs",
+        description: "Send tokens offchain from an Externally Owned Account with clear steps.",
+        link: "/ccip/tutorials/evm/offchain/transfer-tokens-from-eoa",
+      },
+      {
+        title: "Using the CLI",
+        description: "Use offchain tools from CCIP to simplify your Ethereum workflows.",
+        link: "/ccip/tutorials/evm/offchain/ccip-tools",
+      },
+      {
+        title: "Deploy and Register a CCT",
+        description: "Use RemixIDE to launch and configure tokens for cross-chain transfers on CCIP.",
+        link: "/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-remix",
+      },
+      {
+        title: "Register CCT Burn & Mint EOA",
+        description: "Implement burn-mint cross-chain token logic with CCIP using Hardhat or Foundry.",
+        link: "/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-burn-mint-hardhat",
+      },
+      {
+        title: "Register CCT Lock & Mint EOA",
+        description: "Implement a lock-mint token registration workflow with CCIP and Hardhat or Foundry.",
+        link: "/ccip/tutorials/evm/cross-chain-tokens/register-from-eoa-lock-mint-hardhat",
+      },
+      {
+        title: "Set Token Pool Rate Limits",
+        description: "Update rate limiter settings for your cross-chain tokens using Hardhat or Foundry.",
+        link: "/ccip/tutorials/evm/cross-chain-tokens/update-rate-limiters-hardhat",
+      },
+    ],
+  },
+  {
+    name: "Solana",
+    links: [
+      {
+        title: "Getting Started with Solana",
+        description: "Learn the basics of building on Solana blockchain.",
+        link: "/ccip/tutorials/svm",
+      },
+      {
+        title: "Solana Token Transfers",
+        description: "Transfer tokens on the Solana blockchain.",
+        link: "/ccip/tutorials/svm/source/token-transfers",
+      },
+    ],
+  },
+  {
+    name: "Aptos",
+    links: [
+      {
+        title: "Getting Started with Aptos",
+        description: "Start building on the Aptos blockchain.",
+        link: "/ccip/tutorials/aptos",
+      },
+    ],
+  },
+]
 
-- You can transfer assets and information across multiple blockchains.
-- Application developers can leverage the strengths and benefits of different chains.
-- Collaboration between developers from diverse blockchain ecosystems enables the building of cross-chain applications to serve more users and provide additional features or products for them.
+export const quickLinks = [
+  {
+    icon: SvgEyeOptic,
+    label: "View Network Configs",
+    link: "https://docs.chain.link/ccip/directory/mainnet",
+  },
+  {
+    icon: SvgTransactionRepeatRecurring,
+    label: "Check Transaction Status",
+    link: "https://ccip.chain.link/",
+  },
+  {
+    icon: SvgWaveSignal,
+    label: "View Lane Status",
+    link: "https://ccip.chain.link/status",
+  },
+  {
+    icon: SvgStartup,
+    label: "Get Testnet Tokens",
+    link: "https://tokenmanager.chain.link/",
+  },
+  {
+    icon: SvgCrossChain,
+    label: "Convert Chainlink tokens",
+    link: "https://www.transporter.io/",
+  },
+  {
+    icon: SvgBulletList,
+    label: "View the Changelog",
+    link: "https://dev.chain.link/changelog?product=CCIP",
+  },
+]
 
-The _Chainlink Cross-Chain Interoperability Protocol (CCIP)_ provides these capabilities and enables a variety of [use cases](#common-use-cases).
+export const cardLinks = [
+  {
+    title: "Deploy/enable a token across multiple chains",
+    description:
+      "Create a new Cross-Chain-Token or enable an established one that can be launched on 50+ chains, providing unparalleled interoperability and reach.",
+    links: [
+      {
+        icon: "token",
+        href: "https://example.com",
+        label: "View Token Manager",
+      },
+      {
+        icon: "remix",
+        href: "https://example.com",
+        label: "Open in Remix",
+      },
+    ],
+  },
+  {
+    title: "Bridge a token",
+    description:
+      "Securely transfer tokens - including ETH, USDC, LINK - and messages between different blockchain networks.",
+    links: [
+      {
+        icon: "token",
+        href: "https://example.com",
+        label: "View Token Manager",
+      },
+      {
+        icon: "remix",
+        href: "https://example.com",
+        label: "Open in Remix",
+      },
+    ],
+  },
+  {
+    title: "Send a token with data",
+    description:
+      "Build token transfers that do more than move value, letting you embed business logic directly into your cross-chain workflows.",
+    links: [
+      {
+        icon: "remix",
+        href: "https://example.com",
+        label: "Open in Remix",
+      },
+    ],
+  },
+]
 
-## What is Chainlink CCIP?
-
-Chainlink CCIP is a blockchain interoperability protocol that enables developers to build secure applications that can transfer tokens, messages (data), or both tokens and messages across chains.
-
-Given the [inherent risks of cross-chain interoperability](/resources/bridge-risks), CCIP features defense-in-depth security and is powered by Chainlink's industry-standard oracle networks which have a proven track record of securing tens of billions of dollars and enabling over $14 trillion in onchain transaction value.
-
-CCIP's robust security framework is built upon several core components:
-
-- **Proven Decentralized Architecture**: CCIP leverages the same highly reliable infrastructure as Chainlink Data Feeds, which has enabled trillions in transaction value across hundreds of DeFi applications. Cross-chain transactions leverage multiple decentralized oracle networks (DONs).
-- **Rate Limiting**: To mitigate risk, CCIP includes a rate limiting feature. This allows owners to establish and configure policies for Cross-Chain Tokens, which are then enforced on both the source and destination chains.
-- **Timelocked Upgrades**: All on-chain, security-critical configuration changes and core infrastructure upgrades must pass through a Role-based Access Control Timelock contract. This process provides a review period during which CCIP node operators can veto the upgrade, or, in time-sensitive situations, explicitly approve it.
-- **High-Quality, Sybil-Resistant Node Operators**: The system is secured by the same globally distributed, security-reviewed, public node operators that secure other Chainlink services, validate leading blockchain networks, and operate traditional Web2 infrastructure. Each independent CCIP node is run by a distinct organization with extensive DevOps expertise and rigorous private key management security practices.
-
-<ClickToZoom
-  src="/images/ccip/ccip-hl-v1.7.png"
-  alt="Chainlink CCIP Architecture"
-  style="display: block; margin: 2rem auto; max-height: 60vh; width: auto;"
+<LayoutHero
+  title="Build with CCIP"
+  description="CCIP makes it simple to move data, messages, and tokens across blockchains. Connect smart contracts on different networks as if they were one system, whether transferring stablecoins, powering cross-chain apps, or running multi-chain DeFi."
+  buttons={[
+    { label: "Get the SDK", link: "#" },
+    { label: "API Doc", link: "#" },
+  ]}
+  image="/images/ccip/ccip-hero.png"
 />
 
-To understand how Chainlink CCIP works, refer to the [architecture](/ccip/concepts/architecture) section. If you are new to using Chainlink CCIP, read these guides before you deploy any contracts that use CCIP.
+<OverviewWrapper>
+  <CardsWrapper links={cardLinks} />
+  <TabGrid header="Tutorials" client:visible tabs={exampleTutorials} />
+  <QuickLinkCard links={quickLinks} />
+  <ToolsUtilitiesGrid links={toolsAndUtilities} />
+  <ResourceSection title="Resources" resources={exampleResources} />
+  <ChangelogSnippet query="ccip" />
 
-## Chainlink CCIP core capabilities
-
-Chainlink CCIP supports three main capabilities:
-
-### Arbitrary Messaging
-
-The ability to send arbitrary data (encoded as bytes) to a receiving smart contract on a different blockchain. The developer is free to encode any data they wish to send.
-
-Typically, developers use arbitrary messaging to trigger an informed action on the receiving smart contract, such as rebalancing an index, minting a specific NFT, or calling an arbitrary function with the sent data as custom parameters. Developers can encode multiple instructions in a single message, enabling them to orchestrate complex, multi-step, multi-chain tasks.
-
-### Token Transfer
-
-The ability to transfer tokens to an account on a different blockchain. This capability enables the seamless movement of assets across chains.
-
-### Programmable Token Transfer
-
-The ability to simultaneously transfer tokens and arbitrary data (encoded as bytes) within a single transaction. This mechanism allows users to transfer tokens and send instructions on what to do with those tokens.
-
-For example, a user could transfer tokens to a lending protocol with instructions to leverage those tokens as collateral for a loan, borrowing another asset to be sent back to the user.
-
-### Receiving account types
-
-With CCIP, you send transactions with data (arbitrary messaging), tokens, or both data and tokens (programmable token transfer). The receiver of a CCIP transaction varies by blockchain family:
-
-| CCIP capability             | What is sent    | Receiving account types                                                                                                                            |
-| --------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Arbitrary Messaging         | Data            | EVM: Smart contracts only<br />SVM: Programs only<br />Aptos: Modules only                                                                         |
-| Token Transfer              | Tokens          | EVM: Smart contracts and EOAs<br />SVM: User wallets or program-controlled PDAs<br />Aptos: User accounts or modules deployed to resource accounts |
-| Programmable Token Transfer | Data and tokens | EVM: Smart contracts only<br />SVM: Data to programs, tokens to program-controlled PDAs<br />Aptos: Modules deployed to resource accounts          |
-
-**Note**: On EVM chains, EOAs cannot receive messages. On Solana (SVM), programs work with Program Derived Addresses (PDAs) to manage token reception.
-
-## Common use cases
-
-Chainlink CCIP enables a variety of use cases:
-
-- **Cross-chain lending:** Chainlink CCIP enables users to lend and borrow a wide range of crypto assets across multiple DeFi platforms running on independent chains.
-- **Low-cost transaction computation:** Chainlink CCIP can help offload the computation of transaction data on cost-optimized chains.
-- **Optimizing cross-chain yield:** Users can leverage Chainlink CCIP to move collateral to new DeFi protocols to maximize yield across chains.
-- **Creating new kinds of dApps:** Chainlink CCIP enables users to take advantage of network effects on certain chains while harnessing compute and storage capabilities of other chains.
-
-Read [What Are Cross-Chain Smart Contracts](https://chain.link/education-hub/cross-chain-smart-contracts) to learn about cross-chain smart contracts and examples of use cases they enable.
-
-## CCIP Directory
-
-See the [CCIP Directory](/ccip/directory) page for a list of supported networks, tokens, and contract addresses.
-
-To learn about tokens, token pools, and the token onboarding process, see the [CCIP Architecture](/ccip/concepts/cross-chain-token/evm/token-pools) page.
+  <MediaSection
+    heading="High-level architecture"
+    description="CCIP delivers cross-chain messages from a source chain to a destination chain by combining offchain consensus and onchain execution components."
+    image="/images/architecture.png"
+  />
+</OverviewWrapper>
