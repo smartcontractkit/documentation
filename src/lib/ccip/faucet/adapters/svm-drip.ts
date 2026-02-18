@@ -103,7 +103,7 @@ export class SvmDripAdapter {
    * Check if drip is available for the given chain
    */
   isDripAvailable(chainConfig: FaucetChainConfig): boolean {
-    return !!(chainConfig.enabled && chainConfig.family === "svm" && chainConfig.faucetAddress)
+    return !!(chainConfig.enabled && chainConfig.family === "solana" && chainConfig.faucetAddress)
   }
 
   /**

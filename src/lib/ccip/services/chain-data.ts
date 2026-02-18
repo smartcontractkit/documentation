@@ -1,12 +1,20 @@
-import { Environment, ChainDetails, FilterType, ChainConfigError, FeeTokenEnriched } from "~/lib/ccip/types/index.ts"
+import {
+  Environment,
+  ChainDetails,
+  FilterType,
+  ChainConfigError,
+  FeeTokenEnriched,
+  ChainFamily,
+} from "~/lib/ccip/types/index.ts"
 import { ChainsConfig } from "@config/data/ccip/index.ts"
-import { getSelectorEntry } from "@config/data/ccip/selectors.ts"
+import { getSelectorEntry, getAllSelectors } from "@config/data/ccip/selectors.ts"
 import { resolveChainOrThrow } from "~/lib/ccip/utils.ts"
 import { logger } from "@lib/logging/index.js"
-import { getChainId, getNativeCurrency, getTitle, getChainTypeAndFamily } from "../../../features/utils/index.ts"
-import { SupportedChain, ChainType, ChainFamily } from "~/config/index.ts"
+import { getChainId, getNativeCurrency, getTitle, getChainTypeAndFamily } from "@features/utils/index.ts"
+import { SupportedChain, ChainType } from "~/config/index.ts"
 import { getTokenData } from "@config/data/ccip/data.ts"
 import { Version } from "@config/data/ccip/types.ts"
+import { deriveDisplayName } from "~/lib/ccip/utils/display-name.ts"
 
 export const prerender = false
 
@@ -65,13 +73,13 @@ abstract class BaseChainStrategy implements IChainProcessingStrategy {
       }
     }
 
-    // Validate chainId and selectorEntry
-    if (!chainId || !selectorEntry) {
+    // Validate chainId and selectorEntry (use explicit null/undefined check to allow chainId 0)
+    if (chainId === undefined || chainId === null || !selectorEntry) {
       logger.warn({
         message: "Missing chain ID or selector entry",
         requestId: this.requestId,
         networkId,
-        hasChainId: !!chainId,
+        hasChainId: chainId !== undefined && chainId !== null,
         hasSelectorEntry: !!selectorEntry,
       })
 
@@ -228,9 +236,19 @@ class EvmChainStrategy extends BaseChainStrategy {
       }
     }
 
-    // Construct the complete EVM chain details
+    // Construct the complete EVM chain details with explicit field assignment
+    const { baseData } = baseValidation
     const validatedData: ChainDetails = {
-      ...(baseValidation.baseData as unknown as ChainDetails),
+      chainId: baseData.chainId!,
+      displayName: baseData.displayName!,
+      selector: baseData.selector!,
+      internalId: baseData.internalId!,
+      feeTokens: baseData.feeTokens!,
+      router: baseData.router!,
+      rmn: baseData.rmn!,
+      chainType: baseData.chainType!,
+      chainFamily: baseData.chainFamily!,
+      supported: true,
       registryModule: chainConfig.registryModule?.address,
       tokenAdminRegistry: chainConfig.tokenAdminRegistry?.address,
       tokenPoolFactory: chainConfig.tokenPoolFactory?.address,
@@ -292,9 +310,19 @@ class SolanaChainStrategy extends BaseChainStrategy {
       }
     }
 
-    // Construct the complete Solana chain details
+    // Construct the complete Solana chain details with explicit field assignment
+    const { baseData } = baseValidation
     const validatedData: ChainDetails = {
-      ...(baseValidation.baseData as unknown as ChainDetails),
+      chainId: baseData.chainId!,
+      displayName: baseData.displayName!,
+      selector: baseData.selector!,
+      internalId: baseData.internalId!,
+      feeTokens: baseData.feeTokens!,
+      router: baseData.router!,
+      rmn: baseData.rmn!,
+      chainType: baseData.chainType!,
+      chainFamily: baseData.chainFamily!,
+      supported: true,
       feeQuoter: chainConfig.feeQuoter,
     }
 
@@ -348,8 +376,19 @@ class AptosChainStrategy extends BaseChainStrategy {
       }
     }
 
+    // Construct the complete Aptos chain details with explicit field assignment
+    const { baseData } = baseValidation
     const validatedData: ChainDetails = {
-      ...(baseValidation.baseData as ChainDetails),
+      chainId: baseData.chainId!,
+      displayName: baseData.displayName!,
+      selector: baseData.selector!,
+      internalId: baseData.internalId!,
+      feeTokens: baseData.feeTokens!,
+      router: baseData.router!,
+      rmn: baseData.rmn!,
+      chainType: baseData.chainType!,
+      chainFamily: baseData.chainFamily!,
+      supported: true,
       tokenAdminRegistry: chainConfig.tokenAdminRegistry?.address ?? "",
       mcms: chainConfig.mcms?.address ?? "",
     }
@@ -373,6 +412,13 @@ class ChainStrategyFactory {
     ["evm", EvmChainStrategy],
     ["solana", SolanaChainStrategy],
     ["aptos", AptosChainStrategy],
+    ["sui", AptosChainStrategy], // Sui uses Move VM like Aptos
+    // New chain types use EVM strategy as fallback until specific strategies are implemented
+    ["tron", EvmChainStrategy],
+    ["canton", EvmChainStrategy],
+    ["ton", EvmChainStrategy],
+    ["stellar", EvmChainStrategy],
+    ["starknet", EvmChainStrategy],
   ])
 
   static getStrategy(chainType: ChainType, requestId: string): IChainProcessingStrategy {
@@ -399,10 +445,11 @@ export class ChainDataService {
   /**
    * Creates a new instance of ChainDataService
    * @param chainConfig - Configuration for supported chains
+   * @param requestId - Optional request ID for log correlation (generates new UUID if not provided)
    */
-  constructor(chainConfig: ChainsConfig) {
+  constructor(chainConfig: ChainsConfig, requestId?: string) {
     this.chainConfig = chainConfig
-    this.requestId = crypto.randomUUID()
+    this.requestId = requestId ?? crypto.randomUUID()
 
     logger.debug({
       message: "ChainDataService initialized",
@@ -625,7 +672,7 @@ export class ChainDataService {
 
       if (filters.chainId) {
         const chainIds = filters.chainId.split(",").map((id) => id.trim())
-        filteredChains = chains.filter((chain) => chainIds.includes(String(chain.chainId)))
+        filteredChains = filteredChains.filter((chain) => chainIds.includes(String(chain.chainId)))
       }
 
       if (filters.selector) {
@@ -654,8 +701,14 @@ export class ChainDataService {
     // Group by chain family
     const groupedChains: Record<ChainFamily, ChainDetails[]> = {
       evm: [],
-      mvm: [],
-      svm: [],
+      aptos: [],
+      sui: [],
+      solana: [],
+      tron: [],
+      canton: [],
+      ton: [],
+      stellar: [],
+      starknet: [],
     }
 
     for (const chain of filteredChains) {
@@ -680,4 +733,116 @@ export class ChainDataService {
       metadata,
     }
   }
+}
+
+/**
+ * Maps a chain type to its corresponding chain family.
+ *
+ * Each chain type maps directly to its own family:
+ * - evm: Ethereum Virtual Machine chains
+ * - solana: Solana chains
+ * - aptos: Aptos chains
+ * - sui: Sui chains
+ * - tron, canton, ton, stellar, starknet: Each has its own family
+ *
+ * @param chainType - The specific chain type
+ * @returns The chain family (same as chain type)
+ * @example
+ * getChainFamilyFromType('solana') // returns 'solana'
+ * getChainFamilyFromType('aptos')  // returns 'aptos'
+ */
+function getChainFamilyFromType(chainType: ChainType): ChainFamily {
+  switch (chainType) {
+    case "evm":
+      return "evm"
+    case "solana":
+      return "solana"
+    case "aptos":
+      return "aptos"
+    case "sui":
+      return "sui"
+    case "tron":
+      return "tron"
+    case "canton":
+      return "canton"
+    case "ton":
+      return "ton"
+    case "stellar":
+      return "stellar"
+    case "starknet":
+      return "starknet"
+    default:
+      return "evm"
+  }
+}
+
+/**
+ * Gets all chains for search including both supported and unsupported chains.
+ *
+ * Supported chains have full details from the chain configuration, while
+ * unsupported chains have minimal details derived from selector YAML files.
+ * The displayName for unsupported chains is derived from their internalId.
+ *
+ * @param environment - Network environment (mainnet/testnet)
+ * @param supportedChains - Array of fully supported chain details with complete configuration
+ * @returns Array of all chain details with supported flag indicating if chain is fully configured
+ *
+ * @example
+ * const allChains = getAllChainsForSearch(Environment.Mainnet, supportedChains)
+ * // Returns both supported chains (with full details) and unsupported chains (minimal details)
+ */
+export function getAllChainsForSearch(environment: Environment, supportedChains: ChainDetails[]): ChainDetails[] {
+  // Use Map for O(1) lookup instead of find() which is O(n)
+  const supportedChainsBySelector = new Map<string, ChainDetails>(
+    supportedChains.map((chain) => [chain.selector, chain])
+  )
+  const networkType = environment === Environment.Mainnet ? "mainnet" : "testnet"
+
+  // Get all selectors from YAML files for all chain types
+  const allSelectors = [
+    ...getAllSelectors("evm", networkType),
+    ...getAllSelectors("solana", networkType),
+    ...getAllSelectors("aptos", networkType),
+    ...getAllSelectors("sui", networkType),
+    ...getAllSelectors("canton", networkType),
+    ...getAllSelectors("ton", networkType),
+    ...getAllSelectors("tron", networkType),
+    ...getAllSelectors("stellar", networkType),
+    ...getAllSelectors("starknet", networkType),
+  ]
+
+  const result: ChainDetails[] = []
+
+  for (const entry of allSelectors) {
+    // Skip entries with missing required data
+    if (!entry.selector || !entry.chainType) {
+      continue
+    }
+
+    const supportedChain = supportedChainsBySelector.get(entry.selector)
+
+    if (supportedChain) {
+      // Supported chain - use full details with supported: true
+      result.push({ ...supportedChain, supported: true })
+    } else {
+      // Unsupported chain - minimal details from selector data
+      // Use explicit chainId check to allow 0 as valid value
+      const chainFamily = getChainFamilyFromType(entry.chainType)
+      const internalId = entry.name || `chain-${entry.chainId ?? "unknown"}`
+      result.push({
+        chainId: entry.chainId ?? "",
+        selector: entry.selector,
+        internalId,
+        displayName: deriveDisplayName(internalId),
+        chainType: entry.chainType,
+        chainFamily,
+        supported: false,
+        feeTokens: [],
+        router: "",
+        rmn: "",
+      })
+    }
+  }
+
+  return result
 }

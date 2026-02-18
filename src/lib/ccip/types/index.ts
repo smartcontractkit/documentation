@@ -1,14 +1,20 @@
 // Chain Data API Types
 
 import { Environment } from "@config/data/ccip/types.ts"
+import type { ChainType, ChainFamily } from "@config/types.ts"
 
 export { Environment }
-
-// Chain type and family declarations
-export type ChainType = "evm" | "solana" | "aptos" | "sui"
-export type ChainFamily = "evm" | "mvm" | "svm"
+export type { ChainType, ChainFamily }
 
 export const prerender = false
+
+// Search types
+export type SearchType = "selector" | "chainId" | "internalId" | "displayName"
+
+export interface SearchDetectionResult {
+  type: SearchType
+  normalizedQuery: string
+}
 
 /**
  * Enriched fee token information with address and metadata
@@ -33,6 +39,9 @@ export type ChainMetadata = {
   timestamp: string
   requestId: string
   ignoredChainCount: number
+  validChainCount: number
+  searchQuery?: string
+  searchType?: SearchType
 }
 
 export interface ChainDetails {
@@ -45,6 +54,7 @@ export interface ChainDetails {
   rmn: string
   chainType: ChainType
   chainFamily: ChainFamily
+  supported: boolean
   registryModule?: string
   tokenAdminRegistry?: string
   tokenPoolFactory?: string
