@@ -1,0 +1,244 @@
+---
+import { CRETemplatesFrontmatter } from "~/content.config.ts"
+
+interface Props {
+  frontmatter: CRETemplatesFrontmatter
+  templateSlug: string
+}
+const { frontmatter, templateSlug } = Astro.props
+---
+
+<div class="hero-content">
+  <div class="hero-text">
+    <!-- Author Badge -->
+    <div class="author-badge">
+      {
+        frontmatter.author === "Chainlink Labs" ? (
+          <img src="/images/cre-templates/chainlink-logo-mark.png" alt="Chainlink" class="chainlink-logo" />
+        ) : frontmatter.author === "AWS" ? (
+          <img src="/images/cre-templates/aws-icon.webp" alt="AWS" class="chainlink-logo" />
+        ) : null
+      }
+      CREATED BY {frontmatter.author.toUpperCase()}
+    </div>
+
+    <!-- Title -->
+    <h1 class="title">{frontmatter.title}</h1>
+
+    <!-- Description -->
+    <p class="description">{frontmatter.description}</p>
+
+    <!-- Get the template section (hidden until CLI is available) -->
+    <div class="get-template" style="display: none;">
+      <span class="get-template-label">Get the template</span>
+      <div class="template-actions">
+        <div class="command-box">
+          <code style="color: #fff !important;">cre init --template={templateSlug}</code>
+          <button class="copy-btn" data-command={`cre init --template=${templateSlug}`} title="Copy command">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GitHub button -->
+    <div class="github-buttons">
+      <a href={frontmatter.githubUrl} class="github-btn" target="_blank" rel="noopener noreferrer">
+        <svg class="github-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"
+          ></path>
+        </svg>
+        View on GitHub
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const copyBtns = document.querySelectorAll<HTMLButtonElement>(".copy-btn")
+    copyBtns.forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const command = btn.dataset.command
+        if (command) {
+          await navigator.clipboard.writeText(command)
+          btn.classList.add("copied")
+          setTimeout(() => btn.classList.remove("copied"), 2000)
+        }
+      })
+    })
+  })
+</script>
+
+<style>
+  .hero-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8x);
+    position: relative;
+  }
+
+  .hero-text {
+    flex: 1;
+    position: relative;
+    z-index: 2;
+  }
+
+  .author-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #5a6175;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--space-4x);
+  }
+
+  .chainlink-logo {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+  }
+
+  .title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0b101c;
+    line-height: 1.2;
+    margin: 0 0 var(--space-4x) 0;
+  }
+
+  .description {
+    font-size: 15px;
+    color: #5a6175;
+    line-height: 1.6;
+    margin: 0 0 var(--space-6x) 0;
+    max-width: 500px;
+  }
+
+  /* Hidden until CLI is available — remove style="display: none;" from .get-template to re-enable */
+  .get-template {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3x);
+  }
+
+  .get-template-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #5a6175;
+  }
+
+  .template-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3x);
+  }
+
+  .command-box {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3x);
+    padding: 12px 18px;
+    background: #1e293b;
+    border-radius: 6px;
+    font-family: var(--font-mono, monospace);
+  }
+
+  .command-box code,
+  .command-box :global(code) {
+    font-size: 13px !important;
+    color: #ffffff !important;
+    background: none !important;
+    background-color: transparent !important;
+    padding: 0 !important;
+    border: none !important;
+    font-weight: 600 !important;
+    opacity: 1 !important;
+    border-radius: 0 !important;
+    letter-spacing: 0.02em !important;
+  }
+
+  .copy-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.7);
+    transition: color 0.2s ease;
+  }
+
+  .copy-btn:hover {
+    color: white;
+  }
+
+  .copy-btn.copied {
+    color: #4ade80;
+  }
+
+  .github-buttons {
+    display: flex;
+    gap: var(--space-2x);
+  }
+
+  .github-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 28px;
+    background: #0847f7;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1px solid #0847f7;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    min-width: 120px;
+  }
+
+  .github-btn:hover {
+    background: #0639c7;
+    border-color: #0639c7;
+  }
+
+  .github-icon {
+    color: white;
+  }
+
+  @media (min-width: 50em) {
+    .hero-content {
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .hero-text {
+      max-width: 55%;
+    }
+
+    .title {
+      font-size: 36px;
+    }
+
+    .description {
+      font-size: 16px;
+    }
+  }
+
+  @media (min-width: 72em) {
+    .title {
+      font-size: 40px;
+    }
+  }
+</style>

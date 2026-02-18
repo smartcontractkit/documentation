@@ -1,0 +1,30 @@
+---
+import { getCollection, render } from "astro:content"
+import CRETemplateLayout from "~/layouts/CRETemplateLayout.astro"
+
+export async function getStaticPaths() {
+  const creTemplatesEntries = await getCollection("cre-templates")
+
+  return creTemplatesEntries.map((entry) => {
+    const routeId = entry.id.replace(/\.(md|mdx)$/, "")
+
+    return {
+      params: { id: routeId },
+      props: { entry, templateSlug: routeId },
+    }
+  })
+}
+
+interface Props {
+  entry: Awaited<ReturnType<typeof getCollection<"cre-templates">>>[number]
+  templateSlug: string
+}
+
+const { entry, templateSlug } = Astro.props
+
+const { Content, headings } = await render(entry)
+---
+
+<CRETemplateLayout frontmatter={entry.data} {headings} {templateSlug}>
+  <Content />
+</CRETemplateLayout>

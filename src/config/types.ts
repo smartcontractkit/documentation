@@ -84,9 +84,9 @@ export type SupportedTechnology =
   | "DOGE_OS"
   | "ADI_NETWORK"
 
-export type ChainType = "evm" | "solana" | "aptos"
+export type ChainType = "evm" | "solana" | "aptos" | "sui" | "canton" | "ton" | "tron" | "stellar" | "starknet"
 
-export type ChainFamily = "evm" | "mvm" | "svm"
+export type ChainFamily = "evm" | "aptos" | "sui" | "solana" | "tron" | "canton" | "ton" | "stellar" | "starknet"
 
 export type SupportedChain =
   | "ETHEREUM_MAINNET"

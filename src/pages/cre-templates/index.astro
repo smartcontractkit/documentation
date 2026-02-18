@@ -1,0 +1,670 @@
+---
+import { getCollection } from "astro:content"
+import BaseLayout from "~/layouts/BaseLayout.astro"
+import TemplateCard from "~/components/CRETemplate/TemplateCard.astro"
+
+const templates = await getCollection("cre-templates")
+const featuredTemplate = templates.find((t) => t.data.featured)
+
+const pageTitle = "CRE Templates Hub | Chainlink Documentation"
+const pageDescription =
+  "Explore workflow templates for the Chainlink Runtime Environment. Clone and customize these templates to build your own CRE workflows."
+---
+
+<BaseLayout
+  title={pageTitle}
+  metadata={{
+    title: "CRE Templates Hub",
+    description: pageDescription,
+  }}
+>
+  <main class="hub-page">
+    <!-- Hero Section -->
+    <header class="hero">
+      <div class="hero-container">
+        <div class="hero-content">
+          <h1 class="hero-title">CRE Templates Hub</h1>
+          <p class="hero-description">
+            Explore workflow templates for the Chainlink Runtime Environment. <br /> Clone and customize these templates to
+            build your own CRE workflows.
+          </p>
+          <div class="hero-actions">
+            <a
+              href="https://github.com/smartcontractkit/cre-templates"
+              class="btn-primary"
+              target="_blank"
+              rel="noopener"
+            >
+              <svg class="github-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"
+                ></path>
+              </svg>
+              View on GitHub
+            </a>
+            <a
+              href="https://github.com/smartcontractkit/cre-templates#contributing"
+              class="btn-secondary"
+              target="_blank"
+              rel="noopener"
+            >
+              Submit your template
+            </a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Featured Template Section -->
+    {
+      featuredTemplate && (
+        <div class="featured-section">
+          <div class="featured-container">
+            <div class="featured-card">
+              <div class="featured-image">
+                <img src="/images/cre-templates/featured-template.png" alt={featuredTemplate.data.title} />
+              </div>
+              <div class="featured-content">
+                <div class="featured-badges">
+                  {(() => {
+                    const langs = [
+                      ...new Set(featuredTemplate.data.githubRepoLinks.map((l) => l.label.replace(/\s*\(.*\)/, ""))),
+                    ].sort((a, b) => (a === "TypeScript" ? -1 : b === "TypeScript" ? 1 : a.localeCompare(b)))
+                    return langs.map((lang) => <span class="featured-badge">{lang.toUpperCase()}</span>)
+                  })()}
+                </div>
+                <h3>{featuredTemplate.data.title}</h3>
+                <p>{featuredTemplate.data.description}</p>
+                <div class="featured-meta">
+                  <span class="featured-author">
+                    {featuredTemplate.data.author === "Chainlink Labs" && (
+                      <img src="/images/cre-templates/chainlink-logo-mark.png" alt="" class="featured-author-icon" />
+                    )}
+                    {featuredTemplate.data.author === "AWS" && (
+                      <img src="/images/cre-templates/aws-icon.webp" alt="" class="featured-author-icon" />
+                    )}
+                    Created by {featuredTemplate.data.author}
+                  </span>
+                </div>
+              </div>
+              <div class="featured-action">
+                <a href={`/cre-templates/${featuredTemplate.id}`} class="featured-btn">
+                  View template
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    <!-- Templates Section -->
+    <div class="templates-container">
+      <section class="template-section">
+        <div class="section-header" id="section-header">
+          <h2>Templates</h2>
+          <div class="filter-pills" id="filter-pills">
+            <button class="filter-pill active" data-filter="all">All</button>
+            <button class="filter-pill" data-filter="TypeScript">TypeScript</button>
+            <button class="filter-pill" data-filter="Go">Go</button>
+          </div>
+        </div>
+
+        <!-- Floating Filter (appears on scroll) -->
+        <div class="floating-filter" id="floating-filter">
+          <button class="floating-pill active" data-filter="all" title="All templates">All</button>
+          <button class="floating-pill" data-filter="TypeScript" title="TypeScript templates">TS</button>
+          <button class="floating-pill" data-filter="Go" title="Go templates">Go</button>
+        </div>
+
+        {
+          templates.length > 0 && (
+            <div class="card-grid">
+              {templates.map((template) => (
+                <TemplateCard
+                  title={template.data.title}
+                  description={template.data.description}
+                  image={template.data.image}
+                  href={`/cre-templates/${template.id}`}
+                  languages={template.data.githubRepoLinks.map((link) => link.label)}
+                  author={template.data.author}
+                />
+              ))}
+            </div>
+          )
+        }
+
+        {
+          templates.length === 0 && (
+            <div class="empty-state">
+              <p>No templates available yet. Check back soon!</p>
+            </div>
+          )
+        }
+      </section>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  :global(body:has(.hub-page)) {
+    background-color: #f5f7fa;
+  }
+
+  .hub-page {
+    background-color: #f5f7fa;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Hero Section */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    background: #2563eb;
+  }
+
+  /* Background image */
+  .hero::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url("/images/cre-templates/hero-pattern.webp");
+    background-size: cover;
+    background-position: right center;
+    background-repeat: no-repeat;
+    z-index: 0;
+  }
+
+  /* Light blue gradient overlay for text readability */
+  .hero::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 70%;
+    bottom: 0;
+    background: linear-gradient(
+      to right,
+      rgba(37, 99, 235, 0.95) 10%,
+      rgba(37, 99, 235, 0.85) 10%,
+      rgba(37, 99, 235, 0) 50%
+    );
+    z-index: 1;
+  }
+
+  .hero-container {
+    /* Match the site header container */
+    max-width: var(--max-width, 90rem);
+    margin: 0 auto;
+    padding: 64px var(--doc-padding, 2rem);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    position: relative;
+    min-height: 200px;
+    z-index: 2;
+  }
+
+  .hero-content {
+    position: relative;
+    max-width: 680px;
+  }
+
+  .hero-title {
+    font-size: 36px;
+    font-weight: 500;
+    color: white;
+    margin: 0 0 16px 0;
+    line-height: 1.2;
+  }
+
+  .hero-description {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.7;
+    margin: 0 0 24px 0;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: #0847f7;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 4px;
+    border: 1px solid #0847f7;
+    text-decoration: none;
+    transition: background 0.2s ease;
+  }
+
+  .btn-primary:hover {
+    background: #0639c7;
+    border-color: #0639c7;
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: transparent;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 4px;
+    border: 1px solid white;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .btn-secondary .github-icon {
+    color: white;
+  }
+
+  /* Featured Section */
+  .featured-section {
+    max-width: var(--max-width, 90rem);
+    margin: 0 auto;
+    padding: 48px var(--doc-padding, 2rem) 0;
+  }
+
+  .featured-container {
+    width: 100%;
+  }
+
+  .featured-card {
+    display: flex;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0;
+    overflow: hidden;
+    text-decoration: none;
+  }
+
+  .featured-image {
+    width: 45%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    padding: 32px;
+  }
+
+  .featured-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .featured-content {
+    flex: 1;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .featured-action {
+    display: flex;
+    align-items: flex-end;
+    padding: 0 32px 32px;
+    flex-shrink: 0;
+  }
+
+  .featured-badges {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .featured-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    background: #f5f7fa;
+    color: #5a6175;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 20px;
+    border: 1px solid #e5e7eb;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+
+  .featured-content h3 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0b101c;
+    margin: 0 0 12px 0;
+    line-height: 1.3;
+  }
+
+  .featured-content p {
+    font-size: 14px;
+    color: #5a6175;
+    line-height: 1.6;
+    margin: 0 0 16px 0;
+  }
+
+  .featured-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .featured-author {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #6b7280;
+  }
+
+  .featured-author-icon {
+    height: 16px;
+    width: auto;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  .featured-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 24px;
+    background: white;
+    color: #1a1a1a;
+    font-size: 14px;
+    font-weight: 500;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    width: fit-content;
+  }
+
+  .featured-btn:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+  }
+
+  @media (max-width: 768px) {
+    .featured-card {
+      flex-direction: column;
+    }
+
+    .featured-image,
+    .featured-content {
+      width: 100%;
+    }
+
+    .featured-image {
+      height: 200px;
+    }
+
+    .featured-action {
+      padding: 0 32px 32px;
+    }
+  }
+
+  /* Templates Section */
+  .templates-container {
+    max-width: var(--max-width, 90rem);
+    margin: 0 auto;
+    padding: 48px var(--doc-padding, 2rem) 80px;
+  }
+
+  .template-section {
+    width: 100%;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .section-header h2 {
+    font-size: 26px;
+    font-weight: 600;
+    color: #0b101c;
+    margin: 0;
+  }
+
+  .filter-pills {
+    display: flex;
+    gap: 8px;
+  }
+
+  .filter-pill {
+    padding: 6px 14px;
+    background: white;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .filter-pill:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+  }
+
+  .filter-pill.active {
+    background: #5a6175;
+    color: white;
+    border-color: #5a6175;
+  }
+
+  /* Floating Filter */
+  .floating-filter {
+    position: fixed;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: white;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.3s ease,
+      visibility 0.3s ease;
+  }
+
+  .floating-filter.visible {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .floating-pill {
+    padding: 8px 12px;
+    background: #f5f7fa;
+    color: #5a6175;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+  }
+
+  .floating-pill:hover {
+    background: #e8eaed;
+  }
+
+  .floating-pill.active {
+    background: #5a6175;
+    color: white;
+  }
+
+  @media (max-width: 1200px) {
+    .floating-filter {
+      display: none;
+    }
+  }
+
+  /* Card Grid */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border-left: 1px solid #e5e7eb;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 64px;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+  }
+
+  .empty-state p {
+    font-size: 16px;
+    color: #5a6175;
+    margin: 0;
+  }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .card-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .hero-container {
+      padding: 48px 24px;
+      min-height: auto;
+    }
+
+    .hero-title {
+      font-size: 28px;
+    }
+
+    .hero-description {
+      font-size: 14px;
+    }
+
+    .hero-description br {
+      display: none;
+    }
+
+    .hero-pattern {
+      opacity: 0.3;
+      width: 100%;
+    }
+
+    .templates-container {
+      padding: 32px 24px 64px;
+    }
+
+    .section-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .card-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const sectionHeader = document.getElementById("section-header")
+    const floatingFilter = document.getElementById("floating-filter")
+    const filterPills = document.querySelectorAll<HTMLButtonElement>(".filter-pill")
+    const floatingPills = document.querySelectorAll<HTMLButtonElement>(".floating-pill")
+    const templateCards = document.querySelectorAll<HTMLAnchorElement>(".template-card")
+
+    // Show/hide floating filter based on section header visibility
+    if (sectionHeader && floatingFilter) {
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            floatingFilter.classList.remove("visible")
+          } else {
+            floatingFilter.classList.add("visible")
+          }
+        },
+        { threshold: 0, rootMargin: "-80px 0px 0px 0px" }
+      )
+      observer.observe(sectionHeader)
+    }
+
+    // Filter function
+    function applyFilter(filter: string) {
+      templateCards.forEach((card) => {
+        const languages = card.dataset.languages?.split(",") || []
+        if (filter === "all" || languages.includes(filter)) {
+          card.style.display = ""
+        } else {
+          card.style.display = "none"
+        }
+      })
+    }
+
+    // Sync active state between both filter sets
+    function syncFilters(filter: string) {
+      filterPills.forEach((p) => {
+        p.classList.toggle("active", p.dataset.filter === filter)
+      })
+      floatingPills.forEach((p) => {
+        p.classList.toggle("active", p.dataset.filter === filter)
+      })
+    }
+
+    // Inline filter pills
+    filterPills.forEach((pill) => {
+      pill.addEventListener("click", () => {
+        const filter = pill.dataset.filter || "all"
+        syncFilters(filter)
+        applyFilter(filter)
+      })
+    })
+
+    // Floating filter pills
+    floatingPills.forEach((pill) => {
+      pill.addEventListener("click", () => {
+        const filter = pill.dataset.filter || "all"
+        syncFilters(filter)
+        applyFilter(filter)
+      })
+    })
+  })
+</script>
