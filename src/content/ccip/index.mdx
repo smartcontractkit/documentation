@@ -13,7 +13,7 @@ hideTitle: true
 ---
 
 import LayoutHero from "@components/LayoutHero/LayoutHero.astro"
-import { TabGrid } from "@components/TabGrid/TabGrid.tsx"
+import { ChainAwareTabGrid } from "@components/TabGrid/ChainAwareTabGrid.tsx"
 import ResourceSection from "@components/Resource/ResourceSection.astro"
 import QuickLinkCard from "@components/QuickLinkCard/QuickLinkCard.astro"
 import ToolsUtilitiesGrid from "@components/ToolsUtilitiesGrid/ToolsUtilitiesGrid.astro"
@@ -29,6 +29,7 @@ import {
   SvgCrossChain,
   SvgBulletList,
 } from "@chainlink/blocks"
+import { ClickToZoom } from "@components"
 
 export const toolsAndUtilities = [
   {
@@ -297,15 +298,26 @@ export const cardLinks = [
 
 <OverviewWrapper>
   <CardsWrapper links={cardLinks} />
-  <TabGrid header="Tutorials" client:visible tabs={exampleTutorials} />
+  <ChainAwareTabGrid header="Tutorials" client:visible tabs={exampleTutorials} />
   <QuickLinkCard links={quickLinks} />
   <ToolsUtilitiesGrid links={toolsAndUtilities} />
   <ResourceSection title="Resources" resources={exampleResources} />
   <ChangelogSnippet query="ccip" />
-
-  <MediaSection
-    heading="High-level architecture"
-    description="CCIP delivers cross-chain messages from a source chain to a destination chain by combining offchain consensus and onchain execution components."
-    image="/images/architecture.png"
-  />
 </OverviewWrapper>
+
+Given the [inherent risks of cross-chain interoperability](/resources/bridge-risks), CCIP features [defense-in-depth security](https://blog.chain.link/five-levels-cross-chain-security/#level_5__defense-in-depth) and is powered by Chainlink's industry-standard oracle networks which have a proven track record of securing tens of billions of dollars and enabling over $14 trillion in onchain transaction value.
+
+CCIP's robust security framework is built upon several core components:
+
+- **Proven Decentralized Architecture**: CCIP leverages the same highly reliable infrastructure as Chainlink Data Feeds, which has enabled trillions in transaction value across hundreds of DeFi applications. Cross-chain transactions are validated by multiple decentralized oracle networks (DONs).
+- **Rate Limiting**: To mitigate risk, CCIP includes a rate limiting feature. This allows owners to establish and configure policies for Cross-Chain Tokens, which are then enforced on both the source and destination chains.
+- **Timelocked Upgrades**: All on-chain, security-critical configuration changes and core infrastructure upgrades must pass through a Role-based Access Control Timelock contract. This process provides a review period during which CCIP node operators can veto the upgrade, or, in time-sensitive situations, explicitly approve it.
+- **High-Quality, Sybil-Resistant Node Operators**: The system is secured by the same globally distributed, security-reviewed, public node operators that secure other Chainlink services, validate leading blockchain networks, and operate traditional Web2 infrastructure. Each independent CCIP node is run by a distinct organization with extensive DevOps expertise and rigorous private key management security practices.
+
+<ClickToZoom
+  src="/images/ccip/ccip-hl-v1.7.jpg"
+  alt="Chainlink CCIP Architecture"
+  style="display: block; margin: 2rem auto; max-height: 60vh; width: auto;"
+/>
+
+To understand how Chainlink CCIP works, refer to the [architecture](/ccip/concepts/architecture/overview) section. If you are new to using Chainlink CCIP, read these guides before you deploy any contracts that use CCIP.
