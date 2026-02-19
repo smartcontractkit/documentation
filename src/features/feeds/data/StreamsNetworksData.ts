@@ -34,6 +34,15 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "ADI",
+    logoUrl: "/assets/chains/adi.svg",
+    mainnet: {
+      label: "ADI Mainnet",
+      verifierProxy: "0x29b289DC5f840762FBF605FF4DF37df18FdA4e7a",
+      explorerUrl: "https://explorer.adifoundation.ai/address/%s",
+    },
+  },
+  {
     network: "Apechain",
     logoUrl: "/assets/chains/apechain.svg",
     mainnet: {
@@ -75,6 +84,15 @@ export const StreamsNetworksData: NetworkData[] = [
       label: "Arbitrum Sepolia",
       verifierProxy: "0x2ff010DEbC1297f19579B4246cad07bd24F2488A",
       explorerUrl: "https://sepolia.arbiscan.io/address/%s",
+    },
+  },
+  {
+    network: "Arc",
+    logoUrl: "/assets/chains/arc.svg",
+    testnet: {
+      label: "Arc Testnet",
+      verifierProxy: "0x72790f9eB82db492a7DDb6d2af22A270Dcc3Db64",
+      explorerUrl: "https://testnet.arcscan.app/address/%s",
     },
   },
   {
@@ -220,6 +238,15 @@ export const StreamsNetworksData: NetworkData[] = [
       label: "Sepolia Testnet",
       verifierProxy: "0x4e9935be37302B9C97Ff4ae6868F1b566ade26d2",
       explorerUrl: "https://sepolia.etherscan.io/address/%s",
+    },
+  },
+  {
+    network: "DogeOS",
+    logoUrl: "/assets/chains/dogeos.svg",
+    testnet: {
+      label: "DogeOS Chikyu Testnet",
+      verifierProxy: "0x72790f9eB82db492a7DDb6d2af22A270Dcc3Db64",
+      explorerUrl: "https://blockscout.testnet.dogeos.com/address/%s",
     },
   },
   {
@@ -464,7 +491,7 @@ export const StreamsNetworksData: NetworkData[] = [
     network: "Pharos",
     logoUrl: "/assets/chains/pharos.svg",
     mainnet: {
-      label: "Pharos Mainnet (Private)",
+      label: "Pharos Mainnet",
       verifierProxy: "0xa094978891512268f4a4a4641B8da1A2a3E3BEB7",
       explorerUrl: "https://pharos.socialscan.io/address/%s",
     },
@@ -605,6 +632,20 @@ export const StreamsNetworksData: NetworkData[] = [
       verifierProgramId: "Gt9S41PtjR58CbG9JhJ3J6vxesqrNAswbWYbLNTMZA3c",
       accessController: "2k3DsgwBoqrnvXKVvd7jX7aptNxdcRBdcd5HkYsGgbrb",
       explorerUrl: "https://explorer.solana.com/address/%s?cluster=devnet",
+    },
+  },
+  {
+    network: "Stable",
+    logoUrl: "/assets/chains/stable.svg",
+    mainnet: {
+      label: "Stable Mainnet",
+      verifierProxy: "0x06034790F8b6c2573B91704BeC6Ab380cB590237",
+      explorerUrl: "https://stablescan.xyz/address/%s",
+    },
+    testnet: {
+      label: "Stable Testnet",
+      verifierProxy: "0x72790f9eB82db492a7DDb6d2af22A270Dcc3Db64",
+      explorerUrl: "https://testnet.stablescan.xyz/address/%s",
     },
   },
   {
