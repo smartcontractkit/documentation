@@ -13099,6 +13099,202 @@ The typical project setup flow for TypeScript workflows:
 
 ---
 
+# Migrate from Gelato Web3 Functions to Chainlink CRE
+Source: https://docs.chain.link/cre/reference/gelato-migration-ts
+Last Updated: 2026-02-16
+
+<Aside type="note" title="SDK Language: TypeScript">
+  You're viewing the **TypeScript** version of this guide. If you prefer Go, use the language selector in the left
+  sidebar to switch to the Go version.
+</Aside>
+
+This page provides a concise mapping of Gelato Web3 Functions concepts to their CRE equivalents.
+
+[CRE](/cre) runs your code across a [Decentralized Oracle Network (DON)](/cre/key-terms#decentralized-oracle-network-don) — a group of independent nodes that each execute your workflow and reach [consensus](/cre/concepts/consensus-computing) on the result.
+
+Unlike a single-executor model, every operation — API calls, blockchain reads, onchain writes — is cryptographically verified by multiple nodes, giving your workflows institutional-grade security and reliability with no single point of failure.
+
+If any term below is unfamiliar, see the [Key Terms](/cre/key-terms) glossary.
+
+## Terminology
+
+The core concepts map closely between platforms, but the names differ:
+
+| Gelato                         | CRE                             | Notes                                                                                                                                                               |
+| ------------------------------ | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Web3 Function**              | **Workflow**                    | Your compiled application. In CRE, workflows are WASM binaries deployed to a [DON](/cre/key-terms#decentralized-oracle-network-don).                                |
+| **`onRun` function**           | **Callback**                    | The function containing your business logic, invoked when a trigger fires.                                                                                          |
+| **Task**                       | **Handler**                     | The binding of a trigger to a callback: `handler(trigger, callback)`.                                                                                               |
+| **Trigger (time/event/block)** | **Trigger (cron/EVM log/HTTP)** | The event that starts execution. CRE adds HTTP triggers.                                                                                                            |
+| **Gelato Executor**            | **Workflow DON**                | The infrastructure that runs your code. CRE uses a Decentralized Oracle Network instead of a single executor.                                                       |
+| **Gelato Relay**               | **Capability DON**              | The service that performs specific operations (chain writes, HTTP fetches). Each [capability](/cre/capabilities) runs on its own DON with consensus.                |
+| **`userArgs` / `schema.json`** | **Config / `config.json`**      | Runtime parameters. Supports optional schema validation via any [Standard Schema](https://github.com/standard-schema/standard-schema) library (e.g., Zod, ArkType). |
+| **`context.secrets`**          | **`runtime.getSecret()`**       | Secret access at runtime. CRE uses a `secrets.yaml` manifest + [Vault DON](/cre/guides/workflow/secrets/using-secrets-deployed) for deployed workflows.             |
+
+## Configuration
+
+**Gelato** uses a combination of the Gelato UI, SDK, and IPFS for task creation and deployment. Configuration is split between `schema.json` (for `userArgs`), the UI (for triggers and secrets), and your function code.
+
+**CRE** consolidates everything into files within your code repository:
+
+| File                   | Purpose                                                                                 |
+| ---------------------- | --------------------------------------------------------------------------------------- |
+| `main.ts`              | Your workflow code (triggers, callbacks, business logic)                                |
+| `config.<target>.json` | Runtime parameters per target (e.g., `config.staging.json`). Replaces Gelato `userArgs` |
+| `secrets.yaml`         | Declares secret names; values come from `.env` (simulation) or Vault DON (deployed)     |
+| `project.yaml`         | Project-level configuration (project name, shared settings)                             |
+| `workflow.yaml`        | Per-workflow configuration (workflow name, paths to artifacts and config files)         |
+
+All deployment and management is done through the CRE CLI (`cre workflow simulate`, `cre workflow deploy`, etc.), not a separate UI or IPFS.
+
+## Triggers
+
+### Time-based
+
+**Gelato**: Time intervals (e.g., "every 5 minutes") or cron expressions, configured through the UI or SDK.
+
+**CRE**: Standard cron expressions (5 or 6 fields) configured directly in your code. Supports timezone prefixes (e.g., `TZ=America/New_York 0 9 * * 1-5`). Minimum interval is 30 seconds.
+
+```typescript
+// CRE cron trigger
+const cron = new CronCapability()
+handler(cron.trigger({ schedule: "0 */5 * * * *" }), onCronTrigger)
+```
+
+See the [Cron Trigger guide](/cre/guides/workflow/using-triggers/cron-trigger) for full details.
+
+### HTTP triggers
+
+**Gelato**: Not natively supported as a trigger type.
+
+**CRE**: Start a workflow execution in response to an external HTTP request. Supports authentication and passes the request body to your callback.
+
+See the [HTTP Trigger guide](/cre/guides/workflow/using-triggers/http-trigger/overview) for details.
+
+### Onchain events
+
+**Gelato**: Event-based triggers that watch for smart contract events, configured in the UI.
+
+**CRE**: `EVMClient.logTrigger()` watches for specific contract events. You specify contract addresses and optionally filter by event topics, directly in your workflow code.
+
+See the [EVM Log Trigger guide](/cre/guides/workflow/using-triggers/evm-log-trigger) for details.
+
+### Per-block triggers
+
+**Gelato**: Native "every block" trigger type.
+
+**CRE**: No direct equivalent. Use a short cron interval (e.g., every 30 seconds) or an EVM log trigger to achieve similar behavior.
+
+## Task authoring and output
+
+### Language and runtime
+
+**Gelato**: TypeScript running in a Deno-like Node.js environment. Full access to `fetch()`, npm packages, and ethers.js.
+
+**CRE**: TypeScript [compiled to WASM via QuickJS](/cre/concepts/typescript-wasm-runtime), not Node.js. Some npm packages that depend on Node.js APIs won't work. The SDK provides built-in clients for all common operations.
+
+
+<Aside type="caution" title="npm compatibility">
+  CRE's TypeScript runtime does not support all npm packages. Use the SDK's built-in clients (`HTTPClient`, `EVMClient`) instead of `fetch()`, axios, or ethers.js. For ABI encoding, CRE uses [viem](https://viem.sh/) instead of ethers.
+</Aside>
+
+### HTTP / API calls
+
+**Gelato**: `fetch()` or axios, running on a single executor.
+
+**CRE**: `HTTPClient.sendRequest()` — each DON node fetches independently, and results are aggregated via [consensus](/cre/concepts/consensus-computing). Your API data is validated across multiple nodes before your workflow uses it.
+
+CRE also offers a [Confidential HTTP](/cre/capabilities/confidential-http) capability for privacy-preserving API calls — secrets are injected inside a secure enclave and responses can be optionally encrypted.
+
+### Onchain reads
+
+**Gelato**: `multiChainProvider.default()` with ethers.js.
+
+**CRE**: `EVMClient.callContract()` with [viem](https://viem.sh/) for ABI encoding/decoding. A single workflow can read from and write to [multiple chains](/cre/reference/sdk/evm-client) — no need for separate infrastructure per chain.
+
+See the [Onchain Read guide](/cre/guides/workflow/using-evm-client/onchain-read) for details.
+
+### Onchain writes
+
+**Gelato**: Return `{ canExec: true, callData: [...] }` from your function. Gelato relays the transaction.
+
+**CRE**: Two-step process with consensus verification:
+
+1. Generate a [signed report](/cre/guides/workflow/using-evm-client/onchain-write/overview) with `runtime.report()`
+2. Submit it onchain with `EVMClient.writeReport()`
+
+```typescript
+// 1. Encode and generate a signed report
+const report = runtime
+  .report({
+    encodedPayload: hexToBase64(callData),
+    encoderName: "evm",
+    signingAlgo: "ecdsa",
+    hashingAlgo: "keccak256",
+  })
+  .result()
+
+// 2. Submit the report onchain
+const writeResult = evmClient
+  .writeReport(runtime, {
+    receiver: contractAddress,
+    report,
+  })
+  .result()
+```
+
+The **[KeystoneForwarder](/cre/guides/workflow/using-evm-client/onchain-write/overview)** contract verifies the DON's signatures before calling your [consumer contract](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts). This is the biggest architectural difference — CRE writes are cryptographically verified by the decentralized network, not relayed by a single executor.
+
+See the [Onchain Write guide](/cre/guides/workflow/using-evm-client/onchain-write/overview) and [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts).
+
+### Secrets
+
+**Gelato**: `context.secrets.get("KEY")`, configured in the UI.
+
+**CRE**: Declare secrets in `secrets.yaml`, provide values via `.env` (simulation) or Vault DON (deployed), access via `runtime.getSecret({ id: "KEY" })` in your code. The API is the same regardless of environment.
+
+See the [Secrets guide](/cre/guides/workflow/secrets) for details.
+
+## Monitoring
+
+**Gelato**: Task dashboard in the Gelato UI showing execution history, logs, and status.
+
+**CRE**: The [CRE UI](https://cre.chain.link) provides:
+
+- Workflow status and lifecycle management (active, paused, etc.)
+- Detailed execution logs and events
+- Performance metrics and debugging tools
+
+See the [Monitoring & Debugging guide](/cre/guides/operations/monitoring-workflows) for details.
+
+## Deployment and lifecycle
+
+| Action             | Gelato                                  | CRE                                                |
+| ------------------ | --------------------------------------- | -------------------------------------------------- |
+| **Test locally**   | Gelato CLI                              | `cre workflow simulate`                            |
+| **Deploy**         | Upload to IPFS + create task via UI/SDK | `cre workflow deploy`                              |
+| **Pause / Resume** | UI                                      | `cre workflow activate` / `cre workflow pause`     |
+| **Update**         | Redeploy to IPFS + update task          | Redeploy with `cre workflow deploy`                |
+| **Delete**         | UI                                      | `cre workflow delete`                              |
+| **Monitor**        | Gelato dashboard                        | CRE UI at [cre.chain.link](https://cre.chain.link) |
+
+## Pricing
+
+CRE is currently in Early Access. For pricing details, reach out via the in-app support on the CRE platform at <a href="https://cre.chain.link" target="_blank" rel="noopener noreferrer">cre.chain.link</a>.
+
+## Get started
+
+You can have a working CRE workflow running locally in minutes:
+
+1. **[Start the Getting Started tutorial](/cre/getting-started/overview)** — build your first workflow from scratch, step by step
+2. **[Create your CRE account](https://cre.chain.link)** — [Account setup guide](/cre/account/creating-account)
+3. **[Install the CRE CLI](/cre/getting-started/cli-installation)**
+4. **[Run a demo](/cre/templates/running-demo-workflow)** — see a complete workflow in
+   action with a single command
+5. **[Browse the templates](/cre/templates)** — see complete workflow examples you can clone and customize
+
+---
+
 # Project Configuration
 Source: https://docs.chain.link/cre/reference/project-configuration-ts
 Last Updated: 2026-02-03
