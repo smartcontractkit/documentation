@@ -34,8 +34,8 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
-    network: "ADI",
-    logoUrl: "/assets/chains/adi.svg",
+    network: "ADI Network",
+    logoUrl: "/assets/chains/adi-network.svg",
     mainnet: {
       label: "ADI Mainnet",
       verifierProxy: "0x29b289DC5f840762FBF605FF4DF37df18FdA4e7a",
