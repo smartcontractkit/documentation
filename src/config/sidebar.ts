@@ -567,16 +567,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             },
           ],
         },
+      ],
+    },
+    {
+      section: "Migrate to CRE",
+      contents: [
         {
-          title: "Migrate to CRE",
+          title: "Migrate from Gelato",
           url: "cre/reference/gelato-migration",
-          children: [
-            {
-              title: "Migrate from Gelato",
-              url: "cre/reference/gelato-migration",
-              highlightAsCurrent: ["cre/reference/gelato-migration-ts", "cre/reference/gelato-migration-go"],
-            },
-          ],
+          highlightAsCurrent: ["cre/reference/gelato-migration-ts", "cre/reference/gelato-migration-go"],
         },
       ],
     },
