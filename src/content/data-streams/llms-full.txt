@@ -5639,7 +5639,7 @@ Extended and overnight session price feeds are currently sourced from a single d
 Unlike regular hours where multiple independent sources cross-validate each other, a single provider means there is no redundant check on individual quote quality. This creates two distinct risks:
 
 - **Provider outage or disruption:** If the provider experiences downtime, technical failures, or connectivity disruption, the feed may flatline or report highly inaccurate figures, which can prevent users from reacting to real price movements. Such issues may lead to mispricing, failed liquidations, and potential bad debt accumulation.
-- **Erroneous individual quotes:** Even when the provider is operational, it may publish a single bid or ask quote that is significantly off from the prevailing market price — for example, a bid price printing far below the previous in-session price. Because there is no second source to cross-validate against, this outlier quote directly distorts the mid-price calculation, creating a large artificial price move. This danger is exacerbated during extended and overnight sessions where the erroneous price can persist for an extended period of time with no corrective market activity to resolve it.
+- **Erroneous individual quotes:** Even when the provider is operational, it may publish a single bid or ask quote that is significantly off from the prevailing market price — for example, a bid price printing far below the previous in-session price. Because there is no second source to cross-validate against, this outlier quote directly distorts the mid-price calculation, creating a large artificial price move.
 
 ##### Mitigation
 
@@ -5647,7 +5647,7 @@ Consumers should not rely on the staleness indicator alone. A feed can be active
 
 - **Monitor bid/ask spread:** A sudden, significant widening of the spread between `bid` and `ask` is a strong indicator that a single outlier quote has distorted the mid-price. Implement a maximum spread threshold — for example, if `(ask - bid) / mid` exceeds a percentage beyond a configured threshold, treat the price as unreliable and restrict or pause exposure accordingly.
 - **Implement price deviation checks:** Compare the current mid-price against a reference (e.g., the previous valid price or a short-term moving average) and trigger a circuit breaker if the move exceeds a configured threshold.
-- **Apply heightened caution during closed market periods:** During extended and overnight sessions, there is no active market to correct erroneous quotes. Consider applying stricter spread and deviation thresholds, or pausing activity entirely, during these windows.
+- **Do not use data when `marketStatus` is `closed`:** When the market is closed, data providers may perform maintenance, which can result in stale or incorrect prices being published. Consuming or acting on feed data during a closed market status is not recommended — pause or restrict all activity until the market reopens and a valid `open` status is confirmed.
 - **Check staleness via `lastSeenTimestampNs`:** Detect when data stops updating entirely, which is a separate but complementary signal to the above.
 - **Pause or lock market activity** when any of the above conditions are triggered.
 - **Restrict to narrow price bands** based on a recent valid reference price.
