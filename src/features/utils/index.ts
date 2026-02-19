@@ -117,10 +117,28 @@ export const getChainTypeAndFamily = (supportedChain: SupportedChain): ChainType
       chainFamily = "evm"
       break
     case "aptos":
-      chainFamily = "mvm"
+      chainFamily = "aptos"
+      break
+    case "sui":
+      chainFamily = "sui"
       break
     case "solana":
-      chainFamily = "svm"
+      chainFamily = "solana"
+      break
+    case "tron":
+      chainFamily = "tron"
+      break
+    case "canton":
+      chainFamily = "canton"
+      break
+    case "ton":
+      chainFamily = "ton"
+      break
+    case "stellar":
+      chainFamily = "stellar"
+      break
+    case "starknet":
+      chainFamily = "starknet"
       break
     default:
       throw new Error(`Unknown chain type: ${chainType}`)
