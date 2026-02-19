@@ -686,9 +686,7 @@ export const StreamsNetworkAddressesTable = ({
   const [searchState, setSearchState] = useState<string | null>(null)
 
   const urlSearch =
-    typeof window !== "undefined"
-      ? (new URLSearchParams(window.location.search).get("streamsNetwork") ?? "")
-      : ""
+    typeof window !== "undefined" ? (new URLSearchParams(window.location.search).get("streamsNetwork") ?? "") : ""
 
   // Priority: user-typed value → SSR prop (when Astro can pass it) → URL param (client fallback)
   const searchValue = searchState ?? (initialSearch || urlSearch)
