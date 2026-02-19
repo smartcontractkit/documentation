@@ -168,7 +168,7 @@ export const productChainLinks: ProductChainLinks = {
     logo: dataStreamsLogo,
     chains: {
       "0g": "/data-streams/supported-networks?streamsNetwork=0g",
-      adi: "/data-streams/supported-networks?streamsNetwork=adi",
+      "adi-network": "/data-streams/supported-networks?streamsNetwork=adi",
       arc: "/data-streams/supported-networks?streamsNetwork=arc",
       apechain: "/data-streams/supported-networks?streamsNetwork=apechain",
       aptos: "/data-streams/supported-networks?streamsNetwork=aptos",
@@ -442,6 +442,7 @@ export const chainNames: Record<string, string> = {
   jovay: "Jovay",
   stable: "Stable",
   tempo: "Tempo",
+  "adi-network": "ADI Network",
   arc: "Arc Network",
   dogeos: "DogeOS",
 }
