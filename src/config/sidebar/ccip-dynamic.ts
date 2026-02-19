@@ -330,6 +330,11 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
         // Universal
       },
       {
+        title: "Offchain",
+        url: "ccip/tutorials/offchain",
+        // Universal - supports all chain families
+      },
+      {
         title: "Transfer Tokens",
         url: "ccip/tutorials/evm/transfer-tokens-from-contract",
         chainTypes: ["evm"],
@@ -348,50 +353,6 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
         title: "Using the Token Manager",
         url: "ccip/tutorials/evm/token-manager",
         chainTypes: ["evm"],
-      },
-      {
-        title: "Using the CCIP JavaScript SDK",
-        url: "ccip/ccip-javascript-sdk",
-        chainTypes: ["evm"],
-      },
-      {
-        title: "Offchain",
-        url: "ccip/tutorials/evm/offchain",
-        chainTypes: ["evm"],
-        children: [
-          {
-            title: "Transfer Tokens between EOAs",
-            url: "ccip/tutorials/evm/offchain/transfer-tokens-from-eoa",
-            chainTypes: ["evm"],
-          },
-          {
-            title: "Checking CCIP Message Status",
-            url: "ccip/tutorials/evm/offchain/get-status-offchain",
-            chainTypes: ["evm"],
-          },
-          {
-            title: "Using CCIP CLI",
-            url: "ccip/tutorials/evm/offchain/ccip-tools",
-            chainTypes: ["evm"],
-            children: [
-              {
-                title: "Transfer Tokens between EOAs",
-                url: "ccip/tutorials/evm/offchain/ccip-tools/transfer-tokens-from-eoa",
-                chainTypes: ["evm"],
-              },
-              {
-                title: "Checking CCIP Message Status",
-                url: "ccip/tutorials/evm/offchain/ccip-tools/get-status-offchain",
-                chainTypes: ["evm"],
-              },
-              // {
-              //   title: "Get Supported Tokens",
-              //   url: "ccip/tutorials/evm/offchain/ccip-tools/get-supported-tokens",
-              //   chainTypes: ["evm"],
-              // },
-            ],
-          },
-        ],
       },
       {
         title: "Cross-Chain Token (CCT)",
@@ -729,13 +690,8 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
         ],
       },
       {
-        title: "SDK",
-        url: "ccip/tools-resources/sdk",
-        chainTypes: ["evm"],
-      },
-      {
-        title: "CLI",
-        url: "ccip/tools-resources/cli",
+        title: "CCIP SDK & CLI",
+        url: "ccip/tools-resources/ccip-tools",
         // Universal
       },
       {

@@ -461,6 +461,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "CRE Templates Hub",
           url: "https://docs.chain.link/cre-templates",
         },
+        {
+          title: "Custom Data Feed Template",
+          url: "cre/templates/running-demo-workflow",
+          highlightAsCurrent: ["cre/templates/running-demo-workflow-ts", "cre/templates/running-demo-workflow-go"],
+        },
       ],
     },
     {
@@ -561,6 +566,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               highlightAsCurrent: ["cre/reference/sdk/consensus-ts", "cre/reference/sdk/consensus-go"],
             },
           ],
+        },
+      ],
+    },
+    {
+      section: "Migrate to CRE",
+      contents: [
+        {
+          title: "Migrate from Gelato",
+          url: "cre/reference/gelato-migration",
+          highlightAsCurrent: ["cre/reference/gelato-migration-ts", "cre/reference/gelato-migration-go"],
         },
       ],
     },
