@@ -2,8 +2,8 @@
   "openapi": "3.0.0",
   "info": {
     "title": "CCIP Docs config API",
-    "description": "API for retrieving CCIP chain, token, and lane information.\n\nTo get started quickly, you can download our [Postman Collection](/api/ccip/v1/postman-collection.json) which includes all endpoints and example requests.",
-    "version": "1.6.0",
+    "description": "API for retrieving CCIP chain, token, lane, and rate limits information.\n\nTo get started quickly, you can download our [Postman Collection](/api/ccip/v1/postman-collection.json) which includes all endpoints and example requests.",
+    "version": "1.13.0",
     "contact": {
       "name": "File issues",
       "url": "https://github.com/smartcontractkit/documentation/issues/new/choose"
@@ -34,7 +34,7 @@
     },
     {
       "name": "lanes",
-      "description": "Cross-chain lane information endpoints"
+      "description": "Cross-chain lane information endpoints with rate limits"
     }
   ],
   "paths": {
@@ -87,8 +87,8 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": ["chainId", "selector", "internalId"],
-              "default": "chainId"
+              "enum": ["chain_id", "selector", "internal_id"],
+              "default": "chain_id"
             },
             "description": "Key to use for organizing the response data"
           },
@@ -120,6 +120,16 @@
               "enum": ["evm", "solana", "aptos", "sui", "tron", "canton", "ton", "stellar", "starknet"]
             },
             "description": "Filter results by chain family. Only effective when using the search parameter."
+          },
+          {
+            "name": "internalIdFormat",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["directory", "selector"],
+              "default": "selector"
+            },
+            "description": "Format for internal IDs in the response. 'selector' uses canonical selector names (e.g., 'ethereum-mainnet'), 'directory' uses chains.json keys (e.g., 'mainnet'). Only applies when outputKey=internal_id."
           }
         ],
         "responses": {
@@ -340,10 +350,20 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": ["chainId", "selector", "internalId"],
-              "default": "chainId"
+              "enum": ["chain_id", "selector", "internal_id"],
+              "default": "chain_id"
             },
             "description": "Key to use for organizing the response data"
+          },
+          {
+            "name": "internalIdFormat",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["directory", "selector"],
+              "default": "selector"
+            },
+            "description": "Format for internal IDs in the response. 'selector' uses canonical selector names (e.g., 'ethereum-mainnet'), 'directory' uses chains.json keys (e.g., 'mainnet'). Only applies when output_key=internal_id."
           }
         ],
         "responses": {
@@ -410,6 +430,295 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tokens/{tokenCanonicalSymbol}": {
+      "get": {
+        "tags": ["tokens"],
+        "summary": "Retrieve detailed token information with custom finality data",
+        "description": "Returns detailed information about a specific CCIP token, including chain-specific configurations and custom finality settings (minBlockConfirmation and hasCustomFinality).",
+        "operationId": "getTokenDetail",
+        "parameters": [
+          {
+            "name": "tokenCanonicalSymbol",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The canonical symbol for the token (e.g., LINK, USDC, BETS)",
+            "example": "BETS"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["mainnet", "testnet"]
+            },
+            "description": "The network environment to query"
+          },
+          {
+            "name": "outputKey",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["chain_id", "selector", "internal_id"],
+              "default": "chain_id"
+            },
+            "description": "Key to use for organizing the response data by chain"
+          },
+          {
+            "name": "internalIdFormat",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["directory", "selector"],
+              "default": "selector"
+            },
+            "description": "Format for internal IDs in the response. 'selector' uses canonical selector names (e.g., 'ethereum-mainnet'), 'directory' uses chains.json keys (e.g., 'mainnet'). Only applies when output_key=internal_id."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with token detail data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenDetailApiResponse"
+                },
+                "examples": {
+                  "withCustomFinality": {
+                    "summary": "Token with custom finality enabled",
+                    "value": {
+                      "metadata": {
+                        "environment": "mainnet",
+                        "timestamp": "2025-12-10T12:00:00Z",
+                        "requestId": "123e4567-e89b-12d3-a456-426614174000",
+                        "tokenSymbol": "BETS",
+                        "chainCount": 2
+                      },
+                      "data": {
+                        "43114": {
+                          "chainId": 43114,
+                          "chainName": "Avalanche",
+                          "decimals": 18,
+                          "destinations": ["1", "137"],
+                          "name": "BetSwirl v2",
+                          "poolAddress": "0xe9d2...9C06",
+                          "poolType": "burnMint",
+                          "symbol": "BETS",
+                          "tokenAddress": "0x9402...E6e5",
+                          "hasCustomFinality": true,
+                          "minBlockConfirmation": 5
+                        },
+                        "1": {
+                          "chainId": 1,
+                          "chainName": "Ethereum",
+                          "decimals": 18,
+                          "destinations": ["43114"],
+                          "name": "BetSwirl v2",
+                          "poolAddress": "0x1234...5678",
+                          "poolType": "lockRelease",
+                          "symbol": "BETS",
+                          "tokenAddress": "0xabcd...ef01",
+                          "hasCustomFinality": false,
+                          "minBlockConfirmation": 0
+                        }
+                      }
+                    }
+                  },
+                  "unavailable": {
+                    "summary": "Token with unavailable finality data",
+                    "value": {
+                      "metadata": {
+                        "environment": "mainnet",
+                        "timestamp": "2025-12-10T12:00:00Z",
+                        "requestId": "456e7890-e89b-12d3-a456-426614174000",
+                        "tokenSymbol": "USDC",
+                        "chainCount": 1
+                      },
+                      "data": {
+                        "1": {
+                          "chainId": 1,
+                          "chainName": "Ethereum",
+                          "decimals": 6,
+                          "destinations": ["43114"],
+                          "name": "USD Coin",
+                          "poolAddress": "0x1234...5678",
+                          "poolType": "burnMint",
+                          "symbol": "USDC",
+                          "tokenAddress": "0xA0b8...c4d2",
+                          "hasCustomFinality": null,
+                          "minBlockConfirmation": null
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Token not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "NOT_FOUND",
+                  "message": "Token 'INVALID' not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tokens/{tokenCanonicalSymbol}/finality": {
+      "get": {
+        "tags": ["tokens"],
+        "summary": "Retrieve token finality data only",
+        "description": "Returns only custom finality information (hasCustomFinality and minBlockConfirmation) for a specific token across all chains. This is a lightweight endpoint that returns minimal data for UI components that only need finality status.",
+        "operationId": "getTokenFinality",
+        "parameters": [
+          {
+            "name": "tokenCanonicalSymbol",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The canonical symbol for the token (e.g., LINK, USDC, BETS)",
+            "example": "BETS"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["mainnet", "testnet"]
+            },
+            "description": "The network environment to query"
+          },
+          {
+            "name": "outputKey",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["chainId", "selector", "internalId"],
+              "default": "chainId"
+            },
+            "description": "Key to use for organizing the response data by chain"
+          },
+          {
+            "name": "internalIdFormat",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["directory", "selector"],
+              "default": "selector"
+            },
+            "description": "Format for internal IDs in the response. 'selector' uses canonical selector names (e.g., 'ethereum-mainnet'), 'directory' uses chains.json keys (e.g., 'mainnet'). Only applies when output_key=internalId."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with token finality data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenFinalityApiResponse"
+                },
+                "examples": {
+                  "mixedFinality": {
+                    "summary": "Token with mixed finality states",
+                    "value": {
+                      "metadata": {
+                        "environment": "mainnet",
+                        "timestamp": "2025-12-10T12:00:00Z",
+                        "requestId": "123e4567-e89b-12d3-a456-426614174000",
+                        "tokenSymbol": "BETS",
+                        "chainCount": 3
+                      },
+                      "data": {
+                        "avalanche-mainnet": {
+                          "hasCustomFinality": true,
+                          "minBlockConfirmation": 5
+                        },
+                        "ethereum-mainnet": {
+                          "hasCustomFinality": false,
+                          "minBlockConfirmation": 0
+                        },
+                        "polygon-mainnet": {
+                          "hasCustomFinality": null,
+                          "minBlockConfirmation": null
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Token not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "NOT_FOUND",
+                  "message": "Token 'INVALID' not found"
                 }
               }
             }
@@ -512,10 +821,20 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "enum": ["chainId", "selector", "internalId"],
-              "default": "chainId"
+              "enum": ["chain_id", "selector", "internal_id"],
+              "default": "chain_id"
             },
             "description": "Key format to use for organizing the lane keys in the response"
+          },
+          {
+            "name": "internalIdFormat",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["directory", "selector"],
+              "default": "selector"
+            },
+            "description": "Format for internal IDs in the response. 'selector' uses canonical selector names (e.g., 'ethereum-mainnet'), 'directory' uses chains.json keys (e.g., 'mainnet'). Only applies when outputKey=internal_id."
           }
         ],
         "responses": {
@@ -1169,6 +1488,107 @@
               "type": "string"
             },
             "description": "Destination chains this token can be sent to"
+          }
+        }
+      },
+      "TokenDetailChainData": {
+        "type": "object",
+        "description": "Extended token chain data with custom finality information",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/TokenChainData"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "hasCustomFinality": {
+                "type": "boolean",
+                "nullable": true,
+                "description": "Whether custom finality is enabled (derived from minBlockConfirmation > 0). Null if data is unavailable."
+              },
+              "minBlockConfirmation": {
+                "type": "integer",
+                "nullable": true,
+                "description": "Minimum block confirmations required. Null if data is unavailable."
+              }
+            }
+          }
+        ]
+      },
+      "TokenDetailMetadata": {
+        "type": "object",
+        "required": ["environment", "timestamp", "requestId", "tokenSymbol", "chainCount"],
+        "properties": {
+          "environment": {
+            "type": "string",
+            "enum": ["mainnet", "testnet"],
+            "description": "Network environment"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp of the response"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for this request"
+          },
+          "tokenSymbol": {
+            "type": "string",
+            "description": "Canonical symbol of the requested token"
+          },
+          "chainCount": {
+            "type": "integer",
+            "description": "Number of chains this token is available on"
+          }
+        }
+      },
+      "TokenDetailApiResponse": {
+        "type": "object",
+        "required": ["metadata", "data"],
+        "properties": {
+          "metadata": {
+            "$ref": "#/components/schemas/TokenDetailMetadata"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TokenDetailChainData"
+            },
+            "description": "Token data indexed by chain ID/selector, including custom finality information"
+          }
+        }
+      },
+      "TokenFinalityData": {
+        "type": "object",
+        "description": "Finality data for a token on a specific chain",
+        "properties": {
+          "hasCustomFinality": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Whether custom finality is enabled (derived from minBlockConfirmation > 0). Null if data is unavailable."
+          },
+          "minBlockConfirmation": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Minimum block confirmations required. Null if data is unavailable."
+          }
+        }
+      },
+      "TokenFinalityApiResponse": {
+        "type": "object",
+        "required": ["metadata", "data"],
+        "properties": {
+          "metadata": {
+            "$ref": "#/components/schemas/TokenDetailMetadata"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TokenFinalityData"
+            },
+            "description": "Finality data indexed by chain ID/selector"
           }
         }
       },

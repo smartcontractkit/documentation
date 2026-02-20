@@ -12,6 +12,10 @@ import type {
   ChainMetadata,
   ChainConfigError,
   FilterType,
+  RateLimitsMetadata,
+  RateLimitsFilterType,
+  RateLimitsDirection,
+  RateLimitsType,
 } from "./types/index.ts"
 import { jsonHeaders, commonHeaders as sharedCommonHeaders } from "@lib/api/cacheHeaders.js"
 import { logger } from "@lib/logging/index.js"
@@ -248,6 +252,24 @@ export const validateOutputKey = (outputKey?: string): "chainId" | "selector" | 
 }
 
 /**
+ * Validates the internalIdFormat parameter
+ * Controls which naming convention is used for internalId in responses:
+ * - 'directory': chains.json keys (e.g., "mainnet", "bsc-mainnet")
+ * - 'selector': selectors.yml names (e.g., "ethereum-mainnet", "binance_smart_chain-mainnet")
+ *
+ * @param internalIdFormat - Format to validate
+ * @returns Validated format, defaults to "selector" for backward compatibility
+ * @throws CCIPError if format is invalid
+ */
+export const validateInternalIdFormat = (internalIdFormat?: string): "directory" | "selector" => {
+  if (!internalIdFormat) return "selector" // Default for backward compatibility
+  if (!["directory", "selector"].includes(internalIdFormat)) {
+    throw new CCIPError(400, 'internalIdFormat must be "directory" or "selector".')
+  }
+  return internalIdFormat as "directory" | "selector"
+}
+
+/**
  * Validates the enrichFeeTokens parameter
  * @param enrichFeeTokens - String value to validate
  * @returns Boolean indicating whether to enrich fee tokens with addresses and metadata
@@ -463,6 +485,91 @@ export const loadChainConfiguration = async (
       error: error instanceof Error ? error.message : "Unknown error",
     })
     throw new CCIPError(500, "Failed to load chain configuration")
+  }
+}
+
+/**
+ * Creates metadata object for rate limits API responses
+ * @param environment - Current environment (mainnet/testnet)
+ * @param sourceChain - Source chain identifier
+ * @param destinationChain - Destination chain identifier
+ * @param tokenCount - Number of tokens in the response
+ * @returns Metadata object with timestamp and request tracking
+ */
+export const createRateLimitsMetadata = (
+  environment: Environment,
+  sourceChain: string,
+  destinationChain: string,
+  tokenCount: number
+): RateLimitsMetadata => {
+  return {
+    environment,
+    timestamp: new Date().toISOString(),
+    requestId: crypto.randomUUID(),
+    sourceChain,
+    destinationChain,
+    tokenCount,
+  }
+}
+
+/**
+ * Validates rate limits filter parameters
+ * @param filters - Filter parameters to validate
+ * @returns Validated filter object
+ * @throws CCIPError if required parameters are missing or invalid
+ */
+export const validateRateLimitsFilters = (filters: {
+  sourceInternalId?: string
+  destinationInternalId?: string
+  tokens?: string
+  direction?: string
+  rateType?: string
+}): RateLimitsFilterType => {
+  // Validate required parameters
+  if (!filters.sourceInternalId) {
+    throw new CCIPError(400, "sourceInternalId parameter is required")
+  }
+  if (!filters.destinationInternalId) {
+    throw new CCIPError(400, "destinationInternalId parameter is required")
+  }
+
+  // Validate direction if provided
+  let direction: RateLimitsDirection | undefined
+  if (filters.direction) {
+    const normalizedDirection = filters.direction.toLowerCase()
+    if (!["in", "out"].includes(normalizedDirection)) {
+      throw new CCIPError(400, 'direction parameter must be "in" or "out"')
+    }
+    direction = normalizedDirection as RateLimitsDirection
+  }
+
+  // Validate rateType if provided
+  let rateType: RateLimitsType | undefined
+  if (filters.rateType) {
+    const normalizedRateType = filters.rateType.toLowerCase()
+    if (!["standard", "custom"].includes(normalizedRateType)) {
+      throw new CCIPError(400, 'rateType parameter must be "standard" or "custom"')
+    }
+    rateType = normalizedRateType as RateLimitsType
+  }
+
+  // Validate tokens if provided (must not be empty after parsing)
+  if (filters.tokens !== undefined && filters.tokens !== null) {
+    const tokenList = filters.tokens
+      .split(",")
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0)
+    if (filters.tokens.length > 0 && tokenList.length === 0) {
+      throw new CCIPError(400, "tokens parameter cannot be empty when provided")
+    }
+  }
+
+  return {
+    sourceInternalId: filters.sourceInternalId,
+    destinationInternalId: filters.destinationInternalId,
+    tokens: filters.tokens,
+    direction,
+    rateType,
   }
 }
 

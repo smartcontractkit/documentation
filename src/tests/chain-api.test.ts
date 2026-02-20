@@ -4,6 +4,7 @@ import {
   validateFilters,
   validateOutputKey,
   validateEnrichFeeTokens,
+  validateInternalIdFormat,
   createMetadata,
   CCIPError,
   handleApiError,
@@ -146,6 +147,26 @@ describe("CCIP Chain API Utils", () => {
       expect(() => validateEnrichFeeTokens("no")).toThrow(CCIPError)
       expect(() => validateEnrichFeeTokens("1")).toThrow(CCIPError)
       expect(() => validateEnrichFeeTokens("0")).toThrow(CCIPError)
+    })
+  })
+
+  describe("validateInternalIdFormat", () => {
+    it("should accept 'selector' format", () => {
+      expect(validateInternalIdFormat("selector")).toBe("selector")
+    })
+
+    it("should accept 'directory' format", () => {
+      expect(validateInternalIdFormat("directory")).toBe("directory")
+    })
+
+    it("should default to 'selector' when undefined", () => {
+      expect(validateInternalIdFormat(undefined)).toBe("selector")
+    })
+
+    it("should throw error for invalid values", () => {
+      expect(() => validateInternalIdFormat("invalid")).toThrow(CCIPError)
+      expect(() => validateInternalIdFormat("chainId")).toThrow(CCIPError)
+      expect(() => validateInternalIdFormat("selectorName")).toThrow(CCIPError)
     })
   })
 

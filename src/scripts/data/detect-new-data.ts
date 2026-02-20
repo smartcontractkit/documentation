@@ -12,6 +12,7 @@ import fs from "fs"
 import path from "path"
 import fetch from "node-fetch"
 import prettier from "prettier"
+import { TOKEN_ICONS_PATH } from "../../config/cdn.js"
 
 // Network endpoints mapping for different blockchain networks
 // Each endpoint provides a JSON file containing feed definitions for that network
@@ -80,7 +81,7 @@ interface DataItem {
  * @returns URL to the asset's icon image
  */
 function buildIconUrl(baseAsset: string): string {
-  return `https://d2f70xi62kby8n.cloudfront.net/tokens/${baseAsset.toLowerCase()}.webp`
+  return `${TOKEN_ICONS_PATH}/${baseAsset.toLowerCase()}.webp`
 }
 
 /**
