@@ -82,6 +82,7 @@ export type SupportedTechnology =
   | "TEMPO"
   | "ARC_NETWORK"
   | "DOGE_OS"
+  | "ADI_NETWORK"
 
 export type ChainType = "evm" | "solana" | "aptos" | "sui" | "canton" | "ton" | "tron" | "stellar" | "starknet"
 
@@ -250,6 +251,7 @@ export type SupportedChain =
   | "MONAD_MAINNET"
   | "NEXON_HENESYS_MAINNET"
   | "PHAROS_ATLANTIC_TESTNET"
+  | "PHAROS_MAINNET"
   | "MORPH_MAINNET"
   | "MORPH_HOODI_TESTNET"
   | "JOVAY_MAINNET"
@@ -258,6 +260,7 @@ export type SupportedChain =
   | "TEMPO_TESTNET"
   | "ARC_NETWORK_TESTNET"
   | "DOGE_OS_CHIKYU_TESTNET"
+  | "ADI_NETWORK_AB_TESTNET"
 
 export type ExplorerInfo = {
   baseUrl: string

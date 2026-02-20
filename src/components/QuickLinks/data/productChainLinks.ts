@@ -99,12 +99,13 @@ export const productChainLinks: ProductChainLinks = {
       everclear: "/ccip/directory/mainnet/chain/everclear-mainnet",
       abchain: "/ccip/directory/mainnet/chain/ab-mainnet",
       henesys: "/ccip/directory/mainnet/chain/nexon-mainnet-henesys",
-      pharos: "/ccip/directory/testnet/chain/pharos-atlantic-testnet",
+      pharos: "/ccip/directory/mainnet/chain/pharos-mainnet",
       morph: "/ccip/directory/mainnet/chain/morph-mainnet",
       jovay: "/ccip/directory/mainnet/chain/jovay-mainnet",
       stable: "/ccip/directory/mainnet/chain/stable-mainnet",
       arc: "/ccip/directory/testnet/chain/arc-testnet",
       dogeos: "/ccip/directory/testnet/chain/dogeos-testnet-chikyu",
+      "adi-network": "/ccip/directory/testnet/chain/adi-testnet",
     },
   },
   CRE: {
@@ -269,6 +270,7 @@ export const productChainLinks: ProductChainLinks = {
     "0g": "/resources/link-token-contracts#0g",
     abchain: "/resources/link-token-contracts#ab-chain",
     abstract: "/resources/link-token-contracts#abstract",
+    "adi-network": "/resources/link-token-contracts#adi-network",
     apechain: "/resources/link-token-contracts#apechain",
     arbitrum: "/resources/link-token-contracts#arbitrum",
     arc: "/resources/link-token-contracts#arc-network",
@@ -445,4 +447,5 @@ export const chainNames: Record<string, string> = {
   "adi-network": "ADI Network",
   arc: "Arc Network",
   dogeos: "DogeOS",
+  "adi-network": "ADI Network",
 }
