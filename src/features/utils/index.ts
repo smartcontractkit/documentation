@@ -557,7 +557,7 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
     case "doge-os-chikyu-testnet":
     case "dogeos-testnet-chikyu":
       return "DOGE_OS_CHIKYU_TESTNET"
-    case "adi-network-ab-testnet":
+    case "adi-testnet":
       return "ADI_NETWORK_AB_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
@@ -897,7 +897,7 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
     case "DOGE_OS_CHIKYU_TESTNET":
       return "dogeos-testnet-chikyu"
     case "ADI_NETWORK_AB_TESTNET":
-      return "adi-network-ab-testnet"
+      return "adi-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
