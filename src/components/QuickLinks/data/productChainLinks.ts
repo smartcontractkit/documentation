@@ -447,5 +447,4 @@ export const chainNames: Record<string, string> = {
   "adi-network": "ADI Network",
   arc: "Arc Network",
   dogeos: "DogeOS",
-  "adi-network": "ADI Network",
 }
