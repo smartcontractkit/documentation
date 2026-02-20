@@ -26,6 +26,7 @@ type EvmConfig struct {
 	CalculatorConsumerAddress string `json:"calculatorConsumerAddress"`
 	GasLimit                  uint64 `json:"gasLimit"`
 }
+
 // highlight-end
 
 type Config struct {
@@ -42,6 +43,7 @@ type MyResult struct {
 	FinalResult   *big.Int
 	TxHash        string
 }
+
 // highlight-end
 
 func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
@@ -169,6 +171,7 @@ func updateCalculatorResult(config *Config, runtime cre.Runtime, chainSelector u
 	logger.Info("View transaction at", "url", fmt.Sprintf("https://sepolia.etherscan.io/tx/%s", txHash))
 	return txHash, nil
 }
+
 // highlight-end
 
 func main() {
