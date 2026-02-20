@@ -57,8 +57,8 @@ contract APIConsumerForwarder is ChainlinkClient, ConfirmedOwner {
 
     // Set the path to find the desired data in the API response, where the response format is:
     // [{
-    //  "id": "bitcoin",
-    //  "symbol": btc",
+    // "id": "bitcoin",
+    // "symbol": "btc",
     // ...
     // },
     //{
