@@ -157,7 +157,7 @@ node <<EOF
       "0g", "apechain", "adi", "aptos", "arbitrum", "arc", "avalanche", "base", "berachain", "bitlayer", "blast",
       "bnb-chain", "bob", "botanix", "celo", "dogeos", "ethereum", "gnosis-chain", "gravity", "hashkey", 
       "hedera", "hyperliquid", "injective", "ink", "jovay", "katana", "lens", "linea", "mantle", 
-      "metis", "monad", "opbnb", "optimism", "polygon", "pharos", "plasma", "ronin", "scroll", "shibarium", "sei",
+      "metis", "monad", "opbnb", "optimism", "polygon", "perennial", "pharos", "plasma", "ronin", "scroll", "shibarium", "sei",
       "soneium", "sonic", "solana", "stable", "taiko", "unichain", "worldchain", "zksync"
     ];
 

@@ -488,10 +488,24 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "Perennial",
+    logoUrl: "/assets/chains/perennial.svg",
+    mainnet: {
+      label: "Perennial Mainnet",
+      verifierProxy: "0xC539169910DE08D237Df0d73BcDa9074c787A4a1",
+      explorerUrl: "https://explorer.perennial.foundation/address/%s",
+    },
+    testnet: {
+      label: "Perennial Testnet",
+      verifierProxy: "0xF94Fc3DfD2875AECBEfDA8b7bFA05884fbF1E042",
+      explorerUrl: "https://explorer-sepolia.perennial.foundation/address/%s",
+    },
+  },
+  {
     network: "Pharos",
     logoUrl: "/assets/chains/pharos.svg",
     mainnet: {
-      label: "Pharos Mainnet",
+      label: "Pharos Mainnet (Private)",
       verifierProxy: "0xa094978891512268f4a4a4641B8da1A2a3E3BEB7",
       explorerUrl: "https://pharos.socialscan.io/address/%s",
     },
