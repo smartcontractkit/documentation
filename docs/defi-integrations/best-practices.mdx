@@ -1,0 +1,517 @@
+---
+title: DeFi Integration Best Practices
+description: Learn Chainlink oracle best practices for DeFi protocol integrations, including price feed selection, threshold configuration, and failure mitigation strategies.
+---
+
+import { Tabs } from '@components/Tabs';
+
+## Overview
+
+Integrating Chainlink oracles into DeFi protocols requires careful consideration of configuration parameters, failure modes, and operational best practices. This guide covers essential practices for DeFi engineers implementing Chainlink price feeds for the first time.
+
+## Price Feed Selection
+
+### Choosing the Right Feed
+
+When selecting a Chainlink price feed for your protocol, consider:
+
+**1. Asset Coverage**
+- Verify the asset pair you need exists on your target blockchain
+- Check feed availability across multiple chains if you plan multi-chain deployment
+- Review the [Data Feeds Directory](https://data.chain.link) for all available pairs
+
+**2. Feed Quality Metrics**
+- **Heartbeat**: How often the feed updates (e.g., every hour)
+- **Deviation Threshold**: Minimum price movement that triggers an update (e.g., 0.5%)
+- **Multiplier/Decimals**: Price precision (18 decimals for most feeds)
+- **Reserve Buffer**: Minimum LINK buffer maintained by node operators
+
+**3. Data Provider Composition**
+- Feeds use multiple independent node operators
+- Review the node operators providing data for your feed
+- Understand geographic and infrastructure diversity
+
+### Feed Categories
+
+```
+┌─────────────────────────────────────────┐
+│ Price Feed Type         │ Use Case      │
+├─────────────────────────┼───────────────┤
+│ Crypto (BTC/USD)        │ Collateral    │
+│ Stablecoin (USDC/USD)   │ Reference     │
+│ L2 Native (ARB/USD)     │ L2 Assets     │
+│ Synthetic (SNX/USD)     │ Derivatives   │
+│ Commodity (GOLD/USD)    │ Real-world    │
+└─────────────────────────────────────────┘
+```
+
+## Configuring Thresholds
+
+### Deviation Threshold
+
+The deviation threshold determines when a price update is triggered, independent of heartbeat timing.
+
+**Decision Tree:**
+
+```
+Is your protocol sensitive to price precision?
+├─ YES (AMM, options, leverage) → 0.1-0.5% (tighter threshold)
+│  └─ High transaction volume? → 0.5% (balance frequency vs gas)
+├─ NO (lending, basic collateral) → 1-2% (wider threshold)
+│  └─ Volatile asset? → 0.5-1% (more frequent updates)
+└─ Stablecoin pairs? → 0.01-0.05% (very tight for peg monitoring)
+```
+
+**Tradeoffs:**
+- Tighter thresholds (0.1%): More frequent updates, higher gas costs, better price accuracy
+- Wider thresholds (2%+): Fewer updates, lower costs, potential stale price risks
+
+### Heartbeat Configuration
+
+Heartbeat sets the maximum time between price updates, ensuring periodic refreshes even without deviation.
+
+**Configuration Guidelines:**
+
+| Asset Type | Recommended Heartbeat | Rationale |
+|---|---|---|
+| Major cryptocurrencies (BTC, ETH) | 1 hour | Highly liquid, stable |
+| Altcoins | 30 minutes | Moderate volatility |
+| Stablecoins | 24 hours | Expected to remain stable |
+| Volatile/illiquid assets | 15 minutes | Risk of extended no-update periods |
+
+**Best Practice Formula:**
+```
+Heartbeat = max(Time_for_significant_price_move, Deviation_sensitivity)
+```
+
+Example: If 5% price move takes ~1 hour under normal conditions, but your protocol cares about >1% moves, use 1-hour heartbeat.
+
+## Handling Stale Data
+
+### Oracle Failure Modes
+
+**1. Stale Price Update**
+- Last update exceeds heartbeat interval
+- Can occur during extreme market conditions or network congestion
+
+**2. Price Feed Unavailability**
+- Temporary outage of price feed contract
+- Node operator downtime
+- Blockchain network issues
+
+**3. Extreme Price Deviation**
+- Flash crash or exchange outage causes invalid price
+- Single data source failure propagates to feed
+
+**4. Decimal Precision Loss**
+- Incorrect scaling of price values
+- Rounding errors in large transactions
+
+### Defensive Programming Patterns
+
+#### Check Staleness
+
+```solidity
+// ✅ CORRECT: Verify data is recent
+function getPriceIfFresh(
+    AggregatorV3Interface priceFeed,
+    uint256 maxStaleness
+) public view returns (uint256) {
+    (
+        uint80 roundId,
+        int256 answer,
+        uint256 startedAt,
+        uint256 updatedAt,
+        uint80 answeredInRound
+    ) = priceFeed.latestRoundData();
+
+    // Check that price is not stale
+    require(
+        block.timestamp - updatedAt <= maxStaleness,
+        "Price data is stale"
+    );
+
+    // Check for round completeness
+    require(
+        answeredInRound >= roundId,
+        "Round data is incomplete"
+    );
+
+    // Validate positive price
+    require(answer > 0, "Invalid price");
+
+    return uint256(answer);
+}
+```
+
+#### Fallback to Secondary Feed
+
+```solidity
+// ✅ CORRECT: Use secondary feed as fallback
+function getPriceWithFallback(
+    AggregatorV3Interface primaryFeed,
+    AggregatorV3Interface secondaryFeed,
+    uint256 maxStaleness
+) public view returns (uint256) {
+    try this.getPriceIfFresh(primaryFeed, maxStaleness) returns (uint256 price) {
+        return price;
+    } catch {
+        // Primary feed failed, use secondary
+        return getPriceIfFresh(secondaryFeed, maxStaleness);
+    }
+}
+```
+
+#### Price Reasonableness Bounds
+
+```solidity
+// ✅ CORRECT: Validate price within expected range
+function getPriceWithBounds(
+    AggregatorV3Interface priceFeed,
+    uint256 maxStaleness,
+    uint256 minPrice,
+    uint256 maxPrice
+) public view returns (uint256) {
+    uint256 price = getPriceIfFresh(priceFeed, maxStaleness);
+
+    require(
+        price >= minPrice && price <= maxPrice,
+        "Price outside acceptable bounds"
+    );
+
+    return price;
+}
+```
+
+## Common Pitfalls
+
+### ❌ PITFALL 1: Ignoring Staleness
+
+```solidity
+// WRONG: No staleness check
+int256 price = priceFeed.latestAnswer();
+uint256 collateralValue = amount * uint256(price);
+```
+
+**Risk**: Using 12-hour-old price in liquidation could cascade into bad debt.
+
+**Fix**: Always check `updatedAt` against heartbeat or max staleness interval.
+
+### ❌ PITFALL 2: Single Data Source Reliance
+
+```solidity
+// WRONG: Only one price feed
+AggregatorV3Interface priceFeed = AggregatorV3Interface(0x...);
+int256 ethPrice = priceFeed.latestAnswer();
+```
+
+**Risk**: Feed becomes unavailable, protocol halts.
+
+**Fix**: Implement fallback feeds or price oracles with circuit breaker.
+
+### ❌ PITFALL 3: Incorrect Decimal Handling
+
+```solidity
+// WRONG: Forgetting feed returns 8 decimals
+int256 price = priceFeed.latestAnswer(); // Returns 123456789 for $1234.56789
+uint256 collateral = amount * uint256(price); // Off by 10 decimals!
+```
+
+**Risk**: Massive accounting errors (off by 10^10 for 18-decimal tokens).
+
+**Fix**: Always scale to application decimals:
+
+```solidity
+int256 rawPrice = priceFeed.latestAnswer();
+uint256 decimals = priceFeed.decimals(); // Usually 8
+uint256 scaledPrice = uint256(rawPrice) * 10**(18 - decimals);
+```
+
+### ❌ PITFALL 4: Ignoring Round Incompleteness
+
+```solidity
+// WRONG: No answeredInRound check
+function getPrice() public view returns (int256) {
+    (,int256 price,,uint256 updatedAt,) = priceFeed.latestRoundData();
+    require(block.timestamp - updatedAt < 3600, "Stale");
+    return price;
+}
+```
+
+**Risk**: Receiving data from incomplete round during aggregation.
+
+**Fix**: Check `answeredInRound >= roundId` in latestRoundData().
+
+### ❌ PITFALL 5: Front-running Oracle Updates
+
+```solidity
+// WRONG: Update oracle price, then execute transaction
+function liquidate(address borrower) external {
+    updatePriceOracle(); // Attacker watches mempool
+    if (isUndercollateralized(borrower)) {
+        // Attacker liquidates before real liquidators
+    }
+}
+```
+
+**Risk**: MEV extraction, sandwich attacks on liquidations.
+
+**Fix**: Use private mempools (MEV-protect RPC), aggregate prices off-chain first.
+
+## Gas Optimization for L2s
+
+### L2-Specific Considerations
+
+**Ethereum L2s** (Arbitrum, Optimism, Polygon) have different gas profiles:
+
+| Metric | L1 | L2 (Arbitrum/Optimism) | Impact |
+|---|---|---|---|
+| Calldata cost | 16 gas/byte | 0.5-4 gas/byte | Cheaper oracle calls |
+| Storage | 20,000 gas | Same | Use storage wisely |
+| Computation | Same | Same | No advantage |
+
+### Optimization Strategies
+
+**1. Cache Round Data Off-Chain**
+
+```solidity
+// ✅ Cache prices in keeper contract
+struct CachedPrice {
+    uint256 price;
+    uint256 timestamp;
+    uint80 roundId;
+}
+
+mapping(bytes32 => CachedPrice) public cachedPrices;
+
+function updatePriceCache(
+    AggregatorV3Interface feed,
+    bytes32 feedId,
+    bytes calldata extraData
+) external onlyKeeper {
+    (
+        uint80 roundId,
+        int256 answer,
+        uint256 startedAt,
+        uint256 updatedAt,
+        uint80 answeredInRound
+    ) = feed.latestRoundData();
+
+    require(answeredInRound >= roundId, "Incomplete round");
+    require(answer > 0, "Invalid price");
+
+    cachedPrices[feedId] = CachedPrice(
+        uint256(answer),
+        updatedAt,
+        roundId
+    );
+}
+
+function getPrice(bytes32 feedId, uint256 maxAge) 
+    external 
+    view 
+    returns (uint256) 
+{
+    CachedPrice storage cached = cachedPrices[feedId];
+    require(
+        block.timestamp - cached.timestamp <= maxAge,
+        "Cached price too old"
+    );
+    return cached.price;
+}
+```
+
+**2. Batch Multiple Feeds**
+
+```solidity
+// ✅ Update multiple prices in single transaction
+function updateMultiplePrices(
+    AggregatorV3Interface[] calldata feeds,
+    bytes32[] calldata feedIds
+) external onlyKeeper {
+    for (uint256 i = 0; i < feeds.length; i++) {
+        // Single loop reduces execution overhead
+        updatePriceCache(feeds[i], feedIds[i], "");
+    }
+}
+```
+
+**3. Use Price Feed Aggregators**
+
+For frequently-accessed prices, use Chainlink Data Streams or on-chain aggregators rather than direct feeds.
+
+## Testing Oracle Integrations Locally
+
+### Mock Oracle for Testing
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+interface AggregatorV3Interface {
+    function latestRoundData() external view returns (
+        uint80 roundId,
+        int256 answer,
+        uint256 startedAt,
+        uint256 updatedAt,
+        uint80 answeredInRound
+    );
+    function decimals() external view returns (uint8);
+}
+
+contract MockPriceFeed is AggregatorV3Interface {
+    int256 public price;
+    uint256 public timestamp;
+    uint80 public roundId;
+    uint8 public constant decimals_ = 8;
+
+    constructor(int256 initialPrice) {
+        price = initialPrice;
+        timestamp = block.timestamp;
+        roundId = 1;
+    }
+
+    function setPrice(int256 newPrice) external {
+        price = newPrice;
+        timestamp = block.timestamp;
+        roundId += 1;
+    }
+
+    function setStalePrice(int256 newPrice, uint256 staleness) external {
+        price = newPrice;
+        timestamp = block.timestamp - staleness;
+        roundId += 1;
+    }
+
+    function latestRoundData() 
+        external 
+        view 
+        returns (
+            uint80,
+            int256,
+            uint256,
+            uint256,
+            uint80
+        ) 
+    {
+        return (roundId, price, timestamp, timestamp, roundId);
+    }
+
+    function decimals() external pure returns (uint8) {
+        return decimals_;
+    }
+}
+```
+
+### Foundry Test Example
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "forge-std/Test.sol";
+import "../src/YourProtocol.sol";
+import "../src/MockPriceFeed.sol";
+
+contract YourProtocolTest is Test {
+    YourProtocol protocol;
+    MockPriceFeed priceFeed;
+
+    function setUp() public {
+        priceFeed = new MockPriceFeed(int256(2000e8)); // $2000 ETH
+        protocol = new YourProtocol(address(priceFeed));
+    }
+
+    function testOracleStalenessFails() public {
+        // Set price to 1 day old
+        priceFeed.setStalePrice(int256(2000e8), 1 days);
+        
+        vm.expectRevert(bytes("Price data is stale"));
+        protocol.executeWithOraclePrice(3600); // maxStaleness = 1 hour
+    }
+
+    function testOraclePriceBoundsFails() public {
+        // Set price outside expected range
+        priceFeed.setPrice(int256(100e8)); // Way too low
+        
+        vm.expectRevert(bytes("Price outside acceptable bounds"));
+        protocol.executeWithPriceBounds(
+            1500e8, // minPrice
+            2500e8  // maxPrice
+        );
+    }
+
+    function testOracleFallback() public {
+        // This would require two mock feeds
+        // Primary fails, secondary succeeds
+        MockPriceFeed primary = new MockPriceFeed(int256(2000e8));
+        MockPriceFeed secondary = new MockPriceFeed(int256(1999e8));
+        
+        // Set primary to stale
+        primary.setStalePrice(int256(2000e8), 2 days);
+        
+        // Should fall back to secondary
+        uint256 price = protocol.getPriceWithFallback(
+            address(primary),
+            address(secondary),
+            1 hours
+        );
+        assertEq(price, 1999e8);
+    }
+}
+```
+
+## Production Deployment Checklist
+
+Before deploying your DeFi protocol using Chainlink oracles:
+
+- [ ] **Feed Selection**
+  - [ ] Verified feed exists on target blockchain
+  - [ ] Reviewed feed composition and node operators
+  - [ ] Checked historical uptime (>99.5% preferred)
+  - [ ] Confirmed decimal precision matches application
+
+- [ ] **Threshold Configuration**
+  - [ ] Deviation threshold appropriate for asset volatility
+  - [ ] Heartbeat set to maximum acceptable staleness
+  - [ ] Tested behavior during extreme volatility
+  - [ ] Documented rationale for threshold selection
+
+- [ ] **Failure Handling**
+  - [ ] Staleness checks implemented for all price reads
+  - [ ] Round completeness validation in place
+  - [ ] Fallback feeds configured (if applicable)
+  - [ ] Circuit breaker / pause mechanism ready
+  - [ ] Price bounds validation enabled
+
+- [ ] **Front-Running Mitigation**
+  - [ ] Private mempool protection enabled (if MEV risk high)
+  - [ ] Liquidation / execution delays considered
+  - [ ] Off-chain aggregation for sensitive operations
+
+- [ ] **Testing**
+  - [ ] Unit tests for all oracle integration paths
+  - [ ] Testnet deployment with real Chainlink feeds
+  - [ ] Stress tests with historical volatile periods
+  - [ ] Mock oracle tests for edge cases
+  - [ ] Round-trip testing (deposit → collateral update → borrow)
+
+- [ ] **Monitoring**
+  - [ ] Alerts set for stale prices
+  - [ ] Dashboard for feed availability
+  - [ ] Integration test health checks
+  - [ ] Gas cost tracking for oracle operations
+
+- [ ] **Documentation**
+  - [ ] Feed addresses documented for each network
+  - [ ] Threshold rationale documented
+  - [ ] Incident response procedures defined
+  - [ ] Runbook for oracle failures created
+
+## Resources
+
+- [Chainlink Price Feeds Documentation](https://docs.chain.link/data-feeds/price-feeds)
+- [Data Feeds Directory](https://data.chain.link)
+- [Chainlink Labs Hardhat Starter Kit](https://github.com/smartcontractkit/hardhat-starter-kit)
+- [DeFi Security Best Practices](https://blog.chain.link/defi-smart-contract-security/)
+- [Flash Loans and Oracles](https://blog.chain.link/flash-loans-and-oracles/)
