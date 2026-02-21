@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro"
-import { APIErrorType, createErrorResponse, commonHeaders, CCIPError } from "~/lib/ccip/utils.ts"
+import { APIErrorType, createErrorResponse, CCIPError } from "~/lib/ccip/utils.ts"
+import { commonHeaders } from "@lib/api/cacheHeaders.ts"
 import { logger } from "@lib/logging/index.js"
 import { FaucetService } from "~/lib/ccip/services/faucet-service.ts"
 import { SvmDripAdapter } from "~/lib/ccip/faucet/adapters/svm-drip.ts"

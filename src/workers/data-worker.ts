@@ -69,7 +69,7 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
       lane.sourceNetwork.name.toLowerCase().includes(searchLower) ||
       lane.destinationNetwork.name.toLowerCase().includes(searchLower)
 
-    const hasTokens = lane.lane.supportedTokens ? Object.keys(lane.lane.supportedTokens).length > 0 : false
+    const hasTokens = lane.lane.supportedTokens ? lane.lane.supportedTokens.length > 0 : false
 
     return matchesNetwork && hasTokens
   })

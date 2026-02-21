@@ -2,19 +2,20 @@ import { APIRoute } from "astro"
 import {
   validateEnvironment,
   validateOutputKey,
+  validateInternalIdFormat,
   createTokenMetadata,
   handleApiError,
-  successHeaders,
-  commonHeaders,
   APIErrorType,
   createErrorResponse,
   CCIPError,
   loadChainConfiguration,
 } from "~/lib/ccip/utils.ts"
+import { jsonHeaders } from "@lib/api/cacheHeaders.ts"
 import { logger } from "@lib/logging/index.js"
 
-import type { TokenFilterType, TokenApiResponse } from "~/lib/ccip/types/index.ts"
+import type { TokenFilterType, TokenApiResponse, TokenDataResponse, TokenChainData } from "~/lib/ccip/types/index.ts"
 import { TokenDataService } from "~/lib/ccip/services/token-data.ts"
+import { ChainIdentifierService } from "~/lib/ccip/services/chain-identifier.ts"
 
 export const prerender = false
 
@@ -52,11 +53,19 @@ export const GET: APIRoute = async ({ request }) => {
     })
 
     // Validate output key - we'll still use this for formatting display options
-    const outputKey = validateOutputKey(params.get("outputKey") || undefined)
+    const outputKey = validateOutputKey(params.get("output_key") || undefined)
     logger.debug({
       message: "Output key validated",
       requestId,
       outputKey,
+    })
+
+    // Validate internalIdFormat parameter (only applies when output_key=internalId)
+    const internalIdFormat = validateInternalIdFormat(params.get("internalIdFormat") || undefined)
+    logger.debug({
+      message: "Internal ID format validated",
+      requestId,
+      internalIdFormat,
     })
 
     const config = await loadChainConfiguration(environment)
@@ -82,6 +91,30 @@ export const GET: APIRoute = async ({ request }) => {
       filters,
     })
 
+    // Apply internalIdFormat to transform chain keys when output_key=internalId
+    let formattedTokens = tokens
+    if (outputKey === "internalId") {
+      const chainIdService = new ChainIdentifierService(environment, internalIdFormat)
+      formattedTokens = {}
+
+      for (const [tokenSymbol, chainData] of Object.entries(tokens)) {
+        const formattedChainData: Record<string, TokenChainData> = {}
+
+        for (const [chainKey, tokenChainData] of Object.entries(chainData)) {
+          // Resolve and format the chain key
+          const resolved = chainIdService.resolve(chainKey)
+          if (resolved) {
+            const formattedKey = chainIdService.format(resolved.directoryKey, internalIdFormat)
+            formattedChainData[formattedKey] = tokenChainData
+          } else {
+            formattedChainData[chainKey] = tokenChainData
+          }
+        }
+
+        formattedTokens[tokenSymbol] = formattedChainData
+      }
+    }
+
     // Create token-specific metadata using the utility function
     const metadata = createTokenMetadata(environment)
     metadata.ignoredTokenCount = serviceMetadata.ignoredTokenCount
@@ -89,7 +122,7 @@ export const GET: APIRoute = async ({ request }) => {
 
     const response: TokenApiResponse = {
       metadata,
-      data: tokens,
+      data: formattedTokens,
       ignored: errors,
     }
 
@@ -100,7 +133,7 @@ export const GET: APIRoute = async ({ request }) => {
     })
 
     return new Response(JSON.stringify(response), {
-      headers: { ...commonHeaders, ...successHeaders },
+      headers: jsonHeaders,
     })
   } catch (error) {
     logger.error({

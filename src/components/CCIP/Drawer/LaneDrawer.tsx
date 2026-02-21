@@ -2,12 +2,11 @@ import Address from "~/components/AddressReact.tsx"
 import "../Tables/Table.css"
 import { Environment, LaneConfig, LaneFilter, Version } from "~/config/data/ccip/types.ts"
 import { getNetwork, getTokenData } from "~/config/data/ccip/data.ts"
-import { displayCapacity, determineTokenMechanism, isTokenPaused } from "~/config/data/ccip/utils.ts"
+import { determineTokenMechanism } from "~/config/data/ccip/utils.ts"
 import { useState } from "react"
 import LaneDetailsHero from "../ChainHero/LaneDetailsHero.tsx"
 import { getExplorerAddressUrl, getTokenIconUrl, fallbackTokenIconUrl } from "~/features/utils/index.ts"
 import TableSearchInput from "../Tables/TableSearchInput.tsx"
-import RateTooltip from "../Tooltip/RateTooltip.tsx"
 import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
 import { ChainType, ExplorerInfo } from "@config/types.ts"
 
@@ -63,7 +62,7 @@ function LaneDrawer({
         <div className="ccip-table__filters">
           <div>
             <div className="ccip-table__filters-title">
-              Tokens <span>({lane?.supportedTokens ? Object.keys(lane.supportedTokens).length : 0})</span>
+              Tokens <span>({lane?.supportedTokens ? lane.supportedTokens.length : 0})</span>
             </div>
           </div>
           <TableSearchInput search={search} setSearch={setSearch} />
@@ -124,8 +123,8 @@ function LaneDrawer({
             </thead>
             <tbody>
               {lane.supportedTokens &&
-                Object.keys(lane.supportedTokens)
-                  ?.filter((token) => token.toLowerCase().includes(search.toLowerCase()))
+                lane.supportedTokens
+                  .filter((token) => token.toLowerCase().includes(search.toLowerCase()))
                   .map((token, index) => {
                     const data = getTokenData({
                       environment,
@@ -135,13 +134,10 @@ function LaneDrawer({
                     if (!Object.keys(data).length) return null
                     const logo = getTokenIconUrl(token)
 
-                    // Check if token is paused
-                    const tokenPaused = isTokenPaused(
-                      data[sourceNetwork.key].decimals,
-                      lane.supportedTokens?.[token]?.rateLimiterConfig?.[
-                        inOutbound === LaneFilter.Inbound ? "in" : "out"
-                      ]
-                    )
+                    // TODO: Fetch rate limits from API for both inbound and outbound
+                    // Token pause detection requires rate limiter data from API
+                    // A token is paused when rate limit capacity is 0
+                    const tokenPaused = false
 
                     return (
                       <tr key={index} className={tokenPaused ? "ccip-table__row--paused" : ""}>
@@ -179,35 +175,25 @@ function LaneDrawer({
                         <td>
                           {inOutbound === LaneFilter.Outbound
                             ? determineTokenMechanism(
-                                data[sourceNetwork.key].poolType,
-                                data[destinationNetwork.key].poolType
+                                data[sourceNetwork.key].pool.type,
+                                data[destinationNetwork.key].pool.type
                               )
                             : determineTokenMechanism(
-                                data[destinationNetwork.key].poolType,
-                                data[sourceNetwork.key].poolType
+                                data[destinationNetwork.key].pool.type,
+                                data[sourceNetwork.key].pool.type
                               )}
                         </td>
 
                         <td>
-                          {lane.supportedTokens &&
-                            displayCapacity(
-                              data[sourceNetwork.key].decimals,
-                              token,
-                              lane.supportedTokens[token]?.rateLimiterConfig?.[
-                                inOutbound === LaneFilter.Inbound ? "in" : "out"
-                              ]
-                            )}
+                          {/* TODO: Fetch rate limits from API for both inbound and outbound
+                              GET /api/ccip/v1/lanes/by-internal-id/{source}/{destination}/supported-tokens?environment={environment}
+                              Response will contain both standard and custom rate limits per token */}
+                          Disabled
                         </td>
                         <td className="rate-tooltip-cell">
-                          {lane.supportedTokens && (
-                            <RateTooltip
-                              destinationLane={lane.supportedTokens[token]}
-                              inOutbound={inOutbound}
-                              symbol={token}
-                              decimals={data[sourceNetwork.key].decimals}
-                              position="left"
-                            />
-                          )}
+                          {/* TODO: Fetch rate limits from API for both inbound and outbound
+                              Display refill rate from standard.in/out or custom.in/out based on inOutbound filter */}
+                          Disabled
                         </td>
                       </tr>
                     )
@@ -217,8 +203,9 @@ function LaneDrawer({
         </div>
         <div className="ccip-table__notFound">
           {lane.supportedTokens &&
-            Object.keys(lane.supportedTokens)?.filter((lane) => lane.toLowerCase().includes(search.toLowerCase()))
-              .length === 0 && <>No tokens found</>}
+            lane.supportedTokens.filter((token) => token.toLowerCase().includes(search.toLowerCase())).length === 0 && (
+              <>No tokens found</>
+            )}
         </div>
       </div>
     </>
