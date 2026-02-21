@@ -1,0 +1,553 @@
+---
+section: vrf
+date: Last Modified
+title: "Get a Random Number (VRF v2.5)"
+metadata:
+  description: "Step-by-step beginner guide to integrating Chainlink VRF v2.5 into your smart contract. Includes runnable Solidity examples, subscription setup, cost estimation, and common pitfalls."
+  excerpt: "chainlink vrf v2.5, random number, solidity, subscription, beginner tutorial, verifiable randomness, on-chain randomness, vrf integration"
+  datePublished: "2025-01-15"
+  lastModified: "2025-01-15"
+  difficulty: "beginner"
+  estimatedTime: "30 minutes"
+---
+
+import { Aside, CodeSample } from "@components"
+
+This guide walks you through integrating **Chainlink VRF v2.5** into a Solidity smart contract from scratch. By the end, you will have a working on-chain randomness consumer deployed to a testnet, funded via a subscription, and ready to request verifiably random numbers.
+
+## What is Chainlink VRF?
+
+Chainlink **Verifiable Random Function (VRF)** provides cryptographically secure random numbers to smart contracts. Each random value comes with an on-chain proof that the value was not tampered with by the oracle, the miner, or anyone else.
+
+VRF v2.5 is the latest version. It introduces:
+
+- **Native-token billing** – pay gas costs in the chain's native token (e.g., ETH on Ethereum) instead of only LINK.
+- **Unified subscription model** – one subscription can fund multiple consumer contracts.
+- **Lower overhead** – reduced gas costs compared to VRF v2.
+
+## Prerequisites
+
+| Requirement | Details |
+|---|---|
+| Solidity knowledge | Basic familiarity with contracts, functions, and events |
+| Wallet | MetaMask or similar, connected to a testnet |
+| Testnet funds | Sepolia ETH and/or testnet LINK |
+| Development environment | [Remix IDE](https://remix.ethereum.org) or Hardhat/Foundry |
+
+<Aside type="note">
+This guide uses **Ethereum Sepolia** as the testnet. All contract addresses and configuration values are Sepolia-specific. See the [VRF Supported Networks](/vrf/v2-5/supported-networks) page for other networks.
+</Aside>
+
+## How VRF v2.5 Works
+
+```
+Your Contract          VRF Coordinator          Chainlink Oracle
+     │                       │                        │
+     │  requestRandomWords() │                        │
+     │──────────────────────>│                        │
+     │                       │  emit RandomWordsRequested
+     │                       │──────────────────────> │
+     │                       │                        │ (generate random
+     │                       │                        │  value + proof)
+     │                       │  fulfillRandomWords()  │
+     │                       │<──────────────────────-│
+     │  fulfillRandomWords() │                        │
+     │<──────────────────────│                        │
+     │  (your callback runs) │                        │
+```
+
+1. Your contract calls `requestRandomWords()` on the VRF Coordinator.
+2. The Coordinator emits an event that Chainlink nodes observe.
+3. The Chainlink node generates a random value with a cryptographic proof.
+4. The Coordinator verifies the proof on-chain and calls `fulfillRandomWords()` on your contract.
+
+## Step 1 — Create a VRF Subscription
+
+A **subscription** is a funding account that pays for VRF requests.
+
+1. Open the [Chainlink VRF Subscription Manager](https://vrf.chain.link).
+2. Connect your wallet and select **Ethereum Sepolia**.
+3. Click **Create Subscription** and confirm the transaction.
+4. Copy your **Subscription ID** — you will need it when deploying your contract.
+5. Fund the subscription with **testnet LINK** (at least 2 LINK for testing).
+   - Get testnet LINK from the [Chainlink Faucet](https://faucets.chain.link).
+
+<Aside type="tip">
+VRF v2.5 also supports paying with native ETH. To use ETH billing, pass `nativePayment: true` when requesting random words and ensure your subscription has enough ETH balance.
+</Aside>
+
+## Step 2 — Write the Consumer Contract
+
+Create a new file called `VRFConsumer.sol` with the following code:
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
+
+import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+
+/**
+ * @title VRFConsumer
+ * @notice A simple Chainlink VRF v2.5 consumer that requests a random number.
+ * @dev Inherits VRFConsumerBaseV2Plus which handles coordinator interaction.
+ */
+contract VRFConsumer is VRFConsumerBaseV2Plus {
+    // -------------------------------------------------------------------------
+    // VRF Configuration (Ethereum Sepolia)
+    // See: https://docs.chain.link/vrf/v2-5/supported-networks
+    // -------------------------------------------------------------------------
+
+    /// @dev Sepolia VRF Coordinator address
+    address constant COORDINATOR = 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1b;
+
+    /// @dev The gas lane (key hash) determines the maximum gas price for fulfillment.
+    /// 100 gwei key hash — suitable for most Sepolia use cases.
+    bytes32 constant KEY_HASH =
+        0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
+
+    /// @dev How much gas the coordinator is allowed to use for your callback.
+    /// Increase this if your fulfillRandomWords logic is complex.
+    uint32 constant CALLBACK_GAS_LIMIT = 100_000;
+
+    /// @dev Number of block confirmations before the VRF response is delivered.
+    /// Higher values increase security but add latency. Minimum is 3.
+    uint16 constant REQUEST_CONFIRMATIONS = 3;
+
+    /// @dev Number of random values to request in a single call.
+    uint32 constant NUM_WORDS = 1;
+
+    // -------------------------------------------------------------------------
+    // State
+    // -------------------------------------------------------------------------
+
+    /// @notice Your VRF subscription ID (set in constructor).
+    uint256 public subscriptionId;
+
+    /// @notice The most recent request ID returned by the coordinator.
+    uint256 public lastRequestId;
+
+    /// @notice The most recently fulfilled random words.
+    uint256[] public randomWords;
+
+    /// @notice Whether the last request has been fulfilled.
+    bool public requestFulfilled;
+
+    // -------------------------------------------------------------------------
+    // Events
+    // -------------------------------------------------------------------------
+
+    event RandomWordsRequested(uint256 indexed requestId);
+    event RandomWordsFulfilled(uint256 indexed requestId, uint256[] randomWords);
+
+    // -------------------------------------------------------------------------
+    // Constructor
+    // -------------------------------------------------------------------------
+
+    /**
+     * @param _subscriptionId Your VRF v2.5 subscription ID.
+     */
+    constructor(uint256 _subscriptionId) VRFConsumerBaseV2Plus(COORDINATOR) {
+        subscriptionId = _subscriptionId;
+    }
+
+    // -------------------------------------------------------------------------
+    // Request
+    // -------------------------------------------------------------------------
+
+    /**
+     * @notice Request a random number from Chainlink VRF.
+     * @param enableNativePayment If true, pay in native ETH instead of LINK.
+     * @return requestId The ID assigned by the VRF Coordinator.
+     */
+    function requestRandomNumber(
+        bool enableNativePayment
+    ) external onlyOwner returns (uint256 requestId) {
+        requestFulfilled = false;
+
+        requestId = s_vrfCoordinator.requestRandomWords(
+            VRFV2PlusClient.RandomWordsRequest({
+                keyHash: KEY_HASH,
+                subId: subscriptionId,
+                requestConfirmations: REQUEST_CONFIRMATIONS,
+                callbackGasLimit: CALLBACK_GAS_LIMIT,
+                numWords: NUM_WORDS,
+                // Pass extra args — nativePayment flag lives here
+                extraArgs: VRFV2PlusClient._argsToBytes(
+                    VRFV2PlusClient.ExtraArgsV1({nativePayment: enableNativePayment})
+                )
+            })
+        );
+
+        lastRequestId = requestId;
+        emit RandomWordsRequested(requestId);
+    }
+
+    // -------------------------------------------------------------------------
+    // Callback (called by the VRF Coordinator)
+    // -------------------------------------------------------------------------
+
+    /**
+     * @notice Fulfillment callback invoked by the VRF Coordinator.
+     * @dev Override this function to use the random values in your application.
+     * @param requestId The request ID being fulfilled.
+     * @param _randomWords Array of random values generated by the oracle.
+     */
+    function fulfillRandomWords(
+        uint256 requestId,
+        uint256[] calldata _randomWords
+    ) internal override {
+        randomWords = _randomWords;
+        requestFulfilled = true;
+        emit RandomWordsFulfilled(requestId, _randomWords);
+    }
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+
+    /**
+     * @notice Transform a raw random word into a number in the range [1, max].
+     * @param wordIndex Index into the randomWords array.
+     * @param max Upper bound (inclusive).
+     * @return A number between 1 and max.
+     */
+    function getNumberInRange(
+        uint256 wordIndex,
+        uint256 max
+    ) external view returns (uint256) {
+        require(requestFulfilled, "VRFConsumer: no fulfilled request yet");
+        require(wordIndex < randomWords.length, "VRFConsumer: word index out of range");
+        require(max > 0, "VRFConsumer: max must be > 0");
+        return (randomWords[wordIndex] % max) + 1;
+    }
+}
+```
+
+### Key contract concepts
+
+| Concept | Explanation |
+|---|---|
+| `VRFConsumerBaseV2Plus` | Base contract that exposes `s_vrfCoordinator` and enforces that only the coordinator can call `fulfillRandomWords`. |
+| `KEY_HASH` | Selects the oracle job and caps the gas price you are willing to pay for fulfillment. |
+| `CALLBACK_GAS_LIMIT` | Maximum gas the coordinator may use when calling back into your contract. Set this to cover all logic inside `fulfillRandomWords`. |
+| `REQUEST_CONFIRMATIONS` | Minimum block depth before fulfillment. Higher values reduce the (already negligible) chance of block reorganizations affecting randomness. |
+| `extraArgs` | Encodes VRF v2.5-specific options, including the `nativePayment` flag. |
+
+## Step 3 — Deploy the Contract
+
+### Using Remix
+
+1. Open [Remix IDE](https://remix.ethereum.org) and create `VRFConsumer.sol`.
+2. Paste the contract code from Step 2.
+3. In the **Solidity Compiler** tab, select compiler version **0.8.19** and compile.
+4. In the **Deploy & Run** tab:
+   - Set environment to **Injected Provider — MetaMask**.
+   - Make sure MetaMask is connected to **Ethereum Sepolia**.
+5. Under **Deploy**, expand the constructor field and enter your **Subscription ID**.
+6. Click **Deploy** and confirm the transaction.
+7. Copy the deployed contract address.
+
+### Using Foundry
+
+```bash
+# Install dependencies
+forge install smartcontractkit/chainlink --no-commit
+
+# Deploy
+forge create src/VRFConsumer.sol:VRFConsumer \
+  --constructor-args <YOUR_SUBSCRIPTION_ID> \
+  --rpc-url $SEPOLIA_RPC_URL \
+  --private-key $PRIVATE_KEY
+```
+
+## Step 4 — Add the Contract as a Subscription Consumer
+
+The VRF Coordinator will only fulfill requests from contracts that are **registered** on your subscription.
+
+1. Return to the [VRF Subscription Manager](https://vrf.chain.link).
+2. Open your subscription.
+3. Click **Add Consumer**.
+4. Paste your deployed contract address and confirm.
+
+<Aside type="caution">
+If your contract is not added as a consumer, the coordinator will revert your request with `InvalidConsumer`. This is one of the most common mistakes for new integrators.
+</Aside>
+
+## Step 5 — Request a Random Number
+
+Call `requestRandomNumber` on your deployed contract:
+
+- In **Remix**, expand your deployed contract in the left panel, set `enableNativePayment` to `false` (to pay with LINK), and click `requestRandomNumber`.
+- The function emits `RandomWordsRequested` with a `requestId`.
+- Wait **1–3 minutes** for the oracle to respond on Sepolia.
+- Check `requestFulfilled` — it will be `true` once fulfilled.
+- Read `randomWords[0]` to see your random value.
+
+### Using Etherscan
+
+1. Find your contract on [Sepolia Etherscan](https://sepolia.etherscan.io).
+2. Go to **Contract → Write Contract → Connect to Web3**.
+3. Call `requestRandomNumber` with `enableNativePayment = false`.
+4. Monitor the **Events** tab for `RandomWordsFulfilled`.
+
+## Cost Estimation
+
+VRF v2.5 fees have two components:
+
+| Component | Description |
+|---|---|
+| **Premium** | A flat LINK (or ETH) fee charged per request. Set by the oracle network. |
+| **Gas reimbursement** | The gas cost for the coordinator to call `fulfillRandomWords` on your contract, paid from your subscription balance. |
+
+### Rough estimates on Sepolia (illustrative)
+
+| Parameter | Value |
+|---|---|
+| Coordinator premium | ~0.25 LINK per request |
+| `fulfillRandomWords` gas | ~80,000–120,000 gas (depends on your callback complexity) |
+| Total at 10 gwei gas price | ~0.25 LINK + ~0.001 ETH equivalent |
+
+<Aside type="note">
+Actual costs vary by network congestion and your `CALLBACK_GAS_LIMIT`. Always check the [VRF Supported Networks](/vrf/v2-5/supported-networks) page for current premium values. Monitor your subscription balance regularly to avoid failed requests.
+</Aside>
+
+### Estimating `CALLBACK_GAS_LIMIT`
+
+Use Hardhat or Foundry to measure your callback gas in a local fork:
+
+```solidity
+// In your test suite (Foundry)
+function test_FulfillRandomWordsGas() public {
+    uint256 gasBefore = gasleft();
+    // Simulate the callback
+    uint256[] memory words = new uint256[](1);
+    words[0] = 12345;
+    consumer.rawFulfillRandomWords(requestId, words);
+    uint256 gasUsed = gasBefore - gasleft();
+    console.log("Callback gas used:", gasUsed);
+}
+```
+
+Add a **20% buffer** to the measured value and set that as your `CALLBACK_GAS_LIMIT`.
+
+## Common Pitfalls
+
+### 1. Contract not added as a consumer
+
+**Symptom**: Transaction reverts with `InvalidConsumer`.  
+**Fix**: Add your contract address to the subscription in the VRF Subscription Manager.
+
+### 2. Insufficient subscription balance
+
+**Symptom**: Request is made but `fulfillRandomWords` is never called.  
+**Fix**: Fund your subscription with more LINK (or ETH if using native payment). Check the [Subscription Manager](https://vrf.chain.link) for the current balance.
+
+### 3. `CALLBACK_GAS_LIMIT` too low
+
+**Symptom**: Fulfillment transaction reverts on-chain; your callback never completes.  
+**Fix**: Increase `CALLBACK_GAS_LIMIT`. Remember: if the callback runs out of gas, the request is marked as failed and you are still charged.
+
+### 4. Using randomness in the same transaction as the request
+
+**Symptom**: Predictable or replayable randomness.  
+**Fix**: Never use the random value in the same transaction that requested it. Always wait for the fulfillment callback.
+
+```solidity
+// ❌ WRONG — Do not do this
+function badRequest() external {
+    uint256 requestId = coordinator.requestRandomWords(...);
+    // randomWords is not set yet!
+    uint256 winner = randomWords[0] % players.length;
+}
+
+// ✅ CORRECT — Use the value only inside the callback
+function fulfillRandomWords(uint256, uint256[] calldata words) internal override {
+    uint256 winner = words[0] % players.length;
+    _selectWinner(winner);
+}
+```
+
+### 5. Assuming request IDs are sequential
+
+**Symptom**: Logic breaks when multiple requests are in-flight.  
+**Fix**: Store a mapping from `requestId` to your application state:
+
+```solidity
+mapping(uint256 => address) public requestIdToPlayer;
+
+function requestForPlayer() external returns (uint256 requestId) {
+    requestId = s_vrfCoordinator.requestRandomWords(...);
+    requestIdToPlayer[requestId] = msg.sender;
+}
+
+function fulfillRandomWords(uint256 requestId, uint256[] calldata words) internal override {
+    address player = requestIdToPlayer[requestId];
+    // use words[0] for `player`
+}
+```
+
+### 6. Reentrancy in the callback
+
+**Symptom**: Unexpected state mutations if the callback calls external contracts.  
+**Fix**: Apply the checks-effects-interactions pattern and consider a reentrancy guard.
+
+## Testing Locally with a Mock Coordinator
+
+For unit tests you should avoid making real VRF requests. Chainlink provides `VRFCoordinatorV2_5Mock`:
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
+
+import {Test} from "forge-std/Test.sol";
+import {VRFCoordinatorV2_5Mock} from
+    "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
+import {VRFConsumer} from "../src/VRFConsumer.sol";
+
+contract VRFConsumerTest is Test {
+    VRFCoordinatorV2_5Mock coordinator;
+    VRFConsumer consumer;
+    uint256 subscriptionId;
+
+    // Mock constructor params (arbitrary for testing)
+    uint96 constant BASE_FEE = 0.1 ether;       // 0.1 LINK
+    uint96 constant GAS_PRICE_LINK = 1e9;        // 1 gwei LINK
+    int256 constant WEI_PER_UNIT_LINK = 4e15;   // 0.004 ETH per LINK
+
+    function setUp() public {
+        coordinator = new VRFCoordinatorV2_5Mock(
+            BASE_FEE,
+            GAS_PRICE_LINK,
+            WEI_PER_UNIT_LINK
+        );
+
+        // Create and fund subscription
+        subscriptionId = coordinator.createSubscription();
+        coordinator.fundSubscription(subscriptionId, 10 ether); // 10 LINK
+
+        // Deploy consumer
+        consumer = new VRFConsumer(subscriptionId);
+
+        // Register consumer
+        coordinator.addConsumer(subscriptionId, address(consumer));
+    }
+
+    function test_RequestAndFulfill() public {
+        // Request randomness
+        uint256 requestId = consumer.requestRandomNumber(false);
+        assertEq(consumer.requestFulfilled(), false);
+
+        // Simulate VRF fulfillment with a known value
+        coordinator.fulfillRandomWords(requestId, address(consumer));
+
+        // Verify fulfillment
+        assertEq(consumer.requestFulfilled(), true);
+        assertGt(consumer.randomWords(0), 0);
+    }
+
+    function test_GetNumberInRange() public {
+        uint256 requestId = consumer.requestRandomNumber(false);
+        coordinator.fulfillRandomWords(requestId, address(consumer));
+
+        uint256 result = consumer.getNumberInRange(0, 6); // dice roll 1-6
+        assertGe(result, 1);
+        assertLe(result, 6);
+    }
+}
+```
+
+Run the tests:
+
+```bash
+forge test --match-contract VRFConsumerTest -vv
+```
+
+## Real-World Example: On-Chain Dice Roll
+
+The following extends `VRFConsumer` into a simple dice-rolling game:
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
+
+import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+
+contract DiceRoller is VRFConsumerBaseV2Plus {
+    address constant COORDINATOR = 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1b;
+    bytes32 constant KEY_HASH =
+        0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
+    uint32 constant CALLBACK_GAS_LIMIT = 100_000;
+    uint16 constant REQUEST_CONFIRMATIONS = 3;
+
+    uint256 public immutable subscriptionId;
+
+    struct Roll {
+        address player;
+        uint8 result;   // 1–6, 0 = pending
+        bool fulfilled;
+    }
+
+    mapping(uint256 => Roll) public rolls;
+
+    event DiceRolled(uint256 indexed requestId, address indexed player);
+    event DiceResult(uint256 indexed requestId, address indexed player, uint8 result);
+
+    constructor(uint256 _subscriptionId) VRFConsumerBaseV2Plus(COORDINATOR) {
+        subscriptionId = _subscriptionId;
+    }
+
+    /// @notice Roll a six-sided die. Each address may only have one pending roll.
+    function rollDice() external returns (uint256 requestId) {
+        requestId = s_vrfCoordinator.requestRandomWords(
+            VRFV2PlusClient.RandomWordsRequest({
+                keyHash: KEY_HASH,
+                subId: subscriptionId,
+                requestConfirmations: REQUEST_CONFIRMATIONS,
+                callbackGasLimit: CALLBACK_GAS_LIMIT,
+                numWords: 1,
+                extraArgs: VRFV2PlusClient._argsToBytes(
+                    VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
+                )
+            })
+        );
+
+        rolls[requestId] = Roll({player: msg.sender, result: 0, fulfilled: false});
+        emit DiceRolled(requestId, msg.sender);
+    }
+
+    function fulfillRandomWords(
+        uint256 requestId,
+        uint256[] calldata randomWords
+    ) internal override {
+        Roll storage roll = rolls[requestId];
+        require(!roll.fulfilled, "DiceRoller: already fulfilled");
+
+        uint8 result = uint8((randomWords[0] % 6) + 1);
+        roll.result = result;
+        roll.fulfilled = true;
+
+        emit DiceResult(requestId, roll.player, result);
+    }
+}
+```
+
+## Next Steps
+
+Now that you have a working VRF v2.5 integration, explore these resources:
+
+- **[VRF Supported Networks](/vrf/v2-5/supported-networks)** — Contract addresses and key hashes for all supported chains.
+- **[Subscription Manager](https://vrf.chain.link)** — Monitor your subscription balance and request history.
+- **[VRF Security Considerations](/vrf/v2-5/security)** — Best practices for using randomness securely in production.
+- **[Direct Funding (VRFV2PlusWrapperConsumerBase)](/vrf/v2-5/migration-from-v2)** — An alternative billing model where each request pays directly without a subscription.
+- **[Chainlink VRF API Reference](/vrf/v2-5/api-reference)** — Full coordinator interface documentation.
+
+<Aside type="tip">
+**Production checklist before mainnet:**
+1. Audit your `fulfillRandomWords` callback for reentrancy.
+2. Measure and set an appropriate `CALLBACK_GAS_LIMIT` with a safety buffer.
+3. Ensure your subscription has enough balance for expected request volume.
+4. Monitor subscription balance with on-chain alerts or the Subscription Manager.
+5. Never use `block.timestamp`, `blockhash`, or `msg.sender` as entropy sources — rely solely on VRF output.
+</Aside>
