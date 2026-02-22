@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro"
-import { APIErrorType, createErrorResponse, commonHeaders, CCIPError } from "~/lib/ccip/utils.ts"
+import { APIErrorType, createErrorResponse, CCIPError } from "~/lib/ccip/utils.ts"
+import { commonHeaders } from "@lib/api/cacheHeaders.ts"
 import { logger } from "@lib/logging/index.js"
 import { getFaucetConfig } from "@lib/core/config/index.ts"
 import { FaucetService } from "~/lib/ccip/services/faucet-service.ts"
@@ -30,13 +31,13 @@ export const GET: APIRoute = async ({ request, params }) => {
     const receiver = url.searchParams.get("receiver")
 
     if (!token) {
-      return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Missing token parameter", 422, {
+      return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Missing token parameter", 422, requestId, {
         code: "invalid_token",
       })
     }
 
     if (!receiver) {
-      return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Missing receiver parameter", 422, {
+      return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Missing receiver parameter", 422, requestId, {
         code: "invalid_receiver",
       })
     }
@@ -102,33 +103,30 @@ export const GET: APIRoute = async ({ request, params }) => {
         error.statusCode === 400 ? APIErrorType.VALIDATION_ERROR : APIErrorType.SERVER_ERROR,
         error.message,
         error.statusCode,
-        { traceId: requestId }
+        requestId
       )
     }
 
     // Handle validation errors
     if (error instanceof Error && error.message.includes("not supported")) {
-      return createErrorResponse(APIErrorType.VALIDATION_ERROR, error.message, 422, {
+      return createErrorResponse(APIErrorType.VALIDATION_ERROR, error.message, 422, requestId, {
         code: "unsupported_chain",
-        traceId: requestId,
       })
     }
 
     if (error instanceof Error && error.message.includes("Invalid address")) {
-      return createErrorResponse(APIErrorType.VALIDATION_ERROR, error.message, 422, {
+      return createErrorResponse(APIErrorType.VALIDATION_ERROR, error.message, 422, requestId, {
         code: "invalid_address",
-        traceId: requestId,
       })
     }
 
     if (error instanceof Error && error.message.includes("not allowed")) {
-      return createErrorResponse(APIErrorType.VALIDATION_ERROR, error.message, 422, {
+      return createErrorResponse(APIErrorType.VALIDATION_ERROR, error.message, 422, requestId, {
         code: "unsupported_token",
-        traceId: requestId,
       })
     }
 
     // Handle other errors
-    return createErrorResponse(APIErrorType.SERVER_ERROR, "Failed to generate challenge", 500, { traceId: requestId })
+    return createErrorResponse(APIErrorType.SERVER_ERROR, "Failed to generate challenge", 500, requestId)
   }
 }

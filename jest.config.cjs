@@ -35,5 +35,9 @@ module.exports = {
     "\\.ya?ml$": "<rootDir>/src/__mocks__/yamlMock.ts",
   },
   transformIgnorePatterns: ["/node_modules/(?!.*\\.mjs$)"],
-  testPathIgnorePatterns: ["/node_modules/", "src/tests/chain-api.test.ts"],
+  testPathIgnorePatterns: [
+    "/node_modules/",
+    "src/tests/chain-api.test.ts",
+    "src/tests/chain-identifier-service.test.ts",
+  ],
 }

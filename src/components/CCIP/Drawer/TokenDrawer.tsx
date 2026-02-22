@@ -8,20 +8,17 @@ import {
   SupportedTokenConfig,
   Version,
   LaneFilter,
-  displayCapacity,
   determineTokenMechanism,
   PoolType,
   getTokenData,
   LaneConfig,
 } from "~/config/data/ccip/index.ts"
-import { isTokenPaused } from "~/config/data/ccip/utils.ts"
 import { useState } from "react"
 import { ChainType, ExplorerInfo, SupportedChain } from "~/config/index.ts"
 import LaneDrawer from "../Drawer/LaneDrawer.tsx"
 import TableSearchInput from "../Tables/TableSearchInput.tsx"
 import Tabs from "../Tables/Tabs.tsx"
 import { Tooltip } from "~/features/common/Tooltip/Tooltip.tsx"
-import RateTooltip from "../Tooltip/RateTooltip.tsx"
 
 function TokenDrawer({
   token,
@@ -47,6 +44,7 @@ function TokenDrawer({
     tokenDecimals: number
     tokenAddress: string
     tokenPoolType: PoolType
+    tokenPoolRawType: string
     tokenPoolAddress: string
     explorer: ExplorerInfo
   }
@@ -84,7 +82,7 @@ function TokenDrawer({
         console.error(`No token data found for ${token.id} on ${network.key} -> ${destinationChain}`)
         return null
       }
-      const destinationPoolType = destinationTokenData.poolType
+      const destinationPoolType = destinationTokenData.pool.type
       if (!destinationPoolType) {
         console.error(`No pool type found for ${token.id} on ${network.key} -> ${destinationChain}`)
         return null
@@ -100,11 +98,11 @@ function TokenDrawer({
         console.error(`No lane data found for ${token.id} on ${network.key} -> ${destinationChain}`)
         return null
       }
-      if (!laneData.supportedTokens) {
+      if (!laneData.supportedTokens || !Array.isArray(laneData.supportedTokens)) {
         console.error(`No supported tokens found for ${token.id} on ${network.key} -> ${destinationChain}`)
         return null
       }
-      if (!(token.id in laneData.supportedTokens)) {
+      if (!laneData.supportedTokens.includes(token.id)) {
         console.error(`${token.id} not found in supported tokens for ${network.key} -> ${destinationChain}`)
         return null
       }
@@ -124,7 +122,7 @@ function TokenDrawer({
           logo: network.tokenLogo,
           decimals: network.tokenDecimals,
           address: network.tokenAddress,
-          poolType: network.tokenPoolType,
+          poolRawType: network.tokenPoolRawType,
           poolAddress: network.tokenPoolAddress,
         }}
         network={{
@@ -216,13 +214,10 @@ function TokenDrawer({
                 .map(({ networkDetails, laneData, destinationChain, destinationPoolType }) => {
                   if (!laneData || !networkDetails) return null
 
-                  // Check if token is paused on this lane
-                  const tokenPaused = isTokenPaused(
-                    network.tokenDecimals,
-                    destinationLanes[destinationChain].rateLimiterConfig?.[
-                      inOutbound === LaneFilter.Inbound ? "in" : "out"
-                    ]
-                  )
+                  // TODO: Fetch rate limits from API for both inbound and outbound
+                  // Token pause detection requires rate limiter data from API
+                  // A token is paused when rate limit capacity is 0
+                  const tokenPaused = false
 
                   return (
                     <tr key={networkDetails.name} className={tokenPaused ? "ccip-table__row--paused" : ""}>
@@ -262,21 +257,15 @@ function TokenDrawer({
                         </button>
                       </td>
                       <td>
-                        {displayCapacity(
-                          network.tokenDecimals,
-                          network.tokenSymbol,
-                          destinationLanes[destinationChain].rateLimiterConfig?.[
-                            inOutbound === LaneFilter.Inbound ? "in" : "out"
-                          ]
-                        )}
+                        {/* TODO: Fetch rate limits from API for both inbound and outbound
+                            GET /api/ccip/v1/lanes/by-internal-id/{source}/{destination}/supported-tokens?environment={environment}
+                            Response will contain both standard and custom rate limits per token */}
+                        Disabled
                       </td>
                       <td>
-                        <RateTooltip
-                          destinationLane={destinationLanes[destinationChain]}
-                          inOutbound={inOutbound}
-                          symbol={network.tokenSymbol}
-                          decimals={network.tokenDecimals}
-                        />
+                        {/* TODO: Fetch rate limits from API for both inbound and outbound
+                            Display refill rate from standard.in/out or custom.in/out based on inOutbound filter */}
+                        Disabled
                       </td>
                       <td>
                         {inOutbound === LaneFilter.Outbound

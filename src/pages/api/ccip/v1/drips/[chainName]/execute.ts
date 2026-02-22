@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro"
-import { APIErrorType, createErrorResponse, commonHeaders, CCIPError } from "~/lib/ccip/utils.ts"
+import { APIErrorType, createErrorResponse, CCIPError } from "~/lib/ccip/utils.ts"
+import { commonHeaders } from "@lib/api/cacheHeaders.ts"
 import { logger } from "@lib/logging/index.js"
 import { FaucetService } from "~/lib/ccip/services/faucet-service.ts"
 import { SvmDripAdapter } from "~/lib/ccip/faucet/adapters/svm-drip.ts"
@@ -32,9 +33,8 @@ export const POST: APIRoute = async ({ request, params }) => {
     try {
       body = await request.json()
     } catch {
-      return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Invalid JSON body", 400, {
+      return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Invalid JSON body", 400, requestId, {
         code: "invalid_json",
-        traceId: requestId,
       })
     }
 
@@ -61,30 +61,26 @@ export const POST: APIRoute = async ({ request, params }) => {
 
     // 2. Input validation
     if (!token || typeof token !== "string") {
-      return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Invalid token parameter", 422, {
+      return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Invalid token parameter", 422, requestId, {
         code: "invalid_token",
-        traceId: requestId,
       })
     }
 
     if (!receiver || typeof receiver !== "string") {
-      return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Invalid receiver parameter", 422, {
+      return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Invalid receiver parameter", 422, requestId, {
         code: "invalid_receiver",
-        traceId: requestId,
       })
     }
 
     if (!challenge || typeof challenge !== "string") {
-      return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Invalid challenge parameter", 422, {
+      return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Invalid challenge parameter", 422, requestId, {
         code: "bad_challenge",
-        traceId: requestId,
       })
     }
 
     if (!receiverSignature || typeof receiverSignature !== "string") {
-      return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Invalid signature parameter", 422, {
+      return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Invalid signature parameter", 422, requestId, {
         code: "invalid_signature",
-        traceId: requestId,
       })
     }
 
@@ -101,9 +97,9 @@ export const POST: APIRoute = async ({ request, params }) => {
         APIErrorType.VALIDATION_ERROR,
         `Faucet configuration error: ${configError instanceof Error ? configError.message : "Invalid chain or token configuration"}`,
         400,
+        requestId,
         {
           code: "FAUCET_CONFIG_ERROR",
-          traceId: requestId,
         }
       )
     }
@@ -113,9 +109,9 @@ export const POST: APIRoute = async ({ request, params }) => {
         APIErrorType.VALIDATION_ERROR,
         `Unsupported chain: ${params.chainName}. This chain is not enabled for faucet operations.`,
         400,
+        requestId,
         {
           code: "UNSUPPORTED_CHAIN",
-          traceId: requestId,
           supportedChains: ["solana-devnet"],
         }
       )
@@ -160,9 +156,9 @@ export const POST: APIRoute = async ({ request, params }) => {
         APIErrorType.VALIDATION_ERROR,
         `Authentication failed: ${verifyResult.message || "Signature verification failed"}`,
         statusCode,
+        requestId,
         {
           code: verifyResult.code || "INVALID_SIGNATURE",
-          traceId: requestId,
         }
       )
     }
@@ -179,10 +175,15 @@ export const POST: APIRoute = async ({ request, params }) => {
     const svmDripAdapter = new SvmDripAdapter()
 
     if (!svmDripAdapter.isDripAvailable(chainConfig)) {
-      return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Drip is not available for this chain", 503, {
-        code: "drip_unavailable",
-        traceId: requestId,
-      })
+      return createErrorResponse(
+        APIErrorType.VALIDATION_ERROR,
+        "Drip is not available for this chain",
+        503,
+        requestId,
+        {
+          code: "drip_unavailable",
+        }
+      )
     }
 
     // 6. Execute the drip (rate limiting handled on-chain by Solana program)
@@ -234,7 +235,7 @@ export const POST: APIRoute = async ({ request, params }) => {
             token,
             receiver,
           },
-          traceId: requestId,
+          requestId,
         }),
         {
           headers: { ...commonHeaders, ...securityHeaders },
@@ -274,11 +275,11 @@ export const POST: APIRoute = async ({ request, params }) => {
         error.statusCode === 400 ? APIErrorType.VALIDATION_ERROR : APIErrorType.SERVER_ERROR,
         error.message,
         error.statusCode,
-        { traceId: requestId }
+        requestId
       )
     }
 
     // Handle other errors
-    return createErrorResponse(APIErrorType.SERVER_ERROR, "Failed to execute drip", 500, { traceId: requestId })
+    return createErrorResponse(APIErrorType.SERVER_ERROR, "Failed to execute drip", 500, requestId)
   }
 }

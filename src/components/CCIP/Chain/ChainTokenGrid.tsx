@@ -53,8 +53,10 @@ function ChainTokenGrid({ tokens, network, environment }: ChainTokenGridProps) {
                       tokenSymbol: data[key].symbol,
                       tokenDecimals: data[key].decimals,
                       tokenAddress: data[key].tokenAddress,
-                      tokenPoolType: data[key].poolType,
-                      tokenPoolAddress: data[key].poolAddress || "",
+                      tokenPoolType: data[key].pool.type,
+                      tokenPoolRawType: data[key].pool.rawType,
+                      tokenPoolAddress: data[key].pool.address || "",
+                      tokenPoolVersion: data[key].pool.version || "",
                       explorer: network.explorer,
                       chainType,
                     }

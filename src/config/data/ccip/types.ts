@@ -17,7 +17,7 @@ export type SupportedTokensConfig = {
 }
 
 export type LaneConfig = {
-  supportedTokens?: SupportedTokensConfig
+  supportedTokens?: string[]
   rateLimiterConfig?: RateLimiterConfig
   onRamp: {
     address: string
@@ -34,13 +34,24 @@ export type DestinationsLaneConfig = {
   [destinationChain: string]: LaneConfig
 }
 
+/** Normalized pool type (semantic). Used for logic, display, token mechanism. */
 export type PoolType = "lockRelease" | "burnMint" | "usdc" | "feeTokenOnly"
+
+/** Raw pool type from downstream data; displayed as-is in the directory. */
+export type PoolRawType = string
+
+type Pool = {
+  address?: string
+  rawType: string
+  type: PoolType
+  version: string
+  advancedPoolHooks?: string
+}
 
 type PoolInfo = {
   tokenAddress: string
   allowListEnabled: boolean
-  poolAddress?: string
-  poolType: PoolType
+  pool: Pool
   name?: string
   symbol: string
   decimals: number
@@ -231,4 +242,25 @@ export interface DecommissionedNetwork {
   logo: string
   explorer: ExplorerInfo
   chainType: ChainType
+}
+
+// Verifier types
+export type VerifierType = "committee" | "api"
+
+export interface VerifierMetadata {
+  id: string
+  name: string
+  type: VerifierType
+}
+
+export interface VerifiersConfig {
+  [networkId: string]: {
+    [address: string]: VerifierMetadata
+  }
+}
+
+export interface Verifier extends VerifierMetadata {
+  network: string
+  address: string
+  logo: string
 }
