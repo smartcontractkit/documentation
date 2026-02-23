@@ -1010,6 +1010,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/tutorials/solana-onchain-report-verification",
           highlightAsCurrent: ["data-streams/tutorials/solana-offchain-report-verification"],
         },
+        {
+          title: "Canton Integration",
+          url: "data-streams/canton-integration",
+        },
       ],
     },
     {
