@@ -15,7 +15,7 @@ export const DownloadButton = () => {
   }
 
   const handleClick = () => {
-    window.open("https://github.com/smartcontractkit/cre-cli/releases/tag/v1.0.7", "_blank", "noopener,noreferrer")
+    window.open("https://github.com/smartcontractkit/cre-cli/releases/tag/v1.0.11", "_blank", "noopener,noreferrer")
   }
 
   const handleMouseOver = (e) => {

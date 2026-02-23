@@ -297,6 +297,20 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "Confidential API Interactions (Experimental)",
+          url: "cre/guides/workflow/using-confidential-http-client",
+          children: [
+            {
+              title: "Making Confidential Requests",
+              url: "cre/guides/workflow/using-confidential-http-client/making-requests",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-confidential-http-client/making-requests-ts",
+                "cre/guides/workflow/using-confidential-http-client/making-requests-go",
+              ],
+            },
+          ],
+        },
+        {
           title: "Secrets",
           url: "cre/guides/workflow/secrets",
           children: [
@@ -409,6 +423,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         { title: "Overview", url: "cre/capabilities" },
         { title: "Triggers", url: "cre/capabilities/triggers" },
         { title: "HTTP", url: "cre/capabilities/http" },
+        {
+          title: "Confidential HTTP (Experimental)",
+          url: "cre/capabilities/confidential-http",
+          highlightAsCurrent: ["cre/capabilities/confidential-http-ts", "cre/capabilities/confidential-http-go"],
+        },
         { title: "EVM Read & Write", url: "cre/capabilities/evm-read-write" },
       ],
     },
@@ -439,8 +458,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Templates",
       contents: [
         {
-          title: "Overview",
-          url: "cre/templates",
+          title: "CRE Templates Hub",
+          url: "https://docs.chain.link/cre-templates",
         },
         {
           title: "Custom Data Feed Template",
@@ -534,11 +553,29 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               highlightAsCurrent: ["cre/reference/sdk/http-client-ts", "cre/reference/sdk/http-client-go"],
             },
             {
+              title: "Confidential HTTP Client (Experimental)",
+              url: "cre/reference/sdk/confidential-http-client",
+              highlightAsCurrent: [
+                "cre/reference/sdk/confidential-http-client-ts",
+                "cre/reference/sdk/confidential-http-client-go",
+              ],
+            },
+            {
               title: "Consensus & Aggregation",
               url: "cre/reference/sdk/consensus",
               highlightAsCurrent: ["cre/reference/sdk/consensus-ts", "cre/reference/sdk/consensus-go"],
             },
           ],
+        },
+      ],
+    },
+    {
+      section: "Migrate to CRE",
+      contents: [
+        {
+          title: "Migrate from Gelato",
+          url: "cre/reference/gelato-migration",
+          highlightAsCurrent: ["cre/reference/gelato-migration-ts", "cre/reference/gelato-migration-go"],
         },
       ],
     },
@@ -563,7 +600,21 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Feed Types",
           url: "data-feeds/feed-types",
           children: [
-            { title: "Price Feeds", url: "data-feeds/price-feeds" },
+            {
+              title: "Price Feeds",
+              url: "data-feeds/price-feeds",
+            },
+            {
+              title: "Tokenized Equity Feeds",
+              url: "data-feeds/tokenized-equity-feeds",
+              children: [
+                {
+                  title: "Provider Catalog",
+                  url: "data-feeds/tokenized-equity-feeds/providers",
+                  children: [{ title: "Ondo Finance", url: "data-feeds/tokenized-equity-feeds/ondo" }],
+                },
+              ],
+            },
             {
               title: "SmartData",
               url: "data-feeds/smartdata",

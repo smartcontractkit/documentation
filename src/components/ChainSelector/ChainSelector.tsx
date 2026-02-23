@@ -40,6 +40,7 @@ export function ChainSelector({
       if (dataFeedType === "rates") return chain.tags?.includes("rates") ?? false
       if (dataFeedType === "usGovernmentMacroeconomicData")
         return chain.tags?.includes("usGovernmentMacroeconomicData") ?? false
+      if (dataFeedType === "tokenizedEquity") return chain.tags?.includes("tokenizedEquity") ?? false
       return chain.tags?.includes("default") ?? false
     })()
 

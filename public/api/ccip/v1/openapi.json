@@ -3,7 +3,7 @@
   "info": {
     "title": "CCIP Docs config API",
     "description": "API for retrieving CCIP chain, token, and lane information.\n\nTo get started quickly, you can download our [Postman Collection](/api/ccip/v1/postman-collection.json) which includes all endpoints and example requests.",
-    "version": "1.5.0",
+    "version": "1.6.0",
     "contact": {
       "name": "File issues",
       "url": "https://github.com/smartcontractkit/documentation/issues/new/choose"
@@ -101,6 +101,25 @@
               "default": "false"
             },
             "description": "When set to 'true', returns detailed fee token information including addresses, names, and decimals instead of just symbol strings"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "description": "Unified search query. Automatically detects query type: selector (>17 digits), chainId (≤17 digits or Solana base58 hash), internalId (kebab-case), or displayName (fuzzy text search). Cannot be combined with chainId, selector, or internalId filters.",
+            "example": "ethereum"
+          },
+          {
+            "name": "family",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["evm", "solana", "aptos", "sui", "tron", "canton", "ton", "stellar", "starknet"]
+            },
+            "description": "Filter results by chain family. Only effective when using the search parameter."
           }
         ],
         "responses": {
@@ -136,10 +155,11 @@
                             "tokenAdminRegistry": "0xb22764f98dD05c789929716D677382Df22C05Cb6",
                             "tokenPoolFactory": "0x17D8a409fE2ceF2d3808bcB61F14aBEFfc28876e",
                             "chainType": "evm",
-                            "chainFamily": "evm"
+                            "chainFamily": "evm",
+                            "supported": true
                           }
                         },
-                        "svm": {
+                        "solana": {
                           "solana-devnet": {
                             "chainId": "solana-devnet",
                             "displayName": "Solana Devnet",
@@ -150,7 +170,52 @@
                             "rmn": "CRmNVnB7S6SqEPFG6m9dVp9fJJCjr3TC2TiAWB3RqNod",
                             "feeQuoter": "FqbCVbS7a4ndxs9xZ8UmfL6LQsUhAJNkWxW3duJRrCWD",
                             "chainType": "solana",
-                            "chainFamily": "svm"
+                            "chainFamily": "solana",
+                            "supported": true
+                          }
+                        }
+                      },
+                      "ignored": []
+                    }
+                  },
+                  "search": {
+                    "summary": "Search response (includes both supported and unsupported chains)",
+                    "value": {
+                      "metadata": {
+                        "environment": "testnet",
+                        "timestamp": "2024-03-14T12:00:00Z",
+                        "requestId": "123e4567-e89b-12d3-a456-426614174000",
+                        "ignoredChainCount": 0,
+                        "validChainCount": 2,
+                        "searchQuery": "solana",
+                        "searchType": "displayName"
+                      },
+                      "data": {
+                        "solana": {
+                          "solana-devnet": {
+                            "chainId": "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG",
+                            "displayName": "Solana Devnet",
+                            "selector": "16015286601757825753",
+                            "internalId": "solana-devnet",
+                            "feeTokens": ["LINK", "SOL"],
+                            "router": "CCiPv7hcmEqNdMdJgmHDJmEJyCkBgLqxmcf87R1Gho6H",
+                            "rmn": "CRmNVnB7S6SqEPFG6m9dVp9fJJCjr3TC2TiAWB3RqNod",
+                            "feeQuoter": "FqbCVbS7a4ndxs9xZ8UmfL6LQsUhAJNkWxW3duJRrCWD",
+                            "chainType": "solana",
+                            "chainFamily": "solana",
+                            "supported": true
+                          },
+                          "solana-testnet": {
+                            "chainId": "4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z",
+                            "displayName": "Solana Testnet",
+                            "selector": "6302590918974934319",
+                            "internalId": "solana-testnet",
+                            "feeTokens": [],
+                            "router": "",
+                            "rmn": "",
+                            "chainType": "solana",
+                            "chainFamily": "solana",
+                            "supported": false
                           }
                         }
                       },
@@ -200,7 +265,8 @@
                             "tokenAdminRegistry": "0xb22764f98dD05c789929716D677382Df22C05Cb6",
                             "tokenPoolFactory": "0x17D8a409fE2ceF2d3808bcB61F14aBEFfc28876e",
                             "chainType": "evm",
-                            "chainFamily": "evm"
+                            "chainFamily": "evm",
+                            "supported": true
                           }
                         }
                       },
@@ -576,8 +642,21 @@
             "type": "integer",
             "minimum": 0,
             "description": "Number of valid chains in the response"
+          },
+          "searchQuery": {
+            "type": "string",
+            "description": "The search query that was used (only present when search parameter was provided)"
+          },
+          "searchType": {
+            "$ref": "#/components/schemas/SearchType",
+            "description": "The detected type of search query (only present when search parameter was provided)"
           }
         }
+      },
+      "SearchType": {
+        "type": "string",
+        "enum": ["selector", "chainId", "internalId", "displayName"],
+        "description": "The detected type of search query. 'selector' for CCIP selectors (>17 digits), 'chainId' for chain IDs (≤17 digits or Solana base58), 'internalId' for kebab-case identifiers, 'displayName' for fuzzy text search."
       },
       "FeeTokenEnriched": {
         "type": "object",
@@ -614,7 +693,8 @@
           "router",
           "rmn",
           "chainType",
-          "chainFamily"
+          "chainFamily",
+          "supported"
         ],
         "properties": {
           "chainId": {
@@ -623,7 +703,7 @@
           },
           "displayName": {
             "type": "string",
-            "description": "Human-readable name of the chain"
+            "description": "Human-readable name of the chain. For supported chains, this comes from configuration. For unsupported chains, it is derived from the internalId."
           },
           "selector": {
             "type": "string",
@@ -650,25 +730,29 @@
                 "description": "Detailed fee token information (when enrichFeeTokens=true)"
               }
             ],
-            "description": "Fee tokens - either as string symbols or enriched objects with addresses"
+            "description": "Fee tokens - either as string symbols or enriched objects with addresses. Empty array for unsupported chains."
           },
           "router": {
             "type": "string",
-            "description": "CCIP Router contract address"
+            "description": "CCIP Router contract address. Empty string for unsupported chains."
           },
           "rmn": {
             "type": "string",
-            "description": "Risk Management Network contract address"
+            "description": "Risk Management Network contract address. Empty string for unsupported chains."
           },
           "chainType": {
             "type": "string",
-            "enum": ["evm", "solana", "aptos"],
+            "enum": ["evm", "solana", "aptos", "sui", "canton", "ton", "tron", "stellar", "starknet"],
             "description": "Type of blockchain"
           },
           "chainFamily": {
             "type": "string",
-            "enum": ["evm", "svm", "mvm"],
-            "description": "Blockchain family (EVM, Solana VM, Move VM)"
+            "enum": ["evm", "solana", "aptos", "sui", "tron", "canton", "ton", "stellar", "starknet"],
+            "description": "Blockchain family grouping"
+          },
+          "supported": {
+            "type": "boolean",
+            "description": "Whether this chain is fully supported with complete configuration. Unsupported chains have minimal details (empty router, rmn, feeTokens)."
           },
           "registryModule": {
             "type": "string",
@@ -676,7 +760,7 @@
           },
           "tokenAdminRegistry": {
             "type": "string",
-            "description": "Token Admin Registry contract address (EVM chains only)"
+            "description": "Token Admin Registry contract address (EVM and Aptos chains)"
           },
           "tokenPoolFactory": {
             "type": "string",
@@ -685,6 +769,10 @@
           "feeQuoter": {
             "type": "string",
             "description": "Fee Quoter address (Solana chains only)"
+          },
+          "mcms": {
+            "type": "string",
+            "description": "MCMS (Multi-Chain Management Service) address (Aptos chains only)"
           }
         }
       },
@@ -730,19 +818,61 @@
                 },
                 "description": "EVM chain details keyed by the specified output key"
               },
-              "svm": {
+              "solana": {
                 "type": "object",
                 "additionalProperties": {
                   "$ref": "#/components/schemas/ChainDetails"
                 },
-                "description": "Solana VM chain details keyed by the specified output key"
+                "description": "Solana chain details keyed by the specified output key"
               },
-              "mvm": {
+              "aptos": {
                 "type": "object",
                 "additionalProperties": {
                   "$ref": "#/components/schemas/ChainDetails"
                 },
-                "description": "Move VM (Aptos) chain details keyed by the specified output key"
+                "description": "Aptos chain details keyed by the specified output key"
+              },
+              "sui": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/ChainDetails"
+                },
+                "description": "Sui chain details keyed by the specified output key"
+              },
+              "tron": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/ChainDetails"
+                },
+                "description": "Tron chain details keyed by the specified output key"
+              },
+              "canton": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/ChainDetails"
+                },
+                "description": "Canton chain details keyed by the specified output key"
+              },
+              "ton": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/ChainDetails"
+                },
+                "description": "TON chain details keyed by the specified output key"
+              },
+              "stellar": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/ChainDetails"
+                },
+                "description": "Stellar chain details keyed by the specified output key"
+              },
+              "starknet": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/ChainDetails"
+                },
+                "description": "Starknet chain details keyed by the specified output key"
               }
             },
             "description": "Chain details grouped by chain family"
@@ -789,7 +919,8 @@
       },
       "ChainInfo": {
         "type": "object",
-        "required": ["chainId", "displayName", "selector", "internalId", "chainType", "chainFamily"],
+        "description": "Chain information used in lane endpoints. Note: chainType and chainFamily are intentionally excluded from this schema for API responses.",
+        "required": ["chainId", "displayName", "selector", "internalId"],
         "properties": {
           "chainId": {
             "oneOf": [{ "type": "integer" }, { "type": "string" }],
@@ -806,16 +937,6 @@
           "internalId": {
             "type": "string",
             "description": "Internal identifier used in configuration"
-          },
-          "chainType": {
-            "type": "string",
-            "enum": ["evm", "solana", "aptos", "sui"],
-            "description": "Type of blockchain"
-          },
-          "chainFamily": {
-            "type": "string",
-            "enum": ["evm", "mvm", "svm"],
-            "description": "Family of blockchain virtual machine"
           }
         }
       },
@@ -931,6 +1052,11 @@
           "message": {
             "type": "string",
             "description": "Human-readable error message"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the request, useful for debugging and support"
           }
         }
       },

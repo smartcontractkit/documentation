@@ -1,0 +1,301 @@
+---
+section: dataFeeds
+date: "Last Modified"
+title: "Tokenized Equity Feeds"
+metadata:
+  title: "Tokenized Equity Feeds | Chainlink Data Feeds"
+  description: "Learn about Chainlink Tokenized Equity Feeds for continuous 24/5 pricing of tokenized stocks and ETFs, including how they work and risk considerations for DeFi integrations."
+  keywords:
+    [
+      "Tokenized Equities",
+      "Tokenized Stocks",
+      "ETF Feeds",
+      "Data Feeds",
+      "24/5 Pricing",
+      "RWA",
+      "Price Feeds",
+      "Equity Pricing",
+    ]
+whatsnext:
+  {
+    "View Provider Catalog": "/data-feeds/tokenized-equity-feeds/providers",
+    "Find Price Feed Addresses": "/data-feeds/price-feeds/addresses",
+    "Learn about developer responsibilities": "/data-feeds/developer-responsibilities",
+  }
+---
+
+import { ClickToZoom } from "@components"
+import TokenizedEquityFeeds from "@features/tokenized-equity-feeds/common/TokenizedEquityFeeds.astro"
+import { FeedList } from "@features/feeds"
+
+<TokenizedEquityFeeds section="tokenizedEquityNote" />
+
+## What are tokenized equities?
+
+Tokenized equities are blockchain tokens that represent ownership or economic exposure to traditional stocks and ETFs. These tokens are distinct financial instruments issued by token issuers, not the underlying equities themselves. Tokenized equity feeds deliver the **primary market price representing the intrinsic value of the equity token** – this is the calculated theoretical token value and may account for long-term total return adjustments such as dividends or corporate actions.
+
+## About tokenized equity feeds
+
+Chainlink Tokenized Equity Feeds provide continuous 24/5 pricing for tokenized representations of US equities and ETFs. These feeds deliver the calculated primary market price of the token as determined by the issuer's pricing methodology, enabling DeFi protocols to accurately value tokenized equities across all major trading sessions in US markets, including regular hours, pre-market, post-market, and overnight (Eastern Standard Time).
+
+Tokenized equity feeds behave differently from standard crypto price feeds due to structural connections with underlying traditional equity markets affecting asset liquidity and pricing. Given the specialized nature of these feeds, all developers must reach out to Chainlink Labs prior to integrating these feeds and also review the [key differences](#key-differences-from-standard-feeds) and [risks](#risks) sections to understand how these characteristics may affect your application.
+
+See the [Provider Catalog](/data-feeds/tokenized-equity-feeds/providers) to view available feeds and issuer-specific implementations.
+
+<ClickToZoom
+  src="/images/data-feed/tokenized-equity/tokenized-equity-diagram.png"
+  caption="Tokenized equity feeds aggregate equity prices from market data providers and issuer-specific logic from asset issuers through the Chainlink DON to deliver token prices to consumer contracts."
+/>
+
+## Why use tokenized equity feeds?
+
+Tokenized equities bring traditional stocks and ETFs onchain, but integrating them into DeFi protocols creates a fundamental challenge: US equity markets operate only 6.5 hours per trading day during regular hours, yet DeFi protocols operate continuously. Interest accrues around the clock, liquidation thresholds are monitored constantly, and risk parameters remain active regardless of underlying market hours.
+
+Chainlink Tokenized Equity Feeds help bridge this gap between TradFi and DeFi markets by:
+
+- **Providing continuous 24/5 pricing**: A single feed that spans regular, pre-market, post-market, and overnight sessions
+- **Simplifying integration**: Consume one feed across trading sessions instead of managing multiple session-specific data sources
+- **Applying session-aware smoothing**: Intelligent pricing algorithms that aim to reduce certain price anomalies during session transitions
+- **Maintaining benchmark accuracy**: Optimized algorithms that are designed to track consolidated tape benchmarks with high fidelity
+- **Performing tokenized price calculations**: Returning real-time calculated primary market valuations of tokenized equities based on the issuer's multiplier values.
+
+## Available tokenized equity feeds
+
+The following table shows all available tokenized equity feeds.
+
+<FeedList client:idle initialNetwork="ethereum-mainnet" dataFeedType="tokenizedEquity" />
+
+## How tokenized equity feeds work
+
+Tokenized equity feeds leverage Chainlink's decentralized oracle infrastructure to aggregate price data from multiple trading sessions and apply session-aware smoothing algorithms. The feeds combine data from various trading venues into a single continuous 24/5 price, handling the complexity of multi-session equity markets.
+
+### Session coverage
+
+US equity markets exhibit distinct liquidity regimes throughout the 24-hour cycle:
+
+| Session         | Hours (ET)            | Liquidity | Characteristics                               |
+| :-------------- | :-------------------- | :-------- | :-------------------------------------------- |
+| Pre-Market      | 04:00 – 09:30         | Rising    | Increasing activity as regular hours approach |
+| Regular Trading | 09:30 – 16:00         | Deep      | Full liquidity, primary price discovery       |
+| Post-Market     | 16:00 – 20:00         | Declining | Reduced liquidity, wider spreads              |
+| Overnight       | 20:00 – 04:00         | Thin      | Limited venues, potential for price spikes    |
+| Weekend         | Fri 20:00 – Sun 20:00 | Zero      | Traditional markets closed                    |
+
+### Session-aware smoothing
+
+To enable reliable, 24/5 continuous pricing, tokenized equity feeds apply intelligent smoothing during session transitions to target pricing integrity under different liquidity conditions. The smoothing methodology:
+
+1. **Tracks benchmark prices accurately** during liquid regular sessions
+1. **Filters microstructure noise** during illiquid session transitions
+1. **Reduces the risk of phantom liquidations** from transient price spikes in thin markets
+1. **Converges quickly** after legitimate large price movements
+1. **Minimizes tracking lag** to reduce mispricing during active trading
+
+Please note that while intelligent smoothing is designed to mitigate these issues, tokenized equities' structural connections with underlying traditional equity markets, liquidity, and pricing considerations require protocols to ensure performance of Chainlink Tokenized Equity Feeds matches expectations and is appropriate for the intended use case.
+
+### Input sources
+
+Tokenized equity feeds combine multiple input sources:
+
+- **Regular hours data**: Multi-sourced from consolidated tape data with deep liquidity
+- **Extended hours data**: Pre-market and post-market venue data
+- **Overnight data**: Data from overnight trading venues
+
+_Extended and overnight session data may be sourced from fewer providers than regular hours data, reflecting the reduced number of venues operating during these periods. See the [Limited Provider Coverage](#limited-provider-coverage-during-extended-and-overnight-sessions) risk section for details._
+
+## Key differences from standard feeds
+
+While tokenized equity feeds use the same Chainlink infrastructure as standard crypto price feeds, they have distinct behaviors you should understand before integrating.
+
+### Continuous vs. point-in-time pricing
+
+Standard crypto price feeds reflect a single aggregated market price at a point in time from 24/7 markets. Tokenized equity feeds combine data from multiple trading sessions that have different operating hours, update frequencies, liquidity profiles, and data sources. The feed value represents a calculated return using the best mid-price for continuous 24/5 coverage of underlying equity markets.
+
+### Smoothing during transitions
+
+Standard feeds report raw aggregated prices. Tokenized equity feeds apply smoothing algorithms during session transitions in an effort to filter out microstructure noise and mitigate artificial volatility. This means:
+
+- Brief price spikes in illiquid sessions are dampened
+- Convergence to new price levels after gaps is gradual rather than instantaneous
+- The reported price may temporarily lag during rapid price movements
+
+For more information about this risk, see [Smoothing-induced Tracking Lag](#smoothing-induced-tracking-lag) below.
+
+### Variable data quality by session
+
+The reliability and accuracy of tokenized equity feeds varies by trading session:
+
+| Session   | Data Quality | Provider Coverage      | Update Frequency |
+| :-------- | :----------- | :--------------------- | :--------------- |
+| Regular   | Highest      | Multiple providers     | Highest          |
+| Extended  | Moderate     | Limited providers      | Moderate         |
+| Overnight | Lower        | Very limited           | Lower            |
+| Weekend   | N/A          | No traditional trading | Stale            |
+
+### Provider-specific behaviors
+
+Tokenized equity feeds for assets from different issuers may differ in terms of their behavior and composition. Review the provider-specific documentation in the [Provider Catalog](/data-feeds/tokenized-equity-feeds/providers) before integrating one of these feeds.
+
+---
+
+## Risks
+
+Tokenized equity feeds introduce specific risks related to the nature of traditional equity markets, multi-session data aggregation, smoothing algorithms, and data sourcing. Users must understand these factors and implement appropriate safeguards.
+
+### Limited provider coverage during extended and overnight sessions
+
+Extended and overnight session price data is sourced from a more limited number of data providers compared to regular hours, making these sessions less reliable than regular hours feeds, which are aggregated from a broader set of providers.
+
+If providers experience downtime, technical failures, or connectivity disruption, the feed may flatline or report stale values. Such issues may lead to mispricing, failed liquidations, and potential bad debt accumulation.
+
+#### Mitigation
+
+- Implement staleness detection by monitoring the feed's last update timestamp
+- Define protocol behavior for when data stops updating (pause operations, use bounded trading ranges, or implement fallback logic)
+- Consider restricting high-risk operations (large liquidations, new positions) during extended and overnight sessions
+
+### Structural illiquidity during extended hours
+
+Pre-market, post-market, and overnight sessions are inherently less liquid than regular trading hours. This results in:
+
+- **Wider bid-ask spreads**: Higher transaction costs and less reliable mid-prices
+- **Stale ticks**: Longer intervals between price updates
+- **Price gaps**: Larger price movements on individual trades
+- **Higher volatility**: Increased susceptibility to large orders moving prices
+
+These conditions are inherent to the underlying markets, not the feed itself, but will be visible in the published data.
+
+#### Mitigation
+
+- Evaluate whether full 24/5 coverage is appropriate for your use case, or if restricting operations to regular hours is safer
+- Configure session-specific risk thresholds, circuit breakers, or mode switching aligned with your risk appetite
+- Apply additional safeguards (wider liquidation buffers, reduced leverage) during lower-liquidity sessions
+- Validate configurations during integration testing, not post-deployment
+
+### Price jumps at session transitions
+
+When transitioning between sessions (Regular ↔ Extended ↔ Overnight), price dislocations can occur due to:
+
+- Different liquidity conditions between sessions
+- Different venues and participants per session
+- Accumulated order flow during closed periods
+- News events occurring outside regular hours
+- Shifts in data provider coverage between sessions (i.e., different cohorts of data providers contributing to the aggregated price)
+
+These are expected market microstructure effects, not data quality issues. Typical jumps are minor, but larger spikes are possible during low-liquidity environments or impactful news cycles.
+
+#### Mitigation
+
+- Implement transition-aware logic that expects and handles price gaps
+- Consider pausing or restricting operations during transition windows
+- Apply additional smoothing or price change limits during transitions
+- Use time-weighted averages (TWAP) or exponential moving averages (EMA) for risk-sensitive calculations
+
+### Smoothing-induced tracking lag
+
+The session-aware smoothing that mitigates phantom liquidations also introduces tracking lag: a delay between market price movements and the reported feed price. During rapid legitimate price moves:
+
+- The smoothed price will temporarily trail the true market price
+- Convergence typically occurs within seconds to tens of seconds
+- In extreme cases, this may result in delayed liquidations or arbitrage opportunities
+
+#### Mitigation
+
+- Understand the trade-off: smoothing protects against false liquidations but delays real ones
+- Configure your protocol's risk parameters to account for potential tracking lag
+- Consider the tracking lag characteristics when setting liquidation thresholds
+- Monitor for persistent deviation between tokenized equity feeds and other market data sources
+
+### Weekend and holiday behavior
+
+Traditional equity markets are closed on weekends and holidays. During these periods:
+
+- The feed will report the last closing price prior to the holiday market close
+- No new price discovery occurs in the underlying markets
+- The staleness indicator will show increasingly old timestamps
+
+This reflects true underlying market inactivity rather than an outage or failure.
+
+#### Mitigation
+
+- Treat weekends and holidays as expected states requiring specific protocol behavior
+- Options include: pausing operations, allowing restricted trading within bounded ranges, or referencing tokenized asset prices on secondary markets
+- Incorporate authoritative exchange holiday calendars (NYSE/NASDAQ for US equities) into your integration
+- Define deterministic behaviors for these periods before deployment
+
+### Corporate actions
+
+Traditional equities are subject to corporate actions that can dramatically change asset prices:
+
+- **Stock splits and reverse splits**: Can cause overnight price changes of 2x, 10x, or more
+- **Dividends**: Ex-dividend date adjustments affect pricing
+- **Mergers and acquisitions**: May cause trading halts or significant price changes
+- **Spin-offs**: New securities with separate pricing
+
+These actions are usually announced outside regular trading hours. The feed will reflect these price changes when markets reopen, which may appear as sudden large moves.
+
+#### Mitigation
+
+- Actively monitor corporate action announcements for assets in your protocol
+- Adjust pricing logic, risk parameters, and position limits around corporate action dates
+- Consider pausing markets during corporate action windows
+- Implement maximum price change limits with manual review for extreme moves
+
+### Market closures and halts not explicitly flagged
+
+Tokenized equity feeds do not explicitly flag:
+
+- Exchange public holidays
+- Trading halts (regulatory, news-pending, circuit breakers)
+- Other operational closures
+
+During these periods, the feed may appear stale or flatline. This reflects true market inactivity, not a data quality issue.
+
+#### Mitigation
+
+- Implement staleness checks comparing the feed's last update timestamp to current time
+- Define protocol behavior for stale data scenarios
+- Monitor exchange halt notifications independently
+- Do not rely solely on feed freshness to determine market status. Users should incorporate external market status sources where available.
+
+---
+
+## Best practices
+
+### Protocol design
+
+- **Set deviation limits**: Cap maximum acceptable price changes per update or per time window
+- **Define fallback behavior**: Determine what happens if the feed stops updating or deviates beyond thresholds
+- **Implement session awareness**: Consider different risk parameters for different trading sessions
+- **Test extensively**: Validate protocol behavior during session transitions, weekends, and simulated failure scenarios before production deployment
+
+### Monitoring
+
+- **Track staleness**: Alert when no new updates arrive within expected frequency
+- **Monitor deviation**: Compare tokenized equity feed values against other market data sources when available
+- **Log session transitions**: Track behavior during session changes to identify patterns
+- **Set up alerts**: Notify operators of unusual price movements, extended staleness, or deviation from expected ranges
+
+### Integration testing
+
+Before deploying to production:
+
+1. Test behavior during each trading session (regular, extended, overnight)
+1. Validate handling of session transitions
+1. Simulate weekend and holiday behavior
+1. Test failure scenarios (stale data, extreme price moves, data gaps)
+1. Verify your staleness detection and fallback logic works correctly
+
+When using tokenized equity feeds, you inherit all responsibilities associated with standard price feeds plus additional responsibilities for understanding session-specific risks, equity market dynamics, and multi-source data quality. Review the [Developer Responsibilities](/data-feeds/developer-responsibilities) page for comprehensive guidance.
+
+---
+
+## FAQ
+
+### How is market data sourced for tokenized equity feed calculation?
+
+Tokenized equity feeds use the [Data Streams v11 report schema](/data-streams/reference/report-schema-v11) for sourcing the underlying equity market price.
+
+### How are total return values (stock splits, multipliers, market pauses) determined?
+
+These values are sourced from the asset issuer. Learn more in the [Provider Catalog](/data-feeds/tokenized-equity-feeds/providers).

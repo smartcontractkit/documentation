@@ -22,6 +22,7 @@ export type DataFeedType =
   | "smartdata"
   | "rates"
   | "usGovernmentMacroeconomicData"
+  | "tokenizedEquity"
   | "streamsCrypto"
   | "streamsRwa"
   | "streamsNav"
@@ -134,6 +135,7 @@ export const FeedList = ({
   allowNetworkTableExpansion = false,
   defaultNetworkTableExpanded = false,
   force24x5Only = false,
+  tokenizedEquityProvider,
 }: {
   initialNetwork: string
   dataFeedType: DataFeedType
@@ -142,6 +144,7 @@ export const FeedList = ({
   allowNetworkTableExpansion?: boolean
   defaultNetworkTableExpanded?: boolean
   force24x5Only?: boolean
+  tokenizedEquityProvider?: string
 }) => {
   const chains = ecosystem === "deprecating" ? ALL_CHAINS : CHAINS
   const isStreams =
@@ -430,7 +433,20 @@ export const FeedList = ({
   const [streamsChain] = useState(initialNetwork)
   const activeChain = isStreams ? streamsChain : currentNetwork
 
-  // Find the selected chain from available chains
+  // Filter chains by dataFeedType tag to get only chains that support this feed type
+  const filteredChainsByTag = useMemo(() => {
+    return chains.filter((chain) => {
+      if (dataFeedType.includes("streams")) return chain.tags?.includes("streams") ?? false
+      if (dataFeedType === "smartdata") return chain.tags?.includes("smartData") ?? false
+      if (dataFeedType === "rates") return chain.tags?.includes("rates") ?? false
+      if (dataFeedType === "usGovernmentMacroeconomicData")
+        return chain.tags?.includes("usGovernmentMacroeconomicData") ?? false
+      if (dataFeedType === "tokenizedEquity") return chain.tags?.includes("tokenizedEquity") ?? false
+      return chain.tags?.includes("default") ?? false
+    })
+  }, [chains, dataFeedType])
+
+  // Find the selected chain from available chains (filtered by dataFeedType)
   const selectedChain = useMemo(() => {
     // During SSR, try to find the chain from URL param if activeChain is not available
     if (!activeChain) {
@@ -439,21 +455,21 @@ export const FeedList = ({
         const urlParams = new URLSearchParams(window.location.search)
         const networkParam = urlParams.get("network")
         if (networkParam) {
-          const foundFromUrl = chains.find((c) => c.page === networkParam)
+          const foundFromUrl = filteredChainsByTag.find((c) => c.page === networkParam)
           if (foundFromUrl) {
             return foundFromUrl
           }
         }
       }
-      return chains[0] // fallback only if no activeChain
+      return filteredChainsByTag[0] || chains[0] // fallback to first filtered chain
     }
 
-    const foundChain = chains.find((c) => c.page === activeChain)
+    const foundChain = filteredChainsByTag.find((c) => c.page === activeChain)
     if (!foundChain) {
-      return chains[0]
+      return filteredChainsByTag[0] || chains[0]
     }
     return foundChain
-  }, [activeChain, chains])
+  }, [activeChain, filteredChainsByTag, chains])
   const chainMetadata = useGetChainMetadata(selectedChain, initialCache && initialCache[selectedChain.page])
   const wrapperRef = useRef(null)
 
@@ -702,7 +718,7 @@ export const FeedList = ({
       .filter((network) => {
         // Ensure the network has at least one visible feed for the current dataFeedType
         const feeds = network.metadata || []
-        return feeds.some((feed: any) => isFeedVisible(feed, dataFeedType, ecosystem))
+        return feeds.some((feed: any) => isFeedVisible(feed, dataFeedType, ecosystem, { tokenizedEquityProvider }))
       })
 
     // Check available network types
@@ -1199,6 +1215,7 @@ export const FeedList = ({
                 currentPage={currentPageNum}
                 paginate={paginate}
                 searchValue={typeof searchValue === "string" ? searchValue : ""}
+                tokenizedEquityProvider={tokenizedEquityProvider}
               />
             ))
           ) : (
@@ -1366,6 +1383,7 @@ export const FeedList = ({
                 currentPage={testnetPageNum}
                 paginate={testnetPaginate}
                 searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
+                tokenizedEquityProvider={tokenizedEquityProvider}
               />
             ))
           ) : (
@@ -1459,6 +1477,7 @@ export const FeedList = ({
                   currentPage={currentPageNum}
                   paginate={paginate}
                   searchValue={typeof searchValue === "string" ? searchValue : ""}
+                  tokenizedEquityProvider={tokenizedEquityProvider}
                 />
               </SectionWrapper>
             ))
@@ -1702,6 +1721,7 @@ export const FeedList = ({
                         currentPage={currentPageNum}
                         paginate={paginate}
                         searchValue={typeof searchValue === "string" ? searchValue : ""}
+                        tokenizedEquityProvider={tokenizedEquityProvider}
                       />
                     </>
                   ) : (
@@ -1879,6 +1899,7 @@ export const FeedList = ({
                         currentPage={testnetPageNum}
                         paginate={testnetPaginate}
                         searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
+                        tokenizedEquityProvider={tokenizedEquityProvider}
                       />
                     </>
                   )}

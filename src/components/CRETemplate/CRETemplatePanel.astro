@@ -1,0 +1,367 @@
+---
+import { MarkdownHeading } from "astro"
+import { CRETemplatesFrontmatter } from "~/content.config.ts"
+import TableOfContents from "../Quickstart/TableOfContents/TableOfContents.tsx"
+import alertIcon from "../Alert/Assets/alert-icon.svg"
+
+interface Props {
+  frontmatter: CRETemplatesFrontmatter
+  headings: MarkdownHeading[]
+}
+const { frontmatter, headings } = Astro.props
+---
+
+<div class="sidebar-cards">
+  <!-- Install CRE CLI Card -->
+  <div class="sidebar-card cli-card">
+    <h3 class="card-title">Install the CRE CLI to use this template</h3>
+    <p class="cli-description">
+      You can use the 'curl' command below or <a
+        href="https://github.com/smartcontractkit/cre-cli/releases"
+        target="_blank"
+        rel="noopener noreferrer">download the latest CLI release on GitHub</a
+      >.
+    </p>
+    <div class="cli-command-box">
+      <code style="color: #fff !important;">curl -sSL \<br />https://cre.chain.link/install.sh | bash</code>
+      <button
+        class="cli-copy-btn"
+        data-command="curl -sSL https://cre.chain.link/install.sh | bash"
+        title="Copy command"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Author & License Card -->
+  <div class="sidebar-card meta-card">
+    <div class="meta-grid">
+      <div class="meta-item">
+        <span class="meta-label">Author</span>
+        <div class="meta-value">
+          {
+            frontmatter.author === "Chainlink Labs" ? (
+              <img src="/images/cre-templates/chainlink-logo-mark.png" alt="Chainlink" class="author-icon" />
+            ) : frontmatter.author === "AWS" ? (
+              <img src="/images/cre-templates/aws-icon.webp" alt="AWS" class="author-icon" />
+            ) : (
+              <svg class="author-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="12" cy="12" r="10" fill="#5a6175" />
+              </svg>
+            )
+          }
+          {frontmatter.author}
+        </div>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">License</span>
+        <span class="meta-value">MIT</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Disclaimer Card -->
+  <div class="sidebar-card disclaimer-card">
+    <div class="disclaimer-header">
+      <img src={alertIcon.src} alt="Warning" class="disclaimer-icon" />
+      <h3 class="card-title disclaimer-title">Disclaimer</h3>
+    </div>
+    <p class="disclaimer-text">
+      This template represents an educational example to use a Chainlink system, product, or service and is provided to
+      demonstrate how to interact with Chainlink's systems, products, and services to integrate them into your own. This
+      template is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, it has not been audited, and it
+      may be missing key checks or error handling to make the usage of the system, product or service more clear. Do not
+      use the code in this example in a production environment without completing your own audits and application of
+      best practices. Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for
+      unintended outputs that are generated due to errors in code.
+    </p>
+  </div>
+
+  <!-- Table of Contents Card -->
+  <div class="sidebar-card toc-card">
+    <TableOfContents client:visible initialHeadings={headings} />
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // Copy button functionality
+    const copyBtns = document.querySelectorAll<HTMLButtonElement>(".cli-copy-btn")
+    copyBtns.forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const command = btn.dataset.command
+        if (command) {
+          await navigator.clipboard.writeText(command)
+          btn.classList.add("copied")
+          setTimeout(() => btn.classList.remove("copied"), 2000)
+        }
+      })
+    })
+
+    // Dynamic sticky sidebar: scroll naturally until ToC is visible, then stick
+    const sidebar = document.querySelector<HTMLElement>(".sidebar-cards")
+    if (sidebar && window.innerWidth >= 800) {
+      const updateStickyTop = () => {
+        const navbarHeight = 80
+        const padding = 16
+        const viewportHeight = window.innerHeight
+        const sidebarHeight = sidebar.scrollHeight
+        const availableSpace = viewportHeight - navbarHeight - padding * 2
+
+        if (sidebarHeight > availableSpace) {
+          // Sidebar is taller than viewport: use negative top so it scrolls
+          // naturally until the bottom (ToC) is visible, then sticks
+          const topValue = -(sidebarHeight - availableSpace)
+          sidebar.style.top = `${topValue}px`
+        } else {
+          // Sidebar fits in viewport: stick from top normally
+          sidebar.style.top = `${navbarHeight + padding}px`
+        }
+      }
+
+      updateStickyTop()
+      window.addEventListener("resize", updateStickyTop)
+    }
+  })
+</script>
+
+<style>
+  .sidebar-cards {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6x);
+  }
+
+  .sidebar-card {
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    padding: var(--space-8x);
+  }
+
+  .card-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #0b101c;
+    margin: 0 0 var(--space-5x) 0;
+    line-height: 1.4;
+  }
+
+  /* CLI Card */
+  .cli-description {
+    font-size: 14px;
+    color: #5a6175;
+    line-height: 1.7;
+    margin: 0 0 var(--space-6x) 0;
+  }
+
+  .cli-description a {
+    color: #0847f7;
+    text-decoration: underline;
+  }
+
+  .cli-description a:hover {
+    color: #0639c7;
+  }
+
+  .cli-command-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3x);
+    padding: 12px 16px;
+    background: #1e293b;
+    border-radius: 8px;
+    font-family: var(--font-mono, monospace);
+  }
+
+  .cli-command-box code,
+  .cli-command-box :global(code) {
+    font-size: 12px !important;
+    color: #ffffff !important;
+    background: none !important;
+    background-color: transparent !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    word-break: break-all;
+  }
+
+  .cli-copy-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.6);
+    transition: color 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .cli-copy-btn:hover {
+    color: white;
+  }
+
+  .cli-copy-btn.copied {
+    color: #4ade80;
+  }
+
+  /* Meta Card (Author & License) */
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-5x);
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3x);
+  }
+
+  .meta-item:first-child {
+    border-right: 1px solid #e5e7eb;
+    padding-right: var(--space-5x);
+  }
+
+  .meta-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: #0b101c;
+  }
+
+  .meta-value {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: #5a6175;
+  }
+
+  .author-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+  }
+
+  /* Disclaimer Card */
+  .disclaimer-card {
+    background: transparent;
+    border-color: #e5e7eb;
+  }
+
+  .disclaimer-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: var(--space-4x);
+  }
+
+  .disclaimer-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  .disclaimer-title {
+    margin: 0 !important;
+  }
+
+  .disclaimer-text {
+    font-size: 12px;
+    color: #5a5a5a;
+    line-height: 1.7;
+    margin: 0;
+  }
+
+  /* ToC Card */
+  .toc-card {
+    display: none;
+  }
+
+  @media (min-width: 50em) {
+    .toc-card {
+      display: block;
+    }
+  }
+
+  /* Reset the ToC component's default styling */
+  .toc-card :global(nav) {
+    margin-top: 0;
+    border: none;
+    background: none;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  .toc-card :global(h2) {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0b101c;
+    text-transform: none;
+    margin-bottom: var(--space-4x);
+  }
+
+  .toc-card :global(ul) {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .toc-card :global(li) {
+    margin: 0;
+    padding: 0;
+  }
+
+  .toc-card :global(a) {
+    display: block;
+    padding: var(--space-2x) 0 var(--space-2x) var(--space-4x);
+    font-size: 13px;
+    color: #5a6175;
+    text-decoration: none;
+    transition:
+      color 0.2s ease,
+      border-color 0.2s ease,
+      background 0.2s ease;
+    border-left: 2px solid #e5e7eb;
+  }
+
+  /* Depth-based indentation */
+  .toc-card :global(a[class*="depth-3"]) {
+    padding-left: var(--space-8x);
+  }
+
+  .toc-card :global(a[class*="depth-4"]) {
+    padding-left: var(--space-12x);
+  }
+
+  .toc-card :global(a:hover) {
+    color: #0847f7;
+    border-left-color: #0847f7;
+  }
+
+  .toc-card :global(a[class*="active"]) {
+    color: #0847f7;
+    border-left-color: #0847f7;
+    background: #f0f4ff;
+  }
+
+  /* Hide the arrow SVG */
+  .toc-card :global(a svg) {
+    display: none;
+  }
+
+  @media (min-width: 50em) {
+    .sidebar-cards {
+      position: sticky;
+      top: calc(var(--theme-navbar-height, 80px) + var(--space-4x));
+    }
+  }
+</style>

@@ -1,0 +1,146 @@
+---
+section: dataFeeds
+date: "Last Modified"
+title: "Ondo Finance Global Markets (GM)"
+metadata:
+  title: "Ondo Finance Tokenized Equity Feeds | Chainlink Data Feeds"
+  description: "Learn about Chainlink tokenized equity feeds for Ondo Finance, including Total Return Value calculation, multiplier handling, and corporate action management."
+  keywords:
+    [
+      "Ondo Finance",
+      "Tokenized Equities",
+      "Total Return Value",
+      "sValue",
+      "Multiplier",
+      "Corporate Actions",
+      "SyntheticSharesOracle",
+    ]
+whatsnext:
+  {
+    "View Provider Catalog": "/data-feeds/tokenized-equity-feeds/providers",
+    "Learn about tokenized equity feeds": "/data-feeds/tokenized-equity-feeds",
+    "Find Price Feed Addresses": "/data-feeds/price-feeds/addresses",
+  }
+---
+
+import { Aside, ClickToZoom } from "@components"
+import TokenizedEquityFeeds from "@features/tokenized-equity-feeds/common/TokenizedEquityFeeds.astro"
+import { FeedList } from "@features/feeds"
+
+<TokenizedEquityFeeds section="tokenizedEquityNote" />
+
+Chainlink provides tokenized equity feeds for Ondo Finance Global Markets (GM) tokenized equities. These feeds differ from standard market-rate feeds in that they report **Total Return Values** rather than raw equity prices.
+
+## Available Ondo tokenized equity feeds
+
+The following table shows the available Ondo tokenized equity feeds.
+
+<FeedList client:idle initialNetwork="ethereum-mainnet" dataFeedType="tokenizedEquity" tokenizedEquityProvider="ondo" />
+
+## Total Return Value calculation
+
+Ondo tokenized equity feeds calculate the token price using the following formula:
+
+```
+Token Price = Underlying Equity Market Price × Multiplier (sValue)
+```
+
+Where:
+
+- **Underlying Equity Market Price**: Sourced from Chainlink's 24/5 equity price feeds, which aggregate data across regular, pre-market, post-market, and overnight trading sessions
+- **Multiplier (`sValue`)**: Sourced from Ondo's `SyntheticSharesOracle` contract, which tracks dividend reinvestments and corporate action adjustments (see [Corporate action handling](#corporate-action-handling) below).
+
+This approach ensures that the token price reflects the total return of the underlying equity, including dividend reinvestments and corporate action adjustments, rather than just the current market price per share.
+
+## How the multiplier works
+
+The multiplier (`sValue`) accounts for events that change the relationship between token quantity and underlying equity value:
+
+| Event Type                   | Multiplier Behavior                   | Example                 |
+| :--------------------------- | :------------------------------------ | :---------------------- |
+| Dividend reinvestment        | Small increase (less than 1% per day) | `sValue`: 1.000 → 1.008 |
+| Stock split (10:1 example)   | Large increase                        | `sValue`: 1.0 → 10.0    |
+| Reverse split (1:10 example) | Large decrease                        | `sValue`: 10.0 → 1.0    |
+| Spin-offs                    | Adjustment to reflect new value       | Varies by event         |
+
+The `SyntheticSharesOracle` contract enforces two update paths:
+
+- **Small updates** (≤1% per 24-hour period): Applied immediately via automated processes. These handle routine dividend reinvestments.
+- **Large updates** (>1%): Requires a scheduled pause window and manual confirmation. These handle major corporate actions like stock splits.
+
+## Corporate action handling
+
+Large corporate actions require special handling to maintain price continuity. The system operates in two modes:
+
+**Normal mode**: The feed returns the current stock price multiplied by the current `sValue`.
+
+**Corporate action mode**: When a large corporate action is scheduled, the system enters a pause state where:
+
+1. The pause is scheduled at least 24 hours in advance
+1. At the scheduled pause time, the price freezes at the last known good value
+1. The new `sValue` is staged but not yet applied
+1. After the corporate action takes effect and Ondo confirms that both the stock price and `sValue` reflect the new values correctly, the system is manually unpaused
+1. The new `sValue` takes effect, and normal operation resumes
+
+<ClickToZoom
+  src="/images/data-feed/tokenized-equity/ondo-tokenized-equity-pause-behavior.png"
+  caption="State transitions between Normal Mode and Corporate Action Mode based on SyntheticSharesOracle responses. When paused is true, the feed freezes at the last known good price until the new sValue is confirmed and the system is unpaused."
+/>
+
+This pause mechanism ensures price continuity during corporate actions. For example, during a 10:1 stock split:
+
+| Stage         | Stock Price | `sValue`      | Token Price   |
+| :------------ | :---------- | :------------ | :------------ |
+| Before split  | $200        | 1.0           | $200          |
+| During pause  | Frozen      | Pending: 10.0 | $200 (frozen) |
+| After unpause | $20         | 10.0          | $200          |
+
+The token price remains continuous at $200 throughout the event, even though the underlying equity market price dropped from $200 to $20.
+
+<Aside type="note">
+  When the `SyntheticSharesOracle` contract returns `paused = true`, the Chainlink feed freezes at the last known good
+  price. Integrators should be aware that during pause windows:
+
+- The feed will not update until manually unpaused
+- The pause duration depends on when Ondo confirms the corporate action has been correctly applied
+- A minimum pause duration (at least 10 minutes) is enforced to prevent premature unpausing
+
+</Aside>
+
+## Example scenarios
+
+**Normal operation**
+
+```
+- Stock price: $200 → $201
+- sValue: 1.000 (unchanged)
+- Token price: $201
+```
+
+**Dividend reinvestment** (small `sValue` drift)
+
+```
+- Stock price: $200
+- sValue: 1.000 → 1.008 (0.8% increase, within allowed drift)
+- Token price: $201.60
+```
+
+**Stock split** (10:1, scheduled corporate action)
+
+```
+1. Ondo schedules pause for Tuesday 8pm with `newSValue = 10`
+2. At 8pm, feed freezes at current token price
+3. Market opens Wednesday with stock price at $20 (post-split)
+4. Ondo confirms alignment and unpauses
+5. sValue becomes 10.0, token price = $20 × 10 = $200 (continuous)
+```
+
+**Split with timing mismatch** (stock price updates before `sValue`)
+
+```
+- Scheduled pause at Tuesday 8pm with `newSValue = 10`
+- At 8:01pm: stock price = $20, sValue = 1.0 (not yet updated)
+- Result: Feed remains frozen at the pre-pause price until Ondo confirms the sValue update and unpauses
+```
+
+This fail-safe behavior prevents incorrect token prices from being published when the stock price and `sValue` are temporarily out of sync.

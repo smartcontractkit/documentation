@@ -1,0 +1,400 @@
+---
+section: cre
+title: "Making Confidential Requests"
+date: Last Modified
+sdkLang: "go"
+pageId: "guides-workflow-confidential-http-making-requests"
+metadata:
+  description: "Make confidential HTTP requests in Go: learn to use enclave execution, secret injection, and optional response encryption in your workflows."
+  datePublished: "2026-02-10"
+  lastModified: "2026-02-10"
+---
+
+import { Aside } from "@components"
+
+<Aside type="caution" title="Experimental — Simulation only">
+  Confidential HTTP is an **experimental** capability available for `cre workflow simulate` only. It cannot be used with
+  `cre workflow deploy` at this time.
+</Aside>
+
+The `confidentialhttp.Client` is the SDK's interface for the underlying [Confidential HTTP Capability](/cre/capabilities/confidential-http). It allows your workflow to make privacy-preserving API calls where secrets are injected inside a secure enclave and responses can be optionally encrypted.
+
+Unlike the regular [`http.Client`](/cre/reference/sdk/http-client), the Confidential HTTP client:
+
+- Executes the request in a secure **enclave** (not on each node individually)
+- Injects secrets from the **Vault DON** using template syntax
+- Optionally **encrypts the response** before returning it to your workflow
+
+## Prerequisites
+
+This guide assumes you have:
+
+- A basic understanding of CRE. If you are new, complete the [Getting Started tutorial](/cre/getting-started/overview) first.
+- Familiarity with [secrets management](/cre/guides/workflow/secrets) in CRE.
+
+## Step-by-step example
+
+This example shows a workflow that makes a confidential POST request to an API, injecting an API secret into both the request body and headers using template syntax.
+
+### Step 1: Configure your workflow
+
+Add the API URL to your `config.json` file.
+
+```json
+{
+  "schedule": "0 */5 * * * *",
+  "url": "https://api.example.com/data"
+}
+```
+
+### Step 2: Set up secrets for simulation
+
+Confidential HTTP uses the `secrets.yaml` file. If you've already set up secrets for your project, you can reuse the same file. For a full walkthrough, see [Using Secrets in Simulation](/cre/guides/workflow/secrets/using-secrets-simulation).
+
+Add the secrets your confidential request needs to your `secrets.yaml`:
+
+```yaml
+# secrets.yaml
+secretsNames:
+  myApiKey:
+    - MY_API_KEY_ALL
+```
+
+Provide the actual value via an environment variable or `.env` file:
+
+```bash
+export MY_API_KEY_ALL="your-secret-api-key"
+```
+
+<Aside type="note" title="Verify secrets-path in workflow.yaml">
+  Make sure the `secrets-path` field in your `workflow.yaml` points to your `secrets.yaml` file (for example,
+  `"../secrets.yaml"` if it is at the project root). New projects created with the CLI may have this field empty by
+  default.
+</Aside>
+
+### Step 3: Build the confidential request
+
+The key difference from regular HTTP is how you construct the request. You provide:
+
+- An `HTTPRequest` with template placeholders (`{{.secretName}}`) in the body and/or headers
+- A list of `VaultDonSecrets` identifying which secrets to fetch from the Vault DON
+- An optional `EncryptOutput` flag to encrypt the response
+
+```go
+import (
+	"github.com/smartcontractkit/cre-sdk-go/capabilities/networking/confidentialhttp"
+	"github.com/smartcontractkit/cre-sdk-go/cre"
+)
+
+type Config struct {
+	Schedule string `json:"schedule"`
+	URL      string `json:"url"`
+}
+
+type Result struct {
+	TransactionID string `json:"transactionId" consensus:"identical"`
+	Status        string `json:"status"        consensus:"identical"`
+}
+```
+
+### Step 4: Implement the request logic
+
+Use `cre.RunInNodeMode` to make the confidential request. The `confidentialhttp.Client` requires a `NodeRuntime`:
+
+```go
+func makeConfidentialRequest(config Config, nodeRuntime cre.NodeRuntime) (Result, error) {
+	// 1. Define the request body with secret template placeholders
+	payload := `{"auth": "{{.myApiKey}}", "action": "getTransaction", "id": "tx-123"}`
+
+	// 2. Define headers with secret template placeholders
+	headers := map[string]*confidentialhttp.HeaderValues{
+		"Content-Type": {
+			Values: []string{"application/json"},
+		},
+		"Authorization": {
+			Values: []string{"Basic {{.myApiKey}}"},
+		},
+	}
+
+	// 3. Create the client and send the request
+	client := confidentialhttp.Client{}
+	resp, err := client.SendRequest(nodeRuntime, &confidentialhttp.ConfidentialHTTPRequest{
+		Request: &confidentialhttp.HTTPRequest{
+			Url:    config.URL,
+			Method: "POST",
+			Body:   &confidentialhttp.HTTPRequest_BodyString{BodyString: payload},
+			MultiHeaders: headers,
+		},
+		VaultDonSecrets: []*confidentialhttp.SecretIdentifier{
+			{Key: "myApiKey"},
+		},
+		EncryptOutput: false,
+	}).Await()
+	if err != nil {
+		return Result{}, fmt.Errorf("confidential HTTP request failed: %w", err)
+	}
+
+	// 4. Parse the response
+	var result Result
+	if err := json.Unmarshal(resp.Body, &result); err != nil {
+		return Result{}, fmt.Errorf("failed to parse response: %w", err)
+	}
+
+	return result, nil
+}
+```
+
+### Step 5: Wire it into your workflow
+
+Call the request function from your trigger handler using `cre.RunInNodeMode`:
+
+```go
+func onCronTrigger(config *Config, runtime cre.Runtime, outputs *cron.Payload) (string, error) {
+	result, err := cre.RunInNodeMode(*config, runtime,
+		makeConfidentialRequest,
+		cre.ConsensusIdenticalAggregation[Result](),
+	).Await()
+	if err != nil {
+		return "", fmt.Errorf("failed to get result: %w", err)
+	}
+
+	runtime.Logger().Info("Transaction result", "id", result.TransactionID, "status", result.Status)
+	return result.TransactionID, nil
+}
+```
+
+### Step 6: Simulate
+
+Run the simulation:
+
+```bash
+cre workflow simulate
+```
+
+## Template syntax for secrets
+
+Secrets are injected into request bodies and headers using Go template syntax: `{{.secretName}}`. The placeholder name must match the `Key` in your `VaultDonSecrets` list.
+
+**In the request body:**
+
+```json
+{ "auth": "{{.myApiKey}}", "data": "public-data" }
+```
+
+**In headers:**
+
+```go
+headers := map[string]*confidentialhttp.HeaderValues{
+	"Authorization": {
+		Values: []string{"Basic {{.myCredential}}"},
+	},
+}
+```
+
+The template placeholders are resolved inside the enclave. The actual secret values never appear in your workflow code or in node memory.
+
+## Response encryption
+
+By default, the API response is returned unencrypted (`EncryptOutput: false`). To encrypt the response body before it leaves the enclave, set `EncryptOutput: true` and provide an AES-256 encryption key as a Vault DON secret.
+
+### Setting up response encryption
+
+1. **Store an AES-256 key** as a Vault DON secret with the identifier `san_marino_aes_gcm_encryption_key`:
+
+   ```yaml
+   # secrets.yaml
+   secretsNames:
+     san_marino_aes_gcm_encryption_key:
+   	- AES_KEY_ALL
+   ```
+
+   The key must be a 256-bit (32 bytes) hex-encoded string:
+
+   ```bash
+   export AES_KEY_ALL="your-256-bit-hex-encoded-key"
+   ```
+
+1. **Include the key in your `VaultDonSecrets`** and set `EncryptOutput: true`:
+
+   ```go
+   resp, err := client.SendRequest(nodeRuntime, &confidentialhttp.ConfidentialHTTPRequest{
+   	Request: &confidentialhttp.HTTPRequest{
+   		Url:    config.URL,
+   		Method: "POST",
+   		Body:   &confidentialhttp.HTTPRequest_BodyString{BodyString: payload},
+   		MultiHeaders: headers,
+   	},
+   	VaultDonSecrets: []*confidentialhttp.SecretIdentifier{
+   		{Key: "myApiKey"},
+   		{Key: "san_marino_aes_gcm_encryption_key"},
+   	},
+   	EncryptOutput: true,
+   }).Await()
+   ```
+
+1. **Decrypt the response** in your own secure backend using AES-GCM. The encrypted response body is structured as `nonce || ciphertext || tag`:
+
+   ```go
+   import (
+   	"crypto/aes"
+   	"crypto/cipher"
+   	"encoding/hex"
+   )
+
+   func AESGCMDecrypt(blob []byte, key []byte) ([]byte, error) {
+   	block, err := aes.NewCipher(key)
+   	if err != nil {
+   		return nil, err
+   	}
+
+   	gcm, err := cipher.NewGCM(block)
+   	if err != nil {
+   		return nil, err
+   	}
+
+   	nonceSize := gcm.NonceSize()
+   	if len(blob) < nonceSize {
+   		return nil, fmt.Errorf("ciphertext too short")
+   	}
+
+   	nonce, ciphertext := blob[:nonceSize], blob[nonceSize:]
+   	return gcm.Open(nil, nonce, ciphertext, nil)
+   }
+   ```
+
+   {/* prettier-ignore */}
+   <Aside type="tip" title="Do not decrypt inside the workflow">
+	The purpose of response encryption is to keep the response confidential even within the decentralized network. Decrypt the response in your own secure backend service, not inside the workflow itself.
+	</Aside>
+
+## Complete example
+
+Here's the full workflow code for a confidential HTTP request with response encryption:
+
+```go
+package main
+
+import (
+	"crypto/aes"
+	"crypto/cipher"
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
+	"log/slog"
+	"os"
+
+	"github.com/smartcontractkit/cre-sdk-go/capabilities/networking/confidentialhttp"
+	"github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
+	"github.com/smartcontractkit/cre-sdk-go/cre"
+)
+
+type Config struct {
+	Schedule string `json:"schedule"`
+	URL      string `json:"url"`
+}
+
+type Result struct {
+	TransactionID string `json:"transactionId" consensus:"identical"`
+	Status        string `json:"status"        consensus:"identical"`
+}
+
+func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+	cronTriggerCfg := &cron.Config{
+		Schedule: config.Schedule,
+	}
+
+	workflow := cre.Workflow[*Config]{
+		cre.Handler(
+			cron.Trigger(cronTriggerCfg),
+			onCronTrigger,
+		),
+	}
+
+	return workflow, nil
+}
+
+func onCronTrigger(config *Config, runtime cre.Runtime, outputs *cron.Payload) (string, error) {
+	result, err := cre.RunInNodeMode(*config, runtime,
+		makeConfidentialRequest,
+		cre.ConsensusIdenticalAggregation[Result](),
+	).Await()
+	if err != nil {
+		return "", fmt.Errorf("failed to get result: %w", err)
+	}
+
+	runtime.Logger().Info("Transaction result", "id", result.TransactionID, "status", result.Status)
+	return result.TransactionID, nil
+}
+
+func makeConfidentialRequest(config Config, nodeRuntime cre.NodeRuntime) (Result, error) {
+	payload := `{"auth": "{{.myApiKey}}", "action": "getTransaction", "id": "tx-123"}`
+
+	headers := map[string]*confidentialhttp.HeaderValues{
+		"Content-Type": {
+			Values: []string{"application/json"},
+		},
+		"Authorization": {
+			Values: []string{"Basic {{.myApiKey}}"},
+		},
+	}
+
+	client := confidentialhttp.Client{}
+	resp, err := client.SendRequest(nodeRuntime, &confidentialhttp.ConfidentialHTTPRequest{
+		Request: &confidentialhttp.HTTPRequest{
+			Url:    config.URL,
+			Method: "POST",
+			Body:   &confidentialhttp.HTTPRequest_BodyString{BodyString: payload},
+			MultiHeaders: headers,
+		},
+		VaultDonSecrets: []*confidentialhttp.SecretIdentifier{
+			{Key: "myApiKey"},
+			{Key: "san_marino_aes_gcm_encryption_key"},
+		},
+		EncryptOutput: true,
+	}).Await()
+	if err != nil {
+		return Result{}, fmt.Errorf("confidential HTTP request failed: %w", err)
+	}
+
+	// In a real workflow, you would forward the encrypted body to your
+	// secure backend for decryption. This inline decryption is shown
+	// for demonstration purposes only.
+	keyHex := os.Getenv("AES_KEY_ALL") // your 256-bit hex-encoded key
+	keyBytes, _ := hex.DecodeString(keyHex)
+	decrypted, err := AESGCMDecrypt(resp.Body, keyBytes)
+	if err != nil {
+		return Result{}, fmt.Errorf("failed to decrypt response: %w", err)
+	}
+
+	var result Result
+	if err := json.Unmarshal(decrypted, &result); err != nil {
+		return Result{}, fmt.Errorf("failed to parse response: %w", err)
+	}
+
+	return result, nil
+}
+
+func AESGCMDecrypt(blob []byte, key []byte) ([]byte, error) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+
+	nonceSize := gcm.NonceSize()
+	if len(blob) < nonceSize {
+		return nil, fmt.Errorf("ciphertext too short")
+	}
+
+	nonce, ciphertext := blob[:nonceSize], blob[nonceSize:]
+	return gcm.Open(nil, nonce, ciphertext, nil)
+}
+```
+
+## API reference
+
+For the full list of types and methods available on the Confidential HTTP client, see the [Confidential HTTP Client SDK Reference](/cre/reference/sdk/confidential-http-client-go).

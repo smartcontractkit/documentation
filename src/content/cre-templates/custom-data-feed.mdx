@@ -1,0 +1,305 @@
+---
+title: "Custom Data Feed"
+description: "A template for bringing your own custom off-chain data feed on-chain with the Chainlink Runtime Environment (CRE)."
+author: "Chainlink Labs"
+excerpt: "Build data feeds that combine offchain APIs with onchain smart contracts."
+image: "thumbnail.jpg"
+githubUrl: "https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/custom-data-feed"
+githubRepoLinks:
+  - label: "TypeScript"
+    url: "https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/custom-data-feed/cre-custom-data-feed-ts"
+  - label: "Go"
+    url: "https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/custom-data-feed/cre-custom-data-feed-go"
+datePublished: "2026-02-13"
+lastModified: "2026-02-13"
+---
+
+import { Aside, Accordion } from "@components"
+
+This template provides an end-to-end starting point for bringing your own **custom data feed** on-chain with the **Chainlink Runtime Environment (CRE)**. It showcases local simulation and the core CRE workflow patterns.
+
+**Quick navigation:**
+
+- [TypeScript Implementation](#typescript-implementation)
+- [Go Implementation](#go-implementation)
+
+---
+
+## What This Template Does
+
+**Components:**
+
+- **Contracts** (Solidity) under `projectRoot/contracts/evm/src`  
+  Example demo contracts used by the workflow:
+  - `ReserveManager`
+  - `SimpleERC20`
+  - `BalanceReader`
+  - `MessageEmitter`
+- **CRE Workflow** that fetches your off-chain data and optionally performs chain writes based on configurable triggers (cron or EVM log).
+
+**Key Technologies:**
+
+- **CRE (Chainlink Runtime Environment)** – orchestrates workflows with DON consensus.
+
+---
+
+## TypeScript Implementation
+
+### Getting Started with TypeScript
+
+<Accordion title="Update .env file" number={1} depth={4}>
+
+You need to add a private key to the `.env` file. This is specifically required if you want to simulate **chain writes** (the key must be valid and funded).  
+If your workflow does **not** write on-chain, you can keep a dummy key:
+
+```bash
+CRE_ETH_PRIVATE_KEY=0000000000000000000000000000000000000000000000000000000000000001
+```
+
+</Accordion>
+
+<Accordion title="Install dependencies" number={2} depth={4}>
+
+If **Bun** is not already installed, follow the instructions at: [https://bun.sh/docs/installation](https://bun.sh/docs/installation)
+
+From your project root, run:
+
+```bash
+bun install --cwd ./my-workflow
+```
+
+</Accordion>
+
+<Accordion title="Configure RPC endpoints" number={3} depth={4}>
+
+For local simulation to interact with a chain, specify RPC endpoints for the chains you interact with in `project.yaml`. This is required for submitting transactions and reading blockchain state.
+
+Supported for local simulation (testnet/mainnet variants):
+
+- Ethereum (`ethereum-testnet-sepolia`, `ethereum-mainnet`)
+- Base (`ethereum-testnet-sepolia-base-1`, `ethereum-mainnet-base-1`)
+- Avalanche (`avalanche-testnet-fuji`, `avalanche-mainnet`)
+- Polygon (`polygon-testnet-amoy`, `polygon-mainnet`)
+- BNB Chain (`binance-smart-chain-testnet`, `binance-smart-chain-mainnet`)
+- Arbitrum (`ethereum-testnet-sepolia-arbitrum-1`, `ethereum-mainnet-arbitrum-1`)
+- Optimism (`ethereum-testnet-sepolia-optimism-1`, `ethereum-mainnet-optimism-1`)
+
+Add your RPCs under `rpcs` (example):
+
+```yaml
+rpcs:
+  - chain-name: ethereum-testnet-sepolia
+    url: <Your RPC endpoint to ETH Sepolia>
+```
+
+> For chain names, see the selectors list: [chain-selectors/selectors.yml](https://github.com/smartcontractkit/chain-selectors/blob/main/selectors.yml)
+
+</Accordion>
+
+<Accordion title="Deploy contracts" number={4} depth={4}>
+
+Deploy the demo contracts: **BalanceReader**, **MessageEmitter**, **ReserveManager**, **SimpleERC20**.
+You can deploy to a local chain or a testnet using tools like Foundry.
+
+For a quick start, you can also use the pre-deployed contract addresses on Ethereum Sepolia—no action required if you're just trying things out.
+
+</Accordion>
+
+<Accordion title="Configure workflow" number={5} depth={4}>
+
+Configure `config.json` for the workflow:
+
+- `schedule`: e.g. `"*/30 * * * * *"` (every 30 seconds), or any cron you prefer
+- `url`: your off-chain data endpoint (custom data feed)
+- `tokenAddress`: `SimpleERC20` contract address
+- `porAddress`: `ReserveManager` contract address
+- `proxyAddress`: `UpdateReservesProxySimplified` contract address
+- `balanceReaderAddress`: `BalanceReader` contract address
+- `messageEmitterAddress`: `MessageEmitter` contract address
+- `chainSelectorName`: human-readable chain name (see selectors YAML linked above)
+- `gasLimit`: gas limit used for chain writes
+
+Ensure `workflow.yaml` points to the config:
+
+```yaml
+staging-settings:
+  user-workflow:
+    workflow-name: "my-workflow"
+  workflow-artifacts:
+    workflow-path: "./main.ts"
+    config-path: "./config.json"
+    secrets-path: ""
+```
+
+</Accordion>
+
+<Accordion title="Simulate the workflow" number={6} depth={4}>
+
+Run the command from the **project root** and pass the **path to the workflow directory**:
+
+```bash
+cre workflow simulate <path-to-workflow-directory>
+```
+
+Example (for `my-workflow`):
+
+```bash
+cre workflow simulate my-workflow
+```
+
+You'll see trigger options similar to:
+
+```
+🚀 Workflow simulation ready. Please select a trigger:
+1. cron-trigger@1.0.0 Trigger
+2. evm:ChainSelector:16015286601757825753@1.0.0 LogTrigger
+```
+
+- **Cron Trigger**: choose `1` → the workflow executes on the schedule.
+- **Log Trigger**: choose `2`, then provide the example inputs:
+
+```
+Transaction Hash: 0x420721d7d00130a03c5b525b2dbfd42550906ddb3075e8377f9bb5d1a5992f8e
+Log Event Index: 0
+```
+
+</Accordion>
+
+---
+
+## Go Implementation
+
+### Getting Started with Go
+
+<Accordion title="Update .env file" number={1} depth={4}>
+
+Add a private key to `.env`. This is required if your workflow performs **chain writes** (must be valid and funded).
+If your workflow does **not** write on-chain, you can use a dummy key:
+
+```bash
+CRE_ETH_PRIVATE_KEY=0000000000000000000000000000000000000000000000000000000000000001
+```
+
+</Accordion>
+
+<Accordion title="Configure RPC endpoints" number={2} depth={4}>
+
+Specify RPC endpoints for chains you interact with in `project.yaml`. This is needed to submit transactions and read state.
+
+Supported for local simulation (testnet/mainnet variants):
+
+- Ethereum (`ethereum-testnet-sepolia`, `ethereum-mainnet`)
+- Base (`ethereum-testnet-sepolia-base-1`, `ethereum-mainnet-base-1`)
+- Avalanche (`avalanche-testnet-fuji`, `avalanche-mainnet`)
+- Polygon (`polygon-testnet-amoy`, `polygon-mainnet`)
+- BNB Chain (`binance-smart-chain-testnet`, `binance-smart-chain-mainnet`)
+- Arbitrum (`ethereum-testnet-sepolia-arbitrum-1`, `ethereum-mainnet-arbitrum-1`)
+- Optimism (`ethereum-testnet-sepolia-optimism-1`, `ethereum-mainnet-optimism-1`)
+
+Add your RPC under `rpcs`:
+
+```yaml
+rpcs:
+  - chain-name: ethereum-testnet-sepolia
+    url: <Your RPC endpoint to ETH Sepolia>
+```
+
+</Accordion>
+
+<Accordion title="Deploy contracts" number={3} depth={4}>
+
+Deploy the demo contracts: **BalanceReader**, **MessageEmitter**, **ReserveManager**, **SimpleERC20** (locally or to a testnet using tools like Foundry).
+
+For quick trials, you can use the pre-deployed addresses on **Ethereum Sepolia**:
+
+- chain: `ethereum-testnet-sepolia`
+- `ReserveManager`: `0x073671aE6EAa2468c203fDE3a79dEe0836adF032`
+- `SimpleERC20`: `0x4700A50d858Cb281847ca4Ee0938F80DEfB3F1dd`
+- `BalanceReader`: `0x4b0739c94C1389B55481cb7506c62430cA7211Cf`
+- `MessageEmitter`: `0x1d598672486ecB50685Da5497390571Ac4E93FDc`
+
+Source code lives under `projectRoot/contracts/evm/src`.
+
+</Accordion>
+
+<Accordion title="Generate contract bindings" number={4} depth={4}>
+
+Generate Go bindings from ABIs (located in `projectRoot/contracts/src/abi`).
+Run this **from your project root** (where `project.yaml` is):
+
+```bash
+# Generate bindings for all contracts
+cre generate-bindings evm
+```
+
+Bindings will appear under `contracts/evm/src/generated/`, e.g.:
+
+- `contracts/evm/src/generated/ierc20/IERC20.go`
+- `contracts/evm/src/generated/reserve_manager/ReserveManager.go`
+- `contracts/evm/src/generated/balance_reader/BalanceReader.go`
+
+(Template bindings are pre-generated; re-run only if ABIs/contracts change.)
+
+</Accordion>
+
+<Accordion title="Configure workflow" number={5} depth={4}>
+
+Edit `config.json`:
+
+- `schedule`: e.g. `"*/3 * * * * *"` (every 3 seconds) or your preferred cron
+- `url`: your off-chain data endpoint (custom data feed)
+- `tokenAddress`: `SimpleERC20` address
+- `reserveManagerAddress`: `ReserveManager` address
+- `balanceReaderAddress`: `BalanceReader` address
+- `messageEmitterAddress`: `MessageEmitter` address
+- `chainName`: selected chain name (see selectors YAML linked above)
+- `gasLimit`: gas limit used for chain writes
+
+Ensure `workflow.yaml` points to the config:
+
+```yaml
+staging-settings:
+  user-workflow:
+    workflow-name: "my-workflow"
+  workflow-artifacts:
+    workflow-path: "."
+    config-path: "./config.json"
+    secrets-path: ""
+```
+
+</Accordion>
+
+<Accordion title="Simulate the workflow" number={6} depth={4}>
+
+From your project root:
+
+```bash
+cre workflow simulate my-workflow
+```
+
+You'll see trigger options, e.g.:
+
+```
+🚀 Workflow simulation ready. Please select a trigger:
+1. cron-trigger@1.0.0 Trigger
+2. evm:ChainSelector:16015286601757825753@1.0.0 LogTrigger
+```
+
+- **Cron Trigger**: choose `1` → the workflow executes immediately on the schedule.
+- **Log Trigger**: choose `2` → provide the example inputs:
+
+```
+Transaction Hash: 0x420721d7d00130a03c5b525b2dbfd42550906ddb3075e8377f9bb5d1a5992f8e
+Log Event Index: 0
+```
+
+</Accordion>
+
+---
+
+## Security Considerations
+
+1. **Demo project** – Not production-ready.
+2. **Demo contracts** – Not audited; do not use as-is in production.
+3. **Use your own RPCs** – For stability and performance, prefer private RPCs for deployment and chain writes.
+4. **Secrets hygiene** – Keep real secrets out of version control; use secure secret managers for `.env` values.

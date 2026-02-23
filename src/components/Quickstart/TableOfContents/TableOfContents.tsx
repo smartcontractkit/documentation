@@ -7,10 +7,11 @@ import { useStore } from "@nanostores/preact"
 import { shouldUpdateToc } from "./tocStore.ts"
 import { clsx } from "~/lib/clsx/clsx.ts"
 
-type HeaderWrapperClass = "header-wrapper-2" | "header-wrapper-3"
+type HeaderWrapperClass = "header-wrapper-2" | "header-wrapper-3" | "header-wrapper-4"
 const wrapperDepthMap: Record<HeaderWrapperClass, number> = {
   "header-wrapper-2": 2,
   "header-wrapper-3": 3,
+  "header-wrapper-4": 4,
 }
 
 const TableOfContents: FunctionalComponent<{
@@ -42,33 +43,29 @@ const TableOfContents: FunctionalComponent<{
   }, [$shouldUpdateToc])
 
   useEffect(() => {
-    const observerCallback: IntersectionObserverCallback = (entries) => {
-      setActiveIds((activeIds) => {
-        const newIds = new Set(activeIds)
-        for (const entry of entries) {
-          const { isIntersecting, target } = entry
-          const { id } = target
-          if (isIntersecting) {
-            newIds.add(id)
-          } else {
-            newIds.delete(id)
+    // Scroll-based approach: find the last heading that has scrolled past the threshold
+    const threshold = window.innerHeight * 0.2
+
+    const handleScroll = () => {
+      let activeSlug: string | null = null
+
+      for (const h of headings) {
+        const element = document.getElementById(h.slug)
+        if (element) {
+          const top = element.getBoundingClientRect().top
+          if (top <= threshold) {
+            activeSlug = h.slug
           }
         }
-        return newIds
-      })
+      }
+
+      setActiveIds(activeSlug ? new Set([activeSlug]) : new Set())
     }
 
-    const elementObserver = new IntersectionObserver(observerCallback, {
-      rootMargin: "-20% 0% -80%",
-    })
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    handleScroll() // Initial check
 
-    headings.forEach((h) => {
-      const element = document.getElementById(h.slug)
-      if (element) {
-        elementObserver.observe(element)
-      }
-    })
-    return () => elementObserver.disconnect()
+    return () => window.removeEventListener("scroll", handleScroll)
   }, [headings])
 
   return (
@@ -89,14 +86,14 @@ const TableOfContents: FunctionalComponent<{
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                     <path
                       d="M16 12.25H7"
-                      stroke="#375BD2"
+                      stroke="#0847F7"
                       stroke-width="1.5"
                       stroke-linecap="round"
                       stroke-linejoin="round"
                     />
                     <path
                       d="M12.5 8.25L16.25 12L12.5 15.75"
-                      stroke="#375BD2"
+                      stroke="#0847F7"
                       stroke-width="1.5"
                       stroke-linecap="round"
                       stroke-linejoin="round"

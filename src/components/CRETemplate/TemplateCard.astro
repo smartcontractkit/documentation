@@ -1,0 +1,191 @@
+---
+interface Props {
+  title: string
+  description: string
+  image?: string
+  href: string
+  author: string
+  languages: string[] // e.g., ["Go", "TypeScript", "Go (MVR)"]
+}
+
+const { title, description, href, author, languages } = Astro.props
+
+// Extract unique base languages (e.g., "Go (MVR)" -> "Go")
+const baseLanguages = [...new Set(languages.map((lang) => lang.replace(/\s*\([^)]*\)\s*/g, "").trim()))].sort(
+  (a, b) => {
+    // TypeScript always comes first
+    if (a === "TypeScript") return -1
+    if (b === "TypeScript") return 1
+    return a.localeCompare(b)
+  }
+)
+---
+
+<a href={href} class="template-card" data-languages={baseLanguages.join(",")}>
+  <!-- Decorative left strip -->
+  <div class="card-strip"></div>
+
+  <!-- Card Content -->
+  <div class="card-content">
+    <!-- Badges -->
+    <div class="language-badges">
+      {baseLanguages.map((lang) => <span class="lang-badge">{lang}</span>)}
+    </div>
+
+    <!-- Title -->
+    <h3 class="card-title">{title}</h3>
+
+    <!-- Description -->
+    <p class="card-description">{description}</p>
+
+    <!-- Footer -->
+    <div class="card-footer">
+      <div class="card-author">
+        {
+          author === "Chainlink Labs" ? (
+            <img src="/images/cre-templates/chainlink-logo-mark.png" alt="Chainlink" class="author-icon" />
+          ) : author === "AWS" ? (
+            <img src="/images/cre-templates/aws-icon.webp" alt="AWS" class="author-icon" />
+          ) : (
+            <svg class="author-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="12" cy="12" r="10" fill="#5a6175" />
+            </svg>
+          )
+        }
+        Created by {author}
+      </div>
+      <svg
+        class="arrow-icon"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M7 17L17 7M17 7H7M17 7V17"></path>
+      </svg>
+    </div>
+  </div>
+</a>
+
+<style>
+  .template-card {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    background: white;
+    border-radius: 0;
+    border-right: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+    transition: all 0.15s ease;
+    text-decoration: none;
+    color: inherit;
+    overflow: hidden;
+    padding-left: 20px;
+  }
+
+  .template-card:hover {
+    background: #f8f9fb;
+  }
+
+  .template-card:hover .arrow-icon {
+    opacity: 1;
+    color: #0847f7;
+  }
+
+  /* Decorative left strip */
+  .card-strip {
+    width: 20px;
+    flex-shrink: 0;
+    align-self: stretch;
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 20px 0;
+    background-image: url("/images/cre-templates/card-strip.png");
+    background-size: cover;
+    background-position: center 100%;
+    background-repeat: no-repeat;
+  }
+
+  /* Card Content */
+  .card-content {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Language Badges */
+  .language-badges {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .lang-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: #f5f7fa;
+    color: #5a6175;
+    border: 1px solid #e5e7eb;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+
+  /* Title */
+  .card-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #0b101c;
+    margin: 0 0 10px 0;
+    line-height: 1.3;
+  }
+
+  /* Description */
+  .card-description {
+    font-size: 14px;
+    color: #5a6175;
+    margin: 0;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Footer */
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 24px;
+  }
+
+  .card-author {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #5a6175;
+    font-weight: 500;
+  }
+
+  .author-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  .arrow-icon {
+    opacity: 0;
+    color: #c4c9d4;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+</style>

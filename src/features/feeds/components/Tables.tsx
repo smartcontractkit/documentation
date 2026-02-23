@@ -218,13 +218,19 @@ const DefaultTHead = ({
   )
 }
 
+// Contact email for tokenized equity feeds (can be updated as needed)
+const TOKENIZED_EQUITY_CONTACT_EMAIL = "chainlink_data_feeds@smartcontract.com"
+
 const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, dataFeedType }) => {
   // Use the pre-computed finalCategory from enriched metadata
   // (already includes deprecating status and Supabase risk tier)
   const finalTier = metadata.finalCategory || metadata.feedCategory
 
-  // US Government Macroeconomic Data logic
+  // Feed type checks
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
+  // Detect tokenized equity feeds by metadata so the badge shows on any page (e.g., standard price feeds)
+  const isTokenizedEquityFeed = metadata.docs?.assetClass === "Equities" && metadata.contractType !== "verifier"
+
   const label = isUSGovernmentMacroeconomicData ? "Category" : "Asset type"
   const value = isUSGovernmentMacroeconomicData
     ? metadata.docs.assetClass === "Macroeconomics"
@@ -259,6 +265,17 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
               </a>
             </div>
           )}
+          {isTokenizedEquityFeed && (
+            <div style={{ marginTop: "5px" }}>
+              <a
+                href="/data-feeds/tokenized-equity-feeds"
+                className={tableStyles.feedVariantBadge}
+                title="Tokenized Equity Feed"
+              >
+                Tokenized Equity
+              </a>
+            </div>
+          )}
         </div>
         {metadata.docs.shutdownDate && (
           <div className={clsx(feedList.shutDate)}>
@@ -288,30 +305,40 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                 </dt>
               )}
               <dd>
-                <div className={tableStyles.assetAddress}>
-                  <button
-                    className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                    data-clipboard-text={metadata.proxyAddress ?? metadata.transmissionsAccount}
-                    onClick={(e) =>
-                      handleClick(e, {
-                        product: "FEEDS",
-                        action: "feedId_copied",
-                        extraInfo1: network.name,
-                        extraInfo2: metadata.name,
-                        extraInfo3: metadata.proxyAddress,
-                      })
-                    }
-                  >
-                    <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
-                  </button>
-                  <a
-                    className={tableStyles.addressLink}
-                    href={network.explorerUrl.replace("%s", metadata.proxyAddress ?? metadata.transmissionsAccount)}
-                    target="_blank"
-                  >
-                    {metadata.proxyAddress ?? metadata.transmissionsAccount}
-                  </a>
-                </div>
+                {isTokenizedEquityFeed ? (
+                  // Tokenized equity feeds show a contact email instead of proxy address
+                  <span>
+                    Contact us:{" "}
+                    <a href={`mailto:${TOKENIZED_EQUITY_CONTACT_EMAIL}`} className={tableStyles.addressLink}>
+                      {TOKENIZED_EQUITY_CONTACT_EMAIL}
+                    </a>
+                  </span>
+                ) : (
+                  <div className={tableStyles.assetAddress}>
+                    <button
+                      className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                      data-clipboard-text={metadata.proxyAddress ?? metadata.transmissionsAccount}
+                      onClick={(e) =>
+                        handleClick(e, {
+                          product: "FEEDS",
+                          action: "feedId_copied",
+                          extraInfo1: network.name,
+                          extraInfo2: metadata.name,
+                          extraInfo3: metadata.proxyAddress,
+                        })
+                      }
+                    >
+                      <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+                    </button>
+                    <a
+                      className={tableStyles.addressLink}
+                      href={network.explorerUrl.replace("%s", metadata.proxyAddress ?? metadata.transmissionsAccount)}
+                      target="_blank"
+                    >
+                      {metadata.proxyAddress ?? metadata.transmissionsAccount}
+                    </a>
+                  </div>
+                )}
               </dd>
             </div>
             {metadata.assetName && (
@@ -353,31 +380,43 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                     <span className="label">{isAaveSVR(metadata) ? "AAVE SVR Proxy:" : "SVR Proxy:"}</span>
                   </dt>
                   <dd>
-                    <button
-                      className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                      data-clipboard-text={metadata.secondaryProxyAddress}
-                      onClick={(e) =>
-                        handleClick(e, {
-                          product: "FEEDS",
-                          action: "SVR_proxy_copied",
-                          extraInfo1: network.name,
-                          extraInfo2: metadata.name,
-                          extraInfo3: metadata.secondaryProxyAddress,
-                        })
-                      }
-                    >
-                      <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
-                    </button>
-                    <a
-                      className={tableStyles.addressLink}
-                      href={network.explorerUrl.replace("%s", metadata.secondaryProxyAddress)}
-                      target="_blank"
-                    >
-                      {metadata.secondaryProxyAddress}
-                    </a>
+                    {isTokenizedEquityFeed ? (
+                      // Tokenized equity feeds show a contact email instead of SVR proxy address
+                      <span>
+                        Contact us:{" "}
+                        <a href={`mailto:${TOKENIZED_EQUITY_CONTACT_EMAIL}`} className={tableStyles.addressLink}>
+                          {TOKENIZED_EQUITY_CONTACT_EMAIL}
+                        </a>
+                      </span>
+                    ) : (
+                      <>
+                        <button
+                          className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
+                          data-clipboard-text={metadata.secondaryProxyAddress}
+                          onClick={(e) =>
+                            handleClick(e, {
+                              product: "FEEDS",
+                              action: "SVR_proxy_copied",
+                              extraInfo1: network.name,
+                              extraInfo2: metadata.name,
+                              extraInfo3: metadata.secondaryProxyAddress,
+                            })
+                          }
+                        >
+                          <img src="/assets/icons/copyIcon.svg" alt="copy to clipboard" />
+                        </button>
+                        <a
+                          className={tableStyles.addressLink}
+                          href={network.explorerUrl.replace("%s", metadata.secondaryProxyAddress)}
+                          target="_blank"
+                        >
+                          {metadata.secondaryProxyAddress}
+                        </a>
+                      </>
+                    )}
                   </dd>
                 </div>
-                {isAaveSVR(metadata) && (
+                {isAaveSVR(metadata) && !isTokenizedEquityFeed && (
                   <div className={clsx(tableStyles.aaveCallout)}>
                     <strong>⚠️ Aave Dedicated Feed:</strong> This SVR proxy feed is dedicated exclusively for use by the
                     Aave protocol. Learn more about{" "}
@@ -387,7 +426,7 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                     .
                   </div>
                 )}
-                {isSharedSVR(metadata) && (
+                {isSharedSVR(metadata) && !isTokenizedEquityFeed && (
                   <div className={clsx(tableStyles.sharedCallout)}>
                     <strong>🔗 SVR Feed:</strong> This SVR proxy feed is usable by any protocol. Learn more about{" "}
                     <a href="/data-feeds/svr-feeds" target="_blank">
@@ -637,11 +676,34 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
 export const StreamsNetworkAddressesTable = ({
   allowExpansion = false,
   defaultExpanded = false,
+  initialSearch = "",
 }: {
   allowExpansion?: boolean
   defaultExpanded?: boolean
+  initialSearch?: string
 } = {}) => {
-  const [searchValue, setSearchValue] = useState("")
+  // null = untouched; string = user has set a value
+  const [searchState, setSearchState] = useState<string | null>(null)
+
+  const urlSearch =
+    typeof window !== "undefined" ? (new URLSearchParams(window.location.search).get("streamsNetwork") ?? "") : ""
+
+  // Priority: user-typed value → SSR prop (when Astro can pass it) → URL param (client fallback)
+  const searchValue = searchState ?? (initialSearch || urlSearch)
+
+  const updateSearch = (value: string) => {
+    setSearchState(value)
+    if (typeof window === "undefined") return
+    const params = new URLSearchParams(window.location.search)
+    if (value) {
+      params.set("streamsNetwork", value)
+    } else {
+      params.delete("streamsNetwork")
+    }
+    const queryString = params.toString()
+    const newUrl = window.location.pathname + (queryString ? "?" + queryString : "") + window.location.hash
+    window.history.replaceState({ path: newUrl }, "", newUrl)
+  }
 
   const normalizedSearch = searchValue.toLowerCase().replaceAll(" ", "")
 
@@ -670,10 +732,10 @@ export const StreamsNetworkAddressesTable = ({
             placeholder="Search"
             className={feedList.filterDropdown_searchInput}
             value={searchValue}
-            onInput={(e) => setSearchValue((e.target as HTMLInputElement).value)}
+            onInput={(e) => updateSearch((e.target as HTMLInputElement).value)}
           />
           {searchValue && (
-            <button className={clsx(button.secondary, feedList.clearFilterBtn)} onClick={() => setSearchValue("")}>
+            <button className={clsx(button.secondary, feedList.clearFilterBtn)} onClick={() => updateSearch("")}>
               Clear filter
             </button>
           )}
@@ -689,7 +751,7 @@ export const StreamsNetworkAddressesTable = ({
           </tr>
         </thead>
         <tbody>
-          {filteredNetworks.length === 0 ? (
+          {typeof window === "undefined" ? null : filteredNetworks.length === 0 ? (
             <tr>
               <td colSpan={3} style={{ textAlign: "center", padding: "2rem", fontStyle: "italic" }}>
                 No results found
@@ -1195,6 +1257,7 @@ export const MainnetTable = ({
   currentPage,
   paginate,
   searchValue,
+  tokenizedEquityProvider,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
@@ -1214,6 +1277,7 @@ export const MainnetTable = ({
   currentPage: number
   paginate
   searchValue: string
+  tokenizedEquityProvider?: string
 }) => {
   if (!network.metadata) return null
 
@@ -1278,6 +1342,7 @@ export const MainnetTable = ({
         streamCategoryFilter,
         rwaSchemaFilter,
         showOnlyMVRFeeds,
+        tokenizedEquityProvider,
       })
     })
     .filter((metadata) => {
@@ -1459,6 +1524,7 @@ export const TestnetTable = ({
   streamCategoryFilter,
   show24x5Feeds,
   tradingHoursFilter,
+  tokenizedEquityProvider,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
@@ -1476,6 +1542,7 @@ export const TestnetTable = ({
   streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
   show24x5Feeds?: boolean
   tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
+  tokenizedEquityProvider?: string
 }) => {
   if (!network.metadata) return null
 
@@ -1531,6 +1598,7 @@ export const TestnetTable = ({
         streamCategoryFilter,
         rwaSchemaFilter,
         showOnlyMVRFeeds,
+        tokenizedEquityProvider,
       })
     })
     .filter((metadata) => {

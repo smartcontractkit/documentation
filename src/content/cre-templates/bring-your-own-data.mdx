@@ -1,0 +1,66 @@
+---
+title: "Bring Your Own Data (NAV & PoR)"
+description: "A template for bringing your own off-chain Proof-of-Reserve (PoR) or Net-Asset-Value (NAV) data on-chain with the Chainlink Runtime Environment (CRE)."
+author: "Chainlink Labs"
+excerpt: "Publish verified financial or reserve data to smart contracts using CRE."
+image: "thumbnail.jpg"
+githubUrl: "https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/bring-your-own-data"
+githubRepoLinks:
+  - label: "Go"
+    url: "https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/bring-your-own-data/workflow-go"
+  - label: "TypeScript"
+    url: "https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/bring-your-own-data/workflow-ts"
+datePublished: "2026-02-13"
+lastModified: "2026-02-13"
+---
+
+import { Aside, Accordion } from "@components"
+
+## What This Template Does
+
+This template provides an end-to-end starting point for bringing your own off-chain Proof-of-Reserve (PoR) or Net-Asset-Value (NAV) data on-chain with the **Chainlink Runtime Environment (CRE)**.
+
+The template consists of two components:
+
+- **Contracts** (deployed on multiple chains)
+  - [DataFeedsCache](https://github.com/smartcontractkit/chainlink-evm/blob/88d90433a15f1c34bb5fabc29be192400fad396c/contracts/src/v0.8/data-feeds/DataFeedsCache.sol) contract that receives data on-chain
+  - DecimalAggregatorProxy proxy contract for PoR data stored in the DataFeedsCache contract
+  - [BundleAggregatorProxy](https://github.com/smartcontractkit/chainlink-evm/blob/88d90433a15f1c34bb5fabc29be192400fad396c/contracts/src/v0.8/data-feeds/BundleAggregatorProxy.sol) proxy contract for NAV data stored in the DataFeedsCache contract
+- **CRE Workflows**
+  - **Golang** workflows targeting the Golang CRE SDK
+    - PoR Workflow (Proof-of-Reserve)
+    - NAV Workflow (Net-Asset-Value)
+  - **TypeScript** workflows targeting the TypeScript CRE SDK
+    - PoR Workflow (Proof-of-Reserve)
+    - NAV Workflow (Net-Asset-Value)
+
+**Key Technologies:**
+
+- **CRE (Chainlink Runtime Environment)** - Orchestrates workflows with DON consensus
+
+---
+
+## Getting Started
+
+You can build with the **CRE SDK** in either **Golang** or **TypeScript**.
+
+<Accordion title="Golang SDK" number={1}>
+
+For detailed instructions on getting started with the Go SDK, see the [Go README](https://github.com/smartcontractkit/cre-templates/blob/main/starter-templates/bring-your-own-data/workflow-go/README.md) on GitHub.
+
+</Accordion>
+
+<Accordion title="TypeScript SDK" number={2}>
+
+For detailed instructions on getting started with the TypeScript SDK, see the [TypeScript README](https://github.com/smartcontractkit/cre-templates/blob/main/starter-templates/bring-your-own-data/workflow-ts/README.md) on GitHub.
+
+</Accordion>
+
+---
+
+## Security Considerations
+
+1. **This is a demo project** - Not production-ready
+2. **DecimalAggregatorProxy contract is demo contract** - Not audited and not production-ready
+3. **Use your own RPC for stability** - For stable deployment and chainwrite operations it is advised to use your own private RPCs
+4. **Secrets hygiene** – Keep real secrets out of version control; use secure secret managers for `.env` values.
