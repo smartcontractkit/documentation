@@ -57,7 +57,7 @@ jobs:
 
       # Cache node_modules to speed up future runs
       - name: Cache node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: cache-node-modules
         with:
           path: |
@@ -88,7 +88,7 @@ jobs:
 
       # Restore node_modules from setup job
       - name: Restore node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             node_modules
@@ -143,7 +143,7 @@ jobs:
       # Create PR for new tokens
       - name: Create PR with new token information
         if: steps.check_tokens.outputs.new_tokens_found == 'true'
-        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7.0.11
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "CCT: Update changelog with new tokens"
@@ -160,7 +160,7 @@ jobs:
       # Capture output artifacts (always runs, even if previous steps failed)
       - name: Capture output files
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: token-detection-artifacts-${{ github.run_id }}
           path: |
