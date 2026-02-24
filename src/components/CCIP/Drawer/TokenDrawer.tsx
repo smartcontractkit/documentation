@@ -324,11 +324,39 @@ function TokenDrawer({
                     <span className="ccip-table__header-sublabel">(Tokens/sec)</span>
                   </th>
                   <th>
-                    <div>FTF Rate limit capacity</div>
+                    <div>
+                      FTF Rate limit capacity
+                      <Tooltip
+                        label=""
+                        tip="Maximum amount per transaction for fast transfers"
+                        labelStyle={{
+                          marginRight: "5px",
+                        }}
+                        style={{
+                          display: "inline-block",
+                          verticalAlign: "middle",
+                          marginBottom: "2px",
+                        }}
+                      />
+                    </div>
                     <span className="ccip-table__header-sublabel">(Tokens)</span>
                   </th>
                   <th>
-                    <div>FTF Rate limit refill rate</div>
+                    <div>
+                      FTF Rate limit refill rate
+                      <Tooltip
+                        label=""
+                        tip="Rate at which available capacity is replenished for fast transfers"
+                        labelStyle={{
+                          marginRight: "5px",
+                        }}
+                        style={{
+                          display: "inline-block",
+                          verticalAlign: "middle",
+                          marginBottom: "2px",
+                        }}
+                      />
+                    </div>
                     <span className="ccip-table__header-sublabel">(Tokens/sec)</span>
                   </th>
                   <th>Verifiers</th>
