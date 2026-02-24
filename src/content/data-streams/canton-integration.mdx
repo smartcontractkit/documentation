@@ -212,6 +212,44 @@ let observationsTimestamp = v3.observationsTimestamp
   production use case.
 </Aside>
 
+#### Working with hex-encoded values
+
+Report fields like `benchmarkPrice`, `bid`, and `ask` are returned as hex strings. The reference [`HexToDecimal.daml` module](https://github.com/smartcontractkit/data-streams-canton/blob/main/examples/daml/HexToDecimal.daml) provides a `hexToUnsignedDecimal` helper for converting these to Daml `Decimal` values.
+
+**Why `hexToUnsignedDecimal` instead of `fromHex`?**
+
+Daml's built-in `fromHex` returns `Optional Int`, which is limited to 64 bits and returns `None` when the sign bit is set. `hexToUnsignedDecimal` uses `Decimal` to handle larger values safely.
+
+**Decimal precision**
+
+Daml's `Decimal` type has 38 significant digits with 10 fixed decimal places, supporting values up to approximately 10^28. EVM price values use 18 decimal places, so divide by 10^18 to get human-readable amounts:
+
+```haskell
+let oneEth : Decimal = 1000000000000000000.0
+let price = v3.benchmarkPrice / oneEth  -- e.g., 3257.58 USD
+```
+
+**Signed values**
+
+`hexToUnsignedDecimal` is unsigned. For signed two's complement values, subtract 2^n manually:
+
+```haskell
+-- Interpreting a negative int64 value
+let twoTo64 : Decimal = 18446744073709551616.0
+let value = hexToUnsignedDecimal negHex - twoTo64
+```
+
+The table below shows which bit widths fit within `Decimal` precision:
+
+| Bit width | Maximum value | Fits in `Decimal`? |
+| --------- | ------------- | ------------------ |
+| int64     | ~1.8 × 10^19  | Yes                |
+| int128    | ~3.4 × 10^38  | Yes                |
+| int192    | ~6.3 × 10^57  | No                 |
+| int256    | ~1.2 × 10^77  | No                 |
+
+For values that exceed `Decimal` precision, consider storing the raw hex string and converting on-demand, or splitting the value into separate whole and fractional components.
+
 ## Important Considerations
 
 See the [Developer Responsibilities](/data-streams/developer-responsibilities) page for important considerations when integrating Chainlink Data Streams. The following are important considerations specific to Canton integration:
