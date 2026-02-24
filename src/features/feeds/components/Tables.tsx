@@ -798,7 +798,9 @@ export const StreamsNetworkAddressesTable = ({
                         )}
                       </td>
                       <td className={tableStyles.addressColumn}>
-                        {network.isSolana ? (
+                        {network.isCanton ? (
+                          <a href="/data-streams/canton-integration">See Canton integration guide →</a>
+                        ) : network.isSolana ? (
                           <>
                             <div>
                               <small className={tableStyles.addressLabel}>Verifier Program ID:</small>
