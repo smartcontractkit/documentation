@@ -33,9 +33,9 @@ export const determineTokenMechanism = (
 
 export const tokenPoolDisplay = (poolType?: PoolType) => {
   const poolTypeMapping: Record<PoolType, string> = {
-    lockRelease: "Lock/Release",
-    burnMint: "Burn/Mint",
-    usdc: "Burn/Mint",
+    lockRelease: "LockRelease",
+    burnMint: "BurnMint",
+    usdc: "BurnMint",
     feeTokenOnly: "Fee Token Only",
   }
 
