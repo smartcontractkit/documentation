@@ -14,14 +14,17 @@ whatsnext:
   }
 ---
 
-import { Aside } from "@components"
+import { Aside, ClickToZoom } from "@components"
+
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+
+<DataStreams section="dsNotes" />
 
 <Aside type="caution" title="Provider Integration">
   If you're interested in making your Canton contract data available as a Chainlink Data Stream, you can integrate as a
   data provider. This enables other parties to consume your data with cryptographic guarantees. [Contact the Chainlink
-  team](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to discuss
-  provider integration options, including use cases such as Proof of Reserve, Exchange Data, DeFi Yields, and Custom
-  Data.
+  team](https://chain.link/contact?ref_id=datastreams) to discuss provider integration options, including use cases such
+  as Proof of Reserve, Exchange Data, DeFi Yields, and Custom Data.
 </Aside>
 
 This guide walks through integrating Chainlink Data Streams to consume cryptographically verified market data within your Canton application.
@@ -48,39 +51,11 @@ For Chainlink Data Streams integration, this party-based model means:
 
 Reports are generated off-chain by Chainlink's OCR (Off-Chain Reporting) protocol and contain `f+1` cryptographic signatures from oracle nodes. Your Canton application verifies these signatures before consuming the data.
 
-{/* TODO: This is an AI generated diagram. Refine and review, then pass to branding */}
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         CONSUMER INTEGRATION FLOW                           │
-└─────────────────────────────────────────────────────────────────────────────┘
-
-     ┌──────────────┐                              ┌──────────────────────┐
-     │  Chainlink   │                              │   Your Application   │
-     │   DON        │                              │   (Canton/Daml)      │
-     └──────┬───────┘                              └──────────┬───────────┘
-            │                                                  │
-            │  1. Generate & sign reports                      │
-            ▼                                                  │
-     ┌──────────────┐                                          │
-     │  Data Streams│    2. Fetch signed report via SDK/API    │
-     │  Aggregation ├──────────────────────────────────────────┤
-     │  Network     │                                          │
-     └──────────────┘                                          │
-                                                               ▼
-                     ┌─────────────────────────────────────────────────────┐
-                     │                  CANTON LEDGER                      │
-                     │  ┌─────────────────┐    ┌────────────────────────┐  │
-                     │  │ VerifierConfig  │    │       Verifier         │  │
-                     │  │ (issued by CLL) │◄───│  3. Verify signatures  │  │
-                     │  │                 │    │     against config     │  │
-                     │  │ • Oracle keys   │    └───────────┬────────────┘  │
-                     │  │ • f parameter   │                │               │
-                     │  └─────────────────┘                ▼               │
-                     │                           4. Return verified        │
-                     │                              report payload         │
-                     └─────────────────────────────────────────────────────┘
-```
+<ClickToZoom
+  src="/images/data-streams/canton-consumer-integration-flow.png"
+  alt="Canton Consumer Integration Flow"
+  caption="Canton Consumer Integration Flow: (1) Chainlink DON generates and signs reports, (2) your Canton application fetches the signed report via SDK or API, (3) the Verifier contract verifies signatures against the Chainlink-issued VerifierConfig containing oracle keys and the fault tolerance parameter, and (4) returns the verified report payload."
+/>
 
 **Key components:**
 
@@ -109,7 +84,7 @@ To get started with your Data Streams integration on the Canton Network, you nee
 
 ### Obtain Data Streams Access
 
-[Contact Chainlink](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to request access to the Data Streams API. You will receive:
+[Contact Chainlink](https://chain.link/contact?ref_id=datastreams) to request access to the Data Streams API. You will receive:
 
 - API credentials (Client ID and Client Secret)
 - Access to the Data Streams REST/WebSocket endpoints
@@ -121,7 +96,7 @@ For more information on Data Streams, see the [official Chainlink Data Streams d
 
 Download the verification contracts from the GitHub releases page:
 
-**https://github.com/smartcontractkit/data-streams-canton-integration/releases**
+**https://github.com/smartcontractkit/data-streams-canton/releases**
 
 The release includes the following DAR packages:
 
@@ -233,8 +208,8 @@ let observationsTimestamp = v3.observationsTimestamp
 <Aside type="note" title="Reference Examples">
   The example decoding modules (`ReportDataV3.daml`, `HexToDecimal.daml`) are provided as unaudited reference
   implementations in the [examples
-  directory](https://github.com/smartcontractkit/data-streams-canton-integration/tree/main/examples). Review and adapt
-  them for your production use case.
+  directory](https://github.com/smartcontractkit/data-streams-canton/tree/main/examples). Review and adapt them for your
+  production use case.
 </Aside>
 
 ## Important Considerations
