@@ -2,7 +2,7 @@ export type NetworkDetails = {
   verifierProxy?: string
   verifierProgramId?: string
   accessController?: string
-  explorerUrl: string
+  explorerUrl?: string
   label: string
   note?: string
 }
@@ -15,6 +15,7 @@ export type NetworkData = {
   testnet?: NetworkDetails
   message?: string
   isSolana?: boolean
+  isCanton?: boolean
 }
 
 export const StreamsNetworksData: NetworkData[] = [
@@ -210,6 +211,15 @@ export const StreamsNetworksData: NetworkData[] = [
       label: "Botanix Testnet",
       verifierProxy: "0xfBFff08fE4169853F7B1b5Ac67eC10dc8806801d",
       explorerUrl: "https://testnet.botanixscan.io/address/%s",
+    },
+  },
+  {
+    network: "Canton",
+    logoUrl: "/assets/chains/canton.svg",
+    isCanton: true,
+    mainnet: {
+      label: "Canton Network",
+      note: "Uses a party-specific VerifierConfig Contract ID issued by Chainlink.",
     },
   },
   {
