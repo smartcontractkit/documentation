@@ -297,7 +297,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
-          title: "Confidential API Interactions (Experimental)",
+          title: "Confidential API Interactions",
           url: "cre/guides/workflow/using-confidential-http-client",
           children: [
             {
@@ -424,7 +424,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         { title: "Triggers", url: "cre/capabilities/triggers" },
         { title: "HTTP", url: "cre/capabilities/http" },
         {
-          title: "Confidential HTTP (Experimental)",
+          title: "Confidential HTTP",
           url: "cre/capabilities/confidential-http",
           highlightAsCurrent: ["cre/capabilities/confidential-http-ts", "cre/capabilities/confidential-http-go"],
         },
@@ -553,7 +553,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               highlightAsCurrent: ["cre/reference/sdk/http-client-ts", "cre/reference/sdk/http-client-go"],
             },
             {
-              title: "Confidential HTTP Client (Experimental)",
+              title: "Confidential HTTP Client",
               url: "cre/reference/sdk/confidential-http-client",
               highlightAsCurrent: [
                 "cre/reference/sdk/confidential-http-client-ts",
