@@ -2,7 +2,7 @@ export type NetworkDetails = {
   verifierProxy?: string
   verifierProgramId?: string
   accessController?: string
-  explorerUrl: string
+  explorerUrl?: string
   label: string
   note?: string
 }
@@ -15,6 +15,7 @@ export type NetworkData = {
   testnet?: NetworkDetails
   message?: string
   isSolana?: boolean
+  isCanton?: boolean
 }
 
 export const StreamsNetworksData: NetworkData[] = [
@@ -31,6 +32,15 @@ export const StreamsNetworksData: NetworkData[] = [
       label: "0G Galileo (Testnet)",
       verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
       explorerUrl: "https://chainscan-galileo.0g.ai/address/%s",
+    },
+  },
+  {
+    network: "ADI Network",
+    logoUrl: "/assets/chains/adi-network.svg",
+    mainnet: {
+      label: "ADI Mainnet",
+      verifierProxy: "0x29b289DC5f840762FBF605FF4DF37df18FdA4e7a",
+      explorerUrl: "https://explorer.adifoundation.ai/address/%s",
     },
   },
   {
@@ -75,6 +85,15 @@ export const StreamsNetworksData: NetworkData[] = [
       label: "Arbitrum Sepolia",
       verifierProxy: "0x2ff010DEbC1297f19579B4246cad07bd24F2488A",
       explorerUrl: "https://sepolia.arbiscan.io/address/%s",
+    },
+  },
+  {
+    network: "Arc",
+    logoUrl: "/assets/chains/arc.svg",
+    testnet: {
+      label: "Arc Testnet",
+      verifierProxy: "0x72790f9eB82db492a7DDb6d2af22A270Dcc3Db64",
+      explorerUrl: "https://testnet.arcscan.app/address/%s",
     },
   },
   {
@@ -195,6 +214,15 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "Canton",
+    logoUrl: "/assets/chains/canton.svg",
+    isCanton: true,
+    mainnet: {
+      label: "Canton Network",
+      note: "Uses a party-specific VerifierConfig Contract ID issued by Chainlink.",
+    },
+  },
+  {
     network: "Celo",
     logoUrl: "/assets/chains/celo.svg",
     mainnet: {
@@ -220,6 +248,15 @@ export const StreamsNetworksData: NetworkData[] = [
       label: "Sepolia Testnet",
       verifierProxy: "0x4e9935be37302B9C97Ff4ae6868F1b566ade26d2",
       explorerUrl: "https://sepolia.etherscan.io/address/%s",
+    },
+  },
+  {
+    network: "DogeOS",
+    logoUrl: "/assets/chains/dogeos.svg",
+    testnet: {
+      label: "DogeOS Chikyu Testnet",
+      verifierProxy: "0x72790f9eB82db492a7DDb6d2af22A270Dcc3Db64",
+      explorerUrl: "https://blockscout.testnet.dogeos.com/address/%s",
     },
   },
   {
@@ -461,6 +498,20 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "Perennial",
+    logoUrl: "/assets/chains/perennial.svg",
+    mainnet: {
+      label: "Perennial Mainnet",
+      verifierProxy: "0xC539169910DE08D237Df0d73BcDa9074c787A4a1",
+      explorerUrl: "https://explorer.perennial.foundation/address/%s",
+    },
+    testnet: {
+      label: "Perennial Testnet",
+      verifierProxy: "0xF94Fc3DfD2875AECBEfDA8b7bFA05884fbF1E042",
+      explorerUrl: "https://explorer-sepolia.perennial.foundation/address/%s",
+    },
+  },
+  {
     network: "Pharos",
     logoUrl: "/assets/chains/pharos.svg",
     mainnet: {
@@ -605,6 +656,20 @@ export const StreamsNetworksData: NetworkData[] = [
       verifierProgramId: "Gt9S41PtjR58CbG9JhJ3J6vxesqrNAswbWYbLNTMZA3c",
       accessController: "2k3DsgwBoqrnvXKVvd7jX7aptNxdcRBdcd5HkYsGgbrb",
       explorerUrl: "https://explorer.solana.com/address/%s?cluster=devnet",
+    },
+  },
+  {
+    network: "Stable",
+    logoUrl: "/assets/chains/stable.svg",
+    mainnet: {
+      label: "Stable Mainnet",
+      verifierProxy: "0x06034790F8b6c2573B91704BeC6Ab380cB590237",
+      explorerUrl: "https://stablescan.xyz/address/%s",
+    },
+    testnet: {
+      label: "Stable Testnet",
+      verifierProxy: "0x72790f9eB82db492a7DDb6d2af22A270Dcc3Db64",
+      explorerUrl: "https://testnet.stablescan.xyz/address/%s",
     },
   },
   {

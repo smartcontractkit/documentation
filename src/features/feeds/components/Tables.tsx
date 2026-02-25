@@ -676,11 +676,34 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
 export const StreamsNetworkAddressesTable = ({
   allowExpansion = false,
   defaultExpanded = false,
+  initialSearch = "",
 }: {
   allowExpansion?: boolean
   defaultExpanded?: boolean
+  initialSearch?: string
 } = {}) => {
-  const [searchValue, setSearchValue] = useState("")
+  // null = untouched; string = user has set a value
+  const [searchState, setSearchState] = useState<string | null>(null)
+
+  const urlSearch =
+    typeof window !== "undefined" ? (new URLSearchParams(window.location.search).get("streamsNetwork") ?? "") : ""
+
+  // Priority: user-typed value → SSR prop (when Astro can pass it) → URL param (client fallback)
+  const searchValue = searchState ?? (initialSearch || urlSearch)
+
+  const updateSearch = (value: string) => {
+    setSearchState(value)
+    if (typeof window === "undefined") return
+    const params = new URLSearchParams(window.location.search)
+    if (value) {
+      params.set("streamsNetwork", value)
+    } else {
+      params.delete("streamsNetwork")
+    }
+    const queryString = params.toString()
+    const newUrl = window.location.pathname + (queryString ? "?" + queryString : "") + window.location.hash
+    window.history.replaceState({ path: newUrl }, "", newUrl)
+  }
 
   const normalizedSearch = searchValue.toLowerCase().replaceAll(" ", "")
 
@@ -709,10 +732,10 @@ export const StreamsNetworkAddressesTable = ({
             placeholder="Search"
             className={feedList.filterDropdown_searchInput}
             value={searchValue}
-            onInput={(e) => setSearchValue((e.target as HTMLInputElement).value)}
+            onInput={(e) => updateSearch((e.target as HTMLInputElement).value)}
           />
           {searchValue && (
-            <button className={clsx(button.secondary, feedList.clearFilterBtn)} onClick={() => setSearchValue("")}>
+            <button className={clsx(button.secondary, feedList.clearFilterBtn)} onClick={() => updateSearch("")}>
               Clear filter
             </button>
           )}
@@ -728,7 +751,7 @@ export const StreamsNetworkAddressesTable = ({
           </tr>
         </thead>
         <tbody>
-          {filteredNetworks.length === 0 ? (
+          {typeof window === "undefined" ? null : filteredNetworks.length === 0 ? (
             <tr>
               <td colSpan={3} style={{ textAlign: "center", padding: "2rem", fontStyle: "italic" }}>
                 No results found
@@ -775,7 +798,9 @@ export const StreamsNetworkAddressesTable = ({
                         )}
                       </td>
                       <td className={tableStyles.addressColumn}>
-                        {network.isSolana ? (
+                        {network.isCanton ? (
+                          <a href="/data-streams/canton-integration">See Canton integration guide →</a>
+                        ) : network.isSolana ? (
                           <>
                             <div>
                               <small className={tableStyles.addressLabel}>Verifier Program ID:</small>

@@ -121,12 +121,250 @@ Source: https://docs.chain.link/data-streams/billing
 
 Chainlink Data Streams uses a subscription-based billing option.
 
-[Contact us](https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs) to learn more about Mainnet pricing and subscription options.
+[Contact us](https://chain.link/contact?ref_id=datastreams) to learn more about Mainnet pricing and subscription options.
 
 <Aside type="caution" title="[Deprecated] Pay-per-verification model">
   The pay-per-verification billing model has been deprecated. <br /> To learn more about the subscription model, please{" "}
   <a href="https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs">contact us</a>.
 </Aside>
+
+---
+
+# Canton Integration Guide
+Source: https://docs.chain.link/data-streams/canton-integration
+
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+
+<Aside type="caution" title="Provider Integration">
+  If you're interested in making your Canton contract data available as a Chainlink Data Stream, you can integrate as a
+  data provider. This enables other parties to consume your data with cryptographic guarantees. [Contact the Chainlink
+  team](https://chain.link/contact?ref_id=datastreams) to discuss provider integration options, including use cases such
+  as Proof of Reserve, Exchange Data, DeFi Yields, and Custom Data.
+</Aside>
+
+This guide walks through integrating Chainlink Data Streams to consume cryptographically verified market data within your Canton application.
+
+## Understanding the Canton Network
+
+Unlike traditional blockchains where all state is replicated across all nodes, the [Canton Network](https://docs.digitalasset.com/overview/3.4/index.html) is a privacy-preserving blockchain that distributes state and transactions only to parties with a legitimate need to see them. This "network of networks" architecture allows validators to store and process only their portion of the ledger, designed to balance privacy and scalability with the decentralization model of a public blockchain. [Learn more about the Canton Network](https://docs.digitalasset.com/build/3.4/overview/index.html).
+
+Canton Network applications are built on infrastructure that [manages ledger state through two types of nodes](https://docs.digitalasset.com/build/3.3/overview/key_concepts.html#canton-network-infrastructure):
+
+- **Validator Nodes** store and validate the portion of the ledger they are entitled to see
+- **Synchronizer Nodes** coordinate transaction commits to prevent double-spends
+- Access to ledger data is managed through [Daml parties](https://docs.digitalasset.com/build/3.3/overview/key_concepts.html#daml-parties)—identifiers for cryptographic keys that represent app providers and app users
+- Each Daml party is *hosted* on a Validator Node, which stores their data and validates transactions on their behalf
+
+For Chainlink Data Streams integration, this party-based model means:
+
+- Your application needs a Daml party to verify reports
+- The Chainlink team grants your Daml party observer access to the `VerifierConfig` contract, which contains the oracle public keys required for signature verification
+- When you verify a Chainlink Data Streams report, your Daml application exercises a choice on the `Verifier` contract
+- Verification occurs within your Canton ledger context using the configuration your Daml party can observe
+
+## How It Works
+
+Reports are generated off-chain by Chainlink's OCR (Off-Chain Reporting) protocol and contain `f+1` cryptographic signatures from oracle nodes. Your Canton application verifies these signatures before consuming the data.
+
+**Key components:**
+
+- **`Verifier`** - A stateless contract that performs cryptographic signature verification against oracle public keys. You create and own this contract.
+- **`VerifierConfig`** - A party-specific contract holding the oracle public keys and fault tolerance configuration. Chainlink issues this to you after onboarding.
+
+The `Verifier` is intentionally stateless and separated from configuration management—this allows you to create your own `Verifier` instances while using the Chainlink-issued `VerifierConfig` for the oracle keys.
+
+<Aside type="note" title="Canton vs EVM">
+  Unlike EVM where contract state is publicly visible and updated in-place, Canton uses an immutable contract model
+  where updates archive the old contract and create a new one with a new Contract ID. This means verification results
+  are only visible to parties with observer access, and you must track the current `VerifierConfig` Contract ID as
+  configurations change.
+</Aside>
+
+## Prerequisites
+
+To get started with your Data Streams integration on the Canton Network, you need:
+
+- Access to a [Canton participant node](https://docs.digitalasset.com/operate/3.4/overview/index.html)
+- Ability to [upload DAR packages to your Canton participant node](https://docs.digitalasset.com/operate/3.4/howtos/operate/packages/packages.html)
+- Familiarity with [Daml contract development](https://docs.digitalasset.com/build/3.5/reference/smart-contracts/index.html)
+- Access to the Chainlink Data Streams API
+  - [Contact us to request access and receive API credentials](https://chain.link/contact?ref_id=datastreams)
+
+## Tutorial
+
+### Obtain Data Streams Access
+
+[Contact Chainlink](https://chain.link/contact?ref_id=datastreams) to request access to the Data Streams API. You will receive:
+
+- API credentials (Client ID and Client Secret)
+- Access to the Data Streams REST/WebSocket endpoints
+
+For more information on Data Streams, see the [official Chainlink Data Streams documentation](/data-streams).
+
+### Download Daml Contracts
+
+Download the verification contracts from the GitHub releases page:
+
+**[https://github.com/smartcontractkit/data-streams-canton/releases](https://github.com/smartcontractkit/data-streams-canton/releases)**
+
+The release includes the following DAR packages:
+
+| Package                     | Description                                |
+| --------------------------- | ------------------------------------------ |
+| `common-1.0.0.dar`          | Shared utilities and data types            |
+| `domain-1.0.0.dar`          | Domain-specific types for Data Streams     |
+| `verifier-config-1.0.0.dar` | Configuration contract for oracle keys     |
+| `verifier-1.0.0.dar`        | Verification engine for validating reports |
+
+### Upload Contracts to Canton
+
+Upload the DAR packages to your Canton participant node:
+
+- `common-1.0.0.dar`
+- `domain-1.0.0.dar`
+- `verifier-config-1.0.0.dar`
+- `verifier-1.0.0.dar`
+
+For guidance on uploading DAR packages, see the [Canton documentation on deploying Daml code](https://docs.digitalasset.com/build/3.3/sdlc-howtos/deploy-daml-code/index.html).
+
+### Request Configuration
+
+Once the contracts are uploaded, provide your Canton Party ID to the Chainlink team. This is the party identifier that will be verifying reports within your application.
+
+The Chainlink team needs this to:
+
+- Add your party as an observer on the `VerifierConfig` contract
+- Enable your party to use the verification functionality
+
+Your Canton Party ID is typically in the format `party::namespace` and can be retrieved from your Canton participant admin console or via the [Ledger API](https://docs.digitalasset.com/build/3.3/component-howtos/ledger-api/index.html).
+
+### Receive `VerifierConfig`
+
+After onboarding, the Chainlink team will issue a `VerifierConfig` contract to your party. This contract contains:
+
+- Oracle public keys for signature verification
+- Fault tolerance parameter (`f`) defining the required signature threshold (`f+1` signatures required)
+- Configuration digest for active oracle sets
+
+<Aside type="caution" title="Important">
+  The `VerifierConfig` contract is actively maintained by Chainlink. When oracle configurations change, Chainlink will
+  update the contract which will generate a new Contract ID. It is important that you look up the latest Contract ID
+  when verifying reports.
+</Aside>
+
+### Verify Reports
+
+With everything in place, you can now verify Data Streams reports:
+
+#### Fetch a signed report from the Data Streams API
+
+Choose from the available streams in the [Streams Overview page](/data-streams/reference/report-schema-overview). Use the [Data Streams SDK](/data-streams/reference/data-streams-api/go-sdk) or [REST API](/data-streams/reference/data-streams-api/interface-api) to fetch reports. The API returns hex-encoded signed reports containing:
+
+- The report payload (price data, timestamps, etc.)
+- `f+1` cryptographic signatures from Chainlink oracle nodes
+
+Learn more about how to fetch and decode reports with the Go, Rust, and TypeScript SDKs in the [Fetch and decode reports](/data-streams/tutorials/go-sdk-fetch) tutorial.
+
+#### Submit to your Canton application
+
+Your Daml application calls the `Verify` choice on the `Verifier` contract. First, import the required modules:
+
+{/* Note: Daml doesn't have syntax highlighting in Prism. Using Haskell as a fallback. */}
+
+```haskell
+import Verifier
+import DA.Crypto.Text (BytesHex)
+```
+
+Then create or reference a `Verifier` instance and call the `Verify` choice:
+
+```haskell
+-- Create a Verifier instance (stateless, can be reused)
+verifierCid <- submit myParty $ createCmd Verifier with
+  owner = myParty
+  observers = []
+
+-- Hex-encoded signed report from the Data Streams API
+let signedReport : BytesHex = "0x..."
+
+-- Verify the report using your VerifierConfig Contract ID
+reportData <- submit myParty $ exerciseCmd verifierCid Verify with
+  configCid = myVerifierConfigCid
+  signedReportBytes = signedReport
+  sender = myParty
+```
+
+#### Use the verified data
+
+If verification succeeds, `reportData` contains the hex-encoded report payload. You can parse this data for use in your application. For example, to decode a V3 crypto report:
+
+```haskell
+import ReportDataV3 (parseReportDataV3)
+
+-- Parse the verified report payload
+let v3 = parseReportDataV3 reportData
+
+-- Access the decoded report fields
+let feedId = v3.feedId                             -- Stream identifier
+let benchmarkPrice = v3.benchmarkPrice             -- Price with 18 decimals
+let bid = v3.bid                                   -- Bid price
+let ask = v3.ask                                   -- Ask price
+let validFromTimestamp = v3.validFromTimestamp     -- Report valid from
+let expiresAt = v3.expiresAt                       -- Report expiration
+let observationsTimestamp = v3.observationsTimestamp
+```
+
+<Aside type="note" title="Reference Examples">
+  The example decoding modules (`ReportDataV3.daml`, `HexToDecimal.daml`) are provided as unaudited reference
+  implementations in the [examples
+  directory](https://github.com/smartcontractkit/data-streams-canton/tree/main/examples). Review and adapt them for your
+  production use case.
+</Aside>
+
+#### Working with hex-encoded values
+
+Report fields like `benchmarkPrice`, `bid`, and `ask` are returned as hex strings. The reference [`HexToDecimal.daml` module](https://github.com/smartcontractkit/data-streams-canton/blob/main/examples/daml/HexToDecimal.daml) provides a `hexToUnsignedDecimal` helper for converting these to Daml `Decimal` values.
+
+**Why `hexToUnsignedDecimal` instead of `fromHex`?**
+
+Daml's built-in `fromHex` returns `Optional Int`, which is limited to 64 bits and returns `None` when the sign bit is set. `hexToUnsignedDecimal` uses `Decimal` to handle larger values safely.
+
+**Decimal precision**
+
+Daml's `Decimal` type has 38 significant digits with 10 fixed decimal places, supporting values up to approximately 10^28. EVM price values use 18 decimal places, so divide by 10^18 to get human-readable amounts:
+
+```haskell
+let oneEth : Decimal = 1000000000000000000.0
+let price = v3.benchmarkPrice / oneEth  -- e.g., 3257.58 USD
+```
+
+**Signed values**
+
+`hexToUnsignedDecimal` is unsigned. For signed two's complement values, subtract 2^n manually:
+
+```haskell
+-- Interpreting a negative int64 value
+let twoTo64 : Decimal = 18446744073709551616.0
+let value = hexToUnsignedDecimal negHex - twoTo64
+```
+
+The table below shows which bit widths fit within `Decimal` precision:
+
+| Bit width | Maximum value | Fits in `Decimal`? |
+| --------- | ------------- | ------------------ |
+| int64     | \~1.8 × 10^19 | Yes                |
+| int128    | \~3.4 × 10^38 | Yes                |
+| int192    | \~6.3 × 10^57 | No                 |
+| int256    | \~1.2 × 10^77 | No                 |
+
+For values that exceed `Decimal` precision, consider storing the raw hex string and converting on-demand, or splitting the value into separate whole and fractional components.
+
+## Important Considerations
+
+See the [Developer Responsibilities](/data-streams/developer-responsibilities) page for important considerations when integrating Chainlink Data Streams. The following are important considerations specific to Canton integration:
+
+- **Config Updates**: When oracle configurations change, you'll receive a new `VerifierConfig` Contract ID. Your application must look up the latest Contract ID when verifying reports.
+- **Observer Access**: You must be explicitly added as an observer to query `VerifierConfig`. Verification results are only visible to the verifying party and contract observers.
 
 ---
 
@@ -510,8 +748,7 @@ Chainlink Data Streams source pricing data from multiple independent aggregators
 | US Equities                | 3+ market data vendors                                                                                                                  |
 
 <Aside type="note" title="Need more details?">
-  For additional information about data sourcing, please [contact
-  us](https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs).
+  For additional information about data sourcing, please [contact us](https://chain.link/contact?ref_id=datastreams).
 </Aside>
 
 ---
@@ -5636,15 +5873,22 @@ In the following sections, we outline key risks and recommended mitigation strat
 
 Extended and overnight session price feeds are currently sourced from a single data provider, making these sessions less reliable than the regular hours price feed which is multi-sourced.
 
-If the provider experiences downtime, technical failures, or connectivity disruption, the feed may flatline or report highly inaccurate figures, preventing users from reacting to real price movements. Such issues may lead to mispricing, failed liquidations, and potential bad debt accumulation.
+Unlike regular hours where multiple independent sources cross-validate each other, a single provider means there is no redundant check on individual quote quality. This creates two distinct risks:
+
+- **Provider outage or disruption:** If the provider experiences downtime, technical failures, or connectivity disruption, the feed may flatline or report highly inaccurate figures, which can prevent users from reacting to real price movements. Such issues may lead to mispricing, failed liquidations, and potential bad debt accumulation.
+- **Erroneous individual quotes:** Even when the provider is operational, it may publish a single bid or ask quote that is significantly off from the prevailing market price — for example, a bid price printing far below the previous in-session price. Because there is no second source to cross-validate against, this outlier quote directly distorts the mid-price calculation, creating a large artificial price move.
 
 ##### Mitigation
 
-The feed includes a staleness indicator, allowing consumers to detect when data stops updating. Users are strongly recommended to implement fallback logic within their protocol risk framework, which may include:
+Consumers should not rely on the staleness indicator alone. A feed can be actively updating with a technically fresh timestamp while still publishing an incorrect mid price derived from a single outlier quote. Recommended safeguards include:
 
-- Pause or lock market activity
-- Restrict to narrow price bands
-- Temporarily switch to the tokenized price feed (understanding that it also carries liquidity limitations)
+- **Monitor bid/ask spread:** A sudden, significant widening of the spread between `bid` and `ask` is a strong indicator that a single outlier quote has distorted the mid-price. Implement a maximum spread threshold — for example, if `(ask - bid) / mid` exceeds a percentage beyond a configured threshold, treat the price as unreliable and restrict or pause exposure accordingly.
+- **Implement price deviation checks:** Compare the current mid-price against a reference (e.g., the previous valid price or a short-term moving average) and trigger a circuit breaker if the move exceeds a configured threshold.
+- **Do not use data when `marketStatus` is `closed`:** When the market is closed, data providers may perform maintenance, which can result in stale or incorrect prices being published. Consuming or acting on feed data during a closed market status is not recommended — pause or restrict all activity until the market reopens and a valid `open` status is confirmed.
+- **Check staleness via `lastSeenTimestampNs`:** Detect when data stops updating entirely, which is a separate but complementary signal to the above.
+- **Pause or lock market activity** when any of the above conditions are triggered.
+- **Restrict to narrow price bands** based on a recent valid reference price.
+- **Temporarily switch to the [tokenized asset](#stream-switching-example-logic) feed** (understanding that it also carries liquidity limitations).
 
 ### Structural Illiquidity and Volatility in Extended & Overnight Hours
 
@@ -7014,7 +7258,7 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
 
 - **Git**: Make sure you have Git installed. You can check your current version by running git --version in your terminal and download the latest version from the official [Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if necessary.
 - **Go Version**: Make sure you have Go version 1.21 or higher. You can check your current version by running `go version` in your terminal and download the latest version from the official [Go website](https://go.dev/) if necessary.
-- **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to request mainnet or testnet access.
+- **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us](https://chain.link/contact?ref_id=datastreams) to request mainnet or testnet access.
 
 ## Tutorial
 
@@ -7624,7 +7868,7 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
 
 - **Git**: Make sure you have Git installed. You can check your current version by running git --version in your terminal and download the latest version from the official [Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if necessary.
 - **Go Version**: Make sure you have Go version 1.21 or higher. You can check your current version by running `go version` in your terminal and download the latest version from the official [Go website](https://go.dev/) if necessary.
-- **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to request mainnet or testnet access.
+- **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us](https://chain.link/contact?ref_id=datastreams) to request mainnet or testnet access.
 
 ## Tutorial
 
@@ -8069,7 +8313,7 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
 ## Requirements
 
 - **Rust**: Make sure you have Rust installed. You can install Rust by following the instructions on the official [Rust website](https://www.rust-lang.org/tools/install).
-- **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to request mainnet or testnet access.
+- **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us](https://chain.link/contact?ref_id=datastreams) to request mainnet or testnet access.
 
 ## Tutorial
 
@@ -8381,7 +8625,7 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
 ## Requirements
 
 - **Rust**: Make sure you have Rust installed. You can install Rust by following the instructions on the official [Rust website](https://www.rust-lang.org/tools/install).
-- **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to request mainnet or testnet access.
+- **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us](https://chain.link/contact?ref_id=datastreams) to request mainnet or testnet access.
 
 ## Tutorial
 
@@ -8839,7 +9083,7 @@ Before you begin, you should have:
   - [RPC Clients](https://solana.com/docs/rpc) and network interaction
   - [Transactions](https://solana.com/docs/core/transactions) and signing
   - [Keypairs](https://solana.com/docs/intro/wallets#keypair) and account management
-- An allowlisted account in the Data Streams Access Controller ([contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to get started)
+- An allowlisted account in the Data Streams Access Controller ([contact us](https://chain.link/contact?ref_id=datastreams) to get started)
 
 ### Requirements
 
@@ -9189,7 +9433,7 @@ Before you begin, you should have:
   - [Instructions](https://solana.com/docs/core/transactions#instruction)
   - [Program Derived Addresses (PDAs)](https://solana.com/docs/core/pda)
 - Knowledge of the [Anchor](https://www.anchor-lang.com/) framework
-- An allowlisted account in the Data Streams Access Controller. ([Contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to get started).
+- An allowlisted account in the Data Streams Access Controller. ([contact us](https://chain.link/contact?ref_id=datastreams) to get started).
 
 ### Requirements
 
@@ -9747,7 +9991,7 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
 - **Git**: Make sure you have Git installed. You can check your current version by running git --version in your terminal and download the latest version from the official [Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if necessary.
 - **Node.js**: Make sure you have Node.js 20.0 or higher. You can check your current version by running node --version in your terminal and download the latest version from the official [Node.js website](https://nodejs.org/) if necessary.
 - **TypeScript**: Make sure you have TypeScript 5.3 or higher. You can check your current version by running npx tsc --version in your terminal and install or update TypeScript by running npm install -g typescript if necessary.
-- **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to request mainnet or testnet access.
+- **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us](https://chain.link/contact?ref_id=datastreams) to request mainnet or testnet access.
 
 ## Tutorial
 
@@ -10212,7 +10456,7 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
 - **Git**: Make sure you have Git installed. You can check your current version by running git --version in your terminal and download the latest version from the official [Git website](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if necessary.
 - **Node.js**: Make sure you have Node.js 20.0 or higher. You can check your current version by running node --version in your terminal and download the latest version from the official [Node.js website](https://nodejs.org/) if necessary.
 - **TypeScript**: Make sure you have TypeScript 5.3 or higher. You can check your current version by running npx tsc --version in your terminal and install or update TypeScript by running npm install -g typescript if necessary.
-- **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us](https://chainlinkcommunity.typeform.com/datastreams?typeform-source=docs.chain.link#ref_id=docs) to request mainnet or testnet access.
+- **API Credentials**: Access to Data Streams requires API credentials. If you haven't already, [contact us](https://chain.link/contact?ref_id=datastreams) to request mainnet or testnet access.
 
 ## Tutorial
 

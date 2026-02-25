@@ -297,7 +297,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
-          title: "Confidential API Interactions (Experimental)",
+          title: "Confidential API Interactions",
           url: "cre/guides/workflow/using-confidential-http-client",
           children: [
             {
@@ -424,7 +424,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         { title: "Triggers", url: "cre/capabilities/triggers" },
         { title: "HTTP", url: "cre/capabilities/http" },
         {
-          title: "Confidential HTTP (Experimental)",
+          title: "Confidential HTTP",
           url: "cre/capabilities/confidential-http",
           highlightAsCurrent: ["cre/capabilities/confidential-http-ts", "cre/capabilities/confidential-http-go"],
         },
@@ -460,6 +460,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "CRE Templates Hub",
           url: "https://docs.chain.link/cre-templates",
+        },
+        {
+          title: "Custom Data Feed Template",
+          url: "cre/templates/running-demo-workflow",
+          highlightAsCurrent: ["cre/templates/running-demo-workflow-ts", "cre/templates/running-demo-workflow-go"],
         },
       ],
     },
@@ -548,7 +553,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               highlightAsCurrent: ["cre/reference/sdk/http-client-ts", "cre/reference/sdk/http-client-go"],
             },
             {
-              title: "Confidential HTTP Client (Experimental)",
+              title: "Confidential HTTP Client",
               url: "cre/reference/sdk/confidential-http-client",
               highlightAsCurrent: [
                 "cre/reference/sdk/confidential-http-client-ts",
@@ -561,6 +566,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               highlightAsCurrent: ["cre/reference/sdk/consensus-ts", "cre/reference/sdk/consensus-go"],
             },
           ],
+        },
+      ],
+    },
+    {
+      section: "Migrate to CRE",
+      contents: [
+        {
+          title: "Migrate from Gelato",
+          url: "cre/reference/gelato-migration",
+          highlightAsCurrent: ["cre/reference/gelato-migration-ts", "cre/reference/gelato-migration-go"],
         },
       ],
     },
@@ -994,6 +1009,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Verify report data (Solana)",
           url: "data-streams/tutorials/solana-onchain-report-verification",
           highlightAsCurrent: ["data-streams/tutorials/solana-offchain-report-verification"],
+        },
+        {
+          title: "Canton Integration",
+          url: "data-streams/canton-integration",
         },
       ],
     },
