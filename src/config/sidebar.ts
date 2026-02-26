@@ -399,6 +399,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Managing Authentication",
               url: "cre/account/managing-auth",
             },
+            {
+              title: "Requesting Deploy Access",
+              url: "cre/account/deploy-access",
+            },
           ],
         },
         {
