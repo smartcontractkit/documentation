@@ -5,7 +5,7 @@ title: "Workflow Commands"
 metadata:
   description: "Manage workflows with CLI: complete command reference for simulating, deploying, activating, pausing, and deleting workflows."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-02-26"
 ---
 
 import { Aside } from "@components"
@@ -243,6 +243,48 @@ cre workflow delete ./my-workflow --target production-settings
 </Aside>
 
 For more details, see [Deleting Workflows](/cre/guides/operations/deleting-workflows).
+
+## `cre workflow custom-build`
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Irreversible operation">
+  This command permanently modifies your `workflow.yaml`, updating `workflow-path` to `./wasm/workflow.wasm` across all targets. It cannot be undone. After conversion, the CLI will no longer compile your source code automatically — your `Makefile` is responsible for producing the WASM binary.
+</Aside>
+
+Converts a workflow to use a custom self-compiled WASM build. Instead of the CLI compiling your source automatically, a generated `Makefile` owns the build step. Use this when you need custom compiler flags, CI/CD artifact promotion, pre-build validation, or non-standard toolchains.
+
+**Usage:**
+
+```bash
+cre workflow custom-build <workflow-folder-path> [flags]
+```
+
+**Arguments:**
+
+- `<workflow-folder-path>` — (Required) Path to the workflow folder (e.g., `./my-workflow`)
+
+**Flags:**
+
+| <div style={{ width: "150px" }}>Flag</div> | Description                                      |
+| ------------------------------------------ | ------------------------------------------------ |
+| `-f, --force`                              | Skip confirmation prompt and convert immediately |
+
+**Example:**
+
+```bash
+cre workflow custom-build ./my-workflow
+```
+
+**Expected output:**
+
+```bash
+✓ Workflow converted to custom build. workflow-path is now ./wasm/workflow.wasm
+  The Makefile is configured to output the WASM to this path. Run: make build
+```
+
+For a full guide including Makefile examples and customization, see [Custom WASM Builds](/cre/guides/operations/custom-build).
+
+---
 
 ## Workflow lifecycle
 

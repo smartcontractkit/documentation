@@ -374,6 +374,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Monitoring & Debugging Workflows",
           url: "cre/guides/operations/monitoring-workflows",
         },
+        {
+          title: "Custom WASM Builds",
+          url: "cre/guides/operations/custom-build",
+        },
       ],
     },
     {

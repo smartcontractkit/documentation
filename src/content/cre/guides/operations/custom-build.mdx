@@ -1,0 +1,168 @@
+---
+section: cre
+date: Last Modified
+title: "Custom WASM Builds"
+metadata:
+  description: "Learn how to take ownership of the WASM build step in CRE workflows using cre workflow custom-build and a custom Makefile."
+  datePublished: "2026-02-26"
+  lastModified: "2026-02-26"
+---
+
+import { Aside } from "@components"
+import { CodeHighlightBlock } from "@components"
+import customBuildMakefileDefault from "./snippets/custom-build-makefile-default.mk?raw"
+import customBuildMakefile from "./snippets/custom-build-makefile.mk?raw"
+
+By default, `cre workflow deploy` and `cre workflow simulate` compile your Go or TypeScript source to a WASM binary automatically — no build configuration required. This works for most workflows.
+
+`cre workflow custom-build` is an opt-in feature for advanced users who need to own the build step. Once converted, the CLI delegates compilation to a `Makefile` in your workflow directory instead of compiling your source itself.
+
+## When to use custom WASM builds
+
+{/* prettier-ignore */}
+<Aside type="note" title="Most users don't need this">
+  Automatic builds are the default and work for the vast majority of workflows. Use custom builds only when you have a specific reason to take control of the compilation step.
+</Aside>
+
+Generally, you should consider using custom WASM builds only when you have a specific reason to take control of the compilation step. Custom workflows are particularly useful for teams that need to use a custom compiler version or toolchain that differs from the CRE default compiler.
+
+Common reasons to use custom WASM builds:
+
+- **Custom compiler flags or build tags**: Add optimization flags, conditional compilation tags, or other build-time settings not exposed by the CLI's built-in compiler
+- **CI/CD pipelines**: Build the WASM artifact once in your pipeline and promote it across environments without recompiling
+- **Pre-build validation**: Add linting, type checking, formatting, or security scanning steps before compilation
+- **Non-standard toolchains**: Use a custom compiler version or toolchain that differs from the CLI default
+- **Language and SDK extensions**: Integrate code from other languages or custom SDKs into your build pipeline
+
+## Convert a workflow to custom build
+
+Run the following command from your project root:
+
+```bash
+cre workflow custom-build ./my-workflow
+```
+
+You will be prompted to confirm before any changes are made. To skip the prompt, use `--force`.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Irreversible operation">
+  This permanently modifies your `workflow.yaml`, updating `workflow-path` to `./wasm/workflow.wasm` for all targets. After conversion, the CLI no longer compiles your source automatically — your `Makefile` is responsible for producing the binary.
+</Aside>
+
+The following changes are made to your workflow:
+
+- Updates `workflow-path` to `./wasm/workflow.wasm` in your `workflow.yaml` for all targets
+- Creates a `Makefile` in your workflow directory with a `build` target
+- Creates a `wasm/` output directory
+
+## Build and simulate
+
+After conversion, install dependencies (TypeScript only), then build and simulate:
+
+```bash
+# TypeScript only
+bun install
+
+make build
+cre workflow simulate ./my-workflow --target staging-settings
+```
+
+The CLI picks up the compiled binary at `wasm/workflow.wasm` automatically.
+
+## Try it yourself
+
+Walk through the full custom build flow end to end using a hello-world project.
+
+**1. Convert your workflow to a custom build:** Run the following command from your project root:
+
+```bash
+cre workflow custom-build ./my-workflow
+```
+
+**2. Open the generated `Makefile`:** In the `my-workflow` directory, you'll see a new `Makefile` with a `build` target.
+
+<CodeHighlightBlock lang="bash" code={customBuildMakefileDefault} title="my-workflow/Makefile" />
+
+Install dependencies and run the initial build:
+
+```bash
+# TypeScript only
+bun install
+
+make build
+cre workflow simulate ./my-workflow --target staging-settings
+```
+
+For a hello-world workflow you'll see output like `"Hello world!"`.
+
+**3. Add a custom step to your `Makefile`** (highlighted line shows what to add):
+
+<CodeHighlightBlock lang="bash" code={customBuildMakefile} title="my-workflow/Makefile" />
+
+**4. Rebuild and simulate again:** Run the following commands from your project root:
+
+```bash
+make build
+cre workflow simulate ./my-workflow --target staging-settings
+```
+
+When `make build` runs you'll see `Running my custom build step...` printed before compilation.
+
+Swap the `echo` for any real step: type checking, linting, code generation, or a custom compiler invocation.
+
+## Generated Makefile
+
+The generated `Makefile` is ready to use. The only requirement is that `make build` produces `wasm/workflow.wasm`.
+
+**Go:**
+
+```makefile
+.PHONY: build
+
+build:
+	GOOS=wasip1 GOARCH=wasm CGO_ENABLED=0 go build -o wasm/workflow.wasm -trimpath -ldflags="-buildid= -w -s" .
+```
+
+**TypeScript:**
+
+```makefile
+.PHONY: build
+
+build:
+	bun cre-compile main.ts wasm/workflow.wasm
+```
+
+## Customizing the Makefile
+
+Edit the generated `Makefile` to add any steps your build requires.
+
+**Example: Go with build tags:**
+
+```makefile
+.PHONY: build
+
+build:
+	GOOS=wasip1 GOARCH=wasm CGO_ENABLED=0 go build -tags mytag -o wasm/workflow.wasm -trimpath -ldflags="-buildid= -w -s" .
+```
+
+**Example: TypeScript with type checking, linting, and formatting:**
+
+```makefile
+.PHONY: build format lint typecheck
+
+format:
+	bun run format
+lint: format
+	bun run lint
+typecheck: lint
+	bun run typecheck
+
+build: typecheck
+	bun cre-compile main.ts wasm/workflow.wasm
+```
+
+## Learn more
+
+- [`cre workflow custom-build` reference](/cre/reference/cli/workflow#cre-workflow-custom-build): Command flags and usage
+- [Simulating Workflows](/cre/guides/operations/simulating-workflows): Testing your workflow locally
+- [Deploying Workflows](/cre/guides/operations/deploying-workflows): Deploying to the Workflow Registry
