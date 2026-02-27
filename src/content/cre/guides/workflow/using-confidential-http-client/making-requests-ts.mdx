@@ -92,15 +92,7 @@ type TransactionResult = {
 Unlike the regular HTTP client, the Confidential HTTP client takes a `Runtime` directly and does not require `runInNodeMode` wrapping:
 
 ```typescript
-import {
-  CronCapability,
-  ConfidentialHTTPClient,
-  handler,
-  ok,
-  json,
-  type Runtime,
-  Runner,
-} from "@chainlink/cre-sdk"
+import { CronCapability, ConfidentialHTTPClient, handler, ok, json, type Runtime, Runner } from "@chainlink/cre-sdk"
 
 const onCronTrigger = (runtime: Runtime<Config>): TransactionResult => {
   const confHTTPClient = new ConfidentialHTTPClient()
@@ -193,7 +185,10 @@ export AES_KEY_ALL="your-256-bit-hex-encoded-key"
          },
          encryptOutput: true,
        },
-       vaultDonSecrets: [{ key: "myApiKey", owner: runtime.config.owner }, { key: "san_marino_aes_gcm_encryption_key" }],
+       vaultDonSecrets: [
+         { key: "myApiKey", owner: runtime.config.owner },
+         { key: "san_marino_aes_gcm_encryption_key" },
+       ],
      })
      .result()
    ```
@@ -215,15 +210,7 @@ The SDK response helpers `ok()`, `text()`, and `json()` work with Confidential H
 Here's the full workflow code for a confidential HTTP request with secret injection:
 
 ```typescript
-import {
-  CronCapability,
-  ConfidentialHTTPClient,
-  handler,
-  ok,
-  json,
-  type Runtime,
-  Runner,
-} from "@chainlink/cre-sdk"
+import { CronCapability, ConfidentialHTTPClient, handler, ok, json, type Runtime, Runner } from "@chainlink/cre-sdk"
 import { z } from "zod"
 
 // Config schema

@@ -19,9 +19,9 @@ The [Confidential HTTP](/cre/capabilities/confidential-http-go) Client lets you 
 
 ## Quick reference
 
-| Method                                     | Description                               |
-| ------------------------------------------ | ----------------------------------------- |
-| [`client.SendRequest`](#clientsendrequest) | Makes a confidential HTTP request.        |
+| Method                                     | Description                        |
+| ------------------------------------------ | ---------------------------------- |
+| [`client.SendRequest`](#clientsendrequest) | Makes a confidential HTTP request. |
 
 ## Core types
 
@@ -38,15 +38,15 @@ The top-level request type that combines an HTTP request with Vault DON secrets 
 
 Defines the HTTP request that will be executed inside the enclave.
 
-| <div style="width: 150px;">Field</div> | <div style="width: 250px;">Type</div> | Description                                                                                                   |
-| -------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `Url`                                  | `string`                              | The URL of the API endpoint.                                                                                  |
-| `Method`                               | `string`                              | The HTTP method (e.g., `"GET"`, `"POST"`).                                                                    |
-| `Body`                                 | `isHTTPRequest_Body`                  | The request body. Use `HTTPRequest_BodyString` for string templates or `HTTPRequest_BodyBytes` for raw bytes. |
-| `MultiHeaders`                         | `map[string]*HeaderValues`            | Request headers. Supports multiple values per key and template syntax for secret injection.                   |
-| `TemplatePublicValues`                 | `map[string]string`                   | Public (non-secret) values used to fill template placeholders in the body and headers.                        |
-| `CustomRootCaCertPem`                  | `[]byte`                              | Optional custom root CA certificate (PEM format) for verifying the external server's TLS certificate.         |
-| `Timeout`                              | `*durationpb.Duration`                | Optional request timeout.                                                                                     |
+| <div style="width: 150px;">Field</div> | <div style="width: 250px;">Type</div> | Description                                                                                                                            |
+| -------------------------------------- | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `Url`                                  | `string`                              | The URL of the API endpoint.                                                                                                           |
+| `Method`                               | `string`                              | The HTTP method (e.g., `"GET"`, `"POST"`).                                                                                             |
+| `Body`                                 | `isHTTPRequest_Body`                  | The request body. Use `HTTPRequest_BodyString` for string templates or `HTTPRequest_BodyBytes` for raw bytes.                          |
+| `MultiHeaders`                         | `map[string]*HeaderValues`            | Request headers. Supports multiple values per key and template syntax for secret injection.                                            |
+| `TemplatePublicValues`                 | `map[string]string`                   | Public (non-secret) values used to fill template placeholders in the body and headers.                                                 |
+| `CustomRootCaCertPem`                  | `[]byte`                              | Optional custom root CA certificate (PEM format) for verifying the external server's TLS certificate.                                  |
+| `Timeout`                              | `*durationpb.Duration`                | Optional request timeout.                                                                                                              |
 | `EncryptOutput`                        | `bool`                                | If `true`, encrypts the response body before it leaves the enclave. See [Response encryption](#response-encryption). Default: `false`. |
 
 #### Setting the request body

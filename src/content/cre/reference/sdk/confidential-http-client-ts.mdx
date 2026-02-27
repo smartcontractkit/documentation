@@ -19,9 +19,9 @@ The [Confidential HTTP](/cre/capabilities/confidential-http-ts) Client lets you 
 
 ## Quick reference
 
-| Method                          | Description                            |
-| ------------------------------- | -------------------------------------- |
-| [`sendRequest`](#sendrequest)   | Makes a confidential HTTP request.     |
+| Method                        | Description                        |
+| ----------------------------- | ---------------------------------- |
+| [`sendRequest`](#sendrequest) | Makes a confidential HTTP request. |
 
 ## Core types
 
@@ -43,16 +43,16 @@ The top-level request type that combines an HTTP request with Vault DON secrets 
 
 Defines the HTTP request that will be executed inside the enclave.
 
-| <div style="width: 170px;">Field</div> | <div style="width: 250px;">Type</div>        | Description                                                                                               |
-| -------------------------------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `url`                                  | `string`                                     | The URL of the API endpoint.                                                                              |
-| `method`                               | `string`                                     | The HTTP method (e.g., `"GET"`, `"POST"`).                                                                |
-| `bodyString`                           | `string` (optional)                          | The request body as a string template. Use this for secret injection with `{{.secretName}}` placeholders. |
-| `bodyBytes`                            | `Uint8Array` \| `string` (optional)          | The request body as raw bytes (base64-encoded in JSON format).                                            |
-| `multiHeaders`                         | `{ [key: string]: HeaderValues }` (optional) | Request headers. Supports multiple values per key and template syntax for secret injection.               |
-| `templatePublicValues`                 | `{ [key: string]: string }` (optional)       | Public (non-secret) values used to fill template placeholders in the body and headers.                    |
-| `customRootCaCertPem`                  | `Uint8Array` \| `string` (optional)          | Optional custom root CA certificate (PEM format) for verifying the external server's TLS certificate.     |
-| `timeout`                              | `Duration` \| `DurationJson` (optional)      | Optional request timeout (e.g., `"5s"`).                                                                  |
+| <div style="width: 170px;">Field</div> | <div style="width: 250px;">Type</div>        | Description                                                                                                                            |
+| -------------------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `url`                                  | `string`                                     | The URL of the API endpoint.                                                                                                           |
+| `method`                               | `string`                                     | The HTTP method (e.g., `"GET"`, `"POST"`).                                                                                             |
+| `bodyString`                           | `string` (optional)                          | The request body as a string template. Use this for secret injection with `{{.secretName}}` placeholders.                              |
+| `bodyBytes`                            | `Uint8Array` \| `string` (optional)          | The request body as raw bytes (base64-encoded in JSON format).                                                                         |
+| `multiHeaders`                         | `{ [key: string]: HeaderValues }` (optional) | Request headers. Supports multiple values per key and template syntax for secret injection.                                            |
+| `templatePublicValues`                 | `{ [key: string]: string }` (optional)       | Public (non-secret) values used to fill template placeholders in the body and headers.                                                 |
+| `customRootCaCertPem`                  | `Uint8Array` \| `string` (optional)          | Optional custom root CA certificate (PEM format) for verifying the external server's TLS certificate.                                  |
+| `timeout`                              | `Duration` \| `DurationJson` (optional)      | Optional request timeout (e.g., `"5s"`).                                                                                               |
 | `encryptOutput`                        | `boolean` (optional)                         | If `true`, encrypts the response body before it leaves the enclave. See [Response encryption](#response-encryption). Default: `false`. |
 
 {/* prettier-ignore */}
@@ -115,12 +115,7 @@ An object with a `.result()` method that blocks until the request completes and 
 **Example:**
 
 ```typescript
-import {
-  ConfidentialHTTPClient,
-  ok,
-  json,
-  type Runtime,
-} from "@chainlink/cre-sdk"
+import { ConfidentialHTTPClient, ok, json, type Runtime } from "@chainlink/cre-sdk"
 
 type Config = { url: string; owner: string }
 type APIResult = { data: string }
