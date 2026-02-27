@@ -8,7 +8,7 @@ declare global {
 }
 
 // ================================
-//  CONFIGURABLE CONSTANTS
+// CONFIGURABLE CONSTANTS
 // ================================
 const BASE_URL = "http://localhost:4321"
 const TEMP_DIR = `${cwd()}/temp`
@@ -17,7 +17,7 @@ const LOG_FILE = `${TEMP_DIR}/link-checker.log`
 const LINK_CHUNK_SIZE = 150
 
 // ================================
-//  HELPER FUNCTIONS
+// HELPER FUNCTIONS
 // ================================
 
 /**
@@ -267,7 +267,7 @@ function checkChunkFile(linksFile: string, mode: "internal" | "external"): Promi
 }
 
 // ================================
-//  MAIN LOGIC
+// MAIN LOGIC
 // ================================
 
 async function main() {

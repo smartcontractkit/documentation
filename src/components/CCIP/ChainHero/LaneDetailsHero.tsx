@@ -88,7 +88,7 @@ function LaneDetailsHero({
   explorer,
   inOutbound,
 }: LaneDetailsHeroProps) {
-  // Map boolean values to display strings
+  // Map Out-of-Order flag to display text
   const getOutOfOrderText = (value?: boolean) => {
     if (value === true) return "Required"
     if (value === false) return "Optional"
