@@ -19,10 +19,9 @@ The [Confidential HTTP](/cre/capabilities/confidential-http-ts) Client lets you 
 
 ## Quick reference
 
-| Method                                              | Description                                                                            |
-| --------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| [`sendRequest` (high-level)](#sendrequest)          | **Recommended.** Makes a confidential HTTP request with built-in consensus and typing. |
-| [`sendRequest` (low-level)](#low-level-sendrequest) | Makes a confidential HTTP request manually inside a `runInNodeMode` block.             |
+| Method                          | Description                            |
+| ------------------------------- | -------------------------------------- |
+| [`sendRequest`](#sendrequest)   | Makes a confidential HTTP request.     |
 
 ## Core types
 
@@ -39,7 +38,6 @@ The top-level request type that combines an HTTP request with Vault DON secrets 
 | -------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `request`                              | `HTTPRequest` \| `HTTPRequestJson`               | The HTTP request to execute inside the enclave. See [`HTTPRequest`](#httprequest--httprequestjson).                                               |
 | `vaultDonSecrets`                      | `SecretIdentifier[]` \| `SecretIdentifierJson[]` | List of secrets to fetch from the Vault DON and make available in the enclave. See [`SecretIdentifier`](#secretidentifier--secretidentifierjson). |
-| `encryptOutput`                        | `boolean`                                        | If `true`, encrypts the response body before it leaves the enclave. See [Response encryption](#response-encryption). Default: `false`.            |
 
 ### `HTTPRequest` / `HTTPRequestJson`
 
@@ -55,6 +53,7 @@ Defines the HTTP request that will be executed inside the enclave.
 | `templatePublicValues`                 | `{ [key: string]: string }` (optional)       | Public (non-secret) values used to fill template placeholders in the body and headers.                    |
 | `customRootCaCertPem`                  | `Uint8Array` \| `string` (optional)          | Optional custom root CA certificate (PEM format) for verifying the external server's TLS certificate.     |
 | `timeout`                              | `Duration` \| `DurationJson` (optional)      | Optional request timeout (e.g., `"5s"`).                                                                  |
+| `encryptOutput`                        | `boolean` (optional)                         | If `true`, encrypts the response body before it leaves the enclave. See [Response encryption](#response-encryption). Default: `false`. |
 
 {/* prettier-ignore */}
 <Aside type="note" title="bodyString vs bodyBytes">
@@ -89,110 +88,25 @@ Represents multiple values for a single HTTP header key.
 | -------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | `values`                               | `string[]`                            | The header values. Supports template syntax for secret injection (e.g., `"Basic {{.myToken}}"`). |
 
-### `ConfidentialHTTPSendRequester`
-
-The object passed to your fetch function when using the [high-level `sendRequest`](#sendrequest) pattern. It wraps the low-level client and provides a single method:
-
-| Method                                                                                                       | Description                                                 |
-| ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
-| `sendRequest(input: ConfidentialHTTPRequest \| ConfidentialHTTPRequestJson): { result: () => HTTPResponse }` | Sends a confidential HTTP request and returns the response. |
-
-You don't create this object yourself — it is provided by the SDK when your function is called.
-
 ## Making requests
 
 ### `sendRequest()`
 
-**Recommended.** The high-level `sendRequest` method handles `runInNodeMode` wrapping and consensus for you. You provide a function that receives a `ConfidentialHTTPSendRequester` and your arguments, and the SDK takes care of the rest.
-
-**Signature:**
-
-```typescript
-sendRequest<TArgs extends unknown[], TOutput>(
-  runtime: Runtime<unknown>,
-  fn: (sendRequester: ConfidentialHTTPSendRequester, ...args: TArgs) => TOutput,
-  consensusAggregation: ConsensusAggregation<TOutput, true>,
-  unwrapOptions?: UnwrapOptions<TOutput>,
-): (...args: TArgs) => { result: () => TOutput }
-```
-
-**Parameters:**
-
-- `runtime`: The `Runtime` instance from your trigger handler.
-- `fn`: A function that receives a `ConfidentialHTTPSendRequester` plus any additional arguments you pass. Use the `sendRequester` to make the confidential request and return the parsed result.
-- `consensusAggregation`: The consensus strategy (e.g., `consensusIdenticalAggregation()`, `consensusMedianAggregation()`).
-- `unwrapOptions` (optional): Advanced option for controlling how complex (non-primitive) output types are unwrapped during consensus. Not needed for most use cases.
-
-**Returns:**
-
-A curried function that accepts `...args` and returns an object with a `.result()` method.
-
-**Example:**
-
-```typescript
-import {
-  ConfidentialHTTPClient,
-  consensusIdenticalAggregation,
-  ok,
-  json,
-  type ConfidentialHTTPSendRequester,
-  type Runtime,
-} from "@chainlink/cre-sdk"
-
-type Config = { url: string; owner: string }
-type APIResult = { data: string }
-
-// 1. Define your fetch function
-const fetchData = (sendRequester: ConfidentialHTTPSendRequester, config: Config): APIResult => {
-  const response = sendRequester
-    .sendRequest({
-      request: {
-        url: config.url,
-        method: "GET",
-        multiHeaders: {
-          Authorization: { values: ["Basic {{.apiKey}}"] },
-        },
-      },
-      vaultDonSecrets: [{ key: "apiKey", owner: config.owner }],
-    })
-    .result()
-
-  if (!ok(response)) {
-    throw new Error(`Request failed: ${response.statusCode}`)
-  }
-
-  return json(response) as APIResult
-}
-
-// 2. Call sendRequest in your trigger handler
-const onCronTrigger = (runtime: Runtime<Config>): string => {
-  const confHTTPClient = new ConfidentialHTTPClient()
-
-  const result = confHTTPClient
-    .sendRequest(runtime, fetchData, consensusIdenticalAggregation<APIResult>())(runtime.config)
-    .result()
-
-  return result.data
-}
-```
-
-### Low-level `sendRequest()`
-
-The low-level overload gives you direct access to the client within a `runtime.runInNodeMode()` block. For Confidential HTTP, this offers minimal practical advantages over the high-level pattern because the API call already executes as a single request inside the enclave. Use this only if you have a specific reason to manage the `runInNodeMode` wrapping manually.
+Makes a confidential HTTP request. The request executes inside a secure enclave, so unlike the regular HTTP client, there is no need to wrap this call in `runtime.runInNodeMode()`.
 
 **Signature:**
 
 ```typescript
 sendRequest(
-  runtime: NodeRuntime<unknown>,
+  runtime: Runtime<unknown>,
   input: ConfidentialHTTPRequest | ConfidentialHTTPRequestJson
 ): { result: () => HTTPResponse }
 ```
 
 **Parameters:**
 
-- `runtime`: A `NodeRuntime` instance provided by `runtime.runInNodeMode()`.
-- `input`: A `ConfidentialHTTPRequest` or `ConfidentialHTTPRequestJson` object containing the request, secrets, and encryption settings.
+- `runtime`: The `Runtime` instance from your trigger handler.
+- `input`: A `ConfidentialHTTPRequest` or `ConfidentialHTTPRequestJson` object containing the request and secrets.
 
 **Returns:**
 
@@ -203,44 +117,35 @@ An object with a `.result()` method that blocks until the request completes and 
 ```typescript
 import {
   ConfidentialHTTPClient,
-  consensusIdenticalAggregation,
+  ok,
+  json,
   type Runtime,
-  type NodeRuntime,
 } from "@chainlink/cre-sdk"
 
-type Config = { url: string }
+type Config = { url: string; owner: string }
+type APIResult = { data: string }
 
-const fetchData = (nodeRuntime: NodeRuntime<Config>): string => {
-  const client = new ConfidentialHTTPClient()
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  const confHTTPClient = new ConfidentialHTTPClient()
 
-  const resp = client
-    .sendRequest(nodeRuntime, {
+  const response = confHTTPClient
+    .sendRequest(runtime, {
       request: {
-        url: nodeRuntime.config.url,
+        url: runtime.config.url,
         method: "GET",
         multiHeaders: {
           Authorization: { values: ["Basic {{.apiKey}}"] },
         },
       },
-      vaultDonSecrets: [{ key: "apiKey" }],
-      encryptOutput: false,
+      vaultDonSecrets: [{ key: "apiKey", owner: runtime.config.owner }],
     })
     .result()
 
-  if (resp.statusCode !== 200) {
-    throw new Error(`Request failed with status: ${resp.statusCode}`)
+  if (!ok(response)) {
+    throw new Error(`Request failed: ${response.statusCode}`)
   }
 
-  const bodyText = new TextDecoder().decode(resp.body)
-  return bodyText
-}
-
-// In your workflow
-const onCronTrigger = (runtime: Runtime<Config>): string => {
-  const result = runtime.runInNodeMode(fetchData, consensusIdenticalAggregation<string>())().result()
-
-  runtime.log(`Result: ${result}`)
-  return result
+  return (json(response) as APIResult).data
 }
 ```
 

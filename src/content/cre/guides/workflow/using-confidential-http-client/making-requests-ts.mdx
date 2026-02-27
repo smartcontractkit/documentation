@@ -87,25 +87,35 @@ type TransactionResult = {
 }
 ```
 
-### Step 4: Implement the fetch function
+### Step 4: Implement the request and wire it into your workflow
 
-Create the function that will be passed to `sendRequest()`. This function receives a `ConfidentialHTTPSendRequester` and your config as parameters:
+Unlike the regular HTTP client, the Confidential HTTP client takes a `Runtime` directly and does not require `runInNodeMode` wrapping:
 
 ```typescript
-import { type ConfidentialHTTPSendRequester, ok, json } from "@chainlink/cre-sdk"
+import {
+  CronCapability,
+  ConfidentialHTTPClient,
+  handler,
+  ok,
+  json,
+  type Runtime,
+  Runner,
+} from "@chainlink/cre-sdk"
 
-const fetchTransaction = (sendRequester: ConfidentialHTTPSendRequester, config: Config): TransactionResult => {
+const onCronTrigger = (runtime: Runtime<Config>): TransactionResult => {
+  const confHTTPClient = new ConfidentialHTTPClient()
+
   // 1. Send the confidential request
-  const response = sendRequester
-    .sendRequest({
+  const response = confHTTPClient
+    .sendRequest(runtime, {
       request: {
-        url: config.url,
+        url: runtime.config.url,
         method: "GET",
         multiHeaders: {
           Authorization: { values: ["Basic {{.myApiKey}}"] },
         },
       },
-      vaultDonSecrets: [{ key: "myApiKey", owner: config.owner }],
+      vaultDonSecrets: [{ key: "myApiKey", owner: runtime.config.owner }],
     })
     .result()
 
@@ -115,33 +125,9 @@ const fetchTransaction = (sendRequester: ConfidentialHTTPSendRequester, config: 
   }
 
   // 3. Parse and return the result
-  return json(response) as TransactionResult
-}
-```
-
-### Step 5: Wire it into your workflow
-
-In your trigger handler, call `confHTTPClient.sendRequest()` with your fetch function and a consensus method:
-
-```typescript
-import {
-  CronCapability,
-  ConfidentialHTTPClient,
-  handler,
-  consensusIdenticalAggregation,
-  type Runtime,
-  Runner,
-} from "@chainlink/cre-sdk"
-
-const onCronTrigger = (runtime: Runtime<Config>): string => {
-  const confHTTPClient = new ConfidentialHTTPClient()
-
-  const result = confHTTPClient
-    .sendRequest(runtime, fetchTransaction, consensusIdenticalAggregation<TransactionResult>())(runtime.config)
-    .result()
-
+  const result = json(response) as TransactionResult
   runtime.log(`Transaction result: ${result.transactionId} — ${result.status}`)
-  return result.transactionId
+  return result
 }
 ```
 
@@ -197,17 +183,17 @@ export AES_KEY_ALL="your-256-bit-hex-encoded-key"
 1. **Include the key in your `vaultDonSecrets`** and set `encryptOutput: true`:
 
    ```typescript
-   const response = sendRequester
-     .sendRequest({
+   const response = confHTTPClient
+     .sendRequest(runtime, {
        request: {
-         url: config.url,
+         url: runtime.config.url,
          method: "GET",
          multiHeaders: {
            Authorization: { values: ["Basic {{.myApiKey}}"] },
          },
+         encryptOutput: true,
        },
-       vaultDonSecrets: [{ key: "myApiKey", owner: config.owner }, { key: "san_marino_aes_gcm_encryption_key" }],
-       encryptOutput: true,
+       vaultDonSecrets: [{ key: "myApiKey", owner: runtime.config.owner }, { key: "san_marino_aes_gcm_encryption_key" }],
      })
      .result()
    ```
@@ -233,10 +219,8 @@ import {
   CronCapability,
   ConfidentialHTTPClient,
   handler,
-  consensusIdenticalAggregation,
   ok,
   json,
-  type ConfidentialHTTPSendRequester,
   type Runtime,
   Runner,
 } from "@chainlink/cre-sdk"
@@ -257,18 +241,20 @@ type TransactionResult = {
   status: string
 }
 
-// Fetch function — receives a ConfidentialHTTPSendRequester and config
-const fetchTransaction = (sendRequester: ConfidentialHTTPSendRequester, config: Config): TransactionResult => {
-  const response = sendRequester
-    .sendRequest({
+// Main workflow handler
+const onCronTrigger = (runtime: Runtime<Config>): TransactionResult => {
+  const confHTTPClient = new ConfidentialHTTPClient()
+
+  const response = confHTTPClient
+    .sendRequest(runtime, {
       request: {
-        url: config.url,
+        url: runtime.config.url,
         method: "GET",
         multiHeaders: {
           Authorization: { values: ["Basic {{.myApiKey}}"] },
         },
       },
-      vaultDonSecrets: [{ key: "myApiKey", owner: config.owner }],
+      vaultDonSecrets: [{ key: "myApiKey", owner: runtime.config.owner }],
     })
     .result()
 
@@ -276,19 +262,9 @@ const fetchTransaction = (sendRequester: ConfidentialHTTPSendRequester, config: 
     throw new Error(`HTTP request failed with status: ${response.statusCode}`)
   }
 
-  return json(response) as TransactionResult
-}
-
-// Main workflow handler
-const onCronTrigger = (runtime: Runtime<Config>): string => {
-  const confHTTPClient = new ConfidentialHTTPClient()
-
-  const result = confHTTPClient
-    .sendRequest(runtime, fetchTransaction, consensusIdenticalAggregation<TransactionResult>())(runtime.config)
-    .result()
-
+  const result = json(response) as TransactionResult
   runtime.log(`Transaction result: ${result.transactionId} — ${result.status}`)
-  return result.transactionId
+  return result
 }
 
 // Initialize workflow

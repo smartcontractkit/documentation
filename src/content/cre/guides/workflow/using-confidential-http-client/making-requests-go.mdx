@@ -94,10 +94,10 @@ type Result struct {
 
 ### Step 4: Implement the request logic
 
-Use `cre.RunInNodeMode` to make the confidential request. The `confidentialhttp.Client` requires a `NodeRuntime`:
+Unlike the regular HTTP client, the Confidential HTTP client takes a `cre.Runtime` directly and does not require `cre.RunInNodeMode` wrapping:
 
 ```go
-func makeConfidentialRequest(config Config, nodeRuntime cre.NodeRuntime) (Result, error) {
+func makeConfidentialRequest(config Config, runtime cre.Runtime) (Result, error) {
 	// 1. Define the request body with secret template placeholders
 	payload := `{"auth": "{{.myApiKey}}", "action": "getTransaction", "id": "tx-123"}`
 
@@ -113,17 +113,17 @@ func makeConfidentialRequest(config Config, nodeRuntime cre.NodeRuntime) (Result
 
 	// 3. Create the client and send the request
 	client := confidentialhttp.Client{}
-	resp, err := client.SendRequest(nodeRuntime, &confidentialhttp.ConfidentialHTTPRequest{
+	resp, err := client.SendRequest(runtime, &confidentialhttp.ConfidentialHTTPRequest{
 		Request: &confidentialhttp.HTTPRequest{
-			Url:    config.URL,
-			Method: "POST",
-			Body:   &confidentialhttp.HTTPRequest_BodyString{BodyString: payload},
+			Url:          config.URL,
+			Method:       "POST",
+			Body:         &confidentialhttp.HTTPRequest_BodyString{BodyString: payload},
 			MultiHeaders: headers,
+			EncryptOutput: false,
 		},
 		VaultDonSecrets: []*confidentialhttp.SecretIdentifier{
 			{Key: "myApiKey"},
 		},
-		EncryptOutput: false,
 	}).Await()
 	if err != nil {
 		return Result{}, fmt.Errorf("confidential HTTP request failed: %w", err)
@@ -141,14 +141,11 @@ func makeConfidentialRequest(config Config, nodeRuntime cre.NodeRuntime) (Result
 
 ### Step 5: Wire it into your workflow
 
-Call the request function from your trigger handler using `cre.RunInNodeMode`:
+Call the request function from your trigger handler:
 
 ```go
 func onCronTrigger(config *Config, runtime cre.Runtime, outputs *cron.Payload) (string, error) {
-	result, err := cre.RunInNodeMode(*config, runtime,
-		makeConfidentialRequest,
-		cre.ConsensusIdenticalAggregation[Result](),
-	).Await()
+	result, err := makeConfidentialRequest(*config, runtime)
 	if err != nil {
 		return "", fmt.Errorf("failed to get result: %w", err)
 	}
@@ -212,18 +209,18 @@ By default, the API response is returned unencrypted (`EncryptOutput: false`). T
 1. **Include the key in your `VaultDonSecrets`** and set `EncryptOutput: true`:
 
    ```go
-   resp, err := client.SendRequest(nodeRuntime, &confidentialhttp.ConfidentialHTTPRequest{
+   resp, err := client.SendRequest(runtime, &confidentialhttp.ConfidentialHTTPRequest{
    	Request: &confidentialhttp.HTTPRequest{
-   		Url:    config.URL,
-   		Method: "POST",
-   		Body:   &confidentialhttp.HTTPRequest_BodyString{BodyString: payload},
-   		MultiHeaders: headers,
+   		Url:           config.URL,
+   		Method:        "POST",
+   		Body:          &confidentialhttp.HTTPRequest_BodyString{BodyString: payload},
+   		MultiHeaders:  headers,
+   		EncryptOutput: true,
    	},
    	VaultDonSecrets: []*confidentialhttp.SecretIdentifier{
    		{Key: "myApiKey"},
    		{Key: "san_marino_aes_gcm_encryption_key"},
    	},
-   	EncryptOutput: true,
    }).Await()
    ```
 
@@ -309,10 +306,7 @@ func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.Secre
 }
 
 func onCronTrigger(config *Config, runtime cre.Runtime, outputs *cron.Payload) (string, error) {
-	result, err := cre.RunInNodeMode(*config, runtime,
-		makeConfidentialRequest,
-		cre.ConsensusIdenticalAggregation[Result](),
-	).Await()
+	result, err := makeConfidentialRequest(*config, runtime)
 	if err != nil {
 		return "", fmt.Errorf("failed to get result: %w", err)
 	}
@@ -321,7 +315,7 @@ func onCronTrigger(config *Config, runtime cre.Runtime, outputs *cron.Payload) (
 	return result.TransactionID, nil
 }
 
-func makeConfidentialRequest(config Config, nodeRuntime cre.NodeRuntime) (Result, error) {
+func makeConfidentialRequest(config Config, runtime cre.Runtime) (Result, error) {
 	payload := `{"auth": "{{.myApiKey}}", "action": "getTransaction", "id": "tx-123"}`
 
 	headers := map[string]*confidentialhttp.HeaderValues{
@@ -334,18 +328,18 @@ func makeConfidentialRequest(config Config, nodeRuntime cre.NodeRuntime) (Result
 	}
 
 	client := confidentialhttp.Client{}
-	resp, err := client.SendRequest(nodeRuntime, &confidentialhttp.ConfidentialHTTPRequest{
+	resp, err := client.SendRequest(runtime, &confidentialhttp.ConfidentialHTTPRequest{
 		Request: &confidentialhttp.HTTPRequest{
-			Url:    config.URL,
-			Method: "POST",
-			Body:   &confidentialhttp.HTTPRequest_BodyString{BodyString: payload},
-			MultiHeaders: headers,
+			Url:           config.URL,
+			Method:        "POST",
+			Body:          &confidentialhttp.HTTPRequest_BodyString{BodyString: payload},
+			MultiHeaders:  headers,
+			EncryptOutput: true,
 		},
 		VaultDonSecrets: []*confidentialhttp.SecretIdentifier{
 			{Key: "myApiKey"},
 			{Key: "san_marino_aes_gcm_encryption_key"},
 		},
-		EncryptOutput: true,
 	}).Await()
 	if err != nil {
 		return Result{}, fmt.Errorf("confidential HTTP request failed: %w", err)
