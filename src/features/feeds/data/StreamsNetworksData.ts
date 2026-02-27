@@ -260,6 +260,15 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "Giwa",
+    logoUrl: "/assets/chains/giwa.svg",
+    testnet: {
+      label: "Giwa Sepolia",
+      verifierProxy: "0x72790f9eB82db492a7DDb6d2af22A270Dcc3Db64",
+      explorerUrl: "https://sepolia-explorer.giwa.io/address/%s",
+    },
+  },
+  {
     network: "Gnosis",
     logoUrl: "/assets/chains/gnosis-chain.svg",
     mainnet: {
@@ -351,6 +360,11 @@ export const StreamsNetworksData: NetworkData[] = [
       label: "Injective EVM Mainnet",
       verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
       explorerUrl: "https://injscan.com/account/inj1vra207kffxhnjt0usk84m9lramaq060t75latq/", // Note: Injective uses Bech32 address format, hardcoding here to avoid confusion
+    },
+    testnet: {
+      label: "Injective Testnet",
+      verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
+      explorerUrl: "https://testnet.explorer.injective.network/account/inj1wfusl84c9k6f9f7akmf27g4zwrwv8kmyt3r45r/",
     },
   },
   {
@@ -520,7 +534,7 @@ export const StreamsNetworksData: NetworkData[] = [
       explorerUrl: "https://pharos.socialscan.io/address/%s",
     },
     testnet: {
-      label: "Pharos  Atlantic Testnet",
+      label: "Pharos Atlantic Testnet",
       verifierProxy: "0x72790f9eb82db492a7ddb6d2af22a270dcc3db64",
       explorerUrl: "https://atlantic.pharosscan.xyz/address/%s",
     },
@@ -599,6 +613,15 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "Seismic",
+    logoUrl: "/assets/chains/seismic.svg",
+    testnet: {
+      label: "Seismic Testnet",
+      verifierProxy: "0x72790f9eB82db492a7DDb6d2af22A270Dcc3Db64",
+      explorerUrl: "https://seismic-testnet.socialscan.io/address/%s",
+    },
+  },
+  {
     network: "Shibarium",
     logoUrl: "/assets/chains/shibarium.svg",
     mainnet: {
@@ -670,6 +693,21 @@ export const StreamsNetworksData: NetworkData[] = [
       label: "Stable Testnet",
       verifierProxy: "0x72790f9eB82db492a7DDb6d2af22A270Dcc3Db64",
       explorerUrl: "https://testnet.stablescan.xyz/address/%s",
+    },
+  },
+  {
+    network: "X Layer",
+    logoUrl: "/assets/chains/xlayer.svg",
+    networkStatus: "https://status.xlayer.tech/",
+    mainnet: {
+      label: "X Layer Mainnet",
+      verifierProxy: "0xcE73c8ad08CBDEaCa6078BF0627C8fe0a9a536E7",
+      explorerUrl: "https://web3.okx.com/explorer/x-layer/address/%s",
+    },
+    testnet: {
+      label: "X Layer Testnet",
+      verifierProxy: "0x72790f9eB82db492a7DDb6d2af22A270Dcc3Db64",
+      explorerUrl: "https://web3.okx.com/explorer/x-layer-testnet/address/%s",
     },
   },
   {
