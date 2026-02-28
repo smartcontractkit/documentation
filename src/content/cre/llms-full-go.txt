@@ -11701,6 +11701,232 @@ Solidity types like `bytes` and `bytes32` map to `[]byte` in Go.
 
 ---
 
+# Verifying Transaction Status
+Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/onchain-write/verifying-transaction-status-go
+Last Updated: 2025-12-08
+
+When your workflow writes data to the blockchain, you can verify both that the transaction was mined and that your consumer contract successfully processed the data. This guide explains how to properly check both levels of execution.
+
+<Aside type="note" title="Prerequisites">
+  This guide assumes you're already familiar with how CRE's onchain write process works. If you haven't read it yet,
+  start with [Onchain Write Overview](/cre/guides/workflow/using-evm-client/onchain-write/overview-go) to understand the
+  secure write flow.
+</Aside>
+
+## Why two levels of verification?
+
+Your workflow's data goes through a two-tier transaction model:
+
+1. **Outer Transaction**: Your workflow → `KeystoneForwarder` contract (on the blockchain)
+2. **Inner Execution**: `KeystoneForwarder` → Your [consumer contract](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)'s `onReport()` function
+
+A common mistake is only checking the outer transaction status. **The transaction can succeed while your consumer contract's `onReport()` function reverts.**
+
+## Understanding the status fields
+
+When you call `WriteReport()` on the EVM client and await the promise, you receive a `WriteReportReply` struct. This struct contains the complete results of your write operation, including two status indicators:
+
+| Field                             | What it checks                                                        | Success means                                                            | Failure means                                                                      |
+| --------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| `TxStatus`                        | Was the transaction mined on the blockchain?                          | Forwarder received and processed the report                              | Network issues, insufficient gas, or forwarder rejected the report                 |
+| `ReceiverContractExecutionStatus` | Did YOUR consumer contract's `onReport()` complete without reverting? | All validation passed (if any), `_processReport()` executed successfully | Forwarder validation failed, workflow ID mismatch, or your business logic reverted |
+
+<Aside type="caution" title="Simulation Limitation">
+  The `receiverContractExecutionStatus` field is currently not populated during workflow simulation. This verification
+  only works in production environments. During simulation, you can only verify that the transaction to the Forwarder
+  succeeded (`txStatus`), but cannot detect if your consumer contract's `onReport()` function reverted.
+</Aside>
+
+## The complete verification pattern
+
+### Only checks outer transaction
+
+```go
+resp, err := writePromise.Await()
+if err != nil {
+    return fmt.Errorf("write failed: %w", err)
+}
+
+// INCOMPLETE: Only verifies the transaction was mined
+if resp.TxStatus == evm.TxStatus_TX_STATUS_SUCCESS {
+    logger.Info("Transaction succeeded")
+    return nil
+}
+```
+
+**Problem**: Your consumer contract could have reverted, but you'd never know because you only checked if the transaction was mined.
+
+### Checks both levels
+
+```go
+resp, err := writePromise.Await()
+if err != nil {
+    return fmt.Errorf("write failed: %w", err)
+}
+
+// Step 1: Check outer transaction status
+if resp.TxStatus != evm.TxStatus_TX_STATUS_SUCCESS {
+    return fmt.Errorf("transaction failed with status: %v", resp.TxStatus)
+}
+
+// Step 2: Check consumer contract execution status
+if resp.ReceiverContractExecutionStatus != nil &&
+   *resp.ReceiverContractExecutionStatus == evm.ReceiverContractExecutionStatus_RECEIVER_CONTRACT_EXECUTION_STATUS_REVERTED {
+    logger.Error("Consumer contract reverted",
+        "error", resp.GetErrorMessage(),
+        "txHash", common.BytesToHash(resp.TxHash).Hex())
+    return fmt.Errorf("consumer contract execution failed: %s", resp.GetErrorMessage())
+}
+
+logger.Info("Both transaction AND consumer contract execution succeeded",
+    "txHash", common.BytesToHash(resp.TxHash).Hex())
+```
+
+**What this checks**:
+
+1. Transaction was mined successfully
+2. Your consumer contract's `onReport()` function executed without reverting
+3. Your business logic completed successfully
+
+## Common scenarios
+
+### Scenario 1: Everything succeeded
+
+```go
+// Transaction mined + Consumer contract executed successfully
+TxStatus: TX_STATUS_SUCCESS
+ReceiverContractExecutionStatus: RECEIVER_CONTRACT_EXECUTION_STATUS_SUCCESS
+```
+
+**What happened**: The report was delivered and your contract processed it successfully.
+
+**Action**: None needed - everything worked as expected.
+
+### Scenario 2: Transaction succeeded, but contract reverted
+
+```go
+// Transaction was mined, but your contract rejected the data
+TxStatus: TX_STATUS_SUCCESS
+ReceiverContractExecutionStatus: RECEIVER_CONTRACT_EXECUTION_STATUS_REVERTED
+```
+
+**What happened**: The forwarder successfully submitted the transaction, but your consumer contract's `onReport()` function reverted during execution.
+
+**Common causes**:
+
+- Forwarder address mismatch: You configured the wrong forwarder address in your consumer contract (simulation forwarders are different from production forwarders - see [Supported Networks](/cre/guides/workflow/using-evm-client/supported-networks-go))
+- Security check failed (if you configured expected values for workflow ID, owner, or name in your contract)
+- Custom validation in `_processReport()` rejected the data
+- ABI decoding failure (struct mismatch between workflow and contract)
+- Custom business logic constraints not met
+
+**Action**: Check the error message and review your consumer contract's validation logic. If moving from simulation to production, ensure you updated the forwarder address in your contract.
+
+### Scenario 3: Transaction failed
+
+```go
+// Transaction failed to be mined
+TxStatus: TX_STATUS_REVERTED or TX_STATUS_FATAL
+ReceiverContractExecutionStatus: N/A
+```
+
+**What happened**: The transaction couldn't be mined on the blockchain.
+
+**Common causes**:
+
+- Insufficient gas
+- Network connectivity issues
+- Incorrect forwarder address
+- RPC endpoint problems
+
+**Action**: Check RPC endpoint, gas configuration, network status, and forwarder address.
+
+## Best practices helper function
+
+Create a reusable helper to verify both status levels:
+
+```go
+// verifyWriteSuccess checks both transaction and contract execution status
+func verifyWriteSuccess(resp *evm.WriteReportReply, logger *slog.Logger) error {
+    // Check outer transaction
+    if resp.TxStatus != evm.TxStatus_TX_STATUS_SUCCESS {
+        return fmt.Errorf("transaction failed with status %v", resp.TxStatus)
+    }
+
+    // Check consumer contract execution
+    if resp.ReceiverContractExecutionStatus != nil &&
+       *resp.ReceiverContractExecutionStatus == evm.ReceiverContractExecutionStatus_RECEIVER_CONTRACT_EXECUTION_STATUS_REVERTED {
+        errorMsg := "unknown error"
+        if resp.ErrorMessage != nil {
+            errorMsg = *resp.ErrorMessage
+        }
+        return fmt.Errorf("consumer contract reverted: %s", errorMsg)
+    }
+
+    // Log success with transaction hash
+    txHash := common.BytesToHash(resp.TxHash).Hex()
+    logger.Info("Write verification succeeded",
+        "txHash", txHash,
+        "txStatus", resp.TxStatus,
+        "contractStatus", resp.ReceiverContractExecutionStatus)
+
+    return nil
+}
+
+// Usage in your workflow
+func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*MyResult, error) {
+    logger := runtime.Logger()
+
+    // ... prepare data and write report ...
+
+    writePromise := contract.WriteReportFromMyData(runtime, data, nil)
+    resp, err := writePromise.Await()
+    if err != nil {
+        return nil, fmt.Errorf("write report await failed: %w", err)
+    }
+
+    // Use the helper for complete verification
+    if err := verifyWriteSuccess(resp, logger); err != nil {
+        return nil, err
+    }
+
+    return &MyResult{TxHash: common.BytesToHash(resp.TxHash).Hex()}, nil
+}
+```
+
+## Accessing error details
+
+The `WriteReportReply` provides multiple ways to access error information:
+
+```go
+resp, err := writePromise.Await()
+if err != nil {
+    return fmt.Errorf("await failed: %w", err)
+}
+
+// Option 1: Direct field access (pointer, can be nil)
+if resp.ErrorMessage != nil {
+    logger.Error("Error message (direct)", "message", *resp.ErrorMessage)
+}
+
+// Option 2: Using the getter method (safer, returns empty string if nil)
+logger.Info("Error message (getter)", "message", resp.GetErrorMessage())
+
+// Option 3: Check status enum
+logger.Info("Contract execution status", "status", resp.GetReceiverContractExecutionStatus())
+```
+
+**Best practice**: Use the getter methods (`GetErrorMessage()`, `GetReceiverContractExecutionStatus()`) as they handle nil values safely.
+
+## Related resources
+
+- **[EVM Client Reference](/cre/reference/sdk/evm-client-go#evmwritereportreply)** - Complete API documentation for `WriteReportReply`, including all field definitions and status constant values
+- **[Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)** - Learn about forwarder validation and the `IReceiver` interface
+- **[Supported Networks](/cre/guides/workflow/using-evm-client/supported-networks)** - Forwarder addresses for simulation and production
+- **[Submitting Reports Onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain)** - Complete guide to the write process
+
+---
+
 # EVM Chain Interactions
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/overview-go
 Last Updated: 2025-11-04
@@ -15225,13 +15451,26 @@ func (c *Client) WriteReport(runtime cre.Runtime, input *WriteCreReportRequest) 
 
 #### `evm.WriteReportReply`
 
-| Field                             | Type                               | Description                                                                         |
-| --------------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------- |
-| `TxStatus`                        | `TxStatus`                         | The final status of the transaction: `SUCCESS`, `REVERTED`, or `FATAL`.             |
-| `ReceiverContractExecutionStatus` | `*ReceiverContractExecutionStatus` | Optional. The status of the receiver contract's execution: `SUCCESS` or `REVERTED`. |
-| `TxHash`                          | `[]byte`                           | Optional. The 32-byte transaction hash of the onchain submission.                   |
-| `TransactionFee`                  | `*pb.BigInt`                       | Optional. The total fee paid for the transaction in Wei.                            |
-| `ErrorMessage`                    | `*string`                          | Optional. An error message if the transaction failed.                               |
+| Field                             | Type                               | Description                                                                                                                                                                                                                       |
+| --------------------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TxStatus`                        | `TxStatus`                         | The final status of the transaction: `evm.TxStatus_TX_STATUS_SUCCESS`, `evm.TxStatus_TX_STATUS_REVERTED`, or `evm.TxStatus_TX_STATUS_FATAL`.                                                                                      |
+| `ReceiverContractExecutionStatus` | `*ReceiverContractExecutionStatus` | Optional. The status of the receiver contract's execution: `evm.ReceiverContractExecutionStatus_RECEIVER_CONTRACT_EXECUTION_STATUS_SUCCESS` or `evm.ReceiverContractExecutionStatus_RECEIVER_CONTRACT_EXECUTION_STATUS_REVERTED`. |
+| `TxHash`                          | `[]byte`                           | Optional. The 32-byte transaction hash of the onchain submission.                                                                                                                                                                 |
+| `TransactionFee`                  | `*pb.BigInt`                       | Optional. The total fee paid for the transaction in Wei.                                                                                                                                                                          |
+| `ErrorMessage`                    | `*string`                          | Optional. An error message if the transaction failed.                                                                                                                                                                             |
+
+**Status constants:**
+
+```go
+// TxStatus values
+evm.TxStatus_TX_STATUS_SUCCESS  // = 2
+evm.TxStatus_TX_STATUS_REVERTED // = 1
+evm.TxStatus_TX_STATUS_FATAL    // = 0
+
+// ReceiverContractExecutionStatus values
+evm.ReceiverContractExecutionStatus_RECEIVER_CONTRACT_EXECUTION_STATUS_SUCCESS  // = 0
+evm.ReceiverContractExecutionStatus_RECEIVER_CONTRACT_EXECUTION_STATUS_REVERTED // = 1
+```
 
 ## Chain Selectors
 
