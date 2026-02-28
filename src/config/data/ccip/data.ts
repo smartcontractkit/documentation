@@ -13,9 +13,13 @@ import {
   Network,
   DecomConfig,
   DecommissionedNetwork,
+  VerifiersConfig,
+  Verifier,
+  VerifierType,
 } from "./types.ts"
 import { determineTokenMechanism } from "./utils.ts"
 import { ExplorerInfo, SupportedChain, ChainType } from "@config/types.ts"
+import { VERIFIER_LOGOS_PATH } from "@config/cdn.ts"
 import {
   directoryToSupportedChain,
   getChainIcon,
@@ -41,6 +45,10 @@ import tokensTestnetv120 from "@config/data/ccip/v1_2_0/testnet/tokens.json" wit
 // For decommissioned chains
 import decomMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/decom.json" with { type: "json" }
 import decomTestnetv120 from "@config/data/ccip/v1_2_0/testnet/decom.json" with { type: "json" }
+
+// For verifiers
+import verifiersMainnetv120 from "@config/data/ccip/v1_2_0/mainnet/verifiers.json" with { type: "json" }
+import verifiersTestnetv120 from "@config/data/ccip/v1_2_0/testnet/verifiers.json" with { type: "json" }
 
 // Import errors by version
 // eslint-disable-next-line camelcase
@@ -264,13 +272,14 @@ export const getAllSupportedTokens = (params: { environment: Environment; versio
 
     Object.entries(laneReferenceData).forEach(([destinationChainRdd, destinationLaneReferenceData]) => {
       const supportedTokens = destinationLaneReferenceData.supportedTokens
-      if (supportedTokens) {
-        Object.entries(supportedTokens).forEach(([token, tokenConfig]) => {
+      if (supportedTokens && Array.isArray(supportedTokens)) {
+        supportedTokens.forEach((token) => {
           const destinationChain = directoryToSupportedChain(destinationChainRdd)
 
           tokens[token] = tokens[token] || {}
           tokens[token][sourceChain] = tokens[token][sourceChain] || {}
-          tokens[token][sourceChain][destinationChain] = tokenConfig
+          // Rate limiter config is now in separate files, store empty config
+          tokens[token][sourceChain][destinationChain] = {}
         })
       }
     })
@@ -308,8 +317,8 @@ export const getTokenMechanism = (params: {
   const tokenConfig = tokensReferenceData[params.token]
   const sourceChainPoolInfo = tokenConfig[sourceChainRdd]
   const destinationChainPoolInfo = tokenConfig[destinationChainRdd]
-  const sourceChainPoolType = sourceChainPoolInfo.poolType
-  const destinationChainPoolType = destinationChainPoolInfo.poolType
+  const sourceChainPoolType = sourceChainPoolInfo.pool.type
+  const destinationChainPoolType = destinationChainPoolInfo.pool.type
   const tokenMechanism = determineTokenMechanism(sourceChainPoolType, destinationChainPoolType)
   return tokenMechanism
 }
@@ -462,11 +471,10 @@ export const getTokensOfChain = ({ chain, filter }: { chain: string; filter: Env
     throw new Error(`Invalid environment: ${filter}`)
   }
 
-  // Filter tokens that satisfy the conditions
+  // Filter tokens that satisfy the conditions; API returns only transferable tokens (exclude feeTokenOnly)
   return Object.keys(tokensData).filter((token) => {
     const tokenData = tokensData[token]
-    // Check if tokenData for the given chain exists and isn't 'feeTokenOnly'
-    if (tokenData[chain] && tokenData[chain].poolType !== "feeTokenOnly") {
+    if (tokenData[chain] && tokenData[chain].pool.type !== "feeTokenOnly") {
       const lanes = getAllTokenLanes({ token, environment: filter })
       // Ensure there is at least one lane and that the lane exists for the given chain
       return Object.keys(lanes).length > 0 && lanes[chain] && Object.keys(lanes[chain]).length > 0
@@ -583,9 +591,9 @@ export const getChainsOfToken = ({ token, filter }: { token: string; filter: Env
     }
   })()
 
-  // Get all valid chains for the given token
+  // Get all valid chains for the given token; API returns only transferable tokens (exclude feeTokenOnly)
   return Object.entries(tokensData[token])
-    .filter(([, tokenData]) => tokenData.poolType !== "feeTokenOnly")
+    .filter(([, tokenData]) => tokenData.pool.type !== "feeTokenOnly")
     .filter(([chain]) => {
       const lanes = getAllTokenLanes({ token, environment: filter })
       return Object.keys(lanes).length > 0 && lanes[chain] && Object.keys(lanes[chain]).length > 0
@@ -669,11 +677,13 @@ export function getAllTokenLanes({
     for (const destinationChain in sourceData) {
       const destinationData = sourceData[destinationChain]
 
-      // Check if the token is supported
-      if (destinationData?.supportedTokens?.[token]) {
+      // Check if the token is supported (supportedTokens is now an array)
+      const supportedTokens = destinationData?.supportedTokens
+      if (Array.isArray(supportedTokens) && supportedTokens.includes(token)) {
         allDestinationLanes[sourceChain] = {
           ...allDestinationLanes[sourceChain],
-          [destinationChain]: destinationData.supportedTokens[token],
+          // Rate limiter config is now in separate files, store empty config
+          [destinationChain]: {},
         }
       }
     }
@@ -814,4 +824,234 @@ export const getAllDecommissionedNetworks = ({ filter }: { filter: Environment }
 export const getDecommissionedNetwork = ({ chain, filter }: { chain: string; filter: Environment }) => {
   const decommissionedChains = getAllDecommissionedNetworks({ filter })
   return decommissionedChains.find((network) => network.chain === chain)
+}
+
+// ============================================================================
+// Verifier utilities
+// ============================================================================
+
+/**
+ * Load verifiers data for a specific environment and version
+ */
+export const loadVerifiersData = ({ environment, version }: { environment: Environment; version: Version }) => {
+  let verifiersReferenceData: VerifiersConfig
+
+  if (environment === Environment.Mainnet && version === Version.V1_2_0) {
+    verifiersReferenceData = verifiersMainnetv120 as unknown as VerifiersConfig
+  } else if (environment === Environment.Testnet && version === Version.V1_2_0) {
+    verifiersReferenceData = verifiersTestnetv120 as unknown as VerifiersConfig
+  } else {
+    throw new Error(`Invalid environment/version combination for verifiers: ${environment}/${version}`)
+  }
+
+  return { verifiersReferenceData }
+}
+
+/**
+ * Get logo URL for a verifier by ID
+ * Uses CloudFront CDN, same infrastructure as token icons
+ */
+export const getVerifierLogoUrl = (verifierId: string): string => {
+  return `${VERIFIER_LOGOS_PATH}/${verifierId}.svg`
+}
+
+/**
+ * Map verifier type to display-friendly name
+ */
+export const getVerifierTypeDisplay = (type: VerifierType): string => {
+  const VERIFIER_TYPE_DISPLAY: Record<VerifierType, string> = {
+    committee: "Committee",
+    api: "API",
+  }
+
+  return VERIFIER_TYPE_DISPLAY[type] || type
+}
+
+/**
+ * Get all verifiers for a specific environment as a flattened list
+ */
+export const getAllVerifiers = ({
+  environment,
+  version = Version.V1_2_0,
+}: {
+  environment: Environment
+  version?: Version
+}): Verifier[] => {
+  const { verifiersReferenceData } = loadVerifiersData({ environment, version })
+
+  const verifiers: Verifier[] = []
+
+  // Flatten the network -> address -> metadata structure
+  for (const [networkId, addressMap] of Object.entries(verifiersReferenceData)) {
+    for (const [address, metadata] of Object.entries(addressMap)) {
+      verifiers.push({
+        ...metadata,
+        network: networkId,
+        address,
+        logo: getVerifierLogoUrl(metadata.id),
+      })
+    }
+  }
+
+  // Sort by verifier name, then by network
+  return verifiers.sort((a, b) => {
+    const nameComparison = a.name.localeCompare(b.name)
+    if (nameComparison !== 0) return nameComparison
+    return a.network.localeCompare(b.network)
+  })
+}
+
+/**
+ * Get all verifiers for a specific network
+ */
+export const getVerifiersByNetwork = ({
+  networkId,
+  environment,
+  version = Version.V1_2_0,
+}: {
+  networkId: string
+  environment: Environment
+  version?: Version
+}): Verifier[] => {
+  const { verifiersReferenceData } = loadVerifiersData({ environment, version })
+
+  const addressMap = verifiersReferenceData[networkId]
+  if (!addressMap) {
+    return []
+  }
+
+  const verifiers: Verifier[] = []
+  for (const [address, metadata] of Object.entries(addressMap)) {
+    verifiers.push({
+      ...metadata,
+      network: networkId,
+      address,
+      logo: getVerifierLogoUrl(metadata.id),
+    })
+  }
+
+  return verifiers.sort((a, b) => a.name.localeCompare(b.name))
+}
+
+/**
+ * Get all verifiers of a specific type (committee or api)
+ */
+export const getVerifiersByType = ({
+  type,
+  environment,
+  version = Version.V1_2_0,
+}: {
+  type: VerifierType
+  environment: Environment
+  version?: Version
+}): Verifier[] => {
+  const allVerifiers = getAllVerifiers({ environment, version })
+  return allVerifiers.filter((verifier) => verifier.type === type)
+}
+
+/**
+ * Get all networks where a specific verifier exists (by verifier ID)
+ */
+export const getVerifierById = ({
+  id,
+  environment,
+  version = Version.V1_2_0,
+}: {
+  id: string
+  environment: Environment
+  version?: Version
+}): Verifier[] => {
+  const allVerifiers = getAllVerifiers({ environment, version })
+  return allVerifiers.filter((verifier) => verifier.id === id)
+}
+
+/**
+ * Get a specific verifier by network and address
+ */
+export const getVerifier = ({
+  networkId,
+  address,
+  environment,
+  version = Version.V1_2_0,
+}: {
+  networkId: string
+  address: string
+  environment: Environment
+  version?: Version
+}): Verifier | undefined => {
+  const { verifiersReferenceData } = loadVerifiersData({ environment, version })
+
+  const addressMap = verifiersReferenceData[networkId]
+  if (!addressMap) {
+    return undefined
+  }
+
+  const metadata = addressMap[address]
+  if (!metadata) {
+    return undefined
+  }
+
+  return {
+    ...metadata,
+    network: networkId,
+    address,
+    logo: getVerifierLogoUrl(metadata.id),
+  }
+}
+
+/**
+ * Get all network IDs where a specific verifier exists
+ * Similar to getChainsOfToken for tokens
+ */
+export const getNetworksOfVerifier = ({
+  id,
+  environment,
+  version = Version.V1_2_0,
+}: {
+  id: string
+  environment: Environment
+  version?: Version
+}): string[] => {
+  const verifiers = getVerifierById({ id, environment, version })
+  return verifiers.map((v) => v.network)
+}
+
+/**
+ * Get unique verifiers for display (deduplicated by ID)
+ * Returns one entry per verifier with totalNetworks count
+ * Useful for landing page display where each verifier should appear once
+ */
+export const getAllUniqueVerifiers = ({
+  environment,
+  version = Version.V1_2_0,
+}: {
+  environment: Environment
+  version?: Version
+}): Array<{
+  id: string
+  name: string
+  type: VerifierType
+  logo: string
+  totalNetworks: number
+}> => {
+  const allVerifiers = getAllVerifiers({ environment, version })
+
+  // Get unique verifier IDs
+  const uniqueIds = Array.from(new Set(allVerifiers.map((v) => v.id)))
+
+  // Map to display format with network count
+  return uniqueIds
+    .map((id) => {
+      const instances = allVerifiers.filter((v) => v.id === id)
+      const firstInstance = instances[0]
+
+      return {
+        id,
+        name: firstInstance.name,
+        type: firstInstance.type,
+        logo: firstInstance.logo,
+        totalNetworks: instances.length,
+      }
+    })
+    .sort((a, b) => a.name.localeCompare(b.name))
 }

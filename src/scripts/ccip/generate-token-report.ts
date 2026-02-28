@@ -87,12 +87,14 @@ function buildTokenSupportMap(tokensData: TokensConfig, lanesData: LanesConfig):
   Object.keys(lanesData).forEach((sourceChain) => {
     Object.keys(lanesData[sourceChain]).forEach((destChain) => {
       const lane = `${sourceChain}-to-${destChain}`
-      const supportedTokens = lanesData[sourceChain][destChain].supportedTokens || {}
-      Object.keys(supportedTokens).forEach((tokenSymbol) => {
-        if (tokenSupport[tokenSymbol]) {
-          tokenSupport[tokenSymbol].lanes.push(lane)
-        }
-      })
+      const supportedTokens = lanesData[sourceChain][destChain].supportedTokens || []
+      if (Array.isArray(supportedTokens)) {
+        supportedTokens.forEach((tokenSymbol) => {
+          if (tokenSupport[tokenSymbol]) {
+            tokenSupport[tokenSymbol].lanes.push(lane)
+          }
+        })
+      }
     })
   })
 
