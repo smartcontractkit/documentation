@@ -502,7 +502,13 @@ The TypeScript SDK provides several helper functions for working with the EVM Cl
 
 ### `encodeCallMsg()`
 
-Encodes a call message payload into a `CallMsgJson`, expected by the EVM capability.
+Encodes a call message payload into a `CallMsgJson`, expected by the EVM capability. This helper converts `0x`-prefixed hex strings to the base64 format required by the protobuf `CallMsg` structure.
+
+<Aside type="caution" title="Always use encodeCallMsg">
+  The `CallMsg` proto uses `bytes` fields, which are base64-encoded in JSON form. If you pass raw hex strings (e.g.,
+  `"0x7b79..."`) directly without `encodeCallMsg()`, the hex characters are silently interpreted as base64, producing
+  **incorrect bytes with no error**. Always use this helper to ensure correct encoding.
+</Aside>
 
 **Signature:**
 
@@ -518,6 +524,12 @@ interface EncodeCallMsgPayload {
   to: Address
   data: Hex // viem Hex type (0x-prefixed hex string)
 }
+```
+
+All fields must be valid `0x`-prefixed hex strings. If any field contains invalid hex, the function throws an error identifying which field is invalid:
+
+```
+Invalid hex in 'to' field of CallMsg: Invalid hex string: missing '0x' prefix...
 ```
 
 **Usage:**
@@ -705,6 +717,45 @@ const report = runtime
 <Aside type="tip" title="When to use this helper">
   Use `prepareReportRequest()` for all EVM write operations to reduce boilerplate and ensure consistent encoding parameters. It's particularly useful in workflows with multiple write operations, as it eliminates repetitive configuration.
 </Aside>
+
+---
+
+### `logTriggerConfig()`
+
+Creates a validated log trigger configuration from hex-encoded addresses and topics. This helper converts hex values to the base64-encoded format expected by `evmClient.logTrigger()`, validates byte lengths (20 bytes for addresses, 32 bytes for topics), and formats the confidence level.
+
+**Signature:**
+
+```typescript
+function logTriggerConfig(opts: LogTriggerConfigOptions): FilterLogTriggerRequestJson
+```
+
+**Parameters:**
+
+| Field        | Type                                    | Description                                                                  |
+| ------------ | --------------------------------------- | ---------------------------------------------------------------------------- |
+| `addresses`  | `Hex[]`                                 | **Required.** EVM addresses to monitor (`0x`-prefixed hex, 20 bytes each).   |
+| `topics`     | `Hex[][]`                               | Optional. Up to 4 arrays of topic values (`0x`-prefixed hex, 32 bytes each). |
+| `confidence` | `'SAFE'` \| `'LATEST'` \| `'FINALIZED'` | Optional. Block confirmation level. Defaults to `SAFE`.                      |
+
+**Usage:**
+
+```typescript
+import { logTriggerConfig } from "@chainlink/cre-sdk"
+import { keccak256, toBytes } from "viem"
+
+const transferEvent = keccak256(toBytes("Transfer(address,address,uint256)"))
+
+const trigger = evmClient.logTrigger(
+  logTriggerConfig({
+    addresses: ["0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9"],
+    topics: [[transferEvent]],
+    confidence: "LATEST",
+  })
+)
+```
+
+See [EVM Log Trigger](/cre/reference/sdk/triggers/evm-log-trigger-ts) for the full configuration reference.
 
 ---
 
