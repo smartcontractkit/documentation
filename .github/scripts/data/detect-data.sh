@@ -155,10 +155,10 @@ node <<EOF
     // === data-streams networks
     const STREAMS_NETWORKS = [
       "0g", "apechain", "adi", "aptos", "arbitrum", "arc", "avalanche", "base", "berachain", "bitlayer", "blast",
-      "bnb-chain", "bob", "botanix", "celo", "dogeos", "ethereum", "gnosis-chain", "gravity", "hashkey", 
+      "bnb-chain", "bob", "botanix", "celo", "dogeos", "ethereum", "giwa", "gnosis-chain", "gravity", "hashkey", 
       "hedera", "hyperliquid", "injective", "ink", "jovay", "katana", "lens", "linea", "mantle", 
-      "metis", "monad", "opbnb", "optimism", "polygon", "perennial", "pharos", "plasma", "ronin", "scroll", "shibarium", "sei",
-      "soneium", "sonic", "solana", "stable", "taiko", "unichain", "worldchain", "zksync"
+      "metis", "monad", "opbnb", "optimism", "polygon", "perennial", "pharos", "plasma", "ronin", "scroll", "shibarium", "sei", "seismic",
+      "soneium", "sonic", "solana", "stable", "xlayer","taiko", "unichain", "worldchain", "zksync"
     ];
 
     // === Build relatedTokens for FEEDS
