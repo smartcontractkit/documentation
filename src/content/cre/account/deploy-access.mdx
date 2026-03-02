@@ -1,0 +1,87 @@
+---
+section: cre
+date: Last Modified
+title: "Requesting Deploy Access"
+metadata:
+  description: "Learn how to check your deployment access status and request Early Access to deploy CRE workflows using the CLI or web UI."
+  datePublished: "2026-02-26"
+  lastModified: "2026-02-26"
+---
+
+import { Aside } from "@components"
+
+Deploying workflows to a Chainlink DON requires Early Access approval. You can request access in two ways:
+
+- **From the CLI** — Run `cre account access` to check your status or submit a request directly from your terminal
+- **From the web** — Visit <a href="https://cre.chain.link/request-access" target="_blank" rel="noopener noreferrer">cre.chain.link/request-access</a> to fill out the request form
+
+## Check your access status
+
+Run the following command to see your current deployment access status:
+
+```bash
+cre account access
+```
+
+Your access status is also shown when you run `cre whoami`:
+
+```bash
+cre whoami
+```
+
+```
+Account details retrieved:
+
+Email:           email@domain.com
+Organization ID: org_mEMRknbVURM9DWsB
+Deploy Access:   Not enabled (run 'cre account access' to request)
+```
+
+## Request deploy access
+
+If your organization does not have deploy access, `cre account access` will prompt you to submit a request:
+
+```
+! Deployment access is not yet enabled for your organization.
+
+  Request deployment access? Yes
+```
+
+After confirming, you'll be asked to briefly describe what you're building:
+
+```
+  Briefly describe your use case
+  What are you building with CRE?
+```
+
+Once submitted, you'll see:
+
+```
+✓ Access request submitted successfully!
+
+Our team will review your request and get back to you via email shortly.
+```
+
+You'll receive a confirmation email, and the Chainlink team will follow up once your request has been reviewed.
+
+{/* prettier-ignore */}
+<Aside type="note" title="You can keep building while you wait">
+  Deploy access is only required for `cre workflow deploy`. You can continue developing and simulating workflows locally with `cre workflow simulate` while your request is under review.
+</Aside>
+
+## What happens after approval
+
+Once your organization is granted deploy access, `cre whoami` will show:
+
+```
+Deploy Access:   Enabled
+```
+
+You can then use `cre workflow deploy` to deploy workflows to the Workflow Registry. See [Deploying Workflows](/cre/guides/operations/deploying-workflows) for next steps.
+
+## Prompted automatically
+
+You don't need to run `cre account access` proactively. The CLI will prompt you to request access automatically in two situations:
+
+- When you run `cre workflow deploy` without access
+- After a successful `cre workflow simulate`, as a reminder that deployment is available once access is granted
