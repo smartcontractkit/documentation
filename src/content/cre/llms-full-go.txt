@@ -6469,8 +6469,13 @@ cre workflow custom-build ./my-workflow
 You will be prompted to confirm before any changes are made. To skip the prompt, use `--force`.
 
 
-<Aside type="caution" title="Irreversible operation">
-  This permanently modifies your `workflow.yaml`, updating `workflow-path` to `./wasm/workflow.wasm` for all targets. After conversion, the CLI no longer compiles your source automatically — your `Makefile` is responsible for producing the binary.
+<Aside type="note" title="What this command changes">
+  This modifies your `workflow.yaml`, updating `workflow-path` to `./wasm/workflow.wasm` for all targets (e.g. `staging-settings`, `production-settings`). After conversion, the CLI no longer compiles your source automatically. Your `Makefile` is responsible for producing the binary.
+
+  There is no automated way to reverse this with the CLI, but you can do it manually:
+
+  1. Edit `my-workflow/workflow.yaml`: change `workflow-path` back from `"./wasm/workflow.wasm"` to `"."` in each target
+  2. Delete `my-workflow/Makefile` and the `my-workflow/wasm/` directory
 </Aside>
 
 The following changes are made to your workflow:
