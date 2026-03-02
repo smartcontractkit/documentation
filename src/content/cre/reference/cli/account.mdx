@@ -5,7 +5,7 @@ title: "Account Management"
 metadata:
   description: "Manage wallet addresses with CLI: link, unlink, and list keys for deploying workflows to the Workflow Registry."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-02-26"
 ---
 
 import { Aside } from "@components"
@@ -16,6 +16,51 @@ The `cre account` commands manage your linked public key addresses for workflow 
 <Aside type="note" title="Global flags">
   All `cre` commands support [global flags](/cre/reference/cli#global-flags) like `--env`, `--target`, `--project-root`, and `--verbose`.
 </Aside>
+
+## `cre account access`
+
+<Aside type="note" title="Authentication required">
+  Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
+  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
+  in with the CLI](/cre/account/cli-login) for further details.
+</Aside>
+
+Checks your organization's deployment access status and lets you submit a request for Early Access directly from the CLI.
+
+For a full walkthrough including the interactive flow and web UI option, see [Requesting Deploy Access](/cre/account/deploy-access).
+
+**Usage:**
+
+```bash
+cre account access
+```
+
+**Interactive flow:**
+
+When you run this command, the CLI will:
+
+1. Check whether your organization has deployment access enabled
+1. If not, prompt you to submit a request
+1. Ask you to briefly describe your use case
+1. Confirm the request was submitted — the Chainlink team will follow up via email
+
+**Example output (access not yet enabled):**
+
+```
+! Deployment access is not yet enabled for your organization.
+
+  Request deployment access? Yes
+
+  Briefly describe your use case
+  What are you building with CRE?
+  > I'm working on a prediction market and I need to deploy my workflow! (or whatever you're building)
+
+✓ Access request submitted successfully!
+
+Our team will review your request and get back to you via email shortly.
+```
+
+---
 
 ## `cre account link-key`
 
