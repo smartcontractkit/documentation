@@ -95,7 +95,7 @@ export function isFeedVisible(
     if (dataFeedType === "streamsCrypto") {
       isVisible = ["Crypto", "Crypto-DEX"].includes(feed.docs?.feedType)
     } else if (dataFeedType === "streamsRwa") {
-      isVisible = ["Equities", "Forex", "Datalink"].includes(feed.docs?.feedType)
+      isVisible = ["Equity", "Forex", "Datalink"].includes(feed.docs?.feedType)
     } else if (dataFeedType === "streamsNav") {
       isVisible = feed.docs?.feedType === "Net Asset Value"
     } else if (dataFeedType === "streamsExRate") {
@@ -149,7 +149,7 @@ export function isFeedVisible(
   // Filter: RWA Category & Schema (Streams RWA)
   if (dataFeedType === "streamsRwa") {
     if (options.streamCategoryFilter === "datalink" && feed.docs.feedType !== "Datalink") return false
-    if (options.streamCategoryFilter === "equities" && feed.docs.feedType !== "Equities") return false
+    if (options.streamCategoryFilter === "equities" && feed.docs.feedType !== "Equity") return false
     if (options.streamCategoryFilter === "forex" && feed.docs.feedType !== "Forex") return false
 
     const schemaVersion = getSchemaVersion(feed)
