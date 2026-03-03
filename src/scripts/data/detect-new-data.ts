@@ -99,6 +99,23 @@ function buildFeedUrl(item: DataItem): string {
   if (item.deliveryChannelCode === "DS") {
     const base = (item.baseAsset || "BASE").toLowerCase()
     const quote = (item.quoteAsset || "QUOTE").toLowerCase()
+
+    // Equity streams have multiple hour-variant feeds for the same asset
+    // (regularhoursequityprice, overnighthoursequityprice, extendedhoursequityprice,
+    // equityprice-timestamped). Their URLs include the variant suffix to distinguish them.
+    // Pattern in feedID: {network}-{base}-{quote}-streams-{variant}-mainnet-production
+    const EQUITY_STREAM_VARIANTS = [
+      "regularhoursequityprice",
+      "overnighthoursequityprice",
+      "extendedhoursequityprice",
+      "equityprice-timestamped",
+    ]
+    const feedIdLower = item.feedID.toLowerCase()
+    const matchedVariant = EQUITY_STREAM_VARIANTS.find((v) => feedIdLower.includes(`-streams-${v}-`))
+    if (matchedVariant) {
+      return `https://data.chain.link/streams/${base}-${quote}-${matchedVariant}-streams`
+    }
+
     return `https://data.chain.link/streams/${base}-${quote}`
   }
 
