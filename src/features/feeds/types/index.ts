@@ -27,7 +27,7 @@ enum ProxyFeedType {
   Commodities = "Commodities",
   Crypto = "Crypto",
   Empty = "-",
-  Equities = "Equities",
+  Equity = "Equity",
   Forex = "Forex",
 }
 

@@ -229,7 +229,7 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
   // Feed type checks
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
   // Detect tokenized equity feeds by metadata so the badge shows on any page (e.g., standard price feeds)
-  const isTokenizedEquityFeed = metadata.docs?.assetClass === "Equities" && metadata.contractType !== "verifier"
+  const isTokenizedEquityFeed = metadata.docs?.assetClass === "Equity" && metadata.contractType !== "verifier"
 
   const label = isUSGovernmentMacroeconomicData ? "Category" : "Asset type"
   const value = isUSGovernmentMacroeconomicData
@@ -1045,7 +1045,7 @@ export const StreamsTr = ({ metadata, isMainnet }) => {
                   {metadata.docs.assetClass}
                   {metadata.docs.assetSubClass &&
                   metadata.docs.assetSubClass !== "Crypto" &&
-                  metadata.docs.assetSubClass !== "Equities"
+                  metadata.docs.assetSubClass !== "Equity"
                     ? " - " + metadata.docs.assetSubClass
                     : ""}
                 </dd>
@@ -1152,8 +1152,8 @@ export const StreamsTr = ({ metadata, isMainnet }) => {
               const schemaVersion = getSchemaVersion(metadata)
               const feedType = metadata.feedType || metadata.docs?.feedType
 
-              // RWA streams (Equities, Forex, Datalink) - v8 or v11
-              if (feedType === "Equities" || feedType === "Forex" || feedType === "Datalink") {
+              // RWA streams (Equity, Forex, Datalink) - v8 or v11
+              if (feedType === "Equity" || feedType === "Forex" || feedType === "Datalink") {
                 if (schemaVersion === "v11") {
                   return (
                     <div className={tableStyles.definitionGroup}>
@@ -1353,8 +1353,8 @@ export const MainnetTable = ({
         const schemaVersion = getSchemaVersion(metadata)
         const feedType = metadata.feedType || metadata.docs?.feedType
 
-        // 24/5 feeds are Equities/Forex with v11 schema
-        const is24x5Feed = (feedType === "Equities" || feedType === "Forex") && schemaVersion === "v11"
+        // 24/5 feeds are Equity/Forex with v11 schema
+        const is24x5Feed = (feedType === "Equity" || feedType === "Forex") && schemaVersion === "v11"
 
         if (!is24x5Feed) return false
 
@@ -1609,8 +1609,8 @@ export const TestnetTable = ({
         const schemaVersion = getSchemaVersion(metadata)
         const feedType = metadata.feedType || metadata.docs?.feedType
 
-        // 24/5 feeds are Equities/Forex with v11 schema
-        const is24x5Feed = (feedType === "Equities" || feedType === "Forex") && schemaVersion === "v11"
+        // 24/5 feeds are Equity/Forex with v11 schema
+        const is24x5Feed = (feedType === "Equity" || feedType === "Forex") && schemaVersion === "v11"
 
         if (!is24x5Feed) return false
 
