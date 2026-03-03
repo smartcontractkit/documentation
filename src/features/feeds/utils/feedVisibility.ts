@@ -118,8 +118,8 @@ export function isFeedVisible(
     isVisible = feed.docs?.productType === "Rates" || feed.docs?.productSubType === "Realized Volatility"
   } else if (isTokenizedEquity) {
     // Tokenized equity feeds (Ondo and other providers)
-    // Filter by assetClass "Equities" for Data Feeds (not Streams verifier contracts)
-    isVisible = feed.docs?.assetClass === "Equities" && feed.contractType !== "verifier"
+    // Filter by assetClass "Equity" for Data Feeds (not Streams verifier contracts)
+    isVisible = feed.docs?.assetClass === "Equity" && feed.contractType !== "verifier"
   } else {
     // Default data feeds (Standard Price Feeds)
     // Exclude all special types to leave only the standard feeds
