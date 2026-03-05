@@ -651,6 +651,102 @@ See [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-ts#
 
 ---
 
+### `hexToBytes()`
+
+Converts a `0x`-prefixed hex string to a `Uint8Array`.
+
+**Signature:**
+
+```typescript
+function hexToBytes(hex: string): Uint8Array
+```
+
+**Usage:**
+
+```typescript
+import { hexToBytes } from "@chainlink/cre-sdk"
+
+const bytes = hexToBytes("0xabcdef")
+// → Uint8Array [171, 205, 239]
+```
+
+---
+
+### `bigintToBytes()`
+
+Converts a native JavaScript `bigint` to a big-endian `Uint8Array`. This is useful when you need to encode a `bigint` as raw bytes for protobuf fields or ABI encoding.
+
+**Signature:**
+
+```typescript
+function bigintToBytes(n: bigint): Uint8Array
+```
+
+**Usage:**
+
+```typescript
+import { bigintToBytes } from "@chainlink/cre-sdk"
+
+const bytes = bigintToBytes(256n)
+// → Uint8Array [1, 0]
+```
+
+---
+
+### `bytesToBigint()`
+
+Converts a big-endian `Uint8Array` to a native JavaScript `bigint`. This is the inverse of `bigintToBytes()`.
+
+**Signature:**
+
+```typescript
+function bytesToBigint(bytes: Uint8Array): bigint
+```
+
+**Usage:**
+
+```typescript
+import { bytesToBigint } from "@chainlink/cre-sdk"
+
+const value = bytesToBigint(new Uint8Array([1, 0]))
+// → 256n
+```
+
+---
+
+### `bigintToProtoBigInt()`
+
+Converts a native `bigint`, `number`, or `string` to the protobuf `BigIntJson` format used by SDK methods. The [`blockNumber()`](#blocknumber) function is a convenience alias for this function.
+
+**Signature:**
+
+```typescript
+function bigintToProtoBigInt(n: number | bigint | string): BigIntJson
+```
+
+**Returns:**
+
+A `BigIntJson` object with `absVal` (base64-encoded big-endian bytes) and `sign` (`"1"`, `"0"`, or `"-1"`).
+
+**Usage:**
+
+```typescript
+import { bigintToProtoBigInt } from "@chainlink/cre-sdk"
+
+const protoBigInt = bigintToProtoBigInt(12345678n)
+// → { absVal: "ALxhTg==", sign: "1" }
+
+const negative = bigintToProtoBigInt(-42n)
+// → { absVal: "Kg==", sign: "-1" }
+
+const zero = bigintToProtoBigInt(0n)
+// → { absVal: "", sign: "0" }
+```
+
+See [Type Conversions](/cre/reference/sdk/type-conversions-ts#protobigint) for more details on the `ProtoBigInt` format.
+
+---
+
 ### `prepareReportRequest()`
 
 Prepares a report request with default EVM encoding parameters for use with `runtime.report()`. This helper simplifies report generation by automatically setting the standard encoding configuration (`evm`, `ecdsa`, `keccak256`) required for EVM-based workflows.

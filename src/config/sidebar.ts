@@ -374,6 +374,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Monitoring & Debugging Workflows",
           url: "cre/guides/operations/monitoring-workflows",
         },
+        {
+          title: "Custom WASM Builds",
+          url: "cre/guides/operations/custom-build",
+        },
       ],
     },
     {
@@ -394,6 +398,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Managing Authentication",
               url: "cre/account/managing-auth",
+            },
+            {
+              title: "Requesting Deploy Access",
+              url: "cre/account/deploy-access",
             },
           ],
         },
@@ -498,6 +506,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             { title: "Account Management", url: "cre/reference/cli/account" },
             { title: "Workflow Commands", url: "cre/reference/cli/workflow" },
             { title: "Secrets Management", url: "cre/reference/cli/secrets" },
+            { title: "Template Sources", url: "cre/reference/cli/templates" },
             { title: "Utilities", url: "cre/reference/cli/utilities" },
           ],
         },
@@ -564,6 +573,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               title: "Consensus & Aggregation",
               url: "cre/reference/sdk/consensus",
               highlightAsCurrent: ["cre/reference/sdk/consensus-ts", "cre/reference/sdk/consensus-go"],
+            },
+            {
+              title: "Type Conversions",
+              url: "cre/reference/sdk/type-conversions-ts",
             },
           ],
         },
