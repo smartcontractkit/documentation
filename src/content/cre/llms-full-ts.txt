@@ -10413,6 +10413,41 @@ type TransactionResult = {
 }
 ```
 
+Create the function that will be passed to `sendRequest()`. This function receives a `ConfidentialHTTPSendRequester` and your config as parameters:
+
+```typescript
+import { type ConfidentialHTTPSendRequester, ok, json } from "@chainlink/cre-sdk"
+
+const fetchTransaction = (sendRequester: ConfidentialHTTPSendRequester, config: Config): TransactionResult => {
+  // 1. Send the confidential request
+  const response = sendRequester
+    .sendRequest({
+      request: {
+        url: config.url,
+        method: "GET",
+        multiHeaders: {
+          Authorization: { values: ["Basic {{.myApiKey}}"] },
+        },
+      },
+      vaultDonSecrets: [{ key: "myApiKey", owner: config.owner }],
+    })
+    .result()
+
+  // 2. Check the response status
+  if (!ok(response)) {
+    throw new Error(`HTTP request failed with status: ${response.statusCode}`)
+  }
+
+  // 3. Parse and return the result
+  return json(response) as TransactionResult
+}
+```
+
+<Aside type="note" title="Alphabetic secret ordering required">
+  When using multiple secrets, pass them into `vaultDonSecrets` in alphabetical order by key. The Vault DON processes secrets in a canonical order to ensure consistent behavior across nodes during execution.
+</Aside>
+
+
 ### Step 4: Implement the request and wire it into your workflow
 
 Unlike the regular HTTP client, the Confidential HTTP client takes a `Runtime` directly and does not require `runInNodeMode` wrapping:
