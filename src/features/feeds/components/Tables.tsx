@@ -228,8 +228,11 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
 
   // Feed type checks
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
-  // Detect tokenized equity feeds by metadata so the badge shows on any page (e.g., standard price feeds)
-  const isTokenizedEquityFeed = metadata.docs?.assetClass === "Equity" && metadata.contractType !== "verifier"
+  // Detect tokenized equity feeds by metadata so the badge shows on any page (e.g., standard price feeds).
+  const isTokenizedEquityFeed =
+    metadata.docs?.assetClass === "Equity" &&
+    metadata.contractType !== "verifier" &&
+    metadata.docs?.productTypeCode === "primaryTokenizedPrice"
 
   const label = isUSGovernmentMacroeconomicData ? "Category" : "Asset type"
   const value = isUSGovernmentMacroeconomicData
