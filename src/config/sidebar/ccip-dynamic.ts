@@ -330,7 +330,7 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
         // Universal
       },
       {
-        title: "Offchain",
+        title: "CCIP API, SDK & CLI",
         url: "ccip/tutorials/offchain",
         // Universal - supports all chain families
       },
@@ -690,8 +690,8 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
         ],
       },
       {
-        title: "CCIP SDK & CLI",
-        url: "ccip/tools-resources/ccip-tools",
+        title: "CCIP API, SDK & CLI",
+        url: "https://docs.chain.link/ccip/tools",
         // Universal
       },
       {

@@ -359,7 +359,7 @@ export const StreamsNetworksData: NetworkData[] = [
     mainnet: {
       label: "Injective EVM Mainnet",
       verifierProxy: "0x60fAa7faC949aF392DFc858F5d97E3EEfa07E9EB",
-      explorerUrl: "https://injscan.com/account/inj1vra207kffxhnjt0usk84m9lramaq060t75latq/", // Note: Injective uses Bech32 address format, hardcoding here to avoid confusion
+      explorerUrl: "https://injscan.com/account/inj1vra207kffxhnjt0usk84m9lramaq060t75latq/",
     },
     testnet: {
       label: "Injective Testnet",

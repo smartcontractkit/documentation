@@ -178,6 +178,7 @@ node <<EOF
 
     // === Build relatedTokens for STREAMS
     function buildDataStreamTokens(streamItems) {
+      const seen = new Set();
       return streamItems.map(i => {
         const baseLower = i.baseAsset.toLowerCase();
         return {
@@ -187,6 +188,13 @@ node <<EOF
           url: i.url,
           iconUrl: \`https://d2f70xi62kby8n.cloudfront.net/tokens/\${baseLower}.webp\`
         };
+      }).filter(t => {
+        // Deduplicate by URL — equity streams have multiple hour-variant feeds
+        // (regular/overnight/extended) that now each produce distinct URLs, but
+        // guard against any edge cases where URL generation still produces duplicates.
+        if (seen.has(t.url)) return false;
+        seen.add(t.url);
+        return true;
       }).sort((a, b) => a.assetName.localeCompare(b.assetName));
     }
 
