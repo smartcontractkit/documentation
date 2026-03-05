@@ -54,6 +54,12 @@ For example, **TSLA** is available via the following streams:
 - `TSLA/USD-Streams-OvernightHours`
 - `TSLA/USD-Streams-RegularHours`
 
+<Aside type="caution" title="Use marketStatus for Stream Selection">
+  Always use the `marketStatus` field to determine which stream to consume and whether the market is currently open. Do
+  not rely on `lastSeenTimestampNs`, `observationsTimestamp`, or any other timestamp to infer market activity or select
+  among streams — timestamps indicate when data was last recorded, not the current state of the market.
+</Aside>
+
 To construct a **continuous price feed**, users must **dynamically switch** between these individual streams based on the value of `marketStatus`. The mapping logic is as follows:
 
 | Market Status     | Stream                            |

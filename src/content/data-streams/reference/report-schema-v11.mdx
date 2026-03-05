@@ -86,6 +86,13 @@ For streams with 24/5 extended hours coverage (e.g., US Equities):
 
 Users should implement appropriate safeguards based on market status, such as pausing trading, adjusting risk parameters, or implementing staleness checks during non-regular hours or closed periods.
 
+<Aside type="caution" title="Use marketStatus for Stream Selection">
+  The `marketStatus` field is the authoritative signal for determining market availability and selecting which stream to
+  consume. Do not use `observationsTimestamp`, `lastSeenTimestampNs`, or any other timestamp field to infer whether a
+  market is open or to decide which stream to use. Timestamps reflect when data was last recorded, not the current state
+  of the market.
+</Aside>
+
 <Aside type="note" title="Handling Unknown and Closed Status">
   Consumers should implement logic to handle market status `0` (Unknown) and market status `5` (Closed), as these
   periods imply no active feed and require a decision on fallback behavior (e.g., using a tokenized price, pausing the
@@ -98,6 +105,7 @@ Users should implement appropriate safeguards based on market status, such as pa
 
 - `lastSeenTimestampNs` helps applications detect stale data for the mid price, especially important during market transitions and holidays.
 - **IMPORTANT**: The `lastSeenTimestampNs` field reflects the timestamp of the last update for the `mid` price only. Do not assume this timestamp applies to `bid`, `ask`, `bidVolume`, `askVolume`, or `lastTradedPrice`. Different fields may have been updated at different times.
+- **Do not use `lastSeenTimestampNs` (or any other timestamp field) to determine which stream to select or to infer whether the market is open.** Timestamps indicate when data was last recorded, not whether the market is currently active. Use the `marketStatus` field as the authoritative signal for market availability and stream selection.
 
 #### Bid/Ask Volume
 
