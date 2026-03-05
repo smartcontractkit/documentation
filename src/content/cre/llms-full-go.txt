@@ -442,9 +442,27 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-02-26
+Last Updated: 2026-03-05
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## Go SDK v1.5.0 - March 5, 2026
+
+**Go SDK version 1.5.0** adds support for the Pharos Atlantic network.
+
+- **New Network**: Added Pharos Atlantic support
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.4.0...v1.5.0)
+
+## Go SDK v1.4.0 - March 2, 2026
+
+**Go SDK version 1.4.0** expands network support and adds Solana workflow bindings.
+
+- **New Networks**: Added Jovay Testnet, Pharos Testnet, and XLayer support
+- **Solana Support**: Added Solana LogTrigger SDK generation and Solana workflow bindings
+- **Breaking change**: Removed Solana SDK types that were previously generated (now replaced by the new Solana bindings approach)
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.3.0...v1.4.0)
 
 ## CLI v1.2.0 - February 26, 2026
 
@@ -452,6 +470,7 @@ This page provides detailed release notes for CRE. It includes information on ne
 
 - **Dynamic template fetching**: Templates are now fetched at runtime from GitHub, so `cre init` always offers the latest available templates without requiring a CLI update. Two new `cre templates` commands let you manage template sources — run `cre templates list` to browse available templates, or `cre templates add` to include custom or third-party repositories. See [Template Sources](/cre/reference/cli/templates) for details.
 - **Deploy access management**: New `cre account access` command lets you check your organization's deployment access status and submit an Early Access request directly from the CLI. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
+- **Unit tests for TypeScript templates**: TypeScript workflow templates now include a unit test setup out of the box
 - **Bug Fix**: Fixed an issue where secrets were not correctly injected during workflow simulation in certain configurations.
 
 **How to update:**
@@ -465,7 +484,7 @@ This page provides detailed release notes for CRE. It includes information on ne
 
 CRE now supports the [Confidential HTTP](/cre/capabilities/confidential-http) capability for production workflows, allowing you to make privacy-preserving API calls with enclave execution. See the [Making Confidential Requests](/cre/guides/workflow/using-confidential-http-client/making-requests-ts) guide to learn more.
 
-## CLI v1.1.0 - February 19th, 2026
+## CLI v1.1.0 - February 18, 2026
 
 **<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.1.0" target="_blank">CRE CLI version 1.1.0</a> is now available.**
 
@@ -478,6 +497,24 @@ CRE now supports the [Confidential HTTP](/cre/capabilities/confidential-http) ca
 - **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
 
 [See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.0.11...v1.1.0)
+
+## TS SDK v1.1.0 - February 18, 2026
+
+**TypeScript SDK version 1.1.0** includes improvements to error handling, Confidential HTTP behavior, and developer experience:
+
+- **Improved error messages**: Error messages across the runtime, codegen, and utilities are now more descriptive and actionable
+- **Confidential HTTP runs in DON mode**: The Confidential HTTP capability now executes in DON mode (instead of node mode), aligning with how other DON-level capabilities work
+- **Clearer setup errors**: The SDK now provides a descriptive error when `cre-setup` has not been run before attempting to compile a workflow
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.0.9...v1.1.0)
+
+## Go SDK v1.3.0 - February 12, 2026
+
+**Go SDK version 1.3.0** updates the Confidential HTTP capability types.
+
+- **Confidential HTTP**: The `encrypt_output` field has moved from `ConfidentialHTTPRequest` to `HTTPRequest`. Update any workflows using `ConfidentialHTTPRequest.encrypt_output` to set this field on the inner `HTTPRequest` instead.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.2.0...v1.3.0)
 
 ## CLI v1.0.11 - February 13, 2026
 
@@ -15502,6 +15539,73 @@ func onTrigger(config *Config, runtime cre.Runtime, ...) (string, error) {
     //...
 }
 ```
+
+## `runtime.GetSecret()`
+
+Retrieves a secret from the Vault DON. Secrets are key-value pairs stored securely and made available to your workflow at runtime. The `GetSecret` method is available on the `Runtime` interface through the embedded `SecretsProvider`.
+
+**Signature:**
+
+```go
+runtime.GetSecret(req *SecretRequest) Promise[*Secret]
+```
+
+### `SecretRequest`
+
+| Field       | Type     | Required | Description                                                           |
+| ----------- | -------- | -------- | --------------------------------------------------------------------- |
+| `Id`        | `string` | Yes      | The identifier of the secret to retrieve.                             |
+| `Namespace` | `string` | No       | The namespace the secret belongs to. Defaults to `"main"` if omitted. |
+
+### `Secret`
+
+The value returned when the promise resolves.
+
+| Field       | Type     | Description                      |
+| ----------- | -------- | -------------------------------- |
+| `Id`        | `string` | The secret identifier.           |
+| `Namespace` | `string` | The secret namespace.            |
+| `Owner`     | `string` | The address of the secret owner. |
+| `Value`     | `string` | The secret value.                |
+
+### `SecretsProvider` interface
+
+The `SecretsProvider` interface is embedded in `Runtime`, which means `GetSecret` is available directly on the runtime object. It is also passed as a parameter to [`InitWorkflow`](#initworkflow), allowing you to access secrets during workflow initialization.
+
+```go
+type SecretsProvider interface {
+    GetSecret(req *SecretRequest) Promise[*Secret]
+}
+```
+
+### Example
+
+```go
+import "github.com/smartcontractkit/cre-sdk-go/cre"
+
+func onTrigger(config *Config, runtime cre.Runtime, ...) (string, error) {
+    secretPromise := runtime.GetSecret(&cre.SecretRequest{
+        Id:        "my-api-key",
+        Namespace: "default",
+    })
+
+    secret, err := secretPromise.Await()
+    if err != nil {
+        return "", fmt.Errorf("failed to get secret: %w", err)
+    }
+
+    logger := runtime.Logger()
+    logger.Info("Secret retrieved", "owner", secret.Owner)
+
+    // Use secret.Value in your workflow logic
+    return "done", nil
+}
+```
+
+<Aside type="note" title="Secrets guide">
+  For a complete walkthrough on creating, storing, and using secrets, see the [Secrets
+  guide](/cre/guides/workflow/secrets).
+</Aside>
 
 ---
 
