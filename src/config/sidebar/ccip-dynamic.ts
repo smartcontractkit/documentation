@@ -615,7 +615,7 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
         ],
       },
       {
-        title: "Solidity Interfaces & Contracts Reference",
+        title: "Solidity Interfaces & Contracts",
         url: "ccip/api-reference/evm",
         chainTypes: ["evm"],
         children: [
@@ -662,7 +662,7 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
         ],
       },
       {
-        title: "SVM Program Interfaces Reference",
+        title: "SVM Program Interfaces",
         url: "ccip/api-reference/svm",
         chainTypes: ["solana"],
         children: [
@@ -676,7 +676,7 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
         ],
       },
       {
-        title: "Move Modules Interface Reference",
+        title: "Move Modules Interface",
         url: "ccip/api-reference/aptos",
         chainTypes: ["aptos"],
         children: [
