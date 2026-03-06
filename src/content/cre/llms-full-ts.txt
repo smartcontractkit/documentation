@@ -442,9 +442,27 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-02-26
+Last Updated: 2026-03-05
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## Go SDK v1.5.0 - March 5, 2026
+
+**Go SDK version 1.5.0** adds support for the Pharos Atlantic network.
+
+- **New Network**: Added Pharos Atlantic support
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.4.0...v1.5.0)
+
+## Go SDK v1.4.0 - March 2, 2026
+
+**Go SDK version 1.4.0** expands network support and adds Solana workflow bindings.
+
+- **New Networks**: Added Jovay Testnet, Pharos Testnet, and XLayer support
+- **Solana Support**: Added Solana LogTrigger SDK generation and Solana workflow bindings
+- **Breaking change**: Removed Solana SDK types that were previously generated (now replaced by the new Solana bindings approach)
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.3.0...v1.4.0)
 
 ## CLI v1.2.0 - February 26, 2026
 
@@ -452,6 +470,7 @@ This page provides detailed release notes for CRE. It includes information on ne
 
 - **Dynamic template fetching**: Templates are now fetched at runtime from GitHub, so `cre init` always offers the latest available templates without requiring a CLI update. Two new `cre templates` commands let you manage template sources — run `cre templates list` to browse available templates, or `cre templates add` to include custom or third-party repositories. See [Template Sources](/cre/reference/cli/templates) for details.
 - **Deploy access management**: New `cre account access` command lets you check your organization's deployment access status and submit an Early Access request directly from the CLI. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
+- **Unit tests for TypeScript templates**: TypeScript workflow templates now include a unit test setup out of the box
 - **Bug Fix**: Fixed an issue where secrets were not correctly injected during workflow simulation in certain configurations.
 
 **How to update:**
@@ -465,7 +484,7 @@ This page provides detailed release notes for CRE. It includes information on ne
 
 CRE now supports the [Confidential HTTP](/cre/capabilities/confidential-http) capability for production workflows, allowing you to make privacy-preserving API calls with enclave execution. See the [Making Confidential Requests](/cre/guides/workflow/using-confidential-http-client/making-requests-ts) guide to learn more.
 
-## CLI v1.1.0 - February 19th, 2026
+## CLI v1.1.0 - February 18, 2026
 
 **<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.1.0" target="_blank">CRE CLI version 1.1.0</a> is now available.**
 
@@ -478,6 +497,24 @@ CRE now supports the [Confidential HTTP](/cre/capabilities/confidential-http) ca
 - **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
 
 [See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.0.11...v1.1.0)
+
+## TS SDK v1.1.0 - February 18, 2026
+
+**TypeScript SDK version 1.1.0** includes improvements to error handling, Confidential HTTP behavior, and developer experience:
+
+- **Improved error messages**: Error messages across the runtime, codegen, and utilities are now more descriptive and actionable
+- **Confidential HTTP runs in DON mode**: The Confidential HTTP capability now executes in DON mode (instead of node mode), aligning with how other DON-level capabilities work
+- **Clearer setup errors**: The SDK now provides a descriptive error when `cre-setup` has not been run before attempting to compile a workflow
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.0.9...v1.1.0)
+
+## Go SDK v1.3.0 - February 12, 2026
+
+**Go SDK version 1.3.0** updates the Confidential HTTP capability types.
+
+- **Confidential HTTP**: The `encrypt_output` field has moved from `ConfidentialHTTPRequest` to `HTTPRequest`. Update any workflows using `ConfidentialHTTPRequest.encrypt_output` to set this field on the inner `HTTPRequest` instead.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.2.0...v1.3.0)
 
 ## CLI v1.0.11 - February 13, 2026
 
@@ -7876,6 +7913,143 @@ CRE CLI version v1.2.0
 
 ---
 
+# SDK Reference: Type Conversions
+Source: https://docs.chain.link/cre/reference/sdk/type-conversions-ts
+Last Updated: 2026-03-02
+
+The CRE TypeScript SDK uses Protocol Buffers under the hood. Each protobuf message generates **two** TypeScript representations:
+
+- **`Type`** (runtime form): Uses native binary types like `Uint8Array` and `bigint`. These are what the SDK returns from `.result()` calls.
+- **`TypeJson`** (JSON-serializable form): Uses `string` and plain objects. These are what you pass *into* SDK methods when constructing requests.
+
+
+<Aside type="tip" title="Rule of thumb">
+  Use **`Json` variants** when constructing request objects inline. Use **runtime types** when processing responses from `.result()` calls.
+</Aside>
+
+## Conversion table
+
+This table shows how protobuf types map to their TypeScript runtime and JSON-serializable forms.
+
+| Protobuf Type               | Runtime (`Type`)                                 | JSON (`TypeJson`)                      | Notes                                                                                                                                                                               |
+| --------------------------- | ------------------------------------------------ | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bytes`                     | `Uint8Array`                                     | `string` (base64)                      | Use [`hexToBase64()`](/cre/reference/sdk/evm-client-ts#hextobase64) to convert hex to base64 for request objects. Use `bytesToHex()` to convert `Uint8Array` responses back to hex. |
+| `int64` / `uint64`          | `bigint`                                         | `string`                               | Numeric strings like `"12345"`.                                                                                                                                                     |
+| `enum`                      | Enum constant (`number`)                         | String name                            | For example, `TX_STATUS_SUCCESS` (number) vs `"TX_STATUS_SUCCESS"` (string).                                                                                                        |
+| `google.protobuf.Duration`  | `Duration` object                                | `string` (e.g. `"5s"`)                 | Duration strings use Go-style format: `"5s"`, `"1.5m"`, `"200ms"`.                                                                                                                  |
+| `google.protobuf.Timestamp` | `Timestamp` `{ seconds: bigint, nanos: number }` | `{ seconds?: string, nanos?: number }` |                                                                                                                                                                                     |
+| `BigInt` (CRE custom)       | `{ absVal: Uint8Array, sign: bigint }`           | `{ absVal: string, sign: string }`     | See [ProtoBigInt](#protobigint) below.                                                                                                                                              |
+
+## ProtoBigInt
+
+`BigInt` is a CRE-specific protobuf type used to represent arbitrarily large integers. It appears in block numbers, account balances, gas values, and other EVM-related fields.
+
+### Structure
+
+The protobuf `BigInt` encodes a signed arbitrary-precision integer as two fields:
+
+| Field    | Runtime type | JSON type         | Description                                                                  |
+| -------- | ------------ | ----------------- | ---------------------------------------------------------------------------- |
+| `absVal` | `Uint8Array` | `string` (base64) | The absolute value as a big-endian byte array (base64-encoded in JSON form). |
+| `sign`   | `bigint`     | `string`          | The sign: `"1"` for positive, `"0"` for zero, `"-1"` for negative.           |
+
+### Converting between `bigint` and `ProtoBigInt`
+
+Use the SDK helpers to convert between native JavaScript `bigint` and the protobuf format:
+
+**Native `bigint` to protobuf `BigIntJson`** (for request objects):
+
+```typescript
+import { blockNumber, bigintToProtoBigInt } from "@chainlink/cre-sdk"
+
+// blockNumber() is a convenience alias for bigintToProtoBigInt()
+const block = blockNumber(12345678n)
+// → { absVal: "ALxhTg==", sign: "1" }
+
+// Equivalent:
+const block2 = bigintToProtoBigInt(12345678n)
+```
+
+**Protobuf `BigInt` to native `bigint`** (for response processing):
+
+```typescript
+import { protoBigIntToBigint } from "@chainlink/cre-sdk"
+
+const header = evmClient.headerByNumber(runtime, {}).result()
+const blockNum = protoBigIntToBigint(header.header.blockNumber)
+// → e.g., 12345678n
+```
+
+### Special constants
+
+The SDK provides pre-built `BigIntJson` constants for common block reference values:
+
+```typescript
+import { LATEST_BLOCK_NUMBER, LAST_FINALIZED_BLOCK_NUMBER } from "@chainlink/cre-sdk"
+
+// LATEST_BLOCK_NUMBER → most recent mined block
+// LAST_FINALIZED_BLOCK_NUMBER → most recent finalized block
+```
+
+These are negative sentinel values that the CRE platform interprets as symbolic references rather than literal block heights.
+
+### Common patterns
+
+**Reading a balance and doing arithmetic:**
+
+```typescript
+import { EVMClient, getNetwork, protoBigIntToBigint, LAST_FINALIZED_BLOCK_NUMBER } from "@chainlink/cre-sdk"
+
+const balance = evmClient
+  .balanceAt(runtime, {
+    account: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb2",
+    blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
+  })
+  .result()
+
+// balance.balance is already a native bigint — no conversion needed
+const balanceInEth = balance.balance / 10n ** 18n
+```
+
+**Specifying a custom block depth:**
+
+```typescript
+import { protoBigIntToBigint, blockNumber } from "@chainlink/cre-sdk"
+
+// Get the latest block number
+const header = evmClient.headerByNumber(runtime, {}).result()
+const latest = protoBigIntToBigint(header.header.blockNumber)
+
+// Query 100 blocks back
+const contractCall = evmClient
+  .callContract(runtime, {
+    call: encodedCall,
+    blockNumber: blockNumber(latest - 100n),
+  })
+  .result()
+```
+
+## `bytes` fields
+
+Protobuf `bytes` fields appear as `Uint8Array` in runtime types and as base64-encoded `string` in JSON types. When working with EVM data, you often need to convert between hex strings and these representations.
+
+```typescript
+import { hexToBase64, bytesToHex, hexToBytes } from "@chainlink/cre-sdk"
+
+// Hex → base64 (for request objects that expect base64-encoded bytes)
+const base64Data = hexToBase64("0xabcdef")
+
+// Hex → Uint8Array (for working with raw bytes)
+const bytes = hexToBytes("0xabcdef")
+
+// Uint8Array → hex (for converting response bytes back to hex)
+const hex = bytesToHex(new Uint8Array([0xab, 0xcd, 0xef]))
+```
+
+See the [EVM Client helper functions](/cre/reference/sdk/evm-client-ts#helper-functions) for the full list of conversion utilities.
+
+---
+
 # The Confidential HTTP Capability
 Source: https://docs.chain.link/cre/capabilities/confidential-http-ts
 Last Updated: 2026-02-06
@@ -10234,6 +10408,41 @@ type TransactionResult = {
   status: string
 }
 ```
+
+Create the function that will be passed to `sendRequest()`. This function receives a `ConfidentialHTTPSendRequester` and your config as parameters:
+
+```typescript
+import { type ConfidentialHTTPSendRequester, ok, json } from "@chainlink/cre-sdk"
+
+const fetchTransaction = (sendRequester: ConfidentialHTTPSendRequester, config: Config): TransactionResult => {
+  // 1. Send the confidential request
+  const response = sendRequester
+    .sendRequest({
+      request: {
+        url: config.url,
+        method: "GET",
+        multiHeaders: {
+          Authorization: { values: ["Basic {{.myApiKey}}"] },
+        },
+      },
+      vaultDonSecrets: [{ key: "myApiKey", owner: config.owner }],
+    })
+    .result()
+
+  // 2. Check the response status
+  if (!ok(response)) {
+    throw new Error(`HTTP request failed with status: ${response.statusCode}`)
+  }
+
+  // 3. Parse and return the result
+  return json(response) as TransactionResult
+}
+```
+
+<Aside type="note" title="Alphabetic secret ordering required">
+  When using multiple secrets, pass them into `vaultDonSecrets` in alphabetical order by key. The Vault DON processes secrets in a canonical order to ensure consistent behavior across nodes during execution.
+</Aside>
+
 
 ### Step 4: Implement the request and wire it into your workflow
 
@@ -14034,7 +14243,7 @@ The [Confidential HTTP](/cre/capabilities/confidential-http-ts) Client lets you 
 
 
 <Aside type="note" title="Runtime types vs JSON types">
-  Each core type has a corresponding `Json` variant (e.g., `ConfidentialHTTPRequest` and `ConfidentialHTTPRequestJson`). The `Json` variant is the plain JSON-serializable form of the protobuf message. Both forms are accepted wherever a type is required.
+  Each core type has a corresponding `Json` variant (e.g., `ConfidentialHTTPRequest` and `ConfidentialHTTPRequestJson`). The `Json` variant is the plain JSON-serializable form of the protobuf message. Both forms are accepted wherever a type is required. See [Type Conversions](/cre/reference/sdk/type-conversions-ts) for a full reference on how protobuf types map to TypeScript.
 </Aside>
 
 ### `ConfidentialHTTPRequest` / `ConfidentialHTTPRequestJson`
@@ -14901,11 +15110,64 @@ runtime.runInNodeMode<TArgs extends unknown[], TOutput>(
 
 - `fn`: A function that receives a `NodeRuntime` and executes on each individual node
 - `consensusAggregation`: An aggregation function (e.g., `consensusMedianAggregation<bigint>()`)
-- `unwrapOptions`: Optional configuration for how to unwrap complex return types
+- `unwrapOptions`: Optional configuration for how to deserialize the consensus result. See [`UnwrapOptions`](#unwrapoptions) below.
 
 **Returns:**
 
 A function that, when called with any additional arguments, returns an object with a `.result()` method.
+
+### `UnwrapOptions`
+
+When `runInNodeMode` returns a non-primitive object type, the SDK needs to know how to deserialize the consensus result back into a typed object. The `unwrapOptions` parameter tells the SDK which deserialization strategy to use.
+
+
+<Aside type="note" title="When do you need this?">
+  You only need `unwrapOptions` when `runInNodeMode` returns a non-primitive object type. Primitive return types (`string`, `number`, `bigint`, `boolean`) do not require `unwrapOptions` — the SDK handles them automatically.
+</Aside>
+
+**Type definition:**
+
+```typescript
+type UnwrapOptions<T> = { schema: SchemaValidator<T>; factory?: never } | { schema?: never; factory: () => T }
+```
+
+**Variants:**
+
+| Variant                 | When to use                                                                  | Example                                          |
+| ----------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------ |
+| `{ schema: validator }` | Objects with a Zod or any Standard Schema-compatible validator               | `{ schema: myZodSchema }`                        |
+| `{ factory: () => T }`  | Objects without a schema — provide a factory that returns a default instance | `{ factory: () => ({ price: 0n, source: "" }) }` |
+
+Note: `schema` and `factory` are mutually exclusive — provide one or the other, not both.
+
+**Example with `schema` (most common for complex types):**
+
+```typescript
+import { HTTPClient, consensusMedianAggregation, type Runtime, type NodeRuntime } from "@chainlink/cre-sdk"
+import { z } from "zod"
+
+const priceResultSchema = z.object({
+  price: z.bigint(),
+  source: z.string(),
+})
+
+type PriceResult = z.infer<typeof priceResultSchema>
+
+const fetchPrice = (nodeRuntime: NodeRuntime<Config>): PriceResult => {
+  const httpClient = new HTTPClient()
+  // ... fetch and parse price ...
+  return { price: 42000n, source: "api.example.com" }
+}
+
+const onTrigger = (runtime: Runtime<Config>): string => {
+  const price = runtime
+    .runInNodeMode(fetchPrice, consensusMedianAggregation<PriceResult>(), { schema: priceResultSchema })()
+    .result()
+
+  runtime.log(`Price: ${price.price} from ${price.source}`)
+  return "done"
+}
+```
 
 **Example:**
 
@@ -14948,6 +15210,58 @@ const onTrigger = (runtime: Runtime<Config>, ...): string => {
 <Aside type="note" title="Notice the double function call">
   The pattern `runInNodeMode(fn, aggregation)()` requires calling the returned function immediately with `()` before
   calling `.result()`. This is because `runInNodeMode` returns a function that can accept additional arguments.
+</Aside>
+
+## `runtime.getSecret()`
+
+Retrieves a secret from the Vault DON. Secrets are key-value pairs stored securely and made available to your workflow at runtime.
+
+**Signature:**
+
+```typescript
+runtime.getSecret(
+  req: SecretRequest | SecretRequestJson
+): { result: () => Secret }
+```
+
+### `SecretRequest` / `SecretRequestJson`
+
+| Field       | Type     | Required | Description                                                           |
+| ----------- | -------- | -------- | --------------------------------------------------------------------- |
+| `id`        | `string` | Yes      | The identifier of the secret to retrieve.                             |
+| `namespace` | `string` | No       | The namespace the secret belongs to. Defaults to `"main"` if omitted. |
+
+### `Secret`
+
+The object returned by `.result()`.
+
+| Field       | Type     | Description                      |
+| ----------- | -------- | -------------------------------- |
+| `id`        | `string` | The secret identifier.           |
+| `namespace` | `string` | The secret namespace.            |
+| `owner`     | `string` | The address of the secret owner. |
+| `value`     | `string` | The secret value.                |
+
+### Example
+
+`runtime.getSecret()` is available directly on the `Runtime` object passed to your handler function. No additional setup is required in `initWorkflow`.
+
+```typescript
+import { type Runtime } from "@chainlink/cre-sdk"
+
+const onTrigger = (runtime: Runtime<Config>): string => {
+  const secret = runtime.getSecret({ id: "my-api-key" }).result()
+
+  runtime.log(`Secret owner: ${secret.owner}`)
+
+  // Use secret.value in your workflow logic
+  return "done"
+}
+```
+
+
+<Aside type="note" title="Secrets guide">
+  For a complete walkthrough on creating, storing, and using secrets, see the [Secrets guide](/cre/guides/workflow/secrets).
 </Aside>
 
 ---
@@ -15577,6 +15891,102 @@ const contractCall = evmClient
 ```
 
 See [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-ts#custom-block-depths) for a complete example.
+
+***
+
+### `hexToBytes()`
+
+Converts a `0x`-prefixed hex string to a `Uint8Array`.
+
+**Signature:**
+
+```typescript
+function hexToBytes(hex: string): Uint8Array
+```
+
+**Usage:**
+
+```typescript
+import { hexToBytes } from "@chainlink/cre-sdk"
+
+const bytes = hexToBytes("0xabcdef")
+// → Uint8Array [171, 205, 239]
+```
+
+***
+
+### `bigintToBytes()`
+
+Converts a native JavaScript `bigint` to a big-endian `Uint8Array`. This is useful when you need to encode a `bigint` as raw bytes for protobuf fields or ABI encoding.
+
+**Signature:**
+
+```typescript
+function bigintToBytes(n: bigint): Uint8Array
+```
+
+**Usage:**
+
+```typescript
+import { bigintToBytes } from "@chainlink/cre-sdk"
+
+const bytes = bigintToBytes(256n)
+// → Uint8Array [1, 0]
+```
+
+***
+
+### `bytesToBigint()`
+
+Converts a big-endian `Uint8Array` to a native JavaScript `bigint`. This is the inverse of `bigintToBytes()`.
+
+**Signature:**
+
+```typescript
+function bytesToBigint(bytes: Uint8Array): bigint
+```
+
+**Usage:**
+
+```typescript
+import { bytesToBigint } from "@chainlink/cre-sdk"
+
+const value = bytesToBigint(new Uint8Array([1, 0]))
+// → 256n
+```
+
+***
+
+### `bigintToProtoBigInt()`
+
+Converts a native `bigint`, `number`, or `string` to the protobuf `BigIntJson` format used by SDK methods. The [`blockNumber()`](#blocknumber) function is a convenience alias for this function.
+
+**Signature:**
+
+```typescript
+function bigintToProtoBigInt(n: number | bigint | string): BigIntJson
+```
+
+**Returns:**
+
+A `BigIntJson` object with `absVal` (base64-encoded big-endian bytes) and `sign` (`"1"`, `"0"`, or `"-1"`).
+
+**Usage:**
+
+```typescript
+import { bigintToProtoBigInt } from "@chainlink/cre-sdk"
+
+const protoBigInt = bigintToProtoBigInt(12345678n)
+// → { absVal: "ALxhTg==", sign: "1" }
+
+const negative = bigintToProtoBigInt(-42n)
+// → { absVal: "Kg==", sign: "-1" }
+
+const zero = bigintToProtoBigInt(0n)
+// → { absVal: "", sign: "0" }
+```
+
+See [Type Conversions](/cre/reference/sdk/type-conversions-ts#protobigint) for more details on the `ProtoBigInt` format.
 
 ***
 
@@ -16473,6 +16883,7 @@ The SDK Reference is broken down into several pages, each corresponding to a cor
 - **[HTTP Client](/cre/reference/sdk/http-client-ts)**: Provides a reference for the `HTTPClient`, used for making offchain API requests from individual nodes.
 - **[Confidential HTTP Client](/cre/reference/sdk/confidential-http-client-ts)**: Provides a reference for the `ConfidentialHTTPClient`, used for privacy-preserving API requests with enclave execution and optional response encryption.
 - **[Consensus & Aggregation](/cre/reference/sdk/consensus-ts)**: Describes how to use aggregators like `consensusMedianAggregation` and `ConsensusAggregationByFields` with `runtime.runInNodeMode()` to process and consolidate data from multiple nodes.
+- **[Type Conversions](/cre/reference/sdk/type-conversions-ts)**: Explains the dual `Type` / `TypeJson` system, protobuf-to-TypeScript type mappings, and the `ProtoBigInt` format used for block numbers, balances, and gas values.
 
 ## Package Structure
 

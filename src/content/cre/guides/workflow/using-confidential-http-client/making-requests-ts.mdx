@@ -117,6 +117,35 @@ const onCronTrigger = (runtime: Runtime<Config>): TransactionResult => {
   }
 
   // 3. Parse and return the result
+  return json(response) as TransactionResult
+}
+```
+
+<Aside type="note" title="Alphabetic secret ordering required">
+  When using multiple secrets, pass them into `vaultDonSecrets` in alphabetical order by key. The Vault DON processes
+  secrets in a canonical order to ensure consistent behavior across nodes during execution.
+</Aside>
+
+In your trigger handler, call `confHTTPClient.sendRequest()` with your fetch function and a consensus method:
+
+```typescript
+import {
+  CronCapability,
+  ConfidentialHTTPClient,
+  handler,
+  consensusIdenticalAggregation,
+  type Runtime,
+  Runner,
+} from "@chainlink/cre-sdk"
+
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  const confHTTPClient = new ConfidentialHTTPClient()
+
+  const result = confHTTPClient
+    .sendRequest(runtime, fetchTransaction, consensusIdenticalAggregation<TransactionResult>())(runtime.config)
+    .result()
+
+=======
   const result = json(response) as TransactionResult
   runtime.log(`Transaction result: ${result.transactionId} — ${result.status}`)
   return result
