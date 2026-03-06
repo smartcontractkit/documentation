@@ -177,6 +177,9 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   ARC_NETWORK_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.arc.network"),
   DOGE_OS_CHIKYU_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.dogeos.com/"),
   ADI_NETWORK_AB_TESTNET: () => new JsonRpcProvider("https://rpc.ab.testnet.adifoundation.ai/"),
+  ADI_NETWORK_MAINNET: () => new JsonRpcProvider("https://rpc.adifoundation.ai"),
+  EDGE_TESTNET: () => new JsonRpcProvider("https://edge-testnet.g.alchemy.com/public"),
+  EDGE_MAINNET: () => new JsonRpcProvider("https://edge-mainnet.g.alchemy.com/public"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {

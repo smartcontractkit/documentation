@@ -295,6 +295,7 @@ export const productChainLinks: ProductChainLinks = {
     cronos: "/resources/link-token-contracts#cronos",
     cronoszkevm: "/resources/link-token-contracts#cronos-zkevm",
     dogeos: "/resources/link-token-contracts#dogeos",
+    edge: "/resources/link-token-contracts#edge",
     etherlink: "/resources/link-token-contracts#etherlink",
     ethereum: "/resources/link-token-contracts#ethereum",
     everclear: "/resources/link-token-contracts#everclear",
@@ -452,4 +453,5 @@ export const chainNames: Record<string, string> = {
   "adi-network": "ADI Network",
   arc: "Arc Network",
   dogeos: "DogeOS",
+  edge: "Edge",
 }
