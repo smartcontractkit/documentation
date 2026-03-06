@@ -122,17 +122,20 @@ func onCronTrigger(config *Config, runtime cre.Runtime, _ *cron.Payload) (string
     evmClient := &evm.Client{ChainSelector: config.ChainSelector}
     contractAddress := common.HexToAddress(config.StorageAddress)
 
+    // Create a new contract instance using the generated bindings
     storageContract, err := storage.NewStorage(evmClient, contractAddress, nil)
     if err != nil {
         return "", err
     }
 
-    // Get returns a *big.Int — big.NewInt(-3) means the finalized block
+    // Call a read-only method — it returns a Promise, which you must .Await() to get the result
+    // big.NewInt(-3) means the finalized block; use big.NewInt(-2) for latest
     value, err := storageContract.Get(runtime, big.NewInt(-3)).Await()
     if err != nil {
         return "", err
     }
 
+    // value is already a *big.Int, ready to use
     runtime.Logger().Info("Storage value", "value", value.String())
     return value.String(), nil
 }
@@ -390,8 +393,10 @@ import (
     "your-project/contracts/evm/src/generated/storage"
 )
 
-// Note: your workflow.go has //go:build wasip1 so its types are not available
-// in regular Go tests. Redefine your Config here to match.
+// Define your config types in the test file to match your workflow's structure.
+// Note: your workflow.go likely has //go:build wasip1 (for WASM compilation),
+// which means those types aren't available when running regular Go tests.
+// So you need to redefine them here in your test file.
 type EvmConfig struct {
     StorageAddress string `json:"storageAddress"`
     ChainName      string `json:"chainName"`
@@ -457,6 +462,26 @@ go test -v ./my-workflow
 # Test all workflows in your project
 go test ./...
 ```
+
+**Expected output with `-v` flag:**
+
+```bash
+=== RUN   TestStorageRead
+    workflow_test.go:55: Mock Storage contract set up at 0xa17CF997C28FF154eDBae1422e6a50BeF23927F4
+    workflow_test.go:56: Mock set up successfully - Get() will return 42
+--- PASS: TestStorageRead (0.00s)
+PASS
+ok      your-project/my-workflow      0.257s
+```
+
+The test passes, confirming your mock contract is set up correctly. In a real workflow test, you would call your workflow function and verify it produces the expected results using the mocked contract.
+
+### Best practices for workflow testing
+
+1. **Name test files correctly**: Use `<name>_test.go` (e.g., `workflow_test.go`) and place them in your workflow directory
+1. **Test function naming**: Start test functions with `Test` (e.g., `TestMyWorkflow`, `TestCronTrigger`)
+1. **Mock all external dependencies**: Use mock contracts for EVM calls and mock HTTP clients for API requests
+1. **Test different scenarios**: Create separate test functions for success cases, error cases, and edge cases
 
 ### Complete reference example
 
