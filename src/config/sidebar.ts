@@ -254,6 +254,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                   title: "Submitting Reports Onchain",
                   url: "cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain",
                 },
+                {
+                  title: "Verifying Transaction Status",
+                  url: "cre/guides/workflow/using-evm-client/onchain-write/verifying-transaction-status",
+                  highlightAsCurrent: [
+                    "cre/guides/workflow/using-evm-client/onchain-write/verifying-transaction-status-ts",
+                    "cre/guides/workflow/using-evm-client/onchain-write/verifying-transaction-status-go",
+                  ],
+                },
               ],
             },
             {
