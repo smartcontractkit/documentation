@@ -213,6 +213,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Generating Bindings",
               url: "cre/guides/workflow/using-evm-client/generating-bindings",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-evm-client/generating-bindings-ts",
+                "cre/guides/workflow/using-evm-client/generating-bindings-go",
+              ],
             },
             {
               title: "Onchain Read",
