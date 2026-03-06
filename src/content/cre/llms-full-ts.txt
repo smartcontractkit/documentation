@@ -446,6 +446,27 @@ Last Updated: 2026-03-05
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
 
+## CLI v1.3.0 - March 5, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.3.0" target="_blank">CRE CLI version 1.3.0</a> is now available.**
+
+- **TypeScript EVM bindings**: The `cre generate-bindings evm` command now supports TypeScript. It generates a fully typed class from your contract ABI with read methods, write helpers, typed event structs, and `logTriggerEventName()` methods that handle all base64 encoding automatically. See [Generating Contract Bindings (TypeScript)](/cre/guides/workflow/using-evm-client/generating-bindings-ts) for details.
+- **Explicit `--target` flag**: The `--target` flag for selecting a deployment target is now required when running `cre workflow deploy` and other target-scoped commands. If omitted, the CLI will prompt for it interactively.
+- **New Mainnets**: Added Jovay, Pharos, and XLayer mainnet support for simulation and production deployment.
+- **Pharos Atlantic Testnet**: Added Pharos Atlantic testnet support.
+
+**Required versions:**
+
+- Jovay / Pharos / XLayer Mainnet: CLI v1.3.0+, Go SDK v1.4.0+, TS SDK v1.1.3+
+- Pharos Atlantic Testnet: CLI v1.3.0+, Go SDK v1.5.0+, TS SDK v1.1.4+
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.2.0...v1.3.0)
+
 ## Go SDK v1.5.0 - March 5, 2026
 
 **Go SDK version 1.5.0** adds support for the Pharos Atlantic network.
@@ -10413,41 +10434,6 @@ type TransactionResult = {
 }
 ```
 
-Create the function that will be passed to `sendRequest()`. This function receives a `ConfidentialHTTPSendRequester` and your config as parameters:
-
-```typescript
-import { type ConfidentialHTTPSendRequester, ok, json } from "@chainlink/cre-sdk"
-
-const fetchTransaction = (sendRequester: ConfidentialHTTPSendRequester, config: Config): TransactionResult => {
-  // 1. Send the confidential request
-  const response = sendRequester
-    .sendRequest({
-      request: {
-        url: config.url,
-        method: "GET",
-        multiHeaders: {
-          Authorization: { values: ["Basic {{.myApiKey}}"] },
-        },
-      },
-      vaultDonSecrets: [{ key: "myApiKey", owner: config.owner }],
-    })
-    .result()
-
-  // 2. Check the response status
-  if (!ok(response)) {
-    throw new Error(`HTTP request failed with status: ${response.statusCode}`)
-  }
-
-  // 3. Parse and return the result
-  return json(response) as TransactionResult
-}
-```
-
-<Aside type="note" title="Alphabetic secret ordering required">
-  When using multiple secrets, pass them into `vaultDonSecrets` in alphabetical order by key. The Vault DON processes secrets in a canonical order to ensure consistent behavior across nodes during execution.
-</Aside>
-
-
 ### Step 4: Implement the request and wire it into your workflow
 
 Unlike the regular HTTP client, the Confidential HTTP client takes a `Runtime` directly and does not require `runInNodeMode` wrapping:
@@ -10478,6 +10464,35 @@ const onCronTrigger = (runtime: Runtime<Config>): TransactionResult => {
   }
 
   // 3. Parse and return the result
+  return json(response) as TransactionResult
+}
+```
+
+<Aside type="note" title="Alphabetic secret ordering required">
+  When using multiple secrets, pass them into `vaultDonSecrets` in alphabetical order by key. The Vault DON processes
+  secrets in a canonical order to ensure consistent behavior across nodes during execution.
+</Aside>
+
+In your trigger handler, call `confHTTPClient.sendRequest()` with your fetch function and a consensus method:
+
+```typescript
+import {
+  CronCapability,
+  ConfidentialHTTPClient,
+  handler,
+  consensusIdenticalAggregation,
+  type Runtime,
+  Runner,
+} from "@chainlink/cre-sdk"
+
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  const confHTTPClient = new ConfidentialHTTPClient()
+
+  const result = confHTTPClient
+    .sendRequest(runtime, fetchTransaction, consensusIdenticalAggregation<TransactionResult>())(runtime.config)
+    .result()
+
+=======
   const result = json(response) as TransactionResult
   runtime.log(`Transaction result: ${result.transactionId} — ${result.status}`)
   return result
@@ -10752,6 +10767,340 @@ These `KeystoneForwarder` addresses are used by deployed workflows. Use these ad
 | <a href="https://amoy.polygonscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Polygon Amoy</a>             | polygon-testnet-amoy                  | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://sepolia.worldscan.org/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">World Chain Sepolia</a>     | ethereum-testnet-sepolia-worldchain-1 | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://sepolia.explorer.zksync.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">ZKSync Era Sepolia</a> | ethereum-testnet-sepolia-zksync-1     | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+
+---
+
+# Generating Contract Bindings
+Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/generating-bindings-ts
+Last Updated: 2026-03-05
+
+To interact with a smart contract from your TypeScript workflow, you first need to create **bindings**. Bindings are type-safe TypeScript classes auto-generated from your contract's ABI. They handle all encoding and decoding—including base64 conversion for the CRE SDK wire format—so you can work directly with native TypeScript types.
+
+How they work depends on whether you are reading from or writing to the chain:
+
+- **For onchain reads**, bindings provide TypeScript methods that directly mirror your contract's `view` and `pure` functions.
+- **For onchain writes**, bindings provide `writeReportFrom<FunctionName>()` helpers that ABI-encode your data and submit a signed report.
+- **For event triggers**, bindings provide `logTrigger<EventName>()` methods that handle topic encoding and return a typed trigger object. The handler receives fully decoded event data—no manual hex or base64 conversion needed.
+
+This is a **one-time code generation step** performed using the CRE CLI.
+
+<Aside type="note" title="CLI version requirement">
+  TypeScript binding generation requires **CLI v1.3.0 or later**. Run `cre update` to get the latest version.
+</Aside>
+
+## The generation process
+
+The CRE CLI reads your ABI files and generates a typed class with all the methods your workflow needs.
+
+The target language is **auto-detected** from your project files (presence of `package.json` picks TypeScript). You can also force TypeScript explicitly with the `--language` flag:
+
+```bash
+cre generate-bindings evm --language typescript
+```
+
+### Step 1: Add your contract ABI
+
+Place your contract's ABI JSON file into the `contracts/evm/src/abi/` directory. For example, to generate bindings for a `PriceUpdater` contract, create `contracts/evm/src/abi/PriceUpdater.abi` with your ABI content.
+
+### Step 2: Generate the bindings
+
+From your **project root**, run:
+
+```bash
+cre generate-bindings evm
+```
+
+This scans all `.abi` files in `contracts/evm/src/abi/` and generates corresponding TypeScript files in `contracts/evm/ts/generated/`. For each contract, three files are generated:
+
+- `<ContractName>.ts` — The typed binding class with read, write, and event trigger methods.
+- `<ContractName>_mock.ts` — A mock implementation for testing your workflows without deploying contracts.
+- `index.ts` — A barrel file that re-exports everything from all generated bindings in the directory.
+
+Each binding class is named after the contract and is imported directly into your workflow.
+
+## Using generated bindings
+
+### For onchain reads
+
+For `view` or `pure` functions, the generator creates methods on the class that call the contract and return the decoded result. These methods **do not return a Promise** — they synchronously return the decoded value after the DON reaches consensus.
+
+**Example: A simple `Storage` contract**
+
+Create `contracts/evm/src/abi/Storage.abi` with the following content. This contract is already deployed on Sepolia at `0xa17CF997C28FF154eDBae1422e6a50BeF23927F4` with an initial value of `22`, so you can run this example without deploying anything.
+
+```json
+[
+  {
+    "inputs": [{ "internalType": "uint256", "name": "initialValue", "type": "uint256" }],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "get",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "value",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
+```
+
+After running `cre generate-bindings evm`, use the generated `Storage` class in your workflow:
+
+```typescript
+import { EVMClient, handler, CronCapability, Runner, type Runtime } from "@chainlink/cre-sdk"
+import { Storage } from "../contracts/evm/ts/generated/Storage"
+
+type Config = {
+  schedule: string
+  storageAddress: string
+  chainSelector: string
+}
+
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  const config = runtime.config
+
+  // EVMClient takes the chain selector as a bigint directly
+  const client = new EVMClient(BigInt(config.chainSelector))
+  const storageContract = new Storage(client, config.storageAddress as `0x${string}`)
+
+  // Call the view function — result is already a decoded bigint
+  const value = storageContract.get(runtime)
+  runtime.log(`Storage value: ${value}`)
+  return value.toString()
+}
+
+export const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+```
+
+`config.staging.json`:
+
+```json
+{
+  "schedule": "*/30 * * * * *",
+  "storageAddress": "0xa17CF997C28FF154eDBae1422e6a50BeF23927F4",
+  "chainSelector": "16015286601757825753"
+}
+```
+
+Run the simulation from your project root:
+
+```bash
+cre workflow simulate my-workflow
+```
+
+Expected output:
+
+```
+✓ Workflow compiled
+[SIMULATION] Simulator Initialized
+[SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+[USER LOG] Storage value: 22
+
+✓ Workflow Simulation Result:
+"22"
+```
+
+<Aside type="note" title="Block number">
+  Read methods use `LAST_FINALIZED_BLOCK_NUMBER` by default. If you need to read from a different block, use the
+  lower-level `EVMClient.callContract()` method directly.
+</Aside>
+
+### For onchain writes
+
+For write functions, the generator creates a `writeReportFrom<FunctionName>()` method that handles ABI encoding, report generation, and submission in one step.
+
+#### Signaling the generator
+
+To generate write helpers, your ABI must include at least one `public` or `external` non-view function. The generated method is named after the **function name** in your ABI.
+
+**Example: A `PriceUpdater` contract**
+
+```solidity
+// contracts/evm/src/abi/PriceUpdater.abi
+contract PriceUpdater {
+  struct PriceData {
+    uint256 ethPrice;
+    uint256 btcPrice;
+  }
+
+  function updatePrices(PriceData memory) public {}
+}
+```
+
+After running `cre generate-bindings evm`, you can use the generated class:
+
+```typescript
+import { EVMClient, handler, CronCapability, Runner, type Runtime } from "@chainlink/cre-sdk"
+import { PriceUpdater } from "../contracts/evm/ts/generated/PriceUpdater"
+
+type Config = {
+  schedule: string
+  proxyAddress: string
+  chainSelector: string
+}
+
+const onCronTrigger = (runtime: Runtime<Config>) => {
+  const config = runtime.config
+
+  const client = new EVMClient(BigInt(config.chainSelector))
+  const contract = new PriceUpdater(client, config.proxyAddress as `0x${string}`)
+
+  // Pass the function arguments directly — types are derived from the ABI
+  return contract.writeReportFromUpdatePrices(runtime, { ethPrice: 4000_000000n, btcPrice: 60000_000000n })
+}
+
+export const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+```
+
+<Aside type="note" title="What does writeReportFrom do?">
+  The generated method: 1. ABI-encodes the function arguments using viem. 1. Calls `runtime.report()` to create a signed
+  DON report. 1. Calls `EVMClient.writeReport()` to submit it to your consumer contract. 1. Returns the transaction
+  result synchronously (after consensus).
+</Aside>
+
+### For event logs
+
+The binding generator creates strongly-typed trigger and decoder methods for each `event` in your ABI. This replaces all manual `hexToBase64` and topic encoding — the generated method handles it automatically.
+
+**Example: A contract with a `UserAdded` event**
+
+```solidity
+contract UserDirectory {
+  event UserAdded(address indexed userAddress, string userName);
+
+  function addUser(string calldata userName) external {
+    emit UserAdded(msg.sender, userName);
+  }
+}
+```
+
+#### Generated types
+
+For each event, the generator creates two types:
+
+- **`<EventName>Topics`** — Optional filter params (indexed fields only). Pass one or more of these to filter events by specific values.
+- **`<EventName>Decoded`** — All event fields, decoded to their TypeScript types.
+
+```typescript
+// Generated in contracts/evm/ts/generated/UserDirectory.ts
+
+export type UserAddedTopics = {
+  userAddress?: `0x${string}` // indexed field — can be used for filtering
+}
+
+export type UserAddedDecoded = {
+  userAddress: `0x${string}`
+  userName: string
+}
+```
+
+#### Triggering and decoding events
+
+Use the `logTrigger<EventName>()` method in your `initWorkflow` function to create a trigger, and the `decode<EventName>()` method (accessed via the trigger's `adapt` property) to decode the log data in your handler.
+
+```typescript
+import { EVMClient, handler, Runner, type Runtime } from "@chainlink/cre-sdk"
+import { UserDirectory } from "../contracts/evm/ts/generated/UserDirectory"
+import type { DecodedLog, UserAddedDecoded } from "../contracts/evm/ts/generated/UserDirectory"
+
+type Config = {
+  contractAddress: string
+  chainSelector: string
+}
+
+export const initWorkflow = (config: Config) => {
+  const client = new EVMClient(BigInt(config.chainSelector))
+  const userDirectory = new UserDirectory(client, config.contractAddress as `0x${string}`)
+
+  // Create a trigger for all UserAdded events (no filter)
+  const userAddedTrigger = userDirectory.logTriggerUserAdded()
+
+  // To filter for a specific user address:
+  // const userAddedTrigger = userDirectory.logTriggerUserAdded([
+  //   { userAddress: "0xabc..." }
+  // ])
+
+  return [handler(userAddedTrigger, onUserAdded)]
+}
+
+const onUserAdded = (runtime: Runtime<Config>, log: DecodedLog<UserAddedDecoded>) => {
+  // log.data is already the typed UserAddedDecoded object — no manual decoding needed
+  runtime.log(`New user added! address=${log.data.userAddress} name=${log.data.userName}`)
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+```
+
+<Aside type="note" title="OR semantics for multiple filters">
+  When you pass multiple filter objects to `logTrigger<EventName>()`, topics are merged with **OR** semantics — the trigger fires if any of the specified filter conditions are met.
+</Aside>
+
+## What the CLI generates
+
+For each ABI file, the generator creates three files in `contracts/evm/ts/generated/`:
+
+- `<ContractName>.ts` — The main binding class
+- `<ContractName>_mock.ts` — A mock implementation for testing
+- `index.ts` — A barrel re-exporting everything, so you can import from a single path
+
+What's inside depends on your ABI:
+
+- **For all contracts**:
+  - A typed `<ContractName>ABI` constant for use with viem utilities.
+  - A `<ContractName>` class with a `writeReport(runtime, callData, gasConfig)` base write method.
+  - A `<ContractName>Mock` type with optional function fields for each `view`/`pure` method (e.g., `get?: () => bigint`) plus a `writeReport` field, and a `new<ContractName>Mock(address, evmMock)` factory.
+- **For onchain reads** (each `view`/`pure` function):
+  - A method on the class (e.g., `get(runtime)`) that returns the decoded value directly as a native TypeScript type.
+- **For onchain writes** (each non-view function):
+  - A `writeReportFrom<FunctionName>(runtime, args, gasConfig?)` method that handles ABI encoding, report generation, and submission in one step.
+- **For events** (each `event` definition):
+  - `<EventName>Topics` and `<EventName>Decoded` types.
+  - A `logTrigger<EventName>(filters?)` method that returns a typed trigger object with OR semantics for multiple filters.
+  - A `decode<EventName>(log)` method that decodes a raw `EVMLog` into `DecodedLog<EventDecoded>`.
+
+You can import from the barrel file to keep imports clean:
+
+```typescript
+import { Storage, newStorageMock } from "../contracts/evm/ts/generated"
+```
+
+## Best practices
+
+1. **Regenerate when needed**: Re-run `cre generate-bindings evm` whenever you update your contract ABIs. Do not edit generated files by hand.
+2. **Handle errors**: The write and trigger methods will throw if encoding or network calls fail. Wrap them in try/catch blocks in your workflow handlers.
+3. **Use explicit `--language` in CI**: If your project has both `go.mod` and `package.json`, auto-detection may be ambiguous. Pass `--language typescript` explicitly in CI pipelines.
+4. **Organize ABIs**: Keep your `.abi` files clearly named in `contracts/evm/src/abi/`. The file name determines the generated class name.
+
+## Where to go next
+
+Now that you know how to generate bindings, you can use them to [read data from](/cre/guides/workflow/using-evm-client/onchain-read) or [write data to](/cre/guides/workflow/using-evm-client/onchain-write/overview) your contracts, or [trigger workflows from events](/cre/guides/workflow/using-triggers/evm-log-trigger).
 
 ---
 
@@ -16171,33 +16520,36 @@ This table shows the chain selector names and their numeric IDs. In your configu
   - **RPC configuration**: For configuring RPC endpoints in `project.yaml`, see [Project Configuration](/cre/reference/project-configuration)
 </Aside>
 
-| Chain               | String Name                           | Numeric ID           |
-| ------------------- | ------------------------------------- | -------------------- |
-| Apechain Curtis     | apechain-testnet-curtis               | 9900119385908781505  |
-| Arc Testnet         | arc-testnet                           | 3034092155422581607  |
-| Arbitrum One        | ethereum-mainnet-arbitrum-1           | 4949039107694359620  |
-| Arbitrum Sepolia    | ethereum-testnet-sepolia-arbitrum-1   | 3478487238524512106  |
-| Avalanche Mainnet   | avalanche-mainnet                     | 6433500567565415381  |
-| Avalanche Fuji      | avalanche-testnet-fuji                | 14767482510784806043 |
-| Base Mainnet        | ethereum-mainnet-base-1               | 15971525489660198786 |
-| Base Sepolia        | ethereum-testnet-sepolia-base-1       | 10344971235874465080 |
-| BNB Chain Mainnet   | binance_smart_chain-mainnet         | 11344663589394136015 |
-| BNB Chain Testnet   | binance_smart_chain-testnet         | 13264668187771770619 |
-| Ethereum Mainnet    | ethereum-mainnet                      | 5009297550715157269  |
-| Ethereum Sepolia    | ethereum-testnet-sepolia              | 16015286601757825753 |
-| Hyperliquid Testnet | hyperliquid-testnet                   | 4286062357653186312  |
-| Ink Sepolia         | ink-testnet-sepolia                   | 9763904284804119144  |
-| Jovay Testnet       | jovay-testnet                         | 945045181441419236   |
-| Linea Sepolia       | ethereum-testnet-sepolia-linea-1      | 5719461335882077547  |
-| OP Mainnet          | ethereum-mainnet-optimism-1           | 3734403246176062136  |
-| OP Sepolia          | ethereum-testnet-sepolia-optimism-1   | 5224473277236331295  |
-| Plasma Testnet      | plasma-testnet                        | 3967220077692964309  |
-| Polygon Mainnet     | polygon-mainnet                       | 4051577828743386545  |
-| Polygon Amoy        | polygon-testnet-amoy                  | 16281711391670634445 |
-| World Chain Mainnet | ethereum-mainnet-worldchain-1         | 2049429975587534727  |
-| World Chain Sepolia | ethereum-testnet-sepolia-worldchain-1 | 5299555114858065850  |
-| ZKSync Era          | ethereum-mainnet-zksync-1             | 1562403441176082196  |
-| ZKSync Era Sepolia  | ethereum-testnet-sepolia-zksync-1     | 6898391096552792247  |
+| Chain                   | String Name                           | Numeric ID           |
+| ----------------------- | ------------------------------------- | -------------------- |
+| Apechain Curtis         | apechain-testnet-curtis               | 9900119385908781505  |
+| Arc Testnet             | arc-testnet                           | 3034092155422581607  |
+| Arbitrum One            | ethereum-mainnet-arbitrum-1           | 4949039107694359620  |
+| Arbitrum Sepolia        | ethereum-testnet-sepolia-arbitrum-1   | 3478487238524512106  |
+| Avalanche Mainnet       | avalanche-mainnet                     | 6433500567565415381  |
+| Avalanche Fuji          | avalanche-testnet-fuji                | 14767482510784806043 |
+| Base Mainnet            | ethereum-mainnet-base-1               | 15971525489660198786 |
+| Base Sepolia            | ethereum-testnet-sepolia-base-1       | 10344971235874465080 |
+| BNB Chain Mainnet       | binance_smart_chain-mainnet         | 11344663589394136015 |
+| BNB Chain Testnet       | binance_smart_chain-testnet         | 13264668187771770619 |
+| Ethereum Mainnet        | ethereum-mainnet                      | 5009297550715157269  |
+| Ethereum Sepolia        | ethereum-testnet-sepolia              | 16015286601757825753 |
+| Hyperliquid Testnet     | hyperliquid-testnet                   | 4286062357653186312  |
+| Ink Sepolia             | ink-testnet-sepolia                   | 9763904284804119144  |
+| Jovay Mainnet           | jovay-mainnet                         | 1523760397290643893  |
+| Jovay Testnet           | jovay-testnet                         | 945045181441419236   |
+| Linea Sepolia           | ethereum-testnet-sepolia-linea-1      | 5719461335882077547  |
+| OP Mainnet              | ethereum-mainnet-optimism-1           | 3734403246176062136  |
+| OP Sepolia              | ethereum-testnet-sepolia-optimism-1   | 5224473277236331295  |
+| Pharos Atlantic Testnet | pharos-atlantic-testnet               | 16098325658947243212 |
+| Pharos Mainnet          | pharos-mainnet                        | 7801139999541420232  |
+| Plasma Testnet          | plasma-testnet                        | 3967220077692964309  |
+| Polygon Mainnet         | polygon-mainnet                       | 4051577828743386545  |
+| Polygon Amoy            | polygon-testnet-amoy                  | 16281711391670634445 |
+| World Chain Mainnet     | ethereum-mainnet-worldchain-1         | 2049429975587534727  |
+| World Chain Sepolia     | ethereum-testnet-sepolia-worldchain-1 | 5299555114858065850  |
+| ZKSync Era              | ethereum-mainnet-zksync-1             | 1562403441176082196  |
+| ZKSync Era Sepolia      | ethereum-testnet-sepolia-zksync-1     | 6898391096552792247  |
 
 ### Usage in configuration files
 
@@ -17619,7 +17971,7 @@ This section provides a reference for the built-in trigger capabilities of the C
 
 # Supported Networks
 Source: https://docs.chain.link/cre/supported-networks-ts
-Last Updated: 2026-02-16
+Last Updated: 2026-03-05
 
 This page lists all EVM-compatible networks supported by CRE workflows, along with the minimum CLI and SDK versions required for each network.
 
@@ -17639,31 +17991,35 @@ Network support depends on your CLI and SDK versions. The tables below show the 
 | Base         | v1.0.0+  | v1.0.0+ | v1.0.1+ |
 | BNB Chain    | v1.0.0+  | v1.0.0+ | v1.0.1+ |
 | Ethereum     | v1.0.0+  | v1.0.0+ | v1.0.1+ |
+| Jovay        | v1.3.0+  | v1.4.0+ | v1.1.3+ |
 | OP Mainnet   | v1.0.0+  | v1.0.0+ | v1.0.1+ |
+| Pharos       | v1.3.0+  | v1.4.0+ | v1.1.3+ |
 | Polygon      | v1.0.0+  | v1.0.0+ | v1.0.1+ |
 | World Chain  | v1.0.11+ | v1.2.0+ | v1.0.9+ |
+| XLayer       | v1.3.0+  | v1.4.0+ | v1.1.3+ |
 | ZKSync Era   | v1.0.6+  | v1.1.3+ | v1.0.7+ |
 
 ## Testnets
 
-| Network             | CLI     | Go SDK  | TS SDK  |
-| ------------------- | ------- | ------- | ------- |
-| Apechain Curtis     | v1.0.7+ | v1.1.4+ | v1.0.7+ |
-| Arc Testnet         | v1.0.7+ | v1.1.4+ | v1.0.7+ |
-| Arbitrum Sepolia    | v1.0.0+ | v1.0.0+ | v1.0.1+ |
-| Avalanche Fuji      | v1.0.0+ | v1.0.0+ | v1.0.1+ |
-| Base Sepolia        | v1.0.0+ | v1.0.0+ | v1.0.1+ |
-| BNB Chain Testnet   | v1.0.0+ | v1.0.0+ | v1.0.1+ |
-| Ethereum Sepolia    | v1.0.0+ | v1.0.0+ | v1.0.1+ |
-| Hyperliquid Testnet | v1.0.7+ | v1.1.4+ | v1.0.7+ |
-| Ink Sepolia         | v1.0.7+ | v1.1.4+ | v1.0.7+ |
-| Jovay Testnet       | v1.0.7+ | v1.1.4+ | v1.0.7+ |
-| Linea Sepolia       | v1.0.7+ | v1.1.4+ | v1.0.7+ |
-| OP Sepolia          | v1.0.0+ | v1.0.0+ | v1.0.1+ |
-| Plasma Testnet      | v1.0.7+ | v1.1.4+ | v1.0.7+ |
-| Polygon Amoy        | v1.0.0+ | v1.0.0+ | v1.0.1+ |
-| World Chain Sepolia | v1.0.7+ | v1.1.4+ | v1.0.7+ |
-| ZKSync Era Sepolia  | v1.0.6+ | v1.1.2+ | v1.0.7+ |
+| Network                 | CLI     | Go SDK  | TS SDK  |
+| ----------------------- | ------- | ------- | ------- |
+| Apechain Curtis         | v1.0.7+ | v1.1.4+ | v1.0.7+ |
+| Arc Testnet             | v1.0.7+ | v1.1.4+ | v1.0.7+ |
+| Arbitrum Sepolia        | v1.0.0+ | v1.0.0+ | v1.0.1+ |
+| Avalanche Fuji          | v1.0.0+ | v1.0.0+ | v1.0.1+ |
+| Base Sepolia            | v1.0.0+ | v1.0.0+ | v1.0.1+ |
+| BNB Chain Testnet       | v1.0.0+ | v1.0.0+ | v1.0.1+ |
+| Ethereum Sepolia        | v1.0.0+ | v1.0.0+ | v1.0.1+ |
+| Hyperliquid Testnet     | v1.0.7+ | v1.1.4+ | v1.0.7+ |
+| Ink Sepolia             | v1.0.7+ | v1.1.4+ | v1.0.7+ |
+| Jovay Testnet           | v1.0.7+ | v1.1.4+ | v1.0.7+ |
+| Linea Sepolia           | v1.0.7+ | v1.1.4+ | v1.0.7+ |
+| OP Sepolia              | v1.0.0+ | v1.0.0+ | v1.0.1+ |
+| Pharos Atlantic Testnet | v1.3.0+ | v1.5.0+ | v1.1.4+ |
+| Plasma Testnet          | v1.0.7+ | v1.1.4+ | v1.0.7+ |
+| Polygon Amoy            | v1.0.0+ | v1.0.0+ | v1.0.1+ |
+| World Chain Sepolia     | v1.0.7+ | v1.1.4+ | v1.0.7+ |
+| ZKSync Era Sepolia      | v1.0.6+ | v1.1.2+ | v1.0.7+ |
 
 ## Forwarder Addresses
 

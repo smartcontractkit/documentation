@@ -304,22 +304,26 @@ export async function main() {
 
 For each ABI file, the generator creates three files in `contracts/evm/ts/generated/`:
 
-**`<ContractName>.ts`** — The main binding file, containing:
+- `<ContractName>.ts` — The main binding class
+- `<ContractName>_mock.ts` — A mock implementation for testing
+- `index.ts` — A barrel re-exporting everything, so you can import from a single path
 
-- A typed ABI constant (`<ContractName>ABI`) for use with viem utilities.
-- A contract class (`<ContractName>`) with:
-  - **Read methods** for each `view`/`pure` function, returning decoded values directly.
-  - **`writeReportFrom<FunctionName>()`** methods for each non-view function, handling the full report-and-submit lifecycle.
-  - **`logTrigger<EventName>()`** methods for each event, returning a typed trigger object.
-  - **`decode<EventName>()`** methods for decoding raw `EVMLog` objects into `DecodedLog<EventDecoded>`.
-- **Event types** (`<EventName>Topics` and `<EventName>Decoded`) for each event.
+What's inside depends on your ABI:
 
-**`<ContractName>_mock.ts`** — A mock for testing, containing:
+- **For all contracts**:
+  - A typed `<ContractName>ABI` constant for use with viem utilities.
+  - A `<ContractName>` class with a `writeReport(runtime, callData, gasConfig)` base write method.
+  - A `<ContractName>Mock` type with optional function fields for each `view`/`pure` method (e.g., `get?: () => bigint`) plus a `writeReport` field, and a `new<ContractName>Mock(address, evmMock)` factory.
+- **For onchain reads** (each `view`/`pure` function):
+  - A method on the class (e.g., `get(runtime)`) that returns the decoded value directly as a native TypeScript type.
+- **For onchain writes** (each non-view function):
+  - A `writeReportFrom<FunctionName>(runtime, args, gasConfig?)` method that handles ABI encoding, report generation, and submission in one step.
+- **For events** (each `event` definition):
+  - `<EventName>Topics` and `<EventName>Decoded` types.
+  - A `logTrigger<EventName>(filters?)` method that returns a typed trigger object with OR semantics for multiple filters.
+  - A `decode<EventName>(log)` method that decodes a raw `EVMLog` into `DecodedLog<EventDecoded>`.
 
-- A `<ContractName>Mock` type with optional overrideable methods for each view function.
-- A `new<ContractName>Mock(address, evmMock)` factory function for use in workflow tests.
-
-**`index.ts`** — A barrel file that re-exports everything from all generated bindings in the directory, so you can import from a single path:
+You can import from the barrel file to keep imports clean:
 
 ```typescript
 import { Storage, newStorageMock } from "../contracts/evm/ts/generated"

@@ -333,23 +333,27 @@ func onUserAdded(config *Config, runtime cre.Runtime, log *evm.Log) (string, err
 }
 ```
 
-## What the CLI Generates
+## What the CLI generates
 
-The generator creates a Go package for each ABI file.
+The generator creates a Go package for each ABI file, placed in `contracts/evm/src/generated/<contractname>/`. Two files are generated:
+
+- `<ContractName>.go` — The main binding
+- `<ContractName>_mock.go` — A mock implementation for testing (excluded from WASM builds via `//go:build !wasip1`)
+
+What's inside each file depends on your ABI:
 
 - **For all contracts**:
-  - `Codec` interface for low-level encoding and decoding.
-- **For onchain reads**:
-  - A contract **client struct** (e.g., `Storage`) to interact with.
-  - A **constructor function** (e.g., `NewStorage(...)`) to instantiate the client.
-  - **Method wrappers** for each `view`/`pure` function (e.g., `storage.Get(...)`) that return a promise.
-- **For onchain writes**:
-  - A **Go type** for each `struct` exposed via a public function (e.g., `price_updater.PriceData`).
-  - A `WriteReportFrom<StructName>` method on the **contract client struct** (e.g., `priceUpdater.WriteReportFromPriceData(...)`). This method handles the full process of generating and sending a report and returns a promise that resolves with the transaction details.
-- **For events**:
-  - A **Go struct** for each `event` (e.g., `UserAdded`).
-  - A `Decode<EventName>` method on the `Codec` to parse raw log data into the corresponding Go struct.
-  - A `LogTrigger<EventName>Log` method on the contract client to easily create a workflow trigger.
+  - A `<ContractName>Codec` interface with `Encode<Method>MethodCall()` and `Decode<Method>MethodOutput()` methods for low-level encoding and decoding.
+  - A `<ContractName>` struct and `New<ContractName>(client, address, options)` constructor.
+  - A `<ContractName>Mock` struct with a settable function field for each `view`/`pure` method (e.g., `Get func() (*big.Int, error)`), and a `New<ContractName>Mock(address, evmMockClient)` constructor.
+- **For onchain reads** (each `view`/`pure` function):
+  - A method on the contract struct (e.g., `Get(runtime, blockNumber)`) that returns a `cre.Promise[T]` you `.Await()`.
+- **For onchain writes** (each non-view function with struct arguments):
+  - A `WriteReportFrom<StructName>(runtime, data, gasConfig)` method that handles ABI encoding, report generation, and submission in one step.
+- **For events** (each `event` definition):
+  - A **Go struct** for the decoded event data (e.g., `UserAdded`).
+  - A `Decode<EventName>` method on the `Codec` to parse raw log data into that struct.
+  - A `LogTrigger<EventName>Log` method on the contract struct to create a workflow trigger.
   - A `FilterLogs<EventName>` method to query historical logs for that event.
 
 ## Using mock bindings for testing
@@ -362,16 +366,16 @@ The `<ContractName>_mock.go` files allow you to test your workflows without depl
 
 ### Complete example: Testing a workflow with mocks
 
-Let's say you have a workflow in `my-workflow/main.go` that reads from a `Storage` contract. Create a test file named `main_test.go` in the same directory.
+Let's say you have a workflow in `my-workflow/workflow.go` that reads from a `Storage` contract. Create a test file named `workflow_test.go` in the same directory.
 
 <Aside type="note" title="Adapt to Your Workflow">
-  This example demonstrates the mock setup pattern. The `Config` and `EvmConfig` types shown are examples - you'll need
-  to define types that match YOUR workflow's structure. The key concepts (creating mocks, setting behavior) remain the
+  This example demonstrates the mock setup pattern. The `Config` and `EvmConfig` types shown are examples — you'll need
+  to define types that match your workflow's structure. The key concepts (creating mocks, setting behavior) remain the
   same regardless of your specific config structure.
 </Aside>
 
 ```go
-// File: my-workflow/main_test.go
+// File: my-workflow/workflow_test.go
 package main
 
 import (
@@ -386,10 +390,8 @@ import (
     "your-project/contracts/evm/src/generated/storage"
 )
 
-// Define your config types in the test file to match your workflow's structure
-// Note: Your main.go likely has //go:build wasip1 (for WASM compilation),
-// which means those types aren't available when running regular Go tests.
-// So you need to redefine them here in your test file.
+// Note: your workflow.go has //go:build wasip1 so its types are not available
+// in regular Go tests. Redefine your Config here to match.
 type EvmConfig struct {
     StorageAddress string `json:"storageAddress"`
     ChainName      string `json:"chainName"`
@@ -455,26 +457,6 @@ go test -v ./my-workflow
 # Test all workflows in your project
 go test ./...
 ```
-
-**Expected output with `-v` flag:**
-
-```bash
-=== RUN   TestStorageRead
-    main_test.go:55: Mock Storage contract set up at 0xa17CF997C28FF154eDBae1422e6a50BeF23927F4
-    main_test.go:56: When Storage.Get() is called, it will return: 42
---- PASS: TestStorageRead (0.00s)
-PASS
-ok      onchain-calculator/my-calculator-workflow       0.257s
-```
-
-The test passes, confirming your mock contract is set up correctly. In a real workflow test, you would call your workflow function and verify it produces the expected results using the mocked contract.
-
-### Best practices for workflow testing
-
-1. **Name test files correctly**: Use `<name>_test.go` (e.g., `main_test.go`) and place them in your workflow directory
-1. **Test function naming**: Start test functions with `Test` (e.g., `TestMyWorkflow`, `TestCronTrigger`)
-1. **Mock all external dependencies**: Use mock contracts for EVM calls and mock HTTP clients for API requests
-1. **Test different scenarios**: Create separate test functions for success cases, error cases, and edge cases
 
 ### Complete reference example
 
