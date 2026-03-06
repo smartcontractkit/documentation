@@ -6215,20 +6215,19 @@ Locate the CCIP-BnM contract address in the [CCIP Directory](/ccip/directory/tes
 
 ---
 
-# Offchain
+# CCIP API, SDK & CLI
 Source: https://docs.chain.link/ccip/tutorials/offchain
-Last Updated: 2026-02-19
+Last Updated: 2026-03-02
 
-The [`ccip-tools-ts`](https://github.com/smartcontractkit/ccip-tools-ts) monorepo provides a TypeScript SDK and CLI for interacting with CCIP programmatically. It supports multiple chain families including EVM, Solana, and Aptos.
+Chainlink CCIP provides three tools for interacting with CCIP programmatically:
 
-## Documentation
-
-- [SDK Reference](https://docs.chain.link/ccip/tools/sdk/): API documentation for the CCIP SDK
-- [CLI Reference](https://docs.chain.link/ccip/tools/cli/): Command reference for the CCIP CLI
-
-## Examples
+- **[CCIP API](https://docs.chain.link/ccip/tools/api/)**: REST API with endpoints for querying messages and their details, lane latency, and intents.
+- **[CCIP SDK](https://docs.chain.link/ccip/tools/sdk/)** ([`@chainlink/ccip-sdk`](https://www.npmjs.com/package/@chainlink/ccip-sdk)): A TypeScript library for sending messages, transferring tokens, estimating fees, and querying CCIP activity.
+- **[CCIP CLI](https://docs.chain.link/ccip/tools/cli/)** ([`@chainlink/ccip-cli`](https://www.npmjs.com/package/@chainlink/ccip-cli)): A command-line interface built on top of the SDK.
 
 The [ccip-sdk-examples](https://github.com/smartcontractkit/ccip-sdk-examples) repository contains code samples demonstrating common patterns for using the CCIP SDK.
+
+For installation, usage examples, and full reference documentation, see the [CCIP Tools documentation](https://docs.chain.link/ccip/tools/).
 
 ---
 
@@ -8308,9 +8307,7 @@ The Token Manager guides you through two workflows:
 
 If you prefer to manage your deployments and configurations programmatically, refer to the [Cross-Chain Tokens](/ccip/tutorials/cross-chain-tokens) guides available for Remix, Hardhat and Foundry.
 
-You can also use the [CCIP SDK](/ccip/tools-resources/ccip-tools) to interact with CCIP programmatically.
-
-After enabling your tokens, you can also use Transporter to perform transfers and import tokens with the contract address. Use [test.transporter.io](https://test.transporter.io) for testnet or [transporter.io](https://transporter.io) for mainnet.
+After enabling your tokens, you can perform transfers and import tokens with the contract address using Transporter ([test.transporter.io](https://test.transporter.io) for testnet or [transporter.io](https://transporter.io) for mainnet) or the [CCIP CLI](https://docs.chain.link/ccip/tools/cli/).
 
 ## Limitations
 
@@ -50027,30 +50024,6 @@ struct ExecutionStateChanged has store, drop {
 | <nobr>`message_id`</nobr>            | <nobr>`vector<u8>`</nobr> | The unique, global identifier for the cross-chain message. This ID is consistent across both the source and destination chains and is the primary key for tracking a CCIP transaction.      |
 | <nobr>`message_hash`</nobr>          | <nobr>`vector<u8>`</nobr> | The hash of the message leaf in the Merkle tree. This value is used internally for verifying the message against a committed Merkle root, ensuring its authenticity and integrity.          |
 | <nobr>`state`</nobr>                 | <nobr>`u8`</nobr>         | The outcome of the execution. Since Aptos transactions are atomic (either fully succeed or fail), a successfully processed CCIP message will always result in an `EXECUTION_STATE_SUCCESS`. |
-
----
-
-# CCIP Tools
-Source: https://docs.chain.link/ccip/tools-resources/ccip-tools
-Last Updated: 2026-02-19
-
-The [`ccip-tools-ts`](https://github.com/smartcontractkit/ccip-tools-ts) monorepo provides TypeScript tooling for interacting with CCIP contracts:
-
-- **CCIP SDK (`@chainlink/ccip-sdk`)**: A TypeScript library for programmatic interaction with CCIP contracts
-- **CCIP CLI (`@chainlink/ccip-cli`)**: A command-line interface built on top of the SDK
-
-## Features
-
-- Query CCIP message details using transaction hashes
-- Send cross-chain messages and token transfers
-- Manually execute messages on the destination chain
-- Estimate gas for CCIP transactions
-- Inspect lane configurations and supported tokens
-- Parse and debug raw CCIP transaction data
-
-## Documentation
-
-For installation, API reference, and usage examples, see the [CCIP Tools documentation](https://docs.chain.link/ccip/tools/).
 
 ---
 
