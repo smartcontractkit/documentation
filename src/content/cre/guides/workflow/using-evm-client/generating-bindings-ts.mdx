@@ -1,0 +1,341 @@
+---
+section: cre
+title: "Generating Contract Bindings"
+sdkLang: "ts"
+pageId: "guides-workflow-evm-generating-bindings"
+date: Last Modified
+metadata:
+  description: "Create type-safe contract interfaces: learn to generate TypeScript bindings from smart contract ABIs for safer, cleaner workflow code."
+  datePublished: "2026-03-05"
+  lastModified: "2026-03-05"
+---
+
+import { Aside } from "@components"
+
+To interact with a smart contract from your TypeScript workflow, you first need to create **bindings**. Bindings are type-safe TypeScript classes auto-generated from your contract's ABI. They handle all encoding and decoding—including base64 conversion for the CRE SDK wire format—so you can work directly with native TypeScript types.
+
+How they work depends on whether you are reading from or writing to the chain:
+
+- **For onchain reads**, bindings provide TypeScript methods that directly mirror your contract's `view` and `pure` functions.
+- **For onchain writes**, bindings provide `writeReportFrom<FunctionName>()` helpers that ABI-encode your data and submit a signed report.
+- **For event triggers**, bindings provide `logTrigger<EventName>()` methods that handle topic encoding and return a typed trigger object. The handler receives fully decoded event data—no manual hex or base64 conversion needed.
+
+This is a **one-time code generation step** performed using the CRE CLI.
+
+<Aside type="note" title="CLI version requirement">
+  TypeScript binding generation requires **CLI v1.3.0 or later**. Run `cre update` to get the latest version.
+</Aside>
+
+## The generation process
+
+The CRE CLI reads your ABI files and generates a typed class with all the methods your workflow needs.
+
+The target language is **auto-detected** from your project files (presence of `package.json` picks TypeScript). You can also force TypeScript explicitly with the `--language` flag:
+
+```bash
+cre generate-bindings evm --language typescript
+```
+
+### Step 1: Add your contract ABI
+
+Place your contract's ABI JSON file into the `contracts/evm/src/abi/` directory. For example, to generate bindings for a `PriceUpdater` contract, create `contracts/evm/src/abi/PriceUpdater.abi` with your ABI content.
+
+### Step 2: Generate the bindings
+
+From your **project root**, run:
+
+```bash
+cre generate-bindings evm
+```
+
+This scans all `.abi` files in `contracts/evm/src/abi/` and generates corresponding TypeScript files in `contracts/evm/ts/generated/`. For each contract, three files are generated:
+
+- `<ContractName>.ts` — The typed binding class with read, write, and event trigger methods.
+- `<ContractName>_mock.ts` — A mock implementation for testing your workflows without deploying contracts.
+- `index.ts` — A barrel file that re-exports everything from all generated bindings in the directory.
+
+Each binding class is named after the contract and is imported directly into your workflow.
+
+## Using generated bindings
+
+### For onchain reads
+
+For `view` or `pure` functions, the generator creates methods on the class that call the contract and return the decoded result. These methods **do not return a Promise** — they synchronously return the decoded value after the DON reaches consensus.
+
+**Example: A simple `Storage` contract**
+
+Create `contracts/evm/src/abi/Storage.abi` with the following content. This contract is already deployed on Sepolia at `0xa17CF997C28FF154eDBae1422e6a50BeF23927F4` with an initial value of `22`, so you can run this example without deploying anything.
+
+```json
+[
+  {
+    "inputs": [{ "internalType": "uint256", "name": "initialValue", "type": "uint256" }],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "get",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "value",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
+```
+
+After running `cre generate-bindings evm`, use the generated `Storage` class in your workflow:
+
+```typescript
+import { EVMClient, handler, CronCapability, Runner, type Runtime } from "@chainlink/cre-sdk"
+import { Storage } from "../contracts/evm/ts/generated/Storage"
+
+type Config = {
+  schedule: string
+  storageAddress: string
+  chainSelector: string
+}
+
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  const config = runtime.config
+
+  // EVMClient takes the chain selector as a bigint directly
+  const client = new EVMClient(BigInt(config.chainSelector))
+  const storageContract = new Storage(client, config.storageAddress as `0x${string}`)
+
+  // Call the view function — result is already a decoded bigint
+  const value = storageContract.get(runtime)
+  runtime.log(`Storage value: ${value}`)
+  return value.toString()
+}
+
+export const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+```
+
+`config.staging.json`:
+
+```json
+{
+  "schedule": "*/30 * * * * *",
+  "storageAddress": "0xa17CF997C28FF154eDBae1422e6a50BeF23927F4",
+  "chainSelector": "16015286601757825753"
+}
+```
+
+Run the simulation from your project root:
+
+```bash
+cre workflow simulate my-workflow
+```
+
+Expected output:
+
+```
+✓ Workflow compiled
+[SIMULATION] Simulator Initialized
+[SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+[USER LOG] Storage value: 22
+
+✓ Workflow Simulation Result:
+"22"
+```
+
+<Aside type="note" title="Block number">
+  Read methods use `LAST_FINALIZED_BLOCK_NUMBER` by default. If you need to read from a different block, use the
+  lower-level `EVMClient.callContract()` method directly.
+</Aside>
+
+### For onchain writes
+
+For write functions, the generator creates a `writeReportFrom<FunctionName>()` method that handles ABI encoding, report generation, and submission in one step.
+
+#### Signaling the generator
+
+To generate write helpers, your ABI must include at least one `public` or `external` non-view function. The generated method is named after the **function name** in your ABI.
+
+**Example: A `PriceUpdater` contract**
+
+```solidity
+// contracts/evm/src/abi/PriceUpdater.abi
+contract PriceUpdater {
+  struct PriceData {
+    uint256 ethPrice;
+    uint256 btcPrice;
+  }
+
+  function updatePrices(PriceData memory) public {}
+}
+```
+
+After running `cre generate-bindings evm`, you can use the generated class:
+
+```typescript
+import { EVMClient, handler, CronCapability, Runner, type Runtime } from "@chainlink/cre-sdk"
+import { PriceUpdater } from "../contracts/evm/ts/generated/PriceUpdater"
+
+type Config = {
+  schedule: string
+  proxyAddress: string
+  chainSelector: string
+}
+
+const onCronTrigger = (runtime: Runtime<Config>) => {
+  const config = runtime.config
+
+  const client = new EVMClient(BigInt(config.chainSelector))
+  const contract = new PriceUpdater(client, config.proxyAddress as `0x${string}`)
+
+  // Pass the function arguments directly — types are derived from the ABI
+  return contract.writeReportFromUpdatePrices(runtime, { ethPrice: 4000_000000n, btcPrice: 60000_000000n })
+}
+
+export const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+```
+
+<Aside type="note" title="What does writeReportFrom do?">
+  The generated method: 1. ABI-encodes the function arguments using viem. 1. Calls `runtime.report()` to create a signed
+  DON report. 1. Calls `EVMClient.writeReport()` to submit it to your consumer contract. 1. Returns the transaction
+  result synchronously (after consensus).
+</Aside>
+
+### For event logs
+
+The binding generator creates strongly-typed trigger and decoder methods for each `event` in your ABI. This replaces all manual `hexToBase64` and topic encoding — the generated method handles it automatically.
+
+**Example: A contract with a `UserAdded` event**
+
+```solidity
+contract UserDirectory {
+  event UserAdded(address indexed userAddress, string userName);
+
+  function addUser(string calldata userName) external {
+    emit UserAdded(msg.sender, userName);
+  }
+}
+```
+
+#### Generated types
+
+For each event, the generator creates two types:
+
+- **`<EventName>Topics`** — Optional filter params (indexed fields only). Pass one or more of these to filter events by specific values.
+- **`<EventName>Decoded`** — All event fields, decoded to their TypeScript types.
+
+```typescript
+// Generated in contracts/evm/ts/generated/UserDirectory.ts
+
+export type UserAddedTopics = {
+  userAddress?: `0x${string}` // indexed field — can be used for filtering
+}
+
+export type UserAddedDecoded = {
+  userAddress: `0x${string}`
+  userName: string
+}
+```
+
+#### Triggering and decoding events
+
+Use the `logTrigger<EventName>()` method in your `initWorkflow` function to create a trigger, and the `decode<EventName>()` method (accessed via the trigger's `adapt` property) to decode the log data in your handler.
+
+```typescript
+import { EVMClient, handler, Runner, type Runtime } from "@chainlink/cre-sdk"
+import { UserDirectory } from "../contracts/evm/ts/generated/UserDirectory"
+import type { DecodedLog, UserAddedDecoded } from "../contracts/evm/ts/generated/UserDirectory"
+
+type Config = {
+  contractAddress: string
+  chainSelector: string
+}
+
+export const initWorkflow = (config: Config) => {
+  const client = new EVMClient(BigInt(config.chainSelector))
+  const userDirectory = new UserDirectory(client, config.contractAddress as `0x${string}`)
+
+  // Create a trigger for all UserAdded events (no filter)
+  const userAddedTrigger = userDirectory.logTriggerUserAdded()
+
+  // To filter for a specific user address:
+  // const userAddedTrigger = userDirectory.logTriggerUserAdded([
+  //   { userAddress: "0xabc..." }
+  // ])
+
+  return [handler(userAddedTrigger, onUserAdded)]
+}
+
+const onUserAdded = (runtime: Runtime<Config>, log: DecodedLog<UserAddedDecoded>) => {
+  // log.data is already the typed UserAddedDecoded object — no manual decoding needed
+  runtime.log(`New user added! address=${log.data.userAddress} name=${log.data.userName}`)
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+```
+
+<Aside type="note" title="OR semantics for multiple filters">
+  When you pass multiple filter objects to `logTrigger<EventName>()`, topics are merged with **OR** semantics — the trigger fires if any of the specified filter conditions are met.
+</Aside>
+
+## What the CLI generates
+
+For each ABI file, the generator creates three files in `contracts/evm/ts/generated/`:
+
+- `<ContractName>.ts` — The main binding class
+- `<ContractName>_mock.ts` — A mock implementation for testing
+- `index.ts` — A barrel re-exporting everything, so you can import from a single path
+
+What's inside depends on your ABI:
+
+- **For all contracts**:
+  - A typed `<ContractName>ABI` constant for use with viem utilities.
+  - A `<ContractName>` class with a `writeReport(runtime, callData, gasConfig)` base write method.
+  - A `<ContractName>Mock` type with optional function fields for each `view`/`pure` method (e.g., `get?: () => bigint`) plus a `writeReport` field, and a `new<ContractName>Mock(address, evmMock)` factory.
+- **For onchain reads** (each `view`/`pure` function):
+  - A method on the class (e.g., `get(runtime)`) that returns the decoded value directly as a native TypeScript type.
+- **For onchain writes** (each non-view function):
+  - A `writeReportFrom<FunctionName>(runtime, args, gasConfig?)` method that handles ABI encoding, report generation, and submission in one step.
+- **For events** (each `event` definition):
+  - `<EventName>Topics` and `<EventName>Decoded` types.
+  - A `logTrigger<EventName>(filters?)` method that returns a typed trigger object with OR semantics for multiple filters.
+  - A `decode<EventName>(log)` method that decodes a raw `EVMLog` into `DecodedLog<EventDecoded>`.
+
+You can import from the barrel file to keep imports clean:
+
+```typescript
+import { Storage, newStorageMock } from "../contracts/evm/ts/generated"
+```
+
+## Best practices
+
+1. **Regenerate when needed**: Re-run `cre generate-bindings evm` whenever you update your contract ABIs. Do not edit generated files by hand.
+1. **Handle errors**: The write and trigger methods will throw if encoding or network calls fail. Wrap them in try/catch blocks in your workflow handlers.
+1. **Use explicit `--language` in CI**: If your project has both `go.mod` and `package.json`, auto-detection may be ambiguous. Pass `--language typescript` explicitly in CI pipelines.
+1. **Organize ABIs**: Keep your `.abi` files clearly named in `contracts/evm/src/abi/`. The file name determines the generated class name.
+
+## Where to go next
+
+Now that you know how to generate bindings, you can use them to [read data from](/cre/guides/workflow/using-evm-client/onchain-read) or [write data to](/cre/guides/workflow/using-evm-client/onchain-write/overview) your contracts, or [trigger workflows from events](/cre/guides/workflow/using-triggers/evm-log-trigger).
