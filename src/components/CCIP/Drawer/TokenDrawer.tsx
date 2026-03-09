@@ -55,6 +55,7 @@ function TokenDrawer({
     tokenDecimals: number
     tokenAddress: string
     tokenPoolType: PoolType
+    tokenPoolRawType: string
     tokenPoolAddress: string
     explorer: ExplorerInfo
   }
@@ -174,6 +175,7 @@ function TokenDrawer({
           decimals: network.tokenDecimals,
           address: network.tokenAddress,
           poolType: network.tokenPoolType,
+          poolRawType: network.tokenPoolRawType,
           poolAddress: network.tokenPoolAddress,
         }}
         network={{
