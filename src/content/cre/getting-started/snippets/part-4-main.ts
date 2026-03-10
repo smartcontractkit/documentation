@@ -52,7 +52,6 @@ const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
   const network = getNetwork({
     chainFamily: "evm",
     chainSelectorName: evmConfig.chainName,
-    isTestnet: true,
   })
   if (!network) {
     throw new Error(`Unknown chain name: ${evmConfig.chainName}`)

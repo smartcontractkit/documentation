@@ -253,3 +253,70 @@ func onTrigger(config *Config, runtime cre.Runtime, ...) (string, error) {
     //...
 }
 ```
+
+## `runtime.GetSecret()`
+
+Retrieves a secret from the Vault DON. Secrets are key-value pairs stored securely and made available to your workflow at runtime. The `GetSecret` method is available on the `Runtime` interface through the embedded `SecretsProvider`.
+
+**Signature:**
+
+```go
+runtime.GetSecret(req *SecretRequest) Promise[*Secret]
+```
+
+### `SecretRequest`
+
+| Field       | Type     | Required | Description                                                           |
+| ----------- | -------- | -------- | --------------------------------------------------------------------- |
+| `Id`        | `string` | Yes      | The identifier of the secret to retrieve.                             |
+| `Namespace` | `string` | No       | The namespace the secret belongs to. Defaults to `"main"` if omitted. |
+
+### `Secret`
+
+The value returned when the promise resolves.
+
+| Field       | Type     | Description                      |
+| ----------- | -------- | -------------------------------- |
+| `Id`        | `string` | The secret identifier.           |
+| `Namespace` | `string` | The secret namespace.            |
+| `Owner`     | `string` | The address of the secret owner. |
+| `Value`     | `string` | The secret value.                |
+
+### `SecretsProvider` interface
+
+The `SecretsProvider` interface is embedded in `Runtime`, which means `GetSecret` is available directly on the runtime object. It is also passed as a parameter to [`InitWorkflow`](#initworkflow), allowing you to access secrets during workflow initialization.
+
+```go
+type SecretsProvider interface {
+    GetSecret(req *SecretRequest) Promise[*Secret]
+}
+```
+
+### Example
+
+```go
+import "github.com/smartcontractkit/cre-sdk-go/cre"
+
+func onTrigger(config *Config, runtime cre.Runtime, ...) (string, error) {
+    secretPromise := runtime.GetSecret(&cre.SecretRequest{
+        Id:        "my-api-key",
+        Namespace: "default",
+    })
+
+    secret, err := secretPromise.Await()
+    if err != nil {
+        return "", fmt.Errorf("failed to get secret: %w", err)
+    }
+
+    logger := runtime.Logger()
+    logger.Info("Secret retrieved", "owner", secret.Owner)
+
+    // Use secret.Value in your workflow logic
+    return "done", nil
+}
+```
+
+<Aside type="note" title="Secrets guide">
+  For a complete walkthrough on creating, storing, and using secrets, see the [Secrets
+  guide](/cre/guides/workflow/secrets).
+</Aside>

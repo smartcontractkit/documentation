@@ -83,6 +83,7 @@ export type SupportedTechnology =
   | "ARC_NETWORK"
   | "DOGE_OS"
   | "ADI_NETWORK"
+  | "EDGE"
 
 export type ChainType = "evm" | "solana" | "aptos" | "sui" | "canton" | "ton" | "tron" | "stellar" | "starknet"
 
@@ -261,6 +262,9 @@ export type SupportedChain =
   | "ARC_NETWORK_TESTNET"
   | "DOGE_OS_CHIKYU_TESTNET"
   | "ADI_NETWORK_AB_TESTNET"
+  | "ADI_NETWORK_MAINNET"
+  | "EDGE_MAINNET"
+  | "EDGE_TESTNET"
 
 export type ExplorerInfo = {
   baseUrl: string

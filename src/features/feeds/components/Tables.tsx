@@ -228,8 +228,15 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
 
   // Feed type checks
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
-  // Detect tokenized equity feeds by metadata so the badge shows on any page (e.g., standard price feeds)
-  const isTokenizedEquityFeed = metadata.docs?.assetClass === "Equities" && metadata.contractType !== "verifier"
+  // True tokenized equity feeds (e.g. Ondo) — controls the "Tokenized Equity" badge.
+  const isTokenizedEquityFeed =
+    metadata.docs?.assetClass === "Equity" &&
+    metadata.contractType !== "verifier" &&
+    metadata.docs?.productTypeCode === "primaryTokenizedPrice"
+
+  // Any feed with a calculated price (productSubType === "calculatedPrice") should
+  // have its address hidden and show a contact email instead.
+  const shouldHideAddress = metadata.docs?.productSubType === "calculatedPrice"
 
   const label = isUSGovernmentMacroeconomicData ? "Category" : "Asset type"
   const value = isUSGovernmentMacroeconomicData
@@ -305,8 +312,8 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                 </dt>
               )}
               <dd>
-                {isTokenizedEquityFeed ? (
-                  // Tokenized equity feeds show a contact email instead of proxy address
+                {shouldHideAddress ? (
+                  // Calculated-price feeds show a contact email instead of proxy address
                   <span>
                     Contact us:{" "}
                     <a href={`mailto:${TOKENIZED_EQUITY_CONTACT_EMAIL}`} className={tableStyles.addressLink}>
@@ -380,8 +387,8 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                     <span className="label">{isAaveSVR(metadata) ? "AAVE SVR Proxy:" : "SVR Proxy:"}</span>
                   </dt>
                   <dd>
-                    {isTokenizedEquityFeed ? (
-                      // Tokenized equity feeds show a contact email instead of SVR proxy address
+                    {shouldHideAddress ? (
+                      // Calculated-price feeds show a contact email instead of SVR proxy address
                       <span>
                         Contact us:{" "}
                         <a href={`mailto:${TOKENIZED_EQUITY_CONTACT_EMAIL}`} className={tableStyles.addressLink}>
@@ -416,7 +423,7 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                     )}
                   </dd>
                 </div>
-                {isAaveSVR(metadata) && !isTokenizedEquityFeed && (
+                {isAaveSVR(metadata) && !shouldHideAddress && (
                   <div className={clsx(tableStyles.aaveCallout)}>
                     <strong>⚠️ Aave Dedicated Feed:</strong> This SVR proxy feed is dedicated exclusively for use by the
                     Aave protocol. Learn more about{" "}
@@ -426,7 +433,7 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                     .
                   </div>
                 )}
-                {isSharedSVR(metadata) && !isTokenizedEquityFeed && (
+                {isSharedSVR(metadata) && !shouldHideAddress && (
                   <div className={clsx(tableStyles.sharedCallout)}>
                     <strong>🔗 SVR Feed:</strong> This SVR proxy feed is usable by any protocol. Learn more about{" "}
                     <a href="/data-feeds/svr-feeds" target="_blank">
@@ -798,7 +805,9 @@ export const StreamsNetworkAddressesTable = ({
                         )}
                       </td>
                       <td className={tableStyles.addressColumn}>
-                        {network.isSolana ? (
+                        {network.isCanton ? (
+                          <a href="/data-streams/canton-integration">See Canton integration guide →</a>
+                        ) : network.isSolana ? (
                           <>
                             <div>
                               <small className={tableStyles.addressLabel}>Verifier Program ID:</small>

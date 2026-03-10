@@ -389,11 +389,64 @@ runtime.runInNodeMode<TArgs extends unknown[], TOutput>(
 
 - `fn`: A function that receives a `NodeRuntime` and executes on each individual node
 - `consensusAggregation`: An aggregation function (e.g., `consensusMedianAggregation<bigint>()`)
-- `unwrapOptions`: Optional configuration for how to unwrap complex return types
+- `unwrapOptions`: Optional configuration for how to deserialize the consensus result. See [`UnwrapOptions`](#unwrapoptions) below.
 
 **Returns:**
 
 A function that, when called with any additional arguments, returns an object with a `.result()` method.
+
+### `UnwrapOptions`
+
+When `runInNodeMode` returns a non-primitive object type, the SDK needs to know how to deserialize the consensus result back into a typed object. The `unwrapOptions` parameter tells the SDK which deserialization strategy to use.
+
+{/* prettier-ignore */}
+<Aside type="note" title="When do you need this?">
+  You only need `unwrapOptions` when `runInNodeMode` returns a non-primitive object type. Primitive return types (`string`, `number`, `bigint`, `boolean`) do not require `unwrapOptions` — the SDK handles them automatically.
+</Aside>
+
+**Type definition:**
+
+```typescript
+type UnwrapOptions<T> = { schema: SchemaValidator<T>; factory?: never } | { schema?: never; factory: () => T }
+```
+
+**Variants:**
+
+| Variant                 | When to use                                                                  | Example                                          |
+| ----------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------ |
+| `{ schema: validator }` | Objects with a Zod or any Standard Schema-compatible validator               | `{ schema: myZodSchema }`                        |
+| `{ factory: () => T }`  | Objects without a schema — provide a factory that returns a default instance | `{ factory: () => ({ price: 0n, source: "" }) }` |
+
+Note: `schema` and `factory` are mutually exclusive — provide one or the other, not both.
+
+**Example with `schema` (most common for complex types):**
+
+```typescript
+import { HTTPClient, consensusMedianAggregation, type Runtime, type NodeRuntime } from "@chainlink/cre-sdk"
+import { z } from "zod"
+
+const priceResultSchema = z.object({
+  price: z.bigint(),
+  source: z.string(),
+})
+
+type PriceResult = z.infer<typeof priceResultSchema>
+
+const fetchPrice = (nodeRuntime: NodeRuntime<Config>): PriceResult => {
+  const httpClient = new HTTPClient()
+  // ... fetch and parse price ...
+  return { price: 42000n, source: "api.example.com" }
+}
+
+const onTrigger = (runtime: Runtime<Config>): string => {
+  const price = runtime
+    .runInNodeMode(fetchPrice, consensusMedianAggregation<PriceResult>(), { schema: priceResultSchema })()
+    .result()
+
+  runtime.log(`Price: ${price.price} from ${price.source}`)
+  return "done"
+}
+```
 
 **Example:**
 
@@ -436,4 +489,56 @@ const onTrigger = (runtime: Runtime<Config>, ...): string => {
 <Aside type="note" title="Notice the double function call">
   The pattern `runInNodeMode(fn, aggregation)()` requires calling the returned function immediately with `()` before
   calling `.result()`. This is because `runInNodeMode` returns a function that can accept additional arguments.
+</Aside>
+
+## `runtime.getSecret()`
+
+Retrieves a secret from the Vault DON. Secrets are key-value pairs stored securely and made available to your workflow at runtime.
+
+**Signature:**
+
+```typescript
+runtime.getSecret(
+  req: SecretRequest | SecretRequestJson
+): { result: () => Secret }
+```
+
+### `SecretRequest` / `SecretRequestJson`
+
+| Field       | Type     | Required | Description                                                           |
+| ----------- | -------- | -------- | --------------------------------------------------------------------- |
+| `id`        | `string` | Yes      | The identifier of the secret to retrieve.                             |
+| `namespace` | `string` | No       | The namespace the secret belongs to. Defaults to `"main"` if omitted. |
+
+### `Secret`
+
+The object returned by `.result()`.
+
+| Field       | Type     | Description                      |
+| ----------- | -------- | -------------------------------- |
+| `id`        | `string` | The secret identifier.           |
+| `namespace` | `string` | The secret namespace.            |
+| `owner`     | `string` | The address of the secret owner. |
+| `value`     | `string` | The secret value.                |
+
+### Example
+
+`runtime.getSecret()` is available directly on the `Runtime` object passed to your handler function. No additional setup is required in `initWorkflow`.
+
+```typescript
+import { type Runtime } from "@chainlink/cre-sdk"
+
+const onTrigger = (runtime: Runtime<Config>): string => {
+  const secret = runtime.getSecret({ id: "my-api-key" }).result()
+
+  runtime.log(`Secret owner: ${secret.owner}`)
+
+  // Use secret.value in your workflow logic
+  return "done"
+}
+```
+
+{/* prettier-ignore */}
+<Aside type="note" title="Secrets guide">
+  For a complete walkthrough on creating, storing, and using secrets, see the [Secrets guide](/cre/guides/workflow/secrets).
 </Aside>

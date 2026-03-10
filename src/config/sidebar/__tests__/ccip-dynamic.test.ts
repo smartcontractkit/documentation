@@ -329,18 +329,18 @@ describe("CCIP Sidebar Configuration", () => {
 
       if (toolsSection) {
         const itemTitles = toolsSection.contents.map((item) => item.title)
-        expect(itemTitles).toContain("CCIP SDK & CLI")
+        expect(itemTitles).toContain("CCIP API, SDK & CLI")
         expect(itemTitles).toContain("Token Manager")
       }
     })
   })
 
   describe("Regression Prevention", () => {
-    it("should maintain CCIP SDK & CLI sidebar item", () => {
-      // Verify that CCIP SDK & CLI item exists with correct URL
+    it("should maintain CCIP API, SDK & CLI sidebar item", () => {
+      // Verify that CCIP API, SDK & CLI item exists with correct URL
       const findCCIPTools = (items: SectionContent[]): SectionContent | null => {
         for (const item of items) {
-          if (item.title === "CCIP SDK & CLI") {
+          if (item.title === "CCIP API, SDK & CLI") {
             return item
           }
           if (item.children) {
@@ -351,15 +351,12 @@ describe("CCIP Sidebar Configuration", () => {
         return null
       }
 
-      let ccipToolsItem: SectionContent | null = null
-      for (const section of CCIP_SIDEBAR_CONTENT) {
-        ccipToolsItem = findCCIPTools(section.contents)
-        if (ccipToolsItem) break
-      }
+      const toolsSection = CCIP_SIDEBAR_CONTENT.find((s) => s.section === "Tools and Resources")
+      const ccipToolsItem = toolsSection ? findCCIPTools(toolsSection.contents) : null
 
       expect(ccipToolsItem).toBeDefined()
-      expect(ccipToolsItem?.url).toBe("ccip/tools-resources/ccip-tools")
-      // CCIP SDK & CLI should be universal (no chainTypes restriction)
+      expect(ccipToolsItem?.url).toBe("https://docs.chain.link/ccip/tools")
+      // CCIP API, SDK & CLI should be universal (no chainTypes restriction)
       expect(ccipToolsItem?.chainTypes).toBeUndefined()
     })
 

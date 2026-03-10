@@ -1,0 +1,142 @@
+---
+section: cre
+title: "SDK Reference: Type Conversions"
+date: Last Modified
+metadata:
+  description: "Reference for TypeScript protobuf type conversions: understanding Type vs TypeJson variants, ProtoBigInt, and conversion helpers."
+  datePublished: "2026-03-02"
+  lastModified: "2026-03-02"
+---
+
+import { Aside } from "@components"
+
+The CRE TypeScript SDK uses Protocol Buffers under the hood. Each protobuf message generates **two** TypeScript representations:
+
+- **`Type`** (runtime form): Uses native binary types like `Uint8Array` and `bigint`. These are what the SDK returns from `.result()` calls.
+- **`TypeJson`** (JSON-serializable form): Uses `string` and plain objects. These are what you pass _into_ SDK methods when constructing requests.
+
+{/* prettier-ignore */}
+<Aside type="tip" title="Rule of thumb">
+  Use **`Json` variants** when constructing request objects inline. Use **runtime types** when processing responses from `.result()` calls.
+</Aside>
+
+## Conversion table
+
+This table shows how protobuf types map to their TypeScript runtime and JSON-serializable forms.
+
+| Protobuf Type               | Runtime (`Type`)                                 | JSON (`TypeJson`)                      | Notes                                                                                                                                                                               |
+| --------------------------- | ------------------------------------------------ | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bytes`                     | `Uint8Array`                                     | `string` (base64)                      | Use [`hexToBase64()`](/cre/reference/sdk/evm-client-ts#hextobase64) to convert hex to base64 for request objects. Use `bytesToHex()` to convert `Uint8Array` responses back to hex. |
+| `int64` / `uint64`          | `bigint`                                         | `string`                               | Numeric strings like `"12345"`.                                                                                                                                                     |
+| `enum`                      | Enum constant (`number`)                         | String name                            | For example, `TX_STATUS_SUCCESS` (number) vs `"TX_STATUS_SUCCESS"` (string).                                                                                                        |
+| `google.protobuf.Duration`  | `Duration` object                                | `string` (e.g. `"5s"`)                 | Duration strings use Go-style format: `"5s"`, `"1.5m"`, `"200ms"`.                                                                                                                  |
+| `google.protobuf.Timestamp` | `Timestamp` `{ seconds: bigint, nanos: number }` | `{ seconds?: string, nanos?: number }` |                                                                                                                                                                                     |
+| `BigInt` (CRE custom)       | `{ absVal: Uint8Array, sign: bigint }`           | `{ absVal: string, sign: string }`     | See [ProtoBigInt](#protobigint) below.                                                                                                                                              |
+
+## ProtoBigInt
+
+`BigInt` is a CRE-specific protobuf type used to represent arbitrarily large integers. It appears in block numbers, account balances, gas values, and other EVM-related fields.
+
+### Structure
+
+The protobuf `BigInt` encodes a signed arbitrary-precision integer as two fields:
+
+| Field    | Runtime type | JSON type         | Description                                                                  |
+| -------- | ------------ | ----------------- | ---------------------------------------------------------------------------- |
+| `absVal` | `Uint8Array` | `string` (base64) | The absolute value as a big-endian byte array (base64-encoded in JSON form). |
+| `sign`   | `bigint`     | `string`          | The sign: `"1"` for positive, `"0"` for zero, `"-1"` for negative.           |
+
+### Converting between `bigint` and `ProtoBigInt`
+
+Use the SDK helpers to convert between native JavaScript `bigint` and the protobuf format:
+
+**Native `bigint` to protobuf `BigIntJson`** (for request objects):
+
+```typescript
+import { blockNumber, bigintToProtoBigInt } from "@chainlink/cre-sdk"
+
+// blockNumber() is a convenience alias for bigintToProtoBigInt()
+const block = blockNumber(12345678n)
+// → { absVal: "ALxhTg==", sign: "1" }
+
+// Equivalent:
+const block2 = bigintToProtoBigInt(12345678n)
+```
+
+**Protobuf `BigInt` to native `bigint`** (for response processing):
+
+```typescript
+import { protoBigIntToBigint } from "@chainlink/cre-sdk"
+
+const header = evmClient.headerByNumber(runtime, {}).result()
+const blockNum = protoBigIntToBigint(header.header.blockNumber)
+// → e.g., 12345678n
+```
+
+### Special constants
+
+The SDK provides pre-built `BigIntJson` constants for common block reference values:
+
+```typescript
+import { LATEST_BLOCK_NUMBER, LAST_FINALIZED_BLOCK_NUMBER } from "@chainlink/cre-sdk"
+
+// LATEST_BLOCK_NUMBER → most recent mined block
+// LAST_FINALIZED_BLOCK_NUMBER → most recent finalized block
+```
+
+These are negative sentinel values that the CRE platform interprets as symbolic references rather than literal block heights.
+
+### Common patterns
+
+**Reading a balance and doing arithmetic:**
+
+```typescript
+import { EVMClient, getNetwork, protoBigIntToBigint, LAST_FINALIZED_BLOCK_NUMBER } from "@chainlink/cre-sdk"
+
+const balance = evmClient
+  .balanceAt(runtime, {
+    account: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb2",
+    blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
+  })
+  .result()
+
+// balance.balance is already a native bigint — no conversion needed
+const balanceInEth = balance.balance / 10n ** 18n
+```
+
+**Specifying a custom block depth:**
+
+```typescript
+import { protoBigIntToBigint, blockNumber } from "@chainlink/cre-sdk"
+
+// Get the latest block number
+const header = evmClient.headerByNumber(runtime, {}).result()
+const latest = protoBigIntToBigint(header.header.blockNumber)
+
+// Query 100 blocks back
+const contractCall = evmClient
+  .callContract(runtime, {
+    call: encodedCall,
+    blockNumber: blockNumber(latest - 100n),
+  })
+  .result()
+```
+
+## `bytes` fields
+
+Protobuf `bytes` fields appear as `Uint8Array` in runtime types and as base64-encoded `string` in JSON types. When working with EVM data, you often need to convert between hex strings and these representations.
+
+```typescript
+import { hexToBase64, bytesToHex, hexToBytes } from "@chainlink/cre-sdk"
+
+// Hex → base64 (for request objects that expect base64-encoded bytes)
+const base64Data = hexToBase64("0xabcdef")
+
+// Hex → Uint8Array (for working with raw bytes)
+const bytes = hexToBytes("0xabcdef")
+
+// Uint8Array → hex (for converting response bytes back to hex)
+const hex = bytesToHex(new Uint8Array([0xab, 0xcd, 0xef]))
+```
+
+See the [EVM Client helper functions](/cre/reference/sdk/evm-client-ts#helper-functions) for the full list of conversion utilities.

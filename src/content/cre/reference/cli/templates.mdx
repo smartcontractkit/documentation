@@ -1,0 +1,123 @@
+---
+section: cre
+date: Last Modified
+title: "Template Sources"
+metadata:
+  description: "Manage the GitHub repository sources that cre init uses to discover workflow templates."
+  datePublished: "2026-02-26"
+  lastModified: "2026-02-26"
+---
+
+import { Aside } from "@components"
+
+The `cre templates` commands manage the GitHub repository sources that `cre init` uses to discover workflow templates.
+
+The CLI always includes two built-in **Hello World** templates (`hello-world-go`, `hello-world-ts`) that are embedded in the binary and available without an internet connection. All other templates are fetched dynamically from GitHub. The Chainlink official template repository (`smartcontractkit/cre-templates`) is configured as the default source — you only need these commands if you want to add custom or third-party template sources.
+
+{/* prettier-ignore */}
+<Aside type="note" title="Global flags">
+  All `cre` commands support [global flags](/cre/reference/cli#global-flags) like `--env`, `--target`, `--project-root`, and `--verbose`.
+</Aside>
+
+## `cre templates list`
+
+Fetches and displays all templates available from your configured repository sources. Results are cached locally; use `--refresh` to fetch the latest data from GitHub.
+
+**Usage:**
+
+```bash
+cre templates list [flags]
+```
+
+**Flags:**
+
+| Flag        | Description                                             |
+| ----------- | ------------------------------------------------------- |
+| `--refresh` | Bypass the local cache and fetch fresh data from GitHub |
+
+Each entry shows the template title, ID, language, and a short description. Use the ID with `cre init --template=<id>` to scaffold a project from that template.
+
+For the current list of available templates, run `cre templates list` or visit [docs.chain.link/cre-templates](https://docs.chain.link/cre-templates).
+
+---
+
+## `cre templates add`
+
+Adds one or more GitHub repositories as template sources. Sources are saved to `~/.cre/template.yaml` and made available in `cre init`.
+
+**Usage:**
+
+```bash
+cre templates add <owner/repo[@ref]>... [flags]
+```
+
+The `@ref` portion is optional and specifies a branch, tag, or commit. If omitted, the repository's default branch is used.
+
+**Examples:**
+
+```bash
+# Add a single repository (uses default branch)
+cre templates add myorg/my-templates
+
+# Add at a specific branch
+cre templates add myorg/my-templates@main
+
+# Add multiple repositories at once
+cre templates add myorg/my-templates anotherorg/more-templates
+```
+
+**Example output:**
+
+```
+✓ Added myorg/my-templates@main
+
+Configured repositories:
+  - smartcontractkit/cre-templates@main
+  - myorg/my-templates@main
+```
+
+{/* prettier-ignore */}
+<Aside type="note">
+  If a repository is already configured, `cre templates add` will skip it and print a warning rather than adding a duplicate.
+</Aside>
+
+---
+
+## `cre templates remove`
+
+Removes one or more template repository sources from `~/.cre/template.yaml`. The `@ref` portion of a repo string is optional and ignored during matching — only the `owner/repo` is used to identify the source to remove.
+
+**Usage:**
+
+```bash
+cre templates remove <owner/repo>... [flags]
+```
+
+**Examples:**
+
+```bash
+# Remove a single repository
+cre templates remove myorg/my-templates
+
+# Remove multiple repositories at once
+cre templates remove myorg/my-templates anotherorg/more-templates
+```
+
+**Example output:**
+
+```
+✓ Removed myorg/my-templates@main
+
+Remaining repositories:
+  - smartcontractkit/cre-templates@main
+```
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Default source">
+  The Chainlink official repository (`smartcontractkit/cre-templates`) is the default source and will be re-added automatically if no sources remain configured. Removing it will cause `cre init` to fall back to the built-in default.
+</Aside>
+
+## Learn more
+
+- [CRE Templates](/cre/templates) — Browse available Building Blocks and Starter Templates
+- [Project Setup Reference](/cre/reference/cli/project-setup) — Full reference for `cre init`
