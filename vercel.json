@@ -13,8 +13,12 @@
       "source": "/(.*)",
       "headers": [
         {
-          "key": "Cache-Control",
-          "value": "s-maxage=60, stale-while-revalidate=300"
+          "key": "Cloudflare-CDN-Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "Vary",
+          "value": "Accept-Encoding, X-Middleware-Prefetch"
         }
       ]
     }
@@ -418,7 +422,7 @@
     },
     {
       "source": "data-streams/stream-ids",
-      "destination": "data-streams/crypto-streams", 
+      "destination": "data-streams/crypto-streams",
       "statusCode": 301
     },
     {
@@ -456,7 +460,15 @@
       "destination": "data-streams/tutorials/streams-direct/streams-direct-ws-rwa-go",
       "statusCode": 301
     },
-    { "source": "/:path+/index.html", "destination": "/:path+", "permanent": true },
-    { "source": "/:path+/",           "destination": "/:path+", "permanent": true }
+    {
+      "source": "/:path+/index.html",
+      "destination": "/:path+",
+      "permanent": true
+    },
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "permanent": true
+    }
   ]
 }
