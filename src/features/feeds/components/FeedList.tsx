@@ -1080,7 +1080,7 @@ export const FeedList = ({
                 <label className={feedList.detailsLabel}>
                   <input
                     type="checkbox"
-                    style="width:15px;height:15px;display:inline;margin-right:8px;"
+                    className={feedList.feedCheckbox}
                     checked={showOnlyDEXFeeds}
                     onChange={() => {
                       closeAllDropdowns()
@@ -1129,7 +1129,7 @@ export const FeedList = ({
                     <label className={feedList.detailsLabel}>
                       <input
                         type="checkbox"
-                        style="width:15px;height:15px;display:inline;margin-right:8px;"
+                        className={feedList.feedCheckbox}
                         checked={show24x5Feeds}
                         onChange={() => {
                           closeAllDropdowns()
@@ -1247,7 +1247,7 @@ export const FeedList = ({
                 <label className={feedList.detailsLabel}>
                   <input
                     type="checkbox"
-                    style="width:15px;height:15px;display:inline;margin-right:8px;"
+                    className={feedList.feedCheckbox}
                     checked={showOnlyDEXFeedsTestnet}
                     onChange={() => {
                       setShowOnlyDEXFeedsTestnet((old) => !old)
@@ -1295,7 +1295,7 @@ export const FeedList = ({
                     <label className={feedList.detailsLabel}>
                       <input
                         type="checkbox"
-                        style="width:15px;height:15px;display:inline;margin-right:8px;"
+                        className={feedList.feedCheckbox}
                         checked={show24x5FeedsTestnet}
                         onChange={() => {
                           closeAllDropdowns()
@@ -1660,24 +1660,24 @@ export const FeedList = ({
                               </button>
                             )}
                           </form>
+                        </div>
+                        <div className={feedList.checkboxContainer}>
                           {!isStreams && (
                             <label className={feedList.detailsLabel}>
                               <input
                                 type="checkbox"
-                                style="width:15px;height:15px;display:inline;margin-right:8px;"
+                                className={feedList.feedCheckbox}
                                 checked={showExtraDetails}
                                 onChange={() => setShowExtraDetails(!showExtraDetails)}
                               />
-                              Show more details
+                              More details
                             </label>
                           )}
-                        </div>
-                        <div className={feedList.checkboxContainer}>
                           {!isStreams && isSmartData && (
                             <label className={feedList.detailsLabel}>
                               <input
                                 type="checkbox"
-                                style="width:15px;height:15px;display:inline;margin-right:8px;"
+                                className={feedList.feedCheckbox}
                                 checked={showOnlyMVRFeeds}
                                 onChange={() => {
                                   setShowOnlyMVRFeeds((old) => !old)
@@ -1691,11 +1691,11 @@ export const FeedList = ({
                             <label className={feedList.detailsLabel}>
                               <input
                                 type="checkbox"
-                                style="width:15px;height:15px;display:inline;margin-right:8px;"
+                                className={feedList.feedCheckbox}
                                 checked={showOnlySVR}
                                 onChange={() => setShowOnlySVR(!showOnlySVR)}
                               />
-                              Show Smart Value Recapture (SVR) feeds
+                              Show SVR feeds
                             </label>
                           )}
                         </div>
@@ -1821,22 +1821,22 @@ export const FeedList = ({
                                 </button>
                               )}
                             </form>
+                          </div>
+                          <div className={feedList.checkboxContainer}>
                             <label className={feedList.detailsLabel}>
                               <input
                                 type="checkbox"
-                                style="width:15px;height:15px;display:inline;margin-right:8px;"
+                                className={feedList.feedCheckbox}
                                 checked={showExtraDetails}
                                 onChange={() => setShowExtraDetails(!showExtraDetails)}
                               />
-                              Show more details
+                              More details
                             </label>
-                          </div>
-                          <div className={feedList.checkboxContainer}>
                             {!isStreams && isSmartData && (
                               <label className={feedList.detailsLabel}>
                                 <input
                                   type="checkbox"
-                                  style="width:15px;height:15px;display:inline;margin-right:8px;"
+                                  className={feedList.feedCheckbox}
                                   checked={showOnlyMVRFeedsTestnet}
                                   onChange={() => {
                                     setShowOnlyMVRFeedsTestnet((old) => !old)
