@@ -105,7 +105,29 @@ export const GET: APIRoute = async ({ request }) => {
       "",
     ]
 
-    const finalMarkdown = [...headerLines, transformed.trim()].join("\n")
+    // Detect FeedPage components — the interactive feed table is dynamically loaded
+    // and cannot be rendered server-side. Append a pointer to the machine-readable
+    // addresses endpoint so LLMs and Copy Page consumers can retrieve actual data.
+    const feedPageMatch = raw.match(/<FeedPage[^>]*dataFeedType=["']([^"']+)["']/)
+    const feedType = feedPageMatch?.[1] ?? "default"
+    const feedsNote = /<FeedPage/.test(raw)
+      ? [
+          "",
+          "---",
+          "",
+          "## Feed Contract Addresses",
+          "",
+          `The interactive address table on this page is loaded dynamically and is not included in this markdown export.`,
+          `Feed addresses are available in machine-readable format at the following endpoint:`,
+          "",
+          `- **All networks:** \`https://docs.chain.link/api/feeds/addresses?type=${feedType}\``,
+          `- **Single network:** \`https://docs.chain.link/api/feeds/addresses?type=${feedType}&network={queryString}\``,
+          `- **Available networks & queryStrings:** \`https://docs.chain.link/api/feeds/networks?type=${feedType}\``,
+          "",
+        ].join("\n")
+      : ""
+
+    const finalMarkdown = [...headerLines, transformed.trim(), feedsNote].join("\n")
 
     // Store in cache (cache key includes language for multi-lang pages)
     markdownCache.set(cacheKey, {

@@ -793,6 +793,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "MVR Feeds API Reference",
           url: "data-feeds/mvr-feeds/api-reference",
         },
+        {
+          title: "Feed Address API",
+          url: "data-feeds/feed-address-api",
+        },
       ],
     },
     {
@@ -1116,6 +1120,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Candlestick API",
           url: "data-streams/reference/candlestick-api",
+        },
+        {
+          title: "Stream ID API",
+          url: "data-streams/stream-id-api",
         },
       ],
     },

@@ -1,6 +1,6 @@
 ---
 import FeedsCommonCallout from "../callouts/FeedsCommonCallout.astro"
-import { FeedList, DataFeedType } from "./FeedList"
+import { FeedList, DataFeedType } from "./FeedList.tsx"
 import { Aside } from "@components"
 export type Props = {
   initialNetwork?: string
@@ -18,10 +18,10 @@ export type Props = {
   allowNetworkTableExpansion?: boolean
   defaultNetworkTableExpanded?: boolean
 }
-import { getServerSideChainMetadata } from "~/features/data/api/backend"
-import { CHAINS, ALL_CHAINS } from "~/features/data/chains"
-import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat"
-import { FeedDataItem, monitoredFeeds } from "~/features/data"
+import { getServerSideChainMetadata } from "~/features/data/api/backend.ts"
+import { CHAINS, ALL_CHAINS } from "~/features/data/chains.ts"
+import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat.tsx"
+import { FeedDataItem, monitoredFeeds } from "~/features/data/index.ts"
 
 const { initialNetwork, ecosystem, dataFeedType, allowNetworkTableExpansion, defaultNetworkTableExpanded } = Astro.props
 
@@ -89,8 +89,9 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
         <a href="/data-streams/tutorials/go-sdk-fetch">Fetch and decode reports</a> tutorial.
       </p>
       <p>
-        For LINK token and Faucet details, see the{" "}
-        <a href="/resources/link-token-contracts?parent=dataFeeds">LINK Token Contracts</a> page.
+        <a href="/resources/link-token-contracts?parent=dataFeeds">LINK Token Contracts</a> |{" "}
+        <a href="/data-streams/supported-networks">Supported networks & verifier proxies</a> |{" "}
+        <a href="/data-streams/stream-id-api">Retrieve stream IDs via API</a>
       </p>
       <Aside type="note" title="Talk to an expert">
         <p>
@@ -109,7 +110,8 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
       </Aside>
       <p>
         <a href="/data-feeds/smartdata">SmartData Feeds documentation</a> |{" "}
-        <a href="/resources/link-token-contracts?parent=dataFeeds">LINK token addresses & faucets</a>
+        <a href="/resources/link-token-contracts?parent=dataFeeds">LINK token addresses & faucets</a> |{" "}
+        <a href="/data-feeds/feed-address-api">Retrieve feed addresses via API</a>
       </p>
       <p>Before using feeds, review the risk considerations and disclaimer below.</p>
     </>
@@ -117,7 +119,8 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
     <>
       <p>
         <a href="/data-feeds/using-data-feeds">Learn to use data feeds</a> |{" "}
-        <a href="/resources/link-token-contracts?parent=dataFeeds">LINK token addresses & faucets</a>
+        <a href="/resources/link-token-contracts?parent=dataFeeds">LINK token addresses & faucets</a> |{" "}
+        <a href="/data-feeds/feed-address-api">Retrieve feed addresses via API</a>
       </p>
     </>
   ) : dataFeedType === "usGovernmentMacroeconomicData" ? (
@@ -131,7 +134,8 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
       <p>
         <a href="https://blog.chain.link/united-states-department-of-commerce-macroeconomic-data">About these feeds</a>{" "}
         | <a href="/data-feeds/using-data-feeds">Learn to use data feeds</a> |{" "}
-        <a href="/resources/link-token-contracts?parent=dataFeeds">LINK token addresses & faucets</a>
+        <a href="/resources/link-token-contracts?parent=dataFeeds">LINK token addresses & faucets</a> |{" "}
+        <a href="/data-feeds/feed-address-api">Retrieve feed addresses via API</a>
       </p>
       <p>
         Before using feeds in production, review the <a href="#data-feed-best-practices">best practices</a> below.
@@ -147,7 +151,8 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
       </Aside>
       <p>
         <a href="/data-feeds/using-data-feeds">Learn to use data feeds</a> |{" "}
-        <a href="/resources/link-token-contracts?parent=dataFeeds">LINK token addresses & faucets</a>
+        <a href="/resources/link-token-contracts?parent=dataFeeds">LINK token addresses & faucets</a> |{" "}
+        <a href="/data-feeds/feed-address-api">Retrieve feed addresses via API</a>
       </p>
       <p>
         Before using feeds in production, review the <a href="#data-feed-best-practices">best practices</a> below.

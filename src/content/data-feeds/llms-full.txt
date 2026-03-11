@@ -1045,6 +1045,135 @@ contract ENSConsumer {
 
 ---
 
+# Feed Address API
+Source: https://docs.chain.link/data-feeds/feed-address-api
+
+The Feed Address API provides programmatic access to Chainlink feed contract addresses across all supported networks. It returns the same data shown in the interactive address tables in the docs, in plain text format suitable for tooling, agents, and automated workflows.
+
+For Data Streams feed IDs, see the [Stream ID API](/data-streams/stream-id-api).
+
+<Aside type="note">These endpoints are read-only and require no authentication or API key.</Aside>
+
+## Endpoints
+
+### Get feed addresses
+
+```
+GET https://docs.chain.link/api/feeds/addresses
+```
+
+Returns a markdown document listing all feed addresses for the requested type. Optionally scoped to a single network.
+
+**Query parameters**
+
+| Parameter | Required | Description                                                                                 |
+| --------- | -------- | ------------------------------------------------------------------------------------------- |
+| `type`    | Yes      | Feed type (see [feed types](#feed-types) below). Defaults to `default`.                     |
+| `network` | No       | A network `queryString` to scope results to one network. See [Get networks](#get-networks). |
+
+**Example requests**
+
+```bash
+# All standard price feeds across all chains
+curl "https://docs.chain.link/api/feeds/addresses?type=default"
+
+# Price feeds on Ethereum Mainnet only
+curl "https://docs.chain.link/api/feeds/addresses?type=default&network=ethereum-mainnet"
+
+# Price feeds on Arbitrum
+curl "https://docs.chain.link/api/feeds/addresses?type=default&network=arbitrum-mainnet-arbitrum-1"
+
+# SmartData feeds (Proof of Reserve, NAVLink, SmartAUM)
+curl "https://docs.chain.link/api/feeds/addresses?type=smartdata"
+```
+
+**Example response** (truncated)
+
+```
+# Chainlink Feed Addresses: Standard Price Feeds
+...
+
+## Ethereum — Ethereum Mainnet
+- Network type: mainnet
+- Query string: `ethereum-mainnet`
+
+| Feed Name | Proxy Address | Deviation | Heartbeat |
+|-----------|--------------|-----------|-----------|
+| BTC / USD | `0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88` | 0.5% | 1h |
+| ETH / USD | `0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419` | 0.5% | 1h |
+...
+```
+
+***
+
+### Get networks
+
+```
+GET https://docs.chain.link/api/feeds/networks
+```
+
+Returns all supported network `queryString` values, separated by mainnet and testnet. Use these values with the `network` parameter above.
+
+**Query parameters**
+
+| Parameter | Required | Description                                            |
+| --------- | -------- | ------------------------------------------------------ |
+| `type`    | No       | Filter to only networks that carry feeds of this type. |
+
+**Example requests**
+
+```bash
+# All networks that carry standard price feeds
+curl "https://docs.chain.link/api/feeds/networks?type=default"
+
+# All networks that carry SmartData feeds
+curl "https://docs.chain.link/api/feeds/networks?type=smartdata"
+```
+
+***
+
+## Feed types
+
+| `type` value                    | Description                                           |
+| ------------------------------- | ----------------------------------------------------- |
+| `default`                       | Standard price feeds (ETH/USD, BTC/USD, etc.)         |
+| `smartdata`                     | SmartData feeds — Proof of Reserve, NAVLink, SmartAUM |
+| `rates`                         | Rates feeds — interest rates, realized volatility     |
+| `tokenizedEquity`               | Tokenized equity feeds                                |
+| `usGovernmentMacroeconomicData` | US Government macroeconomic data feeds                |
+
+***
+
+## Static snapshots
+
+Pre-rendered snapshots of each feed type are available as static files, baked at deploy time. Useful for offline tooling, RAG indexing, or any context where a live API call is not practical.
+
+```
+https://docs.chain.link/data-feeds/feed-addresses/{type}.txt
+```
+
+**Examples**
+
+```bash
+curl "https://docs.chain.link/data-feeds/feed-addresses/default.txt"
+curl "https://docs.chain.link/data-feeds/feed-addresses/smartdata.txt"
+curl "https://docs.chain.link/data-feeds/feed-addresses/rates.txt"
+curl "https://docs.chain.link/data-feeds/feed-addresses/tokenizedEquity.txt"
+curl "https://docs.chain.link/data-feeds/feed-addresses/usGovernmentMacroeconomicData.txt"
+```
+
+Snapshots reflect data as of the last site deployment. For always-current data, use the [live endpoint](#get-feed-addresses).
+
+***
+
+## Notes
+
+- Feeds marked as hidden in the reference data directory are excluded from all responses, matching the data shown in the interactive docs tables.
+- The `default` type across all networks is large (\~2,500+ feeds). Use `&network={queryString}` to scope requests where possible.
+- Data is sourced from the same backend used by the interactive address tables in the docs, cached daily.
+
+---
+
 # Feed Types
 Source: https://docs.chain.link/data-feeds/feed-types
 
