@@ -1,14 +1,19 @@
 /**
- * GET /api/feeds/addresses?type={feedType}&network={queryString}
+ * GET /api/feeds/addresses?type={feedType}&network={queryString}&format={markdown|json}
  *
- * Returns feed contract addresses in plain markdown.
+ * Returns feed contract addresses for the given type.
  * See /data-feeds/feed-address-api for documentation and examples.
  */
 
 import type { APIRoute } from "astro"
 import { getServerSideChainMetadata } from "~/features/data/api/backend.ts"
 import { CHAINS } from "~/features/data/chains.ts"
-import { buildFeedAddressMarkdown, VALID_FEED_TYPES } from "~/features/feeds/utils/feedMarkdown.ts"
+import {
+  buildFeedAddressMarkdown,
+  collectFeedEntries,
+  FEED_TYPE_LABELS,
+  VALID_FEED_TYPES,
+} from "~/features/feeds/utils/feedMarkdown.ts"
 import type { DataFeedType } from "~/features/feeds/components/FeedList.tsx"
 import { textPlainHeaders } from "@lib/api/cacheHeaders.js"
 
@@ -21,6 +26,9 @@ export const GET: APIRoute = async ({ request }) => {
   const url = new URL(request.url)
   const rawType = url.searchParams.get("type") ?? "default"
   const networkFilter = url.searchParams.get("network") || null
+  const format = url.searchParams.get("format") ?? "markdown"
+  const rawNetworkType = url.searchParams.get("networkType") || null
+  const networkType = rawNetworkType === "mainnet" || rawNetworkType === "testnet" ? rawNetworkType : undefined
 
   if (!VALID_FEED_TYPES.includes(rawType as DataFeedType)) {
     return new Response(`Invalid type "${rawType}". Valid values: ${VALID_FEED_TYPES.join(", ")}`, {
@@ -30,17 +38,37 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   const type = rawType as DataFeedType
-  const cacheKey = `${type}:${networkFilter ?? "all"}`
+  const cacheKey = `${type}:${networkFilter ?? "all"}:${networkType ?? "all"}:${format}`
 
   const cached = memoryCache.get(cacheKey)
   if (cached && Date.now() - cached.timestamp < MEMORY_CACHE_TTL) {
-    return new Response(cached.content, { status: 200, headers: { ...textPlainHeaders, "X-Cache": "HIT" } })
+    const contentType = format === "json" ? "application/json" : textPlainHeaders["Content-Type"]
+    return new Response(cached.content, { status: 200, headers: { "Content-Type": contentType, "X-Cache": "HIT" } })
   }
 
   const chainCache = await getServerSideChainMetadata(CHAINS)
-  const markdown = buildFeedAddressMarkdown(type, networkFilter, chainCache)
 
-  memoryCache.set(cacheKey, { content: markdown, timestamp: Date.now() })
+  let content: string
+  let contentType: string
 
-  return new Response(markdown, { status: 200, headers: { ...textPlainHeaders, "X-Cache": "MISS" } })
+  if (format === "json") {
+    const feeds = collectFeedEntries(type, networkFilter, chainCache, { networkType })
+    const payload = {
+      type,
+      label: FEED_TYPE_LABELS[type],
+      network: networkFilter,
+      networkType: networkType ?? null,
+      count: feeds.length,
+      feeds,
+    }
+    content = JSON.stringify(payload, null, 2)
+    contentType = "application/json"
+  } else {
+    content = buildFeedAddressMarkdown(type, networkFilter, chainCache, "https://docs.chain.link", { networkType })
+    contentType = textPlainHeaders["Content-Type"]
+  }
+
+  memoryCache.set(cacheKey, { content, timestamp: Date.now() })
+
+  return new Response(content, { status: 200, headers: { "Content-Type": contentType, "X-Cache": "MISS" } })
 }

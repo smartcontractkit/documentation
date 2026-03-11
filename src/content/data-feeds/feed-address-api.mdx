@@ -20,7 +20,7 @@ metadata:
 
 import { Aside } from "@components"
 
-The Feed Address API provides programmatic access to Chainlink feed contract addresses across all supported networks. It returns the same data shown in the interactive address tables in the docs, in plain text format suitable for tooling, agents, and automated workflows.
+The Feed Address API provides programmatic access to Chainlink feed contract addresses across all supported networks. It returns the same data shown in the [interactive address tables](/data-feeds/price-feeds/addresses), in plain text or JSON format suitable for tooling, agents, and automated workflows.
 
 For Data Streams feed IDs, see the [Stream ID API](/data-streams/stream-id-api).
 
@@ -34,32 +34,37 @@ For Data Streams feed IDs, see the [Stream ID API](/data-streams/stream-id-api).
 GET https://docs.chain.link/api/feeds/addresses
 ```
 
-Returns a markdown document listing all feed addresses for the requested type. Optionally scoped to a single network.
+Returns feed addresses for the requested type. Optionally scoped to a single network.
 
 **Query parameters**
 
-| Parameter | Required | Description                                                                                 |
-| --------- | -------- | ------------------------------------------------------------------------------------------- |
-| `type`    | Yes      | Feed type (see [feed types](#feed-types) below). Defaults to `default`.                     |
-| `network` | No       | A network `queryString` to scope results to one network. See [Get networks](#get-networks). |
+| Parameter     | Required | Description                                                                                 |
+| ------------- | -------- | ------------------------------------------------------------------------------------------- |
+| `type`        | Yes      | Feed type (see [feed types](#feed-types) below). Defaults to `default`.                     |
+| `network`     | No       | A network `queryString` to scope results to one network. See [Get networks](#get-networks). |
+| `networkType` | No       | `mainnet` or `testnet`. Filters results to one network class. Omit to return both.          |
+| `format`      | No       | Response format: `markdown` (default) or `json`.                                            |
 
 **Example requests**
 
 ```bash
-# All standard price feeds across all chains
+# All standard price feeds across all chains (markdown)
 curl "https://docs.chain.link/api/feeds/addresses?type=default"
 
-# Price feeds on Ethereum Mainnet only
-curl "https://docs.chain.link/api/feeds/addresses?type=default&network=ethereum-mainnet"
+# Mainnet-only standard price feeds — JSON (recommended for most integrations)
+curl "https://docs.chain.link/api/feeds/addresses?type=default&networkType=mainnet&format=json"
 
-# Price feeds on Arbitrum
-curl "https://docs.chain.link/api/feeds/addresses?type=default&network=arbitrum-mainnet-arbitrum-1"
+# Price feeds on Ethereum Mainnet only — JSON
+curl "https://docs.chain.link/api/feeds/addresses?type=default&network=ethereum-mainnet&format=json"
 
-# SmartData feeds (Proof of Reserve, NAVLink, SmartAUM)
-curl "https://docs.chain.link/api/feeds/addresses?type=smartdata"
+# Price feeds on Arbitrum — JSON
+curl "https://docs.chain.link/api/feeds/addresses?type=default&network=arbitrum-mainnet-arbitrum-1&format=json"
+
+# SmartData feeds — mainnet only
+curl "https://docs.chain.link/api/feeds/addresses?type=smartdata&networkType=mainnet"
 ```
 
-**Example response** (truncated)
+**Markdown response** (truncated)
 
 ```
 # Chainlink Feed Addresses: Standard Price Feeds
@@ -76,6 +81,33 @@ curl "https://docs.chain.link/api/feeds/addresses?type=smartdata"
 ...
 ```
 
+**JSON response** (truncated)
+
+```json
+{
+  "type": "default",
+  "label": "Standard Price Feeds",
+  "network": "ethereum-mainnet",
+  "networkType": null,
+  "count": 150,
+  "feeds": [
+    {
+      "name": "BTC / USD",
+      "proxyAddress": "0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88",
+      "deviation": "0.5%",
+      "heartbeat": "1h",
+      "network": "ethereum-mainnet",
+      "networkName": "Ethereum Mainnet",
+      "networkType": "mainnet",
+      "chain": "Ethereum"
+    },
+    ...
+  ]
+}
+```
+
+[Smart Value Recapture (SVR)](/data-feeds/svr-feeds) variants include an additional `"svr": "shared"` or `"svr": "aave"` field to distinguish them from the standard feed on the same network.
+
 ---
 
 ### Get networks
@@ -91,6 +123,7 @@ Returns all supported network `queryString` values, separated by mainnet and tes
 | Parameter | Required | Description                                            |
 | --------- | -------- | ------------------------------------------------------ |
 | `type`    | No       | Filter to only networks that carry feeds of this type. |
+| `format`  | No       | Response format: `markdown` (default) or `json`.       |
 
 **Example requests**
 
@@ -98,21 +131,39 @@ Returns all supported network `queryString` values, separated by mainnet and tes
 # All networks that carry standard price feeds
 curl "https://docs.chain.link/api/feeds/networks?type=default"
 
+# JSON — useful for programmatic iteration
+curl "https://docs.chain.link/api/feeds/networks?type=default&format=json"
+
 # All networks that carry SmartData feeds
-curl "https://docs.chain.link/api/feeds/networks?type=smartdata"
+curl "https://docs.chain.link/api/feeds/networks?type=smartdata&format=json"
+```
+
+**JSON response** (truncated)
+
+```json
+{
+  "type": "default",
+  "mainnet": [
+    { "queryString": "ethereum-mainnet", "networkName": "Ethereum Mainnet", "chain": "Ethereum" },
+    { "queryString": "arbitrum-mainnet", "networkName": "Arbitrum Mainnet", "chain": "Arbitrum" }
+  ],
+  "testnet": [{ "queryString": "ethereum-sepolia", "networkName": "Ethereum Sepolia", "chain": "Ethereum" }]
+}
 ```
 
 ---
 
 ## Feed types
 
-| `type` value                    | Description                                           |
-| ------------------------------- | ----------------------------------------------------- |
-| `default`                       | Standard price feeds (ETH/USD, BTC/USD, etc.)         |
-| `smartdata`                     | SmartData feeds — Proof of Reserve, NAVLink, SmartAUM |
-| `rates`                         | Rates feeds — interest rates, realized volatility     |
-| `tokenizedEquity`               | Tokenized equity feeds                                |
-| `usGovernmentMacroeconomicData` | US Government macroeconomic data feeds                |
+Each `type` value corresponds to a category of Chainlink feed. See [feed types](/data-feeds/feed-types) for a full overview.
+
+| `type` value                    | Description                                                                                 |
+| ------------------------------- | ------------------------------------------------------------------------------------------- |
+| `default`                       | [Standard price feeds](/data-feeds/price-feeds) — ETH/USD, BTC/USD, and similar             |
+| `smartdata`                     | [SmartData feeds](/data-feeds/smartdata) — Proof of Reserve, NAVLink, SmartAUM              |
+| `rates`                         | [Rates feeds](/data-feeds/rates-feeds) — interest rates, realized volatility                |
+| `tokenizedEquity`               | [Tokenized equity feeds](/data-feeds/tokenized-equity-feeds)                                |
+| `usGovernmentMacroeconomicData` | [US Government macroeconomic data feeds](/data-feeds/us-government-macroeconomic/addresses) |
 
 ---
 
@@ -140,6 +191,8 @@ Snapshots reflect data as of the last site deployment. For always-current data, 
 
 ## Notes
 
-- Feeds marked as hidden in the reference data directory are excluded from all responses, matching the data shown in the interactive docs tables.
+- Responses match exactly what is shown in the [interactive address tables](/data-feeds/price-feeds/addresses).
 - The `default` type across all networks is large (~2,500+ feeds). Use `&network={queryString}` to scope requests where possible.
 - Data is sourced from the same backend used by the interactive address tables in the docs, cached daily.
+- To use a feed address in your contracts, see [Using Data Feeds](/data-feeds/using-data-feeds).
+- For guidance on selecting the right feed, see [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds).

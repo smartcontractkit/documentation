@@ -6296,7 +6296,7 @@ Source: https://docs.chain.link/data-streams/smartdata-streams
 # Stream ID API
 Source: https://docs.chain.link/data-streams/stream-id-api
 
-The Stream ID API provides programmatic access to Chainlink Data Streams feed IDs and supported network verifier proxy addresses, in plain text format suitable for tooling, agents, and automated workflows.
+The Stream ID API provides programmatic access to Chainlink [Data Streams](/data-streams) feed IDs and supported network verifier proxy addresses, in plain text or JSON format suitable for tooling, agents, and automated workflows.
 
 For Data Feeds proxy addresses (price feeds, SmartData, rates), see the [Feed Address API](/data-feeds/feed-address-api).
 
@@ -6310,7 +6310,7 @@ For Data Feeds proxy addresses (price feeds, SmartData, rates), see the [Feed Ad
 GET https://docs.chain.link/api/streams/ids?type={category}
 ```
 
-Returns a markdown table of stream feed IDs for the requested category. Each row includes the feed ID, category, and report schema version. Stream IDs are universal — the same ID is valid across all supported networks.
+Returns stream feed IDs for the requested category. Stream IDs are universal — the same ID is valid across all [supported networks](/data-streams/supported-networks).
 
 **Query parameters**
 
@@ -6318,12 +6318,16 @@ Returns a markdown table of stream feed IDs for the requested category. Each row
 | --------- | -------- | ------------------------------------------------------------------------------------------------ |
 | `type`    | Yes      | Stream category (see [stream categories](#stream-categories) below). Defaults to `crypto`.       |
 | `schema`  | No       | Filter by report schema version (e.g. `v8`, `v11`). Omit to return all schemas for the category. |
+| `format`  | No       | Response format: `markdown` (default) or `json`.                                                 |
 
 **Example requests**
 
 ```bash
-# Crypto stream IDs (ETH/USD, BTC/USD, etc.)
+# Crypto stream IDs (ETH/USD, BTC/USD, etc.) — markdown
 curl "https://docs.chain.link/api/streams/ids?type=crypto"
+
+# Crypto streams — JSON
+curl "https://docs.chain.link/api/streams/ids?type=crypto&format=json"
 
 # All RWA streams (v8 Standard + v11 Advanced combined)
 curl "https://docs.chain.link/api/streams/ids?type=rwa"
@@ -6334,30 +6338,51 @@ curl "https://docs.chain.link/api/streams/ids?type=rwa&schema=v8"
 # RWA Advanced only (v11 — extended trading hours)
 curl "https://docs.chain.link/api/streams/ids?type=rwa&schema=v11"
 
-# SmartData NAV stream IDs
-curl "https://docs.chain.link/api/streams/ids?type=smartdata"
-
-# Exchange rate stream IDs
-curl "https://docs.chain.link/api/streams/ids?type=exchangeRate"
-
-# Tokenized asset stream IDs
-curl "https://docs.chain.link/api/streams/ids?type=tokenizedAsset"
+# Exchange rate stream IDs — JSON
+curl "https://docs.chain.link/api/streams/ids?type=exchangeRate&format=json"
 ```
 
-**Example response** (truncated)
+**Markdown response** (truncated)
 
 ```
-# Chainlink Data Streams — RWA
+# Chainlink Data Streams: Data Streams — RWA
 
-| Feed Name | Feed ID | Category | Schema |
-|-----------|---------|----------|--------|
-| Apple Inc / USD | `0x...` | Equities | v8 |
-| Apple Inc / USD | `0x...` | Equities | v11 |
-| EUR / USD       | `0x...` | Forex    | v8 |
+| Stream | Feed ID | Asset Class | Schema | Trading Hours |
+|--------|---------|-------------|--------|---------------|
+| AAPL/USD | `0x...` | Equities | v8 | Mon–Fri 9:30–16:00 ET |
+| AAPL/USD | `0x...` | Equities | v11 | Mon–Fri 9:30–16:00 ET |
+| EUR/USD  | `0x...` | Forex      | v8 | — |
 ...
 ```
 
-The `Schema` column is included in all responses. For categories with multiple schemas (e.g. `rwa`), both appear in the combined response. Use `?schema=` to narrow to one.
+**JSON response** (truncated)
+
+```json
+{
+  "type": "crypto",
+  "label": "Data Streams — Crypto",
+  "schemaFilter": null,
+  "count": 237,
+  "streams": [
+    {
+      "name": "BTC/USD",
+      "feedId": "0x00039d9f...",
+      "assetClass": "Crypto",
+      "schema": "v3"
+    },
+    {
+      "name": "AAPL/USD",
+      "feedId": "0x000b313c...",
+      "assetClass": "Equities — Regular Hours",
+      "schema": "v11",
+      "tradingHours": "Regular Hours (9:30am–4:00pm Mon–Fri ET)"
+    },
+    ...
+  ]
+}
+```
+
+The `schema` column is included in all responses. For categories with multiple schemas (e.g. `rwa`), both appear in the combined response. Use `?schema=` to narrow to one. `tradingHours` is only present on streams with restricted [market hours](/data-streams/market-hours).
 
 ***
 
@@ -6367,22 +6392,43 @@ The `Schema` column is included in all responses. For categories with multiple s
 GET https://docs.chain.link/api/streams/networks
 ```
 
-Returns all networks supported by Chainlink Data Streams with verifier proxy contract addresses. Verifier proxies are shared across all categories and schemas — use the address for the network where your application is deployed.
+Returns all networks supported by Chainlink Data Streams with verifier proxy contract addresses. Verifier proxies are shared across all categories and schemas — use the address for the network where your application is deployed. See [Supported Networks](/data-streams/supported-networks) for the full interactive list.
 
 **Query parameters**
 
 | Parameter | Required | Description                                                          |
 | --------- | -------- | -------------------------------------------------------------------- |
 | `include` | No       | Pass `testnet` to include testnet networks. Mainnet only by default. |
+| `format`  | No       | Response format: `markdown` (default) or `json`.                     |
 
 **Example requests**
 
 ```bash
 curl "https://docs.chain.link/api/streams/networks"
-curl "https://docs.chain.link/api/streams/networks?include=testnet"
+curl "https://docs.chain.link/api/streams/networks?format=json"
+curl "https://docs.chain.link/api/streams/networks?include=testnet&format=json"
 ```
 
-**Example response** (truncated)
+**JSON response** (truncated)
+
+```json
+{
+  "mainnet": [
+    {
+      "network": "Arbitrum",
+      "label": "Arbitrum Mainnet",
+      "verifierProxy": "0x478Aa2aC9F6D65F84e09D9185d126c3a17c2a93C"
+    },
+    {
+      "network": "Avalanche",
+      "label": "Avalanche Mainnet",
+      "verifierProxy": "0x79BAa65505C6682F16F9b2C7F8afEBb1821BE3f6"
+    }
+  ]
+}
+```
+
+**Markdown response** (truncated)
 
 ```
 # Chainlink Data Streams — Supported Networks
@@ -6433,9 +6479,11 @@ Snapshots reflect data as of the last site deployment. For always-current data, 
 
 ## Notes
 
-- Stream IDs are universal and do not change per network. The same feed ID is used whether your application is on Arbitrum, Avalanche, Base, or any other supported network.
-- To verify a report onchain, use the verifier proxy for the network where your application is deployed. See [Verify report data](/data-streams/tutorials/evm-onchain-report-verification).
-- Hidden streams are excluded from all responses, matching the data shown in the interactive docs tables.
+- Stream IDs are universal and do not change per network. The same feed ID is used whether your application is on Arbitrum, Avalanche, Base, or any other [supported network](/data-streams/supported-networks).
+- To verify a report onchain, use the verifier proxy for the network where your application is deployed. See [Verify report data onchain](/data-streams/tutorials/evm-onchain-report-verification).
+- To fetch reports offchain, see the [Getting Started](/data-streams/getting-started) guide and [SDK tutorials](/data-streams/tutorials).
+- For background on how Data Streams work, see [Architecture](/data-streams/architecture) and [Concepts](/data-streams/concepts/best-practices).
+- Responses match exactly what is shown in the interactive stream ID tables in the docs.
 - Data is sourced from the same backend used by the interactive stream ID tables in the docs, cached daily.
 
 ---

@@ -1,5 +1,5 @@
 /**
- * Shared markdown formatting for Chainlink feed address output.
+ * Shared data collection and formatting for Chainlink feed address output.
  *
  * Used by:
  * - /api/feeds/addresses  (dynamic endpoint)
@@ -65,7 +65,154 @@ export interface FeedMarkdownOptions {
   schemaFilter?: string
   /** Public-facing API type name for use in generated URLs (e.g. "crypto" instead of "streamsCrypto"). */
   publicType?: string
+  /** Restrict to "mainnet" or "testnet" networks only. */
+  networkType?: "mainnet" | "testnet"
 }
+
+// ---------------------------------------------------------------------------
+// Structured data types — used for JSON output
+// ---------------------------------------------------------------------------
+
+export interface StreamEntry {
+  name: string
+  feedId: string
+  assetClass: string
+  schema: string
+  tradingHours?: string
+}
+
+export interface FeedEntry {
+  name: string
+  proxyAddress: string
+  deviation: string
+  heartbeat: string
+  network: string
+  networkName: string
+  networkType: string
+  /** Blockchain ecosystem name (e.g. "Ethereum", "Arbitrum"). */
+  chain: string
+  svr?: "shared" | "aave"
+}
+
+// ---------------------------------------------------------------------------
+// Shared data collectors — used by both markdown and JSON formatters
+// ---------------------------------------------------------------------------
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function resolveSVR(feed: any): "shared" | "aave" | undefined {
+  const isShared = typeof feed.path === "string" && /-shared-svr$/.test(feed.path)
+  if (isShared) return "shared"
+  if (feed.secondaryProxyAddress) return "aave"
+  return undefined
+}
+
+export function collectStreamEntries(
+  type: DataFeedType,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  chainCache: Record<string, any>,
+  options: FeedMarkdownOptions = {}
+): StreamEntry[] {
+  const visibilityOpts = { schemaFilter: options.schemaFilter }
+  const seenFeedIds = new Set<string>()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const raw: any[] = []
+
+  for (const chain of CHAINS) {
+    const chainData = chainCache[chain.page]
+    if (!chainData?.networks) continue
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for (const network of chainData.networks as any[]) {
+      if (!network?.metadata?.length) continue
+      if (network.networkType !== "mainnet") continue
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      for (const feed of network.metadata as any[]) {
+        if (!isFeedVisible(feed, type, "", visibilityOpts)) continue
+        if (!feed.feedId || seenFeedIds.has(feed.feedId)) continue
+        seenFeedIds.add(feed.feedId)
+        raw.push(feed)
+      }
+    }
+  }
+
+  raw.sort((a, b) => (resolveStreamPair(a) ?? "").localeCompare(resolveStreamPair(b) ?? ""))
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return raw.flatMap((feed: any) => {
+    const name = resolveStreamPair(feed)
+    if (!name) return []
+    const tradingHours = resolveTradingHours(feed)
+    const entry: StreamEntry = {
+      name,
+      feedId: feed.feedId,
+      assetClass: resolveAssetClass(feed),
+      schema: resolveStreamSchema(type, feed),
+    }
+    if (tradingHours && tradingHours !== "—") entry.tradingHours = tradingHours
+    return [entry]
+  })
+}
+
+/** Strips the " Data Feeds" suffix Chainlink appends to chain group titles. */
+function resolveChainName(chainTitle: string, chainPage: string): string {
+  // Handles "Arbitrum Data Feeds" → "Arbitrum" and "Data Feeds" (Ethereum) → "Ethereum"
+  const stripped = chainTitle.replace(/\s*Data Feeds$/, "").trim()
+  return stripped || chainPage.charAt(0).toUpperCase() + chainPage.slice(1)
+}
+
+export function collectFeedEntries(
+  type: DataFeedType,
+  networkFilter: string | null,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  chainCache: Record<string, any>,
+  options: FeedMarkdownOptions = {}
+): FeedEntry[] {
+  const visibilityOpts = { schemaFilter: options.schemaFilter }
+  const entries: FeedEntry[] = []
+
+  for (const chain of CHAINS) {
+    const chainData = chainCache[chain.page]
+    if (!chainData?.networks) continue
+    const chainName = resolveChainName(chain.title, chain.page)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for (const network of chainData.networks as any[]) {
+      if (!network?.metadata?.length) continue
+      if (networkFilter && network.queryString !== networkFilter) continue
+      if (options.networkType && network.networkType !== options.networkType) continue
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const visibleFeeds = network.metadata.filter((feed: any) => isFeedVisible(feed, type, "", visibilityOpts))
+      if (visibleFeeds.length === 0) continue
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      for (const feed of visibleFeeds as any[]) {
+        const svr = resolveSVR(feed)
+        const entry: FeedEntry = {
+          name: feed.name || feed.assetName || "Unknown",
+          proxyAddress: feed.proxyAddress || feed.transmissionsAccount || feed.contractAddress || "N/A",
+          deviation: formatDeviation(feed.threshold),
+          heartbeat: formatHeartbeat(feed.heartbeat),
+          network: network.queryString,
+          networkName: network.name,
+          networkType: network.networkType,
+          chain: chainName,
+        }
+        if (svr) entry.svr = svr
+        entries.push(entry)
+      }
+    }
+  }
+
+  // Sort alphabetically by feed name within each network for consistent, scannable output
+  entries.sort((a, b) => {
+    if (a.network !== b.network) return a.network.localeCompare(b.network)
+    return a.name.localeCompare(b.name)
+  })
+
+  return entries
+}
+
+// ---------------------------------------------------------------------------
+// Markdown formatter
+// ---------------------------------------------------------------------------
 
 /**
  * Builds a plain-markdown document listing feed addresses or stream IDs
@@ -85,7 +232,6 @@ export function buildFeedAddressMarkdown(
   const baseUrl = `${siteBase}/api/feeds/addresses?type=${type}`
   const visibilityOpts = { schemaFilter: options.schemaFilter }
 
-  // Collect available queryStrings split by network type (feeds only; streams are network-agnostic)
   const mainnetQueryStrings: string[] = []
   const testnetQueryStrings: string[] = []
 
@@ -116,6 +262,20 @@ export function buildFeedAddressMarkdown(
     )
     lines.push(`> Supported networks and verifier proxy addresses: \`${siteBase}/api/streams/networks\``)
     lines.push("")
+
+    const streamEntries = collectStreamEntries(type, chainCache, options)
+    if (streamEntries.length > 0) {
+      lines.push("| Stream | Feed ID | Asset Class | Schema | Trading Hours |")
+      lines.push("|--------|---------|-------------|--------|---------------|")
+      for (const entry of streamEntries) {
+        lines.push(
+          `| ${entry.name} | \`${entry.feedId}\` | ${entry.assetClass} | ${entry.schema} | ${entry.tradingHours ?? "—"} |`
+        )
+      }
+      lines.push("")
+    } else {
+      lines.push(`No stream IDs found for type \`${type}\`.`)
+    }
   } else {
     lines.push(`# Chainlink Feed Addresses: ${label}`)
     lines.push(`Source: ${siteBase}/data-feeds/price-feeds/addresses`)
@@ -136,103 +296,33 @@ export function buildFeedAddressMarkdown(
       lines.push(`**Testnet queryStrings:** ${testnetQueryStrings.map((q) => `\`${q}\``).join(", ")}`)
       lines.push("")
     }
-  }
 
-  let hasAnyFeeds = false
-
-  if (streams) {
-    // Stream IDs are universal — deduplicate by feedId across all networks
-    const seenFeedIds = new Set<string>()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const allStreamFeeds: any[] = []
-
-    for (const chain of CHAINS) {
-      const chainData = chainCache[chain.page]
-      if (!chainData?.networks) continue
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      for (const network of chainData.networks as any[]) {
-        if (!network?.metadata?.length) continue
-        // Stream IDs differ between mainnet and testnet — only include mainnet
-        if (network.networkType !== "mainnet") continue
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        for (const feed of network.metadata as any[]) {
-          if (!isFeedVisible(feed, type, "", visibilityOpts)) continue
-          if (!feed.feedId || seenFeedIds.has(feed.feedId)) continue
-          seenFeedIds.add(feed.feedId)
-          allStreamFeeds.push(feed)
+    const feedEntries = collectFeedEntries(type, networkFilter, chainCache, options)
+    if (feedEntries.length === 0) {
+      lines.push(
+        networkFilter
+          ? `No feeds found for type \`${type}\` on network \`${networkFilter}\`. Check the network queryString or omit the \`network\` parameter to see all networks.`
+          : `No feeds found for type \`${type}\`.`
+      )
+    } else {
+      let currentNetwork = ""
+      for (const entry of feedEntries) {
+        if (entry.network !== currentNetwork) {
+          currentNetwork = entry.network
+          const network = feedEntries.find((e) => e.network === currentNetwork)!
+          lines.push(`## ${entry.chain} — ${network.networkName}`)
+          lines.push(`- Network type: ${network.networkType}`)
+          lines.push(`- Query string: \`${network.network}\``)
+          lines.push("")
+          lines.push("| Feed Name | Proxy Address | Deviation | Heartbeat |")
+          lines.push("|-----------|--------------|-----------|-----------|")
         }
-      }
-    }
-
-    if (allStreamFeeds.length > 0) {
-      hasAnyFeeds = true
-      // Sort alphabetically by resolved pair name for discoverability (e.g. BTC/USD before EZETH/ETH)
-      allStreamFeeds.sort((a, b) => {
-        const pairA = resolveStreamPair(a) ?? ""
-        const pairB = resolveStreamPair(b) ?? ""
-        return pairA.localeCompare(pairB)
-      })
-      lines.push("| Stream | Feed ID | Asset Class | Schema | Trading Hours |")
-      lines.push("|--------|---------|-------------|--------|---------------|")
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      for (const feed of allStreamFeeds as any[]) {
-        const pair = resolveStreamPair(feed)
-        if (!pair) continue
-        const feedId = feed.feedId
-        const assetClass = resolveAssetClass(feed)
-        const schema = resolveStreamSchema(type, feed)
-        const tradingHours = resolveTradingHours(feed)
-        lines.push(`| ${pair} | \`${feedId}\` | ${assetClass} | ${schema} | ${tradingHours} |`)
+        const svrLabel = entry.svr === "shared" ? " (Shared SVR)" : entry.svr === "aave" ? " (Aave SVR)" : ""
+        const name = `${entry.name}${svrLabel}`.replace(/\|/g, "\\|")
+        lines.push(`| ${name} | \`${entry.proxyAddress}\` | ${entry.deviation} | ${entry.heartbeat} |`)
       }
       lines.push("")
     }
-  } else {
-    // Feeds: proxy addresses vary per network
-    for (const chain of CHAINS) {
-      const chainData = chainCache[chain.page]
-      if (!chainData?.networks) continue
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      for (const network of chainData.networks as any[]) {
-        if (!network?.metadata?.length) continue
-        if (networkFilter && network.queryString !== networkFilter) continue
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const visibleFeeds = network.metadata.filter((feed: any) => isFeedVisible(feed, type, "", visibilityOpts))
-        if (visibleFeeds.length === 0) continue
-
-        hasAnyFeeds = true
-        lines.push(`## ${chain.title} — ${network.name}`)
-        lines.push(`- Network type: ${network.networkType}`)
-        lines.push(`- Query string: \`${network.queryString}\``)
-        if (network.explorerUrl) {
-          lines.push(`- Explorer: ${network.explorerUrl.replace("%s", "")}`)
-        }
-        lines.push("")
-        lines.push("| Feed Name | Proxy Address | Deviation | Heartbeat |")
-        lines.push("|-----------|--------------|-----------|-----------|")
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        for (const feed of visibleFeeds as any[]) {
-          const baseName = (feed.name || feed.assetName || "Unknown").replace(/\|/g, "\\|")
-          // Label SVR variants so developers can distinguish them from the standard feed
-          const isSharedSVR = typeof feed.path === "string" && /-shared-svr$/.test(feed.path)
-          const isAaveSVR = !!feed.secondaryProxyAddress && !isSharedSVR
-          const svrLabel = isSharedSVR ? " (Shared SVR)" : isAaveSVR ? " (Aave SVR)" : ""
-          const name = `${baseName}${svrLabel}`
-          const address = feed.proxyAddress || feed.transmissionsAccount || feed.contractAddress || "N/A"
-          lines.push(
-            `| ${name} | \`${address}\` | ${formatDeviation(feed.threshold)} | ${formatHeartbeat(feed.heartbeat)} |`
-          )
-        }
-        lines.push("")
-      }
-    }
-  }
-
-  if (!hasAnyFeeds) {
-    lines.push(
-      networkFilter
-        ? `No feeds found for type \`${type}\` on network \`${networkFilter}\`. Check the network queryString or omit the \`network\` parameter to see all networks.`
-        : `No feeds found for type \`${type}\`.`
-    )
   }
 
   return lines.join("\n")

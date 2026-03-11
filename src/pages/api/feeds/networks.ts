@@ -1,5 +1,5 @@
 /**
- * GET /api/feeds/networks?type={feedType}
+ * GET /api/feeds/networks?type={feedType}&format={markdown|json}
  *
  * Returns all network queryStrings for the given feed type, split by mainnet and testnet.
  * See /data-feeds/feed-address-api for documentation and examples.
@@ -27,7 +27,6 @@ const VALID_TYPES: DataFeedType[] = [
   "usGovernmentMacroeconomicData",
 ]
 
-// Map DataFeedType values to the chain-level tag used in chains.ts
 function feedTypeToChainTag(type: DataFeedType): string {
   if (
     type === "streamsCrypto" ||
@@ -44,11 +43,15 @@ function feedTypeToChainTag(type: DataFeedType): string {
   return "default"
 }
 
+function resolveChainName(chainTitle: string, chainPage: string): string {
+  const stripped = chainTitle.replace(/\s*Data Feeds$/, "").trim()
+  return stripped || chainPage.charAt(0).toUpperCase() + chainPage.slice(1)
+}
+
 interface NetworkEntry {
   queryString: string
   networkName: string
-  chainTitle: string
-  chainPage: string
+  chain: string
 }
 
 function getNetworks(typeFilter: DataFeedType | null): {
@@ -59,11 +62,12 @@ function getNetworks(typeFilter: DataFeedType | null): {
   const testnet: NetworkEntry[] = []
 
   for (const chain of CHAINS) {
-    // If a type filter is given, skip chains whose tags don't include the relevant tag
     if (typeFilter) {
       const tag = feedTypeToChainTag(typeFilter)
       if (!chain.tags?.includes(tag as never)) continue
     }
+
+    const chainName = resolveChainName(chain.title, chain.page)
 
     for (const network of chain.networks) {
       if (!network.rddUrl && !network.queryString) continue
@@ -71,8 +75,7 @@ function getNetworks(typeFilter: DataFeedType | null): {
       const entry: NetworkEntry = {
         queryString: network.queryString,
         networkName: network.name,
-        chainTitle: chain.title,
-        chainPage: chain.page,
+        chain: chainName,
       }
 
       if (network.networkType === "mainnet") {
@@ -110,7 +113,7 @@ function buildMarkdown(typeFilter: DataFeedType | null): string {
   lines.push("| queryString | Network Name | Chain |")
   lines.push("|-------------|--------------|-------|")
   for (const n of mainnet) {
-    lines.push(`| \`${n.queryString}\` | ${n.networkName} | ${n.chainTitle} |`)
+    lines.push(`| \`${n.queryString}\` | ${n.networkName} | ${n.chain} |`)
   }
   lines.push("")
 
@@ -119,7 +122,7 @@ function buildMarkdown(typeFilter: DataFeedType | null): string {
   lines.push("| queryString | Network Name | Chain |")
   lines.push("|-------------|--------------|-------|")
   for (const n of testnet) {
-    lines.push(`| \`${n.queryString}\` | ${n.networkName} | ${n.chainTitle} |`)
+    lines.push(`| \`${n.queryString}\` | ${n.networkName} | ${n.chain} |`)
   }
   lines.push("")
 
@@ -129,6 +132,7 @@ function buildMarkdown(typeFilter: DataFeedType | null): string {
 export const GET: APIRoute = async ({ request }) => {
   const url = new URL(request.url)
   const rawType = url.searchParams.get("type")
+  const format = url.searchParams.get("format") ?? "markdown"
 
   if (rawType && !VALID_TYPES.includes(rawType as DataFeedType)) {
     return new Response(`Invalid type "${rawType}". Valid values: ${VALID_TYPES.join(", ")}`, {
@@ -138,6 +142,20 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   const typeFilter = rawType ? (rawType as DataFeedType) : null
+
+  if (format === "json") {
+    const { mainnet, testnet } = getNetworks(typeFilter)
+    const payload = {
+      type: typeFilter,
+      mainnet,
+      testnet,
+    }
+    return new Response(JSON.stringify(payload, null, 2), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    })
+  }
+
   const markdown = buildMarkdown(typeFilter)
 
   return new Response(markdown, {
