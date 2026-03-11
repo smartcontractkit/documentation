@@ -1,5 +1,5 @@
 /**
- * Shared data collection and formatting for Chainlink feed address output.
+ * Shared data collection and output formatting (markdown + JSON) for Chainlink feed and stream data.
  *
  * Used by:
  * - /api/feeds/addresses  (dynamic endpoint)
@@ -9,7 +9,13 @@
 
 import { CHAINS } from "~/features/data/chains.ts"
 import { isFeedVisible } from "./feedVisibility.ts"
-import { resolveStreamPair, resolveAssetClass, resolveTradingHours, resolveStreamSchema } from "./streamMetadata.ts"
+import {
+  resolveStreamPair,
+  resolveAssetClass,
+  resolveTradingHours,
+  resolveStreamSchema,
+  escapePipes,
+} from "./streamMetadata.ts"
 import type { DataFeedType } from "../components/FeedList.tsx"
 
 export const VALID_FEED_TYPES: DataFeedType[] = [
@@ -318,7 +324,7 @@ export function buildFeedAddressMarkdown(
           lines.push("|-----------|--------------|-----------|-----------|")
         }
         const svrLabel = entry.svr === "shared" ? " (Shared SVR)" : entry.svr === "aave" ? " (Aave SVR)" : ""
-        const name = `${entry.name}${svrLabel}`.replace(/\|/g, "\\|")
+        const name = escapePipes(`${entry.name}${svrLabel}`)
         lines.push(`| ${name} | \`${entry.proxyAddress}\` | ${entry.deviation} | ${entry.heartbeat} |`)
       }
       lines.push("")

@@ -29,6 +29,14 @@ export const STREAM_CATEGORY_MAP: Record<string, DataFeedType> = {
 }
 
 /**
+ * Escapes backslashes and pipe characters for safe rendering in markdown tables.
+ * Backslashes are escaped first to prevent them from interfering with pipe escaping.
+ */
+export function escapePipes(value: string): string {
+  return value.replace(/\\/g, "\\\\").replace(/\|/g, "\\|")
+}
+
+/**
  * Returns the display pair name ("BTC/USD") from a stream feed.
  * Returns null for incomplete entries that should be skipped.
  */
@@ -37,7 +45,7 @@ export function resolveStreamPair(feed: any): string | null {
   const base = Array.isArray(feed.pair) && feed.pair.length >= 2 ? feed.pair[0] : ""
   const quote = Array.isArray(feed.pair) && feed.pair.length >= 2 ? feed.pair[1] : ""
   if (base && quote) return `${base}/${quote}`
-  const fromName = (feed.name || "").replace(/-Streams-.*$/, "").replace(/\|/g, "\\|")
+  const fromName = escapePipes((feed.name || "").replace(/-Streams-.*$/, ""))
   return fromName || null
 }
 
@@ -60,8 +68,8 @@ export function resolveAssetClass(feed: any): string {
   const main = ASSET_CLASS_DISPLAY[rawMain] ?? rawMain
   const sub = ASSET_CLASS_DISPLAY[rawSub] ?? rawSub
   // Compare raw values to catch cases where main and sub are the same internal identifier
-  if (main && sub && rawSub !== rawMain) return `${main} — ${sub}`.replace(/\|/g, "\\|")
-  return (main || sub || "—").replace(/\|/g, "\\|")
+  if (main && sub && rawSub !== rawMain) return escapePipes(`${main} — ${sub}`)
+  return escapePipes(main || sub || "—")
 }
 
 /**

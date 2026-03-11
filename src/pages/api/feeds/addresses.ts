@@ -13,7 +13,7 @@ import {
   collectFeedEntries,
   FEED_TYPE_LABELS,
   VALID_FEED_TYPES,
-} from "~/features/feeds/utils/feedMarkdown.ts"
+} from "~/features/feeds/utils/feedOutput.ts"
 import type { DataFeedType } from "~/features/feeds/components/FeedList.tsx"
 import { textPlainHeaders } from "@lib/api/cacheHeaders.js"
 

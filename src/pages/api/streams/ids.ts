@@ -13,7 +13,7 @@ import {
   collectStreamEntries,
   FEED_TYPE_LABELS,
   type FeedMarkdownOptions,
-} from "~/features/feeds/utils/feedMarkdown.ts"
+} from "~/features/feeds/utils/feedOutput.ts"
 import { STREAM_CATEGORY_MAP } from "~/features/feeds/utils/streamMetadata.ts"
 import { textPlainHeaders } from "@lib/api/cacheHeaders.js"
 
