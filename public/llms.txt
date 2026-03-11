@@ -84,12 +84,14 @@ This document offers simple, clean, and comprehensive resources for developers t
 - [SmartData Addresses](https://docs.chain.link/data-feeds/smartdata/addresses): Addresses for SmartData feeds.
 - [Solana Data Feeds](https://docs.chain.link/data-feeds/solana): Data feeds specific to the Solana blockchain.
 - [Using Data Feeds](https://docs.chain.link/data-feeds/using-data-feeds): Instructions on integrating data feeds.
+- [Feed Address API](https://docs.chain.link/data-feeds/feed-address-api): Programmatic access to feed contract addresses — full parameter reference, JSON format, filtering by network and network type.
 
 ### Feed Contract Addresses (Machine-Readable)
-Two access patterns are available for all feed types. Static snapshots are pre-rendered at deploy time (zero runtime cost, suitable for RAG indexing). Dynamic endpoints are always live. Filter to a single network by appending `&network={queryString}`. Get the full network list at `https://docs.chain.link/api/feeds/networks`.
+Two access patterns are available for all feed types. Static snapshots are pre-rendered at deploy time (zero runtime cost, suitable for RAG indexing). Dynamic endpoints are always live and support `?format=json` for structured output. Full parameter reference: https://docs.chain.link/data-feeds/feed-address-api
 
 #### Network Discovery
-- [Available Feed Networks](https://docs.chain.link/api/feeds/networks): All supported network queryStrings, separated by mainnet and testnet. Add `?type={feedType}` to filter to networks carrying a specific feed type.
+- [Available Feed Networks (markdown)](https://docs.chain.link/api/feeds/networks): All supported network queryStrings, separated by mainnet and testnet. Add `?type={feedType}` to filter to networks carrying a specific feed type.
+- [Available Feed Networks (JSON)](https://docs.chain.link/api/feeds/networks?format=json): Same data as structured JSON. Add `?type={feedType}` to filter.
 
 #### Feed Address API — Static Snapshots (pre-rendered at deploy — best for RAG indexing)
 - [Standard Price Feed Addresses](https://docs.chain.link/data-feeds/feed-addresses/default.txt): All standard Chainlink price feeds (ETH/USD, BTC/USD, etc.) across all chains.
@@ -99,7 +101,9 @@ Two access patterns are available for all feed types. Static snapshots are pre-r
 - [US Macroeconomic Data Feed Addresses](https://docs.chain.link/data-feeds/feed-addresses/usGovernmentMacroeconomicData.txt): US Government macroeconomic data feed addresses.
 
 #### Feed Address API — Dynamic Endpoints (always live — best for real-time lookup)
-- [Standard Price Feed Addresses](https://docs.chain.link/api/feeds/addresses?type=default): Live, filterable by `&network={queryString}`.
+Append `&format=json` to any URL below for structured JSON output. Append `&networkType=mainnet` to restrict to mainnet only. Append `&network={queryString}` to scope to a single network.
+- [Standard Price Feed Addresses](https://docs.chain.link/api/feeds/addresses?type=default): Live standard price feeds across all networks. SVR variants include an `"svr"` field (`"shared"` or `"aave"`).
+- [Standard Price Feeds — Mainnet JSON](https://docs.chain.link/api/feeds/addresses?type=default&networkType=mainnet&format=json): Mainnet-only standard price feeds as structured JSON.
 - [SmartData Feed Addresses](https://docs.chain.link/api/feeds/addresses?type=smartdata): Live SmartData addresses.
 - [Rates Feed Addresses](https://docs.chain.link/api/feeds/addresses?type=rates): Live Rates addresses.
 - [Tokenized Equity Feed Addresses](https://docs.chain.link/api/feeds/addresses?type=tokenizedEquity): Live tokenized equity addresses.
@@ -109,26 +113,33 @@ Two access patterns are available for all feed types. Static snapshots are pre-r
 - [Data Streams Overview](https://docs.chain.link/data-streams): Introduction to Chainlink Data Streams.
 - [Getting Started with Data Streams](https://docs.chain.link/data-streams/getting-started): Beginner's guide to Data Streams.
 - [Data Streams Billing](https://docs.chain.link/data-streams/billing): Billing information for Data Streams.
-- [Stream IDs](https://docs.chain.link/data-streams/stream-ids): Understanding Stream IDs in Data Streams.
-- [Stream ID API](https://docs.chain.link/data-streams/stream-id-api): Programmatic access to Data Streams feed IDs across all supported networks.
+- [Supported Networks](https://docs.chain.link/data-streams/supported-networks): Networks supported by Data Streams with verifier proxy addresses.
+- [Market Hours](https://docs.chain.link/data-streams/market-hours): Trading hours for RWA and other time-restricted streams.
+- [Report Schema Overview](https://docs.chain.link/data-streams/reference/report-schema-overview): All stream categories and their report schema versions.
+- [Stream ID API](https://docs.chain.link/data-streams/stream-id-api): Programmatic access to Data Streams feed IDs — full parameter reference, JSON format, schema filtering.
 
 ### Stream ID API — Static Snapshots (pre-rendered at deploy — best for RAG indexing)
+Stream IDs are universal — the same feed ID applies across all supported networks.
 - [Crypto Stream IDs](https://docs.chain.link/data-feeds/feed-addresses/streamsCrypto.txt): Feed IDs for all Chainlink Crypto Data Streams.
-- [RWA Stream IDs](https://docs.chain.link/data-feeds/feed-addresses/streamsRwa.txt): Feed IDs for Real-World Asset streams (equities, forex, datalink).
-- [NAV Stream IDs](https://docs.chain.link/data-feeds/feed-addresses/streamsNav.txt): Feed IDs for SmartData NAV streams.
+- [RWA Stream IDs](https://docs.chain.link/data-feeds/feed-addresses/streamsRwa.txt): Feed IDs for Real-World Asset streams (equities, forex).
+- [SmartData NAV Stream IDs](https://docs.chain.link/data-feeds/feed-addresses/streamsNav.txt): Feed IDs for SmartData NAV streams.
 - [Exchange Rate Stream IDs](https://docs.chain.link/data-feeds/feed-addresses/streamsExRate.txt): Feed IDs for exchange rate streams.
 - [Tokenized Asset Stream IDs](https://docs.chain.link/data-feeds/feed-addresses/streamsBacked.txt): Feed IDs for tokenized asset streams.
 
 ### Stream ID API — Dynamic Endpoints (always live)
-- [Supported Networks & Verifier Proxies](https://docs.chain.link/api/streams/networks): All mainnet networks with verifier proxy addresses.
-- [Supported Networks (incl. testnet)](https://docs.chain.link/api/streams/networks?include=testnet): All networks including testnet.
-- [Crypto Stream IDs](https://docs.chain.link/api/streams/ids?type=crypto): Universal stream IDs for Crypto streams.
-- [RWA Stream IDs](https://docs.chain.link/api/streams/ids?type=rwa): Universal stream IDs for RWA streams (v8 Standard + v11 Advanced).
-- [RWA Standard Stream IDs](https://docs.chain.link/api/streams/ids?type=rwa&schema=v8): RWA v8 Standard streams only.
-- [RWA Advanced Stream IDs](https://docs.chain.link/api/streams/ids?type=rwa&schema=v11): RWA v11 Advanced (extended hours) streams only.
-- [SmartData NAV Stream IDs](https://docs.chain.link/api/streams/ids?type=smartdata): Universal stream IDs for SmartData NAV streams.
-- [Exchange Rate Stream IDs](https://docs.chain.link/api/streams/ids?type=exchangeRate): Universal stream IDs for exchange rate streams.
-- [Tokenized Asset Stream IDs](https://docs.chain.link/api/streams/ids?type=tokenizedAsset): Universal stream IDs for tokenized asset streams.
+Append `&format=json` to any stream ID URL for structured JSON output including feed ID, asset class, schema, and trading hours where applicable. Full parameter reference: https://docs.chain.link/data-streams/stream-id-api
+- [Supported Networks & Verifier Proxies (markdown)](https://docs.chain.link/api/streams/networks): All mainnet networks with verifier proxy addresses.
+- [Supported Networks & Verifier Proxies (JSON)](https://docs.chain.link/api/streams/networks?format=json): Same data as structured JSON.
+- [Supported Networks incl. testnet (JSON)](https://docs.chain.link/api/streams/networks?include=testnet&format=json): All networks including testnet as JSON.
+- [Crypto Stream IDs](https://docs.chain.link/api/streams/ids?type=crypto): Universal stream IDs for Crypto streams (schema v3).
+- [Crypto Stream IDs (JSON)](https://docs.chain.link/api/streams/ids?type=crypto&format=json): Crypto streams as structured JSON.
+- [RWA Stream IDs](https://docs.chain.link/api/streams/ids?type=rwa): RWA streams — v8 Standard and v11 Advanced combined.
+- [RWA Standard Stream IDs (v8)](https://docs.chain.link/api/streams/ids?type=rwa&schema=v8): RWA v8 Standard streams only.
+- [RWA Advanced Stream IDs (v11)](https://docs.chain.link/api/streams/ids?type=rwa&schema=v11): RWA v11 Advanced streams (extended trading hours) only.
+- [RWA Stream IDs (JSON)](https://docs.chain.link/api/streams/ids?type=rwa&format=json): All RWA streams as structured JSON with trading hours per entry.
+- [SmartData NAV Stream IDs](https://docs.chain.link/api/streams/ids?type=smartdata): Universal stream IDs for SmartData NAV streams (schema v9).
+- [Exchange Rate Stream IDs](https://docs.chain.link/api/streams/ids?type=exchangeRate): Universal stream IDs for exchange rate streams (schema v7).
+- [Tokenized Asset Stream IDs](https://docs.chain.link/api/streams/ids?type=tokenizedAsset): Universal stream IDs for tokenized asset streams (schema v10).
 
 ## Chainlink Automation
 - [Automation Overview](https://docs.chain.link/chainlink-automation): Introduction to Chainlink Automation.
