@@ -43,7 +43,7 @@ const NETWORK_ENDPOINTS: Record<string, string> = {
   unichain: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-unichain-1.json",
   xlayer: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-xlayer-1.json",
   ronin: "https://reference-data-directory.vercel.app/feeds-ronin-mainnet.json",
-  tron: "https://docs.chain.link/files/json/feeds-tron-mainnet.json",
+  tron: "https://reference-data-directory.vercel.app/feeds-tron-mainnet.json",
   botanix: "https://reference-data-directory.vercel.app/feeds-bitcoin-mainnet-botanix.json",
   monad: "https://reference-data-directory.vercel.app/feeds-monad-testnet.json",
   polygonkatana: "https://reference-data-directory.vercel.app/feeds-polygon-mainnet-katana.json",
