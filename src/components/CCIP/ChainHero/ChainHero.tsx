@@ -137,7 +137,9 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
             }}
           >
             {network?.name || token?.id}
-            <span className="ccip-chain-hero__token-logo__symbol">{token?.name}</span>
+            <span className="ccip-chain-hero__token-logo__symbol">
+              {token?.id === "USDC" ? "USD Coin" : token?.name}
+            </span>
 
             {chainTooltipConfig && (
               <Tooltip

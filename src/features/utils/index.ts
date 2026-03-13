@@ -565,6 +565,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "EDGE_TESTNET"
     case "edge-mainnet":
       return "EDGE_MAINNET"
+    case "robinhood-testnet":
+      return "ROBINHOOD_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -910,6 +912,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "edge-testnet"
     case "EDGE_MAINNET":
       return "edge-mainnet"
+    case "ROBINHOOD_TESTNET":
+      return "robinhood-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }
