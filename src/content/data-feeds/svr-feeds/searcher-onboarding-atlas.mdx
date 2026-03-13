@@ -1,0 +1,1041 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "SVR Searcher Onboarding: Atlas (Base, Arbitrum, BNB Chain)"
+whatsnext:
+  {
+    "SVR Feeds Overview": "/data-feeds/svr-feeds",
+    "SVR Searcher Onboarding: Ethereum Mainnet": "/data-feeds/svr-feeds/searcher-onboarding-ethereum",
+    "Data Feeds API Reference": "/data-feeds/api-reference",
+  }
+---
+
+import { Aside, CopyText } from "@components"
+import { Tabs } from "@components/Tabs"
+
+export const contracts = {
+  base: {
+    atlas: "0x583dcFef0D240DC80753F0F0B26513feE27D9B77",
+    dappControl: "0xa5E1a36938769cbd5a26f5e19D8FCB379f597c83",
+  },
+  arbitrum: {
+    atlas: "0x8ad1aE9D97C79aA68A0a151E83ff3942f68F86C1",
+    dappControl: "0xe15BBa987C002ecc3586e81244517877D294d291",
+  },
+  bnb: {
+    atlas: "0x21B7d28B882772A1Cfe633Daee6f42ebb95DeC4E",
+    dappControl: "0x7D50b32444609A9B53BcF208c159C8d0d0767835",
+  },
+}
+
+export const baseFeeds = [
+  { asset: "AAVE-USD", type: "Aave-SVR", aggregator: "0x4b6F092e0e13B94fFAF2C59aAbDEb85a5342e9C1" },
+  { asset: "BTC-USD", type: "Aave-SVR", aggregator: "0x137233996b6586a110bb7a753248e26CC0307b1B" },
+  { asset: "BTC-USD", type: "SVR", aggregator: "0xeb3Ad4395924b76eB64b3d6aBabA0B62875b1A1f" },
+  { asset: "ETH-USD", type: "Aave-SVR", aggregator: "0xD772F6D9b7A35cb96fDdFE569964ab1C05017BF9" },
+  { asset: "ETH-USD", type: "SVR", aggregator: "0x83f3425A5b32655DC645f7f4e422DD60E9741794" },
+  { asset: "EURC-USD", type: "Aave-SVR", aggregator: "0x042fc0bA0684eDE99b751b0931B6D1F590758994" },
+  { asset: "EURC-USD", type: "SVR", aggregator: "0xa9c061D7f744796b29025a50Ec7eb55971ca587d" },
+  { asset: "GHO-USD", type: "Aave-SVR", aggregator: "0x68358e8E49138E89af9d3E55Cc66Bc44f6025d0f" },
+  { asset: "USDC-USD", type: "Aave-SVR", aggregator: "0x0fB39aE1d48Faf8CA5ea8DbF7e134e07386A7877" },
+  { asset: "USDC-USD", type: "SVR", aggregator: "0x7F73eB1ae276Ef4d155f9Cf9a81986DB343CF1CA" },
+  { asset: "USDT-USD", type: "Aave-SVR", aggregator: "0xA7f8123688b9d7cf2f91cb926B2a3f44Cc229d0A" },
+  { asset: "USDT-USD", type: "SVR", aggregator: "0xcc7cC8513BD52E443cEA0E63599d47Db56149817" },
+  { asset: "ezETH-ETH Exchange Rate", type: "Aave-SVR", aggregator: "0x9eF2826f41563b1375a3188C33040E697981F7C5" },
+  { asset: "LBTC-BTC Exchange Rate", type: "Aave-SVR", aggregator: "0x8Bd94C7616fa88cc2ab59A66540bcEaf034ef304" },
+  { asset: "rsETH-ETH Exchange Rate", type: "Aave-SVR", aggregator: "0xf1A51Dc55e6707F5aEE7D426110CA50119A5314B" },
+  { asset: "weETH-eETH Exchange Rate", type: "Aave-SVR", aggregator: "0x6D96F90d0Db82903406E97Dda54969EA58a82ec8" },
+  { asset: "wstETH-stETH Exchange Rate", type: "Aave-SVR", aggregator: "0x926E0bbA53F2deEb8a2BD0138fDd3Dc675830399" },
+]
+
+export const arbitrumFeeds = [
+  { asset: "AAVE-USD", type: "Aave-SVR", aggregator: "0xc1720A8240Dbd992d95D6c865A15e490901879B1" },
+  { asset: "ARB-USD", type: "Aave-SVR", aggregator: "0xB72359B2dc04Ff363e094648DF78247c98297c20" },
+  { asset: "ARB-USD", type: "SVR", aggregator: "0x62619470FcBA2Ae5c2dc22c18CF5251C09c1E618" },
+  { asset: "BTC-USD", type: "Aave-SVR", aggregator: "0xE7c522c60bA7f1b5E398D2312593713e2B19aeb0" },
+  { asset: "BTC-USD", type: "SVR", aggregator: "0xA686Fa6122d30EBc51843847fEf4a0ae759fBac1" },
+  { asset: "DAI-USD", type: "Aave-SVR", aggregator: "0xFBe1C9F4297d509b4D0ECcbc098df7Db29DA2918" },
+  { asset: "DAI-USD", type: "SVR", aggregator: "0xa1c0bD64AFFAF53E7674E2A6C5df6b80A4FB80d3" },
+  { asset: "ETH-USD", type: "Aave-SVR", aggregator: "0xa5E1a36938769cbd5a26f5e19D8FCB379f597c83" },
+  { asset: "ETH-USD", type: "SVR", aggregator: "0x0b6eaC11aAD4211AD686d1Ece56C071E306Bd29B" },
+  { asset: "EURC-USD", type: "Aave-SVR", aggregator: "0x333399F03B84678Ec22842Cd467c8Fe089E3Ef27" },
+  { asset: "EURC-USD", type: "SVR", aggregator: "0xa0e9a602B8060E1828Be7eE4626e086bDdbD2F99" },
+  { asset: "FRAX-USD", type: "Aave-SVR", aggregator: "0x674a6D60637891C63116218c38a9a49BE07D21bc" },
+  { asset: "FRAX-USD", type: "SVR", aggregator: "0x7399107Df5344E0b928e75f3ACfa90569eC20848" },
+  { asset: "GHO-USD", type: "Aave-SVR", aggregator: "0x0309C05449070AC1aB244B99955EA5fEdEB79E6A" },
+  { asset: "LINK-USD", type: "Aave-SVR", aggregator: "0x4c76F02E484e8ce9B6C2358CF9624BabC5531E9e" },
+  { asset: "LINK-USD", type: "SVR", aggregator: "0x355E12F02C59B31AfF1ae2775352dC2Ac1f5C829" },
+  { asset: "USDC-USD", type: "Aave-SVR", aggregator: "0x16c0e73906CDa7AC1F137B0F513a00b84c8f7A4E" },
+  { asset: "USDC-USD", type: "SVR", aggregator: "0x01065f4726bBbCE2ef1a4Bebc04Af3209357c71e" },
+  { asset: "USDT-USD", type: "Aave-SVR", aggregator: "0x12b8916e7B6297f31C99e3A8e2BDa661f27c676A" },
+  { asset: "USDT-USD", type: "SVR", aggregator: "0x41F14AfB0eB605097c5950D2458415437A3d2Bcd" },
+]
+
+export const bnbFeeds = [
+  { asset: "AAVE-USD", type: "SVR", aggregator: "0x703741CFe0ff0eAd093B317D79577fD85B259efb" },
+  { asset: "ADA-USD", type: "SVR", aggregator: "0x82836D0B28a8BDa21d3dE13520776918a8055DD9" },
+  { asset: "BCH-USD", type: "SVR", aggregator: "0xcff3236AF9e56e0AD26469911BdAd5DC116dc999" },
+  { asset: "BNB-USD", type: "SVR", aggregator: "0x494aE7aFbE8A4cc90adB6b574e2C63b79a574A42" },
+  { asset: "BNB-USD", type: "Aave-SVR", aggregator: "0xb6D12f1a49a7935A53EE520b3883e28271E95aac" },
+  { asset: "BTC-USD", type: "SVR", aggregator: "0x10cAD61aF7b534F18DB2E39e9b8515a78B116433" },
+  { asset: "BTC-USD", type: "Aave-SVR", aggregator: "0x75366e3D729B2B0c1C313265AA46C29221c3b51B" },
+  { asset: "CAKE-USD", type: "SVR", aggregator: "0x9f62D4C1B9581FAf48a3690f87F558bCBf9b2Aaf" },
+  { asset: "DAI-USD", type: "SVR", aggregator: "0x81534A1964b5aF6198dfFD93aA5cc1c45296E57F" },
+  { asset: "DOGE-USD", type: "SVR", aggregator: "0x2493e08824CEF5a467B927059489f016913e977D" },
+  { asset: "ETH-USD", type: "SVR", aggregator: "0x290a47E6B5e2021f8fD47DA5784F57C144683ff2" },
+  { asset: "ETH-USD", type: "Aave-SVR", aggregator: "0x5C1ca0D1CaF8F663Fa4F89D1C8301B6037831B07" },
+  { asset: "FIL-USD", type: "SVR", aggregator: "0xE44468fff3f870a14E99114E3DE257938C56e088" },
+  { asset: "FUSD-USD", type: "SVR", aggregator: "0xAC91cfb2531002a48cbC5348245A6C7CC9Ce9384" },
+  { asset: "LINK-USD", type: "SVR", aggregator: "0x3333A2df25C26EEa361Dd7FD6Afc43A15D89b595" },
+  { asset: "LTC-USD", type: "SVR", aggregator: "0x5A69d0948b0607401cC821704b7E99916bc9452E" },
+  { asset: "SOL-USD", type: "SVR", aggregator: "0x1df4D7704b1bB87D95eE3Cf6763d1E934b0D8a3C" },
+  { asset: "SUSDE-USDE", type: "SVR", aggregator: "0x9f0CfC9A81B06C1b8Fb3Fc6e2f11f3bAF7DDfC71" },
+  { asset: "TRX-USD", type: "SVR", aggregator: "0x3Cf2fEe3CaA34D4D5C6c0E7c840c77Ba9422bE6c" },
+  { asset: "TUSD-USD", type: "SVR", aggregator: "0x99fdb9088d643509d2D8Dc3BfD5DfC8529a28992" },
+  { asset: "TWT-BNB", type: "SVR", aggregator: "0x653AF94dd711019dED4b3Da3342A23a895eeEAA9" },
+  { asset: "UNI-USD", type: "SVR", aggregator: "0x1B98955233D396D5A347D081a5B79AaE9591a594" },
+  { asset: "USD1-USD", type: "SVR", aggregator: "0xd4C7fd2175953346a249E38535D3565D23826482" },
+  { asset: "USDC-USD", type: "Aave-SVR", aggregator: "0xdc94188A6deb8B9D39e4ACBcED5395D5Ce118502" },
+  { asset: "USDC-USD", type: "SVR", aggregator: "0xe1BFc770C664Db8FAc0c0c4175D20b4F2E2CFc55" },
+  { asset: "USDE-USD", type: "SVR", aggregator: "0x2e37755453BAA5FC1d6B2431A64a6DDd2a3C5454" },
+  { asset: "USDT-USD", type: "SVR", aggregator: "0xAa41Cb7a230BBA5a317F77bA60030960341e186D" },
+  { asset: "USDT-USD", type: "Aave-SVR", aggregator: "0xdaEaB3108483458cd1C441a753009D2f2c020292" },
+  { asset: "WSTETH-STETH", type: "Aave-SVR", aggregator: "0x5b3b1E268c4dAA1819739157e5e0CafA594f99aa" },
+  { asset: "XRP-USD", type: "SVR", aggregator: "0xE39712410F824e7b46d4f2409eaD5246C4294A95" },
+  { asset: "XSOLVBTC-SOLVBTC", type: "SVR", aggregator: "0xDDd5c6C8b9EF8106438Ddd3634D4892d906CF7D2" },
+  { asset: "XVS-USD", type: "SVR", aggregator: "0x182a1DC5Eb5A8bfF82e324eCB69ED1FFbd5a3FF3" },
+]
+
+[Chainlink Smart Value Recapture (SVR)](/data-feeds/svr-feeds) has expanded to Base, Arbitrum, and BNB Chain with a new auction system, **Atlas**. This guide provides existing Chainlink SVR searchers with the technical specifications and integration requirements for participating in all non-ETH mainnet SVR auctions.
+
+<Aside title="Support and Help" type="note">
+  <p>
+    For questions, technical assistance, or onboarding help with using SVR, feel free to reach out in the SVR channel
+    under the Technical section of our [official Discord](http://chain.link/discord), or email us at
+    devrel@smartcontract.com.
+  </p>
+</Aside>
+
+## Core Components
+
+- **SVR Price Feeds**: Modified Chainlink aggregators used for SVR auction transactions.
+- **Atlas**: A set of smart contracts and off-chain auction infrastructure.
+- **Solver Network**: Network of liquidators.
+
+## Terminology
+
+The terms **Searcher** and **Solver** are used interchangeably throughout this guide.
+
+## Operational Recommendations
+
+Recommended native token amounts for bonding:
+
+- **Base and Arbitrum**: 0.1 ETH
+- **BNB Chain**: 1 BNB
+
+## Supported Protocols
+
+- AAVE
+- Compound
+- Venus
+
+## Contract References
+
+The following contracts are deployed at version **v1.6.4**.
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">Base</Fragment>
+  <Fragment slot="tab.2">Arbitrum</Fragment>
+  <Fragment slot="tab.3">BNB Chain</Fragment>
+  <Fragment slot="panel.1">
+    <table>
+      <thead>
+        <tr>
+          <th>Contract</th>
+          <th>Address</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Atlas (v1.6.4)</td>
+          <td>
+            <CopyText text={contracts.base.atlas} code />
+          </td>
+        </tr>
+        <tr>
+          <td>DappControl</td>
+          <td>
+            <CopyText text={contracts.base.dappControl} code />
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </Fragment>
+  <Fragment slot="panel.2">
+    <table>
+      <thead>
+        <tr>
+          <th>Contract</th>
+          <th>Address</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Atlas (v1.6.4)</td>
+          <td>
+            <CopyText text={contracts.arbitrum.atlas} code />
+          </td>
+        </tr>
+        <tr>
+          <td>DappControl</td>
+          <td>
+            <CopyText text={contracts.arbitrum.dappControl} code />
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </Fragment>
+  <Fragment slot="panel.3">
+    <table>
+      <thead>
+        <tr>
+          <th>Contract</th>
+          <th>Address</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Atlas (v1.6.4)</td>
+          <td>
+            <CopyText text={contracts.bnb.atlas} code />
+          </td>
+        </tr>
+        <tr>
+          <td>DappControl</td>
+          <td>
+            <CopyText text={contracts.bnb.dappControl} code />
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </Fragment>
+</Tabs>
+
+## Feed Aggregator Addresses
+
+<Aside type="note">
+  <p>
+    Searchers need to listen to the **Aggregator address** for price reports, not the proxy address. You can find the
+    aggregator address by reading `aggregator` in the proxy contract. For convenience, we've included the aggregator
+    address in the table below. Use **Aave-SVR** type feeds for Aave and **SVR** type feeds for other protocols. For the
+    full list of SVR feeds, see the [SVR Feeds page](/data-feeds/svr-feeds).
+  </p>
+</Aside>
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">Base</Fragment>
+  <Fragment slot="tab.2">Arbitrum</Fragment>
+  <Fragment slot="tab.3">BNB Chain</Fragment>
+  <Fragment slot="panel.1">
+    <table>
+      <thead>
+        <tr>
+          <th>Asset</th>
+          <th>Type</th>
+          <th>Aggregator Address</th>
+        </tr>
+      </thead>
+      <tbody>
+        {baseFeeds.map((feed, i) => (
+          <tr key={i}>
+            <td>
+              <strong>{feed.asset}</strong>
+            </td>
+            <td>{feed.type}</td>
+            <td>
+              <CopyText text={feed.aggregator} code />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </Fragment>
+  <Fragment slot="panel.2">
+    <table>
+      <thead>
+        <tr>
+          <th>Asset</th>
+          <th>Type</th>
+          <th>Aggregator Address</th>
+        </tr>
+      </thead>
+      <tbody>
+        {arbitrumFeeds.map((feed, i) => (
+          <tr key={i}>
+            <td>
+              <strong>{feed.asset}</strong>
+            </td>
+            <td>{feed.type}</td>
+            <td>
+              <CopyText text={feed.aggregator} code />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </Fragment>
+  <Fragment slot="panel.3">
+    <table>
+      <thead>
+        <tr>
+          <th>Asset</th>
+          <th>Type</th>
+          <th>Aggregator Address</th>
+        </tr>
+      </thead>
+      <tbody>
+        {bnbFeeds.map((feed, i) => (
+          <tr key={i}>
+            <td>
+              <strong>{feed.asset}</strong>
+            </td>
+            <td>{feed.type}</td>
+            <td>
+              <CopyText text={feed.aggregator} code />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </Fragment>
+</Tabs>
+
+## Guide
+
+### High-Level
+
+Atlas is conceptually similar to MEV-Share, built to work on any EVM chain without requiring block builders.
+
+Instead of relying on block builders to bundle together the oracle update and the liquidation transaction, the oracle update and the liquidation are both represented as [EIP-712](https://eips.ethereum.org/EIPS/eip-712) messages and are bundled together into a single atomic EVM transaction similar to multi-call or [ERC-4337](https://eips.ethereum.org/EIPS/eip-4337).
+
+<Aside title="Important" type="caution">
+  <ul>
+    <li>
+      The final bundled transaction is **not submitted by the searcher**. It is submitted by the Chainlink oracle
+      network.
+    </li>
+    <li>
+      Searchers must have **bonded native tokens** with the Atlas smart contracts in order to reimburse the Chainlink
+      oracle for the gas costs of both the **searcher operation** and the **oracle update**.
+    </li>
+    <li>
+      Gas prices for these transactions are chosen by the Chainlink oracle. The selected gas price is provided to the
+      searcher at the start of the auction.
+    </li>
+    <li>
+      Searchers must sign for a <code>gasPrice</code> that is **exactly equal** to the gas price specified by the
+      Chainlink oracle.
+    </li>
+    <li>
+      Searchers must not attempt to use a gas limit for their operation that is greater than the allowed{" "}
+      <code>SolverGasLimit</code>. Query this value by calling <code>getSolverGasLimit</code> on the{" "}
+      <code>DappControl</code>
+      contract. Sending <code>SolverOps</code> with a higher gas limit will not work.
+    </li>
+    <li>
+      Since auction and <code>auctionSolution</code> payloads can exceed default read/write buffer sizes in popular
+      WebSocket libraries, explicitly configure read and write buffers to greater than **10 KB**.
+    </li>
+    <li>
+      Solvers should expect that their long-lived connections to the SVR endpoint will be disconnected, and should
+      implement **auto-reconnect** functionality.
+    </li>
+  </ul>
+</Aside>
+
+### Endpoints
+
+| Endpoint           | URL                                           |
+| ------------------ | --------------------------------------------- |
+| Bid endpoint       | `https://svr-bid-endpoint.chain.link/`        |
+| Searcher WebSocket | `wss://svr-bid-endpoint.chain.link/ws/solver` |
+
+### Simulation and Execution
+
+SolverOps that fail simulation will not show up on-chain.
+
+**Example transaction:** [BscScan 0x6194065e](https://bscscan.com/tx/0x6194065e247c98cd5b665582227cf70c00cc7a2016ff1448f1286ad592cf7c05)
+
+### Signing the Payload
+
+The payload that needs to be signed is the Ethereum message ([EIP-191](https://eips.ethereum.org/EIPS/eip-191)) in the following format:
+
+```
+<auctionID>:<userOperationHash>:<solverOperationFrom>
+```
+
+Note the colon (`:`) between each field. Most libraries provide built-in helpers for signing messages:
+
+- **ethers.js**: [Signer.signMessage](https://docs.ethers.org/v5/api/signer/#Signer-signMessage)
+- **geth**: [accounts.go#L184](https://github.com/ethereum/go-ethereum/blob/master/accounts/accounts.go#L184)
+
+**Example signed payload:**
+
+```
+89599d40-decb-4f1c-97bb-c3e101d790af:0x6044c22ab257659b74b1eb4cf2f8f65e0bcc2d9fe832279efb42a6700873fa74:0x5003676390dfe662Af408Eb0bf13e182aDcaCE0a
+```
+
+### WebSocket Subscription
+
+Connect to the searcher WebSocket endpoint and subscribe to user operations:
+
+**Subscription payload:**
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "solver_subscribe",
+  "params": ["userOperations"]
+}
+```
+
+**Example response:**
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": "5ed17bf8-ed27-4625-97ef-447554594a3c"
+}
+```
+
+**Example notification:**
+
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "solver_subscription",
+  "params": {
+    "subscription": "5ed17bf8-ed27-4625-97ef-447554594a3c",
+    "result": {
+      "auction_id": "1bc9a4ce-4fcf-4eb1-8632-959e2273953e",
+      "partial_user_operation": {
+        "chainId": "0x2105",
+        "userOpHash": "0x21d03d618fa4fb9166ae91f199b774b64390b8bf6ecdd2ae4637096e7b60e5e3",
+        "to": "0xb15BdDC2180cF83B3ECb1eDE074a177c9C7Acc5f",
+        "gas": "0x4e20",
+        "maxFeePerGas": "0x4c4b40",
+        "deadline": "0x19d8c75",
+        "dapp": "0x43b4aae0f98fc9ebd86a1e9496cdb9d7208ee55b",
+        "control": "0x43b4aae0f98fc9ebd86a1e9496cdb9d7208ee55b",
+        "value": "0x0",
+        "data": "0x1ad6fbc3",
+        "from": "0xfc8b8974fc3adb8281a6c4c38d7cc895769a8568"
+      }
+    }
+  }
+}
+```
+
+### Submitting a Solution
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "solver_submitSolverOperation",
+  "params": [
+    {
+      "auction_id": "1bc9a4ce-4fcf-4eb1-8632-959e2273953e",
+      "auction_solution": {
+        "from": "0x377136613944bdd5d9f0db22987b7432e76c354f",
+        "to": "0xb15BdDC2180cF83B3ECb1eDE074a177c9C7Acc5f",
+        "value": "0x0",
+        "gas": "0x7a120",
+        "maxFeePerGas": "0xb71b00",
+        "deadline": "0x12aad5bd",
+        "solver": "0x7ff1b456058af5e8f36c4e5c29049f40c0aa945c",
+        "control": "0x43b4aae0f98fc9ebd86a1e9496cdb9d7208ee55b",
+        "userOpHash": "0xbf8c8c00c288558cc0204e8e802a2045655804441c576fec386b888e8619052a",
+        "bidToken": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+        "bidAmount": "0x3b9aca00",
+        "data": "0x1a2b3c4d",
+        "signature": "0x786a3a67058a02307066747ebaf09a5704b6d3fd4f891d9390e437530b68b7f91bcd4c12e09035917ca22b40069663c644b1d9eb74b4808028e086484fb1b27b1c"
+      }
+    }
+  ]
+}
+```
+
+**Example response:**
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": "null"
+}
+```
+
+## Bond Bridged ETH to the Auction Contract
+
+### About Bonding
+
+While Chainlink oracles submit transactions on-chain and advance the associated gas costs, all searchers are required to atomically pay the gas costs of their liquidation and the oracle update within the transaction.
+
+Searchers do not need to explicitly send a payment. Instead, gas costs are automatically deducted from the searcher's bonded balance.
+
+### Gas Repayment Rules
+
+The amount of gas repaid by a searcher depends on the outcome of the searcher operation:
+
+| Outcome                                                          | Gas Charged                                                                                |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Searcher operation executed successfully                         | Gas consumed by both the searcher operation and user operation is charged to the searcher. |
+| Searcher operation executed but failed (searcher responsibility) | Gas consumed by the searcher operation is charged to the searcher.                         |
+| Searcher operation executed but failed (bundler responsibility)  | No gas charge applied to the searcher.                                                     |
+| Searcher operation not executed                                  | No gas charge applied to the searcher.                                                     |
+
+### Bonding and Unbonding Steps
+
+#### 1. Select an Account
+
+The account (EOA) bonding ETH must be the same account that will sign the searcher operations (defined in the `from` field of the operation).
+
+<Aside type="note">
+  <p>
+    A searcher is limited to one auction per block. If a searcher needs to participate in more than one auction in a
+    block, they will need as many accounts (EOA) with bonded ETH as needed.
+  </p>
+</Aside>
+
+#### 2. Deposit and Bond
+
+Call the `depositAndBond` function on the Atlas contract:
+
+```solidity
+interface IAtlas {
+    function depositAndBond(uint256 amountToBond) external payable;
+}
+
+address atlasAddress = address(0x8e098Dfd60aEC9bCf07fd3cA5933e9F22b1b4A0d);
+uint256 amountToBond = 1e18;
+
+IAtlas(atlasAddress).depositAndBond{ value: amountToBond }(amountToBond);
+```
+
+<Aside type="caution">
+  <p>
+    <b>The bonded amount is credited to the function caller.</b> <br /> Ensure you are calling with the proper account.
+  </p>
+</Aside>
+
+#### 3. Unbonding
+
+Searchers can recover their funds in two steps:
+
+    1. Call `unbond` and wait for the unbonding period
+    1. Call `redeem`
+
+```solidity
+interface IAtlas {
+    function unbond(uint256 amount) external;
+    function redeem(uint256 amount) external;
+    function ESCROW_DURATION() external view returns (uint256);
+}
+
+address atlasAddress = address(0x8e098Dfd60aEC9bCf07fd3cA5933e9F22b1b4A0d);
+uint256 amountToUnbond = 1e18;
+
+IAtlas(atlasAddress).unbond(amountToUnbond);
+
+uint256 escrowDuration = IAtlas(atlasAddress).ESCROW_DURATION();
+
+// Must wait `escrowDuration` blocks before calling `redeem`.
+
+IAtlas(atlasAddress).redeem(amountToUnbond);
+```
+
+## How to Deploy a Searcher Contract
+
+Searcher execution logic must be held in a smart contract that will be called by the system during transaction execution. The searcher must pay their bid before the end of their execution.
+
+### 1. Requirements
+
+The searcher's contract **must** define the following callback function:
+
+```solidity
+function atlasSolverCall(
+    address solverOpFrom,
+    address executionEnvironment,
+    address bidToken,
+    uint256 bidAmount,
+    bytes calldata solverOpData,
+    bytes calldata forwardedData
+) external payable
+```
+
+This function is called by Atlas during transaction execution. Parameter breakdown:
+
+| Parameter              | Description                                                                                        |
+| ---------------------- | -------------------------------------------------------------------------------------------------- |
+| `solverOpFrom`         | The `from` field of the searcher/solver operation being executed (for safety checks).              |
+| `executionEnvironment` | A unique contract generated for the user/dAppControl pair. The bid must be paid to this address.   |
+| `bidToken`             | The bid token. `address(0)` refers to ETH.                                                         |
+| `bidAmount`            | The bid amount to be paid to the execution environment.                                            |
+| `solverOpData`         | The data passed by the searcher/solver in the searcher operation's `data` field.                   |
+| `forwardedData`        | The data returned by previous execution steps (pre-ops and user operation) if enabled by the dApp. |
+
+Before the end of `atlasSolverCall` execution, the solver **must**:
+
+- Pay `bidAmount` to the `executionEnvironment` address in `bidToken` currency, or face revert.
+- Pay its gas consumption by calling the Atlas `reconcile` function.
+- Ensure the caller is the Atlas contract.
+
+### 2. Easy Integration
+
+Solvers can inherit their contract from the official `SolverBase` contract. This contract defines the `atlasSolverCall` function, handles safety checks, bid payments, and gas liability payments, so the solver can focus on its custom execution logic only.
+
+<Aside type="note">
+  <p>
+    Atlas must be imported in your project before inheriting from <code>SolverBase</code>. The Atlas source code is
+    available at the <a href="https://github.com/FastLane-Labs/atlas">Atlas GitHub repository</a>.
+  </p>
+</Aside>
+
+Inheriting from `SolverBase`:
+
+```solidity
+pragma solidity ^0.8.22;
+
+import {SolverBase} from "@atlas/solver/SolverBase.sol";
+
+contract DemoSolver is SolverBase {
+    /*
+     * @notice Constructor
+     * @param weth_ The address of the WETH token
+     * @param atlas_ The address of Atlas
+     */
+    constructor(address weth_, address atlas_) SolverBase(weth_, atlas_, msg.sender) {}
+
+    function myMevFunction(address myParam1, uint256 myParam2) external {
+        // Solver MEV logic goes here
+
+        // At the end of execution, profit should be held in this same contract
+        // The `payBids` modifier in `SolverBase` will take care of paying what is owed
+    }
+}
+```
+
+Once deployed, the contract address must be referenced in the searcher operation's `solver` field. The `data` field must be the encoded `myMevFunction` call:
+
+```solidity
+address myParam1 = address(0x01);
+uint256 myParam2 = 999;
+
+bytes calldata solverOperationData = abi.encodeCall(DemoSolver.myMevFunction, (myParam1, myParam2));
+```
+
+## How to Participate in Auctions
+
+After bonding atlETH and deploying their smart contract, solvers are finally able to participate in auctions by communicating with the searcher gateway.
+
+This guide uses Go and the [Atlas Go SDK](https://github.com/FastLane-Labs/atlas-sdk-go).
+
+### 1. Communicate with the Searcher Gateway
+
+Searchers communicate with the system through the Searcher Gateway, which serves as the entry point for reading user operations and submitting solutions.
+
+The gateway exposes a compliant JSON RPC API, so we can use the geth RPC client. It is fully compatible with the Atlas API, so all existing Atlas integrations work seamlessly through the gateway. The following code connects to the searcher gateway and defines an event loop where user operation notifications will be received.
+
+It validates the notification and builds a solver operation by calling the `isOfInterest` and `buildSolution` functions, which are defined in the next sections. It then sends the solution back to the searcher gateway.
+
+```go
+// connect.go
+package searcher_gateway
+
+import (
+	"context"
+	"time"
+
+	"github.com/FastLane-Labs/atlas-sdk-go/types"
+	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/gorilla/websocket"
+)
+
+const (
+	solverNamespace                 = "solver"
+	userOperationsSubscriptionTopic = "userOperations"
+	submitSolverOperationMethod     = "solver_submitSolverOperation"
+	searcherGatewayUrl              = "wss://svr-bid-endpoint.chain.link/ws/solver"
+)
+
+// Notifications are received in this format
+type UserOperationNotification struct {
+	AuctionId            string                         `json:"auction_id"`
+	PartialUserOperation *types.UserOperationPartialRaw `json:"partial_user_operation"`
+}
+
+func runSearcherGateway() {
+	// Set bigger buffer sizes for the websocket connection
+	dialerOption := rpc.WithWebsocketDialer(websocket.Dialer{
+		ReadBufferSize:  1024 * 1024,
+		WriteBufferSize: 1024 * 1024,
+	})
+
+	// Dial the searcher gateway
+	searcherGatewayClient, err := rpc.DialOptions(context.TODO(), searcherGatewayUrl, dialerOption)
+	if err != nil {
+		panic(err)
+	}
+
+	// Create a channel to receive notifications
+	var (
+		uoChan chan *UserOperationNotification
+		sub    *rpc.ClientSubscription
+	)
+
+	// Subscribe/Resubscribe to user operations notifications
+	subscribe := func() {
+		for {
+			uoChan = make(chan *UserOperationNotification, 32)
+
+			sub, err = searcherGatewayClient.Subscribe(context.TODO(), solverNamespace, uoChan, userOperationsSubscriptionTopic)
+			if err != nil {
+				// Failed to subscribe, wait a bit and retry
+				time.Sleep(1 * time.Second)
+				continue
+			}
+
+			break
+		}
+	}
+
+	// Main loop
+	for {
+		select {
+		case <-sub.Err():
+			// If the subscription errors, resubscribe
+			subscribe()
+
+		case n := <-uoChan:
+			// Received a notification, check if it's of interest
+			if !isOfInterest(n) {
+				continue
+			}
+
+			// Build a solution and submit it
+			solution, err := buildSolution(n)
+			if err != nil {
+				panic(err)
+			}
+
+			// No error means the submission was successful
+			err = searcherGatewayClient.CallContext(context.TODO(), nil, submitSolverOperationMethod, solution)
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
+}
+```
+
+### 2. Build Solver Operations
+
+Here is an example on how to construct a solver operation.
+
+```go
+// solution.go
+package searcher_gateway
+
+import (
+	"math/big"
+
+	"github.com/FastLane-Labs/atlas-sdk-go/config"
+	"github.com/FastLane-Labs/atlas-sdk-go/types"
+	"github.com/FastLane-Labs/atlas-sdk-go/utils"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
+)
+
+// Solutions are sent in this format
+type Solution struct {
+	AuctionId       string                    `json:"auction_id"`
+	AuctionSolution *types.SolverOperationRaw `json:"auction_solution"`
+}
+
+func buildSolution(n *UserOperationNotification) (*Solution, error) {
+	// Get the solver private key
+	solverPk, err := crypto.HexToECDSA("0xmySolverPrivateKey")
+	if err != nil {
+		return nil, err
+	}
+
+	var (
+		// This is the address of the solver account
+		// This account must have bonded atlETH on the Atlas contract
+		solverAccount = crypto.PubkeyToAddress(solverPk.PublicKey)
+
+		// This is the address of the solver contract
+		// This contract must have the `atlasSolverCall` defined
+		solverContractAddress = common.HexToAddress("0xmySolverContractAddress")
+
+		// This contains the data to be passed to the `atlasSolverCall`
+		// This should contain the solver execution logic
+		solverData = common.FromHex("0xmySolverData")
+	)
+
+	// Build the solver operation
+	solverOperation := &types.SolverOperation{
+		// The solver account (and signer of this operation)
+		From: solverAccount,
+
+		// The Atlas address, here we're retrieving it from the user operation
+		To: n.PartialUserOperation.To,
+
+		// The gas limit for the solver operation
+		Gas: big.NewInt(500_000),
+
+		// The max fee per gas for the solver operation
+		// It must be equal to or higher than the user operation's max fee per gas
+		// Here we match the user operation's value
+		MaxFeePerGas: new(big.Int).Set(n.PartialUserOperation.MaxFeePerGas.ToInt()),
+
+		// The deadline for the solver operation (block number)
+		// Here we match the user operation's value
+		Deadline: new(big.Int).Set(n.PartialUserOperation.Deadline.ToInt()),
+
+		// The solver contract address
+		Solver: solverContractAddress,
+
+		// The `dAppControl` (module) address
+		// Here we're retrieving it from the user operation
+		Control: n.PartialUserOperation.Control,
+
+		// The user operation hash
+		UserOpHash: n.PartialUserOperation.UserOpHash,
+
+		// The bid token, address(0) usually stands for ETH
+		BidToken: common.Address{},
+
+		// The bid amount
+		BidAmount: big.NewInt(200_000),
+
+		// The data to be passed to the solver contract
+		Data: solverData,
+	}
+
+	// To sign an operation with the SDK, we need to specify the chain ID and the Atlas version
+
+	// Getting the chain ID from the notification
+	chainId := n.PartialUserOperation.ChainId.ToInt().Uint64()
+
+	// Getting the Atlas version from the Atlas address specified in the user operation
+	atlasVersion, err := config.GetVersionFromAtlasAddress(chainId, n.PartialUserOperation.To)
+	if err != nil {
+		return nil, err
+	}
+
+	// Getting the hash of the solver operation (this is the payload that will be signed)
+	hash, err := solverOperation.Hash(chainId, &atlasVersion)
+	if err != nil {
+		return nil, err
+	}
+
+	// Signing the hash with the solver private key
+	signature, err := utils.SignMessage(hash.Bytes(), solverPk)
+	if err != nil {
+		return nil, err
+	}
+
+	// Setting the signature to the solver operation
+	solverOperation.Signature = signature
+
+	// Returning the solution
+	return &Solution{
+		// The auction ID, as communicated in the notification
+		AuctionId: n.AuctionId,
+
+		// The solver operation, serialized
+		AuctionSolution: solverOperation.EncodeToRaw(),
+	}, nil
+}
+```
+
+### 3. Filter User Operations
+
+In the above example, we do not filter user operations. The searcher gateway will broadcast every user operation it gets. It's necessary to discard operations that the solver can't bid on.
+
+```go
+// filter.go
+package searcher_gateway
+
+import (
+	"math/big"
+
+	"github.com/ethereum/go-ethereum/common"
+)
+
+var (
+	// Filtering notifications for this chain ID only
+	chainId = big.NewInt(8453)
+
+	// Filtering notifications for the Chainlink dApp control (module) address only
+	dAppControlAddress = common.HexToAddress("0xe15BBa987C002ecc3586e81244517877D294d291")
+)
+
+// This function returns true if the notification is of interest and false
+// if it should be discarded
+func isOfInterest(n *UserOperationNotification) bool {
+	if n.PartialUserOperation.ChainId.ToInt().Cmp(chainId) != 0 {
+		return false
+	}
+
+	if n.PartialUserOperation.Control != dAppControlAddress {
+		return false
+	}
+
+	return true
+}
+```
+
+### 4. Decode User Operations
+
+When a notification is of interest, and before building a solver operation, decode the received user operation to ensure you are able to bid on it.
+
+To find out what a user operation is intending to do, inspect its `dapp` and `hints` fields:
+
+- **`userOperation.dapp`**: The contract address that the user will call.
+- **`userOperation.hints`**: Three key pieces of information that clarify which feed is being updated and at what price:
+  - `aggregator`: The contract address of the feed.
+  - `medianPrice`: The median reported price, the final updated feed price.
+  - `rawReport`: The full report sent to the aggregator. This is included for visibility, but isn't strictly needed since we already have the `medianPrice`.
+
+#### How to Filter Out Chainlink Partnership / Price Updates
+
+Once you've identified a potential SVR feed update transmission with the `isOfInterest()` method, it's important to know how to extract:
+
+- The **feed address**: This is required to determine which SVR data feed is being updated.
+- The **new price data**: This is essential for determining if profitable liquidation opportunities exist.
+
+The decoding process relies on recognizing that the transaction ultimately calls the `transmitSecondary` function, which updates the price using the report data:
+
+```solidity
+transmitSecondary(
+  bytes32[3] calldata reportContext,
+  bytes calldata report,
+  bytes32[] calldata rs,
+  bytes32[] calldata ss,
+  bytes32 rawVs
+)
+```
+
+The `report` parameter has the following structure:
+
+```solidity
+struct Report {
+  uint32 observationsTimestamp;
+  bytes32 observers;
+  int192[] observations;
+  int192 juelsPerFeeCoin;
+}
+```
+
+The median price, which is used to update the value, could be extracted from the report structure (`rawReport`) by selecting the median observation. If the count is odd, use the central element; if the count is even, take the element at index `length / 2` rather than averaging the two central values.
+
+This isn't necessary because the median price has already been pre-calculated and is available as `medianPrice`. The following code demonstrates how to retrieve the feed address and decode the feed price:
+
+```go
+func GetFeedAddressAndPrice(n *UserOperationNotification) (common.Address, *big.Int, error) {
+	feedAddress := common.HexToAddress(n.PartialUserOperation.Hints["aggregator"].(string))
+
+	decodedPrice, err := hex.DecodeString(strings.TrimPrefix(strings.ToLower(n.PartialUserOperation.Hints["medianPrice"].(string)), "0x"))
+	if err != nil {
+		return common.Address{}, nil, fmt.Errorf("failed to decode medianPrice hint: %w", err)
+	}
+
+	feedPrice := new(big.Int).SetBytes(decodedPrice)
+
+	return feedAddress, feedPrice, nil
+}
+```
+
+## Tracing Solver Operation Results
+
+FastLane provides a query API for solvers to trace what happened to their solver operation. Results are cached for 1 hour. Currently with an auction time of 2s, you should wait ~3 seconds before querying this API for a given SolverOp.
+
+**URL:** `https://solver-query-api-fra.fastlane-labs.xyz/`
+
+**Example request:**
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "sample-id",
+  "method": "solver_getSolverOperationResult",
+  "params": [
+    {
+      "auctionId": "abcd-1234",
+      "userOperationHash": "0x1234...",
+      "solverOperationFrom": "0xabcd...",
+      "signature": "0xabcd..."
+    }
+  ]
+}
+```
+
+**Example response:**
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "sample-id",
+  "result": {
+    "auctionId": "abcd-1234",
+    "solverOperationFrom": "0xabcd...",
+    "result": "included"
+  }
+}
+```
+
+## Common Mistakes
+
+**Not paying the bid to the ExecutionEnvironment contract**
+
+This won't happen if you inherit from `SolverBase`.
+
+**Solver operation arrives too late**
+
+If the solver operation arrives after the auction duration has elapsed, it will not be included. The query API will communicate the error `"solver operation not found"`.
+
+**Not enough bonded atlEth**
+
+Read the [bonding guide](#bond-bridged-eth-to-the-auction-contract) to learn how to bond atlETH. This error will be communicated in the query API response.
+
+**Solver operation signer is different from the owner of the Solver Contract**
+
+[`SolverBase`](https://github.com/FastLane-Labs/atlas/blob/main/src/contracts/solver/SolverBase.sol) has an owner, and the solver operation will revert if the signer differs from the owner. The query API will communicate error `SolverOpReverted`.
+
+**Incorrect solver signature**
+
+The solver signature is an [EIP-712](https://eips.ethereum.org/EIPS/eip-712) signature. The following domain should be used:
+
+```javascript
+{
+    name: "AtlasVerification",
+    version: "<version>", // Version of the Atlas Verification contract
+    chainId: 1, // chain id
+    verifyingContract: "<atlas_verification_address>", // Atlas Verification contract address
+}
+```
+
+An incorrect signature will be communicated by the query API.
+
+**Incorrect Bid Token**
+
+The bid token is described in the dapp control contract (`userOperation.control`). If set to `address(0)`, the bid token is the chain's native token. Paying with the wrong token will result in a `SolverOpReverted` error.
+
+**A reverting solver operation**
+
+If the solver operation reverts for any reason, the query API will communicate error `SolverOpReverted`.
