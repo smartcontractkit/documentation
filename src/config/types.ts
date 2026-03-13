@@ -84,6 +84,7 @@ export type SupportedTechnology =
   | "DOGE_OS"
   | "ADI_NETWORK"
   | "EDGE"
+  | "ROBINHOOD_CHAIN"
 
 export type ChainType = "evm" | "solana" | "aptos" | "sui" | "canton" | "ton" | "tron" | "stellar" | "starknet"
 
@@ -265,6 +266,7 @@ export type SupportedChain =
   | "ADI_NETWORK_MAINNET"
   | "EDGE_MAINNET"
   | "EDGE_TESTNET"
+  | "ROBINHOOD_CHAIN_TESTNET"
 
 export type ExplorerInfo = {
   baseUrl: string
