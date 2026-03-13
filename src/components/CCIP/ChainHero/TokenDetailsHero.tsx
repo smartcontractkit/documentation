@@ -25,8 +25,6 @@ interface TokenDetailsHeroProps {
 }
 
 function TokenDetailsHero({ network, token }: TokenDetailsHeroProps) {
-  const displayName = token.id === "USDC" ? "USD Coin" : token.name
-
   return (
     <section className="ccip-chain-hero">
       <div className="ccip-chain-hero__content">
@@ -44,7 +42,7 @@ function TokenDetailsHero({ network, token }: TokenDetailsHeroProps) {
           </div>
 
           <h1>
-            {token.id} <span className="ccip-chain-hero__token-logo__symbol">{displayName}</span>
+            {token.id} <span className="ccip-chain-hero__token-logo__symbol">{token.name}</span>
           </h1>
         </div>
 
