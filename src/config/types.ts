@@ -266,7 +266,7 @@ export type SupportedChain =
   | "ADI_NETWORK_MAINNET"
   | "EDGE_MAINNET"
   | "EDGE_TESTNET"
-  | "ROBINHOOD_CHAIN_TESTNET"
+  | "ROBINHOOD_TESTNET"
 
 export type ExplorerInfo = {
   baseUrl: string

@@ -180,7 +180,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   ADI_NETWORK_MAINNET: () => new JsonRpcProvider("https://rpc.adifoundation.ai"),
   EDGE_TESTNET: () => new JsonRpcProvider("https://edge-testnet.g.alchemy.com/public"),
   EDGE_MAINNET: () => new JsonRpcProvider("https://edge-mainnet.g.alchemy.com/public"),
-  ROBINHOOD_CHAIN_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.chain.robinhood.com"),
+  ROBINHOOD_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.chain.robinhood.com"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {
