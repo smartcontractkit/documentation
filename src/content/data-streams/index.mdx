@@ -106,8 +106,32 @@ Access data directly through REST APIs or WebSocket connections using our SDKs:
 
 1. Implement Verification: Add [onchain verification](/data-streams/reference/data-streams-api/onchain-verification) to ensure data authenticity in your smart contracts.
 
-### Streams Trade: An alternative implementation
+## Alternative implementations
+
+### Streams Trade
 
 For applications that require automated data retrieval and execution, Streams Trade combines Chainlink Data Streams with [Chainlink Automation](/chainlink-automation) to deliver automated trade execution with frontrunning mitigation. This approach suits dApps that require automated, trust-minimized trade execution and high-frequency market data.
 
 [Learn more about Streams Trade](/data-streams/streams-trade).
+
+### Push Engine
+
+<Aside type="caution" title="Disclaimer">
+  This reference implementation is provided to help you understand how to interact with Chainlink's systems and services
+  so that you can integrate them into your own. This reference implementation is provided on an “AS IS” and “AS
+  AVAILABLE” basis without any representations, warranties, covenants, or conditions of any kind. Use at your own risk.
+  Users remain fully responsible for reviewing, auditing, and deploying any code or contracts. Do not use the code in
+  this reference implementation in a production environment without completing your own audits and application of best
+  practices. Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for
+  unintended outputs that are generated due to errors in code. Please review the Chainlink Terms of Service which
+  provides important information and disclosures. By using this reference implementation, you expressly acknowledge and
+  agree to accept these terms.
+</Aside>
+
+While Data Streams provides low-latency data offchain, bringing verified reports onchain requires developers to build and maintain a custom service to monitor the feed and push updates.
+
+[Push Engine](https://github.com/hackbg/push-engine), a reference implementation made available for third-party integrators, provides a foundational framework for the DevOps teams and Infrastructure Managers tasked with building these systems. Push Engine is a configurable service that handles the core logic of monitoring off-chain Data Streams and pushing values to your smart contracts based on predefined conditions, such as time intervals or price deviations. It also includes a web interface to manage your feeds and monitor their status.
+
+Based on predefined conditions like time intervals or price deviations, Push Engine bundles and sends a report for onchain verification and consumption. This approach suits dApps that need fresh data pushed onchain based on custom logic, without the overhead of building and maintaining the necessary infrastructure.
+
+[See our quickstart guide for Push Engine](/quickstarts/push-engine).
