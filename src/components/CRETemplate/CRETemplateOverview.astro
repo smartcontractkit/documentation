@@ -28,15 +28,27 @@ const { frontmatter } = Astro.props
     <p class="description">{frontmatter.description}</p>
 
     {
-      frontmatter.cliTemplateId ? (
+      frontmatter.cliTemplateIds?.length ? (
         <div class="get-template">
           <span class="get-template-label">Get the template</span>
           <div class="template-actions">
+            {frontmatter.cliTemplateIds.length > 1 && (
+              <div class="lang-toggle">
+                {frontmatter.cliTemplateIds.map((entry, i) => (
+                  <button class={`lang-toggle-pill ${i === 0 ? "active" : ""}`} data-cli-id={entry.id}>
+                    {entry.label.replace("TypeScript", "TS")}
+                  </button>
+                ))}
+              </div>
+            )}
             <div class="command-box">
-              <code style="color: #fff !important;">cre init --template={frontmatter.cliTemplateId}</code>
+              <code id="cli-command" style="color: #fff !important;">
+                cre init --template={frontmatter.cliTemplateIds[0].id}
+              </code>
               <button
                 class="copy-btn"
-                data-command={`cre init --template=${frontmatter.cliTemplateId}`}
+                id="cli-copy-btn"
+                data-command={`cre init --template=${frontmatter.cliTemplateIds[0].id}`}
                 title="Copy command"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -69,6 +81,24 @@ const { frontmatter } = Astro.props
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
+    const cliCommand = document.getElementById("cli-command")
+    const cliCopyBtn = document.getElementById("cli-copy-btn") as HTMLButtonElement | null
+    const togglePills = document.querySelectorAll<HTMLButtonElement>(".lang-toggle-pill")
+
+    togglePills.forEach((pill) => {
+      pill.addEventListener("click", () => {
+        const id = pill.dataset.cliId
+        if (!id || !cliCommand || !cliCopyBtn) return
+
+        togglePills.forEach((p) => p.classList.remove("active"))
+        pill.classList.add("active")
+
+        const command = `cre init --template=${id}`
+        cliCommand.textContent = command
+        cliCopyBtn.dataset.command = command
+      })
+    })
+
     const copyBtns = document.querySelectorAll<HTMLButtonElement>(".copy-btn")
     copyBtns.forEach((btn) => {
       btn.addEventListener("click", async () => {
@@ -142,9 +172,42 @@ const { frontmatter } = Astro.props
     color: #5a6175;
   }
 
+  .lang-toggle {
+    display: inline-flex;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    flex-shrink: 0;
+  }
+
+  .lang-toggle-pill {
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    background: #f5f7fa;
+    color: #5a6175;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .lang-toggle-pill:not(:last-child) {
+    border-right: 1px solid #d1d5db;
+  }
+
+  .lang-toggle-pill:hover {
+    background: #e8eaed;
+  }
+
+  .lang-toggle-pill.active {
+    background: #1e293b;
+    color: white;
+  }
+
   .template-actions {
     display: flex;
-    flex-wrap: wrap;
     align-items: stretch;
     gap: var(--space-3x);
   }
@@ -153,10 +216,11 @@ const { frontmatter } = Astro.props
     display: inline-flex;
     align-items: center;
     gap: var(--space-3x);
-    padding: 0 18px;
+    padding: 12px 18px;
     background: #1e293b;
     border-radius: 6px;
     font-family: var(--font-mono, monospace);
+    white-space: nowrap;
   }
 
   .command-box code,
@@ -213,10 +277,7 @@ const { frontmatter } = Astro.props
     text-decoration: none;
     transition: all 0.2s ease;
     white-space: nowrap;
-  }
-
-  .github-buttons .github-btn {
-    padding: 12px 28px;
+    flex-shrink: 0;
   }
 
   .github-btn:hover {
