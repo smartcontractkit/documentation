@@ -9,7 +9,6 @@ import { MarkdownPreviewModal } from "./MarkdownPreviewModal.js"
 import type { CopyPageLinkProps, CopyAction } from "./types.js"
 import styles from "./CopyPageLink.module.css"
 import { AiBadge } from "../../AiBadge/AiBadge.js"
-
 export function CopyPageLink({ className }: CopyPageLinkProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -170,7 +169,7 @@ Please ask me to paste it now. After I paste, please:
     <>
       <div className={`${styles.container} ${className || ""}`}>
         <label className={styles.label} htmlFor="copy-page-trigger">
-          Copy Page
+          Use with LLMs <AiBadge />
         </label>
         <button
           id="copy-page-trigger"
@@ -200,7 +199,6 @@ Please ask me to paste it now. After I paste, please:
             />
           </svg>
           <span className={styles.triggerText}>{copiedAction === "copy" ? "Copied!" : "Copy page"}</span>
-          {!copiedAction && <AiBadge />}
           <svg className={styles.arrow} width="12" height="12" viewBox="0 0 12 12" fill="none">
             <path
               d="M2.5 4.5L6 8L9.5 4.5"
