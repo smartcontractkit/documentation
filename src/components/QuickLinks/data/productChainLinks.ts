@@ -106,6 +106,8 @@ export const productChainLinks: ProductChainLinks = {
       arc: "/ccip/directory/testnet/chain/arc-testnet",
       dogeos: "/ccip/directory/testnet/chain/dogeos-testnet-chikyu",
       "adi-network": "/ccip/directory/testnet/chain/adi-testnet",
+      edge: "/ccip/directory/mainnet/chain/edge-mainnet",
+      robinhood: "/ccip/directory/testnet/chain/robinhood-testnet",
     },
   },
   CRE: {
@@ -334,6 +336,7 @@ export const productChainLinks: ProductChainLinks = {
     polygon: "/resources/link-token-contracts#polygon",
     polygonkatana: "/resources/link-token-contracts#polygon-katana",
     polygonzkevm: "/resources/link-token-contracts#polygon-zkevm",
+    robinhood: "/resources/link-token-contracts#robinhood-chain",
     ronin: "/resources/link-token-contracts#ronin",
     rootstock: "/resources/link-token-contracts#rootstock",
     scroll: "/resources/link-token-contracts#scroll",
@@ -454,4 +457,5 @@ export const chainNames: Record<string, string> = {
   arc: "Arc Network",
   dogeos: "DogeOS",
   edge: "Edge",
+  robinhood: "Robinhood Chain",
 }

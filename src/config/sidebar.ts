@@ -637,7 +637,20 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "data-feeds/smartdata",
               children: [{ title: "Multiple-Variable Response (MVR) Feeds", url: "data-feeds/mvr-feeds" }],
             },
-            { title: "Smart Value Recapture (SVR) Feeds", url: "data-feeds/svr-feeds" },
+            {
+              title: "Smart Value Recapture (SVR) Feeds",
+              url: "data-feeds/svr-feeds",
+              children: [
+                {
+                  title: "Searcher Onboarding: Ethereum Mainnet",
+                  url: "data-feeds/svr-feeds/searcher-onboarding-ethereum",
+                },
+                {
+                  title: "Searcher Onboarding: Atlas (Base, Arbitrum, BNB Chain)",
+                  url: "data-feeds/svr-feeds/searcher-onboarding-atlas",
+                },
+              ],
+            },
             { title: "Rate and Volatility Feeds", url: "data-feeds/rates-feeds" },
             { title: "L2 Sequencer Uptime Feeds", url: "data-feeds/l2-sequencer-feeds" },
           ],
