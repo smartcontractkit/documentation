@@ -102,6 +102,7 @@ const creTemplatesFrontmatter = z
     ), // Links to GitHub folders for each language variant
     image: z.string(),
     featured: z.boolean().optional(), // Whether this template is featured on the hub page
+    cliTemplateId: z.string().optional(), // CLI ID for `cre init --template=<id>` — if set, the command box is shown
     datePublished: z.string().optional(), // ISO date string
     lastModified: z.string().optional(), // ISO date string
   })
