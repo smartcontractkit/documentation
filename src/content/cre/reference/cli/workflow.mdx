@@ -5,12 +5,53 @@ title: "Workflow Commands"
 metadata:
   description: "Manage workflows with CLI: complete command reference for simulating, deploying, activating, pausing, and deleting workflows."
   datePublished: "2025-11-04"
-  lastModified: "2026-02-26"
+  lastModified: "2026-03-17"
 ---
 
 import { Aside } from "@components"
 
 The `cre workflow` commands manage workflows throughout their entire lifecycle, from local testing to deployment and ongoing management.
+
+## `cre workflow build`
+
+Compiles a workflow to a raw WASM binary and writes it to a file. Unlike `cre workflow deploy`, this command only compiles — it does not upload artifacts or register the workflow onchain. Use this command to produce and inspect a build artifact independently, for example in a CI/CD pipeline where you want to build once and promote the same binary across environments.
+
+**Usage:**
+
+```bash
+cre workflow build <workflow-folder-path> [flags]
+```
+
+**Arguments:**
+
+- `<workflow-folder-path>` — (Required) Path to the workflow folder (e.g., `./my-workflow`)
+
+**Flags:**
+
+| <div style={{ width: "150px" }}>Flag</div> | Description                                                                              |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| `-o, --output`                             | Output file path for the compiled WASM binary (default: `<workflow-folder>/binary.wasm`) |
+
+**Example:**
+
+```bash
+cre workflow build ./my-workflow
+```
+
+**Example output:**
+
+```
+Compiling workflow...
+✓ Workflow compiled successfully
+  Binary hash: 0x3a7f...c21b
+✓ Build output written to ./my-workflow/binary.wasm
+```
+
+The binary hash printed here matches the hash shown during `cre workflow deploy`. You can also compute it explicitly with [`cre workflow hash`](#cre-workflow-hash).
+
+For CI/CD usage, see [Deploying Workflows](/cre/guides/operations/deploying-workflows#cicd-pipeline-integration).
+
+---
 
 ## `cre workflow simulate`
 
@@ -108,11 +149,14 @@ cre workflow deploy <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| <div style={{ width: "150px" }}>Flag</div> | Description                                                                                    |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------------- |
-| `-o, --output`                             | Output file for the compiled WASM binary encoded in base64 (default: `"./binary.wasm.br.b64"`) |
-| `--unsigned`                               | Return the raw transaction instead of sending it to the network                                |
-| `--yes`                                    | Skip the confirmation prompt and proceed with the operation                                    |
+| <div style={{ width: "150px" }}>Flag</div> | Description                                                                                                                   |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `-o, --output`                             | Output file for the compiled WASM binary encoded in base64 (default: `"./binary.wasm.br.b64"`)                                |
+| `--wasm`                                   | Path to a pre-built WASM binary (skips compilation). Use with [`cre workflow build`](#cre-workflow-build) for CI/CD pipelines |
+| `--config`                                 | Override the config file path from `workflow.yaml`                                                                            |
+| `--no-config`                              | Deploy without a config file                                                                                                  |
+| `--unsigned`                               | Return the raw transaction instead of sending it to the network                                                               |
+| `--yes`                                    | Skip the confirmation prompt and proceed with the operation                                                                   |
 
 **Examples:**
 
@@ -126,6 +170,16 @@ cre workflow deploy <workflow-name-or-path> [flags]
 
   ```bash
   cre workflow deploy my-workflow --output ./dist/workflow.wasm.br.b64
+  ```
+
+- Deploy using a pre-built binary (skips compilation)
+
+  ```bash
+  # Build once
+  cre workflow build ./my-workflow
+
+  # Deploy with the pre-built binary
+  cre workflow deploy ./my-workflow --wasm ./my-workflow/binary.wasm --target production-settings
   ```
 
 For more details, see [Deploying Workflows](/cre/guides/operations/deploying-workflows).
@@ -287,12 +341,80 @@ For a full guide including Makefile examples and customization, see [Custom WASM
 
 ---
 
+## `cre workflow hash`
+
+Computes and displays content hashes for a workflow without deploying it. Reports the binary hash, config hash, and the workflow hash — the same value used as the onchain workflow ID. This is useful for verifying what will be deployed before submitting a transaction, or for confirming that a build artifact is identical to a previously deployed version.
+
+Hashes are also displayed automatically during `cre workflow build` and `cre workflow deploy`.
+
+**Usage:**
+
+```bash
+cre workflow hash <workflow-folder-path> [flags]
+```
+
+**Arguments:**
+
+- `<workflow-folder-path>` — (Required) Path to the workflow folder (e.g., `./my-workflow`)
+
+**Flags:**
+
+| <div style={{ width: "180px" }}>Flag</div> | Description                                                                                                                                                          |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--public_key`                             | Owner address to use when computing the workflow hash. Required when `CRE_ETH_PRIVATE_KEY` is not set and no `workflow-owner-address` is configured in your settings |
+| `--wasm`                                   | Path or URL to a pre-built WASM binary (skips compilation)                                                                                                           |
+| `--config`                                 | Override the config file path from `workflow.yaml`                                                                                                                   |
+| `--no-config`                              | Compute hash without a config file                                                                                                                                   |
+
+{/* prettier-ignore */}
+<Aside type="note" title="Owner address required">
+  This command needs your owner address to compute the workflow hash, since the hash incorporates the owner. It derives this from `CRE_ETH_PRIVATE_KEY` by default. If you don't want to provide a private key, pass your address directly with `--public_key`.
+</Aside>
+
+**Examples:**
+
+- Compute hashes using settings from `workflow.yaml`
+
+  ```bash
+  cre workflow hash my-workflow --target staging-settings
+  ```
+
+- Compute hashes without providing a private key
+
+  ```bash
+  cre workflow hash my-workflow --public_key 0xYourOwnerAddress --target staging-settings
+  ```
+
+- Compute hashes for a pre-built binary without recompiling
+
+  ```bash
+  cre workflow hash my-workflow --wasm ./my-workflow/binary.wasm --target staging-settings
+  ```
+
+**Example output:**
+
+```
+✓ Workflow compiled
+  Binary hash:   0dcbb19de3c22edfe61605a970eb6d42199df91ac3e992cd3f2e33cb13efbb4c
+  Config hash:   3bdaebcc2f639d77cb248242c1d01c8651f540cdbf423d26fe3128516fd225b6
+  Workflow hash: 004fff5bb1ae05cc16e453f8ad564f5e8b0eae1945ec22f3d0adfc0339954d56
+```
+
+{/* prettier-ignore */}
+<Aside type="note" title="Workflow hash = Workflow ID">
+  The **workflow hash** is the same value that appears as the **Workflow ID** onchain. If your consumer contracts validate the workflow ID, use `cre workflow hash` to check the expected ID before and after updates. See [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows) for details.
+</Aside>
+
+---
+
 ## Workflow lifecycle
 
 The typical workflow lifecycle uses these commands in sequence:
 
 1. **Develop locally** — Write and iterate on your workflow code
 1. **`cre workflow simulate`** — Test your workflow in a local simulation environment
+1. **`cre workflow build`** — (Optional) Compile to WASM independently; useful in CI/CD pipelines
+1. **`cre workflow hash`** — (Optional) Inspect content hashes before deploying
 1. **`cre workflow deploy`** — Deploy your workflow to the registry
 1. **`cre workflow pause`** / **`cre workflow activate`** — Control workflow execution as needed
 1. **`cre workflow deploy`** (again) — Deploy updates (replaces the existing workflow)
@@ -300,7 +422,7 @@ The typical workflow lifecycle uses these commands in sequence:
 
 ## Learn more
 
-- [Deploying Workflows](/cre/guides/operations/deploying-workflows) — Detailed deployment guide
+- [Deploying Workflows](/cre/guides/operations/deploying-workflows) — Detailed deployment guide, including CI/CD pipeline integration
 - [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows) — Managing workflow state
 - [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows) — Version management
 - [Deleting Workflows](/cre/guides/operations/deleting-workflows) — Cleanup and removal
