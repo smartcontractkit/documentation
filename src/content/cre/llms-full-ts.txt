@@ -442,9 +442,73 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-03-05
+Last Updated: 2026-03-17
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.5.0 - March 17, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.5.0" target="_blank">CRE CLI version 1.5.0</a> is now available.**
+
+- **New Mainnets**: Added Celo, Gnosis Chain, Ink, Linea, Mantle, MegaETH, Plasma, Scroll, and Sonic mainnet support for simulation and production deployment.
+- **New Testnets**: Added Cronos, Mantle Sepolia, MegaETH Testnet 2, Scroll Sepolia, Sonic Testnet, TAC Testnet, and Unichain Sepolia testnet support.
+- **`cre hash` command**: New command to display content hashes for workflow artifacts. Hashes are also displayed automatically during `cre workflow build` and `cre workflow deploy`.
+- **Environment variable resolution in RPC URLs**: Use `${VAR}` syntax in your `project.yaml` RPC URLs to inject values from environment variables.
+- **JSON ABI support in `cre generate-bindings`**: The `cre generate-bindings evm` command now accepts raw JSON ABI files in addition to compiled Hardhat and Foundry artifacts.
+- **`.env` support across all commands**: The `.env` file is now respected across all CRE commands, with `.env` values taking precedence over other settings.
+- **Bug Fix**: Fixed an issue where `cre workflow build` could fail in configurations where `cre workflow simulate` succeeded.
+
+**Required versions for new networks:**
+
+- All new mainnets and testnets: CLI v1.5.0+, Go SDK v1.6.0+, TS SDK v1.3.0+
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.4.0...v1.5.0)
+
+## Go SDK v1.6.0 - March 16, 2026
+
+**Go SDK version 1.6.0** updates EVM capabilities to support the new networks added in CLI v1.5.0.
+
+- **New Networks**: Updated EVM client capabilities to support Celo, Gnosis Chain, Ink, Linea, Mantle, MegaETH, Plasma, Scroll, Sonic, and their associated testnets
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.5.0...v1.6.0)
+
+## TS SDK v1.3.0 - March 16, 2026
+
+**TypeScript SDK version 1.3.0** updates EVM capabilities to support the new networks added in CLI v1.5.0.
+
+- **New Networks**: Updated EVM client capabilities to support new networks added in CLI v1.5.0
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.2.0...v1.3.0)
+
+## CLI v1.4.0 - March 12, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.4.0" target="_blank">CRE CLI version 1.4.0</a> is now available.**
+
+- **CI/CD pipeline support**: `cre workflow build`, `cre workflow upload`, and `cre workflow deploy` can now be run as independent steps for better integration with CI/CD pipelines.
+- **MultiHeaders support**: The HTTP capability now supports sending multiple headers per request.
+
+This release also includes various internal improvements and security fixes.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.3.0...v1.4.0)
+
+## TS SDK v1.2.0 - March 12, 2026
+
+**TypeScript SDK version 1.2.0** includes improvements to the EVM client and developer experience.
+
+- **`logTriggerConfig` helper**: New helper for configuring EVM log triggers in your workflow
+- **Improved error messages**: Added field-level context to `encodeCallMsg` errors for easier debugging
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.1.0...v1.2.0)
 
 ## CLI v1.3.0 - March 5, 2026
 
@@ -10699,11 +10763,20 @@ These `MockKeystoneForwarder` addresses are used when running `cre workflow simu
 | <a href="https://snowscan.xyz/address/0xdc21e279934ff6721cadfdd112dafb3261f09a2c" target="_blank" rel="noopener noreferrer">Avalanche</a>               | avalanche-mainnet             | 0xdc21e279934ff6721cadfdd112dafb3261f09a2c |
 | <a href="https://basescan.org/address/0x5e342a8438b4f5d39e72875fcee6f76b39cce548" target="_blank" rel="noopener noreferrer">Base</a>                    | ethereum-mainnet-base-1       | 0x5e342a8438b4f5d39e72875fcee6f76b39cce548 |
 | <a href="https://bscscan.com/address/0x6f3239bbb26e98961e1115aba83f8a282e5508c8" target="_blank" rel="noopener noreferrer">BNB Smart Chain</a>          | binance_smart_chain-mainnet | 0x6f3239bbb26e98961e1115aba83f8a282e5508c8 |
+| <a href="https://explorer.celo.org/mainnet/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Celo</a>       | celo-mainnet                  | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | <a href="https://etherscan.io/address/0xa3d1ad4ac559a6575a114998affb2fb2ec97a7d9" target="_blank" rel="noopener noreferrer">Ethereum Mainnet</a>        | ethereum-mainnet              | 0xa3d1ad4ac559a6575a114998affb2fb2ec97a7d9 |
+| <a href="https://gnosisscan.io/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Gnosis Chain</a>           | gnosis-chain-mainnet          | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://explorer.inkonchain.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Ink</a>          | ethereum-mainnet-ink-1        | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | <a href="https://explorer.jovay.io/address/0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4" target="_blank" rel="noopener noreferrer">Jovay Mainnet</a>      | jovay-mainnet                 | 0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4 |
+| <a href="https://lineascan.build/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Linea</a>                | ethereum-mainnet-linea-1      | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://mantlescan.xyz/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Mantle</a>                | ethereum-mainnet-mantle-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://megaeth.blockscout.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">MegaETH</a>       | megaeth-mainnet               | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | <a href="https://optimistic.etherscan.io/address/0x9119a1501550ed94a3f2794038ed9258337afa18" target="_blank" rel="noopener noreferrer">OP Mainnet</a>   | ethereum-mainnet-optimism-1   | 0x9119a1501550ed94a3f2794038ed9258337afa18 |
 | <a href="https://pharos.socialscan.io/address/0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4" target="_blank" rel="noopener noreferrer">Pharos Mainnet</a>  | pharos-mainnet                | 0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4 |
+| <a href="https://plasmascan.to/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Plasma</a>                 | plasma-mainnet                | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | <a href="https://polygonscan.com/address/0xf458d621885e29a5003ea9bbba5280d54e19b1ce" target="_blank" rel="noopener noreferrer">Polygon</a>              | polygon-mainnet               | 0xf458d621885e29a5003ea9bbba5280d54e19b1ce |
+| <a href="https://scrollscan.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Scroll</a>                | ethereum-mainnet-scroll-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://sonicscan.org/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Sonic</a>                  | sonic-mainnet                 | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | <a href="https://worldscan.org/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">World Chain</a>            | ethereum-mainnet-worldchain-1 | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | <a href="https://www.oklink.com/xlayer/address/0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4" target="_blank" rel="noopener noreferrer">XLayer Mainnet</a> | ethereum-mainnet-xlayer-1     | 0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4 |
 | <a href="https://explorer.zksync.io/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">ZKSync Era</a>        | ethereum-mainnet-zksync-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
@@ -10718,15 +10791,22 @@ These `MockKeystoneForwarder` addresses are used when running `cre workflow simu
 | <a href="https://testnet.snowscan.xyz/address/0x2e7371a5d032489e4f60216d8d898a4c10805963" target="_blank" rel="noopener noreferrer">Avalanche Fuji</a>             | avalanche-testnet-fuji                | 0x2e7371a5d032489e4f60216d8d898a4c10805963 |
 | <a href="https://sepolia.basescan.org/address/0x82300bd7c3958625581cc2f77bc6464dcecdf3e5" target="_blank" rel="noopener noreferrer">Base Sepolia</a>               | ethereum-testnet-sepolia-base-1       | 0x82300bd7c3958625581cc2f77bc6464dcecdf3e5 |
 | <a href="https://testnet.bscscan.com/address/0xa238e42cb8782808dbb2f37e19859244ec4779b0" target="_blank" rel="noopener noreferrer">BSC Testnet</a>                 | binance_smart_chain-testnet         | 0xa238e42cb8782808dbb2f37e19859244ec4779b0 |
+| <a href="https://explorer.cronos.org/testnet/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Cronos Testnet</a>      | cronos-testnet                        | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | <a href="https://sepolia.etherscan.io/address/0x15fC6ae953E024d975e77382eEeC56A9101f9F88" target="_blank" rel="noopener noreferrer">Ethereum Sepolia</a>           | ethereum-testnet-sepolia              | 0x15fC6ae953E024d975e77382eEeC56A9101f9F88 |
 | <a href="https://testnet.purrsec.com/address/0xB27fA1c28288c50542527F64BCda22C9FbAc24CB" target="_blank" rel="noopener noreferrer">Hyperliquid Testnet</a>         | hyperliquid-testnet                   | 0xB27fA1c28288c50542527F64BCda22C9FbAc24CB |
 | <a href="https://explorer-sepolia.inkonchain.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Ink Sepolia</a>     | ink-testnet-sepolia                   | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | <a href="https://sepolia-explorer.jovay.io/l2/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Jovay Testnet</a>      | jovay-testnet                         | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | <a href="https://sepolia.lineascan.build/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Linea Sepolia</a>           | ethereum-testnet-sepolia-linea-1      | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://sepolia.mantlescan.xyz/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Mantle Sepolia</a>           | ethereum-testnet-sepolia-mantle-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://megaexplorer.xyz/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">MegaETH Testnet 2</a>              | megaeth-testnet-2                     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | <a href="https://sepolia-optimism.etherscan.io/address/0xa2888380dff3704a8ab6d1cd1a8f69c15fea5ee3" target="_blank" rel="noopener noreferrer">OP Sepolia</a>        | ethereum-testnet-sepolia-optimism-1   | 0xa2888380dff3704a8ab6d1cd1a8f69c15fea5ee3 |
 | <a href="https://atlantic.pharosscan.xyz/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Pharos Atlantic Testnet</a> | pharos-atlantic-testnet               | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | <a href="https://testnet.plasmascan.to/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Plasma Testnet</a>            | plasma-testnet                        | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | <a href="https://amoy.polygonscan.com/address/0x3675a5eb2286a3f87e8278fc66edf458a2e3bb74" target="_blank" rel="noopener noreferrer">Polygon Amoy</a>               | polygon-testnet-amoy                  | 0x3675a5eb2286a3f87e8278fc66edf458a2e3bb74 |
+| <a href="https://sepolia-blockscout.scroll.io/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Scroll Sepolia</a>     | ethereum-testnet-sepolia-scroll-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://explorer.testnet.soniclabs.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Sonic Testnet</a>    | sonic-testnet                         | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://spb.explorer.tac.build/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">TAC Testnet</a>              | tac-testnet                           | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://sepolia.uniscan.xyz/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Unichain Sepolia</a>            | ethereum-testnet-sepolia-unichain-1   | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | <a href="https://sepolia.worldscan.org/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">World Chain Sepolia</a>       | ethereum-testnet-sepolia-worldchain-1 | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | <a href="https://www.oklink.com/xlayer-test/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">XLayer Testnet</a>       | xlayer-testnet                        | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | <a href="https://sepolia.explorer.zksync.io/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">ZKSync Era Sepolia</a>   | ethereum-testnet-sepolia-zksync-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
@@ -10743,11 +10823,20 @@ These `KeystoneForwarder` addresses are used by deployed workflows. Use these ad
 | <a href="https://snowscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Avalanche</a>               | avalanche-mainnet             | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://basescan.org/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Base</a>                    | ethereum-mainnet-base-1       | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
 | <a href="https://bscscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">BNB Smart Chain</a>          | binance_smart_chain-mainnet | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://explorer.celo.org/mainnet/address/0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1" target="_blank" rel="noopener noreferrer">Celo</a>       | celo-mainnet                  | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
 | <a href="https://etherscan.io/address/0x0b93082D9b3C7C97fAcd250082899BAcf3af3885" target="_blank" rel="noopener noreferrer">Ethereum Mainnet</a>        | ethereum-mainnet              | 0x0b93082D9b3C7C97fAcd250082899BAcf3af3885 |
+| <a href="https://gnosisscan.io/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Gnosis Chain</a>           | gnosis-chain-mainnet          | 0x9eF6468C5f37b976E57d52054c693269479A784d |
+| <a href="https://explorer.inkonchain.com/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Ink</a>          | ethereum-mainnet-ink-1        | 0x9eF6468C5f37b976E57d52054c693269479A784d |
 | <a href="https://explorer.jovay.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Jovay Mainnet</a>      | jovay-mainnet                 | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://lineascan.build/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Linea</a>                | ethereum-mainnet-linea-1      | 0x9eF6468C5f37b976E57d52054c693269479A784d |
+| <a href="https://mantlescan.xyz/address/0xB9F79d863261869B234c481D1f9A7af84AeAd192" target="_blank" rel="noopener noreferrer">Mantle</a>                | ethereum-mainnet-mantle-1     | 0xB9F79d863261869B234c481D1f9A7af84AeAd192 |
+| <a href="https://megaeth.blockscout.com/address/0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c" target="_blank" rel="noopener noreferrer">MegaETH</a>       | megaeth-mainnet               | 0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c |
 | <a href="https://optimistic.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">OP Mainnet</a>   | ethereum-mainnet-optimism-1   | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
 | <a href="https://pharos.socialscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Pharos Mainnet</a>  | pharos-mainnet                | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://plasmascan.to/address/0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c" target="_blank" rel="noopener noreferrer">Plasma</a>                 | plasma-mainnet                | 0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c |
 | <a href="https://polygonscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Polygon</a>              | polygon-mainnet               | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://scrollscan.com/address/0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1" target="_blank" rel="noopener noreferrer">Scroll</a>                | ethereum-mainnet-scroll-1     | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
+| <a href="https://sonicscan.org/address/0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1" target="_blank" rel="noopener noreferrer">Sonic</a>                  | sonic-mainnet                 | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
 | <a href="https://worldscan.org/address/0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1" target="_blank" rel="noopener noreferrer">World Chain</a>            | ethereum-mainnet-worldchain-1 | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
 | <a href="https://www.oklink.com/xlayer/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">XLayer Mainnet</a> | ethereum-mainnet-xlayer-1     | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://explorer.zksync.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">ZKSync Era</a>        | ethereum-mainnet-zksync-1     | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
@@ -10761,16 +10850,24 @@ These `KeystoneForwarder` addresses are used by deployed workflows. Use these ad
 | <a href="https://testnet.snowscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Avalanche Fuji</a>             | avalanche-testnet-fuji                | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://sepolia.basescan.org/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Base Sepolia</a>               | ethereum-testnet-sepolia-base-1       | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
 | <a href="https://testnet.bscscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">BSC Testnet</a>                 | binance_smart_chain-testnet         | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://explorer.cronos.org/testnet/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Cronos Testnet</a>      | cronos-testnet                        | 0x9eF6468C5f37b976E57d52054c693269479A784d |
 | <a href="https://sepolia.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Ethereum Sepolia</a>           | ethereum-testnet-sepolia              | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
 | <a href="https://testnet.purrsec.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Hyperliquid Testnet</a>         | hyperliquid-testnet                   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://explorer-sepolia.inkonchain.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Ink Sepolia</a>     | ink-testnet-sepolia                   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://sepolia-explorer.jovay.io/l2/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Jovay Testnet</a>      | jovay-testnet                         | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://sepolia.lineascan.build/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Linea Sepolia</a>           | ethereum-testnet-sepolia-linea-1      | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://sepolia.mantlescan.xyz/address/0xB9F79d863261869B234c481D1f9A7af84AeAd192" target="_blank" rel="noopener noreferrer">Mantle Sepolia</a>           | ethereum-testnet-sepolia-mantle-1     | 0xB9F79d863261869B234c481D1f9A7af84AeAd192 |
+| <a href="https://megaexplorer.xyz/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">MegaETH Testnet 2</a>              | megaeth-testnet-2                     | 0x9eF6468C5f37b976E57d52054c693269479A784d |
 | <a href="https://sepolia-optimism.etherscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">OP Sepolia</a>        | ethereum-testnet-sepolia-optimism-1   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://atlantic.pharosscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Pharos Atlantic Testnet</a> | pharos-atlantic-testnet               | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://testnet.plasmascan.to/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Plasma Testnet</a>            | plasma-testnet                        | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | <a href="https://amoy.polygonscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Polygon Amoy</a>               | polygon-testnet-amoy                  | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://sepolia-blockscout.scroll.io/address/0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1" target="_blank" rel="noopener noreferrer">Scroll Sepolia</a>     | ethereum-testnet-sepolia-scroll-1     | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
+| <a href="https://explorer.testnet.soniclabs.com/address/0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1" target="_blank" rel="noopener noreferrer">Sonic Testnet</a>    | sonic-testnet                         | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
+| <a href="https://spb.explorer.tac.build/address/0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c" target="_blank" rel="noopener noreferrer">TAC Testnet</a>              | tac-testnet                           | 0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c |
+| <a href="https://sepolia.uniscan.xyz/address/0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1" target="_blank" rel="noopener noreferrer">Unichain Sepolia</a>            | ethereum-testnet-sepolia-unichain-1   | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
 | <a href="https://sepolia.worldscan.org/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">World Chain Sepolia</a>       | ethereum-testnet-sepolia-worldchain-1 | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://www.oklink.com/xlayer-test/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">XLayer Testnet</a>       | xlayer-testnet                        | 0x9eF6468C5f37b976E57d52054c693269479A784d |
 | <a href="https://sepolia.explorer.zksync.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">ZKSync Era Sepolia</a>   | ethereum-testnet-sepolia-zksync-1     | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 
 ---
@@ -17957,7 +18054,7 @@ This section provides a reference for the built-in trigger capabilities of the C
 
 # Supported Networks
 Source: https://docs.chain.link/cre/supported-networks-ts
-Last Updated: 2026-03-05
+Last Updated: 2026-03-17
 
 This page lists all EVM-compatible networks supported by CRE workflows, along with the minimum CLI and SDK versions required for each network.
 
@@ -17976,11 +18073,20 @@ Network support depends on your CLI and SDK versions. The tables below show the 
 | Avalanche    | v1.0.0+  | v1.0.0+ | v1.0.1+ |
 | Base         | v1.0.0+  | v1.0.0+ | v1.0.1+ |
 | BNB Chain    | v1.0.0+  | v1.0.0+ | v1.0.1+ |
+| Celo         | v1.5.0+  | v1.6.0+ | v1.3.0+ |
 | Ethereum     | v1.0.0+  | v1.0.0+ | v1.0.1+ |
+| Gnosis Chain | v1.5.0+  | v1.6.0+ | v1.3.0+ |
+| Ink          | v1.5.0+  | v1.6.0+ | v1.3.0+ |
 | Jovay        | v1.3.0+  | v1.4.0+ | v1.1.3+ |
+| Linea        | v1.5.0+  | v1.6.0+ | v1.3.0+ |
+| Mantle       | v1.5.0+  | v1.6.0+ | v1.3.0+ |
+| MegaETH      | v1.5.0+  | v1.6.0+ | v1.3.0+ |
 | OP Mainnet   | v1.0.0+  | v1.0.0+ | v1.0.1+ |
 | Pharos       | v1.3.0+  | v1.4.0+ | v1.1.3+ |
+| Plasma       | v1.5.0+  | v1.6.0+ | v1.3.0+ |
 | Polygon      | v1.0.0+  | v1.0.0+ | v1.0.1+ |
+| Scroll       | v1.5.0+  | v1.6.0+ | v1.3.0+ |
+| Sonic        | v1.5.0+  | v1.6.0+ | v1.3.0+ |
 | World Chain  | v1.0.11+ | v1.2.0+ | v1.0.9+ |
 | XLayer       | v1.3.0+  | v1.4.0+ | v1.1.3+ |
 | ZKSync Era   | v1.0.6+  | v1.1.3+ | v1.0.7+ |
@@ -17995,16 +18101,24 @@ Network support depends on your CLI and SDK versions. The tables below show the 
 | Avalanche Fuji          | v1.0.0+ | v1.0.0+ | v1.0.1+ |
 | Base Sepolia            | v1.0.0+ | v1.0.0+ | v1.0.1+ |
 | BNB Chain Testnet       | v1.0.0+ | v1.0.0+ | v1.0.1+ |
+| Cronos Testnet          | v1.5.0+ | v1.6.0+ | v1.3.0+ |
 | Ethereum Sepolia        | v1.0.0+ | v1.0.0+ | v1.0.1+ |
 | Hyperliquid Testnet     | v1.0.7+ | v1.1.4+ | v1.0.7+ |
 | Ink Sepolia             | v1.0.7+ | v1.1.4+ | v1.0.7+ |
 | Jovay Testnet           | v1.0.7+ | v1.1.4+ | v1.0.7+ |
 | Linea Sepolia           | v1.0.7+ | v1.1.4+ | v1.0.7+ |
+| Mantle Sepolia          | v1.5.0+ | v1.6.0+ | v1.3.0+ |
+| MegaETH Testnet 2       | v1.5.0+ | v1.6.0+ | v1.3.0+ |
 | OP Sepolia              | v1.0.0+ | v1.0.0+ | v1.0.1+ |
 | Pharos Atlantic Testnet | v1.3.0+ | v1.5.0+ | v1.1.4+ |
 | Plasma Testnet          | v1.0.7+ | v1.1.4+ | v1.0.7+ |
 | Polygon Amoy            | v1.0.0+ | v1.0.0+ | v1.0.1+ |
+| Scroll Sepolia          | v1.5.0+ | v1.6.0+ | v1.3.0+ |
+| Sonic Testnet           | v1.5.0+ | v1.6.0+ | v1.3.0+ |
+| TAC Testnet             | v1.5.0+ | v1.6.0+ | v1.3.0+ |
+| Unichain Sepolia        | v1.5.0+ | v1.6.0+ | v1.3.0+ |
 | World Chain Sepolia     | v1.0.7+ | v1.1.4+ | v1.0.7+ |
+| XLayer Testnet          | v1.5.0+ | v1.6.0+ | v1.3.0+ |
 | ZKSync Era Sepolia      | v1.0.6+ | v1.1.2+ | v1.0.7+ |
 
 ## Forwarder Addresses
