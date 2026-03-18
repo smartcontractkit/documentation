@@ -26,7 +26,10 @@ const feedItems = monitoredFeeds.mainnet
  * The raw value lives on-chain and is stored as a string to avoid JS number precision
  * loss. We divide by 10^decimals to recover the actual price, then format it.
  */
-const getMaxSubmissionValueBound = (maxSubmissionValue: string | undefined, decimals: number | undefined): string | null => {
+const getMaxSubmissionValueBound = (
+  maxSubmissionValue: string | undefined,
+  decimals: number | undefined
+): string | null => {
   if (!maxSubmissionValue || decimals == null || decimals < 0) return null
   try {
     const raw = BigInt(maxSubmissionValue)
