@@ -325,9 +325,14 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
           )}
           {stablecoinBound && (
             <div>
-              <span className={tableStyles.boundedNote} title="This feed has a maximum reportable price">
+              <a
+                href="/data-feeds/selecting-data-feeds#bounded-market-price-feeds"
+                className={tableStyles.boundedNote}
+                title="This feed has a maximum reportable price"
+                target="_blank"
+              >
                 Bounded (Upper): {stablecoinBound}
-              </span>
+              </a>
             </div>
           )}
         </div>
@@ -580,9 +585,14 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
         )}
         {stablecoinBound && (
           <div style={{ textAlign: "center" }}>
-            <span className={tableStyles.boundedNote} title="This feed has a maximum reportable price">
+            <a
+              href="/data-feeds/selecting-data-feeds#bounded-market-price-feeds"
+              className={tableStyles.boundedNote}
+              title="This feed has a maximum reportable price"
+              target="_blank"
+            >
               Bounded (Upper): {stablecoinBound}
-            </span>
+            </a>
           </div>
         )}
       </td>
