@@ -15,6 +15,13 @@ This documentation is open source. If you want to contribute tutorials or improv
 
 ## Developing
 
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) v18 or later
+- [npm](https://www.npmjs.com/) v9 or later
+
+### Running locally
+
 To run a local development environment, use the following command:
 
 ```
