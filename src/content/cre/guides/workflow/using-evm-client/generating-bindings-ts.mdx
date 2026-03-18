@@ -7,7 +7,7 @@ date: Last Modified
 metadata:
   description: "Create type-safe contract interfaces: learn to generate TypeScript bindings from smart contract ABIs for safer, cleaner workflow code."
   datePublished: "2026-03-05"
-  lastModified: "2026-03-05"
+  lastModified: "2026-03-17"
 ---
 
 import { Aside } from "@components"
@@ -38,7 +38,12 @@ cre generate-bindings evm --language typescript
 
 ### Step 1: Add your contract ABI
 
-Place your contract's ABI JSON file into the `contracts/evm/src/abi/` directory. For example, to generate bindings for a `PriceUpdater` contract, create `contracts/evm/src/abi/PriceUpdater.abi` with your ABI content.
+Place your contract ABI file into the `contracts/evm/src/abi/` directory. Two file formats are supported:
+
+- **`*.abi`** — A raw JSON array of ABI entries, as produced by `solc` or extracted from a compiled artifact
+- **`*.json`** — A compiled artifact file (Hardhat, Foundry, or similar) with a top-level `"abi"` field
+
+For example, to generate bindings for a `PriceUpdater` contract, create either `contracts/evm/src/abi/PriceUpdater.abi` or `contracts/evm/src/abi/PriceUpdater.json`. Both formats can coexist in the same directory.
 
 ### Step 2: Generate the bindings
 
@@ -48,7 +53,7 @@ From your **project root**, run:
 cre generate-bindings evm
 ```
 
-This scans all `.abi` files in `contracts/evm/src/abi/` and generates corresponding TypeScript files in `contracts/evm/ts/generated/`. For each contract, three files are generated:
+This scans all `.abi` and `.json` files in `contracts/evm/src/abi/` and generates corresponding TypeScript files in `contracts/evm/ts/generated/`. For each contract, three files are generated:
 
 - `<ContractName>.ts` — The typed binding class with read, write, and event trigger methods.
 - `<ContractName>_mock.ts` — A mock implementation for testing your workflows without deploying contracts.
