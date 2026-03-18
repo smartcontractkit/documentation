@@ -53,7 +53,7 @@ export interface ChainMetadata {
   feedCategory: string
   feedType: string
   docs: Docs
-  decimals: number
+  decimals?: number
   maxSubmissionValue?: string
   transmissionsAccount: null | string
 }
