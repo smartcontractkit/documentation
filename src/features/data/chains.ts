@@ -261,12 +261,7 @@ export const CHAINS: Chain[] = [
         name: "Ethereum Mainnet",
         explorerUrl: "https://etherscan.io/address/%s",
         networkType: "mainnet",
-        // TODO: revert all 3 before merging (stablecoin-bound testing only):
-        //   1. restore rddUrl below to the real Vercel URL (uncomment original, delete override)
-        //   2. revert backend.ts — remove fetchJson helper + fs import, restore direct EleventyFetch call
-        //   3. revert public/files/json/feeds-mainnet.json — restore USDT/USD maxSubmissionValue to sentinel
-        // rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
-        rddUrl: "/files/json/feeds-mainnet.json",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
         rddBundleUrl: "https://reference-data-directory.vercel.app/bundle-proxies-mainnet.json",
         queryString: "ethereum-mainnet",
         tags: ["smartData", "usGovernmentMacroeconomicData", "tokenizedEquity"],
