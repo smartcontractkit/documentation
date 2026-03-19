@@ -15,7 +15,7 @@ datePublished: "2026-03-19"
 lastModified: "2026-03-19"
 ---
 
-import { Aside, Accordion } from "@components"
+import { Aside, Accordion, ClickToZoom } from "@components"
 
 {/* prettier-ignore */}
 <Aside type="note">
@@ -42,60 +42,24 @@ This template implements the **full prediction market lifecycle** using three CR
 
 ### Market Creation
 
-```mermaid
-sequenceDiagram
-    participant Cron as Cron (hourly)
-    participant CRE as CRE DON
-    participant Contract as PredictionMarket
-    participant Forwarder as KeystoneForwarder
-
-    Cron->>CRE: Trigger
-    Note over CRE: Compute expiration = now + duration
-    Note over CRE: Format question, scale strike price
-    CRE->>Contract: Read nextMarketId
-    CRE->>Forwarder: Send ACTION_CREATE report
-    Forwarder->>Contract: Create market on-chain
-```
+<ClickToZoom
+  src="/images/cre-templates/templates/prediction-market-creation.png"
+  alt="Market Creation workflow diagram"
+/>
 
 ### Market Resolution
 
-```mermaid
-sequenceDiagram
-    participant Cron as Cron (every 10 min)
-    participant CRE as CRE DON
-    participant Contract as PredictionMarket
-    participant Feed as BTC/USD Data Feed
-    participant Forwarder as KeystoneForwarder
-
-    Cron->>CRE: Trigger
-    loop For each market ID
-        CRE->>Contract: Read isResolvable(marketId)
-        alt Expired and open
-            CRE->>Feed: Read latestAnswer()
-            CRE->>Forwarder: Send ACTION_RESOLVE report
-            Forwarder->>Contract: Resolve (price >= strike?)
-        else Not resolvable
-            Note over CRE: Skip
-        end
-    end
-```
+<ClickToZoom
+  src="/images/cre-templates/templates/prediction-market-resolution.png"
+  alt="Market Resolution workflow diagram"
+/>
 
 ### Dispute Management
 
-```mermaid
-sequenceDiagram
-    participant Contract as PredictionMarket
-    participant CRE as CRE DON
-    participant Feed as BTC/USD Data Feed
-    participant Forwarder as KeystoneForwarder
-
-    Contract->>CRE: DisputeRaised event (LogTrigger)
-    Note over CRE: Decode (marketId, disputor, reason)
-    CRE->>Contract: Verify market still disputed
-    CRE->>Feed: Read latestAnswer()
-    CRE->>Forwarder: Send ACTION_RESOLVE_DISPUTE report
-    Forwarder->>Contract: Re-evaluate outcome
-```
+<ClickToZoom
+  src="/images/cre-templates/templates/prediction-market-dispute.png"
+  alt="Dispute Management workflow diagram"
+/>
 
 ---
 

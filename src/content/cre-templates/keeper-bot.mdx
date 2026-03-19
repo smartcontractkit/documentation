@@ -15,7 +15,7 @@ datePublished: "2026-03-19"
 lastModified: "2026-03-19"
 ---
 
-import { Aside, Accordion } from "@components"
+import { Aside, Accordion, ClickToZoom } from "@components"
 
 ## What This Template Does
 
@@ -40,23 +40,7 @@ This pattern is a direct replacement for Gelato Web3Functions and Chainlink Auto
 
 ## How It Works
 
-```mermaid
-sequenceDiagram
-    participant Cron as Cron Trigger
-    participant CRE as CRE DON
-    participant Contract as KeeperConsumer
-    participant Forwarder as KeystoneForwarder
-
-    Cron->>CRE: Trigger (every 5 min)
-    CRE->>Contract: Read needsUpkeep()
-    alt Upkeep needed
-        Note over CRE: Encode report
-        CRE->>Forwarder: Send signed report
-        Forwarder->>Contract: _processReport → update state
-    else Not needed
-        Note over CRE: Log and skip
-    end
-```
+<ClickToZoom src="/images/cre-templates/templates/keeper-bot.png" alt="Keeper Bot workflow diagram" />
 
 ---
 

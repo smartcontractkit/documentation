@@ -15,7 +15,7 @@ datePublished: "2026-03-19"
 lastModified: "2026-03-19"
 ---
 
-import { Aside, Accordion } from "@components"
+import { Aside, Accordion, ClickToZoom } from "@components"
 
 ## What This Template Does
 
@@ -41,23 +41,7 @@ This pattern is compatible with vault protocols like Beefy, Yearn, and Alchemix.
 
 ## How It Works
 
-```mermaid
-sequenceDiagram
-    participant Cron as Cron Trigger
-    participant CRE as CRE DON
-    participant Vault as VaultHarvester
-    participant Forwarder as KeystoneForwarder
-
-    Cron->>CRE: Trigger (every 5 min)
-    CRE->>Vault: Read shouldHarvest(), pendingYield()
-    alt Profitable
-        Note over CRE: Encode harvest report
-        CRE->>Forwarder: Send signed report
-        Forwarder->>Vault: _processReport → harvest + compound
-    else Not profitable
-        Note over CRE: Log and skip
-    end
-```
+<ClickToZoom src="/images/cre-templates/templates/vault-harvester.png" alt="Vault Harvester workflow diagram" />
 
 ---
 

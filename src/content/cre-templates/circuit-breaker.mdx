@@ -15,7 +15,7 @@ datePublished: "2026-03-19"
 lastModified: "2026-03-19"
 ---
 
-import { Aside, Accordion } from "@components"
+import { Aside, Accordion, ClickToZoom } from "@components"
 
 ## What This Template Does
 
@@ -38,27 +38,7 @@ Both triggers converge on decision logic: if an anomaly is detected, a DON-signe
 
 ## How It Works
 
-```mermaid
-sequenceDiagram
-    participant Contract as ProtocolWithBreaker
-    participant CRE as CRE DON
-    participant Forwarder as KeystoneForwarder
-
-    Contract->>CRE: PriceUpdated event (LogTrigger)
-    Note over CRE: Decode event data
-    CRE->>Contract: Read on-chain state
-    Note over CRE: Calculate deviation (basis points)
-    alt Deviation > threshold
-        CRE->>Forwarder: Send signed report
-        Forwarder->>Contract: _processReport → pause
-    else Within threshold
-        Note over CRE: Log and skip
-    end
-
-    Note over CRE: Cron fires every 10 min
-    CRE->>Contract: Read protocol state
-    Note over CRE: Log health status
-```
+<ClickToZoom src="/images/cre-templates/templates/circuit-breaker.png" alt="Circuit Breaker workflow diagram" />
 
 ---
 

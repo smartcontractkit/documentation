@@ -15,7 +15,7 @@ datePublished: "2026-03-19"
 lastModified: "2026-03-19"
 ---
 
-import { Aside, Accordion } from "@components"
+import { Aside, Accordion, ClickToZoom } from "@components"
 
 ## What This Template Does
 
@@ -38,23 +38,7 @@ The workflow:
 
 ## How It Works
 
-```mermaid
-sequenceDiagram
-    participant Token as MonitoredToken
-    participant CRE as CRE DON
-    participant Reactor as ReactorConsumer
-    participant Forwarder as KeystoneForwarder
-
-    Token->>CRE: LargeTransfer event (LogTrigger)
-    Note over CRE: Decode event (from, to, amount)
-    CRE->>Reactor: Read flaggedAddresses(sender)
-    alt Not flagged
-        CRE->>Forwarder: Send signed report
-        Forwarder->>Reactor: _processReport → flag address
-    else Already flagged
-        Note over CRE: Log and skip
-    end
-```
+<ClickToZoom src="/images/cre-templates/templates/event-reactor.png" alt="Event Reactor workflow diagram" />
 
 ---
 
