@@ -8935,48 +8935,77 @@ Dive deeper into concepts from this guide:
 
 ---
 
-# Build with AI
+# Build with AI (Skill, Prompting)
 Source: https://docs.chain.link/cre/getting-started/build-with-ai-ts
 Last Updated: 2026-03-19
 
-You can use AI-powered tools to generate, debug, and explore CRE workflows. There are two approaches: install a skill in your code editor or paste a starter prompt into AI web chat.
+You can use AI coding assistants to generate, debug, and explore CRE workflows. There are two approaches: install a skill in your code editor agent or load CRE context into any LLM chat and prompt from there.
 
-## Code editor
+## Code editor skill
+
+Agent skills are structured instruction sets that give an AI coding agent domain-specific knowledge and a defined approach for a task. When you install a skill, your agent reads it at the start of a session and uses it to guide how it fetches docs, generates code, and debugs — without you having to repeat that context every time. See the [Agent Skills specification](https://agentskills.io/specification) for the full format and best practices.
+
+### Supported agent tools
+
+The skill works with any agent-capable AI coding tool that implements the [Agent Skills specification](https://agentskills.io/specification). Verified with Claude Code, Cursor, Codex, Gemini, Copilot, and Cline.
 
 ### Install the skill
 
 Run the following command to add the CRE skill to your code editor agent:
 
 ```shell
-npx skills add https://github.com/smartcontractkit/chainlink-agent-skill --skill cre-skills
+npx skills add https://github.com/smartcontractkit/chainlink-agent-skills --skill cre-skills
 ```
 
 ### Prompt your agent
 
-Once installed, reference the skill in your prompt:
+Once installed, your agent will automatically discover and activate the skill based on your task. For best results across tools, explicitly reference it in your prompt:
 
 ```
 Use the /cre-skills skill and [describe what you want to build]
 ```
 
-### What you can do
+In Claude Code, you can invoke it directly as a slash command: `/cre-skills`.
 
-- Generate complete CRE workflows in TypeScript
-- Get help with onboarding, project setup, and account configuration
-- Debug issues with simulation, secrets, triggers, and deployment
-- Look up CLI commands, SDK APIs, and capability details
+### What the skill covers
 
-### Works with
+The skill is organized into focused reference areas, each covering a specific part of CRE. When you ask a question, your agent matches it to the most relevant area and fetches only what it needs — so you get a targeted answer without the agent reading the entire SDK. The areas the skill covers:
 
-Claude Code, Cursor, Codex, Gemini, Copilot, Cline
+| Topic                                            | What it helps with                                                                                                                                                                                                                                                                                                                                                                        |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Getting started](/cre/getting-started/overview) | [CLI installation](/cre/getting-started/cli-installation), [project setup](/cre/getting-started/part-1-project-setup), tutorial walkthrough                                                                                                                                                                                                                                               |
+| [Account setup](/cre/account)                    | [Creating accounts](/cre/account/creating-account), [CLI login](/cre/account/cli-login), [managing authentication](/cre/account/managing-auth)                                                                                                                                                                                                                                            |
+| Workflow building                                | [Secrets](/cre/guides/workflow/secrets), [triggers](/cre/guides/workflow/using-triggers/overview) (cron/HTTP/EVM log), [HTTP client](/cre/guides/workflow/using-http-client), [EVM client](/cre/guides/workflow/using-evm-client/overview), onchain read/write                                                                                                                            |
+| [SDK reference](/cre/reference/sdk/overview)     | [Core SDK](/cre/reference/sdk/core), [consensus/aggregation](/cre/reference/sdk/consensus), [EVM client](/cre/reference/sdk/evm-client), [HTTP client](/cre/reference/sdk/http-client), [trigger APIs](/cre/reference/sdk/triggers/overview)                                                                                                                                              |
+| [CLI reference](/cre/reference/cli)              | [Accounts](/cre/reference/cli/account), [authentication](/cre/reference/cli/authentication), [secrets](/cre/reference/cli/secrets), [workflows](/cre/reference/cli/workflow), [utilities](/cre/reference/cli/utilities)                                                                                                                                                                   |
+| [Capabilities](/cre/capabilities)                | [EVM read/write](/cre/capabilities/evm-read-write), [HTTP](/cre/capabilities/http), [triggers overview](/cre/capabilities/triggers)                                                                                                                                                                                                                                                       |
+| Operations                                       | [Deploying](/cre/guides/operations/deploying-workflows), [simulating](/cre/guides/operations/simulating-workflows), [monitoring](/cre/guides/operations/monitoring-workflows), [activating/pausing](/cre/guides/operations/activating-pausing-workflows), [updating](/cre/guides/operations/updating-deployed-workflows), [deleting workflows](/cre/guides/operations/deleting-workflows) |
+| Concepts                                         | [Consensus computing](/cre/concepts/consensus-computing), [finality](/cre/concepts/finality), [non-determinism](/cre/concepts/non-determinism), [TypeScript WASM runtime](/cre/concepts/typescript-wasm-runtime)                                                                                                                                                                          |
+| [Templates](/cre/templates)                      | CRE workflow templates and usage                                                                                                                                                                                                                                                                                                                                                          |
 
-## AI Webchat
+### Workflow generation
 
-If you prefer working in a browser, you can load the full CRE TypeScript documentation into an AI chat session.
+When you ask the skill to build a workflow, it will:
+
+1. Confirm whether you want Go or TypeScript
+2. Ask whether HTTP requests should use regular or Confidential HTTP (for privacy-preserving API calls via enclave execution)
+3. Generate the complete workflow scaffold immediately — no speculative fetching
+4. Give you a `cre workflow simulate` command to test it
+5. Iterate on errors by fetching exactly what the error names, fixing it, and asking you to re-run
+
+### Debugging
+
+When diagnosing errors, the skill identifies the capability involved, fetches the relevant doc page, checks repo examples if needed, and proposes a fix based on CRE-specific constraints — not general programming assumptions.
+
+## Prompting
+
+If you prefer to work directly in an AI assistant, you can load the full CRE TypeScript documentation into the context window and prompt from there. This is useful for broad exploration, but loads the entire SDK reference upfront — the skill approach above keeps your context window focused on your current task.
 
 **Context file**: https\://docs.chain.link/cre/llms-full-ts.txt
 
-Copy the starter prompt below, replace the placeholder at the end with your use case, and paste it into your preferred AI chat.
+Alternatively, you can click the "Copy Page" button in the top right corner of any Chainlink docs page to load the full page content into the context window of your preferred AI assistant. Loading a single page — for example, just the triggers reference or the EVM client page — rather than the entire SDK consumes fewer tokens (lower cost per request for pay-per-token APIs), keeps you within the limits of smaller context windows, and gives the model more relevant signal to attend to, which tends to produce more accurate output.
+
+Copy the starter prompt below, replace the placeholder at the end with your use case, and paste it into your preferred AI assistant.
 
 ```
 I'm building a Chainlink CRE workflow using the TypeScript SDK.
@@ -8991,8 +9020,6 @@ Please fetch and read that file. After you've read it, please:
 
 I want to build: [describe your use case]
 ```
-
-|
 
 ---
 

@@ -146,7 +146,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           highlightAsCurrent: ["cre/getting-started/before-you-build-ts", "cre/getting-started/before-you-build-go"],
         },
         {
-          title: "Build with AI",
+          title: "Build with AI (Skill, Prompting)",
           url: "cre/getting-started/build-with-ai",
           highlightAsCurrent: ["cre/getting-started/build-with-ai-ts", "cre/getting-started/build-with-ai-go"],
         },
