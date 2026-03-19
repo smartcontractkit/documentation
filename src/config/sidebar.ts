@@ -360,7 +360,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "cre/guides/operations/simulating-workflows",
         },
         {
-          title: "Understanding Workflow Limits",
+          title: "Testing Production Limits",
           url: "cre/guides/operations/understanding-limits",
         },
         {
