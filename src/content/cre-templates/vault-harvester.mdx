@@ -1,0 +1,124 @@
+---
+title: "Vault Harvester"
+description: "Automated DeFi vault harvesting — check if yield is profitable, then harvest and compound using CRE."
+author: "Chainlink Labs"
+excerpt: "Automate DeFi vault yield harvesting with profitability checks and on-chain execution."
+image: "thumbnail.jpg"
+cliTemplateIds:
+  - label: "TypeScript"
+    id: "vault-harvester-ts"
+githubUrl: "https://github.com/smartcontractkit/cre-templates/tree/all-new-templates/starter-templates/vault-harvester"
+githubRepoLinks:
+  - label: "TypeScript"
+    url: "https://github.com/smartcontractkit/cre-templates/tree/all-new-templates/starter-templates/vault-harvester/vault-harvester-ts"
+datePublished: "2026-03-19"
+lastModified: "2026-03-19"
+---
+
+import { Aside, Accordion } from "@components"
+
+## What This Template Does
+
+This template automates **DeFi vault harvesting** — a specialized version of the keeper pattern for vault-specific operations like yield harvesting and compounding.
+
+The workflow:
+
+1. **Cron trigger** fires every 5 minutes (configurable)
+2. **Reads** vault state: `shouldHarvest()`, `pendingYield()`, `totalHarvested()`, `harvestCount()`
+3. **If profitable** (time elapsed AND yield > threshold): Sends a signed report to trigger harvest on-chain
+4. **If not profitable**: Logs and skips — no wasted gas on unprofitable harvests
+5. **On-chain**: Harvests pending yield, resets state, and emits an event
+
+This pattern is compatible with vault protocols like Beefy, Yearn, and Alchemix.
+
+**Key Technologies:**
+
+- **CRE (Chainlink Runtime Environment)** — Orchestrates periodic workflows with DON consensus
+- **Profitability checking** — Time + yield threshold validation off-chain
+- **Yield tracking** — Harvest counter and history
+
+---
+
+## How It Works
+
+```mermaid
+sequenceDiagram
+    participant Cron as Cron Trigger
+    participant CRE as CRE DON
+    participant Vault as VaultHarvester
+    participant Forwarder as KeystoneForwarder
+
+    Cron->>CRE: Trigger (every 5 min)
+    CRE->>Vault: Read shouldHarvest(), pendingYield()
+    alt Profitable
+        Note over CRE: Encode harvest report
+        CRE->>Forwarder: Send signed report
+        Forwarder->>Vault: _processReport → harvest + compound
+    else Not profitable
+        Note over CRE: Log and skip
+    end
+```
+
+---
+
+## Getting Started
+
+<Accordion title="Install dependencies" number={1}>
+
+```bash
+cd my-workflow && bun install && cd .. && cd contracts && bun install && cd ..
+```
+
+</Accordion>
+
+<Accordion title="Run tests" number={2}>
+
+```bash
+cd my-workflow && bun test
+```
+
+</Accordion>
+
+<Accordion title="Simulate the workflow" number={3}>
+
+Dry run:
+
+```bash
+cre workflow simulate my-workflow --target staging-settings
+```
+
+With broadcast (writes on-chain):
+
+```bash
+cre workflow simulate my-workflow --target staging-settings --broadcast
+```
+
+</Accordion>
+
+<Accordion title="Deploy your own contract" number={4}>
+
+Deploy `VaultHarvester` with constructor arguments: forwarder address, harvest interval in seconds, and minimum yield threshold in wei:
+
+```bash
+forge create src/VaultHarvester.sol:VaultHarvester \
+  --broadcast --private-key <KEY> --rpc-url <RPC> \
+  --constructor-args 0x15fc6ae953e024d975e77382eeec56a9101f9f88 300 1000000000000000000
+```
+
+Simulate yield accrual for testing:
+
+```bash
+cast send <YOUR_CONTRACT> "accrueYield(uint256)" 2000000000000000000
+```
+
+Then update `contractAddress` in `my-workflow/config.staging.json`.
+
+</Accordion>
+
+## Customization
+
+- **Change schedule** — Edit `schedule` in `config.staging.json` (cron syntax)
+- **Change profitability check** — Modify `shouldHarvest()` in the contract
+- **Change harvest logic** — Update `_processReport()` for your vault's harvest + compound strategy
+
+For full details, see the [TypeScript README](https://github.com/smartcontractkit/cre-templates/tree/all-new-templates/starter-templates/vault-harvester/vault-harvester-ts) on GitHub.

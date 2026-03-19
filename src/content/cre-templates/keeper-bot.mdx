@@ -1,0 +1,117 @@
+---
+title: "Keeper Bot"
+description: "Cron-based smart contract maintenance — read state, check condition, execute if needed using the universal keeper pattern."
+author: "Chainlink Labs"
+excerpt: "Automate periodic smart contract upkeep with off-chain condition checking and on-chain execution."
+image: "thumbnail.jpg"
+cliTemplateIds:
+  - label: "TypeScript"
+    id: "keeper-bot-ts"
+githubUrl: "https://github.com/smartcontractkit/cre-templates/tree/all-new-templates/starter-templates/keeper-bot"
+githubRepoLinks:
+  - label: "TypeScript"
+    url: "https://github.com/smartcontractkit/cre-templates/tree/all-new-templates/starter-templates/keeper-bot/keeper-bot-ts"
+datePublished: "2026-03-19"
+lastModified: "2026-03-19"
+---
+
+import { Aside, Accordion } from "@components"
+
+## What This Template Does
+
+This template implements the universal **cron → read → check → write** pattern for periodic smart contract maintenance.
+
+The workflow:
+
+1. **Cron trigger** fires every 5 minutes (configurable)
+2. **Reads** `needsUpkeep()` from the on-chain `KeeperConsumer` contract
+3. **If upkeep needed**: Encodes a new counter value, generates a DON-signed report, and writes on-chain via `KeystoneForwarder`
+4. **If not needed**: Logs and skips — no wasted gas
+
+This pattern is a direct replacement for Gelato Web3Functions and Chainlink Automation.
+
+**Key Technologies:**
+
+- **CRE (Chainlink Runtime Environment)** — Orchestrates periodic workflows with DON consensus
+- **Off-chain condition checking** — No gas wasted on failed checks
+- **Configurable scheduling** — Standard cron expressions
+
+---
+
+## How It Works
+
+```mermaid
+sequenceDiagram
+    participant Cron as Cron Trigger
+    participant CRE as CRE DON
+    participant Contract as KeeperConsumer
+    participant Forwarder as KeystoneForwarder
+
+    Cron->>CRE: Trigger (every 5 min)
+    CRE->>Contract: Read needsUpkeep()
+    alt Upkeep needed
+        Note over CRE: Encode report
+        CRE->>Forwarder: Send signed report
+        Forwarder->>Contract: _processReport → update state
+    else Not needed
+        Note over CRE: Log and skip
+    end
+```
+
+---
+
+## Getting Started
+
+<Accordion title="Install dependencies" number={1}>
+
+```bash
+cd my-workflow && bun install && cd ..
+```
+
+</Accordion>
+
+<Accordion title="Run tests" number={2}>
+
+```bash
+cd my-workflow && bun test
+```
+
+</Accordion>
+
+<Accordion title="Simulate the workflow" number={3}>
+
+Dry run:
+
+```bash
+cre workflow simulate my-workflow --target staging-settings
+```
+
+With broadcast (writes on-chain):
+
+```bash
+cre workflow simulate my-workflow --target staging-settings --broadcast
+```
+
+</Accordion>
+
+<Accordion title="Deploy your own contract" number={4}>
+
+Deploy `KeeperConsumer` with constructor arguments: forwarder address and interval in seconds (e.g., 300 for 5 minutes):
+
+```bash
+forge create src/KeeperConsumer.sol:KeeperConsumer \
+  --broadcast --private-key <KEY> --rpc-url <RPC> \
+  --constructor-args 0x15fc6ae953e024d975e77382eeec56a9101f9f88 300
+```
+
+Then update `contractAddress` in `my-workflow/config.staging.json`.
+
+</Accordion>
+
+## Customization
+
+- **Change schedule** — Edit `schedule` in `config.staging.json` (cron syntax)
+- **Change condition** — Replace `needsUpkeep()` with any view function
+- **Change action** — Modify `_processReport()` logic in the contract
+
+For full details, see the [TypeScript README](https://github.com/smartcontractkit/cre-templates/tree/all-new-templates/starter-templates/keeper-bot/keeper-bot-ts) on GitHub.
