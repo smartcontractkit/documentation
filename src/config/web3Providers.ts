@@ -146,7 +146,6 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   JANCTION_TESTNET: () => new JsonRpcProvider("https://rpc_testnet.janction.io"),
   NEO_X_MAINNET: () => new JsonRpcProvider("https://mainnet-1.rpc.banelabs.org"),
   NEO_X_TESTNET: () => new JsonRpcProvider("https://testnet.rpc.banelabs.org"),
-  KATANA_TATARA: () => new JsonRpcProvider("https://rpc.tatara.katanarpc.com"),
   KATANA_MAINNET: () => new JsonRpcProvider("https://rpc.katanarpc.com"),
   BOTANIX_MAINNET: () => new JsonRpcProvider("https://rpc.botanix.org"),
   APTOS_MAINNET: () => new JsonRpcProvider("https://fullnode.mainnet.aptoslabs.com/v1"),

@@ -232,7 +232,6 @@ export type SupportedChain =
   | "JANCTION_TESTNET"
   | "NEO_X_MAINNET"
   | "NEO_X_TESTNET"
-  | "KATANA_TATARA"
   | "KATANA_MAINNET"
   | "BOTANIX_MAINNET"
   | "APTOS_MAINNET"
