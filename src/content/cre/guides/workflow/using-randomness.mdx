@@ -6,14 +6,15 @@ date: Last Modified
 metadata:
   description: "Generate random numbers safely in CRE: use runtime.Rand() to ensure all nodes get the same values and maintain consensus."
   datePublished: "2025-11-04"
-  lastModified: "2026-02-05"
+  lastModified: "2026-03-17"
 ---
 
 import { Aside } from "@components"
 
 <Aside type="note" title="TL;DR">
-  Use `runtime.Rand()` to generate random numbers in your workflows. This provides secure, deterministic randomness that
-  enables all nodes in the network to reach consensus. Do **not** use Go's global `rand` package—it can break consensus.
+  Use `runtime.Rand()` to generate random numbers in your workflows. This provides deterministic randomness that ensures
+  all nodes in the network generate the same values and can reach consensus. Do **not** use Go's global `rand`
+  package—it can break consensus. Note that `runtime.Rand()` is **not** cryptographically secure.
 </Aside>
 
 ## The problem: Why randomness needs special handling
@@ -215,7 +216,7 @@ Random generators are tied to the mode they were created in. **Do not** attempt 
 
 **Is the randomness cryptographically secure?**
 
-The randomness is sourced from the host environment's secure random generator, but the standard Go `*rand.Rand` object is **not** intended for cryptographic purposes. For cryptographic operations, use dedicated crypto libraries.
+No. `runtime.Rand()` returns a seeded pseudo-random number generator (Go's `math/rand`). The seed is coordinated by the CRE platform so that all nodes in the DON produce the same sequence — that is what makes consensus possible — but it is not cryptographically secure. Do not use it for key generation, signature nonces, or any security-sensitive purpose. For cryptographic randomness, use Go's `crypto/rand` package.
 
 **What happens if I try to use randomness in the wrong mode?**
 

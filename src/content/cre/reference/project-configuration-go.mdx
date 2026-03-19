@@ -7,7 +7,7 @@ date: Last Modified
 metadata:
   description: "Configure your Go project: learn to manage project.yaml, workflow.yaml, and targets for different environments."
   datePublished: "2025-11-04"
-  lastModified: "2026-02-03"
+  lastModified: "2026-03-17"
 ---
 
 import { ClickToZoom, Aside } from "@components"
@@ -105,6 +105,22 @@ production-settings:
 | -------------------------------------- | -------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `account.workflow-owner-address`       | No       | Multi-sig only                               | Multi-sig wallet address that owns the workflow. Required when using the `--unsigned` flag to generate unsigned transactions. For standard (non-multi-sig) deployments, omit this field—the CLI uses the address from `CRE_ETH_PRIVATE_KEY`. See [Using Multi-sig Wallets](/cre/guides/operations/using-multisig-wallets). |
 | `rpcs`                                 | Yes      | Always (if using EVM)                        | Array of RPC endpoints for chains your workflow interacts with. Each entry requires `chain-name` (e.g., `ethereum-mainnet`) and `url` (the RPC endpoint). **Required for both simulation and deployed workflows** that use EVM capabilities. The CLI pre-populates a public Sepolia RPC URL by default.                    |
+
+#### Environment variable interpolation in RPC URLs
+
+RPC URLs support `${VAR_NAME}` syntax to inject values from environment variables. This keeps sensitive API keys and endpoint tokens out of `project.yaml`, which is typically committed to version control.
+
+```yaml
+# project.yaml
+production-settings:
+  rpcs:
+    - chain-name: ethereum-mainnet
+      url: https://mainnet.infura.io/v3/${INFURA_API_KEY}
+    - chain-name: ethereum-testnet-sepolia
+      url: https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}
+```
+
+Variable values are resolved from environment variables at runtime. This works across all CLI commands: `cre workflow simulate`, `cre workflow deploy`, and others.
 
 <Aside type="caution" title="Missing RPC causes simulation failure">
   If your workflow uses EVM capabilities, you must configure RPC endpoints. Without them, the simulator cannot register
