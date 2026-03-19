@@ -5032,6 +5032,116 @@ For complete setup instructions, configuration requirements, and step-by-step gu
 
 ---
 
+# Verifying Workflows
+Source: https://docs.chain.link/cre/guides/operations/verifying-workflows
+Last Updated: 2026-03-19
+
+Workflow verification ensures the integrity and authenticity of your workflows across deployment, onchain execution, and third-party auditing. This guide explains how workflow IDs are computed, how to verify workflows in consumer contracts, and how to enable independent verification by third parties.
+
+## Workflow ID
+
+The workflow ID is a unique hash that serves as the primary identifier for your workflow throughout its lifecycle. It is computed locally during [`cre workflow deploy`](/cre/reference/cli/workflow#cre-workflow-deploy) from the following inputs:
+
+- **workflowOwner**: The deployer's address
+- **workflowName**: The name specified in your workflow
+- **Compiled workflow binary**: The WASM binary produced from your workflow code
+- **Config file contents**: The contents of your workflow's config file
+- **Secrets hash**: An empty string placeholder for secrets
+
+Because the workflow ID is derived from these inputs, it deterministically represents a specific version of your workflow code and configuration.
+
+<Aside type="caution" title="Workflow ID changes on updates">
+  The workflow ID changes whenever you update your workflow code or config file, even if the workflow name stays the
+  same. For example, if you change contract bindings, the compiled binary changes, which produces a new workflow ID.
+  Plan for this when designing consumer contracts that permission on workflow ID.
+</Aside>
+
+Use [`cre workflow hash`](/cre/reference/cli/workflow#cre-workflow-hash) to inspect the workflow ID before deploying. This lets you preview the ID without submitting an onchain transaction.
+
+For more details on deployment and updates, see [Deploying Workflows](/cre/guides/operations/deploying-workflows) and [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows).
+
+## Verifying workflows onchain
+
+When a workflow writes onchain, the consumer contract receives both the report data and metadata through the `onReport` callback. The metadata contains information you can use to verify the source of the report:
+
+- **`workflowId`** (`bytes32`): The unique workflow hash
+- **`workflowName`** (`bytes10`): The workflow name, hash-encoded
+- **`workflowOwner`** (`address`): The address that deployed the workflow
+
+See [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts) for the full `IReceiver` interface and metadata structure.
+
+### Workflow name encoding
+
+The `workflowName` in metadata is not stored as a plain string. It is a SHA256 hash of the workflow name, truncated to `bytes10`. See [how workflow names are encoded](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#how-workflow-names-are-encoded) for the full encoding process.
+
+### Security best practices
+
+Follow these practices to ensure only authorized workflows can interact with your consumer contract:
+
+- **Verify `msg.sender`**: Always check that `msg.sender` is the expected forwarder address. See the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory) for addresses by network.
+- **Permission on workflow ID**: Use `setExpectedWorkflowId` from `ReceiverTemplate` to restrict which workflow can call your contract.
+
+<Aside type="tip" title="Permissioning without workflow ID">
+  If you permission on `workflowId`, you must update it in your contract every time you update the workflow. An
+  alternative is to use `setExpectedAuthor` and `setExpectedWorkflowName` from `ReceiverTemplate` instead. These values
+  don't change when you update your workflow code, so your contract won't need updates after each workflow deployment.
+</Aside>
+
+## Third-party verification
+
+<Aside type="note" title="Go workflows only">
+  Reproducible builds are currently supported for Go workflows only. TypeScript reproducible builds are in development.
+</Aside>
+
+Third-party verification allows customers or auditors to independently confirm that a deployed workflow matches its source code. The deployer shares the workflow source, and the verifier uses the CRE CLI to compute the workflow hash and compare it against the onchain workflow ID.
+
+### Steps for the workflow developer
+
+1. **Add a `.env.public` file** to your workflow folder with the Go toolchain version pinned:
+
+   ```
+   GOTOOLCHAIN=go1.23.0
+   ```
+
+   This ensures reproducible builds across different platforms and environments. Add this file *before* running `cre workflow deploy`.
+
+2. **Share your workflow source** with the customer. Provide a zip archive or repository link that includes all workflow files, including `.env.public`. Exclude `.env` files that contain private keys or secrets.
+
+### Steps for the verifier
+
+1. [**Install the CRE CLI**](/cre/getting-started/cli-installation). No login or deploy access is required for hash verification.
+
+2. **Unzip or clone** the shared workflow repository.
+
+3. **Run `cre workflow hash`** to compute the workflow hash:
+
+   ```bash
+   cre workflow hash ./workflow-folder --public_key=0xYourDeployerAddress
+   ```
+
+   Replace `./workflow-folder` with the path to the workflow source and `0xYourDeployerAddress` with the deployer's public address.
+
+4. **Compare the output** with the workflow ID observed onchain. The `Workflow hash` value in the output corresponds to the onchain workflow ID:
+
+   ```
+   Binary hash:   0dcbb19de3c22edfe61605a970eb6d42199df91ac3e992cd3f2e33cb13efbb4c
+   Config hash:   3bdaebcc2f639d77cb248242c1d01c8651f540cdbf423d26fe3128516fd225b6
+   Workflow hash: 004fff5bb1ae05cc16e453f8ad564f5e8b0eae1945ec22f3d0adfc0339954d56
+   ```
+
+   If the workflow hash matches the onchain workflow ID, the deployed workflow matches the shared source code.
+
+<Aside type="tip">Run `cre workflow hash -h` for full usage details and additional flags.</Aside>
+
+## Learn more
+
+- [Deploying Workflows](/cre/guides/operations/deploying-workflows)
+- [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows)
+- [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)
+- [CRE CLI Workflow Reference](/cre/reference/cli/workflow)
+
+---
+
 # Deleting Workflows
 Source: https://docs.chain.link/cre/guides/operations/deleting-workflows
 Last Updated: 2025-11-04
@@ -9111,6 +9221,94 @@ Dive deeper into concepts from this guide:
 | **EVM interactions**     | [EVM Client Overview](/cre/guides/workflow/using-evm-client/overview), [Onchain Read](/cre/guides/workflow/using-evm-client/onchain-read), [Onchain Write](/cre/guides/workflow/using-evm-client/onchain-write/overview) |
 | **Configuration**        | [Project Configuration](/cre/reference/project-configuration), [Secrets Guide](/cre/guides/workflow/secrets)                                                                                                             |
 | **All capabilities**     | [Capabilities Overview](/cre/capabilities)                                                                                                                                                                               |
+
+---
+
+# Build with AI (Skill, Prompting)
+Source: https://docs.chain.link/cre/getting-started/build-with-ai-ts
+Last Updated: 2026-03-19
+
+You can use AI coding assistants to generate, debug, and explore CRE workflows. There are two approaches: install a skill in your code editor agent or load CRE context into any LLM chat and prompt from there.
+
+## Code editor skill
+
+Agent skills are structured instruction sets that give an AI coding agent domain-specific knowledge and a defined approach for a task. When you install a skill, your agent reads it at the start of a session and uses it to guide how it fetches docs, generates code, and debugs — without you having to repeat that context every time. See the [Agent Skills specification](https://agentskills.io/specification) for the full format and best practices.
+
+### Supported agent tools
+
+The skill works with any agent-capable AI coding tool that implements the [Agent Skills specification](https://agentskills.io/specification). Verified with Claude Code, Cursor, Codex, Gemini, Copilot, and Cline.
+
+### Install the skill
+
+Run the following command to add the CRE skill to your code editor agent:
+
+```shell
+npx skills add https://github.com/smartcontractkit/chainlink-agent-skills --skill cre-skills
+```
+
+### Prompt your agent
+
+Once installed, your agent will automatically discover and activate the skill based on your task. For best results across tools, explicitly reference it in your prompt:
+
+```
+Use the /cre-skills skill and [describe what you want to build]
+```
+
+In Claude Code, you can invoke it directly as a slash command: `/cre-skills`.
+
+### What the skill covers
+
+The skill is organized into focused reference areas, each covering a specific part of CRE. When you ask a question, your agent matches it to the most relevant area and fetches only what it needs — so you get a targeted answer without the agent reading the entire SDK. The areas the skill covers:
+
+| Topic                                            | What it helps with                                                                                                                                                                                                                                                                                                                                                                        |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Getting started](/cre/getting-started/overview) | [CLI installation](/cre/getting-started/cli-installation), [project setup](/cre/getting-started/part-1-project-setup), tutorial walkthrough                                                                                                                                                                                                                                               |
+| [Account setup](/cre/account)                    | [Creating accounts](/cre/account/creating-account), [CLI login](/cre/account/cli-login), [managing authentication](/cre/account/managing-auth)                                                                                                                                                                                                                                            |
+| Workflow building                                | [Secrets](/cre/guides/workflow/secrets), [triggers](/cre/guides/workflow/using-triggers/overview) (cron/HTTP/EVM log), [HTTP client](/cre/guides/workflow/using-http-client), [EVM client](/cre/guides/workflow/using-evm-client/overview), onchain read/write                                                                                                                            |
+| [SDK reference](/cre/reference/sdk/overview)     | [Core SDK](/cre/reference/sdk/core), [consensus/aggregation](/cre/reference/sdk/consensus), [EVM client](/cre/reference/sdk/evm-client), [HTTP client](/cre/reference/sdk/http-client), [trigger APIs](/cre/reference/sdk/triggers/overview)                                                                                                                                              |
+| [CLI reference](/cre/reference/cli)              | [Accounts](/cre/reference/cli/account), [authentication](/cre/reference/cli/authentication), [secrets](/cre/reference/cli/secrets), [workflows](/cre/reference/cli/workflow), [utilities](/cre/reference/cli/utilities)                                                                                                                                                                   |
+| [Capabilities](/cre/capabilities)                | [EVM read/write](/cre/capabilities/evm-read-write), [HTTP](/cre/capabilities/http), [triggers overview](/cre/capabilities/triggers)                                                                                                                                                                                                                                                       |
+| Operations                                       | [Deploying](/cre/guides/operations/deploying-workflows), [simulating](/cre/guides/operations/simulating-workflows), [monitoring](/cre/guides/operations/monitoring-workflows), [activating/pausing](/cre/guides/operations/activating-pausing-workflows), [updating](/cre/guides/operations/updating-deployed-workflows), [deleting workflows](/cre/guides/operations/deleting-workflows) |
+| Concepts                                         | [Consensus computing](/cre/concepts/consensus-computing), [finality](/cre/concepts/finality), [non-determinism](/cre/concepts/non-determinism), [TypeScript WASM runtime](/cre/concepts/typescript-wasm-runtime)                                                                                                                                                                          |
+| [Templates](/cre/templates)                      | CRE workflow templates and usage                                                                                                                                                                                                                                                                                                                                                          |
+
+### Workflow generation
+
+When you ask the skill to build a workflow, it will:
+
+1. Confirm whether you want Go or TypeScript
+2. Ask whether HTTP requests should use regular or Confidential HTTP (for privacy-preserving API calls via enclave execution)
+3. Generate the complete workflow scaffold immediately — no speculative fetching
+4. Give you a `cre workflow simulate` command to test it
+5. Iterate on errors by fetching exactly what the error names, fixing it, and asking you to re-run
+
+### Debugging
+
+When diagnosing errors, the skill identifies the capability involved, fetches the relevant doc page, checks repo examples if needed, and proposes a fix based on CRE-specific constraints — not general programming assumptions.
+
+## Prompting
+
+If you prefer to work directly in an AI assistant, you can load the full CRE TypeScript documentation into the context window and prompt from there. This is useful for broad exploration, but loads the entire SDK reference upfront — the skill approach above keeps your context window focused on your current task.
+
+**Context file**: https\://docs.chain.link/cre/llms-full-ts.txt
+
+Alternatively, you can click the "Copy Page" button in the top right corner of any Chainlink docs page to load the full page content into the context window of your preferred AI assistant. Loading a single page — for example, just the triggers reference or the EVM client page — rather than the entire SDK consumes fewer tokens (lower cost per request for pay-per-token APIs), keeps you within the limits of smaller context windows, and gives the model more relevant signal to attend to, which tends to produce more accurate output.
+
+Copy the starter prompt below, replace the placeholder at the end with your use case, and paste it into your preferred AI assistant.
+
+```
+I'm building a Chainlink CRE workflow using the TypeScript SDK.
+
+Here is the full CRE TypeScript documentation:
+https://docs.chain.link/cre/llms-full-ts.txt
+
+Please fetch and read that file. After you've read it, please:
+- Help me build a CRE workflow based on what I describe
+- Answer any questions I have about the CRE TypeScript SDK
+- Guide me through implementation step by step
+
+I want to build: [describe your use case]
+```
 
 ---
 
