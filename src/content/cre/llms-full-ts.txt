@@ -4918,13 +4918,15 @@ Third-party verification allows customers or auditors to independently confirm t
 
 ### Steps for the workflow developer
 
-1. **Add a `.env.public` file** to your workflow folder with the Go toolchain version pinned:
+1. **Add a `.env.public` file** to your workflow folder with `GOTOOLCHAIN` set to the Go toolchain version you use to build the workflow. Pinning that version helps reproducible builds across machines and environments. Add this file *before* running `cre workflow deploy`.
+
+   Example (replace with your own version—the tag below is not prescriptive):
 
    ```
    GOTOOLCHAIN=go1.23.0
    ```
 
-   This ensures reproducible builds across different platforms and environments. Add this file *before* running `cre workflow deploy`.
+   Use the same toolchain string you build with; `go version` reports it (for example `go1.23.0 linux/amd64` → use `go1.23.0`).
 
 2. **Share your workflow source** with the customer. Provide a zip archive or repository link that includes all workflow files, including `.env.public`. Exclude `.env` files that contain private keys or secrets.
 
