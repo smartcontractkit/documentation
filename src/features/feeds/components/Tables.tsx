@@ -17,6 +17,43 @@ import { isFeedVisible } from "~/features/feeds/utils/feedVisibility.ts"
 
 const feedItems = monitoredFeeds.mainnet
 
+/**
+ * Decodes a raw maxSubmissionValue (BigInt string scaled by 10^decimals) into a
+ * human-readable USD price string. Returns null if the value is effectively unbounded
+ * (i.e. the contract's default max sentinel — all 0xff bytes) or otherwise too large
+ * to represent a real price cap.
+ *
+ * The raw value lives on-chain and is stored as a string to avoid JS number precision
+ * loss. We divide by 10^decimals to recover the actual price, then format it.
+ */
+const getMaxSubmissionValueBound = (
+  maxSubmissionValue: string | undefined,
+  decimals: number | undefined
+): string | null => {
+  if (!maxSubmissionValue || decimals == null || decimals < 0) return null
+  try {
+    const raw = BigInt(maxSubmissionValue)
+    const divisor = BigInt(10) ** BigInt(decimals)
+    const wholePart = raw / divisor
+    // Hide the badge if the decoded price exceeds $1,000,000 (1M).
+    // This filters out the all-0xff unbounded sentinel that contracts use by default
+    // (which decodes to ~9.578e44) while still accommodating any real-world price cap
+    // across USD, ETH, EUR, and other quote currencies — the highest plausible cap
+    // for any stablecoin or pegged asset is well below $1M.
+    if (wholePart > BigInt(1_000_000)) return null
+    const remainder = raw % divisor
+    const price = Number(wholePart) + Number(remainder) / Number(divisor)
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(price)
+  } catch {
+    return null
+  }
+}
+
 // Helper function to extract schema version from clicProductName
 // e.g., "HOOD/USD-Streams-RegularHoursEquityPrice-DS-Premium-Global-011" -> "v11"
 // e.g., "USD/SEK-Datalink-DeutscheBoerse-DS-Premium-Global-008" -> "v8"
@@ -238,6 +275,12 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
   // have its address hidden and show a contact email instead.
   const shouldHideAddress = metadata.docs?.productSubType === "calculatedPrice"
 
+  // Stablecoin price-bound note: only shown for stablecoin feeds with a meaningful cap
+  const isStablecoin = metadata.docs?.assetSubClass === "Stablecoin"
+  const stablecoinBound = isStablecoin
+    ? getMaxSubmissionValueBound(metadata.maxSubmissionValue, metadata.decimals)
+    : null
+
   const label = isUSGovernmentMacroeconomicData ? "Category" : "Asset type"
   const value = isUSGovernmentMacroeconomicData
     ? metadata.docs.assetClass === "Macroeconomics"
@@ -280,6 +323,18 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                 title="Tokenized Equity Feed"
               >
                 Tokenized Equity
+              </a>
+            </div>
+          )}
+          {stablecoinBound && (
+            <div>
+              <a
+                href="/data-feeds/selecting-data-feeds#bounded-market-price-feeds"
+                className={tableStyles.boundedNote}
+                title="This feed has a maximum reportable price"
+                target="_blank"
+              >
+                Bounded (Upper): {stablecoinBound}
               </a>
             </div>
           )}
@@ -475,6 +530,12 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
   // (already includes deprecating status and Supabase risk tier)
   const finalTier = metadata.finalCategory || metadata.feedCategory
 
+  // Stablecoin price-bound note for Stablecoin Stability Assessment feeds
+  const isStablecoinAssessment = metadata.docs?.assetClass === "Stablecoin Stability Assessment"
+  const stablecoinBound = isStablecoinAssessment
+    ? getMaxSubmissionValueBound(metadata.maxSubmissionValue, metadata.decimals)
+    : null
+
   return (
     <tr>
       <td className={tableStyles.pairCol}>
@@ -522,6 +583,18 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
               title="Multiple-Variable Response (MVR) Feed"
             >
               MVR
+            </a>
+          </div>
+        )}
+        {stablecoinBound && (
+          <div style={{ textAlign: "center" }}>
+            <a
+              href="/data-feeds/selecting-data-feeds#bounded-market-price-feeds"
+              className={tableStyles.boundedNote}
+              title="This feed has a maximum reportable price"
+              target="_blank"
+            >
+              Bounded (Upper): {stablecoinBound}
             </a>
           </div>
         )}
