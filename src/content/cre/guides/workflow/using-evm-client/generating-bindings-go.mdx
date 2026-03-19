@@ -7,7 +7,7 @@ date: Last Modified
 metadata:
   description: "Create type-safe contract interfaces: learn to generate Go bindings from smart contract ABIs for safer, cleaner workflow code."
   datePublished: "2025-11-04"
-  lastModified: "2026-03-05"
+  lastModified: "2026-03-17"
 ---
 
 import { Aside } from "@components"
@@ -38,7 +38,12 @@ cre generate-bindings evm --language go
 
 ### Step 1: Add your contract ABI
 
-Place your contract's ABI JSON file into the `contracts/evm/src/abi/` directory. For example, to generate bindings for a `PriceUpdater` contract, you would create `contracts/evm/src/abi/PriceUpdater.abi` with your ABI content.
+Place your contract ABI file into the `contracts/evm/src/abi/` directory. Two file formats are supported:
+
+- **`*.abi`** — A raw JSON array of ABI entries, as produced by `solc` or extracted from a compiled artifact
+- **`*.json`** — A compiled artifact file (Hardhat, Foundry, or similar) with a top-level `"abi"` field
+
+For example, to generate bindings for a `PriceUpdater` contract, create either `contracts/evm/src/abi/PriceUpdater.abi` or `contracts/evm/src/abi/PriceUpdater.json`. Both formats can coexist in the same directory.
 
 ### Step 2: Generate the bindings
 
@@ -48,7 +53,7 @@ From your **project root**, run the binding generator:
 cre generate-bindings evm
 ```
 
-This command scans all `.abi` files in `contracts/evm/src/abi/` and generates corresponding Go packages in `contracts/evm/src/generated/`. For each contract, two files are generated:
+This command scans all `.abi` and `.json` files in `contracts/evm/src/abi/` and generates corresponding Go packages in `contracts/evm/src/generated/`. For each contract, two files are generated:
 
 - `<ContractName>.go` — The main binding for interacting with the contract
 - `<ContractName>_mock.go` — A mock implementation for testing your workflows without deploying contracts
