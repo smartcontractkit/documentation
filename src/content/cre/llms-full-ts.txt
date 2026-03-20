@@ -448,9 +448,24 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-03-17
+Last Updated: 2026-03-20
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.6.0 - March 20, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.6.0" target="_blank">CRE CLI version 1.6.0</a> is now available.**
+
+- **Simulation limits support**: The `cre workflow simulate` command now accepts a `--limits` flag, letting you simulate workflows under specific resource constraints to better reflect production behavior. Use `cre workflow limits export` to inspect the embedded defaults and create custom limits files. See [Testing Production Limits](/cre/guides/operations/understanding-limits) for details.
+- **Improved `cre init`**: Various improvements to the project initialization experience.
+- **Bug fixes**: Fixed a binding bug and improved WASM debug symbol retention during simulation.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.5.0...v1.6.0)
 
 ## CLI v1.5.0 - March 17, 2026
 
@@ -4449,13 +4464,13 @@ See [Customizing limits](#customizing-limits) for how to create a custom limits 
 
 ## Viewing default limits
 
-Use the `cre workflow limits export` command to inspect the default production limits:
+Use the [`cre workflow limits export`](/cre/reference/cli/workflow#cre-workflow-limits) command to inspect the default production limits:
 
 ```bash
 cre workflow limits export
 ```
 
-This outputs a JSON file containing all enforced limits and their default values. You can redirect the output to a file:
+This outputs the default limits as JSON to stdout. You can redirect the output to a file:
 
 ```bash
 cre workflow limits export > my-limits.json
@@ -4510,6 +4525,7 @@ If your workflow requires higher limits than the defaults, you can request a lim
 
 - **Service quotas reference**: See the full [Service Quotas](/cre/service-quotas) page for all quota keys and values.
 - **Simulating workflows**: Learn more about the simulation environment in [Simulating Workflows](/cre/guides/operations/simulating-workflows).
+- **CLI reference**: See the [`cre workflow simulate`](/cre/reference/cli/workflow#cre-workflow-simulate) and [`cre workflow limits`](/cre/reference/cli/workflow#cre-workflow-limits) command references for all available flags.
 - **Deploy your workflow**: Once validated, see [Deploying Workflows](/cre/guides/operations/deploying-workflows).
 
 ---
@@ -7662,15 +7678,16 @@ cre workflow simulate <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| Flag                      | Description                                                                                                                                                                       |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--broadcast`             | Broadcast onchain write transactions (default: `false`). Without this flag, a dry run is performed                                                                                |
-| `-g, --engine-logs`       | Enable non-fatal engine logging                                                                                                                                                   |
-| `--non-interactive`       | Run without prompts; requires `--trigger-index` (see the line below) and inputs for the selected trigger type                                                                     |
-| `--trigger-index <int>`   | Selects which handler to run (0-based position). If your workflow has multiple handlers, `0` is the first, `1` is the second, etc. Required with `--non-interactive`              |
-| `--http-payload <string>` | HTTP trigger payload as JSON string or path to JSON file (with or without `@` prefix). For HTTP triggers only                                                                     |
-| `--evm-tx-hash <string>`  | Transaction hash (`0x...`) containing the event that triggered your workflow. For EVM log triggers only                                                                           |
-| `--evm-event-index <int>` | Which log/event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For EVM log triggers only |
+| Flag                      | Description                                                                                                                                                                                                                                                                      |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--broadcast`             | Broadcast onchain write transactions (default: `false`). Without this flag, a dry run is performed                                                                                                                                                                               |
+| `-g, --engine-logs`       | Enable non-fatal engine logging                                                                                                                                                                                                                                                  |
+| `--non-interactive`       | Run without prompts; requires `--trigger-index` (see the line below) and inputs for the selected trigger type                                                                                                                                                                    |
+| `--trigger-index <int>`   | Selects which handler to run (0-based position). If your workflow has multiple handlers, `0` is the first, `1` is the second, etc. Required with `--non-interactive`                                                                                                             |
+| `--http-payload <string>` | HTTP trigger payload as JSON string or path to JSON file (with or without `@` prefix). For HTTP triggers only                                                                                                                                                                    |
+| `--evm-tx-hash <string>`  | Transaction hash (`0x...`) containing the event that triggered your workflow. For EVM log triggers only                                                                                                                                                                          |
+| `--evm-event-index <int>` | Which log/event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For EVM log triggers only                                                                                                |
+| `--limits <string>`       | Production limits to enforce during simulation: `default` (embedded prod limits), a path to a limits JSON file (e.g. from `cre workflow limits export`), or `none` to disable. See [Testing Production Limits](/cre/guides/operations/understanding-limits) (default: `default`) |
 
 **Examples:**
 
@@ -7991,6 +8008,34 @@ cre workflow hash <workflow-folder-path> [flags]
   The **workflow hash** is the same value that appears as the **Workflow ID** onchain. If your consumer contracts validate the workflow ID, use `cre workflow hash` to check the expected ID before and after updates. See [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows) for details.
 </Aside>
 
+## `cre workflow limits`
+
+Manage simulation limits. Use this command to inspect the default production limits used during `cre workflow simulate`.
+
+### `cre workflow limits export`
+
+Prints the default production limits as JSON to stdout. Use this as a starting point for creating a custom limits file.
+
+**Usage:**
+
+```bash
+cre workflow limits export
+```
+
+**Example:**
+
+```bash
+cre workflow limits export > my-limits.json
+```
+
+Redirect the output to a file, edit the values you want to adjust, then pass the file to `cre workflow simulate` with the `--limits` flag:
+
+```bash
+cre workflow simulate ./my-workflow --limits ./my-limits.json --target staging-settings
+```
+
+See [Testing Production Limits](/cre/guides/operations/understanding-limits) for a full walkthrough.
+
 ***
 
 ## Workflow lifecycle
@@ -7998,16 +8043,19 @@ cre workflow hash <workflow-folder-path> [flags]
 The typical workflow lifecycle uses these commands in sequence:
 
 1. **Develop locally** — Write and iterate on your workflow code
-2. **`cre workflow simulate`** — Test your workflow in a local simulation environment
-3. **`cre workflow build`** — (Optional) Compile to WASM independently; useful in CI/CD pipelines
-4. **`cre workflow hash`** — (Optional) Inspect content hashes before deploying
-5. **`cre workflow deploy`** — Deploy your workflow to the registry
-6. **`cre workflow pause`** / **`cre workflow activate`** — Control workflow execution as needed
-7. **`cre workflow deploy`** (again) — Deploy updates (replaces the existing workflow)
-8. **`cre workflow delete`** — Remove the workflow when no longer needed
+2. **`cre workflow limits export`** — (Optional) Inspect and customize production limits before simulating
+3. **`cre workflow simulate`** — Test your workflow in a local simulation environment
+4. **`cre workflow build`** — (Optional) Compile to WASM independently; useful in CI/CD pipelines
+5. **`cre workflow hash`** — (Optional) Inspect content hashes before deploying
+6. **`cre workflow deploy`** — Deploy your workflow to the registry
+7. **`cre workflow pause`** / **`cre workflow activate`** — Control workflow execution as needed
+8. **`cre workflow deploy`** (again) — Deploy updates (replaces the existing workflow)
+9. **`cre workflow delete`** — Remove the workflow when no longer needed
 
 ## Learn more
 
+- [Testing Production Limits](/cre/guides/operations/understanding-limits) — Using the `--limits` flag and `cre workflow limits export`
+- [Simulating Workflows](/cre/guides/operations/simulating-workflows) — Detailed simulation guide
 - [Deploying Workflows](/cre/guides/operations/deploying-workflows) — Detailed deployment guide, including CI/CD pipeline integration
 - [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows) — Managing workflow state
 - [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows) — Version management
