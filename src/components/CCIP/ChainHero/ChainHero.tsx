@@ -186,34 +186,32 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                 {network.chainSelector ? <CopyValue value={network.chainSelector} /> : "n/a"}{" "}
               </div>
             </div>
-            <div className="ccip-chain-hero__details__item">
-              <div className="ccip-chain-hero__details__label">
-                RMN
-                <Tooltip
-                  label=""
-                  tip="The RMN contract is used to curse."
-                  labelStyle={{
-                    marginRight: "8px",
-                  }}
-                  style={{
-                    display: "inline-block",
-                    verticalAlign: "middle",
-                    marginBottom: "2px",
-                  }}
-                />
-              </div>
-              <div className="ccip-chain-hero__details__value" data-clipboard-type="rmn">
-                {network.armProxy ? (
+            {network.armProxy?.address && (
+              <div className="ccip-chain-hero__details__item">
+                <div className="ccip-chain-hero__details__label">
+                  RMN
+                  <Tooltip
+                    label=""
+                    tip="The RMN contract is used to curse."
+                    labelStyle={{
+                      marginRight: "8px",
+                    }}
+                    style={{
+                      display: "inline-block",
+                      verticalAlign: "middle",
+                      marginBottom: "2px",
+                    }}
+                  />
+                </div>
+                <div className="ccip-chain-hero__details__value" data-clipboard-type="rmn">
                   <Address
                     endLength={4}
                     contractUrl={getExplorerAddressUrl(network.explorer, network.chainType)(network.armProxy.address)}
                     address={network.armProxy.address}
                   />
-                ) : (
-                  "n/a"
-                )}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Conditional rendering based on chain type */}
             {network.chainType === "evm" && (
