@@ -386,6 +386,12 @@ These quotas apply to each individual workflow.
 
 [Contact us](/cre/support-feedback) to discuss quota increases.
 
+<Aside type="tip" title="Test limits locally before deploying">
+  You can enforce these production quotas during local simulation using the `--limits` flag. Export, customize, and
+  validate limits before deploying. See [Testing Production Limits](/cre/guides/operations/understanding-limits) for
+  details.
+</Aside>
+
 ---
 
 # Support & Feedback
@@ -5265,8 +5271,131 @@ Despite these limitations, simulation is an essential tool for catching bugs, va
 
 ## Next steps
 
+- **Test against production limits**: Use the `--limits` flag to enforce production quotas during simulation. See [Testing Production Limits](/cre/guides/operations/understanding-limits).
 - **Deploy your workflow**: Once you're confident your workflow works correctly, see [Deploying Workflows](/cre/guides/operations/deploying-workflows).
 - **CLI reference**: For a complete list of flags and options, see the [CLI Workflow Commands reference](/cre/reference/cli/workflow/).
+
+---
+
+# Testing Production Limits
+Source: https://docs.chain.link/cre/guides/operations/understanding-limits
+Last Updated: 2026-03-19
+
+Simulation limits let you test your workflows against production constraints locally before deploying. By enforcing the same quotas that apply in production, you can catch violations early and avoid surprises at deploy time.
+
+## Why use simulation limits
+
+When you simulate a workflow, the CLI can enforce the same [service quotas](/cre/service-quotas) that your workflow will be subject to in production. This helps you:
+
+- **Catch violations early**: Identify workflows that exceed timeout, memory, or rate limits before deploying.
+- **Match production behavior**: Ensure your local simulation mirrors how your workflow will run on the network.
+- **Avoid surprises at deploy time**: Confidently deploy knowing your workflow operates within quota boundaries.
+
+## Using the `--limits` flag
+
+The `--limits` flag controls how simulation limits are enforced. It supports three modes:
+
+### Default limits (default behavior)
+
+By default, the simulator enforces embedded production limits. You do not need to pass any flag:
+
+```bash
+cre workflow simulate my-workflow --target staging-settings
+```
+
+This is equivalent to explicitly passing `--limits default`:
+
+```bash
+cre workflow simulate my-workflow --limits default --target staging-settings
+```
+
+### No limits
+
+To disable all limit enforcement during simulation, use `--limits none`:
+
+```bash
+cre workflow simulate my-workflow --limits none --target staging-settings
+```
+
+<Aside type="caution" title="Use with care">
+  Running without limits is useful for debugging, but your workflow may still fail when deployed if it exceeds
+  production quotas. Always validate with limits enabled before deploying.
+</Aside>
+
+### Custom limits
+
+You can provide a custom limits file to override specific values:
+
+```bash
+cre workflow simulate my-workflow --limits ./my-limits.json --target staging-settings
+```
+
+See [Customizing limits](#customizing-limits) for how to create a custom limits file.
+
+## Viewing default limits
+
+Use the `cre workflow limits export` command to inspect the default production limits:
+
+```bash
+cre workflow limits export
+```
+
+This outputs a JSON file containing all enforced limits and their default values. You can redirect the output to a file:
+
+```bash
+cre workflow limits export > my-limits.json
+```
+
+## Customizing limits
+
+To customize limits for simulation:
+
+1. **Export the defaults** to a JSON file:
+
+   ```bash
+   cre workflow limits export > my-limits.json
+   ```
+
+2. **Edit the JSON file** to adjust the values you want to change. For example, you might increase the execution timeout or HTTP call limit for testing purposes.
+
+3. **Pass the custom file** to the simulator:
+
+   ```bash
+   cre workflow simulate my-workflow --limits ./my-limits.json --target staging-settings
+   ```
+
+<Aside type="note" title="Custom limits are for simulation only">
+  Custom limits only affect local simulation. Production deployments always use the platform-enforced quotas listed on
+  the [Service Quotas](/cre/service-quotas) page. To change production limits, see [Requesting limit
+  increases](#requesting-limit-increases).
+</Aside>
+
+## Default limit values
+
+The default limits enforced during simulation match the production quotas documented on the [Service Quotas](/cre/service-quotas) page. Use `cre workflow limits export` to inspect the exact values applied to your simulations.
+
+## Requesting limit increases
+
+If your workflow requires higher limits than the defaults, you can request a limit increase:
+
+1. Go to [cre.chain.link](https://cre.chain.link) and log in to your account.
+2. Click **Help** in the sidebar.
+3. Set **Issue Type** to **Other**.
+4. In the **Description** field, include:
+   - Which limit you need increased
+   - The desired value
+   - The reason for the increase
+
+<Aside type="tip" title="Be specific">
+  Include the quota key from the [Service Quotas](/cre/service-quotas) page (e.g., `PerWorkflow.ExecutionTimeout`) in
+  your request to help the team process it faster.
+</Aside>
+
+## Next steps
+
+- **Service quotas reference**: See the full [Service Quotas](/cre/service-quotas) page for all quota keys and values.
+- **Simulating workflows**: Learn more about the simulation environment in [Simulating Workflows](/cre/guides/operations/simulating-workflows).
+- **Deploy your workflow**: Once validated, see [Deploying Workflows](/cre/guides/operations/deploying-workflows).
 
 ---
 
