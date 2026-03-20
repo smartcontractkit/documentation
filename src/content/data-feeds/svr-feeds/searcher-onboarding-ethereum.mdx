@@ -112,6 +112,10 @@ Chainlink SVR uses forwarder contracts to route feed updates. You typically see 
 
 1. **callData**: The `callData` includes the parameters for `transmitSecondary()` on the aggregator contract. You can decode this if you need to extract the updated price when the onchain event is not emitted (details in the section below).
 
+Here's an example of a single transaction event:
+
+<CodeSample src="samples/DataFeeds/SVR/single-transaction-event.json" />
+
 Below are code examples for setting up a listener that monitors the MEV-Share event stream for SVR feed updates. These examples show how to connect to the stream, filter for relevant transactions with the `6fadcf72` function selector, and process incoming events:
 
 <Tabs client:visible>
@@ -124,6 +128,10 @@ Below are code examples for setting up a listener that monitors the MEV-Share ev
     <CodeSample src="samples/DataFeeds/SVR/listener.go" lang="go" />
   </Fragment>
 </Tabs>
+
+The event stream is also expected to occasionally transmit transaction bundles. The bundle event has a similar format to the single transaction event, but with more than one transactions. Transactions will be bundled in nonce ascending order, meaning txs[0] has the lowest nonce and txs[len(txs)] has the highest. Below is an example of a bundle:
+
+<CodeSample src="samples/DataFeeds/SVR/bundle-transaction-event.json" />
 
 #### 3. Decode `callData` for `forward` and `transmitSecondary`
 
@@ -283,6 +291,10 @@ Below are code examples demonstrating how to construct and submit bundles to the
 </Tabs>
 
 For gas management, simulations, and other advanced usage, see the official [Flashbots documentation](https://docs.flashbots.net/).
+
+Bidding for bundle events is very similar to single transaction events. As a searcher, you can append your transaction at the end of the bundle by using the bundle event hash just like you would with the single transaction event hash. Below is an example:
+
+<CodeSample src="samples/DataFeeds/SVR/bundle-bid.json" />
 
 #### 7. Considerations
 
