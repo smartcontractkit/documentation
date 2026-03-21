@@ -1,0 +1,111 @@
+---
+title: "Event Reactor"
+description: "Listen for on-chain events, fetch off-chain context, and respond on-chain using the event → read → decide → write pattern."
+author: "Chainlink Labs"
+excerpt: "React to on-chain events in real time with automated state-aware decision making using CRE."
+image: "thumbnail.jpg"
+cliTemplateIds:
+  - label: "TypeScript"
+    id: "event-reactor-ts"
+githubUrl: "https://github.com/smartcontractkit/cre-templates/tree/all-new-templates/starter-templates/event-reactor"
+githubRepoLinks:
+  - label: "TypeScript"
+    url: "https://github.com/smartcontractkit/cre-templates/tree/all-new-templates/starter-templates/event-reactor/event-reactor-ts"
+datePublished: "2026-03-19"
+lastModified: "2026-03-19"
+---
+
+import { Aside, Accordion, ClickToZoom } from "@components"
+
+## What This Template Does
+
+This template demonstrates the **event → read → decide → write** pattern using a LogTrigger for real-time on-chain reaction.
+
+The workflow:
+
+1. **LogTrigger** fires when `MonitoredToken` emits a `LargeTransfer` event
+2. **Decodes** the event using typed bindings (from, to, amount, timestamp)
+3. **Reads** `ReactorConsumer` state to check if the sender is already flagged
+4. **Decides**: If not flagged, sends a signed report to flag the address on-chain. If already flagged, logs and skips.
+
+**Key Technologies:**
+
+- **CRE (Chainlink Runtime Environment)** — Event-driven workflow orchestration with DON consensus
+- **LogTrigger** — Real-time event reaction without cron delays
+- **State-aware decisions** — Checks existing state before acting to avoid duplicates
+
+---
+
+## How It Works
+
+<ClickToZoom src="/images/cre-templates/templates/event-reactor.png" alt="Event Reactor workflow diagram" />
+
+---
+
+## Getting Started
+
+<Accordion title="Install dependencies" number={1}>
+
+```bash
+cd my-workflow && bun install && cd .. && cd contracts && bun install && cd ..
+```
+
+</Accordion>
+
+<Accordion title="Run tests" number={2}>
+
+```bash
+cd my-workflow && bun test
+```
+
+</Accordion>
+
+<Accordion title="Simulate the workflow" number={3}>
+
+Simulate with a pre-emitted event on Sepolia:
+
+```bash
+cre workflow simulate my-workflow --target staging-settings \
+  --non-interactive \
+  --trigger-index 0 \
+  --evm-tx-hash 0xe5ac97df3f93c5fdc89690a71d68a8e5ebd35ec8ba9c6cb5d1069f5818222553 \
+  --evm-event-index 0
+```
+
+Emit your own `LargeTransfer` event:
+
+```bash
+cast send 0x805A04e5C8b2dcb2B26C9e9C9aa12ce34374A35b \
+  "simulateLargeTransfer(address,uint256)" \
+  0x000000000000000000000000000000000000dEaD \
+  2000000000000000000000
+```
+
+</Accordion>
+
+<Accordion title="Deploy your own contracts" number={4}>
+
+Deploy `MonitoredToken` (no constructor args):
+
+```bash
+forge create src/MonitoredToken.sol:MonitoredToken \
+  --broadcast --private-key <KEY> --rpc-url <RPC>
+```
+
+Deploy `ReactorConsumer` with the forwarder address:
+
+```bash
+forge create src/ReactorConsumer.sol:ReactorConsumer \
+  --broadcast --private-key <KEY> --rpc-url <RPC> \
+  --constructor-args 0x15fc6ae953e024d975e77382eeec56a9101f9f88
+```
+
+</Accordion>
+
+## Customization
+
+- **Change monitored event** — Modify `MonitoredToken` or point to a different contract
+- **Change reaction logic** — Update the `onLargeTransfer` workflow and `_processReport` in the contract
+- **Add off-chain API calls** — Use `cre.capabilities.HTTPClient` to fetch external data before deciding
+
+For full details, see the [TypeScript README](https://github.com/smartcontractkit/cre-templates/tree/all-new-templates/starter-templates/event-reactor/event-reactor-ts) on GitHub.

@@ -3,9 +3,8 @@ import { CRETemplatesFrontmatter } from "~/content.config.ts"
 
 interface Props {
   frontmatter: CRETemplatesFrontmatter
-  templateSlug: string
 }
-const { frontmatter, templateSlug } = Astro.props
+const { frontmatter } = Astro.props
 ---
 
 <div class="hero-content">
@@ -28,38 +27,78 @@ const { frontmatter, templateSlug } = Astro.props
     <!-- Description -->
     <p class="description">{frontmatter.description}</p>
 
-    <!-- Get the template section (hidden until CLI is available) -->
-    <div class="get-template" style="display: none;">
-      <span class="get-template-label">Get the template</span>
-      <div class="template-actions">
-        <div class="command-box">
-          <code style="color: #fff !important;">cre init --template={templateSlug}</code>
-          <button class="copy-btn" data-command={`cre init --template=${templateSlug}`} title="Copy command">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-            </svg>
-          </button>
+    {
+      frontmatter.cliTemplateIds?.length ? (
+        <div class="get-template">
+          <span class="get-template-label">Get the template</span>
+          <div class="template-actions">
+            {frontmatter.cliTemplateIds.length > 1 && (
+              <div class="lang-toggle">
+                {frontmatter.cliTemplateIds.map((entry, i) => (
+                  <button class={`lang-toggle-pill ${i === 0 ? "active" : ""}`} data-cli-id={entry.id}>
+                    {entry.label.replace("TypeScript", "TS")}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div class="command-box">
+              <code id="cli-command" style="color: #fff !important;">
+                cre init --template={frontmatter.cliTemplateIds[0].id}
+              </code>
+              <button
+                class="copy-btn"
+                id="cli-copy-btn"
+                data-command={`cre init --template=${frontmatter.cliTemplateIds[0].id}`}
+                title="Copy command"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              </button>
+            </div>
+            <a href={frontmatter.githubUrl} class="github-btn" target="_blank" rel="noopener noreferrer">
+              <svg class="github-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" />
+              </svg>
+              View on GitHub
+            </a>
+          </div>
         </div>
-      </div>
-    </div>
-
-    <!-- GitHub button -->
-    <div class="github-buttons">
-      <a href={frontmatter.githubUrl} class="github-btn" target="_blank" rel="noopener noreferrer">
-        <svg class="github-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <path
-            d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"
-          ></path>
-        </svg>
-        View on GitHub
-      </a>
-    </div>
+      ) : (
+        <div class="github-buttons">
+          <a href={frontmatter.githubUrl} class="github-btn" target="_blank" rel="noopener noreferrer">
+            <svg class="github-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" />
+            </svg>
+            View on GitHub
+          </a>
+        </div>
+      )
+    }
   </div>
 </div>
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
+    const cliCommand = document.getElementById("cli-command")
+    const cliCopyBtn = document.getElementById("cli-copy-btn") as HTMLButtonElement | null
+    const togglePills = document.querySelectorAll<HTMLButtonElement>(".lang-toggle-pill")
+
+    togglePills.forEach((pill) => {
+      pill.addEventListener("click", () => {
+        const id = pill.dataset.cliId
+        if (!id || !cliCommand || !cliCopyBtn) return
+
+        togglePills.forEach((p) => p.classList.remove("active"))
+        pill.classList.add("active")
+
+        const command = `cre init --template=${id}`
+        cliCommand.textContent = command
+        cliCopyBtn.dataset.command = command
+      })
+    })
+
     const copyBtns = document.querySelectorAll<HTMLButtonElement>(".copy-btn")
     copyBtns.forEach((btn) => {
       btn.addEventListener("click", async () => {
@@ -121,7 +160,6 @@ const { frontmatter, templateSlug } = Astro.props
     max-width: 500px;
   }
 
-  /* Hidden until CLI is available — remove style="display: none;" from .get-template to re-enable */
   .get-template {
     display: flex;
     flex-direction: column;
@@ -134,10 +172,43 @@ const { frontmatter, templateSlug } = Astro.props
     color: #5a6175;
   }
 
+  .lang-toggle {
+    display: inline-flex;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    flex-shrink: 0;
+  }
+
+  .lang-toggle-pill {
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    background: #f5f7fa;
+    color: #5a6175;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .lang-toggle-pill:not(:last-child) {
+    border-right: 1px solid #d1d5db;
+  }
+
+  .lang-toggle-pill:hover {
+    background: #e8eaed;
+  }
+
+  .lang-toggle-pill.active {
+    background: #1e293b;
+    color: white;
+  }
+
   .template-actions {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+    align-items: stretch;
     gap: var(--space-3x);
   }
 
@@ -149,6 +220,7 @@ const { frontmatter, templateSlug } = Astro.props
     background: #1e293b;
     border-radius: 6px;
     font-family: var(--font-mono, monospace);
+    white-space: nowrap;
   }
 
   .command-box code,
@@ -201,10 +273,11 @@ const { frontmatter, templateSlug } = Astro.props
     font-size: 14px;
     font-weight: 600;
     border: 1px solid #0847f7;
-    border-radius: 4px;
+    border-radius: 6px;
     text-decoration: none;
     transition: all 0.2s ease;
-    min-width: 120px;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .github-btn:hover {

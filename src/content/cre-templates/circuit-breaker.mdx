@@ -1,0 +1,105 @@
+---
+title: "Circuit Breaker"
+description: "Monitor on-chain events for anomalies, automatically pause contracts when thresholds are breached using a dual-trigger circuit breaker pattern."
+author: "Chainlink Labs"
+excerpt: "Protect DeFi protocols with automated anomaly detection and circuit breaking using CRE."
+image: "thumbnail.jpg"
+cliTemplateIds:
+  - label: "TypeScript"
+    id: "circuit-breaker-ts"
+githubUrl: "https://github.com/smartcontractkit/cre-templates/tree/all-new-templates/starter-templates/circuit-breaker"
+githubRepoLinks:
+  - label: "TypeScript"
+    url: "https://github.com/smartcontractkit/cre-templates/tree/all-new-templates/starter-templates/circuit-breaker/circuit-breaker-ts"
+datePublished: "2026-03-19"
+lastModified: "2026-03-19"
+---
+
+import { Aside, Accordion, ClickToZoom } from "@components"
+
+## What This Template Does
+
+This template demonstrates a **dual-trigger circuit breaker pattern** that monitors on-chain events for anomalies and automatically pauses contracts when thresholds are breached.
+
+Two triggers work together:
+
+- **LogTrigger** — Fires when `ProtocolWithBreaker` emits a `PriceUpdated` event. The workflow decodes the event data (newPrice, oldPrice, timestamp), reads on-chain state, calculates price deviation in basis points, and trips the breaker if deviation exceeds the threshold.
+- **Cron** — Fires every 10 minutes for periodic health checks. Reads protocol state and logs current status for monitoring.
+
+Both triggers converge on decision logic: if an anomaly is detected, a DON-signed report is sent via `KeystoneForwarder` to pause the protocol on-chain.
+
+**Key Technologies:**
+
+- **CRE (Chainlink Runtime Environment)** — Orchestrates dual-trigger workflows with DON consensus
+- **LogTrigger + Cron** — Real-time event monitoring with async health checks
+- **On-chain circuit breaker** — One-way pause by default (only CRE can unpause)
+
+---
+
+## How It Works
+
+<ClickToZoom src="/images/cre-templates/templates/circuit-breaker.png" alt="Circuit Breaker workflow diagram" />
+
+---
+
+## Getting Started
+
+<Accordion title="Install dependencies" number={1}>
+
+```bash
+cd my-workflow && bun install && cd .. && cd contracts && bun install && cd ..
+```
+
+</Accordion>
+
+<Accordion title="Run tests" number={2}>
+
+```bash
+cd my-workflow && bun test
+```
+
+</Accordion>
+
+<Accordion title="Simulate the workflow" number={3}>
+
+Simulate the **Cron health check**:
+
+```bash
+cre workflow simulate my-workflow --target staging-settings
+```
+
+Simulate the **LogTrigger** with an anomalous price event:
+
+```bash
+cre workflow simulate my-workflow --target staging-settings \
+  --non-interactive \
+  --trigger-index 0 \
+  --evm-tx-hash 0x98dfb56db57cb0689e5e4092949d41431a283f52128066bc941b0c219d3f6203 \
+  --evm-event-index 0
+```
+
+</Accordion>
+
+<Accordion title="Deploy your own contract" number={4}>
+
+Deploy `ProtocolWithBreaker` with constructor arguments: forwarder address, initial price, and deviation threshold in basis points (1000 = 10%):
+
+```bash
+forge create src/ProtocolWithBreaker.sol:ProtocolWithBreaker \
+  --broadcast \
+  --private-key <KEY> \
+  --rpc-url <RPC> \
+  --constructor-args 0x15fc6ae953e024d975e77382eeec56a9101f9f88 1000000000000000000 1000
+```
+
+</Accordion>
+
+## Customization
+
+- **Change threshold** — Update `_deviationThresholdBps` in the constructor args
+- **Change schedule** — Edit `schedule` in `config.staging.json`
+- **Add webhook alerts** — Use `HTTPClient` POST to send notifications when the breaker trips
+- **Monitor different events** — Change the event listener to watch different contract events
+- **Implement unpause logic** — Create a separate workflow to unpause the protocol
+
+For full details, see the [TypeScript README](https://github.com/smartcontractkit/cre-templates/tree/all-new-templates/starter-templates/circuit-breaker/circuit-breaker-ts) on GitHub.
