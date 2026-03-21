@@ -380,13 +380,6 @@ export const CHAINS: Chain[] = [
         rddUrl: "https://reference-data-directory.vercel.app/feeds-polygon-mainnet-katana.json",
         queryString: "katara-mainnet",
       },
-      {
-        name: "Katana Testnet Tatara",
-        explorerUrl: "https://explorer.tatara.katana.network/address/%s",
-        networkType: "testnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-polygon-testnet-tatara.json",
-        queryString: "katara-testnet-tatara",
-      },
     ],
   },
   {

@@ -389,11 +389,6 @@ export const StreamsNetworksData: NetworkData[] = [
       verifierProxy: "0x2a644E5AC685112A7Eff0c4d73CD0260546D366F",
       explorerUrl: "https://explorer.katanarpc.com/address/%s",
     },
-    testnet: {
-      label: "Katana Testnet (Tatara)",
-      verifierProxy: "0x57A97148C1fa50f35F0639f380077017D8893b6b",
-      explorerUrl: "https://explorer.tatara.katana.network/address/%s",
-    },
   },
   {
     network: "Lens",
