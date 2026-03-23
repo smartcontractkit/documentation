@@ -102,6 +102,7 @@ const creTemplatesFrontmatter = z
     ), // Links to GitHub folders for each language variant
     image: z.string(),
     featured: z.boolean().optional(), // Whether this template is featured on the hub page
+    tags: z.array(z.string()).optional(), // Tags from cre-templates registry (e.g., "data-feeds", "cross-chain")
     cliTemplateIds: z
       .array(
         z.object({
