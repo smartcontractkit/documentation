@@ -6,7 +6,7 @@ isIndex: true
 metadata:
   description: "Connect your workflow to external APIs: learn to make GET and POST requests with built-in consensus for secure offchain data."
   datePublished: "2025-11-04"
-  lastModified: "2026-02-03"
+  lastModified: "2026-03-17"
 ---
 
 import { Aside } from "@components"
@@ -16,6 +16,11 @@ The CRE SDK provides an HTTP client that allows your workflows to interact with 
 {/* prettier-ignore */}
 <Aside type="caution" title="Using timestamps in requests">
   If your HTTP request includes timestamps (e.g., for authentication headers or time-based queries), use `runtime.now()` instead of `Date.now()`. This ensures all nodes use the same timestamp and reach consensus. See [Using Time in Workflows](/cre/guides/workflow/time-in-workflows) for details.
+</Aside>
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Parse responses before aggregation">
+  When using a numeric aggregation method (such as `median`), always parse the HTTP response **inside** your node function and return a numeric value — never pass the raw response body to the aggregation step. If your endpoint returns an error string and your node function passes that string to a median aggregation, consensus will fail with `unsupported type for median aggregation`. See the [best practices section](/cre/guides/workflow/using-http-client/get-request#best-practices) of the GET request guide for correct and incorrect patterns.
 </Aside>
 
 These guides will walk you through the common use cases for the HTTP client.

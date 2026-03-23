@@ -12,8 +12,8 @@ export const getServerSideChainMetadata = async (
     const requests = chain.networks.map((nw) =>
       nw?.rddUrl
         ? EleventyFetch(nw?.rddUrl, {
-            duration: skipCache ? "0s" : "1d", // No cache if skipCache is true
-            type: "json", // we'll parse JSON for you
+            duration: skipCache ? "0s" : "1d",
+            type: "json",
           }).then((metadata) => ({
             ...nw,
             metadata: metadata.filter(
