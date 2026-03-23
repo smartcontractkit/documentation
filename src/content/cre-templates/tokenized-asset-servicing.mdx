@@ -15,7 +15,7 @@ datePublished: "2026-02-13"
 lastModified: "2026-02-13"
 ---
 
-import { Aside, Accordion } from "@components"
+import { Aside, Accordion, ClickToZoom } from "@components"
 
 ## What This Template Does
 
@@ -45,30 +45,10 @@ This architecture decouples on-chain immutability from off-chain accessibility, 
 
 ## Flow Diagram
 
-```mermaid
-sequenceDiagram
-    participant Contract as Smart Contract<br/>(Ethereum Sepolia)
-    participant CRE as Chainlink CRE<br/>(LogTrigger/HTTPTrigger)
-    participant Lambda as AWS Lambda
-    participant DynamoDB as AWS DynamoDB
-
-    Note over Contract,DynamoDB: Asset Registration Flow
-    Contract->>Contract: Emit AssetRegistered event
-    Contract-->>CRE: Event Log (LogTrigger)
-    CRE->>CRE: Parse event data
-    CRE->>Lambda: POST /function-url (HTTP Ability)
-    Lambda->>DynamoDB: PutItem (AssetId, Name, Issuer, Supply)
-
-    Note over Contract,DynamoDB: Asset Verification Flow
-    Contract->>Contract: Emit AssetVerified event
-    Contract-->>CRE: Event Log (LogTrigger)
-    CRE->>Lambda: POST verification data
-    Lambda->>DynamoDB: UpdateItem (Add Verified: true)
-
-    Note over Contract,DynamoDB: UID Update Flow (Bidirectional)
-    CRE->>CRE: Receive HTTP Trigger
-    CRE->>Contract: updateAssetMetadata(assetId, uid)
-```
+<ClickToZoom
+  src="/images/cre-templates/templates/tokenized-asset-flow.png"
+  alt="Tokenized Asset Servicing flow diagram"
+/>
 
 ---
 
