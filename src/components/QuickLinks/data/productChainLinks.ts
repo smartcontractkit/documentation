@@ -108,6 +108,7 @@ export const productChainLinks: ProductChainLinks = {
       "adi-network": "/ccip/directory/testnet/chain/adi-testnet",
       edge: "/ccip/directory/mainnet/chain/edge-mainnet",
       robinhood: "/ccip/directory/testnet/chain/robinhood-testnet",
+      ton: "/ccip/directory/testnet/chain/ton-testnet",
     },
   },
   CRE: {
@@ -459,4 +460,5 @@ export const chainNames: Record<string, string> = {
   dogeos: "DogeOS",
   edge: "Edge",
   robinhood: "Robinhood Chain",
+  ton: "TON",
 }
