@@ -1,7 +1,7 @@
 import Address from "~/components/AddressReact.tsx"
 import "./Table.css"
 import { drawerContentStore } from "../Drawer/drawerStore.ts"
-import { Environment, SupportedTokenConfig, tokenPoolDisplay, PoolType } from "~/config/data/ccip/index.ts"
+import { Environment, SupportedTokenConfig, PoolType } from "~/config/data/ccip/index.ts"
 import { areAllLanesPaused } from "~/config/data/ccip/utils.ts"
 import { ChainType, ExplorerInfo } from "~/config/types.ts"
 import TableSearchInput from "./TableSearchInput.tsx"
@@ -22,7 +22,9 @@ interface TableProps {
     tokenDecimals: number
     tokenAddress: string
     tokenPoolType: PoolType
+    tokenPoolRawType: string
     tokenPoolAddress: string
+    tokenPoolVersion: string
     explorer: ExplorerInfo
   }[]
   token: {
@@ -60,6 +62,9 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
               <th>Token address</th>
               <th>Token pool type</th>
               <th>Token pool address</th>
+              <th>Pool version</th>
+              <th>Custom finality</th>
+              <th>Min Blocks required</th>
             </tr>
           </thead>
           <tbody>
@@ -128,7 +133,7 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                         endLength={6}
                       />
                     </td>
-                    <td>{tokenPoolDisplay(network.tokenPoolType)}</td>
+                    <td>{network.tokenPoolRawType ?? "—"}</td>
                     <td data-clipboard-type="token-pool">
                       <Address
                         contractUrl={getExplorerAddressUrl(
@@ -138,6 +143,18 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                         address={network.tokenPoolAddress}
                         endLength={6}
                       />
+                    </td>
+                    <td>{network.tokenPoolVersion}</td>
+                    <td>
+                      {/* TODO: Fetch from API - GET /api/ccip/v1/tokens/{tokenCanonicalSymbol}/finality?environment={environment}
+                          Custom finality is derived from minBlockConfirmation > 0
+                          Display: "Yes" | "No" | "N/A" (with tooltip for unavailable) */}
+                      -
+                    </td>
+                    <td>
+                      {/* TODO: Fetch from API - GET /api/ccip/v1/tokens/{tokenCanonicalSymbol}/finality?environment={environment}
+                          Display minBlockConfirmation value or "-" if custom finality is disabled/unavailable */}
+                      -
                     </td>
                   </tr>
                 )
