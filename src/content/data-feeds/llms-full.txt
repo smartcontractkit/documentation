@@ -6343,7 +6343,42 @@ Chainlink SVR uses forwarder contracts to route feed updates. You typically see 
 
 3. **callData**: The `callData` includes the parameters for `transmitSecondary()` on the aggregator contract. You can decode this if you need to extract the updated price when the onchain event is not emitted (details in the section below).
 
+Here's an example of a single transaction event:
+
+```json
+{
+  "hash": "0x_single_transaction_event_hash",
+  "txs": [
+    {
+      "to": "0x45ab36b69e02e59d3c49b863b31f530c991dd554",
+      "functionSelector": "0x6fadcf72",
+      "callData": "0x80640b.....................a2354d"
+    }
+  ]
+}
+```
+
 Below are code examples for setting up a listener that monitors the MEV-Share event stream for SVR feed updates. These examples show how to connect to the stream, filter for relevant transactions with the `6fadcf72` function selector, and process incoming events:
+
+The event stream is also expected to occasionally transmit transaction bundles. The bundle event has a similar format to the single transaction event, but with more than one transactions. Transactions will be bundled in nonce ascending order, meaning txs[0] has the lowest nonce and txs[len(txs)] has the highest. Below is an example of a bundle:
+
+```json
+{
+  "hash": "0x_bundle_event_hash",
+  "txs": [
+    {
+      "to": "0x45ab36b69e02e59d3c49b863b31f530c991dd554",
+      "functionSelector": "0x6fadcf72",
+      "callData": "0x80640b.....................a2354d"
+    },
+    {
+      "to": "0x45ab36b69e02e59d3c49b863b31f530c991dd554",
+      "functionSelector": "0x6fadcf72",
+      "callData": "0x12340b.....................a2354d"
+    }
+  ]
+}
+```
 
 #### 3. Decode `callData` for `forward` and `transmitSecondary`
 
@@ -6469,6 +6504,33 @@ Once you've detected an SVR update and identified a profitable liquidation oppor
 Below are code examples demonstrating how to construct and submit bundles to the Flashbots relay:
 
 For gas management, simulations, and other advanced usage, see the official [Flashbots documentation](https://docs.flashbots.net/).
+
+Bidding for bundle events is very similar to single transaction events. As a searcher, you can append your transaction at the end of the bundle by using the bundle event hash just like you would with the single transaction event hash. Below is an example:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "mev_sendBundle",
+  "params": [
+    {
+      "version": "v0.1",
+      "inclusion": {
+        "block": "0x01",
+        "maxBlock": "0x04"
+      },
+      "body": [
+        {
+          "hash": "0x_bundle_event_hash"
+        },
+        {
+          "tx": "0x0213a...",
+          "canRevert": false
+        }
+      ]
+    }
+  ]
+}
+```
 
 #### 7. Considerations
 
