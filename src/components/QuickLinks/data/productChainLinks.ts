@@ -210,6 +210,7 @@ export const productChainLinks: ProductChainLinks = {
       polygon: "/data-streams/supported-networks?streamsNetwork=polygon",
       polygonkatana: "/data-streams/supported-networks?streamsNetwork=katana",
       plasma: "/data-streams/supported-networks?streamsNetwork=plasma",
+      robinhood: "/data-streams/supported-networks?streamsNetwork=robinhood",
       ronin: "/data-streams/supported-networks?streamsNetwork=ronin",
       sei: "/data-streams/supported-networks?streamsNetwork=sei",
       seismic: "/data-streams/supported-networks?streamsNetwork=seismic",
