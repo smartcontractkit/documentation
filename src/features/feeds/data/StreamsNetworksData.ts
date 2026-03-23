@@ -565,6 +565,15 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "Robinhood Chain",
+    logoUrl: "/assets/chains/ronin.svg",
+    testnet: {
+      label: "Robinhood Chain Testnet",
+      verifierProxy: "0x72790f9eB82db492a7DDb6d2af22A270Dcc3Db64",
+      explorerUrl: "https://explorer.testnet.chain.robinhood.com/address/%s",
+    },
+  },
+  {
     network: "Ronin",
     logoUrl: "/assets/chains/ronin.svg",
     mainnet: {
