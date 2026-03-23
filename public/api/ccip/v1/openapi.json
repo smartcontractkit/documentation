@@ -2,8 +2,8 @@
   "openapi": "3.0.0",
   "info": {
     "title": "CCIP Docs config API",
-    "description": "API for retrieving CCIP chain, token, and lane information.\n\nTo get started quickly, you can download our [Postman Collection](/api/ccip/v1/postman-collection.json) which includes all endpoints and example requests.",
-    "version": "1.6.0",
+    "description": "API for retrieving CCIP chain, token, lane, and rate limits information.\n\nTo get started quickly, you can download our [Postman Collection](/api/ccip/v1/postman-collection.json) which includes all endpoints and example requests.",
+    "version": "1.16.0",
     "contact": {
       "name": "File issues",
       "url": "https://github.com/smartcontractkit/documentation/issues/new/choose"
@@ -34,7 +34,7 @@
     },
     {
       "name": "lanes",
-      "description": "Cross-chain lane information endpoints"
+      "description": "Cross-chain lane information endpoints with rate limits"
     }
   ],
   "paths": {
@@ -120,6 +120,16 @@
               "enum": ["evm", "solana", "aptos", "sui", "tron", "canton", "ton", "stellar", "starknet"]
             },
             "description": "Filter results by chain family. Only effective when using the search parameter."
+          },
+          {
+            "name": "internalIdFormat",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["directory", "selector"],
+              "default": "selector"
+            },
+            "description": "Format for internal IDs in the response. 'selector' uses canonical selector names (e.g., 'ethereum-mainnet'), 'directory' uses chains.json keys (e.g., 'mainnet'). Only applies when outputKey=internalId."
           }
         ],
         "responses": {
@@ -344,6 +354,16 @@
               "default": "chainId"
             },
             "description": "Key to use for organizing the response data"
+          },
+          {
+            "name": "internalIdFormat",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["directory", "selector"],
+              "default": "selector"
+            },
+            "description": "Format for internal IDs in the response. 'selector' uses canonical selector names (e.g., 'ethereum-mainnet'), 'directory' uses chains.json keys (e.g., 'mainnet'). Only applies when outputKey=internalId."
           }
         ],
         "responses": {
@@ -410,6 +430,474 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tokens/{tokenCanonicalSymbol}": {
+      "get": {
+        "tags": ["tokens"],
+        "summary": "Retrieve detailed token information with custom finality data",
+        "description": "Returns detailed information about a specific CCIP token, including chain-specific configurations and custom finality settings (minBlockConfirmation and hasCustomFinality).",
+        "operationId": "getTokenDetail",
+        "parameters": [
+          {
+            "name": "tokenCanonicalSymbol",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The canonical symbol for the token (e.g., LINK, USDC, BETS)",
+            "example": "BETS"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["mainnet", "testnet"]
+            },
+            "description": "The network environment to query"
+          },
+          {
+            "name": "outputKey",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["chainId", "selector", "internalId"],
+              "default": "chainId"
+            },
+            "description": "Key to use for organizing the response data by chain"
+          },
+          {
+            "name": "internalIdFormat",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["directory", "selector"],
+              "default": "selector"
+            },
+            "description": "Format for internal IDs in the response. 'selector' uses canonical selector names (e.g., 'ethereum-mainnet'), 'directory' uses chains.json keys (e.g., 'mainnet'). Only applies when outputKey=internalId."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with token detail data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenDetailApiResponse"
+                },
+                "examples": {
+                  "v2Pool": {
+                    "summary": "v2.0 pool (BETS) with CCV features enabled",
+                    "description": "For v2.0+ pools (supportsV2Features=true), ccvConfig contains thresholdAmount and customFinality shows block confirmation settings. Different chains may show different scenarios: customFinality enabled (minBlockConfirmation > 0), disabled (minBlockConfirmation = 0), or downstream API error (both null).",
+                    "value": {
+                      "metadata": {
+                        "environment": "mainnet",
+                        "timestamp": "2025-12-10T12:00:00Z",
+                        "requestId": "123e4567-e89b-12d3-a456-426614174000",
+                        "tokenSymbol": "BETS",
+                        "chainCount": 3
+                      },
+                      "data": {
+                        "1": {
+                          "chainId": 1,
+                          "chainName": "Ethereum",
+                          "decimals": 18,
+                          "destinations": ["56", "137"],
+                          "name": "BetSwirl Token",
+                          "poolAddress": "0x1B7492C3bD23A4aDB448710e4275FF14A5288932",
+                          "poolType": "lockRelease",
+                          "symbol": "BETS",
+                          "tokenAddress": "0x514910771AF9Ca656af840dff83E8264EcF986CA",
+                          "customFinality": {
+                            "hasCustomFinality": false,
+                            "minBlockConfirmation": 0
+                          },
+                          "ccvConfig": {
+                            "thresholdAmount": "10000000000000000000000"
+                          },
+                          "pool": {
+                            "address": "0x1B7492C3bD23A4aDB448710e4275FF14A5288932",
+                            "rawType": "LockReleaseTokenPool",
+                            "type": "lockRelease",
+                            "version": "2.0.0",
+                            "advancedPoolHooks": null,
+                            "supportsV2Features": true
+                          }
+                        },
+                        "137": {
+                          "chainId": 137,
+                          "chainName": "Polygon",
+                          "decimals": 18,
+                          "destinations": ["1"],
+                          "name": "BetSwirl Token",
+                          "poolAddress": "0x5678...9ABC",
+                          "poolType": "burnMint",
+                          "symbol": "BETS",
+                          "tokenAddress": "0xDEF0...1234",
+                          "customFinality": {
+                            "hasCustomFinality": true,
+                            "minBlockConfirmation": 5
+                          },
+                          "ccvConfig": {
+                            "thresholdAmount": "5000000000000000000000"
+                          },
+                          "pool": {
+                            "address": "0x5678...9ABC",
+                            "rawType": "BurnMintTokenPool",
+                            "type": "burnMint",
+                            "version": "2.0.0",
+                            "advancedPoolHooks": null,
+                            "supportsV2Features": true
+                          }
+                        },
+                        "56": {
+                          "chainId": 56,
+                          "chainName": "BNB Smart Chain",
+                          "decimals": 18,
+                          "destinations": ["1"],
+                          "name": "BetSwirl Token",
+                          "poolAddress": "0xABCD...1234",
+                          "poolType": "burnMint",
+                          "symbol": "BETS",
+                          "tokenAddress": "0x9876...FEDC",
+                          "customFinality": {
+                            "hasCustomFinality": null,
+                            "minBlockConfirmation": null
+                          },
+                          "ccvConfig": {
+                            "thresholdAmount": null
+                          },
+                          "pool": {
+                            "address": "0xABCD...1234",
+                            "rawType": "BurnMintTokenPool",
+                            "type": "burnMint",
+                            "version": "2.0.0",
+                            "advancedPoolHooks": null,
+                            "supportsV2Features": true
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "v1Pool": {
+                    "summary": "v1.x pool (GHO) with CCV features not supported",
+                    "description": "For v1.x pools (supportsV2Features=false), both ccvConfig and customFinality are null because these features are not supported by v1.x pools.",
+                    "value": {
+                      "metadata": {
+                        "environment": "mainnet",
+                        "timestamp": "2025-12-10T12:00:00Z",
+                        "requestId": "456e7890-e89b-12d3-a456-426614174000",
+                        "tokenSymbol": "GHO",
+                        "chainCount": 1
+                      },
+                      "data": {
+                        "1": {
+                          "chainId": 1,
+                          "chainName": "Ethereum",
+                          "decimals": 18,
+                          "destinations": ["42161"],
+                          "name": "Gho Token",
+                          "poolAddress": "0xGHO1...5678",
+                          "poolType": "lockRelease",
+                          "symbol": "GHO",
+                          "tokenAddress": "0x40D1...2C2f",
+                          "customFinality": null,
+                          "ccvConfig": null,
+                          "pool": {
+                            "address": "0xGHO1...5678",
+                            "rawType": "LockReleaseTokenPool",
+                            "type": "lockRelease",
+                            "version": "1.6.0",
+                            "advancedPoolHooks": null,
+                            "supportsV2Features": false
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Token not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "NOT_FOUND",
+                  "message": "Token 'INVALID' not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tokens/{tokenCanonicalSymbol}/chains/{chain}": {
+      "get": {
+        "tags": ["tokens"],
+        "summary": "Retrieve token directory data for a specific chain",
+        "description": "Returns detailed token configuration for a specific chain, including pool information, CCV (Cross-Chain Verifier) configuration, and lane-specific verifiers and rate limits. This endpoint provides the data needed for cross-chain token transfer interfaces.",
+        "operationId": "getTokenDirectory",
+        "parameters": [
+          {
+            "name": "tokenCanonicalSymbol",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The canonical symbol for the token (e.g., LINK, USDC, LBTC)",
+            "example": "LBTC"
+          },
+          {
+            "name": "chain",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The source chain identifier (e.g., mainnet, ethereum-testnet-sepolia)",
+            "example": "mainnet"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["mainnet", "testnet"]
+            },
+            "description": "The network environment to query"
+          },
+          {
+            "name": "outputKey",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["chainId", "selector", "internalId"],
+              "default": "chainId"
+            },
+            "description": "Key format to use for lane keys in the response"
+          },
+          {
+            "name": "internalIdFormat",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["directory", "selector"],
+              "default": "selector"
+            },
+            "description": "Format for internalId values in the response. 'selector' uses canonical selector names (e.g., 'ethereum-mainnet'), 'directory' uses chains.json keys (e.g., 'mainnet')."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with token directory data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenDirectoryApiResponse"
+                },
+                "examples": {
+                  "v2Pool": {
+                    "summary": "v2.0 pool (LBTC) with CCV features enabled",
+                    "description": "For v2.0+ pools (supportsV2Features=true), ccvConfig contains thresholdAmount and verifiers include additional threshold verifiers in aboveThreshold array. customFinality shows block confirmation settings.",
+                    "value": {
+                      "metadata": {
+                        "environment": "mainnet",
+                        "timestamp": "2025-12-10T12:00:00Z",
+                        "requestId": "123e4567-e89b-12d3-a456-426614174000",
+                        "symbol": "LBTC",
+                        "sourceChain": "ethereum-mainnet"
+                      },
+                      "data": {
+                        "internalId": "ethereum-mainnet",
+                        "chainId": 1,
+                        "selector": "5009297550715157269",
+                        "token": {
+                          "address": "0x8236a87084f8B84306f72007F36F2618A5634494",
+                          "decimals": 8
+                        },
+                        "pool": {
+                          "address": "0x88E18636EfFC3b3cd520FC72B710eb99C0017BC7",
+                          "rawType": "BurnMintTokenPool",
+                          "type": "burnMint",
+                          "version": "2.0.0",
+                          "advancedPoolHooks": null,
+                          "supportsV2Features": true
+                        },
+                        "ccvConfig": {
+                          "thresholdAmount": "100000000000"
+                        },
+                        "customFinality": {
+                          "hasCustomFinality": true,
+                          "minBlockConfirmation": 5
+                        },
+                        "outboundLanes": {
+                          "8453": {
+                            "internalId": "ethereum-mainnet-base-1",
+                            "chainId": 8453,
+                            "selector": "15971525489660198786",
+                            "rateLimits": {
+                              "standard": {
+                                "capacity": "3490000000",
+                                "rate": "323148",
+                                "isEnabled": true
+                              },
+                              "custom": {
+                                "capacity": "6980000000",
+                                "rate": "646296",
+                                "isEnabled": true
+                              }
+                            },
+                            "fees": {
+                              "standardTransferFeeBps": 10,
+                              "customTransferFeeBps": 25
+                            },
+                            "verifiers": {
+                              "belowThreshold": ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"],
+                              "aboveThreshold": [
+                                "0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D",
+                                "0xF4c7E640EdA248ef95972845a62bdC74237805dB"
+                              ]
+                            }
+                          }
+                        },
+                        "inboundLanes": {
+                          "8453": {
+                            "internalId": "ethereum-mainnet-base-1",
+                            "chainId": 8453,
+                            "selector": "15971525489660198786",
+                            "rateLimits": {
+                              "standard": null,
+                              "custom": null
+                            },
+                            "fees": null,
+                            "verifiers": {
+                              "belowThreshold": ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"],
+                              "aboveThreshold": ["0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D"]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "v1Pool": {
+                    "summary": "v1.x pool (GHO) with CCV features not supported",
+                    "description": "For v1.x pools (supportsV2Features=false), both ccvConfig and customFinality are null because these features are not supported. Verifiers in lanes are also null.",
+                    "value": {
+                      "metadata": {
+                        "environment": "mainnet",
+                        "timestamp": "2025-12-10T12:00:00Z",
+                        "requestId": "456e7890-e89b-12d3-a456-426614174000",
+                        "symbol": "GHO",
+                        "sourceChain": "ethereum-mainnet"
+                      },
+                      "data": {
+                        "internalId": "ethereum-mainnet",
+                        "chainId": 1,
+                        "selector": "5009297550715157269",
+                        "token": {
+                          "address": "0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f",
+                          "decimals": 18
+                        },
+                        "pool": {
+                          "address": "0xGhoPool123...",
+                          "rawType": "LockReleaseTokenPool",
+                          "type": "lockRelease",
+                          "version": "1.6.0",
+                          "advancedPoolHooks": null,
+                          "supportsV2Features": false
+                        },
+                        "ccvConfig": null,
+                        "customFinality": null,
+                        "outboundLanes": {
+                          "42161": {
+                            "internalId": "arbitrum-mainnet",
+                            "chainId": 42161,
+                            "selector": "4949039107694359620",
+                            "rateLimits": {
+                              "standard": {
+                                "capacity": "5000000000000000000000",
+                                "rate": "1670000000000000000",
+                                "isEnabled": true
+                              },
+                              "custom": null
+                            },
+                            "fees": null,
+                            "verifiers": null
+                          }
+                        },
+                        "inboundLanes": {}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Token or chain not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "NOT_FOUND",
+                  "message": "Token 'INVALID' not found on chain 'mainnet'"
                 }
               }
             }
@@ -516,6 +1004,16 @@
               "default": "chainId"
             },
             "description": "Key format to use for organizing the lane keys in the response"
+          },
+          {
+            "name": "internalIdFormat",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["directory", "selector"],
+              "default": "selector"
+            },
+            "description": "Format for internal IDs in the response. 'selector' uses canonical selector names (e.g., 'ethereum-mainnet'), 'directory' uses chains.json keys (e.g., 'mainnet'). Only applies when outputKey=internalId."
           }
         ],
         "responses": {
@@ -1115,7 +1613,7 @@
           },
           "poolType": {
             "type": "string",
-            "enum": ["lockRelease", "burnMint", "usdc", "feeTokenOnly"],
+            "enum": ["lockRelease", "burnMint", "usdc"],
             "description": "Type of pool for this token"
           },
           "poolAddress": {
@@ -1148,7 +1646,7 @@
           },
           "poolType": {
             "type": "string",
-            "enum": ["lockRelease", "burnMint", "usdc", "feeTokenOnly"],
+            "enum": ["lockRelease", "burnMint", "usdc"],
             "description": "Type of pool for this token"
           },
           "poolAddress": {
@@ -1169,6 +1667,108 @@
               "type": "string"
             },
             "description": "Destination chains this token can be sent to"
+          }
+        }
+      },
+      "TokenDetailChainData": {
+        "type": "object",
+        "description": "Extended token chain data with custom finality and CCV information",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/TokenChainData"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "customFinality": {
+                "nullable": true,
+                "allOf": [{ "$ref": "#/components/schemas/CustomFinalityConfig" }],
+                "description": "Custom finality configuration for v2.0+ pools. Null for v1.x pools (check pool.supportsV2Features). When present with hasCustomFinality=null and minBlockConfirmation=null, indicates downstream API error."
+              },
+              "ccvConfig": {
+                "nullable": true,
+                "allOf": [{ "$ref": "#/components/schemas/CCVConfig" }],
+                "description": "CCV configuration for v2.0+ pools. Null for v1.x pools (check pool.supportsV2Features). When present with thresholdAmount=null, indicates downstream API error."
+              },
+              "pool": {
+                "nullable": true,
+                "type": "object",
+                "properties": {
+                  "address": {
+                    "type": "string",
+                    "description": "Pool contract address"
+                  },
+                  "rawType": {
+                    "type": "string",
+                    "description": "Raw pool type from configuration (e.g., 'LockReleaseTokenPool', 'BurnMintTokenPool', 'USDCTokenPool')"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": ["lockRelease", "burnMint", "usdc"],
+                    "description": "Normalized pool type"
+                  },
+                  "version": {
+                    "type": "string",
+                    "description": "Pool contract version"
+                  },
+                  "advancedPoolHooks": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Address of advanced pool hooks contract, or null if not configured"
+                  },
+                  "supportsV2Features": {
+                    "type": "boolean",
+                    "description": "Whether this pool supports v2 features (customFinality, ccvConfig). When true and these fields have null values inside, it indicates a downstream API error rather than feature not supported."
+                  }
+                },
+                "description": "Pool information including version, hooks, and v2 feature support flag"
+              }
+            }
+          }
+        ]
+      },
+      "TokenDetailMetadata": {
+        "type": "object",
+        "required": ["environment", "timestamp", "requestId", "tokenSymbol", "chainCount"],
+        "properties": {
+          "environment": {
+            "type": "string",
+            "enum": ["mainnet", "testnet"],
+            "description": "Network environment"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp of the response"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for this request"
+          },
+          "tokenSymbol": {
+            "type": "string",
+            "description": "Canonical symbol of the requested token"
+          },
+          "chainCount": {
+            "type": "integer",
+            "description": "Number of chains this token is available on"
+          }
+        }
+      },
+      "TokenDetailApiResponse": {
+        "type": "object",
+        "required": ["metadata", "data"],
+        "properties": {
+          "metadata": {
+            "$ref": "#/components/schemas/TokenDetailMetadata"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TokenDetailChainData"
+            },
+            "description": "Token data indexed by chain ID/selector, including custom finality information"
           }
         }
       },
@@ -1244,6 +1844,304 @@
               "$ref": "#/components/schemas/TokenConfigError"
             },
             "description": "List of tokens that were ignored due to configuration issues"
+          }
+        }
+      },
+      "TokenDirectoryMetadata": {
+        "type": "object",
+        "required": ["environment", "timestamp", "requestId", "symbol", "sourceChain"],
+        "properties": {
+          "environment": {
+            "type": "string",
+            "enum": ["mainnet", "testnet"],
+            "description": "Network environment"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp of the response"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for this request"
+          },
+          "symbol": {
+            "type": "string",
+            "description": "Canonical symbol of the requested token"
+          },
+          "sourceChain": {
+            "type": "string",
+            "description": "Source chain identifier"
+          }
+        }
+      },
+      "LaneVerifiers": {
+        "type": "object",
+        "description": "Pre-computed verifier sets for different transfer amounts. Only present for v2.0+ pools (supportsV2Features=true). For v1.x pools, the entire verifiers field is null. Values: empty array [] = no verifiers configured, [addr1, ...] = verifiers configured, null = downstream API error.",
+        "required": ["belowThreshold", "aboveThreshold"],
+        "properties": {
+          "belowThreshold": {
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Verifier addresses used when transfer amount is below the threshold. Empty array [] if no verifiers configured, null if downstream API error."
+          },
+          "aboveThreshold": {
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Verifier addresses used when transfer amount is at or above the threshold (includes all belowThreshold verifiers plus additional threshold verifiers). Empty array [] if no verifiers configured, null if downstream API error."
+          }
+        }
+      },
+      "RateLimiterConfig": {
+        "type": "object",
+        "description": "Rate limit configuration for a single direction (in or out)",
+        "required": ["capacity", "rate", "isEnabled"],
+        "properties": {
+          "capacity": {
+            "type": "string",
+            "description": "Maximum capacity of the rate limiter bucket (in token's smallest unit)"
+          },
+          "rate": {
+            "type": "string",
+            "description": "Rate at which the bucket refills (tokens per second in smallest unit)"
+          },
+          "isEnabled": {
+            "type": "boolean",
+            "description": "Whether rate limiting is enabled"
+          }
+        }
+      },
+      "DirectionalRateLimits": {
+        "type": "object",
+        "description": "Rate limits for both directions (in and out) on a lane",
+        "properties": {
+          "in": {
+            "nullable": true,
+            "allOf": [{ "$ref": "#/components/schemas/RateLimiterConfig" }],
+            "description": "Inbound rate limit configuration"
+          },
+          "out": {
+            "nullable": true,
+            "allOf": [{ "$ref": "#/components/schemas/RateLimiterConfig" }],
+            "description": "Outbound rate limit configuration"
+          }
+        }
+      },
+      "TokenRateLimits": {
+        "type": "object",
+        "description": "Rate limits for both standard and custom transfers, each with in/out directions",
+        "required": ["standard", "custom"],
+        "properties": {
+          "standard": {
+            "nullable": true,
+            "allOf": [{ "$ref": "#/components/schemas/DirectionalRateLimits" }],
+            "description": "Standard transfer rate limit configuration"
+          },
+          "custom": {
+            "nullable": true,
+            "allOf": [{ "$ref": "#/components/schemas/DirectionalRateLimits" }],
+            "description": "Custom (custom block confirmation) transfer rate limit configuration"
+          }
+        }
+      },
+      "LaneFees": {
+        "type": "object",
+        "description": "Transfer fees for a lane in basis points (1 bps = 0.01%)",
+        "required": ["standardTransferFeeBps", "customTransferFeeBps"],
+        "properties": {
+          "standardTransferFeeBps": {
+            "type": "integer",
+            "description": "Standard transfer fee in basis points"
+          },
+          "customTransferFeeBps": {
+            "type": "integer",
+            "description": "custom (custom block confirmation) transfer fee in basis points"
+          }
+        }
+      },
+      "TokenDirectoryLane": {
+        "type": "object",
+        "description": "Lane configuration for outbound or inbound transfers. Use pool.supportsV2Features to interpret verifiers: false + null = v1.x pool (not supported), true + {null, null} = downstream error, true + {[], []} = not configured, true + {[...], [...]} = configured.",
+        "required": ["internalId", "chainId", "selector", "rateLimits", "fees", "verifiers"],
+        "properties": {
+          "internalId": {
+            "type": "string",
+            "description": "Internal identifier of the remote chain (destination for outbound, source for inbound)"
+          },
+          "chainId": {
+            "oneOf": [{ "type": "integer" }, { "type": "string" }],
+            "description": "Chain ID of the remote chain"
+          },
+          "selector": {
+            "type": "string",
+            "description": "CCIP chain selector of the remote chain"
+          },
+          "rateLimits": {
+            "$ref": "#/components/schemas/TokenRateLimits",
+            "description": "Rate limits for both standard and custom transfers, with in/out directions"
+          },
+          "fees": {
+            "nullable": true,
+            "allOf": [{ "$ref": "#/components/schemas/LaneFees" }],
+            "description": "Transfer fees in basis points, or null if not configured"
+          },
+          "verifiers": {
+            "nullable": true,
+            "allOf": [{ "$ref": "#/components/schemas/LaneVerifiers" }],
+            "description": "Verifier configuration. For v1.x pools (pool.supportsV2Features=false): null. For v2.x pools: object with arrays or null values."
+          }
+        }
+      },
+      "CCVConfig": {
+        "type": "object",
+        "description": "Cross-Chain Verifier (CCV) configuration for a pool. Only present for v2.0+ pools (check pool.supportsV2Features). For v1.x pools, the entire ccvConfig field is null.",
+        "required": ["thresholdAmount"],
+        "properties": {
+          "thresholdAmount": {
+            "type": "string",
+            "nullable": true,
+            "description": "Amount threshold (in token's smallest unit) above which additional threshold verifiers are required. Values: '0' = CCV not configured for this pool, 'N' (positive number) = CCV configured with threshold N, null = downstream API error fetching CCV config."
+          }
+        }
+      },
+      "TokenDirectoryTokenInfo": {
+        "type": "object",
+        "required": ["address", "decimals"],
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "Token contract address"
+          },
+          "decimals": {
+            "type": "integer",
+            "description": "Token decimals"
+          }
+        }
+      },
+      "TokenDirectoryPoolInfo": {
+        "type": "object",
+        "required": ["address", "rawType", "type", "version", "advancedPoolHooks", "supportsV2Features"],
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "Pool contract address"
+          },
+          "rawType": {
+            "type": "string",
+            "description": "Raw pool type from configuration (e.g., 'LockReleaseTokenPool', 'BurnMintTokenPool', 'USDCTokenPool')"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["lockRelease", "burnMint", "usdc"],
+            "description": "Normalized pool type"
+          },
+          "version": {
+            "type": "string",
+            "description": "Pool contract version"
+          },
+          "advancedPoolHooks": {
+            "type": "string",
+            "nullable": true,
+            "description": "Address of advanced pool hooks contract, or null if not configured"
+          },
+          "supportsV2Features": {
+            "type": "boolean",
+            "description": "Whether this pool supports v2 features (customFinality, ccvConfig). When true and these fields have null values inside, it indicates a downstream API error rather than feature not supported."
+          }
+        }
+      },
+      "CustomFinalityConfig": {
+        "type": "object",
+        "description": "Custom finality configuration for the token on this chain. Only present for v2.0+ pools (check pool.supportsV2Features). For v1.x pools, the entire customFinality field is null. When both hasCustomFinality and minBlockConfirmation are null inside the object, it indicates a downstream API error for a v2.x pool.",
+        "required": ["hasCustomFinality", "minBlockConfirmation"],
+        "properties": {
+          "hasCustomFinality": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Whether custom finality is enabled (derived from minBlockConfirmation > 0). Null indicates downstream API error."
+          },
+          "minBlockConfirmation": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Minimum block confirmations required. Null indicates downstream API error."
+          }
+        }
+      },
+      "TokenDirectoryData": {
+        "type": "object",
+        "description": "Token directory data for a specific chain",
+        "required": [
+          "internalId",
+          "chainId",
+          "selector",
+          "token",
+          "pool",
+          "ccvConfig",
+          "customFinality",
+          "outboundLanes",
+          "inboundLanes"
+        ],
+        "properties": {
+          "internalId": {
+            "type": "string",
+            "description": "Internal chain identifier"
+          },
+          "chainId": {
+            "oneOf": [{ "type": "integer" }, { "type": "string" }],
+            "description": "Chain ID"
+          },
+          "selector": {
+            "type": "string",
+            "description": "CCIP chain selector"
+          },
+          "token": {
+            "$ref": "#/components/schemas/TokenDirectoryTokenInfo"
+          },
+          "pool": {
+            "$ref": "#/components/schemas/TokenDirectoryPoolInfo"
+          },
+          "ccvConfig": {
+            "nullable": true,
+            "allOf": [{ "$ref": "#/components/schemas/CCVConfig" }],
+            "description": "CCV configuration for v2.0+ pools. Null for v1.x pools (check pool.supportsV2Features). When present with thresholdAmount=null, indicates downstream API error."
+          },
+          "customFinality": {
+            "nullable": true,
+            "allOf": [{ "$ref": "#/components/schemas/CustomFinalityConfig" }],
+            "description": "Custom finality configuration for v2.0+ pools. Null for v1.x pools (check pool.supportsV2Features). When present with hasCustomFinality=null and minBlockConfirmation=null, indicates downstream API error."
+          },
+          "outboundLanes": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TokenDirectoryLane"
+            },
+            "description": "Outbound lanes indexed by destination chain ID"
+          },
+          "inboundLanes": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TokenDirectoryLane"
+            },
+            "description": "Inbound lanes indexed by source chain ID"
+          }
+        }
+      },
+      "TokenDirectoryApiResponse": {
+        "type": "object",
+        "required": ["metadata", "data"],
+        "properties": {
+          "metadata": {
+            "$ref": "#/components/schemas/TokenDirectoryMetadata"
+          },
+          "data": {
+            "$ref": "#/components/schemas/TokenDirectoryData"
           }
         }
       }

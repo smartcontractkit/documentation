@@ -48,6 +48,7 @@ function TokenDrawer({
     tokenDecimals: number
     tokenAddress: string
     tokenPoolType: PoolType
+    tokenPoolRawType: string
     tokenPoolAddress: string
     tokenPoolVersion?: string
     explorer: ExplorerInfo
@@ -143,7 +144,7 @@ function TokenDrawer({
         return null
       }
 
-      const destinationPoolType = destinationTokenData.poolType
+      const destinationPoolType = destinationTokenData.pool?.type
       if (!destinationPoolType) {
         console.error(`No pool type found for ${token.id} on ${network.key} -> ${destinationChain}`)
         return null
@@ -160,11 +161,11 @@ function TokenDrawer({
         console.error(`No lane data found for ${token.id} on ${network.key} -> ${destinationChain}`)
         return null
       }
-      if (!laneData.supportedTokens) {
+      if (!laneData.supportedTokens || !Array.isArray(laneData.supportedTokens)) {
         console.error(`No supported tokens found for ${token.id} on ${network.key} -> ${destinationChain}`)
         return null
       }
-      if (!(token.id in laneData.supportedTokens)) {
+      if (!laneData.supportedTokens.includes(token.id)) {
         console.error(`${token.id} not found in supported tokens for ${network.key} -> ${destinationChain}`)
         return null
       }
@@ -190,7 +191,7 @@ function TokenDrawer({
           logo: network.tokenLogo,
           decimals: network.tokenDecimals,
           address: network.tokenAddress,
-          poolType: network.tokenPoolType,
+          poolRawType: network.tokenPoolRawType,
           poolAddress: network.tokenPoolAddress,
         }}
         network={{

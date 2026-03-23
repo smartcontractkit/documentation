@@ -273,10 +273,8 @@ function Search({ chains, tokens, small, environment, lanes }: SearchProps) {
                         {lane.sourceNetwork.name} {">"} {lane.destinationNetwork.name}
                         {!small && (
                           <span>
-                            {lane?.lane?.supportedTokens ? Object.keys(lane.lane.supportedTokens).length : 0}{" "}
-                            {lane?.lane?.supportedTokens && Object.keys(lane.lane.supportedTokens).length > 1
-                              ? "tokens"
-                              : "token"}
+                            {lane?.lane?.supportedTokens ? lane.lane.supportedTokens.length : 0}{" "}
+                            {lane?.lane?.supportedTokens && lane.lane.supportedTokens.length > 1 ? "tokens" : "token"}
                           </span>
                         )}
                       </button>
