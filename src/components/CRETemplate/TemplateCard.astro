@@ -6,11 +6,12 @@ interface Props {
   href: string
   author: string
   languages: string[] // e.g., ["Go", "TypeScript", "Go (MVR)"]
+  tags?: string[] // e.g., ["data-feeds", "cross-chain", "defi"]
 }
 
-const { title, description, href, author, languages } = Astro.props
+const { title, description, href, author, languages, tags = [] } = Astro.props
 
-// Extract unique base languages (e.g., "Go (MVR)" -> "Go")
+// Extract unique base languages (e.g., "Go (MVR)" -> "Go") — used for filtering
 const baseLanguages = [...new Set(languages.map((lang) => lang.replace(/\s*\([^)]*\)\s*/g, "").trim()))].sort(
   (a, b) => {
     // TypeScript always comes first
@@ -19,6 +20,9 @@ const baseLanguages = [...new Set(languages.map((lang) => lang.replace(/\s*\([^)
     return a.localeCompare(b)
   }
 )
+
+// Show at most 3 tags on the card
+const displayTags = tags.slice(0, 3)
 ---
 
 <a href={href} class="template-card" data-languages={baseLanguages.join(",")}>
@@ -27,9 +31,9 @@ const baseLanguages = [...new Set(languages.map((lang) => lang.replace(/\s*\([^)
 
   <!-- Card Content -->
   <div class="card-content">
-    <!-- Badges -->
+    <!-- Tags -->
     <div class="language-badges">
-      {baseLanguages.map((lang) => <span class="lang-badge">{lang}</span>)}
+      {displayTags.map((tag) => <span class="lang-badge">{tag}</span>)}
     </div>
 
     <!-- Title -->
@@ -120,6 +124,8 @@ const baseLanguages = [...new Set(languages.map((lang) => lang.replace(/\s*\([^)
   /* Language Badges */
   .language-badges {
     display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     gap: 8px;
     margin-bottom: 16px;
   }
@@ -134,6 +140,7 @@ const baseLanguages = [...new Set(languages.map((lang) => lang.replace(/\s*\([^)
     border: 1px solid #e5e7eb;
     letter-spacing: 0.3px;
     text-transform: uppercase;
+    text-align: center;
   }
 
   /* Title */
