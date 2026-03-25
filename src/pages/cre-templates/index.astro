@@ -66,12 +66,9 @@ const pageDescription =
               </div>
               <div class="featured-content">
                 <div class="featured-badges">
-                  {(() => {
-                    const langs = [
-                      ...new Set(featuredTemplate.data.githubRepoLinks.map((l) => l.label.replace(/\s*\(.*\)/, ""))),
-                    ].sort((a, b) => (a === "TypeScript" ? -1 : b === "TypeScript" ? 1 : a.localeCompare(b)))
-                    return langs.map((lang) => <span class="featured-badge">{lang.toUpperCase()}</span>)
-                  })()}
+                  {(featuredTemplate.data.tags ?? []).slice(0, 3).map((tag) => (
+                    <span class="featured-badge">{tag}</span>
+                  ))}
                 </div>
                 <h3>{featuredTemplate.data.title}</h3>
                 <p>{featuredTemplate.data.description}</p>
@@ -127,6 +124,7 @@ const pageDescription =
                   image={template.data.image}
                   href={`/cre-templates/${template.id}`}
                   languages={template.data.githubRepoLinks.map((link) => link.label)}
+                  tags={template.data.tags}
                   author={template.data.author}
                 />
               ))}
