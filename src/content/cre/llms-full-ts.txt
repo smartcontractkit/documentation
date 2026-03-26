@@ -3671,7 +3671,11 @@ Last Updated: 2026-02-06
 
 The CRE SDK provides a Confidential HTTP client that allows your workflows to interact with external APIs while keeping sensitive data private. Requests execute inside a secure enclave, secrets are injected via templates, and responses can optionally be encrypted.
 
-For a conceptual overview of what Confidential HTTP is and how it differs from the regular HTTP capability, see [The Confidential HTTP Capability](/cre/capabilities/confidential-http).
+<Aside type="caution" title="Read this before putting sensitive data in Confidential HTTP requests">
+  **Confidential HTTP does not automatically protect credentials you load with `runtime.getSecret()` / `runtime.GetSecret()`** and then paste into headers or body as plaintext. For Vault DON–style isolation, use **`vaultDonSecrets` / `VaultDonSecrets`** and **`{{.key}}` templates** only. The step-by-step guide below explains the correct pattern and common mistakes.
+</Aside>
+
+For **why** you might need Confidential HTTP—what stays off Workflow DON nodes, and [when to use it vs. regular HTTP](/cre/capabilities/confidential-http#when-to-use-confidential-http-vs-regular-http)—see [The Confidential HTTP capability](/cre/capabilities/confidential-http#whats-kept-confidential).
 
 ## Guides
 
@@ -8772,6 +8776,12 @@ This approach ensures:
 | **Request body**               | Template-based injection: secrets referenced in the request body (e.g., `{{.myApiKey}}`) are resolved inside the enclave, so sensitive values never appear in workflow memory. |
 | **Response body**              | Optionally encrypted. When `EncryptOutput` is enabled, the full response is [AES-GCM](https://en.wikipedia.org/wiki/Galois/Counter_Mode) encrypted before leaving the enclave. |
 
+<Aside type="caution" title="Do not inject sensitive values into the request as plain workflow strings">
+  **Credentials:** List sensitive values in **`vaultDonSecrets`** and reference them only with **`{{.key}}` placeholders**. Secrets read via **`runtime.getSecret()`** (or any string you build in workflow code) and pasted into headers or body are handled in **Workflow DON** execution, not enclave-only. See [Making Confidential Requests (TypeScript)](/cre/guides/workflow/using-confidential-http-client/making-requests-ts#step-4-implement-the-request-and-wire-it-into-your-workflow).
+
+  **Scope:** The enclave executes the **outbound HTTP request** and template resolution—not arbitrary workflow logic. Using `ConfidentialHTTPClient` does not make the rest of your workflow confidential compute.
+</Aside>
+
 ## Use cases
 
 ### Credential isolation
@@ -11110,12 +11120,12 @@ New DON timestamps are produced continuously (multiple per second). Treat it as 
 Source: https://docs.chain.link/cre/guides/workflow/using-confidential-http-client/making-requests-ts
 Last Updated: 2026-02-10
 
-The `ConfidentialHTTPClient` is the SDK's interface for the underlying [Confidential HTTP Capability](/cre/capabilities/confidential-http). It allows your workflow to make privacy-preserving API calls where secrets are injected inside a secure enclave and responses can be optionally encrypted.
+`ConfidentialHTTPClient` implements the [Confidential HTTP capability](/cre/capabilities/confidential-http-ts). Use it when an outbound call should carry [sensitive credentials or request fields](/cre/capabilities/confidential-http-ts#whats-kept-confidential) without assembling them as plain strings in workflow code on every node—see [when to use Confidential vs. regular HTTP](/cre/capabilities/confidential-http-ts#when-to-use-confidential-http-vs-regular-http). For those values, use **`vaultDonSecrets`** with **`{{.key}}`** placeholders only; **`runtime.getSecret()`** in headers or body follows a different trust boundary.
 
 Unlike the regular [`HTTPClient`](/cre/reference/sdk/http-client), the Confidential HTTP client:
 
 - Executes the request in a secure **enclave** (not on each node individually)
-- Injects secrets from the **Vault DON** using template syntax
+- Resolves **`vaultDonSecrets`** into the request via **Vault DON** template syntax
 - Optionally **encrypts the response** before returning it to your workflow
 
 ## Prerequisites
@@ -11219,36 +11229,11 @@ const onCronTrigger = (runtime: Runtime<Config>): TransactionResult => {
 }
 ```
 
-<Aside type="note" title="Alphabetic secret ordering required">
-  When using multiple secrets, pass them into `vaultDonSecrets` in alphabetical order by key. The Vault DON processes
-  secrets in a canonical order to ensure consistent behavior across nodes during execution.
+<Aside type="caution" title="Do not assemble sensitive request data in workflow code">
+  Register API credentials in the Vault DON, add them to **`vaultDonSecrets`**, and reference them **only** with **`{{.key}}` placeholders** in headers or body—not with plaintext from **`runtime.getSecret()`** or other workflow-built strings (those run in **Workflow DON** execution on every node). See [Using secrets with deployed workflows](/cre/guides/workflow/secrets/using-secrets-deployed).
+
+  With **multiple** secrets, list **`vaultDonSecrets`** keys in **alphabetical order** (Vault DON canonical ordering).
 </Aside>
-
-In your trigger handler, call `confHTTPClient.sendRequest()` with your fetch function and a consensus method:
-
-```typescript
-import {
-  CronCapability,
-  ConfidentialHTTPClient,
-  handler,
-  consensusIdenticalAggregation,
-  type Runtime,
-  Runner,
-} from "@chainlink/cre-sdk"
-
-const onCronTrigger = (runtime: Runtime<Config>): string => {
-  const confHTTPClient = new ConfidentialHTTPClient()
-
-  const result = confHTTPClient
-    .sendRequest(runtime, fetchTransaction, consensusIdenticalAggregation<TransactionResult>())(runtime.config)
-    .result()
-
-=======
-  const result = json(response) as TransactionResult
-  runtime.log(`Transaction result: ${result.transactionId} — ${result.status}`)
-  return result
-}
-```
 
 ### Step 5: Simulate
 
@@ -11276,7 +11261,7 @@ multiHeaders: {
 }
 ```
 
-The template placeholders are resolved inside the enclave. The actual secret values never appear in your workflow code or in node memory.
+The template placeholders are resolved inside the enclave. The actual secret values never appear in your workflow code or in node memory. Credentials must be wired through **`vaultDonSecrets`** as in Step 4—not interpolated from **`runtime.getSecret()`**.
 
 ## Response encryption
 
@@ -15454,6 +15439,10 @@ The [Confidential HTTP](/cre/capabilities/confidential-http-ts) Client lets you 
 - For use cases and a conceptual overview, see [The Confidential HTTP Capability](/cre/capabilities/confidential-http-ts)
 - **Guide:** [Making Confidential Requests](/cre/guides/workflow/using-confidential-http-client/making-requests-ts)
 
+<Aside type="caution" title="Do not assume sensitive values are always enclave-resolved">
+  **Credential isolation** applies when sensitive values are listed in **`vaultDonSecrets`** and referenced only with **`{{.secretName}}` placeholders**, so plaintext is resolved inside the enclave. Values you interpolate into headers or body as ordinary workflow strings—including from **`runtime.getSecret()`** and similar APIs—are resolved in **Workflow DON** execution and follow a different trust boundary. See [Making Confidential Requests](/cre/guides/workflow/using-confidential-http-client/making-requests-ts#step-4-implement-the-request-and-wire-it-into-your-workflow) for the intended pattern.
+</Aside>
+
 ## Quick reference
 
 | Method                        | Description                        |
@@ -15471,10 +15460,10 @@ The [Confidential HTTP](/cre/capabilities/confidential-http-ts) Client lets you 
 
 The top-level request type that combines an HTTP request with Vault DON secrets and encryption settings.
 
-| Field             | Type                                             | Description                                                                                                                                       |
-| ----------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `request`         | `HTTPRequest` \| `HTTPRequestJson`               | The HTTP request to execute inside the enclave. See [`HTTPRequest`](#httprequest--httprequestjson).                                               |
-| `vaultDonSecrets` | `SecretIdentifier[]` \| `SecretIdentifierJson[]` | List of secrets to fetch from the Vault DON and make available in the enclave. See [`SecretIdentifier`](#secretidentifier--secretidentifierjson). |
+| Field             | Type                                             | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ----------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `request`         | `HTTPRequest` \| `HTTPRequestJson`               | The HTTP request to execute inside the enclave. See [`HTTPRequest`](#httprequest--httprequestjson).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `vaultDonSecrets` | `SecretIdentifier[]` \| `SecretIdentifierJson[]` | Vault DON secrets for enclave-only `{{.key}}` substitution in the request ([`SecretIdentifier`](#secretidentifier--secretidentifierjson)). Use this when credentials or other sensitive template values must stay out of Workflow DON execution—not replaceable by pasting `runtime.getSecret()` output into headers or body. See [what stays confidential](/cre/capabilities/confidential-http-ts#whats-kept-confidential) and [Making Confidential Requests](/cre/guides/workflow/using-confidential-http-client/making-requests-ts#step-4-implement-the-request-and-wire-it-into-your-workflow). |
 
 ### `HTTPRequest` / `HTTPRequestJson`
 
