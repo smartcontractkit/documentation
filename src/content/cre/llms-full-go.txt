@@ -6886,7 +6886,7 @@ Once your account is created:
 
 # Logging in with the CLI
 Source: https://docs.chain.link/cre/account/cli-login
-Last Updated: 2026-02-12
+Last Updated: 2026-03-26
 
 To deploy and manage workflows with the CRE CLI, you need to authenticate your CLI session with your CRE account. This guide walks you through the browser-based login process.
 
@@ -6947,11 +6947,13 @@ Login completed successfully
 
 Your CLI session is authenticated and ready to use.
 
+In the terminal, the CLI may show **“Fetching user context…”** while it downloads your organization’s tenant configuration from the platform. It then writes **`~/.cre/context.yaml`** (registry manifest: vault gateway URL, registries, secrets auth flows, and related fields). That file is separate from your credentials file (`cre.yaml`). For details and a sanitized example, see [Tenant context cache](/cre/reference/cli/authentication#tenant-context-cache).
+
 ---
 
 # Managing Authentication
 Source: https://docs.chain.link/cre/account/managing-auth
-Last Updated: 2026-02-12
+Last Updated: 2026-03-26
 
 This guide covers how to manage your CLI authentication, including browser-based login, API key authentication, checking your status, handling session expiration, and logging out.
 
@@ -6960,6 +6962,8 @@ This guide covers how to manage your CLI authentication, including browser-based
 To authenticate your CLI with your CRE account, use the `cre login` command. This opens a browser window where you'll enter your credentials and complete two-factor authentication.
 
 For detailed login instructions, see the [Logging in with the CLI](/cre/account/cli-login) guide.
+
+Browser login stores **`~/.cre/cre.yaml`** (credentials) and **`~/.cre/context.yaml`** (cached **tenant context**: registry manifest from the platform, including vault gateway URL and related settings). **`cre logout`** removes both. For a full description and a sample `context.yaml` shape, see [Tenant context cache](/cre/reference/cli/authentication#tenant-context-cache).
 
 ## API key authentication
 
@@ -7013,7 +7017,7 @@ To check your deploy access status or submit a request, see [Requesting Deploy A
 
 ## Logging out
 
-To explicitly end your CLI session and remove your stored credentials, use the `cre logout` command:
+To explicitly end your CLI session and remove your stored credentials **and cached tenant context** (`context.yaml`), use the `cre logout` command:
 
 ```bash
 cre logout
@@ -8026,7 +8030,7 @@ See the [repository README](https://github.com/smartcontractkit/cre-gcp-predicti
 
 # CLI Reference
 Source: https://docs.chain.link/cre/reference/cli
-Last Updated: 2026-03-17
+Last Updated: 2026-03-26
 
 <Aside type="note" title="Required CLI Version: v1.5.0">
   To ensure compatibility with the guides and examples in this documentation, please use version `v1.5.0` of the CRE
@@ -8054,8 +8058,8 @@ These flags can be used with any `cre` command.
 
 Manage your authentication and account credentials.
 
-- **`cre login`** — Authenticate with the CRE UI and save credentials locally
-- **`cre logout`** — Revoke authentication tokens and remove local credentials
+- **`cre login`** — Authenticate with the CRE UI, save credentials locally, and cache tenant context (`context.yaml`)
+- **`cre logout`** — Revoke authentication tokens and remove local credentials and cached tenant context
 - **`cre whoami`** — Show your current account details
 
 [View authentication commands →](/cre/reference/cli/authentication)
@@ -8159,7 +8163,7 @@ The typical workflow development process uses these commands in sequence:
 
 # Authentication Commands
 Source: https://docs.chain.link/cre/reference/cli/authentication
-Last Updated: 2026-02-12
+Last Updated: 2026-03-26
 
 The CRE CLI supports two authentication methods:
 
@@ -8170,7 +8174,7 @@ The CRE CLI supports two authentication methods:
 
 ### `cre login`
 
-Starts the interactive authentication flow. This command opens your browser for user login and saves your credentials locally.
+Starts the interactive authentication flow. This command opens your browser for user login, saves your credentials locally to `~/.cre/cre.yaml`, and **fetches your tenant context** from the CRE platform. That response is cached per CRE environment (for example `PRODUCTION`) in **`~/.cre/context.yaml`** — a registry manifest that includes items such as your vault gateway URL, workflow registries, and which secrets authentication flows each registry supports. See [Tenant context cache](#tenant-context-cache) below.
 
 **Usage:**
 
@@ -8184,13 +8188,13 @@ cre login
 2. Enter your account email address
 3. Enter your account password
 4. Enter your one-time password (OTP) from your authenticator app
-5. The CLI automatically captures and saves your credentials locally
+5. The CLI automatically captures and saves your credentials locally, then fetches and caches tenant context (you may see **“Fetching user context…”** in the terminal)
 
 For a detailed walkthrough with screenshots, see [Logging in with the CLI](/cre/account/cli-login).
 
 ### `cre logout`
 
-Revokes authentication tokens and removes local credentials. This invalidates the current authentication tokens and deletes stored credentials from your machine.
+Revokes authentication tokens and removes **local credentials** (`~/.cre/cre.yaml`) **and the cached tenant context file** (`~/.cre/context.yaml`). This invalidates the current session tokens and clears the CLI-side copy of your tenant registry manifest.
 
 **Usage:**
 
@@ -8244,9 +8248,41 @@ export CRE_API_KEY="your-api-key"
 cre whoami
 ```
 
-When `CRE_API_KEY` is set, the CLI skips the browser-based login flow entirely. All commands that require authentication (deploying, managing workflows, etc.) will use the API key.
+When `CRE_API_KEY` is set, the CLI skips the browser-based login flow entirely. All commands that require authentication (deploying, managing workflows, etc.) will use the API key. The CLI still **ensures tenant context** is available (fetching or refreshing `~/.cre/context.yaml` as needed) so your session matches the platform configuration for that key.
 
 In a CI/CD pipeline, configure `CRE_API_KEY` as a secret environment variable in your platform and run CLI commands as usual.
+
+## Tenant context cache
+
+After a successful browser login — and when using an API key for commands that load credentials — the CLI stores **tenant context** at **`~/.cre/context.yaml`**. This file comes from the platform’s **`getTenantConfig`** data: a **registry manifest** for your organization so the CLI knows your CRE environment layout (for example vault gateway URL, registries, and allowed secrets auth flows per registry). Values are grouped under your CRE environment name (such as `PRODUCTION`).
+
+
+<Aside type="note" title="Credentials vs tenant context">
+  **`cre.yaml`** holds authentication tokens for your session. **`context.yaml`** holds **tenant configuration** returned by the platform, not secrets. **`cre logout`** removes both files from your machine.
+</Aside>
+
+The following example is **illustrative** only; your registries, addresses, and flow lists depend on your organization and environment.
+
+```yaml
+PRODUCTION:
+  tenant_id: "<tenant-id>"
+  default_don_family: zone-a
+  vault_gateway_url: https://01.gateway.zone-a.cre.chain.link
+  registries:
+    - id: onchain:ethereum-mainnet
+      label: ethereum-mainnet (0x1234...abcd)
+      type: on-chain
+      chain_selector: "<chain-selector>"
+      address: "0x0000000000000000000000000000000000000000"
+      secrets_auth_flows:
+        - browser
+        - owner-key-signing
+    - id: private
+      label: Private (Chainlink-hosted)
+      type: off-chain
+      secrets_auth_flows:
+        - browser
+```
 
 ## Authentication methods summary
 
