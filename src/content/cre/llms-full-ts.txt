@@ -19,7 +19,7 @@ Using the **CRE SDK** (available in Go and TypeScript), you build **Workflows**.
 
 You can start building and [simulating](/cre/guides/operations/simulating-workflows) CRE workflows immediately, without any approval:
 
-- **Create an account** at [cre.chain.link](https://cre.chain.link) to access the platform
+- **Create an account** at [app.chain.link/cre/discover](https://app.chain.link/cre/discover) to access the platform
 - **Install the CRE CLI** on your machine
 - **Build workflows** using the Go or TypeScript SDKs
 - **Simulate workflows** to test and debug before deployment
@@ -39,7 +39,7 @@ Early Access to workflow deployment includes:
 - **Workflow lifecycle management**: Deploy, activate, pause, update, and delete workflows through the CLI
 - **Monitoring and debugging**: Access detailed logs, events, and performance metrics in the CRE UI
 
-To request Early Access, run `cre account access` from the CLI or visit <a href="https://cre.chain.link/request-access" target="_blank">cre.chain.link/request-access</a>. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
+To request Early Access, run `cre account access` from the CLI or visit <a href="https://app.chain.link/cre/request-access" target="_blank">app.chain.link/cre/request-access</a>. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
 
 ## How CRE runs your workflows
 
@@ -386,6 +386,12 @@ These quotas apply to each individual workflow.
 
 [Contact us](/cre/support-feedback) to discuss quota increases.
 
+<Aside type="tip" title="Test limits locally before deploying">
+  You can enforce these production quotas during local simulation using the `--limits` flag. Export, customize, and
+  validate limits before deploying. See [Testing Production Limits](/cre/guides/operations/understanding-limits) for
+  details.
+</Aside>
+
 ---
 
 # Support & Feedback
@@ -401,7 +407,7 @@ Need help with CRE? Have feedback, want to report a bug, or request a feature? Y
 
 ## How to submit a support request
 
-1. Go to <a href="https://cre.chain.link" target="_blank" rel="noopener noreferrer">cre.chain.link</a>
+1. Go to <a href="https://app.chain.link/cre/discover" target="_blank" rel="noopener noreferrer">app.chain.link/cre/discover</a>
 2. Log in to your account (if you're not already logged in)
 3. In the left sidebar, click **Help**
 4. The support form will open as a slide-out panel
@@ -442,9 +448,124 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-03-05
+Last Updated: 2026-03-23
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.7.0 - March 23, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.7.0" target="_blank">CRE CLI version 1.7.0</a> is now available.**
+
+- **New Mainnets**: Added Hyperliquid Mainnet support for simulation and production deployment.
+- **New Testnets**: Added Gnosis Chiado testnet support.
+
+**Required versions for new networks:**
+
+- Hyperliquid Mainnet / Gnosis Chiado: CLI v1.7.0+, Go SDK v1.7.0+, TS SDK v1.4.0+
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.6.0...v1.7.0)
+
+## Go SDK v1.7.0 - March 23, 2026
+
+**Go SDK version 1.7.0** updates EVM capabilities to support the new networks added in CLI v1.7.0.
+
+- **New Networks**: Updated EVM client capabilities to support Hyperliquid Mainnet and Gnosis Chiado
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.6.0...v1.7.0)
+
+## TS SDK v1.4.0 - March 23, 2026
+
+**TypeScript SDK version 1.4.0** improves the TypeScript experience when working with Node.js APIs and adds support for new networks.
+
+- **Improved Node.js API experience**: Improved TypeScript experience when dealing with Node.js APIs
+- **New Networks**: Updated EVM client capabilities to support new networks added in CLI v1.7.0
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.3.0...v1.4.0)
+
+## CLI v1.6.0 - March 20, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.6.0" target="_blank">CRE CLI version 1.6.0</a> is now available.**
+
+- **Simulation limits support**: The `cre workflow simulate` command now accepts a `--limits` flag, letting you simulate workflows under specific resource constraints to better reflect production behavior. Use `cre workflow limits export` to inspect the embedded defaults and create custom limits files. See [Testing Production Limits](/cre/guides/operations/understanding-limits) for details.
+- **Improved `cre init`**: Various improvements to the project initialization experience.
+- **Bug fixes**: Fixed a binding bug and improved WASM debug symbol retention during simulation.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.5.0...v1.6.0)
+
+## CLI v1.5.0 - March 17, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.5.0" target="_blank">CRE CLI version 1.5.0</a> is now available.**
+
+- **New Mainnets**: Added Celo, Gnosis Chain, Ink, Linea, Mantle, MegaETH, Plasma, Scroll, and Sonic mainnet support for simulation and production deployment.
+- **New Testnets**: Added Cronos, Mantle Sepolia, MegaETH Testnet 2, Scroll Sepolia, Sonic Testnet, TAC Testnet, and Unichain Sepolia testnet support.
+- **`cre hash` command**: New command to display content hashes for workflow artifacts. Hashes are also displayed automatically during `cre workflow build` and `cre workflow deploy`.
+- **Environment variable resolution in RPC URLs**: Use `${VAR}` syntax in your `project.yaml` RPC URLs to inject values from environment variables.
+- **JSON ABI support in `cre generate-bindings`**: The `cre generate-bindings evm` command now accepts raw JSON ABI files in addition to compiled Hardhat and Foundry artifacts.
+- **`.env` support across all commands**: The `.env` file is now respected across all CRE commands, with `.env` values taking precedence over other settings.
+- **Bug Fix**: Fixed an issue where `cre workflow build` could fail in configurations where `cre workflow simulate` succeeded.
+- **Known issue**: Environment variables passed without a `.env` file present (for example, via a secrets manager like `op run`) may not be bound correctly. Creating an empty `.env` file in your project root (`touch .env`) resolves this. A fix is coming in CLI v1.5.1.
+
+**Required versions for new networks:**
+
+- All new mainnets and testnets: CLI v1.5.0+, Go SDK v1.6.0+, TS SDK v1.3.0+
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.4.0...v1.5.0)
+
+## Go SDK v1.6.0 - March 16, 2026
+
+**Go SDK version 1.6.0** updates EVM capabilities to support the new networks added in CLI v1.5.0.
+
+- **New Networks**: Updated EVM client capabilities to support Celo, Gnosis Chain, Ink, Linea, Mantle, MegaETH, Plasma, Scroll, Sonic, and their associated testnets
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.5.0...v1.6.0)
+
+## TS SDK v1.3.0 - March 16, 2026
+
+**TypeScript SDK version 1.3.0** updates EVM capabilities to support the new networks added in CLI v1.5.0.
+
+- **New Networks**: Updated EVM client capabilities to support new networks added in CLI v1.5.0
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.2.0...v1.3.0)
+
+## CLI v1.4.0 - March 12, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.4.0" target="_blank">CRE CLI version 1.4.0</a> is now available.**
+
+- **CI/CD pipeline support**: `cre workflow build`, `cre workflow upload`, and `cre workflow deploy` can now be run as independent steps for better integration with CI/CD pipelines.
+- **MultiHeaders support**: The HTTP capability now supports sending multiple headers per request.
+
+This release also includes various internal improvements and security fixes.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.3.0...v1.4.0)
+
+## TS SDK v1.2.0 - March 12, 2026
+
+**TypeScript SDK version 1.2.0** includes improvements to the EVM client and developer experience.
+
+- **`logTriggerConfig` helper**: New helper for configuring EVM log triggers in your workflow
+- **Improved error messages**: Added field-level context to `encodeCallMsg` errors for easier debugging
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.1.0...v1.2.0)
 
 ## CLI v1.3.0 - March 5, 2026
 
@@ -725,11 +846,11 @@ This release also includes various small improvements and bug fixes, such as bet
 
 ### Available now
 
-- **Build and simulate workflows**: Create an account at [cre.chain.link](https://cre.chain.link), install the CRE CLI, and start building workflows using the Go or TypeScript SDKs. Simulate your workflows locally to test and debug before deployment—simulation makes real calls to live APIs and public EVM blockchains.
+- **Build and simulate workflows**: Create an account at [app.chain.link/cre/discover](https://app.chain.link/cre/discover), install the CRE CLI, and start building workflows using the Go or TypeScript SDKs. Simulate your workflows locally to test and debug before deployment—simulation makes real calls to live APIs and public EVM blockchains.
 
 ### Early Access
 
-- **Deploy and run workflows**: Deploy your workflows to a Chainlink DON with full lifecycle management (deploy, activate, pause, update, delete). Monitor and debug with detailed logs, events, and performance metrics in the CRE UI. To request Early Access, <a href="https://cre.chain.link/request-access" target="_blank">share details about your project</a>.
+- **Deploy and run workflows**: Deploy your workflows to a Chainlink DON with full lifecycle management (deploy, activate, pause, update, delete). Monitor and debug with detailed logs, events, and performance metrics in the CRE UI. To request Early Access, <a href="https://app.chain.link/cre/request-access" target="_blank">share details about your project</a>.
 
 ---
 
@@ -794,9 +915,9 @@ These guides explain how to install the Chainlink Developer Platform CLI (also r
 
 # Installing the CRE CLI on macOS and Linux
 Source: https://docs.chain.link/cre/getting-started/cli-installation/macos-linux
-Last Updated: 2026-02-26
+Last Updated: 2026-03-17
 
-This page explains how to install the CRE CLI on macOS or Linux. The recommended version at the time of writing is **v1.2.0**.
+This page explains how to install the CRE CLI on macOS or Linux. The recommended version at the time of writing is **v1.5.0**.
 
 ## Installation
 
@@ -810,7 +931,7 @@ Choose your installation method:
 The easiest way to install the CRE CLI is using the installation script:
 
 ```bash
-curl -sSL https://cre.chain.link/install.sh | bash
+curl -sSL https://app.chain.link/cre/install.sh | bash
 ```
 
 This script will:
@@ -827,7 +948,7 @@ After the script completes, verify the installation:
 cre version
 ```
 
-**Expected output:** `CRE CLI version v1.2.0`
+**Expected output:** `CRE CLI version v1.5.0`
 
 <Aside type="note" title="macOS Gatekeeper">
   If you see warnings about "unrecognized developer/source" on macOS, run:{" "}
@@ -875,11 +996,11 @@ shasum -a 256 cre_darwin_arm64.zip
 Compare the output with the official checksum from the [CRE CLI releases page](https://github.com/smartcontractkit/cre-cli/releases):
 
 1. Go to [https://github.com/smartcontractkit/cre-cli/releases](https://github.com/smartcontractkit/cre-cli/releases)
-2. Find the release version you downloaded (e.g., v1.0.11)
+2. Find the release version you downloaded (e.g., v1.5.0)
 3. Under the **Assets** section, locate your downloaded file
 4. Compare the SHA-256 checksum shown next to the file with your command output
 
-**Example:** For `cre_darwin_arm64.zip` in release v1.0.11, you'll see something like:
+**Example:** For `cre_darwin_arm64.zip` in release v1.5.0, you'll see something like:
 
 ```
 cre_darwin_arm64.zip
@@ -909,7 +1030,7 @@ If the checksums match, the file is authentic and safe to install. If they don't
 3. **Rename the extracted binary to `cre`**
 
    ```bash
-   mv cre_v1.0.11_darwin_arm64 cre
+   mv cre_v1.5.0_darwin_arm64 cre
    ```
 
 4. **Make it executable**:
@@ -982,7 +1103,7 @@ cre version
 
 **Expected output:**
 
-You should see version information: `cre version v1.0.11`.
+You should see version information: `cre version v1.5.0`.
 
 **If it doesn't work:**
 
@@ -1019,9 +1140,9 @@ Once you're authenticated, you're ready to build your first workflow:
 
 # Installing the CRE CLI on Windows
 Source: https://docs.chain.link/cre/getting-started/cli-installation/windows
-Last Updated: 2026-02-26
+Last Updated: 2026-03-17
 
-This page explains how to install the Chainlink Developer Platform CLI (also referred to as the CRE CLI) on Windows. The recommended version at the time of writing is **v1.2.0**.
+This page explains how to install the Chainlink Developer Platform CLI (also referred to as the CRE CLI) on Windows. The recommended version at the time of writing is **v1.5.0**.
 
 ## Installation
 
@@ -1035,7 +1156,7 @@ Choose your installation method:
 The easiest way to install the CRE CLI is using the installation script. Open **PowerShell** and run:
 
 ```powershell
-irm https://cre.chain.link/install.ps1 | iex
+irm https://app.chain.link/cre/install.ps1 | iex
 ```
 
 This script will:
@@ -1051,7 +1172,7 @@ After the script completes, **open a new PowerShell window** and verify the inst
 cre version
 ```
 
-**Expected output:** `CRE CLI version v1.2.0`
+**Expected output:** `CRE CLI version v1.5.0`
 
 ### Manual installation
 
@@ -1078,11 +1199,11 @@ Get-FileHash cre_windows_amd64.zip -Algorithm SHA256
 Compare the `Hash` value in the output with the official checksum from the [CRE CLI releases page](https://github.com/smartcontractkit/cre-cli/releases):
 
 1. Go to [https://github.com/smartcontractkit/cre-cli/releases](https://github.com/smartcontractkit/cre-cli/releases)
-2. Find the release version you downloaded (e.g., v1.0.11)
+2. Find the release version you downloaded (e.g., v1.5.0)
 3. Under the **Assets** section, locate `cre_windows_amd64.zip`
 4. Compare the SHA-256 checksum shown next to the file with the `Hash` value from your PowerShell output
 
-**Example:** For `cre_windows_amd64.zip` in release v1.0.11, you'll see something like:
+**Example:** For `cre_windows_amd64.zip` in release v1.5.0, you'll see something like:
 
 ```
 cre_windows_amd64.zip
@@ -1096,7 +1217,7 @@ If the checksums match, the file is authentic and safe to install. If they don't
 1. Navigate to the directory where you downloaded the archive.
 2. Right-click the `.zip` file and select **Extract All...**.
 3. Choose a permanent location for the extracted folder (e.g., `C:\Program Files\cre-cli`).
-4. Inside the extracted folder, rename the file `cre_v1.0.11_windows_amd64.exe` to `cre.exe`.
+4. Inside the extracted folder, rename the file `cre_v1.5.0_windows_amd64.exe` to `cre.exe`.
 
 #### 3. Add the CLI to your PATH
 
@@ -1121,7 +1242,7 @@ Open a new **PowerShell** or **Command Prompt** window and run:
 cre version
 ```
 
-You should see version information: `cre version v1.0.11`.
+You should see version information: `cre version v1.5.0`.
 
 ## Next steps
 
@@ -1492,7 +1613,7 @@ Details:
 
 ### From the CRE UI
 
-1. Log in to <a href="https://cre.chain.link/workflows" target="_blank" rel="noopener noreferrer">cre.chain.link/workflows</a>
+1. Log in to <a href="https://app.chain.link/cre/workflows" target="_blank" rel="noopener noreferrer">app.chain.link/cre/workflows</a>
 2. Click on your workflow name
 3. In the **Overview** section, find the **Workflow ID** field
 4. Click the copy button to copy it to your clipboard
@@ -1717,8 +1838,8 @@ When your request is successfully accepted, the gateway returns a JSON-RPC respo
 | `result.status`                | Execution status (typically `"ACCEPTED"` when the workflow trigger is successfully accepted by the gateway) |
 
 <Aside type="tip" title="Track your execution">
-  Copy the `workflow_execution_id` to track this specific execution in the [CRE UI](https://cre.chain.link/workflows).
-  You can view logs, events, and execution details using this ID.
+  Copy the `workflow_execution_id` to track this specific execution in the [CRE
+  UI](https://app.chain.link/cre/workflows). You can view logs, events, and execution details using this ID.
 </Aside>
 
 ### Error response
@@ -1746,7 +1867,7 @@ If the request fails (e.g., invalid JWT, unauthorized key, workflow not found), 
 
 After triggering your workflow, verify execution in the CRE UI:
 
-1. Go to <a href="https://cre.chain.link/workflows" target="_blank" rel="noopener noreferrer">cre.chain.link/workflows</a>
+1. Go to <a href="https://app.chain.link/cre/workflows" target="_blank" rel="noopener noreferrer">app.chain.link/cre/workflows</a>
 2. Click on your workflow
 3. Check the **Execution** tab for recent runs
 4. Click on an **Execution ID** to view detailed logs and events
@@ -1982,8 +2103,8 @@ Your curl command receives a JSON response:
 | `result.status`                | Execution status (typically `"ACCEPTED"` for valid requests)                          |
 
 <Aside type="tip" title="Track your execution">
-  Copy the `workflow_execution_id` to track this specific execution in the [CRE UI](https://cre.chain.link/workflows).
-  You can view logs, events, and execution details using this ID.
+  Copy the `workflow_execution_id` to track this specific execution in the [CRE
+  UI](https://app.chain.link/cre/workflows). You can view logs, events, and execution details using this ID.
 </Aside>
 
 ### Health check endpoint
@@ -2045,7 +2166,7 @@ All code is available in the <a href="https://github.com/smartcontractkit/cre-sd
 
 After triggering workflows with the tool, verify execution in the CRE UI:
 
-1. Go to <a href="https://cre.chain.link/workflows" target="_blank" rel="noopener noreferrer">cre.chain.link/workflows</a>
+1. Go to <a href="https://app.chain.link/cre/workflows" target="_blank" rel="noopener noreferrer">app.chain.link/cre/workflows</a>
 2. Click on your workflow
 3. Navigate to the **Execution** tab
 4. Find recent executions and click **Execution ID** to view Events and Logs
@@ -3505,13 +3626,18 @@ if (writeResult.txStatus === TxStatus.SUCCESS) {
 
 # API Interactions
 Source: https://docs.chain.link/cre/guides/workflow/using-http-client
-Last Updated: 2026-02-03
+Last Updated: 2026-03-17
 
 The CRE SDK provides an HTTP client that allows your workflows to interact with external APIs. Use it to fetch offchain data, send results to other systems, or trigger external events.
 
 
 <Aside type="caution" title="Using timestamps in requests">
   If your HTTP request includes timestamps (e.g., for authentication headers or time-based queries), use `runtime.now()` instead of `Date.now()`. This ensures all nodes use the same timestamp and reach consensus. See [Using Time in Workflows](/cre/guides/workflow/time-in-workflows) for details.
+</Aside>
+
+
+<Aside type="caution" title="Parse responses before aggregation">
+  When using a numeric aggregation method (such as `median`), always parse the HTTP response **inside** your node function and return a numeric value — never pass the raw response body to the aggregation step. If your endpoint returns an error string and your node function passes that string to a median aggregation, consensus will fail with `unsupported type for median aggregation`. See the [best practices section](/cre/guides/workflow/using-http-client/get-request#best-practices) of the GET request guide for correct and incorrect patterns.
 </Aside>
 
 These guides will walk you through the common use cases for the HTTP client.
@@ -4310,17 +4436,141 @@ Despite these limitations, simulation is an essential tool for catching bugs, va
 
 ## Next steps
 
+- **Test against production limits**: Use the `--limits` flag to enforce production quotas during simulation. See [Testing Production Limits](/cre/guides/operations/understanding-limits).
 - **Deploy your workflow**: Once you're confident your workflow works correctly, see [Deploying Workflows](/cre/guides/operations/deploying-workflows).
 - **CLI reference**: For a complete list of flags and options, see the [CLI Workflow Commands reference](/cre/reference/cli/workflow/).
 
 ---
 
+# Testing Production Limits
+Source: https://docs.chain.link/cre/guides/operations/understanding-limits
+Last Updated: 2026-03-19
+
+Simulation limits let you test your workflows against production constraints locally before deploying. By enforcing the same quotas that apply in production, you can catch violations early and avoid surprises at deploy time.
+
+## Why use simulation limits
+
+When you simulate a workflow, the CLI can enforce the same [service quotas](/cre/service-quotas) that your workflow will be subject to in production. This helps you:
+
+- **Catch violations early**: Identify workflows that exceed timeout, memory, or rate limits before deploying.
+- **Match production behavior**: Ensure your local simulation mirrors how your workflow will run on the network.
+- **Avoid surprises at deploy time**: Confidently deploy knowing your workflow operates within quota boundaries.
+
+## Using the `--limits` flag
+
+The `--limits` flag controls how simulation limits are enforced. It supports three modes:
+
+### Default limits (default behavior)
+
+By default, the simulator enforces embedded production limits. You do not need to pass any flag:
+
+```bash
+cre workflow simulate my-workflow --target staging-settings
+```
+
+This is equivalent to explicitly passing `--limits default`:
+
+```bash
+cre workflow simulate my-workflow --limits default --target staging-settings
+```
+
+### No limits
+
+To disable all limit enforcement during simulation, use `--limits none`:
+
+```bash
+cre workflow simulate my-workflow --limits none --target staging-settings
+```
+
+<Aside type="caution" title="Use with care">
+  Running without limits is useful for debugging, but your workflow may still fail when deployed if it exceeds
+  production quotas. Always validate with limits enabled before deploying.
+</Aside>
+
+### Custom limits
+
+You can provide a custom limits file to override specific values:
+
+```bash
+cre workflow simulate my-workflow --limits ./my-limits.json --target staging-settings
+```
+
+See [Customizing limits](#customizing-limits) for how to create a custom limits file.
+
+## Viewing default limits
+
+Use the [`cre workflow limits export`](/cre/reference/cli/workflow#cre-workflow-limits) command to inspect the default production limits:
+
+```bash
+cre workflow limits export
+```
+
+This outputs the default limits as JSON to stdout. You can redirect the output to a file:
+
+```bash
+cre workflow limits export > my-limits.json
+```
+
+## Customizing limits
+
+To customize limits for simulation:
+
+1. **Export the defaults** to a JSON file:
+
+   ```bash
+   cre workflow limits export > my-limits.json
+   ```
+
+2. **Edit the JSON file** to adjust the values you want to change. For example, you might increase the execution timeout or HTTP call limit for testing purposes.
+
+3. **Pass the custom file** to the simulator:
+
+   ```bash
+   cre workflow simulate my-workflow --limits ./my-limits.json --target staging-settings
+   ```
+
+<Aside type="note" title="Custom limits are for simulation only">
+  Custom limits only affect local simulation. Production deployments always use the platform-enforced quotas listed on
+  the [Service Quotas](/cre/service-quotas) page. To change production limits, see [Requesting limit
+  increases](#requesting-limit-increases).
+</Aside>
+
+## Default limit values
+
+The default limits enforced during simulation match the production quotas documented on the [Service Quotas](/cre/service-quotas) page. Use `cre workflow limits export` to inspect the exact values applied to your simulations.
+
+## Requesting limit increases
+
+If your workflow requires higher limits than the defaults, you can request a limit increase:
+
+1. Go to [app.chain.link/cre/discover](https://app.chain.link/cre/discover) and log in to your account.
+2. Click **Help** in the sidebar.
+3. Set **Issue Type** to **Other**.
+4. In the **Description** field, include:
+   - Which limit you need increased
+   - The desired value
+   - The reason for the increase
+
+<Aside type="tip" title="Be specific">
+  Include the quota key from the [Service Quotas](/cre/service-quotas) page (e.g., `PerWorkflow.ExecutionTimeout`) in
+  your request to help the team process it faster.
+</Aside>
+
+## Next steps
+
+- **Service quotas reference**: See the full [Service Quotas](/cre/service-quotas) page for all quota keys and values.
+- **Simulating workflows**: Learn more about the simulation environment in [Simulating Workflows](/cre/guides/operations/simulating-workflows).
+- **CLI reference**: See the [`cre workflow simulate`](/cre/reference/cli/workflow#cre-workflow-simulate) and [`cre workflow limits`](/cre/reference/cli/workflow#cre-workflow-limits) command references for all available flags.
+- **Deploy your workflow**: Once validated, see [Deploying Workflows](/cre/guides/operations/deploying-workflows).
+
+---
+
 # Deploying Workflows
 Source: https://docs.chain.link/cre/guides/operations/deploying-workflows
-Last Updated: 2026-02-12
+Last Updated: 2026-03-17
 
 <Aside type="note" title="Early Access required">
-  Workflow deployment is currently in Early Access. Run `cre account access` or visit <a href="https://cre.chain.link/request-access" target="_blank" rel="noopener noreferrer">cre.chain.link/request-access</a> to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
+  Workflow deployment is currently in Early Access. Run `cre account access` or visit <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">app.chain.link/cre/request-access</a> to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
 
   **While you wait:** Continue building and simulating workflows using [`cre workflow simulate`](/cre/guides/operations/simulating-workflows).
 </Aside>
@@ -4377,6 +4627,9 @@ cre workflow deploy my-workflow --target production-settings
 | ---------------- | --------------------------------------------------------------------------------------- |
 | `--target`       | Sets the target environment from your configuration files (e.g., `production-settings`) |
 | `--output`       | The output file for the compiled WASM binary (default: `"./binary.wasm.br.b64"`)        |
+| `--wasm`         | Path to a pre-built WASM binary (skips compilation). Useful in CI/CD pipelines          |
+| `--config`       | Override the config file path from `workflow.yaml`                                      |
+| `--no-config`    | Deploy without a config file                                                            |
 | `--unsigned`     | Return the raw transaction instead of broadcasting it to the network                    |
 | `--yes`          | Skip confirmation prompts and proceed with the operation                                |
 | `--project-root` | Path to the project root directory                                                      |
@@ -4449,9 +4702,89 @@ Details:
 
 After a successful deployment, you can verify that your workflow was registered correctly in two ways:
 
-1. **CRE UI**: View your deployed workflow in the [CRE platform](https://cre.chain.link). Navigate to the **Workflows** section to see your workflow's status, ID, and execution history.
+1. **CRE UI**: View your deployed workflow in the [CRE platform](https://app.chain.link/cre/discover). Navigate to the **Workflows** section to see your workflow's status, ID, and execution history.
 
 2. **Block Explorer**: Check the Workflow Registry contract on a block explorer. The CLI output will provide the transaction hash for the registration. The `WorkflowRegistry` contract is deployed on **Ethereum Mainnet** at the address <a href="https://etherscan.io/address/0x4ac54353fa4fa961afcc5ec4b118596d3305e7e5#code" target="_blank" rel="noopener noreferrer">`0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5`</a>.
+
+## CI/CD pipeline integration
+
+The `cre workflow build` and `cre workflow deploy` commands can be run as independent steps, making it straightforward to integrate CRE deployments into CI/CD pipelines.
+
+The separation gives you two key benefits:
+
+- **Build once, deploy many times** — Compile your workflow to a WASM binary in a build step, then promote that exact binary to staging and production without recompiling. This ensures the artifact you tested is the artifact you deploy.
+- **Verify before deploying** — Use `cre workflow hash` after building to record and verify content hashes before submitting a deployment transaction.
+
+### Example: GitHub Actions
+
+The following example shows a two-job pipeline: a `build` job that compiles and uploads the WASM artifact, and a `deploy` job that downloads and deploys that exact binary.
+
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy Workflow
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install CRE CLI
+        run: curl -sSL https://github.com/smartcontractkit/cre-cli/releases/latest/download/install.sh | sh
+
+      - name: Build workflow
+        run: cre workflow build ./my-workflow --output ./my-workflow/binary.wasm
+        env:
+          CRE_API_KEY: ${{ secrets.CRE_API_KEY }}
+
+      - name: Display content hashes
+        run: cre workflow hash ./my-workflow --wasm ./my-workflow/binary.wasm --target production-settings
+        env:
+          CRE_API_KEY: ${{ secrets.CRE_API_KEY }}
+          CRE_ETH_PRIVATE_KEY: ${{ secrets.CRE_ETH_PRIVATE_KEY }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: workflow-binary
+          path: ./my-workflow/binary.wasm
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install CRE CLI
+        run: curl -sSL https://github.com/smartcontractkit/cre-cli/releases/latest/download/install.sh | sh
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: workflow-binary
+          path: ./my-workflow
+
+      - name: Deploy workflow
+        run: cre workflow deploy ./my-workflow --wasm ./my-workflow/binary.wasm --target production-settings --yes
+        env:
+          CRE_API_KEY: ${{ secrets.CRE_API_KEY }}
+          CRE_ETH_PRIVATE_KEY: ${{ secrets.CRE_ETH_PRIVATE_KEY }}
+          INFURA_API_KEY: ${{ secrets.INFURA_API_KEY }}
+```
+
+
+<Aside type="note" title="API key authentication">
+  Use `CRE_API_KEY` for non-interactive authentication in CI/CD pipelines instead of `cre login`. Create an API key from the CRE platform under **Organization → APIs**. See [Authentication](/cre/reference/cli/authentication#api-key-authentication) for setup instructions.
+</Aside>
+
+
+<Aside type="note" title="RPC URLs in CI/CD">
+  Use `${VAR_NAME}` syntax in your `project.yaml` RPC URLs to inject secrets from your CI/CD environment. See [Environment variable interpolation in RPC URLs](/cre/reference/project-configuration#environment-variable-interpolation-in-rpc-urls) for details.
+</Aside>
 
 ## Using multi-sig wallets
 
@@ -4697,6 +5030,118 @@ For complete setup instructions, configuration requirements, and step-by-step gu
 - [Deploying Workflows](/cre/guides/operations/deploying-workflows) — Learn about the initial deployment process
 - [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows) — Control workflow execution state
 - [Deleting Workflows](/cre/guides/operations/deleting-workflows) — Remove workflows from the registry
+
+---
+
+# Verifying Workflows
+Source: https://docs.chain.link/cre/guides/operations/verifying-workflows
+Last Updated: 2026-03-19
+
+Workflow verification ensures the integrity and authenticity of your workflows across deployment, onchain execution, and third-party auditing. This guide explains how workflow IDs are computed, how to verify workflows in consumer contracts, and how to enable independent verification by third parties.
+
+## Workflow ID
+
+The workflow ID is a unique hash that serves as the primary identifier for your workflow throughout its lifecycle. It is computed locally during [`cre workflow deploy`](/cre/reference/cli/workflow#cre-workflow-deploy) from the following inputs:
+
+- **workflowOwner**: The deployer's address
+- **workflowName**: The name specified in your workflow
+- **Compiled workflow binary**: The WASM binary produced from your workflow code
+- **Config file contents**: The contents of your workflow's config file
+- **Secrets hash**: An empty string placeholder for secrets
+
+Because the workflow ID is derived from these inputs, it deterministically represents a specific version of your workflow code and configuration.
+
+<Aside type="caution" title="Workflow ID changes on updates">
+  The workflow ID changes whenever you update your workflow code or config file, even if the workflow name stays the
+  same. For example, if you change contract bindings, the compiled binary changes, which produces a new workflow ID.
+  Plan for this when designing consumer contracts that permission on workflow ID.
+</Aside>
+
+Use [`cre workflow hash`](/cre/reference/cli/workflow#cre-workflow-hash) to inspect the workflow ID before deploying. This lets you preview the ID without submitting an onchain transaction.
+
+For more details on deployment and updates, see [Deploying Workflows](/cre/guides/operations/deploying-workflows) and [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows).
+
+## Verifying workflows onchain
+
+When a workflow writes onchain, the consumer contract receives both the report data and metadata through the `onReport` callback. The metadata contains information you can use to verify the source of the report:
+
+- **`workflowId`** (`bytes32`): The unique workflow hash
+- **`workflowName`** (`bytes10`): The workflow name, hash-encoded
+- **`workflowOwner`** (`address`): The address that deployed the workflow
+
+See [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts) for the full `IReceiver` interface and metadata structure.
+
+### Workflow name encoding
+
+The `workflowName` in metadata is not stored as a plain string. It is a SHA256 hash of the workflow name, truncated to `bytes10`. See [how workflow names are encoded](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#how-workflow-names-are-encoded) for the full encoding process.
+
+### Security best practices
+
+Follow these practices to ensure only authorized workflows can interact with your consumer contract:
+
+- **Verify `msg.sender`**: Always check that `msg.sender` is the expected forwarder address. See the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory) for addresses by network.
+- **Permission on workflow ID**: Use `setExpectedWorkflowId` from `ReceiverTemplate` to restrict which workflow can call your contract.
+
+<Aside type="tip" title="Permissioning without workflow ID">
+  If you permission on `workflowId`, you must update it in your contract every time you update the workflow. An
+  alternative is to use `setExpectedAuthor` and `setExpectedWorkflowName` from `ReceiverTemplate` instead. These values
+  don't change when you update your workflow code, so your contract won't need updates after each workflow deployment.
+</Aside>
+
+## Third-party verification
+
+<Aside type="note" title="Go workflows only">
+  Reproducible builds are currently supported for Go workflows only. TypeScript reproducible builds are in development.
+</Aside>
+
+Third-party verification allows customers or auditors to independently confirm that a deployed workflow matches its source code. The deployer shares the workflow source, and the verifier uses the CRE CLI to compute the workflow hash and compare it against the onchain workflow ID.
+
+### Steps for the workflow developer
+
+1. **Add a `.env.public` file** to your workflow folder with `GOTOOLCHAIN` set to the Go toolchain version you use to build the workflow. Pinning that version helps reproducible builds across machines and environments. Add this file *before* running `cre workflow deploy`.
+
+   Example (replace with your own version—the tag below is not prescriptive):
+
+   ```
+   GOTOOLCHAIN=go1.23.0
+   ```
+
+   Use the same toolchain string you build with; `go version` reports it (for example `go1.23.0 linux/amd64` → use `go1.23.0`).
+
+2. **Share your workflow source** with the customer. Provide a zip archive or repository link that includes all workflow files, including `.env.public`. Exclude `.env` files that contain private keys or secrets.
+
+### Steps for the verifier
+
+1. [**Install the CRE CLI**](/cre/getting-started/cli-installation). No login or deploy access is required for hash verification.
+
+2. **Unzip or clone** the shared workflow repository.
+
+3. **Run `cre workflow hash`** to compute the workflow hash:
+
+   ```bash
+   cre workflow hash ./workflow-folder --public_key=0xYourDeployerAddress
+   ```
+
+   Replace `./workflow-folder` with the path to the workflow source and `0xYourDeployerAddress` with the deployer's public address.
+
+4. **Compare the output** with the workflow ID observed onchain. The `Workflow hash` value in the output corresponds to the onchain workflow ID:
+
+   ```
+   Binary hash:   0dcbb19de3c22edfe61605a970eb6d42199df91ac3e992cd3f2e33cb13efbb4c
+   Config hash:   3bdaebcc2f639d77cb248242c1d01c8651f540cdbf423d26fe3128516fd225b6
+   Workflow hash: 004fff5bb1ae05cc16e453f8ad564f5e8b0eae1945ec22f3d0adfc0339954d56
+   ```
+
+   If the workflow hash matches the onchain workflow ID, the deployed workflow matches the shared source code.
+
+<Aside type="tip">Run `cre workflow hash -h` for full usage details and additional flags.</Aside>
+
+## Learn more
+
+- [Deploying Workflows](/cre/guides/operations/deploying-workflows)
+- [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows)
+- [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)
+- [CRE CLI Workflow Reference](/cre/reference/cli/workflow)
 
 ---
 
@@ -4999,9 +5444,9 @@ After deploying a workflow, you can monitor its execution history, performance m
 
 ## Accessing the workflows dashboard
 
-1. **Log in to the CRE UI** at <a href="https://cre.chain.link/login" target="_blank" rel="noopener noreferrer">cre.chain.link</a>
+1. **Log in to the CRE UI** at <a href="https://app.chain.link/login" target="_blank" rel="noopener noreferrer">app.chain.link/cre/discover</a>
 
-2. **Navigate to the Workflows section** by clicking **Workflows** in the left sidebar, or visit <a href="https://cre.chain.link/workflows" target="_blank" rel="noopener noreferrer">cre.chain.link/workflows</a> directly
+2. **Navigate to the Workflows section** by clicking **Workflows** in the left sidebar, or visit <a href="https://app.chain.link/cre/workflows" target="_blank" rel="noopener noreferrer">app.chain.link/cre/workflows</a> directly
 
 The Workflows dashboard displays three main sections:
 
@@ -5394,13 +5839,13 @@ Last Updated: 2026-02-12
 
 Your CRE account is required to use the CRE CLI. You must be authenticated to run CLI commands, including simulating workflows, deploying workflows, and managing deployed workflows. You can authenticate using the browser-based `cre login` flow or an [API key](/cre/reference/cli/authentication#api-key-authentication) for CI/CD and headless environments(\*). This section covers everything you need to know about creating and managing your account.
 
-(\*) API key authentication requires your account to have <a href="https://cre.chain.link/request-access" target="_blank" rel="noopener noreferrer">Early Access</a> approval.
+(\*) API key authentication requires your account to have <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">Early Access</a> approval.
 
 ## What you'll need
 
 To use CRE, you need:
 
-1. **A CRE account** - Created through the web interface at <a href="https://cre.chain.link" target="_blank" rel="noopener noreferrer">cre.chain.link</a> (to create a new organization) or via an invitation link from an organization Owner (to join an existing organization)
+1. **A CRE account** - Created through the web interface at <a href="https://app.chain.link/cre/discover" target="_blank" rel="noopener noreferrer">app.chain.link/cre/discover</a> (to create a new organization) or via an invitation link from an organization Owner (to join an existing organization)
 2. **Two-factor authentication** - Set up during account creation for security
 3. **CLI authentication** - Connect your CLI to your account using `cre login` or an [API key](/cre/reference/cli/authentication#api-key-authentication)
 
@@ -5441,7 +5886,7 @@ Before you can use CRE, you need to create an account. An account is required to
 
 There are two ways to create an account:
 
-1. **Create a new organization**: Sign up directly on the <a href="https://cre.chain.link" target="_blank" rel="noopener noreferrer">CRE UI</a>. You'll become the *Owner* of a new organization.
+1. **Create a new organization**: Sign up directly on the <a href="https://app.chain.link/cre/discover" target="_blank" rel="noopener noreferrer">CRE UI</a>. You'll become the *Owner* of a new organization.
 2. **Join an existing organization**: Accept an invitation from an existing organization Owner. You'll become a *Member* of that organization automatically after account creation.
 
 This guide walks you through the account creation process for both scenarios.
@@ -5459,7 +5904,7 @@ There are two ways to begin the account creation process:
 
 In this option, you'll create a new organization and become the *Owner* of that organization.
 
-Go to <a href="https://cre.chain.link/login" target="_blank" rel="noopener noreferrer">cre.chain.link</a> and click the **"Create an account"** button.
+Go to <a href="https://app.chain.link/login" target="_blank" rel="noopener noreferrer">app.chain.link/cre/discover</a> and click the **"Create an account"** button.
 
 ### Option B: Join an existing organization
 
@@ -5635,7 +6080,7 @@ For detailed login instructions, see the [Logging in with the CLI](/cre/account/
 
 
 <Aside type="note" title="Deploy access required">
-  API key authentication requires your account to have Early Access approval for deployment. To <a href="https://cre.chain.link/request-access" target="_blank" rel="noopener noreferrer">request Early Access</a>, please share details about your project and use case—this helps us provide better support as you build with CRE.
+  API key authentication requires your account to have Early Access approval for deployment. To <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">request Early Access</a>, please share details about your project and use case—this helps us provide better support as you build with CRE.
 </Aside>
 
 For CI/CD pipelines or headless environments where a browser is not available, you can authenticate using the `CRE_API_KEY` environment variable. When set, the CLI uses the API key automatically — no `cre login` required.
@@ -5645,7 +6090,7 @@ export CRE_API_KEY="your-api-key"
 cre whoami
 ```
 
-API keys are created in the **APIs** tab of the **Organization** page in the <a href="https://cre.chain.link" target="_blank" rel="noopener noreferrer">CRE platform</a>. For full details, see [API Key Authentication](/cre/reference/cli/authentication#api-key-authentication).
+API keys are created in the **APIs** tab of the **Organization** page in the <a href="https://app.chain.link/cre/discover" target="_blank" rel="noopener noreferrer">CRE platform</a>. For full details, see [API Key Authentication](/cre/reference/cli/authentication#api-key-authentication).
 
 ## Session expiration
 
@@ -5700,7 +6145,7 @@ Last Updated: 2026-02-26
 Deploying workflows to a Chainlink DON requires Early Access approval. You can request access in two ways:
 
 - **From the CLI** — Run `cre account access` to check your status or submit a request directly from your terminal
-- **From the web** — Visit <a href="https://cre.chain.link/request-access" target="_blank" rel="noopener noreferrer">cre.chain.link/request-access</a> to fill out the request form
+- **From the web** — Visit <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">app.chain.link/cre/request-access</a> to fill out the request form
 
 ## Check your access status
 
@@ -5831,7 +6276,7 @@ Members are users invited by the Owner to join the organization. Each member:
 All organization members can:
 
 1. **View linked wallet keys** - Use `cre account list-key` to see all addresses linked to the organization by any member
-2. **Monitor all workflows** - Access <a href="https://cre.chain.link/workflows" target="_blank" rel="noopener noreferrer">cre.chain.link/workflows</a> to view:
+2. **Monitor all workflows** - Access <a href="https://app.chain.link/cre/workflows" target="_blank" rel="noopener noreferrer">app.chain.link/cre/workflows</a> to view:
    - All deployed workflows across the organization
    - Recent execution history
    - Workflow status (Active, Paused, Pending)
@@ -6303,7 +6748,7 @@ To collaborate with your team on CRE workflows, you can invite members to your o
 
 ## Prerequisites
 
-- You must be logged in to <a href="https://cre.chain.link" target="_blank" rel="noopener noreferrer">cre.chain.link</a>
+- You must be logged in to <a href="https://app.chain.link/cre/discover" target="_blank" rel="noopener noreferrer">app.chain.link/cre/discover</a>
 - You must be the Owner of your organization
 - The email addresses you're inviting must belong to whitelisted domains
 
@@ -6414,7 +6859,7 @@ CRE provides several types of triggers to start your workflows:
 
 # The HTTP Capability
 Source: https://docs.chain.link/cre/capabilities/http
-Last Updated: 2025-11-04
+Last Updated: 2026-03-17
 
 The **HTTP** capability is a decentralized service that allows your workflow to securely interact with any external, offchain API. It can be used to both **fetch data from** and **send data to** other systems.
 
@@ -6431,6 +6876,10 @@ This provides cryptographically verified, tamper-proof execution for your offcha
 
   **In deployed workflows**, the HTTP capability DON executes your API requests across multiple nodes, and responses are validated through Byzantine Fault Tolerant (BFT) consensus before being returned to your workflow.
 </Aside>
+
+## Features
+
+- **Multiple headers per request**: Use the `MultiHeaders` field to send multiple headers in a single HTTP request. This is useful for APIs that require multiple authentication or content negotiation headers simultaneously.
 
 ## Learn more
 
@@ -6747,10 +7196,10 @@ See the [repository README](https://github.com/smartcontractkit/cre-gcp-predicti
 
 # CLI Reference
 Source: https://docs.chain.link/cre/reference/cli
-Last Updated: 2026-02-26
+Last Updated: 2026-03-17
 
-<Aside type="note" title="Required CLI Version: v1.2.0">
-  To ensure compatibility with the guides and examples in this documentation, please use version `v1.2.0` of the CRE
+<Aside type="note" title="Required CLI Version: v1.5.0">
+  To ensure compatibility with the guides and examples in this documentation, please use version `v1.5.0` of the CRE
   CLI. You can check your installed version by running `cre version`. Refer to the [CLI
   Installation](/cre/getting-started/cli-installation/macos-linux) guide for more information.
 </Aside>
@@ -6811,7 +7260,9 @@ Manage your linked public key addresses and deployment access.
 
 Manage workflows throughout their entire lifecycle.
 
+- **`cre workflow build`** — Compile a workflow to a WASM binary (without uploading or deploying)
 - **`cre workflow simulate`** — Compile and execute workflows in a local simulation environment
+- **`cre workflow hash`** — Display content hashes for a workflow's binary and config (matches the onchain workflow ID)
 - **`cre workflow deploy`** — Deploy a workflow to the Workflow Registry contract
 - **`cre workflow activate`** — Activate a workflow on the Workflow Registry contract
 - **`cre workflow pause`** — Pause a workflow on the Workflow Registry contract
@@ -6863,8 +7314,10 @@ The typical workflow development process uses these commands in sequence:
 1. **`cre init`** — Initialize your project
 2. **`cre generate-bindings`** — Generate contract bindings from ABIs (Go workflows only, if interacting with contracts)
 3. **`cre workflow simulate`** — Test your workflow locally
-4. **`cre workflow deploy`** — Deploy your workflow to the registry
-5. **`cre workflow activate`** / **`cre workflow pause`** — Control workflow execution
+4. **`cre workflow build`** — (Optional) Compile independently; useful in CI/CD pipelines
+5. **`cre workflow hash`** — (Optional) Inspect content hashes before deploying
+6. **`cre workflow deploy`** — Deploy your workflow to the registry
+7. **`cre workflow activate`** / **`cre workflow pause`** — Control workflow execution
 
 ## Learn more
 
@@ -6941,7 +7394,7 @@ For CI/CD pipelines, automated scripts, or any environment where a browser is no
 
 ### Creating an API key
 
-1. Log in to the <a href="https://cre.chain.link" target="_blank" rel="noopener noreferrer">CRE platform</a>
+1. Log in to the <a href="https://app.chain.link/cre/discover" target="_blank" rel="noopener noreferrer">CRE platform</a>
 2. Navigate to the **Organization** page
 3. Select the **APIs** tab
 4. Click **+ Organization API**
@@ -7195,9 +7648,50 @@ When you run this command, the CLI will:
 
 # Workflow Commands
 Source: https://docs.chain.link/cre/reference/cli/workflow
-Last Updated: 2026-02-26
+Last Updated: 2026-03-17
 
 The `cre workflow` commands manage workflows throughout their entire lifecycle, from local testing to deployment and ongoing management.
+
+## `cre workflow build`
+
+Compiles a workflow to a raw WASM binary and writes it to a file. Unlike `cre workflow deploy`, this command only compiles — it does not upload artifacts or register the workflow onchain. Use this command to produce and inspect a build artifact independently, for example in a CI/CD pipeline where you want to build once and promote the same binary across environments.
+
+**Usage:**
+
+```bash
+cre workflow build <workflow-folder-path> [flags]
+```
+
+**Arguments:**
+
+- `<workflow-folder-path>` — (Required) Path to the workflow folder (e.g., `./my-workflow`)
+
+**Flags:**
+
+| Flag           | Description                                                                              |
+| -------------- | ---------------------------------------------------------------------------------------- |
+| `-o, --output` | Output file path for the compiled WASM binary (default: `<workflow-folder>/binary.wasm`) |
+
+**Example:**
+
+```bash
+cre workflow build ./my-workflow
+```
+
+**Example output:**
+
+```
+Compiling workflow...
+✓ Workflow compiled successfully
+  Binary hash: 0x3a7f...c21b
+✓ Build output written to ./my-workflow/binary.wasm
+```
+
+The binary hash printed here matches the hash shown during `cre workflow deploy`. You can also compute it explicitly with [`cre workflow hash`](#cre-workflow-hash).
+
+For CI/CD usage, see [Deploying Workflows](/cre/guides/operations/deploying-workflows#cicd-pipeline-integration).
+
+***
 
 ## `cre workflow simulate`
 
@@ -7221,15 +7715,16 @@ cre workflow simulate <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| Flag                      | Description                                                                                                                                                                       |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--broadcast`             | Broadcast onchain write transactions (default: `false`). Without this flag, a dry run is performed                                                                                |
-| `-g, --engine-logs`       | Enable non-fatal engine logging                                                                                                                                                   |
-| `--non-interactive`       | Run without prompts; requires `--trigger-index` (see the line below) and inputs for the selected trigger type                                                                     |
-| `--trigger-index <int>`   | Selects which handler to run (0-based position). If your workflow has multiple handlers, `0` is the first, `1` is the second, etc. Required with `--non-interactive`              |
-| `--http-payload <string>` | HTTP trigger payload as JSON string or path to JSON file (with or without `@` prefix). For HTTP triggers only                                                                     |
-| `--evm-tx-hash <string>`  | Transaction hash (`0x...`) containing the event that triggered your workflow. For EVM log triggers only                                                                           |
-| `--evm-event-index <int>` | Which log/event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For EVM log triggers only |
+| Flag                      | Description                                                                                                                                                                                                                                                                      |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--broadcast`             | Broadcast onchain write transactions (default: `false`). Without this flag, a dry run is performed                                                                                                                                                                               |
+| `-g, --engine-logs`       | Enable non-fatal engine logging                                                                                                                                                                                                                                                  |
+| `--non-interactive`       | Run without prompts; requires `--trigger-index` (see the line below) and inputs for the selected trigger type                                                                                                                                                                    |
+| `--trigger-index <int>`   | Selects which handler to run (0-based position). If your workflow has multiple handlers, `0` is the first, `1` is the second, etc. Required with `--non-interactive`                                                                                                             |
+| `--http-payload <string>` | HTTP trigger payload as JSON string or path to JSON file (with or without `@` prefix). For HTTP triggers only                                                                                                                                                                    |
+| `--evm-tx-hash <string>`  | Transaction hash (`0x...`) containing the event that triggered your workflow. For EVM log triggers only                                                                                                                                                                          |
+| `--evm-event-index <int>` | Which log/event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For EVM log triggers only                                                                                                |
+| `--limits <string>`       | Production limits to enforce during simulation: `default` (embedded prod limits), a path to a limits JSON file (e.g. from `cre workflow limits export`), or `none` to disable. See [Testing Production Limits](/cre/guides/operations/understanding-limits) (default: `default`) |
 
 **Examples:**
 
@@ -7294,11 +7789,14 @@ cre workflow deploy <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| Flag           | Description                                                                                    |
-| -------------- | ---------------------------------------------------------------------------------------------- |
-| `-o, --output` | Output file for the compiled WASM binary encoded in base64 (default: `"./binary.wasm.br.b64"`) |
-| `--unsigned`   | Return the raw transaction instead of sending it to the network                                |
-| `--yes`        | Skip the confirmation prompt and proceed with the operation                                    |
+| Flag           | Description                                                                                                                   |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `-o, --output` | Output file for the compiled WASM binary encoded in base64 (default: `"./binary.wasm.br.b64"`)                                |
+| `--wasm`       | Path to a pre-built WASM binary (skips compilation). Use with [`cre workflow build`](#cre-workflow-build) for CI/CD pipelines |
+| `--config`     | Override the config file path from `workflow.yaml`                                                                            |
+| `--no-config`  | Deploy without a config file                                                                                                  |
+| `--unsigned`   | Return the raw transaction instead of sending it to the network                                                               |
+| `--yes`        | Skip the confirmation prompt and proceed with the operation                                                                   |
 
 **Examples:**
 
@@ -7312,6 +7810,16 @@ cre workflow deploy <workflow-name-or-path> [flags]
 
   ```bash
   cre workflow deploy my-workflow --output ./dist/workflow.wasm.br.b64
+  ```
+
+- Deploy using a pre-built binary (skips compilation)
+
+  ```bash
+  # Build once
+  cre workflow build ./my-workflow
+
+  # Deploy with the pre-built binary
+  cre workflow deploy ./my-workflow --wasm ./my-workflow/binary.wasm --target production-settings
   ```
 
 For more details, see [Deploying Workflows](/cre/guides/operations/deploying-workflows).
@@ -7473,20 +7981,119 @@ For a full guide including Makefile examples and customization, see [Custom WASM
 
 ***
 
+## `cre workflow hash`
+
+Computes and displays content hashes for a workflow without deploying it. Reports the binary hash, config hash, and the workflow hash — the same value used as the onchain workflow ID. This is useful for verifying what will be deployed before submitting a transaction, or for confirming that a build artifact is identical to a previously deployed version.
+
+Hashes are also displayed automatically during `cre workflow build` and `cre workflow deploy`.
+
+**Usage:**
+
+```bash
+cre workflow hash <workflow-folder-path> [flags]
+```
+
+**Arguments:**
+
+- `<workflow-folder-path>` — (Required) Path to the workflow folder (e.g., `./my-workflow`)
+
+**Flags:**
+
+| Flag           | Description                                                                                                                                                          |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--public_key` | Owner address to use when computing the workflow hash. Required when `CRE_ETH_PRIVATE_KEY` is not set and no `workflow-owner-address` is configured in your settings |
+| `--wasm`       | Path or URL to a pre-built WASM binary (skips compilation)                                                                                                           |
+| `--config`     | Override the config file path from `workflow.yaml`                                                                                                                   |
+| `--no-config`  | Compute hash without a config file                                                                                                                                   |
+
+
+<Aside type="note" title="Owner address required">
+  This command needs your owner address to compute the workflow hash, since the hash incorporates the owner. It derives this from `CRE_ETH_PRIVATE_KEY` by default. If you don't want to provide a private key, pass your address directly with `--public_key`.
+</Aside>
+
+**Examples:**
+
+- Compute hashes using settings from `workflow.yaml`
+
+  ```bash
+  cre workflow hash my-workflow --target staging-settings
+  ```
+
+- Compute hashes without providing a private key
+
+  ```bash
+  cre workflow hash my-workflow --public_key 0xYourOwnerAddress --target staging-settings
+  ```
+
+- Compute hashes for a pre-built binary without recompiling
+
+  ```bash
+  cre workflow hash my-workflow --wasm ./my-workflow/binary.wasm --target staging-settings
+  ```
+
+**Example output:**
+
+```
+✓ Workflow compiled
+  Binary hash:   0dcbb19de3c22edfe61605a970eb6d42199df91ac3e992cd3f2e33cb13efbb4c
+  Config hash:   3bdaebcc2f639d77cb248242c1d01c8651f540cdbf423d26fe3128516fd225b6
+  Workflow hash: 004fff5bb1ae05cc16e453f8ad564f5e8b0eae1945ec22f3d0adfc0339954d56
+```
+
+
+<Aside type="note" title="Workflow hash = Workflow ID">
+  The **workflow hash** is the same value that appears as the **Workflow ID** onchain. If your consumer contracts validate the workflow ID, use `cre workflow hash` to check the expected ID before and after updates. See [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows) for details.
+</Aside>
+
+## `cre workflow limits`
+
+Manage simulation limits. Use this command to inspect the default production limits used during `cre workflow simulate`.
+
+### `cre workflow limits export`
+
+Prints the default production limits as JSON to stdout. Use this as a starting point for creating a custom limits file.
+
+**Usage:**
+
+```bash
+cre workflow limits export
+```
+
+**Example:**
+
+```bash
+cre workflow limits export > my-limits.json
+```
+
+Redirect the output to a file, edit the values you want to adjust, then pass the file to `cre workflow simulate` with the `--limits` flag:
+
+```bash
+cre workflow simulate ./my-workflow --limits ./my-limits.json --target staging-settings
+```
+
+See [Testing Production Limits](/cre/guides/operations/understanding-limits) for a full walkthrough.
+
+***
+
 ## Workflow lifecycle
 
 The typical workflow lifecycle uses these commands in sequence:
 
 1. **Develop locally** — Write and iterate on your workflow code
-2. **`cre workflow simulate`** — Test your workflow in a local simulation environment
-3. **`cre workflow deploy`** — Deploy your workflow to the registry
-4. **`cre workflow pause`** / **`cre workflow activate`** — Control workflow execution as needed
-5. **`cre workflow deploy`** (again) — Deploy updates (replaces the existing workflow)
-6. **`cre workflow delete`** — Remove the workflow when no longer needed
+2. **`cre workflow limits export`** — (Optional) Inspect and customize production limits before simulating
+3. **`cre workflow simulate`** — Test your workflow in a local simulation environment
+4. **`cre workflow build`** — (Optional) Compile to WASM independently; useful in CI/CD pipelines
+5. **`cre workflow hash`** — (Optional) Inspect content hashes before deploying
+6. **`cre workflow deploy`** — Deploy your workflow to the registry
+7. **`cre workflow pause`** / **`cre workflow activate`** — Control workflow execution as needed
+8. **`cre workflow deploy`** (again) — Deploy updates (replaces the existing workflow)
+9. **`cre workflow delete`** — Remove the workflow when no longer needed
 
 ## Learn more
 
-- [Deploying Workflows](/cre/guides/operations/deploying-workflows) — Detailed deployment guide
+- [Testing Production Limits](/cre/guides/operations/understanding-limits) — Using the `--limits` flag and `cre workflow limits export`
+- [Simulating Workflows](/cre/guides/operations/simulating-workflows) — Detailed simulation guide
+- [Deploying Workflows](/cre/guides/operations/deploying-workflows) — Detailed deployment guide, including CI/CD pipeline integration
 - [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows) — Managing workflow state
 - [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows) — Version management
 - [Deleting Workflows](/cre/guides/operations/deleting-workflows) — Cleanup and removal
@@ -7869,7 +8476,7 @@ Remaining repositories:
 
 # Utility Commands
 Source: https://docs.chain.link/cre/reference/cli/utilities
-Last Updated: 2026-02-16
+Last Updated: 2026-03-17
 
 Utility commands provide helpful information and troubleshooting capabilities.
 
@@ -7919,12 +8526,12 @@ cre version
 **Example output:**
 
 ```bash
-CRE CLI version v1.2.0
+CRE CLI version v1.5.0
 ```
 
 
 <Aside type="note" title="Version compatibility">
-  Always check that your CLI version matches the version recommended in the documentation. The current recommended version is **v1.0.11**. See the [CLI Installation guide](/cre/getting-started/cli-installation) for more information.
+  Always check that your CLI version matches the version recommended in the documentation. The current recommended version is **v1.5.0**. See the [CLI Installation guide](/cre/getting-started/cli-installation) for more information.
 </Aside>
 
 ## Learn more
@@ -8612,7 +9219,7 @@ Here are resources to help you go from simulation to production.
 
 
 <Aside type="note" title="Deployment access required">
-  Deploying requires Early Access approval. Run `cre account access` or visit <a href="https://cre.chain.link/request-access" target="_blank">cre.chain.link/request-access</a> to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access). While you wait, continue building and simulating workflows.
+  Deploying requires Early Access approval. Run `cre account access` or visit <a href="https://app.chain.link/cre/request-access" target="_blank">app.chain.link/cre/request-access</a> to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access). While you wait, continue building and simulating workflows.
 </Aside>
 
 1. **[Link a Wallet Key](/cre/organization/linking-keys)** — Connect your wallet to your organization
@@ -8649,6 +9256,94 @@ Dive deeper into concepts from this guide:
 | **EVM interactions**     | [EVM Client Overview](/cre/guides/workflow/using-evm-client/overview), [Onchain Read](/cre/guides/workflow/using-evm-client/onchain-read), [Onchain Write](/cre/guides/workflow/using-evm-client/onchain-write/overview) |
 | **Configuration**        | [Project Configuration](/cre/reference/project-configuration), [Secrets Guide](/cre/guides/workflow/secrets)                                                                                                             |
 | **All capabilities**     | [Capabilities Overview](/cre/capabilities)                                                                                                                                                                               |
+
+---
+
+# Build with AI (Skill, Prompting)
+Source: https://docs.chain.link/cre/getting-started/build-with-ai-ts
+Last Updated: 2026-03-19
+
+You can use AI coding assistants to generate, debug, and explore CRE workflows. There are two approaches: install a skill in your code editor agent or load CRE context into any LLM chat and prompt from there.
+
+## Code editor skill
+
+Agent skills are structured instruction sets that give an AI coding agent domain-specific knowledge and a defined approach for a task. When you install a skill, your agent reads it at the start of a session and uses it to guide how it fetches docs, generates code, and debugs — without you having to repeat that context every time. See the [Agent Skills specification](https://agentskills.io/specification) for the full format and best practices.
+
+### Supported agent tools
+
+The skill works with any agent-capable AI coding tool that implements the [Agent Skills specification](https://agentskills.io/specification). Verified with Claude Code, Cursor, Codex, Gemini, Copilot, and Cline.
+
+### Install the skill
+
+Run the following command to add the CRE skill to your code editor agent:
+
+```shell
+npx skills add https://github.com/smartcontractkit/chainlink-agent-skills --skill cre-skills
+```
+
+### Prompt your agent
+
+Once installed, your agent will automatically discover and activate the skill based on your task. For best results across tools, explicitly reference it in your prompt:
+
+```
+Use the /cre-skills skill and [describe what you want to build]
+```
+
+In Claude Code, you can invoke it directly as a slash command: `/cre-skills`.
+
+### What the skill covers
+
+The skill is organized into focused reference areas, each covering a specific part of CRE. When you ask a question, your agent matches it to the most relevant area and fetches only what it needs — so you get a targeted answer without the agent reading the entire SDK. The areas the skill covers:
+
+| Topic                                            | What it helps with                                                                                                                                                                                                                                                                                                                                                                        |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Getting started](/cre/getting-started/overview) | [CLI installation](/cre/getting-started/cli-installation), [project setup](/cre/getting-started/part-1-project-setup), tutorial walkthrough                                                                                                                                                                                                                                               |
+| [Account setup](/cre/account)                    | [Creating accounts](/cre/account/creating-account), [CLI login](/cre/account/cli-login), [managing authentication](/cre/account/managing-auth)                                                                                                                                                                                                                                            |
+| Workflow building                                | [Secrets](/cre/guides/workflow/secrets), [triggers](/cre/guides/workflow/using-triggers/overview) (cron/HTTP/EVM log), [HTTP client](/cre/guides/workflow/using-http-client), [EVM client](/cre/guides/workflow/using-evm-client/overview), onchain read/write                                                                                                                            |
+| [SDK reference](/cre/reference/sdk/overview)     | [Core SDK](/cre/reference/sdk/core), [consensus/aggregation](/cre/reference/sdk/consensus), [EVM client](/cre/reference/sdk/evm-client), [HTTP client](/cre/reference/sdk/http-client), [trigger APIs](/cre/reference/sdk/triggers/overview)                                                                                                                                              |
+| [CLI reference](/cre/reference/cli)              | [Accounts](/cre/reference/cli/account), [authentication](/cre/reference/cli/authentication), [secrets](/cre/reference/cli/secrets), [workflows](/cre/reference/cli/workflow), [utilities](/cre/reference/cli/utilities)                                                                                                                                                                   |
+| [Capabilities](/cre/capabilities)                | [EVM read/write](/cre/capabilities/evm-read-write), [HTTP](/cre/capabilities/http), [triggers overview](/cre/capabilities/triggers)                                                                                                                                                                                                                                                       |
+| Operations                                       | [Deploying](/cre/guides/operations/deploying-workflows), [simulating](/cre/guides/operations/simulating-workflows), [monitoring](/cre/guides/operations/monitoring-workflows), [activating/pausing](/cre/guides/operations/activating-pausing-workflows), [updating](/cre/guides/operations/updating-deployed-workflows), [deleting workflows](/cre/guides/operations/deleting-workflows) |
+| Concepts                                         | [Consensus computing](/cre/concepts/consensus-computing), [finality](/cre/concepts/finality), [non-determinism](/cre/concepts/non-determinism), [TypeScript WASM runtime](/cre/concepts/typescript-wasm-runtime)                                                                                                                                                                          |
+| [Templates](/cre/templates)                      | CRE workflow templates and usage                                                                                                                                                                                                                                                                                                                                                          |
+
+### Workflow generation
+
+When you ask the skill to build a workflow, it will:
+
+1. Confirm whether you want Go or TypeScript
+2. Ask whether HTTP requests should use regular or Confidential HTTP (for privacy-preserving API calls via enclave execution)
+3. Generate the complete workflow scaffold immediately — no speculative fetching
+4. Give you a `cre workflow simulate` command to test it
+5. Iterate on errors by fetching exactly what the error names, fixing it, and asking you to re-run
+
+### Debugging
+
+When diagnosing errors, the skill identifies the capability involved, fetches the relevant doc page, checks repo examples if needed, and proposes a fix based on CRE-specific constraints — not general programming assumptions.
+
+## Prompting
+
+If you prefer to work directly in an AI assistant, you can load the full CRE TypeScript documentation into the context window and prompt from there. This is useful for broad exploration, but loads the entire SDK reference upfront — the skill approach above keeps your context window focused on your current task.
+
+**Context file**: https\://docs.chain.link/cre/llms-full-ts.txt
+
+Alternatively, you can click the "Copy Page" button in the top right corner of any Chainlink docs page to load the full page content into the context window of your preferred AI assistant. Loading a single page — for example, just the triggers reference or the EVM client page — rather than the entire SDK consumes fewer tokens (lower cost per request for pay-per-token APIs), keeps you within the limits of smaller context windows, and gives the model more relevant signal to attend to, which tends to produce more accurate output.
+
+Copy the starter prompt below, replace the placeholder at the end with your use case, and paste it into your preferred AI assistant.
+
+```
+I'm building a Chainlink CRE workflow using the TypeScript SDK.
+
+Here is the full CRE TypeScript documentation:
+https://docs.chain.link/cre/llms-full-ts.txt
+
+Please fetch and read that file. After you've read it, please:
+- Help me build a CRE workflow based on what I describe
+- Answer any questions I have about the CRE TypeScript SDK
+- Guide me through implementation step by step
+
+I want to build: [describe your use case]
+```
 
 ---
 
@@ -10652,7 +11347,7 @@ For the full list of types and methods available on the Confidential HTTP client
 
 # Forwarder Directory
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory-ts
-Last Updated: 2026-02-16
+Last Updated: 2026-03-23
 
 <Aside type="note" title="Looking for supported networks?">
   For a complete list of supported networks and version requirements, see [Supported Networks](/cre/supported-networks).
@@ -10693,38 +11388,61 @@ These `MockKeystoneForwarder` addresses are used when running `cre workflow simu
 
 ### Simulation Mainnets
 
-| Network                                                                                                                                               | Chain Name                    | Mock Forwarder Address                     |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------ |
-| <a href="https://arbiscan.io/address/0xd770499057619c9a76205fd4168161cf94abc532" target="_blank" rel="noopener noreferrer">Arbitrum One</a>           | ethereum-mainnet-arbitrum-1   | 0xd770499057619c9a76205fd4168161cf94abc532 |
-| <a href="https://snowscan.xyz/address/0xdc21e279934ff6721cadfdd112dafb3261f09a2c" target="_blank" rel="noopener noreferrer">Avalanche</a>             | avalanche-mainnet             | 0xdc21e279934ff6721cadfdd112dafb3261f09a2c |
-| <a href="https://basescan.org/address/0x5e342a8438b4f5d39e72875fcee6f76b39cce548" target="_blank" rel="noopener noreferrer">Base</a>                  | ethereum-mainnet-base-1       | 0x5e342a8438b4f5d39e72875fcee6f76b39cce548 |
-| <a href="https://bscscan.com/address/0x6f3239bbb26e98961e1115aba83f8a282e5508c8" target="_blank" rel="noopener noreferrer">BNB Smart Chain</a>        | binance_smart_chain-mainnet | 0x6f3239bbb26e98961e1115aba83f8a282e5508c8 |
-| <a href="https://etherscan.io/address/0xa3d1ad4ac559a6575a114998affb2fb2ec97a7d9" target="_blank" rel="noopener noreferrer">Ethereum Mainnet</a>      | ethereum-mainnet              | 0xa3d1ad4ac559a6575a114998affb2fb2ec97a7d9 |
-| <a href="https://optimistic.etherscan.io/address/0x9119a1501550ed94a3f2794038ed9258337afa18" target="_blank" rel="noopener noreferrer">OP Mainnet</a> | ethereum-mainnet-optimism-1   | 0x9119a1501550ed94a3f2794038ed9258337afa18 |
-| <a href="https://polygonscan.com/address/0xf458d621885e29a5003ea9bbba5280d54e19b1ce" target="_blank" rel="noopener noreferrer">Polygon</a>            | polygon-mainnet               | 0xf458d621885e29a5003ea9bbba5280d54e19b1ce |
-| <a href="https://worldscan.org/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">World Chain</a>          | ethereum-mainnet-worldchain-1 | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://explorer.zksync.io/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">ZKSync Era</a>      | ethereum-mainnet-zksync-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Network                                                                                                                                                             | Chain Name                    | Mock Forwarder Address                     |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------ |
+| <a href="https://arbiscan.io/address/0xd770499057619c9a76205fd4168161cf94abc532" target="_blank" rel="noopener noreferrer">Arbitrum One</a>                         | ethereum-mainnet-arbitrum-1   | 0xd770499057619c9a76205fd4168161cf94abc532 |
+| <a href="https://snowscan.xyz/address/0xdc21e279934ff6721cadfdd112dafb3261f09a2c" target="_blank" rel="noopener noreferrer">Avalanche</a>                           | avalanche-mainnet             | 0xdc21e279934ff6721cadfdd112dafb3261f09a2c |
+| <a href="https://basescan.org/address/0x5e342a8438b4f5d39e72875fcee6f76b39cce548" target="_blank" rel="noopener noreferrer">Base</a>                                | ethereum-mainnet-base-1       | 0x5e342a8438b4f5d39e72875fcee6f76b39cce548 |
+| <a href="https://bscscan.com/address/0x6f3239bbb26e98961e1115aba83f8a282e5508c8" target="_blank" rel="noopener noreferrer">BNB Smart Chain</a>                      | binance_smart_chain-mainnet | 0x6f3239bbb26e98961e1115aba83f8a282e5508c8 |
+| <a href="https://explorer.celo.org/mainnet/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Celo</a>                   | celo-mainnet                  | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://etherscan.io/address/0xa3d1ad4ac559a6575a114998affb2fb2ec97a7d9" target="_blank" rel="noopener noreferrer">Ethereum Mainnet</a>                    | ethereum-mainnet              | 0xa3d1ad4ac559a6575a114998affb2fb2ec97a7d9 |
+| <a href="https://gnosisscan.io/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Gnosis Chain</a>                       | gnosis-chain-mainnet          | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://app.hyperliquid.xyz/explorer/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Hyperliquid Mainnet</a> | hyperliquid-mainnet           | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://explorer.inkonchain.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Ink</a>                      | ethereum-mainnet-ink-1        | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://explorer.jovay.io/address/0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4" target="_blank" rel="noopener noreferrer">Jovay Mainnet</a>                  | jovay-mainnet                 | 0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4 |
+| <a href="https://lineascan.build/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Linea</a>                            | ethereum-mainnet-linea-1      | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://mantlescan.xyz/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Mantle</a>                            | ethereum-mainnet-mantle-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://megaeth.blockscout.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">MegaETH</a>                   | megaeth-mainnet               | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://optimistic.etherscan.io/address/0x9119a1501550ed94a3f2794038ed9258337afa18" target="_blank" rel="noopener noreferrer">OP Mainnet</a>               | ethereum-mainnet-optimism-1   | 0x9119a1501550ed94a3f2794038ed9258337afa18 |
+| <a href="https://pharos.socialscan.io/address/0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4" target="_blank" rel="noopener noreferrer">Pharos Mainnet</a>              | pharos-mainnet                | 0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4 |
+| <a href="https://plasmascan.to/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Plasma</a>                             | plasma-mainnet                | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://polygonscan.com/address/0xf458d621885e29a5003ea9bbba5280d54e19b1ce" target="_blank" rel="noopener noreferrer">Polygon</a>                          | polygon-mainnet               | 0xf458d621885e29a5003ea9bbba5280d54e19b1ce |
+| <a href="https://scrollscan.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Scroll</a>                            | ethereum-mainnet-scroll-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://sonicscan.org/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Sonic</a>                              | sonic-mainnet                 | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://worldscan.org/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">World Chain</a>                        | ethereum-mainnet-worldchain-1 | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://www.oklink.com/xlayer/address/0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4" target="_blank" rel="noopener noreferrer">XLayer Mainnet</a>             | ethereum-mainnet-xlayer-1     | 0x2B3068C4B288A2CD1f8B3613b8f33ef7cEecadC4 |
+| <a href="https://explorer.zksync.io/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">ZKSync Era</a>                    | ethereum-mainnet-zksync-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 
 ### Simulation Testnets
 
-| Network                                                                                                                                                          | Chain Name                            | Mock Forwarder Address                     |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- | ------------------------------------------ |
-| <a href="https://explorer.curtis.apechain.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Apechain Curtis</a>  | apechain-testnet-curtis               | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://testnet.arcscan.app/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Arc Testnet</a>               | arc-testnet                           | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://sepolia.arbiscan.io/address/0xd41263567ddfead91504199b8c6c87371e83ca5d" target="_blank" rel="noopener noreferrer">Arbitrum Sepolia</a>          | ethereum-testnet-sepolia-arbitrum-1   | 0xd41263567ddfead91504199b8c6c87371e83ca5d |
-| <a href="https://testnet.snowscan.xyz/address/0x2e7371a5d032489e4f60216d8d898a4c10805963" target="_blank" rel="noopener noreferrer">Avalanche Fuji</a>           | avalanche-testnet-fuji                | 0x2e7371a5d032489e4f60216d8d898a4c10805963 |
-| <a href="https://sepolia.basescan.org/address/0x82300bd7c3958625581cc2f77bc6464dcecdf3e5" target="_blank" rel="noopener noreferrer">Base Sepolia</a>             | ethereum-testnet-sepolia-base-1       | 0x82300bd7c3958625581cc2f77bc6464dcecdf3e5 |
-| <a href="https://testnet.bscscan.com/address/0xa238e42cb8782808dbb2f37e19859244ec4779b0" target="_blank" rel="noopener noreferrer">BSC Testnet</a>               | binance_smart_chain-testnet         | 0xa238e42cb8782808dbb2f37e19859244ec4779b0 |
-| <a href="https://sepolia.etherscan.io/address/0x15fC6ae953E024d975e77382eEeC56A9101f9F88" target="_blank" rel="noopener noreferrer">Ethereum Sepolia</a>         | ethereum-testnet-sepolia              | 0x15fC6ae953E024d975e77382eEeC56A9101f9F88 |
-| <a href="https://testnet.purrsec.com/address/0xB27fA1c28288c50542527F64BCda22C9FbAc24CB" target="_blank" rel="noopener noreferrer">Hyperliquid Testnet</a>       | hyperliquid-testnet                   | 0xB27fA1c28288c50542527F64BCda22C9FbAc24CB |
-| <a href="https://explorer-sepolia.inkonchain.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Ink Sepolia</a>   | ink-testnet-sepolia                   | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://sepolia-explorer.jovay.io/l2/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Jovay Testnet</a>    | jovay-testnet                         | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://sepolia.lineascan.build/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Linea Sepolia</a>         | ethereum-testnet-sepolia-linea-1      | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://sepolia-optimism.etherscan.io/address/0xa2888380dff3704a8ab6d1cd1a8f69c15fea5ee3" target="_blank" rel="noopener noreferrer">OP Sepolia</a>      | ethereum-testnet-sepolia-optimism-1   | 0xa2888380dff3704a8ab6d1cd1a8f69c15fea5ee3 |
-| <a href="https://testnet.plasmascan.to/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Plasma Testnet</a>          | plasma-testnet                        | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://amoy.polygonscan.com/address/0x3675a5eb2286a3f87e8278fc66edf458a2e3bb74" target="_blank" rel="noopener noreferrer">Polygon Amoy</a>             | polygon-testnet-amoy                  | 0x3675a5eb2286a3f87e8278fc66edf458a2e3bb74 |
-| <a href="https://sepolia.worldscan.org/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">World Chain Sepolia</a>     | ethereum-testnet-sepolia-worldchain-1 | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| <a href="https://sepolia.explorer.zksync.io/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">ZKSync Era Sepolia</a> | ethereum-testnet-sepolia-zksync-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| Network                                                                                                                                                            | Chain Name                            | Mock Forwarder Address                     |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------- | ------------------------------------------ |
+| <a href="https://explorer.curtis.apechain.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Apechain Curtis</a>    | apechain-testnet-curtis               | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://testnet.arcscan.app/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Arc Testnet</a>                 | arc-testnet                           | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://sepolia.arbiscan.io/address/0xd41263567ddfead91504199b8c6c87371e83ca5d" target="_blank" rel="noopener noreferrer">Arbitrum Sepolia</a>            | ethereum-testnet-sepolia-arbitrum-1   | 0xd41263567ddfead91504199b8c6c87371e83ca5d |
+| <a href="https://testnet.snowscan.xyz/address/0x2e7371a5d032489e4f60216d8d898a4c10805963" target="_blank" rel="noopener noreferrer">Avalanche Fuji</a>             | avalanche-testnet-fuji                | 0x2e7371a5d032489e4f60216d8d898a4c10805963 |
+| <a href="https://sepolia.basescan.org/address/0x82300bd7c3958625581cc2f77bc6464dcecdf3e5" target="_blank" rel="noopener noreferrer">Base Sepolia</a>               | ethereum-testnet-sepolia-base-1       | 0x82300bd7c3958625581cc2f77bc6464dcecdf3e5 |
+| <a href="https://testnet.bscscan.com/address/0xa238e42cb8782808dbb2f37e19859244ec4779b0" target="_blank" rel="noopener noreferrer">BSC Testnet</a>                 | binance_smart_chain-testnet         | 0xa238e42cb8782808dbb2f37e19859244ec4779b0 |
+| <a href="https://explorer.cronos.org/testnet/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Cronos Testnet</a>      | cronos-testnet                        | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://sepolia.etherscan.io/address/0x15fC6ae953E024d975e77382eEeC56A9101f9F88" target="_blank" rel="noopener noreferrer">Ethereum Sepolia</a>           | ethereum-testnet-sepolia              | 0x15fC6ae953E024d975e77382eEeC56A9101f9F88 |
+| <a href="https://gnosis-chiado.blockscout.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Gnosis Chiado</a>      | gnosis-chain-testnet-chiado           | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://testnet.purrsec.com/address/0xB27fA1c28288c50542527F64BCda22C9FbAc24CB" target="_blank" rel="noopener noreferrer">Hyperliquid Testnet</a>         | hyperliquid-testnet                   | 0xB27fA1c28288c50542527F64BCda22C9FbAc24CB |
+| <a href="https://explorer-sepolia.inkonchain.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Ink Sepolia</a>     | ink-testnet-sepolia                   | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://sepolia-explorer.jovay.io/l2/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Jovay Testnet</a>      | jovay-testnet                         | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://sepolia.lineascan.build/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Linea Sepolia</a>           | ethereum-testnet-sepolia-linea-1      | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://sepolia.mantlescan.xyz/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Mantle Sepolia</a>           | ethereum-testnet-sepolia-mantle-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://megaexplorer.xyz/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">MegaETH Testnet 2</a>              | megaeth-testnet-2                     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://sepolia-optimism.etherscan.io/address/0xa2888380dff3704a8ab6d1cd1a8f69c15fea5ee3" target="_blank" rel="noopener noreferrer">OP Sepolia</a>        | ethereum-testnet-sepolia-optimism-1   | 0xa2888380dff3704a8ab6d1cd1a8f69c15fea5ee3 |
+| <a href="https://atlantic.pharosscan.xyz/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Pharos Atlantic Testnet</a> | pharos-atlantic-testnet               | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://testnet.plasmascan.to/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Plasma Testnet</a>            | plasma-testnet                        | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://amoy.polygonscan.com/address/0x3675a5eb2286a3f87e8278fc66edf458a2e3bb74" target="_blank" rel="noopener noreferrer">Polygon Amoy</a>               | polygon-testnet-amoy                  | 0x3675a5eb2286a3f87e8278fc66edf458a2e3bb74 |
+| <a href="https://sepolia-blockscout.scroll.io/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Scroll Sepolia</a>     | ethereum-testnet-sepolia-scroll-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://explorer.testnet.soniclabs.com/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Sonic Testnet</a>    | sonic-testnet                         | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://spb.explorer.tac.build/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">TAC Testnet</a>              | tac-testnet                           | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://sepolia.uniscan.xyz/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">Unichain Sepolia</a>            | ethereum-testnet-sepolia-unichain-1   | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://sepolia.worldscan.org/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">World Chain Sepolia</a>       | ethereum-testnet-sepolia-worldchain-1 | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://www.oklink.com/xlayer-test/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">XLayer Testnet</a>       | xlayer-testnet                        | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
+| <a href="https://sepolia.explorer.zksync.io/address/0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1" target="_blank" rel="noopener noreferrer">ZKSync Era Sepolia</a>   | ethereum-testnet-sepolia-zksync-1     | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 
 ## Production Forwarders
 
@@ -10732,43 +11450,66 @@ These `KeystoneForwarder` addresses are used by deployed workflows. Use these ad
 
 ### Mainnets
 
-| Network                                                                                                                                               | Chain Name                    | Forwarder Address                          |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------ |
-| <a href="https://arbiscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Arbitrum One</a>           | ethereum-mainnet-arbitrum-1   | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
-| <a href="https://snowscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Avalanche</a>             | avalanche-mainnet             | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://basescan.org/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Base</a>                  | ethereum-mainnet-base-1       | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
-| <a href="https://bscscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">BNB Smart Chain</a>        | binance_smart_chain-mainnet | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://etherscan.io/address/0x0b93082D9b3C7C97fAcd250082899BAcf3af3885" target="_blank" rel="noopener noreferrer">Ethereum Mainnet</a>      | ethereum-mainnet              | 0x0b93082D9b3C7C97fAcd250082899BAcf3af3885 |
-| <a href="https://optimistic.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">OP Mainnet</a> | ethereum-mainnet-optimism-1   | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
-| <a href="https://polygonscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Polygon</a>            | polygon-mainnet               | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://worldscan.org/address/0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1" target="_blank" rel="noopener noreferrer">World Chain</a>          | ethereum-mainnet-worldchain-1 | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
-| <a href="https://explorer.zksync.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">ZKSync Era</a>      | ethereum-mainnet-zksync-1     | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| Network                                                                                                                                                             | Chain Name                    | Forwarder Address                          |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------ |
+| <a href="https://arbiscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Arbitrum One</a>                         | ethereum-mainnet-arbitrum-1   | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
+| <a href="https://snowscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Avalanche</a>                           | avalanche-mainnet             | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://basescan.org/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Base</a>                                | ethereum-mainnet-base-1       | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
+| <a href="https://bscscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">BNB Smart Chain</a>                      | binance_smart_chain-mainnet | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://explorer.celo.org/mainnet/address/0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1" target="_blank" rel="noopener noreferrer">Celo</a>                   | celo-mainnet                  | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
+| <a href="https://etherscan.io/address/0x0b93082D9b3C7C97fAcd250082899BAcf3af3885" target="_blank" rel="noopener noreferrer">Ethereum Mainnet</a>                    | ethereum-mainnet              | 0x0b93082D9b3C7C97fAcd250082899BAcf3af3885 |
+| <a href="https://gnosisscan.io/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Gnosis Chain</a>                       | gnosis-chain-mainnet          | 0x9eF6468C5f37b976E57d52054c693269479A784d |
+| <a href="https://app.hyperliquid.xyz/explorer/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Hyperliquid Mainnet</a> | hyperliquid-mainnet           | 0x9eF6468C5f37b976E57d52054c693269479A784d |
+| <a href="https://explorer.inkonchain.com/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Ink</a>                      | ethereum-mainnet-ink-1        | 0x9eF6468C5f37b976E57d52054c693269479A784d |
+| <a href="https://explorer.jovay.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Jovay Mainnet</a>                  | jovay-mainnet                 | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://lineascan.build/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Linea</a>                            | ethereum-mainnet-linea-1      | 0x9eF6468C5f37b976E57d52054c693269479A784d |
+| <a href="https://mantlescan.xyz/address/0xB9F79d863261869B234c481D1f9A7af84AeAd192" target="_blank" rel="noopener noreferrer">Mantle</a>                            | ethereum-mainnet-mantle-1     | 0xB9F79d863261869B234c481D1f9A7af84AeAd192 |
+| <a href="https://megaeth.blockscout.com/address/0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c" target="_blank" rel="noopener noreferrer">MegaETH</a>                   | megaeth-mainnet               | 0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c |
+| <a href="https://optimistic.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">OP Mainnet</a>               | ethereum-mainnet-optimism-1   | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
+| <a href="https://pharos.socialscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Pharos Mainnet</a>              | pharos-mainnet                | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://plasmascan.to/address/0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c" target="_blank" rel="noopener noreferrer">Plasma</a>                             | plasma-mainnet                | 0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c |
+| <a href="https://polygonscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Polygon</a>                          | polygon-mainnet               | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://scrollscan.com/address/0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1" target="_blank" rel="noopener noreferrer">Scroll</a>                            | ethereum-mainnet-scroll-1     | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
+| <a href="https://sonicscan.org/address/0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1" target="_blank" rel="noopener noreferrer">Sonic</a>                              | sonic-mainnet                 | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
+| <a href="https://worldscan.org/address/0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1" target="_blank" rel="noopener noreferrer">World Chain</a>                        | ethereum-mainnet-worldchain-1 | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
+| <a href="https://www.oklink.com/xlayer/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">XLayer Mainnet</a>             | ethereum-mainnet-xlayer-1     | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://explorer.zksync.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">ZKSync Era</a>                    | ethereum-mainnet-zksync-1     | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 
 ### Testnets
 
-| Network                                                                                                                                                          | Chain Name                            | Forwarder Address                          |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- | ------------------------------------------ |
-| <a href="https://explorer.curtis.apechain.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Apechain Curtis</a>  | apechain-testnet-curtis               | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://sepolia.arbiscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Arbitrum Sepolia</a>          | ethereum-testnet-sepolia-arbitrum-1   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://testnet.snowscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Avalanche Fuji</a>           | avalanche-testnet-fuji                | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://sepolia.basescan.org/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Base Sepolia</a>             | ethereum-testnet-sepolia-base-1       | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
-| <a href="https://testnet.bscscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">BSC Testnet</a>               | binance_smart_chain-testnet         | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://sepolia.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Ethereum Sepolia</a>         | ethereum-testnet-sepolia              | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
-| <a href="https://testnet.purrsec.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Hyperliquid Testnet</a>       | hyperliquid-testnet                   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://explorer-sepolia.inkonchain.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Ink Sepolia</a>   | ink-testnet-sepolia                   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://sepolia-explorer.jovay.io/l2/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Jovay Testnet</a>    | jovay-testnet                         | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://sepolia.lineascan.build/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Linea Sepolia</a>         | ethereum-testnet-sepolia-linea-1      | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://sepolia-optimism.etherscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">OP Sepolia</a>      | ethereum-testnet-sepolia-optimism-1   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://testnet.plasmascan.to/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Plasma Testnet</a>          | plasma-testnet                        | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://amoy.polygonscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Polygon Amoy</a>             | polygon-testnet-amoy                  | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://sepolia.worldscan.org/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">World Chain Sepolia</a>     | ethereum-testnet-sepolia-worldchain-1 | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
-| <a href="https://sepolia.explorer.zksync.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">ZKSync Era Sepolia</a> | ethereum-testnet-sepolia-zksync-1     | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| Network                                                                                                                                                            | Chain Name                            | Forwarder Address                          |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------- | ------------------------------------------ |
+| <a href="https://explorer.curtis.apechain.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Apechain Curtis</a>    | apechain-testnet-curtis               | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://sepolia.arbiscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Arbitrum Sepolia</a>            | ethereum-testnet-sepolia-arbitrum-1   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://testnet.snowscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Avalanche Fuji</a>             | avalanche-testnet-fuji                | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://sepolia.basescan.org/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Base Sepolia</a>               | ethereum-testnet-sepolia-base-1       | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
+| <a href="https://testnet.bscscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">BSC Testnet</a>                 | binance_smart_chain-testnet         | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://explorer.cronos.org/testnet/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">Cronos Testnet</a>      | cronos-testnet                        | 0x9eF6468C5f37b976E57d52054c693269479A784d |
+| <a href="https://sepolia.etherscan.io/address/0xF8344CFd5c43616a4366C34E3EEE75af79a74482" target="_blank" rel="noopener noreferrer">Ethereum Sepolia</a>           | ethereum-testnet-sepolia              | 0xF8344CFd5c43616a4366C34E3EEE75af79a74482 |
+| <a href="https://gnosis-chiado.blockscout.com/address/0x0b93082D9b3C7C97fAcd250082899BAcf3af3885" target="_blank" rel="noopener noreferrer">Gnosis Chiado</a>      | gnosis-chain-testnet-chiado           | 0x0b93082D9b3C7C97fAcd250082899BAcf3af3885 |
+| <a href="https://testnet.purrsec.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Hyperliquid Testnet</a>         | hyperliquid-testnet                   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://explorer-sepolia.inkonchain.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Ink Sepolia</a>     | ink-testnet-sepolia                   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://sepolia-explorer.jovay.io/l2/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Jovay Testnet</a>      | jovay-testnet                         | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://sepolia.lineascan.build/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Linea Sepolia</a>           | ethereum-testnet-sepolia-linea-1      | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://sepolia.mantlescan.xyz/address/0xB9F79d863261869B234c481D1f9A7af84AeAd192" target="_blank" rel="noopener noreferrer">Mantle Sepolia</a>           | ethereum-testnet-sepolia-mantle-1     | 0xB9F79d863261869B234c481D1f9A7af84AeAd192 |
+| <a href="https://megaexplorer.xyz/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">MegaETH Testnet 2</a>              | megaeth-testnet-2                     | 0x9eF6468C5f37b976E57d52054c693269479A784d |
+| <a href="https://sepolia-optimism.etherscan.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">OP Sepolia</a>        | ethereum-testnet-sepolia-optimism-1   | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://atlantic.pharosscan.xyz/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Pharos Atlantic Testnet</a> | pharos-atlantic-testnet               | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://testnet.plasmascan.to/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Plasma Testnet</a>            | plasma-testnet                        | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://amoy.polygonscan.com/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">Polygon Amoy</a>               | polygon-testnet-amoy                  | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://sepolia-blockscout.scroll.io/address/0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1" target="_blank" rel="noopener noreferrer">Scroll Sepolia</a>     | ethereum-testnet-sepolia-scroll-1     | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
+| <a href="https://explorer.testnet.soniclabs.com/address/0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1" target="_blank" rel="noopener noreferrer">Sonic Testnet</a>    | sonic-testnet                         | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
+| <a href="https://spb.explorer.tac.build/address/0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c" target="_blank" rel="noopener noreferrer">TAC Testnet</a>              | tac-testnet                           | 0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c |
+| <a href="https://sepolia.uniscan.xyz/address/0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1" target="_blank" rel="noopener noreferrer">Unichain Sepolia</a>            | ethereum-testnet-sepolia-unichain-1   | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
+| <a href="https://sepolia.worldscan.org/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">World Chain Sepolia</a>       | ethereum-testnet-sepolia-worldchain-1 | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
+| <a href="https://www.oklink.com/xlayer-test/address/0x9eF6468C5f37b976E57d52054c693269479A784d" target="_blank" rel="noopener noreferrer">XLayer Testnet</a>       | xlayer-testnet                        | 0x9eF6468C5f37b976E57d52054c693269479A784d |
+| <a href="https://sepolia.explorer.zksync.io/address/0x76c9cf548b4179F8901cda1f8623568b58215E62" target="_blank" rel="noopener noreferrer">ZKSync Era Sepolia</a>   | ethereum-testnet-sepolia-zksync-1     | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 
 ---
 
 # Generating Contract Bindings
 Source: https://docs.chain.link/cre/guides/workflow/using-evm-client/generating-bindings-ts
-Last Updated: 2026-03-05
+Last Updated: 2026-03-17
 
 To interact with a smart contract from your TypeScript workflow, you first need to create **bindings**. Bindings are type-safe TypeScript classes auto-generated from your contract's ABI. They handle all encoding and decoding—including base64 conversion for the CRE SDK wire format—so you can work directly with native TypeScript types.
 
@@ -10796,7 +11537,12 @@ cre generate-bindings evm --language typescript
 
 ### Step 1: Add your contract ABI
 
-Place your contract's ABI JSON file into the `contracts/evm/src/abi/` directory. For example, to generate bindings for a `PriceUpdater` contract, create `contracts/evm/src/abi/PriceUpdater.abi` with your ABI content.
+Place your contract ABI file into the `contracts/evm/src/abi/` directory. Two file formats are supported:
+
+- **`*.abi`** — A raw JSON array of ABI entries, as produced by `solc` or extracted from a compiled artifact
+- **`*.json`** — A compiled artifact file (Hardhat, Foundry, or similar) with a top-level `"abi"` field
+
+For example, to generate bindings for a `PriceUpdater` contract, create either `contracts/evm/src/abi/PriceUpdater.abi` or `contracts/evm/src/abi/PriceUpdater.json`. Both formats can coexist in the same directory.
 
 ### Step 2: Generate the bindings
 
@@ -10806,7 +11552,7 @@ From your **project root**, run:
 cre generate-bindings evm
 ```
 
-This scans all `.abi` files in `contracts/evm/src/abi/` and generates corresponding TypeScript files in `contracts/evm/ts/generated/`. For each contract, three files are generated:
+This scans all `.abi` and `.json` files in `contracts/evm/src/abi/` and generates corresponding TypeScript files in `contracts/evm/ts/generated/`. For each contract, three files are generated:
 
 - `<ContractName>.ts` — The typed binding class with read, write, and event trigger methods.
 - `<ContractName>_mock.ts` — A mock implementation for testing your workflows without deploying contracts.
@@ -11648,7 +12394,7 @@ This approach gives you the flexibility of direct ABI handling with the type saf
 
 # Making GET Requests
 Source: https://docs.chain.link/cre/guides/workflow/using-http-client/get-request-ts
-Last Updated: 2026-02-03
+Last Updated: 2026-03-17
 
 The `HTTPClient` is the SDK's interface for the underlying [HTTP Capability](/cre/capabilities/http). It allows your workflow to fetch data from any external API.
 
@@ -12023,6 +12769,48 @@ The request object provides several fields to customize your HTTP call. See the 
 - **Body**: Request payload (for POST, PUT, etc.)
 - **Timeout**: Request timeout as a duration string in seconds (e.g., `"5s"`, `"8s"`)
 - **Cache settings**: Control response caching behavior
+
+## Best practices
+
+### Parse inside the node function, not outside it
+
+When using a numeric aggregation method such as `median()`, the value returned from your node function must be a numeric type. If your node function returns a raw HTTP response body (a string), consensus will fail with an error like:
+
+```
+unsupported type for median aggregation: *pb.Value_StringValue
+```
+
+This commonly happens when an endpoint returns an error body — for example, `"error"` or a JSON error object — and the node function passes that string directly to the aggregation step instead of parsing it first.
+
+**Incorrect pattern** — returning a raw string that gets passed to median:
+
+```typescript
+const fetchData = (nodeRuntime: NodeRuntime<Config>): string => {
+  const response = nodeRuntime.httpClient.sendRequest({ url: config.apiUrl, method: "GET" }).result()
+  return response.body // ❌ raw string; will fail if aggregation is median
+}
+```
+
+**Correct pattern** — parse inside the node function and return a numeric value:
+
+```typescript
+const fetchData = (nodeRuntime: NodeRuntime<Config>): number => {
+  const response = nodeRuntime.httpClient.sendRequest({ url: config.apiUrl, method: "GET" }).result()
+
+  const data = JSON.parse(response.body)
+  if (typeof data.price !== "number") {
+    throw new Error(`Unexpected response body: ${response.body}`) // ✓ throw on bad data
+  }
+  return data.price // ✓ return the numeric value
+}
+```
+
+If the endpoint is down or returns an unexpected body, throwing an error (rather than returning the raw string) causes the node to report a failure to the consensus mechanism, which handles node-level failures gracefully.
+
+
+<Aside type="note" title="Confidential HTTP">
+  This parsing requirement applies to standard HTTP requests. When using the [Confidential HTTP capability](/cre/capabilities/confidential-http), requests run in a Trusted Execution Environment and the response is not accessible for parsing in node mode.
+</Aside>
 
 ---
 
@@ -14272,7 +15060,7 @@ See the [Secrets guide](/cre/guides/workflow/secrets) for details.
 
 **Gelato**: Task dashboard in the Gelato UI showing execution history, logs, and status.
 
-**CRE**: The [CRE UI](https://cre.chain.link) provides:
+**CRE**: The [CRE UI](https://app.chain.link/cre/discover) provides:
 
 - Workflow status and lifecycle management (active, paused, etc.)
 - Detailed execution logs and events
@@ -14282,25 +15070,25 @@ See the [Monitoring & Debugging guide](/cre/guides/operations/monitoring-workflo
 
 ## Deployment and lifecycle
 
-| Action             | Gelato                                  | CRE                                                |
-| ------------------ | --------------------------------------- | -------------------------------------------------- |
-| **Test locally**   | Gelato CLI                              | `cre workflow simulate`                            |
-| **Deploy**         | Upload to IPFS + create task via UI/SDK | `cre workflow deploy`                              |
-| **Pause / Resume** | UI                                      | `cre workflow activate` / `cre workflow pause`     |
-| **Update**         | Redeploy to IPFS + update task          | Redeploy with `cre workflow deploy`                |
-| **Delete**         | UI                                      | `cre workflow delete`                              |
-| **Monitor**        | Gelato dashboard                        | CRE UI at [cre.chain.link](https://cre.chain.link) |
+| Action             | Gelato                                  | CRE                                                                          |
+| ------------------ | --------------------------------------- | ---------------------------------------------------------------------------- |
+| **Test locally**   | Gelato CLI                              | `cre workflow simulate`                                                      |
+| **Deploy**         | Upload to IPFS + create task via UI/SDK | `cre workflow deploy`                                                        |
+| **Pause / Resume** | UI                                      | `cre workflow activate` / `cre workflow pause`                               |
+| **Update**         | Redeploy to IPFS + update task          | Redeploy with `cre workflow deploy`                                          |
+| **Delete**         | UI                                      | `cre workflow delete`                                                        |
+| **Monitor**        | Gelato dashboard                        | CRE UI at [app.chain.link/cre/discover](https://app.chain.link/cre/discover) |
 
 ## Pricing
 
-CRE is currently in Early Access. For pricing details, reach out via the in-app support on the CRE platform at <a href="https://cre.chain.link" target="_blank" rel="noopener noreferrer">cre.chain.link</a>.
+CRE is currently in Early Access. For pricing details, reach out via the in-app support on the CRE platform at <a href="https://app.chain.link/cre/discover" target="_blank" rel="noopener noreferrer">app.chain.link/cre/discover</a>.
 
 ## Get started
 
 You can have a working CRE workflow running locally in minutes:
 
 1. **[Start the Getting Started tutorial](/cre/getting-started/overview)** — build your first workflow from scratch, step by step
-2. **[Create your CRE account](https://cre.chain.link)** — [Account setup guide](/cre/account/creating-account)
+2. **[Create your CRE account](https://app.chain.link/cre/discover)** — [Account setup guide](/cre/account/creating-account)
 3. **[Install the CRE CLI](/cre/getting-started/cli-installation)**
 4. **[Run a demo](/cre/templates/running-demo-workflow)** — see a complete workflow in
    action with a single command
@@ -14310,7 +15098,7 @@ You can have a working CRE workflow running locally in minutes:
 
 # Project Configuration
 Source: https://docs.chain.link/cre/reference/project-configuration-ts
-Last Updated: 2026-02-03
+Last Updated: 2026-03-17
 
 This page explains how to manage configuration within Chainlink Runtime Environment (CRE) projects. It covers the standard project structure, the roles and usage of the configuration files (`project.yaml` and `workflow.yaml`), and the concept of **targets** for handling environment-specific settings.
 
@@ -14410,6 +15198,22 @@ production-settings:
 | -------------------------------- | -------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `account.workflow-owner-address` | No       | Multi-sig only        | Multi-sig wallet address that owns the workflow. Required when using the `--unsigned` flag to generate unsigned transactions. For standard (non-multi-sig) deployments, omit this field—the CLI uses the address from `CRE_ETH_PRIVATE_KEY`. See [Using Multi-sig Wallets](/cre/guides/operations/using-multisig-wallets). |
 | `rpcs`                           | Yes      | Always (if using EVM) | Array of RPC endpoints for chains your workflow interacts with. Each entry requires `chain-name` (e.g., `ethereum-mainnet`) and `url` (the RPC endpoint). **Required for both simulation and deployed workflows** that use EVM capabilities. The CLI pre-populates a public Sepolia RPC URL by default.                    |
+
+#### Environment variable interpolation in RPC URLs
+
+RPC URLs support `${VAR_NAME}` syntax to inject values from environment variables. This keeps sensitive API keys and endpoint tokens out of `project.yaml`, which is typically committed to version control.
+
+```yaml
+# project.yaml
+production-settings:
+  rpcs:
+    - chain-name: ethereum-mainnet
+      url: https://mainnet.infura.io/v3/${INFURA_API_KEY}
+    - chain-name: ethereum-testnet-sepolia
+      url: https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}
+```
+
+Variable values are resolved from environment variables at runtime. This works across all CLI commands: `cre workflow simulate`, `cre workflow deploy`, and others.
 
 <Aside type="caution" title="Missing RPC causes simulation failure">
   If your workflow uses EVM capabilities, you must configure RPC endpoints. Without them, the simulator cannot register
@@ -17948,7 +18752,7 @@ This section provides a reference for the built-in trigger capabilities of the C
 
 # Supported Networks
 Source: https://docs.chain.link/cre/supported-networks-ts
-Last Updated: 2026-03-05
+Last Updated: 2026-03-23
 
 This page lists all EVM-compatible networks supported by CRE workflows, along with the minimum CLI and SDK versions required for each network.
 
@@ -17961,41 +18765,60 @@ Network support depends on your CLI and SDK versions. The tables below show the 
 
 ## Mainnets
 
-| Network      | CLI      | Go SDK  | TS SDK  |
-| ------------ | -------- | ------- | ------- |
-| Arbitrum One | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| Avalanche    | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| Base         | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| BNB Chain    | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| Ethereum     | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| Jovay        | v1.3.0+  | v1.4.0+ | v1.1.3+ |
-| OP Mainnet   | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| Pharos       | v1.3.0+  | v1.4.0+ | v1.1.3+ |
-| Polygon      | v1.0.0+  | v1.0.0+ | v1.0.1+ |
-| World Chain  | v1.0.11+ | v1.2.0+ | v1.0.9+ |
-| XLayer       | v1.3.0+  | v1.4.0+ | v1.1.3+ |
-| ZKSync Era   | v1.0.6+  | v1.1.3+ | v1.0.7+ |
+| Network             | CLI      | Go SDK  | TS SDK  |
+| ------------------- | -------- | ------- | ------- |
+| Arbitrum One        | v1.0.0+  | v1.0.0+ | v1.0.1+ |
+| Avalanche           | v1.0.0+  | v1.0.0+ | v1.0.1+ |
+| Base                | v1.0.0+  | v1.0.0+ | v1.0.1+ |
+| BNB Chain           | v1.0.0+  | v1.0.0+ | v1.0.1+ |
+| Celo                | v1.5.0+  | v1.6.0+ | v1.3.0+ |
+| Ethereum            | v1.0.0+  | v1.0.0+ | v1.0.1+ |
+| Gnosis Chain        | v1.5.0+  | v1.6.0+ | v1.3.0+ |
+| Hyperliquid Mainnet | v1.7.0+  | v1.7.0+ | v1.4.0+ |
+| Ink                 | v1.5.0+  | v1.6.0+ | v1.3.0+ |
+| Jovay               | v1.3.0+  | v1.4.0+ | v1.3.1+ |
+| Linea               | v1.5.0+  | v1.6.0+ | v1.3.0+ |
+| Mantle              | v1.5.0+  | v1.6.0+ | v1.3.0+ |
+| MegaETH             | v1.5.0+  | v1.6.0+ | v1.3.1+ |
+| OP Mainnet          | v1.0.0+  | v1.0.0+ | v1.0.1+ |
+| Pharos              | v1.3.0+  | v1.4.0+ | v1.3.1+ |
+| Plasma              | v1.5.0+  | v1.6.0+ | v1.3.0+ |
+| Polygon             | v1.0.0+  | v1.0.0+ | v1.0.1+ |
+| Scroll              | v1.5.0+  | v1.6.0+ | v1.3.0+ |
+| Sonic               | v1.5.0+  | v1.6.0+ | v1.3.0+ |
+| World Chain         | v1.0.11+ | v1.2.0+ | v1.0.9+ |
+| XLayer              | v1.3.0+  | v1.4.0+ | v1.1.3+ |
+| ZKSync Era          | v1.0.6+  | v1.1.3+ | v1.0.7+ |
 
 ## Testnets
 
 | Network                 | CLI     | Go SDK  | TS SDK  |
 | ----------------------- | ------- | ------- | ------- |
 | Apechain Curtis         | v1.0.7+ | v1.1.4+ | v1.0.7+ |
-| Arc Testnet             | v1.0.7+ | v1.1.4+ | v1.0.7+ |
+| Arc Testnet             | v1.0.7+ | v1.1.4+ | v1.3.1+ |
 | Arbitrum Sepolia        | v1.0.0+ | v1.0.0+ | v1.0.1+ |
 | Avalanche Fuji          | v1.0.0+ | v1.0.0+ | v1.0.1+ |
 | Base Sepolia            | v1.0.0+ | v1.0.0+ | v1.0.1+ |
 | BNB Chain Testnet       | v1.0.0+ | v1.0.0+ | v1.0.1+ |
+| Cronos Testnet          | v1.5.0+ | v1.6.0+ | v1.3.0+ |
 | Ethereum Sepolia        | v1.0.0+ | v1.0.0+ | v1.0.1+ |
+| Gnosis Chiado           | v1.7.0+ | v1.7.0+ | v1.4.0+ |
 | Hyperliquid Testnet     | v1.0.7+ | v1.1.4+ | v1.0.7+ |
 | Ink Sepolia             | v1.0.7+ | v1.1.4+ | v1.0.7+ |
 | Jovay Testnet           | v1.0.7+ | v1.1.4+ | v1.0.7+ |
 | Linea Sepolia           | v1.0.7+ | v1.1.4+ | v1.0.7+ |
+| Mantle Sepolia          | v1.5.0+ | v1.6.0+ | v1.3.0+ |
+| MegaETH Testnet 2       | v1.5.0+ | v1.6.0+ | v1.3.1+ |
 | OP Sepolia              | v1.0.0+ | v1.0.0+ | v1.0.1+ |
-| Pharos Atlantic Testnet | v1.3.0+ | v1.5.0+ | v1.1.4+ |
+| Pharos Atlantic Testnet | v1.3.0+ | v1.5.0+ | v1.3.1+ |
 | Plasma Testnet          | v1.0.7+ | v1.1.4+ | v1.0.7+ |
 | Polygon Amoy            | v1.0.0+ | v1.0.0+ | v1.0.1+ |
+| Scroll Sepolia          | v1.5.0+ | v1.6.0+ | v1.3.0+ |
+| Sonic Testnet           | v1.5.0+ | v1.6.0+ | v1.3.1+ |
+| TAC Testnet             | v1.5.0+ | v1.6.0+ | v1.3.0+ |
+| Unichain Sepolia        | v1.5.0+ | v1.6.0+ | v1.3.0+ |
 | World Chain Sepolia     | v1.0.7+ | v1.1.4+ | v1.0.7+ |
+| XLayer Testnet          | v1.5.0+ | v1.6.0+ | v1.3.1+ |
 | ZKSync Era Sepolia      | v1.0.6+ | v1.1.2+ | v1.0.7+ |
 
 ## Forwarder Addresses

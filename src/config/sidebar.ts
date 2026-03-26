@@ -145,6 +145,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "cre/getting-started/before-you-build",
           highlightAsCurrent: ["cre/getting-started/before-you-build-ts", "cre/getting-started/before-you-build-go"],
         },
+        {
+          title: "Build with AI (Skill, Prompting)",
+          url: "cre/getting-started/build-with-ai",
+          highlightAsCurrent: ["cre/getting-started/build-with-ai-ts", "cre/getting-started/build-with-ai-go"],
+        },
       ],
     },
     {
@@ -355,6 +360,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "cre/guides/operations/simulating-workflows",
         },
         {
+          title: "Testing Production Limits",
+          url: "cre/guides/operations/understanding-limits",
+        },
+        {
           title: "Deploying Workflows",
           url: "cre/guides/operations/deploying-workflows",
         },
@@ -365,6 +374,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Updating Deployed Workflows",
           url: "cre/guides/operations/updating-deployed-workflows",
+        },
+        {
+          title: "Verifying Workflows",
+          url: "cre/guides/operations/verifying-workflows",
         },
         {
           title: "Deleting Workflows",

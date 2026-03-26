@@ -181,6 +181,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   EDGE_TESTNET: () => new JsonRpcProvider("https://edge-testnet.g.alchemy.com/public"),
   EDGE_MAINNET: () => new JsonRpcProvider("https://edge-mainnet.g.alchemy.com/public"),
   ROBINHOOD_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.chain.robinhood.com"),
+  TON_TESTNET: () => new JsonRpcProvider("https://ton-testnet.api.onfinality.io/public"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {

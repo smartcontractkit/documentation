@@ -152,7 +152,7 @@ A simple way to read the variables or functions is to get the ABI from a blockch
 | [getRoundData](#getrounddata-1)                         | Get the full information for a specific aggregator round including the answer and update timestamps. Use this to get the full historical data for a round.                                                                                  |
 | [getTimestamp](#gettimestamp)                           | <Icon type="deprecated" /> Deprecated - Do not use this function.                                                                                                                                                                           |
 | [hasAccess](#hasaccess)                                 | Check if an address has internal access.                                                                                                                                                                                                    |
-| [latestAnswer](#latestanswer)                           | <Icon type="deprecated" /> Deprecated - Do not use this function.                                                                                                                                                                           |
+| [latestAnswer](#latestanswer)                           | Return the latest answer for this data feed. No timestamp is included to check data freshness.                                                                                                                                              |
 | [latestConfigDetails](#latestconfigdetails)             | Return information about the current offchain reporting protocol configuration.                                                                                                                                                             |
 | [latestRound](#latestround)                             | <Icon type="deprecated" /> Deprecated - Do not use this function.                                                                                                                                                                           |
 | [latestRoundData](#latestrounddata-1)                   | Get the full information for the most recent round including the answer and update timestamps.                                                                                                                                              |
@@ -260,7 +260,7 @@ function hasAccess(address _user, bytes memory _calldata) public view virtual ov
 
 #### latestAnswer
 
-<Aside type="caution" title="This function is deprecated. Do not use this function." />
+Return the latest answer for this data feed. No timestamp is included to check data freshness. Returns `0` if no writes have occurred. `latestRoundData` includes the latest answer and timestamps for checking data freshness.
 
 #### latestConfigDetails
 
@@ -3617,8 +3617,6 @@ For a summary of data sourcing models by asset type, see [Data Sources](/data-fe
 
 This categorization is put in place to inform users about the intended use cases of feeds and help highlight some of the inherent market integrity risks surrounding the data quality of these feeds.
 
-Market price feeds incorporate three layers of aggregation at the data source, node operator, and oracle network layers, providing industry-standard security and reliability on the price data they reference.
-
 Data feeds are grouped into the following categories based on the level of market pricing risk, based on multiple factors, from lowest to highest:
 
 - [🟢 Low Market Pricing Risk](#-low-market-pricing-risk-feeds)
@@ -3631,8 +3629,23 @@ Data feeds are grouped into the following categories based on the level of marke
 
 <Aside type="note">
   For important updates regarding the use of Chainlink Data Feeds, users should join the official Chainlink Discord and
-  subscribe to the [#data-feeds channel](https://discord.gg/Dqy5N9UbsR).
+  subscribe to the [#data-feeds channel](https://discord.gg/Dqy5N9UbsR) and reguarly check the [Chainlink
+  Changelog](https://dev.chain.link/changelog?product=Data+Feeds).
 </Aside>
+
+## Market Price Feeds
+
+Market Price Feeds incorporate three layers of aggregation at the data source, node operator, and oracle network layers. These feeds are designed to reflect observable market prices across [major venues](https://blog.chain.link/chainlink-price-feeds-secure-defi/).
+
+### Bounded Market Price Feeds
+
+Bounded Market Price Feeds are a specific category of Market Price Feeds that incorporate predefined bounds on reported values to mitigate specific asset class risks, following risk management best practices.
+
+For example, a Bounded Market Price Feed for a stablecoin would include an upper bound that caps the on-chain reported price at a pre-defined maximum (e.g., $1.05), even during edge cases like market dislocations where the stablecoin trades higher than the cap. In such cases, the price will not be reported on-chain. Instead, the most recently written on-chain price will be the value returned by calling [latestRoundData](https://docs.chain.link/data-feeds/api-reference#latestrounddata) on the feed’s [proxy address](https://docs.chain.link/data-feeds#single-value-feed-components). This helps prevent extreme or sustained premium pricing from being reported. These bounds are designed to provide guardrails for assets where structural deviations may introduce elevated risk for feed consumers. Note that a Bounded Market Price Feed for a stablecoin would not include a lower bound for the on-chain reported price.
+
+In rare circumstances, the fundamental value of an asset underlying a Bounded Market Price Feed, such as a stablecoin, may materially change. In such a case, the predefined bound(s) associated with a Bounded Market Price Feed may be adjusted or removed following advanced notice to consumers of such Bounded Market Price Feed.
+
+Users must be aware that Bounded Market Price Feeds have unique risk considerations. Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and that the operation and performance of Bounded Market Price Feeds matches expectations. If your use case requires the use of a non-Bounded Market Price Feed and one does not exist, contact us at [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
 
 ### 🟢 Low Market Pricing Risk Feeds
 
@@ -3852,9 +3865,7 @@ To mitigate the risk associated with front running, users building highly latenc
 
 ## Exchange Rate Feeds
 
-The architecture of exchange rate feeds differs from that of standard market rate Chainlink Price Feeds.
-
-**Market rate feeds** (e.g., Chainlink Price Feeds) deliver price updates based on the volume-based aggregated market price of a specific asset. Price data is [aggregated from across multiple sources](https://blog.chain.link/chainlink-price-feeds-secure-defi/), including centralized and decentralized exchanges, to provide an accurate representation of an asset's market-wide price.
+The architecture of exchange rate feeds differs from that of [Market Price Feeds](#market-price-feeds).
 
 **Exchange rate feeds** are tied to specific protocols or ecosystems and report the internal redemption rates for an asset (i.e., the value/rate at which an asset can be redeemed or exchanged within that protocol's ecosystem). This data is sourced directly from a specified smart contract on a source chain and relayed to a destination chain.
 
@@ -3865,10 +3876,10 @@ Exchange rate feeds are useful in circumstances such as:
 - **Improving liquidity pool performance for yield-bearing assets:** Exchange rate feeds can be utilized to programmatically adjust swap curves to maximize liquidity efficiency.
 
 <Aside type="note">
-  Users must be aware that both market rate and exchange rate pricing methodologies have unique risk considerations and
-  mitigation strategies that vary based on an asset's type and liquidity profile. Users are responsible for decisions
-  relating to feed selection. To learn more about how best to leverage Chainlink Data Feeds for your project, contact us
-  [here](https://chain.link/contact).
+  Users must be aware that both market price and exchange rate pricing methodologies have unique risk considerations and
+  ice mitigation strategies that vary based on an asset's type and liquidity profile. Users are responsible for
+  decisions relating to feed selection. To learn more about how best to leverage Chainlink Data Feeds for your project,
+  contact us [here](https://chain.link/contact).
 </Aside>
 
 ## ETF and Forex feeds
@@ -5515,8 +5526,7 @@ export const arbitrumFeeds = [
 ]
 
 <Aside type="note" title="Searcher Onboarding">
-  To onboard as a searcher to SVR, reach out to
-  [raoul.schipper@smartcontract.com](mailto:raoul.schipper@smartcontract.com).
+  To onboard as a searcher to SVR, reach out to [devrel@smartcontract.com](mailto:devrel@smartcontract.com).
 </Aside>
 
 [Chainlink Smart Value Recapture (SVR)](/data-feeds/svr-feeds) has expanded to Base, Arbitrum, and BNB Chain with a new auction system, **Atlas**. This guide provides existing Chainlink SVR searchers with the technical specifications and integration requirements for participating in all non-ETH mainnet SVR auctions.
@@ -6290,8 +6300,7 @@ return []
 }
 
 <Aside type="note" title="Searcher Onboarding">
-  To onboard as a searcher to SVR, reach out to
-  [raoul.schipper@smartcontract.com](mailto:raoul.schipper@smartcontract.com).
+  To onboard as a searcher to SVR, reach out to [devrel@smartcontract.com](mailto:devrel@smartcontract.com).
 </Aside>
 
 This guide explains how to identify and bid on **Chainlink SVR** liquidation opportunities on **Ethereum Mainnet**
@@ -6334,7 +6343,42 @@ Chainlink SVR uses forwarder contracts to route feed updates. You typically see 
 
 3. **callData**: The `callData` includes the parameters for `transmitSecondary()` on the aggregator contract. You can decode this if you need to extract the updated price when the onchain event is not emitted (details in the section below).
 
+Here's an example of a single transaction event:
+
+```json
+{
+  "hash": "0x_single_transaction_event_hash",
+  "txs": [
+    {
+      "to": "0x45ab36b69e02e59d3c49b863b31f530c991dd554",
+      "functionSelector": "0x6fadcf72",
+      "callData": "0x80640b.....................a2354d"
+    }
+  ]
+}
+```
+
 Below are code examples for setting up a listener that monitors the MEV-Share event stream for SVR feed updates. These examples show how to connect to the stream, filter for relevant transactions with the `6fadcf72` function selector, and process incoming events:
+
+The event stream is also expected to occasionally transmit transaction bundles. The bundle event has a similar format to the single transaction event, but with more than one transactions. Transactions will be bundled in nonce ascending order, meaning txs[0] has the lowest nonce and txs[len(txs)] has the highest. Below is an example of a bundle:
+
+```json
+{
+  "hash": "0x_bundle_event_hash",
+  "txs": [
+    {
+      "to": "0x45ab36b69e02e59d3c49b863b31f530c991dd554",
+      "functionSelector": "0x6fadcf72",
+      "callData": "0x80640b.....................a2354d"
+    },
+    {
+      "to": "0x45ab36b69e02e59d3c49b863b31f530c991dd554",
+      "functionSelector": "0x6fadcf72",
+      "callData": "0x12340b.....................a2354d"
+    }
+  ]
+}
+```
 
 #### 3. Decode `callData` for `forward` and `transmitSecondary`
 
@@ -6460,6 +6504,33 @@ Once you've detected an SVR update and identified a profitable liquidation oppor
 Below are code examples demonstrating how to construct and submit bundles to the Flashbots relay:
 
 For gas management, simulations, and other advanced usage, see the official [Flashbots documentation](https://docs.flashbots.net/).
+
+Bidding for bundle events is very similar to single transaction events. As a searcher, you can append your transaction at the end of the bundle by using the bundle event hash just like you would with the single transaction event hash. Below is an example:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "mev_sendBundle",
+  "params": [
+    {
+      "version": "v0.1",
+      "inclusion": {
+        "block": "0x01",
+        "maxBlock": "0x04"
+      },
+      "body": [
+        {
+          "hash": "0x_bundle_event_hash"
+        },
+        {
+          "tx": "0x0213a...",
+          "canRevert": false
+        }
+      ]
+    }
+  ]
+}
+```
 
 #### 7. Considerations
 

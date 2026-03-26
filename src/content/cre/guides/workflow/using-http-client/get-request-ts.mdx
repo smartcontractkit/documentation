@@ -7,7 +7,7 @@ pageId: "guides-workflow-http-get-request"
 metadata:
   description: "Fetch data from APIs in TypeScript: learn to make GET requests with consensus validation to bring offchain data into your workflow."
   datePublished: "2025-11-04"
-  lastModified: "2026-02-03"
+  lastModified: "2026-03-17"
 ---
 
 import { Aside } from "@components"
@@ -385,3 +385,45 @@ The request object provides several fields to customize your HTTP call. See the 
 - **Body**: Request payload (for POST, PUT, etc.)
 - **Timeout**: Request timeout as a duration string in seconds (e.g., `"5s"`, `"8s"`)
 - **Cache settings**: Control response caching behavior
+
+## Best practices
+
+### Parse inside the node function, not outside it
+
+When using a numeric aggregation method such as `median()`, the value returned from your node function must be a numeric type. If your node function returns a raw HTTP response body (a string), consensus will fail with an error like:
+
+```
+unsupported type for median aggregation: *pb.Value_StringValue
+```
+
+This commonly happens when an endpoint returns an error body — for example, `"error"` or a JSON error object — and the node function passes that string directly to the aggregation step instead of parsing it first.
+
+**Incorrect pattern** — returning a raw string that gets passed to median:
+
+```typescript
+const fetchData = (nodeRuntime: NodeRuntime<Config>): string => {
+  const response = nodeRuntime.httpClient.sendRequest({ url: config.apiUrl, method: "GET" }).result()
+  return response.body // ❌ raw string; will fail if aggregation is median
+}
+```
+
+**Correct pattern** — parse inside the node function and return a numeric value:
+
+```typescript
+const fetchData = (nodeRuntime: NodeRuntime<Config>): number => {
+  const response = nodeRuntime.httpClient.sendRequest({ url: config.apiUrl, method: "GET" }).result()
+
+  const data = JSON.parse(response.body)
+  if (typeof data.price !== "number") {
+    throw new Error(`Unexpected response body: ${response.body}`) // ✓ throw on bad data
+  }
+  return data.price // ✓ return the numeric value
+}
+```
+
+If the endpoint is down or returns an unexpected body, throwing an error (rather than returning the raw string) causes the node to report a failure to the consensus mechanism, which handles node-level failures gracefully.
+
+{/* prettier-ignore */}
+<Aside type="note" title="Confidential HTTP">
+  This parsing requirement applies to standard HTTP requests. When using the [Confidential HTTP capability](/cre/capabilities/confidential-http), requests run in a Trusted Execution Environment and the response is not accessible for parsing in node mode.
+</Aside>

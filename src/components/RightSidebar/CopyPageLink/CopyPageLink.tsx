@@ -8,7 +8,7 @@ import { extractPageContent, copyToClipboard } from "./contentExtractor.js"
 import { MarkdownPreviewModal } from "./MarkdownPreviewModal.js"
 import type { CopyPageLinkProps, CopyAction } from "./types.js"
 import styles from "./CopyPageLink.module.css"
-
+import { AiBadge } from "../../AiBadge/AiBadge.js"
 export function CopyPageLink({ className }: CopyPageLinkProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -169,7 +169,7 @@ Please ask me to paste it now. After I paste, please:
     <>
       <div className={`${styles.container} ${className || ""}`}>
         <label className={styles.label} htmlFor="copy-page-trigger">
-          Copy Page
+          Use with LLMs <AiBadge />
         </label>
         <button
           id="copy-page-trigger"

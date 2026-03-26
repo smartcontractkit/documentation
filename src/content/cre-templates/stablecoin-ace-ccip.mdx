@@ -4,6 +4,10 @@ description: "A demo stablecoin issuance system demonstrating CRE integrated wit
 author: "Chainlink Labs"
 excerpt: "Build a compliant, multi-chain stablecoin using Chainlink's complete service stack."
 image: "thumbnail.jpg"
+tags:
+  - "stablecoin"
+  - "cross-chain"
+  - "proof-of-reserve"
 githubUrl: "https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/stablecoin-ace-ccip"
 githubRepoLinks:
   - label: "TypeScript"
@@ -12,7 +16,7 @@ datePublished: "2026-02-13"
 lastModified: "2026-02-13"
 ---
 
-import { Aside, Accordion } from "@components"
+import { Aside, Accordion, ClickToZoom } from "@components"
 
 ## What This Template Does
 
@@ -41,56 +45,17 @@ This repository demonstrates how financial institutions can build a **secure, co
 
 ### Flow 1: Stablecoin Issuance with PoR + ACE
 
-```mermaid
-sequenceDiagram
-    actor User
-    participant CRE as CRE Workflow
-    participant PoR as PoR API
-    participant Forwarder as CRE Forwarder
-    participant Consumer as MintingConsumerWithACE
-    participant Stablecoin as Stablecoin Contract
-
-    User->>CRE: HTTP Trigger (Deposit $1000 USD)
-    CRE->>PoR: HTTP Capability (Fetch Reserves)
-    PoR-->>CRE: Reserves: $500,000
-    alt Sufficient Reserves
-        CRE->>Forwarder: On Chain Write (Submit Mint Report)
-        Forwarder->>Consumer: Call onReport()
-        Consumer->>Consumer: Run PolicyEngine (BlacklistPolicy)
-        alt Not Blacklisted
-            Consumer->>Stablecoin: mint(user, 1000e18)
-            Stablecoin-->>User: Tokens Minted
-        else Blacklisted
-            Consumer-->>User: Minting Failed
-        end
-    else Insufficient Reserves
-        CRE-->>User: PoR Validation Failed
-    end
-```
+<ClickToZoom
+  src="/images/cre-templates/templates/stablecoin-flow1.png"
+  alt="Stablecoin Issuance with PoR and ACE flow diagram"
+/>
 
 ### Flow 2: Cross-Chain Transfer with ACE
 
-```mermaid
-sequenceDiagram
-    actor Sender
-    participant CRE as CRE Workflow
-    participant Consumer as CCIPTransferConsumerWithACE
-    participant Stablecoin as Stablecoin Contract
-    participant Router as CCIP Router
-    participant Destination as Destination Chain
-
-    Sender->>CRE: HTTP Trigger (Transfer 500 tokens to Fuji)
-    CRE->>Consumer: Call onReport()
-    Consumer->>Consumer: Run PolicyEngine (VolumePolicy)
-    alt Amount Within Limit
-        Consumer->>Router: ccipSend(destinationChain, message)
-        Router->>Stablecoin: Burn Tokens on Source
-        Router->>Destination: Send CCIP Message (~10-20 min)
-        CRE-->>Sender: Transfer Initiated
-    else Amount Exceeds Limit
-        CRE-->>Sender: Transfer Failed
-    end
-```
+<ClickToZoom
+  src="/images/cre-templates/templates/stablecoin-flow2.png"
+  alt="Cross-Chain Transfer with ACE flow diagram"
+/>
 
 ---
 
