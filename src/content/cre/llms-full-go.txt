@@ -448,9 +448,24 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-03-23
+Last Updated: 2026-03-26
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.8.0 - March 26, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.8.0" target="_blank">CRE CLI version 1.8.0</a> is now available.**
+
+- **Tenant context cache**: The [**Authentication**](/cre/reference/cli/authentication#tenant-context-cache) reference documents **`~/.cre/context.yaml`**, which the CLI updates after login so your local session reflects the platform’s registry manifest.
+- **Scriptable `cre init`**: [**Project setup**](/cre/reference/cli/project-setup) covers **`cre init --non-interactive`** and related flags for CI and automation without prompts.
+- **`cre templates list --json`**: Use [**Template sources**](/cre/reference/cli/templates) for **`--json`** output when you need machine-readable template listings in scripts.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.7.0...v1.8.0)
 
 ## CLI v1.7.0 - March 23, 2026
 
@@ -8072,7 +8087,7 @@ Manage your authentication and account credentials.
 
 Initialize projects and generate contract bindings (Go only).
 
-- **`cre init`** — Initialize a new CRE project with an interactive setup guide
+- [**`cre init`**](/cre/reference/cli/project-setup) — Initialize a new CRE project (interactive wizard or **`--non-interactive`** with flags for CI/CD)
 - **`cre generate-bindings`** (Go only) — Generate Go bindings from contract ABI files for type-safe contract interactions
 
 [View project setup commands →](/cre/reference/cli/project-setup)
@@ -8126,7 +8141,7 @@ Manage secrets stored in the Vault DON for use in your workflows.
 
 Manage the GitHub repositories that `cre init` uses to discover templates.
 
-- **`cre templates list`** — List all templates available from configured sources
+- **`cre templates list`** — List templates (human output includes required networks; **`--json`** for scripts)
 - **`cre templates add`** — Add a custom or third-party template repository
 - **`cre templates remove`** — Remove a template repository source
 
@@ -9227,7 +9242,7 @@ For details, see [Using Multi-sig Wallets](/cre/guides/operations/using-multisig
 
 # Template Sources
 Source: https://docs.chain.link/cre/reference/cli/templates
-Last Updated: 2026-02-26
+Last Updated: 2026-03-26
 
 The `cre templates` commands manage the GitHub repository sources that `cre init` uses to discover workflow templates.
 
@@ -9250,11 +9265,12 @@ cre templates list [flags]
 
 **Flags:**
 
-| Flag        | Description                                             |
-| ----------- | ------------------------------------------------------- |
-| `--refresh` | Bypass the local cache and fetch fresh data from GitHub |
+| Flag        | Description                                               |
+| ----------- | --------------------------------------------------------- |
+| `--json`    | Print the template list as **JSON** (for scripts and CI). |
+| `--refresh` | Bypass the local cache and fetch fresh data from GitHub   |
 
-Each entry shows the template title, ID, language, and a short description. Use the ID with `cre init --template=<id>` to scaffold a project from that template.
+Each entry shows the template title, ID, language, a short description, and **required networks** (chains you must supply RPCs for when using `cre init`, especially with **`--non-interactive`**). Use the template name with **`cre init --template=<name>`** to scaffold a project.
 
 For the current list of available templates, run `cre templates list` or visit [docs.chain.link/cre-templates](https://docs.chain.link/cre-templates).
 
@@ -9911,7 +9927,7 @@ I want to build: [describe your use case]
 
 # Part 1: Project Setup & Simulation
 Source: https://docs.chain.link/cre/getting-started/part-1-project-setup-go
-Last Updated: 2026-01-14
+Last Updated: 2026-03-26
 
 <Aside type="note" title="SDK Language: Go">
   You're viewing the **Go** version of this guide. If you prefer TypeScript, use the language selector in the left
@@ -9988,6 +10004,11 @@ The CRE CLI provides an `init` command to scaffold a new project. It's an intera
    - **Workflow name**: my-calculator-workflow
 
 The CLI will then create a new `onchain-calculator` directory and initialize your first workflow within it.
+
+
+<Aside type="note" title="Scriptable init">
+  Prefer a **non-interactive** or **CI** flow? The CLI supports **`cre init --non-interactive`** and related flags—see [Project setup commands](/cre/reference/cli/project-setup).
+</Aside>
 
 ## Step 3: Explore the generated files
 
@@ -15329,7 +15350,7 @@ Or explore the SDK reference for detailed API documentation:
 
 # Project Setup Commands
 Source: https://docs.chain.link/cre/reference/cli/project-setup-go
-Last Updated: 2026-03-17
+Last Updated: 2026-03-26
 
 The project setup commands include `cre init` to initialize new CRE projects or add workflows, and `cre generate-bindings` to generate contract bindings for type-safe contract interactions.
 
@@ -15359,11 +15380,16 @@ cre init [flags]
 
 **Flags:**
 
-| Flag                  | Description                        |
-| --------------------- | ---------------------------------- |
-| `-p, --project-name`  | Name for the new project           |
-| `-t, --template-id`   | ID of the workflow template to use |
-| `-w, --workflow-name` | Name for the new workflow          |
+| Flag                  | Description                                                                                                                               |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `--non-interactive`   | Fail instead of prompting; supply all inputs via flags (for **CI/CD** and non-TTY environments).                                          |
+| `-p, --project-name`  | Name for the new project (required for a new project when using `--non-interactive`).                                                     |
+| `-t, --template`      | Template name to use (for example `hello-world-go`). Run `cre templates list` to see IDs and required networks.                           |
+| `-w, --workflow-name` | Name for the new workflow.                                                                                                                |
+| `--refresh`           | Bypass the template cache and fetch fresh data from GitHub.                                                                               |
+| `--rpc-url`           | RPC endpoint for a chain, repeatable. Format: `chain-name=url`. Often **required** with `--non-interactive` when the template needs RPCs. |
+
+Inherited [global flags](/cre/reference/cli#global-flags) include **`-R, --project-root`**, which `cre init` uses as the directory where the project is created when you pass it explicitly.
 
 **Interactive mode (recommended):**
 
@@ -15386,19 +15412,22 @@ Running `cre init` without flags starts an interactive setup that guides you thr
 cre init
 ```
 
-**Non-interactive mode:**
+**Non-interactive mode (scripting / CI):**
+
+Pass **`--non-interactive`** plus the flags your template needs. Use **`cre templates list`** (or **`cre templates list --json`**) to see **required networks** and choose **`--rpc-url`** values.
 
 ```bash
-# Create a new project with initial workflow
 cre init \
+  --non-interactive \
   --project-name my-cre-project \
   --workflow-name my-workflow \
-  --template-id 1
+  --template hello-world-go \
+  --rpc-url sepolia=https://sepolia.infura.io/v3/YOUR_KEY
 ```
 
+
 <Aside type="note" title="Interactive vs. non-interactive">
-  For most users, running `cre init` without flags (interactive mode) is the easiest way to set up a project. The CLI
-  will guide you through the setup process with clear prompts.
+  For most users, `cre init` without flags is easiest. With **`--non-interactive`**, the CLI does not prompt; if RPC URLs are required and there is no TTY, you get a clear error—pass the needed **`--rpc-url`** flags up front.
 </Aside>
 
 For a detailed walkthrough, see [Part 1 of the Getting Started guide](/cre/getting-started/part-1-project-setup).
