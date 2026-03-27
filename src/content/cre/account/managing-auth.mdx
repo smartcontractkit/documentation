@@ -5,7 +5,7 @@ title: "Managing Authentication"
 metadata:
   description: "Manage your CRE CLI sessions: check if you're logged in, handle expired sessions, and securely log out when needed."
   datePublished: "2025-11-04"
-  lastModified: "2026-02-12"
+  lastModified: "2026-03-26"
 ---
 
 import { Aside } from "@components"
@@ -17,6 +17,8 @@ This guide covers how to manage your CLI authentication, including browser-based
 To authenticate your CLI with your CRE account, use the `cre login` command. This opens a browser window where you'll enter your credentials and complete two-factor authentication.
 
 For detailed login instructions, see the [Logging in with the CLI](/cre/account/cli-login) guide.
+
+Browser login stores **`~/.cre/cre.yaml`** (credentials) and **`~/.cre/context.yaml`** (cached **tenant context**: registry manifest from the platform, including vault gateway URL and related settings). **`cre logout`** removes both. For a full description and a sample `context.yaml` shape, see [Tenant context cache](/cre/reference/cli/authentication#tenant-context-cache).
 
 ## API key authentication
 
@@ -70,7 +72,7 @@ To check your deploy access status or submit a request, see [Requesting Deploy A
 
 ## Logging out
 
-To explicitly end your CLI session and remove your stored credentials, use the `cre logout` command:
+To explicitly end your CLI session and remove your stored credentials **and cached tenant context** (`context.yaml`), use the `cre logout` command:
 
 ```bash
 cre logout
