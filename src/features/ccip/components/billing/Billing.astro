@@ -6,11 +6,29 @@ import {
 } from "@config/data/ccip"
 
 const lockAndUnlockAllLanes = calculateNetworkFeesForTokenMechanismDirect(TokenMechanism.LockAndUnlock, "allLanes")
-const restFromEthereum = calculateNetworkFeesForTokenMechanismDirect(TokenMechanism.BurnAndMint, "fromEthereum")
-const restToEthereum = calculateNetworkFeesForTokenMechanismDirect(TokenMechanism.BurnAndMint, "toEthereum")
-const restMechanismNonEthereum = calculateNetworkFeesForTokenMechanismDirect(TokenMechanism.BurnAndMint, "nonEthereum")
+const restFromEthereumToNonEthereum = calculateNetworkFeesForTokenMechanismDirect(
+  TokenMechanism.BurnAndMint,
+  "fromEthereumToNonEthereum"
+)
+const restFromEthereumToSolana = calculateNetworkFeesForTokenMechanismDirect(
+  TokenMechanism.BurnAndMint,
+  "fromEthereumToSolana"
+)
+const restFromNonEthereumToEthereum = calculateNetworkFeesForTokenMechanismDirect(
+  TokenMechanism.BurnAndMint,
+  "fromNonEthereumToEthereum"
+)
+const restFromNonEthereumToNonEthereum = calculateNetworkFeesForTokenMechanismDirect(
+  TokenMechanism.BurnAndMint,
+  "fromNonEthereumToNonEthereum"
+)
+const restFromNonEthereumToSolana = calculateNetworkFeesForTokenMechanismDirect(
+  TokenMechanism.BurnAndMint,
+  "fromNonEthereumToSolana"
+)
 const messagingFeesFromToEthereum = calculateMessagingNetworkFeesDirect("fromToEthereum")
-const messagingFeesNonEthereum = calculateMessagingNetworkFeesDirect("nonEthereum")
+const messagingFeesFromNonEthereumToNonEthereum = calculateMessagingNetworkFeesDirect("fromNonEthereumToNonEthereum")
+const messagingFeesFromNonEthereumToSolana = calculateMessagingNetworkFeesDirect("fromNonEthereumToSolana")
 ---
 
 <div style="overflow-x: auto;">
@@ -19,7 +37,8 @@ const messagingFeesNonEthereum = calculateMessagingNetworkFeesDirect("nonEthereu
       <tr>
         <th rowspan="2">Use case</th>
         <th rowspan="2">Token Pool Mechanism</th>
-        <th rowspan="2">Lanes</th>
+        <th rowspan="2">Source Chain</th>
+        <th rowspan="2">Destination Chain</th>
         <th colspan="2">Fee Token</th>
       </tr>
       <tr>
@@ -30,45 +49,81 @@ const messagingFeesNonEthereum = calculateMessagingNetworkFeesDirect("nonEthereu
     <tbody>
       <!-- Token Transfers with/without messaging -->
       <tr>
-        <td rowspan="4">
+        <td rowspan="6">
           <ul style="list-style-type:none; margin:0; padding:0;">
             <li>Token Transfers</li>
             <li>Programmable Token Transfers</li>
           </ul>
         </td>
         <td>Lock and Unlock</td>
-        <td>All Lanes</td>
+        <td>All Chains</td>
+        <td>All Chains</td>
         <td>{lockAndUnlockAllLanes.linkFee}</td>
         <td>{lockAndUnlockAllLanes.gasTokenFee}</td>
       </tr>
-      <tr>
-        <td rowspan="3">Lock and Mint<br />Burn and Mint<br />Burn and Unlock</td>
-        <td>Non-Ethereum</td>
-        <td>{restMechanismNonEthereum.linkFee}</td>
-        <td>{restMechanismNonEthereum.gasTokenFee}</td>
+      <tr class="section-divider">
+        <td rowspan="5">Lock and Mint<br />Burn and Mint<br />Burn and Unlock</td>
+        <td>Ethereum</td>
+        <td>Not Ethereum</td>
+        <td>{restFromEthereumToNonEthereum.linkFee}</td>
+        <td>{restFromEthereumToNonEthereum.gasTokenFee}</td>
       </tr>
       <tr>
-        <td>From: Ethereum</td>
-        <td>{restFromEthereum.linkFee}</td>
-        <td>{restFromEthereum.gasTokenFee}</td>
+        <td>Ethereum</td>
+        <td>Solana</td>
+        <td>{restFromEthereumToSolana.linkFee}</td>
+        <td>{restFromEthereumToSolana.gasTokenFee}</td>
       </tr>
       <tr>
-        <td>To: Ethereum</td>
-        <td>{restToEthereum.linkFee}</td>
-        <td>{restToEthereum.gasTokenFee}</td>
+        <td>Not Ethereum</td>
+        <td>Solana</td>
+        <td>{restFromNonEthereumToSolana.linkFee}</td>
+        <td>{restFromNonEthereumToSolana.gasTokenFee}</td>
+      </tr>
+      <tr>
+        <td>Not Ethereum</td>
+        <td>Ethereum</td>
+        <td>{restFromNonEthereumToEthereum.linkFee}</td>
+        <td>{restFromNonEthereumToEthereum.gasTokenFee}</td>
+      </tr>
+      <tr>
+        <td>Not Ethereum</td>
+        <td>Not Ethereum</td>
+        <td>{restFromNonEthereumToNonEthereum.linkFee}</td>
+        <td>{restFromNonEthereumToNonEthereum.gasTokenFee}</td>
       </tr>
       <!-- Messaging -->
-      <tr>
-        <td rowspan="2">Messaging</td>
-        <td rowspan="2">N/A</td>
-        <td>Non-Ethereum</td>
-        <td>{messagingFeesNonEthereum.linkFee}</td>
-        <td>{messagingFeesNonEthereum.gasTokenFee}</td>
-      </tr>
-      <tr>
-        <td>From/To: Ethereum</td>
+      <tr class="section-divider">
+        <td rowspan="5">Messaging</td>
+        <td rowspan="5">N/A</td>
+        <td>Ethereum</td>
+        <td>Not Ethereum</td>
         <td>{messagingFeesFromToEthereum.linkFee}</td>
         <td>{messagingFeesFromToEthereum.gasTokenFee}</td>
+      </tr>
+      <tr>
+        <td>Ethereum</td>
+        <td>Solana</td>
+        <td>{messagingFeesFromToEthereum.linkFee}</td>
+        <td>{messagingFeesFromToEthereum.gasTokenFee}</td>
+      </tr>
+      <tr>
+        <td>Not Ethereum</td>
+        <td>Solana</td>
+        <td>{messagingFeesFromNonEthereumToSolana.linkFee}</td>
+        <td>{messagingFeesFromNonEthereumToSolana.gasTokenFee}</td>
+      </tr>
+      <tr>
+        <td>Not Ethereum</td>
+        <td>Ethereum</td>
+        <td>{messagingFeesFromToEthereum.linkFee}</td>
+        <td>{messagingFeesFromToEthereum.gasTokenFee}</td>
+      </tr>
+      <tr>
+        <td>Not Ethereum</td>
+        <td>Not Ethereum</td>
+        <td>{messagingFeesFromNonEthereumToNonEthereum.linkFee}</td>
+        <td>{messagingFeesFromNonEthereumToNonEthereum.gasTokenFee}</td>
       </tr>
     </tbody>
   </table>
@@ -85,5 +140,8 @@ const messagingFeesNonEthereum = calculateMessagingNetworkFeesDirect("nonEthereu
     border: 1px solid #ddd;
     padding: 1em;
     white-space: nowrap;
+  }
+  tr.section-divider td {
+    border-top: 3px solid #bbb;
   }
 </style>
