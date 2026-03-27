@@ -666,6 +666,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             },
             { title: "Rate and Volatility Feeds", url: "data-feeds/rates-feeds" },
             { title: "L2 Sequencer Uptime Feeds", url: "data-feeds/l2-sequencer-feeds" },
+            { title: "Self-Managed Feeds", url: "data-feeds/self-managed-feeds" },
           ],
         },
         {
