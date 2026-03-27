@@ -1050,13 +1050,14 @@ Source: https://docs.chain.link/data-feeds/feed-types
 
 Chainlink Data Feeds provide multiple feed types for different onchain use cases.
 
-| Feed Type                                                   | Purpose                                                                                                                                                               |
-| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Price Feeds](/data-feeds/price-feeds)                      | Aggregated, decentralized asset prices with cryptographic integrity for collateral, lending, and derivatives.                                                         |
-| [SmartData](/data-feeds/smartdata)                          | RWA-focused single-value and multi-variable (MVR) feeds (reserves, NAV, AUM, bundled OHLC sets) enabling secure, data-rich tokenization with efficient onchain reads. |
-| [Smart Value Recapture (SVR) Feeds](/data-feeds/svr-feeds)  | Specialized feeds providing metrics that help protocols recapture MEV or reduce external value leakage.                                                               |
-| [Rate and Volatility Feeds](/data-feeds/rates-feeds)        | Interest rate curves, staking APR, and realized volatility benchmarks used for pricing models, risk controls, and hedging strategies.                                 |
-| [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds) | Real-time status of L2 sequencer availability for protective circuit breakers and fallback transaction logic.                                                         |
+| Feed Type                                                   | Purpose                                                                                                                                                                 |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Price Feeds](/data-feeds/price-feeds)                      | Aggregated, decentralized asset prices with cryptographic integrity for collateral, lending, and derivatives.                                                           |
+| [SmartData](/data-feeds/smartdata)                          | RWA-focused single-value and multi-variable (MVR) feeds (reserves, NAV, AUM, bundled OHLC sets) enabling secure, data-rich tokenization with efficient onchain reads.   |
+| [Smart Value Recapture (SVR) Feeds](/data-feeds/svr-feeds)  | Specialized feeds providing metrics that help protocols recapture MEV or reduce external value leakage.                                                                 |
+| [Rate and Volatility Feeds](/data-feeds/rates-feeds)        | Interest rate curves, staking APR, and realized volatility benchmarks used for pricing models, risk controls, and hedging strategies.                                   |
+| [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds) | Real-time status of L2 sequencer availability for protective circuit breakers and fallback transaction logic.                                                           |
+| [Self-Managed Feeds](/data-feeds/self-managed-feeds)        | Data Feeds where a chain or third party publishes onchain updates instead of Chainlink Labs–managed oracle infrastructure; not operated or monitored by Chainlink Labs. |
 
 ---
 
@@ -1469,6 +1470,7 @@ Data feeds provide many different types of data for your applications.
 - [Smart Value Recapture (SVR) Feeds](#smart-value-recapture-svr-feeds)
 - [Rate and Volatility Feeds](#rate-and-volatility-feeds)
 - [L2 sequencer uptime feeds](#l2-sequencer-uptime-feeds)
+- [Self-managed feeds](#self-managed-feeds)
 
 ### Price Feeds
 
@@ -1514,6 +1516,12 @@ Several feeds provide interest rate curve data, APY data, and realized asset pri
 L2 sequencer feeds track the last known status of the sequencer on an L2 network at a given point in time. This helps you prevent mass liquidations by providing a grace period to allow customers to react to these events.
 
 To learn how to use L2 sequencer uptime feeds, see the [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds) documentation.
+
+### Self-managed feeds
+
+Some networks publish Data Feed–style proxy contracts where **onchain updates are written by the chain or a third-party operator** (for example using a CRE workflow that reads [Chainlink Data Streams](/data-streams)), rather than through Chainlink Labs–managed decentralized oracle networks. **Chainlink Labs does not operate, monitor, or list addresses** for these deployments in official feed catalogs.
+
+For responsibilities, monitoring scope, and how to obtain contract addresses, see [Self-Managed Feeds](/data-feeds/self-managed-feeds).
 
 ## Components of a data feed
 
@@ -3898,6 +3906,50 @@ When you use Data Feeds for ETFs or Foreign Exchange (Forex) data, be aware of t
   Service](https://chain.link/terms) for important information and disclosures. By using Chainlink Data Feeds, you
   acknowledge and agree to these terms.
 </Aside>
+
+---
+
+# Self-Managed Feeds
+Source: https://docs.chain.link/data-feeds/self-managed-feeds
+
+<Aside type="note" title="Contact us">
+  Chains and operators interested in deploying self-managed feeds can reach the Data Feeds team at
+  [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
+</Aside>
+
+**Self-managed feeds** are Data Feeds where values are written onchain by a **third party** (typically the chain or its designated operator), not by Chainlink node operators publishing through Chainlink Labs–managed oracle infrastructure.
+
+At a high level, a [Chainlink Runtime Environment (CRE)](/cre) workflow reads from [Chainlink Data Streams](/data-streams) and writes updates to a proxy contract so consumers can read answers using the same familiar Data Feeds interfaces. **Chainlink Labs does not manage the onchain publication path, monitoring, or service levels** for these deployments. The chain (or its operator) is responsible for running the workflow, maintaining contracts, and supporting integrators.
+
+As of March 2026, **[Jovay](https://jovay.io/)** and **[Pharos](https://www.pharos.xyz/)** offer self-managed feed deployments. **Contract addresses for these feeds are not listed in Chainlink public documentation**; obtain deployed proxy addresses directly from those networks or their operators:
+
+- [Jovay](https://jovay.io/)
+- [Pharos](https://www.pharos.xyz/)
+
+## Responsibilities & guarantees
+
+### Data quality
+
+Data for assets are delivered through **[Chainlink Data Streams](/data-streams)**. Data Streams provides the offchain data for the self-managed feeds; however, it is the third party’s obligation to read, transform, or write the correct values onchain on schedule.
+
+### Monitoring & service levels
+
+**These onchain feeds are not managed or monitored by Chainlink Labs.**
+
+Specifically:
+
+- Chainlink Labs does **not** provide monitoring for:
+  - Heartbeat compliance
+  - Deviation compliance
+  - End-to-end latency of writing prices onchain
+  - Whether the correct data was written onchain
+- No service level agreements (SLAs) are provided for self-managed feed publication.
+- No onchain monitoring specific to these feeds is provided by Chainlink Labs.
+
+### Feed visibility
+
+- Proxy addresses for self-managed feeds **do not appear** on official Chainlink public documentation sites (including feed address catalogs).
+- Integrators must obtain deployed contract addresses **directly from the operators** of the self-managed feeds on each chain.
 
 ---
 
