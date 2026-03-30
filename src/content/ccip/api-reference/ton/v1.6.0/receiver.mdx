@@ -1,0 +1,159 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.6.0 TON Receiver API Reference"
+metadata:
+  description: "API documentation for implementing CCIP receivers on the TON blockchain."
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## Receiver
+
+This section describes the interface a TON contract must implement to receive CCIP messages.
+
+---
+
+## Receiving Messages
+
+### `Receiver_CCIPReceive`
+
+**Opcode:** `0xb3126df1`
+
+This is the message the CCIP Router delivers to your receiver contract when a cross-chain message arrives. Your contract must handle this opcode in its `onInternalMessage` entry function.
+
+```tolk
+struct (0xb3126df1) Receiver_CCIPReceive {
+    execId: uint192;
+    message: Any2TVMMessage;
+}
+```
+
+#### Fields
+
+| Field                  | Type                          | Description                                                                                             |
+| ---------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------- |
+| <nobr>`execId`</nobr>  | <nobr>`uint192`</nobr>        | Execution ID assigned by the OffRamp. Must be included in the `Router_CCIPReceiveConfirm` response.     |
+| <nobr>`message`</nobr> | <nobr>`Any2TVMMessage`</nobr> | The CCIP message payload. See [Any2TVMMessage](/ccip/api-reference/ton/v1.6.0/messages#any2tvmmessage). |
+
+---
+
+### `Router_CCIPReceiveConfirm`
+
+**Opcode:** `0x1e55bbf6`
+
+After processing a `Receiver_CCIPReceive`, your contract **must** send this confirmation back to the Router. The Router uses it to finalize message delivery. Without this confirmation, the message is not considered delivered.
+
+```tolk
+struct (0x1e55bbf6) Router_CCIPReceiveConfirm {
+    execId: ReceiveExecutorId; // uint192
+}
+```
+
+Send this with `SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE` so the remaining TON (the gas reserve forwarded by the OffRamp minus your execution costs) is returned through the protocol chain.
+
+---
+
+## Implementation Requirements
+
+Every TON CCIP receiver must:
+
+1. **Accept `Receiver_CCIPReceive` only from the authorized CCIP Router** — verify `in.senderAddress == st.router`.
+2. **Verify sufficient value is attached** — the Router needs at least 0.02 TON to forward the confirmation. Set `MIN_VALUE` above your execution costs.
+3. **Send `Router_CCIPReceiveConfirm` back to the Router** — include `execId` from the received message. Use `SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE`.
+
+<Aside type="caution">
+  Failing to send `Router_CCIPReceiveConfirm` means the protocol cannot mark the message as delivered. All three
+  requirements must be met for correct CCIP integration.
+</Aside>
+
+---
+
+## `validateAndConfirm` Helper
+
+The receiver library exposes a `validateAndConfirm` helper that encapsulates the three required steps for simple receivers.
+
+```tolk
+fun Receiver_CCIPReceive.validateAndConfirm(self, opts: Receiver_ValidateOptions)
+```
+
+**`Receiver_ValidateOptions`**
+
+```tolk
+struct Receiver_ValidateOptions {
+    router: address;           // Expected CCIP Router address
+    minValue: coins;           // Minimum attached value required
+    inMsg: Receiver_InMessagePartial; // The incoming message metadata
+    confirmationMsg: Receiver_ConfirmOpts; // Options for the confirmation message
+}
+
+struct Receiver_ConfirmOpts {
+    value: coins = 0;
+    sendMode: uint8 = SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE;
+}
+```
+
+<Aside>
+  `validateAndConfirm` may not fit more complex receivers. You can implement the three steps manually as shown in the
+  minimal receiver example below.
+</Aside>
+
+---
+
+## Minimal Receiver Example
+
+```tolk
+import "../chainlink-ton/contracts/contracts/lib/receiver/types"    // Any2TVMMessage
+import "../chainlink-ton/contracts/contracts/lib/receiver/errors"   // Receiver_Error
+import "../chainlink-ton/contracts/contracts/lib/receiver/messages" // Receiver_CCIPReceive
+import "../chainlink-ton/contracts/contracts/ccip/router/messages"  // Router_CCIPReceiveConfirm
+
+struct Storage {
+    router: address; // The CCIP Router address
+}
+
+const MIN_VALUE: coins = ton("0.03"); // 0.02 TON for OffRamp + your execution costs
+
+type MinimalReceiver_InMessage = Receiver_CCIPReceive;
+
+fun onInternalMessage(in: InMessage) {
+    val msg = lazy MinimalReceiver_InMessage.fromSlice(in.body);
+    match (msg) {
+        Receiver_CCIPReceive => {
+            val st = lazy Storage.load();
+
+            // 1. Accept messages only from the authorized CCIP Router
+            assert(in.senderAddress == st.router) throw (Receiver_Error.Unauthorized as int);
+
+            // 2. Verify enough value is attached
+            assert(in.valueCoins >= MIN_VALUE) throw (Receiver_Error.LowValue as int);
+
+            // 3. Send CCIPReceiveConfirm back to the Router
+            val receiveConfirm = createMessage({
+                bounce: true,
+                value: 0,
+                dest: in.senderAddress,
+                body: Router_CCIPReceiveConfirm { execId: msg.execId },
+            });
+            receiveConfirm.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
+
+            // 4. Process the message — add your logic here
+            processMessage(msg.message);
+        }
+        else => {
+            assert(in.body.isEmpty()) throw 0xFFFF;
+        }
+    }
+}
+
+fun processMessage(message: Any2TVMMessage) {
+    // message.data — your payload from the source chain
+    // message.sourceChainSelector — verify the sender chain
+    // message.sender — cross-chain address of the sender
+}
+```
+
+For a complete walkthrough, see the [Implementing CCIP Receivers](/ccip/tutorials/ton/receivers) tutorial.
+
+<CcipCommon callout="educationalDisclaimer" />

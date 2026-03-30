@@ -22,3 +22,4 @@ export { default as SideBySideCode } from "./SideBySideCode/SideBySideCode.astro
 export { default as CodeHighlightBlock } from "./CodeHighlightBlock/CodeHighlightBlock.astro"
 export { default as CodeHighlightBlockMulti } from "./CodeHighlightBlockMulti/CodeHighlightBlockMulti.astro"
 export { Callout } from "./Callout/Callout.tsx"
+export { GitHubCard } from "./github-card/index.ts"

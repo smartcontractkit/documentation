@@ -1,0 +1,48 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP Architecture - Overview (TON)"
+metadata:
+  description: "Overview of Chainlink CCIP architecture for TON. Learn about core capabilities, data transmission, offchain and onchain components, and security model for TON arbitrary messaging."
+  image: "/images/ccip/concepts/architecture/ccip-ton-source-chain.jpg"
+  excerpt: "ccip architecture overview ton cross-chain messaging protocol data transmission offchain onchain components risk management network arbitrary messaging"
+  difficulty: "intermediate"
+  estimatedTime: "15 minutes"
+  datePublished: "2026-04-07"
+  lastModified: "2026-04-07"
+---
+
+import { Aside } from "@components"
+
+CCIP is a cross-chain messaging protocol built on Chainlink and secured by its decentralized oracle networks (DONs). On TON, CCIP provides the following capability:
+
+- **Data Transmission**: Send arbitrary data (i.e., bytes) to a receiving contract.
+
+<Aside>TON currently supports arbitrary message passing only. Token transfers are not yet supported.</Aside>
+
+<Aside title="Terminology">
+
+While this documentation references concepts like "smart contracts", the implementation of these ideas varies across different blockchain families. On TON, onchain logic is written in **Tolk** or **FunC** and compiled to the TVM (TON Virtual Machine) instruction set. TON smart contracts are stateful, communicate exclusively through internal and external messages, and cannot call each other's getters synchronously — all cross-contract interaction is asynchronous.
+
+</Aside>
+
+## High-level Architecture
+
+CCIP delivers cross-chain messages from a source chain to a destination chain by combining offchain consensus and onchain execution components. The architecture is composed of two primary layers:
+
+1. **Offchain Architecture**
+   - Decentralized Oracle Network (DON) with nodes that perform distinct roles:
+     - Commit: Observes and validates source-chain events to build a consensus-based report.
+     - Execution: Validates pending messages and optimizes them for execution on the destination chain.
+
+1. **Onchain Architecture**
+   - Router:
+     - Each blockchain has a single immutable Router contract that serves as the unified interface for users and decentralized applications (dApps).
+   - On the source blockchain, onramp functionality consists of:
+     - Providing fee estimates.
+     - Dispatching the message data.
+   - On the destination blockchain, offramping functionality consists of:
+     - Accepting and verifying commit reports from the Committing DON.
+     - Routing the processed message to the designated receiver.
+
+**Note:** These high-level descriptions outline the core principles of CCIP. The detailed onchain and offchain architectures for TON can be found in the relevant documentation.
