@@ -43,7 +43,7 @@ describe("CCIP Sidebar Configuration", () => {
         if (item.chainTypes !== undefined) {
           expect(Array.isArray(item.chainTypes)).toBe(true)
           item.chainTypes.forEach((chainType: ChainType) => {
-            expect(["evm", "solana", "aptos"]).toContain(chainType)
+            expect(["evm", "solana", "aptos", "ton"]).toContain(chainType)
           })
         }
       }
@@ -56,7 +56,7 @@ describe("CCIP Sidebar Configuration", () => {
     })
 
     it("should only contain valid chainTypes", () => {
-      const validChainTypes = ["evm", "solana", "aptos"]
+      const validChainTypes = ["evm", "solana", "aptos", "ton"]
 
       const checkChainTypes = (item: SectionContent) => {
         if (item.chainTypes) {

@@ -1,0 +1,364 @@
+---
+section: ccip
+date: Last Modified
+title: "Implementing CCIP Receivers"
+isIndex: false
+metadata:
+  description: "Build secure TON CCIP receivers in Tolk. Learn the three mandatory protocol steps, understand Any2TVMMessage, and choose between MinimalReceiver, ReceiverWithValidateAndConfirm, or the full MessageReceiver reference implementation."
+  image: "/images/ccip/ccip-hl-v1.6.gif"
+  excerpt: "TON CCIP receiver, Tolk smart contract, Router validation, CCIPReceiveConfirm, Any2TVMMessage, MinimalReceiver"
+  datePublished: "2026-03-29"
+  lastModified: "2026-03-29"
+  estimatedTime: "20 minutes"
+  difficulty: "advanced"
+---
+
+import { Aside, GitHubCard } from "@components"
+import { Tabs } from "@components/Tabs"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<Aside type="note" title="Prerequisites">
+
+This reference guide assumes familiarity with:
+
+- The [Tolk language](https://docs.ton.org/tolk/overview) and [TON smart contract development](https://docs.ton.org/contract-dev/first-smart-contract)
+- The [CCIP architecture](/ccip/concepts/architecture/overview)
+- The [prerequisites](/ccip/tutorials/ton/source/prerequisites) for TON CCIP development
+
+</Aside>
+
+# Implementing CCIP Receivers
+
+A **CCIP Receiver** is a TON smart contract (written in Tolk) that accepts incoming cross-chain messages delivered by the CCIP protocol. When a message is sent from an EVM chain to TON via CCIP, the CCIP Router on TON forwards it to your receiver contract as an internal message. Your contract must validate the delivery, acknowledge it to the protocol, and process the payload.
+
+## How Message Delivery Works
+
+When a cross-chain message arrives on TON:
+
+1. The CCIP off-ramp verifies the message against a Merkle root and routes it through the CCIP Router on TON.
+1. The Router sends a `Receiver_CCIPReceive` internal message to your receiver contract, with enough TON attached to cover the confirmation transaction.
+1. Your contract performs three mandatory protocol steps, then executes your application logic.
+1. Your contract sends `Router_CCIPReceiveConfirm` back to the Router, which marks the message as successfully delivered on-chain.
+
+## Security Architecture
+
+### Three Mandatory Protocol Steps
+
+Every TON CCIP receiver **must** implement all three steps in order:
+
+**Step 1 — Authorize the Router.** Accept `Receiver_CCIPReceive` messages only from the configured CCIP Router address. Any other sender must be rejected.
+
+```tolk
+assert(in.senderAddress == st.router) throw ERROR_UNAUTHORIZED;
+```
+
+**Step 2 — Check attached value.** The Router forwards TON with the message to cover the confirmation transaction. Verify the attached value meets `MIN_VALUE`. The Router needs at least **0.02 TON** to send `Router_CCIPReceiveConfirm` back through the protocol chain. Use **0.03 TON** as a baseline and increase it to cover your own execution costs.
+
+```tolk
+assert(in.valueCoins >= MIN_VALUE) throw ERROR_LOW_VALUE;
+```
+
+**Step 3 — Acknowledge delivery.** Send `Router_CCIPReceiveConfirm` back to the Router using `SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE` to forward all remaining TON for the protocol's confirmation chain.
+
+```tolk
+val receiveConfirm = createMessage({
+    bounce: true,
+    value: 0,
+    dest: in.senderAddress,
+    body: Router_CCIPReceiveConfirm { execId: msg.execId },
+});
+receiveConfirm.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
+```
+
+<Aside type="caution" title="Setting MIN_VALUE Too Low">
+
+If `MIN_VALUE` is too small, your contract may not forward enough TON for `Router_CCIPReceiveConfirm` to propagate back through the protocol chain, leaving the message in an undelivered state. Start at **0.03 TON** and benchmark your contract's execution costs to determine the correct value.
+
+</Aside>
+
+### Developer Responsibilities
+
+Unlike EVM receivers, **source chain and sender validation are not enforced at the protocol level on TON** — only the Router address check (step 1) is a protocol requirement. Your contract is responsible for any application-layer checks:
+
+- **Source chain validation**: Check `message.sourceChainSelector` against an allowlist of trusted chains.
+- **Sender validation**: Check `message.sender` against trusted source-side addresses.
+
+Without these checks, any address on any chain can send a CCIP message to your receiver and have it processed.
+
+## Message Structure
+
+The CCIP Router delivers an `Any2TVMMessage` struct inside each `Receiver_CCIPReceive` message:
+
+```tolk filename="chainlink-ton/contracts/contracts/lib/receiver/types.tolk"
+struct Any2TVMMessage {
+    messageId: uint256;          // Unique message identifier
+    sourceChainSelector: uint64; // CCIP chain selector of the originating chain
+    sender: CrossChainAddress;   // Encoded sender address from the source chain
+    data: cell;                  // Arbitrary payload (your application data)
+    tokenAmounts: cell?;         // Reserved for future token support; currently unused
+}
+```
+
+| Field                 | Type                | Description                                                                              |
+| --------------------- | ------------------- | ---------------------------------------------------------------------------------------- |
+| `messageId`           | `uint256`           | Unique identifier — use for deduplication to prevent replay                              |
+| `sourceChainSelector` | `uint64`            | CCIP selector of the originating chain                                                   |
+| `sender`              | `CrossChainAddress` | Encoded source-chain sender address; for EVM sources, these are the 20 EVM address bytes |
+| `data`                | `cell`              | Application payload encoded as a TON Cell                                                |
+| `tokenAmounts`        | `cell?`             | Reserved for future token-transfer support; currently `null`                             |
+
+`CrossChainAddress` is a `slice` type. For EVM-to-TON messages, it contains the 20-byte EVM address of the sender.
+
+<Aside type="note" title="Receiver Library: Early Development">
+
+The `lib/receiver/` library (`messages.tolk`, `types.tolk`, `errors.tolk`) shipped with `chainlink-ton` is **audited but still under active development**. It may not cover every use case. You are responsible for correctly implementing the three mandatory protocol steps in your receiver. If `validateAndConfirm` does not meet your needs, implement the steps inline as shown in `MinimalReceiver` below.
+
+</Aside>
+
+## Receiver Implementations
+
+The starter kit provides three receiver contracts at different complexity levels. Choose the one that fits your use case, or use one as a starting template.
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">MinimalReceiver</Fragment>
+  <Fragment slot="tab.2">ReceiverWithValidateAndConfirm</Fragment>
+  <Fragment slot="tab.3">MessageReceiver</Fragment>
+  <Fragment slot="panel.1">
+    `contracts/minimal_receiver.tolk` — The bare-minimum CCIP receiver. All three mandatory protocol steps are implemented inline, giving you full transparency and control over each check.
+
+    **When to use**: When you want explicit control over every protocol step, need to customize error handling, or prefer not to depend on the early-stage Receiver library.
+
+    #### Entry Point
+
+    ```tolk filename="contracts/minimal_receiver.tolk"
+    fun onInternalMessage(in: InMessage) {
+        val msg = lazy MinimalReceiver_InMessage.fromSlice(in.body);
+        match (msg) {
+            Receiver_CCIPReceive => {
+                val st = lazy Storage.load();
+
+                // 1. Accept messages only from the authorized CCIP Router.
+                assert(in.senderAddress == st.router) throw ERROR_UNAUTHORIZED;
+
+                // 2. Verify enough value is attached to cover gas costs.
+                //    Router needs ≥0.02 TON for CCIPReceiveConfirm; increase for your own costs.
+                assert(in.valueCoins >= MIN_VALUE) throw ERROR_LOW_VALUE;
+
+                // 3. Send CCIPReceiveConfirm back to the Router.
+                val receiveConfirm = createMessage({
+                    bounce: true,
+                    value: 0,
+                    dest: in.senderAddress,
+                    body: Router_CCIPReceiveConfirm { execId: msg.execId },
+                });
+                receiveConfirm.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
+
+                // ★ YOUR LOGIC: call your application function(s) with msg.message
+                processMessage(msg.message);
+            }
+            else => {
+                // Ignore plain TON transfers; reject unknown opcodes.
+                assert(in.body.isEmpty()) throw 0xFFFF;
+            }
+        }
+    }
+    ```
+
+    <GitHubCard
+      title="minimal_receiver.tolk"
+      href="https://github.com/smartcontractkit/ccip-starter-kit-ton/blob/main/contracts/minimal_receiver.tolk"
+      iconName="github-svg-card"
+    >
+      Complete contract source including storage, constants, and imports.
+    </GitHubCard>
+
+    Deploy:
+
+    ```bash filename="Terminal"
+    npm run deploy:ton:receiver:minimal
+    ```
+
+  </Fragment>
+  <Fragment slot="panel.2">
+    `contracts/receiver_with_validateAndConfirm.tolk` — Uses the `validateAndConfirm` helper from the Receiver library to perform all three mandatory protocol steps in a single call. Functionally equivalent to `MinimalReceiver` but with less boilerplate.
+
+    **When to use**: When the default `validateAndConfirm` behavior fits your requirements and you prefer more concise code. See the Receiver library caution above before choosing this approach.
+
+    #### Entry Point
+
+    ```tolk filename="contracts/receiver_with_validateAndConfirm.tolk"
+    Receiver_CCIPReceive => {
+        val st = lazy Storage.load();
+
+        // Performs all three mandatory protocol steps in one call:
+        //   1. Verifies sender == st.router
+        //   2. Verifies valueCoins >= MIN_VALUE
+        //   3. Sends CCIPReceiveConfirm with SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE
+        msg.validateAndConfirm({
+            router: st.router,
+            minValue: MIN_VALUE,
+            inMsg: {
+                senderAddress: in.senderAddress,
+                valueCoins: in.valueCoins,
+            },
+            confirmationMsg: {
+                sendMode: SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE,
+            },
+        });
+
+        // ★ YOUR LOGIC: call your application function(s) with msg.message
+        processMessage(msg.message);
+    }
+    ```
+
+    <GitHubCard
+      title="receiver_with_validateAndConfirm.tolk"
+      href="https://github.com/smartcontractkit/ccip-starter-kit-ton/blob/main/contracts/receiver_with_validateAndConfirm.tolk"
+      iconName="github-svg-card"
+    >
+      Complete contract source including storage, constants, and imports.
+    </GitHubCard>
+
+    Deploy:
+
+    ```bash filename="Terminal"
+    npm run deploy:ton:receiver:validate-and-confirm
+    ```
+
+  </Fragment>
+  <Fragment slot="panel.3">
+    `chainlink-ton/contracts/contracts/ccip/test/receiver/contract.tolk` — A full-featured receiver used by the Chainlink team for protocol integration tests. It implements all three protocol steps inline and adds two-step ownership, switchable behavior, getter methods, and contract upgrade support — making it a useful reference for production receivers that need administrative controls.
+
+    <Aside type="note">
+
+    This contract lives in `contracts/ccip/test/` because it is included in GitHub release artifacts for integration tests. It is a well-structured **reference implementation** — its ownership and behavior-switching features make it a practical template for any receiver that needs administrative controls beyond the minimum protocol requirements.
+
+    </Aside>
+
+    #### Storage and Behavior
+
+    ```tolk filename="chainlink-ton/contracts/contracts/ccip/test/receiver/storage.tolk"
+    struct Storage {
+        id: uint32;
+        ownable: Ownable2Step;     // Two-step ownership — admin messages require requireOwner()
+        authorizedCaller: address; // Must be the CCIP Router address for production use
+        behavior: TestReceiverBehavior;
+    }
+
+    enum TestReceiverBehavior : uint8 {
+        Accept = 0,    // Normal — emit event for each received message
+        RejectAll,     // Always throw (simulates a failing receiver)
+        ConsumeAllGas  // Infinite loop (simulates an out-of-gas receiver)
+    }
+    ```
+
+    `Ownable2Step` requires the new owner to explicitly accept the transfer, preventing accidental ownership loss. All admin messages (`UpdateAuthorizedCaller`, `UpdateBehavior`, `Upgradeable_Upgrade`) verify `st.ownable.requireOwner(in.senderAddress)` before making any state change.
+
+    #### Entry Point
+
+    ```tolk filename="chainlink-ton/contracts/contracts/ccip/test/receiver/contract.tolk"
+    fun onInternalMessage(in: InMessage) {
+        val msg = lazy TestReceiver_InMessage.fromSlice(in.body);
+        match (msg) {
+            Receiver_CCIPReceive => {
+                var st = lazy Storage.load();
+
+                // 1. Check that enough value is received to process this message.
+                assert( in.valueCoins >= ton("0.03") ) throw (Receiver_Error.LowValue as int);
+
+                // 2. Check CCIPReceive only comes from router.
+                assert( in.senderAddress == st.authorizedCaller) throw (Receiver_Error.Unauthorized as int);
+
+                // 3. Process the message according to your product logic.
+                match (st.behavior) {
+                    TestReceiverBehavior.Accept        => { processAccept(msg, in.senderAddress) },
+                    TestReceiverBehavior.RejectAll     => { processRejectAll() },
+                    TestReceiverBehavior.ConsumeAllGas => { processConsumeAllGas() },
+                }
+
+                // 4. Send CCIPReceiveConfirm back to the Router after processing.
+                //    reserveToncoinsOnBalance preserves the contract's existing balance;
+                //    SEND_MODE_CARRY_ALL_BALANCE then forwards everything above that amount —
+                //    effectively the TON that arrived with this message minus compute/action fees.
+                //    At least 0.02 TON is required for the Router to process the confirmation;
+                //    send ~0.025 TON or more to account for fee fluctuations.
+                reserveToncoinsOnBalance(0, RESERVE_MODE_INCREASE_BY_ORIGINAL_BALANCE);
+                val receiveConfirm = createMessage({
+                    bounce: true,
+                    value: 0,
+                    dest: in.senderAddress,
+                    body: Router_CCIPReceiveConfirm { execId: msg.execId },
+                });
+                receiveConfirm.send(SEND_MODE_CARRY_ALL_BALANCE);
+            }
+            TestReceiver_UpdateAuthorizedCaller => { onUpdateAuthorizedCaller(msg, in.senderAddress) }
+            TestReceiver_UpdateBehavior         => { onUpdateBehavior(msg, in.senderAddress) }
+            Upgradeable_Upgrade => {
+                var st = lazy Storage.load();
+                st.ownable.requireOwner(in.senderAddress);
+                onUpgrade(msg);
+            }
+            else => { assert(in.body.isEmpty()) throw 0xFFFF }
+        }
+    }
+    ```
+
+    Two aspects of this implementation differ from `MinimalReceiver`:
+
+    - **Value is checked before sender**: The contract validates `valueCoins >= 0.03 TON` first, then verifies the Router address. Both checks are mandatory; the order is a valid implementation choice.
+    - **Confirm is sent after processing**: `Router_CCIPReceiveConfirm` is enqueued after the behavior logic runs, not before. `reserveToncoinsOnBalance` preserves the contract's pre-message balance so that `SEND_MODE_CARRY_ALL_BALANCE` forwards only the TON that arrived with this message, minus compute and action fees.
+
+    The `TestReceiverBehavior.RejectAll` and `ConsumeAllGas` branches are testing aids that simulate common failure scenarios. In a production receiver, remove them and replace `processAccept` with your application logic.
+
+    #### Getter Methods
+
+    | Method | Returns | Description |
+    |---|---|---|
+    | `getId()` | `uint32` | Contract instance identifier |
+    | `getAuthorizedCaller()` | `address` | Currently configured Router address |
+    | `getBehavior()` | `int` | Behavior value: `0` = Accept, `1` = RejectAll, `2` = ConsumeAllGas |
+    | `typeAndVersion()` | `(slice, slice)` | Facility name and contract version (`"1.6.0"`) |
+    | `facilityId()` | `uint16` | Facility identifier (`191`) |
+    | `errorCode(local)` | `uint16` | Namespaced error code for a given local code |
+
+    <GitHubCard
+      title="contracts/ccip/test/receiver/"
+      href="https://github.com/smartcontractkit/chainlink-ton/tree/main/contracts/contracts/ccip/test/receiver"
+      iconName="github-svg-card"
+    >
+      Complete source including message handlers, admin functions, and upgrade logic.
+    </GitHubCard>
+
+    Deploy:
+
+    ```bash filename="Terminal"
+    npm run deploy:ton:receiver
+    ```
+
+    The deploy script initializes the contract with your deployer wallet as `ownable.owner`, the CCIP Router from `networkConfig.tonTestnet.router` as `authorizedCaller`, and `behavior` set to `Accept` (0).
+
+  </Fragment>
+</Tabs>
+
+## After Deployment
+
+After deploying, send a test message from an EVM chain to verify delivery:
+
+```bash filename="Terminal"
+npm run evm2ton:send -- \
+  --sourceChain <evm-chain-name> \
+  --tonReceiver <your-deployed-receiver-address> \
+  --msg "Hello TON from EVM" \
+  --feeToken native
+```
+
+Then confirm the message was received on TON:
+
+```bash filename="Terminal"
+npm run utils:checkTON -- \
+  --sourceChain <evm-chain-name> \
+  --tonReceiver <your-deployed-receiver-address> \
+  --msg "Hello TON from EVM"
+```
+
+<CcipCommon callout="educationalDisclaimer" />

@@ -1,0 +1,62 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP Tutorials (TON)"
+metadata:
+  description: "CCIP tutorials for TON. Build receivers, send messages between TON and EVM chains using Chainlink CCIP."
+  image: "/images/ccip/ccip-hl-v1.6.gif"
+  excerpt: "TON, CCIP, receivers, arbitrary messaging, TON Testnet, Ethereum Sepolia, TL-B, Tolk"
+  datePublished: "2026-03-29"
+  lastModified: "2026-03-29"
+  estimatedTime: "8 minutes"
+  difficulty: "intermediate"
+isIndex: true
+---
+
+import { Aside } from "@components"
+
+Chainlink CCIP enables secure cross-chain communication between TON and EVM blockchains. These tutorials will help you implement cross-chain arbitrary messaging in both directions.
+
+## Getting Started
+
+Before diving into specific implementations, ensure you understand the fundamentals:
+
+- [Prerequisites for TON to EVM Tutorials](/ccip/tutorials/ton/source/prerequisites) - Set up your development environment for TON → EVM CCIP development.
+- [Prerequisites for EVM to TON Tutorials](/ccip/tutorials/ton/destination/prerequisites) - Set up your development environment for EVM → TON CCIP development.
+
+## Implementing CCIP Receivers on TON
+
+Before sending any cross-chain message to TON, you need a receiver contract deployed on TON Testnet:
+
+- [Implementing CCIP Receivers](/ccip/tutorials/ton/receivers) - Understand the TON CCIP receiver protocol and deploy a `MessageReceiver`, `MinimalReceiver`, or `ReceiverWithValidateAndConfirm` contract.
+
+## Using TON as a Source Chain
+
+Send messages from TON to EVM chains:
+
+- [TON to EVM Guide](/ccip/tutorials/ton/source) - Guide for building CCIP messages from TON to EVM chains.
+- [Arbitrary Messaging](/ccip/tutorials/ton/source/arbitrary-messaging) - Send a data payload from a TON wallet to a receiver contract on Ethereum Sepolia.
+
+## Using TON as a Destination Chain
+
+Send messages from EVM chains to TON:
+
+- [EVM to TON Guide](/ccip/tutorials/ton/destination) - Guide for building CCIP messages from EVM chains to TON.
+- [Arbitrary Messaging](/ccip/tutorials/ton/destination/arbitrary-messaging) - Send a data payload from Ethereum Sepolia to a receiver contract on TON Testnet.
+
+## Architecture Reference
+
+Key Differences from EVM:
+
+- **Cell-Based Storage:** TON uses a Cell data structure (TL-B format) instead of ABI-encoded byte arrays. All CCIP message fields are serialized into Cells using builder primitives.
+- **Actor Model:** TON contracts communicate by passing messages between actors. CCIP delivery follows a multi-step internal message flow: `Receiver_CCIPReceive` → contract logic → `Router_CCIPReceiveConfirm`.
+- **Tolk Language:** TON smart contracts in the starter kit are written in Tolk, a statically-typed language that compiles to TVM bytecode.
+
+Message Types:
+
+- **Arbitrary Messaging:** Send a data payload to trigger logic execution on the destination chain. Currently the only supported message type on TON CCIP lanes.
+
+<Aside type="note">
+  These tutorials use TON Testnet and Ethereum Sepolia for demonstration purposes. When deploying to production, make
+  sure to thoroughly test your implementation and follow all security best practices.
+</Aside>
