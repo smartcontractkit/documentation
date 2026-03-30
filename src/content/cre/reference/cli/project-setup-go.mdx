@@ -7,7 +7,7 @@ pageId: "cli-project-setup"
 metadata:
   description: "Initialize Go projects with CLI: complete reference for cre init and generate-bindings commands to start building workflows."
   datePublished: "2025-11-04"
-  lastModified: "2026-03-17"
+  lastModified: "2026-03-26"
 ---
 
 import { Aside } from "@components"
@@ -40,11 +40,16 @@ cre init [flags]
 
 **Flags:**
 
-| Flag                  | Description                        |
-| --------------------- | ---------------------------------- |
-| `-p, --project-name`  | Name for the new project           |
-| `-t, --template-id`   | ID of the workflow template to use |
-| `-w, --workflow-name` | Name for the new workflow          |
+| Flag                  | Description                                                                                                                               |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `--non-interactive`   | Fail instead of prompting; supply all inputs via flags (for **CI/CD** and non-TTY environments).                                          |
+| `-p, --project-name`  | Name for the new project (required for a new project when using `--non-interactive`).                                                     |
+| `-t, --template`      | Template name to use (for example `hello-world-go`). Run `cre templates list` to see IDs and required networks.                           |
+| `-w, --workflow-name` | Name for the new workflow.                                                                                                                |
+| `--refresh`           | Bypass the template cache and fetch fresh data from GitHub.                                                                               |
+| `--rpc-url`           | RPC endpoint for a chain, repeatable. Format: `chain-name=url`. Often **required** with `--non-interactive` when the template needs RPCs. |
+
+Inherited [global flags](/cre/reference/cli#global-flags) include **`-R, --project-root`**, which `cre init` uses as the directory where the project is created when you pass it explicitly.
 
 **Interactive mode (recommended):**
 
@@ -67,19 +72,22 @@ Running `cre init` without flags starts an interactive setup that guides you thr
 cre init
 ```
 
-**Non-interactive mode:**
+**Non-interactive mode (scripting / CI):**
+
+Pass **`--non-interactive`** plus the flags your template needs. Use **`cre templates list`** (or **`cre templates list --json`**) to see **required networks** and choose **`--rpc-url`** values.
 
 ```bash
-# Create a new project with initial workflow
 cre init \
+  --non-interactive \
   --project-name my-cre-project \
   --workflow-name my-workflow \
-  --template-id 1
+  --template hello-world-go \
+  --rpc-url sepolia=https://sepolia.infura.io/v3/YOUR_KEY
 ```
 
+{/* prettier-ignore */}
 <Aside type="note" title="Interactive vs. non-interactive">
-  For most users, running `cre init` without flags (interactive mode) is the easiest way to set up a project. The CLI
-  will guide you through the setup process with clear prompts.
+  For most users, `cre init` without flags is easiest. With **`--non-interactive`**, the CLI does not prompt; if RPC URLs are required and there is no TTY, you get a clear error—pass the needed **`--rpc-url`** flags up front.
 </Aside>
 
 For a detailed walkthrough, see [Part 1 of the Getting Started guide](/cre/getting-started/part-1-project-setup).

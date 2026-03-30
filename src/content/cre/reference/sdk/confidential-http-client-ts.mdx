@@ -17,6 +17,10 @@ The [Confidential HTTP](/cre/capabilities/confidential-http-ts) Client lets you 
 - For use cases and a conceptual overview, see [The Confidential HTTP Capability](/cre/capabilities/confidential-http-ts)
 - **Guide:** [Making Confidential Requests](/cre/guides/workflow/using-confidential-http-client/making-requests-ts)
 
+<Aside type="caution" title="Do not assume sensitive values are always enclave-resolved">
+  **Credential isolation** applies when sensitive values are listed in **`vaultDonSecrets`** and referenced only with **`{{.secretName}}` placeholders**, so plaintext is resolved inside the enclave. Values you interpolate into headers or body as ordinary workflow strings—including from **`runtime.getSecret()`** and similar APIs—are resolved in **Workflow DON** execution and follow a different trust boundary. See [Making Confidential Requests](/cre/guides/workflow/using-confidential-http-client/making-requests-ts#step-4-implement-the-request-and-wire-it-into-your-workflow) for the intended pattern.
+</Aside>
+
 ## Quick reference
 
 | Method                        | Description                        |
@@ -34,10 +38,10 @@ The [Confidential HTTP](/cre/capabilities/confidential-http-ts) Client lets you 
 
 The top-level request type that combines an HTTP request with Vault DON secrets and encryption settings.
 
-| <div style="width: 140px;">Field</div> | <div style="width: 230px;">Type</div>            | Description                                                                                                                                       |
-| -------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `request`                              | `HTTPRequest` \| `HTTPRequestJson`               | The HTTP request to execute inside the enclave. See [`HTTPRequest`](#httprequest--httprequestjson).                                               |
-| `vaultDonSecrets`                      | `SecretIdentifier[]` \| `SecretIdentifierJson[]` | List of secrets to fetch from the Vault DON and make available in the enclave. See [`SecretIdentifier`](#secretidentifier--secretidentifierjson). |
+| <div style="width: 140px;">Field</div> | <div style="width: 230px;">Type</div>            | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| -------------------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `request`                              | `HTTPRequest` \| `HTTPRequestJson`               | The HTTP request to execute inside the enclave. See [`HTTPRequest`](#httprequest--httprequestjson).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `vaultDonSecrets`                      | `SecretIdentifier[]` \| `SecretIdentifierJson[]` | Vault DON secrets for enclave-only `{{.key}}` substitution in the request ([`SecretIdentifier`](#secretidentifier--secretidentifierjson)). Use this when credentials or other sensitive template values must stay out of Workflow DON execution—not replaceable by pasting `runtime.getSecret()` output into headers or body. See [what stays confidential](/cre/capabilities/confidential-http-ts#whats-kept-confidential) and [Making Confidential Requests](/cre/guides/workflow/using-confidential-http-client/making-requests-ts#step-4-implement-the-request-and-wire-it-into-your-workflow). |
 
 ### `HTTPRequest` / `HTTPRequestJson`
 
