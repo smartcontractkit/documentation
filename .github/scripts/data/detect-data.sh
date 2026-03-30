@@ -154,11 +154,12 @@ node <<EOF
 
     // === data-streams networks
     const STREAMS_NETWORKS = [
-      "0g", "apechain", "aptos", "arbitrum", "avalanche", "base", "berachain", "bitlayer", "blast",
-      "bnb-chain", "bob", "botanix", "celo", "ethereum", "gnosis-chain", "gravity", "hashkey", "hedera", "hyperliquid", "injective",
-      "ink", "jovay", "katana", "lens", "linea", "mantle", "metis", "monad", "opbnb", "optimism", "polygon", "pharos", "plasma", "ronin",
-      "scroll", "shibarium", "sei", "soneium", "sonic",
-      "solana", "taiko", "unichain", "worldchain", "zksync"
+      "0g", "apechain", "adi", "aptos", "arbitrum", "arc", "avalanche", "base", "berachain", "bitlayer", "blast",
+      "bnb-chain", "bob", "botanix", "celo", "dogeos", "ethereum", "giwa", "gnosis-chain", "gravity", "hashkey", 
+      "hedera", "hyperliquid", "injective", "ink", "jovay", "katana", "lens", "linea", "mantle", 
+      "metis", "monad", "opbnb", "optimism", "polygon", "perennial", "pharos", "plasma", "ronin",
+      "robinhood", "scroll", "shibarium", "sei", "seismic", "soneium", "sonic", "solana", "stable", 
+      "xlayer","taiko", "unichain", "worldchain", "zksync"
     ];
 
     // === Build relatedTokens for FEEDS
@@ -178,6 +179,7 @@ node <<EOF
 
     // === Build relatedTokens for STREAMS
     function buildDataStreamTokens(streamItems) {
+      const seen = new Set();
       return streamItems.map(i => {
         const baseLower = i.baseAsset.toLowerCase();
         return {
@@ -187,6 +189,13 @@ node <<EOF
           url: i.url,
           iconUrl: \`https://d2f70xi62kby8n.cloudfront.net/tokens/\${baseLower}.webp\`
         };
+      }).filter(t => {
+        // Deduplicate by URL — equity streams have multiple hour-variant feeds
+        // (regular/overnight/extended) that now each produce distinct URLs, but
+        // guard against any edge cases where URL generation still produces duplicates.
+        if (seen.has(t.url)) return false;
+        seen.add(t.url);
+        return true;
       }).sort((a, b) => a.assetName.localeCompare(b.assetName));
     }
 

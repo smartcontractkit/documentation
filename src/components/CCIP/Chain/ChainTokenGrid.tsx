@@ -1,4 +1,4 @@
-import { Environment, Version, Network, PoolType } from "~/config/data/ccip/types.ts"
+import { Environment, Version, Network } from "~/config/data/ccip/types.ts"
 import { getAllTokenLanes, getTokenData } from "~/config/data/ccip/data.ts"
 import TokenCard from "../Cards/TokenCard.tsx"
 import { drawerContentStore, DrawerWidth, drawerWidthStore } from "../Drawer/drawerStore.ts"
@@ -54,10 +54,10 @@ function ChainTokenGrid({ tokens, network, environment }: ChainTokenGridProps) {
                       tokenSymbol: data[key].symbol,
                       tokenDecimals: data[key].decimals,
                       tokenAddress: data[key].tokenAddress,
-                      tokenPoolType: (data[key].pool?.type || data[key].poolType) as PoolType,
-                      tokenPoolRawType: data[key].pool?.rawType || "",
-                      tokenPoolAddress: data[key].pool?.address || data[key].poolAddress || "",
-                      tokenPoolVersion: data[key].pool?.version || "",
+                      tokenPoolType: data[key].pool?.type ?? "burnMint",
+                      tokenPoolRawType: data[key].pool?.rawType ?? "",
+                      tokenPoolAddress: data[key].pool?.address ?? "",
+                      tokenPoolVersion: data[key].pool?.version ?? "",
                       explorer: network.explorer,
                       chainType,
                     }

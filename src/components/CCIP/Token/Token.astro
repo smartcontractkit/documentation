@@ -12,6 +12,7 @@ import {
   Version,
   Environment,
 } from "~/config/data/ccip"
+import { fetchPoolDataForTokenAllChains } from "~/lib/ccip/graphql/services/enrichment-data-service.ts"
 import ChainHero from "~/components/CCIP/ChainHero/ChainHero"
 import Table from "~/components/CCIP/Tables/TokenChainsTable"
 import {
@@ -68,6 +69,8 @@ const data = getTokenData({
   version: Version.V1_2_0,
   tokenId: token,
 })
+
+const tokenPoolData = await fetchPoolDataForTokenAllChains(environment as Environment, token)
 
 const tokenLanes = getAllTokenLanes({
   environment,
@@ -157,10 +160,10 @@ const tokenStructuredData = generateTokenStructuredData(token, environment, chai
               tokenSymbol: data[key]?.symbol ?? "",
               tokenDecimals: data[key]?.decimals ?? 0,
               tokenAddress: data[key]?.tokenAddress ?? "",
-              tokenPoolType: data[key]?.pool?.type,
-              tokenPoolRawType: data[key]?.pool?.rawType || "",
-              tokenPoolAddress: data[key]?.pool?.address ?? data[key]?.poolAddress ?? "",
-              tokenPoolVersion: data[key]?.pool?.version ?? "",
+              tokenPoolType: tokenPoolData[key]?.type ?? data[key]?.pool?.type,
+              tokenPoolRawType: tokenPoolData[key]?.rawType ?? data[key]?.pool?.rawType ?? "",
+              tokenPoolAddress: tokenPoolData[key]?.address ?? data[key]?.pool?.address ?? "",
+              tokenPoolVersion: tokenPoolData[key]?.version ?? data[key]?.pool?.version ?? "",
               explorer: explorer,
               chainType: chainType,
             }

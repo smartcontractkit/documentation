@@ -2,8 +2,8 @@ import {
   Environment,
   RateLimitsFilterType,
   RateLimitsServiceResponse,
-  RateLimitsData,
-  TokenRateLimits,
+  TokenLaneData,
+  RawTokenRateLimits,
   RateLimiterConfig,
   RateLimiterEntry,
   RateLimiterDirections,
@@ -16,9 +16,7 @@ import { loadReferenceData, Version } from "@config/data/ccip/index.ts"
 import type { ChainConfig } from "@config/data/ccip/types.ts"
 import { logger } from "@lib/logging/index.js"
 
-// Import the mock data files
-import rateLimitsMainnet from "~/__mocks__/rate-limits-mainnet.json" with { type: "json" }
-import rateLimitsTestnet from "~/__mocks__/rate-limits-testnet.json" with { type: "json" }
+import { fetchLaneRateLimits } from "~/lib/ccip/graphql/services/enrichment-data-service.ts"
 
 export const prerender = false
 
@@ -60,11 +58,59 @@ export class RateLimitsDataService {
     })
 
     try {
-      // Load the appropriate rate limits data based on environment
-      const rateLimitsData = this.loadRateLimitsData(environment)
+      // Load reference data to resolve chain identifiers
+      const { chainsReferenceData } = loadReferenceData({
+        environment,
+        version: Version.V1_2_0,
+      })
 
-      // Extract rate limits for the specified lane
-      const result = this.extractLaneRateLimits(rateLimitsData, filters)
+      // Resolve chain identifiers to chains.json keys (handles both short names and selector names)
+      const laneDataService = new LaneDataService()
+      const resolvedSourceId =
+        laneDataService.resolveToInternalId(
+          filters.sourceInternalId,
+          "internalId",
+          chainsReferenceData as Record<string, ChainConfig>
+        ) || filters.sourceInternalId
+      const resolvedDestId =
+        laneDataService.resolveToInternalId(
+          filters.destinationInternalId,
+          "internalId",
+          chainsReferenceData as Record<string, ChainConfig>
+        ) || filters.destinationInternalId
+
+      // Create resolved filters
+      const resolvedFilters: RateLimitsFilterType = {
+        ...filters,
+        sourceInternalId: resolvedSourceId,
+        destinationInternalId: resolvedDestId,
+      }
+
+      // Get token list: from filter or from all tokens in reference data
+      const { tokensReferenceData } = loadReferenceData({ environment, version: Version.V1_2_0 })
+      const tokenFilter = resolvedFilters.tokens
+        ? resolvedFilters.tokens
+            .split(",")
+            .map((t: string) => t.trim())
+            .filter((t: string) => t.length > 0)
+        : Object.keys(tokensReferenceData)
+
+      // Fetch rate limits per token from GraphQL
+      const result: Record<string, TokenLaneData> = {}
+      for (const tokenSymbol of tokenFilter) {
+        const laneRateLimits = await fetchLaneRateLimits(
+          environment,
+          tokenSymbol,
+          resolvedFilters.sourceInternalId,
+          resolvedFilters.destinationInternalId
+        )
+        if (laneRateLimits) {
+          const filteredLimits = this.applyFilters(laneRateLimits, resolvedFilters.direction, resolvedFilters.rateType)
+          if (filteredLimits) {
+            result[tokenSymbol] = filteredLimits
+          }
+        }
+      }
 
       const tokenCount = Object.keys(result).length
 
@@ -94,85 +140,6 @@ export class RateLimitsDataService {
   }
 
   /**
-   * Loads rate limits data for the specified environment
-   */
-  private loadRateLimitsData(environment: Environment): RateLimitsData {
-    logger.debug({
-      message: "Loading rate limits data",
-      requestId: this.requestId,
-      environment,
-    })
-
-    if (environment === Environment.Mainnet) {
-      return rateLimitsMainnet as RateLimitsData
-    }
-    return rateLimitsTestnet as RateLimitsData
-  }
-
-  /**
-   * Extracts rate limits for a specific lane from the token-centric data structure
-   *
-   * @param rateLimitsData - Full rate limits data (token -> source -> { minBlockConfirmation?, remote: { dest -> ... } })
-   * @param filters - Filter parameters
-   * @returns Token-centric rate limits for the specified lane
-   */
-  private extractLaneRateLimits(
-    rateLimitsData: RateLimitsData,
-    filters: RateLimitsFilterType
-  ): Record<string, TokenRateLimits> {
-    const { sourceInternalId, destinationInternalId, tokens, direction, rateType } = filters
-    const result: Record<string, TokenRateLimits> = {}
-
-    // Parse token filter if provided
-    const tokenFilter = tokens
-      ? tokens
-          .split(",")
-          .map((t) => t.trim())
-          .filter((t) => t.length > 0)
-      : null
-
-    // Iterate through all tokens in the data
-    for (const [tokenSymbol, sourceChains] of Object.entries(rateLimitsData)) {
-      // Skip if token filter is provided and this token is not in the filter
-      if (tokenFilter && !tokenFilter.includes(tokenSymbol)) {
-        continue
-      }
-
-      // Check if this token has data for the requested source chain
-      const sourceChainData = sourceChains[sourceInternalId]
-      if (!sourceChainData) {
-        continue
-      }
-
-      // Check if destination exists in remote
-      const laneRateLimits = sourceChainData.remote[destinationInternalId]
-      if (!laneRateLimits) {
-        continue
-      }
-
-      // Apply filters for direction and rate type
-      const filteredLimits = this.applyFilters(laneRateLimits, direction, rateType)
-
-      if (filteredLimits) {
-        result[tokenSymbol] = filteredLimits
-      }
-    }
-
-    logger.debug({
-      message: "Lane rate limits extracted",
-      requestId: this.requestId,
-      sourceChain: sourceInternalId,
-      destinationChain: destinationInternalId,
-      tokenCount: Object.keys(result).length,
-      filteredTokens: tokenFilter,
-      direction,
-      rateType,
-    })
-
-    return result
-  }
-
-  /**
    * Applies direction and rate type filters to rate limits
    *
    * @param rateLimits - Original rate limits with standard and custom entries
@@ -181,22 +148,21 @@ export class RateLimitsDataService {
    * @returns Filtered rate limits or null if no data matches
    */
   private applyFilters(
-    rateLimits: TokenRateLimits,
+    rateLimits: RawTokenRateLimits,
     direction?: "in" | "out",
     rateType?: "standard" | "custom"
-  ): TokenRateLimits | null {
-    // Apply direction filter to both standard and custom entries
+  ): TokenLaneData | null {
     const filteredStandard = this.applyDirectionFilter(rateLimits.standard, direction)
     const filteredCustom = this.applyDirectionFilter(rateLimits.custom, direction)
+    const fees = rateLimits.fees ?? null
 
-    // If rate type filter is specified, return only that type
     if (rateType === "standard") {
       if (!filteredStandard) {
         return null
       }
       return {
-        standard: filteredStandard,
-        custom: null, // Indicate custom was filtered out
+        rateLimits: { standard: filteredStandard, custom: null },
+        fees,
       }
     }
 
@@ -205,19 +171,21 @@ export class RateLimitsDataService {
         return null
       }
       return {
-        standard: null, // Indicate standard was filtered out
-        custom: filteredCustom,
+        rateLimits: { standard: null, custom: filteredCustom },
+        fees,
       }
     }
 
-    // No rate type filter, return both (if either has data)
     if (!filteredStandard && !filteredCustom) {
       return null
     }
 
     return {
-      standard: filteredStandard ?? null,
-      custom: filteredCustom ?? null,
+      rateLimits: {
+        standard: filteredStandard ?? null,
+        custom: filteredCustom ?? null,
+      },
+      fees,
     }
   }
 

@@ -7,7 +7,7 @@ pageId: "guides-workflow-http-get-request"
 metadata:
   description: "Fetch data from APIs in Go: learn to make GET requests with consensus validation to bring offchain data into your workflow."
   datePublished: "2025-11-04"
-  lastModified: "2026-02-03"
+  lastModified: "2026-03-17"
 ---
 
 import { Aside } from "@components"
@@ -221,3 +221,54 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 ## Customizing your requests
 
 The `http.Request` struct provides several fields to customize your request. See the [HTTP Client SDK Reference](/cre/reference/sdk/http-client) for a full list of options.
+
+## Best practices
+
+### Parse inside the node function, not outside it
+
+When using a numeric aggregation method such as `ConsensusMedianAggregation` or a median field tag, the value returned from your node function must be a numeric type. If your node function returns a raw HTTP response body (a string), consensus will fail with an error like:
+
+```
+unsupported type for median aggregation: *pb.Value_StringValue
+```
+
+This commonly happens when an endpoint returns an error body — for example, `"error"` or a JSON error object — and the node function passes that string directly to the aggregation step instead of parsing it first.
+
+**Incorrect pattern** — returning a raw string that gets passed to median:
+
+```go
+func fetchData(config *Config, nodeRuntime cre.NodeRuntime) (string, error) {
+    // ...
+    return resp.Body, nil // ❌ raw string; will fail if aggregation is median
+}
+```
+
+**Correct pattern** — parse inside the node function and return a numeric value:
+
+```go
+func fetchData(config *Config, nodeRuntime cre.NodeRuntime) (float64, error) {
+    client := &http.Client{}
+    resp, err := client.SendRequest(nodeRuntime, &http.Request{
+        Url:    config.ApiUrl,
+        Method: "GET",
+    }).Await()
+    if err != nil {
+        return 0, fmt.Errorf("request failed: %w", err) // ✓ return error, not a string
+    }
+
+    var data struct {
+        Price float64 `json:"price"`
+    }
+    if err := json.Unmarshal([]byte(resp.Body), &data); err != nil {
+        return 0, fmt.Errorf("failed to parse response body %q: %w", resp.Body, err) // ✓ return error
+    }
+    return data.Price, nil // ✓ return the numeric value
+}
+```
+
+If the endpoint is down or returns an unexpected body, returning an error (rather than the raw string) causes the node to report a failure to the consensus mechanism, which handles node-level failures gracefully.
+
+{/* prettier-ignore */}
+<Aside type="note" title="Confidential HTTP">
+  This parsing requirement applies to standard HTTP requests. When using the [Confidential HTTP capability](/cre/capabilities/confidential-http), requests run in a Trusted Execution Environment and the response is not accessible for parsing in node mode.
+</Aside>

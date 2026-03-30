@@ -132,16 +132,11 @@ export const GET: APIRoute = async ({ request }) => {
         error.statusCode === 400 ? APIErrorType.VALIDATION_ERROR : APIErrorType.SERVER_ERROR,
         error.message,
         error.statusCode,
-        {}
+        requestId
       )
     }
 
     // Handle other errors
-    if (error instanceof Error) {
-      return createErrorResponse(APIErrorType.SERVER_ERROR, "Failed to process lanes request", 500, {
-        message: error.message,
-      })
-    }
-    return handleApiError(error)
+    return handleApiError(error, requestId)
   }
 }

@@ -4,6 +4,7 @@ import {
   validateFilters,
   validateOutputKey,
   validateEnrichFeeTokens,
+  validateInternalIdFormat,
   createMetadata,
   CCIPError,
   handleApiError,
@@ -149,6 +150,26 @@ describe("CCIP Chain API Utils", () => {
     })
   })
 
+  describe("validateInternalIdFormat", () => {
+    it("should accept 'selector' format", () => {
+      expect(validateInternalIdFormat("selector")).toBe("selector")
+    })
+
+    it("should accept 'directory' format", () => {
+      expect(validateInternalIdFormat("directory")).toBe("directory")
+    })
+
+    it("should default to 'selector' when undefined", () => {
+      expect(validateInternalIdFormat(undefined)).toBe("selector")
+    })
+
+    it("should throw error for invalid values", () => {
+      expect(() => validateInternalIdFormat("invalid")).toThrow(CCIPError)
+      expect(() => validateInternalIdFormat("chainId")).toThrow(CCIPError)
+      expect(() => validateInternalIdFormat("selectorName")).toThrow(CCIPError)
+    })
+  })
+
   describe("createMetadata", () => {
     it("should create valid metadata", () => {
       const metadata = createMetadata(ENV.Mainnet)
@@ -165,24 +186,28 @@ describe("CCIP Chain API Utils", () => {
   describe("handleApiError", () => {
     it("should handle CCIPError", async () => {
       const error = new CCIPError(400, "Bad Request")
-      const response = handleApiError(error)
+      const response = handleApiError(error, "test-request-id")
       expect(response).toBeInstanceOf(Response)
       const data = await response.json()
       expect(data).toEqual({
         error: "VALIDATION_ERROR",
         message: "Bad Request",
+        requestId: "test-request-id",
+        details: {},
       })
       expect(response.status).toBe(400)
     })
 
     it("should handle unknown errors", async () => {
       const error = new Error("Unknown")
-      const response = handleApiError(error)
+      const response = handleApiError(error, "test-request-id")
       expect(response).toBeInstanceOf(Response)
       const data = await response.json()
       expect(data).toEqual({
         error: "UNKNOWN_ERROR",
         message: "Unknown",
+        requestId: "test-request-id",
+        details: {},
       })
       expect(response.status).toBe(500)
     })

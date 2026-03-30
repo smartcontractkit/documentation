@@ -41,6 +41,7 @@ const NETWORK_ENDPOINTS: Record<string, string> = {
   aptos: "https://docs.chain.link/files/json/feeds-aptos-mainnet.json",
   sonic: "https://reference-data-directory.vercel.app/feeds-sonic-mainnet.json",
   mantle: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-mantle-1.json",
+  unichain: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-unichain-1.json",
   xlayer: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-xlayer-1.json",
   ronin: "https://reference-data-directory.vercel.app/feeds-ronin-mainnet.json",
   tron: "https://reference-data-directory.vercel.app/feeds-tron-mainnet.json",
@@ -100,6 +101,23 @@ function buildFeedUrl(item: DataItem): string {
   if (item.deliveryChannelCode === "DS") {
     const base = (item.baseAsset || "BASE").toLowerCase()
     const quote = (item.quoteAsset || "QUOTE").toLowerCase()
+
+    // Equity streams have multiple hour-variant feeds for the same asset
+    // (regularhoursequityprice, overnighthoursequityprice, extendedhoursequityprice,
+    // equityprice-timestamped). Their URLs include the variant suffix to distinguish them.
+    // Pattern in feedID: {network}-{base}-{quote}-streams-{variant}-mainnet-production
+    const EQUITY_STREAM_VARIANTS = [
+      "regularhoursequityprice",
+      "overnighthoursequityprice",
+      "extendedhoursequityprice",
+      "equityprice-timestamped",
+    ]
+    const feedIdLower = item.feedID.toLowerCase()
+    const matchedVariant = EQUITY_STREAM_VARIANTS.find((v) => feedIdLower.includes(`-streams-${v}-`))
+    if (matchedVariant) {
+      return `https://data.chain.link/streams/${base}-${quote}-${matchedVariant}-streams`
+    }
+
     return `https://data.chain.link/streams/${base}-${quote}`
   }
 

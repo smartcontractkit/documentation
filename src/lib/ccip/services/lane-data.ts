@@ -13,8 +13,7 @@ import {
   ChainType,
   ChainFamily,
   LaneInputKeyType,
-  TokenRateLimits,
-  RateLimitsData,
+  TokenLaneData,
 } from "~/lib/ccip/types/index.ts"
 import { loadReferenceData, Version } from "@config/data/ccip/index.ts"
 import type { LaneConfig, ChainConfig } from "@config/data/ccip/types.ts"
@@ -26,10 +25,16 @@ import {
   getChainTypeAndFamily,
   directoryToSupportedChain,
 } from "../../../features/utils/index.ts"
+import { getSelectorEntry } from "@config/data/ccip/selectors.ts"
+
+import pLimit from "p-limit"
+import { fetchLaneRateLimits } from "~/lib/ccip/graphql/services/enrichment-data-service.ts"
 
 // Import rate limits mock data
 import rateLimitsMainnet from "~/__mocks__/rate-limits-mainnet.json" with { type: "json" }
 import rateLimitsTestnet from "~/__mocks__/rate-limits-testnet.json" with { type: "json" }
+
+const GRAPHQL_CONCURRENCY = 10
 
 export const prerender = false
 
@@ -224,11 +229,16 @@ export class LaneDataService {
         return null
       }
 
+      // Resolve internalId from the selector YAML name (consistent with chains and tokens endpoints)
+      // Falls back to the RDD directory key if the selector entry is not found
+      const selectorEntry = getSelectorEntry(chainId, chainType)
+      const internalId = selectorEntry?.name ?? chainKey
+
       return {
         chainId,
         displayName,
         selector,
-        internalId: chainKey,
+        internalId,
         chainType,
         chainFamily,
       }
@@ -252,18 +262,18 @@ export class LaneDataService {
     filters: LaneFilterType
   ): boolean {
     // Check source chain filters
-    if (filters.sourceChainId && !this.matchesChainFilter(sourceChain, filters.sourceChainId, "chain_id")) {
+    if (filters.sourceChainId && !this.matchesChainFilter(sourceChain, filters.sourceChainId, "chainId")) {
       return false
     }
     if (filters.sourceSelector && !this.matchesChainFilter(sourceChain, filters.sourceSelector, "selector")) {
       return false
     }
-    if (filters.sourceInternalId && !this.matchesChainFilter(sourceChain, filters.sourceInternalId, "internal_id")) {
+    if (filters.sourceInternalId && !this.matchesChainFilter(sourceChain, filters.sourceInternalId, "internalId")) {
       return false
     }
 
     // Check destination chain filters
-    if (filters.destinationChainId && !this.matchesChainFilter(destChain, filters.destinationChainId, "chain_id")) {
+    if (filters.destinationChainId && !this.matchesChainFilter(destChain, filters.destinationChainId, "chainId")) {
       return false
     }
     if (filters.destinationSelector && !this.matchesChainFilter(destChain, filters.destinationSelector, "selector")) {
@@ -271,7 +281,7 @@ export class LaneDataService {
     }
     if (
       filters.destinationInternalId &&
-      !this.matchesChainFilter(destChain, filters.destinationInternalId, "internal_id")
+      !this.matchesChainFilter(destChain, filters.destinationInternalId, "internalId")
     ) {
       return false
     }
@@ -285,21 +295,20 @@ export class LaneDataService {
   private matchesChainFilter(
     chain: ChainInfoInternal,
     filterValue: string,
-    filterType: "chain_id" | "selector" | "internal_id"
+    filterType: "chainId" | "selector" | "internalId"
   ): boolean {
     const filterValues = filterValue.split(",").map((v) => v.trim())
-    // Map snake_case filter types to camelCase property names
     const propertyMap: Record<string, keyof ChainInfoInternal> = {
-      chain_id: "chainId",
+      chainId: "chainId",
       selector: "selector",
-      internal_id: "internalId",
+      internalId: "internalId",
     }
     const propertyName = propertyMap[filterType]
     const chainValue = chain[propertyName].toString()
 
     // For chain_id, also check generated chain key format
-    if (filterType === "chain_id") {
-      const generatedKey = generateChainKey(chain.chainId, chain.chainType, "chain_id")
+    if (filterType === "chainId") {
+      const generatedKey = generateChainKey(chain.chainId, chain.chainType, "chainId")
       return filterValues.includes(chainValue) || filterValues.includes(generatedKey)
     }
 
@@ -314,21 +323,20 @@ export class LaneDataService {
     destChain: ChainInfoInternal,
     outputKey: OutputKeyType
   ): string {
-    // Map snake_case output keys to camelCase property names
     const propertyMap: Record<string, keyof ChainInfoInternal> = {
-      chain_id: "chainId",
+      chainId: "chainId",
       selector: "selector",
-      internal_id: "internalId",
+      internalId: "internalId",
     }
     const propertyName = propertyMap[outputKey]
 
     const sourceKey =
-      outputKey === "chain_id"
+      outputKey === "chainId"
         ? generateChainKey(sourceChain.chainId, sourceChain.chainType, outputKey)
         : sourceChain[propertyName].toString()
 
     const destKey =
-      outputKey === "chain_id"
+      outputKey === "chainId"
         ? generateChainKey(destChain.chainId, destChain.chainType, outputKey)
         : destChain[propertyName].toString()
 
@@ -489,7 +497,7 @@ export class LaneDataService {
       }
 
       // Build lane details with rate limits
-      const laneDetails = this.buildLaneDetailsWithRateLimits(
+      const laneDetails = await this.buildLaneDetailsWithRateLimits(
         sourceChain,
         destChain,
         laneConfig,
@@ -518,38 +526,106 @@ export class LaneDataService {
   }
 
   /**
-   * Resolves a chain identifier to its internal ID
+   * Builds a mapping from selector names (e.g., "ethereum-mainnet") to chains.json keys (e.g., "mainnet")
+   * This enables the API to accept both naming conventions.
+   *
+   * @param chainsReferenceData - Chain configuration data
+   * @returns Map of selector name → chains.json key
+   */
+  private buildSelectorNameToChainKeyMap(chainsReferenceData: Record<string, ChainConfig>): Map<string, string> {
+    const map = new Map<string, string>()
+
+    for (const [chainKey] of Object.entries(chainsReferenceData)) {
+      try {
+        // Get the chain ID and type to look up the selector entry
+        const supportedChain = directoryToSupportedChain(chainKey)
+        const chainId = getChainId(supportedChain)
+        const { chainType } = getChainTypeAndFamily(supportedChain)
+
+        if (chainId) {
+          const selectorEntry = getSelectorEntry(chainId, chainType)
+          if (selectorEntry?.name && selectorEntry.name !== chainKey) {
+            // Map selector name to chains.json key
+            map.set(selectorEntry.name, chainKey)
+          }
+        }
+      } catch {
+        // Skip chains that can't be resolved
+      }
+    }
+
+    return map
+  }
+
+  /**
+   * Resolves a chain identifier to its internal ID (chains.json key)
+   *
+   * Accepts both:
+   * - chains.json keys (e.g., "mainnet", "bsc-mainnet")
+   * - selector names (e.g., "ethereum-mainnet", "binance_smart_chain-mainnet")
    *
    * @param identifier - Chain identifier (chainId, selector, or internalId)
    * @param inputKeyType - Type of identifier
    * @param chainsReferenceData - Chain configuration data
-   * @returns Internal ID or null if not found
+   * @returns Internal ID (chains.json key) or null if not found
    */
   resolveToInternalId(
     identifier: string,
     inputKeyType: LaneInputKeyType,
     chainsReferenceData: Record<string, ChainConfig>
   ): string | null {
-    // If already an internal_id, return it directly
-    if (inputKeyType === "internal_id") {
-      return chainsReferenceData[identifier] ? identifier : null
+    // If already an internal_id, check both chains.json key and selector name
+    if (inputKeyType === "internalId") {
+      // First, try direct lookup in chains.json keys
+      if (chainsReferenceData[identifier]) {
+        return identifier
+      }
+
+      // If not found, check if identifier is a selector name and map to chains.json key
+      const selectorNameMap = this.buildSelectorNameToChainKeyMap(chainsReferenceData)
+      const chainKey = selectorNameMap.get(identifier)
+      if (chainKey && chainsReferenceData[chainKey]) {
+        return chainKey
+      }
+
+      return null
     }
 
     // Search through chains to find matching chain_id or selector
-    for (const [internalId, chainConfig] of Object.entries(chainsReferenceData)) {
-      if (inputKeyType === "chain_id") {
-        // Try to match by numeric chain ID
+    if (inputKeyType === "chainId") {
+      // Collect all matching chains (chainId can have collisions across chain families)
+      const matches: Array<{ internalId: string; chainType: ChainType; chainFamily: ChainFamily }> = []
+
+      for (const [internalId] of Object.entries(chainsReferenceData)) {
         try {
           const supportedChain = directoryToSupportedChain(internalId)
           const chainId = getChainId(supportedChain)
           if (chainId && chainId.toString() === identifier) {
-            return internalId
+            const { chainType, chainFamily } = getChainTypeAndFamily(supportedChain)
+            matches.push({ internalId, chainType, chainFamily })
           }
         } catch {
           // Skip chains that can't be resolved
         }
-      } else if (inputKeyType === "selector") {
-        // Match by selector
+      }
+
+      if (matches.length === 0) {
+        return null
+      }
+
+      // Prioritize EVM chains since by-chain-id is typically used for EVM chain IDs
+      const evmMatch = matches.find((m) => m.chainFamily === "evm")
+      if (evmMatch) {
+        return evmMatch.internalId
+      }
+
+      // Fall back to first match if no EVM chain found
+      return matches[0].internalId
+    }
+
+    // For selector, there should be no collisions
+    for (const [internalId, chainConfig] of Object.entries(chainsReferenceData)) {
+      if (inputKeyType === "selector") {
         if (chainConfig.chainSelector === identifier) {
           return internalId
         }
@@ -560,25 +636,16 @@ export class LaneDataService {
   }
 
   /**
-   * Loads rate limits data for the specified environment
-   */
-  private loadRateLimitsData(environment: Environment): RateLimitsData {
-    return environment === "mainnet"
-      ? (rateLimitsMainnet as unknown as RateLimitsData)
-      : (rateLimitsTestnet as unknown as RateLimitsData)
-  }
-
-  /**
    * Builds lane details with rate limits included in supportedTokens
    */
-  private buildLaneDetailsWithRateLimits(
+  private async buildLaneDetailsWithRateLimits(
     sourceChain: ChainInfoInternal,
     destChain: ChainInfoInternal,
     laneConfig: LaneConfig,
     sourceInternalId: string,
     destinationInternalId: string,
     environment: Environment
-  ): LaneDetailWithRateLimits {
+  ): Promise<LaneDetailWithRateLimits> {
     // Convert internal chain info to public interface
     const publicSourceChain: ChainInfo = {
       chainId: sourceChain.chainId,
@@ -597,43 +664,36 @@ export class LaneDataService {
     // Extract supported token symbols
     const tokenSymbols = this.extractSupportedTokens(laneConfig)
 
-    // Load rate limits data
-    const rateLimitsData = this.loadRateLimitsData(environment)
+    // Fetch rate limits per token concurrently
+    const limit = pLimit(GRAPHQL_CONCURRENCY)
+    const supportedTokensWithRateLimits: Record<string, TokenLaneData> = {}
 
-    // Build supportedTokens with rate limits
-    const supportedTokensWithRateLimits: Record<string, TokenRateLimits> = {}
+    const tokenResults = await Promise.allSettled(
+      tokenSymbols.map((tokenSymbol) =>
+        limit(async () => ({
+          tokenSymbol,
+          rateLimits: await fetchLaneRateLimits(environment, tokenSymbol, sourceInternalId, destinationInternalId),
+        }))
+      )
+    )
 
-    for (const tokenSymbol of tokenSymbols) {
-      const tokenData = rateLimitsData[tokenSymbol]
-      if (tokenData) {
-        const sourceData = tokenData[sourceInternalId]
-        if (sourceData?.remote) {
-          const destData = sourceData.remote[destinationInternalId]
-          if (destData) {
-            supportedTokensWithRateLimits[tokenSymbol] = {
-              standard: destData.standard,
-              custom: destData.custom,
-            }
-          } else {
-            // Token exists but no rate limits for this lane - use null for unavailable
-            supportedTokensWithRateLimits[tokenSymbol] = {
-              standard: null,
-              custom: null,
-            }
-          }
-        } else {
-          // Token exists but no data for source chain
-          supportedTokensWithRateLimits[tokenSymbol] = {
-            standard: null,
-            custom: null,
-          }
+    for (const settled of tokenResults) {
+      if (settled.status !== "fulfilled") continue
+      const { tokenSymbol, rateLimits: laneRateLimits } = settled.value
+
+      if (laneRateLimits) {
+        supportedTokensWithRateLimits[tokenSymbol] = {
+          rateLimits: { standard: laneRateLimits.standard, custom: laneRateLimits.custom },
+          fees: null,
         }
       } else {
-        // Token not found in rate limits data
-        supportedTokensWithRateLimits[tokenSymbol] = {
-          standard: null,
-          custom: null,
-        }
+        logger.warn({
+          message: "Token in lanes.json supportedTokens has no on-chain lane data — filtering out",
+          requestId: this.requestId,
+          tokenSymbol,
+          sourceInternalId,
+          destinationInternalId,
+        })
       }
     }
 
@@ -720,31 +780,36 @@ export class LaneDataService {
       // Extract supported token symbols
       const tokenSymbols = this.extractSupportedTokens(laneConfig)
 
-      // Load rate limits data
-      const rateLimitsData = this.loadRateLimitsData(environment)
+      // Fetch rate limits per token concurrently
+      const limit = pLimit(GRAPHQL_CONCURRENCY)
+      const supportedTokensWithRateLimits: Record<string, TokenLaneData> = {}
 
-      // Build supportedTokens with rate limits
-      const supportedTokensWithRateLimits: Record<string, TokenRateLimits> = {}
+      const tokenResults = await Promise.allSettled(
+        tokenSymbols.map((tokenSymbol) =>
+          limit(async () => ({
+            tokenSymbol,
+            rateLimits: await fetchLaneRateLimits(environment, tokenSymbol, sourceInternalId, destinationInternalId),
+          }))
+        )
+      )
 
-      for (const tokenSymbol of tokenSymbols) {
-        const tokenData = rateLimitsData[tokenSymbol]
-        if (tokenData) {
-          const sourceData = tokenData[sourceInternalId]
-          if (sourceData?.remote) {
-            const destData = sourceData.remote[destinationInternalId]
-            if (destData) {
-              supportedTokensWithRateLimits[tokenSymbol] = {
-                standard: destData.standard,
-                custom: destData.custom,
-              }
-            } else {
-              supportedTokensWithRateLimits[tokenSymbol] = { standard: null, custom: null }
-            }
-          } else {
-            supportedTokensWithRateLimits[tokenSymbol] = { standard: null, custom: null }
+      for (const settled of tokenResults) {
+        if (settled.status !== "fulfilled") continue
+        const { tokenSymbol, rateLimits: laneRateLimits } = settled.value
+
+        if (laneRateLimits) {
+          supportedTokensWithRateLimits[tokenSymbol] = {
+            rateLimits: { standard: laneRateLimits.standard, custom: laneRateLimits.custom },
+            fees: null,
           }
         } else {
-          supportedTokensWithRateLimits[tokenSymbol] = { standard: null, custom: null }
+          logger.warn({
+            message: "Token in lanes.json supportedTokens has no on-chain lane data — filtering out",
+            requestId: this.requestId,
+            tokenSymbol,
+            sourceInternalId,
+            destinationInternalId,
+          })
         }
       }
 

@@ -1,5 +1,5 @@
 import { Environment, LaneConfig, Network, Version } from "~/config/data/ccip/types.ts"
-import { getTokenData, getNetworkIconUrl } from "~/config/data/ccip/data.ts"
+import { getTokenData } from "~/config/data/ccip/data.ts"
 import Address from "~/components/AddressReact.tsx"
 import Breadcrumb from "../Breadcrumb/Breadcrumb.tsx"
 import Search from "../Search/Search.tsx"
@@ -146,31 +146,39 @@ function ChainHero({
           </div>
         </div>
 
-        {(network || token) && (
-          <div className="ccip-chain-hero__heading">
-            <img
-              src={getNetworkIconUrl(network?.name) || token?.logo}
-              alt=""
-              className={token?.logo ? "ccip-chain-hero__token-logo" : ""}
-              onError={({ currentTarget }) => {
-                currentTarget.onerror = null // prevents looping
-                currentTarget.src = fallbackTokenIconUrl
-              }}
-            />
-            <h1>
-              {network?.name || token?.name}
-              <span className="ccip-chain-hero__token-logo__symbol">{token?.id}</span>
+        <div className="ccip-chain-hero__heading">
+          <img
+            src={network?.logo || token?.logo}
+            alt=""
+            className={token?.logo ? "ccip-chain-hero__token-logo" : ""}
+            onError={({ currentTarget }) => {
+              currentTarget.onerror = null // prevents looping
+              currentTarget.src = fallbackTokenIconUrl
+            }}
+          />
+          <h1
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              position: "relative",
+              overflow: "visible",
+            }}
+          >
+            {network?.name || token?.id}
+            <span className="ccip-chain-hero__token-logo__symbol">
+              {token?.id === "USDC" ? "USD Coin" : token?.name}
+            </span>
 
-              {chainTooltipConfig && (
-                <Tooltip
-                  tip={chainTooltipConfig.content}
-                  hoverable={chainTooltipConfig.hoverable}
-                  hideDelay={chainTooltipConfig.hideDelay}
-                />
-              )}
-            </h1>
-          </div>
-        )}
+            {chainTooltipConfig && (
+              <Tooltip
+                tip={chainTooltipConfig.content}
+                hoverable={chainTooltipConfig.hoverable}
+                hideDelay={chainTooltipConfig.hideDelay}
+              />
+            )}
+          </h1>
+        </div>
         {network && (
           <div className="ccip-chain-hero__details">
             <div className="ccip-chain-hero__details__item">

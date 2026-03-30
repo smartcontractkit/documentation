@@ -12,7 +12,7 @@ import {
   LaneConfig,
   getVerifiersByNetwork,
 } from "~/config/data/ccip/index.ts"
-import { useState, useMemo, Fragment } from "react"
+import { useState, useMemo } from "react"
 import { ChainType, ExplorerInfo, SupportedChain } from "~/config/index.ts"
 import TableSearchInput from "../Tables/TableSearchInput.tsx"
 import Tabs from "../Tables/Tabs.tsx"
@@ -35,6 +35,7 @@ function TokenDrawer({
   network,
   destinationLanes,
   environment,
+  poolTypesByChain,
 }: {
   token: {
     id: string
@@ -62,6 +63,7 @@ function TokenDrawer({
     [sourceChain: string]: SupportedTokenConfig
   }
   environment: Environment
+  poolTypesByChain?: Record<string, PoolType>
 }) {
   const [search, setSearch] = useState("")
   const [activeTab, setActiveTab] = useState<TokenTab>(TokenTab.Outbound)
@@ -114,7 +116,7 @@ function TokenDrawer({
         console.error(`No token data found for ${token.id} on ${network.key} -> ${destinationChain}`)
         return null
       }
-      const destinationPoolType = destinationTokenData.pool?.type || destinationTokenData.poolType
+      const destinationPoolType = poolTypesByChain?.[destinationChain] ?? destinationTokenData.pool?.type
       if (!destinationPoolType) {
         console.error(`No pool type found for ${token.id} on ${network.key} -> ${destinationChain}`)
         return null
@@ -154,7 +156,6 @@ function TokenDrawer({
           logo: network.tokenLogo,
           decimals: network.tokenDecimals,
           address: network.tokenAddress,
-          poolType: network.tokenPoolType,
           poolRawType: network.tokenPoolRawType,
           poolAddress: network.tokenPoolAddress,
         }}
@@ -266,7 +267,8 @@ function TokenDrawer({
                   const destination = activeTab === TokenTab.Outbound ? destinationChain : network.key
                   const laneKey = `${source}-${destination}`
                   const laneRateLimits = rateLimitsMap[laneKey]
-                  const tokenRateLimits = laneRateLimits?.[token.id]
+                  const tokenLaneData = laneRateLimits?.[token.id]
+                  const tokenRateLimits = tokenLaneData?.rateLimits
 
                   const direction = activeTab === TokenTab.Outbound ? "out" : "in"
 
@@ -308,6 +310,7 @@ function TokenDrawer({
                     />
                   ) : (
                     <NetworkLaneRowNoVerifiers
+                      key={networkDetails.name}
                       networkDetails={networkDetails}
                       tokenPaused={tokenPaused}
                       mechanism={mechanism}

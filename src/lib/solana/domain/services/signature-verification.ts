@@ -308,7 +308,7 @@ export class SolanaSignatureService {
         logger.warn({
           message: "Timing-safe HMAC verification failed for SIWS challenge",
           requestId: params.requestId,
-          family: "svm",
+          family: "solana",
           receiverAddress: params.receiver,
           step: "hmac_verification",
         })
@@ -327,7 +327,7 @@ export class SolanaSignatureService {
       logger.debug({
         message: "SIWS challenge metadata parsed",
         requestId: params.requestId,
-        family: "svm",
+        family: "solana",
         expiresAt: metadata.expiresAt,
         issuedAt: metadata.issuedAt,
         nonce: metadata.nonce,
@@ -351,7 +351,7 @@ export class SolanaSignatureService {
         logger.warn({
           message: "SIWS challenge expired",
           requestId: params.requestId,
-          family: "svm",
+          family: "solana",
           expiresAt: metadata.expiresAt,
           currentTime: now,
           timeRemaining: metadata.expiresAt - now,
@@ -366,7 +366,7 @@ export class SolanaSignatureService {
         logger.warn({
           message: "SIWS challenge issued in the future",
           requestId: params.requestId,
-          family: "svm",
+          family: "solana",
           issuedAt: metadata.issuedAt,
           currentTime: now,
           step: "future_check",
@@ -388,7 +388,7 @@ export class SolanaSignatureService {
           logger.info({
             message: "Ed25519 signature verification successful",
             requestId: params.requestId,
-            family: "svm",
+            family: "solana",
             receiverAddress: params.receiver,
             verificationTimeMs: verificationTime,
             step: "signature_verification",
@@ -398,7 +398,7 @@ export class SolanaSignatureService {
           logger.warn({
             message: "Ed25519 signature verification failed",
             requestId: params.requestId,
-            family: "svm",
+            family: "solana",
             receiverAddress: params.receiver,
             verificationTimeMs: verificationTime,
             step: "signature_verification",
@@ -418,7 +418,7 @@ export class SolanaSignatureService {
       logger.error({
         message: "Error during SIWS signature verification",
         requestId: params.requestId,
-        family: "svm",
+        family: "solana",
         error: error instanceof Error ? error.message : "Unknown error",
         step: "verification_error",
       })

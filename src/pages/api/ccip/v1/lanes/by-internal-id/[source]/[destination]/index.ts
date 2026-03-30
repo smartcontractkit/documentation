@@ -1,10 +1,18 @@
 import type { APIRoute } from "astro"
-import { validateEnvironment, handleApiError, APIErrorType, createErrorResponse, CCIPError } from "~/lib/ccip/utils.ts"
+import {
+  validateEnvironment,
+  validateInternalIdFormat,
+  handleApiError,
+  APIErrorType,
+  createErrorResponse,
+  CCIPError,
+} from "~/lib/ccip/utils.ts"
 import { jsonHeaders } from "@lib/api/cacheHeaders.ts"
 import { logger } from "@lib/logging/index.js"
 
 import type { LaneDetailApiResponse, LaneDetailMetadata } from "~/lib/ccip/types/index.ts"
 import { LaneDataService } from "~/lib/ccip/services/lane-data.ts"
+import { ChainIdentifierService } from "~/lib/ccip/services/chain-identifier.ts"
 
 export const prerender = false
 
@@ -41,8 +49,35 @@ export const GET: APIRoute = async ({ params, request }) => {
       environment,
     })
 
+    // Validate internalIdFormat parameter (controls output format)
+    const internalIdFormat = validateInternalIdFormat(queryParams.get("internalIdFormat") || undefined)
+    logger.debug({
+      message: "Internal ID format validated",
+      requestId,
+      internalIdFormat,
+    })
+
+    // Initialize chain identifier service for formatting
+    const chainIdService = new ChainIdentifierService(environment, internalIdFormat)
+
+    // Resolve source and destination to directory keys for data lookup
+    const sourceResolved = chainIdService.resolve(source)
+    const destResolved = chainIdService.resolve(destination)
+
+    if (!sourceResolved) {
+      throw new CCIPError(400, `Invalid source chain identifier: '${source}'`)
+    }
+    if (!destResolved) {
+      throw new CCIPError(400, `Invalid destination chain identifier: '${destination}'`)
+    }
+
     const laneDataService = new LaneDataService()
-    const result = await laneDataService.getLaneDetails(environment, source, destination, "internal_id")
+    const result = await laneDataService.getLaneDetails(
+      environment,
+      sourceResolved.directoryKey,
+      destResolved.directoryKey,
+      "internalId"
+    )
 
     if (!result.data) {
       throw new CCIPError(404, `Lane from '${source}' to '${destination}' not found`)
@@ -55,18 +90,35 @@ export const GET: APIRoute = async ({ params, request }) => {
       destination,
     })
 
-    // Create lane detail metadata
+    // Format chain identifiers based on internalIdFormat
+    const formattedSource = chainIdService.format(sourceResolved.directoryKey, internalIdFormat)
+    const formattedDest = chainIdService.format(destResolved.directoryKey, internalIdFormat)
+
+    // Format the internalId fields in the response data
+    const formattedData = {
+      ...result.data,
+      sourceChain: {
+        ...result.data.sourceChain,
+        internalId: formattedSource,
+      },
+      destinationChain: {
+        ...result.data.destinationChain,
+        internalId: formattedDest,
+      },
+    }
+
+    // Create lane detail metadata with formatted chain identifiers
     const metadata: LaneDetailMetadata = {
       environment,
       timestamp: new Date().toISOString(),
       requestId,
-      sourceChain: source,
-      destinationChain: destination,
+      sourceChain: formattedSource,
+      destinationChain: formattedDest,
     }
 
     const response: LaneDetailApiResponse = {
       metadata,
-      data: result.data,
+      data: formattedData,
     }
 
     logger.info({
@@ -96,16 +148,11 @@ export const GET: APIRoute = async ({ params, request }) => {
             : APIErrorType.SERVER_ERROR,
         error.message,
         error.statusCode,
-        {}
+        requestId
       )
     }
 
     // Handle other errors
-    if (error instanceof Error) {
-      return createErrorResponse(APIErrorType.SERVER_ERROR, "Failed to process lane detail request", 500, {
-        message: error.message,
-      })
-    }
-    return handleApiError(error)
+    return handleApiError(error, requestId)
   }
 }

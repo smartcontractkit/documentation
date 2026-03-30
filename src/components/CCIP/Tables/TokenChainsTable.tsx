@@ -46,8 +46,14 @@ interface TableProps {
 function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
   const [search, setSearch] = useState("")
 
+  // Build pool type map from GraphQL-enriched networks data for use in TokenDrawer
+  const poolTypesByChain = networks.reduce<Record<string, PoolType>>((acc, n) => {
+    if (n.tokenPoolType) acc[n.key] = n.tokenPoolType
+    return acc
+  }, {})
+
   // Fetch finality data using custom hook
-  const { finalityData, isLoading: loading } = useTokenFinality(token.id, environment, "internal_id")
+  const { finalityData, isLoading: loading } = useTokenFinality(token.id, environment, "internalId")
 
   return (
     <>
@@ -94,6 +100,7 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                               network={network}
                               destinationLanes={lanes[network.key]}
                               environment={environment}
+                              poolTypesByChain={poolTypesByChain}
                             />
                           ))
                         }}
@@ -140,7 +147,7 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                         endLength={4}
                       />
                     </td>
-                    <td>{network.tokenPoolRawType}</td>
+                    <td>{network.tokenPoolRawType ?? "—"}</td>
                     <td data-clipboard-type="token-pool">
                       <Address
                         contractUrl={getExplorerAddressUrl(

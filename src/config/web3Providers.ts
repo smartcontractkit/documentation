@@ -167,6 +167,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   MONAD_MAINNET: () => new JsonRpcProvider("https://rpc3.monad.xyz"),
   NEXON_HENESYS_MAINNET: () => new JsonRpcProvider("https://henesys-rpc.msu.io/"),
   PHAROS_ATLANTIC_TESTNET: () => new JsonRpcProvider("https://atlantic.dplabs-internal.com/"),
+  PHAROS_MAINNET: () => new JsonRpcProvider(),
   MORPH_MAINNET: () => new JsonRpcProvider("https://rpc.morphl2.io"),
   MORPH_HOODI_TESTNET: () => new JsonRpcProvider("https://rpc-hoodi.morphl2.io/"),
   JOVAY_MAINNET: () => new JsonRpcProvider("https://rpc.jovay.io"),
@@ -175,6 +176,12 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   TEMPO_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.tempo.xyz"),
   ARC_NETWORK_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.arc.network"),
   DOGE_OS_CHIKYU_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.dogeos.com/"),
+  ADI_NETWORK_AB_TESTNET: () => new JsonRpcProvider("https://rpc.ab.testnet.adifoundation.ai/"),
+  ADI_NETWORK_MAINNET: () => new JsonRpcProvider("https://rpc.adifoundation.ai"),
+  EDGE_TESTNET: () => new JsonRpcProvider("https://edge-testnet.g.alchemy.com/public"),
+  EDGE_MAINNET: () => new JsonRpcProvider("https://edge-mainnet.g.alchemy.com/public"),
+  ROBINHOOD_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.chain.robinhood.com"),
+  TON_TESTNET: () => new JsonRpcProvider("https://ton-testnet.api.onfinality.io/public"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {

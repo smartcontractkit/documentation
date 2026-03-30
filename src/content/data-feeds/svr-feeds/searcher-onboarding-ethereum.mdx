@@ -1,0 +1,318 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "SVR Searcher Onboarding: Ethereum Mainnet"
+whatsnext:
+  {
+    "SVR Feeds Overview": "/data-feeds/svr-feeds",
+    "SVR Searcher Onboarding: Atlas (Base, Arbitrum, BNB Chain)": "/data-feeds/svr-feeds/searcher-onboarding-atlas",
+    "Data Feeds API Reference": "/data-feeds/api-reference",
+  }
+---
+
+import { Aside, ClickToZoom, CodeSample, CopyText } from "@components"
+import { Tabs } from "@components/Tabs"
+import { CHAINS } from "@features/data/chains"
+import { isSharedSVR, isAaveSVR } from "~/features/feeds/utils/svrDetection.ts"
+
+export async function getFeeds() {
+  const ethereumMainnet = CHAINS.find((chain) => chain.page === "ethereum")?.networks.find(
+    (network) => network.networkType === "mainnet"
+  )
+
+const rddUrl = ethereumMainnet?.rddUrl
+
+if (!rddUrl) {
+return []
+}
+
+try {
+const response = await fetch(rddUrl)
+const data = await response.json()
+
+    const svrFeeds = data.filter(
+      (feed) => feed.secondaryProxyAddress && !feed.docs?.hidden && (isAaveSVR(feed) || isSharedSVR(feed))
+    )
+
+    const feedGroups = {}
+
+    svrFeeds.forEach(feed => {
+      const baseName = feed.name.replace(" / ", "/")
+
+      if (!feedGroups[baseName]) {
+        feedGroups[baseName] = {
+          name: baseName,
+          aaveAddress: null,
+          svrAddress: null
+        }
+      }
+
+      if (isAaveSVR(feed)) {
+        feedGroups[baseName].aaveAddress = feed.contractAddress
+      } else if (isSharedSVR(feed)) {
+        feedGroups[baseName].svrAddress = feed.contractAddress
+      }
+    })
+
+    const combinedFeeds = Object.values(feedGroups)
+      .sort((a, b) => a.name.localeCompare(b.name))
+
+    return combinedFeeds
+
+} catch (error) {
+return []
+}
+}
+
+export const feeds = await getFeeds()
+
+<Aside type="note" title="Searcher Onboarding">
+  To onboard as a searcher to SVR, reach out to [devrel@smartcontract.com](mailto:devrel@smartcontract.com).
+</Aside>
+
+This guide explains how to identify and bid on **Chainlink SVR** liquidation opportunities on **Ethereum Mainnet**
+through **Flashbots MEV-Share**. SVR Feeds support a private transmission channel for oracle price updates, enabling
+searchers to backrun new prices with liquidation transactions and compete for profit.
+
+For Base, Arbitrum, and BNB Chain, see the [Atlas searcher onboarding guide](/data-feeds/svr-feeds/searcher-onboarding-atlas).
+
+### Why Chainlink SVR?
+
+Traditional MEV searching depends on spotting oracle price updates in the public mempool. With SVR, new price reports are shared in a private mempool via Flashbots MEV-Share. Searchers place bids to include liquidation transactions directly **after** the price update in the same block. The highest bidder gets included, capturing the liquidation bonus while sharing part of the winning bid with the DeFi protocol (e.g., Aave) and the Chainlink Network.
+
+### Example Application: Aave Liquidations
+
+Aave is a lending protocol where collateralized positions must remain above a [threshold](https://aave.com/help/borrowing/liquidations) called their health factor. When an oracle price update reveals a borrower is undercollateralized, the position becomes eligible for liquidation. The searcher liquidates the position in exchange for a liquidation bonus reward. With Chainlink SVR, a searcher's liquidation transaction can be bundled with the new SVR price update through Flashbots.
+
+For more background on how Aave liquidations work, see [Aave Documentation](https://docs.aave.com/). To understand how Chainlink SVR adds a structured auction for these Aave liquidation opportunities, read the following sections.
+
+### Price Update, Auction, and Liquidation Execution Flow
+
+<ClickToZoom src="/images/data-feed/svr/svr-price-update-auction-liquidation-flow.webp" />
+
+### How to Participate as a Searcher
+
+#### 1. High-Level Steps for Searchers
+
+1. **Monitor and Identify SVR Price Updates**: Chainlink SVR sends oracle reports through Flashbots Protect (MEV-Share). Your searcher node must watch private transactions, not just the public mempool. It must also filter by these SVR data feed update events, and determine which feed address the update is for.
+
+1. **Bundle and Bid**
+   - Detect an eligible liquidation (e.g., an undercollateralized Aave position) triggered by the new price update.
+   - Submit your liquidation transaction **in the same bundle** as the price update, placing a bid to entice block builders.
+
+1. **Execute Liquidation**: If your bundle is selected, your liquidation happens **immediately after** the fresh price arrives onchain, capturing the liquidation bonus. Based on the results of the auction, a portion of the MEV is recaptured and split between Aave and the Chainlink Network, while the rest goes to you.
+
+#### 2. Listen for Events on MEV Share
+
+Chainlink SVR uses forwarder contracts to route feed updates. You typically see **one transaction per event**, which calls the function `forward(address to, bytes callData)` with the function selector `6fadcf72`. This method, in turn, calls the SVR aggregator's `transmitSecondary()` function with the new price data.
+
+1. **Forwarder Contracts**: Each Node Operator Proxy has a unique forwarder contract. That means that feed update transactions may come from different forwarder addresses depending on which proxy sends the transaction.
+
+1. **Function Selector**: In the transaction's `txs` array, look for the selector `6fadcf72` (`forward(...)`).
+
+1. **callData**: The `callData` includes the parameters for `transmitSecondary()` on the aggregator contract. You can decode this if you need to extract the updated price when the onchain event is not emitted (details in the section below).
+
+Here's an example of a single transaction event:
+
+<CodeSample src="samples/DataFeeds/SVR/single-transaction-event.json" />
+
+Below are code examples for setting up a listener that monitors the MEV-Share event stream for SVR feed updates. These examples show how to connect to the stream, filter for relevant transactions with the `6fadcf72` function selector, and process incoming events:
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">TS</Fragment>
+  <Fragment slot="tab.2">Go</Fragment>
+  <Fragment slot="panel.1">
+    <CodeSample src="samples/DataFeeds/SVR/listener.ts" lang="typescript" />
+  </Fragment>
+  <Fragment slot="panel.2">
+    <CodeSample src="samples/DataFeeds/SVR/listener.go" lang="go" />
+  </Fragment>
+</Tabs>
+
+The event stream is also expected to occasionally transmit transaction bundles. The bundle event has a similar format to the single transaction event, but with more than one transactions. Transactions will be bundled in nonce ascending order, meaning txs[0] has the lowest nonce and txs[len(txs)] has the highest. Below is an example of a bundle:
+
+<CodeSample src="samples/DataFeeds/SVR/bundle-transaction-event.json" />
+
+#### 3. Decode `callData` for `forward` and `transmitSecondary`
+
+Once you've identified a potential SVR feed update transaction, you'll need to decode its payload. This step allows you to extract:
+
+- The **feed address**: This is required to determine which SVR data feed is being updated.
+- The **new price data**: This is essential for determining if profitable liquidation opportunities exist.
+
+The decoding process involves understanding two function calls:
+
+1. First, the transaction calls the `forward` function:
+
+   ```solidity
+   forward(address to, bytes callData)
+   ```
+
+1. Inside the `callData` parameter is the encoded call to `transmitSecondary`, which contains the actual price data:
+
+   ```solidity
+   transmitSecondary(
+       bytes32[3] calldata reportContext,
+       bytes calldata report,
+       bytes32[] calldata rs,
+       bytes32[] calldata ss,
+       bytes32 rawVs
+   )
+   ```
+
+   The structure of `report` is:
+
+   ```solidity
+   struct Report {
+     uint32 observationsTimestamp;
+     bytes32 observers;
+     int192[] observations;
+     int192 juelsPerFeeCoin;
+   }
+   ```
+
+Below is an example of an ABI definition for the `forward` and `transmitSecondary` function interfaces to help you decode the function calls:
+
+<CodeSample src="samples/DataFeeds/SVR/decoding-abi.json" />
+
+The following code samples demonstrate the complete decoding process, including extracting the median price from the nested report structure. These implementations show how to:
+
+1. Decode the `forward` function call
+1. Extract and decode the `transmitSecondary` function data
+1. Parse the report bytes using the `Report` struct
+1. Access the median observation (the updated price)
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">TS</Fragment>
+  <Fragment slot="tab.2">Go</Fragment>
+  <Fragment slot="panel.1">
+    <CodeSample src="samples/DataFeeds/SVR/decoder.ts" lang="typescript" />
+  </Fragment>
+  <Fragment slot="panel.2">
+    <CodeSample src="samples/DataFeeds/SVR/decoder.go" lang="go" />
+  </Fragment>
+</Tabs>
+
+#### 4. Detect SVR-enabled Feeds
+
+When processing forward calls, verify that the `to` address from the code sample above (the destination of the forward call) matches one of these feed addresses. This tells you which SVR data feed the price update is for:
+
+<table>
+  <thead>
+    <tr>
+      <th>Feed</th>
+      <th>SVR Feed</th>
+      <th>Aave Dedicated SVR Feed</th>
+    </tr>
+  </thead>
+  <tbody>
+    {feeds &&
+      feeds.map((feed) => (
+        <tr key={feed.name}>
+          <td>
+            <strong>{feed.name}</strong>
+          </td>
+          <td>
+            {feed.svrAddress ? (
+              <CopyText text={feed.svrAddress} code />
+            ) : (
+              <span style={{ color: "#888" }}>Not available</span>
+            )}
+          </td>
+          <td>
+            {feed.aaveAddress ? (
+              <CopyText text={feed.aaveAddress} code />
+            ) : (
+              <span style={{ color: "#888" }}>Not available</span>
+            )}
+          </td>
+        </tr>
+      ))}
+    {(!feeds || feeds.length === 0) && (
+      <tr>
+        <td colSpan="3">No SVR feeds found.</td>
+      </tr>
+    )}
+  </tbody>
+</table>
+
+#### 5. Calculate Updated Price
+
+After successfully decoding the transaction data, you need to extract the median price from the `observations` array inside the decoded `report`:
+
+```solidity
+report.observations[report.observations.length / 2]
+```
+
+This formula retrieves the median value from the sorted array of price observations. The middle element represents the median price. This price is the value committed to the blockchain that protocols will use for determining liquidation eligibility.
+
+To use this price effectively, convert it to the appropriate decimal representation for the asset pair.
+
+#### 6. Bidding With Flashbots MEV-Share
+
+Once you've detected an SVR update and identified a profitable liquidation opportunity, you need to construct and submit a bundle to Flashbots. Consider these key aspects when preparing your submission:
+
+- **Bundle Components**: Your bundle must contain two elements in this exact order:
+  1. The original oracle update transaction (referenced by its hash)
+  1. Your liquidation transaction (fully signed transaction bytes)
+
+- **Backrun Position**: MEV-Share only permits backruns, meaning your liquidation transaction must come after the target transaction. This order is enforced by the bundle structure.
+
+- **Bidding Strategy**: Block builders typically select the highest-paying bundle. Your bid must be competitive while leaving room for profit. The bundle's economic value comes from:
+  - The gas price of your transaction
+  - Any explicit payment you include to the builder
+
+  **How to submit your bid**: Within your backrun transaction itself, send ETH to `block.coinbase` (the block builder's address). The higher the payment sent to `block.coinbase`, the more competitive your bundle becomes. Example:
+
+  ```solidity
+  // Within your liquidation transaction, send payment to block.coinbase
+  payable(block.coinbase).transfer(bidAmount);
+  ```
+
+  You pay your full bid amount to `block.coinbase`. The revenue split between Chainlink and the DeFi protocol occurs as part of the SVR system.
+
+- **Inclusion Parameters**: Specify the target block range for your bundle to be considered
+  - Typically target the next block plus a small range for redundancy
+  - A narrow block range can increase chances of inclusion but risks missing execution
+
+- **Authentication**: All Flashbots bundles require cryptographic signing with your wallet
+
+Below are code examples demonstrating how to construct and submit bundles to the Flashbots relay:
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">TS</Fragment>
+  <Fragment slot="tab.2">Go</Fragment>
+  <Fragment slot="panel.1">
+    <CodeSample src="samples/DataFeeds/SVR/broadcaster.ts" lang="typescript" />
+  </Fragment>
+  <Fragment slot="panel.2">
+    <CodeSample src="samples/DataFeeds/SVR/broadcaster.go" lang="go" />
+  </Fragment>
+</Tabs>
+
+For gas management, simulations, and other advanced usage, see the official [Flashbots documentation](https://docs.flashbots.net/).
+
+Bidding for bundle events is very similar to single transaction events. As a searcher, you can append your transaction at the end of the bundle by using the bundle event hash just like you would with the single transaction event hash. Below is an example:
+
+<CodeSample src="samples/DataFeeds/SVR/bundle-bid.json" />
+
+#### 7. Considerations
+
+- **Competition**: Multiple searchers might detect the same liquidation. The best bid typically wins.
+- **Profit-Sharing**: A portion of liquidation MEV is recaptured and redirected to the integrating DeFi protocol and the Chainlink Network.
+- **Gas Efficiency**: Bundles that are too costly might erode the profitability of the proposed transaction. Optimize carefully.
+- **Non-SVR `forward` calls**: There are other events on the MEV-Share event stream that have the same `forward` function signature. Be sure to filter for the ones that call `transmitSecondary` on the listed SVR feeds.
+
+#### 8. Next Steps for Searchers
+
+1. **Set Up Your Searcher Node**
+   - Integrate with [Flashbots MEV-Share](https://docs.flashbots.net/) to read private transactions.
+   - Filter for calls matching function selector `6fadcf72` directed at the correct contract address.
+
+2. **Test Your Bundles**
+   - Construct atomic bundles combining the price update and your liquidation transaction.
+   - Try local simulations or testnet deployments where available.
+
+3. **Stay Updated**
+   - Keep track of any updates to the SVR aggregator address, function signatures, or Flashbots MEV-Share changes.
+   - Monitor for changes in liquidation parameters (e.g., new assets, different collateral thresholds).

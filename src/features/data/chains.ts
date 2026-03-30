@@ -821,6 +821,13 @@ export const CHAINS: Chain[] = [
     supportedFeatures: ["feeds"],
     networks: [
       {
+        name: "Unichain Mainnet",
+        explorerUrl: "https://uniscan.xyz/address/%s",
+        networkType: "mainnet",
+        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-unichain-1.json",
+        queryString: "unichain-mainnet",
+      },
+      {
         name: "Unichain Sepolia",
         explorerUrl: "https://sepolia.uniscan.xyz/address/%s",
         networkType: "testnet",

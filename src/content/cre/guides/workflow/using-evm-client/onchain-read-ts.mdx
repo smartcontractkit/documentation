@@ -77,7 +77,6 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
   const network = getNetwork({
     chainFamily: "evm",
     chainSelectorName: runtime.config.chainName,
-    isTestnet: true,
   })
 
   if (!network) {
@@ -151,7 +150,6 @@ The SDK provides a `getNetwork()` helper that looks up network information by na
 const network = getNetwork({
   chainFamily: "evm",
   chainSelectorName: "ethereum-testnet-sepolia",
-  isTestnet: true,
 })
 
 // Returns network info including:
@@ -289,6 +287,11 @@ Viem automatically handles type conversions:
 | `string`                 | `string`        |
 | `bytes`, `bytes32`, etc. | `Uint8Array`    |
 
+{/* prettier-ignore */}
+<Aside type="caution" title="Use safe scaling for decimal conversions">
+  When converting values read from contracts (e.g., token balances, prices) to human-readable formats, use <a href="https://viem.sh/docs/utilities/formatUnits" target="_blank">viem's `formatUnits()`</a> instead of `Number(value) / 1e18`. Floating-point division causes silent precision loss for large `bigint` values. See [Safe decimal scaling](/cre/getting-started/before-you-build-ts#safe-decimal-scaling) for details and examples.
+</Aside>
+
 ## Complete example with configuration
 
 Here's a full runnable workflow with external configuration:
@@ -322,7 +325,6 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
   const network = getNetwork({
     chainFamily: "evm",
     chainSelectorName: runtime.config.chainSelectorName,
-    isTestnet: true,
   })
 
   if (!network) {

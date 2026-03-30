@@ -1,10 +1,20 @@
 import type { APIRoute } from "astro"
-import { validateEnvironment, handleApiError, APIErrorType, createErrorResponse, CCIPError } from "~/lib/ccip/utils.ts"
+import {
+  validateEnvironment,
+  validateInternalIdFormat,
+  handleApiError,
+  APIErrorType,
+  createErrorResponse,
+  CCIPError,
+} from "~/lib/ccip/utils.ts"
 import { jsonHeaders } from "@lib/api/cacheHeaders.ts"
 import { logger } from "@lib/logging/index.js"
 
 import type { LaneDetailApiResponse, LaneDetailMetadata } from "~/lib/ccip/types/index.ts"
 import { LaneDataService } from "~/lib/ccip/services/lane-data.ts"
+import { ChainIdentifierService } from "~/lib/ccip/services/chain-identifier.ts"
+import { loadReferenceData, Version } from "@config/data/ccip/index.ts"
+import type { ChainConfig } from "@config/data/ccip/types.ts"
 
 export const prerender = false
 
@@ -41,8 +51,42 @@ export const GET: APIRoute = async ({ params, request }) => {
       environment,
     })
 
+    // Validate internalIdFormat parameter (controls output format for internal IDs)
+    const internalIdFormat = validateInternalIdFormat(queryParams.get("internalIdFormat") || undefined)
+    logger.debug({
+      message: "Internal ID format validated",
+      requestId,
+      internalIdFormat,
+    })
+
+    // Initialize chain identifier service for formatting
+    const chainIdService = new ChainIdentifierService(environment, internalIdFormat)
+
     const laneDataService = new LaneDataService()
-    const result = await laneDataService.getLaneDetails(environment, source, destination, "chain_id")
+
+    // Load reference data to resolve chain IDs to directory keys
+    const { chainsReferenceData } = loadReferenceData({
+      environment,
+      version: Version.V1_2_0,
+    })
+
+    // Resolve chain IDs to directory keys
+    const sourceDirectoryKey = laneDataService.resolveToInternalId(
+      source,
+      "chainId",
+      chainsReferenceData as Record<string, ChainConfig>
+    )
+    const destDirectoryKey = laneDataService.resolveToInternalId(
+      destination,
+      "chainId",
+      chainsReferenceData as Record<string, ChainConfig>
+    )
+
+    if (!sourceDirectoryKey || !destDirectoryKey) {
+      throw new CCIPError(404, `Lane from chain '${source}' to chain '${destination}' not found`)
+    }
+
+    const result = await laneDataService.getLaneDetails(environment, sourceDirectoryKey, destDirectoryKey, "internalId")
 
     if (!result.data) {
       throw new CCIPError(404, `Lane from chain '${source}' to chain '${destination}' not found`)
@@ -55,7 +99,23 @@ export const GET: APIRoute = async ({ params, request }) => {
       destination,
     })
 
-    // Create lane detail metadata
+    // Format the internalId fields in the response data based on internalIdFormat
+    const formattedSourceInternalId = chainIdService.format(sourceDirectoryKey, internalIdFormat)
+    const formattedDestInternalId = chainIdService.format(destDirectoryKey, internalIdFormat)
+
+    const formattedData = {
+      ...result.data,
+      sourceChain: {
+        ...result.data.sourceChain,
+        internalId: formattedSourceInternalId,
+      },
+      destinationChain: {
+        ...result.data.destinationChain,
+        internalId: formattedDestInternalId,
+      },
+    }
+
+    // Create lane detail metadata (keep chain IDs as that's what user passed)
     const metadata: LaneDetailMetadata = {
       environment,
       timestamp: new Date().toISOString(),
@@ -66,7 +126,7 @@ export const GET: APIRoute = async ({ params, request }) => {
 
     const response: LaneDetailApiResponse = {
       metadata,
-      data: result.data,
+      data: formattedData,
     }
 
     logger.info({
@@ -96,16 +156,11 @@ export const GET: APIRoute = async ({ params, request }) => {
             : APIErrorType.SERVER_ERROR,
         error.message,
         error.statusCode,
-        {}
+        requestId
       )
     }
 
     // Handle other errors
-    if (error instanceof Error) {
-      return createErrorResponse(APIErrorType.SERVER_ERROR, "Failed to process lane detail request", 500, {
-        message: error.message,
-      })
-    }
-    return handleApiError(error)
+    return handleApiError(error, requestId)
   }
 }

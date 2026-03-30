@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react"
-import type { TokenFinalityData, Environment, OutputKeyType } from "~/lib/ccip/types/index.ts"
+import type { CustomFinalityConfig, Environment, OutputKeyType } from "~/lib/ccip/types/index.ts"
 import { realtimeDataService } from "~/lib/ccip/services/realtime-data-instance.ts"
 
 interface UseTokenFinalityResult {
-  finalityData: Record<string, TokenFinalityData>
+  finalityData: Record<string, CustomFinalityConfig>
   isLoading: boolean
   error: Error | null
 }
@@ -20,7 +20,7 @@ export function useTokenFinality(
   environment: Environment,
   outputKey?: OutputKeyType
 ): UseTokenFinalityResult {
-  const [finalityData, setFinalityData] = useState<Record<string, TokenFinalityData>>({})
+  const [finalityData, setFinalityData] = useState<Record<string, CustomFinalityConfig>>({})
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
 

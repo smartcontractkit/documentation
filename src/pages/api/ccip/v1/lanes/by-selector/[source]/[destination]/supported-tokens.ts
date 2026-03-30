@@ -1,10 +1,20 @@
 import type { APIRoute } from "astro"
-import { validateEnvironment, handleApiError, APIErrorType, createErrorResponse, CCIPError } from "~/lib/ccip/utils.ts"
+import {
+  validateEnvironment,
+  validateInternalIdFormat,
+  handleApiError,
+  APIErrorType,
+  createErrorResponse,
+  CCIPError,
+} from "~/lib/ccip/utils.ts"
 import { jsonHeaders } from "@lib/api/cacheHeaders.ts"
 import { logger } from "@lib/logging/index.js"
 
 import type { SupportedTokensApiResponse, SupportedTokensMetadata } from "~/lib/ccip/types/index.ts"
 import { LaneDataService } from "~/lib/ccip/services/lane-data.ts"
+import { ChainIdentifierService } from "~/lib/ccip/services/chain-identifier.ts"
+import { loadReferenceData, Version } from "@config/data/ccip/index.ts"
+import type { ChainConfig } from "@config/data/ccip/types.ts"
 
 export const prerender = false
 
@@ -41,8 +51,47 @@ export const GET: APIRoute = async ({ params, request }) => {
       environment,
     })
 
+    // Validate internalIdFormat parameter (controls output format for internal IDs)
+    const internalIdFormat = validateInternalIdFormat(queryParams.get("internalIdFormat") || undefined)
+    logger.debug({
+      message: "Internal ID format validated",
+      requestId,
+      internalIdFormat,
+    })
+
+    // Initialize chain identifier service for formatting (reserved for future use)
+    const _chainIdService = new ChainIdentifierService(environment, internalIdFormat)
+
     const laneDataService = new LaneDataService()
-    const result = await laneDataService.getSupportedTokensWithRateLimits(environment, source, destination, "selector")
+
+    // Load reference data to resolve selectors to directory keys
+    const { chainsReferenceData } = loadReferenceData({
+      environment,
+      version: Version.V1_2_0,
+    })
+
+    // Resolve selectors to directory keys
+    const sourceDirectoryKey = laneDataService.resolveToInternalId(
+      source,
+      "selector",
+      chainsReferenceData as Record<string, ChainConfig>
+    )
+    const destDirectoryKey = laneDataService.resolveToInternalId(
+      destination,
+      "selector",
+      chainsReferenceData as Record<string, ChainConfig>
+    )
+
+    if (!sourceDirectoryKey || !destDirectoryKey) {
+      throw new CCIPError(404, `Lane from selector '${source}' to selector '${destination}' not found`)
+    }
+
+    const result = await laneDataService.getSupportedTokensWithRateLimits(
+      environment,
+      sourceDirectoryKey,
+      destDirectoryKey,
+      "internalId"
+    )
 
     if (!result.data) {
       throw new CCIPError(404, `Lane from selector '${source}' to selector '${destination}' not found`)
@@ -56,7 +105,7 @@ export const GET: APIRoute = async ({ params, request }) => {
       tokenCount: result.tokenCount,
     })
 
-    // Create metadata
+    // Create metadata (keep selectors in metadata as that's what user passed)
     const metadata: SupportedTokensMetadata = {
       environment,
       timestamp: new Date().toISOString(),
@@ -97,15 +146,11 @@ export const GET: APIRoute = async ({ params, request }) => {
             : APIErrorType.SERVER_ERROR,
         error.message,
         error.statusCode,
-        {}
+        requestId
       )
     }
 
-    if (error instanceof Error) {
-      return createErrorResponse(APIErrorType.SERVER_ERROR, "Failed to process supported tokens request", 500, {
-        message: error.message,
-      })
-    }
-    return handleApiError(error)
+    // Handle other errors
+    return handleApiError(error, requestId)
   }
 }

@@ -34,26 +34,26 @@ export type DestinationsLaneConfig = {
   [destinationChain: string]: LaneConfig
 }
 
+/** Normalized pool type (semantic). Used for logic, display, token mechanism. */
 export type PoolType = "lockRelease" | "burnMint" | "usdc" | "feeTokenOnly"
 
-export type PoolRawType = "LockRelease" | "BurnMint" | "usdc"
+/** Raw pool type from downstream data; displayed as-is in the directory. */
+export type PoolRawType = string
 
 type Pool = {
   address?: string
-  rawType: PoolRawType
+  rawType: string
   type: PoolType
   version: string
+  advancedPoolHooks?: string
 }
 
-type PoolInfo = {
+export type PoolInfo = {
   tokenAddress: string
-  allowListEnabled: boolean
-  pool?: Pool
-  poolAddress?: string
-  poolType?: string
   name?: string
   symbol: string
   decimals: number
+  pool?: Pool
 }
 
 export type ChainConfig = {

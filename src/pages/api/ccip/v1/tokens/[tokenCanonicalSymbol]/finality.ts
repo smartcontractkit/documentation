@@ -10,10 +10,15 @@ import {
 import { jsonHeaders } from "@lib/api/cacheHeaders.ts"
 import { logger } from "@lib/logging/index.js"
 
-import type { TokenFinalityApiResponse, TokenDetailMetadata } from "~/lib/ccip/types/index.ts"
+import type { CustomFinalityConfig, TokenDetailMetadata } from "~/lib/ccip/types/index.ts"
 import { TokenDataService } from "~/lib/ccip/services/token-data.ts"
 
 export const prerender = false
+
+interface TokenFinalityApiResponse {
+  metadata: TokenDetailMetadata
+  data: Record<string, CustomFinalityConfig | null>
+}
 
 export const GET: APIRoute = async ({ params, request }) => {
   const requestId = crypto.randomUUID()
@@ -53,7 +58,7 @@ export const GET: APIRoute = async ({ params, request }) => {
     })
 
     const tokenDataService = new TokenDataService()
-    const result = await tokenDataService.getTokenFinality(environment, tokenCanonicalSymbol, outputKey)
+    const result = await tokenDataService.getTokenWithFinality(environment, tokenCanonicalSymbol, outputKey)
 
     if (!result) {
       throw new CCIPError(404, `Token '${tokenCanonicalSymbol}' not found`)
@@ -66,6 +71,12 @@ export const GET: APIRoute = async ({ params, request }) => {
       chainCount: result.metadata.chainCount,
     })
 
+    // Extract finality data from the full token detail response
+    const finalityData: Record<string, CustomFinalityConfig | null> = {}
+    for (const [chainKey, chainData] of Object.entries(result.data)) {
+      finalityData[chainKey] = chainData.customFinality ?? null
+    }
+
     // Create token finality metadata
     const metadata: TokenDetailMetadata = {
       environment,
@@ -77,7 +88,7 @@ export const GET: APIRoute = async ({ params, request }) => {
 
     const response: TokenFinalityApiResponse = {
       metadata,
-      data: result.data,
+      data: finalityData,
     }
 
     logger.info({
@@ -107,16 +118,22 @@ export const GET: APIRoute = async ({ params, request }) => {
             : APIErrorType.SERVER_ERROR,
         error.message,
         error.statusCode,
-        {}
+        requestId
       )
     }
 
     // Handle other errors
     if (error instanceof Error) {
-      return createErrorResponse(APIErrorType.SERVER_ERROR, "Failed to process token finality request", 500, {
-        message: error.message,
-      })
+      return createErrorResponse(
+        APIErrorType.SERVER_ERROR,
+        "Failed to process token finality request",
+        500,
+        requestId,
+        {
+          message: error.message,
+        }
+      )
     }
-    return handleApiError(error)
+    return handleApiError(error, requestId)
   }
 }

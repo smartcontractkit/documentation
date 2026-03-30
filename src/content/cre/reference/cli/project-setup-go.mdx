@@ -7,7 +7,7 @@ pageId: "cli-project-setup"
 metadata:
   description: "Initialize Go projects with CLI: complete reference for cre init and generate-bindings commands to start building workflows."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-03-17"
 ---
 
 import { Aside } from "@components"
@@ -52,8 +52,13 @@ Running `cre init` without flags starts an interactive setup that guides you thr
 
 1. **Project name** (only if creating a new project)
 1. **Language** (Go or TypeScript)
-1. **Workflow template** (example templates for the chosen language)
+1. **Workflow template** (fetched dynamically from configured template sources)
 1. **Workflow name**
+
+{/* prettier-ignore */}
+<Aside type="note" title="Template sources">
+  Templates are fetched at runtime from GitHub. The Chainlink official repository is included by default. To browse available templates or add custom sources, see [Template Sources](/cre/reference/cli/templates).
+</Aside>
 
 **Example:**
 
@@ -108,6 +113,17 @@ cre generate-bindings <chain-family> [flags]
 | `-k, --pkg`                                | Base package name; each contract gets its own subdirectory (default: `"bindings"`) |
 | `-p, --project-root`                       | Path to project root directory (default: current directory)                        |
 
+**Supported input file formats:**
+
+The command accepts two ABI file formats in the same directory:
+
+| Format        | Extension | Description                                                                             |
+| ------------- | --------- | --------------------------------------------------------------------------------------- |
+| Raw ABI       | `*.abi`   | A JSON array of ABI entries, as output by `solc` or extracted from a compiled artifact  |
+| JSON artifact | `*.json`  | A compiled artifact file (Hardhat, Foundry, or any tool) with a top-level `"abi"` field |
+
+Both formats can coexist in the same `--abi` directory. The CLI detects the format automatically based on file extension and content.
+
 **How it works:**
 
 - Supports EVM chain family and Go language
@@ -123,6 +139,14 @@ cre generate-bindings <chain-family> [flags]
 - Generate bindings for all ABI files in the default directory
 
   ```bash
+  cre generate-bindings evm
+  ```
+
+- Generate bindings from Hardhat/Foundry artifact files (`.json`)
+
+  ```bash
+  # Place your compiled artifact files in contracts/evm/src/abi/
+  # The CLI reads the "abi" field from each .json file automatically
   cre generate-bindings evm
   ```
 

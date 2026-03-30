@@ -1,10 +1,18 @@
 import type { APIRoute } from "astro"
-import { validateEnvironment, handleApiError, APIErrorType, createErrorResponse, CCIPError } from "~/lib/ccip/utils.ts"
+import {
+  validateEnvironment,
+  validateInternalIdFormat,
+  handleApiError,
+  APIErrorType,
+  createErrorResponse,
+  CCIPError,
+} from "~/lib/ccip/utils.ts"
 import { jsonHeaders } from "@lib/api/cacheHeaders.ts"
 import { logger } from "@lib/logging/index.js"
 
 import type { SupportedTokensApiResponse, SupportedTokensMetadata } from "~/lib/ccip/types/index.ts"
 import { LaneDataService } from "~/lib/ccip/services/lane-data.ts"
+import { ChainIdentifierService } from "~/lib/ccip/services/chain-identifier.ts"
 
 export const prerender = false
 
@@ -41,12 +49,34 @@ export const GET: APIRoute = async ({ params, request }) => {
       environment,
     })
 
+    // Validate internalIdFormat parameter (controls output format)
+    const internalIdFormat = validateInternalIdFormat(queryParams.get("internalIdFormat") || undefined)
+    logger.debug({
+      message: "Internal ID format validated",
+      requestId,
+      internalIdFormat,
+    })
+
+    // Initialize chain identifier service for formatting
+    const chainIdService = new ChainIdentifierService(environment, internalIdFormat)
+
+    // Resolve source and destination to directory keys for data lookup
+    const sourceResolved = chainIdService.resolve(source)
+    const destResolved = chainIdService.resolve(destination)
+
+    if (!sourceResolved) {
+      throw new CCIPError(400, `Invalid source chain identifier: '${source}'`)
+    }
+    if (!destResolved) {
+      throw new CCIPError(400, `Invalid destination chain identifier: '${destination}'`)
+    }
+
     const laneDataService = new LaneDataService()
     const result = await laneDataService.getSupportedTokensWithRateLimits(
       environment,
-      source,
-      destination,
-      "internal_id"
+      sourceResolved.directoryKey,
+      destResolved.directoryKey,
+      "internalId"
     )
 
     if (!result.data) {
@@ -61,13 +91,17 @@ export const GET: APIRoute = async ({ params, request }) => {
       tokenCount: result.tokenCount,
     })
 
-    // Create metadata
+    // Format chain identifiers based on internalIdFormat
+    const formattedSource = chainIdService.format(sourceResolved.directoryKey, internalIdFormat)
+    const formattedDest = chainIdService.format(destResolved.directoryKey, internalIdFormat)
+
+    // Create metadata with formatted chain identifiers
     const metadata: SupportedTokensMetadata = {
       environment,
       timestamp: new Date().toISOString(),
       requestId,
-      sourceChain: source,
-      destinationChain: destination,
+      sourceChain: formattedSource,
+      destinationChain: formattedDest,
       tokenCount: result.tokenCount,
     }
 
@@ -102,15 +136,11 @@ export const GET: APIRoute = async ({ params, request }) => {
             : APIErrorType.SERVER_ERROR,
         error.message,
         error.statusCode,
-        {}
+        requestId
       )
     }
 
-    if (error instanceof Error) {
-      return createErrorResponse(APIErrorType.SERVER_ERROR, "Failed to process supported tokens request", 500, {
-        message: error.message,
-      })
-    }
-    return handleApiError(error)
+    // Handle other errors
+    return handleApiError(error, requestId)
   }
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import type { TokenRateLimits, Environment } from "~/lib/ccip/types/index.ts"
+import type { TokenLaneData, Environment } from "~/lib/ccip/types/index.ts"
 import { realtimeDataService } from "~/lib/ccip/services/realtime-data-instance.ts"
 
 interface LaneConfig {
@@ -8,7 +8,7 @@ interface LaneConfig {
 }
 
 interface UseMultiLaneRateLimitsResult {
-  rateLimitsMap: Record<string, Record<string, TokenRateLimits>>
+  rateLimitsMap: Record<string, Record<string, TokenLaneData>>
   isLoading: boolean
   error: Error | null
 }
@@ -21,7 +21,7 @@ interface UseMultiLaneRateLimitsResult {
  * @returns Map of rate limits keyed by lane (source-destination), loading state, and error state
  */
 export function useMultiLaneRateLimits(lanes: LaneConfig[], environment: Environment): UseMultiLaneRateLimitsResult {
-  const [rateLimitsMap, setRateLimitsMap] = useState<Record<string, Record<string, TokenRateLimits>>>({})
+  const [rateLimitsMap, setRateLimitsMap] = useState<Record<string, Record<string, TokenLaneData>>>({})
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
 
@@ -33,7 +33,7 @@ export function useMultiLaneRateLimits(lanes: LaneConfig[], environment: Environ
       setError(null)
 
       try {
-        const newRateLimits: Record<string, Record<string, TokenRateLimits>> = {}
+        const newRateLimits: Record<string, Record<string, TokenLaneData>> = {}
 
         // Fetch all lanes in parallel
         const promises = lanes.map(async ({ source, destination }) => {

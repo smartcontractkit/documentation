@@ -3,14 +3,20 @@ interface Props {
   title: string
   number?: number
   contentReference?: string
+  depth?: 3 | 4
 }
-const { title, number, contentReference } = Astro.props
+const { title, number, contentReference, depth = 3 } = Astro.props
 const id = title.toLowerCase().split(" ").join("-")
+const wrapperClass = `header-wrapper-${depth}`
 ---
 
 <astro-accordion {...contentReference && { contentReference }}>
-  <div class="header-wrapper-3" id={id} title={title}>
-    <details style={number === 1 || !number ? { borderTop: "1px solid var(--gray-300, #ced0d5)" } : {}}>
+  <div class={wrapperClass} id={id} title={title}>
+    <details
+      open
+      {...{ expanded: "" }}
+      style={number === 1 || !number ? { borderTop: "1px solid var(--gray-300, #ced0d5)" } : {}}
+    >
       <summary id={id} data-id={`${number}-${id}`}>
         <span class="before">{number}</span>
         <slot name="title">{title}</slot>
@@ -39,7 +45,8 @@ const id = title.toLowerCase().split(" ").join("-")
     padding: var(--space-2x) 0px;
   }
 
-  .header-wrapper-3 {
+  .header-wrapper-3,
+  .header-wrapper-4 {
     scroll-margin-top: calc(var(--theme-navbar-height) + var(--space-16x));
   }
 

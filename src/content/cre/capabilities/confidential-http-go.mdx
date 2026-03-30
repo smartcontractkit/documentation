@@ -1,6 +1,6 @@
 ---
 section: cre
-title: "The Confidential HTTP Capability (Experimental)"
+title: "The Confidential HTTP Capability"
 date: Last Modified
 sdkLang: "go"
 pageId: "confidential-http"
@@ -11,11 +11,6 @@ metadata:
 ---
 
 import { Aside } from "@components"
-
-<Aside type="caution" title="Experimental — Simulation only">
-  Confidential HTTP is an **experimental** capability available for `cre workflow simulate` only. It cannot be used with
-  `cre workflow deploy` at this time.
-</Aside>
 
 The **Confidential HTTP** capability is a privacy-preserving HTTP service powered by the Chainlink Privacy Standard. It enables your workflow to interact with external APIs while keeping sensitive data—such as API credentials, request body fields, and response data—confidential.
 
@@ -35,7 +30,7 @@ Confidential HTTP operates differently from the [regular HTTP capability](/cre/c
 
 1. **Request consensus:** Nodes in the Confidential HTTP DON reach quorum on the request parameters (forwarded by each Workflow DON node).
 1. **Secret retrieval:** The Confidential HTTP DON fetches encrypted secrets from the [Vault DON](/cre/guides/workflow/secrets/using-secrets-deployed).
-1. **Enclave execution:** Secrets are decrypted and injected into the request inside a secure enclave. The HTTP request executes from the enclave—credentials never exist in accessible memory.
+1. **Enclave execution:** Secrets are threshold decrypted using Vault DON. Decryption shares are injected to a secure enclave such that only the secure enclave can combine them to extract plaintext secrets to use in the HTTP request execution—credentials never exist in accessible memory.
 1. **Response:** The response is returned to your workflow. If `EncryptOutput` is enabled, the response body is encrypted before leaving the enclave.
 
 This approach ensures:

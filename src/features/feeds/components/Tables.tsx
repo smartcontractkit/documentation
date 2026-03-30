@@ -17,6 +17,43 @@ import { isFeedVisible } from "~/features/feeds/utils/feedVisibility.ts"
 
 const feedItems = monitoredFeeds.mainnet
 
+/**
+ * Decodes a raw maxSubmissionValue (BigInt string scaled by 10^decimals) into a
+ * human-readable USD price string. Returns null if the value is effectively unbounded
+ * (i.e. the contract's default max sentinel — all 0xff bytes) or otherwise too large
+ * to represent a real price cap.
+ *
+ * The raw value lives on-chain and is stored as a string to avoid JS number precision
+ * loss. We divide by 10^decimals to recover the actual price, then format it.
+ */
+const getMaxSubmissionValueBound = (
+  maxSubmissionValue: string | undefined,
+  decimals: number | undefined
+): string | null => {
+  if (!maxSubmissionValue || decimals == null || decimals < 0) return null
+  try {
+    const raw = BigInt(maxSubmissionValue)
+    const divisor = BigInt(10) ** BigInt(decimals)
+    const wholePart = raw / divisor
+    // Hide the badge if the decoded price exceeds $1,000,000 (1M).
+    // This filters out the all-0xff unbounded sentinel that contracts use by default
+    // (which decodes to ~9.578e44) while still accommodating any real-world price cap
+    // across USD, ETH, EUR, and other quote currencies — the highest plausible cap
+    // for any stablecoin or pegged asset is well below $1M.
+    if (wholePart > BigInt(1_000_000)) return null
+    const remainder = raw % divisor
+    const price = Number(wholePart) + Number(remainder) / Number(divisor)
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(price)
+  } catch {
+    return null
+  }
+}
+
 // Helper function to extract schema version from clicProductName
 // e.g., "HOOD/USD-Streams-RegularHoursEquityPrice-DS-Premium-Global-011" -> "v11"
 // e.g., "USD/SEK-Datalink-DeutscheBoerse-DS-Premium-Global-008" -> "v8"
@@ -228,8 +265,21 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
 
   // Feed type checks
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
-  // Detect tokenized equity feeds by metadata so the badge shows on any page (e.g., standard price feeds)
-  const isTokenizedEquityFeed = metadata.docs?.assetClass === "Equities" && metadata.contractType !== "verifier"
+  // True tokenized equity feeds (e.g. Ondo) — controls the "Tokenized Equity" badge.
+  const isTokenizedEquityFeed =
+    metadata.docs?.assetClass === "Equity" &&
+    metadata.contractType !== "verifier" &&
+    metadata.docs?.productTypeCode === "primaryTokenizedPrice"
+
+  // Any feed with a calculated price (productSubType === "calculatedPrice") should
+  // have its address hidden and show a contact email instead.
+  const shouldHideAddress = metadata.docs?.productSubType === "calculatedPrice"
+
+  // Stablecoin price-bound note: only shown for stablecoin feeds with a meaningful cap
+  const isStablecoin = metadata.docs?.assetSubClass === "Stablecoin"
+  const stablecoinBound = isStablecoin
+    ? getMaxSubmissionValueBound(metadata.maxSubmissionValue, metadata.decimals)
+    : null
 
   const label = isUSGovernmentMacroeconomicData ? "Category" : "Asset type"
   const value = isUSGovernmentMacroeconomicData
@@ -276,6 +326,18 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
               </a>
             </div>
           )}
+          {stablecoinBound && (
+            <div>
+              <a
+                href="/data-feeds/selecting-data-feeds#bounded-market-price-feeds"
+                className={tableStyles.boundedNote}
+                title="This feed has a maximum reportable price"
+                target="_blank"
+              >
+                Bounded (Upper): {stablecoinBound}
+              </a>
+            </div>
+          )}
         </div>
         {metadata.docs.shutdownDate && (
           <div className={clsx(feedList.shutDate)}>
@@ -305,8 +367,8 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                 </dt>
               )}
               <dd>
-                {isTokenizedEquityFeed ? (
-                  // Tokenized equity feeds show a contact email instead of proxy address
+                {shouldHideAddress ? (
+                  // Calculated-price feeds show a contact email instead of proxy address
                   <span>
                     Contact us:{" "}
                     <a href={`mailto:${TOKENIZED_EQUITY_CONTACT_EMAIL}`} className={tableStyles.addressLink}>
@@ -380,8 +442,8 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                     <span className="label">{isAaveSVR(metadata) ? "AAVE SVR Proxy:" : "SVR Proxy:"}</span>
                   </dt>
                   <dd>
-                    {isTokenizedEquityFeed ? (
-                      // Tokenized equity feeds show a contact email instead of SVR proxy address
+                    {shouldHideAddress ? (
+                      // Calculated-price feeds show a contact email instead of SVR proxy address
                       <span>
                         Contact us:{" "}
                         <a href={`mailto:${TOKENIZED_EQUITY_CONTACT_EMAIL}`} className={tableStyles.addressLink}>
@@ -416,7 +478,7 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                     )}
                   </dd>
                 </div>
-                {isAaveSVR(metadata) && !isTokenizedEquityFeed && (
+                {isAaveSVR(metadata) && !shouldHideAddress && (
                   <div className={clsx(tableStyles.aaveCallout)}>
                     <strong>⚠️ Aave Dedicated Feed:</strong> This SVR proxy feed is dedicated exclusively for use by the
                     Aave protocol. Learn more about{" "}
@@ -426,7 +488,7 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
                     .
                   </div>
                 )}
-                {isSharedSVR(metadata) && !isTokenizedEquityFeed && (
+                {isSharedSVR(metadata) && !shouldHideAddress && (
                   <div className={clsx(tableStyles.sharedCallout)}>
                     <strong>🔗 SVR Feed:</strong> This SVR proxy feed is usable by any protocol. Learn more about{" "}
                     <a href="/data-feeds/svr-feeds" target="_blank">
@@ -467,6 +529,12 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
   // Use the pre-computed finalCategory from enriched metadata
   // (already includes deprecating status and Supabase risk tier)
   const finalTier = metadata.finalCategory || metadata.feedCategory
+
+  // Stablecoin price-bound note for Stablecoin Stability Assessment feeds
+  const isStablecoinAssessment = metadata.docs?.assetClass === "Stablecoin Stability Assessment"
+  const stablecoinBound = isStablecoinAssessment
+    ? getMaxSubmissionValueBound(metadata.maxSubmissionValue, metadata.decimals)
+    : null
 
   return (
     <tr>
@@ -515,6 +583,18 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
               title="Multiple-Variable Response (MVR) Feed"
             >
               MVR
+            </a>
+          </div>
+        )}
+        {stablecoinBound && (
+          <div style={{ textAlign: "center" }}>
+            <a
+              href="/data-feeds/selecting-data-feeds#bounded-market-price-feeds"
+              className={tableStyles.boundedNote}
+              title="This feed has a maximum reportable price"
+              target="_blank"
+            >
+              Bounded (Upper): {stablecoinBound}
             </a>
           </div>
         )}
@@ -676,11 +756,34 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
 export const StreamsNetworkAddressesTable = ({
   allowExpansion = false,
   defaultExpanded = false,
+  initialSearch = "",
 }: {
   allowExpansion?: boolean
   defaultExpanded?: boolean
+  initialSearch?: string
 } = {}) => {
-  const [searchValue, setSearchValue] = useState("")
+  // null = untouched; string = user has set a value
+  const [searchState, setSearchState] = useState<string | null>(null)
+
+  const urlSearch =
+    typeof window !== "undefined" ? (new URLSearchParams(window.location.search).get("streamsNetwork") ?? "") : ""
+
+  // Priority: user-typed value → SSR prop (when Astro can pass it) → URL param (client fallback)
+  const searchValue = searchState ?? (initialSearch || urlSearch)
+
+  const updateSearch = (value: string) => {
+    setSearchState(value)
+    if (typeof window === "undefined") return
+    const params = new URLSearchParams(window.location.search)
+    if (value) {
+      params.set("streamsNetwork", value)
+    } else {
+      params.delete("streamsNetwork")
+    }
+    const queryString = params.toString()
+    const newUrl = window.location.pathname + (queryString ? "?" + queryString : "") + window.location.hash
+    window.history.replaceState({ path: newUrl }, "", newUrl)
+  }
 
   const normalizedSearch = searchValue.toLowerCase().replaceAll(" ", "")
 
@@ -709,10 +812,10 @@ export const StreamsNetworkAddressesTable = ({
             placeholder="Search"
             className={feedList.filterDropdown_searchInput}
             value={searchValue}
-            onInput={(e) => setSearchValue((e.target as HTMLInputElement).value)}
+            onInput={(e) => updateSearch((e.target as HTMLInputElement).value)}
           />
           {searchValue && (
-            <button className={clsx(button.secondary, feedList.clearFilterBtn)} onClick={() => setSearchValue("")}>
+            <button className={clsx(button.secondary, feedList.clearFilterBtn)} onClick={() => updateSearch("")}>
               Clear filter
             </button>
           )}
@@ -728,7 +831,7 @@ export const StreamsNetworkAddressesTable = ({
           </tr>
         </thead>
         <tbody>
-          {filteredNetworks.length === 0 ? (
+          {typeof window === "undefined" ? null : filteredNetworks.length === 0 ? (
             <tr>
               <td colSpan={3} style={{ textAlign: "center", padding: "2rem", fontStyle: "italic" }}>
                 No results found
@@ -775,7 +878,9 @@ export const StreamsNetworkAddressesTable = ({
                         )}
                       </td>
                       <td className={tableStyles.addressColumn}>
-                        {network.isSolana ? (
+                        {network.isCanton ? (
+                          <a href="/data-streams/canton-integration">See Canton integration guide →</a>
+                        ) : network.isSolana ? (
                           <>
                             <div>
                               <small className={tableStyles.addressLabel}>Verifier Program ID:</small>

@@ -42,8 +42,8 @@ export function useLaneTokens({ tokens, environment, rateLimitsData, inOutbound,
         if (!Object.keys(data).length) return null
 
         const logo = getTokenIconUrl(token)
-        const tokenRateLimits = rateLimitsData[token]
-        const allLimits = realtimeDataService.getAllRateLimitsForDirection(tokenRateLimits, direction)
+        const tokenLaneData = rateLimitsData[token]
+        const allLimits = realtimeDataService.getAllRateLimitsForDirection(tokenLaneData?.rateLimits, direction)
         const isPaused = allLimits.standard?.capacity === "0"
 
         return {

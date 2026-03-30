@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react"
-import type { TokenRateLimits, Environment } from "~/lib/ccip/types/index.ts"
+import type { TokenLaneData, Environment } from "~/lib/ccip/types/index.ts"
 import { realtimeDataService } from "~/lib/ccip/services/realtime-data-instance.ts"
 
 interface UseTokenRateLimitsResult {
-  rateLimits: Record<string, TokenRateLimits>
+  rateLimits: Record<string, TokenLaneData>
   isLoading: boolean
   error: Error | null
 }
@@ -20,7 +20,7 @@ export function useTokenRateLimits(
   destination: string,
   environment: Environment
 ): UseTokenRateLimitsResult {
-  const [rateLimits, setRateLimits] = useState<Record<string, TokenRateLimits>>({})
+  const [rateLimits, setRateLimits] = useState<Record<string, TokenLaneData>>({})
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
 

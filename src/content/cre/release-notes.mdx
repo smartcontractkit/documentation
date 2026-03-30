@@ -5,12 +5,198 @@ date: Last Modified
 metadata:
   description: "Discover what's new in CRE: latest features, changes, and improvements in each release of the Chainlink Runtime Environment."
   datePublished: "2025-11-04"
-  lastModified: "2026-02-10"
+  lastModified: "2026-03-20"
 ---
 
 import { Aside } from "@components"
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.6.0 - March 20, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.6.0" target="_blank">CRE CLI version 1.6.0</a> is now available.**
+
+- **Simulation limits support**: The `cre workflow simulate` command now accepts a `--limits` flag, letting you simulate workflows under specific resource constraints to better reflect production behavior. Use `cre workflow limits export` to inspect the embedded defaults and create custom limits files. See [Testing Production Limits](/cre/guides/operations/understanding-limits) for details.
+- **Improved `cre init`**: Various improvements to the project initialization experience.
+- **Bug fixes**: Fixed a binding bug and improved WASM debug symbol retention during simulation.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.5.0...v1.6.0)
+
+## CLI v1.5.0 - March 17, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.5.0" target="_blank">CRE CLI version 1.5.0</a> is now available.**
+
+- **New Mainnets**: Added Celo, Gnosis Chain, Ink, Linea, Mantle, MegaETH, Plasma, Scroll, and Sonic mainnet support for simulation and production deployment.
+- **New Testnets**: Added Cronos, Mantle Sepolia, MegaETH Testnet 2, Scroll Sepolia, Sonic Testnet, TAC Testnet, and Unichain Sepolia testnet support.
+- **`cre hash` command**: New command to display content hashes for workflow artifacts. Hashes are also displayed automatically during `cre workflow build` and `cre workflow deploy`.
+- **Environment variable resolution in RPC URLs**: Use `${VAR}` syntax in your `project.yaml` RPC URLs to inject values from environment variables.
+- **JSON ABI support in `cre generate-bindings`**: The `cre generate-bindings evm` command now accepts raw JSON ABI files in addition to compiled Hardhat and Foundry artifacts.
+- **`.env` support across all commands**: The `.env` file is now respected across all CRE commands, with `.env` values taking precedence over other settings.
+- **Bug Fix**: Fixed an issue where `cre workflow build` could fail in configurations where `cre workflow simulate` succeeded.
+- **Known issue**: Environment variables passed without a `.env` file present (for example, via a secrets manager like `op run`) may not be bound correctly. Creating an empty `.env` file in your project root (`touch .env`) resolves this. A fix is coming in CLI v1.5.1.
+
+**Required versions for new networks:**
+
+- All new mainnets and testnets: CLI v1.5.0+, Go SDK v1.6.0+, TS SDK v1.3.0+
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.4.0...v1.5.0)
+
+## Go SDK v1.6.0 - March 16, 2026
+
+**Go SDK version 1.6.0** updates EVM capabilities to support the new networks added in CLI v1.5.0.
+
+- **New Networks**: Updated EVM client capabilities to support Celo, Gnosis Chain, Ink, Linea, Mantle, MegaETH, Plasma, Scroll, Sonic, and their associated testnets
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.5.0...v1.6.0)
+
+## TS SDK v1.3.0 - March 16, 2026
+
+**TypeScript SDK version 1.3.0** updates EVM capabilities to support the new networks added in CLI v1.5.0.
+
+- **New Networks**: Updated EVM client capabilities to support new networks added in CLI v1.5.0
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.2.0...v1.3.0)
+
+## CLI v1.4.0 - March 12, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.4.0" target="_blank">CRE CLI version 1.4.0</a> is now available.**
+
+- **CI/CD pipeline support**: `cre workflow build`, `cre workflow upload`, and `cre workflow deploy` can now be run as independent steps for better integration with CI/CD pipelines.
+- **MultiHeaders support**: The HTTP capability now supports sending multiple headers per request.
+
+This release also includes various internal improvements and security fixes.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.3.0...v1.4.0)
+
+## TS SDK v1.2.0 - March 12, 2026
+
+**TypeScript SDK version 1.2.0** includes improvements to the EVM client and developer experience.
+
+- **`logTriggerConfig` helper**: New helper for configuring EVM log triggers in your workflow
+- **Improved error messages**: Added field-level context to `encodeCallMsg` errors for easier debugging
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.1.0...v1.2.0)
+
+## CLI v1.3.0 - March 5, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.3.0" target="_blank">CRE CLI version 1.3.0</a> is now available.**
+
+- **TypeScript EVM bindings**: The `cre generate-bindings evm` command now supports TypeScript. It generates a fully typed class from your contract ABI with read methods, write helpers, typed event structs, and `logTriggerEventName()` methods that handle all base64 encoding automatically. See [Generating Contract Bindings (TypeScript)](/cre/guides/workflow/using-evm-client/generating-bindings-ts) for details.
+- **Explicit `--target` flag**: The `--target` flag for selecting a deployment target is now required when running `cre workflow deploy` and other target-scoped commands. If omitted, the CLI will prompt for it interactively.
+- **New Mainnets**: Added Jovay, Pharos, and XLayer mainnet support for simulation and production deployment.
+- **Pharos Atlantic Testnet**: Added Pharos Atlantic testnet support.
+
+**Required versions:**
+
+- Jovay / Pharos / XLayer Mainnet: CLI v1.3.0+, Go SDK v1.4.0+, TS SDK v1.1.3+
+- Pharos Atlantic Testnet: CLI v1.3.0+, Go SDK v1.5.0+, TS SDK v1.1.4+
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.2.0...v1.3.0)
+
+## Go SDK v1.5.0 - March 5, 2026
+
+**Go SDK version 1.5.0** adds support for the Pharos Atlantic network.
+
+- **New Network**: Added Pharos Atlantic support
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.4.0...v1.5.0)
+
+## Go SDK v1.4.0 - March 2, 2026
+
+**Go SDK version 1.4.0** expands network support and adds Solana workflow bindings.
+
+- **New Networks**: Added Jovay Testnet, Pharos Testnet, and XLayer support
+- **Solana Support**: Added Solana LogTrigger SDK generation and Solana workflow bindings
+- **Breaking change**: Removed Solana SDK types that were previously generated (now replaced by the new Solana bindings approach)
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.3.0...v1.4.0)
+
+## CLI v1.2.0 - February 26, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.2.0" target="_blank">CRE CLI version 1.2.0</a> is now available.**
+
+- **Dynamic template fetching**: Templates are now fetched at runtime from GitHub, so `cre init` always offers the latest available templates without requiring a CLI update. Two new `cre templates` commands let you manage template sources — run `cre templates list` to browse available templates, or `cre templates add` to include custom or third-party repositories. See [Template Sources](/cre/reference/cli/templates) for details.
+- **Deploy access management**: New `cre account access` command lets you check your organization's deployment access status and submit an Early Access request directly from the CLI. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
+- **Unit tests for TypeScript templates**: TypeScript workflow templates now include a unit test setup out of the box
+- **Bug Fix**: Fixed an issue where secrets were not correctly injected during workflow simulation in certain configurations.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.1.0...v1.2.0)
+
+## Confidential HTTP Capability - February 25, 2026
+
+CRE now supports the [Confidential HTTP](/cre/capabilities/confidential-http) capability for production workflows, allowing you to make privacy-preserving API calls with enclave execution. See the [Making Confidential Requests](/cre/guides/workflow/using-confidential-http-client/making-requests-ts) guide to learn more.
+
+## CLI v1.1.0 - February 18, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.1.0" target="_blank">CRE CLI version 1.1.0</a> is now available.**
+
+- **Custom WASM builds**: New `cre workflow custom-build` command converts a workflow to use a custom Makefile-based build process. Use this when you need custom compiler flags, build tags, CI/CD artifact promotion, or non-standard toolchains. See the [Custom WASM Builds](/cre/guides/operations/custom-build) guide for details.
+- **Improved CLI interface**: The CLI has a refreshed visual output across all commands — styled errors, progress indicators, and spinners during long-running operations make it easier to follow what's happening.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.0.11...v1.1.0)
+
+## TS SDK v1.1.0 - February 18, 2026
+
+**TypeScript SDK version 1.1.0** includes improvements to error handling, Confidential HTTP behavior, and developer experience:
+
+- **Improved error messages**: Error messages across the runtime, codegen, and utilities are now more descriptive and actionable
+- **Confidential HTTP runs in DON mode**: The Confidential HTTP capability now executes in DON mode (instead of node mode), aligning with how other DON-level capabilities work
+- **Clearer setup errors**: The SDK now provides a descriptive error when `cre-setup` has not been run before attempting to compile a workflow
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.0.9...v1.1.0)
+
+## Go SDK v1.3.0 - February 12, 2026
+
+**Go SDK version 1.3.0** updates the Confidential HTTP capability types.
+
+- **Confidential HTTP**: The `encrypt_output` field has moved from `ConfidentialHTTPRequest` to `HTTPRequest`. Update any workflows using `ConfidentialHTTPRequest.encrypt_output` to set this field on the inner `HTTPRequest` instead.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.2.0...v1.3.0)
+
+## CLI v1.0.11 - February 13, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.0.11" target="_blank">CRE CLI version 1.0.11</a> is now available.**
+
+- **New Network**: Added [World Chain Mainnet](/cre/supported-networks) support for workflow simulation and production deployment
+
+**Required versions:** CLI v1.0.11+, Go SDK v1.2.0+, TS SDK v1.0.9+
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.0.10...v1.0.11)
 
 ## CLI v1.0.10 - February 9, 2026
 

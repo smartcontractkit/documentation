@@ -17,6 +17,12 @@ export const SELECTOR_FILES = {
   evm: "selectors.yml",
   solana: "selectors_solana.yml",
   aptos: "selectors_aptos.yml",
+  sui: "selectors_sui.yml",
+  canton: "selectors_canton.yml",
+  ton: "selectors_ton.yml",
+  tron: "selectors_tron.yml",
+  stellar: "selectors_stellar.yml",
+  starknet: "selectors_starknet.yml",
 }
 
 /** Destination paths for selector files */
@@ -24,6 +30,12 @@ export const SELECTOR_CONFIG_PATHS = {
   evm: path.join(CCIP_CONFIG_DIR, SELECTOR_FILES.evm),
   solana: path.join(CCIP_CONFIG_DIR, SELECTOR_FILES.solana),
   aptos: path.join(CCIP_CONFIG_DIR, SELECTOR_FILES.aptos),
+  sui: path.join(CCIP_CONFIG_DIR, SELECTOR_FILES.sui),
+  canton: path.join(CCIP_CONFIG_DIR, SELECTOR_FILES.canton),
+  ton: path.join(CCIP_CONFIG_DIR, SELECTOR_FILES.ton),
+  tron: path.join(CCIP_CONFIG_DIR, SELECTOR_FILES.tron),
+  stellar: path.join(CCIP_CONFIG_DIR, SELECTOR_FILES.stellar),
+  starknet: path.join(CCIP_CONFIG_DIR, SELECTOR_FILES.starknet),
 }
 
 /** Backup paths for selector files */
@@ -31,6 +43,12 @@ export const SELECTOR_BACKUP_PATHS = {
   evm: `${SELECTOR_CONFIG_PATHS.evm}.backup`,
   solana: `${SELECTOR_CONFIG_PATHS.solana}.backup`,
   aptos: `${SELECTOR_CONFIG_PATHS.aptos}.backup`,
+  sui: `${SELECTOR_CONFIG_PATHS.sui}.backup`,
+  canton: `${SELECTOR_CONFIG_PATHS.canton}.backup`,
+  ton: `${SELECTOR_CONFIG_PATHS.ton}.backup`,
+  tron: `${SELECTOR_CONFIG_PATHS.tron}.backup`,
+  stellar: `${SELECTOR_CONFIG_PATHS.stellar}.backup`,
+  starknet: `${SELECTOR_CONFIG_PATHS.starknet}.backup`,
 }
 
 // Legacy paths for backward compatibility

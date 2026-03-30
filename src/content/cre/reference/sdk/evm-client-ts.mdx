@@ -7,7 +7,7 @@ pageId: "reference-sdk-evm-client"
 metadata:
   description: "Reference for TypeScript EVM Client: complete API for smart contract interactions, reads, writes, and report generation with Viem."
   datePublished: "2025-11-04"
-  lastModified: "2026-02-03"
+  lastModified: "2026-02-16"
 ---
 
 import { Aside, CopyText } from "@components"
@@ -25,7 +25,6 @@ import { EVMClient, getNetwork } from "@chainlink/cre-sdk"
 const network = getNetwork({
   chainFamily: "evm",
   chainSelectorName: "ethereum-testnet-sepolia",
-  isTestnet: true,
 })
 
 if (!network) {
@@ -52,7 +51,6 @@ import { getNetwork } from "@chainlink/cre-sdk"
 const network = getNetwork({
   chainFamily: "evm",
   chainSelectorName: "ethereum-testnet-sepolia",
-  isTestnet: true,
 })
 
 // Access network properties
@@ -116,7 +114,6 @@ import { Storage } from "../contracts/abi"
 const network = getNetwork({
   chainFamily: "evm",
   chainSelectorName: "ethereum-testnet-sepolia",
-  isTestnet: true,
 })
 const evmClient = new EVMClient(network.chainSelector.selector)
 
@@ -639,6 +636,102 @@ See [Custom Block Depths](/cre/guides/workflow/using-evm-client/onchain-read-ts#
 
 ---
 
+### `hexToBytes()`
+
+Converts a `0x`-prefixed hex string to a `Uint8Array`.
+
+**Signature:**
+
+```typescript
+function hexToBytes(hex: string): Uint8Array
+```
+
+**Usage:**
+
+```typescript
+import { hexToBytes } from "@chainlink/cre-sdk"
+
+const bytes = hexToBytes("0xabcdef")
+// → Uint8Array [171, 205, 239]
+```
+
+---
+
+### `bigintToBytes()`
+
+Converts a native JavaScript `bigint` to a big-endian `Uint8Array`. This is useful when you need to encode a `bigint` as raw bytes for protobuf fields or ABI encoding.
+
+**Signature:**
+
+```typescript
+function bigintToBytes(n: bigint): Uint8Array
+```
+
+**Usage:**
+
+```typescript
+import { bigintToBytes } from "@chainlink/cre-sdk"
+
+const bytes = bigintToBytes(256n)
+// → Uint8Array [1, 0]
+```
+
+---
+
+### `bytesToBigint()`
+
+Converts a big-endian `Uint8Array` to a native JavaScript `bigint`. This is the inverse of `bigintToBytes()`.
+
+**Signature:**
+
+```typescript
+function bytesToBigint(bytes: Uint8Array): bigint
+```
+
+**Usage:**
+
+```typescript
+import { bytesToBigint } from "@chainlink/cre-sdk"
+
+const value = bytesToBigint(new Uint8Array([1, 0]))
+// → 256n
+```
+
+---
+
+### `bigintToProtoBigInt()`
+
+Converts a native `bigint`, `number`, or `string` to the protobuf `BigIntJson` format used by SDK methods. The [`blockNumber()`](#blocknumber) function is a convenience alias for this function.
+
+**Signature:**
+
+```typescript
+function bigintToProtoBigInt(n: number | bigint | string): BigIntJson
+```
+
+**Returns:**
+
+A `BigIntJson` object with `absVal` (base64-encoded big-endian bytes) and `sign` (`"1"`, `"0"`, or `"-1"`).
+
+**Usage:**
+
+```typescript
+import { bigintToProtoBigInt } from "@chainlink/cre-sdk"
+
+const protoBigInt = bigintToProtoBigInt(12345678n)
+// → { absVal: "ALxhTg==", sign: "1" }
+
+const negative = bigintToProtoBigInt(-42n)
+// → { absVal: "Kg==", sign: "-1" }
+
+const zero = bigintToProtoBigInt(0n)
+// → { absVal: "", sign: "0" }
+```
+
+See [Type Conversions](/cre/reference/sdk/type-conversions-ts#protobigint) for more details on the `ProtoBigInt` format.
+
+---
+
 ### `prepareReportRequest()`
 
 Prepares a report request with default EVM encoding parameters for use with `runtime.report()`. This helper simplifies report generation by automatically setting the standard encoding configuration (`evm`, `ecdsa`, `keccak256`) required for EVM-based workflows.
@@ -764,7 +857,6 @@ import { getNetwork } from "@chainlink/cre-sdk"
 const network = getNetwork({
   chainFamily: "evm",
   chainSelectorName: "ethereum-testnet-sepolia",
-  isTestnet: true,
 })
 
 if (!network) {
@@ -817,13 +909,17 @@ This table shows the chain selector names and their numeric IDs. In your configu
 | Ethereum Sepolia                       | <CopyText text="ethereum-testnet-sepolia" code />              | <CopyText text="16015286601757825753" code /> |
 | Hyperliquid Testnet                    | <CopyText text="hyperliquid-testnet" code />                   | <CopyText text="4286062357653186312" code />  |
 | Ink Sepolia                            | <CopyText text="ink-testnet-sepolia" code />                   | <CopyText text="9763904284804119144" code />  |
+| Jovay Mainnet                          | <CopyText text="jovay-mainnet" code />                         | <CopyText text="1523760397290643893" code />  |
 | Jovay Testnet                          | <CopyText text="jovay-testnet" code />                         | <CopyText text="945045181441419236" code />   |
 | Linea Sepolia                          | <CopyText text="ethereum-testnet-sepolia-linea-1" code />      | <CopyText text="5719461335882077547" code />  |
 | OP Mainnet                             | <CopyText text="ethereum-mainnet-optimism-1" code />           | <CopyText text="3734403246176062136" code />  |
 | OP Sepolia                             | <CopyText text="ethereum-testnet-sepolia-optimism-1" code />   | <CopyText text="5224473277236331295" code />  |
+| Pharos Atlantic Testnet                | <CopyText text="pharos-atlantic-testnet" code />               | <CopyText text="16098325658947243212" code /> |
+| Pharos Mainnet                         | <CopyText text="pharos-mainnet" code />                        | <CopyText text="7801139999541420232" code />  |
 | Plasma Testnet                         | <CopyText text="plasma-testnet" code />                        | <CopyText text="3967220077692964309" code />  |
 | Polygon Mainnet                        | <CopyText text="polygon-mainnet" code />                       | <CopyText text="4051577828743386545" code />  |
 | Polygon Amoy                           | <CopyText text="polygon-testnet-amoy" code />                  | <CopyText text="16281711391670634445" code /> |
+| World Chain Mainnet                    | <CopyText text="ethereum-mainnet-worldchain-1" code />         | <CopyText text="2049429975587534727" code />  |
 | World Chain Sepolia                    | <CopyText text="ethereum-testnet-sepolia-worldchain-1" code /> | <CopyText text="5299555114858065850" code />  |
 | ZKSync Era                             | <CopyText text="ethereum-mainnet-zksync-1" code />             | <CopyText text="1562403441176082196" code />  |
 | ZKSync Era Sepolia                     | <CopyText text="ethereum-testnet-sepolia-zksync-1" code />     | <CopyText text="6898391096552792247" code />  |
@@ -862,7 +958,6 @@ Your workflow configuration can include chain selector names as part of your cus
 const network = getNetwork({
   chainFamily: "evm",
   chainSelectorName: config.evms[0].chainName, // Read from your config
-  isTestnet: true,
 })
 
 if (!network) {

@@ -145,6 +145,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "cre/getting-started/before-you-build",
           highlightAsCurrent: ["cre/getting-started/before-you-build-ts", "cre/getting-started/before-you-build-go"],
         },
+        {
+          title: "Build with AI (Skill, Prompting)",
+          url: "cre/getting-started/build-with-ai",
+          highlightAsCurrent: ["cre/getting-started/build-with-ai-ts", "cre/getting-started/build-with-ai-go"],
+        },
       ],
     },
     {
@@ -213,6 +218,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Generating Bindings",
               url: "cre/guides/workflow/using-evm-client/generating-bindings",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-evm-client/generating-bindings-ts",
+                "cre/guides/workflow/using-evm-client/generating-bindings-go",
+              ],
             },
             {
               title: "Onchain Read",
@@ -297,7 +306,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
-          title: "Confidential API Interactions (Experimental)",
+          title: "Confidential API Interactions",
           url: "cre/guides/workflow/using-confidential-http-client",
           children: [
             {
@@ -351,6 +360,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "cre/guides/operations/simulating-workflows",
         },
         {
+          title: "Testing Production Limits",
+          url: "cre/guides/operations/understanding-limits",
+        },
+        {
           title: "Deploying Workflows",
           url: "cre/guides/operations/deploying-workflows",
         },
@@ -363,6 +376,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "cre/guides/operations/updating-deployed-workflows",
         },
         {
+          title: "Verifying Workflows",
+          url: "cre/guides/operations/verifying-workflows",
+        },
+        {
           title: "Deleting Workflows",
           url: "cre/guides/operations/deleting-workflows",
         },
@@ -373,6 +390,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Monitoring & Debugging Workflows",
           url: "cre/guides/operations/monitoring-workflows",
+        },
+        {
+          title: "Custom WASM Builds",
+          url: "cre/guides/operations/custom-build",
         },
       ],
     },
@@ -394,6 +415,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Managing Authentication",
               url: "cre/account/managing-auth",
+            },
+            {
+              title: "Requesting Deploy Access",
+              url: "cre/account/deploy-access",
             },
           ],
         },
@@ -424,7 +449,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         { title: "Triggers", url: "cre/capabilities/triggers" },
         { title: "HTTP", url: "cre/capabilities/http" },
         {
-          title: "Confidential HTTP (Experimental)",
+          title: "Confidential HTTP",
           url: "cre/capabilities/confidential-http",
           highlightAsCurrent: ["cre/capabilities/confidential-http-ts", "cre/capabilities/confidential-http-go"],
         },
@@ -458,8 +483,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Templates",
       contents: [
         {
-          title: "Overview",
-          url: "cre/templates",
+          title: "CRE Templates Hub",
+          url: "https://docs.chain.link/cre-templates",
         },
         {
           title: "Custom Data Feed Template",
@@ -498,6 +523,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             { title: "Account Management", url: "cre/reference/cli/account" },
             { title: "Workflow Commands", url: "cre/reference/cli/workflow" },
             { title: "Secrets Management", url: "cre/reference/cli/secrets" },
+            { title: "Template Sources", url: "cre/reference/cli/templates" },
             { title: "Utilities", url: "cre/reference/cli/utilities" },
           ],
         },
@@ -553,7 +579,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               highlightAsCurrent: ["cre/reference/sdk/http-client-ts", "cre/reference/sdk/http-client-go"],
             },
             {
-              title: "Confidential HTTP Client (Experimental)",
+              title: "Confidential HTTP Client",
               url: "cre/reference/sdk/confidential-http-client",
               highlightAsCurrent: [
                 "cre/reference/sdk/confidential-http-client-ts",
@@ -565,7 +591,21 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "cre/reference/sdk/consensus",
               highlightAsCurrent: ["cre/reference/sdk/consensus-ts", "cre/reference/sdk/consensus-go"],
             },
+            {
+              title: "Type Conversions",
+              url: "cre/reference/sdk/type-conversions-ts",
+            },
           ],
+        },
+      ],
+    },
+    {
+      section: "Migrate to CRE",
+      contents: [
+        {
+          title: "Migrate from Gelato",
+          url: "cre/reference/gelato-migration",
+          highlightAsCurrent: ["cre/reference/gelato-migration-ts", "cre/reference/gelato-migration-go"],
         },
       ],
     },
@@ -610,7 +650,20 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               url: "data-feeds/smartdata",
               children: [{ title: "Multiple-Variable Response (MVR) Feeds", url: "data-feeds/mvr-feeds" }],
             },
-            { title: "Smart Value Recapture (SVR) Feeds", url: "data-feeds/svr-feeds" },
+            {
+              title: "Smart Value Recapture (SVR) Feeds",
+              url: "data-feeds/svr-feeds",
+              children: [
+                {
+                  title: "Searcher Onboarding: Ethereum Mainnet",
+                  url: "data-feeds/svr-feeds/searcher-onboarding-ethereum",
+                },
+                {
+                  title: "Searcher Onboarding: Atlas (Base, Arbitrum, BNB Chain)",
+                  url: "data-feeds/svr-feeds/searcher-onboarding-atlas",
+                },
+              ],
+            },
             { title: "Rate and Volatility Feeds", url: "data-feeds/rates-feeds" },
             { title: "L2 Sequencer Uptime Feeds", url: "data-feeds/l2-sequencer-feeds" },
           ],
@@ -999,6 +1052,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Verify report data (Solana)",
           url: "data-streams/tutorials/solana-onchain-report-verification",
           highlightAsCurrent: ["data-streams/tutorials/solana-offchain-report-verification"],
+        },
+        {
+          title: "Canton Integration",
+          url: "data-streams/canton-integration",
         },
       ],
     },

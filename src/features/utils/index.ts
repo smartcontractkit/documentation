@@ -118,10 +118,28 @@ export const getChainTypeAndFamily = (supportedChain: SupportedChain): ChainType
       chainFamily = "evm"
       break
     case "aptos":
-      chainFamily = "mvm"
+      chainFamily = "aptos"
+      break
+    case "sui":
+      chainFamily = "sui"
       break
     case "solana":
-      chainFamily = "svm"
+      chainFamily = "solana"
+      break
+    case "tron":
+      chainFamily = "tron"
+      break
+    case "canton":
+      chainFamily = "canton"
+      break
+    case "ton":
+      chainFamily = "ton"
+      break
+    case "stellar":
+      chainFamily = "stellar"
+      break
+    case "starknet":
+      chainFamily = "starknet"
       break
     default:
       throw new Error(`Unknown chain type: ${chainType}`)
@@ -522,6 +540,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "NEXON_HENESYS_MAINNET"
     case "pharos-atlantic-testnet":
       return "PHAROS_ATLANTIC_TESTNET"
+    case "pharos-mainnet":
+      return "PHAROS_MAINNET"
     case "morph-mainnet":
       return "MORPH_MAINNET"
     case "ethereum-testnet-hoodi-morph":
@@ -539,6 +559,18 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
     case "doge-os-chikyu-testnet":
     case "dogeos-testnet-chikyu":
       return "DOGE_OS_CHIKYU_TESTNET"
+    case "adi-testnet":
+      return "ADI_NETWORK_AB_TESTNET"
+    case "adi-mainnet":
+      return "ADI_NETWORK_MAINNET"
+    case "edge-testnet":
+      return "EDGE_TESTNET"
+    case "edge-mainnet":
+      return "EDGE_MAINNET"
+    case "robinhood-testnet":
+      return "ROBINHOOD_TESTNET"
+    case "ton-testnet":
+      return "TON_TESTNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -858,6 +890,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "nexon-mainnet-henesys"
     case "PHAROS_ATLANTIC_TESTNET":
       return "pharos-atlantic-testnet"
+    case "PHAROS_MAINNET":
+      return "pharos-mainnet"
     case "MORPH_MAINNET":
       return "morph-mainnet"
     case "MORPH_HOODI_TESTNET":
@@ -874,6 +908,18 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "arc-testnet"
     case "DOGE_OS_CHIKYU_TESTNET":
       return "dogeos-testnet-chikyu"
+    case "ADI_NETWORK_AB_TESTNET":
+      return "adi-testnet"
+    case "ADI_NETWORK_MAINNET":
+      return "adi-mainnet"
+    case "EDGE_TESTNET":
+      return "edge-testnet"
+    case "EDGE_MAINNET":
+      return "edge-mainnet"
+    case "ROBINHOOD_TESTNET":
+      return "robinhood-testnet"
+    case "TON_TESTNET":
+      return "ton-testnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

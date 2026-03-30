@@ -5,16 +5,17 @@ title: "Deploying Workflows"
 metadata:
   description: "Deploy your workflow: learn how to register your workflow and start running it across a Decentralized Oracle Network (DON)."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-03-17"
 ---
 
 import { Aside } from "@components"
 
 {/* prettier-ignore */}
 <Aside type="note" title="Early Access required">
-  Workflow deployment is currently in Early Access. To <a href="https://cre.chain.link/request-access" target="_blank" rel="noopener noreferrer">request Early Access</a>, please share details about your project and use case—this helps us provide better support as you build with CRE.
-  
-  **While you wait:** Continue building and simulating workflows using [`cre workflow simulate`](/cre/guides/operations/simulating-workflows).
+  Workflow deployment is currently in Early Access. Run `cre account access` or visit <a href="https://cre.chain.link/request-access" target="_blank" rel="noopener noreferrer">cre.chain.link/request-access</a> to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
+
+**While you wait:** Continue building and simulating workflows using [`cre workflow simulate`](/cre/guides/operations/simulating-workflows).
+
 </Aside>
 
 When you deploy a workflow, you take your locally tested code and register it with the onchain Workflow Registry contract. This makes your workflow "live" so it can activate and respond to triggers across a [Decentralized Oracle Network (DON)](/cre/key-terms#decentralized-oracle-network-don).
@@ -23,8 +24,8 @@ When you deploy a workflow, you take your locally tested code and register it wi
 
 Before you can deploy a workflow, you must have:
 
-- **Early Access approval**: Workflow deployment is currently in Early Access. <a href="https://cre.chain.link/request-access" target="_blank" rel="noopener noreferrer">Request access here</a> if you haven't already.
-- **[Logged in](/cre/reference/cli/authentication#cre-login)**: Authenticated with the platform by running `cre login`. To check if you are logged in, run `cre whoami`.
+- **Early Access approval**: Workflow deployment is currently in Early Access. Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
+- **[Authenticated](/cre/reference/cli/authentication)**: Logged in via `cre login` or using an [API key](/cre/reference/cli/authentication#api-key-authentication) (`CRE_API_KEY`). To verify, run `cre whoami`.
 - **[Linked your key](/cre/reference/cli/account#cre-account-link-key)**: Linked your EOA or multi-sig wallet to your account by running `cre account link-key`.
 - **A funded wallet**: The account you are deploying from must be funded with ETH on Ethereum Mainnet to pay the gas fees for the onchain registration transaction to the Workflow Registry contract.
 
@@ -69,6 +70,9 @@ cre workflow deploy my-workflow --target production-settings
 | ---------------- | --------------------------------------------------------------------------------------- |
 | `--target`       | Sets the target environment from your configuration files (e.g., `production-settings`) |
 | `--output`       | The output file for the compiled WASM binary (default: `"./binary.wasm.br.b64"`)        |
+| `--wasm`         | Path to a pre-built WASM binary (skips compilation). Useful in CI/CD pipelines          |
+| `--config`       | Override the config file path from `workflow.yaml`                                      |
+| `--no-config`    | Deploy without a config file                                                            |
 | `--unsigned`     | Return the raw transaction instead of broadcasting it to the network                    |
 | `--yes`          | Skip confirmation prompts and proceed with the operation                                |
 | `--project-root` | Path to the project root directory                                                      |
@@ -144,6 +148,86 @@ After a successful deployment, you can verify that your workflow was registered 
 1. **CRE UI**: View your deployed workflow in the [CRE platform](https://cre.chain.link). Navigate to the **Workflows** section to see your workflow's status, ID, and execution history.
 
 1. **Block Explorer**: Check the Workflow Registry contract on a block explorer. The CLI output will provide the transaction hash for the registration. The `WorkflowRegistry` contract is deployed on **Ethereum Mainnet** at the address <a href="https://etherscan.io/address/0x4ac54353fa4fa961afcc5ec4b118596d3305e7e5#code" target="_blank" rel="noopener noreferrer">`0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5`</a>.
+
+## CI/CD pipeline integration
+
+The `cre workflow build` and `cre workflow deploy` commands can be run as independent steps, making it straightforward to integrate CRE deployments into CI/CD pipelines.
+
+The separation gives you two key benefits:
+
+- **Build once, deploy many times** — Compile your workflow to a WASM binary in a build step, then promote that exact binary to staging and production without recompiling. This ensures the artifact you tested is the artifact you deploy.
+- **Verify before deploying** — Use `cre workflow hash` after building to record and verify content hashes before submitting a deployment transaction.
+
+### Example: GitHub Actions
+
+The following example shows a two-job pipeline: a `build` job that compiles and uploads the WASM artifact, and a `deploy` job that downloads and deploys that exact binary.
+
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy Workflow
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install CRE CLI
+        run: curl -sSL https://github.com/smartcontractkit/cre-cli/releases/latest/download/install.sh | sh
+
+      - name: Build workflow
+        run: cre workflow build ./my-workflow --output ./my-workflow/binary.wasm
+        env:
+          CRE_API_KEY: ${{ secrets.CRE_API_KEY }}
+
+      - name: Display content hashes
+        run: cre workflow hash ./my-workflow --wasm ./my-workflow/binary.wasm --target production-settings
+        env:
+          CRE_API_KEY: ${{ secrets.CRE_API_KEY }}
+          CRE_ETH_PRIVATE_KEY: ${{ secrets.CRE_ETH_PRIVATE_KEY }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: workflow-binary
+          path: ./my-workflow/binary.wasm
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install CRE CLI
+        run: curl -sSL https://github.com/smartcontractkit/cre-cli/releases/latest/download/install.sh | sh
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: workflow-binary
+          path: ./my-workflow
+
+      - name: Deploy workflow
+        run: cre workflow deploy ./my-workflow --wasm ./my-workflow/binary.wasm --target production-settings --yes
+        env:
+          CRE_API_KEY: ${{ secrets.CRE_API_KEY }}
+          CRE_ETH_PRIVATE_KEY: ${{ secrets.CRE_ETH_PRIVATE_KEY }}
+          INFURA_API_KEY: ${{ secrets.INFURA_API_KEY }}
+```
+
+{/* prettier-ignore */}
+<Aside type="note" title="API key authentication">
+  Use `CRE_API_KEY` for non-interactive authentication in CI/CD pipelines instead of `cre login`. Create an API key from the CRE platform under **Organization → APIs**. See [Authentication](/cre/reference/cli/authentication#api-key-authentication) for setup instructions.
+</Aside>
+
+{/* prettier-ignore */}
+<Aside type="note" title="RPC URLs in CI/CD">
+  Use `${VAR_NAME}` syntax in your `project.yaml` RPC URLs to inject secrets from your CI/CD environment. See [Environment variable interpolation in RPC URLs](/cre/reference/project-configuration#environment-variable-interpolation-in-rpc-urls) for details.
+</Aside>
 
 ## Using multi-sig wallets
 

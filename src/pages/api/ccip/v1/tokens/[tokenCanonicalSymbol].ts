@@ -2,6 +2,7 @@ import type { APIRoute } from "astro"
 import {
   validateEnvironment,
   validateOutputKey,
+  validateInternalIdFormat,
   handleApiError,
   APIErrorType,
   createErrorResponse,
@@ -10,8 +11,10 @@ import {
 import { jsonHeaders } from "@lib/api/cacheHeaders.ts"
 import { logger } from "@lib/logging/index.js"
 
-import type { TokenDetailApiResponse, TokenDetailMetadata } from "~/lib/ccip/types/index.ts"
+import type { TokenDetailApiResponse, TokenDetailMetadata, TokenDetailDataResponse } from "~/lib/ccip/types/index.ts"
 import { TokenDataService } from "~/lib/ccip/services/token-data.ts"
+import { ChainIdentifierService } from "~/lib/ccip/services/chain-identifier.ts"
+import { resolveTokenSymbol } from "~/lib/ccip/graphql/utils/reference-data-resolver.ts"
 
 export const prerender = false
 
@@ -19,7 +22,9 @@ export const GET: APIRoute = async ({ params, request }) => {
   const requestId = crypto.randomUUID()
 
   try {
-    const { tokenCanonicalSymbol } = params
+    const tokenCanonicalSymbol = params.tokenCanonicalSymbol
+      ? decodeURIComponent(params.tokenCanonicalSymbol)
+      : undefined
 
     logger.info({
       message: "Processing CCIP token detail request",
@@ -38,6 +43,12 @@ export const GET: APIRoute = async ({ params, request }) => {
 
     // Validate environment
     const environment = validateEnvironment(queryParams.get("environment") || undefined)
+
+    // Resolve to canonical symbol (case-insensitive, trimmed)
+    const canonicalSymbol = resolveTokenSymbol(environment, tokenCanonicalSymbol)
+    if (!canonicalSymbol) {
+      throw new CCIPError(404, `Token '${tokenCanonicalSymbol}' not found`)
+    }
     logger.debug({
       message: "Environment validated",
       requestId,
@@ -45,18 +56,45 @@ export const GET: APIRoute = async ({ params, request }) => {
     })
 
     // Validate output key for chain representation
-    const outputKey = validateOutputKey(queryParams.get("output_key") || undefined)
+    const outputKey = validateOutputKey(queryParams.get("outputKey") || undefined)
     logger.debug({
       message: "Output key validated",
       requestId,
       outputKey,
     })
 
+    // Validate internalIdFormat parameter (only applies when outputKey=internalId)
+    const internalIdFormat = validateInternalIdFormat(queryParams.get("internalIdFormat") || undefined)
+    logger.debug({
+      message: "Internal ID format validated",
+      requestId,
+      internalIdFormat,
+    })
+
     const tokenDataService = new TokenDataService()
-    const result = await tokenDataService.getTokenWithFinality(environment, tokenCanonicalSymbol, outputKey)
+    const result = await tokenDataService.getTokenWithFinality(environment, canonicalSymbol, outputKey)
 
     if (!result) {
-      throw new CCIPError(404, `Token '${tokenCanonicalSymbol}' not found`)
+      throw new CCIPError(404, `Token '${canonicalSymbol}' not found`)
+    }
+
+    // Apply internalIdFormat to transform chain keys when output_key=internalId
+    let formattedData = result.data
+    if (outputKey === "internalId") {
+      const chainIdService = new ChainIdentifierService(environment, internalIdFormat)
+      const formatted: TokenDetailDataResponse = {}
+
+      for (const [chainKey, chainData] of Object.entries(result.data)) {
+        const resolved = chainIdService.resolve(chainKey)
+        if (resolved) {
+          const formattedKey = chainIdService.format(resolved.directoryKey, internalIdFormat)
+          formatted[formattedKey] = chainData
+        } else {
+          formatted[chainKey] = chainData
+        }
+      }
+
+      formattedData = formatted
     }
 
     logger.info({
@@ -71,13 +109,13 @@ export const GET: APIRoute = async ({ params, request }) => {
       environment,
       timestamp: new Date().toISOString(),
       requestId,
-      tokenSymbol: tokenCanonicalSymbol,
+      tokenSymbol: canonicalSymbol,
       chainCount: result.metadata.chainCount,
     }
 
     const response: TokenDetailApiResponse = {
       metadata,
-      data: result.data,
+      data: formattedData,
     }
 
     logger.info({
@@ -107,16 +145,11 @@ export const GET: APIRoute = async ({ params, request }) => {
             : APIErrorType.SERVER_ERROR,
         error.message,
         error.statusCode,
-        {}
+        requestId
       )
     }
 
     // Handle other errors
-    if (error instanceof Error) {
-      return createErrorResponse(APIErrorType.SERVER_ERROR, "Failed to process token detail request", 500, {
-        message: error.message,
-      })
-    }
-    return handleApiError(error)
+    return handleApiError(error, requestId)
   }
 }

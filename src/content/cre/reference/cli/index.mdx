@@ -6,13 +6,13 @@ isIndex: true
 metadata:
   description: "Explore all CRE CLI commands: complete reference for project setup, workflow deployment, account management, and development tools."
   datePublished: "2025-11-04"
-  lastModified: "2026-02-10"
+  lastModified: "2026-03-17"
 ---
 
 import { Aside } from "@components"
 
-<Aside type="note" title="Required CLI Version: v1.0.10">
-  To ensure compatibility with the guides and examples in this documentation, please use version `v1.0.10` of the CRE
+<Aside type="note" title="Required CLI Version: v1.5.0">
+  To ensure compatibility with the guides and examples in this documentation, please use version `v1.5.0` of the CRE
   CLI. You can check your installed version by running `cre version`. Refer to the [CLI
   Installation](/cre/getting-started/cli-installation/macos-linux) guide for more information.
 </Aside>
@@ -58,8 +58,9 @@ Initialize projects and generate contract bindings (Go only).
 
 ### Account Management
 
-Manage your linked public key addresses for workflow operations.
+Manage your linked public key addresses and deployment access.
 
+- **`cre account access`** — Check deployment access status or submit an Early Access request
 - **`cre account link-key`** — Link a public key address to your account
 - **`cre account list-key`** — List workflow owners linked to your organization
 - **`cre account unlink-key`** — Unlink a public key address from your account
@@ -72,11 +73,14 @@ Manage your linked public key addresses for workflow operations.
 
 Manage workflows throughout their entire lifecycle.
 
+- **`cre workflow build`** — Compile a workflow to a WASM binary (without uploading or deploying)
 - **`cre workflow simulate`** — Compile and execute workflows in a local simulation environment
+- **`cre workflow hash`** — Display content hashes for a workflow's binary and config (matches the onchain workflow ID)
 - **`cre workflow deploy`** — Deploy a workflow to the Workflow Registry contract
 - **`cre workflow activate`** — Activate a workflow on the Workflow Registry contract
 - **`cre workflow pause`** — Pause a workflow on the Workflow Registry contract
 - **`cre workflow delete`** — Delete all versions of a workflow from the Workflow Registry
+- **`cre workflow custom-build`** — Convert a workflow to use a custom self-compiled WASM build
 
 [View workflow commands →](/cre/reference/cli/workflow)
 
@@ -92,6 +96,18 @@ Manage secrets stored in the Vault DON for use in your workflows.
 - **`cre secrets list`** — List secret identifiers in a namespace
 
 [View secrets management commands →](/cre/reference/cli/secrets)
+
+---
+
+### Template Sources
+
+Manage the GitHub repositories that `cre init` uses to discover templates.
+
+- **`cre templates list`** — List all templates available from configured sources
+- **`cre templates add`** — Add a custom or third-party template repository
+- **`cre templates remove`** — Remove a template repository source
+
+[View template source commands →](/cre/reference/cli/templates)
 
 ---
 
@@ -111,6 +127,8 @@ The typical workflow development process uses these commands in sequence:
 1. **`cre init`** — Initialize your project
 1. **`cre generate-bindings`** — Generate contract bindings from ABIs (Go workflows only, if interacting with contracts)
 1. **`cre workflow simulate`** — Test your workflow locally
+1. **`cre workflow build`** — (Optional) Compile independently; useful in CI/CD pipelines
+1. **`cre workflow hash`** — (Optional) Inspect content hashes before deploying
 1. **`cre workflow deploy`** — Deploy your workflow to the registry
 1. **`cre workflow activate`** / **`cre workflow pause`** — Control workflow execution
 

@@ -133,7 +133,7 @@ export class SvmAdapter implements FamilyAdapter {
       logger.error({
         message: "Error during signature verification",
         requestId: args.requestId,
-        family: "svm",
+        family: "solana",
         error: error instanceof Error ? error.message : "Unknown error",
         step: "verification_error",
       })

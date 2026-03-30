@@ -1,9 +1,10 @@
 import { Environment } from "~/lib/ccip/types/index.ts"
 import type {
   TokenRateLimits,
+  TokenLaneData,
   RateLimiterEntry,
   RateLimiterConfig,
-  TokenFinalityData,
+  CustomFinalityConfig,
   OutputKeyType,
 } from "~/lib/ccip/types/index.ts"
 
@@ -34,7 +35,7 @@ export interface LaneSupportedTokensResponse {
     destinationChain: string
     tokenCount: number
   }
-  data: Record<string, TokenRateLimits>
+  data: Record<string, TokenLaneData>
 }
 
 /**
@@ -48,7 +49,7 @@ export interface TokenFinalityResponse {
     tokenSymbol: string
     chainCount: number
   }
-  data: Record<string, TokenFinalityData>
+  data: Record<string, CustomFinalityConfig>
 }
 
 /**
