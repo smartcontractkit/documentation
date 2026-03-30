@@ -1526,7 +1526,7 @@ export const MainnetTable = ({
               <tr>
                 <td colSpan={showExtraDetails ? 4 : 2} style={{ textAlign: "center" }}>
                   <img
-                    src="https://smartcontract.imgix.net/icons/null-search.svg?auto=compress%2Cformat"
+                    src="https://d2f70xi62kby8n.cloudfront.net/icons/null-search.svg?auto=compress%2Cformat"
                     style={{ height: "160px" }}
                   />
                   <h4>No results found</h4>
@@ -1763,7 +1763,7 @@ export const TestnetTable = ({
               <tr>
                 <td style={{ textAlign: "center" }}>
                   <img
-                    src="https://smartcontract.imgix.net/icons/null-search.svg?auto=compress%2Cformat"
+                    src="https://d2f70xi62kby8n.cloudfront.net/icons/null-search.svg?auto=compress%2Cformat"
                     style={{ height: "160px" }}
                   />
                   <h4>No results found</h4>

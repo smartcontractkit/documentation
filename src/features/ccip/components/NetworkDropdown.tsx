@@ -380,7 +380,7 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
                   <img
                     src={
                       activeChain === undefined
-                        ? "https://smartcontract.imgix.net/icons/alert.svg"
+                        ? "https://d2f70xi62kby8n.cloudfront.net/icons/alert.svg"
                         : getChainIcon(activeChain)
                     }
                     style={{ marginRight: "var(--space-2x)" }}
@@ -398,7 +398,7 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
                   <img
                     src={
                       activeChain === undefined
-                        ? "https://smartcontract.imgix.net/icons/alert.svg"
+                        ? "https://d2f70xi62kby8n.cloudfront.net/icons/alert.svg"
                         : getChainIcon(activeChain)
                     }
                     style={{ marginRight: "var(--space-2x)", minHeight: "1.2em", minWidth: "1.2em" }}
@@ -412,7 +412,7 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
                   </span>
                 </>
               )}
-              <img src="https://smartcontract.imgix.net/icons/Caret2.svg" />
+              <img src="https://d2f70xi62kby8n.cloudfront.net/icons/Caret2.svg" />
             </div>
           </summary>
           <div className={styles["dropdown-container"]}>
@@ -431,7 +431,7 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
                         {supportedChainTitle}
                       </span>
                       {supportedChainTitle === activeChainTitle && (
-                        <img src="https://smartcontract.imgix.net/icons/check_circle_bold.svg" />
+                        <img src="https://d2f70xi62kby8n.cloudfront.net/icons/check_circle_bold.svg" />
                       )}
                     </button>
                   </li>
@@ -551,7 +551,7 @@ export const NetworkDropdown = ({ userAddress }: Props) => {
             <div className={`paragraph-100 ${styles.warningContent}`}>
               <img
                 className={styles.warningIcon}
-                src="https://smartcontract.imgix.net/icons/alert.svg"
+                src="https://d2f70xi62kby8n.cloudfront.net/icons/alert.svg"
                 alt=""
                 aria-hidden="true"
               />

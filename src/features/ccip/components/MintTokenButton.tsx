@@ -232,7 +232,7 @@ export const MintTokenButton = () => {
                   aria-label="Connect MetaMask wallet to mint CCIP test tokens"
                 >
                   <img
-                    src="https://smartcontract.imgix.net/icons/wallet_filled.svg?auto=compress%2Cformat"
+                    src="https://d2f70xi62kby8n.cloudfront.net/icons/wallet_filled.svg?auto=compress%2Cformat"
                     alt=""
                     className={walletStyles.walletIcon}
                   />

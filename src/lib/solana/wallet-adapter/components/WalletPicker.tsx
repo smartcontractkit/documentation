@@ -5,7 +5,7 @@ import type { WalletReadyState } from "@solana/wallet-adapter-base"
 import styles from "./WalletPicker.module.css"
 
 // Default wallet icon - consistent with Chainlink design system
-const DEFAULT_WALLET_ICON = "https://smartcontract.imgix.net/icons/wallet_filled.svg?auto=compress%2Cformat"
+const DEFAULT_WALLET_ICON = "https://d2f70xi62kby8n.cloudfront.net/icons/wallet_filled.svg?auto=compress%2Cformat"
 
 interface WalletPickerProps {
   className?: string
