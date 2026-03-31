@@ -13,7 +13,11 @@ import { Aside } from "@components"
 
 The CRE SDK provides a Confidential HTTP client that allows your workflows to interact with external APIs while keeping sensitive data private. Requests execute inside a secure enclave, secrets are injected via templates, and responses can optionally be encrypted.
 
-For a conceptual overview of what Confidential HTTP is and how it differs from the regular HTTP capability, see [The Confidential HTTP Capability](/cre/capabilities/confidential-http).
+<Aside type="caution" title="Read this before putting sensitive data in Confidential HTTP requests">
+  **Confidential HTTP does not automatically protect credentials you load with `runtime.getSecret()` / `runtime.GetSecret()`** and then paste into headers or body as plaintext. For Vault DON–style isolation, use **`vaultDonSecrets` / `VaultDonSecrets`** and **`{{.key}}` templates** only. The step-by-step guide below explains the correct pattern and common mistakes.
+</Aside>
+
+For **why** you might need Confidential HTTP—what stays off Workflow DON nodes, and [when to use it vs. regular HTTP](/cre/capabilities/confidential-http#when-to-use-confidential-http-vs-regular-http)—see [The Confidential HTTP capability](/cre/capabilities/confidential-http#whats-kept-confidential).
 
 ## Guides
 

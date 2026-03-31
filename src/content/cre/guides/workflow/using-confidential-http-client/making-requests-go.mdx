@@ -12,12 +12,12 @@ metadata:
 
 import { Aside } from "@components"
 
-The `confidentialhttp.Client` is the SDK's interface for the underlying [Confidential HTTP Capability](/cre/capabilities/confidential-http). It allows your workflow to make privacy-preserving API calls where secrets are injected inside a secure enclave and responses can be optionally encrypted.
+`confidentialhttp.Client` implements the [Confidential HTTP capability](/cre/capabilities/confidential-http-go). Use it when an outbound call should carry [sensitive credentials or request fields](/cre/capabilities/confidential-http-go#whats-kept-confidential) without assembling them as plain strings in workflow code on every node—see [when to use Confidential vs. regular HTTP](/cre/capabilities/confidential-http-go#when-to-use-confidential-http-vs-regular-http). For those values, use **`VaultDonSecrets`** with **`{{.key}}`** placeholders only; **`runtime.GetSecret()`** in headers or body follows a different trust boundary.
 
 Unlike the regular [`http.Client`](/cre/reference/sdk/http-client), the Confidential HTTP client:
 
 - Executes the request in a secure **enclave** (not on each node individually)
-- Injects secrets from the **Vault DON** using template syntax
+- Resolves **`VaultDonSecrets`** into the request via **Vault DON** template syntax
 - Optionally **encrypts the response** before returning it to your workflow
 
 ## Prerequisites
@@ -139,9 +139,11 @@ func makeConfidentialRequest(config Config, runtime cre.Runtime) (Result, error)
 }
 ```
 
-<Aside type="note" title="Alphabetic secret ordering required">
-  When using multiple secrets, pass them into `VaultDonSecrets` in alphabetical order by key. The Vault DON processes
-  secrets in a canonical order to ensure consistent behavior across nodes during execution.
+<Aside type="caution" title="Do not assemble sensitive request data in workflow code">
+  Register API credentials in the Vault DON, add them to **`VaultDonSecrets`**, and reference them **only** with **`{{.key}}` placeholders** in headers or body—not with plaintext from **`runtime.GetSecret()`** or other workflow-built strings (those run in **Workflow DON** execution on every node). See [Using secrets with deployed workflows](/cre/guides/workflow/secrets/using-secrets-deployed).
+
+With **multiple** secrets, list **`VaultDonSecrets`** keys in **alphabetical order** (Vault DON canonical ordering).
+
 </Aside>
 
 ### Step 5: Wire it into your workflow
@@ -188,7 +190,7 @@ headers := map[string]*confidentialhttp.HeaderValues{
 }
 ```
 
-The template placeholders are resolved inside the enclave. The actual secret values never appear in your workflow code or in node memory.
+The template placeholders are resolved inside the enclave. The actual secret values never appear in your workflow code or in node memory. Credentials must be wired through **`VaultDonSecrets`** as in Step 4—not interpolated from **`runtime.GetSecret()`**.
 
 ## Response encryption
 
