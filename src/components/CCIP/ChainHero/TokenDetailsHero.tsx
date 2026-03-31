@@ -1,7 +1,5 @@
 import Address from "~/components/AddressReact.tsx"
 import { getExplorerAddressUrl, fallbackTokenIconUrl } from "~/features/utils/index.ts"
-import { PoolType } from "~/config/data/ccip/types.ts"
-import { tokenPoolDisplay } from "~/config/data/ccip/utils.ts"
 import "./ChainHero.css"
 import { ExplorerInfo, ChainType } from "~/config/types.ts"
 
@@ -19,7 +17,7 @@ interface TokenDetailsHeroProps {
     logo: string
     decimals: number
     address: string
-    poolType: PoolType
+    poolRawType: string
     poolAddress: string
   }
 }
@@ -67,7 +65,7 @@ function TokenDetailsHero({ network, token }: TokenDetailsHeroProps) {
           </div>
           <div className="ccip-chain-hero__details__item">
             <div className="ccip-chain-hero__details__label">Token pool type</div>
-            <div className="ccip-chain-hero__details__value">{tokenPoolDisplay(token.poolType)}</div>
+            <div className="ccip-chain-hero__details__value">{token.poolRawType ?? "—"}</div>
           </div>
           <div className="ccip-chain-hero__details__item">
             <div className="ccip-chain-hero__details__label">Token pool address</div>

@@ -3,12 +3,11 @@ import {
   validateEnvironment,
   validateOutputKey,
   handleApiError,
-  successHeaders,
-  commonHeaders,
   APIErrorType,
   createErrorResponse,
   CCIPError,
 } from "~/lib/ccip/utils.ts"
+import { jsonHeaders } from "@lib/api/cacheHeaders.ts"
 import { logger } from "@lib/logging/index.js"
 
 import type { LaneFilterType, LaneApiResponse, LaneMetadata } from "~/lib/ccip/types/index.ts"
@@ -39,12 +38,12 @@ export const GET: APIRoute = async ({ request }) => {
 
     // Get filters for lanes
     const filters: LaneFilterType = {
-      sourceChainId: params.get("sourceChainId") || undefined,
-      destinationChainId: params.get("destinationChainId") || undefined,
-      sourceSelector: params.get("sourceSelector") || undefined,
-      destinationSelector: params.get("destinationSelector") || undefined,
-      sourceInternalId: params.get("sourceInternalId") || undefined,
-      destinationInternalId: params.get("destinationInternalId") || undefined,
+      sourceChainId: params.get("source_chain_id") || undefined,
+      destinationChainId: params.get("destination_chain_id") || undefined,
+      sourceSelector: params.get("source_selector") || undefined,
+      destinationSelector: params.get("destination_selector") || undefined,
+      sourceInternalId: params.get("source_internal_id") || undefined,
+      destinationInternalId: params.get("destination_internal_id") || undefined,
       version: params.get("version") || undefined,
     }
 
@@ -117,7 +116,7 @@ export const GET: APIRoute = async ({ request }) => {
     })
 
     return new Response(JSON.stringify(response), {
-      headers: { ...commonHeaders, ...successHeaders },
+      headers: jsonHeaders,
     })
   } catch (error) {
     logger.error({
@@ -133,16 +132,11 @@ export const GET: APIRoute = async ({ request }) => {
         error.statusCode === 400 ? APIErrorType.VALIDATION_ERROR : APIErrorType.SERVER_ERROR,
         error.message,
         error.statusCode,
-        {}
+        requestId
       )
     }
 
     // Handle other errors
-    if (error instanceof Error) {
-      return createErrorResponse(APIErrorType.SERVER_ERROR, "Failed to process lanes request", 500, {
-        message: error.message,
-      })
-    }
-    return handleApiError(error)
+    return handleApiError(error, requestId)
   }
 }
