@@ -889,7 +889,20 @@ export const CHAINS: Chain[] = [
   },
 ]
 
-// All mainnet feeds. Used for deprecated feeds.
+/** Every mainnet in `CHAINS`, sorted by display name for the deprecating-feeds aggregate (same rows as per-chain pages). */
+const allMainnetNetworksFromChains = (chains: Chain[]): ChainNetwork[] => {
+  const mainnets: ChainNetwork[] = []
+  for (const chain of chains) {
+    for (const network of chain.networks) {
+      if (network.networkType === "mainnet") {
+        mainnets.push(network)
+      }
+    }
+  }
+  mainnets.sort((a, b) => a.name.localeCompare(b.name, "en"))
+  return mainnets
+}
+
 export const ALL_CHAINS: Chain[] = [
   {
     page: "deprecated",
@@ -898,187 +911,7 @@ export const ALL_CHAINS: Chain[] = [
     networkStatusUrl: "https://ethstats.dev/",
     tags: ["default", "smartData"],
     supportedFeatures: ["feeds"],
-    networks: [
-      {
-        name: "Ethereum Mainnet",
-        explorerUrl: "https://etherscan.io/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-mainnet.json",
-        queryString: "ethereum-mainnet",
-        tags: ["smartData"],
-      },
-      {
-        name: "BNB Chain Mainnet",
-        explorerUrl: "https://bscscan.com/address/%s",
-        networkType: "mainnet",
-        tags: ["smartData"],
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-bsc-mainnet.json",
-        queryString: "bnb-mainnet",
-      },
-      {
-        name: "Polygon Mainnet",
-        explorerUrl: "https://polygonscan.com/address/%s",
-        networkType: "mainnet",
-        tags: ["smartData"],
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-matic-mainnet.json",
-        queryString: "polygon-mainnet",
-      },
-      {
-        name: "Gnosis Chain Mainnet",
-        explorerUrl: "https://gnosisscan.io/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-xdai-mainnet.json",
-        queryString: "gnosis-mainnet",
-      },
-      {
-        name: "Avalanche Mainnet",
-        explorerUrl: "https://snowtrace.io/address/%s",
-        networkType: "mainnet",
-        tags: ["smartData"],
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-avalanche-mainnet.json",
-        queryString: "avalanche-mainnet",
-      },
-      {
-        name: "Fantom Mainnet",
-        explorerUrl: "https://ftmscan.com/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-fantom-mainnet.json",
-        queryString: "fantom-mainnet",
-      },
-      {
-        name: "Arbitrum Mainnet",
-        explorerUrl: "https://arbiscan.io/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-arbitrum-1.json",
-        queryString: "arbitrum-mainnet",
-      },
-      {
-        name: "OP Mainnet",
-        explorerUrl: "https://optimistic.etherscan.io/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-optimism-1.json",
-        queryString: "optimism-mainnet",
-      },
-      {
-        name: "Moonriver Mainnet",
-        explorerUrl: "https://moonriver.moonscan.io/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-kusama-mainnet-moonriver.json",
-        queryString: "moonriver-mainnet",
-      },
-      {
-        name: "Moonbeam Mainnet",
-        explorerUrl: "https://moonscan.io/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-polkadot-mainnet-moonbeam.json",
-        queryString: "moonbeam-mainnet",
-      },
-      {
-        name: "Metis Mainnet",
-        explorerUrl: "https://andromeda-explorer.metis.io/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-andromeda-1.json",
-        queryString: "metis-mainnet",
-      },
-      {
-        name: "Base Mainnet",
-        explorerUrl: "https://basescan.org/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-base-1.json",
-        queryString: "base-mainnet",
-      },
-      {
-        name: "Celo Mainnet",
-        explorerUrl: "https://explorer.celo.org/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-celo-mainnet.json",
-        queryString: "celo-mainnet",
-      },
-      {
-        name: "Scroll Mainnet",
-        explorerUrl: "https://scrollscan.com/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-scroll-1.json",
-        queryString: "scroll-mainnet",
-      },
-      {
-        name: "Linea Mainnet",
-        explorerUrl: "https://lineascan.build/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-linea-1.json",
-        queryString: "linea-mainnet",
-      },
-      {
-        name: "ZKsync Era Mainnet",
-        explorerUrl: "https://explorer.zksync.io/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-zksync-1.json",
-        queryString: "zksync-mainnet",
-      },
-      {
-        name: "Polygon zkEVM Mainnet",
-        explorerUrl: "https://zkevm.polygonscan.com/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-polygon-zkevm-1.json",
-        queryString: "polygon-zkevm-mainnet",
-      },
-      {
-        name: "Ronin Mainnet",
-        explorerUrl: "https://app.roninchain.com/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-ronin-mainnet.json",
-        queryString: "ronin-mainnet",
-      },
-      {
-        name: "Solana Mainnet",
-        explorerUrl: "https://solscan.io/account/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-solana-mainnet.json",
-        queryString: "solana-mainnet",
-      },
-      {
-        name: "BOB Mainnet",
-        explorerUrl: "https://explorer.gobob.xyz/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-bitcoin-mainnet-bob-1.json",
-        queryString: "bob-mainnet",
-      },
-      {
-        name: "Katana Mainnet",
-        explorerUrl: "https://explorer.katanarpc.com/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-polygon-mainnet-katana.json",
-        queryString: "katara-mainnet",
-      },
-      {
-        name: "Sonic Mainnet",
-        explorerUrl: "https://sonicscan.org/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-sonic-mainnet.json",
-        queryString: "sonic-mainnet",
-      },
-      {
-        name: "TRON Mainnet",
-        explorerUrl: "https://tronscan.org/#/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-tron-mainnet.json",
-        queryString: "tron-mainnet",
-      },
-      {
-        name: "Plasma Mainnet",
-        explorerUrl: "https://plasmascan.to/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-plasma-mainnet.json",
-        queryString: "plasma-mainnet",
-      },
-      {
-        name: "Monad Mainnet",
-        explorerUrl: "https://monadvision.com/address/%s",
-        networkType: "mainnet",
-        rddUrl: "https://reference-data-directory.vercel.app/feeds-monad-mainnet.json",
-        queryString: "monad-mainnet",
-      },
-    ],
+    networks: allMainnetNetworksFromChains(CHAINS),
     label: "All",
   },
 ]

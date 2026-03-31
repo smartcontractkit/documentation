@@ -5,7 +5,7 @@ title: "Managing Authentication"
 metadata:
   description: "Manage your CRE CLI sessions: check if you're logged in, handle expired sessions, and securely log out when needed."
   datePublished: "2025-11-04"
-  lastModified: "2026-02-12"
+  lastModified: "2026-03-26"
 ---
 
 import { Aside } from "@components"
@@ -18,11 +18,13 @@ To authenticate your CLI with your CRE account, use the `cre login` command. Thi
 
 For detailed login instructions, see the [Logging in with the CLI](/cre/account/cli-login) guide.
 
+Browser login stores **`~/.cre/cre.yaml`** (credentials) and **`~/.cre/context.yaml`** (cached **tenant context**: registry manifest from the platform, including vault gateway URL and related settings). **`cre logout`** removes both. For a full description and a sample `context.yaml` shape, see [Tenant context cache](/cre/reference/cli/authentication#tenant-context-cache).
+
 ## API key authentication
 
 {/* prettier-ignore */}
 <Aside type="note" title="Deploy access required">
-  API key authentication requires your account to have Early Access approval for deployment. To <a href="https://cre.chain.link/request-access" target="_blank" rel="noopener noreferrer">request Early Access</a>, please share details about your project and use case—this helps us provide better support as you build with CRE.
+  API key authentication requires your account to have Early Access approval for deployment. To <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">request Early Access</a>, please share details about your project and use case—this helps us provide better support as you build with CRE.
 </Aside>
 
 For CI/CD pipelines or headless environments where a browser is not available, you can authenticate using the `CRE_API_KEY` environment variable. When set, the CLI uses the API key automatically — no `cre login` required.
@@ -32,7 +34,7 @@ export CRE_API_KEY="your-api-key"
 cre whoami
 ```
 
-API keys are created in the **APIs** tab of the **Organization** page in the <a href="https://cre.chain.link" target="_blank" rel="noopener noreferrer">CRE platform</a>. For full details, see [API Key Authentication](/cre/reference/cli/authentication#api-key-authentication).
+API keys are created in the **APIs** tab of the **Organization** page in the <a href="https://app.chain.link/cre/discover" target="_blank" rel="noopener noreferrer">CRE platform</a>. For full details, see [API Key Authentication](/cre/reference/cli/authentication#api-key-authentication).
 
 ## Session expiration
 
@@ -70,7 +72,7 @@ To check your deploy access status or submit a request, see [Requesting Deploy A
 
 ## Logging out
 
-To explicitly end your CLI session and remove your stored credentials, use the `cre logout` command:
+To explicitly end your CLI session and remove your stored credentials **and cached tenant context** (`context.yaml`), use the `cre logout` command:
 
 ```bash
 cre logout

@@ -47,6 +47,13 @@ This approach ensures:
 | **Request body**               | Template-based injection: secrets referenced in the request body (e.g., `{{.myApiKey}}`) are resolved inside the enclave, so sensitive values never appear in workflow memory. |
 | **Response body**              | Optionally encrypted. When `EncryptOutput` is enabled, the full response is [AES-GCM](https://en.wikipedia.org/wiki/Galois/Counter_Mode) encrypted before leaving the enclave. |
 
+<Aside type="caution" title="Do not inject sensitive values into the request as plain workflow strings">
+  **Credentials:** List sensitive values in **`vaultDonSecrets`** and reference them only with **`{{.key}}` placeholders**. Secrets read via **`runtime.getSecret()`** (or any string you build in workflow code) and pasted into headers or body are handled in **Workflow DON** execution, not enclave-only. See [Making Confidential Requests (TypeScript)](/cre/guides/workflow/using-confidential-http-client/making-requests-ts#step-4-implement-the-request-and-wire-it-into-your-workflow).
+
+**Scope:** The enclave executes the **outbound HTTP request** and template resolution—not arbitrary workflow logic. Using `ConfidentialHTTPClient` does not make the rest of your workflow confidential compute.
+
+</Aside>
+
 ## Use cases
 
 ### Credential isolation
