@@ -481,25 +481,46 @@ export function handleBilling(
   try {
     // Calculate fees using the same logic as Billing.astro
     const lockAndUnlockAllLanes = calculateNetworkFeesForTokenMechanismDirect(TokenMechanism.LockAndUnlock, "allLanes")
-    const restFromEthereum = calculateNetworkFeesForTokenMechanismDirect(TokenMechanism.BurnAndMint, "fromEthereum")
-    const restToEthereum = calculateNetworkFeesForTokenMechanismDirect(TokenMechanism.BurnAndMint, "toEthereum")
-    const restMechanismNonEthereum = calculateNetworkFeesForTokenMechanismDirect(
+    const restFromEthereumToNonEthereum = calculateNetworkFeesForTokenMechanismDirect(
       TokenMechanism.BurnAndMint,
-      "nonEthereum"
+      "fromEthereumToNonEthereum"
+    )
+    const restFromEthereumToSolana = calculateNetworkFeesForTokenMechanismDirect(
+      TokenMechanism.BurnAndMint,
+      "fromEthereumToSolana"
+    )
+    const restFromNonEthereumToEthereum = calculateNetworkFeesForTokenMechanismDirect(
+      TokenMechanism.BurnAndMint,
+      "fromNonEthereumToEthereum"
+    )
+    const restFromNonEthereumToNonEthereum = calculateNetworkFeesForTokenMechanismDirect(
+      TokenMechanism.BurnAndMint,
+      "fromNonEthereumToNonEthereum"
+    )
+    const restFromNonEthereumToSolana = calculateNetworkFeesForTokenMechanismDirect(
+      TokenMechanism.BurnAndMint,
+      "fromNonEthereumToSolana"
     )
     const messagingFeesFromToEthereum = calculateMessagingNetworkFeesDirect("fromToEthereum")
-    const messagingFeesNonEthereum = calculateMessagingNetworkFeesDirect("nonEthereum")
+    const messagingFeesFromNonEthereumToNonEthereum =
+      calculateMessagingNetworkFeesDirect("fromNonEthereumToNonEthereum")
+    const messagingFeesFromNonEthereumToSolana = calculateMessagingNetworkFeesDirect("fromNonEthereumToSolana")
 
     // Generate markdown table
     const tableRows = [
-      "| Use case | Token Pool Mechanism | Lanes | LINK | Others |",
-      "|----------|----------------------|-------|------|--------|",
-      `| Token Transfers / Programmable Token Transfers | Lock and Unlock | All Lanes | ${lockAndUnlockAllLanes.linkFee} | ${lockAndUnlockAllLanes.gasTokenFee} |`,
-      `| Token Transfers / Programmable Token Transfers | Lock and Mint / Burn and Mint / Burn and Unlock | Non-Ethereum | ${restMechanismNonEthereum.linkFee} | ${restMechanismNonEthereum.gasTokenFee} |`,
-      `| Token Transfers / Programmable Token Transfers | Lock and Mint / Burn and Mint / Burn and Unlock | From: Ethereum | ${restFromEthereum.linkFee} | ${restFromEthereum.gasTokenFee} |`,
-      `| Token Transfers / Programmable Token Transfers | Lock and Mint / Burn and Mint / Burn and Unlock | To: Ethereum | ${restToEthereum.linkFee} | ${restToEthereum.gasTokenFee} |`,
-      `| Messaging | N/A | Non-Ethereum | ${messagingFeesNonEthereum.linkFee} | ${messagingFeesNonEthereum.gasTokenFee} |`,
-      `| Messaging | N/A | From/To: Ethereum | ${messagingFeesFromToEthereum.linkFee} | ${messagingFeesFromToEthereum.gasTokenFee} |`,
+      "| Use case | Token Pool Mechanism | Source Chain | Destination Chain | LINK | Others |",
+      "|----------|----------------------|--------------|-------------------|------|--------|",
+      `| Token Transfers / Programmable Token Transfers | Lock and Unlock | All Chains | All Chains | ${lockAndUnlockAllLanes.linkFee} | ${lockAndUnlockAllLanes.gasTokenFee} |`,
+      `| Token Transfers / Programmable Token Transfers | Lock and Mint / Burn and Mint / Burn and Unlock | Ethereum | Not Ethereum | ${restFromEthereumToNonEthereum.linkFee} | ${restFromEthereumToNonEthereum.gasTokenFee} |`,
+      `| Token Transfers / Programmable Token Transfers | Lock and Mint / Burn and Mint / Burn and Unlock | Ethereum | Solana | ${restFromEthereumToSolana.linkFee} | ${restFromEthereumToSolana.gasTokenFee} |`,
+      `| Token Transfers / Programmable Token Transfers | Lock and Mint / Burn and Mint / Burn and Unlock | Not Ethereum | Solana | ${restFromNonEthereumToSolana.linkFee} | ${restFromNonEthereumToSolana.gasTokenFee} |`,
+      `| Token Transfers / Programmable Token Transfers | Lock and Mint / Burn and Mint / Burn and Unlock | Not Ethereum | Ethereum | ${restFromNonEthereumToEthereum.linkFee} | ${restFromNonEthereumToEthereum.gasTokenFee} |`,
+      `| Token Transfers / Programmable Token Transfers | Lock and Mint / Burn and Mint / Burn and Unlock | Not Ethereum | Not Ethereum | ${restFromNonEthereumToNonEthereum.linkFee} | ${restFromNonEthereumToNonEthereum.gasTokenFee} |`,
+      `| Messaging | N/A | Ethereum | Not Ethereum | ${messagingFeesFromToEthereum.linkFee} | ${messagingFeesFromToEthereum.gasTokenFee} |`,
+      `| Messaging | N/A | Ethereum | Solana | ${messagingFeesFromToEthereum.linkFee} | ${messagingFeesFromToEthereum.gasTokenFee} |`,
+      `| Messaging | N/A | Not Ethereum | Solana | ${messagingFeesFromNonEthereumToSolana.linkFee} | ${messagingFeesFromNonEthereumToSolana.gasTokenFee} |`,
+      `| Messaging | N/A | Not Ethereum | Ethereum | ${messagingFeesFromToEthereum.linkFee} | ${messagingFeesFromToEthereum.gasTokenFee} |`,
+      `| Messaging | N/A | Not Ethereum | Not Ethereum | ${messagingFeesFromNonEthereumToNonEthereum.linkFee} | ${messagingFeesFromNonEthereumToNonEthereum.gasTokenFee} |`,
     ]
 
     const markdownTable = tableRows.join("\n")
