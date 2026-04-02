@@ -3070,13 +3070,163 @@ The deployment and configuration process involves these steps:
   While the `setForwarderAddress()` function allows updating to `address(0)`, this disables the critical security check and allows **anyone** to call your `onReport()` function with arbitrary data. The function emits a `SecurityWarning` event if you attempt this. Only use `address(0)` for testing if you fully understand the implications.
 </Aside>
 
-### Replay protection
+### Replay attacks
 
-The `KeystoneForwarder` contract includes built-in replay protection that prevents successful reports from being executed multiple times. By requiring the forwarder address at construction time, `ReceiverTemplate` ensures your consumer benefits from this protection automatically.
+CRE reports carry DON signatures that any compatible `KeystoneForwarder` will accept. This creates two distinct replay vectors that workflow authors must explicitly protect against by embedding protective metadata in their report payloads and verifying it in their consumer contracts.
+
+#### Cross-chain replay
+
+**The risk**: While publishing a single signed report to multiple chains simultaneously enables patterns like [Proof of Reserve (PoR)](/data-feeds/smartdata#proof-of-reserve-feeds) or feed-style publish-once-post-many, it also means **anyone holding a valid report can replay it on any chain that recognizes the DON's signing keys**.
+
+The forwarder validates cryptographic signatures but those signatures do not commit to a specific chain—without additional protection in your consumer contract, a replayed report can land on an unintended chain.
+
+**The mitigation**: Embed the target chain selector in the report payload. The consumer contract decodes this value and rejects reports not intended for the current chain. Chain selectors are `uint64` identifiers used throughout the CRE platform to identify blockchain networks — see [Chain Selectors](/cre/reference/sdk/evm-client-ts#chain-selectors) for the full list of constants and the `ChainSelectorFromName` helper.
+
+**Workflow (embed chain selector in the report payload):**
+
+```go
+// Define your report struct with a ChainSelector field.
+// ChainSelector is a uint64 — the same type used when instantiating evm.Client.
+type PaymentReport struct {
+  Recipient     common.Address
+  Amount        *big.Int
+  ChainSelector uint64 // Target chain — used by the consumer to reject cross-chain replays
+}
+
+paymentReport := PaymentReport{
+  Recipient:     common.HexToAddress(config.Recipient),
+  Amount:        big.NewInt(100_000_000), // e.g., 100 USDC (6 decimals)
+  ChainSelector: config.ChainSelector,   // e.g., 16015286601757825753 for Ethereum Sepolia
+}
+
+// ABI-encode paymentReport and pass to runtime.GenerateReport() as normal
+```
+
+**Consumer contract (verify the embedded chain selector):**
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+contract ChainRestrictedConsumer is ReceiverTemplate {
+  IERC20 public immutable i_token;
+  uint64 public immutable i_expectedChainSelector;
+
+  error UnexpectedChainSelector(uint64 received, uint64 expected);
+
+  constructor(
+    address _forwarderAddress,
+    address _token,
+    uint64 _expectedChainSelector
+  ) ReceiverTemplate(_forwarderAddress) {
+    i_token = IERC20(_token);
+    i_expectedChainSelector = _expectedChainSelector;
+  }
+
+  function _processReport(bytes calldata report) internal override {
+    (address recipient, uint256 amount, uint64 chainSelector) = abi.decode(
+      report,
+      (address, uint256, uint64)
+    );
+
+    if (chainSelector != i_expectedChainSelector) {
+      revert UnexpectedChainSelector(chainSelector, i_expectedChainSelector);
+    }
+
+    i_token.transfer(recipient, amount);
+  }
+}
+```
+
+#### Same-chain replay on failure
+
+**The risk**: While allowing failed deliveries to be retried without requiring a new signed report enables permissionless recovery from transient failures, it also means the forwarder does not mark reverted transmissions as used.
+
+**A malicious actor can exploit this window**: after your workflow has already reacted to a failure (for example, scheduled a corrective action), an attacker can replay the original signed report once conditions recover, causing double-execution.
 
 
-<Aside type="note" title="Failed reports can be retried">
-  If a report fails (reverts), the forwarder's replay protection allows it to be retried. This is safe because reverts undo all state changes, ensuring no duplicate effects occur in your contract.
+<Aside type="caution" title="Attack scenario: double payment">
+  1. A cron workflow attempts to pay a wallet $100 USDC. The consumer contract **reverts** (insufficient funds).
+  2. CRE returns a reverted transaction hash. The workflow records the failure and plans to correct the balance on the next run.
+  3. Funds are replenished — by the owner, another workflow, or a user deposit.
+  4. An attacker (or a bot) replays the original signed report. The consumer now has funds and the payment **executes again** — the recipient is paid twice.
+</Aside>
+
+**The mitigation**: Embed the scheduled execution timestamp in the report payload. The consumer contract stores the last accepted timestamp and rejects any report with a timestamp equal to or earlier than the stored value. Once a later execution has been accepted, earlier failed reports can never land.
+
+
+<Aside type="note" title="Use the trigger's scheduled time, not wall-clock time">
+  The timestamp must be deterministic across all DON nodes so they agree during consensus. Use the cron trigger's scheduled execution slot time rather than `time.Now()`. Refer to the [cron trigger reference](/cre/reference/sdk/triggers/cron-trigger-go) for the exact field name on the trigger payload.
+</Aside>
+
+**Workflow (embed scheduled execution timestamp in the report payload):**
+
+```go
+// Use the trigger's scheduled slot time — deterministic across all DON nodes.
+// Refer to the cron trigger reference for the exact field name on cron.Payload.
+scheduledAt := trigger.ScheduledAt.Unix()
+
+// Define your report struct with a ScheduledAt field
+type PaymentReport struct {
+  Recipient   common.Address
+  Amount      *big.Int
+  ScheduledAt *big.Int // Monotonic execution timestamp — used to reject stale replays
+}
+
+paymentReport := PaymentReport{
+  Recipient:   common.HexToAddress(config.Recipient),
+  Amount:      big.NewInt(100_000_000), // e.g., 100 USDC (6 decimals)
+  ScheduledAt: big.NewInt(scheduledAt),
+}
+
+// ABI-encode paymentReport and pass to runtime.GenerateReport() as normal
+```
+
+**Consumer contract (reject reports from earlier executions):**
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+contract ScheduledPaymentConsumer is ReceiverTemplate {
+  IERC20 public immutable i_token;
+  uint256 public s_lastAcceptedTimestamp;
+
+  error ReportTooOld(uint256 reportTimestamp, uint256 lastAccepted);
+
+  event PaymentProcessed(address indexed recipient, uint256 amount, uint256 scheduledAt);
+
+  constructor(address _forwarderAddress, address _token) ReceiverTemplate(_forwarderAddress) {
+    i_token = IERC20(_token);
+  }
+
+  function _processReport(bytes calldata report) internal override {
+    (address recipient, uint256 amount, uint256 scheduledAt) = abi.decode(
+      report,
+      (address, uint256, uint256)
+    );
+
+    if (scheduledAt <= s_lastAcceptedTimestamp) {
+      revert ReportTooOld(scheduledAt, s_lastAcceptedTimestamp);
+    }
+
+    s_lastAcceptedTimestamp = scheduledAt;
+
+    i_token.transfer(recipient, amount);
+    emit PaymentProcessed(recipient, amount, scheduledAt);
+  }
+}
+```
+
+
+<Aside type="tip" title="Combining both protections">
+  For maximum safety, embed both `chainSelector` and `scheduledAt` in a single report struct. This protects against cross-chain and same-chain replay simultaneously with one encoding step.
 </Aside>
 
 ### Additional validation layers
@@ -3107,9 +3257,13 @@ The forwarder address provides baseline security, but you can add additional val
    - **Single workflow**: Use `setExpectedWorkflowId()` to restrict to one specific workflow (highest security)
    - **Multiple workflows from same owner**: Use `setExpectedAuthor()` to restrict to workflows you own
    - **Multiple workflows from different owners**: Implement custom validation logic in your `onReport()` override
-3. **Keep your owner key secure** - The owner can update all permission settings
-4. **Test permission configurations** - Verify your security settings work as expected before production deployment
-5. **Workflow name validation** - Can be used with `setExpectedWorkflowName()` but requires `setExpectedAuthor()` to also be configured for security
+3. **Protect against replay attacks** - For any workflow that performs state-changing actions (payments, minting, position updates):
+   - Embed the **target chain selector** in the report payload and verify it in `_processReport` to prevent cross-chain replay
+   - Embed a **monotonic execution timestamp** from the cron trigger and reject reports with a timestamp ≤ the last accepted value to prevent same-chain replay on failure
+   - See [Replay attacks](#replay-attacks) for complete code examples
+4. **Keep your owner key secure** - The owner can update all permission settings
+5. **Test permission configurations** - Verify your security settings work as expected before production deployment
+6. **Workflow name validation** - Can be used with `setExpectedWorkflowName()` but requires `setExpectedAuthor()` to also be configured for security
 
 ---
 
@@ -3530,6 +3684,16 @@ This report is designed to be passed directly to either:
 - `evm.Client.WriteReport()` for onchain delivery
 - `http.Client` for offchain delivery
 
+
+<Aside type="caution" title="Protect against replay attacks before submitting">
+  If your workflow performs state-changing actions (payments, minting, position updates), embed protective metadata in the payload you pass to `runtime.GenerateReport()`:
+
+  - **Chain selector**: Include the target chain selector so the consumer contract can reject reports replayed on a different chain.
+  - **Execution timestamp**: Include the cron trigger's scheduled slot time so the consumer can reject stale reports that were previously reverted and are being replayed by an attacker.
+
+  See [Replay attacks](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#replay-attacks) in the Building Consumer Contracts guide for full code examples.
+</Aside>
+
 ### 4. Submit the report
 
 Now that you have a generated report, choose where to send it:
@@ -3775,6 +3939,16 @@ This report is designed to be passed directly to either:
 
 - `evm.Client.WriteReport()` for onchain delivery
 - `http.Client` for offchain delivery
+
+
+<Aside type="caution" title="Protect against replay attacks before submitting">
+  If your workflow performs state-changing actions (payments, minting, position updates), add protective fields to your struct before encoding:
+
+  - **Chain selector**: Include the target chain selector so the consumer contract can reject reports replayed on a different chain.
+  - **Execution timestamp**: Include the cron trigger's scheduled slot time so the consumer can reject stale reports that were previously reverted and are being replayed by an attacker.
+
+  See [Replay attacks](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#replay-attacks) in the Building Consumer Contracts guide for full code examples.
+</Aside>
 
 The report can now be [submitted onchain](/cre/guides/workflow/using-evm-client/onchain-write/submitting-reports-onchain) or [sent via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http).
 
@@ -4120,6 +4294,11 @@ type WriteReportReply struct {
 - **`ReceiverContractExecutionStatus`**: Whether your consumer contract's `onReport()` function executed successfully
 - **`ErrorMessage`**: If the transaction failed, this field contains details about what went wrong
 
+
+<Aside type="caution" title="Replay attack risk">
+  A signed report can be replayed on a different chain or resubmitted on the same chain after a revert. If your workflow performs state-changing actions, embed a chain selector and a scheduled execution timestamp in your report payload **before** calling `WriteReport()`, and verify them in your consumer contract. See [Replay attacks](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#replay-attacks) for full examples.
+</Aside>
+
 ## Best practices
 
 When submitting reports onchain, follow these practices to ensure reliability and observability:
@@ -4295,6 +4474,7 @@ See the [CLI Reference](/cre/reference/cli/workflow#cre-workflow-simulate) for m
 - Verify your consumer contract implements the `IReceiver` interface correctly (see [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts))
 - Review your consumer contract's `onReport()` validation logic—it may be rejecting the report
 - Ensure the report data format matches what your consumer contract expects
+- **Important**: A reverted transaction opens a replay window. The forwarder does not mark reverted reports as used, meaning anyone can resubmit the signed report once conditions change. If your workflow takes corrective action after seeing a revert, see [Same-chain replay on failure](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#same-chain-replay-on-failure) for how to protect against double-execution
 
 **"out of gas" error or transaction runs out of gas**
 
@@ -13068,6 +13248,11 @@ Here's the journey your workflow's data takes to reach the blockchain:
 4. **Delivery to your contract**: The Forwarder validates the report's signatures and calls your consumer contract's `onReport()` function with the data
 
 Your workflow code handles this process using the [`evm.Client`](/cre/reference/sdk/evm-client), which manages the interaction with the Forwarder contract. Depending on your approach (covered below), this can be fully automated via generated binding helpers or done manually with direct client calls.
+
+
+<Aside type="caution" title="Replay attacks">
+  Signed reports can be replayed on a different chain or resubmitted on the same chain after a revert. For any workflow that performs state-changing actions, you must embed protective metadata in the report payload and verify it in your consumer contract. See [Replay attacks](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#replay-attacks) for full examples.
+</Aside>
 
 ## What you need: A consumer contract
 
