@@ -525,13 +525,170 @@ The deployment and configuration process involves these steps:
   While the `setForwarderAddress()` function allows updating to `address(0)`, this disables the critical security check and allows **anyone** to call your `onReport()` function with arbitrary data. The function emits a `SecurityWarning` event if you attempt this. Only use `address(0)` for testing if you fully understand the implications.
 </Aside>
 
-### Replay protection
+### Replay attacks
 
-The `KeystoneForwarder` contract includes built-in replay protection that prevents successful reports from being executed multiple times. By requiring the forwarder address at construction time, `ReceiverTemplate` ensures your consumer benefits from this protection automatically.
+CRE reports carry DON signatures that any compatible `KeystoneForwarder` will accept. This creates two distinct replay vectors that workflow authors must explicitly protect against by embedding protective metadata in their report payloads and verifying it in their consumer contracts.
+
+#### Cross-chain replay
+
+**The risk**: While publishing a single signed report to multiple chains simultaneously enables patterns like [Proof of Reserve (PoR)](/data-feeds/smartdata#proof-of-reserve-feeds) or feed-style publish-once-post-many, it also means **anyone holding a valid report can replay it on any chain that recognizes the DON's signing keys**.
+
+The forwarder validates cryptographic signatures but those signatures do not commit to a specific chain—without additional protection in your consumer contract, a replayed report can land on an unintended chain.
+
+<ClickToZoom
+  src="/images/cre/crosschain-replay-attack-vector-diagram.png"
+  alt="Cross-chain replay attack vector diagram"
+/>
+
+**The mitigation**: Embed the target chain selector in the report payload. The consumer contract decodes this value and rejects reports not intended for the current chain. Chain selectors are `uint64` identifiers used throughout the CRE platform to identify blockchain networks — see [Chain Selectors](/cre/reference/sdk/evm-client-ts#chain-selectors) for the full list of constants and the `ChainSelectorFromName` helper.
+
+**Workflow (embed chain selector in the report payload):**
+
+```go
+// Define your report struct with a ChainSelector field.
+// ChainSelector is a uint64 — the same type used when instantiating evm.Client.
+type PaymentReport struct {
+  Recipient     common.Address
+  Amount        *big.Int
+  ChainSelector uint64 // Target chain — used by the consumer to reject cross-chain replays
+}
+
+paymentReport := PaymentReport{
+  Recipient:     common.HexToAddress(config.Recipient),
+  Amount:        big.NewInt(100_000_000), // e.g., 100 USDC (6 decimals)
+  ChainSelector: config.ChainSelector,   // e.g., 16015286601757825753 for Ethereum Sepolia
+}
+
+// ABI-encode paymentReport and pass to runtime.GenerateReport() as normal
+```
+
+**Consumer contract (verify the embedded chain selector):**
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+contract ChainRestrictedConsumer is ReceiverTemplate {
+  IERC20 public immutable i_token;
+  uint64 public immutable i_expectedChainSelector;
+
+  error UnexpectedChainSelector(uint64 received, uint64 expected);
+
+  constructor(
+    address _forwarderAddress,
+    address _token,
+    uint64 _expectedChainSelector
+  ) ReceiverTemplate(_forwarderAddress) {
+    i_token = IERC20(_token);
+    i_expectedChainSelector = _expectedChainSelector;
+  }
+
+  function _processReport(bytes calldata report) internal override {
+    (address recipient, uint256 amount, uint64 chainSelector) = abi.decode(
+      report,
+      (address, uint256, uint64)
+    );
+
+    if (chainSelector != i_expectedChainSelector) {
+      revert UnexpectedChainSelector(chainSelector, i_expectedChainSelector);
+    }
+
+    i_token.transfer(recipient, amount);
+  }
+}
+```
+
+#### Same-chain replay on failure
+
+**The risk**: While allowing failed deliveries to be retried without requiring a new signed report enables permissionless recovery from transient failures, it also means the forwarder does not mark reverted transmissions as used.
+
+**A malicious actor can exploit this window**: after your workflow has already reacted to a failure (for example, scheduled a corrective action), an attacker can replay the original signed report once conditions recover, causing double-execution.
+
+<ClickToZoom src="/images/cre/same-chain-replay-on-failure.png" alt="Same-chain replay on failure diagram" />
 
 {/* prettier-ignore */}
-<Aside type="note" title="Failed reports can be retried">
-  If a report fails (reverts), the forwarder's replay protection allows it to be retried. This is safe because reverts undo all state changes, ensuring no duplicate effects occur in your contract.
+<Aside type="caution" title="Attack scenario: double payment">
+  1. A cron workflow attempts to pay a wallet $100 USDC. The consumer contract **reverts** (insufficient funds).
+  1. CRE returns a reverted transaction hash. The workflow records the failure and plans to correct the balance on the next run.
+  1. Funds are replenished — by the owner, another workflow, or a user deposit.
+  1. An attacker (or a bot) replays the original signed report. The consumer now has funds and the payment **executes again** — the recipient is paid twice.
+</Aside>
+
+**The mitigation**: Embed the scheduled execution timestamp in the report payload. The consumer contract stores the last accepted timestamp and rejects any report with a timestamp equal to or earlier than the stored value. Once a later execution has been accepted, earlier failed reports can never land.
+
+{/* prettier-ignore */}
+<Aside type="note" title="Use the trigger's scheduled time, not wall-clock time">
+  The timestamp must be deterministic across all DON nodes so they agree during consensus. Use the cron trigger's scheduled execution slot time rather than `time.Now()`. Refer to the [cron trigger reference](/cre/reference/sdk/triggers/cron-trigger-go) for the exact field name on the trigger payload.
+</Aside>
+
+**Workflow (embed scheduled execution timestamp in the report payload):**
+
+```go
+// Use the trigger's scheduled slot time — deterministic across all DON nodes.
+// Refer to the cron trigger reference for the exact field name on cron.Payload.
+scheduledAt := trigger.ScheduledAt.Unix()
+
+// Define your report struct with a ScheduledAt field
+type PaymentReport struct {
+  Recipient   common.Address
+  Amount      *big.Int
+  ScheduledAt *big.Int // Monotonic execution timestamp — used to reject stale replays
+}
+
+paymentReport := PaymentReport{
+  Recipient:   common.HexToAddress(config.Recipient),
+  Amount:      big.NewInt(100_000_000), // e.g., 100 USDC (6 decimals)
+  ScheduledAt: big.NewInt(scheduledAt),
+}
+
+// ABI-encode paymentReport and pass to runtime.GenerateReport() as normal
+```
+
+**Consumer contract (reject reports from earlier executions):**
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+contract ScheduledPaymentConsumer is ReceiverTemplate {
+  IERC20 public immutable i_token;
+  uint256 public s_lastAcceptedTimestamp;
+
+  error ReportTooOld(uint256 reportTimestamp, uint256 lastAccepted);
+
+  event PaymentProcessed(address indexed recipient, uint256 amount, uint256 scheduledAt);
+
+  constructor(address _forwarderAddress, address _token) ReceiverTemplate(_forwarderAddress) {
+    i_token = IERC20(_token);
+  }
+
+  function _processReport(bytes calldata report) internal override {
+    (address recipient, uint256 amount, uint256 scheduledAt) = abi.decode(
+      report,
+      (address, uint256, uint256)
+    );
+
+    if (scheduledAt <= s_lastAcceptedTimestamp) {
+      revert ReportTooOld(scheduledAt, s_lastAcceptedTimestamp);
+    }
+
+    s_lastAcceptedTimestamp = scheduledAt;
+
+    i_token.transfer(recipient, amount);
+    emit PaymentProcessed(recipient, amount, scheduledAt);
+  }
+}
+```
+
+{/* prettier-ignore */}
+<Aside type="tip" title="Combining both protections">
+  For maximum safety, embed both `chainSelector` and `scheduledAt` in a single report struct. This protects against cross-chain and same-chain replay simultaneously with one encoding step.
 </Aside>
 
 ### Additional validation layers
@@ -562,6 +719,10 @@ The forwarder address provides baseline security, but you can add additional val
    - **Single workflow**: Use `setExpectedWorkflowId()` to restrict to one specific workflow (highest security)
    - **Multiple workflows from same owner**: Use `setExpectedAuthor()` to restrict to workflows you own
    - **Multiple workflows from different owners**: Implement custom validation logic in your `onReport()` override
+1. **Protect against replay attacks** - For any workflow that performs state-changing actions (payments, minting, position updates):
+   - Embed the **target chain selector** in the report payload and verify it in `_processReport` to prevent cross-chain replay
+   - Embed a **monotonic execution timestamp** from the cron trigger and reject reports with a timestamp ≤ the last accepted value to prevent same-chain replay on failure
+   - See [Replay attacks](#replay-attacks) for complete code examples
 1. **Keep your owner key secure** - The owner can update all permission settings
 1. **Test permission configurations** - Verify your security settings work as expected before production deployment
 1. **Workflow name validation** - Can be used with `setExpectedWorkflowName()` but requires `setExpectedAuthor()` to also be configured for security
