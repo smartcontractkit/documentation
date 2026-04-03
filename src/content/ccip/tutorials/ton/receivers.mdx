@@ -58,7 +58,7 @@ assert(in.senderAddress == st.router) throw ERROR_UNAUTHORIZED;
 assert(in.valueCoins >= MIN_VALUE) throw ERROR_LOW_VALUE;
 ```
 
-**Step 3 — Acknowledge delivery.** Send `Router_CCIPReceiveConfirm` back to the Router using `SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE` to forward all remaining TON for the protocol's confirmation chain.
+**Step 3 — Acknowledge delivery.** Send `Router_CCIPReceiveConfirm` back to the Router with enough TON attached to cover the protocol's confirmation chain. Using `SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE` is the simplest approach — it forwards all remaining value automatically — but any send mode is valid as long as at least **0.02 TON** reaches the Router.
 
 ```tolk
 val receiveConfirm = createMessage({
@@ -72,7 +72,7 @@ receiveConfirm.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
 
 <Aside type="caution" title="Setting MIN_VALUE Too Low">
 
-If `MIN_VALUE` is too small, your contract may not forward enough TON for `Router_CCIPReceiveConfirm` to propagate back through the protocol chain, leaving the message in an undelivered state. Start at **0.03 TON** and benchmark your contract's execution costs to determine the correct value.
+If `MIN_VALUE` is too small, your contract may not forward enough TON for `Router_CCIPReceiveConfirm` to propagate back through the protocol chain, leaving the message in an undelivered state. The message cannot be retried and used gas is not refunded. Start at **0.03 TON** and benchmark your contract's execution costs to determine the correct value.
 
 </Aside>
 

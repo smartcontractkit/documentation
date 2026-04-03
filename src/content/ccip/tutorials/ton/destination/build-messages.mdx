@@ -47,21 +47,12 @@ struct EVM2AnyMessage {
 - **Encoding**: TON addresses must be encoded into a 36-byte format: 4 bytes for the workchain identifier (big-endian signed int32) followed by 32 bytes for the account hash. Use the `encodeTONAddress` helper shown below.
 
 <Aside title="Encoding a TON Address">
-  Parse the TON address with `Address.parse()` from `@ton/core`, then encode it into the 36-byte format expected by the
-  EVM CCIP Router:
+  TON user-friendly addresses (e.g., `EQ...`) are base64-encoded 36-byte sequences. Decode the address string
+  directly to get the bytes expected by the EVM CCIP Router:
 
-```typescript filename="scripts/utils/utils.ts"
-import { Address } from "@ton/core"
-import { ethers } from "ethers"
-
-function encodeTONAddress(addr: Address): Uint8Array {
-  const workchainBytes = new Uint8Array(4)
-  new DataView(workchainBytes.buffer).setInt32(0, addr.workChain, false)
-  return ethers.getBytes(ethers.concat([workchainBytes, addr.hash]))
-}
-
+```typescript filename="scripts/evm2ton/sendMessage.ts"
 const tonContractAddr = "EQB9QIw22sgwNKMfqsMKGepkhnjXYJmXlzCgcBSAlaiF9VCj"
-const receiver = encodeTONAddress(Address.parse(tonContractAddr))
+const receiver = new Uint8Array(Buffer.from(tonContractAddr, "base64"))
 ```
 
 </Aside>
@@ -156,13 +147,12 @@ Use this configuration when sending a data payload to a custom smart contract on
   </Fragment>
   <Fragment slot="panel.2">
     ```typescript filename="scripts/evm2ton/sendMessage.ts"
-    import { Address } from "@ton/core"
     import { ethers } from "ethers"
 
     const TON_TESTNET_CHAIN_SELECTOR = 1399300952838017768n
 
     const tonContractAddr = "EQB9QIw22sgwNKMfqsMKGepkhnjXYJmXlzCgcBSAlaiF9VCj"
-    const receiver = encodeTONAddress(Address.parse(tonContractAddr))
+    const receiver = new Uint8Array(Buffer.from(tonContractAddr, 'base64'))
     const data = ethers.toUtf8Bytes("Hello TON!")
 
     const message = {
@@ -184,14 +174,13 @@ Use this configuration when sending a data payload to a custom smart contract on
   </Fragment>
   <Fragment slot="panel.3">
     ```typescript filename="scripts/evm2ton/sendMessage.ts"
-    import { Address } from "@ton/core"
     import { ethers } from "ethers"
 
     const TON_TESTNET_CHAIN_SELECTOR = 1399300952838017768n
     const LINK_ADDRESS = "0x779877A7B0D9E8603169DdbD7836e478b4624789"  // LINK on Sepolia
 
     const tonContractAddr = "EQB9QIw22sgwNKMfqsMKGepkhnjXYJmXlzCgcBSAlaiF9VCj"
-    const receiver = encodeTONAddress(Address.parse(tonContractAddr))
+    const receiver = new Uint8Array(Buffer.from(tonContractAddr, 'base64'))
     const data = ethers.toUtf8Bytes("Hello TON!")
 
     const message = {

@@ -23546,7 +23546,7 @@ assert(in.senderAddress == st.router) throw ERROR_UNAUTHORIZED;
 assert(in.valueCoins >= MIN_VALUE) throw ERROR_LOW_VALUE;
 ```
 
-**Step 3 — Acknowledge delivery.** Send `Router_CCIPReceiveConfirm` back to the Router using `SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE` to forward all remaining TON for the protocol's confirmation chain.
+**Step 3 — Acknowledge delivery.** Send `Router_CCIPReceiveConfirm` back to the Router with enough TON attached to cover the protocol's confirmation chain. Using `SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE` is the simplest approach — it forwards all remaining value automatically — but any send mode is valid as long as at least **0.02 TON** reaches the Router.
 
 ```tolk
 val receiveConfirm = createMessage({
@@ -23559,7 +23559,7 @@ receiveConfirm.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
 ```
 
 <Aside type="caution" title="Setting MIN_VALUE Too Low">
-  If `MIN_VALUE` is too small, your contract may not forward enough TON for `Router_CCIPReceiveConfirm` to propagate back through the protocol chain, leaving the message in an undelivered state. Start at **0.03 TON** and benchmark your contract's execution costs to determine the correct value.
+  If `MIN_VALUE` is too small, your contract may not forward enough TON for `Router_CCIPReceiveConfirm` to propagate back through the protocol chain, leaving the message in an undelivered state. The message cannot be retried and used gas is not refunded. Start at **0.03 TON** and benchmark your contract's execution costs to determine the correct value.
 </Aside>
 
 ### Developer Responsibilities
@@ -23858,8 +23858,8 @@ export function buildExtraArgsForEVM(gasLimitEVMUnits: number, allowOutOfOrderEx
   const extraArgs = buildExtraArgsForEVM(100_000, true)
   ```
 
-  If the gas limit is too low, execution fails on the destination chain and the message cannot be retried. Unused gas is
-  not refunded.
+  If the gas limit is too low, execution fails on the destination chain. For EVM destinations, failed messages can be
+  retried with a higher gas limit. Unused gas is not refunded.
 
   **`allowOutOfOrderExecution`**: Must always be `true` for TON-to-EVM messages. Setting this to `false` will cause the
   Router to reject the message.
@@ -24464,21 +24464,12 @@ struct EVM2AnyMessage {
 - **Encoding**: TON addresses must be encoded into a 36-byte format: 4 bytes for the workchain identifier (big-endian signed int32) followed by 32 bytes for the account hash. Use the `encodeTONAddress` helper shown below.
 
 <Aside title="Encoding a TON Address">
-  Parse the TON address with `Address.parse()` from `@ton/core`, then encode it into the 36-byte format expected by the
-  EVM CCIP Router:
+  TON user-friendly addresses (e.g., `EQ...`) are base64-encoded 36-byte sequences. Decode the address string
+  directly to get the bytes expected by the EVM CCIP Router:
 
-  ```typescript filename="scripts/utils/utils.ts"
-  import { Address } from "@ton/core"
-  import { ethers } from "ethers"
-
-  function encodeTONAddress(addr: Address): Uint8Array {
-    const workchainBytes = new Uint8Array(4)
-    new DataView(workchainBytes.buffer).setInt32(0, addr.workChain, false)
-    return ethers.getBytes(ethers.concat([workchainBytes, addr.hash]))
-  }
-
+  ```typescript filename="scripts/evm2ton/sendMessage.ts"
   const tonContractAddr = "EQB9QIw22sgwNKMfqsMKGepkhnjXYJmXlzCgcBSAlaiF9VCj"
-  const receiver = encodeTONAddress(Address.parse(tonContractAddr))
+  const receiver = new Uint8Array(Buffer.from(tonContractAddr, "base64"))
   ```
 </Aside>
 
