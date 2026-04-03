@@ -1,0 +1,129 @@
+---
+section: ccip
+date: Last Modified
+title: "Prerequisites for EVM to TON Tutorials"
+isIndex: false
+metadata:
+  description: "Complete setup guide for EVM to TON cross-chain development. Install Node.js, configure EVM and TON wallets, and get testnet tokens for CCIP Chainlink tutorials. Step-by-step instructions for developers building cross-chain applications."
+  image: "/images/ccip/ccip-hl-v1.6.gif"
+  excerpt: "prerequisites, EVM, TON, wallets, testnet, setup"
+  datePublished: "2026-03-29"
+  lastModified: "2026-03-29"
+  estimatedTime: "10 minutes"
+  difficulty: "beginner"
+---
+
+import { Aside } from "@components"
+
+Before starting the EVM to TON tutorials, ensure you have the following:
+
+## Development Environment
+
+- **Node.js v20 or higher**: You can use the [nvm package](http://nvm.sh/) to install and switch between Node.js versions. Once installed, verify the node version with:
+
+  ```bash filename="Terminal"
+  node -v
+  ```
+
+  Example output:
+
+  ```text
+  $ node -v
+  v22.15.0
+  ```
+
+- **npm**: For installing and managing dependencies.
+- **Git**: For cloning the repository.
+
+## Starter Kit Repository
+
+1.  Clone the CCIP TON Starter Kit:
+
+    ```bash filename="Terminal"
+    git clone https://github.com/smartcontractkit/ccip-starter-kit-ton.git
+    ```
+
+1.  Navigate to the directory:
+
+    ```bash filename="Terminal"
+    cd ccip-starter-kit-ton
+    ```
+
+1.  Install dependencies:
+
+    ```bash filename="Terminal"
+    npm install
+    ```
+
+This installs the required TON SDK packages, including [`@ton/core`](https://github.com/ton-org/ton-core), [`@ton/ton`](https://github.com/ton-org/ton), and [`@ton/crypto`](https://github.com/ton-org/ton-crypto), as well as [`ethers`](https://github.com/ethers-io/ethers.js) for the EVM-side scripts.
+
+## Wallets
+
+- **EVM Wallet and Private Key**: You need an EVM wallet to send CCIP messages from an EVM chain (e.g., Ethereum Sepolia) and to deploy receiver contracts.
+  - Set up a wallet like [MetaMask](https://metamask.io/).
+  - Export the private key for the account you intend to use. Follow the [official MetaMask guide](https://support.metamask.io/configure/accounts/how-to-export-an-accounts-private-key/) to obtain your private key.
+
+- **TON Wallet**: You need a TON wallet to deploy the receiver contract on TON Testnet. The starter kit uses the **[V4R2 wallet version](https://docs.ton.org/standard/wallets/v4)**. You can create a TON wallet using [Tonkeeper](https://tonkeeper.com/):
+  1. Download and install Tonkeeper
+  2. Create a new wallet and save the [24-word recovery phrase (mnemonic)](https://docs.ton.org/standard/wallets/mnemonics)
+  3. Add a Testnet Account using the same mnemonic
+  4. In wallet settings, select **V4R2** as the wallet version
+
+  <Aside type="note" title="Why V4R2?">
+    V4R2 and W5 are different wallet contract versions on TON. The same mnemonic generates different addresses for each
+    version. CCIP TON infrastructure is built for V4R2.
+  </Aside>
+
+## Environment Configuration (`.env` file)
+
+The starter kit uses a `.env` file to manage sensitive information like private keys and RPC URLs. Create a new file named `.env` in the root of the `ccip-starter-kit-ton` directory by copying the example file:
+
+```bash filename="Terminal"
+cp .env.example .env
+```
+
+Next, open the `.env` file and fill in the required values:
+
+- `EVM_PRIVATE_KEY`: The private key (with `0x` prefix) of your EVM wallet. Required for sending CCIP messages from EVM chains and deploying receiver contracts on TON.
+
+- `ETHEREUM_SEPOLIA_RPC_URL`: The RPC endpoint for Ethereum Sepolia. Required when sending from Ethereum Sepolia. You can obtain a free RPC URL from providers like [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or [QuickNode](https://www.quicknode.com/).
+
+- `ARBITRUM_SEPOLIA_RPC_URL` (optional): The RPC endpoint for Arbitrum Sepolia if you plan to send messages from this chain.
+
+- `TON_MNEMONIC`: Your 24-word mnemonic phrase for the TON wallet. Required to deploy the receiver contract on TON Testnet.
+
+- `TON_RPC_URL` (optional): Override the default TON RPC endpoint. The default is `https://ton-testnet.api.onfinality.io/public`, which does not require an API key.
+
+- `TON_CENTER_API_KEY` (optional): Only required if you use a toncenter RPC URL (e.g., `https://testnet.toncenter.com/api/v2/jsonRPC`). Get a free API key from [@tonapibot](https://t.me/tonapibot) on Telegram.
+
+**Example `.env` file:**
+
+```bash filename=".env"
+EVM_PRIVATE_KEY=0xYourEVMPrivateKey
+ETHEREUM_SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY
+ARBITRUM_SEPOLIA_RPC_URL=https://arb-sepolia.g.alchemy.com/v2/YOUR_API_KEY
+TON_MNEMONIC="word1 word2 word3 ... word24"
+```
+
+<Aside type="caution" title="Keep Your Secrets Safe">
+  Never share your EVM private key or TON mnemonic phrase, or commit them to version control. The `.env` file should be
+  added to your `.gitignore` to prevent accidental exposure.
+</Aside>
+
+## Testnet Tokens
+
+### ETH on Ethereum Sepolia
+
+ETH is required to pay for EVM transaction fees and CCIP fees when sending from Ethereum Sepolia. Use the [Chainlink Faucet](https://faucet.chain.link) to get test ETH.
+
+### LINK on Ethereum Sepolia (optional)
+
+When paying CCIP fees in LINK instead of ETH, you need LINK tokens on the source chain. Use the [Chainlink Faucet](https://faucet.chain.link) to get test LINK.
+
+### TON on Testnet
+
+A small amount of TON is required to deploy the receiver contract and pay for transactions on TON Testnet.
+
+1. Visit the [TON Testnet Faucet](https://t.me/testgiver_ton_bot) on Telegram
+2. Send your V4R2 testnet wallet address to `@testgiver_ton_bot`
+3. The bot will send you 2 testnet TON (you can request again every 60 minutes)

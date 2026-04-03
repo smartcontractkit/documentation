@@ -1,0 +1,377 @@
+---
+section: ccip
+date: Last Modified
+title: "Building CCIP Messages from TON to EVM"
+isIndex: false
+metadata:
+  description: "Learn how to construct CCIP arbitrary messages from TON to EVM chains. Covers the TL-B Cell layout, receiver encoding, extraArgs, fee estimation, and sending options."
+  image: "/images/ccip/ccip-hl-v1.6.gif"
+  excerpt: "TON→EVM, CCIP, arbitrary messaging, TL-B Cell, extraArgs, GenericExtraArgsV2, fee estimation, CCIPSend"
+  datePublished: "2026-03-29"
+  lastModified: "2026-03-29"
+  estimatedTime: "30 minutes"
+  difficulty: "advanced"
+---
+
+import { Aside, GitHubCard } from "@components"
+import { Tabs } from "@components/Tabs"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## Introduction
+
+This guide explains how to construct CCIP messages from the TON blockchain to EVM chains (e.g., Ethereum Sepolia, Arbitrum Sepolia). TON's CCIP integration currently supports **arbitrary messaging only** — token transfers are not supported on TON lanes.
+
+You send a CCIP message from TON by constructing a [Cell](https://docs.ton.org/foundations/serialization/cells) in the specific [TL-B layout](https://docs.ton.org/languages/tl-b/overview) expected by the CCIP Router contract, then sending that Cell as the body of an internal TON message to the Router address with enough TON attached to cover both the CCIP protocol fee and source-chain execution costs.
+
+<Aside title="Note">
+  The code snippets in this guide use the [`@ton/core`](https://www.npmjs.com/package/@ton/core),
+  [`@ton/ton`](https://www.npmjs.com/package/@ton/ton), and [`@ton/crypto`](https://www.npmjs.com/package/@ton/crypto)
+  packages for building and sending transactions. Ensure these libraries are installed in your project if you are
+  following along with the code examples.
+</Aside>
+
+## CCIP Message Cell Layout on TON
+
+CCIP messages from TON are sent by constructing a `Router_CCIPSend` Cell and delivering it as the body of an [internal message](https://docs.ton.org/foundations/messages/internal) to the CCIP Router address on TON Testnet (`EQB9QIw22sgwNKMfqsMKGepkhnjXYJmXlzCgcBSAlaiF9VCj`).
+
+The `buildCCIPMessageForEVM` helper in the [TON Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-ton/blob/main/scripts/utils/utils.ts) assembles this Cell:
+
+```typescript filename="scripts/utils/utils.ts"
+import { Address, beginCell, Cell } from "@ton/core"
+
+const CCIP_SEND_OPCODE = 0x31768d95
+
+export function buildCCIPMessageForEVM(
+  queryID: bigint | number,
+  destChainSelector: bigint | number,
+  receiverBytes: Buffer, // 32 bytes: 12 zero-bytes + 20-byte EVM address
+  data: Cell, // message payload
+  feeToken: Address, // native TON address
+  extraArgs: Cell // GenericExtraArgsV2 cell
+): Cell {
+  return beginCell()
+    .storeUint(CCIP_SEND_OPCODE, 32) // Router opcode
+    .storeUint(queryID, 64) // unique message identifier (wallet seqno)
+    .storeUint(destChainSelector, 64) // destination chain selector
+    .storeUint(receiverBytes.length, 8) // receiver byte-length prefix (always 32)
+    .storeBuffer(receiverBytes) // encoded EVM receiver address
+    .storeRef(data) // message payload cell
+    .storeRef(Cell.EMPTY) // tokenAmounts — always empty for TON
+    .storeAddress(feeToken) // fee token (native TON only)
+    .storeRef(extraArgs) // GenericExtraArgsV2 cell
+    .endCell()
+}
+```
+
+The following sections describe each field in detail.
+
+---
+
+### queryID
+
+- **Type**: `uint64`
+- **Purpose**: A unique identifier that lets the TON CCIP Router correlate `Router_CCIPSendACK` and `Router_CCIPSendNACK` responses back to the originating send.
+- **Recommended value**: Use the sending wallet's current sequence number (`seqno`). Wallet seqnos are monotonically increasing and unique per wallet, making them collision-free.
+
+```typescript filename="scripts/ton2evm/sendMessage.ts"
+const seqno = await walletContract.getSeqno()
+// pass BigInt(seqno) as queryID
+```
+
+<Aside title="ACK and NACK responses">
+  After the Router processes your message, it sends back a `Router_CCIPSendACK` (accepted) or `Router_CCIPSendNACK`
+  (rejected) containing the same `queryID`. If you are sending through an on-chain Sender contract (see the **Via Sender
+  Contract** tab in [Sending the Message](#sending-the-message)), you can match responses to their originating send
+  using this field.
+</Aside>
+
+---
+
+### destChainSelector
+
+- **Type**: `uint64`
+- **Purpose**: Identifies the destination EVM chain where the message will be delivered.
+- **Supported chains**: See the [CCIP Directory](/ccip/directory/testnet/chain/ton-testnet) for the complete list of supported TON → EVM lanes and their chain selectors.
+
+```typescript filename="helper-config.ts"
+// From helper-config.ts in the Starter Kit
+const destChainSelector = BigInt(networkConfig["sepolia"].chainSelector)
+// => 16015286601757825753n (Ethereum Sepolia)
+```
+
+---
+
+### receiver
+
+- **Definition**: The address of the contract on the destination EVM chain that will receive the CCIP message.
+- **Encoding**: EVM addresses are 20 bytes, but the TON CCIP Router expects a 32-byte buffer. Left-pad the 20-byte address with 12 zero-bytes.
+
+```typescript filename="scripts/utils/utils.ts"
+export function encodeEVMAddress(evmAddr: string): Buffer {
+  const addrBytes = Buffer.from(evmAddr.slice(2), "hex") // strip '0x'
+  return Buffer.concat([Buffer.alloc(12, 0), addrBytes]) // 12 zero-bytes + 20-byte address
+}
+```
+
+**Usage:**
+
+```typescript filename="scripts/ton2evm/sendMessage.ts"
+const receiverBytes = encodeEVMAddress("0xYourEVMReceiverAddress")
+// receiverBytes.length === 32
+```
+
+<Aside title="Why 32 bytes?">
+  The TON CCIP Router uses a chain-agnostic 32-byte address format. EVM addresses are 20 bytes, so 12 zero-bytes are
+  prepended as left-padding. The on-chain codec on the EVM side strips these padding bytes when decoding.
+</Aside>
+
+---
+
+### data
+
+- **Definition**: The raw bytes delivered to the `_ccipReceive` function on the destination EVM contract via `Client.Any2EVMMessage.data`.
+- **Format**: A TL-B `Cell` containing your message payload.
+
+For sending a plain text string:
+
+```typescript filename="scripts/ton2evm/sendMessage.ts"
+import { beginCell } from "@ton/core"
+
+const data = beginCell().storeStringTail("Hello EVM from TON").endCell()
+```
+
+The EVM receiver contract receives these bytes as `message.data` and is responsible for interpreting them. The `MessageReceiver.sol` contract in the Starter Kit emits the raw bytes in a `MessageFromTON` event, which can be decoded with `ethers.toUtf8String(message.data)`.
+
+<Aside title="Data encoding">
+  The TON sender stores the payload as raw bytes inside a Cell. The destination EVM contract receives exactly those
+  bytes in `message.data`. If your EVM receiver expects ABI-encoded data (e.g., `abi.decode(message.data, (string))`),
+  encode the payload accordingly before storing it in the Cell.
+</Aside>
+
+---
+
+### tokenAmounts
+
+- **Value**: Always `Cell.EMPTY`.
+- **Reason**: Token transfers are not supported on TON CCIP lanes. All messages from TON carry data only.
+
+```typescript
+.storeRef(Cell.EMPTY) // tokenAmounts — must always be an empty cell
+```
+
+---
+
+### feeToken
+
+- **Definition**: The token used to pay the CCIP protocol fee on TON.
+- **Supported value**: Only native TON is supported. Paying fees in LINK is not available for TON-to-EVM messages.
+- **Address**: `EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAd99`
+
+```typescript filename="scripts/ton2evm/sendMessage.ts"
+const feeToken = Address.parse(networkConfig.tonTestnet.nativeTokenAddress)
+// "EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAd99"
+```
+
+The CCIP protocol fee is deducted from the TON value attached to the Router message, not from a separate token transfer.
+
+---
+
+### extraArgs
+
+The `extraArgs` field is a `Cell` encoding [`GenericExtraArgsV2`](/ccip/api-reference/evm/v1.6.1/client#genericextraargsv2) parameters required by the destination EVM chain. The tag `0x181dcf10` is the [`GENERIC_EXTRA_ARGS_V2_TAG`](/ccip/api-reference/evm/v1.6.1/client#generic_extra_args_v2_tag). The Cell layout is:
+
+| Field                      | Type      | Description                                         |
+| -------------------------- | --------- | --------------------------------------------------- |
+| `tag`                      | `uint32`  | `0x181dcf10` — identifies GenericExtraArgsV2 format |
+| `hasGasLimit`              | `bit`     | Must be `1` (gas limit is always present)           |
+| `gasLimit`                 | `uint256` | EVM gas units allocated for receiver execution      |
+| `allowOutOfOrderExecution` | `bit`     | Must be `1` for TON-to-EVM messages                 |
+
+```typescript filename="scripts/utils/utils.ts"
+export function buildExtraArgsForEVM(gasLimitEVMUnits: number, allowOutOfOrderExecution: boolean): Cell {
+  return beginCell()
+    .storeUint(0x181dcf10, 32) // GenericExtraArgsV2 tag
+    .storeBit(true) // gasLimit IS present
+    .storeUint(gasLimitEVMUnits, 256) // gasLimit in EVM gas units
+    .storeBit(allowOutOfOrderExecution) // must be true
+    .endCell()
+}
+```
+
+<Aside title="Configuring extraArgs correctly">
+  **`gasLimit`**: Set this to the estimated gas required by your receiver contract's
+  [`_ccipReceive`](/ccip/api-reference/evm/v1.6.1/ccip-receiver#_ccipreceive) function on the destination chain.
+  `100_000` EVM gas units covers simple message storage (e.g.,
+  [`MessageReceiver.sol`](https://github.com/smartcontractkit/ccip-starter-kit-ton/blob/main/contracts/MessageReceiver.sol)).
+  Increase this for contracts with more complex logic.
+
+```typescript
+const extraArgs = buildExtraArgsForEVM(100_000, true)
+```
+
+If the gas limit is too low, execution fails on the destination chain. For EVM destinations, failed messages can be
+retried with a higher gas limit. Unused gas is not refunded.
+
+**`allowOutOfOrderExecution`**: Must always be `true` for TON-to-EVM messages. Setting this to `false` will cause the
+Router to reject the message.
+
+</Aside>
+
+---
+
+## Estimating the CCIP Fee
+
+Before sending, query the protocol fee. The fee is returned in [nanoTON](https://docs.ton.org/foundations/fees) and is computed by the FeeQuoter contract, reachable through a chain of on-chain getter calls:
+
+```
+Router.onRamp(destChainSelector)         → OnRamp address
+OnRamp.feeQuoter(destChainSelector)      → FeeQuoter address
+FeeQuoter.validatedFeeCell(ccipSendCell) → fee in nanoTON
+```
+
+The `getCCIPFeeForEVM` helper in the Starter Kit performs this lookup. The CCIP message Cell passed to it must be fully populated — `queryID`, `destChainSelector`, `receiver`, `data`, `feeToken`, and `extraArgs` must all match the values used in the final send.
+
+```typescript filename="scripts/ton2evm/sendMessage.ts"
+import { TonClient } from "@ton/ton"
+import { fromNano } from "@ton/core"
+
+const fee = await getCCIPFeeForEVM(client, routerAddress, destChainSelector, ccipSendMessage)
+console.log(`CCIP fee: ${fromNano(fee)} TON`)
+```
+
+### Applying a buffer and gas reserve
+
+Add a buffer on top of the quoted fee to account for minor variations between quote time and execution:
+
+- **10% fee buffer**: Covers small fluctuations in the protocol fee.
+- **0.5 TON gas reserve**: Covers the wallet-level transaction fee and source-chain execution. This is sent to the Router along with the fee and any surplus is returned via the ACK message.
+
+```typescript filename="scripts/ton2evm/sendMessage.ts"
+const fee = await getCCIPFeeForEVM(client, routerAddress, destChainSelector, ccipSendMessage)
+const feeWithBuffer = (fee * 110n) / 100n // +10%
+const gasReserve = 500_000_000n // 0.5 TON in nanoTON
+
+const valueToAttach = feeWithBuffer + gasReserve // total value sent to Router
+```
+
+---
+
+## Sending the Message
+
+After building the Cell and calculating the total value to attach, you have two options.
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">Direct from Wallet</Fragment>
+  <Fragment slot="tab.2">Via Sender Contract</Fragment>
+  <Fragment slot="panel.1">
+    Send the `Router_CCIPSend` Cell directly from your wallet to the CCIP Router address. This is the simplest path when your application logic is entirely off-chain.
+
+    ```
+    Wallet ──(Router_CCIPSend)──► CCIP Router
+    ```
+
+    ```typescript filename="scripts/ton2evm/sendMessage.ts"
+    import { Address, internal as createInternal } from "@ton/core"
+
+    const routerAddress = Address.parse(networkConfig.tonTestnet.router)
+
+    await walletContract.sendTransfer({
+      seqno,
+      secretKey: keyPair.secretKey,
+      messages: [
+        createInternal({
+          to: routerAddress,
+          value: valueToAttach, // feeWithBuffer + gasReserve
+          body: ccipSendCell, // the Router_CCIPSend cell
+        }),
+      ],
+    })
+    ```
+
+  </Fragment>
+  <Fragment slot="panel.2">
+    If your application logic lives on-chain, deploy the `MinimalSender` contract from the Starter Kit. Your wallet sends a `CCIPSender_RelayCCIPSend` message to the Sender, which then forwards the pre-built `Router_CCIPSend` Cell to the Router.
+
+    ```
+    Wallet ──(CCIPSender_RelayCCIPSend)──► MinimalSender ──(Router_CCIPSend)──► CCIP Router
+    ```
+
+    Build the relay message as follows:
+
+    ```typescript filename="scripts/ton2evm/sendMessage.ts"
+    import { beginCell, toNano } from "@ton/core"
+
+    const CCIP_SENDER_RELAY_OPCODE = 0x00000001
+
+    const relayMsg = beginCell()
+      .storeUint(CCIP_SENDER_RELAY_OPCODE, 32)
+      .storeAddress(routerAddress) // CCIP Router to forward to
+      .storeCoins(valueToAttach) // value to attach when forwarding (fee + gas reserve)
+      .storeRef(ccipSendCell) // the pre-built Router_CCIPSend cell
+      .endCell()
+
+    const senderOverhead = toNano("0.1") // covers MinimalSender execution costs
+
+    await walletContract.sendTransfer({
+      seqno,
+      secretKey: keyPair.secretKey,
+      messages: [
+        createInternal({
+          to: senderAddress,
+          value: valueToAttach + senderOverhead, // Router value + Sender gas
+          body: relayMsg,
+        }),
+      ],
+    })
+    ```
+
+    <Aside title="Sender contract overhead">
+      When routing through a Sender contract, attach an additional ~0.1 TON on top of `valueToAttach` to cover the
+      Sender's own execution costs. The Sender forwards exactly `valueToAttach` to the Router and consumes the remainder
+      for gas. Any TON surplus above actual compute costs is returned via `Router_CCIPSendACK` (message accepted) or
+      `Router_CCIPSendNACK` (message rejected — both fee and surplus are returned on rejection).
+    </Aside>
+
+    The `MinimalSender` contract handles Router responses in its `onInternalMessage` handler:
+
+    ```tolk filename="contracts/minimal_sender.tolk"
+    // Tolk is TON's smart contract language: https://docs.ton.org/tolk/overview
+    Router_CCIPSendACK => {
+        // Message accepted by the Router.
+        // msg.messageId is the unique CCIP message ID for tracking delivery.
+        // Add your on-chain success logic here (e.g., update state, emit event).
+    }
+    Router_CCIPSendNACK => {
+        // Message rejected by the Router.
+        // Both the fee and surplus TON are returned to the Sender.
+        // msg.error contains the Router exit code.
+        // Add your on-chain failure logic here (e.g., retry, refund).
+        throw msg.error;
+    }
+    ```
+
+  </Fragment>
+</Tabs>
+
+---
+
+## Reference: Full Message Construction
+
+The complete flow from wallet setup to sending is available in the TON Starter Kit:
+
+<GitHubCard
+  title="scripts/ton2evm/sendMessage.ts"
+  href="https://github.com/smartcontractkit/ccip-starter-kit-ton/blob/main/scripts/ton2evm/sendMessage.ts"
+  iconName="github-svg-card"
+>
+  Full script including wallet setup, message construction, fee estimation, and send with CLI options for chain,
+  receiver, message content, and optional Sender contract routing.
+</GitHubCard>
+
+## Related Tutorials
+
+To see these concepts in action with a step-by-step implementation guide, check out the following tutorial:
+
+- [Arbitrary Messaging: TON to EVM](/ccip/tutorials/ton/source/arbitrary-messaging) — Learn how to send data messages from a TON wallet to an EVM receiver contract.
+
+<CcipCommon callout="educationalDisclaimer" />

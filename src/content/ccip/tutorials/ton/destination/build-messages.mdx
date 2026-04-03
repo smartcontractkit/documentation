@@ -1,0 +1,220 @@
+---
+section: ccip
+date: Last Modified
+title: "Building CCIP Messages from EVM to TON"
+isIndex: false
+metadata:
+  description: "Implement CCIP messages from EVM chains to the TON blockchain. Guide covers message structure, TON address encoding, nanoTON gasLimit, and implementation for arbitrary data messaging."
+  image: "/images/ccip/ccip-hl-v1.6.gif"
+  excerpt: "EVM to TON, CCIP message, receiver encoding, extraArgs, nanoTON, gasLimit, GenericExtraArgsV2, encodeTONAddress, arbitrary messaging"
+  datePublished: "2026-03-29"
+  lastModified: "2026-03-29"
+  estimatedTime: "20 minutes"
+  difficulty: "advanced"
+---
+
+import { Aside } from "@components"
+import { Tabs } from "@components/Tabs"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## Introduction
+
+This guide explains how to construct CCIP messages from Ethereum Virtual Machine (EVM) chains (e.g., Ethereum Sepolia, Arbitrum Sepolia) to the TON blockchain. It covers the message structure, required parameters, and implementation details for sending arbitrary data payloads to a Tolk smart contract on TON.
+
+<Aside title="Note">
+  The code snippets below use the [ethers.js](https://www.npmjs.com/package/ethers) and
+  [`@ton/core`](https://www.npmjs.com/package/@ton/core) packages for encoding and address parsing. Ensure both are
+  installed in your project if you are following along with the code examples.
+</Aside>
+
+## CCIP Message Structure
+
+CCIP messages from EVM are built using the [`EVM2AnyMessage`](/ccip/api-reference/evm/v1.6.1/client#evm2anymessage) struct from the [`Client.sol`](/ccip/api-reference/evm/v1.6.1/client) library. The `EVM2AnyMessage` struct is defined as follows:
+
+```solidity filename="Client.sol"
+struct EVM2AnyMessage {
+    bytes receiver;
+    bytes data;
+    EVMTokenAmount[] tokenAmounts;
+    address feeToken;
+    bytes extraArgs;
+}
+```
+
+### receiver
+
+- **Definition**: The encoded TON address of the smart contract on TON that will receive and process the CCIP message.
+- **Encoding**: TON addresses must be encoded into a 36-byte format: 4 bytes for the workchain identifier (big-endian signed int32) followed by 32 bytes for the account hash. Use the `encodeTONAddress` helper shown below.
+
+<Aside title="Encoding a TON Address">
+  TON user-friendly addresses (e.g., `EQ...`) are base64-encoded 36-byte sequences. Decode the address string
+  directly to get the bytes expected by the EVM CCIP Router:
+
+```typescript filename="scripts/evm2ton/sendMessage.ts"
+const tonContractAddr = "EQB9QIw22sgwNKMfqsMKGepkhnjXYJmXlzCgcBSAlaiF9VCj"
+const receiver = new Uint8Array(Buffer.from(tonContractAddr, "base64"))
+```
+
+</Aside>
+
+### data
+
+- **Definition**: The raw bytes payload delivered to the `ccipReceive` entry point on the TON destination contract.
+- **For arbitrary messaging**: Contains the custom data payload your receiver will process.
+- **Encoding**: Pass raw bytes directly — do **not** use `hexlify`. Use `ethers.toUtf8Bytes()` for string payloads.
+
+<Aside type="tip" title="Data Encoding">
+
+```typescript filename="scripts/evm2ton/sendMessage.ts"
+import { ethers } from "ethers"
+
+// Pass raw bytes — do NOT call hexlify on the result.
+const data = ethers.toUtf8Bytes("Hello TON!")
+```
+
+</Aside>
+
+### tokenAmounts
+
+- **Definition**: An array of token addresses and amounts to transfer.
+- **Current support**: EVM-to-TON currently supports arbitrary messaging only. Set `tokenAmounts` to an empty array (`[]`).
+
+### feeToken
+
+- **Definition**: Specifies which token to use for paying CCIP fees.
+- **Native gas token**: Use `ethers.ZeroAddress` (`address(0)`) to pay with the source chain's native token (e.g., ETH on Ethereum Sepolia).
+- **LINK**: Specify the LINK token address on your source chain. See the [CCIP Directory](/ccip/directory/testnet) for token addresses.
+
+## extraArgs
+
+For TON-bound messages, the `extraArgs` parameter is a byte string composed of the 4-byte `GenericExtraArgsV2` tag (`0x181dcf10`) prepended to the ABI-encoded values `(uint256 gasLimit, bool allowOutOfOrderExecution)`. This format matches the [`GenericExtraArgsV2`](/ccip/api-reference/evm/v1.6.1/client#genericextraargsv2) specification.
+
+### gasLimit
+
+- **Definition**: The amount of nanoTON reserved for execution on the TON destination chain.
+- **Units**: This value is denominated in **nanoTON**, not EVM gas units. 1 TON = 1,000,000,000 nanoTON. A starting value of `100_000_000n` (0.1 TON) covers most receive operations. Any unused nanoTON is returned to the contract.
+- **Usage**: Increase this value if your receiver performs heavy computation. Determine the right amount through testing.
+
+### allowOutOfOrderExecution
+
+- **Definition**: A boolean required by the TON lane.
+- **Usage**: Must be set to `true` when TON is the destination chain.
+
+<Aside title="Encoding extraArgs for TON">
+  ABI-encode `gasLimit` (in nanoTON) and `allowOutOfOrderExecution`, then prepend the `0x181dcf10` tag:
+
+```typescript filename="scripts/utils/utils.ts"
+import { ethers } from "ethers"
+
+function buildExtraArgsForTON(gasLimitNanoTON: bigint, allowOutOfOrderExecution: boolean): Uint8Array {
+  const encoded = ethers.AbiCoder.defaultAbiCoder().encode(
+    ["uint256", "bool"],
+    [gasLimitNanoTON, allowOutOfOrderExecution]
+  )
+  return ethers.getBytes(ethers.concat(["0x181dcf10", encoded]))
+}
+
+// 100_000_000n nanoTON = 0.1 TON reserved for execution
+const extraArgs = buildExtraArgsForTON(100_000_000n, true)
+```
+
+</Aside>
+
+## Implementation by Message Type
+
+### Arbitrary Messaging
+
+Use this configuration when sending a data payload to a custom smart contract on TON.
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">Configuration</Fragment>
+  <Fragment slot="tab.2">Pay with Native Token</Fragment>
+  <Fragment slot="tab.3">Pay with LINK</Fragment>
+  <Fragment slot="panel.1">
+    ```
+    {
+      destinationChainSelector: TON_TESTNET_CHAIN_SELECTOR,
+      receiver: encodedTONAddress,    // 36-byte encoded TON contract address
+      tokenAmounts: [],               // Empty — token transfers not yet supported
+      feeToken: feeTokenAddress,      // address(0) for native, LINK address for LINK
+      data: rawBytesPayload,          // ethers.toUtf8Bytes(...) — do NOT hexlify
+      extraArgs: {
+        gasLimit: 100_000_000n,       // 0.1 TON in nanoTON
+        allowOutOfOrderExecution: true
+      }
+    }
+    ```
+  </Fragment>
+  <Fragment slot="panel.2">
+    ```typescript filename="scripts/evm2ton/sendMessage.ts"
+    import { ethers } from "ethers"
+
+    const TON_TESTNET_CHAIN_SELECTOR = 1399300952838017768n
+
+    const tonContractAddr = "EQB9QIw22sgwNKMfqsMKGepkhnjXYJmXlzCgcBSAlaiF9VCj"
+    const receiver = new Uint8Array(Buffer.from(tonContractAddr, 'base64'))
+    const data = ethers.toUtf8Bytes("Hello TON!")
+
+    const message = {
+      receiver,
+      data,
+      tokenAmounts: [],
+      feeToken: ethers.ZeroAddress,   // pay fee in native ETH
+      extraArgs: buildExtraArgsForTON(100_000_000n, true)
+    }
+
+    const fee = await router.getFee(TON_TESTNET_CHAIN_SELECTOR, message)
+    const feeWithBuffer = (fee * 110n) / 100n  // add 10% buffer
+
+    const tx = await router.ccipSend(TON_TESTNET_CHAIN_SELECTOR, message, {
+      value: feeWithBuffer
+    })
+    ```
+
+  </Fragment>
+  <Fragment slot="panel.3">
+    ```typescript filename="scripts/evm2ton/sendMessage.ts"
+    import { ethers } from "ethers"
+
+    const TON_TESTNET_CHAIN_SELECTOR = 1399300952838017768n
+    const LINK_ADDRESS = "0x779877A7B0D9E8603169DdbD7836e478b4624789"  // LINK on Sepolia
+
+    const tonContractAddr = "EQB9QIw22sgwNKMfqsMKGepkhnjXYJmXlzCgcBSAlaiF9VCj"
+    const receiver = new Uint8Array(Buffer.from(tonContractAddr, 'base64'))
+    const data = ethers.toUtf8Bytes("Hello TON!")
+
+    const message = {
+      receiver,
+      data,
+      tokenAmounts: [],
+      feeToken: LINK_ADDRESS,         // pay fee in LINK
+      extraArgs: buildExtraArgsForTON(100_000_000n, true)
+    }
+
+    const fee = await router.getFee(TON_TESTNET_CHAIN_SELECTOR, message)
+    const feeWithBuffer = (fee * 110n) / 100n  // add 10% buffer
+
+    await linkToken.approve(await router.getAddress(), feeWithBuffer)
+    const tx = await router.ccipSend(TON_TESTNET_CHAIN_SELECTOR, message)
+    ```
+
+  </Fragment>
+</Tabs>
+
+<Aside type="note" title="Key Requirements">
+
+- `receiver` must be the 36-byte encoded TON address of your destination smart contract — not a raw TON address string.
+- `tokenAmounts` **MUST** be an empty array.
+- `data` must be raw bytes. Use `ethers.toUtf8Bytes()` — do **not** call `hexlify`.
+- `gasLimit` is in **nanoTON** (`100_000_000n` = 0.1 TON is a recommended starting value).
+- `allowOutOfOrderExecution` **MUST** be `true`.
+
+</Aside>
+
+## Related Tutorials
+
+To see these concepts in action with a step-by-step implementation guide, check out the following tutorial:
+
+- [Arbitrary Messaging: EVM to TON](/ccip/tutorials/ton/destination/arbitrary-messaging) — Learn how to send data messages from an EVM chain to a TON smart contract.
+
+<CcipCommon callout="educationalDisclaimer" />
