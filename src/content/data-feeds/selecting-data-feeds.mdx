@@ -32,19 +32,9 @@ Data feeds are grouped into the following categories based on the level of marke
   Changelog](https://dev.chain.link/changelog?product=Data+Feeds).
 </Aside>
 
-## Market Price Feeds
+## Market pricing risk by category
 
-Market Price Feeds incorporate three layers of aggregation at the data source, node operator, and oracle network layers. These feeds are designed to reflect observable market prices across [major venues](https://blog.chain.link/chainlink-price-feeds-secure-defi/).
-
-### Bounded Market Price Feeds
-
-Bounded Market Price Feeds are a specific category of Market Price Feeds that incorporate predefined bounds on reported values to mitigate specific asset class risks, following risk management best practices.
-
-For example, a Bounded Market Price Feed for a stablecoin would include an upper bound that caps the on-chain reported price at a pre-defined maximum (e.g., $1.05), even during edge cases like market dislocations where the stablecoin trades higher than the cap. In such cases, the price will not be reported on-chain. Instead, the most recently written on-chain price will be the value returned by calling [latestRoundData](https://docs.chain.link/data-feeds/api-reference#latestrounddata) on the feed’s [proxy address](https://docs.chain.link/data-feeds#single-value-feed-components). This helps prevent extreme or sustained premium pricing from being reported. These bounds are designed to provide guardrails for assets where structural deviations may introduce elevated risk for feed consumers. Note that a Bounded Market Price Feed for a stablecoin would not include a lower bound for the on-chain reported price.
-
-In rare circumstances, the fundamental value of an asset underlying a Bounded Market Price Feed, such as a stablecoin, may materially change. In such a case, the predefined bound(s) associated with a Bounded Market Price Feed may be adjusted or removed following advanced notice to consumers of such Bounded Market Price Feed.
-
-Users must be aware that Bounded Market Price Feeds have unique risk considerations. Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and that the operation and performance of Bounded Market Price Feeds matches expectations. If your use case requires the use of a non-Bounded Market Price Feed and one does not exist, contact us at [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
+These subsections describe standard market price feeds at each pricing risk level and correspond to the [category list](#data-feed-categories) above.
 
 ### 🟢 Low Market Pricing Risk Feeds
 
@@ -261,6 +251,20 @@ Front running (when a third party benefits from prior access to information abou
 
 To mitigate the risk associated with front running, users building highly latency-dependent applications should assess whether the configuration of data feeds meets their needed specifications for speed and frequency. [Chainlink Data Streams](https://docs.chain.link/data-streams) serve as an alternative solution to Data Feeds for latency-sensitive applications, providing low-latency delivery of market data offchain that can be verified onchain while mitigating front running.
 
+## Market Price Feeds
+
+Market Price Feeds incorporate three layers of aggregation at the data source, node operator, and oracle network layers. These feeds are designed to reflect observable market prices across [major venues](https://blog.chain.link/chainlink-price-feeds-secure-defi/).
+
+### Bounded Market Price Feeds
+
+Bounded Market Price Feeds are a specific category of Market Price Feeds that incorporate predefined bounds on reported values to mitigate specific asset class risks, following risk management best practices.
+
+For example, a Bounded Market Price Feed for a stablecoin would include an upper bound that caps the on-chain reported price at a pre-defined maximum (e.g., $1.05), even during edge cases like market dislocations where the stablecoin trades higher than the cap. In such cases, the price will not be reported on-chain. Instead, the most recently written on-chain price will be the value returned by calling [latestRoundData](https://docs.chain.link/data-feeds/api-reference#latestrounddata) on the feed’s [proxy address](https://docs.chain.link/data-feeds#single-value-feed-components). This helps prevent extreme or sustained premium pricing from being reported. These bounds are designed to provide guardrails for assets where structural deviations may introduce elevated risk for feed consumers. Note that a Bounded Market Price Feed for a stablecoin would not include a lower bound for the on-chain reported price.
+
+In rare circumstances, the fundamental value of an asset underlying a Bounded Market Price Feed, such as a stablecoin, may materially change. In such a case, the predefined bound(s) associated with a Bounded Market Price Feed may be adjusted or removed following advanced notice to consumers of such Bounded Market Price Feed.
+
+Users must be aware that Bounded Market Price Feeds have unique risk considerations. Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and that the operation and performance of Bounded Market Price Feeds matches expectations. If your use case requires the use of a non-Bounded Market Price Feed and one does not exist, contact us at [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
+
 ## Exchange Rate Feeds
 
 The architecture of exchange rate feeds differs from that of [Market Price Feeds](#market-price-feeds).
@@ -275,7 +279,7 @@ Exchange rate feeds are useful in circumstances such as:
 
 <Aside type="note">
   Users must be aware that both market price and exchange rate pricing methodologies have unique risk considerations and
-  ice mitigation strategies that vary based on an asset's type and liquidity profile. Users are responsible for
+  risk mitigation strategies that vary based on an asset's type and liquidity profile. Users are responsible for
   decisions relating to feed selection. To learn more about how best to leverage Chainlink Data Feeds for your project,
   contact us [here](https://chain.link/contact).
 </Aside>
