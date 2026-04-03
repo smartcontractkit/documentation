@@ -16,15 +16,10 @@ The EVM Log Trigger fires when a specific log (event) is emitted by an onchain s
 
 ## Creating the trigger
 
-<Aside type="note" title="Base64 Encoding Required">
-  **All addresses and topic values must be base64 encoded** using the `hexToBase64()` helper function from the CRE SDK.
-  While the workflow simulator accepts raw hex strings for convenience during development, **deployed workflows require
-  base64 encoding**. Always use `hexToBase64()` on addresses and topic values to ensure your workflow works in both
-  simulation and production.
-</Aside>
+The recommended way to create a log trigger is with the `logTriggerConfig()` helper, which accepts hex-encoded addresses and topics and handles base64 conversion, byte-length validation, and confidence level formatting automatically:
 
 ```typescript
-import { EVMClient, getNetwork, hexToBase64 } from "@chainlink/cre-sdk"
+import { EVMClient, getNetwork, logTriggerConfig } from "@chainlink/cre-sdk"
 import { keccak256, toBytes } from "viem"
 
 // Create an EVMClient instance with a chain selector
@@ -38,8 +33,35 @@ const evmClient = new EVMClient(network.chainSelector.selector)
 // Create a log trigger with address and event signature
 const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
 
+const trigger = evmClient.logTrigger(
+  logTriggerConfig({
+    addresses: ["0x1234567890123456789012345678901234567890"],
+    topics: [[transferEventHash]],
+  })
+)
+```
+
+<Aside type="caution" title="Base64 encoding is required by logTrigger()">
+  The `logTrigger()` method expects base64-encoded addresses and topics, not hex strings. If you pass raw hex strings
+  directly without encoding, the hex characters are silently interpreted as base64, producing **incorrect bytes with no
+  error**. Use `logTriggerConfig()` (recommended) or `hexToBase64()` to ensure correct encoding.
+</Aside>
+
+<details>
+<summary>Manual configuration with hexToBase64()</summary>
+
+If you need more control, you can encode values manually using `hexToBase64()`:
+
+```typescript
+import { EVMClient, getNetwork, hexToBase64 } from "@chainlink/cre-sdk"
+import { keccak256, toBytes } from "viem"
+
+const evmClient = new EVMClient(network.chainSelector.selector)
+
+const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
+
 const trigger = evmClient.logTrigger({
-  addresses: [hexToBase64("0x123...abc")],
+  addresses: [hexToBase64("0x1234567890123456789012345678901234567890")],
   topics: [
     {
       values: [hexToBase64(transferEventHash)],
@@ -48,14 +70,95 @@ const trigger = evmClient.logTrigger({
 })
 ```
 
-## Configuration
+</details>
 
-The `logTrigger()` method accepts a configuration object with the following fields:
+## `logTriggerConfig()` helper
+
+The `logTriggerConfig()` helper is the recommended way to build the configuration object for `logTrigger()`. It accepts hex-encoded addresses and topics (the format you get from viem) and handles:
+
+- **Base64 conversion**: Converts `0x`-prefixed hex to the base64 encoding required by the proto
+- **Byte-length validation**: Verifies addresses are 20 bytes and topics are 32 bytes
+- **Confidence formatting**: Accepts short names (`'LATEST'`, `'SAFE'`, `'FINALIZED'`) instead of the full `CONFIDENCE_LEVEL_` prefix
+
+**Signature:**
+
+```typescript
+function logTriggerConfig(opts: LogTriggerConfigOptions): FilterLogTriggerRequestJson
+```
+
+**Parameters:**
+
+```typescript
+interface LogTriggerConfigOptions {
+  /** EVM addresses to monitor — hex strings with 0x prefix (20 bytes each) */
+  addresses: Hex[]
+  /** Topic filters — array of up to 4 arrays of hex topic values (32 bytes each).
+   *  - topics[0]: event signatures (keccak256 hashes), at least one required
+   *  - topics[1]: possible values for first indexed arg (optional)
+   *  - topics[2]: possible values for second indexed arg (optional)
+   *  - topics[3]: possible values for third indexed arg (optional)
+   */
+  topics?: Hex[][]
+  /** Confidence level for log finality. Defaults to SAFE. */
+  confidence?: "SAFE" | "LATEST" | "FINALIZED"
+}
+```
+
+**Validation errors:**
+
+The helper throws descriptive errors for common mistakes:
+
+- Missing `0x` prefix on addresses or topics
+- Addresses that aren't exactly 20 bytes
+- Topics that aren't exactly 32 bytes
+- Error messages include the index of the invalid value (e.g., `"Invalid address at index 1: ..."`)
+
+**Example with topic filtering:**
+
+```typescript
+import { logTriggerConfig } from "@chainlink/cre-sdk"
+import { keccak256, toBytes, padHex } from "viem"
+
+const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
+const fromAddress = padHex("0xabcdef1234567890abcdef1234567890abcdef12", { size: 32 })
+
+const trigger = evmClient.logTrigger(
+  logTriggerConfig({
+    addresses: ["0x1234567890123456789012345678901234567890"],
+    topics: [
+      // Topic 0: Event signature (Transfer event) - already 32 bytes
+      [transferEventHash],
+      // Topic 1: From address (indexed parameter 1) - must pad from 20 to 32 bytes
+      [fromAddress],
+      // Topic 2: Omit for wildcard (any "to" address)
+    ],
+    confidence: "FINALIZED",
+  })
+)
+```
+
+<Aside type="note" title="Simplified configuration">
+  For simple use cases, you can omit `topics` and `confidence`. The trigger will fire for any event from the specified
+  addresses using the default "SAFE" confirmation level.
+</Aside>
+
+<Aside type="caution" title="Topic values must be 32 bytes">
+EVM logs always store indexed parameters as **32-byte values**. When filtering on topics 1, 2, or 3, pad your values to 32 bytes using `padHex(value, { size: 32 })` from viem (e.g., addresses are 20 bytes and must be padded). `logTriggerConfig()` validates the byte length and throws an error if a topic is not exactly 32 bytes.
+
+Topic 0 (the event signature from `keccak256`) is already 32 bytes and doesn't need padding.
+
+</Aside>
+
+---
+
+## Raw configuration reference
+
+The `logTrigger()` method accepts a `FilterLogTriggerRequestJson` object directly. When using `logTriggerConfig()`, the helper builds this object for you. If you need to construct it manually, the fields are:
 
 | <div style="width: 100px;">Field</div> | <div style="width: 140px;">Type</div> | Description                                                                                                                                                                                                                                                                                                                                                                                               |
 | -------------------------------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `addresses`                            | `string[]`                            | **Required.** A list of contract addresses to monitor. **Must be base64 encoded** using `hexToBase64()`. At least one address is required.                                                                                                                                                                                                                                                                |
-| `topics`                               | `TopicValues[]`                       | **Required.** An array to filter event topics. The first element must contain at least one event signature. The next three elements can contain indexed argument values (optional). An empty array element acts as a wildcard for indexed arguments. **All topic values must be base64 encoded** using `hexToBase64()`.                                                                                   |
+| `topics`                               | `TopicValues[]`                       | Optional. An array to filter event topics. The first element must contain at least one event signature. The next three elements can contain indexed argument values (optional). An empty array element acts as a wildcard for indexed arguments. **All topic values must be base64 encoded** using `hexToBase64()`.                                                                                       |
 | `confidence`                           | `string`                              | Optional. The block confirmation level to monitor. Can be: <ul><li>**`"CONFIDENCE_LEVEL_LATEST"`**: The most recent block (fastest but least secure).</li><li>**`"CONFIDENCE_LEVEL_SAFE"` (default)**: A block unlikely to be reorged but not yet irreversible.</li><li>**`"CONFIDENCE_LEVEL_FINALIZED"`**: A block considered irreversible (safest, but requires waiting longer for finality).</li></ul> |
 
 <Aside type="note" title="Finality details">
@@ -64,8 +167,6 @@ The `logTrigger()` method accepts a configuration object with the following fiel
 </Aside>
 
 ### `TopicValues`
-
-The `topics` array uses a special format for filtering events:
 
 | Field    | Type       | Description                                                                             |
 | -------- | ---------- | --------------------------------------------------------------------------------------- |
@@ -77,52 +178,6 @@ The `topics` array uses a special format for filtering events:
 - **`topics[1]`**: Optional. Values for the first indexed argument. Can be empty (wildcard).
 - **`topics[2]`**: Optional. Values for the second indexed argument. Can be empty (wildcard).
 - **`topics[3]`**: Optional. Values for the third indexed argument. Can be empty (wildcard).
-
-<Aside type="caution" title="Topic values must be padded to 32 bytes and base64 encoded">
-EVM logs always store indexed parameters as **32-byte values**. When filtering on topics 1, 2, or 3:
-
-1. **Pad your values to 32 bytes** using `padHex(value, { size: 32 })` from viem (e.g., addresses are 20 bytes and must be padded)
-1. **Convert to base64** using `hexToBase64()` from the CRE SDK
-
-If you don't pad correctly, your filter won't match the actual log topics and the trigger will not fire.
-
-Topic 0 (the event signature from `keccak256`) is already 32 bytes and doesn't need padding.
-
-</Aside>
-
-**Example:**
-
-```typescript
-import { hexToBase64 } from "@chainlink/cre-sdk"
-import { keccak256, toBytes, padHex } from "viem"
-
-const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
-const fromAddress = "0xabcdef..." as `0x${string}`
-
-const trigger = evmClient.logTrigger({
-  addresses: [hexToBase64("0x1234567890abcdef...")],
-  topics: [
-    // Topic 0: Event signature (Transfer event) - already 32 bytes
-    {
-      values: [hexToBase64(transferEventHash)],
-    },
-    // Topic 1: From address (indexed parameter 1) - must pad from 20 to 32 bytes
-    {
-      values: [hexToBase64(padHex(fromAddress, { size: 32 }))],
-    },
-    // Topic 2: Empty (wildcard for any "to" address)
-    {
-      values: [],
-    },
-  ],
-  confidence: "CONFIDENCE_LEVEL_FINALIZED",
-})
-```
-
-<Aside type="note" title="Simplified configuration">
-  In the demo workflow and for simple use cases, you can omit `topics` and `confidence`. The trigger will fire for any
-  event from the specified addresses using the default "SAFE" confirmation level.
-</Aside>
 
 ## Payload
 
@@ -220,11 +275,12 @@ import {
   handler,
   bytesToHex,
   getNetwork,
+  logTriggerConfig,
   Runner,
-  hexToBase64,
   type Runtime,
   type EVMLog,
 } from "@chainlink/cre-sdk"
+import { keccak256, toBytes } from "viem"
 
 type Config = {
   chainSelectorName: string
@@ -260,11 +316,16 @@ const initWorkflow = (config: Config) => {
 
   const evmClient = new EVMClient(network.chainSelector.selector)
 
+  const transferEventHash = keccak256(toBytes("Transfer(address,address,uint256)"))
+
   return [
     handler(
-      evmClient.logTrigger({
-        addresses: [hexToBase64(config.contractAddress)],
-      }),
+      evmClient.logTrigger(
+        logTriggerConfig({
+          addresses: [config.contractAddress as `0x${string}`],
+          topics: [[transferEventHash]],
+        })
+      ),
       onLogTrigger
     ),
   ]
