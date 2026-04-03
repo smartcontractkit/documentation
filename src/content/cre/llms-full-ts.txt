@@ -448,9 +448,32 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-03-26
+Last Updated: 2026-04-02
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.9.0 - April 2, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.9.0" target="_blank">CRE CLI version 1.9.0</a> is now available.**
+
+- **Browser-based OAuth for vault secrets**: `cre secrets create`, `cre secrets update`, `cre secrets delete`, and `cre secrets list` now use a browser-based OAuth (PKCE) flow to authorize Vault DON access. When you run a secrets operation, the CLI starts a local callback server, opens your browser to complete authorization, exchanges the code for a short-lived vault JWT, and submits your encrypted secrets directly to the Vault DON gateway — all automatically. Your existing CLI login session (`~/.cre/cre.yaml`) is not affected; the vault authorization uses a separate short-lived token. API key authentication is not supported for this flow; interactive login (`cre login`) is required. See [Secrets Management Commands](/cre/reference/cli/secrets) for details.
+- **`--skip-type-checks` flag**: The `cre workflow build`, `cre workflow simulate`, `cre workflow deploy`, and `cre workflow hash` commands now accept a `--skip-type-checks` flag. When set, the CLI skips the TypeScript type-checking step during compilation. This can significantly speed up iteration in development, but should not be used for production builds where type safety is important. See [Workflow Commands](/cre/reference/cli/workflow) for the updated flag reference.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.8.0...v1.9.0)
+
+## TS SDK v1.5.0 - March 27, 2026
+
+**TypeScript SDK version 1.5.0** improves type checking accuracy and build reproducibility for TypeScript workflows.
+
+- **Workflow-aware type checking**: The SDK now runs TypeScript type checks using your workflow's own `tsconfig.json` instead of its internal configuration. This gives you more accurate, project-specific type errors and lets you enforce your own strict settings during compilation.
+- **Reproducible builds**: TypeScript workflow binaries are now reproducible on the same OS, making it easier to verify build integrity across CI runs and environments.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.4.0...v1.5.0)
 
 ## CLI v1.8.0 - March 26, 2026
 
@@ -3033,13 +3056,163 @@ The deployment and configuration process involves these steps:
   While the `setForwarderAddress()` function allows updating to `address(0)`, this disables the critical security check and allows **anyone** to call your `onReport()` function with arbitrary data. The function emits a `SecurityWarning` event if you attempt this. Only use `address(0)` for testing if you fully understand the implications.
 </Aside>
 
-### Replay protection
+### Replay attacks
 
-The `KeystoneForwarder` contract includes built-in replay protection that prevents successful reports from being executed multiple times. By requiring the forwarder address at construction time, `ReceiverTemplate` ensures your consumer benefits from this protection automatically.
+CRE reports carry DON signatures that any compatible `KeystoneForwarder` will accept. This creates two distinct replay vectors that workflow authors must explicitly protect against by embedding protective metadata in their report payloads and verifying it in their consumer contracts.
+
+#### Cross-chain replay
+
+**The risk**: While publishing a single signed report to multiple chains simultaneously enables patterns like [Proof of Reserve (PoR)](/data-feeds/smartdata#proof-of-reserve-feeds) or feed-style publish-once-post-many, it also means **anyone holding a valid report can replay it on any chain that recognizes the DON's signing keys**.
+
+The forwarder validates cryptographic signatures but those signatures do not commit to a specific chain—without additional protection in your consumer contract, a replayed report can land on an unintended chain.
+
+**The mitigation**: Embed the target chain selector in the report payload. The consumer contract decodes this value and rejects reports not intended for the current chain. Chain selectors are `uint64` identifiers used throughout the CRE platform to identify blockchain networks — see [Chain Selectors](/cre/reference/sdk/evm-client-ts#chain-selectors) for the full list of constants and the `ChainSelectorFromName` helper.
+
+**Workflow (embed chain selector in the report payload):**
+
+```go
+// Define your report struct with a ChainSelector field.
+// ChainSelector is a uint64 — the same type used when instantiating evm.Client.
+type PaymentReport struct {
+  Recipient     common.Address
+  Amount        *big.Int
+  ChainSelector uint64 // Target chain — used by the consumer to reject cross-chain replays
+}
+
+paymentReport := PaymentReport{
+  Recipient:     common.HexToAddress(config.Recipient),
+  Amount:        big.NewInt(100_000_000), // e.g., 100 USDC (6 decimals)
+  ChainSelector: config.ChainSelector,   // e.g., 16015286601757825753 for Ethereum Sepolia
+}
+
+// ABI-encode paymentReport and pass to runtime.GenerateReport() as normal
+```
+
+**Consumer contract (verify the embedded chain selector):**
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+contract ChainRestrictedConsumer is ReceiverTemplate {
+  IERC20 public immutable i_token;
+  uint64 public immutable i_expectedChainSelector;
+
+  error UnexpectedChainSelector(uint64 received, uint64 expected);
+
+  constructor(
+    address _forwarderAddress,
+    address _token,
+    uint64 _expectedChainSelector
+  ) ReceiverTemplate(_forwarderAddress) {
+    i_token = IERC20(_token);
+    i_expectedChainSelector = _expectedChainSelector;
+  }
+
+  function _processReport(bytes calldata report) internal override {
+    (address recipient, uint256 amount, uint64 chainSelector) = abi.decode(
+      report,
+      (address, uint256, uint64)
+    );
+
+    if (chainSelector != i_expectedChainSelector) {
+      revert UnexpectedChainSelector(chainSelector, i_expectedChainSelector);
+    }
+
+    i_token.transfer(recipient, amount);
+  }
+}
+```
+
+#### Same-chain replay on failure
+
+**The risk**: While allowing failed deliveries to be retried without requiring a new signed report enables permissionless recovery from transient failures, it also means the forwarder does not mark reverted transmissions as used.
+
+**A malicious actor can exploit this window**: after your workflow has already reacted to a failure (for example, scheduled a corrective action), an attacker can replay the original signed report once conditions recover, causing double-execution.
 
 
-<Aside type="note" title="Failed reports can be retried">
-  If a report fails (reverts), the forwarder's replay protection allows it to be retried. This is safe because reverts undo all state changes, ensuring no duplicate effects occur in your contract.
+<Aside type="caution" title="Attack scenario: double payment">
+  1. A cron workflow attempts to pay a wallet $100 USDC. The consumer contract **reverts** (insufficient funds).
+  2. CRE returns a reverted transaction hash. The workflow records the failure and plans to correct the balance on the next run.
+  3. Funds are replenished — by the owner, another workflow, or a user deposit.
+  4. An attacker (or a bot) replays the original signed report. The consumer now has funds and the payment **executes again** — the recipient is paid twice.
+</Aside>
+
+**The mitigation**: Embed the scheduled execution timestamp in the report payload. The consumer contract stores the last accepted timestamp and rejects any report with a timestamp equal to or earlier than the stored value. Once a later execution has been accepted, earlier failed reports can never land.
+
+
+<Aside type="note" title="Use the trigger's scheduled time, not wall-clock time">
+  The timestamp must be deterministic across all DON nodes so they agree during consensus. Use the cron trigger's scheduled execution slot time rather than `time.Now()`. Refer to the [cron trigger reference](/cre/reference/sdk/triggers/cron-trigger-go) for the exact field name on the trigger payload.
+</Aside>
+
+**Workflow (embed scheduled execution timestamp in the report payload):**
+
+```go
+// Use the trigger's scheduled slot time — deterministic across all DON nodes.
+// Refer to the cron trigger reference for the exact field name on cron.Payload.
+scheduledAt := trigger.ScheduledAt.Unix()
+
+// Define your report struct with a ScheduledAt field
+type PaymentReport struct {
+  Recipient   common.Address
+  Amount      *big.Int
+  ScheduledAt *big.Int // Monotonic execution timestamp — used to reject stale replays
+}
+
+paymentReport := PaymentReport{
+  Recipient:   common.HexToAddress(config.Recipient),
+  Amount:      big.NewInt(100_000_000), // e.g., 100 USDC (6 decimals)
+  ScheduledAt: big.NewInt(scheduledAt),
+}
+
+// ABI-encode paymentReport and pass to runtime.GenerateReport() as normal
+```
+
+**Consumer contract (reject reports from earlier executions):**
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.26;
+
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+contract ScheduledPaymentConsumer is ReceiverTemplate {
+  IERC20 public immutable i_token;
+  uint256 public s_lastAcceptedTimestamp;
+
+  error ReportTooOld(uint256 reportTimestamp, uint256 lastAccepted);
+
+  event PaymentProcessed(address indexed recipient, uint256 amount, uint256 scheduledAt);
+
+  constructor(address _forwarderAddress, address _token) ReceiverTemplate(_forwarderAddress) {
+    i_token = IERC20(_token);
+  }
+
+  function _processReport(bytes calldata report) internal override {
+    (address recipient, uint256 amount, uint256 scheduledAt) = abi.decode(
+      report,
+      (address, uint256, uint256)
+    );
+
+    if (scheduledAt <= s_lastAcceptedTimestamp) {
+      revert ReportTooOld(scheduledAt, s_lastAcceptedTimestamp);
+    }
+
+    s_lastAcceptedTimestamp = scheduledAt;
+
+    i_token.transfer(recipient, amount);
+    emit PaymentProcessed(recipient, amount, scheduledAt);
+  }
+}
+```
+
+
+<Aside type="tip" title="Combining both protections">
+  For maximum safety, embed both `chainSelector` and `scheduledAt` in a single report struct. This protects against cross-chain and same-chain replay simultaneously with one encoding step.
 </Aside>
 
 ### Additional validation layers
@@ -3070,9 +3243,13 @@ The forwarder address provides baseline security, but you can add additional val
    - **Single workflow**: Use `setExpectedWorkflowId()` to restrict to one specific workflow (highest security)
    - **Multiple workflows from same owner**: Use `setExpectedAuthor()` to restrict to workflows you own
    - **Multiple workflows from different owners**: Implement custom validation logic in your `onReport()` override
-3. **Keep your owner key secure** - The owner can update all permission settings
-4. **Test permission configurations** - Verify your security settings work as expected before production deployment
-5. **Workflow name validation** - Can be used with `setExpectedWorkflowName()` but requires `setExpectedAuthor()` to also be configured for security
+3. **Protect against replay attacks** - For any workflow that performs state-changing actions (payments, minting, position updates):
+   - Embed the **target chain selector** in the report payload and verify it in `_processReport` to prevent cross-chain replay
+   - Embed a **monotonic execution timestamp** from the cron trigger and reject reports with a timestamp ≤ the last accepted value to prevent same-chain replay on failure
+   - See [Replay attacks](#replay-attacks) for complete code examples
+4. **Keep your owner key secure** - The owner can update all permission settings
+5. **Test permission configurations** - Verify your security settings work as expected before production deployment
+6. **Workflow name validation** - Can be used with `setExpectedWorkflowName()` but requires `setExpectedAuthor()` to also be configured for security
 
 ---
 
@@ -3176,6 +3353,16 @@ const reportData = encodeAbiParameters(parseAbiParameters("bool"), [true])
 
 <Aside type="caution" title="Use safe scaling for decimal values">
   When scaling values to match a token's decimals (e.g., converting `"1.5"` to `1500000000000000000n`), use <a href="https://viem.sh/docs/utilities/parseUnits" target="_blank">viem's `parseUnits()`</a> instead of `BigInt(value * 1e18)`. Floating-point multiplication causes silent precision loss. See [Safe decimal scaling](/cre/getting-started/before-you-build-ts#safe-decimal-scaling) for details and examples.
+</Aside>
+
+
+<Aside type="caution" title="Protect against replay attacks before generating the report">
+  If your workflow performs state-changing actions (payments, minting, position updates), embed protective fields in the payload you ABI-encode **before** calling `runtime.report()`:
+
+  - **Chain selector**: Include the target chain selector so the consumer contract can reject reports replayed on a different chain.
+  - **Execution timestamp**: Include the cron trigger's scheduled slot time so the consumer can reject stale reports that were previously reverted and are being replayed by an attacker.
+
+  See [Replay attacks](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#replay-attacks) in the Building Consumer Contracts guide for full Solidity and workflow code examples.
 </Aside>
 
 ### Step 3: Generate the signed report
@@ -7705,7 +7892,7 @@ When you run this command, the CLI will:
 
 # Workflow Commands
 Source: https://docs.chain.link/cre/reference/cli/workflow
-Last Updated: 2026-03-17
+Last Updated: 2026-04-02
 
 The `cre workflow` commands manage workflows throughout their entire lifecycle, from local testing to deployment and ongoing management.
 
@@ -7725,9 +7912,10 @@ cre workflow build <workflow-folder-path> [flags]
 
 **Flags:**
 
-| Flag           | Description                                                                              |
-| -------------- | ---------------------------------------------------------------------------------------- |
-| `-o, --output` | Output file path for the compiled WASM binary (default: `<workflow-folder>/binary.wasm`) |
+| Flag                 | Description                                                                                                                 |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `-o, --output`       | Output file path for the compiled WASM binary (default: `<workflow-folder>/binary.wasm`)                                    |
+| `--skip-type-checks` | Skip TypeScript type checking during compilation. Speeds up iteration in development; not recommended for production builds |
 
 **Example:**
 
@@ -7782,6 +7970,7 @@ cre workflow simulate <workflow-name-or-path> [flags]
 | `--evm-tx-hash <string>`  | Transaction hash (`0x...`) containing the event that triggered your workflow. For EVM log triggers only                                                                                                                                                                          |
 | `--evm-event-index <int>` | Which log/event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For EVM log triggers only                                                                                                |
 | `--limits <string>`       | Production limits to enforce during simulation: `default` (embedded prod limits), a path to a limits JSON file (e.g. from `cre workflow limits export`), or `none` to disable. See [Testing Production Limits](/cre/guides/operations/understanding-limits) (default: `default`) |
+| `--skip-type-checks`      | Skip TypeScript type checking during compilation. Speeds up iteration in development; not recommended for production builds                                                                                                                                                      |
 
 **Examples:**
 
@@ -7846,14 +8035,15 @@ cre workflow deploy <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| Flag           | Description                                                                                                                   |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `-o, --output` | Output file for the compiled WASM binary encoded in base64 (default: `"./binary.wasm.br.b64"`)                                |
-| `--wasm`       | Path to a pre-built WASM binary (skips compilation). Use with [`cre workflow build`](#cre-workflow-build) for CI/CD pipelines |
-| `--config`     | Override the config file path from `workflow.yaml`                                                                            |
-| `--no-config`  | Deploy without a config file                                                                                                  |
-| `--unsigned`   | Return the raw transaction instead of sending it to the network                                                               |
-| `--yes`        | Skip the confirmation prompt and proceed with the operation                                                                   |
+| Flag                 | Description                                                                                                                   |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `-o, --output`       | Output file for the compiled WASM binary encoded in base64 (default: `"./binary.wasm.br.b64"`)                                |
+| `--wasm`             | Path to a pre-built WASM binary (skips compilation). Use with [`cre workflow build`](#cre-workflow-build) for CI/CD pipelines |
+| `--config`           | Override the config file path from `workflow.yaml`                                                                            |
+| `--no-config`        | Deploy without a config file                                                                                                  |
+| `--unsigned`         | Return the raw transaction instead of sending it to the network                                                               |
+| `--yes`              | Skip the confirmation prompt and proceed with the operation                                                                   |
+| `--skip-type-checks` | Skip TypeScript type checking during compilation. Speeds up iteration in development; not recommended for production builds   |
 
 **Examples:**
 
@@ -8056,12 +8246,13 @@ cre workflow hash <workflow-folder-path> [flags]
 
 **Flags:**
 
-| Flag           | Description                                                                                                                                                          |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--public_key` | Owner address to use when computing the workflow hash. Required when `CRE_ETH_PRIVATE_KEY` is not set and no `workflow-owner-address` is configured in your settings |
-| `--wasm`       | Path or URL to a pre-built WASM binary (skips compilation)                                                                                                           |
-| `--config`     | Override the config file path from `workflow.yaml`                                                                                                                   |
-| `--no-config`  | Compute hash without a config file                                                                                                                                   |
+| Flag                 | Description                                                                                                                                                          |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--public_key`       | Owner address to use when computing the workflow hash. Required when `CRE_ETH_PRIVATE_KEY` is not set and no `workflow-owner-address` is configured in your settings |
+| `--wasm`             | Path or URL to a pre-built WASM binary (skips compilation)                                                                                                           |
+| `--config`           | Override the config file path from `workflow.yaml`                                                                                                                   |
+| `--no-config`        | Compute hash without a config file                                                                                                                                   |
+| `--skip-type-checks` | Skip TypeScript type checking during compilation. Speeds up iteration in development; not recommended for production builds                                          |
 
 
 <Aside type="note" title="Owner address required">
@@ -8159,7 +8350,7 @@ The typical workflow lifecycle uses these commands in sequence:
 
 # Secrets Management Commands
 Source: https://docs.chain.link/cre/reference/cli/secrets
-Last Updated: 2026-03-26
+Last Updated: 2026-04-02
 
 <Aside type="note" title="Authentication required">
   Running the commands on this page requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to
@@ -8169,13 +8360,24 @@ Last Updated: 2026-03-26
 
 The `cre secrets` commands manage secrets stored in the Vault DON (Decentralized Oracle Network) for deployed workflows. These commands allow you to create, update, delete, and list secrets that your workflows can access at runtime.
 
+## Authorization flow
+
+Starting with CLI v1.9.0, secrets operations use a **browser-based OAuth (PKCE) flow** to authorize Vault DON access:
+
+1. You run a `cre secrets` command (e.g., `cre secrets create my-secrets.yaml`).
+2. The CLI starts a local callback server and opens your browser to a Vault authorization URL.
+3. You authenticate in the browser. When complete, the browser redirects back to the local callback.
+4. The CLI exchanges the authorization code for a short-lived vault JWT and submits your encrypted secrets directly to the Vault DON gateway (CLI v1.8.2+).
+
+Your existing CLI login session (`~/.cre/cre.yaml`) is **not** affected — the vault authorization uses a separate short-lived token. **API key authentication is not supported** for this flow; you must be logged in with `cre login`.
+
 ## Namespaces
 
 Secrets are organized into **namespaces**, which act as logical groupings (e.g., `"main"`, `"staging"`, `"production"`). All secrets are stored in the `"main"` namespace by default. Currently, `create`, `update`, and `delete` commands only support the default namespace. Custom namespace support may be added in future CLI versions.
 
 
 <Aside type="note" title="Prerequisites">
-  - You must be logged in with `cre login`
+  - You must be logged in with `cre login` (interactive login required; API keys are not supported for secrets operations)
   - Your `workflow-owner-address` must be configured in your project
   - **Production CRE:** only **linked workflow owner** vault authorization is supported for these commands. See ([Using Secrets with Deployed Workflows](/cre/guides/workflow/secrets/using-secrets-deployed))
   - For comprehensive guides on using secrets, see [Managing Secrets](/cre/guides/workflow/secrets)

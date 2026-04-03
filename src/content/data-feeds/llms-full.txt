@@ -5901,6 +5901,27 @@ After bonding atlETH and deploying their smart contract, solvers are finally abl
 
 This guide uses Go and the [Atlas Go SDK](https://github.com/FastLane-Labs/atlas-sdk-go).
 
+### Parallel Auctions
+
+On certain assets—primarily BTC and ETH feeds on BNB Chain, Base, and Arbitrum—two separate auctions are created in parallel by different Chainlink nodes for each liquidation opportunity. **These auctions are independent**: there is no matching or coordination between them.
+
+**How the parallel auctions behave**
+
+Both auctions represent the exact same liquidation opportunity, but:
+
+- They are sent to the auction independently.
+- They can arrive at different times due to latency differences.
+- They may have slightly different deadlines, based on when each node receives the report.
+- It is effectively random which auction transaction lands first or succeeds onchain.
+
+**Implication for bidding**
+
+If you only bid on one auction, you have roughly a 50% chance of winning even if your bid is the highest. To guarantee coverage, you must bid on both auctions using the same strategy.
+
+<Aside type="caution" title="Required: Bid on Both Parallel Auctions" />
+
+Duplicate auctions were introduced to improve landing guarantees by increasing the probability that at least one auction succeeds onchain.
+
 ### 1. Communicate with the Searcher Gateway
 
 Searchers communicate with the system through the Searcher Gateway, which serves as the entry point for reading user operations and submitting solutions.

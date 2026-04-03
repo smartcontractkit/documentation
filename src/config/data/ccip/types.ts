@@ -117,9 +117,11 @@ export type NetworkFeeStructure = {
 
 export type LaneSpecificFees = {
   fromToEthereum?: NetworkFeeStructure
-  fromEthereum?: NetworkFeeStructure
-  toEthereum?: NetworkFeeStructure
-  nonEthereum?: NetworkFeeStructure
+  fromEthereumToNonEthereum?: NetworkFeeStructure
+  fromEthereumToSolana?: NetworkFeeStructure
+  fromNonEthereumToEthereum?: NetworkFeeStructure
+  fromNonEthereumToNonEthereum?: NetworkFeeStructure
+  fromNonEthereumToSolana?: NetworkFeeStructure
   allLanes?: NetworkFeeStructure
 }
 
