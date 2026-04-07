@@ -40,7 +40,7 @@ const getMaxSubmissionValueBound = (
     // (which decodes to ~9.578e44) while still accommodating any real-world price cap
     // across USD, ETH, EUR, and other quote currencies — the highest plausible cap
     // for any stablecoin or pegged asset is well below $1M.
-    if (wholePart > BigInt(1_000_000)) return null
+    if (wholePart > BigInt(2_00)) return null
     const remainder = raw % divisor
     const price = Number(wholePart) + Number(remainder) / Number(divisor)
     return new Intl.NumberFormat("en-US", {
