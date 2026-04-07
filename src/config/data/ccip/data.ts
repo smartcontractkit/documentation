@@ -174,19 +174,25 @@ export const networkFees: NetworkFees = {
       allLanes: { gasTokenFee: "0.05 %", linkFee: "0.045 %" },
     },
     [TokenMechanism.LockAndMint]: {
-      fromEthereum: { gasTokenFee: "0.50 USD", linkFee: "0.45 USD" },
-      toEthereum: { gasTokenFee: "1.50 USD", linkFee: "1.35 USD" },
-      nonEthereum: { gasTokenFee: "0.25 USD", linkFee: "0.225 USD" },
+      fromEthereumToNonEthereum: { gasTokenFee: "0.50 USD", linkFee: "0.45 USD" },
+      fromEthereumToSolana: { gasTokenFee: "0.60 USD", linkFee: "0.54 USD" },
+      fromNonEthereumToEthereum: { gasTokenFee: "1.50 USD", linkFee: "1.35 USD" },
+      fromNonEthereumToNonEthereum: { gasTokenFee: "0.25 USD", linkFee: "0.225 USD" },
+      fromNonEthereumToSolana: { gasTokenFee: "0.35 USD", linkFee: "0.315 USD" },
     },
     [TokenMechanism.BurnAndMint]: {
-      fromEthereum: { gasTokenFee: "0.50 USD", linkFee: "0.45 USD" },
-      toEthereum: { gasTokenFee: "1.50 USD", linkFee: "1.35 USD" },
-      nonEthereum: { gasTokenFee: "0.25 USD", linkFee: "0.225 USD" },
+      fromEthereumToNonEthereum: { gasTokenFee: "0.50 USD", linkFee: "0.45 USD" },
+      fromEthereumToSolana: { gasTokenFee: "0.60 USD", linkFee: "0.54 USD" },
+      fromNonEthereumToEthereum: { gasTokenFee: "1.50 USD", linkFee: "1.35 USD" },
+      fromNonEthereumToNonEthereum: { gasTokenFee: "0.25 USD", linkFee: "0.225 USD" },
+      fromNonEthereumToSolana: { gasTokenFee: "0.35 USD", linkFee: "0.315 USD" },
     },
     [TokenMechanism.BurnAndUnlock]: {
-      fromEthereum: { gasTokenFee: "0.50 USD", linkFee: "0.45 USD" },
-      toEthereum: { gasTokenFee: "1.50 USD", linkFee: "1.35 USD" },
-      nonEthereum: { gasTokenFee: "0.25 USD", linkFee: "0.225 USD" },
+      fromEthereumToNonEthereum: { gasTokenFee: "0.50 USD", linkFee: "0.45 USD" },
+      fromEthereumToSolana: { gasTokenFee: "0.60 USD", linkFee: "0.54 USD" },
+      fromNonEthereumToEthereum: { gasTokenFee: "1.50 USD", linkFee: "1.35 USD" },
+      fromNonEthereumToNonEthereum: { gasTokenFee: "0.25 USD", linkFee: "0.225 USD" },
+      fromNonEthereumToSolana: { gasTokenFee: "0.35 USD", linkFee: "0.315 USD" },
     },
     [TokenMechanism.NoPoolDestinationChain]: {
       allLanes: { gasTokenFee: "", linkFee: "" },
@@ -197,7 +203,8 @@ export const networkFees: NetworkFees = {
   },
   messaging: {
     fromToEthereum: { gasTokenFee: "0.50 USD", linkFee: "0.45 USD" },
-    nonEthereum: { gasTokenFee: "0.10 USD", linkFee: "0.09 USD" },
+    fromNonEthereumToNonEthereum: { gasTokenFee: "0.10 USD", linkFee: "0.09 USD" },
+    fromNonEthereumToSolana: { gasTokenFee: "0.10 USD", linkFee: "0.09 USD" },
   },
 }
 

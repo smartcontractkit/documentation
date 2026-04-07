@@ -110,6 +110,17 @@ const amount = 10000000000000001n // Stays exactly 10000000000000001
   When scaling values to match a token's decimals (e.g., converting `"1.5"` to `1500000000000000000n`), use <a href="https://viem.sh/docs/utilities/parseUnits" target="_blank">viem's `parseUnits()`</a> instead of `BigInt(value * 1e18)`. Floating-point multiplication causes silent precision loss. See [Safe decimal scaling](/cre/getting-started/before-you-build-ts#safe-decimal-scaling) for details and examples.
 </Aside>
 
+{/* prettier-ignore */}
+<Aside type="caution" title="Protect against replay attacks before generating the report">
+  If your workflow performs state-changing actions (payments, minting, position updates), embed protective fields in the payload you ABI-encode **before** calling `runtime.report()`:
+
+- **Chain selector**: Include the target chain selector so the consumer contract can reject reports replayed on a different chain.
+- **Execution timestamp**: Include the cron trigger's scheduled slot time so the consumer can reject stale reports that were previously reverted and are being replayed by an attacker.
+
+See [Replay attacks](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#replay-attacks) in the Building Consumer Contracts guide for full Solidity and workflow code examples.
+
+</Aside>
+
 ### Step 3: Generate the signed report
 
 Convert the encoded data to base64 and generate a report:

@@ -44,6 +44,11 @@ Here's the journey your workflow's data takes to reach the blockchain:
 
 Your workflow code handles this process using the [`evm.Client`](/cre/reference/sdk/evm-client), which manages the interaction with the Forwarder contract. Depending on your approach (covered below), this can be fully automated via generated binding helpers or done manually with direct client calls.
 
+{/* prettier-ignore */}
+<Aside type="caution" title="Replay attacks">
+  Signed reports can be replayed on a different chain or resubmitted on the same chain after a revert. For any workflow that performs state-changing actions, you must embed protective metadata in the report payload and verify it in your consumer contract. See [Replay attacks](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#replay-attacks) for full examples.
+</Aside>
+
 ## What you need: A consumer contract
 
 Before you can write data onchain, you need a **consumer contract**. This is the smart contract that will receive your workflow's data.

@@ -174,6 +174,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   JOVAY_TESTNET: () => new JsonRpcProvider("https://api.zan.top/public/jovay-testnet"),
   STABLE_MAINNET: () => new JsonRpcProvider("https://rpc.stable.xyz"),
   TEMPO_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.tempo.xyz"),
+  TEMPO_TESTNET_MODERATO: () => new JsonRpcProvider("https://rpc.moderato.tempo.xyz"),
   ARC_NETWORK_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.arc.network"),
   DOGE_OS_CHIKYU_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.dogeos.com/"),
   ADI_NETWORK_AB_TESTNET: () => new JsonRpcProvider("https://rpc.ab.testnet.adifoundation.ai/"),
