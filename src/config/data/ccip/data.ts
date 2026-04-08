@@ -204,7 +204,6 @@ export const networkFees: NetworkFees = {
   messaging: {
     fromToEthereum: { gasTokenFee: "0.50 USD", linkFee: "0.45 USD" },
     fromNonEthereumToNonEthereum: { gasTokenFee: "0.10 USD", linkFee: "0.09 USD" },
-    fromNonEthereumToSolana: { gasTokenFee: "0.10 USD", linkFee: "0.09 USD" },
   },
 }
 
