@@ -34,13 +34,10 @@ const getMaxSubmissionValueBound = (
   try {
     const raw = BigInt(maxSubmissionValue)
     const divisor = BigInt(10) ** BigInt(decimals)
+    // Hide the badge if the decoded price exceeds $2.00 (fixed-point compare avoids
+    // float drift). The all-0xff unbounded sentinel decodes to ~9.578e44 and is filtered here.
+    if (raw > BigInt(2) * divisor) return null
     const wholePart = raw / divisor
-    // Hide the badge if the decoded price exceeds $1,000,000 (1M).
-    // This filters out the all-0xff unbounded sentinel that contracts use by default
-    // (which decodes to ~9.578e44) while still accommodating any real-world price cap
-    // across USD, ETH, EUR, and other quote currencies — the highest plausible cap
-    // for any stablecoin or pegged asset is well below $1M.
-    if (wholePart > BigInt(1_000_000)) return null
     const remainder = raw % divisor
     const price = Number(wholePart) + Number(remainder) / Number(divisor)
     return new Intl.NumberFormat("en-US", {
