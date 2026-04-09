@@ -378,6 +378,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Verifying Workflows",
           url: "cre/guides/operations/verifying-workflows",
+          highlightAsCurrent: [
+            "cre/guides/operations/verifying-workflows-ts",
+            "cre/guides/operations/verifying-workflows-go",
+          ],
         },
         {
           title: "Deleting Workflows",
