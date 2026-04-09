@@ -1312,6 +1312,7 @@ export type CcipTokenPool = {
   blockNumber?: Maybe<Scalars["Int"]["output"]>
   blockTimestamp?: Maybe<Scalars["Datetime"]["output"]>
   createdAt?: Maybe<Scalars["Datetime"]["output"]>
+  info?: Maybe<Scalars["JSON"]["output"]>
   logIndex?: Maybe<Scalars["Int"]["output"]>
   minBlockConfirmations?: Maybe<Scalars["Int"]["output"]>
   network?: Maybe<Scalars["String"]["output"]>
@@ -1349,6 +1350,8 @@ export type CcipTokenPoolCondition = {
   blockTimestamp?: InputMaybe<Scalars["Datetime"]["input"]>
   /** Checks for equality with the object’s `createdAt` field. */
   createdAt?: InputMaybe<Scalars["Datetime"]["input"]>
+  /** Checks for equality with the object’s `info` field. */
+  info?: InputMaybe<Scalars["JSON"]["input"]>
   /** Checks for equality with the object’s `logIndex` field. */
   logIndex?: InputMaybe<Scalars["Int"]["input"]>
   /** Checks for equality with the object’s `minBlockConfirmations` field. */
@@ -1544,6 +1547,8 @@ export type CcipTokenPoolFilter = {
   blockHash?: InputMaybe<StringFilter>
   /** Filter by the object’s `blockNumber` field. */
   blockNumber?: InputMaybe<IntFilter>
+  /** Filter by the object’s `info` field. */
+  info?: InputMaybe<JsonFilter>
   /** Filter by the object’s `logIndex` field. */
   logIndex?: InputMaybe<IntFilter>
   /** Filter by the object’s `minBlockConfirmations` field. */
@@ -1599,6 +1604,7 @@ export type CcipTokenPoolLane = {
   inboundCapacity?: Maybe<Scalars["BigFloat"]["output"]>
   inboundEnabled?: Maybe<Scalars["Boolean"]["output"]>
   inboundRate?: Maybe<Scalars["BigFloat"]["output"]>
+  info?: Maybe<Scalars["JSON"]["output"]>
   logIndex?: Maybe<Scalars["Int"]["output"]>
   network?: Maybe<Scalars["String"]["output"]>
   outboundCapacity?: Maybe<Scalars["BigFloat"]["output"]>
@@ -1645,6 +1651,8 @@ export type CcipTokenPoolLaneCondition = {
   inboundEnabled?: InputMaybe<Scalars["Boolean"]["input"]>
   /** Checks for equality with the object’s `inboundRate` field. */
   inboundRate?: InputMaybe<Scalars["BigFloat"]["input"]>
+  /** Checks for equality with the object’s `info` field. */
+  info?: InputMaybe<Scalars["JSON"]["input"]>
   /** Checks for equality with the object’s `logIndex` field. */
   logIndex?: InputMaybe<Scalars["Int"]["input"]>
   /** Checks for equality with the object’s `network` field. */
@@ -1687,6 +1695,8 @@ export type CcipTokenPoolLaneFilter = {
   customOutboundEnabled?: InputMaybe<BooleanFilter>
   /** Filter by the object’s `inboundEnabled` field. */
   inboundEnabled?: InputMaybe<BooleanFilter>
+  /** Filter by the object’s `info` field. */
+  info?: InputMaybe<JsonFilter>
   /** Filter by the object’s `logIndex` field. */
   logIndex?: InputMaybe<IntFilter>
   /** Filter by the object’s `network` field. */
@@ -1849,6 +1859,8 @@ export enum CcipTokenPoolLanesOrderBy {
   InboundEnabledDesc = "INBOUND_ENABLED_DESC",
   InboundRateAsc = "INBOUND_RATE_ASC",
   InboundRateDesc = "INBOUND_RATE_DESC",
+  InfoAsc = "INFO_ASC",
+  InfoDesc = "INFO_DESC",
   LogIndexAsc = "LOG_INDEX_ASC",
   LogIndexDesc = "LOG_INDEX_DESC",
   Natural = "NATURAL",
@@ -1895,7 +1907,9 @@ export type CcipTokenPoolLanesWithPool = {
   inboundCapacity?: Maybe<Scalars["BigFloat"]["output"]>
   inboundEnabled?: Maybe<Scalars["Boolean"]["output"]>
   inboundRate?: Maybe<Scalars["BigFloat"]["output"]>
+  info?: Maybe<Scalars["JSON"]["output"]>
   logIndex?: Maybe<Scalars["Int"]["output"]>
+  minBlockConfirmations?: Maybe<Scalars["Int"]["output"]>
   network?: Maybe<Scalars["String"]["output"]>
   outboundCapacity?: Maybe<Scalars["BigFloat"]["output"]>
   outboundEnabled?: Maybe<Scalars["Boolean"]["output"]>
@@ -1903,6 +1917,7 @@ export type CcipTokenPoolLanesWithPool = {
   owner?: Maybe<Scalars["String"]["output"]>
   pendingAdministrator?: Maybe<Scalars["String"]["output"]>
   pendingOwner?: Maybe<Scalars["String"]["output"]>
+  poolInfo?: Maybe<Scalars["JSON"]["output"]>
   previousPool?: Maybe<Scalars["String"]["output"]>
   previousPoolTypeAndVersion?: Maybe<Scalars["String"]["output"]>
   registry?: Maybe<Scalars["String"]["output"]>
@@ -1957,8 +1972,12 @@ export type CcipTokenPoolLanesWithPoolCondition = {
   inboundEnabled?: InputMaybe<Scalars["Boolean"]["input"]>
   /** Checks for equality with the object’s `inboundRate` field. */
   inboundRate?: InputMaybe<Scalars["BigFloat"]["input"]>
+  /** Checks for equality with the object’s `info` field. */
+  info?: InputMaybe<Scalars["JSON"]["input"]>
   /** Checks for equality with the object’s `logIndex` field. */
   logIndex?: InputMaybe<Scalars["Int"]["input"]>
+  /** Checks for equality with the object’s `minBlockConfirmations` field. */
+  minBlockConfirmations?: InputMaybe<Scalars["Int"]["input"]>
   /** Checks for equality with the object’s `network` field. */
   network?: InputMaybe<Scalars["String"]["input"]>
   /** Checks for equality with the object’s `outboundCapacity` field. */
@@ -1973,6 +1992,8 @@ export type CcipTokenPoolLanesWithPoolCondition = {
   pendingAdministrator?: InputMaybe<Scalars["String"]["input"]>
   /** Checks for equality with the object’s `pendingOwner` field. */
   pendingOwner?: InputMaybe<Scalars["String"]["input"]>
+  /** Checks for equality with the object’s `poolInfo` field. */
+  poolInfo?: InputMaybe<Scalars["JSON"]["input"]>
   /** Checks for equality with the object’s `previousPool` field. */
   previousPool?: InputMaybe<Scalars["String"]["input"]>
   /** Checks for equality with the object’s `previousPoolTypeAndVersion` field. */
@@ -2027,8 +2048,12 @@ export type CcipTokenPoolLanesWithPoolFilter = {
   customOutboundEnabled?: InputMaybe<BooleanFilter>
   /** Filter by the object’s `inboundEnabled` field. */
   inboundEnabled?: InputMaybe<BooleanFilter>
+  /** Filter by the object’s `info` field. */
+  info?: InputMaybe<JsonFilter>
   /** Filter by the object’s `logIndex` field. */
   logIndex?: InputMaybe<IntFilter>
+  /** Filter by the object’s `minBlockConfirmations` field. */
+  minBlockConfirmations?: InputMaybe<IntFilter>
   /** Filter by the object’s `network` field. */
   network?: InputMaybe<StringFilter>
   /** Negates the expression. */
@@ -2043,6 +2068,8 @@ export type CcipTokenPoolLanesWithPoolFilter = {
   pendingAdministrator?: InputMaybe<StringFilter>
   /** Filter by the object’s `pendingOwner` field. */
   pendingOwner?: InputMaybe<StringFilter>
+  /** Filter by the object’s `poolInfo` field. */
+  poolInfo?: InputMaybe<JsonFilter>
   /** Filter by the object’s `previousPool` field. */
   previousPool?: InputMaybe<StringFilter>
   /** Filter by the object’s `previousPoolTypeAndVersion` field. */
@@ -2129,8 +2156,12 @@ export enum CcipTokenPoolLanesWithPoolsOrderBy {
   InboundEnabledDesc = "INBOUND_ENABLED_DESC",
   InboundRateAsc = "INBOUND_RATE_ASC",
   InboundRateDesc = "INBOUND_RATE_DESC",
+  InfoAsc = "INFO_ASC",
+  InfoDesc = "INFO_DESC",
   LogIndexAsc = "LOG_INDEX_ASC",
   LogIndexDesc = "LOG_INDEX_DESC",
+  MinBlockConfirmationsAsc = "MIN_BLOCK_CONFIRMATIONS_ASC",
+  MinBlockConfirmationsDesc = "MIN_BLOCK_CONFIRMATIONS_DESC",
   Natural = "NATURAL",
   NetworkAsc = "NETWORK_ASC",
   NetworkDesc = "NETWORK_DESC",
@@ -2146,6 +2177,8 @@ export enum CcipTokenPoolLanesWithPoolsOrderBy {
   PendingAdministratorDesc = "PENDING_ADMINISTRATOR_DESC",
   PendingOwnerAsc = "PENDING_OWNER_ASC",
   PendingOwnerDesc = "PENDING_OWNER_DESC",
+  PoolInfoAsc = "POOL_INFO_ASC",
+  PoolInfoDesc = "POOL_INFO_DESC",
   PreviousPoolAsc = "PREVIOUS_POOL_ASC",
   PreviousPoolDesc = "PREVIOUS_POOL_DESC",
   PreviousPoolTypeAndVersionAsc = "PREVIOUS_POOL_TYPE_AND_VERSION_ASC",
@@ -2218,6 +2251,8 @@ export enum CcipTokenPoolsOrderBy {
   BlockTimestampDesc = "BLOCK_TIMESTAMP_DESC",
   CreatedAtAsc = "CREATED_AT_ASC",
   CreatedAtDesc = "CREATED_AT_DESC",
+  InfoAsc = "INFO_ASC",
+  InfoDesc = "INFO_DESC",
   LogIndexAsc = "LOG_INDEX_ASC",
   LogIndexDesc = "LOG_INDEX_DESC",
   MinBlockConfirmationsAsc = "MIN_BLOCK_CONFIRMATIONS_ASC",
@@ -3092,6 +3127,8 @@ export type GetTokenPoolLanesWithPoolsQuery = {
       tokenDecimals?: number | null
       remoteNetworkName?: string | null
       remoteToken?: string | null
+      info?: any | null
+      poolInfo?: any | null
       removed?: boolean | null
       typeAndVersion?: string | null
       tokenPool?: string | null
@@ -3130,6 +3167,7 @@ export type GetTokenPoolsQuery = {
       tokenSymbol?: string | null
       typeAndVersion?: string | null
       minBlockConfirmations?: number | null
+      info?: any | null
       tokenPool?: string | null
     }>
   } | null
@@ -3218,6 +3256,8 @@ export const GetTokenPoolLanesWithPoolsDocument = {
                       { kind: "Field", name: { kind: "Name", value: "tokenDecimals" } },
                       { kind: "Field", name: { kind: "Name", value: "remoteNetworkName" } },
                       { kind: "Field", name: { kind: "Name", value: "remoteToken" } },
+                      { kind: "Field", name: { kind: "Name", value: "info" } },
+                      { kind: "Field", name: { kind: "Name", value: "poolInfo" } },
                       { kind: "Field", name: { kind: "Name", value: "removed" } },
                       { kind: "Field", name: { kind: "Name", value: "typeAndVersion" } },
                       { kind: "Field", name: { kind: "Name", value: "tokenPool" } },
@@ -3327,6 +3367,7 @@ export const GetTokenPoolsDocument = {
                       { kind: "Field", name: { kind: "Name", value: "tokenSymbol" } },
                       { kind: "Field", name: { kind: "Name", value: "typeAndVersion" } },
                       { kind: "Field", name: { kind: "Name", value: "minBlockConfirmations" } },
+                      { kind: "Field", name: { kind: "Name", value: "info" } },
                       { kind: "Field", name: { kind: "Name", value: "tokenPool" } },
                     ],
                   },

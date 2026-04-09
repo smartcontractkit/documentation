@@ -122,7 +122,17 @@ export type TokenPool = {
   rawType: string
   type: string
   version: string
-  advancedPoolHooks?: string | null
+  hook: string | null
+  capabilities: {
+    supportsV2Features: boolean
+  }
+  finality: {
+    finalityDepth: number | null
+    finalitySafe: boolean | null
+  }
+  ccv: {
+    thresholdAmount: string | null
+  }
 }
 
 export type TokenChainData = {
@@ -162,62 +172,14 @@ export interface TokenFilterType {
   chain_id?: string
 }
 
-/**
- * CCV (Cross-Chain Verifier) configuration for a pool
- * Only present for v2.0+ pools (check pool.supportsV2Features)
- * For v1.x pools, the entire ccvConfig field is null
- *
- * Values for thresholdAmount:
- * - "0": CCV not configured for this v2 pool
- * - "N" (positive number string): CCV configured with threshold N
- * - null: downstream API error fetching CCV config
- */
-export interface CCVConfig {
-  thresholdAmount: string | null
-}
-
 // Token Detail API Types (for /tokens/{tokenCanonicalSymbol} endpoint)
 
 /**
- * Custom finality configuration (reused across token endpoints)
- */
-export interface CustomFinalityConfig {
-  /** Whether custom finality is enabled (derived from minBlockConfirmation > 0) */
-  hasCustomFinality: boolean | null
-  /** Minimum block confirmations required, null if unavailable */
-  minBlockConfirmation: number | null
-}
-
-/**
- * Extended token chain data with custom finality and CCV information
+ * Extended token chain data with enriched pool configuration.
  */
 export interface TokenDetailChainData extends Omit<TokenChainData, "pool"> {
-  /** Custom finality configuration for the token on this chain
-   * - null: v1 pool (feature not supported)
-   * - {hasCustomFinality: null, minBlockConfirmation: null}: v2 pool, downstream API error
-   * - {hasCustomFinality: false, minBlockConfirmation: 0}: v2 pool, feature not used
-   * - {hasCustomFinality: true, minBlockConfirmation: N}: v2 pool, feature enabled
-   */
-  customFinality: CustomFinalityConfig | null
-  /** CCV (Cross-Chain Verifier) configuration for the pool
-   * - null: v1 pool (feature not supported, check pool.supportsV2Features)
-   * - {thresholdAmount: "0"}: v2 pool, CCV not configured
-   * - {thresholdAmount: null}: v2 pool, downstream API error
-   * - {thresholdAmount: "N"}: v2 pool, CCV configured with threshold N
-   */
-  ccvConfig: CCVConfig | null
-  /** Pool information including version, hooks, and v2 feature support flag */
-  pool: {
-    address: string
-    rawType: string
-    type: string
-    version: string
-    advancedPoolHooks: string | null
-    /** Whether this pool supports v2 features (customFinality, ccvConfig).
-     * When true and customFinality/ccvConfig fields have null values inside,
-     * it indicates a downstream API error rather than feature not supported. */
-    supportsV2Features: boolean
-  } | null
+  /** Pool information including capabilities, finality and CCV threshold. */
+  pool: TokenPool | null
 }
 
 /**
@@ -388,6 +350,14 @@ export interface TokenFees {
   customTransferFeeBps: number
 }
 
+export interface LaneVerifierInfo {
+  inboundCCVs: string[] | null
+  outboundCCVs: string[] | null
+  thresholdInboundCCVs: string[] | null
+  thresholdOutboundCCVs: string[] | null
+  thresholdAmount: string | null
+}
+
 /**
  * Raw rate limits from mock data (fees may not be present)
  */
@@ -395,6 +365,7 @@ export interface RawTokenRateLimits {
   standard: RateLimiterEntry
   custom: RateLimiterEntry
   fees?: TokenFees
+  laneVerifierInfo?: LaneVerifierInfo | null
 }
 
 /**
@@ -413,6 +384,10 @@ export interface TokenRateLimits {
 export interface TokenLaneData {
   rateLimits: TokenRateLimits
   fees: TokenFees | null
+  verifiers: {
+    belowThreshold: string[] | null
+    aboveThreshold: string[] | null
+  } | null
 }
 
 /**
@@ -566,7 +541,7 @@ export interface RateLimitsServiceResponse {
 
 /**
  * Verifiers configuration for a lane with pre-computed sets for different transfer amounts
- * Only present for v2.0+ pools (check pool.supportsV2Features)
+ * Only present for v2.0+ pools (check pool.capabilities.supportsV2Features)
  * For v1.x pools, the entire verifiers field is null
  *
  * Values for belowThreshold/aboveThreshold:
@@ -587,11 +562,11 @@ export interface LaneVerifiers {
 /**
  * Lane data in token directory response
  *
- * Use pool.supportsV2Features to interpret verifiers:
- * - pool.supportsV2Features=false + verifiers=null → v1.x pool, feature not supported
- * - pool.supportsV2Features=true + verifiers={belowThreshold: null, aboveThreshold: null} → downstream API error
- * - pool.supportsV2Features=true + verifiers={belowThreshold: [], aboveThreshold: []} → not configured
- * - pool.supportsV2Features=true + verifiers={belowThreshold: [...], aboveThreshold: [...]} → configured
+ * Use pool.capabilities.supportsV2Features to interpret verifiers:
+ * - pool.capabilities.supportsV2Features=false + verifiers=null → v1.x pool, feature not supported
+ * - pool.capabilities.supportsV2Features=true + verifiers={belowThreshold: null, aboveThreshold: null} → downstream API error
+ * - pool.capabilities.supportsV2Features=true + verifiers={belowThreshold: [], aboveThreshold: []} → not configured
+ * - pool.capabilities.supportsV2Features=true + verifiers={belowThreshold: [...], aboveThreshold: [...]} → configured
  */
 export interface TokenDirectoryLane {
   internalId: string
@@ -613,17 +588,7 @@ export interface TokenDirectoryTokenInfo {
 /**
  * Pool info in directory response
  */
-export interface TokenDirectoryPoolInfo {
-  address: string
-  rawType: string
-  type: string
-  version: string
-  advancedPoolHooks: string | null
-  /** Whether this pool supports v2 features (customFinality, ccvConfig).
-   * When true and customFinality/ccvConfig fields have null values inside,
-   * it indicates a downstream API error rather than feature not supported. */
-  supportsV2Features: boolean
-}
+export type TokenDirectoryPoolInfo = TokenPool
 
 /**
  * Token directory data for a specific chain
@@ -634,10 +599,6 @@ export interface TokenDirectoryData {
   selector: string
   token: TokenDirectoryTokenInfo
   pool: TokenDirectoryPoolInfo
-  ccvConfig: CCVConfig | null
-  customFinality: CustomFinalityConfig | null
-  outboundLanes: Record<string, TokenDirectoryLane>
-  inboundLanes: Record<string, TokenDirectoryLane>
 }
 
 /**
@@ -679,14 +640,6 @@ export interface CCVLaneConfig {
   base: string[] | null
   threshold: string[] | null
 }
-
-export interface CCVChainConfig {
-  thresholdAmount: string
-  outboundCCVs: Record<string, CCVLaneConfig>
-  inboundCCVs: Record<string, CCVLaneConfig>
-}
-
-export type CCVConfigData = Record<string, Record<string, CCVChainConfig>>
 
 // Faucet API Types
 export type {

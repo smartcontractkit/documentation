@@ -161,6 +161,150 @@ interface TokenChainInfo {
 }
 ```
 
+#### GET /api/ccip/v1/tokens/{tokenCanonicalSymbol}/chains/{chain}
+
+Query token directory data for one token on one source chain, scoped to token + pool configuration.
+
+**Path Parameters:**
+
+- `tokenCanonicalSymbol` (required): Canonical token symbol (e.g., `LINK`, `CCIP-BnM`, `LBTC`)
+- `chain` (required): Source chain identifier
+  - Accepts directory-style internal IDs (e.g., `mainnet`, `bsc-testnet`)
+  - Accepts selector-style internal IDs (e.g., `ethereum-mainnet`, `binance_smart_chain-testnet`)
+  - Does **not** accept numeric chainId in this endpoint path
+
+**Query Parameters:**
+
+- `environment` (required): Network environment
+  - Values: `mainnet`, `testnet`
+- `internalIdFormat` (optional): Naming convention for `internalId` fields
+  - Values: `selector`, `directory`
+  - Default: `selector`
+
+**Examples:**
+
+```bash
+# Directory-style chain identifier in path
+curl "https://docs.chain.link/api/ccip/v1/tokens/LBTC/chains/mainnet?environment=mainnet"
+
+# Selector-style chain identifier in path
+curl "https://docs.chain.link/api/ccip/v1/tokens/LBTC/chains/ethereum-mainnet?environment=mainnet"
+
+# Return internalId fields using directory naming
+curl "https://docs.chain.link/api/ccip/v1/tokens/LBTC/chains/ethereum-mainnet?environment=mainnet&internalIdFormat=directory"
+```
+
+For lane-level data (`rateLimits`, `fees`, `verifiers`), use the lane endpoints:
+
+- `/api/ccip/v1/lanes/by-chain-id/{source}/{destination}`
+- `/api/ccip/v1/lanes/by-selector/{source}/{destination}`
+- `/api/ccip/v1/lanes/by-internal-id/{source}/{destination}`
+- `/api/ccip/v1/lanes/by-chain-id/{source}/{destination}/supported-tokens`
+- `/api/ccip/v1/lanes/by-selector/{source}/{destination}/supported-tokens`
+- `/api/ccip/v1/lanes/by-internal-id/{source}/{destination}/supported-tokens`
+
+**Token + pool response example (`/tokens/{tokenCanonicalSymbol}/chains/{chain}`):**
+
+```json
+{
+  "metadata": {
+    "environment": "mainnet",
+    "timestamp": "2025-12-10T12:00:00Z",
+    "requestId": "123e4567-e89b-12d3-a456-426614174000",
+    "symbol": "LBTC",
+    "sourceChain": "ethereum-mainnet"
+  },
+  "data": {
+    "internalId": "ethereum-mainnet",
+    "chainId": 1,
+    "selector": "5009297550715157269",
+    "token": {
+      "address": "0x8236a87084f8B84306f72007F36F2618A5634494",
+      "decimals": 8
+    },
+    "pool": {
+      "address": "0x88E18636EfFC3b3cd520FC72B710eb99C0017BC7",
+      "rawType": "BurnMintTokenPool",
+      "type": "burnMint",
+      "version": "2.0.0",
+      "hook": null,
+      "capabilities": {
+        "supportsV2Features": true
+      },
+      "finality": {
+        "finalityDepth": 5,
+        "finalitySafe": true
+      },
+      "ccv": {
+        "thresholdAmount": "100000000000"
+      }
+    }
+  }
+}
+```
+
+**Field semantics for pool data:**
+
+- `pool.capabilities.supportsV2Features=true` indicates v2 features are available for this pool.
+- `pool.finality.finalityDepth` is the minimum confirmations used for finalized execution.
+- `pool.finality.finalitySafe` indicates whether FCR-safe finality is supported.
+- `pool.ccv.thresholdAmount` is the amount threshold (smallest token unit) used for threshold verifier logic.
+- `pool.hook` is the hook contract address when configured, otherwise `null`.
+
+**Lane token data example (`/lanes/by-internal-id/{source}/{destination}/supported-tokens`):**
+
+```bash
+curl "https://docs.chain.link/api/ccip/v1/lanes/by-internal-id/ethereum-mainnet/ethereum-mainnet-base-1/supported-tokens?environment=mainnet"
+```
+
+```json
+{
+  "metadata": {
+    "environment": "mainnet",
+    "timestamp": "2025-12-10T12:00:00Z",
+    "requestId": "123e4567-e89b-12d3-a456-426614174111",
+    "sourceChain": "ethereum-mainnet",
+    "destinationChain": "ethereum-mainnet-base-1",
+    "tokenCount": 1
+  },
+  "data": {
+    "LBTC": {
+      "rateLimits": {
+        "standard": {
+          "in": {
+            "capacity": "100000000000",
+            "rate": "100000000",
+            "isEnabled": true
+          },
+          "out": {
+            "capacity": "200000000000",
+            "rate": "200000000",
+            "isEnabled": true
+          }
+        },
+        "custom": null
+      },
+      "fees": {
+        "standardTransferFeeBps": 0,
+        "customTransferFeeBps": 0
+      },
+      "verifiers": {
+        "belowThreshold": ["0x1111111111111111111111111111111111111111"],
+        "aboveThreshold": ["0x1111111111111111111111111111111111111111", "0x2222222222222222222222222222222222222222"]
+      }
+    }
+  }
+}
+```
+
+**Field semantics for lane token data:**
+
+- `rateLimits.standard` and `rateLimits.custom` each contain directional limits (`in` and `out`).
+- `fees` are lane transfer fees in basis points.
+- `verifiers` is available on lane token endpoints; this is where verifier sets are exposed.
+- `verifiers.belowThreshold` applies below the pool threshold amount.
+- `verifiers.aboveThreshold` applies at or above the threshold.
+
 ### Error Handling
 
 The API uses standard HTTP status codes:

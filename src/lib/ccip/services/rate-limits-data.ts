@@ -163,6 +163,7 @@ export class RateLimitsDataService {
       return {
         rateLimits: { standard: filteredStandard, custom: null },
         fees,
+        verifiers: null,
       }
     }
 
@@ -173,6 +174,7 @@ export class RateLimitsDataService {
       return {
         rateLimits: { standard: null, custom: filteredCustom },
         fees,
+        verifiers: null,
       }
     }
 
@@ -186,6 +188,7 @@ export class RateLimitsDataService {
         custom: filteredCustom ?? null,
       },
       fees,
+      verifiers: null,
     }
   }
 

@@ -14,6 +14,7 @@ import {
   ChainFamily,
   LaneInputKeyType,
   TokenLaneData,
+  LaneVerifierInfo,
 } from "~/lib/ccip/types/index.ts"
 import { loadReferenceData, Version } from "@config/data/ccip/index.ts"
 import type { LaneConfig, ChainConfig } from "@config/data/ccip/types.ts"
@@ -414,6 +415,41 @@ export class LaneDataService {
   }
 
   /**
+   * Builds verifier sets for a lane in source->destination direction.
+   */
+  private getOutboundVerifiers(
+    laneVerifierInfo: LaneVerifierInfo | null | undefined
+  ): { belowThreshold: string[] | null; aboveThreshold: string[] | null } | null {
+    if (!laneVerifierInfo) {
+      return null
+    }
+
+    const belowThreshold = laneVerifierInfo.outboundCCVs
+    const thresholdVerifiers = laneVerifierInfo.thresholdOutboundCCVs
+    const thresholdAmount = laneVerifierInfo.thresholdAmount ?? "0"
+
+    return this.buildVerifiersResponse(belowThreshold, thresholdVerifiers, thresholdAmount)
+  }
+
+  /**
+   * Builds verifier response from base and threshold verifier sets.
+   */
+  private buildVerifiersResponse(
+    baseVerifiers: string[] | null,
+    thresholdVerifiers: string[] | null,
+    thresholdAmount: string
+  ): { belowThreshold: string[] | null; aboveThreshold: string[] | null } {
+    if (baseVerifiers === null || thresholdVerifiers === null) {
+      return { belowThreshold: null, aboveThreshold: null }
+    }
+
+    return {
+      belowThreshold: baseVerifiers,
+      aboveThreshold: thresholdAmount === "0" ? baseVerifiers : [...baseVerifiers, ...thresholdVerifiers],
+    }
+  }
+
+  /**
    * Gets the request ID for this service instance
    */
   getRequestId(): string {
@@ -687,6 +723,7 @@ export class LaneDataService {
         supportedTokensWithRateLimits[tokenSymbol] = {
           rateLimits: { standard: laneRateLimits.standard, custom: laneRateLimits.custom },
           fees: null,
+          verifiers: this.getOutboundVerifiers(laneRateLimits.laneVerifierInfo),
         }
       } else {
         logger.warn({
@@ -803,6 +840,7 @@ export class LaneDataService {
           supportedTokensWithRateLimits[tokenSymbol] = {
             rateLimits: { standard: laneRateLimits.standard, custom: laneRateLimits.custom },
             fees: null,
+            verifiers: this.getOutboundVerifiers(laneRateLimits.laneVerifierInfo),
           }
         } else {
           logger.warn({

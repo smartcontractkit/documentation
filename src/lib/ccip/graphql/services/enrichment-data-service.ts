@@ -31,7 +31,7 @@ import type {
   RawTokenRateLimits,
   RateLimiterConfig,
   RateLimiterDirections,
-  CCVConfigData,
+  LaneVerifierInfo,
 } from "~/lib/ccip/types/index.ts"
 import type {
   GetTokenPoolLanesWithPoolsQuery,
@@ -47,8 +47,11 @@ export interface PoolInfo {
   rawType: string
   type: string
   version: string
+  finalityDepth: number | null
+  finalitySafe: boolean | null
+  hook: string | null
+  thresholdAmount: string | null
 }
-
 export type PoolData = Record<string, PoolInfo> // directoryKey → PoolInfo
 
 // ---------- Cache ----------
@@ -70,7 +73,6 @@ function cached<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
   queryCache.set(key, promise)
   return promise
 }
-
 // ---------- Rate limit helpers ----------
 
 function toRateLimiterConfig(capacity: unknown, rate: unknown, isEnabled: unknown): RateLimiterConfig {
@@ -80,7 +82,6 @@ function toRateLimiterConfig(capacity: unknown, rate: unknown, isEnabled: unknow
     isEnabled: Boolean(isEnabled),
   }
 }
-
 function toRateLimiterDirections(
   inCap: unknown,
   inRate: unknown,
@@ -93,6 +94,74 @@ function toRateLimiterDirections(
   return {
     in: toRateLimiterConfig(inCap, inRate, inEnabled),
     out: toRateLimiterConfig(outCap, outRate, outEnabled),
+  }
+}
+
+type RawPoolInfoPayload = {
+  finalityDepth?: unknown
+  finalitySafe?: unknown
+  hook?: unknown
+  thresholdAmount?: unknown
+}
+
+type RawLaneInfoPayload = {
+  inboundCCVs?: unknown
+  outboundCCVs?: unknown
+  thresholdInboundCCVs?: unknown
+  thresholdOutboundCCVs?: unknown
+}
+
+function normalizeThresholdAmount(value: unknown): string | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return String(value)
+  }
+  if (typeof value === "string") {
+    return value
+  }
+  return null
+}
+
+function parsePoolInfo(
+  poolInfo: unknown
+): Pick<PoolInfo, "finalityDepth" | "finalitySafe" | "hook" | "thresholdAmount"> {
+  if (!poolInfo || typeof poolInfo !== "object") {
+    return {
+      finalityDepth: null,
+      finalitySafe: null,
+      hook: null,
+      thresholdAmount: null,
+    }
+  }
+
+  const payload = poolInfo as RawPoolInfoPayload
+  return {
+    finalityDepth: typeof payload.finalityDepth === "number" ? payload.finalityDepth : null,
+    finalitySafe: typeof payload.finalitySafe === "boolean" ? payload.finalitySafe : null,
+    hook: typeof payload.hook === "string" ? payload.hook : null,
+    thresholdAmount: normalizeThresholdAmount(payload.thresholdAmount),
+  }
+}
+
+function parseAddressList(value: unknown): string[] | null {
+  if (!Array.isArray(value)) {
+    return null
+  }
+  const addresses = value.filter((entry): entry is string => typeof entry === "string")
+  return addresses.length === value.length ? addresses : null
+}
+
+function parseLaneInfo(laneInfo: unknown, thresholdAmount: string | null): LaneVerifierInfo | null {
+  if (!laneInfo || typeof laneInfo !== "object") {
+    return null
+  }
+
+  const payload = laneInfo as RawLaneInfoPayload
+  return {
+    inboundCCVs: parseAddressList(payload.inboundCCVs),
+    outboundCCVs: parseAddressList(payload.outboundCCVs),
+    thresholdInboundCCVs: parseAddressList(payload.thresholdInboundCCVs),
+    thresholdOutboundCCVs: parseAddressList(payload.thresholdOutboundCCVs),
+    thresholdAmount,
   }
 }
 
@@ -121,11 +190,16 @@ export async function fetchPoolDataForToken(
 
       const chainFamily = getChainFamilyForDirectoryKey(directoryKey)
       const rawType = extractRawType(node.typeAndVersion)
+      const parsedPoolInfo = parsePoolInfo(node.info)
       return {
         address: normalizeAddressForDisplay(node.tokenPool, chainFamily),
         rawType,
         type: normalizePoolType(rawType),
         version: extractVersion(node.typeAndVersion) || "",
+        finalityDepth: parsedPoolInfo.finalityDepth,
+        finalitySafe: parsedPoolInfo.finalitySafe,
+        hook: parsedPoolInfo.hook,
+        thresholdAmount: parsedPoolInfo.thresholdAmount,
       }
     })
   } catch (error) {
@@ -165,11 +239,16 @@ export async function fetchPoolDataForTokenAllChains(environment: Environment, t
 
         const chainFamily = getChainFamilyForDirectoryKey(dirKey)
         const rawType = extractRawType(node.typeAndVersion)
+        const parsedPoolInfo = parsePoolInfo(node.info)
         poolData[dirKey] = {
           address: normalizeAddressForDisplay(node.tokenPool, chainFamily),
           rawType,
           type: normalizePoolType(rawType),
           version: extractVersion(node.typeAndVersion) || "",
+          finalityDepth: parsedPoolInfo.finalityDepth,
+          finalitySafe: parsedPoolInfo.finalitySafe,
+          hook: parsedPoolInfo.hook,
+          thresholdAmount: parsedPoolInfo.thresholdAmount,
         }
       }
 
@@ -210,6 +289,7 @@ export async function fetchAllPoolData(environment: Environment): Promise<AllPoo
         const { tokenSymbol, directoryKey } = mapping
         const chainFamily = getChainFamilyForDirectoryKey(directoryKey)
         const rawType = extractRawType(node.typeAndVersion)
+        const parsedPoolInfo = parsePoolInfo(node.info)
 
         if (!allPoolData[tokenSymbol]) allPoolData[tokenSymbol] = {}
         allPoolData[tokenSymbol][directoryKey] = {
@@ -217,6 +297,10 @@ export async function fetchAllPoolData(environment: Environment): Promise<AllPoo
           rawType,
           type: normalizePoolType(rawType),
           version: extractVersion(node.typeAndVersion) || "",
+          finalityDepth: parsedPoolInfo.finalityDepth,
+          finalitySafe: parsedPoolInfo.finalitySafe,
+          hook: parsedPoolInfo.hook,
+          thresholdAmount: parsedPoolInfo.thresholdAmount,
         }
       }
 
@@ -305,7 +389,12 @@ export async function fetchMinBlockConfirmations(
       })
 
       const node = result.allCcipTokenPools?.nodes?.find((n) => n.tokenPool)
-      return node?.minBlockConfirmations ?? null
+      if (!node) {
+        return null
+      }
+
+      const parsedPoolInfo = parsePoolInfo(node.info)
+      return parsedPoolInfo.finalityDepth ?? node.minBlockConfirmations ?? null
     })
   } catch (error) {
     console.error(`[CCIP GraphQL] fetchMinBlockConfirmations failed: ${tokenSymbol}@${directoryKey}`, error)
@@ -351,6 +440,9 @@ export async function fetchLaneRateLimits(
       const node = result.allCcipTokenPoolLanesWithPools?.nodes?.[0]
       if (!node) return null
 
+      const lanePoolInfo = parsePoolInfo(node.poolInfo)
+      const laneVerifierInfo = parseLaneInfo(node.info, lanePoolInfo.thresholdAmount)
+
       return {
         standard: toRateLimiterDirections(
           node.inboundCapacity,
@@ -368,6 +460,7 @@ export async function fetchLaneRateLimits(
           node.customOutboundRate,
           node.customOutboundEnabled
         ),
+        laneVerifierInfo,
       }
     })
   } catch (error) {
@@ -377,11 +470,4 @@ export async function fetchLaneRateLimits(
     )
     return null
   }
-}
-
-// ---------- Stubs ----------
-
-// TODO: CCV verifier data is not yet available in the GraphQL schema.
-export function stubCCVConfigData(): CCVConfigData {
-  return {}
 }

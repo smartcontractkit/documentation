@@ -9,15 +9,12 @@ import {
   TokenDetailChainData,
   TokenDetailDataResponse,
   TokenDetailServiceResponse,
-  CCVConfigData,
-  CCVConfig,
-  CustomFinalityConfig,
 } from "~/lib/ccip/types/index.ts"
 import { Version } from "@config/data/ccip/types.ts"
 import { SupportedChain } from "@config/index.ts"
 import { getAllSupportedTokens, getAllTokenLanes, getTokenData } from "@config/data/ccip/data.ts"
 import { resolveChainOrThrow, generateChainKey } from "~/lib/ccip/utils.ts"
-import { getEffectivePoolVersion, shouldEnableCCVFeatures } from "~/lib/ccip/utils/pool-version.ts"
+import { getEffectivePoolVersion, isV2Pool, shouldEnableCCVFeatures } from "~/lib/ccip/utils/pool-version.ts"
 import { logger } from "@lib/logging/index.js"
 import { getChainId, getChainTypeAndFamily, getTitle } from "../../../features/utils/index.ts"
 import { getSelectorEntry } from "@config/data/ccip/selectors.ts"
@@ -25,10 +22,7 @@ import { getSelectorEntry } from "@config/data/ccip/selectors.ts"
 import {
   fetchPoolDataForTokenAllChains,
   fetchAllPoolData,
-  fetchMinBlockConfirmations,
-  stubCCVConfigData,
   type AllPoolData,
-  type PoolData,
 } from "~/lib/ccip/graphql/services/enrichment-data-service.ts"
 
 export const prerender = false
@@ -204,6 +198,17 @@ export class TokenDataService {
                 rawType: poolInfo.rawType,
                 type: poolInfo.type,
                 version: poolInfo.version,
+                hook: poolInfo.hook,
+                capabilities: {
+                  supportsV2Features: isV2Pool(poolInfo.version || ""),
+                },
+                finality: {
+                  finalityDepth: poolInfo.finalityDepth,
+                  finalitySafe: poolInfo.finalitySafe,
+                },
+                ccv: {
+                  thresholdAmount: poolInfo.thresholdAmount,
+                },
               },
               symbol: chainData.symbol,
               tokenAddress: chainData.tokenAddress,
@@ -393,12 +398,12 @@ export class TokenDataService {
   }
 
   /**
-   * Retrieves detailed token information for a specific token, including custom finality data
+   * Retrieves detailed token information for a specific token, including enriched pool data.
    *
    * @param environment - Network environment (mainnet/testnet)
    * @param tokenCanonicalSymbol - Canonical symbol for the token
    * @param outputKey - Format to use for displaying chain information
-   * @returns Token details with custom finality information for each chain
+   * @returns Token details with pool finality/CCV information for each chain
    */
   public async getTokenWithFinality(
     environment: Environment,
@@ -425,16 +430,10 @@ export class TokenDataService {
       return null
     }
 
-    // Load CCV config data for threshold amounts (stubbed — TODO)
-    const ccvConfigData = this.loadCCVConfigData()
-
     // Get raw token data with directory keys for reverse lookup
     const rawTokenData = this.getRawTokenData(environment, tokenCanonicalSymbol)
 
-    // Get token's CCV config by directory key
-    const tokenCCVConfig = ccvConfigData[tokenCanonicalSymbol]
-
-    // Merge token data with custom finality and CCV config information
+    // Merge token data with effective pool version and capability information
     const result: TokenDetailDataResponse = {}
 
     for (const [chainKey, chainData] of Object.entries(tokenData)) {
@@ -447,62 +446,8 @@ export class TokenDataService {
         ? await shouldEnableCCVFeatures(environment, tokenCanonicalSymbol, directoryKey, actualPoolVersion)
         : false
 
-      // Both customFinality and ccvConfig are v2.0+ pool features only
-      let minBlockConfirmation: number | null = null
-      let hasCustomFinality: boolean | null = null
-      let ccvConfig: CCVConfig | null = null
-      let customFinalityDataAvailable = false
-
-      if (isCCVEnabled && directoryKey) {
-        // Fetch minBlockConfirmation from GraphQL
-        minBlockConfirmation = await fetchMinBlockConfirmations(environment, tokenCanonicalSymbol, directoryKey)
-        customFinalityDataAvailable = true
-
-        // Derive hasCustomFinality from minBlockConfirmation
-        if (minBlockConfirmation === null) {
-          hasCustomFinality = null
-        } else if (minBlockConfirmation > 0) {
-          hasCustomFinality = true
-        } else {
-          hasCustomFinality = false
-        }
-
-        // Look up CCV config using directory key
-        // For v2 pools:
-        // - Entry with thresholdAmount value: configured → {thresholdAmount: "value"}
-        // - Entry with thresholdAmount null: downstream error → {thresholdAmount: null}
-        // - No entry: not configured → {thresholdAmount: "0"}
-        if (tokenCCVConfig && directoryKey && tokenCCVConfig[directoryKey]) {
-          // Entry exists - use the value (could be a string or null for downstream error)
-          ccvConfig = {
-            thresholdAmount: tokenCCVConfig[directoryKey].thresholdAmount,
-          }
-        } else {
-          // No entry for this v2 pool - CCV not configured
-          ccvConfig = {
-            thresholdAmount: "0",
-          }
-        }
-      }
-
-      // Build customFinality response:
-      // - v1 pool (isCCVEnabled=false): null (feature not supported)
-      // - v2 pool with data: { hasCustomFinality, minBlockConfirmation }
-      // - v2 pool without data (no entry in mock): { hasCustomFinality: null, minBlockConfirmation: null } (downstream error)
-      let customFinality: CustomFinalityConfig | null = null
-      if (isCCVEnabled) {
-        if (customFinalityDataAvailable) {
-          customFinality = { hasCustomFinality, minBlockConfirmation }
-        } else {
-          // v2 pool but no data available - downstream API error
-          customFinality = { hasCustomFinality: null, minBlockConfirmation: null }
-        }
-      }
-
       const detailChainData: TokenDetailChainData = {
         ...chainData,
-        customFinality,
-        ccvConfig,
         pool: chainData.pool
           ? {
               address: chainData.pool.address,
@@ -516,8 +461,17 @@ export class TokenDataService {
                     chainData.pool.version || ""
                   )
                 : chainData.pool.version || "",
-              advancedPoolHooks: chainData.pool.advancedPoolHooks || null,
-              supportsV2Features: isCCVEnabled,
+              hook: chainData.pool.hook ?? null,
+              capabilities: {
+                supportsV2Features: isCCVEnabled,
+              },
+              finality: {
+                finalityDepth: chainData.pool.finality.finalityDepth ?? null,
+                finalitySafe: chainData.pool.finality.finalitySafe ?? null,
+              },
+              ccv: {
+                thresholdAmount: chainData.pool.ccv.thresholdAmount ?? null,
+              },
             }
           : null,
       }
@@ -538,15 +492,6 @@ export class TokenDataService {
         chainCount: Object.keys(result).length,
       },
     }
-  }
-
-  /**
-   * Loads rate limits data from the GraphQL API
-   */
-
-  // eslint-disable-next-line class-methods-use-this
-  private loadCCVConfigData(): CCVConfigData {
-    return stubCCVConfigData()
   }
 
   /**
@@ -615,42 +560,5 @@ export class TokenDataService {
     }
 
     return null
-  }
-
-  /**
-   * Gets the internal ID for a chain based on chainId/chainName
-   * This is needed to look up rate limits data which uses internal IDs as keys
-   */
-  private getInternalIdFromChainKey(
-    chainId: number | string,
-    _chainName: string,
-    _outputKey: OutputKeyType
-  ): string | null {
-    try {
-      // If outputKey is internalId, the chainName might already be the internal ID
-      // We need to look up the selector entry by chainId
-      const numericChainId = typeof chainId === "string" ? parseInt(chainId, 10) : chainId
-
-      if (isNaN(numericChainId)) {
-        // chainId is not numeric, might be a non-EVM chain identifier
-        // Try to find by name pattern
-        return null
-      }
-
-      // Get selector entry which has the internal name
-      const selectorEntry = getSelectorEntry(numericChainId, "evm")
-      if (selectorEntry) {
-        return selectorEntry.name
-      }
-
-      return null
-    } catch {
-      logger.debug({
-        message: "Could not resolve internal ID for chain",
-        requestId: this.requestId,
-        chainId,
-      })
-      return null
-    }
   }
 }

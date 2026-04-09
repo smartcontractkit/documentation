@@ -20,6 +20,7 @@ export const TOKEN_POOLS_QUERY = gql(`
         tokenSymbol
         typeAndVersion
         minBlockConfirmations
+        info
         tokenPool
       }
       totalCount

@@ -1,7 +1,6 @@
 import type { APIRoute } from "astro"
 import {
   validateEnvironment,
-  validateOutputKey,
   validateInternalIdFormat,
   handleApiError,
   APIErrorType,
@@ -66,12 +65,9 @@ export const GET: APIRoute = async ({ params, request }) => {
     const rawInternalIdFormat = queryParams.get("internalIdFormat") || undefined
     const internalIdFormat = validateInternalIdFormat(rawInternalIdFormat)
 
-    // Validate output key for chain representation
-    const outputKey = validateOutputKey(queryParams.get("outputKey") || undefined, rawInternalIdFormat)
     logger.debug({
-      message: "Output key and internal ID format validated",
+      message: "Internal ID format validated",
       requestId,
-      outputKey,
       internalIdFormat,
     })
 
@@ -90,7 +86,6 @@ export const GET: APIRoute = async ({ params, request }) => {
       environment,
       canonicalSymbol,
       chain,
-      outputKey,
       internalIdFormat as NamingConvention
     )
 
@@ -106,8 +101,6 @@ export const GET: APIRoute = async ({ params, request }) => {
       requestId,
       canonicalSymbol,
       chain,
-      outboundLaneCount: Object.keys(result.data.outboundLanes).length,
-      inboundLaneCount: Object.keys(result.data.inboundLanes).length,
     })
 
     // Create token directory metadata
@@ -134,15 +127,25 @@ export const GET: APIRoute = async ({ params, request }) => {
       headers: jsonHeaders,
     })
   } catch (error) {
-    logger.error({
-      message: "Error processing token directory request",
-      requestId,
-      error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
-    })
-
     // Handle CCIPError specifically, preserving its status code
     if (error instanceof CCIPError) {
+      if (error.statusCode >= 400 && error.statusCode < 500) {
+        logger.warn({
+          message: "Token directory request rejected",
+          requestId,
+          statusCode: error.statusCode,
+          error: error.message,
+        })
+      } else {
+        logger.error({
+          message: "Token directory request failed",
+          requestId,
+          statusCode: error.statusCode,
+          error: error.message,
+          stack: error.stack,
+        })
+      }
+
       return createErrorResponse(
         error.statusCode === 400
           ? APIErrorType.VALIDATION_ERROR
@@ -154,6 +157,13 @@ export const GET: APIRoute = async ({ params, request }) => {
         requestId
       )
     }
+
+    logger.error({
+      message: "Error processing token directory request",
+      requestId,
+      error: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+    })
 
     // Handle other errors
     return handleApiError(error, requestId)
