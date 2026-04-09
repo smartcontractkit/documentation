@@ -433,7 +433,11 @@ function ChainHero({ chains, tokens, network, token, environment, lanes }: Chain
                               />
                             </object>
                             <div>{token.name}</div>
-                            <Address endLength={4} contractUrl={contractUrl} address={address} />
+                            <Address
+                              endLength={4}
+                              contractUrl={token.name === "TON" ? undefined : contractUrl}
+                              address={address}
+                            />
                           </div>
                         ))}
                       {!nativeTokenHasAddress() && nativeCurrency && (
