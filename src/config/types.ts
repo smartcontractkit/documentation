@@ -261,6 +261,7 @@ export type SupportedChain =
   | "STABLE_MAINNET"
   | "TEMPO_TESTNET"
   | "TEMPO_TESTNET_MODERATO"
+  | "TEMPO_MAINNET"
   | "ARC_NETWORK_TESTNET"
   | "DOGE_OS_CHIKYU_TESTNET"
   | "ADI_NETWORK_AB_TESTNET"
@@ -269,6 +270,7 @@ export type SupportedChain =
   | "EDGE_TESTNET"
   | "ROBINHOOD_TESTNET"
   | "TON_TESTNET"
+  | "TON_MAINNET"
 
 export type ExplorerInfo = {
   baseUrl: string

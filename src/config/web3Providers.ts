@@ -175,6 +175,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   STABLE_MAINNET: () => new JsonRpcProvider("https://rpc.stable.xyz"),
   TEMPO_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.tempo.xyz"),
   TEMPO_TESTNET_MODERATO: () => new JsonRpcProvider("https://rpc.moderato.tempo.xyz"),
+  TEMPO_MAINNET: () => new JsonRpcProvider("https://rpc.tempo.xyz"),
   ARC_NETWORK_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.arc.network"),
   DOGE_OS_CHIKYU_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.dogeos.com/"),
   ADI_NETWORK_AB_TESTNET: () => new JsonRpcProvider("https://rpc.ab.testnet.adifoundation.ai/"),
@@ -183,6 +184,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   EDGE_MAINNET: () => new JsonRpcProvider("https://edge-mainnet.g.alchemy.com/public"),
   ROBINHOOD_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.chain.robinhood.com"),
   TON_TESTNET: () => new JsonRpcProvider("https://ton-testnet.api.onfinality.io/public"),
+  TON_MAINNET: () => new JsonRpcProvider("https://ton.api.onfinality.io/public"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {
