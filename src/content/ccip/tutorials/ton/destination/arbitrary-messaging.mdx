@@ -1,0 +1,256 @@
+---
+section: ccip
+date: Last Modified
+title: "Arbitrary Messaging: EVM to TON"
+isIndex: false
+metadata:
+  description: "Learn how to send arbitrary data messages from an EVM chain to a TON smart contract using Chainlink's Cross-Chain Interoperability Protocol (CCIP). This step-by-step tutorial guides you through deploying a receiver on TON and executing a data-only cross-chain message."
+  image: "/images/ccip/concepts/architecture/ccip-ton-destination-chain.jpg"
+  excerpt: "arbitrary data, messaging, EVM→TON, native fees, LINK fees, TON Testnet, MinimalReceiver"
+  datePublished: "2026-03-29"
+  lastModified: "2026-03-29"
+  estimatedTime: "20 minutes"
+  difficulty: "intermediate"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+This tutorial demonstrates how to send a CCIP arbitrary message from an Ethereum Virtual Machine (EVM) chain to the TON blockchain using Chainlink CCIP. You will learn how to deploy a receiver contract on TON, send a message from Ethereum Sepolia, and verify its delivery.
+
+<Aside title="Prerequisites">
+  Make sure you've completed the [prerequisites for EVM to TON tutorials](/ccip/tutorials/ton/destination/prerequisites)
+  and understand how to [build CCIP messages from EVM to TON](/ccip/tutorials/ton/destination/build-messages) before
+  beginning this tutorial.
+</Aside>
+
+## Introduction
+
+This tutorial covers sending a data-only message from Ethereum Sepolia to a receiver contract on TON Testnet. When you send a message using CCIP:
+
+1. The `ccipSend` transaction is submitted to the CCIP Router on the source EVM chain.
+1. The Router deducts the protocol fee and forwards the message to the CCIP Decentralized Oracle Network (DON).
+1. The DON delivers the message to the `Receiver_CCIPReceive` handler of your receiver contract on TON Testnet.
+1. Your receiver contract acknowledges delivery by sending `Router_CCIPReceiveConfirm` back to the TON CCIP Router.
+
+## What You Will Build
+
+In this tutorial, you will:
+
+- Deploy a `MinimalReceiver` contract on TON Testnet.
+- Configure a CCIP message with a text payload.
+- Send the message from Ethereum Sepolia to your deployed receiver.
+- Pay for CCIP fees using native ETH or LINK.
+- Monitor and verify cross-chain message delivery on TON.
+
+<Aside title="Minimum Requirements">
+
+To successfully complete this tutorial, ensure you have:
+
+- ETH on Ethereum Sepolia for transaction fees and CCIP fees (at least 0.1 ETH recommended). If paying with LINK, also get testnet LINK from the [Chainlink Faucet](https://faucet.chain.link).
+- TON on TON Testnet to cover deployment and contract execution costs (at least 0.5 TON recommended). Get testnet TON from [@testgiver_ton_bot](https://t.me/testgiver_ton_bot) on Telegram.
+- `EVM_PRIVATE_KEY` set in your `.env` file — used to send from the EVM source chain.
+- `TON_MNEMONIC` set in your `.env` file — used to deploy the receiver contract on TON.
+- `ETHEREUM_SEPOLIA_RPC_URL` set in your `.env` file.
+  <br></br>
+  The wallet and `.env` setup are covered in the [prerequisites](/ccip/tutorials/ton/destination/prerequisites).
+
+</Aside>
+
+## Deploy the Receiver on TON
+
+Before sending a message, you need a receiver contract deployed on TON Testnet. The starter kit includes a deploy script for the `MinimalReceiver` contract:
+
+```bash filename="Terminal"
+npm run deploy:ton:receiver:minimal
+```
+
+On success, the script prints output similar to the following:
+
+```
+🚀 Deploying MinimalReceiver contract to TON Testnet...
+
+📤 Deploying from wallet: EQBTzZB_jpRo1oR3wLsxhrS7tPLUDteL9NN_83S1fWwanyHK
+Explorer: https://testnet.tonviewer.com/EQBTzZB_jpRo1oR3wLsxhrS7tPLUDteL9NN_83S1fWwanyHK
+💰 Wallet balance: 106.538102666 TON
+
+⏳ Compiling MinimalReceiver.tolk...
+📍 Contract will be deployed at: EQBt4-OlEHzH_MsmHdl_YsL26f3OPpV2jRzZ34zxo9E2xasT
+📍 Router address (authorized caller): EQB9QIw22sgwNKMfqsMKGepkhnjXYJmXlzCgcBSAlaiF9VCj
+
+⏳ Sending deployment transaction...
+
+✅ MinimalReceiver deployment initiated!
+📍 Contract address: EQBt4-OlEHzH_MsmHdl_YsL26f3OPpV2jRzZ34zxo9E2xasT
+📝 Next steps:
+1. Wait 1-2 minutes for the transaction to be confirmed
+2. Copy the contract address above — pass it as --tonReceiver when sending messages
+3. Verify deployment on TON explorer:
+   https://testnet.tonviewer.com/EQBt4-OlEHzH_MsmHdl_YsL26f3OPpV2jRzZ34zxo9E2xasT
+4. Send a test message to the deployed receiver:
+   npm run evm2ton:send -- --sourceChain <source-chain> --tonReceiver EQBt4-OlEHzH_MsmHdl_YsL26f3OPpV2jRzZ34zxo9E2xasT --msg "Hello TON from EVM" --feeToken native
+```
+
+**Save the contract address** — you will pass it as `--tonReceiver` in the next step.
+
+<Aside type="note" title="What MinimalReceiver does">
+  The `MinimalReceiver` contract (`contracts/minimal_receiver.tolk`) implements all three mandatory CCIP receiver
+  protocol steps inline: it validates that the message comes from the authorized CCIP Router, checks that enough TON is
+  attached to cover the confirmation gas, and sends `Router_CCIPReceiveConfirm` back to the Router. It also emits a
+  `CCIPMessageReceived` event for each delivery.
+  <br></br>
+  The starter kit also includes
+  [`ReceiverWithValidateAndConfirm`](/ccip/tutorials/ton/receivers#receiver-implementations) (same protocol steps via a
+  library helper) and [`MessageReceiver`](/ccip/tutorials/ton/receivers#receiver-implementations) (a full-featured
+  reference implementation).
+  <br></br>
+  For a full explanation of the protocol steps and all three implementations, see [Implementing CCIP
+  Receivers](/ccip/tutorials/ton/receivers).
+</Aside>
+
+## How the Script Works
+
+The `evm2ton/sendMessage.ts` script handles the EVM-side interaction with the CCIP Router on your behalf. Here is what happens behind the scenes:
+
+1. **Context Initialization**: The script connects to the EVM chain and loads your wallet from the `EVM_PRIVATE_KEY` environment variable.
+1. **Argument Parsing**: It reads your command-line arguments (`--sourceChain`, `--tonReceiver`, `--msg`, and `--feeToken`) to determine the source chain, receiver address, message content, and fee payment method.
+1. **Address Encoding**: It encodes your TON receiver address into the 36-byte format expected by the EVM-side CCIP message using `encodeTONAddress()`.
+1. **Message Construction**: It builds the `EVM2AnyMessage` struct using `buildCCIPMessageForTON(receiverBytes, messageData, 100_000_000n, true, selectedFeeToken)`. The `100_000_000n` nanoTON `gasLimit` covers receiver execution on TON. Note that `allowOutOfOrderExecution` **must** be `true` — TON-bound lanes require it, and the Router will reject the message otherwise.
+1. **Fee Estimation**: It calls `getCCIPFeeForTON()` to retrieve the CCIP protocol fee from the on-chain Router, then applies a 10% buffer.
+1. **Sending**: For native fees, it calls `router.ccipSend(destChainSelector, message, { value: feeWithBuffer })`. For LINK fees, it checks the current allowance, approves the Router if needed, then calls `router.ccipSend(destChainSelector, message)`.
+
+## Send the Message
+
+Run the following command to send a message from Ethereum Sepolia to your deployed receiver on TON:
+
+```bash filename="Terminal"
+npm run evm2ton:send -- \
+  --sourceChain sepolia \
+  --tonReceiver <YOUR_TON_RECEIVER_ADDRESS> \
+  --msg "Hello TON from EVM" \
+  --feeToken native
+```
+
+Replace `<YOUR_TON_RECEIVER_ADDRESS>` with the address from the deployment step. To pay fees in LINK instead of ETH, pass `--feeToken link`.
+
+### Understanding the Output
+
+When the script executes successfully, you will see output similar to the following:
+
+```
+🧪 Testing EVM → TON Messaging
+
+🌐 Source Chain: sepolia
+💸 Fee Token: native
+✅ Connected to EVM, Block: 10554561
+📤 Sending from: 0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA
+💰 Balance: 8.088902489560498964 ETH
+
+✅ Transaction submitted!
+   Hash: 0x581ea250df1538f6ef999c98db7fb30897d62efecad6614f09d67f7c05f18dec
+
+⏳ Waiting for confirmation...
+✅ Transaction confirmed in block: 10554562
+📋 Message ID: 0xcf5c283fb14942e82498b0a1887bb2c525f0a8a065b5682230af4518dc53bff0
+🔍 Track on CCIP Explorer: https://ccip.chain.link/#/side-drawer/msg/0xcf5c283fb14942e82498b0a1887bb2c525f0a8a065b5682230af4518dc53bff0
+
+
+⏳ Message is being processed by CCIP network...
+⏳ Expected delivery: 5-15 minutes (staging environment)
+
+🔍 Monitor your transaction:
+   https://sepolia.etherscan.io/tx/0x581ea250df1538f6ef999c98db7fb30897d62efecad6614f09d67f7c05f18dec
+
+🔍 Monitor delivery on TON:
+   https://testnet.tonviewer.com/EQBt4-OlEHzH_MsmHdl_YsL26f3OPpV2jRzZ34zxo9E2xasT
+
+💡 Run verification script after 10-15 minutes:
+   npm run utils:checkTON -- --sourceChain sepolia --tonReceiver EQBt4-OlEHzH_MsmHdl_YsL26f3OPpV2jRzZ34zxo9E2xasT --msg "Hello TON from EVM"
+```
+
+The CCIP Message ID and Explorer link let you track the message lifecycle across chains.
+
+## Verification
+
+After sending, verify delivery on TON in the following ways.
+
+### Track on CCIP Explorer
+
+Use the CCIP Explorer URL printed in the output to monitor the full cross-chain message lifecycle:
+
+```
+https://ccip.chain.link/#/side-drawer/msg/<YOUR_CCIP_MESSAGE_ID>
+```
+
+### Verify Delivery on TON
+
+CCIP delivery from Ethereum Sepolia to TON Testnet typically takes **5–15 minutes**. After waiting, run the verification script:
+
+<Aside type="note" title="Note">
+  Since end-to-end transaction time depends primarily on the time to finality on the source blockchain (Ethereum Sepolia
+  in this case), it is recommended to wait at least 5 minutes before running verification. For more details, refer to
+  [Finality by Blockchain](/ccip/ccip-execution-latency#finality-by-blockchain).
+</Aside>
+
+```bash filename="Terminal"
+npm run utils:checkTON -- \
+  --sourceChain sepolia \
+  --tonReceiver <YOUR_TON_RECEIVER_ADDRESS> \
+  --msg "Hello TON from EVM"
+```
+
+When the message has been successfully delivered, you will see output similar to the following:
+
+```
+═══════════════════════════════════════════════════════════════
+  EVM → TON Message Verification
+═══════════════════════════════════════════════════════════════
+
+📍 Receiver Contract: EQBt4-OlEHzH_MsmHdl_YsL26f3OPpV2jRzZ34zxo9E2xasT
+🌐 Source Chain: sepolia
+🔍 Looking for message: "Hello TON from EVM"
+🔍 Expected sender: EQB9QIw22sgwNKMfqsMKGepkhnjXYJmXlzCgcBSAlaiF9VCj (CCIP Router)
+
+📊 Fetching recent transactions...
+
+═══════════════════════════════════════════════════════════════
+  ✅ CCIP MESSAGE FOUND
+═══════════════════════════════════════════════════════════════
+
+📨 Most Recent CCIP Message:
+   From:                EQB9QIw22sgwNKMfqsMKGepkhnjXYJmXlzCgcBSAlaiF9VCj (CCIP Router ✓)
+   Message ID:          0xcf5c283fb14942e82498b0a1887bb2c525f0a8a065b5682230af4518dc53bff0
+   CCIP Explorer:       https://ccip.chain.link/#/side-drawer/msg/0xcf5c283fb14942e82498b0a1887bb2c525f0a8a065b5682230af4518dc53bff0
+   Value:               0.1 TON
+   Message:             "Hello TON from EVM"
+   Time:                2026-03-30T16:10:45.000Z
+   TX Hash:             21048345fbf52bf7c02f64d587bf6a6dd9567ad1786cd2abeaa1c1399f940f86
+
+   📍 Received 1 minute(s) ago
+
+═══════════════════════════════════════════════════════════════
+  VERIFICATION RESULT
+═══════════════════════════════════════════════════════════════
+
+✅ Message verified successfully!
+
+   ✓ Message content matches: "Hello TON from EVM"
+   ✓ From CCIP Router
+
+📊 Total CCIP messages found: 3
+   (showing most recent above)
+
+🔗 View on explorer:
+   https://testnet.tonviewer.com/transaction/21048345fbf52bf7c02f64d587bf6a6dd9567ad1786cd2abeaa1c1399f940f86
+   Receiver: https://testnet.tonviewer.com/EQBt4-OlEHzH_MsmHdl_YsL26f3OPpV2jRzZ34zxo9E2xasT
+```
+
+### Verify on TON Explorer
+
+You can also verify delivery directly on the TON Testnet block explorer:
+
+1. Visit [testnet.tonviewer.com](https://testnet.tonviewer.com)
+2. Search for your receiver contract address
+3. Under **Transactions**, you should see an incoming message from the CCIP Router (`EQB9QIw22sgwNKMfqsMKGepkhnjXYJmXlzCgcBSAlaiF9VCj`) containing your payload
+
+<CcipCommon callout="educationalDisclaimer" />

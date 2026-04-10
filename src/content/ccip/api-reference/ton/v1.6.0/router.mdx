@@ -1,0 +1,241 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.6.0 TON Router API Reference"
+metadata:
+  description: "API documentation for sending CCIP messages and estimating fees via the CCIP Router on TON."
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## Router
+
+The CCIP Router is the single entry point for sending cross-chain messages from TON. Each TON network has exactly one immutable Router contract.
+
+<Aside type="note">
+  On TON, cross-contract communication is exclusively asynchronous — all interactions happen through internal messages.
+  Unlike EVM chains, you cannot call Router getters synchronously from within a contract. See [Fee
+  Estimation](#fee-estimation) for the two available approaches.
+</Aside>
+
+---
+
+## Sending a Message
+
+### `Router_CCIPSend`
+
+**Opcode:** `0x31768d95`
+
+Send this internal message to the Router to initiate a cross-chain message. See the [Messages reference](/ccip/api-reference/ton/v1.6.0/messages#router_ccipsend) for the complete field descriptions.
+
+**Minimum value to attach**
+
+The Router requires a minimum value attached to the message:
+
+- `Router_Costs.CCIPSend()` covers the Router's own execution (checked onchain)
+- Additionally, you must cover the CCIP fee (query from FeeQuoter) and a gas reserve (~0.5 TON) for the execution chain
+
+#### Responses
+
+| Message                                                     | Opcode | Description                                                                                          |
+| ----------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------- |
+| <nobr>`Router_MessageSent` (opcode `0x6513f8e1`)</nobr>     | ACK    | The message was accepted. `messageId` is the unique cross-chain message identifier.                  |
+| <nobr>`Router_MessageRejected` (opcode `0x8ae25114`)</nobr> | NACK   | The message was rejected. `error` contains the exit code. Both the fee and gas reserve are returned. |
+
+```tolk
+struct (0x6513f8e1) Router_MessageSent {
+    queryID: uint64;
+    messageId: uint256;
+    destChainSelector: uint64;
+    sender: address;
+}
+
+struct (0x8ae25114) Router_MessageRejected {
+    queryID: uint64;
+    destChainSelector: uint64;
+    sender: address;
+    error: uint256;
+}
+```
+
+**Example (sending directly from a wallet)**
+
+See the [TON Starter Kit](https://github.com/smartcontractkit/ton-starter-kit) `scripts/ton2evm/sendMessage.ts` for a complete example. The core send call looks like:
+
+```typescript
+const ccipSendCell = buildCCIPMessageForEVM(
+  BigInt(seqno), // queryID
+  destChainSelector,
+  encodeEVMAddress(evmReceiver),
+  data,
+  feeToken,
+  extraArgs
+)
+
+await walletContract.sendTransfer({
+  seqno,
+  secretKey: keyPair.secretKey,
+  messages: [
+    createInternal({
+      to: routerAddress,
+      value: feeWithBuffer + gasReserve,
+      body: ccipSendCell,
+    }),
+  ],
+})
+```
+
+**Example (via a Sender contract)**
+
+To send from an onchain contract, use [`CCIPSender_RelayCCIPSend`](#sender-pattern):
+
+```typescript
+const relayMsg = beginCell()
+  .storeUint(0x00000001, 32) // CCIPSender_RelayCCIPSend opcode
+  .storeAddress(routerAddress) // CCIP Router address
+  .storeCoins(valueToAttach) // CCIP fee + gas reserve
+  .storeRef(ccipSendCell) // pre-built Router_CCIPSend cell
+  .endCell()
+```
+
+---
+
+## Fee Estimation
+
+Because TON contracts cannot call getters synchronously, there are two ways to estimate the CCIP fee before sending:
+
+### Option 1: `validatedFeeCell` getter (free, recommended)
+
+Call the `validatedFeeCell` getter on the **FeeQuoter** contract directly. This is a read-only getter and costs no gas.
+
+**Address resolution path:** `Router.onRamp(destChainSelector)` → `OnRamp.feeQuoter(destChainSelector)` → call `validatedFeeCell`
+
+```tolk
+// FeeQuoter getter
+get fun validatedFeeCell(msg: Cell<Router_CCIPSend>): coins
+```
+
+#### Parameters
+
+| Name               | Type                                 | Description                                                      |
+| ------------------ | ------------------------------------ | ---------------------------------------------------------------- |
+| <nobr>`msg`</nobr> | <nobr>`Cell<Router_CCIPSend>`</nobr> | The fully constructed `Router_CCIPSend` cell you intend to send. |
+
+#### Returns
+
+| Type                 | Description         |
+| -------------------- | ------------------- |
+| <nobr>`coins`</nobr> | The fee in nanoTON. |
+
+**TypeScript example (from the Starter Kit)**
+
+```typescript
+// Resolve FeeQuoter address
+const onRampAddr = (
+  await client.runMethod(routerAddress, "onRamp", [{ type: "int", value: destChainSelector }])
+).stack.readAddress()
+
+const feeQuoterAddr = (
+  await client.runMethod(onRampAddr, "feeQuoter", [{ type: "int", value: destChainSelector }])
+).stack.readAddress()
+
+// Query fee
+const feeRes = await client.runMethod(feeQuoterAddr, "validatedFeeCell", [{ type: "cell", cell: ccipSendCell }])
+const fee = feeRes.stack.readBigNumber()
+```
+
+---
+
+### Option 2: `Router_GetValidatedFee` message (costs gas)
+
+Send a `Router_GetValidatedFee` internal message to the Router. The Router forwards the request to the OnRamp and FeeQuoter, then returns the fee via a callback message. This costs TON for the on-chain execution.
+
+```tolk
+// Sent TO the Router
+struct (0x4dd6aa82) Router_GetValidatedFee<T> {
+    ccipSend: Cell<Router_CCIPSend>;
+    context: T;
+}
+```
+
+This option is primarily useful for contracts that need to query fees from within a transaction. For most off-chain scripts, use Option 1 instead.
+
+---
+
+## Getters
+
+The following read-only getters are available on the Router contract:
+
+### `onRamp`
+
+Returns the OnRamp contract address for a given destination chain selector.
+
+```tolk
+get fun onRamp(destChainSelector: uint64): address
+```
+
+| Name                             | Type                  | Description                                       |
+| -------------------------------- | --------------------- | ------------------------------------------------- |
+| <nobr>`destChainSelector`</nobr> | <nobr>`uint64`</nobr> | The CCIP chain selector of the destination chain. |
+
+#### Returns
+
+The OnRamp contract address. Used to resolve the FeeQuoter for fee estimation.
+
+---
+
+### `offRamp`
+
+Returns the OffRamp contract address for a given source chain selector.
+
+```tolk
+get fun offRamp(sourceChainSelector: uint64): address
+```
+
+| Name                               | Type                  | Description                                  |
+| ---------------------------------- | --------------------- | -------------------------------------------- |
+| <nobr>`sourceChainSelector`</nobr> | <nobr>`uint64`</nobr> | The CCIP chain selector of the source chain. |
+
+#### Returns
+
+The OffRamp contract address.
+
+---
+
+## Sender Pattern
+
+### `CCIPSender_RelayCCIPSend`
+
+**Opcode:** `0x00000001`
+
+Use this message to trigger a CCIP send from a TON smart contract (instead of sending directly from a wallet). Deploy a Sender contract, then send it this message with the pre-built `Router_CCIPSend` cell.
+
+```tolk
+struct (0x00000001) CCIPSender_RelayCCIPSend {
+    routerAddress: address;   // The CCIP Router to forward to
+    valueToAttach: coins;     // CCIP fee + gas reserve to forward to the Router
+    message: Cell<Router_CCIPSend>; // Pre-built Router_CCIPSend cell
+}
+```
+
+#### Fields
+
+| Field                        | Type                                 | Description                                                                                                                                                                                 |
+| ---------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <nobr>`routerAddress`</nobr> | <nobr>`address`</nobr>               | The CCIP Router contract address.                                                                                                                                                           |
+| <nobr>`valueToAttach`</nobr> | <nobr>`coins`</nobr>                 | The nanoTON value to forward to the Router. Must cover the CCIP fee plus execution gas reserve. Query `validatedFeeCell` beforehand and add at least a 10% buffer and ~0.5 TON gas reserve. |
+| <nobr>`message`</nobr>       | <nobr>`Cell<Router_CCIPSend>`</nobr> | The pre-built `Router_CCIPSend` message cell.                                                                                                                                               |
+
+**Total value to send to the Sender contract**
+
+`valueToAttach` + ~0.1 TON (to cover the Sender contract's own execution). Any surplus is returned via ACK.
+
+#### Responses
+
+| Message                               | Opcode                    | Meaning                                                                                   |
+| ------------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------- |
+| <nobr>`Router_MessageSent`</nobr>     | <nobr>`0x6513f8e1`</nobr> | Message accepted. `messageId` is the cross-chain message ID. Any surplus TON is returned. |
+| <nobr>`Router_MessageRejected`</nobr> | <nobr>`0x8ae25114`</nobr> | Message rejected. Both the fee and surplus are returned. `error` contains the exit code.  |
+
+<CcipCommon callout="educationalDisclaimer" />

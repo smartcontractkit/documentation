@@ -1,0 +1,187 @@
+---
+section: ccip
+date: Last Modified
+title: "Prerequisites for TON to EVM Tutorials"
+isIndex: false
+metadata:
+  description: "Complete setup guide for TON to EVM cross-chain development. Install TON SDK packages, Node.js, configure wallets, and get testnet TON for CCIP Chainlink tutorials. Step-by-step instructions for developers building cross-chain applications."
+  image: "/images/ccip/concepts/architecture/ccip-ton-source-chain.jpg"
+  excerpt: "prerequisites, TON, SDK, wallets, testnet, setup"
+  datePublished: "2026-03-29"
+  lastModified: "2026-03-29"
+  estimatedTime: "10 minutes"
+  difficulty: "beginner"
+---
+
+import { Aside } from "@components"
+
+Before starting the TON to EVM tutorials, ensure you have the following:
+
+## Development Environment
+
+- **Node.js v20 or higher**: You can use the [nvm package](http://nvm.sh/) to install and switch between Node.js versions. Once installed, verify the node version with:
+
+  ```bash filename="Terminal"
+  node -v
+  ```
+
+  Example output:
+
+  ```text
+  $ node -v
+  v22.15.0
+  ```
+
+- **npm**: For installing and managing dependencies.
+- **Git**: For cloning the repository.
+
+## Starter Kit Repository
+
+1.  Clone the CCIP TON Starter Kit:
+
+    ```bash filename="Terminal"
+    git clone https://github.com/smartcontractkit/ccip-starter-kit-ton.git
+    ```
+
+1.  Navigate to the directory:
+
+    ```bash filename="Terminal"
+    cd ccip-starter-kit-ton
+    ```
+
+1.  Install dependencies:
+
+    ```bash filename="Terminal"
+    npm install
+    ```
+
+This installs the required TON SDK packages, including [`@ton/core`](https://github.com/ton-org/ton-core), [`@ton/ton`](https://github.com/ton-org/ton), and [`@ton/crypto`](https://github.com/ton-org/ton-crypto), which are used to interact with the TON blockchain.
+
+## Understanding TON Network Configuration
+
+The TON Starter Kit uses a `helper-config.ts` file to manage network settings and contract addresses for TON Testnet. This configuration includes:
+
+- **CCIP Router Address**: The on-chain address of the CCIP Router contract on TON
+- **Chain Selectors**: Unique identifiers for destination EVM chains
+- **RPC Endpoints**: URLs for connecting to TON blockchain nodes
+
+**Example configuration snippet:**
+
+```typescript filename="helper-config.ts"
+tonTestnet: {
+  chainSelector: '1399300952838017768',
+  router: 'EQB9QIw22sgwNKMfqsMKGepkhnjXYJmXlzCgcBSAlaiF9VCj',
+  // ...
+  destChains: {
+    sepolia: 'sepolia',
+    arbitrumSepolia: 'arbitrumSepolia'
+  },
+  // ...
+},
+sepolia: {
+  chainSelector: '16015286601757825753',
+  router: '0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59',
+  // ...
+},
+arbitrumSepolia: {
+  chainSelector: '3478487238524512106',
+  router: '0x2a9C5afB0d0e4BAb2BCdaE109EC4b0c4Be15a165',
+  // ...
+},
+```
+
+## Wallets
+
+- **TON Wallet**: You'll need a TON wallet to send transactions. The starter kit uses the **[V4R2 wallet version](https://docs.ton.org/standard/wallets/v4)**. You can create a TON wallet using [Tonkeeper](https://tonkeeper.com/) (available on iOS, Android, desktop, and as a browser extension):
+  1. Download and install Tonkeeper
+  2. Create a new wallet and save the [24-word recovery phrase (mnemonic)](https://docs.ton.org/standard/wallets/mnemonics)
+  3. Add a Testnet Account using the same mnemonic
+  4. In wallet settings, select **V4R2** as the wallet version
+
+  <Aside type="note" title="Why V4R2?">
+    V4R2 and W5 are different wallet contract versions on TON. The same mnemonic generates different addresses for each
+    version. CCIP TON infrastructure is built for V4R2.
+  </Aside>
+
+  The wallet's private key is derived from the 24-word mnemonic phrase and stored in your environment configuration.
+
+- **EVM Wallet Address**: You'll need an EVM-compatible wallet address to receive messages on the destination chain (e.g., Ethereum Sepolia or Arbitrum Sepolia). You only need the address itself, not the private key, as you are only sending _to_ this address.
+
+## Environment Configuration (`.env` file)
+
+The starter kit uses a `.env` file to manage sensitive information like mnemonic phrases and RPC URLs. Create a new file named `.env` in the root of the `ccip-starter-kit-ton` directory by copying the example file:
+
+```bash filename="Terminal"
+cp .env.example .env
+```
+
+Next, open the `.env` file and fill in the required values:
+
+- `TON_MNEMONIC`: Your 24-word mnemonic phrase for the TON wallet. This is used to derive the private key for signing transactions on TON.
+
+- `EVM_PRIVATE_KEY`: The private key of your EVM wallet (with `0x` prefix). Required for deploying receiver contracts on EVM chains (e.g., `deploy:evm:receiver`). The corresponding wallet must hold Sepolia ETH.
+
+- `ETHEREUM_SEPOLIA_RPC_URL`: The RPC endpoint for Ethereum Sepolia. This is used by verification scripts to check message execution status on the destination chain. You can obtain a free RPC URL from providers like [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or [QuickNode](https://www.quicknode.com/).
+
+- `ARBITRUM_SEPOLIA_RPC_URL` (optional): The RPC endpoint for Arbitrum Sepolia if you plan to send messages to this chain.
+
+- `TON_RPC_URL` (optional): Override the default TON RPC endpoint. The default is `https://ton-testnet.api.onfinality.io/public`, which doesn't require an API key.
+
+- `TON_CENTER_API_KEY` (optional): Only required if you use a toncenter RPC URL (e.g., `https://testnet.toncenter.com/api/v2/jsonRPC`). Get a free API key from [@tonapibot](https://t.me/tonapibot) on Telegram.
+
+**Example `.env` file:**
+
+```bash filename=".env"
+TON_MNEMONIC="word1 word2 word3 ... word24"
+EVM_PRIVATE_KEY=0xYourEVMPrivateKey
+ETHEREUM_SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY
+ARBITRUM_SEPOLIA_RPC_URL=https://arb-sepolia.g.alchemy.com/v2/YOUR_API_KEY
+```
+
+<Aside type="caution" title="Keep Your Secrets Safe">
+  Never share your mnemonic phrase or EVM private key, or commit them to version control. The `.env` file should be
+  added to your `.gitignore` to prevent accidental exposure.
+</Aside>
+
+## Native TON Tokens for Transaction Fees
+
+**TON** tokens are required for all transactions on the TON blockchain, including sending CCIP messages. TON is also used to pay for CCIP fees when sending cross-chain messages.
+
+<Aside type="note" title="TON-Only Fee Payment">
+  Unlike some other CCIP source chains, TON currently supports only native TON tokens for paying CCIP fees. LINK tokens
+  are not supported as a fee payment option.
+</Aside>
+
+### Getting TON on Testnet
+
+To obtain TON tokens on Testnet, use the official TON Testnet faucet:
+
+1. Visit the [TON Testnet Faucet](https://t.me/testgiver_ton_bot)
+2. Open Telegram and start a chat with the `@testgiver_ton_bot`
+3. Send your V4R2 testnet wallet address to the bot
+4. The bot will send you 2 testnet TON (you can request again every 60 minutes)
+
+### Checking Your TON Balance
+
+You can check your wallet balance using TON blockchain explorers:
+
+- [Testnet Explorer](https://testnet.tonscan.org/): Enter your wallet address to view balance and transaction history
+- TON wallet applications like Tonkeeper also display your balance
+
+Alternatively, you can use the TON SDK in a script to query your balance programmatically:
+
+```typescript
+import { TonClient } from "@ton/ton"
+
+const client = new TonClient({
+  endpoint: "https://testnet.toncenter.com/api/v2/jsonRPC",
+})
+
+const balance = await client.getBalance(yourWalletAddress)
+console.log(`Balance: ${balance} nanoTON`)
+```
+
+<Aside type="note" title="TON Denominations">
+  TON uses nanoTON as the smallest unit (1 TON = 1,000,000,000 nanoTON). The starter kit scripts use the `toNano()` and
+  `fromNano()` helper functions from `@ton/core` to convert between TON and nanoTON.
+</Aside>

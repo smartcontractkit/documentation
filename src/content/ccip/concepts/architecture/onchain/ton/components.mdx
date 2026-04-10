@@ -1,0 +1,192 @@
+---
+section: ccip
+date: Last Modified
+title: "Onchain Architecture - Components (TON)"
+metadata:
+  description: "Explore the onchain components of CCIP architecture on TON: Sender/Receiver, Router, OnRamp, OffRamp, FeeQuoter, SendExecutor, MerkleRoot, and ReceiveExecutor contract details."
+  image: "/images/ccip/concepts/architecture/ccip-ton-source-chain.jpg"
+  excerpt: "ccip ton components, architecture, contracts, router contract, onramp contract, offramp contract, fee quoter, send executor, receive executor, merkle root, arbitrary message, rmn"
+  datePublished: "2026-04-07"
+  lastModified: "2026-04-07"
+  difficulty: "advanced"
+  estimatedTime: "35 minutes"
+---
+
+import { Aside } from "@components"
+
+This section provides more detail on the onchain components for TON.
+
+<Aside>TON currently supports arbitrary message passing only. Token transfers are not yet supported.</Aside>
+
+## Sender/Receiver
+
+**CCIP supports the following as senders and receivers on TON:**
+
+- A user-controlled wallet — A wallet account controlled by a private key.
+- A smart contract — Onchain executable logic written in Tolk or FunC.
+
+**For arbitrary message passing, the supported sender/receiver combinations are:**
+
+- **Wallet → Smart Contract**
+  - **Supported Message Type**: Arbitrary data.
+  - **Reason**: The receiving contract implements a handler for `CCIPReceive` internal messages and can process the data payload.
+
+- **Smart Contract → Smart Contract**
+  - **Supported Message Type**: Arbitrary data.
+  - **Reason**: Both the sender and receiver are programmable contracts that can initiate and handle CCIP messages with arbitrary data.
+
+**A CCIP Message on TON can include:**
+
+- An arbitrary bytes data payload.
+
+**Sender Responsibilities:**
+
+- Prepare the `CCIPSend` message, including the encoded receiver address, data payload, destination chain selector, and extra arguments (e.g., gas limit for EVM destination chains).
+- Retrieve a fee estimate using one of two methods. Unlike EVM integrations, TON contracts cannot proxy-query each other's state, so there is no free getter path through the Router:
+  - **Via FeeQuoter getter (free)**: Call the `validatedFeeCell` getter directly on the `FeeQuoter` contract. This requires no transaction and incurs no gas cost. To resolve the `FeeQuoter` address programmatically, call `Router.onRamp(destChainSelector)` → `OnRamp.feeQuoter(destChainSelector)`. The `getCCIPFeeForEVM` helper performs this lookup automatically — see [Estimating the CCIP Fee](/ccip/tutorials/ton/source/build-messages#estimating-the-ccip-fee) for a full example.
+  - **Via Router message (costs gas)**: Send a `Router_GetValidatedFee` message to the `Router`. This is an actual on-chain transaction — the `Router` relays the request to the `OnRamp`, which forwards it to the `FeeQuoter`. The result is returned via `Router_MessageValidated` (or `Router_MessageValidationFailed`).
+- Send `CCIPSend` to the `Router` with sufficient TON attached to cover both the CCIP fee and internal message forwarding gas costs. The router checks that the attached value meets the minimum required (`Router_Costs.CCIPSend()`).
+
+**Receiver Responsibilities:**
+
+- **Security validation**: The receiver contract must verify that the sender of any `CCIPReceive` internal message is the registered CCIP `Router` contract.
+- **Confirmation**: The receiver must reply with a `CCIPReceiveConfirm{execId}` message back to the `Router` after processing the message. This confirmation must carry sufficient TON to cover the confirmation trace costs (`Router_Costs.receiveConfirm()`). Without this confirmation the execution is treated as failed.
+- **Failure handling**: If the receiver cannot process the message, it may allow `CCIPReceive` to bounce. The `Router` detects the bounce and forwards `CCIPReceiveBounced` to the `OffRamp`, initiating the failure path.
+
+## Router
+
+The `Router` contract is the single user-facing entry point for both sending and receiving CCIP messages on TON.
+
+**On the source chain (sending)**, the `Router`:
+
+- Accepts `CCIPSend` messages from senders. Requires a minimum TON value (`Router_Costs.CCIPSend()`); messages with insufficient value are rejected before any further processing.
+- Checks the destination chain is not cursed (using its locally stored `CursedSubjects`) before forwarding to the `OnRamp`.
+- Resolves the `OnRamp` address for the given destination chain selector from its `onRamps` map and forwards the `OnRamp_Send` message, carrying all remaining value.
+- Receives `Router_MessageSent` from the `OnRamp` on success and delivers `CCIPSendACK` back to the original sender with unused TON.
+- Receives `Router_MessageRejected` from the `OnRamp` on failure and delivers `CCIPSendNACK` to the sender.
+- Accepts `Router_GetValidatedFee` from any caller, relays to the `OnRamp`, and returns the result (`Router_MessageValidated` or `Router_MessageValidationFailed`).
+
+**On the destination chain (receiving)**, the `Router`:
+
+- Accepts `Router_RouteMessage` from the registered `OffRamp` for the source chain and forwards `CCIPReceive` to the Receiver contract.
+- Accepts `Router_CCIPReceiveConfirm` from any caller (permissionless at the Router level; authorization is enforced by the `ReceiveExecutor`) and forwards `OffRamp_CCIPReceiveConfirm` to the `OffRamp`.
+- Detects a bounced `CCIPReceive` from the Receiver and forwards `OffRamp_CCIPReceiveBounced` to the `OffRamp`.
+
+**As the RMN Remote**, the `Router`:
+
+- Stores the set of cursed subjects (`CursedSubjects`) in its own storage, acting as the RMN Remote for the TON chain family. There is no separate RMN Remote contract.
+- Accepts `Router_RMNRemoteCurse` and `Router_RMNRemoteUncurse` messages exclusively from the authorized RMN admin (`Ownable2Step`-gated).
+- On each curse or un-curse operation, emits a `Cursed` or `Uncursed` chain log and updates the `forwardUpdates` set, then propagates `OffRamp_UpdateCursedSubjects` to every registered `OffRamp` address (one message per unique OffRamp). The `forwardUpdates` set is rebuilt automatically whenever the `onRamps`/`offRamps` maps change.
+- Accepts permissionless `Router_RMNRemoteVerifyNotCursed` queries and synchronously replies with whether the given subject is cursed.
+
+## OnRamp
+
+The `OnRamp` contract processes all outbound CCIP messages on the source chain. It is not called directly by users; the `Router` is the only authorized caller of `OnRamp_Send`.
+
+When the `Router` forwards `OnRamp_Send`, the `OnRamp`:
+
+- **Allowlist check**: If `allowlistEnabled` is set for the destination chain configuration, verifies the sender address is in the `allowedSenders` map for that lane. Rejects the message if not.
+- **SendExecutor deployment**: Generates a random `executorID` (`uint224` derived from a 256-bit random value), computes a deterministic address using `autoDeployAddress(executorID)`, and sends `Deployable_InitializeAndSend` to deploy and initialize the ephemeral `SendExecutor{id}` contract in a single message. All remaining value is carried to the `SendExecutor`.
+- **ExecutorFinishedSuccessfully handling**: When the `SendExecutor` reports success, the `OnRamp` assigns the next sequence number for the destination chain, generates the `messageId` (as a hash over a metadata preimage, the sender address, sequence number, nonce, and message body), emits a `CCIPMessageSent` chain log containing the complete `TVM2AnyRampMessage`, and sends `Router_MessageSent` back to the `Router`. The collected CCIP fee is retained in the `OnRamp`'s balance.
+- **ExecutorFinishedWithError handling**: Forwards a `Router_MessageRejected` notification to the `Router` with the error code.
+
+The `OnRamp` also handles fee withdrawal (`OnRamp_WithdrawFeeTokens`, permissionless), dynamic config updates (owner-only), destination chain config updates (owner-only), and allowlist updates (allowlist admin or owner).
+
+## SendExecutor\{id\}
+
+The `SendExecutor{id}` is an ephemeral contract deployed by the `OnRamp` once per outgoing message. Its address is deterministically derived from the `OnRamp`'s address and a randomly generated `id`, so the `OnRamp` can authenticate replies without storing any state.
+
+The `SendExecutor{id}`:
+
+- Is deployed and immediately receives `CCIPSendExecutor_Execute` (a self-message sent as part of `Deployable_InitializeAndSend`), which carries the full `OnRamp_Send` payload and the `FeeQuoter` address.
+- Sends `FeeQuoter_GetValidatedFee` to the `FeeQuoter` and transitions to state `OnGoingFeeValidation`.
+- On `FeeQuoter_MessageValidated`: verifies the sender attached enough value to cover the CCIP fee, then reports `OnRamp_ExecutorFinishedSuccessfully` to the `OnRamp` carrying the fee amount and returning any remaining balance.
+- On `FeeQuoter_MessageValidationFailed` or a bounce of `FeeQuoter_GetValidatedFee`: reports `OnRamp_ExecutorFinishedWithError` to the `OnRamp`.
+- Is destroyed after reporting (state `Finalized` is terminal; the contract returns its remaining balance to the `OnRamp`).
+
+## FeeQuoter
+
+The `FeeQuoter` contract is responsible for fee validation and price data storage.
+
+**On the source chain**, the `FeeQuoter`:
+
+- Accepts `FeeQuoter_GetValidatedFee` from the `SendExecutor{id}` (routed via the `OnRamp`). Validates the message payload (receiver encoding, gas limit, supported destination chain, fee token), computes the total fee from execution cost, premium multiplier, and data availability cost, and replies with either `FeeQuoter_MessageValidated` (including the fee amount) or `FeeQuoter_MessageValidationFailed`.
+- Stores fee token premium multipliers, destination-chain fee configuration, and token prices with staleness enforcement.
+- Accepts `FeeQuoter_UpdatePrices` from the `OffRamp` (forwarded from OCR `Commit` reports) to update token and gas prices onchain.
+
+Unlike EVM integrations, TON contracts cannot proxy-query each other's state, so there is no free getter path through the `Router`. End users have two options for fee estimation: call the `validatedFeeCell` getter directly on the `FeeQuoter` (free, no transaction required), or send a `Router_GetValidatedFee` internal message to the `Router` (an actual on-chain transaction that costs gas). See [Sender Responsibilities](#senderreceiver) above for details on both paths.
+
+## OffRamp
+
+The `OffRamp` contract operates on the destination chain and is the primary contract that the offchain Committing and Executing DONs interact with.
+
+### Commit Phase
+
+1. **Report submission**: The Committing DON calls `OffRamp_Commit` with an OCR3 report containing a Merkle root (covering a batch of messages from a source chain) and optional token/gas price updates.
+
+1. **Fee check**: The `OffRamp` verifies the attached TON covers the minimum commit cost. Price-update-only reports require less TON than reports with Merkle roots.
+
+1. **Curse and source chain check**: The `OffRamp` checks its locally replicated `CursedSubjects` and verifies the source chain is enabled in `sourceChainConfigs`. If either check fails, the report is rejected.
+
+1. **Sequence number validation**: Verifies the root's `minSeqNr` matches the next expected sequence number for the source chain and that the range covers at most 64 messages. If valid, advances `minSeqNr` to `maxSeqNr + 1`.
+
+1. **MerkleRoot deployment**: Deploys a `MerkleRoot{id}` contract by sending `Deployable_Initialize` to its deterministic address. The `MerkleRoot{id}` is initialized with the Merkle root value, the `OffRamp`'s address as owner, the current timestamp, and the sequence number range.
+
+1. **Price updates**: If the report includes price updates and their OCR sequence number is newer than `latestPriceSequenceNumber`, forwards `FeeQuoter_UpdatePrices` to the `FeeQuoter`.
+
+1. **OCR3 signature verification and event emission**: Calls `ocr3Base.transmit()` to verify the Committing DON's signatures and emit `OCR3Base_Transmitted`. Then emits `CommitReportAccepted`.
+
+   <Aside type="note">
+     RMN BLS signature verification over blessed Merkle roots is not performed on TON. The `isRMNVerificationDisabled`
+     flag is always set to `true` in `SourceChainConfig`. Curse protection is provided by the `Router`'s curse
+     mechanism.
+   </Aside>
+
+### Execution Phase
+
+1. **Report submission**: The Executing DON calls `OffRamp_Execute` with an OCR3 execute report. The OCR3 transmit call for the Execute plugin uses an empty signatures cell because signature verification is disabled for the Execute plugin by configuration.
+
+1. **Curse check**: The `OffRamp` checks `CursedSubjects` immediately. If the source chain is cursed, the report is rejected before any further processing.
+
+1. **Source chain and message validation**: Verifies the source chain is enabled, computes the metadata hash from the source chain selector, destination chain selector, and the known `OnRamp` cross-chain address. Verifies the message's `destChainSelector` and `sourceChainSelector` match the stored configuration. Reconstructs the Merkle root from the message and the provided proof, then resolves the `MerkleRoot{id}` contract address from this root.
+
+1. **MerkleRoot validation**: Sends `MerkleRoot_Validate` to the `MerkleRoot{id}` contract. The `MerkleRoot{id}` checks the per-message execution state (must be `Untouched` for DON execution, or `Failure` for retries after the permissionless threshold), marks it `InProgress`, and replies with `OffRamp_ExecuteValidated`. If this was the last message in the root, the `MerkleRoot{id}` destroys itself and returns its balance.
+
+1. **ExecutionStateChanged emission**: Emits `ExecutionStateChanged` with state `InProgress`.
+
+1. **ReceiveExecutor deployment or reuse**: Deploys (or, on retry, reuses) a `ReceiveExecutor{id}` contract at a deterministic address derived from the `messageId` and `sourceChainSelector`. Sends `Deployable_Initialize` followed immediately by `ReceiveExecutor_InitExecute`.
+
+1. **Dispatch**: The `ReceiveExecutor{id}` replies with `OffRamp_DispatchValidated`. The `OffRamp` sends `Router_RouteMessage` to the `Router`, which forwards `CCIPReceive` to the Receiver contract.
+
+1. **Confirmation**: If the Receiver confirms (`Router_CCIPReceiveConfirm` → `OffRamp_CCIPReceiveConfirm`), the `OffRamp` sends `ReceiveExecutor_Confirm` to the `ReceiveExecutor{id}`. The `ReceiveExecutor{id}` verifies the confirm came from the `OffRamp` and that the confirming address matches the intended Receiver, transitions to `Success`, destroys itself, and sends `OffRamp_NotifySuccess`. The `OffRamp` calls `MerkleRoot_MarkState(Success)` and emits `ExecutionStateChanged` with state `Success`.
+
+1. **Failure**: If the Receiver bounces `CCIPReceive`, the `Router` sends `OffRamp_CCIPReceiveBounced`. The `OffRamp` sends `ReceiveExecutor_Bounced` to the `ReceiveExecutor{id}`, which transitions to `ExecuteFailed` and sends `OffRamp_NotifyFailure`. The `OffRamp` calls `MerkleRoot_MarkState(Failure)` and emits `ExecutionStateChanged` with state `Failure`.
+
+### Permissionless Manual Execution (Fallback)
+
+The `OffRamp` includes an `OffRamp_ManuallyExecute` handler that follows the same path as `OffRamp_Execute` but accepts a `gasOverride` field. Manual execution is permissionless and becomes available after `permissionlessExecutionThresholdSeconds` have elapsed since the `MerkleRoot{id}` was deployed. It can retry messages in `Failure` state or, after the threshold, messages still in `Untouched` state. For more information, read the [manual execution](/ccip/concepts/manual-execution) page.
+
+### Curse Propagation
+
+The `OffRamp` accepts `OffRamp_UpdateCursedSubjects` exclusively from the address stored as `rmnRouter` in its `deployables` storage (which is the `Router` address). When received, it overwrites the local `CursedSubjects` replica. This is the only mechanism by which the curse state is updated in the `OffRamp`.
+
+## MerkleRoot\{id\}
+
+The `MerkleRoot{id}` is an ephemeral contract deployed once per committed Merkle root by the `OffRamp`. Its address is deterministic, derived from the `OffRamp`'s address and the Merkle root value itself.
+
+- Tracks the execution state of every message in the committed root using a packed two-bit bitmap keyed by sequence number offset. Supports up to 64 messages per root.
+- Per-message states are: `Untouched` (0), `InProgress` (1), `Success` (2), `Failure` (3).
+- Accepts `MerkleRoot_Validate` from the `OffRamp`. Verifies the sender is the owning `OffRamp`, checks the message's current state (must be `Untouched` for normal DON execution; `Failure` or stale `Untouched` for manual retry), marks the message as `InProgress`, and replies `OffRamp_ExecuteValidated`.
+- Accepts `MerkleRoot_MarkState` from the `OffRamp` to transition a message to `Success` or `Failure`. Increments a delivered count on `Success`. When delivered count equals the total expected messages, the `MerkleRoot{id}` freezes and returns its balance to the `OffRamp`.
+- Is never directly redeployed; if a root's `MerkleRoot{id}` was destroyed (all messages succeeded) and a retry attempt arrives, the address will not exist and the message will bounce.
+
+## ReceiveExecutor\{id\}
+
+The `ReceiveExecutor{id}` is an ephemeral contract deployed (or reused on retry) by the `OffRamp` per incoming message. Its address is deterministic, derived from the `OffRamp`'s address, the `messageId`, and the `sourceChainSelector`.
+
+- Stores the message content, the owning `MerkleRoot{id}` address (`root`), the execution ID, the current per-message delivery state, and the last execution timestamp.
+- Per-message delivery states are: `Untouched`, `Execute`, `ExecuteFailed`, `Success`.
+- Accepts `ReceiveExecutor_InitExecute` from the `OffRamp`. Records the current timestamp, transitions to `Execute`, and replies `OffRamp_DispatchValidated` carrying all remaining value.
+- Accepts `ReceiveExecutor_Confirm` from the `OffRamp`. Verifies the `OffRamp` is the sender and that the provided receiver address matches the intended receiver. Transitions to `Success`, destroys itself, and replies `OffRamp_NotifySuccess`.
+- Accepts `ReceiveExecutor_Bounced` from the `OffRamp`. Verifies the `OffRamp` is the sender and that the bounced receiver matches the intended receiver. Transitions to `ExecuteFailed` and replies `OffRamp_NotifyFailure`.
+- On retry (`ExecuteFailed` → `Execute`): the same `ReceiveExecutor{id}` contract at the same deterministic address is reused. The `OffRamp` sends `ReceiveExecutor_InitExecute` again, which updates the timestamp and re-triggers the dispatch.

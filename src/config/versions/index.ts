@@ -15,6 +15,7 @@ export interface VMVersionConfig {
   evm: VersionConfig
   svm: VersionConfig
   aptos: VersionConfig
+  ton: VersionConfig
 }
 
 // Registry of all product versions
@@ -46,6 +47,13 @@ export const VERSIONS = {
       ALL: ["v1.6.0"] as const,
       RELEASE_DATES: {
         "v1.6.0": "2025-06-30T00:00:00Z", // 30 June 2025
+      },
+    },
+    ton: {
+      LATEST: "v1.6.0",
+      ALL: ["v1.6.0"] as const,
+      RELEASE_DATES: {
+        "v1.6.0": "2026-04-07T00:00:00Z", // 7 April 2026
       },
     },
     // Default for backward compatibility
