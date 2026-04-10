@@ -5,13 +5,16 @@ title: "Installing the CRE CLI on macOS and Linux"
 metadata:
   description: "Install the CRE CLI on macOS or Linux: choose automatic script or manual setup, verify integrity, and get ready to build workflows."
   datePublished: "2025-11-04"
-  lastModified: "2026-03-17"
+  lastModified: "2026-04-10"
 ---
 
 import { Aside, CopyText, PageTabs } from "@components"
 import { DownloadButton } from "~/components/DownloadButton.tsx"
+import { VERSIONS } from "~/config/versions"
 
-This page explains how to install the CRE CLI on macOS or Linux. The recommended version at the time of writing is **v1.5.0**.
+export const CRE_CLI_VERSION = VERSIONS["cre-cli"].LATEST
+
+This page explains how to install the CRE CLI on macOS or Linux. The recommended version at the time of writing is **{CRE_CLI_VERSION}**.
 
 <PageTabs
   pages={[
@@ -66,7 +69,7 @@ After the script completes, verify the installation:
 cre version
 ```
 
-**Expected output:** `CRE CLI version v1.5.0`
+**Expected output:** `CRE CLI version {CRE_CLI_VERSION}`
 
 <Aside type="note" title="macOS Gatekeeper">
   If you see warnings about "unrecognized developer/source" on macOS, run:{" "}
@@ -120,11 +123,11 @@ shasum -a 256 cre_darwin_arm64.zip
 Compare the output with the official checksum from the [CRE CLI releases page](https://github.com/smartcontractkit/cre-cli/releases):
 
 1. Go to https://github.com/smartcontractkit/cre-cli/releases
-1. Find the release version you downloaded (e.g., v1.5.0)
+1. Find the release version you downloaded (e.g., {CRE_CLI_VERSION})
 1. Under the **Assets** section, locate your downloaded file
 1. Compare the SHA-256 checksum shown next to the file with your command output
 
-**Example:** For `cre_darwin_arm64.zip` in release v1.5.0, you'll see something like:
+**Example:** For `cre_darwin_arm64.zip` in release {CRE_CLI_VERSION}, you'll see something like:
 
 ```
 cre_darwin_arm64.zip
@@ -154,7 +157,7 @@ If the checksums match, the file is authentic and safe to install. If they don't
 1. **Rename the extracted binary to `cre`**
 
    ```bash
-   mv cre_v1.5.0_darwin_arm64 cre
+   mv cre_{CRE_CLI_VERSION}_darwin_arm64 cre
    ```
 
 1. **Make it executable**:
@@ -227,7 +230,7 @@ cre version
 
 **Expected output:**
 
-You should see version information: `cre version v1.5.0`.
+You should see version information: `cre version {CRE_CLI_VERSION}`.
 
 **If it doesn't work:**
 
