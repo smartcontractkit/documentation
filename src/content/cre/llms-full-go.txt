@@ -448,9 +448,23 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-04-02
+Last Updated: 2026-04-10
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.10.0 - April 10, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.10.0" target="_blank">CRE CLI version 1.10.0</a> is now available.**
+
+- **Optional org ownership for secrets**: Secrets can now optionally be owned by your organization instead of your individual workflow owner address. Set `CRE_CLI_SECRETS_ORG_OWNED: true` in your target configuration to use your org ID as the secret owner across `cre secrets create`, `cre secrets update`, `cre secrets delete`, and `cre secrets list`. This is useful for teams sharing secrets across multiple workflows. When disabled (the default), behavior is unchanged. See [Secrets Management Commands](/cre/reference/cli/secrets#org-owned-secrets) for details.
+- **EVM Bindings generator fix**: Corrected a struct prefix bug in the EVM Bindings generator that could produce incorrect struct names under certain conditions.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.9.0...v1.10.0)
 
 ## CLI v1.9.0 - April 2, 2026
 
@@ -953,9 +967,11 @@ These guides explain how to install the Chainlink Developer Platform CLI (also r
 
 # Installing the CRE CLI on macOS and Linux
 Source: https://docs.chain.link/cre/getting-started/cli-installation/macos-linux
-Last Updated: 2026-03-17
+Last Updated: 2026-04-10
 
-This page explains how to install the CRE CLI on macOS or Linux. The recommended version at the time of writing is **v1.5.0**.
+export const CRE_CLI_VERSION = VERSIONS["cre-cli"].LATEST
+
+This page explains how to install the CRE CLI on macOS or Linux. The recommended version at the time of writing is **{CRE_CLI_VERSION}**.
 
 ## Installation
 
@@ -986,7 +1002,7 @@ After the script completes, verify the installation:
 cre version
 ```
 
-**Expected output:** `CRE CLI version v1.5.0`
+**Expected output:** `CRE CLI version {CRE_CLI_VERSION}`
 
 <Aside type="note" title="macOS Gatekeeper">
   If you see warnings about "unrecognized developer/source" on macOS, run:{" "}
@@ -1034,11 +1050,11 @@ shasum -a 256 cre_darwin_arm64.zip
 Compare the output with the official checksum from the [CRE CLI releases page](https://github.com/smartcontractkit/cre-cli/releases):
 
 1. Go to [https://github.com/smartcontractkit/cre-cli/releases](https://github.com/smartcontractkit/cre-cli/releases)
-2. Find the release version you downloaded (e.g., v1.5.0)
+2. Find the release version you downloaded (e.g., {CRE_CLI_VERSION})
 3. Under the **Assets** section, locate your downloaded file
 4. Compare the SHA-256 checksum shown next to the file with your command output
 
-**Example:** For `cre_darwin_arm64.zip` in release v1.5.0, you'll see something like:
+**Example:** For `cre_darwin_arm64.zip` in release {CRE_CLI_VERSION}, you'll see something like:
 
 ```
 cre_darwin_arm64.zip
@@ -1068,7 +1084,7 @@ If the checksums match, the file is authentic and safe to install. If they don't
 3. **Rename the extracted binary to `cre`**
 
    ```bash
-   mv cre_v1.5.0_darwin_arm64 cre
+   mv cre_{CRE_CLI_VERSION}_darwin_arm64 cre
    ```
 
 4. **Make it executable**:
@@ -1141,7 +1157,7 @@ cre version
 
 **Expected output:**
 
-You should see version information: `cre version v1.5.0`.
+You should see version information: `cre version {CRE_CLI_VERSION}`.
 
 **If it doesn't work:**
 
@@ -1178,9 +1194,11 @@ Once you're authenticated, you're ready to build your first workflow:
 
 # Installing the CRE CLI on Windows
 Source: https://docs.chain.link/cre/getting-started/cli-installation/windows
-Last Updated: 2026-03-17
+Last Updated: 2026-04-10
 
-This page explains how to install the Chainlink Developer Platform CLI (also referred to as the CRE CLI) on Windows. The recommended version at the time of writing is **v1.5.0**.
+export const CRE_CLI_VERSION = VERSIONS["cre-cli"].LATEST
+
+This page explains how to install the Chainlink Developer Platform CLI (also referred to as the CRE CLI) on Windows. The recommended version at the time of writing is **{CRE_CLI_VERSION}**.
 
 ## Installation
 
@@ -1210,7 +1228,7 @@ After the script completes, **open a new PowerShell window** and verify the inst
 cre version
 ```
 
-**Expected output:** `CRE CLI version v1.5.0`
+**Expected output:** `CRE CLI version {CRE_CLI_VERSION}`
 
 ### Manual installation
 
@@ -1237,11 +1255,11 @@ Get-FileHash cre_windows_amd64.zip -Algorithm SHA256
 Compare the `Hash` value in the output with the official checksum from the [CRE CLI releases page](https://github.com/smartcontractkit/cre-cli/releases):
 
 1. Go to [https://github.com/smartcontractkit/cre-cli/releases](https://github.com/smartcontractkit/cre-cli/releases)
-2. Find the release version you downloaded (e.g., v1.5.0)
+2. Find the release version you downloaded (e.g., {CRE_CLI_VERSION})
 3. Under the **Assets** section, locate `cre_windows_amd64.zip`
 4. Compare the SHA-256 checksum shown next to the file with the `Hash` value from your PowerShell output
 
-**Example:** For `cre_windows_amd64.zip` in release v1.5.0, you'll see something like:
+**Example:** For `cre_windows_amd64.zip` in release {CRE_CLI_VERSION}, you'll see something like:
 
 ```
 cre_windows_amd64.zip
@@ -1255,7 +1273,7 @@ If the checksums match, the file is authentic and safe to install. If they don't
 1. Navigate to the directory where you downloaded the archive.
 2. Right-click the `.zip` file and select **Extract All...**.
 3. Choose a permanent location for the extracted folder (e.g., `C:\Program Files\cre-cli`).
-4. Inside the extracted folder, rename the file `cre_v1.5.0_windows_amd64.exe` to `cre.exe`.
+4. Inside the extracted folder, rename the file `cre_{CRE_CLI_VERSION}_windows_amd64.exe` to `cre.exe`.
 
 #### 3. Add the CLI to your PATH
 
@@ -1280,7 +1298,7 @@ Open a new **PowerShell** or **Command Prompt** window and run:
 cre version
 ```
 
-You should see version information: `cre version v1.5.0`.
+You should see version information: `cre version {CRE_CLI_VERSION}`.
 
 ## Next steps
 
@@ -8142,11 +8160,13 @@ See the [repository README](https://github.com/smartcontractkit/cre-gcp-predicti
 
 # CLI Reference
 Source: https://docs.chain.link/cre/reference/cli
-Last Updated: 2026-03-26
+Last Updated: 2026-04-10
 
-<Aside type="note" title="Required CLI Version: v1.5.0">
-  To ensure compatibility with the guides and examples in this documentation, please use version `v1.5.0` of the CRE
-  CLI. You can check your installed version by running `cre version`. Refer to the [CLI
+export const CRE_CLI_VERSION = VERSIONS["cre-cli"].LATEST
+
+<Aside type="note" title={`Required CLI Version: ${CRE_CLI_VERSION}`}>
+  To ensure compatibility with the guides and examples in this documentation, please use version `{CRE_CLI_VERSION}` of
+  the CRE CLI. You can check your installed version by running `cre version`. Refer to the [CLI
   Installation](/cre/getting-started/cli-installation/macos-linux) guide for more information.
 </Aside>
 
@@ -9084,7 +9104,7 @@ The typical workflow lifecycle uses these commands in sequence:
 
 # Secrets Management Commands
 Source: https://docs.chain.link/cre/reference/cli/secrets
-Last Updated: 2026-04-02
+Last Updated: 2026-04-10
 
 <Aside type="note" title="Authentication required">
   Running the commands on this page requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to
@@ -9105,6 +9125,27 @@ Starting with CLI v1.9.0, secrets operations use a **browser-based OAuth (PKCE) 
 
 Your existing CLI login session (`~/.cre/cre.yaml`) is **not** affected — the vault authorization uses a separate short-lived token. **API key authentication is not supported** for this flow; you must be logged in with `cre login`.
 
+## Org-owned secrets
+
+Starting with CLI v1.10.0, secrets can optionally be owned by your **organization** instead of your individual workflow owner address. When the `CRE_CLI_SECRETS_ORG_OWNED` environment variable is set to `true` in your target configuration, all secrets operations use your org ID (from your authenticated session) as the owner identifier rather than your workflow owner address.
+
+This is useful for teams that share secrets across multiple workflows within an organization, as it decouples secret ownership from individual wallet addresses.
+
+**How it works:**
+
+- When `CRE_CLI_SECRETS_ORG_OWNED=true`, the CLI uses your org ID as the TDH2 encryption label and vault secret owner
+- When `CRE_CLI_SECRETS_ORG_OWNED=false` (the default), behavior is unchanged — the workflow owner address is used
+
+**Configuration:**
+
+Add `CRE_CLI_SECRETS_ORG_OWNED: true` to your target environment in your `.env.public` or configuration YAML:
+
+```yaml
+CRE_CLI_SECRETS_ORG_OWNED: true
+```
+
+You must be authenticated with `cre login` and your session must include a valid org ID for this to work.
+
 ## Namespaces
 
 Secrets are organized into **namespaces**, which act as logical groupings (e.g., `"main"`, `"staging"`, `"production"`). All secrets are stored in the `"main"` namespace by default. Currently, `create`, `update`, and `delete` commands only support the default namespace. Custom namespace support may be added in future CLI versions.
@@ -9112,7 +9153,7 @@ Secrets are organized into **namespaces**, which act as logical groupings (e.g.,
 
 <Aside type="note" title="Prerequisites">
   - You must be logged in with `cre login` (interactive login required; API keys are not supported for secrets operations)
-  - Your `workflow-owner-address` must be configured in your project
+  - Your `workflow-owner-address` must be configured in your project (not required when `CRE_CLI_SECRETS_ORG_OWNED=true`)
   - **Production CRE:** only **linked workflow owner** vault authorization is supported for these commands. See ([Using Secrets with Deployed Workflows](/cre/guides/workflow/secrets/using-secrets-deployed))
   - For comprehensive guides on using secrets, see [Managing Secrets](/cre/guides/workflow/secrets)
 </Aside>
@@ -9278,7 +9319,7 @@ cre secrets delete secrets-to-delete.yaml --target production-settings
 
 ## cre secrets list
 
-Lists all secret identifiers for your owner address in a specific namespace.
+Lists all secret identifiers for your owner address (or org ID, when `CRE_CLI_SECRETS_ORG_OWNED=true`) in a specific namespace.
 
 ### Usage
 
@@ -9471,7 +9512,9 @@ Remaining repositories:
 
 # Utility Commands
 Source: https://docs.chain.link/cre/reference/cli/utilities
-Last Updated: 2026-03-17
+Last Updated: 2026-04-10
+
+export const CRE_CLI_VERSION = VERSIONS["cre-cli"].LATEST
 
 Utility commands provide helpful information and troubleshooting capabilities.
 
@@ -9521,12 +9564,12 @@ cre version
 **Example output:**
 
 ```bash
-CRE CLI version v1.5.0
+CRE CLI version {CRE_CLI_VERSION}
 ```
 
 
 <Aside type="note" title="Version compatibility">
-  Always check that your CLI version matches the version recommended in the documentation. The current recommended version is **v1.5.0**. See the [CLI Installation guide](/cre/getting-started/cli-installation) for more information.
+  Always check that your CLI version matches the version recommended in the documentation. The current recommended version is **{CRE_CLI_VERSION}**. See the [CLI Installation guide](/cre/getting-started/cli-installation) for more information.
 </Aside>
 
 ## Learn more

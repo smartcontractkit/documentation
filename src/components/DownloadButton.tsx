@@ -1,5 +1,7 @@
 /** @jsxImportSource preact */
 
+import { VERSIONS } from "@config/versions/index.ts"
+
 export const DownloadButton = () => {
   const buttonStyle = {
     padding: "12px 24px",
@@ -15,7 +17,8 @@ export const DownloadButton = () => {
   }
 
   const handleClick = () => {
-    window.open("https://github.com/smartcontractkit/cre-cli/releases/tag/v1.2.0", "_blank", "noopener,noreferrer")
+    const version = VERSIONS["cre-cli"].LATEST
+    window.open(`https://github.com/smartcontractkit/cre-cli/releases/tag/${version}`, "_blank", "noopener,noreferrer")
   }
 
   const handleMouseOver = (e) => {
