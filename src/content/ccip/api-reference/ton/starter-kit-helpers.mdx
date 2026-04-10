@@ -1,0 +1,300 @@
+---
+section: ccip
+date: Last Modified
+title: "TON Starter Kit Helper Reference"
+metadata:
+  description: "Reference documentation for the unaudited TypeScript helper utilities in the TON CCIP Starter Kit."
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## Starter Kit Helpers
+
+<Aside type="caution">
+  These TypeScript utilities are part of the [TON Starter Kit](https://github.com/smartcontractkit/ton-starter-kit)
+  (`scripts/utils/utils.ts`). They are **not audited** and are **not part of the CCIP protocol contracts**. Use them as
+  reference implementations for building your own scripts and applications. Do not use them in production without
+  independent review.
+</Aside>
+
+The Starter Kit provides helper functions for constructing and sending CCIP messages from TypeScript. These functions abstract TL-B cell encoding and fee estimation.
+
+---
+
+## Extra Args Builders
+
+### `buildExtraArgsForEVM`
+
+Builds a `GenericExtraArgsV2` TL-B `Cell` for a **TON → EVM** message. The `gasLimit` is in **EVM gas units**.
+
+```typescript
+export function buildExtraArgsForEVM(gasLimitEVMUnits: number, allowOutOfOrderExecution: boolean): Cell
+```
+
+#### Parameters
+
+| Name                                    | Type                   | Description                                                                               |
+| --------------------------------------- | ---------------------- | ----------------------------------------------------------------------------------------- |
+| <nobr>`gasLimitEVMUnits`</nobr>         | <nobr>`number`</nobr>  | Gas limit for execution on the destination EVM chain, in EVM gas units (e.g., `100_000`). |
+| <nobr>`allowOutOfOrderExecution`</nobr> | <nobr>`boolean`</nobr> | If `true`, this message can be executed out of order. Set to `true` for most use cases.   |
+
+#### Returns
+
+A `Cell` containing the encoded `GenericExtraArgsV2` (tag `0x181dcf10`).
+
+#### Example
+
+```typescript
+const extraArgs = buildExtraArgsForEVM(100_000, true) // 100k EVM gas limit
+```
+
+---
+
+### `buildExtraArgsForTON`
+
+Encodes `GenericExtraArgsV2` as ABI bytes for use in an **EVM → TON** `ccipSend` call. The `gasLimit` is in **nanoTON**.
+
+```typescript
+export function buildExtraArgsForTON(gasLimitNanoTON: bigint | number, allowOutOfOrderExecution: boolean): Uint8Array
+```
+
+#### Parameters
+
+| Name                                    | Type                            | Description                                                                                                                                                |
+| --------------------------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <nobr>`gasLimitNanoTON`</nobr>          | <nobr>`bigint \| number`</nobr> | The TON execution budget forwarded to the receiver, in nanoTON. For example, `100_000_000n` = 0.1 TON. Must be sufficient for your receiver's `MIN_VALUE`. |
+| <nobr>`allowOutOfOrderExecution`</nobr> | <nobr>`boolean`</nobr>          | If `true`, this message can be executed out of order.                                                                                                      |
+
+#### Returns
+
+A `Uint8Array` containing the ABI-encoded `GenericExtraArgsV2` with the `0x181dcf10` tag prepended.
+
+#### Example
+
+```typescript
+const extraArgs = buildExtraArgsForTON(100_000_000n, true) // 0.1 TON gas limit
+```
+
+<Aside type="caution">
+  Use `buildExtraArgsForEVM` for TON→EVM sends (constructs a TL-B `Cell`). Use `buildExtraArgsForTON` for EVM→TON sends
+  (constructs ABI-encoded bytes for the EVM Router). They are not interchangeable.
+</Aside>
+
+---
+
+## Address Encoding
+
+### `encodeEVMAddress`
+
+Encodes an EVM address (20 bytes) into the 32-byte `CrossChainAddress` format required by the TON CCIP Router. Left-pads the 20-byte address with 12 zero bytes.
+
+```typescript
+export function encodeEVMAddress(evmAddr: string): Buffer
+```
+
+#### Parameters
+
+| Name                   | Type                  | Description                                                    |
+| ---------------------- | --------------------- | -------------------------------------------------------------- |
+| <nobr>`evmAddr`</nobr> | <nobr>`string`</nobr> | The EVM address as a hex string (with or without `0x` prefix). |
+
+#### Returns
+
+A 32-byte `Buffer` (12 zero bytes + 20-byte EVM address).
+
+#### Example
+
+```typescript
+const receiver = encodeEVMAddress("0xABCD...1234") // 32-byte CrossChainAddress
+```
+
+---
+
+## Message Builders
+
+### `buildCCIPMessageForEVM`
+
+Builds the complete `Router_CCIPSend` TL-B `Cell` for a **TON → EVM** message, ready to send directly to the CCIP Router.
+
+```typescript
+export function buildCCIPMessageForEVM(
+  queryID: bigint | number,
+  destChainSelector: bigint | number,
+  receiverBytes: Buffer,
+  data: Cell,
+  feeToken: Address,
+  extraArgs: Cell
+): Cell
+```
+
+#### Parameters
+
+| Name                             | Type                            | Description                                                                                 |
+| -------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------- |
+| <nobr>`queryID`</nobr>           | <nobr>`bigint \| number`</nobr> | Unique identifier for this send. Use the wallet `seqno`. Returned in ACK/NACK responses.    |
+| <nobr>`destChainSelector`</nobr> | <nobr>`bigint \| number`</nobr> | CCIP chain selector of the destination EVM chain.                                           |
+| <nobr>`receiverBytes`</nobr>     | <nobr>`Buffer`</nobr>           | 32-byte encoded receiver address. Use [`encodeEVMAddress`](#encodeevmaddress).              |
+| <nobr>`data`</nobr>              | <nobr>`Cell`</nobr>             | The message payload as a TL-B `Cell`.                                                       |
+| <nobr>`feeToken`</nobr>          | <nobr>`Address`</nobr>          | The TON address of the fee token. Use the wrapped native token address for native TON fees. |
+| <nobr>`extraArgs`</nobr>         | <nobr>`Cell`</nobr>             | Encoded extra args. Use [`buildExtraArgsForEVM`](#buildextraargsforevm).                    |
+
+#### Returns
+
+A TL-B `Cell` with opcode `0x31768d95` (`Router_CCIPSend`).
+
+#### Example
+
+```typescript
+const ccipSendCell = buildCCIPMessageForEVM(
+  BigInt(seqno),
+  destChainSelector,
+  encodeEVMAddress(evmReceiverAddress),
+  beginCell().storeStringTail("Hello EVM from TON").endCell(),
+  feeTokenAddress,
+  buildExtraArgsForEVM(100_000, true)
+)
+```
+
+---
+
+### `buildCCIPMessageForTON`
+
+Builds the CCIP message struct for an **EVM → TON** `ccipSend` call on the EVM Router.
+
+```typescript
+export function buildCCIPMessageForTON(
+  receiver: Uint8Array,
+  data: Uint8Array,
+  gasLimitNanoTON: bigint | number,
+  allowOutOfOrderExecution: boolean,
+  feeToken: string = ethers.ZeroAddress
+): object
+```
+
+#### Parameters
+
+| Name                                    | Type                            | Description                                                                                                                        |
+| --------------------------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| <nobr>`receiver`</nobr>                 | <nobr>`Uint8Array`</nobr>       | The TON receiver address encoded as raw bytes (from base64 address).                                                               |
+| <nobr>`data`</nobr>                     | <nobr>`Uint8Array`</nobr>       | The message payload as raw bytes.                                                                                                  |
+| <nobr>`gasLimitNanoTON`</nobr>          | <nobr>`bigint \| number`</nobr> | TON gas budget for the receiver, in nanoTON. Minimum recommended: `100_000_000n` (0.1 TON).                                        |
+| <nobr>`allowOutOfOrderExecution`</nobr> | <nobr>`boolean`</nobr>          | If `true`, this message can be executed out of order.                                                                              |
+| <nobr>`feeToken`</nobr>                 | <nobr>`string`</nobr>           | EVM address of the fee token. Use `ethers.ZeroAddress` for native ETH/gas token fees. Use the LINK token address to pay with LINK. |
+
+#### Returns
+
+A message object ready to pass to the EVM Router's `ccipSend` function.
+
+#### Example
+
+```typescript
+const receiverBytes = new Uint8Array(Buffer.from(tonReceiverAddress, "base64"))
+const message = buildCCIPMessageForTON(
+  receiverBytes,
+  ethers.toUtf8Bytes("Hello TON from EVM"),
+  100_000_000n, // 0.1 TON
+  true,
+  ethers.ZeroAddress // pay with native
+)
+
+const fee = await router.getFee(destChainSelector, message)
+const tx = await router.ccipSend(destChainSelector, message, { value: (fee * 110n) / 100n })
+```
+
+---
+
+## Fee Estimation
+
+### `getCCIPFeeForEVM`
+
+Queries the validated CCIP fee from the TON FeeQuoter for a **TON → EVM** message. Resolves the FeeQuoter address automatically via the Router and OnRamp getters.
+
+```typescript
+export async function getCCIPFeeForEVM(
+  client: TonClient,
+  routerAddress: Address,
+  destChainSelector: bigint,
+  ccipSendMessage: TonCCIPSendMessage
+): Promise<bigint>
+```
+
+#### Parameters
+
+| Name                             | Type                              | Description                                                          |
+| -------------------------------- | --------------------------------- | -------------------------------------------------------------------- |
+| <nobr>`client`</nobr>            | <nobr>`TonClient`</nobr>          | A connected `TonClient` instance.                                    |
+| <nobr>`routerAddress`</nobr>     | <nobr>`Address`</nobr>            | The CCIP Router address on TON.                                      |
+| <nobr>`destChainSelector`</nobr> | <nobr>`bigint`</nobr>             | CCIP chain selector of the EVM destination chain.                    |
+| <nobr>`ccipSendMessage`</nobr>   | <nobr>`TonCCIPSendMessage`</nobr> | The complete CCIP message object (same fields as `Router_CCIPSend`). |
+
+#### Returns
+
+`Promise<bigint>` — the fee in nanoTON.
+
+**Address resolution:** `Router.onRamp(destChainSelector)` → `OnRamp.feeQuoter(destChainSelector)` → `validatedFeeCell(ccipSendCell)`
+
+#### Example
+
+```typescript
+const fee = await getCCIPFeeForEVM(client, routerAddress, destChainSelector, ccipSendMessage)
+const feeWithBuffer = (fee * 110n) / 100n // add 10% buffer
+```
+
+---
+
+### `getCCIPFeeForTON`
+
+Queries the CCIP fee from the **EVM Router** for an EVM → TON message.
+
+```typescript
+export async function getCCIPFeeForTON(
+  router: ethers.Contract,
+  destChainSelector: bigint | number,
+  message: ReturnType<typeof buildCCIPMessageForTON>
+): Promise<bigint>
+```
+
+#### Parameters
+
+| Name                             | Type                            | Description                                                                  |
+| -------------------------------- | ------------------------------- | ---------------------------------------------------------------------------- |
+| <nobr>`router`</nobr>            | <nobr>`ethers.Contract`</nobr>  | An ethers.js contract instance of the EVM CCIP Router.                       |
+| <nobr>`destChainSelector`</nobr> | <nobr>`bigint \| number`</nobr> | CCIP chain selector for TON (the destination).                               |
+| <nobr>`message`</nobr>           | object                          | The message object from [`buildCCIPMessageForTON`](#buildccipmessageforton). |
+
+#### Returns
+
+`Promise<bigint>` — the fee in the fee token's smallest unit (e.g., wei for native, or LINK's 18-decimal units).
+
+---
+
+## Event Parsing
+
+### `extractCCIPMessageIdForTON`
+
+Extracts the CCIP `messageId` from an EVM transaction receipt by parsing the `CCIPMessageSent` event emitted by the OnRamp.
+
+```typescript
+export function extractCCIPMessageIdForTON(receipt: ethers.TransactionReceipt): string | null
+```
+
+#### Parameters
+
+| Name                   | Type                                     | Description                                           |
+| ---------------------- | ---------------------------------------- | ----------------------------------------------------- |
+| <nobr>`receipt`</nobr> | <nobr>`ethers.TransactionReceipt`</nobr> | The transaction receipt from the EVM `ccipSend` call. |
+
+#### Returns
+
+The `messageId` as a hex string, or `null` if not found.
+
+#### Example
+
+```typescript
+const receipt = await tx.wait()
+const messageId = extractCCIPMessageIdForTON(receipt)
+console.log("CCIP Message ID:", messageId)
+```
+
+<CcipCommon callout="educationalDisclaimer" />
