@@ -1,5 +1,3 @@
-import type { Collection } from "~/content.config.ts"
-
 // Base type for version configuration
 export interface VersionConfig {
   LATEST: string
@@ -77,6 +75,16 @@ export const VERSIONS = {
       "v0.2.3": "2024-11-30T00:00:00Z", // 30 November 2024
     },
   },
+  // CRE CLI Versions — update LATEST here for each new release
+  "cre-cli": {
+    LATEST: "v1.10.0",
+    ALL: ["v1.10.0", "v1.9.0", "v1.8.0"] as const,
+    RELEASE_DATES: {
+      "v1.10.0": "2026-04-10T00:00:00Z",
+      "v1.9.0": "2026-04-02T00:00:00Z",
+      "v1.8.0": "2026-03-26T00:00:00Z",
+    },
+  },
   // Add new products here following the same pattern
   // example: {
   //   LATEST: "v1.0.0",
@@ -90,8 +98,5 @@ export const VERSIONS = {
 
 // Type helpers
 export type ProductVersions = {
-  [K in Collection]?: VersionConfig | VMVersionConfig
+  [key: string]: VersionConfig | VMVersionConfig
 }
-
-// Re-export for convenience
-export type { Collection }
