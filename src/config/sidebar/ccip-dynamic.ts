@@ -375,6 +375,26 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
     section: "Tutorials",
     contents: [
       {
+        title: "Overview",
+        url: "ccip/tutorials/evm",
+        chainTypes: ["evm"],
+      },
+      {
+        title: "Overview",
+        url: "ccip/tutorials/svm",
+        chainTypes: ["solana"],
+      },
+      {
+        title: "Overview",
+        url: "ccip/tutorials/aptos",
+        chainTypes: ["aptos"],
+      },
+      {
+        title: "Overview",
+        url: "ccip/tutorials/ton",
+        chainTypes: ["ton"],
+      },
+      {
         title: "Acquire Test Tokens",
         url: "ccip/test-tokens",
         chainTypes: ["evm", "solana", "aptos"],
