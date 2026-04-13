@@ -25314,7 +25314,7 @@ struct EVM2AnyMessage {
 ### receiver
 
 - **Definition**: The encoded TON address of the smart contract on TON that will receive and process the CCIP message.
-- **Encoding**: TON addresses must be encoded into a 36-byte format: 4 bytes for the workchain identifier (big-endian signed int32) followed by 32 bytes for the account hash. Use the `encodeTONAddress` helper shown below.
+- **Encoding**: TON addresses must be encoded into a 36-byte [user-friendly format](https://docs.ton.org/foundations/addresses/formats#user-friendly-format): 1 byte for flags, 1 byte for `workchain_id`, 32 bytes for the `account_id` and 2 bytes for the [CRC16-CCITT](https://github.com/ton-blockchain/ton-kotlin/blob/main/crypto/src/crc16.kt) checksum of the preceding 34 bytes.
 
 <Aside title="Encoding a TON Address">
   TON user-friendly addresses (e.g., `EQ...`) are base64-encoded 36-byte sequences. Decode the address string
@@ -25325,6 +25325,8 @@ struct EVM2AnyMessage {
   const receiver = new Uint8Array(Buffer.from(tonContractAddr, "base64"))
   ```
 </Aside>
+
+Warning: If the `receiver` address is not correctly encoded and the checksum doesn't match, the message will be directed to TON [Zero Account](https://docs.ton.org/foundations/whitepapers/tblkch#4-1-2-zero-account),
 
 ### data
 
