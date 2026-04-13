@@ -81,11 +81,11 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
         url: "ccip/service-limits/aptos",
         chainTypes: ["aptos"],
       },
-      // {
-      //   title: "Service Limits",
-      //   url: "ccip/service-limits/ton",
-      //   chainTypes: ["ton"],
-      // },
+      {
+        title: "Service Limits",
+        url: "ccip/service-limits/ton",
+        chainTypes: ["ton"],
+      },
       {
         title: "Service Responsibility",
         url: "ccip/service-responsibility",
