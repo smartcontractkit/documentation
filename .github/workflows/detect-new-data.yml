@@ -45,7 +45,7 @@ jobs:
 
       # Step 3: Cache node_modules for faster future runs
       - name: Cache node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: cache-node-modules
         with:
           path: |
@@ -81,7 +81,7 @@ jobs:
 
       # Step 3: Restore cached node_modules from setup job
       - name: Restore node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             node_modules
@@ -135,7 +135,7 @@ jobs:
       # Step 10: Create a pull request if new data items were found
       - name: Commit & Create Pull Request
         if: steps.detect_data.outputs.new_data_found == 'true'
-        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "Data: Update changelog for new data items"
