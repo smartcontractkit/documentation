@@ -390,9 +390,9 @@ export const StreamsNetworksData: NetworkData[] = [
       explorerUrl: "https://explorer.katanarpc.com/address/%s",
     },
     testnet: {
-      label: "Katana Testnet (Tatara)",
-      verifierProxy: "0x57A97148C1fa50f35F0639f380077017D8893b6b",
-      explorerUrl: "https://explorer.tatara.katana.network/address/%s",
+      label: "Katana Testnet (Bokuto)",
+      verifierProxy: "0x72790f9eB82db492a7DDb6d2af22A270Dcc3Db64",
+      explorerUrl: "https://bokuto.katanascan.com/address/%s",
     },
   },
   {
@@ -688,6 +688,20 @@ export const StreamsNetworksData: NetworkData[] = [
       verifierProgramId: "Gt9S41PtjR58CbG9JhJ3J6vxesqrNAswbWYbLNTMZA3c",
       accessController: "2k3DsgwBoqrnvXKVvd7jX7aptNxdcRBdcd5HkYsGgbrb",
       explorerUrl: "https://explorer.solana.com/address/%s?cluster=devnet",
+    },
+  },
+  {
+    network: "Stellar",
+    logoUrl: "/assets/chains/ethereum.svg",
+    mainnet: {
+      label: "Stellar Mainnet",
+      verifierProxy: "CAKA3NBYPC6OBEUEGNIYGNYG3ES2GPQK736B5SR7ASGUXRDAKXI2JCQI",
+      explorerUrl: "https://stellarchain.io/contracts/%s",
+    },
+    testnet: {
+      label: "Stellar Testnet",
+      verifierProxy: "CA7GVHWH4GRHE6GI7MHEKQZAOYO4GE7KRGSU3EOS3HYJRVLX3XEA4ONQ",
+      explorerUrl: "https://stellarchain.io/contracts/%s",
     },
   },
   {
