@@ -390,9 +390,9 @@ export const StreamsNetworksData: NetworkData[] = [
       explorerUrl: "https://explorer.katanarpc.com/address/%s",
     },
     testnet: {
-      label: "Katana Testnet (Tatara)",
-      verifierProxy: "0x57A97148C1fa50f35F0639f380077017D8893b6b",
-      explorerUrl: "https://explorer.tatara.katana.network/address/%s",
+      label: "Katana Testnet (Bokuto)",
+      verifierProxy: "0x72790f9eB82db492a7DDb6d2af22A270Dcc3Db64",
+      explorerUrl: "https://bokuto.katanascan.com/address/%s",
     },
   },
   {
