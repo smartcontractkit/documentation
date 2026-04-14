@@ -391,15 +391,28 @@ async function handleSpecificChains(chainIds: number[]): Promise<void> {
       throw new ValidationError("Expected an array of chain metadata", data)
     }
 
-    // Pre-filter the chains we're interested in
-    const requestedChains = data.filter(
-      (item) => isRecord(item) && typeof item.chainId === "number" && chainIds.includes(item.chainId)
-    )
+    // Pre-filter the chains we're interested in, skipping any that chainid.network
+    // has flagged as a reused chain ID to prevent overwriting our known-correct entries.
+    const skippedReusedIds = new Set<number>()
+    const requestedChains = data.filter((item) => {
+      if (!isRecord(item) || typeof item.chainId !== "number") return false
+      if (!chainIds.includes(item.chainId)) return false
+      const isReusedId = Array.isArray(item.redFlags) && item.redFlags.includes("reusedChainId")
+      if (isReusedId) {
+        console.warn(`Skipping chain ${item.chainId} ("${item.name}"): flagged as reusedChainId by chainid.network`)
+        skippedReusedIds.add(item.chainId as number)
+      }
+      return !isReusedId
+    })
 
     // Now validate only the chains we care about
     const validatedChains = validateChainMetadataArray(requestedChains)
 
     if (validatedChains.length === 0) {
+      if (skippedReusedIds.size > 0) {
+        console.log(`\nAll requested chain IDs were skipped due to reusedChainId conflicts. No updates made.`)
+        return
+      }
       throw new ValidationError("No valid chains found to update", chainIds)
     }
 
@@ -474,7 +487,16 @@ const getSupportedChainsMetadata = async (): Promise<ChainMetadata[]> => {
       if (!chainMetadata.chainId) {
         throw new ValidationError("Chain metadata missing chainId", chainMetadata)
       }
-      return chainMetadata.chainId.toString() in linkNameSymbol
+      if (!(chainMetadata.chainId.toString() in linkNameSymbol)) return false
+      // Skip chains flagged as reused IDs by chainid.network to prevent overwriting
+      // our known-correct entries with data from a different chain sharing the same ID.
+      const isReusedId = chainMetadata.redFlags?.includes("reusedChainId") ?? false
+      if (isReusedId) {
+        console.warn(
+          `Skipping chain ${chainMetadata.chainId} ("${chainMetadata.name}"): flagged as reusedChainId by chainid.network`
+        )
+      }
+      return !isReusedId
     })
 
     return supportedChainsMetadata.sort((a, b) => a.chainId - b.chainId)
