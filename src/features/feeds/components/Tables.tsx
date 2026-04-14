@@ -806,22 +806,22 @@ export const StreamsNetworkAddressesTable = ({
   const tableContent = (
     <>
       {!lockSearch && (
-      <div className={feedList.filterDropdown_search} style={{ padding: "0.5rem" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flex: 1 }}>
-          <input
-            type="text"
-            placeholder="Search"
-            className={feedList.filterDropdown_searchInput}
-            value={searchValue}
-            onInput={(e) => updateSearch((e.target as HTMLInputElement).value)}
-          />
-          {searchValue && (
-            <button className={clsx(button.secondary, feedList.clearFilterBtn)} onClick={() => updateSearch("")}>
-              Clear filter
-            </button>
-          )}
+        <div className={feedList.filterDropdown_search} style={{ padding: "0.5rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flex: 1 }}>
+            <input
+              type="text"
+              placeholder="Search"
+              className={feedList.filterDropdown_searchInput}
+              value={searchValue}
+              onInput={(e) => updateSearch((e.target as HTMLInputElement).value)}
+            />
+            {searchValue && (
+              <button className={clsx(button.secondary, feedList.clearFilterBtn)} onClick={() => updateSearch("")}>
+                Clear filter
+              </button>
+            )}
+          </div>
         </div>
-      </div>
       )}
 
       <table className={tableStyles.networksTable}>
