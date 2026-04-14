@@ -754,10 +754,12 @@ export const StreamsNetworkAddressesTable = ({
   allowExpansion = false,
   defaultExpanded = false,
   initialSearch = "",
+  lockSearch = false,
 }: {
   allowExpansion?: boolean
   defaultExpanded?: boolean
   initialSearch?: string
+  lockSearch?: boolean
 } = {}) => {
   // null = untouched; string = user has set a value
   const [searchState, setSearchState] = useState<string | null>(null)
@@ -765,10 +767,11 @@ export const StreamsNetworkAddressesTable = ({
   const urlSearch =
     typeof window !== "undefined" ? (new URLSearchParams(window.location.search).get("streamsNetwork") ?? "") : ""
 
-  // Priority: user-typed value → SSR prop (when Astro can pass it) → URL param (client fallback)
-  const searchValue = searchState ?? (initialSearch || urlSearch)
+  // When lockSearch is true, always use initialSearch and ignore user input / URL params
+  const searchValue = lockSearch ? initialSearch : (searchState ?? (initialSearch || urlSearch))
 
   const updateSearch = (value: string) => {
+    if (lockSearch) return
     setSearchState(value)
     if (typeof window === "undefined") return
     const params = new URLSearchParams(window.location.search)
@@ -802,22 +805,24 @@ export const StreamsNetworkAddressesTable = ({
 
   const tableContent = (
     <>
-      <div className={feedList.filterDropdown_search} style={{ padding: "0.5rem" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flex: 1 }}>
-          <input
-            type="text"
-            placeholder="Search"
-            className={feedList.filterDropdown_searchInput}
-            value={searchValue}
-            onInput={(e) => updateSearch((e.target as HTMLInputElement).value)}
-          />
-          {searchValue && (
-            <button className={clsx(button.secondary, feedList.clearFilterBtn)} onClick={() => updateSearch("")}>
-              Clear filter
-            </button>
-          )}
+      {!lockSearch && (
+        <div className={feedList.filterDropdown_search} style={{ padding: "0.5rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flex: 1 }}>
+            <input
+              type="text"
+              placeholder="Search"
+              className={feedList.filterDropdown_searchInput}
+              value={searchValue}
+              onInput={(e) => updateSearch((e.target as HTMLInputElement).value)}
+            />
+            {searchValue && (
+              <button className={clsx(button.secondary, feedList.clearFilterBtn)} onClick={() => updateSearch("")}>
+                Clear filter
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       <table className={tableStyles.networksTable}>
         <thead>

@@ -691,6 +691,20 @@ export const StreamsNetworksData: NetworkData[] = [
     },
   },
   {
+    network: "Stellar",
+    logoUrl: "/assets/chains/ethereum.svg",
+    mainnet: {
+      label: "Stellar Mainnet",
+      verifierProxy: "CAKA3NBYPC6OBEUEGNIYGNYG3ES2GPQK736B5SR7ASGUXRDAKXI2JCQI",
+      explorerUrl: "https://stellarchain.io/contracts/%s",
+    },
+    testnet: {
+      label: "Stellar Testnet",
+      verifierProxy: "CA7GVHWH4GRHE6GI7MHEKQZAOYO4GE7KRGSU3EOS3HYJRVLX3XEA4ONQ",
+      explorerUrl: "https://stellarchain.io/contracts/%s",
+    },
+  },
+  {
     network: "Stable",
     logoUrl: "/assets/chains/stable.svg",
     mainnet: {
