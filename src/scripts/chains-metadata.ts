@@ -77,6 +77,45 @@ interface ChainMetadata {
   slip44?: number
 }
 
+/**
+ * Normalizes a chain name for comparison by lowercasing and removing spaces,
+ * hyphens, and other non-alphanumeric characters.
+ * e.g. "zkSync Sepolia Testnet" and "zksync-sepolia-testnet" both become "zksyncsepoliatestnet"
+ */
+function normalizeChainName(name: string): string {
+  return name.toLowerCase().replace(/[\s\-_]/g, "")
+}
+
+type ChainMatchResult =
+  | { matched: true; reason: "name" | "nativeCurrency" }
+  | { matched: false; existingName: string | undefined }
+
+/**
+ * When chainid.network flags a chain as reusedChainId, determines whether the incoming
+ * entry is the same chain we already support, using two signals:
+ *   1. Name match (normalized) — primary check
+ *   2. nativeCurrency.symbol match — secondary check for renamed chains
+ * Returns the match reason so callers can log appropriately.
+ */
+function matchAgainstExistingChain(incomingChain: ChainMetadata): ChainMatchResult {
+  const existing = (currentChainsMetadata as ChainMetadata[]).find((c) => c.chainId === incomingChain.chainId)
+  if (!existing) return { matched: false, existingName: undefined }
+
+  if (normalizeChainName(existing.name) === normalizeChainName(incomingChain.name)) {
+    return { matched: true, reason: "name" }
+  }
+
+  if (
+    existing.nativeCurrency?.symbol &&
+    incomingChain.nativeCurrency?.symbol &&
+    existing.nativeCurrency.symbol === incomingChain.nativeCurrency.symbol
+  ) {
+    return { matched: true, reason: "nativeCurrency" }
+  }
+
+  return { matched: false, existingName: existing.name }
+}
+
 // Type guard functions
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
@@ -399,8 +438,21 @@ async function handleSpecificChains(chainIds: number[]): Promise<void> {
       if (!chainIds.includes(item.chainId)) return false
       const isReusedId = Array.isArray(item.redFlags) && item.redFlags.includes("reusedChainId")
       if (isReusedId) {
-        console.warn(`Skipping chain ${item.chainId} ("${item.name}"): flagged as reusedChainId by chainid.network`)
-        skippedReusedIds.add(item.chainId as number)
+        const match = matchAgainstExistingChain(item as unknown as ChainMetadata)
+        if (match.matched) {
+          const detail =
+            match.reason === "nativeCurrency"
+              ? `name changed ("${match.reason}" matched on nativeCurrency symbol "${(item as unknown as ChainMetadata).nativeCurrency?.symbol}")`
+              : "name matched"
+          console.log(
+            `Chain ${item.chainId} ("${item.name}") is flagged as reusedChainId but ${detail} — allowing update`
+          )
+          return true
+        }
+        console.warn(
+          `Skipping chain ${item.chainId} ("${item.name}"): flagged as reusedChainId and does not match our existing entry ("${match.existingName ?? "none"}") by name or nativeCurrency`
+        )
+        skippedReusedIds.add(item.chainId)
       }
       return !isReusedId
     })
@@ -483,20 +535,48 @@ async function handleFullComparison(): Promise<void> {
 const getSupportedChainsMetadata = async (): Promise<ChainMetadata[]> => {
   try {
     const chainsMetadata = await getChainsMetadata()
+    // Track chain IDs that are skipped due to reusedChainId conflicts so we can
+    // preserve the existing entry rather than letting it disappear from the output.
+    const preservedChainIds = new Set<number>()
+
     const supportedChainsMetadata = chainsMetadata.filter((chainMetadata) => {
       if (!chainMetadata.chainId) {
         throw new ValidationError("Chain metadata missing chainId", chainMetadata)
       }
       if (!(chainMetadata.chainId.toString() in linkNameSymbol)) return false
-      // Skip chains flagged as reused IDs by chainid.network to prevent overwriting
-      // our known-correct entries with data from a different chain sharing the same ID.
+      // For chains flagged as reusedChainId by chainid.network, check whether the incoming
+      // entry is the same chain we already support. If names match, allow the update through
+      // (e.g. explorer URL changed). If names differ, it's a different chain squatting on
+      // the same ID — preserve our existing entry instead of deleting or overwriting it.
       const isReusedId = chainMetadata.redFlags?.includes("reusedChainId") ?? false
       if (isReusedId) {
+        const match = matchAgainstExistingChain(chainMetadata)
+        if (match.matched) {
+          const detail =
+            match.reason === "nativeCurrency"
+              ? `name changed ("${match.reason}" matched on nativeCurrency symbol "${chainMetadata.nativeCurrency?.symbol}")`
+              : "name matched"
+          console.log(
+            `Chain ${chainMetadata.chainId} ("${chainMetadata.name}") is flagged as reusedChainId but ${detail} — allowing update`
+          )
+          return true
+        }
         console.warn(
-          `Skipping chain ${chainMetadata.chainId} ("${chainMetadata.name}"): flagged as reusedChainId by chainid.network`
+          `Skipping chain ${chainMetadata.chainId} ("${chainMetadata.name}"): flagged as reusedChainId and does not match our existing entry ("${match.existingName ?? "none"}") by name or nativeCurrency — preserving existing entry`
         )
+        preservedChainIds.add(chainMetadata.chainId)
+        return false
       }
-      return !isReusedId
+      return true
+    })
+
+    // Re-inject preserved entries so they are not lost in the full replacement.
+    preservedChainIds.forEach((chainId) => {
+      const existing = (currentChainsMetadata as ChainMetadata[]).find((c) => c.chainId === chainId)
+      if (existing) {
+        supportedChainsMetadata.push(existing)
+        console.log(`Preserved existing entry for chain ${chainId} ("${existing.name}")`)
+      }
     })
 
     return supportedChainsMetadata.sort((a, b) => a.chainId - b.chainId)
