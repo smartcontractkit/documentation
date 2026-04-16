@@ -526,6 +526,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             },
             { title: "Account Management", url: "cre/reference/cli/account" },
             { title: "Workflow Commands", url: "cre/reference/cli/workflow" },
+            { title: "Registry Commands", url: "cre/reference/cli/registry" },
             { title: "Secrets Management", url: "cre/reference/cli/secrets" },
             { title: "Template Sources", url: "cre/reference/cli/templates" },
             { title: "Utilities", url: "cre/reference/cli/utilities" },
