@@ -1059,6 +1059,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           highlightAsCurrent: ["data-streams/tutorials/solana-offchain-report-verification"],
         },
         {
+          title: "Verify report data (Stellar)",
+          url: "data-streams/tutorials/stellar-onchain-report-verification",
+        },
+        {
           title: "Canton Integration",
           url: "data-streams/canton-integration",
         },
@@ -1141,6 +1145,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Onchain report verification (EVM chains)",
               url: "data-streams/reference/data-streams-api/onchain-verification",
+            },
+            {
+              title: "Onchain report verification (Stellar)",
+              url: "data-streams/tutorials/stellar-onchain-report-verification",
             },
           ],
         },
