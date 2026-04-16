@@ -1,0 +1,144 @@
+---
+section: cre
+date: Last Modified
+title: "Verifying Workflows"
+sdkLang: "ts"
+pageId: "operations-verifying-workflows"
+metadata:
+  description: "Learn how to verify workflow identity, validate workflows onchain in consumer contracts, and enable third-party verification using reproducible builds."
+  datePublished: "2026-03-19"
+  lastModified: "2026-04-09"
+---
+
+import { Aside } from "@components"
+
+<Aside type="note" title="TypeScript">
+  This page covers workflow verification for TypeScript workflows. For Go workflows, see [Verifying Workflows
+  (Go)](/cre/guides/operations/verifying-workflows-go).
+</Aside>
+
+Workflow verification ensures the integrity and authenticity of your workflows across deployment, onchain execution, and third-party auditing. This guide explains how workflow IDs are computed, how to verify workflows in consumer contracts, and how to enable independent verification by third parties.
+
+## Workflow ID
+
+The workflow ID is a unique hash that serves as the primary identifier for your workflow throughout its lifecycle. It is computed locally during [`cre workflow deploy`](/cre/reference/cli/workflow#cre-workflow-deploy) from the following inputs:
+
+- **workflowOwner**: The deployer's address
+- **workflowName**: The name specified in your workflow
+- **Compiled workflow binary**: The WASM binary produced from your workflow code
+- **Config file contents**: The contents of your workflow's config file
+- **Secrets hash**: An empty string placeholder for secrets
+
+Because the workflow ID is derived from these inputs, it deterministically represents a specific version of your workflow code and configuration.
+
+<Aside type="caution" title="Workflow ID changes on updates">
+  The workflow ID changes whenever you update your workflow code or config file, even if the workflow name stays the
+  same. For example, if you change contract bindings, the compiled binary changes, which produces a new workflow ID.
+  Plan for this when designing consumer contracts that permission on workflow ID.
+</Aside>
+
+Use [`cre workflow hash`](/cre/reference/cli/workflow#cre-workflow-hash) to inspect the workflow ID before deploying. This lets you preview the ID without submitting an onchain transaction.
+
+For more details on deployment and updates, see [Deploying Workflows](/cre/guides/operations/deploying-workflows) and [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows).
+
+## Verifying workflows onchain
+
+When a workflow writes onchain, the consumer contract receives both the report data and metadata through the `onReport` callback. The metadata contains information you can use to verify the source of the report:
+
+- **`workflowId`** (`bytes32`): The unique workflow hash
+- **`workflowName`** (`bytes10`): The workflow name, hash-encoded
+- **`workflowOwner`** (`address`): The address that deployed the workflow
+
+See [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts) for the full `IReceiver` interface and metadata structure.
+
+### Workflow name encoding
+
+The `workflowName` in metadata is not stored as a plain string. It is a SHA256 hash of the workflow name, truncated to `bytes10`. See [how workflow names are encoded](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#how-workflow-names-are-encoded) for the full encoding process.
+
+### Security best practices
+
+Follow these practices to ensure only authorized workflows can interact with your consumer contract:
+
+- **Verify `msg.sender`**: Always check that `msg.sender` is the expected forwarder address. See the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory) for addresses by network.
+- **Permission on workflow ID**: Use `setExpectedWorkflowId` from `ReceiverTemplate` to restrict which workflow can call your contract.
+
+<Aside type="tip" title="Permissioning without workflow ID">
+  If you permission on `workflowId`, you must update it in your contract every time you update the workflow. An
+  alternative is to use `setExpectedAuthor` and `setExpectedWorkflowName` from `ReceiverTemplate` instead. These values
+  don't change when you update your workflow code, so your contract won't need updates after each workflow deployment.
+</Aside>
+
+## Third-party verification
+
+Third-party verification allows customers or auditors to independently confirm that a deployed workflow matches its source code. The deployer shares the workflow source, and the verifier uses the CRE CLI to compute the workflow hash and compare it against the onchain workflow ID.
+
+TypeScript workflows use Docker to produce reproducible builds. The same source always produces the same WASM binary hash because the build runs inside a pinned Docker image with a locked dependency tree.
+
+### Prerequisites
+
+- [CRE CLI](/cre/getting-started/cli-installation) installed
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) running
+- `make` available in your PATH (included with Xcode Command Line Tools on macOS; install via your package manager on Linux)
+
+### Steps for the workflow developer
+
+1. **Use the [`verifiable-build-ts` template](https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/verifiable-build/verifiable-build-ts)** as the starting point for your workflow. This template includes the `Dockerfile`, `Makefile`, and `Dockerfile.lock` required to produce reproducible builds.
+
+2. **Generate the lockfile** by running `make lock` from inside the `workflow/` directory. Re-run this whenever you change dependencies in `package.json`:
+
+   ```bash
+   cd workflow
+   make lock
+   ```
+
+   This generates `bun.lock` inside a Docker container to ensure cross-platform consistency. Always commit the updated `bun.lock` so that verifiers can reproduce your build.
+
+3. **Share your workflow source** with the verifier. Provide a zip archive or repository link that includes all workflow files and the committed `bun.lock`. Exclude `.env` files that contain private keys or secrets.
+
+### Steps for the verifier
+
+1. [**Install the CRE CLI**](/cre/getting-started/cli-installation). No login or deploy access is required for hash verification.
+
+2. **Start Docker Desktop.** When `cre workflow hash` runs, it detects that the workflow uses a pre-built WASM path and invokes `make build`. The Makefile then uses Docker to reproduce the WASM binary.
+
+3. **Clone or unzip** the shared workflow repository.
+
+4. **Run `cre workflow hash`** from the project root directory to compute the workflow hash:
+
+   ```bash
+   cre workflow hash workflow --public_key <DEPLOYER_ADDRESS> --target production-settings
+   ```
+
+   Replace `<DEPLOYER_ADDRESS>` with the deployer's public address (for example, `0xb0f2D38245dD6d397ebBDB5A814b753D56c30715`).
+
+5. **Compare the output** with the workflow ID observed onchain. The `Workflow hash` value corresponds to the onchain workflow ID:
+
+   ```
+   Compiling workflow...
+   ✓ Workflow compiled
+     Binary hash:   03c77e16354e5555f9a74e787f9a6aa0d939e9b8e4ddff06542b7867499c58ea
+     Config hash:   3bdaebcc2f639d77cb248242c1d01c8651f540cdbf423d26fe3128516fd225b6
+     Workflow hash: 001de36f9d689b57f2e4f1eaeda1db5e79f7991402e3611e13a5c930599c2297
+   ```
+
+   If the workflow hash matches the onchain workflow ID, the deployed workflow matches the shared source code.
+
+<Aside type="tip">Run `cre workflow hash -h` for full usage details and additional flags.</Aside>
+
+### How reproducible builds work
+
+When `cre workflow hash` runs on this template, it detects `workflow-path: ./wasm/workflow.wasm` in `workflow.yaml` and delegates compilation to `make build` rather than compiling TypeScript directly:
+
+1. `make build` on the host starts a Docker build targeting `linux/amd64`.
+2. Inside the container, `bun install --frozen-lockfile` installs exact dependency versions from `bun.lock`.
+3. The workflow is compiled to a WASM binary (`workflow.wasm`).
+4. The binary is exported back to the host.
+
+Because the build runs inside a pinned Docker image with a locked dependency tree, the same source always produces the same binary hash.
+
+## Learn more
+
+- [Deploying Workflows](/cre/guides/operations/deploying-workflows)
+- [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows)
+- [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)
+- [CRE CLI Workflow Reference](/cre/reference/cli/workflow)

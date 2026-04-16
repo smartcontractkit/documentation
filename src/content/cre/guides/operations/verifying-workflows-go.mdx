@@ -2,13 +2,20 @@
 section: cre
 date: Last Modified
 title: "Verifying Workflows"
+sdkLang: "go"
+pageId: "operations-verifying-workflows"
 metadata:
   description: "Learn how to verify workflow identity, validate workflows onchain in consumer contracts, and enable third-party verification using reproducible builds."
   datePublished: "2026-03-19"
-  lastModified: "2026-03-19"
+  lastModified: "2026-04-09"
 ---
 
 import { Aside } from "@components"
+
+<Aside type="note" title="Go">
+  This page covers workflow verification for Go workflows. For TypeScript workflows, see [Verifying Workflows
+  (TypeScript)](/cre/guides/operations/verifying-workflows-ts).
+</Aside>
 
 Workflow verification ensures the integrity and authenticity of your workflows across deployment, onchain execution, and third-party auditing. This guide explains how workflow IDs are computed, how to verify workflows in consumer contracts, and how to enable independent verification by third parties.
 
@@ -63,11 +70,9 @@ Follow these practices to ensure only authorized workflows can interact with you
 
 ## Third-party verification
 
-<Aside type="note" title="Go workflows only">
-  Reproducible builds are currently supported for Go workflows only. TypeScript reproducible builds are in development.
-</Aside>
-
 Third-party verification allows customers or auditors to independently confirm that a deployed workflow matches its source code. The deployer shares the workflow source, and the verifier uses the CRE CLI to compute the workflow hash and compare it against the onchain workflow ID.
+
+Go workflows are verifiable by default and do not require a template or Docker.
 
 ### Steps for the workflow developer
 
@@ -81,7 +86,7 @@ Third-party verification allows customers or auditors to independently confirm t
 
    Use the same toolchain string you build with; `go version` reports it (for example `go1.23.0 linux/amd64` → use `go1.23.0`).
 
-2. **Share your workflow source** with the customer. Provide a zip archive or repository link that includes all workflow files, including `.env.public`. Exclude `.env` files that contain private keys or secrets.
+2. **Share your workflow source** with the verifier. Provide a zip archive or repository link that includes all workflow files, including `.env.public`. Exclude `.env` files that contain private keys or secrets.
 
 ### Steps for the verifier
 
@@ -92,7 +97,7 @@ Third-party verification allows customers or auditors to independently confirm t
 3. **Run `cre workflow hash`** to compute the workflow hash:
 
    ```bash
-   cre workflow hash ./workflow-folder --public_key=0xYourDeployerAddress
+   cre workflow hash ./workflow-folder --public_key 0xYourDeployerAddress
    ```
 
    Replace `./workflow-folder` with the path to the workflow source and `0xYourDeployerAddress` with the deployer's public address.
