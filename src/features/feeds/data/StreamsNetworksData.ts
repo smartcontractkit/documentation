@@ -692,7 +692,7 @@ export const StreamsNetworksData: NetworkData[] = [
   },
   {
     network: "Stellar",
-    logoUrl: "/assets/chains/ethereum.svg",
+    logoUrl: "/assets/chains/stellar.svg",
     mainnet: {
       label: "Stellar Mainnet",
       verifierProxy: "CAKA3NBYPC6OBEUEGNIYGNYG3ES2GPQK736B5SR7ASGUXRDAKXI2JCQI",
