@@ -448,9 +448,25 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-04-10
+Last Updated: 2026-04-16
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.11.0 - April 16, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.11.0" target="_blank">CRE CLI version 1.11.0</a> is now available.**
+
+- **`cre registry list`**: New command that displays the workflow registries configured for your organization, including each registry's type and address. Run `cre registry list` after logging in to inspect which registries are available in your environment. See [Registry Commands](/cre/reference/cli/registry) for details.
+- **Paused workflow deploy warning**: When you run `cre workflow deploy` to update a workflow that is currently paused, the CLI now shows a warning after the update completes: `Your workflow is paused and has been updated`. This makes it easier to catch cases where you've pushed an update but won't see it run until you activate the workflow again.
+- **HTTP trigger payload path fix**: When simulating a workflow with an HTTP trigger, file paths passed to `--http-payload` are now resolved relative to the directory where you ran the command, rather than the workflow directory. If you run `cre workflow simulate ./my-workflow --http-payload ./payload.json`, the CLI now finds `payload.json` in your working directory as expected.
+- **Duplicate workflow deploy check**: Before registering a workflow, the CLI now checks whether the same binary and config are already registered, preventing redundant onchain transactions.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.10.0...v1.11.0)
 
 ## CLI v1.10.0 - April 10, 2026
 
@@ -7314,7 +7330,7 @@ See the [repository README](https://github.com/smartcontractkit/cre-gcp-predicti
 
 # CLI Reference
 Source: https://docs.chain.link/cre/reference/cli
-Last Updated: 2026-04-10
+Last Updated: 2026-04-16
 
 export const CRE_CLI_VERSION = VERSIONS["cre-cli"].LATEST
 
@@ -7403,6 +7419,16 @@ Manage secrets stored in the Vault DON for use in your workflows.
 - **`cre secrets list`** — List secret identifiers in a namespace
 
 [View secrets management commands →](/cre/reference/cli/secrets)
+
+***
+
+### Registry Commands
+
+Inspect the workflow registries available to your organization. A workflow registry is the system that tracks which workflows are registered to your organization and makes them available to the Chainlink DON for execution.
+
+- **`cre registry list`** — Display the registries configured for your organization, including type and on-chain address
+
+[View registry commands →](/cre/reference/cli/registry)
 
 ***
 
@@ -7800,7 +7826,7 @@ When you run this command, the CLI will:
 
 # Workflow Commands
 Source: https://docs.chain.link/cre/reference/cli/workflow
-Last Updated: 2026-04-02
+Last Updated: 2026-04-16
 
 The `cre workflow` commands manage workflows throughout their entire lifecycle, from local testing to deployment and ongoing management.
 
@@ -7874,7 +7900,7 @@ cre workflow simulate <workflow-name-or-path> [flags]
 | `-g, --engine-logs`       | Enable non-fatal engine logging                                                                                                                                                                                                                                                  |
 | `--non-interactive`       | Run without prompts; requires `--trigger-index` (see the line below) and inputs for the selected trigger type                                                                                                                                                                    |
 | `--trigger-index <int>`   | Selects which handler to run (0-based position). If your workflow has multiple handlers, `0` is the first, `1` is the second, etc. Required with `--non-interactive`                                                                                                             |
-| `--http-payload <string>` | HTTP trigger payload as JSON string or path to JSON file (with or without `@` prefix). For HTTP triggers only                                                                                                                                                                    |
+| `--http-payload <string>` | HTTP trigger payload as JSON string or path to a JSON file. File paths are resolved relative to the directory where you ran the command. For HTTP triggers only                                                                                                                  |
 | `--evm-tx-hash <string>`  | Transaction hash (`0x...`) containing the event that triggered your workflow. For EVM log triggers only                                                                                                                                                                          |
 | `--evm-event-index <int>` | Which log/event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For EVM log triggers only                                                                                                |
 | `--limits <string>`       | Production limits to enforce during simulation: `default` (embedded prod limits), a path to a limits JSON file (e.g. from `cre workflow limits export`), or `none` to disable. See [Testing Production Limits](/cre/guides/operations/understanding-limits) (default: `default`) |
@@ -7929,7 +7955,7 @@ cre workflow simulate <workflow-name-or-path> [flags]
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Deploys a workflow to the Workflow Registry contract. This command compiles your workflow, uploads the artifacts to the CRE Storage Service, and registers the workflow onchain.
+Deploys a workflow to the Workflow Registry — the onchain contract where workflows are enrolled so the Chainlink DON knows they exist and should run them. This command compiles your workflow, uploads the artifacts to the CRE Storage Service, and submits a registration transaction to the registry. Use [`cre registry list`](/cre/reference/cli/registry) to see which registry your organization is configured to use.
 
 **Usage:**
 
@@ -7976,6 +8002,11 @@ cre workflow deploy <workflow-name-or-path> [flags]
   # Deploy with the pre-built binary
   cre workflow deploy ./my-workflow --wasm ./my-workflow/binary.wasm --target production-settings
   ```
+
+
+<Aside type="note" title="Deploying over a paused workflow">
+  If you deploy an update to a workflow that is currently paused, the CLI will complete the update and then print a warning: `Your workflow is paused and has been updated`. The workflow remains paused after the update — run `cre workflow activate` to resume it.
+</Aside>
 
 For more details, see [Deploying Workflows](/cre/guides/operations/deploying-workflows).
 
@@ -8253,6 +8284,58 @@ The typical workflow lifecycle uses these commands in sequence:
 - [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows) — Managing workflow state
 - [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows) — Version management
 - [Deleting Workflows](/cre/guides/operations/deleting-workflows) — Cleanup and removal
+
+---
+
+# Registry Commands
+Source: https://docs.chain.link/cre/reference/cli/registry
+Last Updated: 2026-04-16
+
+The `cre registry` commands let you view and inspect the workflow registries available to your organization.
+
+## What is a workflow registry?
+
+A **workflow registry** is the system that tracks which workflows are registered to your CRE organization and makes them available to the DON (Decentralized Oracle Network) for execution. The standard registry is a smart contract on Ethereum Mainnet — when you run `cre workflow deploy`, the CLI submits a transaction to that contract recording your workflow's name, owner, and artifact URLs, and the DON reads from it to discover and execute your workflow.
+
+When you log in with `cre login`, the CLI fetches your organization's registry configuration from the CRE platform and caches it locally in `~/.cre/context.yaml`. `cre registry list` reads from that cache and shows which registries your organization has access to.
+
+
+<Aside type="note" title="Authentication required">
+  Running `cre registry` commands requires you to be logged in. Run `cre whoami` to verify your session, or `cre login` to authenticate. See [Logging in with the CLI](/cre/account/cli-login) for details.
+</Aside>
+
+
+<Aside type="note" title="Global flags">
+  All `cre` commands support [global flags](/cre/reference/cli#global-flags) like `--env`, `--target`, `--project-root`, and `--verbose`.
+</Aside>
+
+## `cre registry list`
+
+Displays the workflow registries configured for your organization, including each registry's label, ID, type, and on-chain address (where applicable). Registry data is sourced from `~/.cre/context.yaml`, which is fetched from the CRE platform when you run `cre login`.
+
+**Usage:**
+
+```bash
+cre registry list
+```
+
+**Example output:**
+
+```
+Registries available to your organization
+
+ethereum-mainnet (0x4Ac5...E7e5)
+  ID:   onchain:ethereum-mainnet
+  Type: on-chain
+  Addr: 0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5
+```
+
+If no registries are found for your environment, the command prints a warning and exits cleanly.
+
+## Learn more
+
+- [Deploying Workflows](/cre/guides/operations/deploying-workflows) — End-to-end deployment guide
+- [Authentication](/cre/reference/cli/authentication) — Managing your CLI login session and tenant context cache
 
 ---
 
@@ -15421,7 +15504,7 @@ You can have a working CRE workflow running locally in minutes:
 
 # Project Configuration
 Source: https://docs.chain.link/cre/reference/project-configuration-ts
-Last Updated: 2026-03-17
+Last Updated: 2026-04-16
 
 This page explains how to manage configuration within Chainlink Runtime Environment (CRE) projects. It covers the standard project structure, the roles and usage of the configuration files (`project.yaml` and `workflow.yaml`), and the concept of **targets** for handling environment-specific settings.
 

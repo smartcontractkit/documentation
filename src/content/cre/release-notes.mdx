@@ -5,12 +5,28 @@ date: Last Modified
 metadata:
   description: "Discover what's new in CRE: latest features, changes, and improvements in each release of the Chainlink Runtime Environment."
   datePublished: "2025-11-04"
-  lastModified: "2026-04-10"
+  lastModified: "2026-04-16"
 ---
 
 import { Aside } from "@components"
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.11.0 - April 16, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.11.0" target="_blank">CRE CLI version 1.11.0</a> is now available.**
+
+- **`cre registry list`**: New command that displays the workflow registries configured for your organization, including each registry's type and address. Run `cre registry list` after logging in to inspect which registries are available in your environment. See [Registry Commands](/cre/reference/cli/registry) for details.
+- **Paused workflow deploy warning**: When you run `cre workflow deploy` to update a workflow that is currently paused, the CLI now shows a warning after the update completes: `Your workflow is paused and has been updated`. This makes it easier to catch cases where you've pushed an update but won't see it run until you activate the workflow again.
+- **HTTP trigger payload path fix**: When simulating a workflow with an HTTP trigger, file paths passed to `--http-payload` are now resolved relative to the directory where you ran the command, rather than the workflow directory. If you run `cre workflow simulate ./my-workflow --http-payload ./payload.json`, the CLI now finds `payload.json` in your working directory as expected.
+- **Duplicate workflow deploy check**: Before registering a workflow, the CLI now checks whether the same binary and config are already registered, preventing redundant onchain transactions.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.10.0...v1.11.0)
 
 ## CLI v1.10.0 - April 10, 2026
 
