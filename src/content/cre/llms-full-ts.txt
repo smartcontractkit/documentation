@@ -5985,15 +5985,24 @@ build: typecheck
 Source: https://docs.chain.link/cre/guides/operations/custom-rust-plugins-ts
 Last Updated: 2026-04-20
 
-TypeScript workflows run inside a Javy-compiled WebAssembly binary. By default, that binary includes only the CRE SDK plugin layer, which includes the Rust code that bridges your TypeScript to CRE node capabilities. Custom Rust plugins let you inject your own Rust crates into that same layer, exposing new functionality as typed globals your TypeScript workflow can call directly.
+TypeScript workflows run inside a [Javy](https://github.com/bytecodealliance/javy)-compiled <a href="https://webassembly.org/" target="_blank" rel="noopener noreferrer">WebAssembly</a> binary. By default, that binary includes the CRE SDK's built-in Rust plugin — pre-compiled to WASM and published with the SDK — which bridges your TypeScript to CRE node capabilities. You do not need [Rust](https://www.rust-lang.org/) installed to write and compile standard workflows.
+
+Custom Rust plugins let you extend that plugin layer with your own Rust logic, exposing new functionality as typed globals your TypeScript workflow can call directly.
+
+### How the two modes work
+
+The SDK always produces a single compiled plugin WASM that is passed to [Javy](https://github.com/bytecodealliance/javy) at build time. When you include custom extensions, they are merged with the SDK's own Rust plugin code before that final WASM is produced. The mechanism for that merge differs depending on which mode you use:
+
+- **`--plugin` (prebuilt)**: You provide a fully compiled `.plugin.wasm` that already contains all extensions merged together. No Rust toolchain required at workflow build time. Best for consuming a third-party Rust SDK (such as a ZK proof verifier) without managing a Rust compiler.
+- **`--cre-exports` (source)**: You provide one or more Rust crate directories. The SDK compiles each crate, merges them with its own plugin code, and produces the final combined plugin at build time. Requires [Rust](https://www.rust-lang.org/) installed locally. Best for writing your own Rust logic or combining multiple extensions.
 
 ## When to use custom Rust plugins
 
 Use a custom Rust plugin when you need logic that is impractical or impossible to express in TypeScript running inside QuickJS:
 
-- **Performance-critical computation**: Rust running natively in WASM is dramatically faster than interpreted JavaScript for anything compute-heavy, like cryptographic operations, numeric processing, data encoding
-- **Native crate access**: Pull in any Rust library from crates.io that targets `wasm32-wasip1`. This unlocks algorithms and formats the SDK doesn't expose (custom signature schemes, binary codecs, etc.)
-- **Custom protocol verification**: Verify offchain reports or proofs that require native crypto not available in QuickJS
+- **Cryptographic proof verification**: Verify ZK proofs, Risc-0 receipts, or other cryptographic attestations using Rust crates (e.g., `risc0-zkvm`) that have no JavaScript equivalent
+- **Third-party Rust SDKs**: Integrate a Rust SDK that provides functionality not natively available in TypeScript — for example, a custom offchain report verifier published by a data provider
+- **Performance-critical computation**: Rust running natively in WASM is significantly faster than interpreted JavaScript in QuickJS for compute-heavy operations like encoding, hashing, or numeric processing
 
 <Aside type="note" title="QuickJS limitations">
   Not all Node.js APIs are available in QuickJS. For example, `node:crypto` is unsupported. If a library you need
@@ -6090,6 +6099,12 @@ clean:
 ```
 
 `--plugin` tells `cre-compile` to link the prebuilt plugin WASM into the final binary instead of the default CRE SDK plugin.
+
+<Aside type="caution" title="Version compatibility">
+  A prebuilt `.plugin.wasm` must be compiled against a version of `@chainlink/cre-sdk-javy-plugin` that is **less than
+  or equal to** the version included in your SDK. Check the plugin package's documentation for its `cre-sdk-javy-plugin`
+  peer dependency version and verify it is compatible with your installed SDK version before using it.
+</Aside>
 
 ## Mode 2: Source extensions (`--cre-exports`)
 
