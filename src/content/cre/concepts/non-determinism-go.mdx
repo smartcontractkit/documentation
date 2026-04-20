@@ -7,7 +7,7 @@ date: Last Modified
 metadata:
   description: "Learn how to avoid non-deterministic behaviors in CRE Go workflows that prevent nodes from reaching consensus."
   datePublished: "2025-11-04"
-  lastModified: "2026-02-03"
+  lastModified: "2026-04-20"
 ---
 
 import { Aside } from "@components"
@@ -25,23 +25,50 @@ The failure pattern: Code diverges → Different request IDs → No quorum → W
 
 ## Quick reference: Common pitfalls
 
-| Don't Use                        | Use Instead                                  |
-| -------------------------------- | -------------------------------------------- |
-| Direct map iteration             | Sort keys first, then iterate                |
-| `encoding/json` v2               | `encoding/json` v1                           |
-| Protocol Buffers `proto.Marshal` | `proto.MarshalOptions{Deterministic: true}`  |
-| `select` with multiple channels  | Process channels in deterministic order      |
-| `time.Now()` or `time` package   | `runtime.Now()`                              |
-| Go's `rand` package              | `runtime.Rand()`                             |
-| LLM free-text responses          | Structured output with field-level consensus |
+| Don't Use                        | Use Instead                                          |
+| -------------------------------- | ---------------------------------------------------- |
+| Direct map iteration             | Sort keys first, then iterate (`cre.OrderedEntries`) |
+| `encoding/json` v2               | `encoding/json` v1                                   |
+| Protocol Buffers `proto.Marshal` | `proto.MarshalOptions{Deterministic: true}`          |
+| `select` with multiple channels  | Process channels in deterministic order              |
+| `time.Now()` or `time` package   | `runtime.Now()`                                      |
+| Go's `rand` package              | `runtime.Rand()`                                     |
+| LLM free-text responses          | Structured output with field-level consensus         |
 
 ## 1. Map iteration
 
 Go maps are **designed to iterate in random order** for security reasons. Each time you iterate over a map, the order may be different. This means different nodes will process items in different sequences, leading to divergent capability calls and consensus failure.
 
-**The problem:** Direct map iteration produces unpredictable order across nodes.
+Use `cre.OrderedEntries` from the SDK to iterate over map entries in sorted key order. It handles the sorting for you in a single range expression:
 
-**The solution:** Extract map keys, sort them, then iterate in the sorted order. This ensures all nodes process items in the same sequence.
+```go
+import "github.com/smartcontractkit/cre-sdk-go/cre"
+
+prices := map[string]float64{"BTC": 50000, "ETH": 3000, "SOL": 100}
+
+for token, price := range cre.OrderedEntries(prices) {
+  processPrice(token, price)
+}
+```
+
+For maps with keys that don't implement `cmp.Ordered` (such as structs), use `cre.OrderedEntriesFunc` with a custom comparator:
+
+```go
+import (
+  "cmp"
+  "github.com/smartcontractkit/cre-sdk-go/cre"
+)
+
+type Asset struct{ symbol string }
+
+assets := map[Asset]float64{{symbol: "BTC"}: 50000, {symbol: "ETH"}: 3000}
+
+for asset, price := range cre.OrderedEntriesFunc(assets, func(a, b Asset) int {
+  return cmp.Compare(a.symbol, b.symbol)
+}) {
+  processPrice(asset, price)
+}
+```
 
 ## 2. JSON and data serialization
 
@@ -93,7 +120,7 @@ Large Language Models (LLMs) generate different responses for the same prompt, e
 
 ### Do:
 
-- Sort map keys before iteration
+- Sort map keys before iteration (or use `cre.OrderedEntries` / `cre.OrderedEntriesFunc`)
 - Use `encoding/json` v1 for deterministic JSON serialization
 - Use `proto.MarshalOptions{Deterministic: true}` for Protocol Buffers
 - Process channels in a fixed, deterministic order

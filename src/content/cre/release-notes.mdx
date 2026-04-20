@@ -5,12 +5,30 @@ date: Last Modified
 metadata:
   description: "Discover what's new in CRE: latest features, changes, and improvements in each release of the Chainlink Runtime Environment."
   datePublished: "2025-11-04"
-  lastModified: "2026-04-16"
+  lastModified: "2026-04-20"
 ---
 
 import { Aside } from "@components"
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## TS SDK v1.6.0 - April 20, 2026
+
+**TypeScript SDK version 1.6.0** adds custom Rust plugin support and non-determinism build warnings.
+
+- **Custom Rust plugin support**: You can now inject custom Rust logic into your TypeScript workflows using the new `--plugin` flag in `cre-compile`. Provide a pre-built `.plugin.wasm` file compiled from your own Rust crate and it will be linked into your workflow binary. The SDK ships example packages (`@chainlink/cre-rust-inject-alpha`, `@chainlink/cre-rust-inject-beta`) and a prebuilt plugin example to help you get started. Use `createExtensionAccessor` from `@chainlink/cre-sdk-javy-plugin/runtime/validate-extension` to access your Rust extensions from TypeScript with Zod-validated types. See [Custom Rust Plugins](/cre/guides/operations/custom-rust-plugins-ts) for a full walkthrough.
+- **Non-determinism build warnings**: The SDK now performs static analysis of your workflow at compile time and emits warnings when it detects potentially non-deterministic patterns such as `Date.now()`, `Math.random()`, `Promise.race()`, and similar constructs. These warnings appear during `cre workflow build` and `cre workflow simulate` to help you catch consensus issues before deployment.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.5.0...v1.6.0)
+
+## Go SDK v1.8.0 - April 17, 2026
+
+**Go SDK version 1.8.0** adds SDK helpers for deterministic map iteration and report verification support.
+
+- **`cre.OrderedEntries` and `cre.OrderedEntriesFunc`**: New helper functions in the `cre` package that return a sorted iterator over map entries. `cre.OrderedEntries` works with any map whose keys implement `cmp.Ordered` (strings, integers, etc.). `cre.OrderedEntriesFunc` accepts a custom comparator for maps with struct or other non-ordered keys. Use these in place of direct map iteration to guarantee consistent ordering across DON nodes. See [Map iteration](/cre/concepts/non-determinism-go#1-map-iteration) for details and examples.
+- **Report verification**: Added report verification support to the SDK.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.7.0...v1.8.0)
 
 ## CLI v1.11.0 - April 16, 2026
 
