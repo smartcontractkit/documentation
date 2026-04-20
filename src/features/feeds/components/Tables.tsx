@@ -272,11 +272,11 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
   // have its address hidden and show a contact email instead.
   const shouldHideAddress = metadata.docs?.productSubType === "calculatedPrice"
 
-  // Stablecoin price-bound note: only shown for stablecoin feeds with a meaningful cap
-  const isStablecoin = metadata.docs?.assetSubClass === "Stablecoin"
-  const stablecoinBound = isStablecoin
-    ? getMaxSubmissionValueBound(metadata.maxSubmissionValue, metadata.decimals)
-    : null
+  // Stablecoin price-bound note: only when the source marks the feed as explicitly capped
+  const stablecoinBound =
+    metadata.docs?.stablecoinCapped === true
+      ? getMaxSubmissionValueBound(metadata.maxSubmissionValue, metadata.decimals)
+      : null
 
   const label = isUSGovernmentMacroeconomicData ? "Category" : "Asset type"
   const value = isUSGovernmentMacroeconomicData
@@ -527,11 +527,11 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
   // (already includes deprecating status and Supabase risk tier)
   const finalTier = metadata.finalCategory || metadata.feedCategory
 
-  // Stablecoin price-bound note for Stablecoin Stability Assessment feeds
-  const isStablecoinAssessment = metadata.docs?.assetClass === "Stablecoin Stability Assessment"
-  const stablecoinBound = isStablecoinAssessment
-    ? getMaxSubmissionValueBound(metadata.maxSubmissionValue, metadata.decimals)
-    : null
+  // Stablecoin price-bound note: only when the source marks the feed as explicitly capped
+  const stablecoinBound =
+    metadata.docs?.stablecoinCapped === true
+      ? getMaxSubmissionValueBound(metadata.maxSubmissionValue, metadata.decimals)
+      : null
 
   return (
     <tr>
