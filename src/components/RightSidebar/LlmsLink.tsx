@@ -10,6 +10,7 @@ interface LlmsLinkProps {
 
 // Map section slugs to display names
 const SECTION_DISPLAY_NAMES: Record<string, string> = {
+  ace: "ACE",
   vrf: "VRF",
   ccip: "CCIP",
   "data-feeds": "Data Feeds",

@@ -1,0 +1,56 @@
+---
+section: ace
+title: "BypassPolicy"
+date: Last Modified
+metadata:
+  description: "BypassPolicy reference: an allowlist policy that immediately allows listed senders to bypass all remaining policies in the chain. Configuration, runtime behavior, and use cases."
+  datePublished: "2026-04-20"
+  lastModified: "2026-04-20"
+---
+
+import { Aside } from "@components"
+
+The BypassPolicy gives privileged addresses a fast path through the policy chain. If _all_ addresses extracted from the transaction are on the bypass list, the policy immediately allows the transaction and skips every remaining policy in the chain. If any address is not on the list, the policy returns `Continue` and lets subsequent policies decide.
+
+This is the only built-in policy that returns `Allowed`.
+
+<Aside type="tip" title="Place this policy first">
+  Because the BypassPolicy short-circuits the entire chain when it matches, place it at the beginning of your policy
+  chain. This way, privileged addresses skip volume limits, identity checks, and all other restrictions in a single
+  step.
+</Aside>
+
+## Configuration
+
+### Address allowlist
+
+The bypass list defines which addresses can skip the rest of the policy chain. The list starts empty at deployment and must be populated afterward.
+
+Each address is added or removed individually. When a protected function is called, the extractor provides one or more addresses from the transaction. Which addresses the policy receives depends on the [mapper configuration](/ace/concepts/policy-management#worked-example-erc-20-transfer). All of those addresses must be on the bypass list for the fast path to activate — if even one address is missing, the policy returns `Continue` and normal policy evaluation continues.
+
+## Runtime behavior
+
+The policy expects a variable number of parameters from the extractor, each an address.
+
+- **`run()`** — Returns `Allowed` if all provided addresses are on the bypass list, skipping all subsequent policies. Returns `Continue` otherwise.
+- **`postRun()`** — No state changes.
+
+## API reference
+
+### Setter functions
+
+- **`allowAddress(address account)`** — Adds an address to the bypass list. Reverts if the address is already listed.
+- **`disallowAddress(address account)`** — Removes an address from the bypass list. Reverts if the address is not listed.
+
+### View functions
+
+- **`addressAllowed(address account)`** — Returns `true` if the address is on the bypass list.
+
+## Use cases
+
+- **Privileged access** — Let administrators or system contracts bypass compliance checks entirely.
+- **Layered permissions** — Place at the top of a policy chain so that listed addresses skip volume limits, identity checks, and other restrictions.
+
+## Source
+
+[BypassPolicy.sol](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/src/policies/BypassPolicy.sol)
