@@ -65,6 +65,89 @@ export type SectionEntry = {
  * }
  */
 export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
+  [SIDEBAR_SECTIONS.ACE]: [
+    {
+      section: "Chainlink ACE",
+      contents: [
+        { title: "Overview", url: "ace" },
+        { title: "Beta Scope", url: "ace/beta-scope" },
+        { title: "Supported Networks", url: "ace/supported-networks" },
+        { title: "Release Notes", url: "ace/release-notes" },
+      ],
+    },
+    {
+      section: "Core Concepts",
+      contents: [
+        { title: "Architecture", url: "ace/concepts/architecture" },
+        { title: "Key Terms", url: "ace/concepts/key-terms" },
+        {
+          title: "Policy Management",
+          url: "ace/concepts/policy-management",
+          children: [{ title: "Policy Ordering & Composition", url: "ace/concepts/policy-ordering" }],
+        },
+        { title: "Cross-Chain Identity", url: "ace/concepts/cross-chain-identity" },
+        { title: "Reporting", url: "ace/concepts/reporting" },
+        { title: "Off-Chain Policy Execution", url: "ace/concepts/off-chain-policies" },
+      ],
+    },
+    {
+      section: "Getting Started",
+      contents: [{ title: "Get Access", url: "ace/getting-started" }],
+    },
+    {
+      section: "Reference",
+      contents: [
+        {
+          title: "Policy Management",
+          children: [
+            { title: "Core Contracts", url: "ace/reference/policy-management-contracts" },
+            {
+              title: "Policy Library",
+              url: "ace/reference/policy-library",
+              children: [
+                { title: "AllowPolicy", url: "ace/reference/policy-library/allow-policy" },
+                { title: "BypassPolicy", url: "ace/reference/policy-library/bypass-policy" },
+                {
+                  title: "CertifiedActionDONValidatorPolicy",
+                  url: "ace/reference/policy-library/certified-action-don-validator-policy",
+                },
+                {
+                  title: "CredentialRegistryIdentityValidatorPolicy",
+                  url: "ace/reference/policy-library/credential-registry-identity-validator-policy",
+                },
+                { title: "IntervalPolicy", url: "ace/reference/policy-library/interval-policy" },
+                { title: "MaxPolicy", url: "ace/reference/policy-library/max-policy" },
+                {
+                  title: "OnlyAuthorizedSenderPolicy",
+                  url: "ace/reference/policy-library/only-authorized-sender-policy",
+                },
+                { title: "PausePolicy", url: "ace/reference/policy-library/pause-policy" },
+                { title: "RejectPolicy", url: "ace/reference/policy-library/reject-policy" },
+                {
+                  title: "RoleBasedAccessControlPolicy",
+                  url: "ace/reference/policy-library/role-based-access-control-policy",
+                },
+                { title: "SecureMintPolicy", url: "ace/reference/policy-library/secure-mint-policy" },
+                { title: "VolumePolicy", url: "ace/reference/policy-library/volume-policy" },
+                { title: "VolumeRatePolicy", url: "ace/reference/policy-library/volume-rate-policy" },
+              ],
+            },
+          ],
+        },
+        {
+          title: "Cross-Chain Identity",
+          children: [{ title: "Identity Contracts", url: "ace/reference/cross-chain-identity-contracts" }],
+        },
+        {
+          title: "APIs",
+          children: [
+            { title: "Coordinator API", url: "ace/reference/api/coordinator" },
+            { title: "Reporting API", url: "ace/reference/api/reporting" },
+          ],
+        },
+      ],
+    },
+  ],
   [SIDEBAR_SECTIONS.CRE]: [
     {
       section: "Chainlink CRE",

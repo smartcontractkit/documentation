@@ -1,0 +1,94 @@
+---
+section: ace
+title: "IntervalPolicy"
+date: Last Modified
+metadata:
+  description: "IntervalPolicy reference: restricts transactions to specific time slots within a repeating cycle — business hours, weekdays, maintenance windows. Configuration, runtime behavior, and use cases."
+  datePublished: "2026-04-20"
+  lastModified: "2026-04-20"
+---
+
+The IntervalPolicy restricts transaction execution to specific time slots within a repeating cycle. It divides time into fixed-length slots, groups those slots into a cycle, and only allows transactions when the current slot falls within a configured range. Transactions attempted outside the allowed window are rejected.
+
+## Configuration
+
+All properties are set when the policy is first deployed and can be updated afterward by the policy owner.
+
+### Start and end slots
+
+The start slot and end slot define the allowed window within each cycle. The start slot is **inclusive** and the end slot is **exclusive** — a transaction is permitted when the current slot is at or after the start and strictly before the end.
+
+For example, with a start slot of `9` and an end slot of `17`, slots 9 through 16 are allowed while slots 0-8 and 17-23 are blocked.
+
+The start slot must always be strictly less than the end slot.
+
+### Cycle parameters
+
+The cycle parameters control how time is divided into slots and repeated:
+
+- **Slot duration** — The length of each slot in seconds. For example, `3600` for one-hour slots or `86400` for one-day slots.
+- **Cycle size** — The total number of slots in one cycle. For example, `24` for a daily cycle using hourly slots, or `7` for a weekly cycle using daily slots.
+- **Cycle offset** — Shifts the slot numbering within the cycle. Use this to align the cycle with a specific starting point (for example, adjusting for time zones or aligning day numbering so that slot `1` corresponds to Monday). Must be less than the cycle size.
+
+## How the slot calculation works
+
+The policy computes the current slot from the block timestamp:
+
+```solidity
+currentSlot = ((block.timestamp / slotDuration) % cycleSize + cycleOffset) % cycleSize
+```
+
+A transaction is permitted only if `currentSlot` falls within `[startSlot, endSlot)`.
+
+## Configuration examples
+
+**Daily business hours (9 AM - 5 PM UTC):**
+
+| Property      | Value         |
+| ------------- | ------------- |
+| Slot duration | 3600 (1 hour) |
+| Cycle size    | 24            |
+| Cycle offset  | 0             |
+| Start slot    | 9             |
+| End slot      | 17            |
+
+**Weekday operations (Monday - Friday):**
+
+| Property      | Value                   |
+| ------------- | ----------------------- |
+| Slot duration | 86400 (1 day)           |
+| Cycle size    | 7                       |
+| Cycle offset  | 0                       |
+| Start slot    | 1 (Monday)              |
+| End slot      | 6 (Saturday, exclusive) |
+
+## Runtime behavior
+
+This policy does not use extracted parameters. It relies entirely on `block.timestamp` and its configured cycle.
+
+- **`run()`** — Reverts if the current slot is outside `[startSlot, endSlot)`. Returns `Continue` otherwise.
+- **`postRun()`** — No state changes.
+
+## API reference
+
+### Setter functions
+
+- **`setStartSlot(uint256 startSlot)`** — Updates the start of the allowed window (inclusive). Must be strictly less than the current end slot.
+- **`setEndSlot(uint256 endSlot)`** — Updates the end of the allowed window (exclusive). Must be strictly greater than the current start slot and less than or equal to the cycle size.
+- **`setCycleParameters(uint256 slotDuration, uint256 cycleSize, uint256 cycleOffset)`** — Updates the slot duration (in seconds), the number of slots per cycle, and the cycle offset. Slot duration must be greater than zero. Cycle size must be greater than or equal to the current end slot. Cycle offset must be less than the cycle size.
+
+### View functions
+
+- **`getStartSlot()`** — Returns the current start slot (inclusive).
+- **`getEndSlot()`** — Returns the current end slot (exclusive).
+- **`getCycleParameters()`** — Returns the slot duration, cycle size, and cycle offset.
+
+## Use cases
+
+- **Operating hours** — Restrict transactions to business hours.
+- **Weekly schedules** — Allow operations only on weekdays.
+- **Maintenance windows** — Automatically block transactions outside scheduled operating periods.
+
+## Source
+
+[IntervalPolicy.sol](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/src/policies/IntervalPolicy.sol)

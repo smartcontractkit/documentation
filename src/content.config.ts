@@ -3,6 +3,7 @@ import { glob } from "astro/loaders"
 import { sectionValues } from "./config/sidebarSections.js"
 
 enum Products {
+  ACE = "ace",
   CRE = "cre",
   CCIP = "ccip",
   AUTOMATION = "automation",
@@ -16,6 +17,7 @@ enum Products {
 }
 
 export const productsInfo: Record<Products, { name: string; slug: string }> = {
+  ace: { name: "ACE", slug: "ace" },
   cre: { name: "CRE", slug: "cre" },
   ccip: { name: "CCIP", slug: "ccip" },
   automation: { name: "Automation", slug: "chainlink-automation" },
@@ -214,6 +216,14 @@ const datalinkCollection = defineCollection({
   schema: baseFrontmatter,
 })
 
+const aceCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/ace",
+    pattern: "**/*.md?(x)",
+  }),
+  schema: baseFrontmatter,
+})
+
 const creCollection = defineCollection({
   loader: glob({
     base: "./src/content/cre",
@@ -277,6 +287,7 @@ const anyApiCollection = defineCollection({
  * -------------------------- */
 
 export const collections = {
+  ace: aceCollection,
   ccip: ccipCollection,
   "data-feeds": dataFeedsCollection,
   "chainlink-automation": chainlinkAutomationCollection,
