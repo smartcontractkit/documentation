@@ -16,6 +16,8 @@ import datalinkLogo from "../../../assets/product-logos/datalink-logo.svg"
 import datalinkShape from "../../../assets/product-logos/datalink-shape.svg"
 import creLogo from "../../../assets/product-logos/cre-logo.svg"
 import creShape from "../../../assets/product-logos/cre-shape.svg"
+import aceLogo from "../../../assets/product-logos/ace-logo.svg"
+import aceShape from "../../../assets/product-logos/ace-shape.svg"
 import { ProductCardProps } from "../components/ProductCard.tsx"
 
 const baseChains = [
@@ -105,6 +107,13 @@ export const evmProducts = [
       { id: "avalanche", title: "Avalanche" },
       { id: "base", title: "Base" },
     ],
+  },
+  {
+    title: "ACE",
+    description: "Programmable, cross-chain compliance for EVM smart contracts.",
+    docsLandingLink: "/ace",
+    image: aceLogo,
+    shape: aceShape,
   },
   {
     title: "Functions",
