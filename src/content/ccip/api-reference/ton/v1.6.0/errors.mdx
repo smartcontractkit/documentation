@@ -1,0 +1,170 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.6.0 TON Errors API Reference"
+metadata:
+  description: "API documentation for CCIP error codes on TON, including native TVM exit codes and per-contract error codes."
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## Errors
+
+CCIP contracts on TON use the TVM exit code system. Each contract has a **facility ID** that namespaces its errors. Contract-level errors are computed as `FACILITY_ID × 100 + offset`.
+
+---
+
+## Native TVM Exit Codes
+
+TVM itself defines a set of standard exit codes that can occur before your contract code even runs (e.g., insufficient gas, cell deserialization failure). These are not CCIP-specific. See the [TON documentation](https://docs.ton.org/tvm/exit-codes) for the complete list.
+
+Common native exit codes you may encounter:
+
+| Exit Code            | Name                               | Description                                           |
+| -------------------- | ---------------------------------- | ----------------------------------------------------- |
+| <nobr>`0`</nobr>     | Success                            | Transaction executed successfully.                    |
+| <nobr>`2`</nobr>     | Stack underflow                    | Not enough values on the stack.                       |
+| <nobr>`3`</nobr>     | Stack overflow                     | Too many values pushed onto the stack.                |
+| <nobr>`4`</nobr>     | Integer overflow                   | Integer value out of range.                           |
+| <nobr>`5`</nobr>     | Integer out of expected range      | Integer out of expected range.                        |
+| <nobr>`6`</nobr>     | Invalid opcode                     | Undefined or invalid TVM instruction.                 |
+| <nobr>`7`</nobr>     | Type check error                   | Primitive type mismatch.                              |
+| <nobr>`8`</nobr>     | Cell overflow                      | Cell builder: writing too many bits or references.    |
+| <nobr>`9`</nobr>     | Cell underflow                     | Cell slice: reading more bits or refs than available. |
+| <nobr>`10`</nobr>    | Dictionary error                   | Invalid dictionary operation.                         |
+| <nobr>`13`</nobr>    | Out of gas                         | Execution ran out of gas (TON).                       |
+| <nobr>`32`</nobr>    | Action list is invalid             | Invalid action list after execution.                  |
+| <nobr>`34`</nobr>    | Action is invalid or not supported | Specific action unsupported.                          |
+| <nobr>`37`</nobr>    | Not enough TON                     | Insufficient balance to send the required amount.     |
+| <nobr>`38`</nobr>    | Not enough extra-currencies        | Insufficient extra-currency balance.                  |
+| <nobr>`65535`</nobr> | Unknown opcode                     | Unhandled message opcode in the contract.             |
+
+---
+
+## Router Errors
+
+**Facility ID:** `571` — errors start at `57100`
+
+These errors occur when sending a `Router_CCIPSend` or `Router_GetValidatedFee` message.
+
+```tolk
+enum Router_Error {
+    DestChainNotEnabled = 57100
+    SourceChainNotEnabled   // 57101
+    SenderIsNotOffRamp      // 57102
+    OffRampNotSetForSelector // 57103
+    OffRampAddressMismatch  // 57104
+    SubjectCursed           // 57105
+    NotOnRamp               // 57106
+    MissingTokenAmounts     // 57107
+    NoMultiTokenTransfers   // 57108
+    InsufficientFee         // 57109
+}
+```
+
+| Exit Code            | Symbol                               | Description                                                                                                           |
+| -------------------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| <nobr>`57100`</nobr> | <nobr>`DestChainNotEnabled`</nobr>   | The `destChainSelector` is not configured on this Router. Check that you are using the correct chain selector.        |
+| <nobr>`57101`</nobr> | <nobr>`SourceChainNotEnabled`</nobr> | The source chain is not enabled on the OffRamp.                                                                       |
+| <nobr>`57102`</nobr> | <nobr>`SenderIsNotOffRamp`</nobr>    | A `Router_RouteMessage` was sent by an address that is not the expected OffRamp.                                      |
+| <nobr>`57105`</nobr> | <nobr>`SubjectCursed`</nobr>         | The transfer is blocked because the source or destination chain has been cursed by the Risk Management Network (RMN). |
+| <nobr>`57108`</nobr> | <nobr>`NoMultiTokenTransfers`</nobr> | Token transfers are not yet supported on TON. Pass an empty `tokenAmounts` cell.                                      |
+| <nobr>`57109`</nobr> | <nobr>`InsufficientFee`</nobr>       | The TON value attached to the message is below the required minimum. Increase the attached value.                     |
+
+---
+
+## OnRamp Errors
+
+**Facility ID:** `134` — errors start at `13400`
+
+These errors occur during OnRamp processing of a CCIP send.
+
+```tolk
+enum Error {
+    UnknownDestChainSelector = 13400
+    Unauthorized            // 13401
+    SenderNotAllowed        // 13402
+    InvalidConfig           // 13403
+    UnknownToken            // 13404
+    InsufficientValue       // 13405
+}
+```
+
+| Exit Code            | Symbol                                  | Description                                                                             |
+| -------------------- | --------------------------------------- | --------------------------------------------------------------------------------------- |
+| <nobr>`13400`</nobr> | <nobr>`UnknownDestChainSelector`</nobr> | The destination chain selector is not registered on the OnRamp.                         |
+| <nobr>`13401`</nobr> | <nobr>`Unauthorized`</nobr>             | The caller is not authorized to perform this operation.                                 |
+| <nobr>`13402`</nobr> | <nobr>`SenderNotAllowed`</nobr>         | The sender allowlist is enabled for this destination chain and the sender is not on it. |
+| <nobr>`13405`</nobr> | <nobr>`InsufficientValue`</nobr>        | The message value is below what the OnRamp requires for processing.                     |
+
+---
+
+## FeeQuoter Errors
+
+**Facility ID:** `344` — errors start at `34400`
+
+These errors occur during fee validation. They surface when the Router forwards your `Router_CCIPSend` to the FeeQuoter, or when you call `validatedFeeCell` directly.
+
+```tolk
+enum FeeQuoter_Error {
+    UnsupportedChainFamilySelector = 34400
+    GasLimitTooHigh                 // 34401
+    ExtraArgOutOfOrderExecutionMustBeTrue // 34402
+    InvalidExtraArgsData            // 34403
+    UnsupportedNumberOfTokens       // 34404
+    InvalidEVMReceiverAddress       // 34405
+    Invalid32ByteReceiverAddress    // 34406
+    MsgDataTooLarge                 // 34411
+    StaleGasPrice                   // 34412
+    DestChainNotEnabled             // 34413
+    FeeTokenNotSupported            // 34414
+    TokenTransfersNotSupported      // 34419
+    MessageFeeTooHigh               // 34427
+}
+```
+
+| Exit Code            | Symbol                                               | Description                                                                                                                                                |
+| -------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <nobr>`34400`</nobr> | <nobr>`UnsupportedChainFamilySelector`</nobr>        | The destination chain family (e.g., EVM, SVM) is not recognized. Check `extraArgs` encoding.                                                               |
+| <nobr>`34401`</nobr> | <nobr>`GasLimitTooHigh`</nobr>                       | The `gasLimit` in `extraArgs` exceeds the maximum configured for the destination chain.                                                                    |
+| <nobr>`34402`</nobr> | <nobr>`ExtraArgOutOfOrderExecutionMustBeTrue`</nobr> | `allowOutOfOrderExecution` must be `true` for this destination chain.                                                                                      |
+| <nobr>`34403`</nobr> | <nobr>`InvalidExtraArgsData`</nobr>                  | The `extraArgs` cell could not be decoded. Check encoding with [`buildExtraArgsForEVM`](/ccip/api-reference/ton/starter-kit-helpers#buildextraargsforevm). |
+| <nobr>`34405`</nobr> | <nobr>`InvalidEVMReceiverAddress`</nobr>             | The EVM receiver address is invalid (e.g., zero address).                                                                                                  |
+| <nobr>`34406`</nobr> | <nobr>`Invalid32ByteReceiverAddress`</nobr>          | The receiver address must be exactly 32 bytes.                                                                                                             |
+| <nobr>`34411`</nobr> | <nobr>`MsgDataTooLarge`</nobr>                       | The `data` payload exceeds the maximum allowed size for the destination chain.                                                                             |
+| <nobr>`34412`</nobr> | <nobr>`StaleGasPrice`</nobr>                         | The gas price data on the FeeQuoter is stale and cannot be used for fee calculation.                                                                       |
+| <nobr>`34413`</nobr> | <nobr>`DestChainNotEnabled`</nobr>                   | The destination chain is not enabled on this FeeQuoter.                                                                                                    |
+| <nobr>`34414`</nobr> | <nobr>`FeeTokenNotSupported`</nobr>                  | The specified fee token is not supported. Use native TON.                                                                                                  |
+| <nobr>`34419`</nobr> | <nobr>`TokenTransfersNotSupported`</nobr>            | Token transfers are not yet supported on TON. Pass an empty `tokenAmounts` cell.                                                                           |
+| <nobr>`34427`</nobr> | <nobr>`MessageFeeTooHigh`</nobr>                     | The calculated fee exceeds the maximum fee per message allowed by the FeeQuoter.                                                                           |
+
+---
+
+## Receiver Errors
+
+**Facility ID:** `54` — hardcoded error values
+
+These errors are thrown by the `validateAndConfirm` helper and the `minimal_receiver` example when validating incoming `Receiver_CCIPReceive` messages.
+
+```tolk
+enum Receiver_Error {
+    Unauthorized = 5400
+    LowValue     // 5401
+}
+```
+
+| Exit Code           | Symbol                      | Description                                                                                                                                                                                        |
+| ------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <nobr>`5400`</nobr> | <nobr>`Unauthorized`</nobr> | The sender of the `Receiver_CCIPReceive` message is not the authorized CCIP Router. Ensure your receiver stores the correct Router address.                                                        |
+| <nobr>`5401`</nobr> | <nobr>`LowValue`</nobr>     | The TON value attached to the `Receiver_CCIPReceive` message is below `MIN_VALUE`. The EVM sender must set a higher `gasLimit` in `GenericExtraArgsV2` (minimum 0.1 TON = `100_000_000n` nanoTON). |
+
+<Aside type="caution">
+  If your receiver throws `LowValue` (5401), the message will require manual execution. The EVM sender must set a
+  sufficient `gasLimit` in nanoTON when building the CCIP message. See the [Manual
+  Execution](/ccip/concepts/ton/manual-execution) page for recovery steps.
+</Aside>
+
+---
+
+<CcipCommon callout="educationalDisclaimer" />

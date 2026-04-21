@@ -34,13 +34,10 @@ const getMaxSubmissionValueBound = (
   try {
     const raw = BigInt(maxSubmissionValue)
     const divisor = BigInt(10) ** BigInt(decimals)
+    // Hide the badge if the decoded price exceeds $2.00 (fixed-point compare avoids
+    // float drift). The all-0xff unbounded sentinel decodes to ~9.578e44 and is filtered here.
+    if (raw > BigInt(2) * divisor) return null
     const wholePart = raw / divisor
-    // Hide the badge if the decoded price exceeds $1,000,000 (1M).
-    // This filters out the all-0xff unbounded sentinel that contracts use by default
-    // (which decodes to ~9.578e44) while still accommodating any real-world price cap
-    // across USD, ETH, EUR, and other quote currencies — the highest plausible cap
-    // for any stablecoin or pegged asset is well below $1M.
-    if (wholePart > BigInt(1_000_000)) return null
     const remainder = raw % divisor
     const price = Number(wholePart) + Number(remainder) / Number(divisor)
     return new Intl.NumberFormat("en-US", {
@@ -757,10 +754,12 @@ export const StreamsNetworkAddressesTable = ({
   allowExpansion = false,
   defaultExpanded = false,
   initialSearch = "",
+  lockSearch = false,
 }: {
   allowExpansion?: boolean
   defaultExpanded?: boolean
   initialSearch?: string
+  lockSearch?: boolean
 } = {}) => {
   // null = untouched; string = user has set a value
   const [searchState, setSearchState] = useState<string | null>(null)
@@ -768,10 +767,11 @@ export const StreamsNetworkAddressesTable = ({
   const urlSearch =
     typeof window !== "undefined" ? (new URLSearchParams(window.location.search).get("streamsNetwork") ?? "") : ""
 
-  // Priority: user-typed value → SSR prop (when Astro can pass it) → URL param (client fallback)
-  const searchValue = searchState ?? (initialSearch || urlSearch)
+  // When lockSearch is true, always use initialSearch and ignore user input / URL params
+  const searchValue = lockSearch ? initialSearch : (searchState ?? (initialSearch || urlSearch))
 
   const updateSearch = (value: string) => {
+    if (lockSearch) return
     setSearchState(value)
     if (typeof window === "undefined") return
     const params = new URLSearchParams(window.location.search)
@@ -805,22 +805,24 @@ export const StreamsNetworkAddressesTable = ({
 
   const tableContent = (
     <>
-      <div className={feedList.filterDropdown_search} style={{ padding: "0.5rem" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flex: 1 }}>
-          <input
-            type="text"
-            placeholder="Search"
-            className={feedList.filterDropdown_searchInput}
-            value={searchValue}
-            onInput={(e) => updateSearch((e.target as HTMLInputElement).value)}
-          />
-          {searchValue && (
-            <button className={clsx(button.secondary, feedList.clearFilterBtn)} onClick={() => updateSearch("")}>
-              Clear filter
-            </button>
-          )}
+      {!lockSearch && (
+        <div className={feedList.filterDropdown_search} style={{ padding: "0.5rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flex: 1 }}>
+            <input
+              type="text"
+              placeholder="Search"
+              className={feedList.filterDropdown_searchInput}
+              value={searchValue}
+              onInput={(e) => updateSearch((e.target as HTMLInputElement).value)}
+            />
+            {searchValue && (
+              <button className={clsx(button.secondary, feedList.clearFilterBtn)} onClick={() => updateSearch("")}>
+                Clear filter
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       <table className={tableStyles.networksTable}>
         <thead>

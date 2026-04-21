@@ -1,0 +1,42 @@
+---
+section: ace
+title: "Reporting API"
+metadata:
+  description: "Overview of the Chainlink ACE Reporting API — read-only access to onchain compliance state and transaction history."
+  datePublished: "2026-04-20"
+---
+
+import { Aside } from "@components"
+
+The Reporting API provides read-only access to onchain compliance state indexed by Chainlink's infrastructure. Use it for audit trails, compliance verification, and monitoring.
+
+Access to the Reporting API is available after account provisioning. To get started, [request access](/ace/getting-started).
+
+<Aside type="note" title="API-only reporting">
+  The Reporting Manager is API-only — there is no reporting UI in the current beta. See [Beta Scope](/ace/beta-scope)
+  for details.
+</Aside>
+
+## Queryable resources
+
+### Transactions
+
+Every policy engine evaluation is recorded onchain and queryable through this endpoint, including:
+
+- Which policies ran and their outcomes
+- Parameters extracted from the transaction calldata
+- Chain, timestamp, sender, target contract, and function selector
+
+### Policies
+
+Query deployed policy instances and their configuration state. Supports point-in-time historical queries using an `as_of` timestamp.
+
+### Targets
+
+Query protected contracts and their full policy wiring — engines, function selectors, extractors, policies, and default outcomes. Supports point-in-time historical queries.
+
+### Identities
+
+Query identity records, registry memberships, and credentials. Optionally includes full credential details. Supports point-in-time historical queries.
+
+For a detailed explanation of the reporting data model and indexing pipeline, see [Reporting](/ace/concepts/reporting).

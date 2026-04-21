@@ -1,0 +1,67 @@
+---
+section: ace
+title: "VolumePolicy"
+date: Last Modified
+metadata:
+  description: "VolumePolicy reference: enforces minimum and maximum value constraints per transaction. Configuration, runtime behavior, and use cases."
+  datePublished: "2026-04-20"
+  lastModified: "2026-04-20"
+---
+
+import { Aside } from "@components"
+
+The VolumePolicy enforces minimum and maximum value constraints on individual transactions. It compares a value extracted from the transaction against configured bounds and rejects if the value falls outside the allowed range.
+
+## Configuration
+
+Both bounds are set when the policy is first deployed and can be updated independently afterward by the policy owner.
+
+### Minimum amount
+
+The minimum defines the lowest acceptable value for the extracted parameter. Any transaction where the extracted value is below this number will be rejected.
+
+Setting the minimum to `0` effectively disables the lower bound — all values will pass the minimum check.
+
+### Maximum amount
+
+The maximum defines the highest acceptable value for the extracted parameter. Any transaction where the extracted value exceeds this number will be rejected.
+
+Setting the maximum to `0` disables the upper bound — there will be no ceiling on the value.
+
+<Aside type="note" title="Relationship between minimum and maximum">
+  The minimum must be strictly less than the maximum, unless one of them is `0`. For example, you cannot set a minimum
+  of 100 and a maximum of 50. You can set a minimum of 100 and a maximum of `0` (no upper limit), or a minimum of `0`
+  and a maximum of 50 (no lower limit).
+</Aside>
+
+## Runtime behavior
+
+The policy expects exactly one parameter from the extractor:
+
+| Parameter | Type      | Description                                       |
+| --------- | --------- | ------------------------------------------------- |
+| `amount`  | `uint256` | The value to check against the configured bounds. |
+
+- **`run()`** — Reverts if `amount < min` or (when `max != 0`) `amount > max`. Returns `Continue` otherwise.
+- **`postRun()`** — No state changes.
+
+## API reference
+
+### Setter functions
+
+- **`setMin(uint256 minAmount)`** — Updates the minimum. Must be strictly less than the current maximum (unless max is `0`). Reverts if the new value is the same as the current minimum.
+- **`setMax(uint256 maxAmount)`** — Updates the maximum. Must be strictly greater than the current minimum (unless setting to `0`). Reverts if the new value is the same as the current maximum.
+
+### View functions
+
+- **`getMin()`** — Returns the current minimum.
+- **`getMax()`** — Returns the current maximum.
+
+## Use cases
+
+- **Transfer range limits** — Require transfers to fall within a minimum and maximum amount.
+- **Anti-dust protection** — Reject extremely small transactions that could be disruptive.
+
+## Source
+
+[VolumePolicy.sol](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/src/policies/VolumePolicy.sol)

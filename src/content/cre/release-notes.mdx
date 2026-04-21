@@ -5,12 +5,60 @@ date: Last Modified
 metadata:
   description: "Discover what's new in CRE: latest features, changes, and improvements in each release of the Chainlink Runtime Environment."
   datePublished: "2025-11-04"
-  lastModified: "2026-04-02"
+  lastModified: "2026-04-20"
 ---
 
 import { Aside } from "@components"
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## TS SDK v1.6.0 - April 20, 2026
+
+**TypeScript SDK version 1.6.0** adds custom Rust plugin support and non-determinism build warnings.
+
+- **Custom Rust plugin support**: You can now inject custom Rust logic into your TypeScript workflows using the new `--plugin` flag in `cre-compile`. Provide a pre-built `.plugin.wasm` file compiled from your own Rust crate and it will be linked into your workflow binary. The SDK ships example packages (`@chainlink/cre-rust-inject-alpha`, `@chainlink/cre-rust-inject-beta`) and a prebuilt plugin example to help you get started. Use `createExtensionAccessor` from `@chainlink/cre-sdk-javy-plugin/runtime/validate-extension` to access your Rust extensions from TypeScript with Zod-validated types. See [Custom Rust Plugins](/cre/guides/operations/custom-rust-plugins-ts) for a full walkthrough.
+- **Non-determinism build warnings**: The SDK now performs static analysis of your workflow at compile time and emits warnings when it detects potentially non-deterministic patterns such as `Date.now()`, `Math.random()`, `Promise.race()`, and similar constructs. These warnings appear during `cre workflow build` and `cre workflow simulate` to help you catch consensus issues before deployment.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.5.0...v1.6.0)
+
+## Go SDK v1.8.0 - April 17, 2026
+
+**Go SDK version 1.8.0** adds SDK helpers for deterministic map iteration and report verification support.
+
+- **`cre.OrderedEntries` and `cre.OrderedEntriesFunc`**: New helper functions in the `cre` package that return a sorted iterator over map entries. `cre.OrderedEntries` works with any map whose keys implement `cmp.Ordered` (strings, integers, etc.). `cre.OrderedEntriesFunc` accepts a custom comparator for maps with struct or other non-ordered keys. Use these in place of direct map iteration to guarantee consistent ordering across DON nodes. See [Map iteration](/cre/concepts/non-determinism-go#1-map-iteration) for details and examples.
+- **Report verification**: Added report verification support to the SDK.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.7.0...v1.8.0)
+
+## CLI v1.11.0 - April 16, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.11.0" target="_blank">CRE CLI version 1.11.0</a> is now available.**
+
+- **`cre registry list`**: New command that displays the workflow registries configured for your organization, including each registry's type and address. Run `cre registry list` after logging in to inspect which registries are available in your environment. See [Registry Commands](/cre/reference/cli/registry) for details.
+- **Paused workflow deploy warning**: When you run `cre workflow deploy` to update a workflow that is currently paused, the CLI now shows a warning after the update completes: `Your workflow is paused and has been updated`. This makes it easier to catch cases where you've pushed an update but won't see it run until you activate the workflow again.
+- **HTTP trigger payload path fix**: When simulating a workflow with an HTTP trigger, file paths passed to `--http-payload` are now resolved relative to the directory where you ran the command, rather than the workflow directory. If you run `cre workflow simulate ./my-workflow --http-payload ./payload.json`, the CLI now finds `payload.json` in your working directory as expected.
+- **Duplicate workflow deploy check**: Before registering a workflow, the CLI now checks whether the same binary and config are already registered, preventing redundant onchain transactions.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.10.0...v1.11.0)
+
+## CLI v1.10.0 - April 10, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.10.0" target="_blank">CRE CLI version 1.10.0</a> is now available.**
+
+- **Optional org ownership for secrets**: Secrets can now optionally be owned by your organization instead of your individual workflow owner address. Set `CRE_CLI_SECRETS_ORG_OWNED: true` in your target configuration to use your org ID as the secret owner across `cre secrets create`, `cre secrets update`, `cre secrets delete`, and `cre secrets list`. This is useful for teams sharing secrets across multiple workflows. When disabled (the default), behavior is unchanged. See [Secrets Management Commands](/cre/reference/cli/secrets#org-owned-secrets) for details.
+- **EVM Bindings generator fix**: Corrected a struct prefix bug in the EVM Bindings generator that could produce incorrect struct names under certain conditions.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.9.0...v1.10.0)
 
 ## CLI v1.9.0 - April 2, 2026
 

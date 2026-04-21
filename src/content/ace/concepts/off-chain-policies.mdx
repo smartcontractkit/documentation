@@ -1,0 +1,75 @@
+---
+section: ace
+title: "Off-Chain Policy Execution"
+date: Last Modified
+metadata:
+  description: "How ACE extends policy enforcement beyond on-chain logic by evaluating compliance rules off-chain through the Chainlink DON, enabling integration with external risk APIs, internal compliance engines, and custom business logic."
+  datePublished: "2026-04-20"
+  lastModified: "2026-04-20"
+---
+
+import { Aside, ClickToZoom } from "@components"
+
+<Aside type="note" title="Getting started with off-chain policies">
+  Off-chain policy setup is managed by Chainlink during Beta. The Chainlink team configures the DON workflow, Keystone
+  Forwarder, and authorized issuers on your behalf. **Contact your Chainlink representative** to discuss your off-chain
+  compliance requirements.
+</Aside>
+
+ACE policies are not limited to on-chain logic. Off-chain policy execution lets you enforce compliance rules that depend on data or systems outside the blockchain — your internal compliance engine, third-party risk APIs, or any custom business logic. The checks happen off-chain before the transaction, and the result is delivered on-chain as a cryptographic **permit** that authorizes the action.
+
+## Why off-chain policies?
+
+On-chain policies evaluate data that is already available in the transaction calldata or on the blockchain. But many compliance requirements depend on information that only exists off-chain:
+
+- **Risk and sanctions databases** — screen wallet addresses against external risk intelligence providers
+- **Internal compliance systems** — connect to proprietary risk models, approval workflows, or internal rule engines
+- **Custom business logic** — any HTTP-accessible data source or decision service your compliance process requires
+
+Off-chain policy execution bridges this gap by running these checks through the Chainlink Decentralized Oracle Network (DON) and delivering the result on-chain.
+
+## How it works
+
+A protected function that requires off-chain verification will revert if the caller does not have a valid permit. Your application must obtain a permit from the Chainlink DON before the user can call the function.
+
+<ClickToZoom
+  src="/images/ace/offchain-engine/simplified-offchain-engine-permit.png"
+  alt="Off-chain policy execution flow: your application requests evaluation from the Chainlink DON, which evaluates built-in rules and calls your policy endpoint. Your endpoint queries external services, returns a signed allow or deny, and the DON delivers a permit on-chain."
+  caption="Off-chain policy evaluation and permit delivery flow."
+/>
+
+Your application and your policy endpoint can be the same server — they represent different roles in the flow, not necessarily separate deployments.
+
+1. Your application sends an **action request** to the Chainlink DON, describing the transaction that needs approval (caller, target contract, function, and parameters) along with any context your policies need (e.g., organization, jurisdiction).
+1. A workflow running on the DON evaluates a pipeline of policies. Some rules run directly inside the workflow. For external policies, the DON calls **your policy endpoint** — an HTTP endpoint you host.
+1. Your policy endpoint runs your business logic: it can query external services (risk scoring APIs, sanctions databases, internal systems, etc.), interpret the results, and return a signed **Allow** or **Deny** to the DON.
+1. If every policy in the pipeline passes, the DON generates a signed **permit** authorizing the specific transaction.
+1. The permit is delivered on-chain via the [Keystone Forwarder](https://docs.chain.link/cre/guides/workflow/using-evm-client/onchain-write/overview-ts#the-secure-write-flow-4-steps) and stored by the [CertifiedActionDONValidatorPolicy](/ace/reference/policy-library/certified-action-don-validator-policy) contract.
+1. The DON sends a **callback** to your application confirming the permit is on-chain.
+1. Your application signals the user to proceed. The user (or your application on their behalf) calls the protected function. The on-chain policy verifies that a valid permit exists — if no permit is found, the transaction reverts.
+
+Each permit is scoped to a specific caller, function, and set of parameters — it cannot be reused for a different action. Permits also have configurable expiration times and usage limits.
+
+## What you can connect to
+
+The off-chain policy model is open-ended. Built-in rules run directly inside the DON workflow, and your external policy endpoints can integrate with any system reachable over HTTP, including:
+
+- Third-party compliance APIs (wallet risk scoring, sanctions screening, AML checks)
+- Internal compliance engines and proprietary rule sets
+- Multi-step approval workflows involving multiple parties
+- Any combination of the above in a single evaluation pipeline
+
+Policies in the pipeline are evaluated sequentially — the first policy to deny stops execution and no permit is generated. This flexibility means off-chain policies can enforce compliance requirements that would be impossible to implement purely on-chain.
+
+## On-chain enforcement
+
+The on-chain side of off-chain policy execution is handled by the [CertifiedActionDONValidatorPolicy](/ace/reference/policy-library/certified-action-don-validator-policy) contract. This policy is attached to your protected functions like any other policy in the chain. At transaction time, it checks whether a valid permit has been delivered by the DON — it does not re-run the off-chain logic. The permit serves as cryptographic proof that the off-chain checks passed.
+
+From the policy engine's perspective, the CertifiedActionDONValidatorPolicy is just another policy in the evaluation chain. It can be combined with on-chain policies (allowlists, volume limits, pause toggles, etc.) in any order.
+
+## Related pages
+
+- [Policy Management](/ace/concepts/policy-management) — how policy chains and evaluation work
+- [Architecture](/ace/concepts/architecture) — how the on-chain and off-chain layers connect
+- [CertifiedActionDONValidatorPolicy](/ace/reference/policy-library/certified-action-don-validator-policy) — the on-chain contract reference
+- [Policy Library](/ace/reference/policy-library) — all available policy implementations

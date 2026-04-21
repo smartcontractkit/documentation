@@ -1,0 +1,111 @@
+---
+section: ace
+title: "Reporting Manager"
+date: Last Modified
+metadata:
+  description: "Understand the ACE Reporting Manager: query policy run transactions, compliance configurations, identities, and credentials with point-in-time historical snapshots for audit and regulatory evidence."
+  datePublished: "2026-04-20"
+  lastModified: "2026-04-20"
+---
+
+import { Aside } from "@components"
+
+This page explains what the Reporting Manager provides, why it matters for compliance, and how the data pipeline works. For a high-level overview of how the Reporting Manager fits into the ACE architecture, see the [Architecture page](/ace/concepts/architecture#reporting-manager).
+
+## Why reporting matters
+
+Enforcing compliance onchain is half the equation. The other half is **proving** it. Regulators, auditors, and internal compliance teams need verifiable evidence that the right rules were in place and applied correctly at the time each transaction occurred.
+
+ACE records every policy evaluation as an onchain event. The Reporting Manager indexes these events and makes them queryable through the **Reporting API**, giving you a complete, tamper-evident audit trail without running your own blockchain indexer.
+
+Typical use cases include:
+
+- **Regulatory audits** — Demonstrate that specific compliance rules were active and enforced during a given period.
+- **Incident investigation** — Trace exactly which policies evaluated a transaction, what parameters were extracted, and what the outcome was.
+- **Ongoing monitoring** — Track policy run activity across contracts, chains, and time ranges to identify anomalies or confirm expected behavior.
+- **Configuration review** — Verify what policies, identities, and credentials were in effect at a specific point in time.
+
+## What you can query
+
+The Reporting API exposes four resource types, each representing a different facet of your compliance data.
+
+### Transactions
+
+Every transaction that triggers at least one policy engine evaluation emits a `PolicyRunComplete` event onchain. The Reporting Manager indexes these events and makes them available as **transaction records** — the core of your audit trail.
+
+Each transaction record includes:
+
+- **Full transaction metadata** — chain, block number, timestamp, sender, recipient, and gas details. Only successful transactions are indexed, since the `PolicyRunComplete` event is only persisted on-chain when the transaction succeeds.
+- **Policy run details** — for each policy engine evaluation within the transaction: the target contract, the function called, the extractor used, each policy that ran (address, name, version, configuration state), the extracted parameters, any context data, and the engine/target default behaviors.
+
+You can filter transactions by:
+
+- Chain
+- Time range (from/to timestamps)
+- Sender or recipient address
+- Target contract address
+- Function selector
+- Specific policy address
+- Policy engine address
+
+This means you can answer questions like "show me every transfer on contract X that was evaluated by the sanctions policy between March 1 and March 31."
+
+### Policies
+
+Query deployed policy instances — their configuration state, ownership, version history, and which engine they belong to. Use this to verify what rules were in place and how they were configured.
+
+Each policy record includes the chain, contract address, owner, name, description, engine address, version number, configuration state (when requested), and the time range during which that version was effective.
+
+### Targets
+
+Query protected contracts and their full policy configuration — which engines are attached, what methods are protected, what extractors and policies are configured per method, and what the default behaviors are.
+
+This gives you a complete snapshot of "what compliance rules protect this contract and how are they wired up."
+
+### Identities
+
+Look up identity records by wallet address, identity registry, credential type, credential registry, or CCID. Each identity includes all registry memberships (which registries, which chains, which wallet addresses are mapped). You can optionally request full credential details, including the credential type identifier, the issuing credential registry, issuance and expiration timestamps, credential data, and full on-chain provenance (block number, transaction hash).
+
+This lets you answer questions like "does this wallet address belong to a registered identity?" or "which identities have a KYC credential issued by this credential registry?"
+
+## Point-in-time queries
+
+Policies, Identities, and Targets all support point-in-time historical queries. This lets you reconstruct the state of your compliance system at any historical moment:
+
+- **What policies were active** on a contract on a specific date?
+- **What credentials** did an identity hold at the time of a transaction?
+- **What protections** were configured on a target contract last quarter?
+
+Point-in-time queries are critical for regulatory investigations where you need to prove not just that compliance rules exist _today_, but that they were in place _when a specific event occurred_. The API returns the version of each resource that was effective at the specified time, including resources that have since been updated or removed.
+
+Transactions support time range filtering instead, since transactions are discrete events rather than stateful resources.
+
+## How data flows
+
+The Reporting Manager does not read directly from the blockchain. Instead, Chainlink's indexing infrastructure continuously monitors onchain events emitted by your managed PolicyEngines and indexes the data into a queryable store.
+
+The pipeline works as follows:
+
+1. A transaction triggers a protected function on your contract.
+1. The PolicyEngine evaluates the policy chain and emits a `PolicyRunComplete` event with full details.
+1. Chainlink's indexing infrastructure detects the event and indexes the transaction data, policy configurations, identity lookups, and credential checks.
+1. The indexed data becomes available through the Reporting API.
+
+This happens automatically for all contracts deployed through the ACE Platform. You do not need to run your own indexer, event listener, or database.
+
+<Aside type="note" title="Managed contracts only">
+  The Reporting Manager only tracks contracts deployed through the ACE Platform (UI or Coordinator API). Self-deployed
+  PolicyEngines and policies function onchain but do not appear in Reporting API responses. See [Beta
+  Scope](/ace/beta-scope) for details.
+</Aside>
+
+## Beta scope
+
+During Beta, the Reporting Manager is **API-only** — there is no reporting UI. You interact with it exclusively through the Reporting API.
+
+The API provides read-only access. All compliance configuration changes (deploying policies, registering identities, issuing credentials) are done through the [Coordinator API](/ace/reference/api/coordinator) or <a href="https://app.chain.link" target="_blank">Platform UI</a>.
+
+## Next steps
+
+- **[Reporting API overview](/ace/reference/api/reporting)** — What the Reporting API provides and what resources can be queried.
+- **[Architecture](/ace/concepts/architecture#how-ace-observes-onchain-activity-read-path)** — How the indexing pipeline connects onchain events to the Reporting API.

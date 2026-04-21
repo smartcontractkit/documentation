@@ -1,0 +1,296 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP Best Practices (TON)"
+metadata:
+  description: "Best practices for building secure and reliable cross-chain dApps using CCIP on TON. Covers receiver protocol steps, source and sender validation, MIN_VALUE configuration, extraArgs, fee estimation, monitoring, and multisig guidance."
+  image: "/images/ccip/ccip-hl-v1.6.gif"
+  excerpt: "ccip ton best practices, receiver validation, MIN_VALUE, Router_CCIPReceiveConfirm, allowOutOfOrderExecution, extraArgs, fee estimation, QueryID, ACK NACK, monitoring, multisig, Tolk smart contract"
+  datePublished: "2026-04-07"
+  lastModified: "2026-04-07"
+  difficulty: "intermediate"
+  estimatedTime: "35 minutes"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="talkToExpert" />
+
+<Aside type="note" title="Interfaces and Applications">
+  Chainlink CCIP is a messaging protocol. Third parties may build user interfaces or other applications on top of CCIP.
+  Neither Chainlink Labs nor the Chainlink Foundation owns, controls, endorses, or assumes any responsibility for any
+  such interfaces or applications. You are solely responsible for your use of such interfaces or applications. Please
+  visit the Chainlink Foundation [Terms of Service](https://chain.link/terms) for more information.
+</Aside>
+
+Before you deploy your cross-chain dApps to mainnet, make sure that your dApps follow the best practices in this document. You are responsible for thoroughly reviewing your code and applying best practices to ensure that your cross-chain dApps are secure and reliable. If you have a unique use case for CCIP that might involve additional cross-chain risk, [contact the Chainlink Labs Team](https://chain.link/ccip-contact) before deploying your application to mainnet.
+
+## Implement all three mandatory receiver protocol steps
+
+Every TON CCIP receiver must implement three mandatory protocol steps in order. Omitting or reordering any step puts your contract into a broken state — either allowing unauthorized execution or stranding messages that cannot be retried.
+
+<Aside type="caution" title="Messages stuck in an in-progress state cannot be retried">
+  If your receiver runs out of gas before reverting in a way that sends a bounced message back, or your receiver doesn't
+  send `Router_CCIPReceiveConfirm` to the Router, the message is left in an in-progress state. The message was
+  delivered, but CCIP doesn't know if it was successful or not. If it failed without bouncing by running out of gas, it
+  cannot be retried and any gas consumed is not refunded. Implement these steps correctly to avoid having issues with
+  non-retriable failed messages.
+</Aside>
+
+**Step 1 — Authorize the Router.** Accept `Receiver_CCIPReceive` only from the configured CCIP Router address. Reject any other sender unconditionally.
+
+```tolk
+assert(in.senderAddress == st.router) throw (Receiver_Error.Unauthorized as int);
+```
+
+**Step 2 — Check attached value.** The Router attaches TON to cover the cost of routing `Router_CCIPReceiveConfirm` back through the protocol chain. Verify the attached value meets your `MIN_VALUE` constant. The Router needs at least **0.02 TON** to process the confirmation. Use **0.03 TON** as your baseline and increase it to account for your own execution costs.
+
+```tolk
+assert(in.valueCoins >= MIN_VALUE) throw (Receiver_Error.LowValue as int);
+```
+
+**Step 3 — Send `Router_CCIPReceiveConfirm`.** Return the confirmation message to the Router along with enough TON to cover the remaining protocol chain. Using `SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE` is the simplest correct choice — it forwards all remaining value automatically.
+
+```tolk
+val receiveConfirm = createMessage({
+    bounce: true,
+    value: 0,
+    dest: in.senderAddress,
+    body: Router_CCIPReceiveConfirm { execId: msg.execId },
+});
+receiveConfirm.send(SEND_MODE_CARRY_ALL_REMAINING_MESSAGE_VALUE);
+```
+
+The `MinimalReceiver` contract in the [TON Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-ton) implements all three steps inline and serves as the reference starting point. For a detailed explanation and multiple implementation options, see [Implementing CCIP Receivers](/ccip/tutorials/ton/receivers).
+
+## Set `MIN_VALUE` correctly
+
+If the `Receiver_CCIPReceive` message execution runs out of gas and fails without bouncing the message back to the Router, or if the Router does not receive `Router_CCIPReceiveConfirm`, then CCIP cannot confirm whether the message was successful or not. The message is left in an in-progress state and, if it failed, it cannot be retried.
+
+`MIN_VALUE` is the minimum TON your receiver requires attached to each `Receiver_CCIPReceive` message. If the value received is lower, it manually reverts and leaves the message in a failed state where retries through manual execution are allowed. `MIN_VALUE` should be enough to cover the expected execution costs of your message. By including the 0.02 TON required for `Router_CCIPReceiveConfirm` in `MIN_VALUE`, you can also make sure your contract will have enough balance to send the confirmation message on successful executions.
+
+Start at **0.03 TON** and benchmark your contract under realistic load to determine the right value. The 0.03 TON baseline includes 0.02 TON for the Router's confirmation cost plus 0.01 TON margin.
+
+```tolk
+// In your receiver contract
+const MIN_VALUE: int = ton("0.03"); // increase if your logic is more expensive
+```
+
+The EVM-side `gasLimit` (set in `extraArgs`) controls how much nanoTON the protocol reserves for delivery. If your receiver requires more than the default 0.1 TON allocation, increase the `gasLimit` in `buildExtraArgsForTON` accordingly:
+
+```typescript
+// In your EVM sender script — increase gasLimit if your TON receiver is expensive
+const extraArgs = buildExtraArgsForTON(200_000_000n, true) // 0.2 TON in nanoTON
+```
+
+## Verify destination chain
+
+Before sending a CCIP message from TON, verify that the destination chain is supported. The CCIP Router on TON exposes its supported destination chains through the `OnRamp`. Sending a message to an unsupported chain selector will be rejected at the Router level, wasting the TON attached to the transaction.
+
+Check the [CCIP Directory](/ccip/directory/testnet/chain/ton-testnet) for the list of supported TON → EVM lanes and their chain selectors before hardcoding a destination. Always use the chain selector constant from `helper-config.ts` in the [TON Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-ton/blob/main/helper-config.ts) rather than deriving it manually.
+
+## Verify source chain
+
+The CCIP protocol delivers messages to your receiver with a `sourceChainSelector` field in `Any2TVMMessage`. **Source chain validation is not enforced at the protocol level on TON** — it is your responsibility to check this field.
+
+Inside your `Receiver_CCIPReceive` handler, validate `message.sourceChainSelector` against an allowlist of chains your application trusts:
+
+```tolk
+// After the three mandatory protocol steps, validate the source chain
+assert(isAllowedSourceChain(msg.message.sourceChainSelector)) throw ERROR_UNTRUSTED_SOURCE;
+```
+
+Without this check, a valid CCIP message sent from any supported source chain will be accepted and processed by your receiver.
+
+## Verify sender
+
+The `sender` field in `Any2TVMMessage` is a `CrossChainAddress` (a `slice` containing the encoded source-chain address). For EVM-to-TON messages, it contains the 20-byte EVM address of the sender contract.
+
+**Sender validation is also not enforced at the protocol level.** Your contract is responsible for checking this field if your application depends on messages arriving from specific addresses:
+
+```tolk
+// After source chain validation
+// For EVM senders, msg.message.sender is a slice containing the 20-byte EVM address
+assert(isTrustedSender(msg.message.sender)) throw ERROR_UNTRUSTED_SENDER;
+```
+
+<Aside type="note" title="When to skip sender validation">
+  Some applications intentionally accept messages from any sender on a trusted source chain — for example, a public
+  message board. In that case, omitting sender validation is a deliberate design choice, not an oversight. Document this
+  decision explicitly in your contract.
+</Aside>
+
+## Configure `extraArgs` correctly
+
+The `extraArgs` field controls execution parameters for the destination chain. Its content and meaning differ depending on which chain is the source and which is the destination.
+
+<Aside type="note">
+  Build `extraArgs` dynamically rather than hardcoding the raw bytes. This allows your application to adapt to future
+  CCIP protocol upgrades without requiring on-chain changes.
+</Aside>
+
+### TON sending to EVM
+
+When sending from TON to an EVM destination, use `buildExtraArgsForEVM` from the Starter Kit. Two fields must be set correctly:
+
+**`gasLimit`** — EVM gas units allocated for `_ccipReceive` execution on the destination contract. `100_000` units covers simple message storage (for example, `MessageReceiver.sol`). Increase this for contracts with heavier logic. If the gas limit is too low, execution fails on EVM. For EVM destinations, failed messages can be retried with a higher gas limit via the CCIP manual execution path, but unused gas is not refunded.
+
+**`allowOutOfOrderExecution`** — Must always be `true` for TON-to-EVM messages. The TON CCIP Router rejects any message where this flag is `false`.
+
+```typescript filename="scripts/utils/utils.ts"
+// gasLimit: EVM gas units for ccipReceive. allowOutOfOrderExecution must be true.
+const extraArgs = buildExtraArgsForEVM(100_000, true)
+```
+
+### EVM sending to TON
+
+When sending from EVM to a TON destination, use `buildExtraArgsForTON` from the Starter Kit. The parameter meanings differ from the EVM case:
+
+**`gasLimit`** — Denominated in **nanoTON**, not EVM gas units. This is the amount of nanoTON reserved for execution on the TON destination chain. A starting value of `100_000_000n` (0.1 TON) covers most receive operations. Any unused nanoTON is returned to the contract after execution.
+
+**`allowOutOfOrderExecution`** — Must be `true` for TON-bound lanes.
+
+```typescript filename="scripts/utils/utils.ts"
+// gasLimit: nanoTON reserved for TON execution (1 TON = 1_000_000_000 nanoTON)
+const extraArgs = buildExtraArgsForTON(100_000_000n, true) // 0.1 TON
+```
+
+<Aside type="caution" title="nanoTON vs EVM gas units">
+  The `gasLimit` in `extraArgs` means different things depending on the destination chain. For EVM destinations it is
+  EVM gas units. For TON destinations it is nanoTON. Confusing the two will result in incorrect fee estimation and may
+  cause delivery failures.
+</Aside>
+
+## Estimate fees accurately and apply a buffer
+
+The CCIP protocol fee for TON-to-EVM messages is denominated in nanoTON and computed by the FeeQuoter contract, reachable through a chain of on-chain getter calls:
+
+```
+Router.onRamp(destChainSelector)         → OnRamp address
+OnRamp.feeQuoter(destChainSelector)      → FeeQuoter address
+FeeQuoter.validatedFeeCell(ccipSendCell) → fee in nanoTON
+```
+
+Use the `getCCIPFeeForEVM` helper in the [TON Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-ton/blob/main/scripts/utils/utils.ts) to perform this lookup. The CCIP message Cell passed to it must be fully populated — all fields must match the values used in the final send.
+
+Apply two buffers on top of the quoted fee:
+
+- **10% fee buffer**: Accounts for small fluctuations between quote time and execution time.
+- **0.5 TON gas reserve**: Covers the wallet-level transaction cost and source-chain execution overhead. Any surplus above actual costs is returned via the ACK message.
+
+```typescript filename="scripts/ton2evm/sendMessage.ts"
+const fee = await getCCIPFeeForEVM(client, routerAddress, destChainSelector, ccipSendMessage)
+const feeWithBuffer = (fee * 110n) / 100n // +10%
+const gasReserve = 500_000_000n // 0.5 TON in nanoTON
+const valueToAttach = feeWithBuffer + gasReserve // total value sent to Router
+```
+
+For EVM-to-TON messages, apply the same 10% buffer to the fee returned by `router.getFee()`:
+
+```typescript filename="scripts/evm2ton/sendMessage.ts"
+const fee = await router.getFee(TON_TESTNET_CHAIN_SELECTOR, message)
+const feeWithBuffer = (fee * 110n) / 100n
+```
+
+## Decouple CCIP message reception from business logic
+
+Your `Receiver_CCIPReceive` handler should perform the three mandatory protocol steps and then delegate to a separate internal function for application logic. Keep the handler itself minimal:
+
+1. Perform the three mandatory protocol steps (Router check, value check, send confirm).
+2. Optionally validate source chain and sender.
+3. Store the incoming message or its processed result in contract storage.
+4. Emit an event (if needed for monitoring).
+5. Call your application logic from a separate function.
+
+Keeping reception and business logic separate provides a natural "escape hatch": if your business logic encounters a critical issue, you can upgrade or replace that function without touching the protocol-facing entry point. This pattern also simplifies testing — you can unit-test the business logic independently of the Receiver protocol.
+
+## Monitor your dApps
+
+### TON → EVM: track ACK and NACK responses
+
+After sending a message from TON, the CCIP Router sends back a `Router_CCIPSendACK` (accepted) or `Router_CCIPSendNACK` (rejected). Use the `queryID` field to correlate responses to their originating send. The recommended value for `queryID` is the wallet's current sequence number (`seqno`), which is monotonically increasing and collision-free.
+
+Use the Starter Kit verification scripts to check the status of your sends:
+
+```bash filename="Terminal"
+# Check ACK/NACK for recent transactions
+npm run utils:checkLastTxs -- --ccipSendOnly true
+
+# Filter to a specific send by QueryID
+npm run utils:checkLastTxs -- --queryId <QUERY_ID>
+```
+
+An ACK contains the CCIP Message ID and a CCIP Explorer URL. A NACK means the Router rejected the message — both the fee and any TON surplus are returned to the sender.
+
+### EVM → TON: track delivery on TON
+
+After sending from EVM, track delivery on TON using the message ID from the `ccipSend` transaction:
+
+```bash filename="Terminal"
+# Check delivery of an EVM-to-TON message
+npm run utils:checkTON -- \
+  --sourceChain sepolia \
+  --tonReceiver <YOUR_TON_RECEIVER_ADDRESS> \
+  --msg "your message"
+```
+
+EVM-to-TON delivery typically takes 5–15 minutes. You can also track the full message lifecycle on the [CCIP Explorer](https://ccip.chain.link) using the message ID printed by the send script.
+
+### Set up monitoring alerts
+
+Build monitoring on top of the verification scripts or TON Testnet block explorer data. Create alerts for:
+
+- NACKs on TON → EVM sends (rejected messages, insufficient fees).
+- Messages that remain in-progress on TON beyond the expected delivery window.
+- Sudden changes in CCIP fee levels that may indicate network conditions affecting your buffer assumptions.
+
+## Evaluate the security and reliability of the networks that you use
+
+Although CCIP has been thoroughly reviewed and audited, inherent risks might still exist based on your use case, the blockchain networks where you deploy your contracts, and the network conditions on those blockchains.
+
+## Review and audit your code
+
+Before securing value with contracts that implement CCIP interfaces and routers, ensure that your code is secure and reliable. If you have a unique use case for CCIP that might involve additional cross-chain risk, [contact the Chainlink Labs Team](https://chain.link/ccip-contact) before deploying your application to mainnet.
+
+## Soak test your dApps
+
+Be aware of the [Service Limits for Supported Networks](/ccip/directory). Before you provide access to end users or secure value, soak test your cross-chain dApps. Ensure that your dApps can operate within these limits and operate correctly during usage spikes or unfavorable network conditions.
+
+## Monitor your dApps
+
+When you build applications that depend on CCIP, include monitoring and safeguards to protect against the negative impact of extreme market events, possible malicious activity on your dApp, potential delays, and outages.
+
+Create your own monitoring alerts based on deviations from normal activity. This will notify you when potential issues occur so you can respond to them.
+
+## Multi-Signature Authorities
+
+Multi-signature authorities enhance security by requiring multiple signatures to authorize transactions.
+
+### Threshold configuration
+
+Set an optimal threshold for signers based on the trust level of participants and the required security.
+
+### Role-based access control
+
+Assign roles with specific permissions to different signers, limiting access to critical operations to trusted individuals.
+
+### Hardware wallet integration
+
+Use hardware wallets for signers to safeguard private keys from online vulnerabilities. Ensure that these devices are secure and regularly updated.
+
+### Regular audits and updates
+
+Conduct periodic audits of signer access and authority settings. Update the multisig setup as necessary, especially when personnel changes occur.
+
+### Emergency recovery plans
+
+Implement procedures for recovering from lost keys or compromised accounts, such as a predefined recovery multisig or recovery key holders.
+
+### Transaction review process
+
+Establish a standard process for reviewing and approving transactions, which can include a waiting period for large transfers to mitigate risks.
+
+### Documentation and training
+
+Maintain thorough documentation of multisig operations and provide training for all signers to ensure familiarity with processes and security protocols.

@@ -84,9 +84,9 @@ export const CHAIN_TYPE_CONFIGS: Record<ChainType, ChainTypeConfig> = {
 
 /**
  * Chain types supported in CCIP
- * Currently: EVM, Solana, Aptos
+ * Currently: EVM, Solana, Aptos, TON
  */
-export const CCIP_SUPPORTED_CHAINS: ChainType[] = ["evm", "solana", "aptos"]
+export const CCIP_SUPPORTED_CHAINS: ChainType[] = ["evm", "solana", "aptos", "ton"]
 
 /**
  * Sections that support chain type filtering (OPT-IN)

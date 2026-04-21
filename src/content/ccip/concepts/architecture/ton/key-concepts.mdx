@@ -1,0 +1,71 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP Architecture - Key Concepts (TON)"
+metadata:
+  description: "Explore key concepts for Chainlink CCIP on TON: blockchain families, cross-chain dApps, finality, lanes, DONs, RMN, and TVM-specific architecture."
+  image: "/images/ccip/concepts/architecture/ccip-ton-source-chain.jpg"
+  excerpt: "ccip key concepts ton blockchain families cross-chain dapps blockchain finality ccip lanes decentralized oracle networks risk management network tvm smart contracts"
+  datePublished: "2026-04-07"
+  lastModified: "2026-04-07"
+  difficulty: "beginner"
+  estimatedTime: "12 minutes"
+---
+
+import { Aside } from "@components"
+
+This page explains the high-level, chain-agnostic concepts behind Chainlink CCIP, with notes specific to TON where relevant. We recommend reading these concepts before diving deep into the architecture pages.
+
+## Prerequisites
+
+Before diving into Chainlink CCIP on TON, ensure you understand these fundamental concepts:
+
+- **Accounts / Addresses**: On TON, all entities — users and contracts alike — are addresses in a workchain. There is no distinction between "externally owned accounts" and "contract accounts" at the protocol level; every address can hold a contract. Addresses are identified by their workchain ID and 256-bit account hash.
+
+- **Smart Contracts**: On TON, smart contracts are written in **Tolk** or **FunC** and compiled to the TVM instruction set. Unlike EVM contracts, TON contracts communicate exclusively through asynchronous messages — they cannot call each other's functions or getters synchronously.
+
+- **Decentralized Applications (dApps)**: [dApps](https://ethereum.org/en/developers/docs/dapps/) are applications that use onchain logic to manage data and transactions.
+
+- **Merkle Trees**: A data structure that summarizes and verifies large information sets with small cryptographic proofs. To learn more, try this [tutorial](https://ethereum.org/en/developers/tutorials/merkle-proofs-for-offline-data-integrity/).
+
+## Blockchain Families
+
+When you see references to "smart contracts" or "onchain programs," they are executed within a virtual machine (VM). Different blockchains implement different VMs with unique design choices:
+
+- **EVM (Ethereum Virtual Machine)**: Used by Ethereum and many other EVM-compatible chains. Contracts are typically written in languages like [Solidity](https://docs.soliditylang.org/) or [Vyper](https://vyper.readthedocs.io/), compiled to EVM bytecode, and executed in a single-threaded environment. Read this [page](https://ethereum.org/en/developers/docs/evm/) to learn more.
+
+- **SVM (Solana Virtual Machine)**: Solana uses the Sealevel parallelization engine to execute onchain programs compiled to Berkeley Packet Filter (BPF) bytecode. This parallel processing approach can handle multiple simultaneous transactions. Read this [page](https://solana.com/news/sealevel---parallel-processing-thousands-of-smart-contracts) to learn more.
+
+- **Aptos**: The Aptos blockchain uses the Move language and its own implementation of the Move Virtual Machine (MoveVM). The MoveVM is designed for safety and verification, and Aptos processes transactions in parallel using its Block-STM execution engine. Read this [page](https://aptos.dev/en/network/blockchain/move) to learn more.
+
+- **TVM (TON Virtual Machine)**: TON uses the TVM, a stack-based virtual machine tailored for the TON blockchain's actor model. Contracts written in Tolk or FunC are compiled to TVM bytecode. Read this [page](https://docs.ton.org/) to learn more. <br></br> **Note:** CCIP currently supports arbitrary message passing on TON only. Token transfers are not yet supported.
+
+## Cross-Chain dApps
+
+**Cross-chain dApps** are decentralized applications designed to run on—or interact with—multiple blockchains. By leveraging CCIP for cross-chain interoperability, these dApps can:
+
+- Execute transactions and send data between different blockchains.
+- Provide their users with access to features across multiple ecosystems via a unified experience.
+- Specialize in the strengths of each underlying chain, such as high throughput, low fees, or specialized contract functionality.
+
+Because of this multi-chain support, cross-chain dApps can offer broader functionality than dApps confined to a single blockchain.
+
+## Blockchain Finality
+
+**Blockchain finality** is the assurance that past transactions included on a given blockchain are extremely difficult or impossible to revert. Finality varies across different blockchains. Some blockchains offer instant finality, while others require multiple block confirmations.
+
+Finality is crucial for cross-chain transfers. It ensures that any specified action is executed on the destination chain only after the source chain action is finalized, minimizing unintended actions due to source chain reorganizations.
+
+To learn more about finality and how CCIP handles this, read the [CCIP Execution Latency](/ccip/ccip-execution-latency) conceptual guide.
+
+## Lane
+
+A **lane** in CCIP is a conceptual unidirectional path from one specific blockchain (the source) to another (the destination). For example, the lane from Blockchain A to Blockchain B is distinct from the lane from Blockchain B to Blockchain A. This concept helps in configuring settings that apply uniquely to each path. For instance, sending a message from a TON blockchain to an EVM blockchain may require different parameters compared to sending a message in the reverse direction.
+
+## Node Operators
+
+Organizations with specialized expertise in running Chainlink nodes. Each operator can run multiple nodes across different decentralized oracle networks.
+
+## Decentralized Oracle Network (DON)
+
+A **decentralized oracle network (DON)** consists of multiple independent Chainlink nodes. These nodes monitor and retrieve data from specified sources (e.g., a source chain), reach consensus off-chain, and post results to a blockchain (e.g., a destination chain) in a [trust-minimized manner](https://blog.chain.link/what-is-trust-minimization/). For more details on the DONs used in CCIP, refer to the CCIP Offchain architecture page.

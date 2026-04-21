@@ -1,0 +1,59 @@
+---
+section: ccip
+date: Last Modified
+title: "Onchain Architecture - Upgradability (TON)"
+metadata:
+  description: "Learn about CCIP's upgradability strategy on TON, covering onchain configuration, in-place contract code upgrades via the Upgradeable library, storage migration, and the cross-chain MCMS-based governance process with RBACTimelock."
+  image: "/images/ccip/concepts/architecture/ccip-ton-source-chain.jpg"
+  excerpt: "ccip ton upgradability tvm code upgrade upgradeable library migrate storage manychainmultisig timelock governance configuration changes onchain upgrade authority backward compatibility secure evolution expedited bypasser"
+  datePublished: "2026-04-07"
+  lastModified: "2026-04-07"
+  difficulty: "advanced"
+  estimatedTime: "10 minutes"
+---
+
+Chainlink's Cross-Chain Interoperability Protocol (CCIP) is designed to evolve in response to new feature requests, security considerations, and the need to support additional blockchains over time. This requires a secure upgrade process that preserves CCIP's robust security while allowing for iterative improvements.
+
+## What Can Be Upgraded
+
+On the TON blockchain, upgradability primarily happens in two ways:
+
+1. **Onchain Configuration**
+
+   The core CCIP contracts (`Router`, `OnRamp`, `OffRamp`, `FeeQuoter`) expose owner-gated message handlers that allow authorized accounts to adjust operational parameters without requiring a new deployment.
+
+   Examples include:
+   - Enabling support for a new destination chain on the OnRamp.
+   - Updating fee parameters on the FeeQuoter.
+   - Updating OCR3 configuration on the OffRamp.
+
+1. **Contract Code Upgrades**
+
+   Each persistent CCIP contract (`Router`, `OnRamp`, `OffRamp`, `FeeQuoter`) implements the `Upgradeable` library. This library handles the `Upgradeable_Upgrade` message (opcode `0x0aa811ed`), which carries a `code` cell containing the new compiled [Tolk](https://docs.ton.org/tolk/overview) bytecode.
+
+   On TON, the [TVM](https://docs.ton.org/tvm/overview) supports in-place code replacement within a single compute phase. When an upgrade message is processed:
+   1. `contract.setCodePostponed(msg.code)` schedules the new bytecode to take effect at the end of the compute phase.
+   1. The [TVM `c3` register](https://docs.ton.org/tvm/registers#c3--function-selector) (the continuation dispatch table) is immediately redirected to the new code, so the remainder of the upgrade handler runs under the new version.
+   1. The `migrate` function — called from the new code with the current storage cell and the previous version string — transforms the old storage layout into the new one.
+   1. The migrated storage is written back via `contract.setData`.
+   1. An `Upgradeable_UpgradedEvent` is emitted containing the new code cell, its SHA256 hash, and the new version string.
+
+   Because the TVM account (and its address) persists across code changes, no external client or off-chain system needs to update a stored address after an upgrade. The `migrate` and `version` functions are assigned stable method IDs (`@method_id(1000)` and `@method_id(1001)` respectively) that are preserved in every version, ensuring the new code can always locate and call the correct function from the previous version during the upgrade.
+
+   Authorization is enforced before the upgrade executes: every contract checks `ownable.requireOwner(senderAddress)`, so only the `Ownable2Step` owner of the contract — in production, the RBACTimelock — can initiate an upgrade.
+
+## Implementation Process
+
+All critical changes to CCIP on TON are governed by a secure, cross-chain process using the **ManyChainMultiSig (MCMS)** system and the **RBACTimelock** contract, which function consistently across all CCIP-supported chains.
+
+The MCMS deployment on TON consists of three independent MCMS instances — **Proposer**, **Canceller**, and **Bypasser** — each holding its own Merkle root of authorized operations and its own signer quorum configuration. Signers are identified by EVM addresses and arranged in a hierarchical group tree, where each group has its own quorum threshold; a proposal is authorized only when the root group of the tree is satisfied. The MCMS contract stores a `seenSignedHashes` map, so a signed root cannot be replayed once it has been submitted.
+
+The RBACTimelock is the `Ownable2Step` owner of all core CCIP contracts. The Proposer, Canceller, and Bypasser MCMS instances hold the corresponding roles within the Timelock. Any change to a CCIP contract — whether a configuration update or a code upgrade — requires a message to be sent from the Timelock to the target contract.
+
+Any proposal must follow one of two paths:
+
+1. **Time-locked Review**: An authorized quorum of signers approves an operation off-chain and the Proposer MCMS submits the resulting Merkle root onchain via `MCMS_SetRoot`. Anyone who holds a valid Merkle inclusion proof can then call `MCMS_Execute` to deliver the operation to the Timelock as a `Timelock_ScheduleBatch` call, which places the batch into a pending queue with a mandatory `minDelay`. During this review window, the Canceller MCMS can cancel a pending batch via `Timelock_Cancel`. If no cancellation occurs, once the delay expires anyone can deliver a `Timelock_ExecuteBatch` message directly to the Timelock. There is no separate Executor role or Executor MCMS instance on TON: the Timelock is deployed with the executor role check disabled, because TON has no CallProxy equivalent. The Timelock then forwards the contained operation (for example, an `Upgradeable_Upgrade` message or a configuration update) to the target CCIP contract.
+
+1. **Expedited Approval**: For time-sensitive situations such as emergency responses, the Bypasser MCMS can authorize an operation that is delivered to the Timelock as `Timelock_BypasserExecuteBatch`. This path bypasses the mandatory review delay and immediately forwards the operation to the target contract.
+
+The entire process is publicly verifiable on-chain. All MCMS roots and executed operations, the Timelock batch schedule and execution history, and the `Upgradeable_UpgradedEvent` emissions from upgraded contracts are recorded as on-chain events.

@@ -1,0 +1,66 @@
+---
+section: ace
+title: "Policy Management Contracts"
+date: Last Modified
+metadata:
+  description: "Reference for the Chainlink ACE Policy Management smart contracts: IPolicyEngine, IPolicyProtected, IPolicy, IExtractor, IMapper, and pre-built policy implementations."
+  datePublished: "2026-04-20"
+  lastModified: "2026-04-20"
+---
+
+import { Aside } from "@components"
+
+<Aside type="note" title="On-chain contracts vs. ACE Platform">
+  The contracts on this page are the **on-chain foundation** of ACE — smart contracts deployed on EVM chains that
+  enforce policies at transaction time. The **ACE Platform** (Policy Manager, Identity Manager, Reporting Manager) is a
+  separate set of off-chain services built on top of these contracts, providing a managed experience through the
+  Platform UI and APIs. See [Beta Scope](/ace/beta-scope) for current platform limitations.
+</Aside>
+
+The Policy Management contracts handle on-chain policy enforcement for ACE-compatible contracts. The source code and full documentation are available in the <a href="https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/policy-management" target="_blank">policy-management package</a> of the <a href="https://github.com/smartcontractkit/chainlink-ace" target="_blank">chainlink-ace repository</a> (Business Source License 1.1).
+
+## Core interfaces
+
+| <div style={{ width: "170px" }}>Interface</div>                                                                                                | Description                                                                                                                                                                                                                     |
+| :--------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [IPolicyEngine](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/src/interfaces/IPolicyEngine.sol)       | Central orchestrator that manages policies, extractors, and mappers for protected contracts. Receives calls from `PolicyProtected` targets, runs the policy chain, and returns allow/reject decisions.                          |
+| [IPolicyProtected](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/src/interfaces/IPolicyProtected.sol) | Base interface for any contract that wants policy enforcement. Provides the `runPolicy` modifier, the connection to a `PolicyEngine`, and context handling for passing off-chain data to policies.                              |
+| [IPolicy](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/src/interfaces/IPolicy.sol)                   | Standard interface for all policy contracts. Each policy implements `run` (read-only evaluation that returns allow/continue/reject) and optionally `postRun` (state changes after execution, such as updating volume counters). |
+| [IExtractor](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/src/interfaces/IExtractor.sol)             | Parses transaction calldata into named parameters (e.g., `to` and `value` from an ERC-20 `transfer`) so policies can evaluate them. One extractor is registered per function signature.                                         |
+| [IMapper](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/src/interfaces/IMapper.sol)                   | Optional interface for transforming or combining extracted parameters before they reach a policy. Only needed for advanced scenarios where a policy expects a different parameter shape than the extractor provides.            |
+
+## Pre-built policies
+
+ACE provides a library of audited, ready-to-use policy implementations covering common compliance scenarios — allowlists, volume limits, role-based access, pause controls, and more. See the <a href="https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/policy-management/src/policies" target="_blank">policies source code</a> for implementation details, or the [Policy Library](/ace/reference/policy-library) page for configuration and usage.
+
+## Reference token implementations
+
+The repository includes reference token contracts that demonstrate full ACE integration:
+
+- [ERC-20 Compliance Token](https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/tokens/erc-20)
+  — A policy-protected ERC-20 with frozen token handling.
+- [ERC-3643 Compliance Token](https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/tokens/erc-3643)
+  — A compliant implementation of the ERC-3643 T-REX standard.
+
+## Repository documentation
+
+The <a href="https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/policy-management/docs" target="_blank">policy-management docs</a> folder contains detailed guides:
+
+- [Concepts](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/docs/CONCEPTS.md)
+  — Architecture, policy flow, extractors, mappers, and context handling
+- [API Guide](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/docs/API_GUIDE.md)
+  — Task-oriented guide with code examples for common operations
+- [API Reference](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/docs/API_REFERENCE.md)
+  — Complete interface specifications with function signatures and events
+- [Custom Policies Tutorial](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/docs/CUSTOM_POLICIES_TUTORIAL.md)
+  — End-to-end walkthrough for building a custom policy contract
+- [Policy Ordering Guide](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/docs/POLICY_ORDERING_GUIDE.md)
+  — How evaluation order affects transaction outcomes
+- [Security Considerations](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/docs/SECURITY.md)
+  — Trust model, gas considerations, and context handling
+
+## Related pages
+
+- [Architecture](/ace/concepts/architecture) — How PolicyEngine contracts fit into the ACE system
+- [Policy Management](/ace/concepts/policy-management) — Conceptual overview of policy chains and evaluation
+- [Policy Library](/ace/reference/policy-library) — Pre-built policy implementations with configuration details

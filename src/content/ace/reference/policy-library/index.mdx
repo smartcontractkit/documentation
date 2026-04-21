@@ -1,0 +1,31 @@
+---
+section: ace
+title: "Policy Library"
+date: Last Modified
+metadata:
+  description: "Complete reference for all pre-built Chainlink ACE policies: access control, volume limits, time-based restrictions, identity validation, off-chain verification, and more."
+  datePublished: "2026-04-20"
+  lastModified: "2026-04-20"
+---
+
+ACE ships with a library of pre-built, audited policies that cover the most common compliance and access control patterns. Each policy is a standalone smart contract that plugs into a PolicyEngine and evaluates transactions at runtime.
+
+For guidance on combining policies and understanding execution order, see [Policy Ordering & Composition](/ace/concepts/policy-ordering).
+
+## Policy summary
+
+| Policy                                                                                                                   | Description                                                                                                                                    |
+| ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| [AllowPolicy](/ace/reference/policy-library/allow-policy)                                                                | Maintains an allowlist. Rejects the transaction if any checked address is **not** on the list.                                                 |
+| [BypassPolicy](/ace/reference/policy-library/bypass-policy)                                                              | Maintains an allowlist. If **all** checked addresses are on the list, immediately allows the transaction and **skips all remaining policies**. |
+| [RejectPolicy](/ace/reference/policy-library/reject-policy)                                                              | Maintains a denylist. Rejects the transaction if any checked address **is** on the list.                                                       |
+| [OnlyAuthorizedSenderPolicy](/ace/reference/policy-library/only-authorized-sender-policy)                                | Rejects the transaction if the sender (`msg.sender`) is not on the authorized list.                                                            |
+| [RoleBasedAccessControlPolicy](/ace/reference/policy-library/role-based-access-control-policy)                           | Maps roles to function selectors. Rejects if the sender does not hold a role allowed for the called function.                                  |
+| [MaxPolicy](/ace/reference/policy-library/max-policy)                                                                    | Rejects the transaction if the extracted value exceeds a configured maximum.                                                                   |
+| [VolumePolicy](/ace/reference/policy-library/volume-policy)                                                              | Rejects the transaction if the extracted value is below a minimum or above a maximum.                                                          |
+| [VolumeRatePolicy](/ace/reference/policy-library/volume-rate-policy)                                                     | Tracks cumulative volume per account per time period. Rejects if the period's cap would be exceeded.                                           |
+| [SecureMintPolicy](/ace/reference/policy-library/secure-mint-policy)                                                     | Checks a Chainlink Proof of Reserve feed. Rejects if minting would push total supply beyond verified reserves.                                 |
+| [IntervalPolicy](/ace/reference/policy-library/interval-policy)                                                          | Divides time into repeating slot-based cycles. Rejects if the current slot is outside the allowed window.                                      |
+| [PausePolicy](/ace/reference/policy-library/pause-policy)                                                                | Global toggle. Rejects every transaction when paused; passes through when unpaused.                                                            |
+| [CredentialRegistryIdentityValidatorPolicy](/ace/reference/policy-library/credential-registry-identity-validator-policy) | Checks each address against configured credential requirements. Rejects if any address lacks required credentials.                             |
+| [CertifiedActionDONValidatorPolicy](/ace/reference/policy-library/certified-action-don-validator-policy)                 | Validates DON-issued permits delivered on-chain via the Keystone Forwarder. Rejects if no valid permit exists.                                 |

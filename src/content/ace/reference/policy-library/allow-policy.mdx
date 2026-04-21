@@ -1,0 +1,46 @@
+---
+section: ace
+title: "AllowPolicy"
+date: Last Modified
+metadata:
+  description: "AllowPolicy reference: an allowlist policy that rejects transactions if any checked address is not on the list. Configuration, runtime behavior, and use cases."
+  datePublished: "2026-04-20"
+  lastModified: "2026-04-20"
+---
+
+The AllowPolicy restricts transactions to a known set of approved addresses. It checks every address extracted from the transaction against an allowlist and immediately rejects if any of them is not on the list, halting all subsequent policy checks.
+
+## Configuration
+
+### Address allowlist
+
+The allowlist defines which addresses are permitted to participate in transactions protected by this policy. The list starts empty at deployment and must be populated afterward — until you add at least one address, every transaction will be rejected.
+
+Each address is added or removed individually. When a protected function is called, the extractor provides one or more addresses from the transaction (for example, both the sender and receiver of a token transfer). Which addresses the policy receives depends on the [mapper configuration](/ace/concepts/policy-management#worked-example-erc-20-transfer). All of those addresses must be on the allowlist for the transaction to pass.
+
+## Runtime behavior
+
+The policy expects a variable number of parameters from the extractor, each an address. All provided addresses are checked against the allowlist.
+
+- **`run()`** — Reverts if _any_ address is not on the allowlist. Returns `Continue` otherwise.
+- **`postRun()`** — No state changes.
+
+## API reference
+
+### Setter functions
+
+- **`allowAddress(address account)`** — Adds an address to the allowlist. Reverts if the address is already listed.
+- **`disallowAddress(address account)`** — Removes an address from the allowlist. Reverts if the address is not listed.
+
+### View functions
+
+- **`addressAllowed(address account)`** — Returns `true` if the address is on the allowlist.
+
+## Use cases
+
+- **Regulated access** — Restrict token transfers to a known set of approved addresses.
+- **Gradual rollout** — Start with a small allowlist and expand as new addresses are vetted.
+
+## Source
+
+[AllowPolicy.sol](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/src/policies/AllowPolicy.sol)

@@ -7,7 +7,7 @@ pageId: "reference-sdk-core"
 metadata:
   description: "Reference for core Go SDK: Workflow, Handler, Runtime, NodeRuntime, and essential functions every CRE workflow uses."
   datePublished: "2025-11-04"
-  lastModified: "2025-11-04"
+  lastModified: "2026-04-20"
 ---
 
 import { Aside } from "@components"
@@ -319,4 +319,65 @@ func onTrigger(config *Config, runtime cre.Runtime, ...) (string, error) {
 <Aside type="note" title="Secrets guide">
   For a complete walkthrough on creating, storing, and using secrets, see the [Secrets
   guide](/cre/guides/workflow/secrets).
+</Aside>
+
+## `cre.OrderedEntries` and `cre.OrderedEntriesFunc`
+
+Go maps iterate in random order, which causes consensus failures in DON mode because different nodes process entries in different sequences. These helpers return a deterministic iterator over a map's entries, sorted by key, so all nodes process items in the same order.
+
+### `cre.OrderedEntries`
+
+Returns an iterator that yields map entries in the natural ascending sort order of the keys. Use this for any map whose key type implements `cmp.Ordered` (strings, integers, floats, etc.).
+
+**Signature:**
+
+```go
+func OrderedEntries[K cmp.Ordered, V any](m map[K]V) iter.Seq2[K, V]
+```
+
+**Example:**
+
+```go
+import "github.com/smartcontractkit/cre-sdk-go/cre"
+
+prices := map[string]float64{"BTC": 50000, "ETH": 3000, "SOL": 100}
+
+// Iterates in alphabetical key order: BTC, ETH, SOL
+for token, price := range cre.OrderedEntries(prices) {
+    processPrice(token, price)
+}
+```
+
+### `cre.OrderedEntriesFunc`
+
+Returns an iterator that yields map entries sorted using a custom comparator. Use this when the key type does not implement `cmp.Ordered` — for example, struct keys.
+
+**Signature:**
+
+```go
+func OrderedEntriesFunc[K comparable, V any](m map[K]V, cmp func(a, b K) int) iter.Seq2[K, V]
+```
+
+**Example:**
+
+```go
+import (
+    "cmp"
+    "github.com/smartcontractkit/cre-sdk-go/cre"
+)
+
+type Asset struct{ symbol string }
+
+assets := map[Asset]float64{{symbol: "BTC"}: 50000, {symbol: "ETH"}: 3000}
+
+for asset, price := range cre.OrderedEntriesFunc(assets, func(a, b Asset) int {
+    return cmp.Compare(a.symbol, b.symbol)
+}) {
+    processPrice(asset, price)
+}
+```
+
+<Aside type="note" title="Non-determinism">
+  For a full explanation of why map iteration order matters in DON mode, see [Avoiding
+  Non-Determinism](/cre/concepts/non-determinism-go#1-map-iteration).
 </Aside>

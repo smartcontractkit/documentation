@@ -5,7 +5,7 @@ title: "Workflow Commands"
 metadata:
   description: "Manage workflows with CLI: complete command reference for simulating, deploying, activating, pausing, and deleting workflows."
   datePublished: "2025-11-04"
-  lastModified: "2026-04-02"
+  lastModified: "2026-04-16"
 ---
 
 import { Aside } from "@components"
@@ -82,7 +82,7 @@ cre workflow simulate <workflow-name-or-path> [flags]
 | `-g, --engine-logs`                        | Enable non-fatal engine logging                                                                                                                                                                                                                                                  |
 | `--non-interactive`                        | Run without prompts; requires `--trigger-index` (see the line below) and inputs for the selected trigger type                                                                                                                                                                    |
 | `--trigger-index <int>`                    | Selects which handler to run (0-based position). If your workflow has multiple handlers, `0` is the first, `1` is the second, etc. Required with `--non-interactive`                                                                                                             |
-| `--http-payload <string>`                  | HTTP trigger payload as JSON string or path to JSON file (with or without `@` prefix). For HTTP triggers only                                                                                                                                                                    |
+| `--http-payload <string>`                  | HTTP trigger payload as JSON string or path to a JSON file. File paths are resolved relative to the directory where you ran the command. For HTTP triggers only                                                                                                                  |
 | `--evm-tx-hash <string>`                   | Transaction hash (`0x...`) containing the event that triggered your workflow. For EVM log triggers only                                                                                                                                                                          |
 | `--evm-event-index <int>`                  | Which log/event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For EVM log triggers only                                                                                                |
 | `--limits <string>`                        | Production limits to enforce during simulation: `default` (embedded prod limits), a path to a limits JSON file (e.g. from `cre workflow limits export`), or `none` to disable. See [Testing Production Limits](/cre/guides/operations/understanding-limits) (default: `default`) |
@@ -138,7 +138,7 @@ cre workflow simulate <workflow-name-or-path> [flags]
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Deploys a workflow to the Workflow Registry contract. This command compiles your workflow, uploads the artifacts to the CRE Storage Service, and registers the workflow onchain.
+Deploys a workflow to the Workflow Registry — the onchain contract where workflows are enrolled so the Chainlink DON knows they exist and should run them. This command compiles your workflow, uploads the artifacts to the CRE Storage Service, and submits a registration transaction to the registry. Use [`cre registry list`](/cre/reference/cli/registry) to see which registry your organization is configured to use.
 
 **Usage:**
 
@@ -185,6 +185,11 @@ cre workflow deploy <workflow-name-or-path> [flags]
   # Deploy with the pre-built binary
   cre workflow deploy ./my-workflow --wasm ./my-workflow/binary.wasm --target production-settings
   ```
+
+{/* prettier-ignore */}
+<Aside type="note" title="Deploying over a paused workflow">
+  If you deploy an update to a workflow that is currently paused, the CLI will complete the update and then print a warning: `Your workflow is paused and has been updated`. The workflow remains paused after the update — run `cre workflow activate` to resume it.
+</Aside>
 
 For more details, see [Deploying Workflows](/cre/guides/operations/deploying-workflows).
 

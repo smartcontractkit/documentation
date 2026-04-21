@@ -21,5 +21,6 @@ export function getLanguageIconSrc(language: string): string | undefined {
   if (["python", "py"].includes(l)) return "/images/language-icons/python.svg"
   if (["rust", "rs"].includes(l)) return "/images/language-icons/rust.svg"
   if (["bash", "sh", "shell", "zsh", "terminal"].includes(l)) return "/images/language-icons/terminal.svg"
+  if (l === "tolk") return "/images/language-icons/tolk.svg"
   return undefined
 }

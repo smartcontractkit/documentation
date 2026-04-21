@@ -1,0 +1,202 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.6.0 TON Messages API Reference"
+metadata:
+  description: "API documentation for CCIP message structures and extra args on the TON blockchain."
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## Messages
+
+This section details the data structures used for sending and receiving CCIP messages on TON. TON contracts communicate exclusively through **internal messages** — structured binary cells encoded using TL-B (Type Language — Binary) serialization. Each message type is identified by a 32-bit opcode.
+
+---
+
+## Outbound Messages (TON → EVM)
+
+### `Router_CCIPSend`
+
+**Opcode:** `0x31768d95`
+
+The primary message to send a cross-chain message from TON to a destination chain. Send this to the CCIP Router contract with sufficient TON attached to cover the CCIP fee plus a gas reserve.
+
+```tolk
+struct (0x31768d95) Router_CCIPSend {
+    queryID: uint64;
+    destChainSelector: uint64;
+    receiver: CrossChainAddress;
+    data: cell;
+    tokenAmounts: SnakedCell<TokenAmount>;
+    feeToken: address?;
+    extraArgs: cell;
+}
+```
+
+#### Fields
+
+| Field                            | Type                                   | Description                                                                                                                          |
+| -------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| <nobr>`queryID`</nobr>           | <nobr>`uint64`</nobr>                  | A unique identifier for this send request. Typically the wallet `seqno`. Returned in ACK/NACK responses.                             |
+| <nobr>`destChainSelector`</nobr> | <nobr>`uint64`</nobr>                  | The CCIP chain selector of the destination chain.                                                                                    |
+| <nobr>`receiver`</nobr>          | <nobr>`CrossChainAddress`</nobr>       | The 32-byte address of the receiver on the destination chain. For EVM destinations, left-pad the 20-byte address with 12 zero bytes. |
+| <nobr>`data`</nobr>              | <nobr>`cell`</nobr>                    | Arbitrary payload to deliver to the receiver contract.                                                                               |
+| <nobr>`tokenAmounts`</nobr>      | <nobr>`SnakedCell<TokenAmount>`</nobr> | Token transfers to include. Pass an empty cell — token transfers are not yet supported on TON.                                       |
+| <nobr>`feeToken`</nobr>          | <nobr>`address?`</nobr>                | Fee token address. Currently only native TON is supported; pass the wrapped native address or `null`.                                |
+| <nobr>`extraArgs`</nobr>         | <nobr>`cell`</nobr>                    | Encoded extra arguments. See [GenericExtraArgsV2](#genericextraargsv2).                                                              |
+
+**Value to attach**
+
+When sending `Router_CCIPSend`, you must attach enough TON to cover:
+
+1. The CCIP fee (query `validatedFeeCell` on the FeeQuoter beforehand)
+2. A gas reserve for execution on TON (~0.5 TON recommended, add a 10% buffer to the fee)
+
+#### Responses
+
+The Router sends one of two responses back to the `queryID` sender:
+
+| Message                               | Opcode                    | Meaning                                           |
+| ------------------------------------- | ------------------------- | ------------------------------------------------- |
+| <nobr>`Router_MessageSent`</nobr>     | <nobr>`0x6513f8e1`</nobr> | Message accepted. Contains the `messageId`.       |
+| <nobr>`Router_MessageRejected`</nobr> | <nobr>`0x8ae25114`</nobr> | Message rejected. Contains the `error` exit code. |
+
+---
+
+### `CrossChainAddress`
+
+A length-prefixed byte slice used to encode destination chain addresses. The first byte is the length (in bytes), followed by the address bytes.
+
+```tolk
+// 1-byte length prefix + up to 64 address bytes
+type CrossChainAddress = slice;
+```
+
+**EVM encoding**
+
+For EVM destination addresses (20 bytes), encode as 32 bytes by left-padding with 12 zero bytes:
+
+```typescript
+// TypeScript encoding from the TON Starter Kit
+export function encodeEVMAddress(evmAddr: string): Buffer {
+  const addrBytes = Buffer.from(evmAddr.slice(2), "hex")
+  return Buffer.concat([Buffer.alloc(12, 0), addrBytes])
+}
+```
+
+---
+
+## Inbound Messages (EVM → TON)
+
+### `Any2TVMMessage`
+
+The message structure delivered to a TON receiver contract by the CCIP OffRamp (via the Router). Your receiver receives this wrapped inside a `Receiver_CCIPReceive` message.
+
+```tolk
+struct Any2TVMMessage {
+    messageId: uint256;
+    sourceChainSelector: uint64;
+    sender: CrossChainAddress;
+    data: cell;
+    tokenAmounts: cell?;
+}
+```
+
+#### Fields
+
+| Field                              | Type                             | Description                                                                                    |
+| ---------------------------------- | -------------------------------- | ---------------------------------------------------------------------------------------------- |
+| <nobr>`messageId`</nobr>           | <nobr>`uint256`</nobr>           | Unique identifier for the CCIP message.                                                        |
+| <nobr>`sourceChainSelector`</nobr> | <nobr>`uint64`</nobr>            | CCIP chain selector of the source chain. Use this to verify the sender chain in your receiver. |
+| <nobr>`sender`</nobr>              | <nobr>`CrossChainAddress`</nobr> | Address of the sender on the source chain.                                                     |
+| <nobr>`data`</nobr>                | <nobr>`cell`</nobr>              | The arbitrary payload sent from the source chain.                                              |
+| <nobr>`tokenAmounts`</nobr>        | <nobr>`cell?`</nobr>             | Reserved for future token transfer support. Currently unused.                                  |
+
+---
+
+## Extra Args
+
+### `GenericExtraArgsV2`
+
+**Tag:** `0x181dcf10`
+
+Used when sending a CCIP message from TON to an **EVM-based destination chain**. Encodes the gas limit (in EVM gas units) to allocate for execution on the destination chain.
+
+```tolk
+// nolint:opcode: hex encoded bytes4(keccak256("CCIP EVMExtraArgsV2"))
+struct (0x181dcf10) GenericExtraArgsV2 {
+    gasLimit: uint256?;
+    allowOutOfOrderExecution: bool;
+}
+```
+
+#### Fields
+
+| Field                                   | Type                    | Description                                                                                                                                                                                |
+| --------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <nobr>`gasLimit`</nobr>                 | <nobr>`uint256?`</nobr> | Gas limit for execution on the destination EVM chain, in EVM gas units (e.g., `100_000`). Must not exceed the maximum configured on the destination chain. Pass `null` to use the default. |
+| <nobr>`allowOutOfOrderExecution`</nobr> | <nobr>`bool`</nobr>     | If `true`, this message may be executed out of order relative to other messages from the same sender. Set to `true` for most use cases.                                                    |
+
+**TL-B encoding**
+
+```tolk
+// From the TON Starter Kit utils.ts
+export function buildExtraArgsForEVM(gasLimitEVMUnits: number, allowOutOfOrderExecution: boolean): Cell {
+  return beginCell()
+    .storeUint(0x181dcf10, 32)          // GenericExtraArgsV2 tag
+    .storeBit(true)                      // gasLimit IS present
+    .storeUint(gasLimitEVMUnits, 256)   // gasLimit value
+    .storeBit(allowOutOfOrderExecution) // allowOutOfOrderExecution
+    .endCell()
+}
+```
+
+<Aside type="caution">
+  `gasLimit` in `GenericExtraArgsV2` for EVM destinations is in **EVM gas units** (e.g., `100_000`), not nanoTON. This
+  is the inverse of the EVM→TON direction where `gasLimit` represents nanoTON.
+</Aside>
+
+---
+
+### EVM → TON: `gasLimit` in nanoTON
+
+When sending from an EVM chain to TON, the `gasLimit` field in `GenericExtraArgsV2` represents the TON execution budget in **nanoTON** (not EVM gas units). This value is forwarded by the OffRamp to your receiver contract as the attached value.
+
+```typescript
+// EVM → TON: gasLimit is in nanoTON
+// 100_000_000n = 0.1 TON
+export function buildExtraArgsForTON(gasLimitNanoTON: bigint | number, allowOutOfOrderExecution: boolean): Uint8Array {
+  const encoded = ethers.AbiCoder.defaultAbiCoder().encode(
+    ["uint256", "bool"],
+    [gasLimitNanoTON, allowOutOfOrderExecution]
+  )
+  return ethers.getBytes(ethers.concat(["0x181dcf10", encoded]))
+}
+```
+
+<Aside type="caution">
+  Set `gasLimit` to a high enough value or your message could fail in a non-retriable way. Setting `gasLimit` to at
+  least **0.1 TON** (`100_000_000n` nanoTON) should be enough to guarantee that receivers following [CCIP TON best
+  practices](/ccip/api-reference/ton/v1.6.0/receiver#implementation-requirements) will manually revert before running
+  out of gas and leave your message in a retriable state if the value was not enough.
+</Aside>
+
+---
+
+### `RampMessageHeader`
+
+Metadata embedded in outbound ramp messages. Not directly constructed by users but visible in emitted events.
+
+```tolk
+struct RampMessageHeader {
+    messageId: uint256;
+    sourceChainSelector: uint64;
+    destChainSelector: uint64;
+    sequenceNumber: uint64;
+    nonce: uint64;
+}
+```
+
+<CcipCommon callout="educationalDisclaimer" />

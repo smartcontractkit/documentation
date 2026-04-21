@@ -11,6 +11,7 @@ import {
 import { CCIP_TOKEN_ICON_MAPPINGS } from "@config/data/ccip/tokenIconMappings.ts"
 import { toQuantity } from "ethers"
 import referenceChains from "~/scripts/reference/chains.json" with { type: "json" }
+import { c } from "node_modules/vite/dist/node/moduleRunnerTransport.d-DJ_mE5sf.js"
 
 interface AddEthereumChainParameter {
   chainId: string
@@ -554,6 +555,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "TEMPO_TESTNET"
     case "tempo-testnet-moderato":
       return "TEMPO_TESTNET_MODERATO"
+    case "tempo-mainnet":
+      return "TEMPO_MAINNET"
     case "arc-testnet":
       return "ARC_NETWORK_TESTNET"
     case "doge-os-chikyu-testnet":
@@ -571,6 +574,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "ROBINHOOD_TESTNET"
     case "ton-testnet":
       return "TON_TESTNET"
+    case "ton-mainnet":
+      return "TON_MAINNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -906,6 +911,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "tempo-testnet"
     case "TEMPO_TESTNET_MODERATO":
       return "tempo-testnet-moderato"
+    case "TEMPO_MAINNET":
+      return "tempo-mainnet"
     case "ARC_NETWORK_TESTNET":
       return "arc-testnet"
     case "DOGE_OS_CHIKYU_TESTNET":
@@ -922,6 +929,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "robinhood-testnet"
     case "TON_TESTNET":
       return "ton-testnet"
+    case "TON_MAINNET":
+      return "ton-mainnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

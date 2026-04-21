@@ -1,0 +1,150 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.6.0 TON Events API Reference"
+metadata:
+  description: "API documentation for events emitted by CCIP contracts on TON during cross-chain message processing."
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## Events
+
+TON contracts emit events by calling `emit(topic, data)` — a convention that serializes the topic (a 32-bit CRC) and data into an external message. Events can be observed by indexers and explorers.
+
+---
+
+## Receiver Events
+
+### `CCIPMessageReceived`
+
+Emitted by receiver contracts to signal a successful CCIP message processing. This is a convention used in the Starter Kit examples, not a protocol-level event.
+
+<Aside type="note">
+  `CCIPMessageReceived` is not a standard part of CCIP and is not emitted by CCIP protocol contracts. It is emitted by
+  the receiver implementations in the TON Starter Kit for testing and observability purposes. Emitting this event is not
+  a requirement for a valid CCIP receiver.
+</Aside>
+
+```tolk
+const RECEIVED_MESSAGE_TOPIC = 0xc5a40ab3; // crc32("Receiver_CCIPMessageReceived")
+
+struct CCIPMessageReceived {
+    message: Any2TVMMessage;
+}
+```
+
+---
+
+## OnRamp Events
+
+### `CCIPMessageSent`
+
+Emitted by the OnRamp when a `Router_CCIPSend` message is accepted and a CCIP message is committed to the cross-chain pipeline.
+
+```tolk
+const CCIP_MESSAGE_SENT_TOPIC: int = stringCrc32("CCIPMessageSent");
+
+struct CCIPMessageSent {
+    message: TVM2AnyRampMessage;
+}
+```
+
+**Fields of `TVM2AnyRampMessage`**
+
+| Field                        | Type                                        | Description                                                                                           |
+| ---------------------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| <nobr>`header`</nobr>        | <nobr>`RampMessageHeader`</nobr>            | Message metadata: `messageId`, `sourceChainSelector`, `destChainSelector`, `sequenceNumber`, `nonce`. |
+| <nobr>`sender`</nobr>        | <nobr>`address`</nobr>                      | TON address of the sender (the Router on behalf of the user).                                         |
+| <nobr>`body`</nobr>          | <nobr>`Cell<TVM2AnyRampMessageBody>`</nobr> | Encoded message body containing `receiver`, `data`, `extraArgs`, `feeToken`, `feeTokenAmount`.        |
+| <nobr>`feeValueJuels`</nobr> | <nobr>`uint96`</nobr>                       | Fee value in LINK Juels for standardized cross-chain accounting.                                      |
+
+**When it's emitted:** After the FeeQuoter validates the message and the OnRamp processes the CCIP send. Use the `messageId` in this event to track your message in the [CCIP Explorer](https://ccip.chain.link/).
+
+---
+
+### `DestChainSelectorAdded`
+
+Emitted when a new destination chain is configured on the OnRamp.
+
+```tolk
+const DEST_CHAIN_SELECTOR_ADDED_TOPIC: int = stringCrc32("DestChainSelectorAdded");
+struct DestChainSelectorAdded {
+    destChainSelector: uint64;
+}
+```
+
+---
+
+### `DestChainConfigUpdated`
+
+Emitted when the configuration for a destination chain is updated on the OnRamp.
+
+```tolk
+const DEST_CHAIN_CONFIG_UPDATED_TOPIC: int = stringCrc32("DestChainConfigUpdated");
+struct DestChainConfigUpdated {
+    destChainSelector: uint64;
+    destChainConfig: OnRamp_DestChainConfig;
+}
+```
+
+---
+
+## Router Admin Events
+
+### `OnRampSet`
+
+Emitted when an OnRamp is configured or updated for a destination chain selector.
+
+```tolk
+const ON_RAMP_SET_TOPIC: int = stringCrc32("OnRampSet");
+struct OnRampSet {
+    destChainSelectors: SnakedCell<uint64>;
+    onRamp: address?;
+}
+```
+
+---
+
+### `OffRampAdded`
+
+Emitted when an OffRamp is added for a source chain selector.
+
+```tolk
+const OFF_RAMP_ADDED_TOPIC: int = stringCrc32("OffRampAdded");
+struct OffRampAdded {
+    sourceChainSelectors: SnakedCell<uint64>;
+    offRampAdded: address;
+}
+```
+
+---
+
+### `OffRampRemoved`
+
+Emitted when an OffRamp is removed.
+
+```tolk
+const OFF_RAMP_REMOVED_TOPIC: int = stringCrc32("OffRampRemoved");
+struct OffRampRemoved {
+    sourceChainSelectors: SnakedCell<uint64>;
+    offRampRemoved: address;
+}
+```
+
+---
+
+### `Cursed` / `Uncursed`
+
+Emitted by the Router when an RMN curse is applied or lifted for a subject (e.g., a source chain).
+
+```tolk
+const CURSED_TOPIC: int = stringCrc32("Cursed");
+struct Cursed { subject: uint128; }
+
+const UNCURSED_TOPIC: int = stringCrc32("Uncursed");
+struct Uncursed { subject: uint128; }
+```
+
+<CcipCommon callout="educationalDisclaimer" />

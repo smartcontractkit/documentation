@@ -1,0 +1,167 @@
+---
+section: ace
+title: "Key Terms and Concepts"
+date: Last Modified
+metadata:
+  description: "Glossary of Chainlink ACE terminology: CCID, credentials, registries, policies, PolicyEngine, extractors, policy chains, default results, delegated signing, Proof of Reserve, CRE Connect, and all other key concepts."
+  datePublished: "2026-04-20"
+  lastModified: "2026-04-20"
+---
+
+This glossary defines the key terms used throughout the ACE documentation. Use it as a quick reference when reading other pages.
+
+### ACE Platform
+
+The complete user-facing layer of ACE, consisting of the Platform UI ([app.chain.link](https://app.chain.link)), the Coordinator API (create, configure, and deploy ACE resources), and the Reporting API (query onchain state and transaction history). Everything you can do in the UI is also available through the Coordinator API.
+
+### AML (Anti-Money Laundering)
+
+A set of laws, regulations, and procedures designed to prevent criminals from disguising illegally obtained funds as legitimate income.
+
+### CCID (Cross-Chain Identifier)
+
+A 32-byte identifier that uniquely represents an entity across multiple EVM blockchains. A CCID links one or more wallet addresses — potentially on different chains — to a single identity. Credentials like KYC or AML status are attached to the CCID, not to individual addresses, making them portable across chains. Learn more in [Cross-Chain Identity](/ace/concepts/cross-chain-identity).
+
+### Composability
+
+The ability to combine modular components in a flexible manner. In ACE, composability means you can chain multiple policies together on a single function, use Policy Management with or without Cross-Chain Identity, and reuse the same policies across different contracts and functions.
+
+### Context parameter
+
+A `bytes` field passed through the policy execution flow, used to supply arbitrary transaction-specific data to policies. Common uses include offchain signatures, Merkle proofs for allowlist verification, and dynamic risk parameters. Learn more in [Policy Management Concepts](/ace/concepts/policy-management).
+
+### Coordinator API
+
+The management API for creating, configuring, and deploying ACE resources (policy engines, policies, identities, credentials). Part of the [ACE Platform](#ace-platform). Everything available in the [Platform UI](#platform-ui) is also available through this API. See the [Coordinator API overview](/ace/reference/api/coordinator) for details.
+
+### CRE Connect
+
+Chainlink infrastructure that routes [ACE Platform](#ace-platform) actions to the blockchain. When you trigger an action (deploy a policy, register an identity), CRE Connect prepares and executes the blockchain transaction through your [CRE Connect Wallet](#cre-connect-wallet).
+
+### Credential
+
+A verifiable attribute linked to a [CCID](#ccid-cross-chain-identifier), such as KYC verification, AML clearance, or accredited investor status. Credentials are stored in a [Credential Registry](#credential-registry) and can be validated onchain without revealing sensitive information. Only hashes or minimal references are stored on the blockchain — the actual PII stays offchain.
+
+### Credential Data Validator
+
+An optional onchain contract configured on a [Credential Source](#credential-source) that inspects the contents of a credential's `credentialData` field. This enables decisions based on what's inside a credential (for example, an investor accreditation tier), not just whether the credential exists. Not available through the ACE Platform during Beta — all credential checks operate in attestation-only mode. Learn more in [Cross-Chain Identity — Credential data and privacy](/ace/concepts/cross-chain-identity#credential-data-and-privacy).
+
+### Credential Issuer
+
+A trusted offchain entity (for example, a KYC/AML provider) authorized to perform real-world identity verification, generate CCIDs, and register the resulting credentials onchain. The Credential Issuer's write access to the registries is governed by policies in the [PolicyEngine](#policy-engine), ensuring only authorized issuers can create identities and issue credentials.
+
+### Credential Registry
+
+An onchain contract that manages the lifecycle of credentials linked to CCIDs, including registration, validation, renewal, and removal. Each credential record includes a credential type identifier, an expiration timestamp, and optional credential data (typically a hash for privacy).
+
+### Credential Source
+
+An onchain data structure that tells the [Identity Validator](#identity-validator) which [Identity Registry](#identity-registry) and [Credential Registry](#credential-registry) to trust for a given credential type. A single source can handle multiple credential types. Sources are configured when setting up the `CredentialRegistryIdentityValidatorPolicy`.
+
+### Credential Type Identifier
+
+A `bytes32` value that denotes the type of credential (for example, KYC, AML, or accredited investor). Identifiers are generated using `keccak256` of a namespaced string: `keccak256("common.kyc")` for standard types, or `keccak256("com.yourapp.custom")` for application-specific types. The `common.` prefix is reserved for standard credential types like `common.kyc`, `common.aml`, `common.kyb`, and `common.accredited`.
+
+### Default result
+
+The [PolicyEngine](#policy-engine)'s fallback decision when every policy in a [policy chain](#policy-chain) returns Continue and none makes a final Allow or Reject decision. The default result can be set to either allow or reject, and it is configured per target contract via the `desired_default_allow` field. Learn more in [Policy Ordering & Composition](/ace/concepts/policy-ordering#the-default-result).
+
+### Delegated signing
+
+The signing model used during ACE Beta. Chainlink signs and executes blockchain transactions on your behalf via the [CRE Connect Wallet](#cre-connect-wallet). You retain full ownership of all contracts. A self-signing model is on the roadmap.
+
+### DON (Decentralized Oracle Network)
+
+A network of independent Chainlink oracle nodes that reach consensus on offchain computations and deliver certified results onchain. The `CertifiedActionDONValidatorPolicy` uses a DON to validate that a transaction has been approved through an offchain workflow before allowing it to proceed.
+
+### ERC-20
+
+A widely used Ethereum token standard defining rules for fungible tokens. ACE provides a reference implementation (`ComplianceTokenERC20`) that adds policy-protected transfers, minting, and burning to a standard ERC-20.
+
+### ERC-165
+
+An Ethereum standard that enables contracts to declare the interfaces they implement. ACE contracts use ERC-165 for interface detection during policy registration and validation.
+
+### ERC-3643
+
+A regulated token standard (also known as T-REX) designed for securities and permissioned tokens. ACE provides a reference implementation (`ComplianceTokenERC3643`) that replaces the canonical T-REX identity (ONCHAINID) and compliance (ModularCompliance) systems with ACE equivalents.
+
+### Extractor
+
+A helper contract that parses raw transaction calldata for a specific function signature and decodes it into a list of named parameters. The [PolicyEngine](#policy-engine) uses extractors to provide each policy with the specific parameters it needs. For example, an `ERC20TransferExtractor` parses `transfer(address,uint256)` calls into `to` and `value` parameters.
+
+### Identity Manager
+
+The ACE Beta product for managing cross-chain identities and credentials via the platform UI or API. Identity Manager operates on the [Cross-Chain Identity](/ace/concepts/cross-chain-identity) onchain contracts (Identity Registry and Credential Registry).
+
+### Identity Registry
+
+An onchain contract that maintains mappings between wallet addresses and [CCIDs](#ccid-cross-chain-identifier). Each address maps to exactly one CCID, though a single CCID can be associated with multiple addresses across multiple chains.
+
+### Identity Validator
+
+An onchain contract (typically the `CredentialRegistryIdentityValidatorPolicy`) that verifies whether a given account meets a set of credential requirements. When a user calls a protected function, the Identity Validator resolves the user's address to a CCID, then checks whether that CCID holds the required credentials from trusted [Credential Sources](#credential-source).
+
+### KYC (Know Your Customer)
+
+A compliance process requiring financial institutions to verify the identity of their clients. In ACE, KYC is represented as a credential type (`common.kyc`) attached to a user's [CCID](#ccid-cross-chain-identifier) after offchain verification by a [Credential Issuer](#credential-issuer).
+
+### Mapper
+
+An optional helper contract used to transform or combine parameters extracted from transaction data before passing them to a policy. Mappers are needed only for advanced scenarios — for example, calculating a USD value from a token amount and price before passing it to a volume policy. In most cases, the PolicyEngine's built-in name-based parameter mapping is sufficient.
+
+### PII (Personally Identifiable Information)
+
+Information that can identify an individual, such as a name, address, or national ID number. ACE's [Cross-Chain Identity](/ace/concepts/cross-chain-identity) system avoids storing PII onchain, using hashed references instead to preserve privacy.
+
+### Platform UI
+
+The web interface at [app.chain.link](https://app.chain.link) for managing ACE resources visually — deploying policy engines, configuring policies, registering identities, and issuing credentials. Part of the [ACE Platform](#ace-platform). Everything available in the UI is also available through the [Coordinator API](#coordinator-api).
+
+### Policy
+
+A self-contained onchain contract that holds a single compliance rule. Each policy implements a `run()` function that receives parameters and returns a verdict: `Allowed` (final approval), `Continue` (defer to the next policy), or reverts with `PolicyRejected` (final rejection). Policies can optionally implement a `postRun()` function for state changes after a check passes (for example, incrementing a volume counter). See the [Policy Library](/ace/reference/policy-library) for all pre-built policies.
+
+### Policy chain
+
+The ordered sequence of policies attached to a specific function selector on a target contract. The [PolicyEngine](#policy-engine) executes policies in chain order; each policy's result (Reject, Allow, or Continue) determines whether subsequent policies run. Learn more in [Policy Ordering & Composition](/ace/concepts/policy-ordering).
+
+### Policy Engine
+
+The central onchain orchestrator. The PolicyEngine holds the registry of all policies attached to a protected contract's function selectors. When a protected function is called, the PolicyEngine calls the relevant [Extractor](#extractor) to parse the transaction data, then executes each attached policy in order. A single PolicyEngine can manage policies for multiple contracts and functions.
+
+### Policy Management
+
+The onchain framework for defining, executing, and managing dynamic compliance rules. It consists of [PolicyProtected](#policyprotected) contracts (the hook), the [PolicyEngine](#policy-engine) (the orchestrator), [Policies](#policy) (the rules), and [Extractors](#extractor) (the data parsers). Learn more in [Policy Management Concepts](/ace/concepts/policy-management).
+
+### Policy Manager
+
+The ACE Beta product for managing policy engines, policy instances, extractors, and protected contracts via the platform UI or API. Policy Manager operates on the [Policy Management](/ace/concepts/policy-management) onchain contracts.
+
+### PolicyProtected
+
+An abstract contract that your application inherits from. It provides the `runPolicy` modifier, which acts as the hook into the policy system. When a user calls a function decorated with `runPolicy`, the modifier intercepts the call and asks the [PolicyEngine](#policy-engine) to evaluate all attached policies before allowing execution to proceed.
+
+### Proof of Reserve (PoR)
+
+A Chainlink data feed that reports the real-world reserves backing a tokenized asset. The `SecureMintPolicy` uses a PoR feed to verify that minting new tokens will not exceed proven reserves. Learn more in the [SecureMintPolicy reference](/ace/reference/policy-library/secure-mint-policy).
+
+### Protected function
+
+A function on your smart contract that is guarded by the `runPolicy` modifier. When called, the modifier intercepts execution and routes it through the [PolicyEngine](#policy-engine) for policy evaluation before allowing the function body to proceed.
+
+### Reporting API
+
+The API for querying onchain state, transaction history, and policy run results. Chainlink's indexing infrastructure monitors onchain events emitted by your PolicyEngines and makes the data available through this API. Part of the [ACE Platform](#ace-platform). See the [Reporting API overview](/ace/reference/api/reporting) for details.
+
+### Reporting Manager
+
+The ACE Beta product for querying onchain state, transaction history, and policy run results. Currently available via API only. Reporting Manager exposes data from the Reporting API, which indexes onchain events and state.
+
+### CRE Connect Wallet
+
+A dedicated onchain smart contract wallet deployed for your organization on each network where you use ACE. Your wallet owns the CRE Connect Wallet, and the CRE Connect Wallet owns all your ACE contracts (policy engines, registries, policies). Chainlink is registered as an authorized operator, allowed to execute operations on your behalf but unable to change ownership or authorization settings.
+
+### Trusted Verifier
+
+See [Credential Issuer](#credential-issuer). A trusted verifier is an offchain entity authorized to conduct external checks (KYC, AML, document verification) and register the resulting credentials onchain.

@@ -62,6 +62,7 @@ export function setChainType(chainType: ChainType): void {
  *   /ccip/tutorials/evm/transfer-tokens → 'evm'
  *   /ccip/service-limits/svm → 'solana'
  *   /ccip/api-reference/aptos/v1.6.0 → 'aptos'
+ *   /ccip/tutorials/ton/receivers → 'ton'
  *
  * @param pathname - URL pathname to analyze
  * @returns Detected chain type or null if not found
@@ -70,6 +71,7 @@ function detectChainFromPath(pathname: string): ChainType | null {
   if (/\/(evm|ethereum)(\/|$)/i.test(pathname)) return "evm"
   if (/\/(svm|solana)(\/|$)/i.test(pathname)) return "solana"
   if (/\/aptos(\/|$)/i.test(pathname)) return "aptos"
+  if (/\/ton(\/|$)/i.test(pathname)) return "ton"
   return null
 }
 

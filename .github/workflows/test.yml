@@ -326,5 +326,15 @@ jobs:
             npm ci --prefer-offline --no-audit
           fi
 
+      - name: Regenerate LLM files
+        run: npm run generate:llms
+
+      - name: Check LLM files are up-to-date
+        run: |
+          if ! git diff --exit-code 'src/content/**/llms-full*.txt'; then
+            echo "LLM files are out of date. Run 'npm run generate:llms' and commit the result."
+            exit 1
+          fi
+
       - name: Validate LLM files
         run: npm run check:llms

@@ -1,0 +1,105 @@
+---
+section: ace
+title: "Chainlink ACE Overview"
+isIndex: true
+date: Last Modified
+metadata:
+  description: "Chainlink ACE (Automated Compliance Engine) provides programmable, cross-chain compliance for smart contracts. Learn how ACE enables modular policy management and cross-chain identity verification."
+  datePublished: "2026-04-20"
+  lastModified: "2026-04-20"
+---
+
+import { Aside, ClickToZoom } from "@components"
+
+<Aside type="note" title="Private Beta">
+  ACE is currently available in **private beta**. To request access or schedule a demo, [contact
+  us](https://chain.link/contact). See [Beta Scope](/ace/beta-scope) for the current feature set and limitations.
+</Aside>
+
+**Chainlink Automated Compliance Engine (ACE)** is a compliance layer for EVM smart contracts. It enforces rules — transfer limits, identity checks, sanctions screening, and more — at transaction time, without embedding compliance logic in your application code. Rules can be added, updated, or removed through the ACE Platform — your application contract doesn't need to change.
+
+## What problems does ACE solve?
+
+Building compliant applications on the blockchain requires handling:
+
+- **Dynamic policy enforcement** that evolves with regulations — without redeploying your core application contracts.
+- **Identity verification** across chains, without fragmented credentials that force users to re-verify on every chain.
+- **Trusted external data** (KYC providers, sanctions lists, price feeds, Proof of Reserves, etc.) delivered onchain to inform compliance decisions.
+
+## Who is ACE for?
+
+ACE serves three primary audiences:
+
+- **Token issuers and asset managers** — Enforce compliance rules (transfer limits, investor checks, sanctions screening) on your smart contracts. ACE separates these rules from your application code, so you can update them as regulations change — without redeploying.
+- **Identity verification (IDV) providers** — Issue cross-chain credentials (KYC, AML, accredited investor status) that your clients can verify on any EVM chain from a single issuance. No need for users to re-verify on every network.
+- **Compliance and legal teams** — Monitor and manage compliance rules through a visual interface — no code required. Every policy decision is recorded onchain and queryable through the Reporting API, providing a complete audit trail.
+
+## What is ACE?
+
+ACE has two layers: **onchain smart contracts** that enforce compliance rules on the blockchain, and the **ACE Platform** that lets you manage those contracts through a UI and APIs.
+
+### Onchain contracts
+
+ACE is built on two sets of smart contracts:
+
+- **[Policy Management](/ace/concepts/policy-management)** — A dynamic engine that enforces compliance rules on your smart contracts. A **PolicyEngine** evaluates a chain of modular **policies** every time a protected function is called. Policies can be added, removed, or reordered without changing your contract.
+- **[Cross-Chain Identity](/ace/concepts/cross-chain-identity)** — A portable identity system for EVM chains. A **Cross-Chain Identifier (CCID)** links all of a user's wallet addresses across chains to a single identity. Credentials like KYC or AML status are attached to the CCID once and verified everywhere.
+
+These contracts execute automatically at transaction time. For a detailed view of the architecture, see [ACE Architecture](/ace/concepts/architecture).
+
+### ACE Platform
+
+The [ACE Platform](/ace/concepts/key-terms#ace-platform) provides three managers that let you operate on these contracts:
+
+- **Policy Manager** (UI + API) — Configure and deploy compliance rules for your smart contracts.
+- **Identity Manager** (UI + API) — Manage cross-chain identities and issue credentials.
+- **Reporting Manager** (API) — Query policy run history, transaction data, and onchain state.
+
+ACE is currently in Beta. See [Beta Scope](/ace/beta-scope) for the current scope and supported features.
+
+## Key features
+
+- **Modular policies** — Each compliance rule is a self-contained module. Chain them together to build sophisticated rulesets; add or remove individual rules without affecting others.
+- **Update without redeploying** — When regulations change, update your compliance rules through the ACE Platform. Your core smart contract stays untouched.
+- **Cross-chain identity** — Verify a user's identity once; the credential is valid across every EVM chain. No re-verification needed when users operate on a new network.
+- **Privacy-preserving** — Sensitive user data stays offchain. Only verification results (credentials) are recorded onchain, typically as hashes or minimal references.
+- **Auditable and transparent** — Every policy evaluation is recorded onchain and queryable through the Reporting API, giving compliance teams a complete audit trail.
+- **Ready-to-use policy library** — Pre-built modules for common scenarios: allowlists, blocklists, volume limits, time restrictions, role-based access, Proof of Reserves minting caps, and identity checks.
+
+## How it works: a real-world example
+
+Here's how ACE components work together. Imagine **Emma** (an institutional investor) wants to buy **$50,000** of a **tokenized bond** on a DEX.
+
+<ClickToZoom
+  src="/images/ace/overview-example.png"
+  caption="Emma buys tokenized bonds: the PolicyEngine checks her credentials and volume limits before approving the trade."
+/>
+
+### The compliance journey, step by step
+
+1. **Transaction initiated** — Emma submits her buy order on the DEX. Before executing, the DEX's smart contract calls the **PolicyEngine** to validate the transaction.
+1. **Credential check executes** — The PolicyEngine runs the credential check, which uses the **Cross-Chain Identity** component to verify Emma has the required credentials (KYC verified, accredited investor). The same identity and credentials would be valid even if Emma were using a different wallet address on a different EVM chain.
+1. **Volume limit executes** — The engine runs the volume limit policy, which tracks Emma's trading volume over time and confirms the $50,000 trade is within her daily limit.
+1. **Transaction approved** — With all policies passing, the PolicyEngine allows the transaction to proceed. The DEX executes the trade and Emma receives her tokenized bonds.
+
+The power of this model is that if regulations change tomorrow, the DEX's owners could add a new policy (for example, a time-of-day restriction) without redeploying or altering the main DEX contract. If any policy check had failed, the PolicyEngine would have reverted the transaction, preventing a non-compliant trade.
+
+## Where to go next?
+
+### Understand ACE
+
+Start here regardless of your role:
+
+1. **[ACE Architecture](/ace/concepts/architecture)** — System components and how they connect.
+1. **[Key Terms](/ace/concepts/key-terms)** — ACE-specific terminology.
+1. **[Policy Management](/ace/concepts/policy-management)** — How compliance rules work.
+1. **[Cross-Chain Identity](/ace/concepts/cross-chain-identity)** — How identity and credentials work.
+
+### Build with ACE
+
+- **[Policy Manager](/ace/concepts/policy-management)** — Configure and manage compliance policies for your smart contracts.
+- **[Identity Manager](/ace/concepts/cross-chain-identity)** — Manage cross-chain identities and credentials.
+- **[Policy Library](/ace/reference/policy-library)** — All pre-built policies with configuration details.
+- **[Policy Ordering & Composition](/ace/concepts/policy-ordering)** — How to compose effective rulesets.
+- **[Coordinator API](/ace/reference/api/coordinator)** — Manage ACE resources programmatically.
+- **[Reporting API](/ace/reference/api/reporting)** — Query compliance state and transaction history.
