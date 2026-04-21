@@ -44,12 +44,6 @@ Use a custom Rust plugin when you need logic that is impractical or impossible t
 
 Before using custom Rust plugins, you need:
 
-- **Rust stable toolchain** with the `wasm32-wasip1` target:
-
-  ```bash
-  rustup target add wasm32-wasip1
-  ```
-
 - **Bun** — the TypeScript SDK uses Bun for compilation. The Javy binary used by `cre-compile` is downloaded automatically when you run `bun install` via a `postinstall` hook — no manual setup required.
 - **Custom WASM builds enabled** for your workflow — Rust plugins are injected via `cre-compile` flags, which you control from a custom `Makefile`. If your workflow still uses automatic compilation, convert it first:
 
@@ -58,6 +52,14 @@ Before using custom Rust plugins, you need:
   ```
 
   See [Custom WASM Builds](/cre/guides/operations/custom-build) for full details.
+
+**Rust toolchain** — only if you compile your own extensions with `--cre-exports` (Mode 2) or follow the **Try it yourself** walkthrough below. You do **not** need Rust on your machine for **Mode 1 (`--plugin`)**: the prebuilt `.plugin.wasm` was already compiled upstream.
+
+If you are using Mode 2 or the walkthrough, install a stable Rust toolchain and add the `wasm32-wasip1` target:
+
+```bash
+rustup target add wasm32-wasip1
+```
 
 ## Mode 1: Prebuilt plugin (`--plugin`)
 
@@ -259,13 +261,7 @@ build:
 
 Walk through source extension mode end to end. This uses Mode 2 (`--cre-exports`) since it works with a local Rust crate you write yourself — no externally published plugin package required.
 
-**Prerequisites:**
-
-```bash
-rustup target add wasm32-wasip1
-```
-
-If you don't have a CRE project yet, create one with `cre init` and follow the [Getting Started guide](/cre/getting-started/overview). Once you're done, your working directory structure should look like this:
+**Prerequisites:** Rust with `wasm32-wasip1` (see [Prerequisites](#prerequisites) above). If you don't have a CRE project yet, create one with `cre init` and follow the [Getting Started guide](/cre/getting-started/overview). Once you're done, your working directory structure should look like this:
 
 ```
 my-project/
@@ -389,20 +385,15 @@ my-workflow/
 │   └── src/
 │       └── lib.rs
 ├── node_modules/
-└── wasm/                     ← created by make build
+└── wasm/                     ← workflow.wasm appears after simulate (or `make build`)
     └── workflow.wasm
 ```
 
-**6. Build and simulate:**
+**6. Simulate:**
 
-Run `make build` from inside your workflow directory, then simulate from the **project root**:
+From **my-project/** (the project root), run the simulator. It builds the workflow WASM first unless you point it at an existing binary, so you do not need to run `make build` manually before simulating:
 
 ```bash
-# From my-workflow/
-make build
-
-# From my-project/ (project root)
-cd ..
 cre workflow simulate ./my-workflow --target staging-settings
 ```
 
@@ -426,4 +417,3 @@ You should see output like the following, confirming your Rust function was call
 - [TypeScript Runtime Environment](/cre/concepts/typescript-wasm-runtime): Understand the Javy/QuickJS compilation pipeline and its constraints
 - [Custom WASM Builds](/cre/guides/operations/custom-build): How to take ownership of the `cre-compile` step with a custom `Makefile`
 - [Simulating Workflows](/cre/guides/operations/simulating-workflows): Test your workflow locally before deployment
-- [TS SDK v1.6.0 Release Notes](/cre/release-notes#ts-sdk-v160---april-20-2026): What changed in the release that introduced this feature
