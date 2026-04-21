@@ -1,0 +1,49 @@
+---
+section: ace
+title: "MaxPolicy"
+date: Last Modified
+metadata:
+  description: "MaxPolicy reference: enforces a maximum value per transaction. Configuration, runtime behavior, and use cases."
+  datePublished: "2026-04-20"
+  lastModified: "2026-04-20"
+---
+
+The MaxPolicy enforces a maximum value constraint on individual transactions. It compares a value extracted from the transaction (for example, a transfer amount) against a configured ceiling and rejects any transaction where the value exceeds that ceiling.
+
+## Configuration
+
+### Maximum amount
+
+Set a single `uint256` value that defines the upper limit for the extracted parameter. Any transaction where the extracted value exceeds this number will be rejected.
+
+The maximum is set when the policy is first deployed and can be updated afterward by the policy owner.
+
+## Runtime behavior
+
+The policy expects exactly one parameter from the extractor:
+
+| Parameter | Type      | Description                             |
+| --------- | --------- | --------------------------------------- |
+| `amount`  | `uint256` | The value to check against the maximum. |
+
+- **`run()`** — Reverts if `amount > max`. Returns `Continue` otherwise.
+- **`postRun()`** — No state changes.
+
+## API reference
+
+### Setter functions
+
+- **`setMax(uint256 max)`** — Updates the maximum allowed value.
+
+### View functions
+
+- **`getMax()`** — Returns the current maximum.
+
+## Use cases
+
+- **Transfer caps** — Limit individual token transfers to a maximum amount.
+- **Spending limits** — Prevent single transactions from exceeding a threshold.
+
+## Source
+
+[MaxPolicy.sol](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/src/policies/MaxPolicy.sol)

@@ -1,0 +1,53 @@
+---
+section: ace
+title: "Cross-Chain Identity Contracts"
+date: Last Modified
+metadata:
+  description: "Reference for the Chainlink ACE Cross-Chain Identity smart contracts: IIdentityRegistry, ICredentialRegistry, ICredentialRequirements, IIdentityValidator, ICredentialDataValidator, and ITrustedIssuerRegistry."
+  datePublished: "2026-04-20"
+  lastModified: "2026-04-20"
+---
+
+import { Aside } from "@components"
+
+<Aside type="note" title="On-chain contracts vs. ACE Platform">
+  The contracts on this page are the **on-chain foundation** of ACE — smart contracts deployed on EVM chains that manage
+  identities and credentials. The **ACE Platform** (Policy Manager, Identity Manager, Reporting Manager) is a separate
+  set of off-chain services built on top of these contracts, providing a managed experience through the Platform UI and
+  Coordinator API. You can use the platform to manage these contracts, or interact with them directly. See [Beta
+  Scope](/ace/beta-scope) for current platform limitations.
+</Aside>
+
+The Cross-Chain Identity contracts manage identity registries and credential lifecycles for ACE. They depend on the [Policy Management contracts](/ace/reference/policy-management-contracts) — registries are owned and governed by a PolicyEngine. The source code and full documentation are available in the <a href="https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/cross-chain-identity" target="_blank">cross-chain-identity package</a> of the <a href="https://github.com/smartcontractkit/chainlink-ace" target="_blank">chainlink-ace repository</a> (Business Source License 1.1).
+
+## Core interfaces
+
+| <div style={{ width: "175px" }}>Interface</div>                                                                                                                   | Description                                                                                                                                                                                                              |
+| :---------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [IIdentityRegistry](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/cross-chain-identity/src/interfaces/IIdentityRegistry.sol)               | Maps wallet addresses to Cross-Chain Identifiers (CCIDs). Supports registering and removing address-to-CCID mappings, and looking up the CCID for a given address or all addresses for a given CCID.                     |
+| [ICredentialRegistry](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/cross-chain-identity/src/interfaces/ICredentialRegistry.sol)           | Manages the lifecycle of credentials linked to a CCID — registration, renewal, removal, and expiration checks. Each credential is identified by a `credentialTypeId` (a `keccak256` hash of the credential type string). |
+| [ICredentialRequirements](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/cross-chain-identity/src/interfaces/ICredentialRequirements.sol)   | Defines which credentials a policy requires, which registries to check, and how many validations must pass. Supports complex rules via credential sources, minimum validation thresholds, and inverted checks.           |
+| [IIdentityValidator](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/cross-chain-identity/src/interfaces/IIdentityValidator.sol)             | Validates whether an account meets all configured credential requirements. Used by the `CredentialRegistryIdentityValidatorPolicy` to check identities during policy evaluation.                                         |
+| [ICredentialValidator](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/cross-chain-identity/src/interfaces/ICredentialValidator.sol)         | Validates whether specific credentials exist and are valid for a given CCID. Provides both single-credential and batch validation functions.                                                                             |
+| [ICredentialDataValidator](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/cross-chain-identity/src/interfaces/ICredentialDataValidator.sol) | Optional interface for inspecting the contents of a credential's `credentialData` field. Enables granular, data-level checks beyond simple attestation (e.g., verifying a specific claim within the credential payload). |
+| [ITrustedIssuerRegistry](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/cross-chain-identity/src/interfaces/ITrustedIssuerRegistry.sol)     | Manages the list of trusted credential issuers — addresses authorized to register and manage credentials in a credential registry.                                                                                       |
+
+## Repository documentation
+
+The [cross-chain-identity docs](https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/cross-chain-identity/docs) folder contains detailed guides:
+
+- [Concepts](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/cross-chain-identity/docs/CONCEPTS.md)
+  — CCID model, credential type IDs, privacy, and design rationale
+- [API Guide](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/cross-chain-identity/docs/API_GUIDE.md)
+  — Deploy registries, configure validator policies, and authorize issuers
+- [API Reference](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/cross-chain-identity/docs/API_REFERENCE.md)
+  — Complete interface specifications with function signatures, events, and errors
+- [Credential Flow](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/cross-chain-identity/docs/CREDENTIAL_FLOW.md)
+  — End-to-end lifecycle from issuance to validation
+- [Security Considerations](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/cross-chain-identity/docs/SECURITY.md)
+  — Issuer trust, PII handling, CCID correlation, and non-reverting requirements
+
+## Related pages
+
+- [Cross-Chain Identity](/ace/concepts/cross-chain-identity) — Conceptual overview of CCIDs, registries, and credential sources
+- [Credential Registry Identity Validator Policy](/ace/reference/policy-library/credential-registry-identity-validator-policy) — The policy that checks credentials at transaction time

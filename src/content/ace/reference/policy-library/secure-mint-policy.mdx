@@ -1,0 +1,96 @@
+---
+section: ace
+title: "SecureMintPolicy"
+date: Last Modified
+metadata:
+  description: "SecureMintPolicy reference: ensures token minting does not exceed verified reserves using a Chainlink Proof of Reserve data feed. Configuration, runtime behavior, and use cases."
+  datePublished: "2026-04-20"
+  lastModified: "2026-04-20"
+---
+
+import { Aside } from "@components"
+
+The SecureMintPolicy ensures the total supply of a token does not exceed the actual reserves of the underlying asset. Before every mint, it reads the latest reserve value from a [Chainlink Proof of Reserve](/data-feeds/proof-of-reserve) data feed and checks whether the new total supply (current supply plus the requested mint amount) would exceed what the reserves can back. If it would, the policy rejects the transaction.
+
+## Configuration
+
+All properties are set when the policy is first deployed and can be updated individually afterward by the policy owner.
+
+### Proof of Reserve feed
+
+The policy needs the address of a data feed contract that reports the reserves backing your token. This is typically a [Chainlink Proof of Reserve](/data-feeds/proof-of-reserve) feed, but any contract that implements the `AggregatorV3Interface` will work.
+
+You can find available Proof of Reserve feeds on the [Data Feeds page](/data-feeds/smartdata/addresses). Each SecureMintPolicy instance supports one feed. If your token is backed by multiple reserve sources, deploy a separate SecureMintPolicy instance for each feed and add them all to the same policy chain.
+
+### Token metadata
+
+Provide the address of the token this policy protects and its number of decimals (between 1 and 18). The policy needs both values to work correctly:
+
+- **Token address** — At runtime, the policy calls `totalSupply()` on the protected contract to determine the current supply. The token address you provide here is used during configuration to validate the decimals value against the token's on-chain metadata.
+- **Token decimals** — The policy uses the decimals to scale the reserve feed's value so the comparison is accurate. If the token exposes a `decimals()` function on-chain, the policy validates your input against it automatically. If the token does not expose `decimals()`, the value you provide is used as-is — make sure it is correct.
+
+<Aside type="caution" title="Decimal scaling">
+  The policy scales between the feed's decimals and the token's decimals automatically. However, if you provide an
+  incorrect decimal value for a token that does not expose `decimals()` on-chain, the reserve calculation will be wrong
+  — potentially allowing over-minting or blocking valid mints. Always verify the token's actual decimals before
+  configuring this policy.
+</Aside>
+
+### Reserve margin
+
+By default, the maximum mintable supply equals the reported reserves exactly. A reserve margin lets you adjust this relationship — either requiring reserves to exceed the supply by a buffer (positive margin) or allowing the supply to slightly exceed reserves for operational flexibility (negative margin).
+
+The margin has two parts: a **mode** that determines how the margin is calculated, and an **amount** that sets how large the margin is.
+
+| <div style="width: 170px;">Mode</div> | Effect                                                                     | <div style="width: 200px;">Example (reserves = 1000)</div> |
+| ------------------------------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `None`                                | No margin. Maximum supply equals reserves directly.                        | Limit = 1000                                               |
+| `PositivePercentage`                  | Reserves must exceed supply by a percentage. Keeps a safety cushion.       | 10% margin -> limit = 900                                  |
+| `PositiveAbsolute`                    | Reserves must exceed supply by a fixed amount.                             | 50 margin -> limit = 950                                   |
+| `NegativePercentage`                  | Supply can exceed reserves by a percentage. Provides operational headroom. | 10% margin -> limit = 1100                                 |
+| `NegativeAbsolute`                    | Supply can exceed reserves by a fixed amount.                              | 50 margin -> limit = 1050                                  |
+
+For percentage-based modes, the amount is specified in basis points (hundredths of a percent). For example, 12.34% is represented as `1234`, and 100% is `10000`.
+
+### Staleness threshold
+
+Reserve data can become outdated if the feed hasn't been updated recently. The staleness threshold defines the maximum age (in seconds) of the reserve data before the policy rejects. If the feed's last update is older than this threshold, any mint attempt will fail.
+
+To choose the right value, check the **heartbeat** of your Proof of Reserve feed on the [Data Feeds page](/data-feeds/proof-of-reserve). The heartbeat tells you the maximum interval between feed updates. Your staleness threshold should typically match or slightly exceed the heartbeat.
+
+Setting the staleness threshold to `0` disables the check entirely — the policy will accept reserve data of any age.
+
+## Runtime behavior
+
+The policy expects one parameter from the extractor:
+
+| Parameter | Type      | Description                        |
+| --------- | --------- | ---------------------------------- |
+| `amount`  | `uint256` | The number of tokens being minted. |
+
+- **`run()`** — Fetches the latest reserve value from the configured data feed. Rejects if the reserve value is negative. If a staleness threshold is set and the data is too old, rejects. Scales the reserve value to match the token's decimals, then calculates the maximum mintable supply using the reserve margin configuration. Rejects if `totalSupply + amount` would exceed this limit. Returns `Continue` otherwise.
+- **`postRun()`** — No state changes.
+
+## API reference
+
+### Setter functions
+
+- **`setReservesFeed(address reservesFeed)`** — Updates the data feed address. Reverts if the new address is the same as the current one.
+- **`setTokenMetadata(address tokenAddress, uint8 tokenDecimals)`** — Updates the token decimals. The token address must match the current one (you cannot change the protected token). Decimals must be between 1 and 18, must differ from the current value, and are validated against the token's on-chain metadata when available.
+- **`setReserveMargin(ReserveMarginMode mode, uint256 amount)`** — Updates the margin mode and amount. For percentage modes, the amount is in basis points and must be `<= 10000`. For absolute modes, the amount must be `> 0`. Reverts if both values are identical to the current configuration.
+- **`setMaxStalenessSeconds(uint256 value)`** — Updates the staleness threshold in seconds. Set to `0` to disable the check. Reverts if the value is the same as the current one.
+
+### View functions
+
+- **`reservesFeed()`** — Returns the address of the current data feed.
+- **`reserveMarginMode()`** — Returns the current margin mode.
+- **`reserveMarginAmount()`** — Returns the current margin amount.
+- **`maxStalenessSeconds()`** — Returns the current staleness threshold in seconds.
+
+## Use cases
+
+- **Collateralized token minting** — Ensure that a stablecoin or asset-backed token cannot be minted beyond the value of its verified reserves.
+
+## Source
+
+[SecureMintPolicy.sol](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/src/policies/SecureMintPolicy.sol)
