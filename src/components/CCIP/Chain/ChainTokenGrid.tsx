@@ -1,5 +1,5 @@
 import { Environment, Version, Network } from "~/config/data/ccip/types.ts"
-import { getAllTokenLanes, getTokenData } from "~/config/data/ccip/data.ts"
+import { getTokenData } from "~/config/data/ccip/data.ts"
 import TokenCard from "../Cards/TokenCard.tsx"
 import { drawerContentStore, DrawerWidth, drawerWidthStore } from "../Drawer/drawerStore.ts"
 import TokenDrawer from "../Drawer/TokenDrawer.tsx"
@@ -65,11 +65,6 @@ function ChainTokenGrid({ tokens, network, environment }: ChainTokenGridProps) {
                   .find((n) => n.key === network.key)
 
                 if (selectedNetwork) {
-                  const destinationLanes = getAllTokenLanes({
-                    environment,
-                    version: Version.V1_2_0,
-                    token: token.id,
-                  })[selectedNetwork.key]
                   drawerWidthStore.set(DrawerWidth.Wide)
                   drawerContentStore.set(() => (
                     <TokenDrawer
@@ -80,7 +75,6 @@ function ChainTokenGrid({ tokens, network, environment }: ChainTokenGridProps) {
                         symbol: selectedNetwork.tokenSymbol,
                       }}
                       network={selectedNetwork}
-                      destinationLanes={destinationLanes}
                       environment={environment}
                     />
                   ))

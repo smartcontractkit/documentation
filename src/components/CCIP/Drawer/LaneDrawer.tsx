@@ -44,12 +44,16 @@ function LaneDrawer({
   const source = inOutbound === LaneFilter.Outbound ? sourceNetwork.key : destinationNetwork.key
   const destination = inOutbound === LaneFilter.Outbound ? destinationNetwork.key : sourceNetwork.key
 
-  // Fetch rate limits data using custom hook
+  // Fetch rate limits data using custom hook — API is source of truth for token list
   const { rateLimits, isLoading: isLoadingRateLimits } = useTokenRateLimits(source, destination, environment)
+
+  // After hydration, use API response keys as the token list; fall back to JSON while loading
+  const apiTokens =
+    !isLoadingRateLimits && Object.keys(rateLimits).length > 0 ? Object.keys(rateLimits) : lane.supportedTokens
 
   // Process tokens with hook
   const { tokens: processedTokens, count: tokenCount } = useLaneTokens({
-    tokens: lane.supportedTokens,
+    tokens: apiTokens,
     environment,
     rateLimitsData: rateLimits,
     inOutbound,

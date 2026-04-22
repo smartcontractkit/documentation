@@ -11,6 +11,7 @@ interface SearchData {
     totalTokens: number
     logo: string
     chain: string
+    chainSelector: string
   }>
   tokens: Array<{
     id: string
@@ -66,7 +67,9 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
   const searchLower = search.toLowerCase()
 
   // Filter networks
-  const networks = data.chains.filter((chain) => chain.name.toLowerCase().includes(searchLower))
+  const networks = data.chains.filter(
+    (chain) => chain.name.toLowerCase().includes(searchLower) || chain.chainSelector.includes(searchLower)
+  )
 
   // Filter tokens
   const tokens = data.tokens.filter((token) => token.id.toLowerCase().includes(searchLower))

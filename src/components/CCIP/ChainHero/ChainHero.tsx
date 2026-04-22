@@ -24,6 +24,7 @@ interface ChainHeroProps {
     totalTokens: number
     logo: string
     chain: string
+    chainSelector: string
   }[]
   tokens: {
     id: string

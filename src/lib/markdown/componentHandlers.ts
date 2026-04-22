@@ -481,14 +481,20 @@ export function handleBilling(
   try {
     // Calculate fees using the same logic as Billing.astro
     const lockAndUnlockAllLanes = calculateNetworkFeesForTokenMechanismDirect(TokenMechanism.LockAndUnlock, "allLanes")
-    const restFromEthereum = calculateNetworkFeesForTokenMechanismDirect(TokenMechanism.BurnAndMint, "fromEthereum")
-    const restToEthereum = calculateNetworkFeesForTokenMechanismDirect(TokenMechanism.BurnAndMint, "toEthereum")
+    const restFromEthereum = calculateNetworkFeesForTokenMechanismDirect(
+      TokenMechanism.BurnAndMint,
+      "fromEthereumToNonEthereum"
+    )
+    const restToEthereum = calculateNetworkFeesForTokenMechanismDirect(
+      TokenMechanism.BurnAndMint,
+      "fromNonEthereumToEthereum"
+    )
     const restMechanismNonEthereum = calculateNetworkFeesForTokenMechanismDirect(
       TokenMechanism.BurnAndMint,
-      "nonEthereum"
+      "fromNonEthereumToNonEthereum"
     )
     const messagingFeesFromToEthereum = calculateMessagingNetworkFeesDirect("fromToEthereum")
-    const messagingFeesNonEthereum = calculateMessagingNetworkFeesDirect("nonEthereum")
+    const messagingFeesNonEthereum = calculateMessagingNetworkFeesDirect("fromNonEthereumToNonEthereum")
 
     // Generate markdown table
     const tableRows = [

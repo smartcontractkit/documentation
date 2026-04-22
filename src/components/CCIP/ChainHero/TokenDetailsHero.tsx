@@ -3,6 +3,7 @@ import { getExplorerAddressUrl, fallbackTokenIconUrl } from "~/features/utils/in
 import "./ChainHero.css"
 import { ExplorerInfo, ChainType } from "~/config/types.ts"
 import { getNetworkIconUrl } from "~/config/data/ccip/data.ts"
+import { formatPoolTypeForDisplay } from "~/lib/ccip/graphql/utils/type-version-parser.ts"
 
 interface TokenDetailsHeroProps {
   network: {
@@ -67,7 +68,9 @@ function TokenDetailsHero({ network, token, inDrawer = false }: TokenDetailsHero
           </div>
           <div className="ccip-chain-hero__details__item">
             <div className="ccip-chain-hero__details__label">Token pool type</div>
-            <div className="ccip-chain-hero__details__value">{token.poolRawType ?? "—"}</div>
+            <div className="ccip-chain-hero__details__value">
+              {token.poolRawType ? formatPoolTypeForDisplay(token.poolRawType) : "—"}
+            </div>
           </div>
           <div className="ccip-chain-hero__details__item">
             <div className="ccip-chain-hero__details__label">Token pool address</div>

@@ -314,8 +314,15 @@ export const validateFilters = (filters: FilterType): void => {
  * @returns Validated output key
  * @throws CCIPError if output key is invalid
  */
-export const validateOutputKey = (outputKey?: string): "chainId" | "selector" | "internalId" => {
-  if (!outputKey) return "chainId"
+export const validateOutputKey = (
+  outputKey?: string,
+  internalIdFormat?: string
+): "chainId" | "selector" | "internalId" => {
+  if (!outputKey) {
+    // When internalIdFormat is explicitly set but outputKey is not,
+    // default to "internalId" so the response keys match the requested format
+    return internalIdFormat ? "internalId" : "chainId"
+  }
   if (!["chainId", "selector", "internalId"].includes(outputKey)) {
     throw new CCIPError(400, "outputKey must be one of: chainId, selector, or internalId.")
   }

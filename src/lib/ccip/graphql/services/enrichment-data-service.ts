@@ -321,16 +321,10 @@ export async function fetchLaneRateLimits(
   sourceDirectoryKey: string,
   destDirectoryKey: string
 ): Promise<RawTokenRateLimits | null> {
-  const srcAddr = resolveTokenAddress(environment, tokenSymbol, sourceDirectoryKey)
-  const dstAddr = resolveTokenAddress(environment, tokenSymbol, destDirectoryKey)
-  if (!srcAddr || !dstAddr) return null
-
   const srcNetwork = toSelectorName(environment, sourceDirectoryKey)
   const dstNetwork = toSelectorName(environment, destDirectoryKey)
-  const srcToken = normalizeAddressForQuery(srcAddr)
-  const dstToken = normalizeAddressForQuery(dstAddr)
 
-  const cacheKey = `lane|${environment}|${srcNetwork}|${srcToken}|${dstNetwork}|${dstToken}`
+  const cacheKey = `lane|${environment}|${srcNetwork}|${tokenSymbol}|${dstNetwork}`
 
   try {
     return await cached(cacheKey, async () => {
@@ -340,9 +334,8 @@ export async function fetchLaneRateLimits(
       >(TOKEN_POOL_LANES_WITH_POOLS_QUERY, {
         first: 1,
         condition: {
-          token: srcToken,
+          tokenSymbol,
           network: srcNetwork,
-          remoteToken: dstToken,
           remoteNetworkName: dstNetwork,
         },
         filter: { removed: { notEqualTo: true } },

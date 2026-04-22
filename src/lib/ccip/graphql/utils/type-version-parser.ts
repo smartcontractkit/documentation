@@ -53,3 +53,20 @@ export function normalizePoolType(rawType: string): string {
   if (lower.includes("burnmint") || lower.includes("burn")) return "burnMint"
   return rawType
 }
+
+/**
+ * Formats a raw pool type to a short human-readable display label.
+ *
+ * @example formatPoolTypeForDisplay("BurnMintTokenPoolAndProxy") → "BurnMint"
+ * @example formatPoolTypeForDisplay("LockReleaseTokenPool") → "LockRelease"
+ * @example formatPoolTypeForDisplay("USDCTokenPool") → "USDC"
+ * @example formatPoolTypeForDisplay("ManagedTokenPool") → "Managed"
+ */
+export function formatPoolTypeForDisplay(rawType: string): string {
+  const lower = rawType.toLowerCase()
+  if (lower.includes("usdc")) return "USDC"
+  if (lower.includes("lockrelease")) return "LockRelease"
+  if (lower.includes("burnmint") || lower.includes("burn")) return "BurnMint"
+  if (lower.includes("managed")) return "Managed"
+  return rawType
+}

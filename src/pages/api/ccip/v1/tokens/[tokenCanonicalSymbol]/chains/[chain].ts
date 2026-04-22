@@ -62,19 +62,16 @@ export const GET: APIRoute = async ({ params, request }) => {
       throw new CCIPError(404, `Token '${tokenCanonicalSymbol}' not found`)
     }
 
+    // Validate internalIdFormat parameter
+    const rawInternalIdFormat = queryParams.get("internalIdFormat") || undefined
+    const internalIdFormat = validateInternalIdFormat(rawInternalIdFormat)
+
     // Validate output key for chain representation
-    const outputKey = validateOutputKey(queryParams.get("outputKey") || undefined)
+    const outputKey = validateOutputKey(queryParams.get("outputKey") || undefined, rawInternalIdFormat)
     logger.debug({
-      message: "Output key validated",
+      message: "Output key and internal ID format validated",
       requestId,
       outputKey,
-    })
-
-    // Validate internalIdFormat parameter (only applies when outputKey=internalId)
-    const internalIdFormat = validateInternalIdFormat(queryParams.get("internalIdFormat") || undefined)
-    logger.debug({
-      message: "Internal ID format validated",
-      requestId,
       internalIdFormat,
     })
 

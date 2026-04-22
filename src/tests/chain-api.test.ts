@@ -116,8 +116,19 @@ describe("CCIP Chain API Utils", () => {
       expect(validateOutputKey("internalId")).toBe("internalId")
     })
 
-    it("should default to chainId", () => {
+    it("should default to chainId when no internalIdFormat", () => {
       expect(validateOutputKey(undefined)).toBe("chainId")
+      expect(validateOutputKey(undefined, undefined)).toBe("chainId")
+    })
+
+    it("should default to internalId when internalIdFormat is set", () => {
+      expect(validateOutputKey(undefined, "directory")).toBe("internalId")
+      expect(validateOutputKey(undefined, "selector")).toBe("internalId")
+    })
+
+    it("should respect explicit outputKey even when internalIdFormat is set", () => {
+      expect(validateOutputKey("chainId", "directory")).toBe("chainId")
+      expect(validateOutputKey("selector", "directory")).toBe("selector")
     })
 
     it("should throw error for invalid output key", () => {

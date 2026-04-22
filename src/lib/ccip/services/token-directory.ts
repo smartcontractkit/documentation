@@ -6,7 +6,6 @@ import {
   CCVConfigData,
   CCVChainConfig,
   LaneVerifiers,
-  TokenRateLimits,
   NamingConvention,
   OutputKeyType,
   CustomFinalityConfig,
@@ -539,7 +538,6 @@ export class TokenDirectoryService {
     return { belowThreshold, aboveThreshold }
   }
 
-  /**
   /**
    * Formats a lane key based on output format
    */

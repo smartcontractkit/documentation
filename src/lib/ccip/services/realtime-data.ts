@@ -6,6 +6,7 @@ import type {
   RateLimiterConfig,
   CustomFinalityConfig,
   OutputKeyType,
+  TokenDirectoryApiResponse,
 } from "~/lib/ccip/types/index.ts"
 
 export const prerender = false
@@ -86,7 +87,7 @@ export class RealtimeDataService {
   ): Promise<LaneSupportedTokensResponse | null> {
     try {
       const baseUrl = getApiBaseUrl()
-      const url = `${baseUrl}/api/ccip/v1/lanes/by-internal-id/${sourceInternalId}/${destinationInternalId}/supported-tokens?environment=${environment}`
+      const url = `${baseUrl}/api/ccip/v1/lanes/by-internal-id/${sourceInternalId}/${destinationInternalId}/supported-tokens?environment=${environment}&internalIdFormat=directory`
 
       const response = await fetch(url)
 
@@ -103,7 +104,42 @@ export class RealtimeDataService {
   }
 
   /**
-   * Fetches token finality details across all chains
+   * Fetches full token directory data for a specific token and chain.
+   * Returns outboundLanes + inboundLanes with rate limits, verifiers, pool info,
+   * and custom finality in a single call — covers both drawer tabs at once.
+   *
+   * @param tokenCanonicalSymbol - Token canonical symbol (e.g., "LINK")
+   * @param chain - Source chain directory key (e.g., "mainnet", "bsc-mainnet")
+   * @param environment - Network environment (mainnet/testnet)
+   * @returns Full token directory data or null on error
+   */
+  async getTokenDirectoryData(
+    tokenCanonicalSymbol: string,
+    chain: string,
+    environment: Environment
+  ): Promise<TokenDirectoryApiResponse | null> {
+    try {
+      const baseUrl = getApiBaseUrl()
+      const url = `${baseUrl}/api/ccip/v1/tokens/${encodeURIComponent(tokenCanonicalSymbol)}/chains/${encodeURIComponent(chain)}?environment=${environment}&internalIdFormat=directory`
+
+      const response = await fetch(url)
+
+      if (!response.ok) {
+        console.error("Failed to fetch token directory data:", response.status)
+        return null
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error("Error fetching token directory data:", error)
+      return null
+    }
+  }
+
+  /**
+   * Fetches token finality details across all chains.
+   * Uses /tokens/{symbol} which already returns customFinality per chain,
+   * then extracts only the finality fields to match TokenFinalityResponse shape.
    *
    * @param tokenCanonicalSymbol - Token canonical symbol (e.g., "BETS", "LINK")
    * @param environment - Network environment (mainnet/testnet)
@@ -117,21 +153,38 @@ export class RealtimeDataService {
   ): Promise<TokenFinalityResponse | null> {
     try {
       const baseUrl = getApiBaseUrl()
-      let url = `${baseUrl}/api/ccip/v1/tokens/${tokenCanonicalSymbol}/finality?environment=${environment}`
+      let url = `${baseUrl}/api/ccip/v1/tokens/${tokenCanonicalSymbol}?environment=${environment}&internalIdFormat=directory`
 
       if (outputKey) {
-        url += `&output_key=${outputKey}`
+        url += `&outputKey=${outputKey}`
       }
 
       const response = await fetch(url)
 
       if (!response.ok) {
-        console.error("Failed to fetch token finality:", response.status)
+        console.error("Failed to fetch token data for finality:", response.status)
         return null
       }
 
-      const data = await response.json()
-      return data
+      const tokenDetail = await response.json()
+
+      // Extract customFinality per chain from the full token detail response
+      const finalityData: Record<string, CustomFinalityConfig> = {}
+      for (const [chainKey, chainData] of Object.entries(tokenDetail.data ?? {})) {
+        const cd = chainData as { customFinality?: CustomFinalityConfig | null }
+        if (cd.customFinality !== undefined) {
+          finalityData[chainKey] = cd.customFinality ?? { hasCustomFinality: null, minBlockConfirmation: null }
+        }
+      }
+
+      return {
+        metadata: {
+          ...tokenDetail.metadata,
+          tokenSymbol: tokenCanonicalSymbol,
+          chainCount: Object.keys(finalityData).length,
+        },
+        data: finalityData,
+      }
     } catch (error) {
       console.error("Error fetching token finality:", error)
       return null

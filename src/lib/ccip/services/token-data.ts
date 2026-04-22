@@ -468,11 +468,17 @@ export class TokenDataService {
         }
 
         // Look up CCV config using directory key
+        // For v2 pools:
+        // - Entry with thresholdAmount value: configured → {thresholdAmount: "value"}
+        // - Entry with thresholdAmount null: downstream error → {thresholdAmount: null}
+        // - No entry: not configured → {thresholdAmount: "0"}
         if (tokenCCVConfig && directoryKey && tokenCCVConfig[directoryKey]) {
+          // Entry exists - use the value (could be a string or null for downstream error)
           ccvConfig = {
             thresholdAmount: tokenCCVConfig[directoryKey].thresholdAmount,
           }
         } else {
+          // No entry for this v2 pool - CCV not configured
           ccvConfig = {
             thresholdAmount: "0",
           }
@@ -488,6 +494,7 @@ export class TokenDataService {
         if (customFinalityDataAvailable) {
           customFinality = { hasCustomFinality, minBlockConfirmation }
         } else {
+          // v2 pool but no data available - downstream API error
           customFinality = { hasCustomFinality: null, minBlockConfirmation: null }
         }
       }
@@ -558,6 +565,8 @@ export class TokenDataService {
         return null
       }
 
+      // Build a mapping of directory key -> chainId for reverse lookup
+      // Only include EVM chains to avoid chain ID collisions (e.g., Aptos also has chainId=1)
       const result: Record<string, { chainId: number | string }> = {}
 
       for (const [directoryKey] of Object.entries(tokenData)) {
@@ -565,6 +574,7 @@ export class TokenDataService {
           const supportedChain = resolveChainOrThrow(directoryKey)
           const { chainType } = getChainTypeAndFamily(supportedChain)
 
+          // Only include EVM chains for reverse lookup
           if (chainType !== "evm") {
             continue
           }
