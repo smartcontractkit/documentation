@@ -1,6 +1,5 @@
 import Card from "../Cards/Card.tsx"
 import Grid from "./Grid.tsx"
-import { getNetworkIconUrl } from "~/config/data/ccip/data.ts"
 interface NetworkGridProps {
   networks: {
     name: string
@@ -25,7 +24,7 @@ function NetworkGrid({ networks, environment }: NetworkGridProps) {
         return (
           <Card
             key={chain.chain}
-            logo={<img src={getNetworkIconUrl(chain.name)} alt="" loading="lazy" />}
+            logo={<img src={chain.logo} alt="" loading="lazy" />}
             title={chain.name}
             subtitle={subtitle}
             link={`/ccip/directory/${environment}/chain/${chain.chain}`}
