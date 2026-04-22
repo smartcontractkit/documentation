@@ -20,6 +20,7 @@ export interface Docs {
   productSubType?: string
   productType?: string
   productTypeCode?: string
+  stablecoinCapped?: boolean
   shutdownDate?: string
   isMVR?: boolean
   decoding?: DecodingVariable[]
