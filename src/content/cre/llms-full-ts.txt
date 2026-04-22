@@ -448,9 +448,27 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-04-16
+Last Updated: 2026-04-20
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## TS SDK v1.6.0 - April 20, 2026
+
+**TypeScript SDK version 1.6.0** adds custom Rust plugin support and non-determinism build warnings.
+
+- **Custom Rust plugin support**: You can now inject custom Rust logic into your TypeScript workflows using the new `--plugin` flag in `cre-compile`. Provide a pre-built `.plugin.wasm` file compiled from your own Rust crate and it will be linked into your workflow binary. The SDK ships example packages (`@chainlink/cre-rust-inject-alpha`, `@chainlink/cre-rust-inject-beta`) and a prebuilt plugin example to help you get started. Use `createExtensionAccessor` from `@chainlink/cre-sdk-javy-plugin/runtime/validate-extension` to access your Rust extensions from TypeScript with Zod-validated types. See [Custom Rust Plugins](/cre/guides/operations/custom-rust-plugins-ts) for a full walkthrough.
+- **Non-determinism build warnings**: The SDK now performs static analysis of your workflow at compile time and emits warnings when it detects potentially non-deterministic patterns such as `Date.now()`, `Math.random()`, `Promise.race()`, and similar constructs. These warnings appear during `cre workflow build` and `cre workflow simulate` to help you catch consensus issues before deployment.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.5.0...v1.6.0)
+
+## Go SDK v1.8.0 - April 17, 2026
+
+**Go SDK version 1.8.0** adds SDK helpers for deterministic map iteration and report verification support.
+
+- **`cre.OrderedEntries` and `cre.OrderedEntriesFunc`**: New helper functions in the `cre` package that return a sorted iterator over map entries. `cre.OrderedEntries` works with any map whose keys implement `cmp.Ordered` (strings, integers, etc.). `cre.OrderedEntriesFunc` accepts a custom comparator for maps with struct or other non-ordered keys. Use these in place of direct map iteration to guarantee consistent ordering across DON nodes. See [Map iteration](/cre/concepts/non-determinism-go#1-map-iteration) for details and examples.
+- **Report verification**: Added report verification support to the SDK.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.7.0...v1.8.0)
 
 ## CLI v1.11.0 - April 16, 2026
 
@@ -5963,6 +5981,459 @@ build: typecheck
 
 ---
 
+# Custom Rust Plugins
+Source: https://docs.chain.link/cre/guides/operations/custom-rust-plugins-ts
+Last Updated: 2026-04-20
+
+TypeScript workflows run inside a [Javy](https://github.com/bytecodealliance/javy)-compiled <a href="https://webassembly.org/" target="_blank" rel="noopener noreferrer">WebAssembly</a> binary. By default, that binary includes the CRE SDK's built-in Rust plugin — pre-compiled to WASM and published with the SDK — which bridges your TypeScript to CRE node capabilities. You do not need [Rust](https://www.rust-lang.org/) installed to write and compile standard workflows.
+
+Custom Rust plugins let you extend that plugin layer with your own Rust logic, exposing new functionality as typed globals your TypeScript workflow can call directly.
+
+### How the two modes work
+
+The SDK always produces a single compiled plugin WASM that is passed to [Javy](https://github.com/bytecodealliance/javy) at build time. When you include custom extensions, they are merged with the SDK's own Rust plugin code before that final WASM is produced. The mechanism for that merge differs depending on which mode you use:
+
+- **`--plugin` (prebuilt)**: You provide a fully compiled `.plugin.wasm` that already contains all extensions merged together. No Rust toolchain required at workflow build time. Best for consuming a third-party Rust SDK (such as a ZK proof verifier) without managing a Rust compiler.
+- **`--cre-exports` (source)**: You provide one or more Rust crate directories. The SDK compiles each crate, merges them with its own plugin code, and produces the final combined plugin at build time. Requires [Rust](https://www.rust-lang.org/) installed locally. Best for writing your own Rust logic or combining multiple extensions.
+
+## When to use custom Rust plugins
+
+Use a custom Rust plugin when you need logic that is impractical or impossible to express in TypeScript running inside QuickJS:
+
+- **Cryptographic proof verification**: Verify ZK proofs, Risc-0 receipts, or other cryptographic attestations using Rust crates (e.g., `risc0-zkvm`) that have no JavaScript equivalent
+- **Third-party Rust SDKs**: Integrate a Rust SDK that provides functionality not natively available in TypeScript — for example, a custom offchain report verifier published by a data provider
+- **Performance-critical computation**: Rust running natively in WASM is significantly faster than interpreted JavaScript in QuickJS for compute-heavy operations like encoding, hashing, or numeric processing
+
+<Aside type="note" title="QuickJS limitations">
+  Not all Node.js APIs are available in QuickJS. For example, `node:crypto` is unsupported. If a library you need
+  doesn't work in simulation, a Rust plugin is the right escape hatch. See [TypeScript Runtime
+  Environment](/cre/concepts/typescript-wasm-runtime) for details.
+</Aside>
+
+## Prerequisites
+
+**Required versions:** TS SDK v1.6.0+
+
+Before using custom Rust plugins, you need:
+
+- **Bun** — the TypeScript SDK uses Bun for compilation. The Javy binary used by `cre-compile` is downloaded automatically when you run `bun install` via a `postinstall` hook — no manual setup required.
+- **Custom WASM builds enabled** for your workflow — Rust plugins are injected via `cre-compile` flags, which you control from a custom `Makefile`. If your workflow still uses automatic compilation, convert it first:
+
+  ```bash
+  cre workflow custom-build ./my-workflow
+  ```
+
+  See [Custom WASM Builds](/cre/guides/operations/custom-build) for full details.
+
+**Rust toolchain** — only if you compile your own extensions with `--cre-exports` (Mode 2) or follow the **Try it yourself** walkthrough below. You do **not** need Rust on your machine for **Mode 1 (`--plugin`)**: the prebuilt `.plugin.wasm` was already compiled upstream.
+
+If you are using Mode 2 or the walkthrough, install a stable Rust toolchain and add the `wasm32-wasip1` target:
+
+```bash
+rustup target add wasm32-wasip1
+```
+
+## Mode 1: Prebuilt plugin (`--plugin`)
+
+In prebuilt mode, you install an npm package that ships a compiled `.plugin.wasm`. Your workflow calls into it via a typed TypeScript accessor, and your `Makefile` passes the `.wasm` path to `cre-compile` with `--plugin`.
+
+This is the simpler integration path — no Rust toolchain required at workflow build time.
+
+### 1. Install the plugin package
+
+The plugin author publishes their package to npm — install it like any other dependency:
+
+```bash
+bun add @acme/my-cre-plugin
+```
+
+The package ships a prebuilt `.plugin.wasm` alongside TypeScript types for the extension's API.
+
+### 2. Import the accessor and call it from your workflow
+
+A well-formed plugin package exports a typed accessor built with `createExtensionAccessor`. Import it directly and call it from your trigger handler:
+
+```typescript
+import { myExtension } from "@acme/my-cre-plugin"
+import { CronCapability, handler, Runner, type Runtime } from "@chainlink/cre-sdk"
+import { z } from "zod"
+
+const configSchema = z.object({
+  schedule: z.string(),
+})
+
+type Config = z.infer<typeof configSchema>
+
+const onCronTrigger = (_runtime: Runtime<Config>) => {
+  const result = myExtension().compute()
+  return JSON.stringify({ result })
+}
+
+const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>({ configSchema })
+  await runner.run(initWorkflow)
+}
+```
+
+### 3. Update your Makefile to pass `--plugin`
+
+```makefile
+JAVY_PLUGIN := $(abspath ./node_modules/@chainlink/cre-sdk-javy-plugin)
+PLUGIN_PKG  := $(abspath ./node_modules/@acme/my-cre-plugin)
+
+.PHONY: build clean
+
+build:
+	mkdir -p wasm
+	CRE_SDK_JAVY_PLUGIN_HOME="$(JAVY_PLUGIN)" bun cre-compile \
+		--plugin $(PLUGIN_PKG)/dist/plugin.wasm \
+		./main.ts \
+		./wasm/workflow.wasm
+
+clean:
+	rm -rf wasm
+```
+
+`--plugin` tells `cre-compile` to link the prebuilt plugin WASM into the final binary instead of the default CRE SDK plugin.
+
+<Aside type="caution" title="Version compatibility">
+  A prebuilt `.plugin.wasm` must be compiled against a version of `@chainlink/cre-sdk-javy-plugin` that is **less than
+  or equal to** the version included in your SDK. Check the plugin package's documentation for its `cre-sdk-javy-plugin`
+  peer dependency version and verify it is compatible with your installed SDK version before using it.
+</Aside>
+
+## Mode 2: Source extensions (`--cre-exports`)
+
+In source mode, you write a Rust crate and pass its directory to `cre-compile` with `--cre-exports`. The compiler builds your crate and links it alongside the SDK plugin at compile time. You can pass multiple `--cre-exports` flags to include several extensions in one binary.
+
+This mode gives you full control over your Rust code and doesn't require distributing a prebuilt `.wasm`.
+
+### 1. Create a Rust crate
+
+Create a new directory for your extension with a `Cargo.toml` and `src/lib.rs`.
+
+**`Cargo.toml`:**
+
+```toml
+# Use underscores in the crate name, not hyphens — the SDK generates a host
+# crate that calls {name}::register(), so hyphens would produce invalid Rust.
+[package]
+name = "my_plugin"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["lib"]
+
+[dependencies]
+cre_wasm_exports = { path = "../node_modules/@chainlink/cre-sdk-javy-plugin/src/cre_wasm_exports" }
+javy-plugin-api = "6.0.0"
+```
+
+**`src/lib.rs`:**
+
+```rust
+use cre_wasm_exports::extend_wasm_exports;
+use javy_plugin_api::javy::quickjs::prelude::*;
+use javy_plugin_api::javy::quickjs::{Ctx, Object};
+
+pub fn register(ctx: &Ctx<'_>) {
+    let obj = Object::new(ctx.clone()).unwrap();
+    obj.set(
+        "greet",
+        Func::from(|| -> String { "Hello from Rust".to_string() }),
+    )
+    .unwrap();
+    extend_wasm_exports(ctx, "myPlugin", obj);
+}
+```
+
+`extend_wasm_exports` registers your object under the global name `"myPlugin"`. Whatever name you use here is what you reference in your TypeScript accessor.
+
+### 2. Create a TypeScript accessor
+
+```typescript
+import { createExtensionAccessor } from "@chainlink/cre-sdk-javy-plugin/runtime/validate-extension"
+import { z } from "zod"
+
+const myPluginSchema = z.object({
+  greet: z.function().args().returns(z.string()),
+})
+
+export type MyPlugin = z.infer<typeof myPluginSchema>
+
+declare global {
+  var myPlugin: MyPlugin
+}
+
+export const myPlugin = createExtensionAccessor("myPlugin", myPluginSchema)
+```
+
+### 3. Call it from your workflow
+
+```typescript
+import { myPlugin } from "./my-plugin-accessor"
+import { CronCapability, handler, Runner, type Runtime } from "@chainlink/cre-sdk"
+import { z } from "zod"
+
+const configSchema = z.object({ schedule: z.string() })
+type Config = z.infer<typeof configSchema>
+
+const onCronTrigger = (_runtime: Runtime<Config>) => {
+  return JSON.stringify({ result: myPlugin().greet() })
+}
+
+const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>({ configSchema })
+  await runner.run(initWorkflow)
+}
+```
+
+### 4. Update your Makefile to pass `--cre-exports`
+
+```makefile
+JAVY_PLUGIN := $(abspath ./node_modules/@chainlink/cre-sdk-javy-plugin)
+
+.PHONY: build clean
+
+build:
+	mkdir -p wasm
+	CRE_SDK_JAVY_PLUGIN_HOME="$(JAVY_PLUGIN)" bun cre-compile \
+		--cre-exports ./my-plugin \
+		./index.ts \
+		./wasm/workflow.wasm
+
+clean:
+	rm -rf wasm
+```
+
+To include multiple Rust extensions in one binary, chain additional `--cre-exports` flags:
+
+```makefile
+build:
+	mkdir -p wasm
+	CRE_SDK_JAVY_PLUGIN_HOME="$(JAVY_PLUGIN)" bun cre-compile \
+		--cre-exports ./my-plugin-a \
+		--cre-exports ./my-plugin-b \
+		./index.ts \
+		./wasm/workflow.wasm
+```
+
+## Try it yourself
+
+Walk through source extension mode end to end. This uses Mode 2 (`--cre-exports`) since it works with a local Rust crate you write yourself — no externally published plugin package required.
+
+**Prerequisites:** Rust with `wasm32-wasip1` (see [Prerequisites](#prerequisites) above). If you don't have a CRE project yet, create one with `cre init` and follow the [Getting Started guide](/cre/getting-started/overview). Once you're done, your working directory structure should look like this:
+
+```
+my-project/
+├── project.yaml
+├── secrets.yaml
+└── my-workflow/
+    ├── workflow.yaml
+    ├── main.ts           ← your workflow entry point
+    ├── main.test.ts
+    ├── package.json
+    ├── bun.lock
+    ├── tsconfig.json
+    └── node_modules/
+```
+
+**1. Convert your workflow to a custom build:**
+
+Run this from your project root:
+
+```bash
+cre workflow custom-build ./my-workflow
+```
+
+This adds a `Makefile` to `my-workflow/` and updates `workflow.yaml` to point at the compiled binary. See [Custom WASM Builds](/cre/guides/operations/custom-build) for details.
+
+**2. Create the Rust plugin crate:**
+
+From your project root, create the crate directory and its source file:
+
+```bash
+mkdir -p my-workflow/my-plugin/src
+```
+
+Create `my-workflow/my-plugin/Cargo.toml`:
+
+```toml
+# my-workflow/my-plugin/Cargo.toml
+# Note: use underscores in the crate name, not hyphens — the SDK uses this
+# as a Rust identifier when generating the host crate.
+[package]
+name = "my_plugin"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["lib"]
+
+[dependencies]
+# cre_wasm_exports ships inside the installed cre-sdk-javy-plugin package
+cre_wasm_exports = { path = "../node_modules/@chainlink/cre-sdk-javy-plugin/src/cre_wasm_exports" }
+javy-plugin-api = "6.0.0"
+```
+
+Create `my-workflow/my-plugin/src/lib.rs`:
+
+```rust
+// my-workflow/my-plugin/src/lib.rs
+use cre_wasm_exports::extend_wasm_exports;
+use javy_plugin_api::javy::quickjs::prelude::*;
+use javy_plugin_api::javy::quickjs::{Ctx, Object};
+
+pub fn register(ctx: &Ctx<'_>) {
+    let obj = Object::new(ctx.clone()).unwrap();
+    obj.set(
+        "greet",
+        Func::from(|| -> String { "Hello from Rust".to_string() }),
+    )
+    .unwrap();
+    // "myPlugin" is the global name your TypeScript accessor will reference
+    extend_wasm_exports(ctx, "myPlugin", obj);
+}
+```
+
+**3. Create a TypeScript accessor:**
+
+Create `my-workflow/my-plugin-accessor.ts`. This file gives you a type-safe handle to the Rust global:
+
+```typescript
+// my-workflow/my-plugin-accessor.ts
+import { createExtensionAccessor } from "@chainlink/cre-sdk-javy-plugin/runtime/validate-extension"
+import { z } from "zod"
+
+const myPluginSchema = z.object({
+  greet: z.function().args().returns(z.string()),
+})
+
+declare global {
+  var myPlugin: z.infer<typeof myPluginSchema>
+}
+
+// "myPlugin" must match the name passed to extend_wasm_exports in lib.rs
+export const myPlugin = createExtensionAccessor("myPlugin", myPluginSchema)
+```
+
+**4. Call the Rust function from your workflow:**
+
+Open `my-workflow/main.ts` and make the highlighted changes:
+
+Code snippet for my-workflow/main.ts:
+
+```typescript
+import { CronCapability, handler, Runner, type Runtime } from "@chainlink/cre-sdk"
+import { myPlugin } from "./my-plugin-accessor"
+
+export type Config = {
+  schedule: string
+}
+
+export const onCronTrigger = (runtime: Runtime<Config>): string => {
+  runtime.log("Hello world! Workflow triggered.")
+  const greeting = myPlugin().greet()
+  runtime.log(`Rust says: ${greeting}`)
+  return greeting
+}
+
+export const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+```
+
+**5. Update the Makefile to pass `--cre-exports`:**
+
+Open `my-workflow/Makefile` (created by `cre workflow custom-build`) and replace its contents with the following (highlighted line is the key addition):
+
+Code snippet for my-workflow/Makefile:
+
+```bash
+JAVY_PLUGIN := $(abspath ./node_modules/@chainlink/cre-sdk-javy-plugin)
+
+.PHONY: build clean
+
+build:
+	mkdir -p wasm
+	CRE_SDK_JAVY_PLUGIN_HOME="$(JAVY_PLUGIN)" bun cre-compile \
+		--cre-exports ./my-plugin \ # highlight-line
+		./main.ts \
+		./wasm/workflow.wasm
+
+clean:
+	rm -rf wasm
+```
+
+Your workflow directory should now look like this:
+
+```
+my-workflow/
+├── workflow.yaml
+├── main.ts
+├── main.test.ts
+├── package.json
+├── bun.lock
+├── tsconfig.json
+├── Makefile                  ← updated
+├── my-plugin-accessor.ts     ← new
+├── my-plugin/                ← new Rust crate
+│   ├── Cargo.toml
+│   └── src/
+│       └── lib.rs
+├── node_modules/
+└── wasm/                     ← workflow.wasm appears after simulate (or `make build`)
+    └── workflow.wasm
+```
+
+**6. Simulate:**
+
+From **my-project/** (the project root), run the simulator. It builds the workflow WASM first unless you point it at an existing binary, so you do not need to run `make build` manually before simulating:
+
+```bash
+cre workflow simulate ./my-workflow --target staging-settings
+```
+
+You should see output like the following, confirming your Rust function was called from TypeScript:
+
+```
+[USER LOG] Hello world! Workflow triggered.
+[USER LOG] Rust says: Hello from Rust
+
+✓ Workflow Simulation Result:
+"Hello from Rust"
+```
+
+<Aside type="note" title="Simulation target">
+  Make sure your CRE CLI is logged in (`cre whoami`) before simulating. See [Simulating
+  Workflows](/cre/guides/operations/simulating-workflows) for details.
+</Aside>
+
+## Learn more
+
+- [TypeScript Runtime Environment](/cre/concepts/typescript-wasm-runtime): Understand the Javy/QuickJS compilation pipeline and its constraints
+- [Custom WASM Builds](/cre/guides/operations/custom-build): How to take ownership of the `cre-compile` step with a custom `Makefile`
+- [Simulating Workflows](/cre/guides/operations/simulating-workflows): Test your workflow locally before deployment
+
+---
+
 # Account
 Source: https://docs.chain.link/cre/account
 Last Updated: 2026-02-12
@@ -7178,7 +7649,7 @@ Learn more about how to use CRE capabilities with built-in consensus:
 
 # TypeScript Runtime Environment
 Source: https://docs.chain.link/cre/concepts/typescript-wasm-runtime
-Last Updated: 2025-11-04
+Last Updated: 2026-04-20
 
 Your TypeScript workflows are compiled to <a href="https://webassembly.org/" target="_blank" rel="noopener noreferrer">WebAssembly (WASM)</a> to run in the CRE execution environment. Understanding this compilation process helps you write compatible code and avoid common pitfalls.
 
@@ -7220,6 +7691,12 @@ Not all Node.js built-in modules are available. For example, `node:crypto` is no
 Before using third-party NPM packages in your workflows, verify they don't rely on unsupported Node.js APIs. The [QuickJS Node.js compatibility documentation](https://sebastianwessel.github.io/quickjs/docs/module-resolution/node-compatibility.html) lists which Node.js modules are available.
 
 **The best way to verify compatibility** is to test with `cre workflow simulate`. Simulation runs your workflow in the same WASM environment as production, so any compatibility issues should surface during simulation.
+
+## Extending with Rust
+
+When a library you need doesn't work in QuickJS, or you need performance beyond what interpreted JavaScript in WASM can provide, you can inject a custom Rust crate into the plugin layer that bridges your TypeScript to the CRE runtime. The compiled Rust code runs natively within the same WASM binary as your workflow and is exposed as a typed global you call from TypeScript.
+
+See [Custom Rust Plugins](/cre/guides/operations/custom-rust-plugins-ts) for a full guide, including prerequisites, both prebuilt and source-extension modes, and step-by-step testing instructions.
 
 ## Why WASM?
 

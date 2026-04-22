@@ -448,9 +448,27 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-04-16
+Last Updated: 2026-04-20
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## TS SDK v1.6.0 - April 20, 2026
+
+**TypeScript SDK version 1.6.0** adds custom Rust plugin support and non-determinism build warnings.
+
+- **Custom Rust plugin support**: You can now inject custom Rust logic into your TypeScript workflows using the new `--plugin` flag in `cre-compile`. Provide a pre-built `.plugin.wasm` file compiled from your own Rust crate and it will be linked into your workflow binary. The SDK ships example packages (`@chainlink/cre-rust-inject-alpha`, `@chainlink/cre-rust-inject-beta`) and a prebuilt plugin example to help you get started. Use `createExtensionAccessor` from `@chainlink/cre-sdk-javy-plugin/runtime/validate-extension` to access your Rust extensions from TypeScript with Zod-validated types. See [Custom Rust Plugins](/cre/guides/operations/custom-rust-plugins-ts) for a full walkthrough.
+- **Non-determinism build warnings**: The SDK now performs static analysis of your workflow at compile time and emits warnings when it detects potentially non-deterministic patterns such as `Date.now()`, `Math.random()`, `Promise.race()`, and similar constructs. These warnings appear during `cre workflow build` and `cre workflow simulate` to help you catch consensus issues before deployment.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.5.0...v1.6.0)
+
+## Go SDK v1.8.0 - April 17, 2026
+
+**Go SDK version 1.8.0** adds SDK helpers for deterministic map iteration and report verification support.
+
+- **`cre.OrderedEntries` and `cre.OrderedEntriesFunc`**: New helper functions in the `cre` package that return a sorted iterator over map entries. `cre.OrderedEntries` works with any map whose keys implement `cmp.Ordered` (strings, integers, etc.). `cre.OrderedEntriesFunc` accepts a custom comparator for maps with struct or other non-ordered keys. Use these in place of direct map iteration to guarantee consistent ordering across DON nodes. See [Map iteration](/cre/concepts/non-determinism-go#1-map-iteration) for details and examples.
+- **Report verification**: Added report verification support to the SDK.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.7.0...v1.8.0)
 
 ## CLI v1.11.0 - April 16, 2026
 
@@ -9885,7 +9903,7 @@ By default, triggers use `SAFE` if no confidence level is specified. For details
 
 # Avoiding Non-Determinism in Workflows
 Source: https://docs.chain.link/cre/concepts/non-determinism-go
-Last Updated: 2026-02-03
+Last Updated: 2026-04-20
 
 <Aside type="note" title="TL;DR">
   In DON mode, all nodes must execute identical code paths to reach consensus. Non-deterministic code causes nodes to
@@ -9900,23 +9918,50 @@ The failure pattern: Code diverges → Different request IDs → No quorum → W
 
 ## Quick reference: Common pitfalls
 
-| Don't Use                        | Use Instead                                  |
-| -------------------------------- | -------------------------------------------- |
-| Direct map iteration             | Sort keys first, then iterate                |
-| `encoding/json` v2               | `encoding/json` v1                           |
-| Protocol Buffers `proto.Marshal` | `proto.MarshalOptions{Deterministic: true}`  |
-| `select` with multiple channels  | Process channels in deterministic order      |
-| `time.Now()` or `time` package   | `runtime.Now()`                              |
-| Go's `rand` package              | `runtime.Rand()`                             |
-| LLM free-text responses          | Structured output with field-level consensus |
+| Don't Use                        | Use Instead                                          |
+| -------------------------------- | ---------------------------------------------------- |
+| Direct map iteration             | Sort keys first, then iterate (`cre.OrderedEntries`) |
+| `encoding/json` v2               | `encoding/json` v1                                   |
+| Protocol Buffers `proto.Marshal` | `proto.MarshalOptions{Deterministic: true}`          |
+| `select` with multiple channels  | Process channels in deterministic order              |
+| `time.Now()` or `time` package   | `runtime.Now()`                                      |
+| Go's `rand` package              | `runtime.Rand()`                                     |
+| LLM free-text responses          | Structured output with field-level consensus         |
 
 ## 1. Map iteration
 
 Go maps are **designed to iterate in random order** for security reasons. Each time you iterate over a map, the order may be different. This means different nodes will process items in different sequences, leading to divergent capability calls and consensus failure.
 
-**The problem:** Direct map iteration produces unpredictable order across nodes.
+Use `cre.OrderedEntries` from the SDK to iterate over map entries in sorted key order. It handles the sorting for you in a single range expression:
 
-**The solution:** Extract map keys, sort them, then iterate in the sorted order. This ensures all nodes process items in the same sequence.
+```go
+import "github.com/smartcontractkit/cre-sdk-go/cre"
+
+prices := map[string]float64{"BTC": 50000, "ETH": 3000, "SOL": 100}
+
+for token, price := range cre.OrderedEntries(prices) {
+  processPrice(token, price)
+}
+```
+
+For maps with keys that don't implement `cmp.Ordered` (such as structs), use `cre.OrderedEntriesFunc` with a custom comparator:
+
+```go
+import (
+  "cmp"
+  "github.com/smartcontractkit/cre-sdk-go/cre"
+)
+
+type Asset struct{ symbol string }
+
+assets := map[Asset]float64{{symbol: "BTC"}: 50000, {symbol: "ETH"}: 3000}
+
+for asset, price := range cre.OrderedEntriesFunc(assets, func(a, b Asset) int {
+  return cmp.Compare(a.symbol, b.symbol)
+}) {
+  processPrice(asset, price)
+}
+```
 
 ## 2. JSON and data serialization
 
@@ -9968,7 +10013,7 @@ Large Language Models (LLMs) generate different responses for the same prompt, e
 
 ### Do:
 
-- Sort map keys before iteration
+- Sort map keys before iteration (or use `cre.OrderedEntries` / `cre.OrderedEntriesFunc`)
 - Use `encoding/json` v1 for deterministic JSON serialization
 - Use `proto.MarshalOptions{Deterministic: true}` for Protocol Buffers
 - Process channels in a fixed, deterministic order
@@ -16693,7 +16738,7 @@ You can apply the `consensus_aggregation` tag to the fields of your struct.
 
 # SDK Reference: Core
 Source: https://docs.chain.link/cre/reference/sdk/core-go
-Last Updated: 2025-11-04
+Last Updated: 2026-04-20
 
 This page provides a reference for the core data structures and functions of the CRE Go SDK. These are the fundamental building blocks that every workflow uses, regardless of trigger types or capabilities.
 
@@ -17000,6 +17045,67 @@ func onTrigger(config *Config, runtime cre.Runtime, ...) (string, error) {
 <Aside type="note" title="Secrets guide">
   For a complete walkthrough on creating, storing, and using secrets, see the [Secrets
   guide](/cre/guides/workflow/secrets).
+</Aside>
+
+## `cre.OrderedEntries` and `cre.OrderedEntriesFunc`
+
+Go maps iterate in random order, which causes consensus failures in DON mode because different nodes process entries in different sequences. These helpers return a deterministic iterator over a map's entries, sorted by key, so all nodes process items in the same order.
+
+### `cre.OrderedEntries`
+
+Returns an iterator that yields map entries in the natural ascending sort order of the keys. Use this for any map whose key type implements `cmp.Ordered` (strings, integers, floats, etc.).
+
+**Signature:**
+
+```go
+func OrderedEntries[K cmp.Ordered, V any](m map[K]V) iter.Seq2[K, V]
+```
+
+**Example:**
+
+```go
+import "github.com/smartcontractkit/cre-sdk-go/cre"
+
+prices := map[string]float64{"BTC": 50000, "ETH": 3000, "SOL": 100}
+
+// Iterates in alphabetical key order: BTC, ETH, SOL
+for token, price := range cre.OrderedEntries(prices) {
+    processPrice(token, price)
+}
+```
+
+### `cre.OrderedEntriesFunc`
+
+Returns an iterator that yields map entries sorted using a custom comparator. Use this when the key type does not implement `cmp.Ordered` — for example, struct keys.
+
+**Signature:**
+
+```go
+func OrderedEntriesFunc[K comparable, V any](m map[K]V, cmp func(a, b K) int) iter.Seq2[K, V]
+```
+
+**Example:**
+
+```go
+import (
+    "cmp"
+    "github.com/smartcontractkit/cre-sdk-go/cre"
+)
+
+type Asset struct{ symbol string }
+
+assets := map[Asset]float64{{symbol: "BTC"}: 50000, {symbol: "ETH"}: 3000}
+
+for asset, price := range cre.OrderedEntriesFunc(assets, func(a, b Asset) int {
+    return cmp.Compare(a.symbol, b.symbol)
+}) {
+    processPrice(asset, price)
+}
+```
+
+<Aside type="note" title="Non-determinism">
+  For a full explanation of why map iteration order matters in DON mode, see [Avoiding
+  Non-Determinism](/cre/concepts/non-determinism-go#1-map-iteration).
 </Aside>
 
 ---
@@ -17781,7 +17887,7 @@ For complete examples of including signatures in different formats (body, header
 
 # SDK Reference
 Source: https://docs.chain.link/cre/reference/sdk/overview-go
-Last Updated: 2026-02-03
+Last Updated: 2026-04-20
 
 This section provides a detailed technical reference for the public interfaces of the CRE Go SDK. Use this reference for quick lookups of specific functions, types, and method signatures.
 
@@ -17789,7 +17895,7 @@ This section provides a detailed technical reference for the public interfaces o
 
 The SDK Reference is broken down into several pages, each corresponding to a core part of the SDK's functionality:
 
-- **[Core SDK](/cre/reference/sdk/core)**: Covers the fundamental building blocks of any workflow, including `cre.Handler`, `cre.Runtime`, and `cre.Promise`.
+- **[Core SDK](/cre/reference/sdk/core)**: Covers the fundamental building blocks of any workflow, including `cre.Handler`, `cre.Runtime`, `cre.Promise`, and map iteration helpers `cre.OrderedEntries` / `cre.OrderedEntriesFunc`.
 - **[Triggers](/cre/reference/sdk/triggers)**: Details the configuration and payload structures for all available trigger types (`Cron`, `HTTP`, `EVM Log`).
 - **[EVM Client](/cre/reference/sdk/evm-client)**: Provides a reference for the `evm.Client`, the primary tool for all EVM interactions, including reads and writes.
 - **[HTTP Client](/cre/reference/sdk/http-client)**: Provides a reference for the `http.Client`, used for making offchain API requests from individual nodes.

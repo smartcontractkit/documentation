@@ -482,6 +482,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Custom WASM Builds",
           url: "cre/guides/operations/custom-build",
         },
+        {
+          title: "Custom Rust Plugins",
+          url: "cre/guides/operations/custom-rust-plugins-ts",
+        },
       ],
     },
     {
