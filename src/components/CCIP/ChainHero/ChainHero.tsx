@@ -147,39 +147,43 @@ function ChainHero({
           </div>
         </div>
 
-        <div className="ccip-chain-hero__heading">
-          <img
-            src={network?.logo || token?.logo}
-            alt=""
-            className={token?.logo ? "ccip-chain-hero__token-logo" : ""}
-            onError={({ currentTarget }) => {
-              currentTarget.onerror = null // prevents looping
-              currentTarget.src = fallbackTokenIconUrl
-            }}
-          />
-          <h1
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              position: "relative",
-              overflow: "visible",
-            }}
-          >
-            {network?.name || token?.id}
-            <span className="ccip-chain-hero__token-logo__symbol">
-              {token?.id === "USDC" ? "USD Coin" : token?.name}
-            </span>
-
-            {chainTooltipConfig && (
-              <Tooltip
-                tip={chainTooltipConfig.content}
-                hoverable={chainTooltipConfig.hoverable}
-                hideDelay={chainTooltipConfig.hideDelay}
+        {(network || token) && (
+          <div className="ccip-chain-hero__heading">
+            {(network?.logo || token?.logo) && (
+              <img
+                src={network?.logo || token?.logo}
+                alt=""
+                className={token?.logo ? "ccip-chain-hero__token-logo" : ""}
+                onError={({ currentTarget }) => {
+                  currentTarget.onerror = null // prevents looping
+                  currentTarget.src = fallbackTokenIconUrl
+                }}
               />
             )}
-          </h1>
-        </div>
+            <h1
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                position: "relative",
+                overflow: "visible",
+              }}
+            >
+              {network?.name || token?.id}
+              <span className="ccip-chain-hero__token-logo__symbol">
+                {token?.id === "USDC" ? "USD Coin" : token?.name}
+              </span>
+
+              {chainTooltipConfig && (
+                <Tooltip
+                  tip={chainTooltipConfig.content}
+                  hoverable={chainTooltipConfig.hoverable}
+                  hideDelay={chainTooltipConfig.hideDelay}
+                />
+              )}
+            </h1>
+          </div>
+        )}
         {network && (
           <div className="ccip-chain-hero__details">
             <div className="ccip-chain-hero__details__item">

@@ -3,6 +3,7 @@ import "../Tables/Table.css"
 import { Environment, LaneConfig, LaneFilter } from "~/config/data/ccip/types.ts"
 import { getNetwork } from "~/config/data/ccip/data.ts"
 import { determineTokenMechanism } from "~/config/data/ccip/utils.ts"
+import type { PoolType } from "~/config/data/ccip/types.ts"
 import { useState } from "react"
 import LaneDetailsHero from "../ChainHero/LaneDetailsHero.tsx"
 import { getExplorerAddressUrl, fallbackTokenIconUrl } from "~/features/utils/index.ts"
@@ -54,7 +55,6 @@ function LaneDrawer({
   // Process tokens with hook
   const { tokens: processedTokens, count: tokenCount } = useLaneTokens({
     tokens: apiTokens,
-    environment,
     rateLimitsData: rateLimits,
     inOutbound,
     searchQuery: search,
@@ -216,22 +216,16 @@ function LaneDrawer({
                   </td>
                   <td data-clipboard-type="token">
                     <Address
-                      address={token.data[sourceNetwork.key].tokenAddress}
+                      address={token.tokenAddress}
                       endLength={4}
-                      contractUrl={getExplorerAddressUrl(explorer)(token.data[sourceNetwork.key].tokenAddress)}
+                      contractUrl={getExplorerAddressUrl(explorer)(token.tokenAddress)}
                     />
                   </td>
-                  <td>{token.data[sourceNetwork.key].decimals}</td>
+                  <td>{token.decimals}</td>
                   <td>
                     {inOutbound === LaneFilter.Outbound
-                      ? determineTokenMechanism(
-                          token.data[sourceNetwork.key].pool?.type,
-                          token.data[destinationNetwork.key].pool?.type
-                        )
-                      : determineTokenMechanism(
-                          token.data[destinationNetwork.key].pool?.type,
-                          token.data[sourceNetwork.key].pool?.type
-                        )}
+                      ? determineTokenMechanism(token.sourcePoolType as PoolType, token.destPoolType as PoolType)
+                      : determineTokenMechanism(token.destPoolType as PoolType, token.sourcePoolType as PoolType)}
                   </td>
 
                   <td>
@@ -261,7 +255,9 @@ function LaneDrawer({
             </tbody>
           </table>
         </div>
-        <div className="ccip-table__notFound">{processedTokens.length === 0 && <>No tokens found</>}</div>
+        <div className="ccip-table__notFound">
+          {isLoadingRateLimits ? <>Loading...</> : processedTokens.length === 0 && <>No tokens found</>}
+        </div>
       </div>
     </>
   )

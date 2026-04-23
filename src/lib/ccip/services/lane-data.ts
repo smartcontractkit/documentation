@@ -27,10 +27,7 @@ import {
 } from "../../../features/utils/index.ts"
 import { getSelectorEntry } from "@config/data/ccip/selectors.ts"
 
-import pLimit from "p-limit"
-import { fetchLaneRateLimits } from "~/lib/ccip/graphql/services/enrichment-data-service.ts"
-
-const GRAPHQL_CONCURRENCY = 10
+import { fetchAllTokensForLane } from "~/lib/ccip/graphql/services/enrichment-data-service.ts"
 
 export const prerender = false
 
@@ -657,39 +654,20 @@ export class LaneDataService {
       internalId: destChain.internalId,
     }
 
-    // Extract supported token symbols
-    const tokenSymbols = this.extractSupportedTokens(laneConfig)
-
-    // Fetch rate limits per token concurrently
-    const limit = pLimit(GRAPHQL_CONCURRENCY)
+    // Fetch all tokens for the lane in a single batch GraphQL call
+    const laneTokens = await fetchAllTokensForLane(environment, sourceInternalId, destinationInternalId)
     const supportedTokensWithRateLimits: Record<string, TokenLaneData> = {}
 
-    const tokenResults = await Promise.allSettled(
-      tokenSymbols.map((tokenSymbol) =>
-        limit(async () => ({
-          tokenSymbol,
-          rateLimits: await fetchLaneRateLimits(environment, tokenSymbol, sourceInternalId, destinationInternalId),
-        }))
-      )
-    )
-
-    for (const settled of tokenResults) {
-      if (settled.status !== "fulfilled") continue
-      const { tokenSymbol, rateLimits: laneRateLimits } = settled.value
-
-      if (laneRateLimits) {
-        supportedTokensWithRateLimits[tokenSymbol] = {
-          rateLimits: { standard: laneRateLimits.standard, custom: laneRateLimits.custom },
-          fees: null,
-        }
-      } else {
-        logger.warn({
-          message: "Token in lanes.json supportedTokens has no on-chain lane data — filtering out",
-          requestId: this.requestId,
-          tokenSymbol,
-          sourceInternalId,
-          destinationInternalId,
-        })
+    for (const laneToken of laneTokens) {
+      supportedTokensWithRateLimits[laneToken.tokenSymbol] = {
+        rateLimits: laneToken.rateLimits
+          ? { standard: laneToken.rateLimits.standard, custom: laneToken.rateLimits.custom }
+          : { standard: null, custom: null },
+        fees: null,
+        tokenAddress: laneToken.tokenAddress,
+        tokenDecimals: laneToken.tokenDecimals,
+        sourcePoolType: laneToken.sourcePoolType,
+        destPoolType: laneToken.destPoolType,
       }
     }
 
@@ -773,39 +751,20 @@ export class LaneDataService {
         return { data: null, tokenCount: 0 }
       }
 
-      // Extract supported token symbols
-      const tokenSymbols = this.extractSupportedTokens(laneConfig)
-
-      // Fetch rate limits per token concurrently
-      const limit = pLimit(GRAPHQL_CONCURRENCY)
+      // Fetch all tokens for the lane in a single batch GraphQL call
+      const laneTokens = await fetchAllTokensForLane(environment, sourceInternalId, destinationInternalId)
       const supportedTokensWithRateLimits: Record<string, TokenLaneData> = {}
 
-      const tokenResults = await Promise.allSettled(
-        tokenSymbols.map((tokenSymbol) =>
-          limit(async () => ({
-            tokenSymbol,
-            rateLimits: await fetchLaneRateLimits(environment, tokenSymbol, sourceInternalId, destinationInternalId),
-          }))
-        )
-      )
-
-      for (const settled of tokenResults) {
-        if (settled.status !== "fulfilled") continue
-        const { tokenSymbol, rateLimits: laneRateLimits } = settled.value
-
-        if (laneRateLimits) {
-          supportedTokensWithRateLimits[tokenSymbol] = {
-            rateLimits: { standard: laneRateLimits.standard, custom: laneRateLimits.custom },
-            fees: null,
-          }
-        } else {
-          logger.warn({
-            message: "Token in lanes.json supportedTokens has no on-chain lane data — filtering out",
-            requestId: this.requestId,
-            tokenSymbol,
-            sourceInternalId,
-            destinationInternalId,
-          })
+      for (const laneToken of laneTokens) {
+        supportedTokensWithRateLimits[laneToken.tokenSymbol] = {
+          rateLimits: laneToken.rateLimits
+            ? { standard: laneToken.rateLimits.standard, custom: laneToken.rateLimits.custom }
+            : { standard: null, custom: null },
+          fees: null,
+          tokenAddress: laneToken.tokenAddress,
+          tokenDecimals: laneToken.tokenDecimals,
+          sourcePoolType: laneToken.sourcePoolType,
+          destPoolType: laneToken.destPoolType,
         }
       }
 

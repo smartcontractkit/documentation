@@ -1,12 +1,15 @@
 import { useMemo } from "react"
-import { Environment, LaneFilter, Version } from "~/config/data/ccip/types.ts"
-import { getTokenData } from "~/config/data/ccip/data.ts"
+import { LaneFilter } from "~/config/data/ccip/types.ts"
 import { getTokenIconUrl } from "~/features/utils/index.ts"
 import { realtimeDataService } from "~/lib/ccip/services/realtime-data-instance.ts"
+import type { TokenLaneData } from "~/lib/ccip/types/index.ts"
 
 export interface ProcessedToken {
   id: string
-  data: ReturnType<typeof getTokenData>
+  tokenAddress: string
+  decimals: number
+  sourcePoolType: string
+  destPoolType: string
   logo: string
   rateLimits: {
     standard: { capacity: string; rate: string; isEnabled: boolean } | null
@@ -17,13 +20,12 @@ export interface ProcessedToken {
 
 interface UseLaneTokensParams {
   tokens: string[] | undefined
-  environment: Environment
-  rateLimitsData: Record<string, any>
+  rateLimitsData: Record<string, TokenLaneData>
   inOutbound: LaneFilter
   searchQuery: string
 }
 
-export function useLaneTokens({ tokens, environment, rateLimitsData, inOutbound, searchQuery }: UseLaneTokensParams) {
+export function useLaneTokens({ tokens, rateLimitsData, inOutbound, searchQuery }: UseLaneTokensParams) {
   const processedTokens = useMemo(() => {
     if (!tokens) return []
 
@@ -32,30 +34,26 @@ export function useLaneTokens({ tokens, environment, rateLimitsData, inOutbound,
     return tokens
       .filter((token) => token.toLowerCase().includes(searchQuery.toLowerCase()))
       .map((token) => {
-        const data = getTokenData({
-          environment,
-          version: Version.V1_2_0,
-          tokenId: token || "",
-        })
-
-        // Skip tokens with no data
-        if (!Object.keys(data).length) return null
+        const tokenLaneData = rateLimitsData[token]
+        if (!tokenLaneData) return null
 
         const logo = getTokenIconUrl(token)
-        const tokenLaneData = rateLimitsData[token]
-        const allLimits = realtimeDataService.getAllRateLimitsForDirection(tokenLaneData?.rateLimits, direction)
+        const allLimits = realtimeDataService.getAllRateLimitsForDirection(tokenLaneData.rateLimits, direction)
         const isPaused = allLimits.standard?.capacity === "0"
 
         return {
           id: token,
-          data,
+          tokenAddress: tokenLaneData.tokenAddress ?? "",
+          decimals: tokenLaneData.tokenDecimals ?? 0,
+          sourcePoolType: tokenLaneData.sourcePoolType ?? "",
+          destPoolType: tokenLaneData.destPoolType ?? "",
           logo,
           rateLimits: allLimits,
           isPaused,
         }
       })
       .filter((token): token is ProcessedToken => token !== null)
-  }, [tokens, environment, rateLimitsData, inOutbound, searchQuery])
+  }, [tokens, rateLimitsData, inOutbound, searchQuery])
 
   return {
     tokens: processedTokens,

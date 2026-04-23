@@ -413,6 +413,10 @@ export interface TokenRateLimits {
 export interface TokenLaneData {
   rateLimits: TokenRateLimits
   fees: TokenFees | null
+  tokenAddress?: string
+  tokenDecimals?: number
+  sourcePoolType?: string
+  destPoolType?: string
 }
 
 /**

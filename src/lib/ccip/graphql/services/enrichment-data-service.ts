@@ -372,6 +372,105 @@ export async function fetchLaneRateLimits(
   }
 }
 
+// ---------- Batch lane tokens ----------
+
+export interface LaneTokenData {
+  tokenSymbol: string
+  tokenAddress: string
+  tokenDecimals: number
+  sourcePoolType: string
+  destPoolType: string
+  rateLimits: RawTokenRateLimits | null
+}
+
+/**
+ * Fetches all tokens for a lane in two parallel batch queries (outbound + inbound).
+ * Replaces the previous N+1 approach of calling fetchLaneRateLimits per token.
+ *
+ * Outbound query (network=src, remoteNetworkName=dest):
+ *   → source token address, decimals, source pool type, rate limits
+ * Inbound query (network=dest, remoteNetworkName=src):
+ *   → destination pool type per token symbol
+ */
+export async function fetchAllTokensForLane(
+  environment: Environment,
+  sourceDirectoryKey: string,
+  destDirectoryKey: string
+): Promise<LaneTokenData[]> {
+  const srcNetwork = toSelectorName(environment, sourceDirectoryKey)
+  const dstNetwork = toSelectorName(environment, destDirectoryKey)
+
+  const cacheKey = `lane-batch|${environment}|${srcNetwork}|${dstNetwork}`
+
+  try {
+    return await cached(cacheKey, async () => {
+      const [outboundResult, inboundResult] = await Promise.all([
+        executeGraphQLQuery<GetTokenPoolLanesWithPoolsQuery, GetTokenPoolLanesWithPoolsQueryVariables>(
+          TOKEN_POOL_LANES_WITH_POOLS_QUERY,
+          {
+            first: 500,
+            condition: { network: srcNetwork, remoteNetworkName: dstNetwork },
+            filter: { removed: { notEqualTo: true } },
+          }
+        ),
+        executeGraphQLQuery<GetTokenPoolLanesWithPoolsQuery, GetTokenPoolLanesWithPoolsQueryVariables>(
+          TOKEN_POOL_LANES_WITH_POOLS_QUERY,
+          {
+            first: 500,
+            condition: { network: dstNetwork, remoteNetworkName: srcNetwork },
+            filter: { removed: { notEqualTo: true } },
+          }
+        ),
+      ])
+
+      // Build destination pool type map: tokenSymbol → destPoolType
+      const destPoolTypeBySymbol = new Map<string, string>()
+      for (const node of inboundResult.allCcipTokenPoolLanesWithPools?.nodes ?? []) {
+        if (node.tokenSymbol) {
+          destPoolTypeBySymbol.set(node.tokenSymbol, normalizePoolType(extractRawType(node.typeAndVersion)))
+        }
+      }
+
+      const results: LaneTokenData[] = []
+      for (const node of outboundResult.allCcipTokenPoolLanesWithPools?.nodes ?? []) {
+        if (!node.tokenSymbol || !node.token) continue
+
+        const rawType = extractRawType(node.typeAndVersion)
+        results.push({
+          tokenSymbol: node.tokenSymbol,
+          tokenAddress: node.token,
+          tokenDecimals: node.tokenDecimals ?? 18,
+          sourcePoolType: normalizePoolType(rawType),
+          destPoolType: destPoolTypeBySymbol.get(node.tokenSymbol) ?? "",
+          rateLimits: {
+            standard: toRateLimiterDirections(
+              node.inboundCapacity,
+              node.inboundRate,
+              node.inboundEnabled,
+              node.outboundCapacity,
+              node.outboundRate,
+              node.outboundEnabled
+            ),
+            custom: toRateLimiterDirections(
+              node.customInboundCapacity,
+              node.customInboundRate,
+              node.customInboundEnabled,
+              node.customOutboundCapacity,
+              node.customOutboundRate,
+              node.customOutboundEnabled
+            ),
+          },
+        })
+      }
+
+      return results
+    })
+  } catch (error) {
+    console.error(`[CCIP GraphQL] fetchAllTokensForLane failed: ${sourceDirectoryKey}->${destDirectoryKey}`, error)
+    return []
+  }
+}
+
 // ---------- Stubs ----------
 
 // TODO: CCV verifier data is not yet available in the GraphQL schema.

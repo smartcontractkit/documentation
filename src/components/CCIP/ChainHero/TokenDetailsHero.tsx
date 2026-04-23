@@ -2,7 +2,6 @@ import Address from "~/components/AddressReact.tsx"
 import { getExplorerAddressUrl, fallbackTokenIconUrl } from "~/features/utils/index.ts"
 import "./ChainHero.css"
 import { ExplorerInfo, ChainType } from "~/config/types.ts"
-import { getNetworkIconUrl } from "~/config/data/ccip/data.ts"
 import { formatPoolTypeForDisplay } from "~/lib/ccip/graphql/utils/type-version-parser.ts"
 
 interface TokenDetailsHeroProps {
@@ -31,7 +30,7 @@ function TokenDetailsHero({ network, token, inDrawer = false }: TokenDetailsHero
       <div className="ccip-chain-hero__content">
         <div className="ccip-chain-hero__heading">
           <div className="ccip-chain-hero__heading__images">
-            <img src={getNetworkIconUrl(network.name)} alt="" />
+            <img src={network.logo} alt="" />
             <img
               src={token?.logo}
               alt=""

@@ -1,4 +1,5 @@
 import { Environment, Version, Network } from "~/config/data/ccip/types.ts"
+import type { PoolType } from "~/config/data/ccip/types.ts"
 import { getTokenData } from "~/config/data/ccip/data.ts"
 import TokenCard from "../Cards/TokenCard.tsx"
 import { drawerContentStore, DrawerWidth, drawerWidthStore } from "../Drawer/drawerStore.ts"
@@ -7,6 +8,7 @@ import { directoryToSupportedChain, getChainIcon, getChainTypeAndFamily, getTitl
 import { useState } from "react"
 import "./ChainTokenGrid.css"
 import SeeMore from "../SeeMore/SeeMore.tsx"
+import type { PoolInfo } from "~/lib/ccip/graphql/services/enrichment-data-service.ts"
 
 interface ChainTokenGridProps {
   tokens: {
@@ -16,11 +18,12 @@ interface ChainTokenGridProps {
   }[]
   network: Network
   environment: Environment
+  poolDataByToken?: Record<string, PoolInfo>
 }
 
 const BEFORE_SEE_MORE = 6 * 4 // Number of networks to show before the "See more" button, 7 rows x 4 items
 
-function ChainTokenGrid({ tokens, network, environment }: ChainTokenGridProps) {
+function ChainTokenGrid({ tokens, network, environment, poolDataByToken }: ChainTokenGridProps) {
   const [seeMore, setSeeMore] = useState(tokens.length <= BEFORE_SEE_MORE)
   return (
     <>
@@ -38,6 +41,7 @@ function ChainTokenGrid({ tokens, network, environment }: ChainTokenGridProps) {
               key={token.id}
               variant="square"
               onClick={() => {
+                const poolInfo = poolDataByToken?.[token.id]
                 const selectedNetwork = Object.keys(data)
                   .map((key) => {
                     const supportedChain = directoryToSupportedChain(key || "")
@@ -54,10 +58,10 @@ function ChainTokenGrid({ tokens, network, environment }: ChainTokenGridProps) {
                       tokenSymbol: data[key].symbol,
                       tokenDecimals: data[key].decimals,
                       tokenAddress: data[key].tokenAddress,
-                      tokenPoolType: data[key].pool?.type ?? "burnMint",
-                      tokenPoolRawType: data[key].pool?.rawType ?? "",
-                      tokenPoolAddress: data[key].pool?.address ?? "",
-                      tokenPoolVersion: data[key].pool?.version ?? "",
+                      tokenPoolType: (poolInfo?.type ?? data[key].pool?.type ?? "burnMint") as PoolType,
+                      tokenPoolRawType: poolInfo?.rawType ?? data[key].pool?.rawType ?? "",
+                      tokenPoolAddress: poolInfo?.address ?? data[key].pool?.address ?? "",
+                      tokenPoolVersion: poolInfo?.version ?? data[key].pool?.version ?? "",
                       explorer: network.explorer,
                       chainType,
                     }
