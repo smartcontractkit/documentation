@@ -1020,10 +1020,6 @@ export const StreamsTHead = () => (
 )
 
 const streamsCategoryMap = {
-  custom: {
-    text: "Custom",
-    link: "/data-streams/developer-responsibilities/#custom-data-streams",
-  },
   new_token: {
     text: "New token",
     link: "/data-streams/developer-responsibilities#new-token-data-streams",
@@ -1053,6 +1049,16 @@ export const StreamsTr = ({ metadata, isMainnet }) => {
               className={tableStyles.feedVariantBadge}
             >
               DEX State Price
+            </a>
+          )}
+          {metadata.feedType === "Datalink" && (
+            <a
+              href="/data-streams/stream-ids"
+              target="_blank"
+              className={tableStyles.feedVariantBadge}
+              title="Datalink Stream"
+            >
+              Datalink
             </a>
           )}
           {isCalculatedStream && (
@@ -1328,6 +1334,7 @@ export const MainnetTable = ({
   showOnlySVR,
   showOnlyMVRFeeds,
   showOnlyDEXFeeds,
+  showOnlyDatalinkFeeds,
   rwaSchemaFilter,
   streamCategoryFilter,
   show24x5Feeds,
@@ -1348,6 +1355,7 @@ export const MainnetTable = ({
   showOnlySVR: boolean
   showOnlyMVRFeeds: boolean
   showOnlyDEXFeeds: boolean
+  showOnlyDatalinkFeeds?: boolean
   rwaSchemaFilter?: "all" | "v8" | "v11"
   streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
   show24x5Feeds?: boolean
@@ -1423,6 +1431,7 @@ export const MainnetTable = ({
       // Use shared visibility logic with filters
       return isFeedVisible(metadata, dataFeedType as any, ecosystem, {
         showOnlyDEXFeeds,
+        showOnlyDatalinkFeeds,
         streamCategoryFilter,
         rwaSchemaFilter,
         showOnlyMVRFeeds,
@@ -1604,6 +1613,7 @@ export const TestnetTable = ({
   searchValue = "",
   showOnlyMVRFeeds,
   showOnlyDEXFeeds,
+  showOnlyDatalinkFeeds,
   rwaSchemaFilter,
   streamCategoryFilter,
   show24x5Feeds,
@@ -1622,6 +1632,7 @@ export const TestnetTable = ({
   searchValue?: string
   showOnlyMVRFeeds?: boolean
   showOnlyDEXFeeds?: boolean
+  showOnlyDatalinkFeeds?: boolean
   rwaSchemaFilter?: "all" | "v8" | "v11"
   streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
   show24x5Feeds?: boolean
@@ -1679,6 +1690,7 @@ export const TestnetTable = ({
       // Use shared visibility logic with filters
       return isFeedVisible(metadata, dataFeedType as any, undefined, {
         showOnlyDEXFeeds,
+        showOnlyDatalinkFeeds,
         streamCategoryFilter,
         rwaSchemaFilter,
         showOnlyMVRFeeds,
