@@ -2509,6 +2509,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "DataLink Providers",
           url: "datalink/provider-catalog",
         },
+        {
+          title: "Available Streams",
+          url: "datalink/provider-catalog/streams",
+        },
       ],
     },
     {
