@@ -26436,17 +26436,20 @@ Hyperliquid has provided a workaround to serve logs through a [dedicated resourc
 # Tempo Integration Guide
 Source: https://docs.chain.link/ccip/tools-resources/network-specific/tempo-integration-guide
 
-CCIP is compatible with Tempo Moderato Testnet, enabling cross-chain token transfers to and from Tempo using the standard BurnMint mechanism. This guide provides comprehensive information for CCIP users who want to enable a token on Tempo.
+CCIP is compatible with Tempo (Moderato Testnet and Mainnet), enabling cross-chain token transfers to and from Tempo using the standard BurnMint mechanism. This guide provides comprehensive information for CCIP users who want to enable a token on Tempo.
 
-**Before you start:** Token Manager Expert Mode access is required for this integration. Contact [CCIP Support](https://chain.link/ccip-contact) to request access before proceeding.
+<Aside type="note" title="Before You Start">
+  **Token Manager Expert Mode** access is required for this integration. Contact [CCIP
+  Support](https://chain.link/ccip-contact) to request access before proceeding.
+</Aside>
 
-## How Tempo Works
+## **How Tempo Works**
 
-Tempo is an app-chain that uses stablecoin-native gas tokens instead of a volatile native token. It introduces a custom token standard (TIP-20) designed for stablecoins and payment tokens, and has a significantly different gas cost structure compared to Ethereum mainnet.
+Tempo is an app-chain that uses any natively issued stablecoin as a gas token through their feeAMM; Tempo does not have a chain native gas token. It introduces a custom token standard (TIP-20) designed for stablecoins and payment tokens, and has a significantly different gas cost structure compared to Ethereum mainnet.
 
 ### Gas and Execution Model
 
-Tempo has substantially higher costs for storage and deployment operations:
+When integrating with CCIP, it is important to consider Tempo costs for storage and deployment operations:
 
 | Operation                            | Tempo       | Ethereum   | Notes                                                                                              |
 | :----------------------------------- | :---------- | :--------- | :------------------------------------------------------------------------------------------------- |
@@ -26458,7 +26461,7 @@ Tempo has substantially higher costs for storage and deployment operations:
 Key implications:
 
 - Always test token transfers and message sends on testnet before estimating production gas costs.
-- Deploying both a token and a token pool via Token Manager's factory contract can exceed gas limits. Adding a token in Token Manager therefore requires an existing token rather than a net-new deployment. Use Token Manager Expert Mode to deploy an ERC-20 or Tempo's official TIP-20 factory contract.
+- Deploying both a token and a token pool via Token Manager's factory contract can exceed gas limits. Adding a token in Token Manager therefore requires an **existing token** rather than a net-new deployment. Use Token Manager Expert Mode to deploy an ERC-20 or Tempo's official TIP-20 factory contract.
 - When sending messages across chains, ensure `destGasOverhead` values are set high enough to cover Tempo's account creation costs on inbound transfers.
 
 ### Fee Tokens
@@ -26485,20 +26488,20 @@ TIP-20 is Tempo's native token standard, optimized for stablecoins and payment t
 Additional TIP-20 transfer restrictions:
 
 - Tokens cannot be sent to another TIP-20 token contract address (reverts).
-- All transfers enforce `TIP403_REGISTRY.isAuthorized(transferPolicyId, from)` and `isAuthorized(transferPolicyId, to)`; both must pass.
+- All transfers enforce `TIP403_REGISTRY.isAuthorized(transferPolicyId, from)` and `isAuthorized(transferPolicyId, to)` — both must pass.
 
-  **ERC-20 alternative:** ERC-20 tokens can also be deployed to Tempo and are supported via Token Manager Expert Mode. Contact CCIP Support for access.
+**ERC-20 alternative:** ERC-20 tokens can also be deployed to Tempo and are supported via Token Manager Expert Mode. Contact CCIP Support for access.
 
-## Prerequisites
+## **Prerequisites**
 
 Before starting:
 
 - Access to [Tempo Moderato Testnet](https://explore.testnet.tempo.xyz)
 - A funded wallet with alphaUSD (see [Add Funds and Set EVM Gas](https://docs.tempo.xyz/guide/use-accounts/add-funds))
-- Token Manager Expert Mode access (request from CCIP Support)
+- Token Manager Expert Mode access (request from [CCIP Support](https://chain.link/ccip-contact?v=General%20Technical%20Support))
 - All Tempo Moderato Testnet CCIP addresses from the [CCIP Directory](https://docs.chain.link/ccip/directory/testnet/chain/tempo-testnet-moderato)
 
-## Integration Steps
+## **Integration Steps**
 
 ### High-Level Sequence
 
@@ -26512,24 +26515,24 @@ Before starting:
 7. Test transfers               (Transporter testnet)
 ```
 
-**Order matters:** Complete Steps 1–5 before wiring token pools. Wiring early can allow users to initiate transfers before the Tempo pool is active.
+**Order matters:** Complete Steps 1–5 before wiring token pools. Wiring early can allow users to initiate transfers before the Tempo pool is active, resulting in transactions stuck in flight.
 
 ### Step 1: Deploy a TIP-20 Token
 
 Deploy using the **TIP20Factory** precompile on Tempo Moderato Testnet.
 
-**Factory address:** <code>[0x20Fc000000000000000000000000000000000000](https://explore.testnet.tempo.xyz/address/0x20Fc000000000000000000000000000000000000?tab=interact)</code>
+**Factory address:** [`0x20Fc000000000000000000000000000000000000`](https://explore.testnet.tempo.xyz/address/0x20Fc000000000000000000000000000000000000?tab=interact)
 
-Call `createToken(string name, string symbol, string currency, address quoteToken, address admin, bytes32 salt). `The following inputs have been provided as an example:
+Call `createToken(string name, string symbol, string currency, address quoteToken, address admin, bytes32 salt).` The following inputs have been provided as an example:
 
-| Parameter    | Example value                                                        |
-| :----------- | :------------------------------------------------------------------- |
-| `name`       | `My Test Token`                                                      |
-| `symbol`     | `MTT`                                                                |
-| `currency`   | `USD`                                                                |
-| `quoteToken` | `0x20C0000000000000000000000000000000000000`                         |
-| `admin`      | Your admin wallet address                                            |
-| `salt`       | `0x0000000000000000000000000000000000000000000000000000000000001234` |
+| Parameter    | Example value                                                                                          |
+| :----------- | :----------------------------------------------------------------------------------------------------- |
+| `name`       | `My Test Token`                                                                                        |
+| `symbol`     | `MTT`                                                                                                  |
+| `currency`   | `USD`                                                                                                  |
+| `quoteToken` | `0x20C0000000000000000000000000000000000000 This is the address of PathUSD`                            |
+| `admin`      | Your admin wallet address                                                                              |
+| `salt`       | `0x0000000000000000000000000000000000000000000000000000000000001234 Used for deterministic deployment` |
 
 **References:**
 
@@ -26593,32 +26596,42 @@ This activates the token and token pool for CCIP. The token is now ready to be w
 
 Now that the token pool is active on Tempo, connect it to your existing remote chains.
 
-**On Tempo (add remote chains):**
+### **On Tempo (add remote chains)**
 
-In Token Manager Expert Mode, go to **Token Pool → Chain Update → Apply Chain Updates**.
+In Token Manager Expert Mode:
 
-1. Set the network to **Tempo Moderato Testnet**.
-2. Enter your Tempo `BurnMintTokenPool` address.
-3. Click **Add a new network** for each remote chain (e.g., Avalanche Fuji). For each, provide:
-   - The remote chain's token address
-   - The remote chain's token pool address
-4. Click **Chain Update** and pay gas.
+1. Go to **Token Pool → Chain Update → Apply Chain Updates**
+2. Set the network to **Tempo Moderato Testnet**
+3. Enter your **Tempo BurnMintTokenPool address**
+4. Under **Add a new network**, configure each remote chain:
+   - **Network**: Select the remote chain (e.g., Avalanche Fuji)
+   - **Token Address**: Enter the token address on the remote chain
+   - **Token Pool Address**: Enter the remote chain’s BurnMintTokenPool address
+5. Click **Chain update** and pay gas
 
-**On each remote chain (add Tempo):**
+Leave **Inbound/Outbound rate limiters** at their default values unless you have specific requirements.
 
-1. Switch the network to a remote chain (e.g., **Avalanche Fuji**).
-2. Enter your existing token pool address on that chain.
-3. Click **Add a new network → Tempo Moderato Testnet**.
-4. Enter your Tempo token address and Tempo `BurnMintTokenPool` address.
-5. Click **Chain Update** and pay gas.
+Ignore **Remove a network** during initial setup.
+
+### **On each remote chain (add Tempo)**
+
+Repeat the process on each connected chain:
+
+1. Switch the network to the remote chain
+2. Enter the existing token pool address on that chain
+3. Under **Add a new network**:
+   - **Network**: Select **Tempo Moderato Testnet**
+   - **Token Address**: Enter your Tempo token address
+   - **Token Pool Address**: Enter your Tempo BurnMintTokenPool address
+4. Click **Chain update** and pay gas
 
 Repeat for each additional remote chain by switching the network at the top. At the end of this step, all token pools should be mutually wired to each other.
 
-New networks will have rate limiting disabled by default.
+To maintain strong security and risk management it is *highly recommended* to enable [Token Pool Rate Limits](https://docs.chain.link/ccip/concepts/rate-limit-management/overview).
 
 ### Step 7: Test Cross-Chain Transfers
 
-Use **[Transporter (testnet)](https://test.transporter.io/)** to test transfers across your connected chains.
+Use [**Transporter (testnet)**](https://test.transporter.io/) to test transfers across your connected chains.
 
 1. In the **Token** dropdown, paste your source chain's token address — the token symbol should be detected automatically.
 2. Select your source and destination networks.
@@ -26627,7 +26640,7 @@ Use **[Transporter (testnet)](https://test.transporter.io/)** to test transfers 
 
 Test transfers in both directions across all connected chains. Your Token Manager dashboard will auto-detect configured networks once wiring is complete.
 
-## Contact Us
+## **Contact Us**
 
 To request Token Manager Expert Mode access, or if you have questions about your integration or need help validating your configuration, contact the Chainlink CCIP team:
 
