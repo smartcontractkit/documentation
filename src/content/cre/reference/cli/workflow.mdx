@@ -5,7 +5,7 @@ title: "Workflow Commands"
 metadata:
   description: "Manage workflows with CLI: complete command reference for simulating, deploying, activating, pausing, and deleting workflows."
   datePublished: "2025-11-04"
-  lastModified: "2026-04-16"
+  lastModified: "2026-04-24"
 ---
 
 import { Aside } from "@components"
@@ -308,6 +308,52 @@ cre workflow delete ./my-workflow --target production-settings
 
 For more details, see [Deleting Workflows](/cre/guides/operations/deleting-workflows).
 
+## `cre workflow list`
+
+<Aside type="note" title="Authentication required">
+  Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
+  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
+  in with the CLI](/cre/account/cli-login) for further details.
+</Aside>
+
+Lists all workflows deployed for your organization. Deleted workflows are hidden by default.
+
+**Usage:**
+
+```bash
+cre workflow list [flags]
+```
+
+**Flags:**
+
+| <div style={{ width: "170px" }}>Flag</div> | Description                                                                       |
+| ------------------------------------------ | --------------------------------------------------------------------------------- |
+| `--include-deleted`                        | Include workflows in `DELETED` status                                             |
+| `--output <string>`                        | Output format. Use `json` to print a JSON array to stdout for scripting use cases |
+| `--registry <string>`                      | Filter results by a specific registry ID from your user context                   |
+
+**Examples:**
+
+- List all workflows
+
+  ```bash
+  cre workflow list
+  ```
+
+- List all workflows including deleted ones
+
+  ```bash
+  cre workflow list --include-deleted
+  ```
+
+- Export workflow list as JSON
+
+  ```bash
+  cre workflow list --output json > workflows.json
+  ```
+
+---
+
 ## `cre workflow custom-build`
 
 {/* prettier-ignore */}
@@ -457,6 +503,7 @@ The typical workflow lifecycle uses these commands in sequence:
 1. **`cre workflow deploy`** — Deploy your workflow to the registry
 1. **`cre workflow pause`** / **`cre workflow activate`** — Control workflow execution as needed
 1. **`cre workflow deploy`** (again) — Deploy updates (replaces the existing workflow)
+1. **`cre workflow list`** — (Optional) View all deployed workflows for your organization
 1. **`cre workflow delete`** — Remove the workflow when no longer needed
 
 ## Learn more
