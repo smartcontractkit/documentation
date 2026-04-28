@@ -58,6 +58,7 @@ function TokenDrawer({
 }) {
   const [search, setSearch] = useState("")
   const [inOutbound, setInOutbound] = useState<LaneFilter>(LaneFilter.Outbound)
+  const [openWarning, setOpenWarning] = useState<string | null>(null)
 
   type LaneRow = {
     networkDetails: {
@@ -83,10 +84,16 @@ function TokenDrawer({
         tokenId: token.id,
       })[destinationChain]
 
-      if (!destinationTokenData) return null
+      if (!destinationTokenData) {
+        console.error(`No token data found for ${token.id} on ${network.key} -> ${destinationChain}`)
+        return null
+      }
 
       const destinationPoolType = destinationTokenData.poolType
-      if (!destinationPoolType) return null
+      if (!destinationPoolType) {
+        console.error(`No pool type found for ${token.id} on ${network.key} -> ${destinationChain}`)
+        return null
+      }
 
       const laneData = getLane({
         sourceChain: network.key as SupportedChain,
@@ -95,7 +102,16 @@ function TokenDrawer({
         version: Version.V1_2_0,
       })
 
-      if (!laneData || !laneData.supportedTokens || !(token.id in laneData.supportedTokens)) {
+      if (!laneData) {
+        console.error(`No lane data found for ${token.id} on ${network.key} -> ${destinationChain}`)
+        return null
+      }
+      if (!laneData.supportedTokens) {
+        console.error(`No supported tokens found for ${token.id} on ${network.key} -> ${destinationChain}`)
+        return null
+      }
+      if (!(token.id in laneData.supportedTokens)) {
+        console.error(`${token.id} not found in supported tokens for ${network.key} -> ${destinationChain}`)
         return null
       }
 
@@ -130,19 +146,25 @@ function TokenDrawer({
           chainType: network.chainType,
         }}
       />
-
       <div className="ccip-table__drawer-container">
         <div className="ccip-table__filters">
-          <Tabs
-            tabs={[
-              { name: "Outbound lanes", key: LaneFilter.Outbound },
-              { name: "Inbound lanes", key: LaneFilter.Inbound },
-            ]}
-            onChange={(key) => setInOutbound(key as LaneFilter)}
-          />
+          <div>
+            <Tabs
+              tabs={[
+                {
+                  name: "Outbound lanes",
+                  key: LaneFilter.Outbound,
+                },
+                {
+                  name: "Inbound lanes",
+                  key: LaneFilter.Inbound,
+                },
+              ]}
+              onChange={(key) => setInOutbound(key as LaneFilter)}
+            />
+          </div>
           <TableSearchInput search={search} setSearch={setSearch} />
         </div>
-
         <div className="ccip-table__wrapper">
           <table className="ccip-table">
             <thead>
@@ -153,8 +175,14 @@ function TokenDrawer({
                   <Tooltip
                     label=""
                     tip="Maximum amount per transaction"
-                    labelStyle={{ marginRight: "5px" }}
-                    style={{ display: "inline-block", verticalAlign: "middle" }}
+                    labelStyle={{
+                      marginRight: "5px",
+                    }}
+                    style={{
+                      display: "inline-block",
+                      verticalAlign: "middle",
+                      marginBottom: "2px",
+                    }}
                   />
                 </th>
                 <th>
@@ -162,8 +190,14 @@ function TokenDrawer({
                   <Tooltip
                     label=""
                     tip="Rate at which available capacity is replenished"
-                    labelStyle={{ marginRight: "5px" }}
-                    style={{ display: "inline-block", verticalAlign: "middle" }}
+                    labelStyle={{
+                      marginRight: "5px",
+                    }}
+                    style={{
+                      display: "inline-block",
+                      verticalAlign: "middle",
+                      marginBottom: "2px",
+                    }}
                   />
                 </th>
                 <th>
@@ -171,17 +205,27 @@ function TokenDrawer({
                   <Tooltip
                     label=""
                     tip="Token handling mechanism: Lock & Mint, Burn & Mint, Lock & Unlock, Burn & Unlock."
-                    labelStyle={{ marginRight: "5px" }}
-                    style={{ display: "inline-block", verticalAlign: "middle" }}
+                    labelStyle={{
+                      marginRight: "5px",
+                    }}
+                    style={{
+                      display: "inline-block",
+                      verticalAlign: "middle",
+                      marginBottom: "2px",
+                    }}
                   />
                 </th>
               </tr>
             </thead>
-
             <tbody>
               {laneRows
-                .filter(({ networkDetails }) => networkDetails.name.toLowerCase().includes(search.toLowerCase()))
+                .filter(
+                  ({ networkDetails }) =>
+                    networkDetails && networkDetails.name.toLowerCase().includes(search.toLowerCase())
+                )
                 .map(({ networkDetails, laneData, destinationChain, destinationPoolType, destinationDecimals }) => {
+                  if (!laneData || !networkDetails) return null
+
                   const tokenPaused = isTokenPaused(
                     network.tokenDecimals,
                     destinationLanes[destinationChain].rateLimiterConfig?.[
@@ -193,33 +237,14 @@ function TokenDrawer({
                   const isV151 = network.tokenPoolVersion?.includes("1.5.1")
                   const isInboundLane = inOutbound === LaneFilter.Inbound
                   const isEvmNetwork = String(network.chainType).toLowerCase() === "evm"
-
                   const shouldWarn = isV151 && hasDecimalMismatch && isInboundLane && isEvmNetwork
-                  const warningContent = (
-                    <>
-                      For v1.5.1 token pools on EVM chains, rate limit enforcement may differ from configured values
-                      when token decimals vary across chains. It is recommended to upgrade to the latest version of
-                      Token Pools.{" "}
-                      <a
-                        href="https://docs.chain.link/ccip/concepts/cross-chain-token/evm/token-pools"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ textDecoration: "underline", color: "white" }}
-                      >
-                        Learn more
-                      </a>
-                      .
-                    </>
-                  )
 
                   return (
                     <tr key={networkDetails.name} className={tokenPaused ? "ccip-table__row--paused" : ""}>
                       <td>
                         <button
                           type="button"
-                          className={`ccip-table__network-name ${
-                            tokenPaused ? "ccip-table__network-name--paused" : ""
-                          }`}
+                          className={`ccip-table__network-name ${tokenPaused ? "ccip-table__network-name--paused" : ""}`}
                           onClick={() => {
                             drawerContentStore.set(() => (
                               <LaneDrawer
@@ -227,8 +252,8 @@ function TokenDrawer({
                                 lane={laneData}
                                 sourceNetwork={network}
                                 destinationNetwork={{
-                                  name: networkDetails.name,
-                                  logo: networkDetails.logo,
+                                  name: networkDetails.name || "",
+                                  logo: networkDetails.logo || "",
                                   key: destinationChain,
                                 }}
                                 inOutbound={inOutbound}
@@ -236,8 +261,13 @@ function TokenDrawer({
                               />
                             ))
                           }}
+                          aria-label={`View lane details for ${networkDetails.name}`}
                         >
-                          <img src={networkDetails.logo} alt={networkDetails.name} className="ccip-table__logo" />
+                          <img
+                            src={networkDetails.logo}
+                            alt={`${networkDetails.name} blockchain logo`}
+                            className="ccip-table__logo"
+                          />
 
                           <span style={{ display: "inline-flex", alignItems: "center" }}>
                             {networkDetails.name}
@@ -251,16 +281,15 @@ function TokenDrawer({
                                   marginLeft: "6px",
                                 }}
                                 onMouseEnter={(e) => {
-                                  const tooltip = e.currentTarget.querySelector(
-                                    ".ccip-table__warning-tooltip"
-                                  ) as HTMLElement | null
-                                  if (tooltip) tooltip.style.display = "block"
+                                  e.stopPropagation()
+                                  setOpenWarning(destinationChain)
                                 }}
                                 onMouseLeave={(e) => {
-                                  const tooltip = e.currentTarget.querySelector(
-                                    ".ccip-table__warning-tooltip"
-                                  ) as HTMLElement | null
-                                  if (tooltip) tooltip.style.display = "none"
+                                  e.stopPropagation()
+                                  setOpenWarning((current) => (current === destinationChain ? null : current))
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation()
                                 }}
                               >
                                 <span
@@ -274,42 +303,53 @@ function TokenDrawer({
                                   ⚠️
                                 </span>
 
-                                <span
-                                  className="ccip-table__warning-tooltip"
-                                  style={{
-                                    display: "none",
-                                    position: "absolute",
-                                    bottom: "calc(100% + 8px)",
-                                    left: "0",
-                                    zIndex: 20,
-                                    minWidth: "260px",
-                                    maxWidth: "320px",
-                                    padding: "8px 10px",
-                                    borderRadius: "6px",
-                                    background: "var(--gray-900)",
-                                    color: "white",
-                                    fontSize: "12px",
-                                    lineHeight: "1.4",
-                                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                                    whiteSpace: "normal",
-                                    pointerEvents: "auto",
-                                  }}
-                                >
-                                  <>
-                                    For v1.5.1 token pools on EVM chains, rate limit enforcement may differ from
-                                    configured values when token decimals vary across chains. It is recommended to
-                                    upgrade to the latest version of Token Pools.{" "}
-                                    <a
-                                      href="https://docs.chain.link/ccip/concepts/cross-chain-token/evm/token-pools"
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      style={{ textDecoration: "underline", color: "white" }}
-                                    >
-                                      Learn more
-                                    </a>
-                                    .
-                                  </>
-                                </span>
+                                {openWarning === destinationChain && (
+                                  <span
+                                    style={{
+                                      position: "absolute",
+                                      bottom: "100%",
+                                      left: "0",
+                                      zIndex: 999,
+                                      minWidth: "260px",
+                                      maxWidth: "320px",
+                                      padding: "8px 10px",
+                                      borderRadius: "6px",
+                                      background: "var(--gray-900)",
+                                      color: "white",
+                                      fontSize: "12px",
+                                      lineHeight: "1.4",
+                                      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                                      whiteSpace: "normal",
+                                      pointerEvents: "auto",
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.stopPropagation()
+                                      setOpenWarning(destinationChain)
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.stopPropagation()
+                                      setOpenWarning((current) => (current === destinationChain ? null : current))
+                                    }}
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                    }}
+                                  >
+                                    <>
+                                      For v1.5.1 token pools on EVM chains, rate limit enforcement may differ from
+                                      configured values when token decimals vary across chains. It is recommended to
+                                      upgrade to the latest version of Token Pools.{" "}
+                                      <a
+                                        href="/ccip/concepts/cross-chain-token/evm/token-pools#token-decimal-handling"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{ textDecoration: "underline", color: "white" }}
+                                      >
+                                        Learn more
+                                      </a>
+                                      .
+                                    </>
+                                  </span>
+                                )}
                               </span>
                             )}
                           </span>
@@ -321,7 +361,6 @@ function TokenDrawer({
                           )}
                         </button>
                       </td>
-
                       <td>
                         {displayCapacity(
                           network.tokenDecimals,
@@ -331,7 +370,6 @@ function TokenDrawer({
                           ]
                         )}
                       </td>
-
                       <td>
                         <RateTooltip
                           destinationLane={destinationLanes[destinationChain]}
@@ -340,7 +378,6 @@ function TokenDrawer({
                           decimals={network.tokenDecimals}
                         />
                       </td>
-
                       <td>
                         {inOutbound === LaneFilter.Outbound
                           ? determineTokenMechanism(network.tokenPoolType, destinationPoolType)
@@ -351,6 +388,12 @@ function TokenDrawer({
                 })}
             </tbody>
           </table>
+        </div>
+
+        <div className="ccip-table__notFound">
+          {laneRows.filter(
+            ({ networkDetails }) => networkDetails && networkDetails.name.toLowerCase().includes(search.toLowerCase())
+          ).length === 0 && <>No lanes found</>}
         </div>
       </div>
     </div>
