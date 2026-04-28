@@ -15,7 +15,8 @@ import {
   LaneConfig,
 } from "~/config/data/ccip/index.ts"
 import { isTokenPaused } from "~/config/data/ccip/utils.ts"
-import { useState } from "react"
+import { useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import { ChainType, ExplorerInfo, SupportedChain } from "~/config/index.ts"
 import LaneDrawer from "../Drawer/LaneDrawer.tsx"
 import TableSearchInput from "../Tables/TableSearchInput.tsx"
@@ -59,6 +60,8 @@ function TokenDrawer({
   const [search, setSearch] = useState("")
   const [inOutbound, setInOutbound] = useState<LaneFilter>(LaneFilter.Outbound)
   const [openWarning, setOpenWarning] = useState<string | null>(null)
+  const [tooltipPosition, setTooltipPosition] = useState<{ top: number; left: number } | null>(null)
+  const closeTimeoutRef = useRef<number | null>(null)
 
   type LaneRow = {
     networkDetails: {
@@ -69,6 +72,57 @@ function TokenDrawer({
     destinationChain: string
     destinationPoolType: PoolType
     destinationDecimals: number
+  }
+
+  const warningContent = (
+    <>
+      For v1.5.1 token pools on EVM chains, rate limit enforcement may differ from configured values when token decimals
+      vary across chains. It is recommended to upgrade to the latest version of Token Pools.{" "}
+      <a
+        href="https://docs.chain.link/ccip/concepts/cross-chain-token/evm/token-pools#token-decimal-handling"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ textDecoration: "underline", color: "white" }}
+      >
+        Learn more
+      </a>
+      .
+    </>
+  )
+
+  const clearCloseTimeout = () => {
+    if (closeTimeoutRef.current !== null) {
+      window.clearTimeout(closeTimeoutRef.current)
+      closeTimeoutRef.current = null
+    }
+  }
+
+  const scheduleCloseWarning = () => {
+    clearCloseTimeout()
+    closeTimeoutRef.current = window.setTimeout(() => {
+      setOpenWarning(null)
+      setTooltipPosition(null)
+    }, 120)
+  }
+
+  const openWarningTooltip = (destinationChain: string, target: HTMLElement) => {
+    clearCloseTimeout()
+
+    const rect = target.getBoundingClientRect()
+    const tooltipWidth = 320
+    const gutter = 8
+    const viewportWidth = window.innerWidth
+
+    let left = rect.left
+    if (left + tooltipWidth + gutter > viewportWidth) {
+      left = Math.max(gutter, viewportWidth - tooltipWidth - gutter)
+    }
+
+    const openBelow = rect.top < 140
+    const top = openBelow ? rect.bottom + 8 : rect.top - 8
+
+    setTooltipPosition({ top, left })
+    setOpenWarning(destinationChain)
   }
 
   const laneRows: LaneRow[] = Object.keys(destinationLanes)
@@ -275,18 +329,17 @@ function TokenDrawer({
                             {shouldWarn && (
                               <span
                                 style={{
-                                  position: "relative",
                                   display: "inline-flex",
                                   alignItems: "center",
                                   marginLeft: "6px",
                                 }}
                                 onMouseEnter={(e) => {
                                   e.stopPropagation()
-                                  setOpenWarning(destinationChain)
+                                  openWarningTooltip(destinationChain, e.currentTarget)
                                 }}
                                 onMouseLeave={(e) => {
                                   e.stopPropagation()
-                                  setOpenWarning((current) => (current === destinationChain ? null : current))
+                                  scheduleCloseWarning()
                                 }}
                                 onClick={(e) => {
                                   e.stopPropagation()
@@ -302,54 +355,6 @@ function TokenDrawer({
                                 >
                                   ⚠️
                                 </span>
-
-                                {openWarning === destinationChain && (
-                                  <span
-                                    style={{
-                                      position: "absolute",
-                                      bottom: "100%",
-                                      left: "0",
-                                      zIndex: 999,
-                                      minWidth: "260px",
-                                      maxWidth: "320px",
-                                      padding: "8px 10px",
-                                      borderRadius: "6px",
-                                      background: "var(--gray-900)",
-                                      color: "white",
-                                      fontSize: "12px",
-                                      lineHeight: "1.4",
-                                      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-                                      whiteSpace: "normal",
-                                      pointerEvents: "auto",
-                                    }}
-                                    onMouseEnter={(e) => {
-                                      e.stopPropagation()
-                                      setOpenWarning(destinationChain)
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      e.stopPropagation()
-                                      setOpenWarning((current) => (current === destinationChain ? null : current))
-                                    }}
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                    }}
-                                  >
-                                    <>
-                                      For v1.5.1 token pools on EVM chains, rate limit enforcement may differ from
-                                      configured values when token decimals vary across chains. It is recommended to
-                                      upgrade to the latest version of Token Pools.{" "}
-                                      <a
-                                        href="/ccip/concepts/cross-chain-token/evm/token-pools#token-decimal-handling"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        style={{ textDecoration: "underline", color: "white" }}
-                                      >
-                                        Learn more
-                                      </a>
-                                      .
-                                    </>
-                                  </span>
-                                )}
                               </span>
                             )}
                           </span>
@@ -396,6 +401,43 @@ function TokenDrawer({
           ).length === 0 && <>No lanes found</>}
         </div>
       </div>
+
+      {openWarning && tooltipPosition && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              style={{
+                position: "fixed",
+                top: tooltipPosition.top,
+                left: tooltipPosition.left,
+                transform: tooltipPosition.top < 140 ? "none" : "translateY(-100%)",
+                zIndex: 9999,
+                minWidth: "260px",
+                maxWidth: "320px",
+                padding: "8px 10px",
+                borderRadius: "6px",
+                background: "var(--gray-900)",
+                color: "white",
+                fontSize: "12px",
+                lineHeight: "1.4",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                whiteSpace: "normal",
+                pointerEvents: "auto",
+              }}
+              onMouseEnter={() => {
+                clearCloseTimeout()
+              }}
+              onMouseLeave={() => {
+                scheduleCloseWarning()
+              }}
+              onClick={(e) => {
+                e.stopPropagation()
+              }}
+            >
+              {warningContent}
+            </div>,
+            document.body
+          )
+        : null}
     </div>
   )
 }
