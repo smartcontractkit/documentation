@@ -3169,12 +3169,18 @@ On the destination blockchain, the CCIP OffRamp contract performs three key call
 
 ### Token Decimal Handling
 
-When deploying a token across multiple blockchains, you choose how many decimals the token uses on each chain. These choices directly affect how token amounts and rate limits behave during cross-chain transfers.
+#### v1.6.0+ (Recommended)
+
+TokenPool contracts in v1.6.0 and higher correctly handle mixed-decimal tokens and enforce Token Pool Rate Limits (TPRLs) across chains without additional configuration.
+
+When deploying a token across multiple blockchains, you choose how many decimals the token uses on each chain. These choices directly determine how token amounts behave during cross-chain transfers.
+
+[Use the latest TokenPool (v1.6.1)](https://www.npmjs.com/package/@chainlink/contracts-ccip/v/1.6.1)
 
 For example:
 
-- On Ethereum: 18 decimals (0.123456789123456789)
-- On Polygon: 9 decimals (0.123456789)
+- On Ethereum: you configure 18 decimals (0.123456789123456789)
+- On Polygon: you configure 9 decimals (0.123456789)
 
 When tokens move between chains with different decimals, CCIP converts values automatically and rounds to match the destination chain’s precision.
 
@@ -3186,13 +3192,27 @@ Consider a token deployed across three blockchains:
 - Blockchain B: 9 decimals
 - Blockchain C: 18 decimals
 
-| Scenario         | Transfer Path | Example                                                           | Impact                                                                                                                                                                         |
-| ---------------- | ------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **High → Low ❌** | A → B         | • Send: 1.123456789123456789<br />• Receive: 1.123456789          | Difference: 0.000000000123456789 is not represented on the destination chain<br />• Burn/mint: permanently removed from supply<br />• Lock/release: remains in the source pool |
-| **Low → High ✅** | B → A         | • Send: 1.123456789<br />• Receive: 1.123456789000000000          | No precision loss                                                                                                                                                              |
-| **Equal ✅**      | A → C         | • Send: 1.123456789123456789<br />• Receive: 1.123456789123456789 | No precision loss                                                                                                                                                              |
+| Scenario         | Transfer Path | Example                                                           | Impact                                                                                                                                                                                                                                                        |
+| ---------------- | ------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **High → Low ❌** | A → B         | • Send: 1.123456789123456789<br />• Receive: 1.123456789          | Precision is lost when converting to the destination chain’s decimals. The difference (0.000000000123456789) is not represented on the destination chain.<br />• Burn/mint: not included in the minted amount<br />• Lock/release: remains in the source pool |
+| **Low → High ✅** | B → A         | • Send: 1.123456789<br />• Receive: 1.123456789000000000          | No precision loss                                                                                                                                                                                                                                             |
+| **Equal ✅**      | A → C         | • Send: 1.123456789123456789<br />• Receive: 1.123456789123456789 | No precision loss                                                                                                                                                                                                                                             |
 
-Decimal choices affect both token amounts during transfers and how rate limits must be configured.
+If you choose different decimals across chains, you are also choosing where precision is lost during transfers.
+
+<Aside type="caution" title="Impact on Token Supply">
+  When transferring from higher to lower precision chains, rounding creates small differences per transfer. Depending on
+  how your pool is configured, these differences either remain in the source pool or are not represented on the
+  destination chain.
+</Aside>
+
+Decimal differences affect both token amounts and how rate limits are interpreted in earlier versions.
+
+#### v1.5.1
+
+Token pools in **v1.5.1** introduce support for tokens with different decimal places across blockchains. However, Token Pool Rate Limits (TPRLs) are not properly enforced when decimals differ between chains.
+
+If you use mixed-decimal tokens in this version, you must manually account for how decimals affect TPRL configuration—and even then, enforcement may be significantly higher or lower than intended.
 
 **Token Pool Rate Limits (TPRL)**
 
@@ -3219,45 +3239,31 @@ Definitions:
 
 `50_000 × 10^9 = 50_000_000_000_000`
 
-Using local decimals (`10^18`) instead will incorrectly scale the limit.
+If you instead use local decimals (`10^18`), you will misconfigure the limit. This can cause rate limits to be higher or lower than intended.
 
-<Aside type="caution" title="Impact on Token Supply">
-  When tokens move between blockchains with different decimal places, rounding can occur due to a loss of precision.
-  This affects small amounts on each transfer and may accumulate over time depending on the pool type.
-</Aside>
-
-#### v1.6.0+ (Recommended)
-
-Token pools in v1.6.0 and higher support tokens with different decimal places across blockchains and correctly enforce Token Pool Rate Limits (TPRLs) when decimals differ.
-
-#### v1.5.1
-
-Starting from v1.5.1, token pools support tokens with different decimal places across blockchains.
-
-<Aside type="caution" title="v1.5.1 token pools on EVM chains">
-  Rate limit enforcement may not match configured values when token decimals differ between chains. Even when configured
-  using the correct model (remote decimals), enforcement may be incorrect. Upgrade to Token Pool{" "}
-  <a href="https://www.npmjs.com/package/@chainlink/contracts-ccip">v1.6.0+</a>.
+<Aside type="caution" title="v1.5.1 limitation">
+  Even if you configure TPRLs using the correct model, enforcement may not match your configured values when token
+  decimals differ between chains. Upgrade to the latest TokenPool (v1.6.0+) to avoid misconfiguration and drift.
+  <a href="https://www.npmjs.com/package/@chainlink/contracts-ccip/v/1.6.1">View package</a>.
 </Aside>
 
 #### v1.5.0
 
-Token pools on v1.5.0 do not support tokens with different decimal places across blockchains. Transfers between chains with different decimals result in inconsistent token amounts.
+Token pools on **v1.5.0** do **not** support tokens with different decimal places across blockchains. If you deploy tokens with different decimals across chains in this version, transfers will produce inconsistent token amounts.
 
 | Transfer Path | Example                                          | Impact              |
 | ------------- | ------------------------------------------------ | ------------------- |
 | 12 → 6        | Send 1.0 (= 10¹² base units) → Receive 1,000,000 | Artificial increase |
 | 6 → 12        | Send 1.0 (= 10⁶ base units) → Receive 0.000001   | Significant loss    |
 
-Upgrade to v1.6.0 or higher for correct handling of mixed-decimal tokens.
+Upgrade to **v1.6.0 or higher** for correct handling of mixed-decimal tokens.
 
-**Best Practices**
+### Best Practices
 
-- Use the same token decimals across chains whenever possible
-- When decimals differ, explicitly account for rounding in transfers
-- Always calculate TPRLs using remote decimals when chains differ
-- Test both transfer directions before production
-- Monitor for accumulation in lock/release pools
+- Use the same token decimals across chains unless you have a clear reason not to
+- If you choose different decimals, account for rounding in both directions
+- Test transfers between all chain pairs before production
+- Monitor lock/release pools for accumulation over time
 - Add UI warnings for transfers that may lose precision
 
 ## Standard Token Pools
