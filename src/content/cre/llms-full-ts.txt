@@ -448,9 +448,24 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-04-20
+Last Updated: 2026-04-24
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.12.0 - April 23, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.12.0" target="_blank">CRE CLI version 1.12.0</a> is now available.**
+
+- **`cre workflow list`**: New command that lists all workflows deployed for your organization. Use `--include-deleted` to include deleted workflows, or `--output json` for machine-readable output. See [`cre workflow list`](/cre/reference/cli/workflow#cre-workflow-list) for details.
+- **Improved workflow output**: `cre workflow deploy`, `cre workflow activate`, `cre workflow pause`, and `cre workflow delete` now display a consistent details block on success, showing the registry, contract address, transaction hash, workflow name, and workflow ID.
+- **Bug fixes**: Fixed `--limits none` not fully disabling engine-level limit enforcement during simulation, and fixed an invalid owner-address bug that could occur during workflow operations.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.11.0...v1.12.0)
 
 ## TS SDK v1.6.0 - April 20, 2026
 
@@ -4947,15 +4962,16 @@ Estimated Cost:
 Transaction confirmed
 View on explorer: https://etherscan.io/tx/0x58599f6...d916b
 
-[OK] Workflow deployed successfully
+✓ Workflow deployed successfully
 
 Details:
-   Contract address:    0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5
-   Transaction hash:    0x58599f6...d916b
-   Workflow Name:       my-workflow
-   Workflow ID:         <your-workflow-id>
-   Binary URL:          https://storage.cre.example.com/artifacts/<workflow-id>/binary.wasm
-   Config URL:          https://storage.cre.example.com/artifacts/<workflow-id>/config
+   Registry:         onchain:ethereum-mainnet
+   Contract address: 0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5
+   Transaction hash: 0x58599f6...d916b
+   Workflow Name:    my-workflow
+   Workflow ID:      <your-workflow-id>
+   Binary URL:       https://storage.cre.example.com/artifacts/<workflow-id>/binary.wasm
+   Config URL:       https://storage.cre.example.com/artifacts/<workflow-id>/config
 ```
 
 ## Verifying your deployment
@@ -5133,14 +5149,17 @@ Estimated Cost:
   ▸ Yes
     No
 
-Transaction confirmed: 0xd5b94bd...87498b
+✓ Transaction confirmed: 0xd5b94bd...87498b
 View on explorer: https://sepolia.etherscan.io/tx/0xd5b94bd...87498b
 
-[OK] Workflow activated successfully
-   Contract address:    0xF3f93fc4dc177748E7557568b5354cB009e3818a
-   Transaction hash:    0xd5b94bd...87498b
-   Workflow Name:       my-workflow
-   Workflow ID:         <your-workflow-id>
+✓ Workflow activated successfully
+
+Details:
+   Registry:         onchain:ethereum-mainnet
+   Contract address: 0xF3f93fc4dc177748E7557568b5354cB009e3818a
+   Transaction hash: 0xd5b94bd...87498b
+   Workflow Name:    my-workflow
+   Workflow ID:      <your-workflow-id>
 ```
 
 ## Pausing a workflow
@@ -5194,15 +5213,16 @@ Estimated Cost:
   ▸ Yes
     No
 
-Transaction confirmed
+✓ Transaction confirmed
 View on explorer: https://sepolia.etherscan.io/tx/0x2e09a66...db66e
-[OK] Workflows paused successfully
+✓ Workflows paused successfully
 
 Details:
-   Contract address:    0xF3f93fc4dc177748E7557568b5354cB009e3818a
-   Transaction hash:    0x2e09a66...db66e
-   Workflow Name:       my-workflow
-   Workflow ID:         <your-workflow-id>
+   Registry:         onchain:ethereum-mainnet
+   Contract address: 0xF3f93fc4dc177748E7557568b5354cB009e3818a
+   Transaction hash: 0x2e09a66...db66e
+   Workflow Name:    my-workflow
+   Workflow ID:      <your-workflow-id>
 ```
 
 
@@ -5371,10 +5391,10 @@ Estimated Cost:
   ▸ Yes
     No
 
-Transaction confirmed
+✓ Transaction confirmed
 View on explorer: https://sepolia.etherscan.io/tx/0xf059c32...fec7d
-[OK] Deleted workflow ID: 00f0379a2df46ad2c5af070f5871da89f589f8bff8af76ff6a44bb59bec88bf4
-Workflows deleted successfully.
+✓ Deleted workflow ID: 00f0379a2df46ad2c5af070f5871da89f589f8bff8af76ff6a44bb59bec88bf4
+✓ Workflows deleted successfully
 ```
 
 ### Skipping the confirmation prompt
@@ -8303,7 +8323,7 @@ When you run this command, the CLI will:
 
 # Workflow Commands
 Source: https://docs.chain.link/cre/reference/cli/workflow
-Last Updated: 2026-04-16
+Last Updated: 2026-04-24
 
 The `cre workflow` commands manage workflows throughout their entire lifecycle, from local testing to deployment and ongoing management.
 
@@ -8602,6 +8622,52 @@ cre workflow delete ./my-workflow --target production-settings
 
 For more details, see [Deleting Workflows](/cre/guides/operations/deleting-workflows).
 
+## `cre workflow list`
+
+<Aside type="note" title="Authentication required">
+  Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
+  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
+  in with the CLI](/cre/account/cli-login) for further details.
+</Aside>
+
+Lists all workflows deployed for your organization. Deleted workflows are hidden by default.
+
+**Usage:**
+
+```bash
+cre workflow list [flags]
+```
+
+**Flags:**
+
+| Flag                  | Description                                                                       |
+| --------------------- | --------------------------------------------------------------------------------- |
+| `--include-deleted`   | Include workflows in `DELETED` status                                             |
+| `--output <string>`   | Output format. Use `json` to print a JSON array to stdout for scripting use cases |
+| `--registry <string>` | Filter results by a specific registry ID from your user context                   |
+
+**Examples:**
+
+- List all workflows
+
+  ```bash
+  cre workflow list
+  ```
+
+- List all workflows including deleted ones
+
+  ```bash
+  cre workflow list --include-deleted
+  ```
+
+- Export workflow list as JSON
+
+  ```bash
+  cre workflow list --output json > workflows.json
+  ```
+
+***
+
 ## `cre workflow custom-build`
 
 
@@ -8751,7 +8817,8 @@ The typical workflow lifecycle uses these commands in sequence:
 6. **`cre workflow deploy`** — Deploy your workflow to the registry
 7. **`cre workflow pause`** / **`cre workflow activate`** — Control workflow execution as needed
 8. **`cre workflow deploy`** (again) — Deploy updates (replaces the existing workflow)
-9. **`cre workflow delete`** — Remove the workflow when no longer needed
+9. **`cre workflow list`** — (Optional) View all deployed workflows for your organization
+10. **`cre workflow delete`** — Remove the workflow when no longer needed
 
 ## Learn more
 

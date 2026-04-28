@@ -135,6 +135,7 @@ export const FeedList = ({
   allowNetworkTableExpansion = false,
   defaultNetworkTableExpanded = false,
   force24x5Only = false,
+  forceStreamCategoryFilter,
   tokenizedEquityProvider,
 }: {
   initialNetwork: string
@@ -144,6 +145,7 @@ export const FeedList = ({
   allowNetworkTableExpansion?: boolean
   defaultNetworkTableExpanded?: boolean
   force24x5Only?: boolean
+  forceStreamCategoryFilter?: StreamsRwaFeedTypeValue
   tokenizedEquityProvider?: string
 }) => {
   const chains = ecosystem === "deprecating" ? ALL_CHAINS : CHAINS
@@ -289,18 +291,20 @@ export const FeedList = ({
   // Initialize all other states
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState<boolean>(false)
   const [streamCategoryFilterParam, setStreamCategoryFilterParam] = useQueryString("feedType")
-  const streamCategoryFilter =
-    typeof streamCategoryFilterParam === "string" && isStreamsRwaFeedTypeValue(streamCategoryFilterParam)
+  const streamCategoryFilter: StreamsRwaFeedTypeValue =
+    forceStreamCategoryFilter ??
+    (typeof streamCategoryFilterParam === "string" && isStreamsRwaFeedTypeValue(streamCategoryFilterParam)
       ? streamCategoryFilterParam
-      : "all"
+      : "all")
   const setStreamCategoryFilter = (next: StreamsRwaFeedTypeValue) => {
     setStreamCategoryFilterParam(next === "all" ? [] : next)
   }
   const [testnetStreamCategoryFilterParam, setTestnetStreamCategoryFilterParam] = useQueryString("testnetFeedType")
-  const testnetStreamCategoryFilter =
-    typeof testnetStreamCategoryFilterParam === "string" && isStreamsRwaFeedTypeValue(testnetStreamCategoryFilterParam)
+  const testnetStreamCategoryFilter: StreamsRwaFeedTypeValue =
+    forceStreamCategoryFilter ??
+    (typeof testnetStreamCategoryFilterParam === "string" && isStreamsRwaFeedTypeValue(testnetStreamCategoryFilterParam)
       ? testnetStreamCategoryFilterParam
-      : "all"
+      : "all")
   const setTestnetStreamCategoryFilter = (next: StreamsRwaFeedTypeValue) => {
     setTestnetStreamCategoryFilterParam(next === "all" ? [] : next)
   }
@@ -326,6 +330,8 @@ export const FeedList = ({
   const [showOnlyMVRFeedsTestnet, setShowOnlyMVRFeedsTestnet] = useState(false)
   const [showOnlyDEXFeeds, setShowOnlyDEXFeeds] = useState(false)
   const [showOnlyDEXFeedsTestnet, setShowOnlyDEXFeedsTestnet] = useState(false)
+  const [showOnlyDatalinkFeeds, setShowOnlyDatalinkFeeds] = useState(false)
+  const [showOnlyDatalinkFeedsTestnet, setShowOnlyDatalinkFeedsTestnet] = useState(false)
   const [show24x5FeedsParam, setShow24x5FeedsParam] = useQueryString("show24x5")
   const show24x5Feeds = force24x5Only || show24x5FeedsParam === "true"
   const setShow24x5Feeds = (value: boolean) => {
@@ -781,8 +787,18 @@ export const FeedList = ({
     ecosystem,
   ])
 
-  const streamsMainnetSectionTitle =
-    dataFeedType === "streamsCrypto"
+  const forcedCategoryLabel =
+    forceStreamCategoryFilter === "datalink"
+      ? "DataLink Streams"
+      : forceStreamCategoryFilter === "equities"
+        ? "Equity Streams"
+        : forceStreamCategoryFilter === "forex"
+          ? "Forex Streams"
+          : null
+
+  const streamsMainnetSectionTitle = forcedCategoryLabel
+    ? `Mainnet ${forcedCategoryLabel}`
+    : dataFeedType === "streamsCrypto"
       ? "Mainnet Crypto Streams"
       : dataFeedType === "streamsNav"
         ? "Mainnet SmartData Streams"
@@ -791,8 +807,9 @@ export const FeedList = ({
           : dataFeedType === "streamsBacked"
             ? "Mainnet Tokenized Asset Streams"
             : "Mainnet RWA Streams"
-  const streamsTestnetSectionTitle =
-    dataFeedType === "streamsCrypto"
+  const streamsTestnetSectionTitle = forcedCategoryLabel
+    ? `Testnet ${forcedCategoryLabel}`
+    : dataFeedType === "streamsCrypto"
       ? "Testnet Crypto Streams"
       : dataFeedType === "streamsNav"
         ? "Testnet SmartData Streams"
@@ -1085,16 +1102,31 @@ export const FeedList = ({
                     onChange={() => {
                       closeAllDropdowns()
                       setShowOnlyDEXFeeds((old) => !old)
-                      setCurrentPage("1") // Reset to first page when filter changes
+                      if (showOnlyDatalinkFeeds) setShowOnlyDatalinkFeeds(false)
+                      setCurrentPage("1")
                     }}
                   />
                   Show DEX State Price streams
+                </label>
+                <label className={feedList.detailsLabel}>
+                  <input
+                    type="checkbox"
+                    style="width:15px;height:15px;display:inline;margin-right:8px;"
+                    checked={showOnlyDatalinkFeeds}
+                    onChange={() => {
+                      closeAllDropdowns()
+                      setShowOnlyDatalinkFeeds((old) => !old)
+                      if (showOnlyDEXFeeds) setShowOnlyDEXFeeds(false)
+                      setCurrentPage("1")
+                    }}
+                  />
+                  Show Datalink streams
                 </label>
               </div>
             )}
             {dataFeedType === "streamsRwa" && (
               <>
-                {!show24x5Feeds && (
+                {!forceStreamCategoryFilter && !show24x5Feeds && (
                   <>
                     <FilterDropdown
                       isOpen={openDropdownId === "main-schema"}
@@ -1124,7 +1156,7 @@ export const FeedList = ({
                     />
                   </>
                 )}
-                {!force24x5Only && (
+                {!force24x5Only && !forceStreamCategoryFilter && (
                   <div className={feedList.checkboxContainer}>
                     <label className={feedList.detailsLabel}>
                       <input
@@ -1161,7 +1193,10 @@ export const FeedList = ({
                     }}
                   />
                 )}
-                {(searchValue || rwaSchemaFilter !== "all" || streamCategoryFilter !== "all" || show24x5Feeds) && (
+                {(searchValue ||
+                  rwaSchemaFilter !== "all" ||
+                  (!forceStreamCategoryFilter && streamCategoryFilter !== "all") ||
+                  show24x5Feeds) && (
                   <button
                     type="button"
                     className={clsx(button.secondary, feedList.clearFilterBtn)}
@@ -1169,7 +1204,7 @@ export const FeedList = ({
                       closeAllDropdowns()
                       setSearchValue("")
                       setRwaSchemaFilter("all")
-                      setStreamCategoryFilter("all")
+                      if (!forceStreamCategoryFilter) setStreamCategoryFilter("all")
                       setShow24x5Feeds(false)
                       setTradingHoursFilter("all")
                       setCurrentPage("1")
@@ -1203,6 +1238,7 @@ export const FeedList = ({
                 showOnlySVR={showOnlySVR}
                 showOnlyMVRFeeds={showOnlyMVRFeeds}
                 showOnlyDEXFeeds={showOnlyDEXFeeds}
+                showOnlyDatalinkFeeds={showOnlyDatalinkFeeds}
                 rwaSchemaFilter={rwaSchemaFilter}
                 streamCategoryFilter={streamCategoryFilter}
                 show24x5Feeds={show24x5Feeds}
@@ -1251,16 +1287,30 @@ export const FeedList = ({
                     checked={showOnlyDEXFeedsTestnet}
                     onChange={() => {
                       setShowOnlyDEXFeedsTestnet((old) => !old)
-                      setTestnetCurrentPage("1") // Reset to first page when filter changes
+                      if (showOnlyDatalinkFeedsTestnet) setShowOnlyDatalinkFeedsTestnet(false)
+                      setTestnetCurrentPage("1")
                     }}
                   />
                   Show DEX State Price streams
+                </label>
+                <label className={feedList.detailsLabel}>
+                  <input
+                    type="checkbox"
+                    style="width:15px;height:15px;display:inline;margin-right:8px;"
+                    checked={showOnlyDatalinkFeedsTestnet}
+                    onChange={() => {
+                      setShowOnlyDatalinkFeedsTestnet((old) => !old)
+                      if (showOnlyDEXFeedsTestnet) setShowOnlyDEXFeedsTestnet(false)
+                      setTestnetCurrentPage("1")
+                    }}
+                  />
+                  Show Datalink streams
                 </label>
               </div>
             )}
             {dataFeedType === "streamsRwa" && (
               <>
-                {!show24x5FeedsTestnet && (
+                {!forceStreamCategoryFilter && !show24x5FeedsTestnet && (
                   <>
                     <FilterDropdown
                       isOpen={openDropdownId === "test-schema"}
@@ -1290,7 +1340,7 @@ export const FeedList = ({
                     />
                   </>
                 )}
-                {!force24x5Only && (
+                {!force24x5Only && !forceStreamCategoryFilter && (
                   <div className={feedList.checkboxContainer}>
                     <label className={feedList.detailsLabel}>
                       <input
@@ -1329,7 +1379,7 @@ export const FeedList = ({
                 )}
                 {(testnetSearchValue ||
                   testnetRwaSchemaFilter !== "all" ||
-                  testnetStreamCategoryFilter !== "all" ||
+                  (!forceStreamCategoryFilter && testnetStreamCategoryFilter !== "all") ||
                   show24x5FeedsTestnet) && (
                   <button
                     type="button"
@@ -1338,7 +1388,7 @@ export const FeedList = ({
                       closeAllDropdowns()
                       setTestnetSearchValue("")
                       setTestnetRwaSchemaFilter("all")
-                      setTestnetStreamCategoryFilter("all")
+                      if (!forceStreamCategoryFilter) setTestnetStreamCategoryFilter("all")
                       setShow24x5FeedsTestnet(false)
                       setTestnetTradingHoursFilter("all")
                       setTestnetCurrentPage("1")
@@ -1373,6 +1423,7 @@ export const FeedList = ({
                 }
                 showOnlyMVRFeeds={showOnlyMVRFeedsTestnet}
                 showOnlyDEXFeeds={showOnlyDEXFeedsTestnet}
+                showOnlyDatalinkFeeds={showOnlyDatalinkFeedsTestnet}
                 rwaSchemaFilter={testnetRwaSchemaFilter}
                 streamCategoryFilter={testnetStreamCategoryFilter}
                 show24x5Feeds={show24x5FeedsTestnet}
