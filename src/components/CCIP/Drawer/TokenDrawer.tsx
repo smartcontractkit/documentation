@@ -48,7 +48,7 @@ function TokenDrawer({
     tokenAddress: string
     tokenPoolType: PoolType
     tokenPoolAddress: string
-    tokenPoolVersion: string
+    tokenPoolVersion?: string
     explorer: ExplorerInfo
   }
   destinationLanes: {
