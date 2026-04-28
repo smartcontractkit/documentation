@@ -25,6 +25,22 @@ function getSchemaVersion(feed: any): string | undefined {
 }
 
 /**
+ * Determines whether a Datalink feed belongs on a given stream page.
+ *
+ * streamsRwa is the catch-all for ALL Datalink feeds (used by the dedicated
+ * Datalink streams page). Every other stream type opts in via this map.
+ * To surface Datalink on a new stream page, add one entry here — nothing
+ * else in the visibility logic needs to change.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const DATALINK_STREAM_MATCH: Partial<Record<string, (feed: any) => boolean>> = {
+  streamsCrypto: (feed) => feed.docs?.assetClass === "Crypto",
+  streamsNav: (feed) => feed.docs?.assetClass === "Net Asset Value",
+  streamsExRate: (feed) => feed.docs?.productTypeCode === "ExRate",
+  streamsBacked: (feed) => feed.docs?.assetClass === "Tokenized Equities",
+}
+
+/**
  * Determines if a feed should be visible based on:
  * - Hidden flags (feedCategory === "hidden" or docs.hidden)
  * - Data feed type filtering (streams, smartdata, rates, etc.)
@@ -34,6 +50,7 @@ function getSchemaVersion(feed: any): string | undefined {
  */
 export interface FeedVisibilityOptions {
   showOnlyDEXFeeds?: boolean
+  showOnlyDatalinkFeeds?: boolean
   streamCategoryFilter?: string
   rwaSchemaFilter?: string
   showOnlyMVRFeeds?: boolean
@@ -92,16 +109,25 @@ export function isFeedVisible(
     // Streams feeds must be verified contracts
     if (feed.contractType !== "verifier") return false
 
-    if (dataFeedType === "streamsCrypto") {
-      isVisible = ["Crypto", "Crypto-DEX"].includes(feed.docs?.feedType)
-    } else if (dataFeedType === "streamsRwa") {
-      isVisible = ["Equities", "Forex", "Datalink"].includes(feed.docs?.feedType)
-    } else if (dataFeedType === "streamsNav") {
-      isVisible = feed.docs?.feedType === "Net Asset Value"
-    } else if (dataFeedType === "streamsExRate") {
-      isVisible = feed.docs?.productTypeCode === "ExRate"
-    } else if (dataFeedType === "streamsBacked") {
-      isVisible = feed.docs?.feedType === "Tokenized Equities"
+    const isDatalink = feed.docs?.feedType === "Datalink"
+
+    if (isDatalink) {
+      // streamsRwa is the catch-all for ALL Datalink (powers the dedicated Datalink page).
+      // Every other stream type opts in via DATALINK_STREAM_MATCH above.
+      isVisible = dataFeedType === "streamsRwa" || (DATALINK_STREAM_MATCH[dataFeedType]?.(feed) ?? false)
+    } else {
+      // Native (non-Datalink) stream visibility per page
+      if (dataFeedType === "streamsCrypto") {
+        isVisible = ["Crypto", "Crypto-DEX"].includes(feed.docs?.feedType)
+      } else if (dataFeedType === "streamsRwa") {
+        isVisible = ["Equities", "Forex"].includes(feed.docs?.feedType)
+      } else if (dataFeedType === "streamsNav") {
+        isVisible = feed.docs?.feedType === "Net Asset Value"
+      } else if (dataFeedType === "streamsExRate") {
+        isVisible = feed.docs?.productTypeCode === "ExRate"
+      } else if (dataFeedType === "streamsBacked") {
+        isVisible = feed.docs?.feedType === "Tokenized Equities"
+      }
     }
   } else if (isSmartData) {
     // SmartData feeds (excluding DS delivery channel)
@@ -149,6 +175,11 @@ export function isFeedVisible(
   // Filter: Show only DEX feeds (Streams Crypto)
   if (dataFeedType === "streamsCrypto" && options.showOnlyDEXFeeds) {
     if (feed.docs?.feedType !== "Crypto-DEX") return false
+  }
+
+  // Filter: Show only Datalink feeds (any stream type)
+  if (isStreams && options.showOnlyDatalinkFeeds) {
+    if (feed.docs?.feedType !== "Datalink") return false
   }
 
   // Filter: RWA Category & Schema (Streams RWA)
