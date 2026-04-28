@@ -6974,21 +6974,21 @@ The token price remains continuous at $200 throughout the event, even though the
   - A minimum pause duration (at least 10 minutes) is enforced to prevent premature unpausing
 </Aside>
 
-### Manual verification before unpausing
+### Verification before unpausing
 
-**Unpausing is manual—do not clear the pause until this check has passed.**
+Before an Ondo Finance Global Markets (GM) feed is unpaused after a large corporate action, Ondo verifies that the post-corporate-action equity price and staged `sValue` are aligned so the next published value remains continuous.
 
 **Where the equity price comes from:** the underlying equity leg is the same Data Streams 24/5 US equity input the DON already uses in the [Total Return Value](#total-return-value-calculation) formula. See the official list of the [24/5 equity streams](/data-streams/rwa-streams?show24x5=true\&page=1), and [learn more about how market data is sourced for tokenized equity feed calculation](/data-feeds/tokenized-equity-feeds#how-is-market-data-sourced-for-tokenized-equity-feed-calculation).
 
-For each Ondo Finance Global Markets (GM) tokenized equity feed, use the stream and time segment configured for that product in feed configuration and your operations monitoring (the value the pipeline would read as the stock leg for the current window), *not* an ad hoc quote from a different venue.
+For each Ondo Finance Global Markets (GM) tokenized equity feed, this check uses the stream and time segment configured for that product (the value the feed pipeline would read as the stock leg for the current window), *not* an ad hoc quote from a different venue.
 
 1. Take the new `sValue` that is staged for go-live (the post–corporate-action multiplier).
 2. Read the current equity market price from that same Data Streams 24/5 input, for the appropriate session (regular, pre-market, post-market, or overnight), the same way the feed prices that window.
-3. Multiply: `new sValue` × that current equity price. That product is the implied token (total return) value you would publish if you unpaused *now*.
+3. Multiply: `new sValue` × that current equity price. That product is the implied token (total return) value the feed would publish if it unpaused *now*.
 4. Compare that implied value to the **token price at freeze** (the last good, frozen feed value from when the pause took effect). They should match, or be treated as aligned only within whatever tolerance Ondo defines, because correct coordination means the post–corporate-action stock price and the new `sValue` should combine to the same onchain token price as at the freeze, preserving continuity.
 
-- **If that equality holds** (within Ondo's tolerance), proceed to unpause according to your runbook and any other release gates.
-- **If it does not hold**, the equity input and the new `sValue` are not yet consistent with each other after the corporate action, so unpausing now would jump or misstate the level for integrators. **Keep the feed paused** until the stock leg, `sValue`, or both are reconciled and the check passes.
+- **If that equality holds** (within Ondo's tolerance), the feed can be unpaused according to the applicable release process and any other release gates.
+- **If it does not hold**, the equity input and the new `sValue` are not yet consistent with each other after the corporate action, so unpausing the feed would jump or misstate the level for integrators. The feed remains paused until the stock leg, `sValue`, or both are reconciled and the check passes.
 
 ## Example scenarios
 
