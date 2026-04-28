@@ -100,6 +100,19 @@ This pause mechanism ensures price continuity during corporate actions. For exam
 
 The token price remains continuous at $200 throughout the event, even though the underlying equity market price dropped from $200 to $20.
 
+### Manual verification before unpausing
+
+**Unpausing is manual**—do not clear the pause until this check has passed.
+
+**Where the equity price comes from:** The **underlying equity** leg is the same **Data Streams 24/5** US equity input the DON already uses in the [Total Return Value](#total-return-value-calculation) formula. That is the [Data Streams v11 report schema](/data-streams/reference/report-schema-v11) path described in the tokenized equity FAQ, [How is market data sourced for tokenized equity feed calculation?](/data-feeds/tokenized-equity-feeds#how-is-market-data-sourced-for-tokenized-equity-feed-calculation). For each on-asset, use the **stream and session** configured for that product in feed configuration and your operations monitoring (the value the pipeline would read as the stock leg for the current window), **not** an ad hoc quote from a different venue. If you do not have that mapping, get the correct stream or runbook for the name from **Ondo** or **Chainlink** for that feed.
+
+1. Take the **new** `sValue` that is staged for go-live (the post–corporate-action multiplier).
+1. Read the **current** equity market price from that same **Data Streams 24/5** input, for the **appropriate session** (regular, pre-market, post-market, or overnight), the same way the feed prices that window.
+1. **Multiply**: `new sValue` × that **current equity price**. That product is the **implied** token (total return) value you would publish if you unpaused *now*.
+1. **Compare** that implied value to the **token price at freeze** (the last good, frozen feed value from when the pause took effect). **They should match**—or be treated as **aligned** only within whatever tolerance Ondo defines—because correct coordination means the post–corporate-action stock price and the new `sValue` should combine to the **same** on-chain token price as at the freeze, preserving **continuity**.
+
+If that equality does not hold, the stock price, `sValue`, or both are not yet in sync for the new regime; the feed should **stay** paused until they are, so integrators are not given a discontinuous or incorrect level.
+
 <Aside type="note">
   When the `SyntheticSharesOracle` contract returns `paused = true`, the Chainlink feed freezes at the last known good
   price. Integrators should be aware that during pause windows:
