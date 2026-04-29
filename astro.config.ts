@@ -80,20 +80,23 @@ export default defineConfig({
         // Exclude redirect source URLs from sitemap to prevent duplicates
         const pathname = new URL(page).pathname
         const cleanPath = pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname
-
+        // Keep machine-readable markdown twin URLs in the sitemap
+        // These are explicit crawlable endpoints generated from docs routes
+        const isMarkdownTwin = cleanPath.endsWith(".md")
         // Exclude short format API reference URLs (e.g., /api-reference/v150, /ccip/api-reference/evm/v150)
         // These are aliases for versioned content - we keep only the canonical long format URLs
         const shortVersionPattern = /\/api-reference\/(?:.*\/)?v\d{3,4}(?:\/|$)/
         if (shortVersionPattern.test(cleanPath)) {
           return false
         }
-
         // Exclude canonical URLs that have language-specific variants (from sidebar config)
-        if (canonicalUrlsWithLanguageVariants.has(cleanPath)) {
+        if (!isMarkdownTwin && canonicalUrlsWithLanguageVariants.has(cleanPath)) {
           return false
         }
-
-        return !redirectSources.has(cleanPath)
+        if (!isMarkdownTwin && redirectSources.has(cleanPath)) {
+          return false
+        }
+        return true
       },
       serialize(item) {
         // Remove trailing slash from URLs (except for root)
