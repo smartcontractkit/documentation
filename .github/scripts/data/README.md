@@ -1,6 +1,6 @@
 # Data Detection GitHub Workflow Scripts
 
-This directory contains scripts for detecting newly added data (feeds, smartData, streams), Data Feed deprecation changes, and validating URLs.
+This directory contains scripts for detecting newly added data (feeds, smartData, streams), Data Feed/Data Stream deprecation changes, and validating URLs.
 
 ## Scripts
 
@@ -8,8 +8,8 @@ This directory contains scripts for detecting newly added data (feeds, smartData
 
 A Bash script that can do two main tasks:
 
-1. `init-baseline` mode – Creates the initial baseline of all known IDs and deprecating feed markers.
-1. `check-data` mode – Compares current data against the baseline to detect newly added items and Data Feed deprecation changes, then updates the `changelog.json` if any are found.
+1. `init-baseline` mode – Creates the initial baseline of all known IDs and deprecating markers.
+1. `check-data` mode – Compares current data against the baseline to detect newly added items and Data Feed/Data Stream deprecation changes, then updates the `changelog.json` if any are found.
 
 ### `validate-urls.sh`
 
@@ -17,7 +17,7 @@ A script that validates URLs found in newly detected data. It checks both feed U
 
 ### `baseline.json`
 
-Stores the known feed/stream/smartData IDs and currently known deprecating Data Feed markers from the last run. This is updated each time new items or deprecation changes are detected.
+Stores the known feed/stream/smartData IDs and currently known deprecating Data Feed/Data Stream markers from the last run. This is updated each time new items or deprecation changes are detected.
 
 ## Workflow Integration
 

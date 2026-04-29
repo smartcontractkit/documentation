@@ -16,7 +16,7 @@ main() {
     exit 0
   fi
 
-  # We'll parse newly added feed items and newly scheduled deprecating items via jq
+  # We'll parse newly added feed items and newly scheduled deprecating feed/stream items via jq
   # We'll track feed vs icon in separate arrays
   feedFailures=()
   iconFailures=()
@@ -50,7 +50,9 @@ main() {
       [
         (.newlyFoundItems // []),
         (.newlyDeprecatedItems // []),
-        ((.changedDeprecatedItems // []) | map(.current))
+        ((.changedDeprecatedItems // []) | map(.current)),
+        (.newlyDeprecatedStreams // []),
+        ((.changedDeprecatedStreams // []) | map(.current))
       ]
       | add
       | .[] as $item

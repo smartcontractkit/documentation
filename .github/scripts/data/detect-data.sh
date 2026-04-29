@@ -2,7 +2,7 @@
 set -e  # Exit immediately on error
 
 # This script orchestrates the detection of new data using the TS script src/scripts/data/detect-new-data.ts
-# 1) "init-baseline": creates a baseline with all currently visible feedIDs and deprecating feed markers (no changelog updates)
+# 1) "init-baseline": creates a baseline with all currently visible feedIDs and deprecating markers (no changelog updates)
 # 2) "check-data": calls the TS script, checks for new items/deprecation changes, updates baseline/changelog if found
 
 BASELINE_FILE=".github/scripts/data/baseline.json"
@@ -31,7 +31,8 @@ init_baseline() {
 {
   "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
   "knownIds": [],
-  "knownDeprecatingFeeds": []
+  "knownDeprecatingFeeds": [],
+  "knownDeprecatingStreams": []
 }
 EOF
     log "No items found, baseline created as empty."
@@ -42,17 +43,19 @@ EOF
   # e.g. [ "arbitrum-1inch-usd", "arbitrum-aave-usd", ... ]
   ids=$(jq '[.newlyFoundItems[]?.feedID] | unique' "$NEW_DATA_FILE")
   deprecatingFeeds=$(jq '[.currentDeprecatedItems[]? | {feedID, shutdownDate}] | unique_by(.feedID) | sort_by(.feedID)' "$NEW_DATA_FILE")
+  deprecatingStreams=$(jq '[.currentDeprecatedStreams[]? | {feedID, shutdownDate}] | unique_by(.feedID) | sort_by(.feedID)' "$NEW_DATA_FILE")
 
   # Write baseline as a single array
   cat <<EOF > "$BASELINE_FILE"
 {
   "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
   "knownIds": $ids,
-  "knownDeprecatingFeeds": $deprecatingFeeds
+  "knownDeprecatingFeeds": $deprecatingFeeds,
+  "knownDeprecatingStreams": $deprecatingStreams
 }
 EOF
 
-  log "Baseline file created with current known IDs and deprecating feed markers."
+  log "Baseline file created with current known IDs and deprecating markers."
   rm -f "$NEW_DATA_FILE"
 }
 
@@ -87,7 +90,11 @@ check_data() {
   resolvedDeprecationCount=$(jq '.resolvedDeprecatedItems // [] | length' "$NEW_DATA_FILE")
   changedDeprecationCount=$(jq '.changedDeprecatedItems // [] | length' "$NEW_DATA_FILE")
   deprecationBaselineInitialized=$(jq -r '.deprecationBaselineInitialized // false' "$NEW_DATA_FILE")
-  log "Found $newCount new items, $newDeprecationCount new deprecations, $resolvedDeprecationCount resolved deprecations, and $changedDeprecationCount changed deprecations."
+  newStreamDeprecationCount=$(jq '.newlyDeprecatedStreams // [] | length' "$NEW_DATA_FILE")
+  resolvedStreamDeprecationCount=$(jq '.resolvedDeprecatedStreams // [] | length' "$NEW_DATA_FILE")
+  changedStreamDeprecationCount=$(jq '.changedDeprecatedStreams // [] | length' "$NEW_DATA_FILE")
+  streamDeprecationBaselineInitialized=$(jq -r '.streamDeprecationBaselineInitialized // false' "$NEW_DATA_FILE")
+  log "Found $newCount new items, $newDeprecationCount new feed deprecations, $resolvedDeprecationCount resolved feed deprecations, $changedDeprecationCount changed feed deprecations, $newStreamDeprecationCount new stream deprecations, $resolvedStreamDeprecationCount resolved stream deprecations, and $changedStreamDeprecationCount changed stream deprecations."
 
   # 4) Merge new IDs and deprecation markers into baseline
   # Step A: read existing knownIds (as JSON array) from the baseline
@@ -118,16 +125,34 @@ check_data() {
       ')
   fi
 
+  if [ "$streamDeprecationBaselineInitialized" = "true" ]; then
+    combinedDeprecatingStreams=$(jq '[.currentDeprecatedStreams[]? | {feedID, shutdownDate}] | unique_by(.feedID) | sort_by(.feedID)' "$NEW_DATA_FILE")
+  else
+    existingDeprecatingStreams=$(jq '.knownDeprecatingStreams // []' "$BASELINE_FILE")
+    addedDeprecatingStreams=$(jq '[((.newlyDeprecatedStreams // []) + ((.changedDeprecatedStreams // []) | map(.current)))[] | {feedID, shutdownDate}]' "$NEW_DATA_FILE")
+    removedDeprecatingStreamIds=$(jq '[((.resolvedDeprecatedStreams // []) + ((.changedDeprecatedStreams // []) | map(.previous)))[] | .feedID]' "$NEW_DATA_FILE")
+
+    combinedDeprecatingStreams=$(jq -n \
+      --argjson old "$existingDeprecatingStreams" \
+      --argjson added "$addedDeprecatingStreams" \
+      --argjson removed "$removedDeprecatingStreamIds" '
+        ($old | map(select(.feedID as $id | ($removed | index($id) | not)))) + $added
+        | unique_by(.feedID)
+        | sort_by(.feedID)
+      ')
+  fi
+
   # Step D: write updated baseline
   cat <<EOF > "$BASELINE_FILE"
 {
   "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
   "knownIds": $combinedArray,
-  "knownDeprecatingFeeds": $combinedDeprecatingFeeds
+  "knownDeprecatingFeeds": $combinedDeprecatingFeeds,
+  "knownDeprecatingStreams": $combinedDeprecatingStreams
 }
 EOF
 
-  log "Baseline updated with new IDs and deprecating feed markers."
+  log "Baseline updated with new IDs and deprecating markers."
 
   # 5) Now update the changelog
 node <<EOF
@@ -139,13 +164,24 @@ node <<EOF
     const newlyDeprecatedItems = newlyFound.newlyDeprecatedItems || [];
     const resolvedDeprecatedItems = newlyFound.resolvedDeprecatedItems || [];
     const changedDeprecatedItems = newlyFound.changedDeprecatedItems || [];
+    const newlyDeprecatedStreams = newlyFound.newlyDeprecatedStreams || [];
+    const resolvedDeprecatedStreams = newlyFound.resolvedDeprecatedStreams || [];
+    const changedDeprecatedStreams = newlyFound.changedDeprecatedStreams || [];
     const deprecatingItems = [
       ...newlyDeprecatedItems,
       ...changedDeprecatedItems.map(change => change.current).filter(Boolean),
     ];
+    const deprecatingStreamItems = [
+      ...newlyDeprecatedStreams,
+      ...changedDeprecatedStreams.map(change => change.current).filter(Boolean),
+    ];
     const deprecatedFeedIdsToRemove = new Set([
       ...resolvedDeprecatedItems.map(item => item.feedID),
       ...changedDeprecatedItems.map(change => change.previous && change.previous.feedID).filter(Boolean),
+    ]);
+    const deprecatedStreamIdsToRemove = new Set([
+      ...resolvedDeprecatedStreams.map(item => item.feedID),
+      ...changedDeprecatedStreams.map(change => change.previous && change.previous.feedID).filter(Boolean),
     ]);
 
     const CHANGELOG_PATH = path.resolve('${CHANGELOG_FILE}');
@@ -271,12 +307,44 @@ node <<EOF
       });
     }
 
-    function removeResolvedDeprecationsFromChangelog(feedIds) {
+    // === Build relatedTokens for DATA STREAM DEPRECATIONS
+    function buildDeprecatingDataStreamTokens(deprecatingStreamItems) {
+      const seen = new Set();
+      return deprecatingStreamItems.map(i => {
+        const baseAsset = i.baseAsset || "";
+        const baseLower = baseAsset.toLowerCase();
+        return {
+          assetName: i.assetName,
+          baseAsset,
+          quoteAsset: i.quoteAsset || "",
+          network: i.network,
+          networkType: i.networkType,
+          shutdownDate: i.shutdownDate,
+          feedID: i.feedID,
+          streamID: i.streamID,
+          feedType: i.feedType,
+          url: i.url,
+          ...(baseLower ? { iconUrl: \`https://d2f70xi62kby8n.cloudfront.net/tokens/\${baseLower}.webp\` } : {})
+        };
+      }).filter(t => {
+        if (seen.has(t.feedID)) return false;
+        seen.add(t.feedID);
+        return true;
+      }).sort((a, b) => {
+        const dateCompare = (a.shutdownDate || "").localeCompare(b.shutdownDate || "");
+        if (dateCompare !== 0) return dateCompare;
+        const networkCompare = (a.networkType || "").localeCompare(b.networkType || "");
+        if (networkCompare !== 0) return networkCompare;
+        return (a.assetName || "").localeCompare(b.assetName || "");
+      });
+    }
+
+    function removeResolvedDeprecationsFromChangelog(topic, emptyEntryTitle, feedIds) {
       if (feedIds.size === 0) return;
 
       changelog.data = changelog.data.filter(entry => {
         if (
-          entry.topic !== "Data Feeds" ||
+          entry.topic !== topic ||
           entry.category !== "deprecation" ||
           !Array.isArray(entry.relatedTokens)
         ) {
@@ -291,7 +359,7 @@ node <<EOF
 
         if (entry.relatedTokens.length === originalLength) return true;
 
-        if (entry.relatedTokens.length === 0 && entry.title === "Feeds scheduled for deprecation") {
+        if (entry.relatedTokens.length === 0 && entry.title === emptyEntryTitle) {
           return false;
         }
 
@@ -315,8 +383,10 @@ node <<EOF
     const dataStreamsTokens = buildDataStreamTokens(dataStreams);
     const smartDataTokens  = buildSmartDataTokens(smartData);
     const deprecatingDataFeedTokens = buildDeprecatingDataFeedTokens(deprecatingItems);
+    const deprecatingDataStreamTokens = buildDeprecatingDataStreamTokens(deprecatingStreamItems);
 
-    removeResolvedDeprecationsFromChangelog(deprecatedFeedIdsToRemove);
+    removeResolvedDeprecationsFromChangelog("Data Feeds", "Feeds scheduled for deprecation", deprecatedFeedIdsToRemove);
+    removeResolvedDeprecationsFromChangelog("Data Streams", "Streams scheduled for deprecation", deprecatedStreamIdsToRemove);
 
     // === Create new changelog entries
     const newEntries = [];
@@ -375,6 +445,22 @@ node <<EOF
           "The following Data Feeds are scheduled for deprecation. See [Feeds Scheduled For Deprecation](https://docs.chain.link/data-feeds/deprecating-feeds) for shutdown dates and the latest status:",
           networksList,
           deprecatingDataFeedTokens,
+          "deprecation"
+        )
+      );
+    }
+
+    // If we have newly scheduled stream deprecations
+    if (deprecatingDataStreamTokens.length > 0) {
+      const networksSet = new Set(deprecatingDataStreamTokens.map(t => t.network));
+      const networksList = [...networksSet];
+      newEntries.push(
+        createChangelogEntry(
+          "Data Streams",
+          "Streams scheduled for deprecation",
+          "The following Data Streams are scheduled for deprecation. See [Deprecating Data Streams](https://docs.chain.link/data-streams/deprecating-streams) for shutdown dates and the latest status:",
+          networksList,
+          deprecatingDataStreamTokens,
           "deprecation"
         )
       );
