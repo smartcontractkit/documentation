@@ -18,7 +18,21 @@ import { Aside } from "@components"
 
 </Aside>
 
-When you deploy a workflow, you take your locally tested code and register it with the onchain Workflow Registry contract. This makes your workflow "live" so it can activate and respond to triggers across a [Decentralized Oracle Network (DON)](/cre/key-terms#decentralized-oracle-network-don).
+{/* prettier-ignore */}
+<Aside type="caution" title="Breaking change: default deployment registry">
+  Starting with the latest CRE CLI release, the default deployment registry is `private` (Chainlink-hosted, off-chain). Existing workflows that deployed to the on-chain Ethereum Mainnet registry **will not redeploy to the same registry on the next `cre workflow deploy`** unless you add `deployment-registry: "onchain:ethereum-mainnet"` under `user-workflow:` in each affected target of your `workflow.yaml`:
+
+```yaml
+user-workflow:
+  workflow-name: "my-workflow-production"
+  deployment-registry: "onchain:ethereum-mainnet"
+```
+
+See [Choosing your registry](#choosing-your-registry) below for the full migration path.
+
+</Aside>
+
+When you deploy a workflow, you take your locally tested code and register it with a **workflow registry** so it can activate and respond to triggers across a [Decentralized Oracle Network (DON)](/cre/key-terms#decentralized-oracle-network-don). CRE supports two registries today: the **on-chain** Workflow Registry contract on Ethereum Mainnet and the **private** Chainlink-hosted registry. Pick which one a target deploys to with the `deployment-registry` field in your `workflow.yaml`.
 
 ## Prerequisites
 
@@ -26,8 +40,61 @@ Before you can deploy a workflow, you must have:
 
 - **Early Access approval**: Workflow deployment is currently in Early Access. Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
 - **[Authenticated](/cre/reference/cli/authentication)**: Logged in via `cre login` or using an [API key](/cre/reference/cli/authentication#api-key-authentication) (`CRE_API_KEY`). To verify, run `cre whoami`.
-- **[Linked your key](/cre/reference/cli/account#cre-account-link-key)**: Linked your EOA or multi-sig wallet to your account by running `cre account link-key`.
-- **A funded wallet**: The account you are deploying from must be funded with ETH on Ethereum Mainnet to pay the gas fees for the onchain registration transaction to the Workflow Registry contract.
+- **(On-chain registry only) [Linked your key](/cre/reference/cli/account#cre-account-link-key)**: Required only when the target's `deployment-registry` is set to `onchain:ethereum-mainnet`. Link your EOA or multi-sig wallet to your account by running `cre account link-key`. Workflows deployed to the default `private` registry do not need a linked key.
+- **(On-chain registry only) A funded wallet**: The deploying account must hold ETH on Ethereum Mainnet to pay gas for the registration transaction. Not required for the `private` registry.
+
+## Choosing your registry
+
+Each target deploys to exactly one registry, selected by the `user-workflow.deployment-registry` field in `workflow.yaml`. Run `cre registry list` to see which registries are available to your organization:
+
+```bash
+cre registry list
+```
+
+**Example output:**
+
+```
+Registries available to your organization
+
+ethereum-mainnet (0x4Ac5...E7e5)
+  ID:   onchain:ethereum-mainnet
+  Type: on-chain
+  Addr: 0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5
+
+Private (Chainlink-hosted)
+  ID:   private
+  Type: off-chain
+```
+
+Use the `ID` value as the value of `deployment-registry` in your `workflow.yaml`.
+
+### Control plane: web3 key vs. auth-only
+
+CRE exposes two ways to manage the lifecycle of a workflow (deploy, activate, pause, update, delete) and its secrets — together, this is the **control plane**. Pick per-target by setting `deployment-registry`:
+
+- **On-chain registry (`onchain:ethereum-mainnet`) — managed with a web3 key.** Each lifecycle command submits a transaction to the on-chain Workflow Registry contract, signed by your linked wallet. Requires `cre account link-key`, an RPC for Ethereum Mainnet, and a funded wallet to pay gas.
+- **Private registry (`private`) — managed with auth only.** Each lifecycle command is authorized by your CRE login session (`cre login`). No wallet, no gas, no key linking. Multiple team members on the same organization can manage the same workflows once authenticated.
+
+Secrets follow the same split. See [Managing with a web3 key](#managing-with-a-web3-key) and [Managing with auth only](#managing-with-auth-only) below for the per-flow specifics, and [Using Secrets with Deployed Workflows](/cre/guides/workflow/secrets/using-secrets-deployed) for the secrets equivalent.
+
+### Managing with a web3 key
+
+Use this flow when `deployment-registry: "onchain:ethereum-mainnet"`:
+
+1. Link your EOA or multi-sig wallet to your organization with `cre account link-key`. See [Linking Wallet Keys](/cre/organization/linking-keys).
+2. Set `CRE_ETH_PRIVATE_KEY` in your `.env` and add an RPC URL for `ethereum-mainnet` to your `project.yaml`.
+3. Run `cre workflow deploy` (or `activate`, `pause`, `delete`, `update`). Each command builds a transaction, prompts you to confirm, and submits it onchain. The Workflow Registry emits an event tying the workflow ID to your wallet address — that address is the workflow's owner and is what you'll see on the CRE platform UI.
+4. For multi-sig wallets, pass `--unsigned` to print the raw transaction data instead of broadcasting. See [Using Multi-sig Wallets](/cre/guides/operations/using-multisig-wallets).
+
+### Managing with auth only
+
+Use this flow when `deployment-registry: "private"` (the default):
+
+1. Log in once with `cre login`.
+2. Run `cre workflow deploy` (or `activate`, `pause`, `delete`, `update`). The CLI authorizes the operation against the Chainlink-hosted registry using your CRE login session. No `.env` private key, no wallet linking, and no Ethereum Mainnet RPC are required for these commands.
+3. Workflows show as `private` in the CRE platform UI. The `Owner` is your CRE organization rather than a wallet address.
+
+If a target needs to deploy to the on-chain registry but you have no `CRE_ETH_PRIVATE_KEY` configured, the CLI errors out before submitting anything (e.g., `failed to load settings: failed to parse private key. Please check CRE_ETH_PRIVATE_KEY in your .env file or system environment`).
 
 ## The deployment process
 
@@ -35,7 +102,9 @@ The `cre workflow deploy` command handles the entire end-to-end process for you:
 
 1. **Compiles** your workflow to a WASM binary.
 1. **Uploads** the compiled binary and any associated configuration files (like your config file or `secrets.yaml`) to the CRE Storage Service.
-1. **Registers** the workflow onchain by submitting a transaction to the Workflow Registry contract on **Ethereum Mainnet**. Your wallet must have ETH for gas fees, and your `project.yaml` must include an RPC configuration for `ethereum-mainnet` (e.g., `https://ethereum-rpc.publicnode.com`). This transaction contains the metadata for your workflow, including its name, owner, and the URL of its artifacts in the storage service.
+1. **Registers** the workflow with the registry selected by `user-workflow.deployment-registry`:
+   - **`onchain:ethereum-mainnet`** — submits a transaction to the Workflow Registry contract on **Ethereum Mainnet**. Your wallet must have ETH for gas fees, and your `project.yaml` must include an RPC configuration for `ethereum-mainnet` (e.g., `https://ethereum-rpc.publicnode.com`). The transaction contains the workflow's name, owner, and artifact URLs.
+   - **`private`** (default) — registers the workflow with the Chainlink-hosted registry, authorized by your CRE login session. No transaction, gas, or RPC is required.
 
 {/* prettier-ignore */}
 <Aside type="caution" title="Early Access: Disclaimer">
@@ -144,11 +213,13 @@ Details:
 
 ## Verifying your deployment
 
-After a successful deployment, you can verify that your workflow was registered correctly in two ways:
+After a successful deployment, you can verify that your workflow was registered correctly:
 
-1. **CRE UI**: View your deployed workflow in the [CRE platform](https://app.chain.link/cre/discover). Navigate to the **Workflows** section to see your workflow's status, ID, and execution history.
+1. **CLI**: Run [`cre workflow list`](/cre/reference/cli/workflow#cre-workflow-list) to see every workflow registered to your organization, the registry each was deployed to, and its current status. Workflows on the private registry are tagged `private` in the output.
 
-1. **Block Explorer**: Check the Workflow Registry contract on a block explorer. The CLI output will provide the transaction hash for the registration. The `WorkflowRegistry` contract is deployed on **Ethereum Mainnet** at the address <a href="https://etherscan.io/address/0x4ac54353fa4fa961afcc5ec4b118596d3305e7e5#code" target="_blank" rel="noopener noreferrer">`0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5`</a>.
+1. **CRE UI**: View your deployed workflow in the [CRE platform](https://app.chain.link/cre/discover). Navigate to the **Workflows** section to see your workflow's status, ID, and execution history. Workflows deployed to the private registry are also tagged `private` in the UI.
+
+1. **Block Explorer (on-chain registry only)**: For workflows deployed with `deployment-registry: "onchain:ethereum-mainnet"`, the CLI output includes the transaction hash for the registration. The `WorkflowRegistry` contract is deployed on **Ethereum Mainnet** at <a href="https://etherscan.io/address/0x4ac54353fa4fa961afcc5ec4b118596d3305e7e5#code" target="_blank" rel="noopener noreferrer">`0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5`</a>.
 
 ## CI/CD pipeline integration
 

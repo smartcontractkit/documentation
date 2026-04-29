@@ -12,6 +12,21 @@ import { Aside } from "@components"
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
 
+## CLI v1.13.0 - April 28, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.13.0" target="_blank">CRE CLI version 1.13.0</a> is now available.**
+
+- **Privately managed workflows**: A new Chainlink-hosted **private** registry is now available alongside the on-chain Workflow Registry. Workflows on the private registry are managed entirely with your CRE login session — no wallet linking, no gas, no Ethereum Mainnet RPC required. Pick a registry per target by setting `user-workflow.deployment-registry` in your `workflow.yaml` to either `"private"` or `"onchain:ethereum-mainnet"`. See [Choosing your registry](/cre/guides/operations/deploying-workflows#choosing-your-registry).
+- **Browser auth for secrets**: `cre secrets create | update | delete | list` now accept `--secrets-auth=browser` to authorize the operation through a browser-based OAuth flow against the Vault DON, using your CRE login session instead of a linked workflow owner address. See [Auth modes](/cre/reference/cli/secrets#auth-modes).
+- **Breaking change — default deployment registry**: The default value for `user-workflow.deployment-registry` is now `"private"`. Existing users whose workflows were deployed to the on-chain Ethereum Mainnet registry must explicitly set `deployment-registry: "onchain:ethereum-mainnet"` under `user-workflow:` for each affected target before running `cre workflow deploy` again — otherwise the next deploy (including upserts to existing workflows) will be routed to the private registry. See [Project Configuration](/cre/reference/project-configuration#3-2-workflow-configuration-workflow-yaml) for the field reference and [Deploying Workflows](/cre/guides/operations/deploying-workflows#choosing-your-registry) for the migration path.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.12.0...v1.13.0)
+
 ## CLI v1.12.0 - April 23, 2026
 
 **<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.12.0" target="_blank">CRE CLI version 1.12.0</a> is now available.**

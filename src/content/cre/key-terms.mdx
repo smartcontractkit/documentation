@@ -22,6 +22,15 @@ The all-in-one orchestration layer unlocking institutional-grade smart contracts
 
 A decentralized, peer-to-peer network of independent nodes that work together to execute a specific task. In CRE, there are two primary types of DONs: **Workflow DONs** that orchestrates the workflow, and specialized **Capability DONs** that execute specific tasks like blockchain interactions.
 
+### Control plane
+
+How you manage a workflow's lifecycle (deploy, activate, pause, update, delete) and its secrets. CRE supports two modes, selected per target via `user-workflow.deployment-registry` in `workflow.yaml`:
+
+- **Web3 key** — operations sign onchain transactions to the Workflow Registry contract on Ethereum Mainnet. Requires a [linked wallet key](/cre/organization/linking-keys) and gas. Used when `deployment-registry: "onchain:ethereum-mainnet"`.
+- **Auth only** — operations are authorized by your CRE login session against the Chainlink-hosted private registry. No wallet, no gas. Used when `deployment-registry: "private"` (the default).
+
+See [Choosing your registry](/cre/guides/operations/deploying-workflows#choosing-your-registry) for the deploy-time view and [Auth modes](/cre/guides/workflow/secrets/using-secrets-deployed#auth-modes-web3-key-vs-browser-auth) for the secrets equivalent.
+
 ## Workflow architecture
 
 ### Workflow
