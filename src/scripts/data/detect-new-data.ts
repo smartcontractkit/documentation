@@ -45,7 +45,7 @@ const NETWORK_ENDPOINTS: Record<string, string> = {
   ronin: "https://reference-data-directory.vercel.app/feeds-ronin-mainnet.json",
   tron: "https://reference-data-directory.vercel.app/feeds-tron-mainnet.json",
   botanix: "https://reference-data-directory.vercel.app/feeds-bitcoin-mainnet-botanix.json",
-  monad: "https://reference-data-directory.vercel.app/feeds-monad-testnet.json",
+  monad: "https://reference-data-directory.vercel.app/feeds-monad-mainnet.json",
   polygonkatana: "https://reference-data-directory.vercel.app/feeds-polygon-mainnet-katana.json",
   bob: "https://reference-data-directory.vercel.app/feeds-bitcoin-mainnet-bob-1.json",
   plasma: "https://reference-data-directory.vercel.app/feeds-plasma-mainnet.json",
@@ -262,7 +262,7 @@ async function detectNewData(): Promise<void> {
     // 3) Identify newly added items (not in baseline)
     const newlyFound: DataItem[] = []
     for (const item of allItems) {
-      if (!knownIds.has(item.feedID)) {
+      if (!item.hidden && !knownIds.has(item.feedID)) {
         newlyFound.push(item)
       }
     }
