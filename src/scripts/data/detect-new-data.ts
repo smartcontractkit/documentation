@@ -68,11 +68,27 @@ interface DataItem {
   feedID: string
   hidden?: boolean
   productTypeCode?: string
+  productType?: string
+  productSubType?: string
   deliveryChannelCode?: string
   network: string
   assetName?: string
   baseAsset?: string
   quoteAsset?: string
+  shutdownDate?: string
+  isMVR?: boolean
+  porType?: string
+}
+
+interface DeprecatingBaselineItem {
+  feedID: string
+  shutdownDate: string
+}
+
+interface Baseline {
+  timestamp: string
+  knownIds: string[]
+  knownDeprecatingFeeds?: DeprecatingBaselineItem[]
 }
 
 /**
@@ -170,6 +186,48 @@ function buildFeedUrl(item: DataItem): string {
 }
 
 /**
+ * Links deprecation changelog feed rows to the live filtered docs page. The page
+ * remains the source of truth for shutdown dates, which lets changelog entries
+ * survive date edits without duplicating stale schedule text.
+ */
+function buildDeprecatingFeedUrl(item: DataItem): string {
+  const searchParam = encodeURIComponent(item.baseAsset || item.assetName || "")
+  return `https://docs.chain.link/data-feeds/deprecating-feeds?network=${item.network}&search=${searchParam}`
+}
+
+function toOutputItem(item: DataItem, urlBuilder: (item: DataItem) => string) {
+  const iconUrl = buildIconUrl(item.baseAsset || "")
+  const url = urlBuilder(item)
+
+  return {
+    feedID: item.feedID,
+    network: item.network,
+    productTypeCode: item.productTypeCode,
+    deliveryChannelCode: item.deliveryChannelCode,
+    assetName: item.assetName,
+    baseAsset: item.baseAsset,
+    quoteAsset: item.quoteAsset,
+    shutdownDate: item.shutdownDate,
+    iconUrl,
+    url,
+  }
+}
+
+function isDeprecatingDataFeed(item: DataItem): item is DataItem & { shutdownDate: string } {
+  if (!item.shutdownDate) return false
+  if (item.deliveryChannelCode === "DS") return false
+
+  const productTypeCode = (item.productTypeCode || "").toUpperCase().trim()
+  if (["POR", "NAV", "AUM", "REFMACRO"].includes(productTypeCode)) return false
+
+  if (item.isMVR) return false
+  if (item.porType) return false
+  if (["Proof of Reserve", "NAVLink", "SmartAUM", "Rates"].includes(item.productType || "")) return false
+
+  return true
+}
+
+/**
  * Main function to detect new data feeds across all configured networks
  * This function:
  * 1. Loads the baseline of known feeds
@@ -182,6 +240,10 @@ async function detectNewData(): Promise<void> {
     // 1) Read baseline
     const baseline = loadBaseline(BASELINE_PATH)
     const knownIds = new Set(baseline.knownIds)
+    const hasDeprecatingBaseline = Object.prototype.hasOwnProperty.call(baseline, "knownDeprecatingFeeds")
+    const knownDeprecatingFeeds = new Map(
+      (baseline.knownDeprecatingFeeds || []).map((item) => [item.feedID, item.shutdownDate])
+    )
 
     // 2) Fetch and parse each network's JSON
     const allItems: DataItem[] = []
@@ -205,37 +267,73 @@ async function detectNewData(): Promise<void> {
       }
     }
 
-    if (newlyFound.length === 0) {
+    // 4) Identify deprecating feeds whose shutdown date was added, removed, or changed
+    const currentDeprecatedItems = allItems.filter(isDeprecatingDataFeed)
+    const currentDeprecatingFeeds = new Map(currentDeprecatedItems.map((item) => [item.feedID, item]))
+    const newlyDeprecatedItems: Array<DataItem & { shutdownDate: string }> = []
+    const resolvedDeprecatedItems: DeprecatingBaselineItem[] = []
+    const changedDeprecatedItems: Array<{
+      previous: DeprecatingBaselineItem
+      current: DataItem & { shutdownDate: string }
+    }> = []
+
+    if (hasDeprecatingBaseline) {
+      for (const item of currentDeprecatedItems) {
+        const knownShutdownDate = knownDeprecatingFeeds.get(item.feedID)
+        if (!knownShutdownDate) {
+          newlyDeprecatedItems.push(item)
+        } else if (knownShutdownDate !== item.shutdownDate) {
+          changedDeprecatedItems.push({
+            previous: { feedID: item.feedID, shutdownDate: knownShutdownDate },
+            current: item,
+          })
+        }
+      }
+
+      for (const [feedID, shutdownDate] of knownDeprecatingFeeds.entries()) {
+        if (!currentDeprecatingFeeds.has(feedID)) {
+          resolvedDeprecatedItems.push({ feedID, shutdownDate })
+        }
+      }
+    }
+
+    const deprecationBaselineInitialized = !hasDeprecatingBaseline
+    const hasChanges =
+      newlyFound.length > 0 ||
+      newlyDeprecatedItems.length > 0 ||
+      resolvedDeprecatedItems.length > 0 ||
+      changedDeprecatedItems.length > 0 ||
+      deprecationBaselineInitialized
+
+    if (!hasChanges) {
       // No new items, clean up any leftover file and exit
       if (fs.existsSync(OUTPUT_PATH)) {
         fs.unlinkSync(OUTPUT_PATH)
       }
-      console.log("No new data items found.")
+      console.log("No new data items or deprecation changes found.")
       process.exit(0)
     }
 
-    // 4) Build the object describing newly found items
+    // 5) Build the object describing newly found items and deprecation changes
     const output = {
-      newDataFound: true,
+      newDataFound: newlyFound.length > 0,
+      deprecationChangesFound:
+        newlyDeprecatedItems.length > 0 || resolvedDeprecatedItems.length > 0 || changedDeprecatedItems.length > 0,
+      deprecationBaselineInitialized,
       timestamp: new Date().toISOString(),
-      newlyFoundItems: newlyFound.map((item) => {
-        const iconUrl = buildIconUrl(item.baseAsset || "")
-        const feedUrl = buildFeedUrl(item)
-        return {
-          feedID: item.feedID,
-          network: item.network,
-          productTypeCode: item.productTypeCode,
-          deliveryChannelCode: item.deliveryChannelCode,
-          assetName: item.assetName,
-          baseAsset: item.baseAsset,
-          quoteAsset: item.quoteAsset,
-          iconUrl,
-          url: feedUrl,
-        }
-      }),
+      newlyFoundItems: newlyFound.map((item) => toOutputItem(item, buildFeedUrl)),
+      newlyDeprecatedItems: newlyDeprecatedItems.map((item) => toOutputItem(item, buildDeprecatingFeedUrl)),
+      resolvedDeprecatedItems,
+      changedDeprecatedItems: changedDeprecatedItems.map(({ previous, current }) => ({
+        previous,
+        current: toOutputItem(current, buildDeprecatingFeedUrl),
+      })),
+      currentDeprecatedItems: deprecationBaselineInitialized
+        ? currentDeprecatedItems.map((item) => toOutputItem(item, buildDeprecatingFeedUrl))
+        : undefined,
     }
 
-    // 5) Write to temp/NEW_DATA_FOUND.json with proper formatting
+    // 6) Write to temp/NEW_DATA_FOUND.json with proper formatting
     ensureDirectoryExists(path.dirname(OUTPUT_PATH))
 
     // Format the JSON with prettier using project config
@@ -261,7 +359,7 @@ async function detectNewData(): Promise<void> {
  * @param filePath - Path to the baseline JSON file
  * @returns Object containing timestamp and array of known feed IDs
  */
-function loadBaseline(filePath: string): { timestamp: string; knownIds: string[] } {
+function loadBaseline(filePath: string): Baseline {
   if (!fs.existsSync(filePath)) {
     return { timestamp: "", knownIds: [] }
   }
@@ -272,7 +370,13 @@ function loadBaseline(filePath: string): { timestamp: string; knownIds: string[]
     return { timestamp: "", knownIds: [] }
   }
 
-  return JSON.parse(text)
+  const parsed = JSON.parse(text)
+
+  return {
+    timestamp: parsed.timestamp || "",
+    knownIds: Array.isArray(parsed.knownIds) ? parsed.knownIds : [],
+    ...(Array.isArray(parsed.knownDeprecatingFeeds) ? { knownDeprecatingFeeds: parsed.knownDeprecatingFeeds } : {}),
+  }
 }
 
 /**
@@ -304,6 +408,8 @@ async function fetchNetworkJson(url: string): Promise<any[]> {
 function convertToDataItem(obj: any, network: string): DataItem | null {
   // Get product type code to check for special cases
   const productTypeCode = obj.docs?.productTypeCode || ""
+  const productType = obj.docs?.productType || ""
+  const productSubType = obj.docs?.productSubType || ""
   const isRefMacro = productTypeCode.toUpperCase().trim() === "REFMACRO"
 
   // 1) Must have a `path`
@@ -347,11 +453,16 @@ function convertToDataItem(obj: any, network: string): DataItem | null {
     feedID: `${network}-${path}`,
     hidden: false,
     productTypeCode,
+    productType,
+    productSubType,
     deliveryChannelCode: deliveryChannel,
     network,
     assetName: topLevelAssetName,
     baseAsset: baseAsset || (isRefMacro ? topLevelAssetName : undefined),
     quoteAsset,
+    shutdownDate: obj.docs?.shutdownDate,
+    isMVR: obj.docs?.isMVR === true,
+    porType: obj.docs?.porType,
   }
 
   return result

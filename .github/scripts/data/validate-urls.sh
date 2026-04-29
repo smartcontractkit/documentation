@@ -16,7 +16,7 @@ main() {
     exit 0
   fi
 
-  # We'll parse .newlyFoundItems[]. (url, iconUrl, etc.) via jq
+  # We'll parse newly added feed items and newly scheduled deprecating items via jq
   # We'll track feed vs icon in separate arrays
   feedFailures=()
   iconFailures=()
@@ -47,7 +47,13 @@ main() {
     fi
   done < <(
     jq -r '
-      .newlyFoundItems[] as $item
+      [
+        (.newlyFoundItems // []),
+        (.newlyDeprecatedItems // []),
+        ((.changedDeprecatedItems // []) | map(.current))
+      ]
+      | add
+      | .[] as $item
       | [
           $item.iconUrl,
           $item.assetName,

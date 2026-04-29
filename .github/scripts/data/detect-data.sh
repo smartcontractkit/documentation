@@ -2,8 +2,8 @@
 set -e  # Exit immediately on error
 
 # This script orchestrates the detection of new data using the TS script src/scripts/data/detect-new-data.ts
-# 1) "init-baseline": creates a baseline with all currently visible feedIDs (no changelog updates)
-# 2) "check-data": calls the TS script, checks for new items, updates baseline/changelog if found
+# 1) "init-baseline": creates a baseline with all currently visible feedIDs and deprecating feed markers (no changelog updates)
+# 2) "check-data": calls the TS script, checks for new items/deprecation changes, updates baseline/changelog if found
 
 BASELINE_FILE=".github/scripts/data/baseline.json"
 CHANGELOG_FILE="public/changelog.json"
@@ -30,7 +30,8 @@ init_baseline() {
     cat <<EOF > "$BASELINE_FILE"
 {
   "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
-  "knownIds": []
+  "knownIds": [],
+  "knownDeprecatingFeeds": []
 }
 EOF
     log "No items found, baseline created as empty."
@@ -39,17 +40,19 @@ EOF
 
   # read newly found IDs as a JSON array
   # e.g. [ "arbitrum-1inch-usd", "arbitrum-aave-usd", ... ]
-  ids=$(jq '[.newlyFoundItems[].feedID] | unique' "$NEW_DATA_FILE")
+  ids=$(jq '[.newlyFoundItems[]?.feedID] | unique' "$NEW_DATA_FILE")
+  deprecatingFeeds=$(jq '[.currentDeprecatedItems[]? | {feedID, shutdownDate}] | unique_by(.feedID) | sort_by(.feedID)' "$NEW_DATA_FILE")
 
   # Write baseline as a single array
   cat <<EOF > "$BASELINE_FILE"
 {
   "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
-  "knownIds": $ids
+  "knownIds": $ids,
+  "knownDeprecatingFeeds": $deprecatingFeeds
 }
 EOF
 
-  log "Baseline file created with current known IDs."
+  log "Baseline file created with current known IDs and deprecating feed markers."
   rm -f "$NEW_DATA_FILE"
 }
 
@@ -72,37 +75,59 @@ check_data() {
     exit 1
   fi
 
-  # 2) If NEW_DATA_FOUND.json doesn't exist => no new items
+  # 2) If NEW_DATA_FOUND.json doesn't exist => no new items or deprecation changes
   if [ ! -f "$NEW_DATA_FILE" ]; then
-    log "No new data found. Exiting."
+    log "No new data or deprecation changes found. Exiting."
     exit 0
   fi
 
-  # 3) We do have new items, so read them
-  count=$(jq '.newlyFoundItems | length' "$NEW_DATA_FILE")
-  log "Found $count new items."
+  # 3) We do have changes, so read them
+  newCount=$(jq '.newlyFoundItems // [] | length' "$NEW_DATA_FILE")
+  newDeprecationCount=$(jq '.newlyDeprecatedItems // [] | length' "$NEW_DATA_FILE")
+  resolvedDeprecationCount=$(jq '.resolvedDeprecatedItems // [] | length' "$NEW_DATA_FILE")
+  changedDeprecationCount=$(jq '.changedDeprecatedItems // [] | length' "$NEW_DATA_FILE")
+  deprecationBaselineInitialized=$(jq -r '.deprecationBaselineInitialized // false' "$NEW_DATA_FILE")
+  log "Found $newCount new items, $newDeprecationCount new deprecations, $resolvedDeprecationCount resolved deprecations, and $changedDeprecationCount changed deprecations."
 
-  # 4) Merge new IDs into baseline
+  # 4) Merge new IDs and deprecation markers into baseline
   # Step A: read existing knownIds (as JSON array) from the baseline
-  existingArray=$(jq '.knownIds' "$BASELINE_FILE")
+  existingArray=$(jq '.knownIds // []' "$BASELINE_FILE")
 
   # Step B: read newly found feedIDs (as JSON array)
-  newArray=$(jq '[.newlyFoundItems[].feedID] | unique' "$NEW_DATA_FILE")
+  newArray=$(jq '[.newlyFoundItems[]?.feedID] | unique' "$NEW_DATA_FILE")
 
   # Step C: combine them in pure JSON
   combinedArray=$(jq -n --argjson old "$existingArray" --argjson new "$newArray" '
     ($old + $new) | unique
   ')
 
+  if [ "$deprecationBaselineInitialized" = "true" ]; then
+    combinedDeprecatingFeeds=$(jq '[.currentDeprecatedItems[]? | {feedID, shutdownDate}] | unique_by(.feedID) | sort_by(.feedID)' "$NEW_DATA_FILE")
+  else
+    existingDeprecatingFeeds=$(jq '.knownDeprecatingFeeds // []' "$BASELINE_FILE")
+    addedDeprecatingFeeds=$(jq '[((.newlyDeprecatedItems // []) + ((.changedDeprecatedItems // []) | map(.current)))[] | {feedID, shutdownDate}]' "$NEW_DATA_FILE")
+    removedDeprecatingFeedIds=$(jq '[((.resolvedDeprecatedItems // []) + ((.changedDeprecatedItems // []) | map(.previous)))[] | .feedID]' "$NEW_DATA_FILE")
+
+    combinedDeprecatingFeeds=$(jq -n \
+      --argjson old "$existingDeprecatingFeeds" \
+      --argjson added "$addedDeprecatingFeeds" \
+      --argjson removed "$removedDeprecatingFeedIds" '
+        ($old | map(select(.feedID as $id | ($removed | index($id) | not)))) + $added
+        | unique_by(.feedID)
+        | sort_by(.feedID)
+      ')
+  fi
+
   # Step D: write updated baseline
   cat <<EOF > "$BASELINE_FILE"
 {
   "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
-  "knownIds": $combinedArray
+  "knownIds": $combinedArray,
+  "knownDeprecatingFeeds": $combinedDeprecatingFeeds
 }
 EOF
 
-  log "Baseline updated with new IDs."
+  log "Baseline updated with new IDs and deprecating feed markers."
 
   # 5) Now update the changelog
 node <<EOF
@@ -111,6 +136,17 @@ node <<EOF
 
     const newlyFound = JSON.parse(fs.readFileSync('${NEW_DATA_FILE}', 'utf8'));
     const items = newlyFound.newlyFoundItems || [];
+    const newlyDeprecatedItems = newlyFound.newlyDeprecatedItems || [];
+    const resolvedDeprecatedItems = newlyFound.resolvedDeprecatedItems || [];
+    const changedDeprecatedItems = newlyFound.changedDeprecatedItems || [];
+    const deprecatingItems = [
+      ...newlyDeprecatedItems,
+      ...changedDeprecatedItems.map(change => change.current).filter(Boolean),
+    ];
+    const deprecatedFeedIdsToRemove = new Set([
+      ...resolvedDeprecatedItems.map(item => item.feedID),
+      ...changedDeprecatedItems.map(change => change.previous && change.previous.feedID).filter(Boolean),
+    ]);
 
     const CHANGELOG_PATH = path.resolve('${CHANGELOG_FILE}');
     let changelog;
@@ -140,9 +176,9 @@ node <<EOF
     }
 
     // === HELPER to build a single Changelog Entry
-    function createChangelogEntry(topic, title, description, relatedNetworks, tokens) {
+    function createChangelogEntry(topic, title, description, relatedNetworks, tokens, category = "integration") {
       return {
-        category: "integration",
+        category,
         date: new Date().toISOString().split('T')[0],
         description,
         ...(relatedNetworks ? { relatedNetworks } : {}),
@@ -214,10 +250,73 @@ node <<EOF
       }).sort((a, b) => a.assetName.localeCompare(b.assetName));
     }
 
+    // === Build relatedTokens for DATA FEED DEPRECATIONS
+    function buildDeprecatingDataFeedTokens(deprecatingFeedItems) {
+      return deprecatingFeedItems.map(i => {
+        const baseLower = i.baseAsset.toLowerCase();
+        return {
+          assetName: i.assetName,
+          baseAsset: i.baseAsset,
+          quoteAsset: i.quoteAsset || "",
+          network: i.network,
+          shutdownDate: i.shutdownDate,
+          feedID: i.feedID,
+          url: i.url,
+          iconUrl: \`https://d2f70xi62kby8n.cloudfront.net/tokens/\${baseLower}.webp\`
+        };
+      }).sort((a, b) => {
+        const dateCompare = (a.shutdownDate || "").localeCompare(b.shutdownDate || "");
+        if (dateCompare !== 0) return dateCompare;
+        return a.assetName.localeCompare(b.assetName);
+      });
+    }
+
+    function removeResolvedDeprecationsFromChangelog(feedIds) {
+      if (feedIds.size === 0) return;
+
+      changelog.data = changelog.data.filter(entry => {
+        if (
+          entry.topic !== "Data Feeds" ||
+          entry.category !== "deprecation" ||
+          !Array.isArray(entry.relatedTokens)
+        ) {
+          return true;
+        }
+
+        const originalLength = entry.relatedTokens.length;
+        entry.relatedTokens = entry.relatedTokens.filter(token => {
+          if (!token || typeof token !== "object") return true;
+          return !feedIds.has(token.feedID);
+        });
+
+        if (entry.relatedTokens.length === originalLength) return true;
+
+        if (entry.relatedTokens.length === 0 && entry.title === "Feeds scheduled for deprecation") {
+          return false;
+        }
+
+        const remainingNetworks = [...new Set(
+          entry.relatedTokens
+            .filter(token => token && typeof token === "object" && token.network)
+            .map(token => token.network)
+        )];
+        if (remainingNetworks.length > 0) {
+          entry.relatedNetworks = remainingNetworks;
+        } else {
+          delete entry.relatedNetworks;
+        }
+
+        return true;
+      });
+    }
+
     // === Now build each group
     const dataFeedsTokens = buildDataFeedTokens(dataFeeds);
     const dataStreamsTokens = buildDataStreamTokens(dataStreams);
     const smartDataTokens  = buildSmartDataTokens(smartData);
+    const deprecatingDataFeedTokens = buildDeprecatingDataFeedTokens(deprecatingItems);
+
+    removeResolvedDeprecationsFromChangelog(deprecatedFeedIdsToRemove);
 
     // === Create new changelog entries
     const newEntries = [];
@@ -261,6 +360,22 @@ node <<EOF
           "New Data Feeds available:",
           networksList,
           dataFeedsTokens
+        )
+      );
+    }
+
+    // If we have newly scheduled deprecations
+    if (deprecatingDataFeedTokens.length > 0) {
+      const networksSet = new Set(deprecatingDataFeedTokens.map(t => t.network));
+      const networksList = [...networksSet];
+      newEntries.push(
+        createChangelogEntry(
+          "Data Feeds",
+          "Feeds scheduled for deprecation",
+          "The following Data Feeds are scheduled for deprecation. See [Feeds Scheduled For Deprecation](https://docs.chain.link/data-feeds/deprecating-feeds) for shutdown dates and the latest status:",
+          networksList,
+          deprecatingDataFeedTokens,
+          "deprecation"
         )
       );
     }
