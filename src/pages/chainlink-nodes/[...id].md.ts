@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro"
 import { getCollection } from "astro:content"
-import { serializeFrontmatter } from "~/utils/markdown" // use shared util if you created it
+import { serializeFrontmatter } from "@utils/markdown" // use shared util if you created it
 
 interface Props {
   entry: Awaited<ReturnType<typeof getCollection<"chainlink-nodes">>>[number]

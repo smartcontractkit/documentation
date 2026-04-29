@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro"
 import { getCollection } from "astro:content"
-import { serializeFrontmatter } from "~/utils/markdown"
+import { serializeFrontmatter } from "@utils/markdown"
 
 interface Props {
   entry: Awaited<ReturnType<typeof getCollection<"cre">>>[number]
