@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro"
 import { getCollection } from "astro:content"
-import { serializeFrontmatter } from "../../utils/markdown"
+import { serializeFrontmatter } from "../../utils/markdown.js"
 
 interface Props {
   entry: Awaited<ReturnType<typeof getCollection<"oracle-platform">>>[number]
