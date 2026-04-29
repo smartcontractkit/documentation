@@ -22,6 +22,11 @@ export const GET: APIRoute = async ({ params, request }) => {
     return new Response("Page not found.", { status: 404 })
   }
 
+  const specialResolution = await resolveSpecialCanonicalMarkdownPath(cleanPath)
+  if (specialResolution) {
+    return buildMarkdownResponseFromPath(specialResolution.resolvedPath, request, specialResolution.sourceCanonicalPath)
+  }
+
   const creResolution = await resolveCreCanonicalMarkdownPath(cleanPath)
 
   if (creResolution.kind === "selector") {
@@ -32,6 +37,14 @@ export const GET: APIRoute = async ({ params, request }) => {
   }
 
   const resolvedPath = creResolution.kind === "resolved" ? creResolution.path : cleanPath
+  return buildMarkdownResponseFromPath(resolvedPath, request)
+}
+
+async function buildMarkdownResponseFromPath(
+  resolvedPath: string,
+  request: Request,
+  sourceCanonicalPathOverride?: string
+): Promise<Response> {
   const mdxAbsPath = await findContentFile(resolvedPath)
 
   if (!mdxAbsPath) {
@@ -51,7 +64,9 @@ export const GET: APIRoute = async ({ params, request }) => {
   })
 
   const relFromContent = toContentRelative(mdxAbsPath)
-  const sourceUrl = toCanonicalUrl(section, relFromContent, SITE_BASE)
+  const derivedSourceUrl = toCanonicalUrl(section, relFromContent, SITE_BASE)
+  const sourceUrl = sourceCanonicalPathOverride ? `${SITE_BASE}/${sourceCanonicalPathOverride}` : derivedSourceUrl
+
   const title = fmTitle || path.basename(mdxAbsPath, path.extname(mdxAbsPath))
   const lastModified = getIsoStringOrUndefined(fmLastModified)
 
@@ -104,6 +119,32 @@ async function findContentFile(cleanPath: string): Promise<string | null> {
   }
 
   return null
+}
+
+type SpecialResolution = {
+  resolvedPath: string
+  sourceCanonicalPath: string
+}
+
+async function resolveSpecialCanonicalMarkdownPath(cleanPath: string): Promise<SpecialResolution | null> {
+  const specialPathMap: Record<string, string> = {
+    "cre-templates": "cre/templates",
+  }
+
+  const mappedPath = specialPathMap[cleanPath]
+  if (!mappedPath) {
+    return null
+  }
+
+  const file = await findContentFile(mappedPath)
+  if (!file) {
+    return null
+  }
+
+  return {
+    resolvedPath: mappedPath,
+    sourceCanonicalPath: cleanPath,
+  }
 }
 
 type CreResolution =
