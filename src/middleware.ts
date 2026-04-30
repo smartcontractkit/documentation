@@ -15,6 +15,8 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
 
   const response = await next()
 
+  response.headers.append("Vary", "Accept")
+
   const contentType = response.headers.get("content-type") || ""
   if (!contentType.includes("text/html") || isAssetLike) {
     return response
