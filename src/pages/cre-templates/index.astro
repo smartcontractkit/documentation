@@ -1,7 +1,10 @@
 ---
+export const prerender = false
+
 import { getCollection } from "astro:content"
 import BaseLayout from "~/layouts/BaseLayout.astro"
 import TemplateCard from "~/components/CRETemplate/TemplateCard.astro"
+import { buildMarkdownDocumentFromPath, markdownHeaders } from "@lib/markdown/buildMarkdownResponse.js"
 
 const templates = await getCollection("cre-templates")
 const featuredTemplate = templates.find((t) => t.data.featured)
@@ -9,6 +12,35 @@ const featuredTemplate = templates.find((t) => t.data.featured)
 const pageTitle = "CRE Templates Hub | Chainlink Documentation"
 const pageDescription =
   "Explore workflow templates for the Chainlink Runtime Environment. Clone and customize these templates to build your own CRE workflows."
+
+const accept = Astro.request.headers.get("accept") || ""
+const wantsMarkdown = accept
+  .toLowerCase()
+  .split(",")
+  .map((part) => part.split(";")[0]?.trim())
+  .includes("text/markdown")
+
+const canonicalPath = "cre-templates"
+const markdownSourcePath = "cre/templates"
+
+if (wantsMarkdown) {
+  const markdown = await buildMarkdownDocumentFromPath(markdownSourcePath, Astro.request)
+
+  if (!markdown) {
+    return new Response("Page not found.", { status: 404 })
+  }
+
+  return new Response(markdown, {
+    status: 200,
+    headers: {
+      ...markdownHeaders,
+      Vary: "Accept",
+    },
+  })
+}
+
+Astro.response.headers.append("Link", `</${canonicalPath}.md>; rel="alternate"; type="text/markdown"`)
+Astro.response.headers.set("Vary", "Accept")
 ---
 
 <BaseLayout

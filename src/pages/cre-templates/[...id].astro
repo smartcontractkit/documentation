@@ -1,27 +1,52 @@
 ---
+export const prerender = false
+
 import { getCollection, render } from "astro:content"
 import CRETemplateLayout from "~/layouts/CRETemplateLayout.astro"
+import { buildMarkdownDocumentFromPath, markdownHeaders } from "@lib/markdown/buildMarkdownResponse.js"
 
-export async function getStaticPaths() {
-  const creTemplatesEntries = await getCollection("cre-templates")
+const requestedId = Astro.params.id?.replace(/^\/+|\/+$/g, "") || "index"
 
-  return creTemplatesEntries.map((entry) => {
-    const routeId = entry.id.replace(/\.(md|mdx)$/, "")
+const creTemplatesEntries = await getCollection("cre-templates")
 
-    return {
-      params: { id: routeId },
-      props: { entry },
-    }
+const entry = creTemplatesEntries.find((candidate) => {
+  const routeId = candidate.id.replace(/\.(md|mdx)$/, "")
+  return routeId === requestedId
+})
+
+if (!entry) {
+  return new Response("Page not found.", { status: 404 })
+}
+
+const accept = Astro.request.headers.get("accept") || ""
+const wantsMarkdown = accept
+  .toLowerCase()
+  .split(",")
+  .map((part) => part.split(";")[0]?.trim())
+  .includes("text/markdown")
+
+const canonicalPath = requestedId === "index" ? "cre-templates" : `cre-templates/${requestedId}`
+
+if (wantsMarkdown) {
+  const markdown = await buildMarkdownDocumentFromPath(canonicalPath, Astro.request)
+
+  if (!markdown) {
+    return new Response("Page not found.", { status: 404 })
+  }
+
+  return new Response(markdown, {
+    status: 200,
+    headers: {
+      ...markdownHeaders,
+      Vary: "Accept",
+    },
   })
 }
 
-interface Props {
-  entry: Awaited<ReturnType<typeof getCollection<"cre-templates">>>[number]
-}
-
-const { entry } = Astro.props
-
 const { Content, headings } = await render(entry)
+
+Astro.response.headers.append("Link", `</${canonicalPath}.md>; rel="alternate"; type="text/markdown"`)
+Astro.response.headers.set("Vary", "Accept")
 ---
 
 <CRETemplateLayout frontmatter={entry.data} {headings}>

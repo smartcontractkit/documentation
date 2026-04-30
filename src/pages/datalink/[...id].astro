@@ -1,27 +1,52 @@
 ---
+export const prerender = false
+
 import DocsLayout from "~/layouts/DocsLayout.astro"
 import { getCollection, render } from "astro:content"
+import { buildMarkdownDocumentFromPath, markdownHeaders } from "@lib/markdown/buildMarkdownResponse.js"
 
-export async function getStaticPaths() {
-  const dataLinkEntries = await getCollection("datalink")
+const requestedId = Astro.params.id?.replace(/^\/+|\/+$/g, "") || "index"
 
-  return dataLinkEntries.map((entry) => {
-    const routeId = entry.id.replace(/\.(md|mdx)$/, "")
+const entries = await getCollection("datalink")
 
-    return {
-      params: { id: routeId },
-      props: { entry },
-    }
+const entry = entries.find((candidate) => {
+  const routeId = candidate.id.replace(/\.(md|mdx)$/, "")
+  return routeId === requestedId
+})
+
+if (!entry) {
+  return new Response("Page not found.", { status: 404 })
+}
+
+const accept = Astro.request.headers.get("accept") || ""
+const wantsMarkdown = accept
+  .toLowerCase()
+  .split(",")
+  .map((part) => part.split(";")[0]?.trim())
+  .includes("text/markdown")
+
+const canonicalPath = requestedId === "index" ? "datalink" : `datalink/${requestedId}`
+
+if (wantsMarkdown) {
+  const markdown = await buildMarkdownDocumentFromPath(canonicalPath, Astro.request)
+
+  if (!markdown) {
+    return new Response("Page not found.", { status: 404 })
+  }
+
+  return new Response(markdown, {
+    status: 200,
+    headers: {
+      ...markdownHeaders,
+      Vary: "Accept",
+    },
   })
 }
 
-interface Props {
-  entry: Awaited<ReturnType<typeof getCollection<"datalink">>>[number]
-}
-
-const { entry } = Astro.props
-
 const { Content, headings } = await render(entry)
+
+Astro.response.headers.append("Link", `</${canonicalPath}.md>; rel="alternate"; type="text/markdown"`)
+Astro.response.headers.set("Vary", "Accept")
 ---
 
 <DocsLayout frontmatter={entry.data} {headings}>

@@ -50,10 +50,11 @@ export default defineConfig({
   integrations: [
     trailingSlashMiddleware(),
     preact({
-      include: ["**/preact/*"],
+      include: ["**/preact/**"],
     }),
     react({
-      include: ["**/react/*"],
+      include: ["**/*.tsx", "**/*.jsx"],
+      exclude: ["**/preact/**"],
     }),
     sitemap({
       changefreq: "daily",
@@ -130,7 +131,9 @@ export default defineConfig({
   },
   // output: 'static' (fully static or partial SSR with `prerender = false` ==> export const prerender = false;)
   output: "static",
-  adapter: vercel(),
+  adapter: vercel({
+    edgeMiddleware: true,
+  }),
   vite: {
     plugins: [yaml()],
     build: {

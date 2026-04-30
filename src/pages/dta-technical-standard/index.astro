@@ -1,14 +1,45 @@
 ---
+export const prerender = false
+
 import DocsLayout from "~/layouts/DocsLayout.astro"
 import { getEntry, render } from "astro:content"
+import { buildMarkdownDocumentFromPath, markdownHeaders } from "@lib/markdown/buildMarkdownResponse.js"
 
 const entry = await getEntry("dta-technical-standard", "index")
+
 if (!entry) {
-  throw new Error("No entry found for DTA index!")
+  return new Response("Page not found.", { status: 404 })
 }
 
-// use the global `render()` function
+const accept = Astro.request.headers.get("accept") || ""
+const wantsMarkdown = accept
+  .toLowerCase()
+  .split(",")
+  .map((part) => part.split(";")[0]?.trim())
+  .includes("text/markdown")
+
+const canonicalPath = "<bucket>"
+
+if (wantsMarkdown) {
+  const markdown = await buildMarkdownDocumentFromPath(canonicalPath, Astro.request)
+
+  if (!markdown) {
+    return new Response("Page not found.", { status: 404 })
+  }
+
+  return new Response(markdown, {
+    status: 200,
+    headers: {
+      ...markdownHeaders,
+      Vary: "Accept",
+    },
+  })
+}
+
 const { Content, headings } = await render(entry)
+
+Astro.response.headers.append("Link", `</${canonicalPath}.md>; rel="alternate"; type="text/markdown"`)
+Astro.response.headers.set("Vary", "Accept")
 ---
 
 <DocsLayout frontmatter={entry.data} {headings}>
