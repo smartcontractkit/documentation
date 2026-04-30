@@ -13,6 +13,8 @@ declare global {
 const BASE_URL = "http://localhost:4321"
 const TEMP_DIR = `${cwd()}/temp`
 const LOG_FILE = `${TEMP_DIR}/link-checker.log`
+const BUILD_DIR = `${cwd()}/dist/client`
+const SITEMAP_FILE = `${BUILD_DIR}/sitemap-0.xml`
 
 const LINK_CHUNK_SIZE = 150
 
@@ -34,7 +36,6 @@ function ensureTempSetup() {
  */
 function displayLogFile() {
   try {
-    // Use readFileSync directly - if file doesn't exist or is empty, catch will handle it
     const content = readFileSync(LOG_FILE, "utf8")
     if (content.trim().length > 0) {
       console.log("\n------ Log File Content ------")
@@ -42,7 +43,7 @@ function displayLogFile() {
       console.log("------------------------------")
     }
   } catch {
-    // File doesn't exist or can't be read - that's fine, nothing to display
+    // Nothing to display
   }
 }
 
@@ -55,7 +56,6 @@ async function waitForServerReadiness(url: string, attempts = 20) {
     try {
       const response = await fetch(url)
       if (response.ok) {
-        // Server responded, but few more checks to ensure stability
         console.log(`Server responded on attempt ${i}, verifying stability...`)
 
         let stableChecks = 0
@@ -67,7 +67,6 @@ async function waitForServerReadiness(url: string, attempts = 20) {
               stableChecks++
             }
           } catch {
-            // Stability check failed
             break
           }
         }
@@ -80,7 +79,7 @@ async function waitForServerReadiness(url: string, attempts = 20) {
         }
       }
     } catch {
-      // Connection error or not ready yet
+      // Not ready yet
     }
     console.log(`Waiting for server to be ready... Attempt ${i}/${attempts}`)
     await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -117,13 +116,11 @@ function getModeFromArgs(): "internal" | "external" {
  * Process the sitemap and split it into chunked files.
  */
 async function processSiteMap(mode: "internal" | "external"): Promise<string[]> {
-  const siteMap = `${cwd()}/.vercel/output/static/sitemap-0.xml`
-  const data = readFileSync(siteMap, "utf8")
+  const data = readFileSync(SITEMAP_FILE, "utf8")
 
   const regex = /<loc>(?<link>.*?)<\/loc>/gm
   const rawLinks: string[] = []
 
-  // Use the appropriate ignore file
   const ignoredPatternsFile =
     mode === "external"
       ? `${cwd()}/src/scripts/link-check/ignoredfiles-external.txt`
@@ -134,11 +131,9 @@ async function processSiteMap(mode: "internal" | "external"): Promise<string[]> 
     .filter((line) => line && !line.startsWith("#"))
     .map((pattern) => new RegExp(pattern))
 
-  // Collect all relevant links
   for (const loc of data.matchAll(regex)) {
     const link = loc.groups?.link
     if (link) {
-      // Replace production domain with the local base
       const normalizedLink = link.replace("https://docs.chain.link", BASE_URL)
       const shouldInclude = !ignoredPatterns.some((pattern) => pattern.test(normalizedLink))
       if (shouldInclude) {
@@ -147,10 +142,7 @@ async function processSiteMap(mode: "internal" | "external"): Promise<string[]> 
     }
   }
 
-  // Split into chunks
   const chunkedLinks = chunkArray(rawLinks, LINK_CHUNK_SIZE)
-
-  // Write each chunk to its own file
   const chunkFiles: string[] = []
 
   chunkedLinks.forEach((linksArr, index) => {
@@ -190,14 +182,13 @@ function checkChunkFile(linksFile: string, mode: "internal" | "external"): Promi
             BASE_URL,
           ]
 
-    // We'll just spawn the linkcheck wrapper
     const checker = spawn("npm", ["run", "linkcheckWrapper", "--", ...args], {
       stdio: ["pipe", "pipe", "pipe"],
     } as SpawnOptions)
 
-    // Write stdout to log file and capture output
     const logStream = createWriteStream(LOG_FILE, { flags: "a" })
     let outputData = ""
+
     if (checker.stdout) {
       checker.stdout.on("data", (data) => {
         const text = data.toString()
@@ -206,7 +197,6 @@ function checkChunkFile(linksFile: string, mode: "internal" | "external"): Promi
       })
     }
 
-    // Write stderr to console and capture output
     if (checker.stderr) {
       checker.stderr.on("data", (data) => {
         const text = data.toString()
@@ -215,42 +205,27 @@ function checkChunkFile(linksFile: string, mode: "internal" | "external"): Promi
       })
     }
 
-    // When process exits
     checker.on("exit", (code) => {
       logStream.end()
 
-      // If exit code is 1 (warnings only), inspect the output.
-      // Warnings are blockers except for certain acceptable cases
       if (code === 1) {
         const lines = outputData.split("\n")
-        // Assuming warnings are indicated by lines containing "=>"
         const warningLines = lines.filter((line) => line.includes("=>"))
 
-        // Get canonical URLs with language variants (these redirect correctly)
         const canonicalUrls = extractCanonicalUrlsWithLanguageVariants()
 
-        // Filter out acceptable warnings:
-        // 1. Mime type warnings (files without mime type metadata, e.g. .sol files)
-        // 2. Missing anchor warnings (anchors may be dynamically generated or client-side only)
-        // 3. Canonical URL warnings (these pages redirect based on user's language preference)
         const blockingWarnings = warningLines.filter((line) => {
           const lineLower = line.toLowerCase()
 
-          // Allow mime type warnings (e.g., ".sol" files have no standard MIME type)
           if (lineLower.includes("mime type")) {
             return false
           }
 
-          // Allow all "missing anchor" warnings
-          // Anchors might be:
-          // - Dynamically generated by JavaScript
-          // - Client-side only (not in static HTML)
-          // - Part of interactive components
           if (lineLower.includes("missing anchor")) {
             return false
           }
 
-          return true // This is a blocking warning
+          return true
         })
 
         if (blockingWarnings.length === 0) {
@@ -261,7 +236,7 @@ function checkChunkFile(linksFile: string, mode: "internal" | "external"): Promi
         }
       }
 
-      resolve(code ?? 1) // if code is null, treat as error
+      resolve(code ?? 1)
     })
   })
 }
@@ -273,10 +248,8 @@ function checkChunkFile(linksFile: string, mode: "internal" | "external"): Promi
 async function main() {
   ensureTempSetup()
 
-  // 1) Determine mode from command line
   const mode = getModeFromArgs()
 
-  // 2) Build site once (production build)
   console.log("Generating a production build...")
   try {
     execSync("npm run build", { stdio: "inherit" })
@@ -286,23 +259,19 @@ async function main() {
     exit(1)
   }
 
-  // 3) Serve the static build in the background
   console.log("Starting production server in background...")
-  execSync("nohup npx serve .vercel/output/static --listen 4321 > server.log 2>&1 &", { stdio: "inherit" })
+  execSync("nohup npx serve dist/client --listen 4321 > server.log 2>&1 &", { stdio: "inherit" })
 
-  // 4) Wait for readiness
   try {
-    await waitForServerReadiness(BASE_URL, 30) // Wait up to 30 attempts
+    await waitForServerReadiness(BASE_URL, 30)
   } catch (err) {
     console.error("Server did not become ready in time.", err)
     exit(1)
   }
 
-  // 5) Process site map: get chunk files
   const chunkFiles = await processSiteMap(mode)
   console.log(`Created ${chunkFiles.length} chunk files.`)
 
-  // 6) Run link check on each chunk sequentially to reduce CI resource pressure
   const results: { chunkNumber: number; failed: boolean }[] = []
 
   for (let index = 0; index < chunkFiles.length; index++) {
@@ -318,7 +287,6 @@ async function main() {
       results.push({ chunkNumber, failed: false })
     }
 
-    // Add a small delay between chunks to reduce server pressure
     if (index < chunkFiles.length - 1) {
       console.log("Waiting 2 seconds before next chunk...")
       await new Promise((resolve) => setTimeout(resolve, 2000))
@@ -327,20 +295,17 @@ async function main() {
 
   const failedChunks = results.filter((r) => r.failed).map((r) => r.chunkNumber)
 
-  // 7) If any chunks failed, exit with error after we've checked them all
   if (failedChunks.length > 0) {
     console.error(`Some chunks failed: ${failedChunks.join(", ")}`)
     displayLogFile()
     exit(2)
   }
 
-  // 8) Otherwise, success
   console.log(`All chunks succeeded!`)
   displayLogFile()
   exit(0)
 }
 
-// Run main, and handle uncaught rejections
 main().catch((err) => {
   console.error("Uncaught error in main():", err)
   displayLogFile()

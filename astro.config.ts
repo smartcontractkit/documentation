@@ -82,6 +82,12 @@ export default defineConfig({
         const pathname = new URL(page).pathname
         const cleanPath = pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname
 
+        // Exclude markdown endpoints from sitemap.
+        // Keep them directly accessible, but do not publish them as canonical crawl targets.
+        if (cleanPath.endsWith(".md")) {
+          return false
+        }
+
         // Exclude short format API reference URLs (e.g., /api-reference/v150, /ccip/api-reference/evm/v150)
         // These are aliases for versioned content - we keep only the canonical long format URLs
         const shortVersionPattern = /\/api-reference\/(?:.*\/)?v\d{3,4}(?:\/|$)/
