@@ -449,15 +449,33 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-04-24
+Last Updated: 2026-04-30
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.13.0 - April 30, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.13.0" target="_blank">CRE CLI version 1.13.0</a> is now available.**
+
+- **Global `--non-interactive` mode**: All commands now accept `--non-interactive`. In CI/CD, scripts, and other headless environments, the CLI fails with an actionable error instead of waiting for prompts. Commands that require confirmation still require the relevant flag, such as `--yes` or `--force`. For authentication in headless environments, use `CRE_API_KEY` instead of `cre login`. See [Global flags](/cre/reference/cli#global-flags) and [Authentication Commands](/cre/reference/cli/authentication#api-key-authentication).
+- **`cre workflow get`**: New command that shows metadata for the workflow configured in `workflow.yaml`. By default, it filters results to the workflow's configured deployment registry; use `--all-registries` to inspect matches across registries. See [`cre workflow get`](/cre/reference/cli/workflow#cre-workflow-get) for details.
+- **JSON output for workflow lists**: `cre workflow list` now supports `--output json` for machine-readable output. You can combine it with `--registry` and `--include-deleted` for scripted workflow inventory checks. See [`cre workflow list`](/cre/reference/cli/workflow#cre-workflow-list) for details.
+- **Updated TypeScript SDK in templates**: Newly initialized TypeScript workflows now use `@chainlink/cre-sdk` v1.6.0, which includes custom Rust plugin support and non-determinism build warnings. See [TS SDK v1.6.0](#ts-sdk-v160---april-20-2026) for details.
+- **Production-aligned simulation limits**: The embedded default limits used by `cre workflow simulate --limits default` now match the current production quotas. Use `cre workflow limits export` to inspect the exact values enforced locally.
+- **Bug fix**: Fixed secrets digest formatting by removing the `0x` prefix before packing allowlist request data.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.12.0...v1.13.0)
 
 ## CLI v1.12.0 - April 23, 2026
 
 **<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.12.0" target="_blank">CRE CLI version 1.12.0</a> is now available.**
 
-- **`cre workflow list`**: New command that lists all workflows deployed for your organization. Use `--include-deleted` to include deleted workflows, or `--output json` for machine-readable output. See [`cre workflow list`](/cre/reference/cli/workflow#cre-workflow-list) for details.
+- **`cre workflow list`**: New command that lists all workflows deployed for your organization. Use `--include-deleted` to include deleted workflows. See [`cre workflow list`](/cre/reference/cli/workflow#cre-workflow-list) for details.
 - **Improved workflow output**: `cre workflow deploy`, `cre workflow activate`, `cre workflow pause`, and `cre workflow delete` now display a consistent details block on success, showing the registry, contract address, transaction hash, workflow name, and workflow ID.
 - **Bug fixes**: Fixed `--limits none` not fully disabling engine-level limit enforcement during simulation, and fixed an invalid owner-address bug that could occur during workflow operations.
 
@@ -4843,7 +4861,7 @@ If your workflow requires higher limits than the defaults, you can request a lim
 
 # Deploying Workflows
 Source: https://docs.chain.link/cre/guides/operations/deploying-workflows
-Last Updated: 2026-03-17
+Last Updated: 2026-04-30
 
 <Aside type="note" title="Early Access required">
   Workflow deployment is currently in Early Access. Run `cre account access` or visit <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">app.chain.link/cre/request-access</a> to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
@@ -5014,12 +5032,12 @@ jobs:
         run: curl -sSL https://github.com/smartcontractkit/cre-cli/releases/latest/download/install.sh | sh
 
       - name: Build workflow
-        run: cre workflow build ./my-workflow --output ./my-workflow/binary.wasm
+        run: cre workflow build ./my-workflow --output ./my-workflow/binary.wasm --non-interactive
         env:
           CRE_API_KEY: ${{ secrets.CRE_API_KEY }}
 
       - name: Display content hashes
-        run: cre workflow hash ./my-workflow --wasm ./my-workflow/binary.wasm --target production-settings
+        run: cre workflow hash ./my-workflow --wasm ./my-workflow/binary.wasm --target production-settings --non-interactive
         env:
           CRE_API_KEY: ${{ secrets.CRE_API_KEY }}
           CRE_ETH_PRIVATE_KEY: ${{ secrets.CRE_ETH_PRIVATE_KEY }}
@@ -5046,7 +5064,7 @@ jobs:
           path: ./my-workflow
 
       - name: Deploy workflow
-        run: cre workflow deploy ./my-workflow --wasm ./my-workflow/binary.wasm --target production-settings --yes
+        run: cre workflow deploy ./my-workflow --wasm ./my-workflow/binary.wasm --target production-settings --yes --non-interactive
         env:
           CRE_API_KEY: ${{ secrets.CRE_API_KEY }}
           CRE_ETH_PRIVATE_KEY: ${{ secrets.CRE_ETH_PRIVATE_KEY }}
@@ -5055,7 +5073,7 @@ jobs:
 
 
 <Aside type="note" title="API key authentication">
-  Use `CRE_API_KEY` for non-interactive authentication in CI/CD pipelines instead of `cre login`. Create an API key from the CRE platform under **Organization → APIs**. See [Authentication](/cre/reference/cli/authentication#api-key-authentication) for setup instructions.
+  Use `CRE_API_KEY` for non-interactive authentication in CI/CD pipelines instead of `cre login`, and pass `--non-interactive` so commands fail instead of prompting. Create an API key from the CRE platform under **Organization → APIs**. See [Authentication](/cre/reference/cli/authentication#api-key-authentication) for setup instructions.
 </Aside>
 
 
@@ -7828,7 +7846,7 @@ See the [repository README](https://github.com/smartcontractkit/cre-gcp-predicti
 
 # CLI Reference
 Source: https://docs.chain.link/cre/reference/cli
-Last Updated: 2026-04-16
+Last Updated: 2026-04-30
 
 export const CRE_CLI_VERSION = VERSIONS["cre-cli"].LATEST
 
@@ -7848,9 +7866,16 @@ These flags can be used with any `cre` command.
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `-h, --help`         | Displays help information for any command                                                                                                                                                  |
 | `-e, --env`          | Specifies the path to your `.env` file (default: `".env"`)                                                                                                                                 |
+| `-E, --public-env`   | Specifies the path to your `.env.public` file, which contains shared, non-sensitive build configuration                                                                                    |
 | `-T, --target`       | Sets the target environment from your configuration files                                                                                                                                  |
 | `-R, --project-root` | Specifies the path to the project root directory. By default, the CLI automatically finds the project root by searching for `project.yaml` in the current directory and parent directories |
 | `-v, --verbose`      | Enables verbose logging to print `DEBUG` level logs                                                                                                                                        |
+| `--non-interactive`  | Fails instead of prompting; provide all required inputs with flags or environment variables. Use this for CI/CD, scripts, and other headless environments                                  |
+
+
+<Aside type="note" title="Non-interactive authentication">
+  `cre login` requires a browser and is not available in non-interactive mode. For CI/CD and other headless environments, set `CRE_API_KEY` instead. See [API key authentication](/cre/reference/cli/authentication#api-key-authentication).
+</Aside>
 
 ## Commands overview
 
@@ -7901,6 +7926,8 @@ Manage workflows throughout their entire lifecycle.
 - **`cre workflow activate`** — Activate a workflow on the Workflow Registry contract
 - **`cre workflow pause`** — Pause a workflow on the Workflow Registry contract
 - **`cre workflow delete`** — Delete all versions of a workflow from the Workflow Registry
+- **`cre workflow list`** — List workflows deployed for your organization; use `--output json` for scripts
+- **`cre workflow get`** — Show metadata for the workflow configured in `workflow.yaml`
 - **`cre workflow custom-build`** — Convert a workflow to use a custom self-compiled WASM build
 
 [View workflow commands →](/cre/reference/cli/workflow)
@@ -7962,6 +7989,7 @@ The typical workflow development process uses these commands in sequence:
 5. **`cre workflow hash`** — (Optional) Inspect content hashes before deploying
 6. **`cre workflow deploy`** — Deploy your workflow to the registry
 7. **`cre workflow activate`** / **`cre workflow pause`** — Control workflow execution
+8. **`cre workflow list`** / **`cre workflow get`** — Inspect deployed workflow metadata
 
 ## Learn more
 
@@ -7973,7 +8001,7 @@ The typical workflow development process uses these commands in sequence:
 
 # Authentication Commands
 Source: https://docs.chain.link/cre/reference/cli/authentication
-Last Updated: 2026-03-26
+Last Updated: 2026-04-30
 
 The CRE CLI supports two authentication methods:
 
@@ -7985,6 +8013,8 @@ The CRE CLI supports two authentication methods:
 ### `cre login`
 
 Starts the interactive authentication flow. This command opens your browser for user login, saves your credentials locally to `~/.cre/cre.yaml`, and **fetches your tenant context** from the CRE platform. That response is cached per CRE environment (for example `PRODUCTION`) in **`~/.cre/context.yaml`** — a registry manifest that includes items such as your vault gateway URL, workflow registries, and which secrets authentication flows each registry supports. See [Tenant context cache](#tenant-context-cache) below.
+
+`cre login` requires a browser and is not available in `--non-interactive` mode. For CI/CD pipelines and other headless environments, use `CRE_API_KEY` instead.
 
 **Usage:**
 
@@ -8060,7 +8090,7 @@ cre whoami
 
 When `CRE_API_KEY` is set, the CLI skips the browser-based login flow entirely. All commands that require authentication (deploying, managing workflows, etc.) will use the API key. The CLI still **ensures tenant context** is available (fetching or refreshing `~/.cre/context.yaml` as needed) so your session matches the platform configuration for that key.
 
-In a CI/CD pipeline, configure `CRE_API_KEY` as a secret environment variable in your platform and run CLI commands as usual.
+In a CI/CD pipeline, configure `CRE_API_KEY` as a secret environment variable in your platform and pass [`--non-interactive`](/cre/reference/cli#global-flags) to fail immediately if a command would otherwise prompt for input.
 
 ## Tenant context cache
 
@@ -8324,9 +8354,14 @@ When you run this command, the CLI will:
 
 # Workflow Commands
 Source: https://docs.chain.link/cre/reference/cli/workflow
-Last Updated: 2026-04-24
+Last Updated: 2026-04-30
 
 The `cre workflow` commands manage workflows throughout their entire lifecycle, from local testing to deployment and ongoing management.
+
+
+<Aside type="note" title="Global flags">
+  All `cre` commands support [global flags](/cre/reference/cli#global-flags), including `--env`, `--public-env`, `--target`, `--project-root`, `--verbose`, and `--non-interactive`.
+</Aside>
 
 ## `cre workflow build`
 
@@ -8631,7 +8666,7 @@ For more details, see [Deleting Workflows](/cre/guides/operations/deleting-workf
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Lists all workflows deployed for your organization. Deleted workflows are hidden by default.
+Lists workflows deployed for your organization across registries. Deleted workflows are hidden by default.
 
 **Usage:**
 
@@ -8666,6 +8701,76 @@ cre workflow list [flags]
   ```bash
   cre workflow list --output json > workflows.json
   ```
+
+**JSON output fields:**
+
+| Field             | Description                                                                  |
+| ----------------- | ---------------------------------------------------------------------------- |
+| `name`            | Workflow name                                                                |
+| `workflowId`      | Workflow ID                                                                  |
+| `ownerAddress`    | Workflow owner address                                                       |
+| `status`          | Current workflow status                                                      |
+| `registry`        | Registry ID, or the workflow source when no registry match is available      |
+| `contractAddress` | Workflow registry contract address, when available for the resolved registry |
+
+**Example JSON output:**
+
+```json
+[
+  {
+    "name": "my-workflow",
+    "workflowId": "00ab...1234",
+    "ownerAddress": "0x1234...abcd",
+    "status": "ACTIVE",
+    "registry": "onchain:ethereum-mainnet",
+    "contractAddress": "0x5678...ef01"
+  }
+]
+```
+
+***
+
+## `cre workflow get`
+
+<Aside type="note" title="Authentication required">
+  Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
+  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
+  in with the CLI](/cre/account/cli-login) for further details.
+</Aside>
+
+Shows metadata for the workflow configured in `workflow.yaml`. The command reads the workflow name for the selected `--target`, searches the CRE platform for matching workflow metadata, and filters results to the workflow's configured `deployment-registry` by default.
+
+**Usage:**
+
+```bash
+cre workflow get <workflow-folder-path> [flags]
+```
+
+**Arguments:**
+
+- `<workflow-folder-path>` — (Required) Path to the workflow folder (e.g., `./my-workflow`)
+
+**Flags:**
+
+| Flag               | Description                                                              |
+| ------------------ | ------------------------------------------------------------------------ |
+| `--all-registries` | Do not filter results by the workflow's configured `deployment-registry` |
+
+**Examples:**
+
+- Show metadata for the workflow configured for a target
+
+  ```bash
+  cre workflow get ./my-workflow --target staging-settings
+  ```
+
+- Search across all registries in your organization
+
+  ```bash
+  cre workflow get ./my-workflow --target staging-settings --all-registries
+  ```
+
+The command prints the same human-readable workflow metadata fields as [`cre workflow list`](#cre-workflow-list): workflow name, workflow ID, owner address, status, registry, and registry address when available.
 
 ***
 
@@ -8819,7 +8924,8 @@ The typical workflow lifecycle uses these commands in sequence:
 7. **`cre workflow pause`** / **`cre workflow activate`** — Control workflow execution as needed
 8. **`cre workflow deploy`** (again) — Deploy updates (replaces the existing workflow)
 9. **`cre workflow list`** — (Optional) View all deployed workflows for your organization
-10. **`cre workflow delete`** — Remove the workflow when no longer needed
+10. **`cre workflow get`** — (Optional) Inspect metadata for the workflow configured in `workflow.yaml`
+11. **`cre workflow delete`** — Remove the workflow when no longer needed
 
 ## Learn more
 
