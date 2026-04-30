@@ -14,7 +14,7 @@ import SectionWrapper from "~/components/SectionWrapper/SectionWrapper.tsx"
 import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/TableOfContents/tocStore.ts"
 import { ChainSelector } from "~/components/ChainSelector/ChainSelector.tsx"
-import { isFeedVisible } from "../utils/feedVisibility.ts"
+import { chainHasVisibleFeeds, networkHasVisibleFeeds } from "../utils/feedVisibility.ts"
 import { updateUrlClean, clearFilters } from "./urlStateHelpers.ts"
 
 export type DataFeedType =
@@ -127,6 +127,7 @@ const FilterDropdown = <T extends string>({
     </details>
   )
 }
+
 export const FeedList = ({
   initialNetwork,
   dataFeedType = "default",
@@ -148,15 +149,17 @@ export const FeedList = ({
   forceStreamCategoryFilter?: StreamsRwaFeedTypeValue
   tokenizedEquityProvider?: string
 }) => {
-  const chains = ecosystem === "deprecating" ? ALL_CHAINS : CHAINS
   const isStreams =
     dataFeedType === "streamsCrypto" ||
     dataFeedType === "streamsRwa" ||
     dataFeedType === "streamsNav" ||
     dataFeedType === "streamsExRate" ||
     dataFeedType === "streamsBacked"
+  const isDeprecating = ecosystem === "deprecating"
+  const isRates = dataFeedType === "rates"
   const isSmartData = dataFeedType === "smartdata"
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
+  const chains = isDeprecating && isStreams ? ALL_CHAINS : CHAINS
 
   // Get network from URL parameters or fall back to initialNetwork
   const getNetworkFromURL = () => {
@@ -452,36 +455,59 @@ export const FeedList = ({
     })
   }, [chains, dataFeedType])
 
+  const requestedChain = useMemo(() => {
+    const requestedNetwork =
+      activeChain || (typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("network") : null)
+
+    return filteredChainsByTag.find((c) => c.page === requestedNetwork) || filteredChainsByTag[0] || chains[0]
+  }, [activeChain, filteredChainsByTag, chains])
+
+  const chainMetadata = useGetChainMetadata(
+    requestedChain,
+    initialCache && initialCache[requestedChain.page],
+    initialCache
+  )
+  const metadataCache = chainMetadata.cache ?? initialCache
+
+  const selectableChains = useMemo(() => {
+    if (!isDeprecating || isStreams || !metadataCache) return filteredChainsByTag
+
+    return filteredChainsByTag.filter((chain) =>
+      chainHasVisibleFeeds((metadataCache as Record<string, any>)[chain.page], dataFeedType, ecosystem, {
+        tokenizedEquityProvider,
+      })
+    )
+  }, [filteredChainsByTag, metadataCache, isDeprecating, isStreams, dataFeedType, ecosystem, tokenizedEquityProvider])
+
+  const availableChainsForSelection = selectableChains.length > 0 ? selectableChains : filteredChainsByTag
+
   // Find the selected chain from available chains (filtered by dataFeedType)
   const selectedChain = useMemo(() => {
-    // During SSR, try to find the chain from URL param if activeChain is not available
-    if (!activeChain) {
-      // Check if we have a network param that we can use directly
-      if (typeof window !== "undefined") {
-        const urlParams = new URLSearchParams(window.location.search)
-        const networkParam = urlParams.get("network")
-        if (networkParam) {
-          const foundFromUrl = filteredChainsByTag.find((c) => c.page === networkParam)
-          if (foundFromUrl) {
-            return foundFromUrl
-          }
-        }
-      }
-      return filteredChainsByTag[0] || chains[0] // fallback to first filtered chain
+    if (activeChain) {
+      const foundChain = availableChainsForSelection.find((c) => c.page === activeChain)
+      if (foundChain) return foundChain
     }
 
-    const foundChain = filteredChainsByTag.find((c) => c.page === activeChain)
-    if (!foundChain) {
-      return filteredChainsByTag[0] || chains[0]
+    if (typeof window !== "undefined") {
+      const networkParam = new URLSearchParams(window.location.search).get("network")
+      const foundFromUrl = availableChainsForSelection.find((c) => c.page === networkParam)
+      if (foundFromUrl) return foundFromUrl
     }
-    return foundChain
-  }, [activeChain, filteredChainsByTag, chains])
-  const chainMetadata = useGetChainMetadata(selectedChain, initialCache && initialCache[selectedChain.page])
+
+    return availableChainsForSelection[0] || chains[0]
+  }, [activeChain, availableChainsForSelection, chains])
+
+  const selectedChainProcessedData =
+    (metadataCache as Record<string, any> | undefined)?.[selectedChain.page] ?? chainMetadata.processedData
+  const currentChainMetadata = {
+    ...chainMetadata,
+    processedData: selectedChainProcessedData,
+  }
   const wrapperRef = useRef(null)
 
   // scroll handler
   useEffect(() => {
-    if (!chainMetadata.loading && chainMetadata.processedData) {
+    if (!currentChainMetadata.loading && currentChainMetadata.processedData) {
       if (typeof window === "undefined") return
 
       // Get the anchor from URL if present
@@ -492,7 +518,7 @@ export const FeedList = ({
         let hasUpdatedAnyId = false
 
         // Find all section elements that need their IDs updated
-        chainMetadata.processedData?.networks.forEach((network) => {
+        currentChainMetadata.processedData?.networks.forEach((network) => {
           const sectionId = network.name.toLowerCase().replace(/\s+/g, "-")
           const existingSection = document.getElementById(sectionId)
 
@@ -525,9 +551,9 @@ export const FeedList = ({
         })
 
         // Also update testnet section if it exists
-        if (chainMetadata.processedData?.testnetNetwork) {
+        if (currentChainMetadata.processedData?.testnetNetwork) {
           const testnetId =
-            chainMetadata.processedData.testnetNetwork.name.toLowerCase().replace(/\s+/g, "-") || "testnet-feeds"
+            currentChainMetadata.processedData.testnetNetwork.name.toLowerCase().replace(/\s+/g, "-") || "testnet-feeds"
           document.querySelectorAll("h2").forEach((heading) => {
             if (heading.textContent === "Testnet Feeds" || heading.textContent?.includes("Testnet")) {
               const section = heading.closest("section")
@@ -591,7 +617,7 @@ export const FeedList = ({
         }
       }, 300)
     }
-  }, [chainMetadata.loading, chainMetadata.processedData, currentNetwork])
+  }, [currentChainMetadata.loading, currentChainMetadata.processedData, currentNetwork])
 
   // Network selection handler
   function handleNetworkSelect(chain: Chain) {
@@ -686,34 +712,17 @@ export const FeedList = ({
   }
 
   useOutsideAlerter(wrapperRef)
-  const isRates = dataFeedType === "rates"
-  const isDeprecating = ecosystem === "deprecating"
   let netCount = 0
 
   // Available network types for current feed type
   const availableNetworkTypes = useMemo(() => {
-    if (!chainMetadata.processedData?.networks) return { mainnet: false, testnet: false }
+    if (!currentChainMetadata.processedData?.networks) return { mainnet: false, testnet: false }
 
     const networkTypes = { mainnet: false, testnet: false }
 
     // Filter networks by feed type
-    const filteredNetworks = chainMetadata.processedData.networks
+    const filteredNetworks = currentChainMetadata.processedData.networks
       .filter((network) => {
-        if (isDeprecating) {
-          let foundDeprecated = false
-          network.metadata?.forEach((feed: any) => {
-            if (feed.feedCategory === "deprecating") {
-              foundDeprecated = true
-            }
-          })
-          // A deprecating network is relevant only if it still has at least one non-hidden deprecating feed
-          if (!foundDeprecated) return false
-          const hasVisible = network.metadata?.some(
-            (feed: any) => feed.feedCategory === "deprecating" && !feed.docs?.hidden
-          )
-          return !!hasVisible
-        }
-
         if (isStreams) return network.tags?.includes("streams")
         if (isSmartData) return network.tags?.includes("smartData")
         if (isRates) return network.tags?.includes("rates")
@@ -723,8 +732,7 @@ export const FeedList = ({
       })
       .filter((network) => {
         // Ensure the network has at least one visible feed for the current dataFeedType
-        const feeds = network.metadata || []
-        return feeds.some((feed: any) => isFeedVisible(feed, dataFeedType, ecosystem, { tokenizedEquityProvider }))
+        return networkHasVisibleFeeds(network, dataFeedType, ecosystem, { tokenizedEquityProvider })
       })
 
     // Check available network types
@@ -738,17 +746,19 @@ export const FeedList = ({
 
     return networkTypes
   }, [
-    chainMetadata.processedData?.networks,
-    isDeprecating,
+    currentChainMetadata.processedData?.networks,
     isStreams,
     isSmartData,
     isRates,
     isUSGovernmentMacroeconomicData,
+    dataFeedType,
+    ecosystem,
+    tokenizedEquityProvider,
   ])
 
   // Auto-switch network type if current selection isn't available
   useEffect(() => {
-    if (!chainMetadata.loading && chainMetadata.processedData) {
+    if (!currentChainMetadata.loading && currentChainMetadata.processedData) {
       const { mainnet, testnet } = availableNetworkTypes
 
       if (selectedNetworkType === "mainnet" && !mainnet && testnet) {
@@ -779,8 +789,8 @@ export const FeedList = ({
       }
     }
   }, [
-    chainMetadata.loading,
-    chainMetadata.processedData,
+    currentChainMetadata.loading,
+    currentChainMetadata.processedData,
     availableNetworkTypes,
     selectedNetworkType,
     dataFeedType,
@@ -836,7 +846,7 @@ export const FeedList = ({
         testnetInputElement.value = typeof testnetSearchValue === "string" ? testnetSearchValue : ""
       }
     }
-  }, [searchValue, testnetSearchValue, chainMetadata.loading])
+  }, [searchValue, testnetSearchValue, currentChainMetadata.loading])
 
   if (
     dataFeedType === "streamsCrypto" ||
@@ -921,8 +931,8 @@ export const FeedList = ({
 
       return (
         <>
-          {chainMetadata.loading && !chainMetadata.processedData && !initialCache && <p>Loading...</p>}
-          {chainMetadata.error && <p>There was an error loading the streams...</p>}
+          {currentChainMetadata.loading && !currentChainMetadata.processedData && !initialCache && <p>Loading...</p>}
+          {currentChainMetadata.error && <p>There was an error loading the streams...</p>}
 
           <SectionWrapper title="Mainnet Deprecating Streams" depth={2}>
             <form class={feedList.filterDropdown_search}>
@@ -1041,7 +1051,7 @@ export const FeedList = ({
     const mainnetFeeds: ChainNetwork[] = []
     const testnetFeeds: ChainNetwork[] = []
 
-    chainMetadata.processedData?.networks.forEach((network) => {
+    currentChainMetadata.processedData?.networks.forEach((network) => {
       if (network.name.includes("Arbitrum")) {
         if (network.networkType === "mainnet") {
           mainnetFeeds.push(network)
@@ -1221,7 +1231,7 @@ export const FeedList = ({
               </>
             )}
           </div>
-          {chainMetadata.loading || !chainMetadata.processedData ? (
+          {currentChainMetadata.loading || !currentChainMetadata.processedData ? (
             <p style="font-style: italic;">Loading...</p>
           ) : mainnetFeeds.length > 0 ? (
             mainnetFeeds.map((network) => (
@@ -1405,7 +1415,7 @@ export const FeedList = ({
               </>
             )}
           </div>
-          {chainMetadata.loading || !chainMetadata.processedData ? (
+          {currentChainMetadata.loading || !currentChainMetadata.processedData ? (
             <p style="font-style: italic;">Loading...</p>
           ) : testnetFeeds.length > 0 ? (
             testnetFeeds.map((network) => (
@@ -1414,6 +1424,7 @@ export const FeedList = ({
                 network={network}
                 showExtraDetails={showExtraDetails}
                 dataFeedType={dataFeedType}
+                ecosystem={ecosystem}
                 selectedFeedCategories={
                   Array.isArray(selectedFeedCategories)
                     ? selectedFeedCategories
@@ -1447,105 +1458,43 @@ export const FeedList = ({
 
   return (
     <SectionWrapper title="Networks" depth={2} updateTOC={false}>
-      {!isDeprecating && (
-        <>
-          <div
-            className={feedList.clChainnavProduct}
-            style={{
-              marginBottom: "var(--space-4x)",
-              justifyContent: "flex-start",
-              flexWrap: "nowrap",
-            }}
-          >
-            {isHydrated && (
-              <ChainSelector
-                key={`chain-selector-${selectedChain.page}`} // Force re-render when chain changes
-                chains={chains}
-                selectedChain={selectedChain}
-                onChainSelect={handleNetworkSelect}
-                onNetworkTypeChange={handleNetworkTypeChange}
-                dataFeedType={dataFeedType}
-                availableNetworkTypes={availableNetworkTypes}
-                selectedNetworkType={selectedNetworkType}
-              />
-            )}
-          </div>
-        </>
+      {selectableChains.length > 0 && (
+        <div
+          className={feedList.clChainnavProduct}
+          style={{
+            marginBottom: "var(--space-4x)",
+            justifyContent: "flex-start",
+            flexWrap: "nowrap",
+          }}
+        >
+          {isHydrated && (
+            <ChainSelector
+              key={`chain-selector-${selectedChain.page}`} // Force re-render when chain changes
+              chains={selectableChains}
+              selectedChain={selectedChain}
+              onChainSelect={handleNetworkSelect}
+              onNetworkTypeChange={handleNetworkTypeChange}
+              dataFeedType={dataFeedType}
+              availableNetworkTypes={availableNetworkTypes}
+              selectedNetworkType={selectedNetworkType}
+            />
+          )}
+        </div>
       )}
 
-      {chainMetadata.error && <p>There was an error loading the feeds...</p>}
+      {currentChainMetadata.error && <p>There was an error loading the feeds...</p>}
 
-      {chainMetadata.loading && !chainMetadata.processedData && <p>Loading...</p>}
+      {currentChainMetadata.loading && !currentChainMetadata.processedData && <p>Loading...</p>}
 
       {(() => {
-        // Handle deprecating feeds from initialCache if available
-        if (isDeprecating && initialCache && initialCache.deprecated && (initialCache.deprecated as any).networks) {
-          return (initialCache.deprecated as any).networks
-            .filter((network: any) => {
-              let foundDeprecated = false
-              network.metadata?.forEach((feed: any) => {
-                // Only include actual feeds (not streams) with deprecating status
-                if (feed.feedCategory === "deprecating" && !(feed.contractType === "verifier" && feed.feedId)) {
-                  foundDeprecated = true
-                }
-              })
-              if (foundDeprecated) {
-                netCount++
-              }
-              return foundDeprecated
-            })
-            .map((network: any) => (
-              <SectionWrapper
-                title={network.name}
-                depth={3}
-                key={network.name}
-                idOverride={network.name.toLowerCase().replace(/\s+/g, "-")}
-              >
-                <MainnetTable
-                  selectedFeedCategories={
-                    Array.isArray(selectedFeedCategories)
-                      ? selectedFeedCategories
-                      : selectedFeedCategories
-                        ? [selectedFeedCategories]
-                        : []
-                  }
-                  network={{
-                    ...network,
-                    metadata: network.metadata.filter(
-                      (feed: any) =>
-                        feed.feedCategory === "deprecating" && !(feed.contractType === "verifier" && feed.feedId)
-                    ),
-                  }}
-                  showExtraDetails={showExtraDetails}
-                  showOnlySVR={showOnlySVR}
-                  showOnlyMVRFeeds={showOnlyMVRFeeds}
-                  showOnlyDEXFeeds={false}
-                  dataFeedType={dataFeedType}
-                  ecosystem={ecosystem}
-                  lastAddr={lastAddr}
-                  firstAddr={firstAddr}
-                  addrPerPage={addrPerPage}
-                  currentPage={currentPageNum}
-                  paginate={paginate}
-                  searchValue={typeof searchValue === "string" ? searchValue : ""}
-                  tokenizedEquityProvider={tokenizedEquityProvider}
-                />
-              </SectionWrapper>
-            ))
-        }
-
         // Handle regular network processing
-        return chainMetadata.processedData?.networks
+        return currentChainMetadata.processedData?.networks
           ?.filter((network: { metadata: unknown[]; tags: string | string[]; networkType: string }) => {
             if (isDeprecating) {
-              let foundDeprecated = false
-              network.metadata?.forEach((feed: any) => {
-                // Only include actual feeds (not streams) with deprecating status
-                if (feed.feedCategory === "deprecating" && !(feed.contractType === "verifier" && feed.feedId)) {
-                  foundDeprecated = true
-                }
+              const foundDeprecated = networkHasVisibleFeeds(network, dataFeedType, ecosystem, {
+                tokenizedEquityProvider,
               })
-              if (foundDeprecated) {
+              if (foundDeprecated && network.networkType === selectedNetworkType) {
                 netCount++
               }
               return foundDeprecated && network.networkType === selectedNetworkType
@@ -1936,6 +1885,7 @@ export const FeedList = ({
                         network={network}
                         showExtraDetails={showExtraDetails}
                         dataFeedType={dataFeedType}
+                        ecosystem={ecosystem}
                         selectedFeedCategories={
                           Array.isArray(selectedFeedCategories)
                             ? selectedFeedCategories
