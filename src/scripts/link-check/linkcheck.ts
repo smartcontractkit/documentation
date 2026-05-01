@@ -13,7 +13,9 @@ declare global {
 const BASE_URL = "http://localhost:4321"
 const TEMP_DIR = `${cwd()}/temp`
 const LOG_FILE = `${TEMP_DIR}/link-checker.log`
-const BUILD_DIR = `${cwd()}/dist/client`
+const DIST_BUILD_DIR = `${cwd()}/dist/client`
+const VERCEL_BUILD_DIR = `${cwd()}/.vercel/output/static`
+const BUILD_DIR = existsSync(VERCEL_BUILD_DIR) ? VERCEL_BUILD_DIR : DIST_BUILD_DIR
 const SITEMAP_FILE = `${BUILD_DIR}/sitemap-0.xml`
 
 const LINK_CHUNK_SIZE = 150
@@ -211,8 +213,6 @@ function checkChunkFile(linksFile: string, mode: "internal" | "external"): Promi
       if (code === 1) {
         const lines = outputData.split("\n")
         const warningLines = lines.filter((line) => line.includes("=>"))
-
-        const canonicalUrls = extractCanonicalUrlsWithLanguageVariants()
 
         const blockingWarnings = warningLines.filter((line) => {
           const lineLower = line.toLowerCase()

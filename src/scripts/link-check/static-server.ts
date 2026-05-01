@@ -3,7 +3,9 @@ import fs from "node:fs"
 import path from "node:path"
 import { URL } from "node:url"
 
-const ROOT = path.resolve("dist/client")
+const DIST_ROOT = path.resolve("dist/client")
+const VERCEL_ROOT = path.resolve(".vercel/output/static")
+const ROOT = fs.existsSync(VERCEL_ROOT) ? VERCEL_ROOT : DIST_ROOT
 const PORT = 4321
 
 const MIME_TYPES: Record<string, string> = {
