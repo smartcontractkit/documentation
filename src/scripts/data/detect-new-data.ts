@@ -99,6 +99,7 @@ interface DataItem {
 interface DeprecatingBaselineItem {
   feedID: string
   shutdownDate: string
+  url?: string
 }
 
 interface Baseline {
@@ -317,6 +318,8 @@ async function detectNewData(): Promise<void> {
     }
 
     // 4) Identify deprecating feeds whose shutdown date was added, removed, or changed
+    const allItemsById = new Map(allItems.map((item) => [item.feedID, item]))
+    const allStreamItemsById = new Map(streamItems.map((item) => [item.feedID, item]))
     const currentDeprecatedItems = allItems.filter(isDeprecatingDataFeed)
     const currentDeprecatingFeeds = new Map(currentDeprecatedItems.map((item) => [item.feedID, item]))
     const currentDeprecatedStreams = streamItems.filter(isDeprecatingDataStream)
@@ -341,7 +344,7 @@ async function detectNewData(): Promise<void> {
           newlyDeprecatedItems.push(item)
         } else if (knownShutdownDate !== item.shutdownDate) {
           changedDeprecatedItems.push({
-            previous: { feedID: item.feedID, shutdownDate: knownShutdownDate },
+            previous: { feedID: item.feedID, shutdownDate: knownShutdownDate, url: buildDeprecatingFeedUrl(item) },
             current: item,
           })
         }
@@ -349,7 +352,12 @@ async function detectNewData(): Promise<void> {
 
       for (const [feedID, shutdownDate] of knownDeprecatingFeeds.entries()) {
         if (!currentDeprecatingFeeds.has(feedID)) {
-          resolvedDeprecatedItems.push({ feedID, shutdownDate })
+          const item = allItemsById.get(feedID)
+          resolvedDeprecatedItems.push({
+            feedID,
+            shutdownDate,
+            ...(item ? { url: buildDeprecatingFeedUrl(item) } : {}),
+          })
         }
       }
     }
@@ -361,7 +369,7 @@ async function detectNewData(): Promise<void> {
           newlyDeprecatedStreams.push(item)
         } else if (knownShutdownDate !== item.shutdownDate) {
           changedDeprecatedStreams.push({
-            previous: { feedID: item.feedID, shutdownDate: knownShutdownDate },
+            previous: { feedID: item.feedID, shutdownDate: knownShutdownDate, url: buildDeprecatingStreamUrl(item) },
             current: item,
           })
         }
@@ -369,7 +377,12 @@ async function detectNewData(): Promise<void> {
 
       for (const [feedID, shutdownDate] of knownDeprecatingStreams.entries()) {
         if (!currentDeprecatingStreams.has(feedID)) {
-          resolvedDeprecatedStreams.push({ feedID, shutdownDate })
+          const item = allStreamItemsById.get(feedID)
+          resolvedDeprecatedStreams.push({
+            feedID,
+            shutdownDate,
+            ...(item ? { url: buildDeprecatingStreamUrl(item) } : {}),
+          })
         }
       }
     }

@@ -6,7 +6,7 @@ isIndex: true
 metadata:
   description: "Explore all CRE CLI commands: complete reference for project setup, workflow deployment, account management, and development tools."
   datePublished: "2025-11-04"
-  lastModified: "2026-04-16"
+  lastModified: "2026-04-30"
 ---
 
 import { Aside } from "@components"
@@ -30,9 +30,16 @@ These flags can be used with any `cre` command.
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `-h, --help`                          | Displays help information for any command                                                                                                                                                  |
 | `-e, --env`                           | Specifies the path to your `.env` file (default: `".env"`)                                                                                                                                 |
+| `-E, --public-env`                    | Specifies the path to your `.env.public` file, which contains shared, non-sensitive build configuration                                                                                    |
 | `-T, --target`                        | Sets the target environment from your configuration files                                                                                                                                  |
 | `-R, --project-root`                  | Specifies the path to the project root directory. By default, the CLI automatically finds the project root by searching for `project.yaml` in the current directory and parent directories |
 | `-v, --verbose`                       | Enables verbose logging to print `DEBUG` level logs                                                                                                                                        |
+| `--non-interactive`                   | Fails instead of prompting; provide all required inputs with flags or environment variables. Use this for CI/CD, scripts, and other headless environments                                  |
+
+{/* prettier-ignore */}
+<Aside type="note" title="Non-interactive authentication">
+  `cre login` requires a browser and is not available in non-interactive mode. For CI/CD and other headless environments, set `CRE_API_KEY` instead. See [API key authentication](/cre/reference/cli/authentication#api-key-authentication).
+</Aside>
 
 ## Commands overview
 
@@ -83,6 +90,8 @@ Manage workflows throughout their entire lifecycle.
 - **`cre workflow activate`** — Activate a workflow on the Workflow Registry contract
 - **`cre workflow pause`** — Pause a workflow on the Workflow Registry contract
 - **`cre workflow delete`** — Delete all versions of a workflow from the Workflow Registry
+- **`cre workflow list`** — List workflows deployed for your organization; use `--output json` for scripts
+- **`cre workflow get`** — Show metadata for the workflow configured in `workflow.yaml`
 - **`cre workflow custom-build`** — Convert a workflow to use a custom self-compiled WASM build
 
 [View workflow commands →](/cre/reference/cli/workflow)
@@ -144,6 +153,7 @@ The typical workflow development process uses these commands in sequence:
 1. **`cre workflow hash`** — (Optional) Inspect content hashes before deploying
 1. **`cre workflow deploy`** — Deploy your workflow to the registry
 1. **`cre workflow activate`** / **`cre workflow pause`** — Control workflow execution
+1. **`cre workflow list`** / **`cre workflow get`** — Inspect deployed workflow metadata
 
 ## Learn more
 
