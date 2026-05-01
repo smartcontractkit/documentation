@@ -6,6 +6,7 @@ import Header from "~/components/Header/Header.astro"
 import { NewsletterCTA } from "~/components/Footer/NewsletterCTA"
 import Footer from "~/components/Footer/Footer.astro"
 import { Metadata, QuickstartsFrontmatter } from "~/content.config.ts"
+//
 
 interface Props {
   title: string
@@ -16,10 +17,8 @@ interface Props {
   structuredData?: object | object[]
   suppressDefaultStructuredData?: boolean
 }
-
 const { title, metadata, quickstartFrontmatter, pageTitle, howToSteps, structuredData, suppressDefaultStructuredData } =
   Astro.props
-
 const canonicalURLStr = new URL(Astro.url.pathname, Astro.site).href.replace(/\/+$/, "")
 const canonicalURL = new URL(canonicalURLStr)
 ---
@@ -27,7 +26,6 @@ const canonicalURL = new URL(canonicalURLStr)
 <html dir="ltr" lang="en-us" class="initial" transition:animate="none">
   <head>
     <HeadCommon {title} />
-
     <HeadSEO
       metadata={metadata}
       {canonicalURL}
@@ -36,15 +34,12 @@ const canonicalURL = new URL(canonicalURLStr)
       howToSteps={howToSteps}
       suppressDefaultStructuredData={suppressDefaultStructuredData}
     />
-
     {structuredData && <StructuredData data={structuredData} />}
-
     <style>
       html {
         scroll-behavior: smooth;
       }
     </style>
-
     <script is:inline>
       try {
         const savedLang = localStorage.getItem("docs-language-preference")
@@ -59,13 +54,8 @@ const canonicalURL = new URL(canonicalURLStr)
         document.documentElement.classList.add("lang-go")
       }
     </script>
-
-    <!-- ✅ NEW: allows child layouts to inject into <head> -->
-    <slot name="head" />
-
     <slot name="head-scripts" />
   </head>
-
   <body>
     <Header />
     <slot />
