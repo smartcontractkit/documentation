@@ -5,6 +5,7 @@ import automationLogo from "../../../assets/product-logos/automation-logo.svg"
 import dataFeedsLogo from "../../../assets/product-logos/data-feeds-logo.svg"
 import dataStreamsLogo from "../../../assets/product-logos/data-streams-logo.svg"
 import creLogo from "../../../assets/product-logos/cre-logo.svg"
+import { c } from "node_modules/vite/dist/node/moduleRunnerTransport.d-DJ_mE5sf.js"
 
 export interface ProductData {
   learnMoreLink: string
@@ -109,6 +110,7 @@ export const productChainLinks: ProductChainLinks = {
       edge: "/ccip/directory/mainnet/chain/edge-mainnet",
       robinhood: "/ccip/directory/testnet/chain/robinhood-testnet",
       ton: "/ccip/directory/mainnet/chain/ton-mainnet",
+      creditcoin: "/ccip/directory/mainnet/chain/creditcoin-mainnet",
     },
   },
   CRE: {
@@ -461,4 +463,5 @@ export const chainNames: Record<string, string> = {
   edge: "Edge",
   robinhood: "Robinhood Chain",
   ton: "TON",
+  creditcoin: "Creditcoin",
 }
