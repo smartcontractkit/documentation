@@ -79,7 +79,7 @@ function TokenDrawer({
       For v1.5.1 token pools on EVM chains, rate limit enforcement may differ from configured values when token decimals
       vary across chains. It is recommended to upgrade to the latest version of Token Pools.{" "}
       <a
-        href="https://docs.chain.link/ccip/concepts/cross-chain-token/evm/token-pools#token-decimal-handling"
+        href="/ccip/concepts/cross-chain-token/evm/token-pools#token-pool-version-considerations"
         target="_blank"
         rel="noopener noreferrer"
         style={{ textDecoration: "underline", color: "white" }}
