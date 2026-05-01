@@ -1,5 +1,6 @@
 import fs from "node:fs/promises"
 import path from "node:path"
+import { VERSIONS } from "../config/versions/index.ts"
 
 const ROOT = process.cwd()
 const CONTENT_DIR = path.join(ROOT, "src", "content")
@@ -14,7 +15,9 @@ const PRODUCTS = [
   "chainlink-functions",
   "chainlink-automation",
   "chainlink-nodes",
-]
+] as const
+
+type Product = (typeof PRODUCTS)[number]
 
 function dottedFromCompact(version: string) {
   if (!/^v\d{3,}$/.test(version)) return version
@@ -48,7 +51,48 @@ async function walk(dir: string): Promise<string[]> {
   return results
 }
 
-function toPublicRoute(product: string, filePath: string) {
+function getAllowedVersions(product: Product, vmType?: string): readonly string[] | null {
+  const productConfig = VERSIONS[product as keyof typeof VERSIONS]
+  if (!productConfig) return null
+
+  if (
+    vmType &&
+    typeof productConfig === "object" &&
+    vmType in productConfig &&
+    typeof productConfig[vmType as keyof typeof productConfig] === "object"
+  ) {
+    const vmConfig = productConfig[vmType as keyof typeof productConfig] as { ALL?: readonly string[] }
+    return vmConfig.ALL ?? null
+  }
+
+  if (typeof productConfig === "object" && "ALL" in productConfig) {
+    const baseConfig = productConfig as { ALL?: readonly string[] }
+    return baseConfig.ALL ?? null
+  }
+
+  return null
+}
+
+function isAllowedApiReferenceVersion(product: Product, publicRoute: string): boolean {
+  const parts = publicRoute.split("/")
+
+  if (parts.length >= 4 && parts[1] === "api-reference" && /^v\d+\.\d+\.\d+$/.test(parts[3])) {
+    const vmType = parts[2]
+    const version = parts[3]
+    const allowedVersions = getAllowedVersions(product, vmType)
+    return allowedVersions ? allowedVersions.includes(version) : true
+  }
+
+  if (parts.length >= 3 && parts[1] === "api-reference" && /^v\d+\.\d+\.\d+$/.test(parts[2])) {
+    const version = parts[2]
+    const allowedVersions = getAllowedVersions(product)
+    return allowedVersions ? allowedVersions.includes(version) : true
+  }
+
+  return true
+}
+
+function toPublicRoute(product: Product, filePath: string) {
   const rel = normalize(path.relative(path.join(CONTENT_DIR, product), filePath))
 
   if (!rel.startsWith("api-reference/")) return null
@@ -81,7 +125,7 @@ function toPublicRoute(product: string, filePath: string) {
   return `${product}/api-reference/${route}`
 }
 
-function toCollectionId(product: string, filePath: string) {
+function toCollectionId(product: Product, filePath: string) {
   const rel = normalize(path.relative(path.join(CONTENT_DIR, product), filePath))
 
   if (!rel.startsWith("api-reference/")) return null
@@ -103,7 +147,7 @@ async function ensureDir(dir: string) {
   await fs.mkdir(dir, { recursive: true })
 }
 
-function pageTemplate(product: string, id: string) {
+function pageTemplate(product: Product, id: string) {
   return `---
 import { getCollection } from "astro:content"
 import ApiReferencePage from "~/components/ApiReferencePage.astro"
@@ -143,6 +187,7 @@ async function main() {
         const collectionId = toCollectionId(product, file)
 
         if (!publicRoute || !collectionId) continue
+        if (!isAllowedApiReferenceVersion(product, publicRoute)) continue
 
         const outPath = path.join("src", "pages", publicRoute + ".astro")
         const fullOutPath = path.join(ROOT, outPath)
