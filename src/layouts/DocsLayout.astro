@@ -33,6 +33,8 @@ const initialHeadings = [titleHeading].concat(filteredHeadings ?? [])
 const whatsNext = frontmatter.whatsnext
 
 const currentPage = new URL(Astro.request.url).pathname
+const pathname = currentPage.replace(/\/$/, "") || "/"
+const alternatePath = pathname === "/" ? "/index.md" : `${pathname}.md`
 
 const fileExtension = frontmatter.fileExtension || "mdx"
 
@@ -65,6 +67,7 @@ const howToSteps = initialHeadings
   pageTitle={frontmatter.title}
   howToSteps={howToSteps}
 >
+  <link slot="head" rel="alternate" type="text/markdown" href={alternatePath} />
   <slot name="head-scripts" slot="head-scripts" />
   <StickyHeader client:media="(max-width: 50em)" {initialHeadings} />
   <DocsNavigation client:load pathname={currentPage} />
