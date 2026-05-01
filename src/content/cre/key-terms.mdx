@@ -26,10 +26,24 @@ A decentralized, peer-to-peer network of independent nodes that work together to
 
 How you manage a workflow's lifecycle (deploy, activate, pause, update, delete) and its secrets. CRE supports two modes, selected per target via `user-workflow.deployment-registry` in `workflow.yaml`:
 
-- **Web3 key** — operations sign onchain transactions to the Workflow Registry contract on Ethereum Mainnet. Requires a [linked wallet key](/cre/organization/linking-keys) and gas. Used when `deployment-registry: "onchain:ethereum-mainnet"`.
-- **Auth only** — operations are authorized by your CRE login session against the Chainlink-hosted private registry. No wallet, no gas. Used when `deployment-registry: "private"` (the default).
+- **Web3 key** — operations sign onchain transactions to the public Workflow Registry contract on Ethereum Mainnet. Requires a [linked wallet key](/cre/organization/linking-keys) and gas for registry transactions. Used when `deployment-registry: "onchain:ethereum-mainnet"`.
+- **Auth only** — operations are authorized by your CRE login session against the Chainlink-hosted private registry. No wallet, no Ethereum Mainnet RPC, and no gas are required for registry management. Used when `deployment-registry: "private"`.
 
 See [Choosing your registry](/cre/guides/operations/deploying-workflows#choosing-your-registry) for the deploy-time view and [Auth modes](/cre/guides/workflow/secrets/using-secrets-deployed#auth-modes-web3-key-vs-browser-auth) for the secrets equivalent.
+
+### Public workflow
+
+A workflow whose lifecycle is managed through the public onchain Workflow Registry. In `workflow.yaml`, this is selected with `deployment-registry: "onchain:ethereum-mainnet"`.
+
+### Private workflow
+
+A workflow whose lifecycle is managed through the Chainlink-hosted private registry. In `workflow.yaml`, this is selected with `deployment-registry: "private"`. Private workflow management is centralized and offchain.
+
+Private does not mean confidential. A private workflow uses a private registry for management, but its execution is not confidential unless it explicitly uses a confidential execution feature or capability.
+
+### Confidential workflow or confidential execution
+
+Execution that uses a confidential runtime, TEE, enclave, or confidential capability to protect data during execution. This is separate from registry selection. Confidential execution does not require the private registry, and a workflow can use confidential execution while still being managed through the public onchain registry.
 
 ## Workflow architecture
 

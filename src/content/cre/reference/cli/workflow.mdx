@@ -138,7 +138,7 @@ cre workflow simulate <workflow-name-or-path> [flags]
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Deploys a workflow to the Workflow Registry — the onchain contract where workflows are enrolled so the Chainlink DON knows they exist and should run them. This command compiles your workflow, uploads the artifacts to the CRE Storage Service, and submits a registration transaction to the registry. Use [`cre registry list`](/cre/reference/cli/registry) to see which registry your organization is configured to use.
+Deploys a workflow to the registry selected by `user-workflow.deployment-registry` in `workflow.yaml`. This command compiles your workflow, uploads the artifacts to the CRE Storage Service, and registers the workflow with either the public onchain Workflow Registry or the Chainlink-hosted private registry. Use [`cre registry list`](/cre/reference/cli/registry) to see which registries your organization can use.
 
 **Usage:**
 
@@ -158,7 +158,7 @@ cre workflow deploy <workflow-name-or-path> [flags]
 | `--wasm`                                   | Path to a pre-built WASM binary (skips compilation). Use with [`cre workflow build`](#cre-workflow-build) for CI/CD pipelines |
 | `--config`                                 | Override the config file path from `workflow.yaml`                                                                            |
 | `--no-config`                              | Deploy without a config file                                                                                                  |
-| `--unsigned`                               | Return the raw transaction instead of sending it to the network                                                               |
+| `--unsigned`                               | Onchain registry only: return the raw transaction instead of sending it to the network                                        |
 | `--yes`                                    | Skip the confirmation prompt and proceed with the operation                                                                   |
 | `--skip-type-checks`                       | Skip TypeScript type checking during compilation. Speeds up iteration in development; not recommended for production builds   |
 
@@ -201,7 +201,7 @@ For more details, see [Deploying Workflows](/cre/guides/operations/deploying-wor
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Changes the workflow status to active on the Workflow Registry contract. Active workflows can respond to their configured triggers.
+Changes the workflow status to active in the registry selected by `deployment-registry`. Active workflows can respond to their configured triggers.
 
 **Usage:**
 
@@ -215,10 +215,10 @@ cre workflow activate <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| Flag         | Description                                                     |
-| ------------ | --------------------------------------------------------------- |
-| `--unsigned` | Return the raw transaction instead of sending it to the network |
-| `--yes`      | Skip the confirmation prompt and proceed with the operation     |
+| Flag         | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `--unsigned` | Onchain registry only: return the raw transaction instead of sending it to the network |
+| `--yes`      | Skip the confirmation prompt and proceed with the operation                            |
 
 **Example:**
 
@@ -236,7 +236,7 @@ For more details, see [Activating & Pausing Workflows](/cre/guides/operations/ac
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Changes the workflow status to paused on the Workflow Registry contract. Paused workflows will not respond to triggers.
+Changes the workflow status to paused in the registry selected by `deployment-registry`. Paused workflows will not respond to triggers.
 
 **Usage:**
 
@@ -250,10 +250,10 @@ cre workflow pause <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| Flag         | Description                                                     |
-| ------------ | --------------------------------------------------------------- |
-| `--unsigned` | Return the raw transaction instead of sending it to the network |
-| `--yes`      | Skip the confirmation prompt and proceed with the operation     |
+| Flag         | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `--unsigned` | Onchain registry only: return the raw transaction instead of sending it to the network |
+| `--yes`      | Skip the confirmation prompt and proceed with the operation                            |
 
 **Example:**
 
@@ -276,7 +276,7 @@ For more details, see [Activating & Pausing Workflows](/cre/guides/operations/ac
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Deletes a workflow from the Workflow Registry.
+Deletes a workflow from the registry selected by `deployment-registry`.
 
 **Usage:**
 
@@ -290,10 +290,10 @@ cre workflow delete <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| Flag         | Description                                                     |
-| ------------ | --------------------------------------------------------------- |
-| `--unsigned` | Return the raw transaction instead of sending it to the network |
-| `--yes`      | Skip the confirmation prompt and proceed with the operation     |
+| Flag         | Description                                                                            |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `--unsigned` | Onchain registry only: return the raw transaction instead of sending it to the network |
+| `--yes`      | Skip the confirmation prompt and proceed with the operation                            |
 
 **Example:**
 

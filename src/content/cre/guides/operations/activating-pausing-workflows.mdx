@@ -10,7 +10,7 @@ metadata:
 
 import { Aside } from "@components"
 
-After deploying a workflow, you can control its operational state using the `cre workflow activate` and `cre workflow pause` commands. These commands modify the workflow's status in the Workflow Registry contract, determining whether it can respond to triggers.
+After deploying a workflow, you can control its operational state using the `cre workflow activate` and `cre workflow pause` commands. These commands modify the workflow's status in the registry selected by `deployment-registry`, determining whether it can respond to triggers.
 
 **Workflow states:**
 
@@ -21,11 +21,12 @@ After deploying a workflow, you can control its operational state using the `cre
 
 Before activating or pausing workflows, ensure you have:
 
-- **A [deployed workflow](/cre/guides/operations/deploying-workflows)**: You must have a workflow that has been successfully deployed to the Workflow Registry.
-- **Workflow ownership**: You must be the owner of the workflow (the account that originally deployed it). Only the workflow owner can activate or pause it.
+- **A [deployed workflow](/cre/guides/operations/deploying-workflows)**: You must have a workflow that has been successfully deployed to the registry selected by `deployment-registry`.
+- **Workflow authorization**: You must be authorized to manage the workflow. Public onchain registry workflows use the linked workflow owner address. Private registry workflows use your CRE organization login session.
 - **Local workflow folder**: You must run these commands from your project directory. The CLI reads the workflow name and configuration from your `workflow.yaml` file to identify which workflow to activate or pause.
 - **[Logged in](/cre/reference/cli/authentication#cre-login)**: Authenticated with the platform by running `cre login`. To check your authentication status, run `cre whoami`.
-- **A funded wallet**: The account you are using must be funded with ETH on Ethereum Mainnet to pay the gas fees for the onchain transaction to the Workflow Registry contract.
+- **A `deployment-registry` value**: Updated CLI-generated targets use `private` by default. For older workflow files, make sure the target has `deployment-registry: "private"` or `deployment-registry: "onchain:ethereum-mainnet"`.
+- **(Onchain registry only) A funded wallet**: The account you are using must be funded with ETH on Ethereum Mainnet to pay gas for the registry transaction.
 
 ## Activating a workflow
 
@@ -46,15 +47,16 @@ cre workflow activate my-workflow --target production-settings
 The CLI identifies which workflow to activate based on:
 
 - `workflow-name` from your `workflow.yaml` file
-- `workflow-owner-address` (either from `workflow.yaml` or derived from your private key in `.env`)
+- `deployment-registry` from your `workflow.yaml` file
+- `workflow-owner-address` for onchain registry workflows, or your CRE organization for private registry workflows
 
 ### What happens during activation
 
-1. The CLI fetches the workflow matching your workflow name and owner address
+1. The CLI fetches the workflow matching your workflow name and configured registry authorization
 1. It validates that the workflow is currently paused
-1. If valid, it sends an onchain transaction to change the status to active
+1. If valid, it updates the workflow status in the target's configured registry. For `onchain:ethereum-mainnet`, this sends an onchain transaction. For `private`, this updates the Chainlink-hosted private registry through your CRE login session.
 
-### Example output
+### Example onchain registry output
 
 ```bash
 > cre workflow activate my-workflow --target production-settings
@@ -114,11 +116,11 @@ cre workflow pause my-workflow --target production-settings
 
 ### What happens during pausing
 
-1. The CLI fetches the workflow matching your workflow name and owner address
+1. The CLI fetches the workflow matching your workflow name and configured registry authorization
 1. It validates that the workflow is currently active
-1. If valid, it sends an onchain transaction to change the status to paused
+1. If valid, it updates the workflow status in the target's configured registry. For `onchain:ethereum-mainnet`, this sends an onchain transaction. For `private`, this updates the Chainlink-hosted private registry through your CRE login session.
 
-### Example output
+### Example onchain registry output
 
 ```bash
 > cre workflow pause my-workflow --target production-settings
@@ -162,7 +164,7 @@ Details:
 
 ## Using multi-sig wallets
 
-Both `activate` and `pause` commands support multi-sig wallets through the `--unsigned` flag. When using this flag, the CLI generates raw transaction data that you can submit through your multi-sig wallet interface instead of sending the transaction directly.
+For onchain registry workflows, both `activate` and `pause` commands support multi-sig wallets through the `--unsigned` flag. When using this flag, the CLI generates raw transaction data that you can submit through your multi-sig wallet interface instead of sending the transaction directly. Private registry workflows do not use `--unsigned` because they do not submit registry transactions.
 
 For complete setup instructions, configuration requirements, and step-by-step guidance, see [Using Multi-sig Wallets](/cre/guides/operations/using-multisig-wallets).
 
