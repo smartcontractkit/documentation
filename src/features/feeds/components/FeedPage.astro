@@ -19,15 +19,13 @@ export type Props = {
   defaultNetworkTableExpanded?: boolean
 }
 import { getServerSideChainMetadata } from "~/features/data/api/backend"
-import { CHAINS, ALL_CHAINS } from "~/features/data/chains"
+import { CHAINS } from "~/features/data/chains"
 import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat"
 import { FeedDataItem, monitoredFeeds } from "~/features/data"
 
 const { initialNetwork, ecosystem, dataFeedType, allowNetworkTableExpansion, defaultNetworkTableExpanded } = Astro.props
 
-// Skip cache for deprecating page to always fetch fresh data
-const isDeprecating = ecosystem === "deprecating"
-const initialCache = await getServerSideChainMetadata([...CHAINS, ...ALL_CHAINS], isDeprecating)
+const initialCache = await getServerSideChainMetadata(CHAINS)
 const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
 ---
 

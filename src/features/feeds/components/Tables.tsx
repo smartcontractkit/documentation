@@ -1384,7 +1384,6 @@ export const MainnetTable = ({
   const isSmartData = dataFeedType === "smartdata"
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
   const isDefault = !isStreams && !isSmartData && !isUSGovernmentMacroeconomicData
-  const isDeprecating = ecosystem === "deprecating"
 
   // Enrich metadata with final category (combining RDD and Supabase data)
   // Priority: deprecating status from RDD > Supabase risk tier > RDD category fallback
@@ -1421,11 +1420,6 @@ export const MainnetTable = ({
     .filter((metadata) => {
       if (showOnlySVR && !metadata.secondaryProxyAddress) {
         return false
-      }
-
-      if (isDeprecating) {
-        // Only show feeds (not streams) with shutdown dates
-        return !!metadata.docs.shutdownDate && !(metadata.contractType === "verifier" && metadata.feedId)
       }
 
       // Use shared visibility logic with filters
@@ -1602,6 +1596,7 @@ export const TestnetTable = ({
   network,
   showExtraDetails,
   dataFeedType,
+  ecosystem = "",
   selectedFeedCategories = [],
   firstAddr = 0,
   lastAddr = 1000,
@@ -1623,6 +1618,7 @@ export const TestnetTable = ({
   network: ChainNetwork
   showExtraDetails: boolean
   dataFeedType: string
+  ecosystem?: string
   selectedFeedCategories?: string[]
   firstAddr?: number
   lastAddr?: number
@@ -1688,7 +1684,7 @@ export const TestnetTable = ({
     .sort((a, b) => (a.name.toUpperCase() < b.name.toUpperCase() ? -1 : 1))
     .filter((metadata) => {
       // Use shared visibility logic with filters
-      return isFeedVisible(metadata, dataFeedType as any, undefined, {
+      return isFeedVisible(metadata, dataFeedType as any, ecosystem, {
         showOnlyDEXFeeds,
         showOnlyDatalinkFeeds,
         streamCategoryFilter,
