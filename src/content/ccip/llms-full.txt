@@ -3169,64 +3169,105 @@ On the destination blockchain, the CCIP OffRamp contract performs three key call
 
 ### Token Decimal Handling
 
-#### v1.5.0
+When you deploy the same token on multiple blockchains, you set decimals independently on each chain. Those settings determine how CCIP converts amounts during transfers. Use matching decimals on every chain when you can. If decimals differ between chains, read the examples and notes below and account for effects on token supply and on Token Pool Rate Limits; enforcement and scaling depend on your TokenPool contract version.
 
-Token pools on **v1.5.0** do not support tokens with different decimal places across blockchains. When transferring a token between blockchains with differing decimal places, the token loses precision resulting in different amounts of tokens between the source and destination blockchain.
-
-Consider a token developer who deployed their token across two blockchains with different decimal configurations:
-
-- Blockchain A: Token with 12 decimals
-- Blockchain B: Token with 6 decimals
-
-| Transfer Path  | Example                                                               | Explanation           | Impact                         |
-| -------------- | --------------------------------------------------------------------- | --------------------- | ------------------------------ |
-| A → B (12 → 6) | • Send 1.0 from A (= 10^12 base units)<br />• Receive on B: 1,000,000 | 10^12/10^6= 1,000,000 | Gain of 999,999 (1,000,000 -1) |
-| B → A (6 → 12) | • Send 1.0 from B (= 10^6 base units)<br />• Receive on A: 0.000001   | 10^6/10^12= 0.000001  | Loss of 0.999999 (1-0.000001)  |
-
-We highly recommend upgrading to v1.5.1 to leverage the native support for token decimal handling. If using v1.5.0, please make sure to configure a custom v1.5.0 token pool.
-
-#### V1.5.1 and Higher
-
-Starting **from v1.5.1**, token pools support tokens with different decimal places across blockchains. This feature can impact the total number of tokens in circulation because tokens locked/burned on the source chain might result in a smaller number of tokens minted/released on the destination chain due to decimal rounding.
+#### Precision Loss Examples
 
 <Aside type="caution" title="Impact on Token Supply">
-  When tokens move between blockchains with different decimal places, rounding can occur due to a loss of precision.
-  This rounding can affect small amounts of tokens during cross-chain transfers.
+  When you move tokens from a higher-decimal chain to a lower-decimal chain, amounts round to the destination's
+  precision and a small remainder is lost on each transfer. With lock/release pools that remainder can remain on the
+  source chain; with burn/mint pools it is typically not included in what is minted on the destination.
 </Aside>
 
-**Understanding Token Decimals**
+For example:
 
-When deploying their token, token developers can configure different decimal places for each blockchain. For example:
+- On Ethereum: you configure 18 decimals (0.123456789123456789)
+- On Polygon: you configure 9 decimals (0.123456789)
 
-- On Ethereum: The developer sets 18 decimals (0.123456789123456789)
-- On Polygon: The developer sets 9 decimals (0.123456789)
-
-When transferring tokens between these blockchains, CCIP handles decimal conversion automatically but must round numbers to match the destination's configured precision.
+When tokens move between chains with different decimals, CCIP converts values automatically and rounds to match the destination chain’s precision.
 
 **Impact Scenario**
 
-Consider a token developer who deployed their token across three blockchains with different decimal configurations:
+Consider a token deployed across three blockchains:
 
-- Blockchain A: High precision (18 decimals)
-- Blockchain B: Low precision (9 decimals)
-- Blockchain C: High precision (18 decimals)
+- Blockchain A: 18 decimals
+- Blockchain B: 9 decimals
+- Blockchain C: 18 decimals
 
-| Scenario                    | Transfer Path | Example                                                                       | Impact                                                                                                                                            |
-| --------------------------- | ------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **High to Low Precision ❌** | A → B         | • Send from A: 1.123456789123456789<br />• Receive on B: 1.123456789          | Lost: 0.000000000123456789<br />• Burn/mint: Tokens permanently burned on Blockchain A<br />• Lock/release: Tokens locked in pool on Blockchain A |
-| **Low to High Precision ✅** | B → A         | • Send from B: 1.123456789<br />• Receive on A: 1.123456789000000000          | • No precision loss                                                                                                                               |
-| **Equal Precision ✅**       | A → C         | • Send from A: 1.123456789123456789<br />• Receive on C: 1.123456789123456789 | • No precision loss                                                                                                                               |
+| Scenario         | Transfer Path | Example                                                           | Impact                                                                                                                                                                                                                                                        |
+| ---------------- | ------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **High → Low ❌** | A → B         | • Send: 1.123456789123456789<br />• Receive: 1.123456789          | Precision is lost when converting to the destination chain’s decimals. The difference (0.000000000123456789) is not represented on the destination chain.<br />• Burn/mint: not included in the minted amount<br />• Lock/release: remains in the source pool |
+| **Low → High ✅** | B → A         | • Send: 1.123456789<br />• Receive: 1.123456789000000000          | No precision loss                                                                                                                                                                                                                                             |
+| **Equal ✅**      | A → C         | • Send: 1.123456789123456789<br />• Receive: 1.123456789123456789 | No precision loss                                                                                                                                                                                                                                             |
 
-**Best Practices**
+#### Token Pool Version Considerations
 
-- Deploy tokens with the same number of decimals across all blockchains whenever possible
-- This prevents any loss of precision during cross-chain transfers
-- Different decimals should only be used when required by blockchain limitations (e.g., non-EVM chains with decimal constraints)
-- Verify decimal configurations on both source and destination blockchains before transfers
-- Consider implementing UI warnings for transfers that might be affected by rounding
-- When using high-to-low precision transfers, be aware that:
-  - In burn/mint pools: Lost precision results in permanently burned tokens
-  - In lock/release pools: Lost precision results in tokens accumulating in the source pool
+<Aside type="caution" title="Token amounts and TPRLs vary by TokenPool version">
+  Decimal differences affect both token amounts and how rate limits are interpreted depending on the version of the
+  TokenPool contract you are using.
+</Aside>
+
+##### v1.6.0+ (Recommended)
+
+TokenPool contracts in v1.6.0 and higher correctly handle mixed-decimal tokens and enforce Token Pool Rate Limits (TPRLs) across chains without additional configuration.
+
+[Use the latest TokenPool (v1.6.1)](https://www.npmjs.com/package/@chainlink/contracts-ccip/v/1.6.1)
+
+##### v1.5.1
+
+Token pools in **v1.5.1** introduce support for tokens with different decimal places across blockchains. However, **INBOUND Token Pool Rate Limits (TPRLs) are not properly enforced when decimals differ between chains** (OUTBOUND TPRLs are properly enforced). If you use mixed-decimal tokens in this version, you must manually account for how decimals affect TPRL configuration—and even then, enforcement may be significantly higher or lower than intended. This includes both capacity and refill rate.
+
+**Token Pool Rate Limits (TPRL)**
+
+When configuring TPRLs for mixed-decimal tokens, you must base calculations on the **remote token decimals** (the source chain). Using local decimals when they differ will incorrectly scale the configured limits.
+
+Definitions:
+
+- Remote decimals: token decimals on the destination chain (where tokens are being transferred from)
+- Local decimals: token decimals on the source chain (where tokens are being transferred to)
+
+**Inbound capacity rule**
+
+- If remote decimals ≠ local decimals\
+  → `capacity = whole_tokens × 10^remote_decimals`
+
+- If remote decimals = local decimals\
+  → `capacity = whole_tokens × 10^local_decimals`
+
+**Example (Solana → Ethereum)**
+
+- Solana: 9 decimals
+- Ethereum: 18 decimals
+- Desired inbound capacity: 50,000 tokens
+
+`50_000 × 10^9 = 50_000_000_000_000`
+
+If you instead use local decimals (`10^18`), you will misconfigure the limit. This can cause rate limits to be higher or lower than intended.
+
+<Aside type="caution" title="v1.5.1 limitation">
+  Even if you configure TPRLs using the correct model, enforcement may not match your configured values when token
+  decimals differ between chains. Upgrade to the latest TokenPool (v1.6.0+) to avoid misconfiguration and drift.
+  <a href="https://www.npmjs.com/package/@chainlink/contracts-ccip/v/1.6.1">View package</a>.
+</Aside>
+
+##### v1.5.0
+
+Token pools on **v1.5.0** do **not** support tokens with different decimal places across blockchains. If you deploy tokens with different decimals across chains in this version, transfers will produce inconsistent token amounts.
+
+| Transfer Path | Example                                          | Impact              |
+| ------------- | ------------------------------------------------ | ------------------- |
+| 12 → 6        | Send 1.0 (= 10¹² base units) → Receive 1,000,000 | Artificial increase |
+| 6 → 12        | Send 1.0 (= 10⁶ base units) → Receive 0.000001   | Significant loss    |
+
+Upgrade to **v1.6.0 or higher** for correct handling of mixed-decimal tokens.
+
+#### Best Practices
+
+- Use the same token decimals across chains unless you have a clear reason not to
+- If you choose different decimals, account for rounding in both directions
+- Test transfers between all chain pairs before production
+- Monitor lock/release pools for accumulation over time
+- Add UI warnings for transfers that may lose precision
 
 ## Standard Token Pools
 
@@ -3267,8 +3308,8 @@ Rebasing tokens are a unique type of token that adjusts its supply in response t
 #### Tokens with different decimals across blockchains
 
 <Aside type="note" title="Note">
-  This custom implementation is only needed for v1.5.0 pools. Starting from v1.5.1, token decimal handling is natively
-  supported by all token pools. See Token Decimal Handling under Common Requirements.
+  This custom implementation is only needed for v1.5.0 pools. Starting from v1.6.0+, token decimal handling is natively
+  supported by all token pools. See [Token Decimal Handling](#token-decimal-handling) for more information.
 </Aside>
 
 For **v1.5.0** pools:
