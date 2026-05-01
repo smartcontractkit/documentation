@@ -1,0 +1,42 @@
+---
+import { render } from "astro:content"
+import type { CollectionEntry } from "astro:content"
+import type { Collection } from "~/content.config.ts"
+import DocsLayout from "~/layouts/DocsLayout.astro"
+
+interface Props {
+  entry: CollectionEntry<Collection>
+}
+
+const { entry } = Astro.props as Props
+
+const sectionMap = {
+  "data-feeds": "dataFeeds",
+  "chainlink-automation": "automation",
+  "chainlink-functions": "chainlinkFunctions",
+  "chainlink-nodes": "nodeOperator",
+  "data-streams": "dataStreams",
+  "chainlink-local": "chainlinkLocal",
+  ccip: "ccip",
+  vrf: "vrf",
+} as const
+
+type SectionType =
+  | "global"
+  | "ccip"
+  | "automation"
+  | "chainlinkFunctions"
+  | "nodeOperator"
+  | "dataFeeds"
+  | "dataStreams"
+  | "legacy"
+  | "vrf"
+  | "chainlinkLocal"
+
+const section = (sectionMap[entry.collection] || "global") as SectionType
+const { Content, headings } = await render(entry)
+---
+
+<DocsLayout frontmatter={{ ...entry.data, section }} {headings}>
+  <Content />
+</DocsLayout>

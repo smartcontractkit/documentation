@@ -22,7 +22,7 @@ export const ccipRedirects = {
       // Only create one redirect without trailing slash
       redirects[`/ccip/api-reference/evm/${file}`] = {
         status: 301,
-        destination: `/ccip/api-reference/evm/v1.5.1/${file}`,
+        destination: `/ccip/api-reference/evm/v1.6.1/${file}`,
       }
       return redirects
     },

@@ -260,8 +260,7 @@ async function main() {
   }
 
   console.log("Starting production server in background...")
-  execSync("nohup npx serve dist/client --listen 4321 > server.log 2>&1 &", { stdio: "inherit" })
-
+  execSync("nohup npx tsx src/scripts/link-check/static-server.ts > server.log 2>&1 &", { stdio: "inherit" })
   try {
     await waitForServerReadiness(BASE_URL, 30)
   } catch (err) {

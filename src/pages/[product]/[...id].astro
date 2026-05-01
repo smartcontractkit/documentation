@@ -1,0 +1,79 @@
+---
+import { getCollection, render } from "astro:content"
+import type { CollectionEntry } from "astro:content"
+import DocsLayout from "~/layouts/DocsLayout.astro"
+import type { Collection } from "~/content.config.ts"
+
+interface RouteParams {
+  params: { product: Collection; id: string }
+  props: { entry: CollectionEntry<Collection> }
+}
+
+export async function getStaticPaths(): Promise<RouteParams[]> {
+  const paths: RouteParams[] = []
+
+  const products: Collection[] = [
+    "ccip",
+    "chainlink-local",
+    "vrf",
+    "data-feeds",
+    "data-streams",
+    "chainlink-functions",
+    "chainlink-automation",
+    "chainlink-nodes",
+  ]
+
+  for (const product of products) {
+    const entries = await getCollection(product)
+
+    for (const entry of entries) {
+      const id = entry.id.replace(/^\/+|\/+$/g, "")
+
+      if (!id) continue
+
+      paths.push({
+        params: { product, id },
+        props: { entry },
+      })
+    }
+  }
+
+  return paths
+}
+
+interface Props {
+  entry: CollectionEntry<Collection>
+}
+
+const { entry } = Astro.props as Props
+
+const sectionMap = {
+  "data-feeds": "dataFeeds",
+  "chainlink-automation": "automation",
+  "chainlink-functions": "chainlinkFunctions",
+  "chainlink-nodes": "nodeOperator",
+  "data-streams": "dataStreams",
+  "chainlink-local": "chainlinkLocal",
+  ccip: "ccip",
+  vrf: "vrf",
+} as const
+
+type SectionType =
+  | "global"
+  | "ccip"
+  | "automation"
+  | "chainlinkFunctions"
+  | "nodeOperator"
+  | "dataFeeds"
+  | "dataStreams"
+  | "legacy"
+  | "vrf"
+  | "chainlinkLocal"
+
+const section = (sectionMap[entry.collection] || "global") as SectionType
+const { Content, headings } = await render(entry)
+---
+
+<DocsLayout frontmatter={{ ...entry.data, section }} {headings}>
+  <Content />
+</DocsLayout>

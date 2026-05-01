@@ -8,10 +8,11 @@
   },
   "scripts": {
     "astro": "astro",
-    "dev": "astro dev",
-    "start": "astro dev",
-    "build": "astro build && npm run pin-sol-version && node scripts/cleanup-vercel-function.mjs",
-    "preview": "astro preview",
+    "generate:api-reference": "tsx src/scripts/generate-api-reference-routes.ts",
+    "dev": "npm run generate:api-reference && astro dev",
+    "start": "npm run generate:api-reference && astro dev",
+    "build": "npm run generate:api-reference && astro build && npm run pin-sol-version && node scripts/cleanup-vercel-function.mjs",
+    "preview": "npm run generate:api-reference && astro preview",
     "pin-sol-version": "tsx --require tsconfig-paths/register src/scripts/helper/pin-solver-dist.ts",
     "linkcheckWrapper": "tsx --require tsconfig-paths/register src/scripts/link-check/linkcheckWrapper.ts",
     "linkcheck-internal": "tsx --require tsconfig-paths/register src/scripts/link-check/linkcheck.ts",
@@ -56,6 +57,7 @@
   "dependencies": {
     "@11ty/eleventy-fetch": "^4.0.1",
     "@astro-community/astro-embed-youtube": "^0.5.10",
+    "@astrojs/check": "^0.9.9",
     "@astrojs/mdx": "^4.3.14",
     "@astrojs/partytown": "^2.1.7",
     "@astrojs/preact": "^4.1.3",

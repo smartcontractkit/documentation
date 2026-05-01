@@ -1,0 +1,17 @@
+---
+import { getCollection } from "astro:content"
+import ApiReferencePage from "~/components/ApiReferencePage.astro"
+
+const entries = await getCollection("ccip")
+
+const entry = entries.find((e) => {
+  const normalized = e.id.replace(/\\/g, "/")
+  return normalized === "api-reference/evm/v163/events"
+})
+
+if (!entry) {
+  throw new Error("Entry not found: api-reference/evm/v163/events")
+}
+---
+
+<ApiReferencePage {entry} />

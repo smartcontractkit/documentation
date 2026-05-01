@@ -1,0 +1,17 @@
+---
+import { getCollection } from "astro:content"
+import ApiReferencePage from "~/components/ApiReferencePage.astro"
+
+const entries = await getCollection("chainlink-local")
+
+const entry = entries.find((e) => {
+  const normalized = e.id.replace(/\\/g, "/")
+  return normalized === "api-reference/v021/mock-offchain-aggregator"
+})
+
+if (!entry) {
+  throw new Error("Entry not found: api-reference/v021/mock-offchain-aggregator")
+}
+---
+
+<ApiReferencePage {entry} />
