@@ -908,9 +908,9 @@ Although Token Developers may request that their tokens be added to Transporter,
 
 ## Chainlink Node Operator Responsibilities
 
-High-quality Chainlink node operators participate in the decentralized oracle networks (DONs) that power CCIP and the Risk Management Network using a configuration specified in the Chainlink software. As participants in these deployments, Node Operators are responsible for the following components of Chainlink CCIP and the Risk Management Network:
+High-quality Chainlink node operators participate in the decentralized oracle networks (DONs) that power CCIP using a configuration specified in the Chainlink software. As participants in these deployments, Node Operators are responsible for the following components of Chainlink CCIP:
 
-- **Node operations:** Chainlink node operators must ensure the proper configuration, maintenance, and monitoring of their nodes participating in the Chainlink CCIP and Risk Management Network DONs.
+- **Node operations:** Chainlink node operators must ensure the proper configuration, maintenance, and monitoring of their nodes participating in the Chainlink CCIP.
 - **Transaction execution:** Chainlink node operators must ensure that transactions execute onchain in a timely manner and that they apply gas bumping when necessary.
 - **Blockchain client:** Chainlink node operators are responsible for selecting and properly employing blockchain clients, including latest fixes and upgrades, to connect to supported blockchain networks.
 - **Consensus participation:** Chainlink node operators must maintain continuous uptime and active participation in OCR consensus.
@@ -1349,6 +1349,10 @@ Organizations with specialized expertise in running Chainlink nodes. Each operat
 
 A **decentralized oracle network (DON)** consists of multiple independent Chainlink nodes. These nodes monitor and retrieve data from specified sources (e.g., a source chain), reach consensus off-chain, and post results to a blockchain (e.g., a destination chain) in a [trust-minimized manner](https://blog.chain.link/what-is-trust-minimization/). For more details on the DONs used in CCIP, refer to the CCIP Offchain architecture page.
 
+## Risk Management Network (RMN)
+
+*Based on user demand, CCIP’s architecture is evolving to provide enhanced support for configurable security, compliance, and monitoring capabilities. As part of that ongoing evolution, the Risk Management Network’s automated offchain role is no longer active in current CCIP deployments, but is expected to be offered as an optional validation layer in future releases. The [onchain RMN contract](https://docs.chain.link/ccip/concepts/architecture/onchain/evm/components#rmn-contract) remains part of CCIP’s architecture as an emergency safeguard over certain per-chain or network-wide functions when required. CCIP continues to provide robust risk management controls, including configurable rate limits, developer token attestations, and monitoring capabilities.*
+
 ---
 
 # CCIP Architecture - Key Concepts (TON)
@@ -1687,9 +1691,13 @@ The RMN Contract is deployed on every chain where CCIP is integrated. Its key fu
    - **Curse Detection**: Onchain components (such as the Router, OnRamp, OffRamp, and TokenPool) call the `isCursed()` function on the RMNRemote contract to detect global curses or curses targeting a remote chain.
 
 <Aside type="note">
-  Based on user demand, CCIP's architecture is evolving to provide enhanced support for modular security and
-  configurable compliance capabilities. As part of this transition, the Risk Management Network is being adapted to
-  align with this broader, more flexible architecture.
+  Based on user demand, CCIP’s architecture is evolving to provide enhanced support for configurable security,
+  compliance, and monitoring capabilities. As part of that ongoing evolution, the Risk Management Network’s automated
+  offchain role is no longer active in current CCIP deployments, but is expected to be offered as an optional validation
+  layer in future releases. The [onchain RMN contract](/ccip/concepts/architecture/onchain/evm/components#rmn-contract)
+  remains part of CCIP’s architecture as an emergency safeguard over certain per-chain or network-wide functions when
+  required. CCIP continues to provide robust risk management controls, including configurable rate limits, developer
+  token attestations, and monitoring capabilities.
 </Aside>
 
 ---
@@ -1768,7 +1776,7 @@ Last Updated: 2025-05-19
 
 On a Solana Virtual Machine (SVM)-based source blockchain, an onchain program or user wallet interacts with the CCIP Router program, which provides a standard interface for sending messages cross-chain. The Router internally calculates fees, locks or burns tokens via a Token Pool program, and then emits a CCIPMessageSent event. The Committing DON observes that event offchain and relays the messages to a destination blockchain.
 
-On an SVM-based destination blockchain, an onchain program called the OffRamp receives a commit from the Committing DON containing merkle roots of batched messages. The OffRamp verifies the OCR signatures, checks with the Risk Management Network (RMN) Remote program that the source chain is not cursed, and then stores the merkle root. Later, the Executing DON submits individual messages for execution, one per transaction (unlike EVM chains, which can execute in batches). The OffRamp verifies each message's merkle proof against the previously committed root, tracks the execution state, and processes the message. This includes making CPI calls to Token Pools to release or mint tokens and, if applicable, delivering message data to a receiver program that implements the CCIP Receive interface.
+On an SVM-based destination blockchain, an onchain program called the OffRamp receives a commit from the Committing DON containing merkle roots of batched messages. The OffRamp verifies the OCR signatures, checks with the RMN Contract Remote program that the source chain is not cursed, and then stores the merkle root. Later, the Executing DON submits individual messages for execution, one per transaction (unlike EVM chains, which can execute in batches). The OffRamp verifies each message's merkle proof against the previously committed root, tracks the execution state, and processes the message. This includes making CPI calls to Token Pools to release or mint tokens and, if applicable, delivering message data to a receiver program that implements the CCIP Receive interface.
 
 ## Key Components
 
@@ -1782,16 +1790,16 @@ On an SVM-based destination blockchain, an onchain program called the OffRamp re
 
 **Destination Chain**:
 
-| Component                     | Ownership                  | Role                                                                                                                                                                                                                                                                                             |
-| ----------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Sender                        | External (User/Program)    | The sender could be a wallet or onchain program. It initiates the cross-chain request by calling the Router program's `ccip_send` instruction.                                                                                                                                                   |
-| Router                        | CCIP                       | The Router program is the entry point for sending cross-chain messages from SVM-based blockchains (outbound only). It validates accounts, calculates fees via the Fee Quoter program, collects fees, manages outbound sequence numbers, and transfers tokens to Token Pools when sending tokens. |
-| OffRamp                       | CCIP                       | Receives and processes cross-chain messages on the destination blockchain. It commits message batches (via merkle roots), executes individual messages, verifies RMN curses, and initiates token releases/minting through Token Pools.                                                           |
-| Fee Quoter                    | CCIP                       | Computes gas and token fees for cross-chain messages and maintains updated price data for tokens and destination chain gas costs.                                                                                                                                                                |
-| Token Pools                   | External (Token Developer) | Specialized programs that handle cross-chain token transfers. Used by the Router for `lock_or_burn_tokens` operations on the source blockchain and by the OffRamp for `release_or_mint_tokens` operations on the destination blockchain.                                                         |
-| Token                         | External (Token Developer) | A token program                                                                                                                                                                                                                                                                                  |
-| Receiver                      | External (User/Program)    | A wallet or onchain program. If the receiver is a program implementing the `ccip_receive` function, it can handle data and/or tokens, but can only receive tokens to a PDA it has authority over. If it's a wallet, it can only receive tokens through its Associated Token Accounts (ATAs).     |
-| Risk Management Network (RMN) | CCIP                       | An onchain program that maintains a registry of "curses" (blocklisted chains). Router, OffRamp, and Token Pools all verify with this program that relevant chains are not cursed before processing messages.                                                                                     |
+| Component           | Ownership                  | Role                                                                                                                                                                                                                                                                                             |
+| ------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Sender              | External (User/Program)    | The sender could be a wallet or onchain program. It initiates the cross-chain request by calling the Router program's `ccip_send` instruction.                                                                                                                                                   |
+| Router              | CCIP                       | The Router program is the entry point for sending cross-chain messages from SVM-based blockchains (outbound only). It validates accounts, calculates fees via the Fee Quoter program, collects fees, manages outbound sequence numbers, and transfers tokens to Token Pools when sending tokens. |
+| OffRamp             | CCIP                       | Receives and processes cross-chain messages on the destination blockchain. It commits message batches (via merkle roots), executes individual messages, verifies RMN curses, and initiates token releases/minting through Token Pools.                                                           |
+| Fee Quoter          | CCIP                       | Computes gas and token fees for cross-chain messages and maintains updated price data for tokens and destination chain gas costs.                                                                                                                                                                |
+| Token Pools         | External (Token Developer) | Specialized programs that handle cross-chain token transfers. Used by the Router for `lock_or_burn_tokens` operations on the source blockchain and by the OffRamp for `release_or_mint_tokens` operations on the destination blockchain.                                                         |
+| Token               | External (Token Developer) | A token program                                                                                                                                                                                                                                                                                  |
+| Receiver            | External (User/Program)    | A wallet or onchain program. If the receiver is a program implementing the `ccip_receive` function, it can handle data and/or tokens, but can only receive tokens to a PDA it has authority over. If it's a wallet, it can only receive tokens through its Associated Token Accounts (ATAs).     |
+| RMN Contract Remote | CCIP                       | An onchain program that maintains a registry of "curses" (blocklisted chains). Router, OffRamp, and Token Pools all verify with this program that relevant chains are not cursed before processing messages.                                                                                     |
 
 ## Typical Lifecycle of a Message
 
@@ -2070,9 +2078,9 @@ The FeeQuoter is a central component in Chainlink CCIP that maintains token and 
 - Token pools follow standard models (Lock/Release and Burn/Mint), with audited code available in the [CCIP repository](https://github.com/smartcontractkit/chainlink-ccip/tree/solana-v1.6.0/chains/solana/contracts/programs).
 - For tokens requiring bespoke logic before burn/mint/lock/release, custom pools can be built on top of the base pools. More details are available in the CCT documentation.
 
-## Risk Management Network
+## Risk Management Network (RMN) Contract
 
-The Risk Management Network (RMN) adds an additional security layer to CCIP by maintaining an onchain "cursing" mechanism. The RMN program enables verification of cross-chain messages and can halt message transmission for specific blockchains or globally when security threats are detected.
+The RMN Contract adds an additional security layer to CCIP by maintaining an onchain "cursing" mechanism. The RMN program enables verification of cross-chain messages and can halt message transmission for specific blockchains or globally when security threats are detected.
 
 ### Cursing Mechanism
 
@@ -2081,9 +2089,13 @@ The Risk Management Network (RMN) adds an additional security layer to CCIP by m
 - The owner calls `uncurse` to lift the curse when the threat is resolved, restoring normal CCIP operations.
 
 <Aside type="note">
-  Based on user demand, CCIP's architecture is evolving to provide enhanced support for modular security and
-  configurable compliance capabilities. As part of this transition, the Risk Management Network is being adapted to
-  align with this broader, more flexible architecture.
+  Based on user demand, CCIP’s architecture is evolving to provide enhanced support for configurable security,
+  compliance, and monitoring capabilities. As part of that ongoing evolution, the Risk Management Network’s automated
+  offchain role is no longer active in current CCIP deployments, but is expected to be offered as an optional validation
+  layer in future releases. The [onchain RMN contract](/ccip/concepts/architecture/onchain/evm/components#rmn-contract)
+  remains part of CCIP’s architecture as an emergency safeguard over certain per-chain or network-wide functions when
+  required. CCIP continues to provide robust risk management controls, including configurable rate limits, developer
+  token attestations, and monitoring capabilities.
 </Aside>
 
 ---
@@ -2408,14 +2420,18 @@ The `ccip::receiver_registry` is a module where developers can register their cu
 - Audited code for `lock_release_token_pool` and `burn_mint_token_pool` modules is available in the CCIP repository.
 - For tokens requiring custom logic before burn/mint/lock/release, developers may build custom pools on top of these base modules. More details are available in the CCT documentation.
 
-## RMN (Risk Management Network) Remote
+## RMN Contract Remote
 
 The `ccip::rmn_remote` module is a critical security component deployed on every CCIP-enabled chain. Various CCIP modules (like `OnRamp`, `OffRamp`, `Token Pools`) query this component to verify the status of other chains in the network. It maintains an onchain list of "cursed" (i.e., blocklisted) chains. If a source or destination chain is cursed, CCIP transactions involving that chain are halted.
 
 <Aside type="note">
-  Based on user demand, CCIP's architecture is evolving to provide enhanced support for modular security and
-  configurable compliance capabilities. As part of this transition, the Risk Management Network is being adapted to
-  align with this broader, more flexible architecture.
+  Based on user demand, CCIP’s architecture is evolving to provide enhanced support for configurable security,
+  compliance, and monitoring capabilities. As part of that ongoing evolution, the Risk Management Network’s automated
+  offchain role is no longer active in current CCIP deployments, but is expected to be offered as an optional validation
+  layer in future releases. The [onchain RMN contract](/ccip/concepts/architecture/onchain/evm/components#rmn-contract)
+  remains part of CCIP’s architecture as an emergency safeguard over certain per-chain or network-wide functions when
+  required. CCIP continues to provide robust risk management controls, including configurable rate limits, developer
+  token attestations, and monitoring capabilities.
 </Aside>
 
 ---
@@ -2657,9 +2673,9 @@ The `Router` contract is the single user-facing entry point for both sending and
 - Accepts `Router_CCIPReceiveConfirm` from any caller (permissionless at the Router level; authorization is enforced by the `ReceiveExecutor`) and forwards `OffRamp_CCIPReceiveConfirm` to the `OffRamp`.
 - Detects a bounced `CCIPReceive` from the Receiver and forwards `OffRamp_CCIPReceiveBounced` to the `OffRamp`.
 
-**As the RMN Remote**, the `Router`:
+**As the RMN Contract**, the `Router`:
 
-- Stores the set of cursed subjects (`CursedSubjects`) in its own storage, acting as the RMN Remote for the TON chain family. There is no separate RMN Remote contract.
+- Stores the set of cursed subjects (`CursedSubjects`) in its own storage, acting as the RMN Contract for the TON chain family. There is no separate RMN Contract contract.
 - Accepts `Router_RMNRemoteCurse` and `Router_RMNRemoteUncurse` messages exclusively from the authorized RMN admin (`Ownable2Step`-gated).
 - On each curse or un-curse operation, emits a `Cursed` or `Uncursed` chain log and updates the `forwardUpdates` set, then propagates `OffRamp_UpdateCursedSubjects` to every registered `OffRamp` address (one message per unique OffRamp). The `forwardUpdates` set is rebuilt automatically whenever the `onRamps`/`offRamps` maps change.
 - Accepts permissionless `Router_RMNRemoteVerifyNotCursed` queries and synchronously replies with whether the given subject is cursed.
@@ -2842,11 +2858,13 @@ CCIP's offchain architecture includes the following:
 - **Interaction Components**: Managing communication between the CCIP DONs.
 
 <Aside type="note">
-  Based on user demand, CCIP's architecture is evolving to provide enhanced support for modular security and
-  configurable compliance capabilities. As part of this transition, the Risk Management Network is being adapted to
-  align with this broader, more flexible architecture. Please see the [onchain
-  architecture](/ccip/concepts/architecture/onchain/evm/components#rmn-contract) for more information on the current
-  functionality of the Risk Management Network.
+  Based on user demand, CCIP’s architecture is evolving to provide enhanced support for configurable security,
+  compliance, and monitoring capabilities. As part of that ongoing evolution, the Risk Management Network’s automated
+  offchain role is no longer active in current CCIP deployments, but is expected to be offered as an optional validation
+  layer in future releases. The [onchain RMN contract](/ccip/concepts/architecture/onchain/evm/components#rmn-contract)
+  remains part of CCIP’s architecture as an emergency safeguard over certain per-chain or network-wide functions when
+  required. CCIP continues to provide robust risk management controls, including configurable rate limits, developer
+  token attestations, and monitoring capabilities.
 </Aside>
 
 ## Components
