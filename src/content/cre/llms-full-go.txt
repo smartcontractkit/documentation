@@ -538,7 +538,7 @@ This page provides detailed release notes for CRE. It includes information on ne
 
 **<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.9.0" target="_blank">CRE CLI version 1.9.0</a> is now available.**
 
-- **Browser-based OAuth for vault secrets**: `cre secrets create`, `cre secrets update`, `cre secrets delete`, and `cre secrets list` now use a browser-based OAuth (PKCE) flow to authorize Vault DON access. When you run a secrets operation, the CLI starts a local callback server, opens your browser to complete authorization, exchanges the code for a short-lived vault JWT, and submits your encrypted secrets directly to the Vault DON gateway — all automatically. Your existing CLI login session (`~/.cre/cre.yaml`) is not affected; the vault authorization uses a separate short-lived token. API key authentication is not supported for this flow; interactive login (`cre login`) is required. See [Secrets Management Commands](/cre/reference/cli/secrets) for details.
+- **Vault secrets authorization improvements**: `cre secrets create`, `cre secrets update`, `cre secrets delete`, and `cre secrets list` now submit encrypted secrets directly to the Vault DON gateway using a short-lived vault token scoped to the operation. Your workflow owner address is used to authorize access via an on-chain allowlist. Your existing CLI login session (`~/.cre/cre.yaml`) is not affected. See [Secrets Management Commands](/cre/reference/cli/secrets) for details.
 - **`--skip-type-checks` flag**: The `cre workflow build`, `cre workflow simulate`, `cre workflow deploy`, and `cre workflow hash` commands now accept a `--skip-type-checks` flag. When set, the CLI skips the TypeScript type-checking step during compilation. This can significantly speed up iteration in development, but should not be used for production builds where type safety is important. See [Workflow Commands](/cre/reference/cli/workflow) for the updated flag reference.
 
 **How to update:**
@@ -9391,14 +9391,13 @@ The `cre secrets` commands manage secrets stored in the Vault DON (Decentralized
 
 ## Authorization flow
 
-Starting with CLI v1.9.0, secrets operations use a **browser-based OAuth (PKCE) flow** to authorize Vault DON access:
+Secrets operations use your **workflow owner address** to authorize Vault DON access:
 
-1. You run a `cre secrets` command (e.g., `cre secrets create my-secrets.yaml`).
-2. The CLI starts a local callback server and opens your browser to a Vault authorization URL.
-3. You authenticate in the browser. When complete, the browser redirects back to the local callback.
-4. The CLI exchanges the authorization code for a short-lived vault JWT and submits your encrypted secrets directly to the Vault DON gateway (CLI v1.8.2+).
+1. The CLI verifies that your workflow owner address is linked to your account on-chain.
+2. The CLI submits an allowlist request transaction on the workflow registry chain (signed by your private key, or via multi-sig with `--unsigned`).
+3. Once the allowlist entry is confirmed, the CLI encrypts your secrets with the Vault master public key and submits them directly to the Vault DON gateway (CLI v1.8.2+).
 
-Your existing CLI login session (`~/.cre/cre.yaml`) is **not** affected — the vault authorization uses a separate short-lived token. **API key authentication is not supported** for this flow; you must be logged in with `cre login`.
+This requires a configured `workflow-owner-address` in your project and a linked workflow owner (see `cre account link-key`).
 
 ## Org-owned secrets
 
