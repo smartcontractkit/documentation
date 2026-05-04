@@ -316,7 +316,7 @@ These quotas apply to each individual workflow.
 
 | Quota Key                                                                                                                               | Description                                                     | Value     |
 | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | --------- |
-| <a href="#perworkflow-executionconcurrencylimit" id="perworkflow-executionconcurrencylimit">`PerWorkflow.ExecutionConcurrencyLimit`</a> | Maximum number of concurrent executions for a specific workflow | 5         |
+| <a href="#perworkflow-executionconcurrencylimit" id="perworkflow-executionconcurrencylimit">`PerWorkflow.ExecutionConcurrencyLimit`</a> | Maximum number of concurrent executions for a specific workflow | 10        |
 | <a href="#perworkflow-executiontimeout" id="perworkflow-executiontimeout">`PerWorkflow.ExecutionTimeout`</a>                            | Maximum total execution time for a single workflow run          | 5 minutes |
 | <a href="#perworkflow-wasmmemorylimit" id="perworkflow-wasmmemorylimit">`PerWorkflow.WASMMemoryLimit`</a>                               | Maximum memory allocated to a workflow                          | 100 MB    |
 | <a href="#perworkflow-executionresponselimit" id="perworkflow-executionresponselimit">`PerWorkflow.ExecutionResponseLimit`</a>          | Maximum size of the data a workflow can return                  | 100 KB    |
@@ -325,22 +325,23 @@ These quotas apply to each individual workflow.
 
 | Quota Key                                                                                                                                  | Description                                                                                            | Value     |
 | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ | --------- |
-| <a href="#perworkflow-capabilityconcurrencylimit" id="perworkflow-capabilityconcurrencylimit">`PerWorkflow.CapabilityConcurrencyLimit`</a> | Maximum concurrent capability calls (HTTP, EVM read/write, secrets) that can execute within a workflow | 3         |
+| <a href="#perworkflow-capabilityconcurrencylimit" id="perworkflow-capabilityconcurrencylimit">`PerWorkflow.CapabilityConcurrencyLimit`</a> | Maximum concurrent capability calls (HTTP, EVM read/write, secrets) that can execute within a workflow | 30        |
 | <a href="#perworkflow-capabilitycalltimeout" id="perworkflow-capabilitycalltimeout">`PerWorkflow.CapabilityCallTimeout`</a>                | Maximum time a single capability call can take to complete                                             | 3 minutes |
 
 ### Secrets quotas
 
 | Quota Key                                                                                                                         | Description                                                                                                                      | Value |
 | --------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----- |
-| <a href="#perworkflow-wasmsecreetssizelimit" id="perworkflow-wasmsecreetssizelimit">`PerWorkflow.WASMSecretsSizeLimit`</a>        | Maximum total size of secrets accessible to a workflow                                                                           | 1 MB  |
+| <a href="#perworkflow-wasmsecretssizelimit" id="perworkflow-wasmsecretssizelimit">`PerWorkflow.WASMSecretsSizeLimit`</a>          | Maximum total size of secrets accessible to a workflow                                                                           | 1 MB  |
 | <a href="#perworkflow-secretsconcurrencylimit" id="perworkflow-secretsconcurrencylimit">`PerWorkflow.SecretsConcurrencyLimit`</a> | Maximum number of secrets that can be fetched concurrently. [Learn how to fetch multiple secrets](/cre/guides/workflow/secrets). | 5     |
+| <a href="#perworkflow-secrets-calllimit" id="perworkflow-secrets-calllimit">`PerWorkflow.Secrets.CallLimit`</a>                   | Maximum number of secrets fetch calls per workflow execution                                                                     | 5     |
 
 ### Consensus quotas
 
 | Quota Key                                                                                                                                              | Description                                                      | Value |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- | ----- |
 | <a href="#perworkflow-consensus-observationsizelimit" id="perworkflow-consensus-observationsizelimit">`PerWorkflow.Consensus.ObservationSizeLimit`</a> | Maximum size of data that can be passed to consensus aggregation | 25 KB |
-| <a href="#perworkflow-consensus-calllimit" id="perworkflow-consensus-calllimit">`PerWorkflow.Consensus.CallLimit`</a>                                  | Maximum number of consensus calls per workflow execution         | 2,000 |
+| <a href="#perworkflow-consensus-calllimit" id="perworkflow-consensus-calllimit">`PerWorkflow.Consensus.CallLimit`</a>                                  | Maximum number of consensus calls per workflow execution         | 20    |
 
 ### Logging quotas
 
@@ -366,7 +367,7 @@ These quotas apply to each individual workflow.
 
 | Quota Key                                                                                                                   | Description                                    | Value                                  |
 | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | -------------------------------------- |
-| <a href="#perworkflow-httptrigger-ratelimit" id="perworkflow-httptrigger-ratelimit">`PerWorkflow.HTTPTrigger.RateLimit`</a> | Maximum rate at which an HTTP trigger can fire | Rate: 1 per 30 seconds <br /> Burst: 3 |
+| <a href="#perworkflow-httptrigger-ratelimit" id="perworkflow-httptrigger-ratelimit">`PerWorkflow.HTTPTrigger.RateLimit`</a> | Maximum rate at which an HTTP trigger can fire | Rate: 1 per 60 seconds <br /> Burst: 1 |
 
 ### EVM log trigger
 
@@ -383,7 +384,7 @@ These quotas apply to each individual workflow.
 
 | Quota Key                                                                                                                                                          | Description                                               | Value     |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------- | --------- |
-| <a href="#perworkflow-chainwrite-targetslimit" id="perworkflow-chainwrite-targetslimit">`PerWorkflow.ChainWrite.TargetsLimit`</a>                                  | Maximum number of destination chains for write operations | 15        |
+| <a href="#perworkflow-chainwrite-targetslimit" id="perworkflow-chainwrite-targetslimit">`PerWorkflow.ChainWrite.TargetsLimit`</a>                                  | Maximum number of destination chains for write operations | 10        |
 | <a href="#perworkflow-chainwrite-reportsizelimit" id="perworkflow-chainwrite-reportsizelimit">`PerWorkflow.ChainWrite.ReportSizeLimit`</a>                         | Maximum size of a report payload                          | 5 KB      |
 | <a href="#perworkflow-chainwrite-evm-transactiongaslimit" id="perworkflow-chainwrite-evm-transactiongaslimit">`PerWorkflow.ChainWrite.EVM.TransactionGasLimit`</a> | Gas quota per EVM transaction                             | 5,000,000 |
 
@@ -471,30 +472,20 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-04-24
+Last Updated: 2026-04-30
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
 
-## CLI v2.0.0 - Upcoming
-
-The next major CRE CLI release updates workflow configuration behavior for private registry deployments.
-
-- **Private registry by default for generated workflows**: New workflow targets generated by CRE CLI v2.0.0 include `deployment-registry: "private"` under `user-workflow`, so new deployments use the Chainlink-hosted private registry unless you choose another registry.
-- **Existing onchain workflows should pin the onchain registry**: Existing users whose workflows were deployed through the public onchain Workflow Registry should add `deployment-registry: "onchain:ethereum-mainnet"` under `user-workflow:` for each affected target before redeploying or updating. This keeps those workflows on the public onchain registry instead of moving management to the private registry.
-- **Migration error for older workflow files**: Existing `workflow.yaml` files created before `deployment-registry` existed may fail after upgrade with a clear error such as `"deployment-registry" is required in target "staging-settings"`. Existing deployed workflows continue running, but redeploy and workflow-management commands may require the config update. Use `deployment-registry: "private"` for Chainlink-hosted private registry management. See [Project Configuration](/cre/reference/project-configuration#3-2-workflow-configuration-workflow-yaml) for the field reference and [Deploying Workflows](/cre/guides/operations/deploying-workflows#migrate-an-existing-workflow) for the migration path.
-
-**How to update:**
-
-- **Automatic update**: When CLI v2.0.0 is available, the CLI will detect the newer version and prompt you to update. Run `cre update` to install it.
-- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
-
-## CLI v1.13.0 - April 28, 2026
+## CLI v1.13.0 - April 30, 2026
 
 **<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.13.0" target="_blank">CRE CLI version 1.13.0</a> is now available.**
 
-- **Privately managed workflows**: A new Chainlink-hosted **private** registry is now available alongside the onchain Workflow Registry. Workflows on the private registry are managed entirely with your CRE login session — no wallet linking, no gas, no Ethereum Mainnet RPC required. Pick a registry per target by setting `user-workflow.deployment-registry` in your `workflow.yaml` to either `"private"` or `"onchain:ethereum-mainnet"`. See [Choosing your registry](/cre/guides/operations/deploying-workflows#choosing-your-registry).
-- **Browser auth for secrets**: `cre secrets create | update | delete | list` now accept `--secrets-auth=browser` to authorize the operation through a browser-based OAuth flow against the Vault DON, using your CRE login session instead of a linked workflow owner address. See [Auth modes](/cre/reference/cli/secrets#auth-modes).
-- **Breaking change — default deployment registry**: The default value for `user-workflow.deployment-registry` is now `"private"`. Existing users whose workflows were deployed to the onchain Ethereum Mainnet registry must explicitly set `deployment-registry: "onchain:ethereum-mainnet"` under `user-workflow:` for each affected target before running `cre workflow deploy` again — otherwise the next deploy (including upserts to existing workflows) will be routed to the private registry. See [Project Configuration](/cre/reference/project-configuration#3-2-workflow-configuration-workflow-yaml) for the field reference and [Deploying Workflows](/cre/guides/operations/deploying-workflows#choosing-your-registry) for the migration path.
+- **Global `--non-interactive` mode**: All commands now accept `--non-interactive`. In CI/CD, scripts, and other headless environments, the CLI fails with an actionable error instead of waiting for prompts. Commands that require confirmation still require the relevant flag, such as `--yes` or `--force`. For authentication in headless environments, use `CRE_API_KEY` instead of `cre login`. See [Global flags](/cre/reference/cli#global-flags) and [Authentication Commands](/cre/reference/cli/authentication#api-key-authentication).
+- **`cre workflow get`**: New command that shows metadata for the workflow configured in `workflow.yaml`. By default, it filters results to the workflow's configured deployment registry; use `--all-registries` to inspect matches across registries. See [`cre workflow get`](/cre/reference/cli/workflow#cre-workflow-get) for details.
+- **JSON output for workflow lists**: `cre workflow list` now supports `--output json` for machine-readable output. You can combine it with `--registry` and `--include-deleted` for scripted workflow inventory checks. See [`cre workflow list`](/cre/reference/cli/workflow#cre-workflow-list) for details.
+- **Updated TypeScript SDK in templates**: Newly initialized TypeScript workflows now use `@chainlink/cre-sdk` v1.6.0, which includes custom Rust plugin support and non-determinism build warnings. See [TS SDK v1.6.0](#ts-sdk-v160---april-20-2026) for details.
+- **Production-aligned simulation limits**: The embedded default limits used by `cre workflow simulate --limits default` now match the current production quotas. Use `cre workflow limits export` to inspect the exact values enforced locally.
+- **Bug fix**: Fixed secrets digest formatting by removing the `0x` prefix before packing allowlist request data.
 
 **How to update:**
 
@@ -507,7 +498,7 @@ The next major CRE CLI release updates workflow configuration behavior for priva
 
 **<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.12.0" target="_blank">CRE CLI version 1.12.0</a> is now available.**
 
-- **`cre workflow list`**: New command that lists all workflows deployed for your organization. Use `--include-deleted` to include deleted workflows, or `--output json` for machine-readable output. See [`cre workflow list`](/cre/reference/cli/workflow#cre-workflow-list) for details.
+- **`cre workflow list`**: New command that lists all workflows deployed for your organization. Use `--include-deleted` to include deleted workflows. See [`cre workflow list`](/cre/reference/cli/workflow#cre-workflow-list) for details.
 - **Improved workflow output**: `cre workflow deploy`, `cre workflow activate`, `cre workflow pause`, and `cre workflow delete` now display a consistent details block on success, showing the registry, contract address, transaction hash, workflow name, and workflow ID.
 - **Bug fixes**: Fixed `--limits none` not fully disabling engine-level limit enforcement during simulation, and fixed an invalid owner-address bug that could occur during workflow operations.
 
@@ -570,7 +561,7 @@ The next major CRE CLI release updates workflow configuration behavior for priva
 
 **<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.9.0" target="_blank">CRE CLI version 1.9.0</a> is now available.**
 
-- **Browser-based OAuth for vault secrets**: `cre secrets create`, `cre secrets update`, `cre secrets delete`, and `cre secrets list` now use a browser-based OAuth (PKCE) flow to authorize Vault DON access. When you run a secrets operation, the CLI starts a local callback server, opens your browser to complete authorization, exchanges the code for a short-lived vault JWT, and submits your encrypted secrets directly to the Vault DON gateway — all automatically. Your existing CLI login session (`~/.cre/cre.yaml`) is not affected; the vault authorization uses a separate short-lived token. API key authentication is not supported for this flow; interactive login (`cre login`) is required. See [Secrets Management Commands](/cre/reference/cli/secrets) for details.
+- **Vault secrets authorization improvements**: `cre secrets create`, `cre secrets update`, `cre secrets delete`, and `cre secrets list` now submit encrypted secrets directly to the Vault DON gateway using a short-lived vault token scoped to the operation. Your workflow owner address is used to authorize access via an on-chain allowlist. Your existing CLI login session (`~/.cre/cre.yaml`) is not affected. See [Secrets Management Commands](/cre/reference/cli/secrets) for details.
 - **`--skip-type-checks` flag**: The `cre workflow build`, `cre workflow simulate`, `cre workflow deploy`, and `cre workflow hash` commands now accept a `--skip-type-checks` flag. When set, the CLI skips the TypeScript type-checking step during compilation. This can significantly speed up iteration in development, but should not be used for production builds where type safety is important. See [Workflow Commands](/cre/reference/cli/workflow) for the updated flag reference.
 
 **How to update:**
@@ -4910,7 +4901,7 @@ If your workflow requires higher limits than the defaults, you can request a lim
 
 # Deploying Workflows
 Source: https://docs.chain.link/cre/guides/operations/deploying-workflows
-Last Updated: 2026-03-17
+Last Updated: 2026-04-30
 
 <Aside type="note" title="Early Access required">
   Workflow deployment is currently in Early Access. Run `cre account access` or visit <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">app.chain.link/cre/request-access</a> to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
@@ -5310,12 +5301,12 @@ jobs:
         run: curl -sSL https://github.com/smartcontractkit/cre-cli/releases/latest/download/install.sh | sh
 
       - name: Build workflow
-        run: cre workflow build ./my-workflow --output ./my-workflow/binary.wasm
+        run: cre workflow build ./my-workflow --output ./my-workflow/binary.wasm --non-interactive
         env:
           CRE_API_KEY: ${{ secrets.CRE_API_KEY }}
 
       - name: Display content hashes
-        run: cre workflow hash ./my-workflow --wasm ./my-workflow/binary.wasm --target production-settings
+        run: cre workflow hash ./my-workflow --wasm ./my-workflow/binary.wasm --target production-settings --non-interactive
         env:
           CRE_API_KEY: ${{ secrets.CRE_API_KEY }}
           CRE_ETH_PRIVATE_KEY: ${{ secrets.CRE_ETH_PRIVATE_KEY }}
@@ -5342,7 +5333,7 @@ jobs:
           path: ./my-workflow
 
       - name: Deploy workflow
-        run: cre workflow deploy ./my-workflow --wasm ./my-workflow/binary.wasm --target production-settings --yes
+        run: cre workflow deploy ./my-workflow --wasm ./my-workflow/binary.wasm --target production-settings --yes --non-interactive
         env:
           CRE_API_KEY: ${{ secrets.CRE_API_KEY }}
           CRE_ETH_PRIVATE_KEY: ${{ secrets.CRE_ETH_PRIVATE_KEY }}
@@ -5351,7 +5342,7 @@ jobs:
 
 
 <Aside type="note" title="API key authentication">
-  Use `CRE_API_KEY` for non-interactive authentication in CI/CD pipelines instead of `cre login`. Create an API key from the CRE platform under **Organization → APIs**. See [Authentication](/cre/reference/cli/authentication#api-key-authentication) for setup instructions.
+  Use `CRE_API_KEY` for non-interactive authentication in CI/CD pipelines instead of `cre login`, and pass `--non-interactive` so commands fail instead of prompting. Create an API key from the CRE platform under **Organization → APIs**. See [Authentication](/cre/reference/cli/authentication#api-key-authentication) for setup instructions.
 </Aside>
 
 
@@ -8131,7 +8122,7 @@ See the [repository README](https://github.com/smartcontractkit/cre-gcp-predicti
 
 # CLI Reference
 Source: https://docs.chain.link/cre/reference/cli
-Last Updated: 2026-04-16
+Last Updated: 2026-04-30
 
 export const CRE_CLI_VERSION = VERSIONS["cre-cli"].LATEST
 
@@ -8151,9 +8142,16 @@ These flags can be used with any `cre` command.
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `-h, --help`         | Displays help information for any command                                                                                                                                                  |
 | `-e, --env`          | Specifies the path to your `.env` file (default: `".env"`)                                                                                                                                 |
+| `-E, --public-env`   | Specifies the path to your `.env.public` file, which contains shared, non-sensitive build configuration                                                                                    |
 | `-T, --target`       | Sets the target environment from your configuration files                                                                                                                                  |
 | `-R, --project-root` | Specifies the path to the project root directory. By default, the CLI automatically finds the project root by searching for `project.yaml` in the current directory and parent directories |
 | `-v, --verbose`      | Enables verbose logging to print `DEBUG` level logs                                                                                                                                        |
+| `--non-interactive`  | Fails instead of prompting; provide all required inputs with flags or environment variables. Use this for CI/CD, scripts, and other headless environments                                  |
+
+
+<Aside type="note" title="Non-interactive authentication">
+  `cre login` requires a browser and is not available in non-interactive mode. For CI/CD and other headless environments, set `CRE_API_KEY` instead. See [API key authentication](/cre/reference/cli/authentication#api-key-authentication).
+</Aside>
 
 ## Commands overview
 
@@ -8185,7 +8183,7 @@ Initialize projects and generate contract bindings (Go only).
 Manage your linked public key addresses and deployment access.
 
 - **`cre account access`** — Check deployment access status or submit an Early Access request
-- **`cre account link-key`** — Link a public key address for public onchain registry operations
+- **`cre account link-key`** — Link a public key address to your account
 - **`cre account list-key`** — List workflow owners linked to your organization
 - **`cre account unlink-key`** — Unlink a public key address from your account
 
@@ -8199,11 +8197,13 @@ Manage workflows throughout their entire lifecycle.
 
 - **`cre workflow build`** — Compile a workflow to a WASM binary (without uploading or deploying)
 - **`cre workflow simulate`** — Compile and execute workflows in a local simulation environment
-- **`cre workflow hash`** — Display content hashes for a workflow's binary and config (matches the workflow ID)
-- **`cre workflow deploy`** — Deploy a workflow to the registry selected by `deployment-registry`
-- **`cre workflow activate`** — Activate a workflow in its configured registry
-- **`cre workflow pause`** — Pause a workflow in its configured registry
-- **`cre workflow delete`** — Delete all versions of a workflow from its configured registry
+- **`cre workflow hash`** — Display content hashes for a workflow's binary and config (matches the onchain workflow ID)
+- **`cre workflow deploy`** — Deploy a workflow to the Workflow Registry contract
+- **`cre workflow activate`** — Activate a workflow on the Workflow Registry contract
+- **`cre workflow pause`** — Pause a workflow on the Workflow Registry contract
+- **`cre workflow delete`** — Delete all versions of a workflow from the Workflow Registry
+- **`cre workflow list`** — List workflows deployed for your organization; use `--output json` for scripts
+- **`cre workflow get`** — Show metadata for the workflow configured in `workflow.yaml`
 - **`cre workflow custom-build`** — Convert a workflow to use a custom self-compiled WASM build
 
 [View workflow commands →](/cre/reference/cli/workflow)
@@ -8227,7 +8227,7 @@ Manage secrets stored in the Vault DON for use in your workflows.
 
 Inspect the workflow registries available to your organization. A workflow registry is the system that tracks which workflows are registered to your organization and makes them available to the Chainlink DON for execution.
 
-- **`cre registry list`** — Display the registries configured for your organization, including type and onchain address
+- **`cre registry list`** — Display the registries configured for your organization, including type and on-chain address
 
 [View registry commands →](/cre/reference/cli/registry)
 
@@ -8265,6 +8265,7 @@ The typical workflow development process uses these commands in sequence:
 5. **`cre workflow hash`** — (Optional) Inspect content hashes before deploying
 6. **`cre workflow deploy`** — Deploy your workflow to the registry
 7. **`cre workflow activate`** / **`cre workflow pause`** — Control workflow execution
+8. **`cre workflow list`** / **`cre workflow get`** — Inspect deployed workflow metadata
 
 ## Learn more
 
@@ -8276,7 +8277,7 @@ The typical workflow development process uses these commands in sequence:
 
 # Authentication Commands
 Source: https://docs.chain.link/cre/reference/cli/authentication
-Last Updated: 2026-03-26
+Last Updated: 2026-04-30
 
 The CRE CLI supports two authentication methods:
 
@@ -8288,6 +8289,8 @@ The CRE CLI supports two authentication methods:
 ### `cre login`
 
 Starts the interactive authentication flow. This command opens your browser for user login, saves your credentials locally to `~/.cre/cre.yaml`, and **fetches your tenant context** from the CRE platform. That response is cached per CRE environment (for example `PRODUCTION`) in **`~/.cre/context.yaml`** — a registry manifest that includes items such as your vault gateway URL, workflow registries, and which secrets authentication flows each registry supports. See [Tenant context cache](#tenant-context-cache) below.
+
+`cre login` requires a browser and is not available in `--non-interactive` mode. For CI/CD pipelines and other headless environments, use `CRE_API_KEY` instead.
 
 **Usage:**
 
@@ -8363,7 +8366,7 @@ cre whoami
 
 When `CRE_API_KEY` is set, the CLI skips the browser-based login flow entirely. All commands that require authentication (deploying, managing workflows, etc.) will use the API key. The CLI still **ensures tenant context** is available (fetching or refreshing `~/.cre/context.yaml` as needed) so your session matches the platform configuration for that key.
 
-In a CI/CD pipeline, configure `CRE_API_KEY` as a secret environment variable in your platform and run CLI commands as usual.
+In a CI/CD pipeline, configure `CRE_API_KEY` as a secret environment variable in your platform and pass [`--non-interactive`](/cre/reference/cli#global-flags) to fail immediately if a command would otherwise prompt for input.
 
 ## Tenant context cache
 
@@ -8627,9 +8630,14 @@ When you run this command, the CLI will:
 
 # Workflow Commands
 Source: https://docs.chain.link/cre/reference/cli/workflow
-Last Updated: 2026-04-24
+Last Updated: 2026-04-30
 
 The `cre workflow` commands manage workflows throughout their entire lifecycle, from local testing to deployment and ongoing management.
+
+
+<Aside type="note" title="Global flags">
+  All `cre` commands support [global flags](/cre/reference/cli#global-flags), including `--env`, `--public-env`, `--target`, `--project-root`, `--verbose`, and `--non-interactive`.
+</Aside>
 
 ## `cre workflow build`
 
@@ -8934,7 +8942,7 @@ For more details, see [Deleting Workflows](/cre/guides/operations/deleting-workf
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Lists all workflows deployed for your organization. Deleted workflows are hidden by default.
+Lists workflows deployed for your organization across registries. Deleted workflows are hidden by default.
 
 **Usage:**
 
@@ -8969,6 +8977,76 @@ cre workflow list [flags]
   ```bash
   cre workflow list --output json > workflows.json
   ```
+
+**JSON output fields:**
+
+| Field             | Description                                                                  |
+| ----------------- | ---------------------------------------------------------------------------- |
+| `name`            | Workflow name                                                                |
+| `workflowId`      | Workflow ID                                                                  |
+| `ownerAddress`    | Workflow owner address                                                       |
+| `status`          | Current workflow status                                                      |
+| `registry`        | Registry ID, or the workflow source when no registry match is available      |
+| `contractAddress` | Workflow registry contract address, when available for the resolved registry |
+
+**Example JSON output:**
+
+```json
+[
+  {
+    "name": "my-workflow",
+    "workflowId": "00ab...1234",
+    "ownerAddress": "0x1234...abcd",
+    "status": "ACTIVE",
+    "registry": "onchain:ethereum-mainnet",
+    "contractAddress": "0x5678...ef01"
+  }
+]
+```
+
+***
+
+## `cre workflow get`
+
+<Aside type="note" title="Authentication required">
+  Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
+  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
+  in with the CLI](/cre/account/cli-login) for further details.
+</Aside>
+
+Shows metadata for the workflow configured in `workflow.yaml`. The command reads the workflow name for the selected `--target`, searches the CRE platform for matching workflow metadata, and filters results to the workflow's configured `deployment-registry` by default.
+
+**Usage:**
+
+```bash
+cre workflow get <workflow-folder-path> [flags]
+```
+
+**Arguments:**
+
+- `<workflow-folder-path>` — (Required) Path to the workflow folder (e.g., `./my-workflow`)
+
+**Flags:**
+
+| Flag               | Description                                                              |
+| ------------------ | ------------------------------------------------------------------------ |
+| `--all-registries` | Do not filter results by the workflow's configured `deployment-registry` |
+
+**Examples:**
+
+- Show metadata for the workflow configured for a target
+
+  ```bash
+  cre workflow get ./my-workflow --target staging-settings
+  ```
+
+- Search across all registries in your organization
+
+  ```bash
+  cre workflow get ./my-workflow --target staging-settings --all-registries
+  ```
+
+The command prints the same human-readable workflow metadata fields as [`cre workflow list`](#cre-workflow-list): workflow name, workflow ID, owner address, status, registry, and registry address when available.
 
 ***
 
@@ -9122,7 +9200,8 @@ The typical workflow lifecycle uses these commands in sequence:
 7. **`cre workflow pause`** / **`cre workflow activate`** — Control workflow execution as needed
 8. **`cre workflow deploy`** (again) — Deploy updates (replaces the existing workflow)
 9. **`cre workflow list`** — (Optional) View all deployed workflows for your organization
-10. **`cre workflow delete`** — Remove the workflow when no longer needed
+10. **`cre workflow get`** — (Optional) Inspect metadata for the workflow configured in `workflow.yaml`
+11. **`cre workflow delete`** — Remove the workflow when no longer needed
 
 ## Learn more
 
@@ -9221,14 +9300,13 @@ Pass `--secrets-auth=browser` on any of `cre secrets create | update | delete | 
 
 ## Authorization flow
 
-Starting with CLI v1.9.0, secrets operations use a **browser-based OAuth (PKCE) flow** to authorize Vault DON access:
+Secrets operations use your **workflow owner address** to authorize Vault DON access:
 
-1. You run a `cre secrets` command (e.g., `cre secrets create my-secrets.yaml`).
-2. The CLI starts a local callback server and opens your browser to a Vault authorization URL.
-3. You authenticate in the browser. When complete, the browser redirects back to the local callback.
-4. The CLI exchanges the authorization code for a short-lived vault JWT and submits your encrypted secrets directly to the Vault DON gateway (CLI v1.8.2+).
+1. The CLI verifies that your workflow owner address is linked to your account on-chain.
+2. The CLI submits an allowlist request transaction on the workflow registry chain (signed by your private key, or via multi-sig with `--unsigned`).
+3. Once the allowlist entry is confirmed, the CLI encrypts your secrets with the Vault master public key and submits them directly to the Vault DON gateway (CLI v1.8.2+).
 
-Your existing CLI login session (`~/.cre/cre.yaml`) is **not** affected — the vault authorization uses a separate short-lived token. **API key authentication is not supported** for this flow; you must be logged in with `cre login`.
+This requires a configured `workflow-owner-address` in your project and a linked workflow owner (see `cre account link-key`).
 
 ## Org-owned secrets
 
