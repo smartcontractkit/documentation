@@ -101,7 +101,7 @@ This pause mechanism ensures price continuity during corporate actions. For exam
 The token price remains continuous at $200 throughout the event, even though the underlying equity market price dropped from $200 to $20.
 
 <Aside type="note">
-  When the `SyntheticSharesOracle` contract returns `paused = true`, the Ondo Finance Global Markets (GM) feed freezes at the last known good
+  When the `SyntheticSharesOracle` contract returns `paused = true`, the Chainlink feed freezes at the last known good
   price. Integrators should be aware that during pause windows:
 
 - The feed will not update until manually unpaused
@@ -109,22 +109,6 @@ The token price remains continuous at $200 throughout the event, even though the
 - A minimum pause duration (at least 10 minutes) is enforced to prevent premature unpausing
 
 </Aside>
-
-### Verification before unpausing
-
-Before an Ondo Finance Global Markets (GM) feed is unpaused after a large corporate action, Ondo verifies that the post-corporate-action equity price and staged `sValue` are aligned so the next published value remains continuous.
-
-**Where the equity price comes from:** the underlying equity leg is the same Data Streams 24/5 US equity input the DON already uses in the [Total Return Value](#total-return-value-calculation) formula. See the official list of the [24/5 equity streams](/data-streams/rwa-streams?show24x5=true&page=1), and [learn more about how market data is sourced for tokenized equity feed calculation](/data-feeds/tokenized-equity-feeds#how-is-market-data-sourced-for-tokenized-equity-feed-calculation).
-
-For each Ondo Finance Global Markets (GM) tokenized equity feed, this check uses the stream and time segment configured for that product (the value the feed pipeline would read as the stock leg for the current window), _not_ an ad hoc quote from a different venue.
-
-1. Take the new `sValue` that is staged for go-live (the post–corporate-action multiplier).
-1. Read the current equity market price from that same Data Streams 24/5 input, for the appropriate session (regular, pre-market, post-market, or overnight), the same way the feed prices that window.
-1. Multiply: `new sValue` × that current equity price. That product is the implied token (total return) value the feed would publish if it unpaused _now_.
-1. Compare that implied value to the **token price at freeze** (the last good, frozen feed value from when the pause took effect). They should match, or be treated as aligned only within whatever tolerance Ondo defines, because correct coordination means the post–corporate-action stock price and the new `sValue` should combine to the same onchain token price as at the freeze, preserving continuity.
-
-- **If that equality holds** (within Ondo's tolerance), the feed can be unpaused according to the applicable release process and any other release gates.
-- **If it does not hold**, the equity input and the new `sValue` are not yet consistent with each other after the corporate action, so unpausing the feed would jump or misstate the level for integrators. The feed remains paused until the stock leg, `sValue`, or both are reconciled and the check passes.
 
 ## Example scenarios
 
@@ -168,6 +152,6 @@ This fail-safe behavior prevents incorrect token prices from being published whe
 
 Primary mint and redeem for Ondo Finance Global Markets (GM) tokenized equities can be permissioned, but once the tokens are onchain, anyone can hold them and anyone can liquidate positions that use the feed.
 
-Ondo Finance Global Markets (GM) feeds have [SVR](/data-feeds/svr-feeds) enabled even when the primary market is not public to all participants. The liquidator set includes teams that can also access primary mint and redeem when they need to. Permissioned mint and redeem concerns the primary market; tokens can still circulate onchain and positions that use the feed can still be liquidated outside that path.
+Most Ondo Finance Global Markets (GM) feeds have [SVR](/data-feeds/svr-feeds) enabled even when the primary market is not public to all participants. The liquidator set includes teams that can also access primary mint and redeem when they need to. Permissioned mint and redeem concerns the primary market; tokens can still circulate onchain and positions that use the feed can still be liquidated outside that path.
 
 For Oracle Extractable Value (OEV) and how SVR relates to standard feeds, use [SVR Feeds](/data-feeds/svr-feeds)—especially [Understanding MEV and OEV](/data-feeds/svr-feeds#understanding-mev-and-oev). To read answers from contracts, follow [Using Data Feeds](/data-feeds/using-data-feeds) and point at the SVR-enabled proxy address for your feed.
