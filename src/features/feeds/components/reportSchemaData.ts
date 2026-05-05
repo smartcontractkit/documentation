@@ -7,6 +7,8 @@ export interface SchemaField {
   field: string
   type: string
   description: string
+  /** Optional docs link rendered alongside the description (e.g. "Learn more") */
+  link?: { label: string; href: string }
 }
 
 export interface SchemaDefinition {
@@ -48,7 +50,12 @@ export const REPORT_SCHEMA_DEFINITIONS: Record<string, SchemaDefinition> = {
     url: "/data-streams/reference/report-schema-v3-dex",
     fields: [
       ...COMMON_FIELDS,
-      { field: "price", type: "int192", description: "DON consensus median DEX state price" },
+      {
+        field: "price",
+        type: "int192",
+        description: "DON consensus median DEX state price",
+        link: { label: "DEX State Price", href: "/data-streams/concepts/dex-state-price-streams" },
+      },
       { field: "bid", type: "int192", description: "N/A — equals price" },
       { field: "ask", type: "int192", description: "N/A — equals price" },
     ],
@@ -78,6 +85,7 @@ export const REPORT_SCHEMA_DEFINITIONS: Record<string, SchemaDefinition> = {
         field: "marketStatus",
         type: "uint32",
         description: "Market status: 0 (Unknown), 1 (Closed), 2 (Open)",
+        link: { label: "Market hours", href: "/data-streams/market-hours" },
       },
     ],
   },
@@ -117,6 +125,7 @@ export const REPORT_SCHEMA_DEFINITIONS: Record<string, SchemaDefinition> = {
         field: "marketStatus",
         type: "uint32",
         description: "Market status: 0 (Unknown), 1 (Closed), 2 (Open)",
+        link: { label: "Market hours", href: "/data-streams/market-hours" },
       },
       {
         field: "currentMultiplier",
@@ -181,6 +190,7 @@ export const REPORT_SCHEMA_DEFINITIONS: Record<string, SchemaDefinition> = {
         field: "marketStatus",
         type: "uint32",
         description: "Market status. Values vary by stream type — see full schema documentation for details.",
+        link: { label: "Market hours", href: "/data-streams/market-hours" },
       },
     ],
   },

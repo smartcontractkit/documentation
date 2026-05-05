@@ -128,7 +128,17 @@ const SchemaInlineExpander = ({ schemaDef }: { schemaDef: SchemaDefinition }) =>
                 <td>
                   <code>{f.type}</code>
                 </td>
-                <td>{f.description}</td>
+                <td>
+                  {f.description}
+                  {f.link && (
+                    <>
+                      {" — "}
+                      <a href={f.link.href} rel="noreferrer" target="_blank">
+                        {f.link.label}
+                      </a>
+                    </>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
