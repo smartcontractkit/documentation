@@ -571,7 +571,7 @@ export const StreamsNetworksData: NetworkData[] = [
   },
   {
     network: "Robinhood Chain",
-    logoUrl: "/assets/chains/ronin.svg",
+    logoUrl: "/assets/chains/robinhood-chain.svg",
     testnet: {
       label: "Robinhood Chain Testnet",
       verifierProxy: "0x72790f9eB82db492a7DDb6d2af22A270Dcc3Db64",

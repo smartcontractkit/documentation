@@ -5,6 +5,7 @@ import automationLogo from "../../../assets/product-logos/automation-logo.svg"
 import dataFeedsLogo from "../../../assets/product-logos/data-feeds-logo.svg"
 import dataStreamsLogo from "../../../assets/product-logos/data-streams-logo.svg"
 import creLogo from "../../../assets/product-logos/cre-logo.svg"
+import { c } from "node_modules/vite/dist/node/moduleRunnerTransport.d-DJ_mE5sf.js"
 
 export interface ProductData {
   learnMoreLink: string
@@ -50,7 +51,6 @@ export const productChainLinks: ProductChainLinks = {
       sonic: "/ccip/directory/mainnet/chain/sonic-mainnet",
       bob: "/ccip/directory/mainnet/chain/bitcoin-mainnet-bob-1",
       worldchain: "/ccip/directory/mainnet/chain/ethereum-mainnet-worldchain-1",
-      polygonzkevm: "/ccip/directory/mainnet/chain/ethereum-mainnet-polygon-zkevm-1",
       xlayer: "/ccip/directory/mainnet/chain/ethereum-mainnet-xlayer-1",
       ink: "/ccip/directory/mainnet/chain/ethereum-mainnet-ink-1",
       corn: "/ccip/directory/mainnet/chain/corn-mainnet",
@@ -109,6 +109,7 @@ export const productChainLinks: ProductChainLinks = {
       edge: "/ccip/directory/mainnet/chain/edge-mainnet",
       robinhood: "/ccip/directory/testnet/chain/robinhood-testnet",
       ton: "/ccip/directory/mainnet/chain/ton-mainnet",
+      creditcoin: "/ccip/directory/mainnet/chain/creditcoin-mainnet",
     },
   },
   CRE: {
@@ -152,7 +153,6 @@ export const productChainLinks: ProductChainLinks = {
       moonriver: "/data-feeds/price-feeds/addresses?page=1&network=moonriver#networks",
       optimism: "/data-feeds/price-feeds/addresses?page=1&network=optimism#networks",
       polygonkatana: "/data-feeds/price-feeds/addresses?page=1&network=polygonkatana#networks",
-      polygonzkevm: "/data-feeds/price-feeds/addresses?page=1&network=polygonzkevm#networks",
       polygon: "/data-feeds/price-feeds/addresses?page=1&network=polygon#networks",
       plasma: "/data-feeds/price-feeds/addresses?page=1&network=plasma#networks",
       ronin: "/data-feeds/price-feeds/addresses?page=1&network=ronin#networks",
@@ -253,7 +253,6 @@ export const productChainLinks: ProductChainLinks = {
       "gnosis-chain": "/chainlink-automation/overview/supported-networks#gnosis",
       optimism: "/chainlink-automation/overview/supported-networks#op",
       polygon: "/chainlink-automation/overview/supported-networks#polygon",
-      polygonzkevm: "/chainlink-automation/overview/supported-networks#polygon-zkevm",
       scroll: "/chainlink-automation/overview/supported-networks#scroll",
       zksync: "/chainlink-automation/overview/supported-networks#zksync",
     },
@@ -337,7 +336,6 @@ export const productChainLinks: ProductChainLinks = {
     plume: "/resources/link-token-contracts#plume",
     polygon: "/resources/link-token-contracts#polygon",
     polygonkatana: "/resources/link-token-contracts#polygon-katana",
-    polygonzkevm: "/resources/link-token-contracts#polygon-zkevm",
     robinhood: "/resources/link-token-contracts#robinhood-chain",
     ronin: "/resources/link-token-contracts#ronin",
     rootstock: "/resources/link-token-contracts#rootstock",
@@ -461,4 +459,5 @@ export const chainNames: Record<string, string> = {
   edge: "Edge",
   robinhood: "Robinhood Chain",
   ton: "TON",
+  creditcoin: "Creditcoin",
 }

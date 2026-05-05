@@ -576,6 +576,8 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
       return "TON_TESTNET"
     case "ton-mainnet":
       return "TON_MAINNET"
+    case "creditcoin-mainnet":
+      return "CREDITCOIN_MAINNET"
     default:
       throw Error(`Chain not found ${chainInRdd}`)
   }
@@ -931,6 +933,8 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "ton-testnet"
     case "TON_MAINNET":
       return "ton-mainnet"
+    case "CREDITCOIN_MAINNET":
+      return "creditcoin-mainnet"
     default:
       throw Error(`Chain not found ${supportedChain}`)
   }

@@ -5,12 +5,17 @@ title: "Workflow Commands"
 metadata:
   description: "Manage workflows with CLI: complete command reference for simulating, deploying, activating, pausing, and deleting workflows."
   datePublished: "2025-11-04"
-  lastModified: "2026-04-24"
+  lastModified: "2026-04-30"
 ---
 
 import { Aside } from "@components"
 
 The `cre workflow` commands manage workflows throughout their entire lifecycle, from local testing to deployment and ongoing management.
+
+{/* prettier-ignore */}
+<Aside type="note" title="Global flags">
+  All `cre` commands support [global flags](/cre/reference/cli#global-flags), including `--env`, `--public-env`, `--target`, `--project-root`, `--verbose`, and `--non-interactive`.
+</Aside>
 
 ## `cre workflow build`
 
@@ -316,7 +321,7 @@ For more details, see [Deleting Workflows](/cre/guides/operations/deleting-workf
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Lists all workflows deployed for your organization. Deleted workflows are hidden by default.
+Lists workflows deployed for your organization across registries. Deleted workflows are hidden by default.
 
 **Usage:**
 
@@ -351,6 +356,76 @@ cre workflow list [flags]
   ```bash
   cre workflow list --output json > workflows.json
   ```
+
+**JSON output fields:**
+
+| Field             | Description                                                                  |
+| ----------------- | ---------------------------------------------------------------------------- |
+| `name`            | Workflow name                                                                |
+| `workflowId`      | Workflow ID                                                                  |
+| `ownerAddress`    | Workflow owner address                                                       |
+| `status`          | Current workflow status                                                      |
+| `registry`        | Registry ID, or the workflow source when no registry match is available      |
+| `contractAddress` | Workflow registry contract address, when available for the resolved registry |
+
+**Example JSON output:**
+
+```json
+[
+  {
+    "name": "my-workflow",
+    "workflowId": "00ab...1234",
+    "ownerAddress": "0x1234...abcd",
+    "status": "ACTIVE",
+    "registry": "onchain:ethereum-mainnet",
+    "contractAddress": "0x5678...ef01"
+  }
+]
+```
+
+---
+
+## `cre workflow get`
+
+<Aside type="note" title="Authentication required">
+  Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
+  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
+  in with the CLI](/cre/account/cli-login) for further details.
+</Aside>
+
+Shows metadata for the workflow configured in `workflow.yaml`. The command reads the workflow name for the selected `--target`, searches the CRE platform for matching workflow metadata, and filters results to the workflow's configured `deployment-registry` by default.
+
+**Usage:**
+
+```bash
+cre workflow get <workflow-folder-path> [flags]
+```
+
+**Arguments:**
+
+- `<workflow-folder-path>` — (Required) Path to the workflow folder (e.g., `./my-workflow`)
+
+**Flags:**
+
+| <div style={{ width: "170px" }}>Flag</div> | Description                                                              |
+| ------------------------------------------ | ------------------------------------------------------------------------ |
+| `--all-registries`                         | Do not filter results by the workflow's configured `deployment-registry` |
+
+**Examples:**
+
+- Show metadata for the workflow configured for a target
+
+  ```bash
+  cre workflow get ./my-workflow --target staging-settings
+  ```
+
+- Search across all registries in your organization
+
+  ```bash
+  cre workflow get ./my-workflow --target staging-settings --all-registries
+  ```
+
+The command prints the same human-readable workflow metadata fields as [`cre workflow list`](#cre-workflow-list): workflow name, workflow ID, owner address, status, registry, and registry address when available.
 
 ---
 
@@ -504,6 +579,7 @@ The typical workflow lifecycle uses these commands in sequence:
 1. **`cre workflow pause`** / **`cre workflow activate`** — Control workflow execution as needed
 1. **`cre workflow deploy`** (again) — Deploy updates (replaces the existing workflow)
 1. **`cre workflow list`** — (Optional) View all deployed workflows for your organization
+1. **`cre workflow get`** — (Optional) Inspect metadata for the workflow configured in `workflow.yaml`
 1. **`cre workflow delete`** — Remove the workflow when no longer needed
 
 ## Learn more

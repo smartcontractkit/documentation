@@ -13,6 +13,7 @@ import { SIDEBAR } from "../config/sidebar.js"
 import type { SectionEntry, SectionContent } from "../config/sidebar.js"
 import fsSync from "fs"
 import { stripHighlightComments, unescapeMarkdown } from "../lib/markdown/index.js"
+import { REPORT_SCHEMA_DEFINITIONS } from "../features/feeds/components/reportSchemaData.js"
 
 interface MdxJsxAttribute {
   name: string
@@ -646,11 +647,50 @@ async function transformMarkdown(markdown: string, mdxAbsPath: string, targetLan
           }
         }
 
+        // Handle SchemaFieldsTable - expand to a markdown table from the shared schema data
+        if (
+          parent &&
+          typeof index === "number" &&
+          node.type === "mdxJsxFlowElement" &&
+          (node as MdxJsxNode).name === "SchemaFieldsTable"
+        ) {
+          const schemaAttr = (node as MdxJsxNode).attributes?.find((a) => a.name === "schema")
+          const schemaKey = typeof schemaAttr?.value === "string" ? schemaAttr.value : ""
+          const schemaDef = schemaKey ? REPORT_SCHEMA_DEFINITIONS[schemaKey] : undefined
+          if (schemaDef) {
+            const tableNode = {
+              type: "table",
+              align: [null, null, null],
+              children: [
+                {
+                  type: "tableRow",
+                  children: [
+                    { type: "tableCell", children: [{ type: "text", value: "Field" }] },
+                    { type: "tableCell", children: [{ type: "text", value: "Type" }] },
+                    { type: "tableCell", children: [{ type: "text", value: "Description" }] },
+                  ],
+                },
+                ...schemaDef.fields.map((f) => ({
+                  type: "tableRow",
+                  children: [
+                    { type: "tableCell", children: [{ type: "inlineCode", value: f.field }] },
+                    { type: "tableCell", children: [{ type: "inlineCode", value: f.type }] },
+                    { type: "tableCell", children: [{ type: "text", value: f.description }] },
+                  ],
+                })),
+              ],
+            }
+            parent.children.splice(index, 1, tableNode as Node)
+            return index + 1
+          }
+        }
+
         // Drop MDX/import/export nodes (but preserve Aside and CcipCommon components which are handled above)
         if (
           (node.type === "mdxJsxFlowElement" &&
             (node as MdxJsxNode).name !== "Aside" &&
-            (node as MdxJsxNode).name !== "CcipCommon") ||
+            (node as MdxJsxNode).name !== "CcipCommon" &&
+            (node as MdxJsxNode).name !== "SchemaFieldsTable") ||
           node.type === "mdxjsEsm" ||
           node.type === "import" ||
           node.type === "export"

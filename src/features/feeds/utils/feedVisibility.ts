@@ -1,4 +1,4 @@
-import { DataFeedType } from "../components/FeedList.tsx"
+import type { DataFeedType } from "../components/FeedList.tsx"
 
 /**
  * Helper function to extract schema version from feed metadata
@@ -95,8 +95,8 @@ export function isFeedVisible(
   // ===========================================================================
   // 2. Ecosystem-Specific Logic
   // ===========================================================================
-  // If we are in the "deprecating" ecosystem view, ONLY show deprecating feeds.
-  if (isDeprecating && feed.feedCategory !== "deprecating") return false
+  // If we are in the "deprecating" ecosystem view, ONLY show feeds with an RDD shutdown date.
+  if (isDeprecating && !feed.docs?.shutdownDate) return false
 
   let isVisible = false
 
@@ -216,4 +216,24 @@ export function isFeedVisible(
   }
 
   return true
+}
+
+export function networkHasVisibleFeeds(
+  network: any,
+  dataFeedType: DataFeedType,
+  ecosystem = "",
+  options: FeedVisibilityOptions = {}
+): boolean {
+  return network?.metadata?.some((feed: any) => isFeedVisible(feed, dataFeedType, ecosystem, options)) ?? false
+}
+
+export function chainHasVisibleFeeds(
+  chain: any,
+  dataFeedType: DataFeedType,
+  ecosystem = "",
+  options: FeedVisibilityOptions = {}
+): boolean {
+  return (
+    chain?.networks?.some((network: any) => networkHasVisibleFeeds(network, dataFeedType, ecosystem, options)) ?? false
+  )
 }

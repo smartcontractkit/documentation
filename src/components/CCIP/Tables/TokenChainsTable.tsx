@@ -23,6 +23,7 @@ interface TableProps {
     tokenAddress: string
     tokenPoolType: PoolType
     tokenPoolAddress: string
+    tokenPoolVersion: string
     explorer: ExplorerInfo
   }[]
   token: {

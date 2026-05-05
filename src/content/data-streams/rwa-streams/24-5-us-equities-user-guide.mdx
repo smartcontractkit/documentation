@@ -156,6 +156,8 @@ Once the overnight venue starts publishing its own quotes, the data will update 
 
 Users relying on bid/ask data during early overnight hours should be aware of this carryover behavior and implement appropriate safeguards, such as checking `lastSeenTimestampNs` for staleness or widening risk parameters during overnight session transitions.
 
+Separately, the overnight stream can occasionally surface **atypical `mid` values**—including **zero**—while timestamps still update. Treat unexpected zeros or discontinuities as unsafe inputs unless confirmed against your reference logic; see [Single Provider for Extended & Overnight Data](#single-provider-for-extended--overnight-data).
+
 ##### Mitigation
 
 Consumers must have fallback logic in place when the data is stale. Potential actions include:
@@ -344,16 +346,19 @@ In the following sections, we outline key risks and recommended mitigation strat
 
 Extended and overnight session price feeds are currently sourced from a single data provider, making these sessions less reliable than the regular hours price feed which is multi-sourced.
 
-Unlike regular hours where multiple independent sources cross-validate each other, a single provider means there is no redundant check on individual quote quality. This creates two distinct risks:
+Unlike regular hours where multiple independent sources cross-validate each other, a single provider means there is no redundant check on individual quote quality. The following risks are closely related:
 
 - **Provider outage or disruption:** If the provider experiences downtime, technical failures, or connectivity disruption, the feed may flatline or report highly inaccurate figures, which can prevent users from reacting to real price movements. Such issues may lead to mispricing, failed liquidations, and potential bad debt accumulation.
 - **Erroneous individual quotes:** Even when the provider is operational, it may publish a single bid or ask quote that is significantly off from the prevailing market price — for example, a bid price printing far below the previous in-session price. Because there is no second source to cross-validate against, this outlier quote directly distorts the mid-price calculation, creating a large artificial price move.
+
+**Atypical `mid` values (including zero):** In edge cases—most often during **overnight** or other thin-liquidity windows—the reported `mid` can be **zero** or otherwise not a valid economic reference, even when `lastSeenTimestampNs` is advancing. This is a different failure mode from staleness: the stream can look “fresh” while the numeric answer is unsafe for automated risk or execution. **Validate** `mid` (non-zero when required for your model, bounds vs. prior observations, spread plausibility) before using it for liquidations, collateral, or other critical paths.
 
 ##### Mitigation
 
 Consumers should not rely on the staleness indicator alone. A feed can be actively updating with a technically fresh timestamp while still publishing an incorrect mid price derived from a single outlier quote. Recommended safeguards include:
 
 - **Monitor bid/ask spread:** A sudden, significant widening of the spread between `bid` and `ask` is a strong indicator that a single outlier quote has distorted the mid-price. Implement a maximum spread threshold — for example, if `(ask - bid) / mid` exceeds a percentage beyond a configured threshold, treat the price as unreliable and restrict or pause exposure accordingly.
+- **Implement value-level checks on `mid`:** Reject or treat as invalid **zero** and other out-of-range answers; compare against your previous accepted tick and configured bands. Apply these checks especially to **Overnight Hours** (and extended-hours) reports, where single-provider risk is highest.
 - **Implement price deviation checks:** Compare the current mid-price against a reference (e.g., the previous valid price or a short-term moving average) and trigger a circuit breaker if the move exceeds a configured threshold.
 - **Do not use data when `marketStatus` is `closed`:** When the market is closed, data providers may perform maintenance, which can result in stale or incorrect prices being published. Consuming or acting on feed data during a closed market status is not recommended — pause or restrict all activity until the market reopens and a valid `open` status is confirmed.
 - **Check staleness via `lastSeenTimestampNs`:** Detect when data stops updating entirely, which is a separate but complementary signal to the above.

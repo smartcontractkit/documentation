@@ -185,6 +185,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   ROBINHOOD_TESTNET: () => new JsonRpcProvider("https://rpc.testnet.chain.robinhood.com"),
   TON_TESTNET: () => new JsonRpcProvider("https://ton-testnet.api.onfinality.io/public"),
   TON_MAINNET: () => new JsonRpcProvider("https://ton.api.onfinality.io/public"),
+  CREDITCOIN_MAINNET: () => new JsonRpcProvider("https://mainnet3.creditcoin.network"),
 }
 
 export const getRpcUrlForChain = (chain: SupportedChain): string => {

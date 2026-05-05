@@ -3871,7 +3871,7 @@ Bounded Market Price Feeds are a specific category of Market Price Feeds that in
 
 For example, a Bounded Market Price Feed for a stablecoin would include an upper bound that caps the on-chain reported price at a pre-defined maximum (e.g., $1.05), even during edge cases like market dislocations where the stablecoin trades higher than the cap. In such cases, the price will not be reported on-chain. Instead, the most recently written on-chain price will be the value returned by calling [latestRoundData](https://docs.chain.link/data-feeds/api-reference#latestrounddata) on the feed’s [proxy address](https://docs.chain.link/data-feeds#single-value-feed-components). This helps prevent extreme or sustained premium pricing from being reported. These bounds are designed to provide guardrails for assets where structural deviations may introduce elevated risk for feed consumers. Note that a Bounded Market Price Feed for a stablecoin would not include a lower bound for the on-chain reported price.
 
-In rare circumstances, the fundamental value of an asset underlying a Bounded Market Price Feed, such as a stablecoin, may materially change. In such a case, the predefined bound(s) associated with a Bounded Market Price Feed may be adjusted or removed following advanced notice to consumers of such Bounded Market Price Feed.
+In rare circumstances, the fundamental value of an asset underlying a Bounded Market Price Feed, such as a stablecoin, may materially change. In such a case, the predefined bound(s) associated with a Bounded Market Price Feed may be adjusted or removed following an update to Chainlink's [Changelog](https://dev.chain.link/changelog).
 
 Users must be aware that Bounded Market Price Feeds have unique risk considerations. Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and that the operation and performance of Bounded Market Price Feeds matches expectations. If your use case requires the use of a non-Bounded Market Price Feed and one does not exist, contact us at [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
 
@@ -6616,7 +6616,7 @@ Bidding for bundle events is very similar to single transaction events. As a sea
 #### 8. Next Steps for Searchers
 
 1. **Set Up Your Searcher Node**
-   - Integrate with [Flashbots MEV-Share](https://docs.flashbots.net/) to read private transactions.
+   - Integrate with [Flashbots MEV-Share](/data-feeds/svr-feeds/searcher-onboarding-ethereum) to read private transactions.
    - Filter for calls matching function selector `6fadcf72` directed at the correct contract address.
 
 2. **Test Your Bundles**
@@ -6745,10 +6745,13 @@ Extended and overnight session price data is sourced from a more limited number 
 
 If providers experience downtime, technical failures, or connectivity disruption, the feed may flatline or report stale values. Such issues may lead to mispricing, failed liquidations, and potential bad debt accumulation.
 
+**Overnight and extended sessions** carry additional nuance: liquidity is thinner and fewer venues contribute data. In those conditions the feed may continue to update while surfacing **atypical numeric values**—including, in edge cases, **a reported price of zero** or other answers that are not economically meaningful as a reference price for the token. That behavior is distinct from staleness (fresh timestamps can accompany unsafe numbers). **Treat unexpected zeros, abrupt discontinuities, or values outside plausible bands as invalid for automated risk decisions** unless you independently confirm them against issuer methodology, recent observations, or supplementary market data.
+
 #### Mitigation
 
 - Implement staleness detection by monitoring the feed's last update timestamp
 - Define protocol behavior for when data stops updating (pause operations, use bounded trading ranges, or implement fallback logic)
+- Add **value-level validation**: enforce minimum and maximum bounds, compare against recent ticks for continuity, and specify explicit fallback behavior for **zero**, out-of-range answers, or sudden jumps during overnight windows
 - Consider restricting high-risk operations (large liquidations, new positions) during extended and overnight sessions
 
 ### Structural illiquidity during extended hours

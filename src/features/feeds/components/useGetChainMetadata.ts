@@ -2,8 +2,14 @@ import { useEffect, useState } from "preact/hooks"
 import { ChainMetadata, getChainMetadata, mergeWithMVRFeeds } from "../../data/api/index.ts"
 import { Chain, CHAINS, POR_MVR_FEEDS_URL } from "~/features/data/chains.ts"
 
-export function useGetChainMetadata(chain: Chain, initialCache?: ChainMetadata) {
-  const [cache, setCache] = useState(initialCache ?? { [chain.page]: chain })
+export function useGetChainMetadata(
+  chain: Chain,
+  initialChainMetadata?: ChainMetadata,
+  initialMetadataCache?: Record<string, ChainMetadata>
+) {
+  const [cache, setCache] = useState<Record<string, any>>(
+    initialMetadataCache ?? (initialChainMetadata ? { [chain.page]: initialChainMetadata } : { [chain.page]: chain })
+  )
   const [error, setError] = useState({ [chain.page]: false })
   const [loading, setLoading] = useState({ [chain.page]: false })
   const processedData = cache[chain.page]
@@ -60,6 +66,7 @@ export function useGetChainMetadata(chain: Chain, initialCache?: ChainMetadata) 
 
   return {
     processedData,
+    cache,
     error: error[chain.page],
     loading: loading[chain.page],
   }

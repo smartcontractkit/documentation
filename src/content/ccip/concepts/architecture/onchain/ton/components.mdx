@@ -72,9 +72,9 @@ The `Router` contract is the single user-facing entry point for both sending and
 - Accepts `Router_CCIPReceiveConfirm` from any caller (permissionless at the Router level; authorization is enforced by the `ReceiveExecutor`) and forwards `OffRamp_CCIPReceiveConfirm` to the `OffRamp`.
 - Detects a bounced `CCIPReceive` from the Receiver and forwards `OffRamp_CCIPReceiveBounced` to the `OffRamp`.
 
-**As the RMN Remote**, the `Router`:
+**As the RMN Contract**, the `Router`:
 
-- Stores the set of cursed subjects (`CursedSubjects`) in its own storage, acting as the RMN Remote for the TON chain family. There is no separate RMN Remote contract.
+- Stores the set of cursed subjects (`CursedSubjects`) in its own storage, acting as the RMN Contract for the TON chain family. There is no separate RMN Contract contract.
 - Accepts `Router_RMNRemoteCurse` and `Router_RMNRemoteUncurse` messages exclusively from the authorized RMN admin (`Ownable2Step`-gated).
 - On each curse or un-curse operation, emits a `Cursed` or `Uncursed` chain log and updates the `forwardUpdates` set, then propagates `OffRamp_UpdateCursedSubjects` to every registered `OffRamp` address (one message per unique OffRamp). The `forwardUpdates` set is rebuilt automatically whenever the `onRamps`/`offRamps` maps change.
 - Accepts permissionless `Router_RMNRemoteVerifyNotCursed` queries and synchronously replies with whether the given subject is cursed.

@@ -1,6 +1,6 @@
-# This workflow automatically detects new data items (feeds, smart data, and streams)
+# This workflow automatically detects new data items (feeds, smart data, and streams) and data deprecation changes
 # It runs weekly on Sunday at 9 PM UTC and can also be triggered manually
-name: Detect New Data (Feeds/SmartData/Streams)
+name: Detect Data Changes (Feeds/SmartData/Streams/Deprecations)
 
 on:
   schedule:
@@ -59,10 +59,10 @@ jobs:
           echo "Cache miss, installing dependencies..."
           npm ci --prefer-offline --no-audit
 
-  # Second job: Main job to detect new data items and validate URLs
+  # Second job: Main job to detect new data items/deprecation changes and validate URLs
   detect-new-data:
     needs: setup
-    name: Check for New Data items
+    name: Check for Data Changes
     runs-on: ubuntu-latest
     steps:
       # Step 1: Check out repository code
@@ -97,17 +97,17 @@ jobs:
       - name: Ensure validate-urls.sh is executable
         run: chmod +x .github/scripts/data/validate-urls.sh
 
-      # Step 6: Run the data detection script to check for new data items
+      # Step 6: Run the data detection script to check for new data items/deprecation changes
       - name: Run data detection
         id: detect_data
         run: |
           .github/scripts/data/detect-data.sh check-data
           
-          # If we see temp/NEW_DATA_FOUND.json afterwards, we know new items were found:
+          # If we see temp/NEW_DATA_FOUND.json afterwards, we know data changes were found:
           if [ -f temp/NEW_DATA_FOUND.json ]; then
-            echo "new_data_found=true" >> $GITHUB_OUTPUT
+            echo "data_changes_found=true" >> $GITHUB_OUTPUT
           else
-            echo "new_data_found=false" >> $GITHUB_OUTPUT
+            echo "data_changes_found=false" >> $GITHUB_OUTPUT
           fi
         continue-on-error: true
 
@@ -132,15 +132,15 @@ jobs:
             gh-action-data
           assignees: khadni
 
-      # Step 10: Create a pull request if new data items were found
+      # Step 10: Create a pull request if new data items or deprecation changes were found
       - name: Commit & Create Pull Request
-        if: steps.detect_data.outputs.new_data_found == 'true'
+        if: steps.detect_data.outputs.data_changes_found == 'true'
         uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "Data: Update changelog for new data items"
+          commit-message: "Data: Update changelog for data changes"
           branch: "data-update-${{ github.run_id }}"
-          title: "Changelog Update: New data found"
+          title: "Changelog Update: Data changes found"
           body: "This PR was automatically created."
           add-paths: |
             .github/scripts/data/baseline.json
@@ -161,4 +161,3 @@ jobs:
             public/changelog.json
           retention-days: 14
           if-no-files-found: ignore
-
