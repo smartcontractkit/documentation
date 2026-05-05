@@ -10,6 +10,7 @@ import { CheckHeartbeat } from "./pause-notice/CheckHeartbeat.tsx"
 import { monitoredFeeds, FeedDataItem } from "~/features/data/index.ts"
 import { StreamsNetworksData, type NetworkData } from "../data/StreamsNetworksData.ts"
 import { FEED_CATEGORY_CONFIG } from "../../../db/feedCategories.js"
+import { REPORT_SCHEMA_DEFINITIONS, type SchemaDefinition } from "./reportSchemaData.ts"
 import { useBatchedFeedCategories, getFeedCategoryFromBatch, getNetworkIdentifier } from "./useBatchedFeedCategories.ts"
 import { isSharedSVR, isAaveSVR } from "~/features/feeds/utils/svrDetection.ts"
 import { ExpandableTableWrapper } from "./ExpandableTableWrapper.tsx"
@@ -74,6 +75,81 @@ const getSchemaVersion = (metadata: any): string | undefined => {
 
   return undefined
 }
+
+const getSchemaDefinitionKey = (metadata: any): string | undefined => {
+  const feedType = metadata.feedType || metadata.docs?.feedType
+
+  if (metadata.feedType === "Crypto-DEX") return "v3-dex"
+  if (metadata.feedType === "Crypto" && metadata.docs?.productTypeCode !== "ExRate") return "v3-crypto"
+
+  const schemaVersion = getSchemaVersion(metadata)
+  if (feedType === "Equities" || feedType === "Forex" || feedType === "Datalink") {
+    if (schemaVersion === "v11") return "v11"
+    if (schemaVersion === "v8") return "v8"
+    return undefined
+  }
+
+  if (metadata.docs?.productTypeCode === "ExRate") return "v7"
+  if (feedType === "Net Asset Value") return "v9"
+  if (feedType === "Tokenized Equities") return "v10"
+
+  return undefined
+}
+
+const SchemaInlineExpander = ({ schemaDef }: { schemaDef: SchemaDefinition }) => (
+  <div className={tableStyles.schemaRow}>
+    <div className={tableStyles.definitionGroup}>
+      <dt>
+        <span className="label">Report Schema:</span>
+      </dt>
+      <dd>
+        <a href={schemaDef.url} rel="noreferrer" target="_blank">
+          {schemaDef.label}
+        </a>
+      </dd>
+    </div>
+    <details className={tableStyles.schemaDetails}>
+      <summary>View {schemaDef.shortLabel} schema fields</summary>
+      <div className={tableStyles.schemaDetailsContent}>
+        <table className={tableStyles.schemaTable}>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            {schemaDef.fields.map((f) => (
+              <tr key={f.field}>
+                <td>
+                  <code>{f.field}</code>
+                </td>
+                <td>
+                  <code>{f.type}</code>
+                </td>
+                <td>
+                  {f.description}
+                  {f.link && (
+                    <>
+                      {" — "}
+                      <a href={f.link.href} rel="noreferrer" target="_blank">
+                        {f.link.label}
+                      </a>
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <a href={schemaDef.url} rel="noreferrer" target="_blank" className={tableStyles.schemaFullLink}>
+        View full schema documentation ↗
+      </a>
+    </details>
+  </div>
+)
 
 // Helper function to parse markdown links and render them
 const parseMarkdownLink = (text: string) => {
@@ -1212,114 +1288,11 @@ export const StreamsTr = ({ metadata, isMainnet }) => {
                 <dd>{metadata.decimals}</dd>
               </div>
             ) : null}
-            {metadata.feedType === "Crypto-DEX" && (
-              <div className={tableStyles.definitionGroup}>
-                <dt>
-                  <span className="label">Report Schema:</span>
-                </dt>
-                <dd>
-                  <a href="/data-streams/reference/report-schema-v3-dex" rel="noreferrer" target="_blank">
-                    Report Schema v3 (Crypto DEX)
-                  </a>
-                </dd>
-              </div>
-            )}
-            {metadata.feedType === "Crypto" && metadata.docs?.productTypeCode !== "ExRate" && (
-              <div className={tableStyles.definitionGroup}>
-                <dt>
-                  <span className="label">Report Schema:</span>
-                </dt>
-                <dd>
-                  <a href="/data-streams/reference/report-schema-v3" rel="noreferrer" target="_blank">
-                    Report Schema v3 (Crypto)
-                  </a>
-                </dd>
-              </div>
-            )}
             {(() => {
-              const schemaVersion = getSchemaVersion(metadata)
-              const feedType = metadata.feedType || metadata.docs?.feedType
-
-              // RWA streams (Equities, Forex, Datalink) - v8 or v11
-              if (feedType === "Equities" || feedType === "Forex" || feedType === "Datalink") {
-                if (schemaVersion === "v11") {
-                  return (
-                    <div className={tableStyles.definitionGroup}>
-                      <dt>
-                        <span className="label">Report Schema:</span>
-                      </dt>
-                      <dd>
-                        <a href="/data-streams/reference/report-schema-v11" rel="noreferrer" target="_blank">
-                          Report Schema v11 (RWA Advanced)
-                        </a>
-                      </dd>
-                    </div>
-                  )
-                } else if (schemaVersion === "v8") {
-                  return (
-                    <div className={tableStyles.definitionGroup}>
-                      <dt>
-                        <span className="label">Report Schema:</span>
-                      </dt>
-                      <dd>
-                        <a href="/data-streams/reference/report-schema-v8" rel="noreferrer" target="_blank">
-                          Report Schema v8 (RWA Standard)
-                        </a>
-                      </dd>
-                    </div>
-                  )
-                }
-              }
-
-              // Exchange Rate streams
-              if (metadata.docs?.productTypeCode === "ExRate") {
-                return (
-                  <div className={tableStyles.definitionGroup}>
-                    <dt>
-                      <span className="label">Report Schema:</span>
-                    </dt>
-                    <dd>
-                      <a href="/data-streams/reference/report-schema-v7" rel="noreferrer" target="_blank">
-                        Report Schema v7 (Redemption Rates)
-                      </a>
-                    </dd>
-                  </div>
-                )
-              }
-
-              // NAV streams
-              if (feedType === "Net Asset Value") {
-                return (
-                  <div className={tableStyles.definitionGroup}>
-                    <dt>
-                      <span className="label">Report Schema:</span>
-                    </dt>
-                    <dd>
-                      <a href="/data-streams/reference/report-schema-v9" rel="noreferrer" target="_blank">
-                        Report Schema v9 (NAV)
-                      </a>
-                    </dd>
-                  </div>
-                )
-              }
-
-              // Tokenized Equities streams
-              if (feedType === "Tokenized Equities") {
-                return (
-                  <div className={tableStyles.definitionGroup}>
-                    <dt>
-                      <span className="label">Report Schema:</span>
-                    </dt>
-                    <dd>
-                      <a href="/data-streams/reference/report-schema-v10" rel="noreferrer" target="_blank">
-                        Report Schema v10 (Tokenized Assets)
-                      </a>
-                    </dd>
-                  </div>
-                )
-              }
-
-              return null
+              const schemaKey = getSchemaDefinitionKey(metadata)
+              const schemaDef = schemaKey ? REPORT_SCHEMA_DEFINITIONS[schemaKey] : undefined
+              if (!schemaDef) return null
+              return <SchemaInlineExpander schemaDef={schemaDef} />
             })()}
           </dl>
         </div>

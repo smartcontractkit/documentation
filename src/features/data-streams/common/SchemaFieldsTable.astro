@@ -1,0 +1,45 @@
+---
+import { REPORT_SCHEMA_DEFINITIONS } from "../../feeds/components/reportSchemaData.ts"
+
+interface Props {
+  schema: string
+}
+
+const { schema } = Astro.props
+const schemaDef = REPORT_SCHEMA_DEFINITIONS[schema]
+---
+
+{
+  schemaDef && (
+    <table>
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {schemaDef.fields.map((f) => (
+          <tr>
+            <td>
+              <code>{f.field}</code>
+            </td>
+            <td>
+              <code>{f.type}</code>
+            </td>
+            <td>
+              {f.description}
+              {f.link && (
+                <>
+                  {" "}
+                  — <a href={f.link.href}>{f.link.label}</a>
+                </>
+              )}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
