@@ -9,6 +9,10 @@ const SITE_BASE = "https://docs.chain.link"
 const CONTENT_ROOT = path.resolve("src/content")
 const LLMS_DIRECTIVE = "> For the complete documentation index, see [llms.txt](/llms.txt)."
 
+const MARKDOWN_REDIRECTS: Record<string, string> = {
+  "ccip/tutorials/cross-chain-tokens": "ccip/tutorials/evm/cross-chain-tokens",
+}
+
 const markdownHeaders = {
   ...textPlainHeaders,
   "Content-Type": "text/markdown; charset=utf-8",
@@ -46,6 +50,12 @@ async function buildMarkdownResponseFromPath(
   request: Request,
   sourceCanonicalPathOverride?: string
 ): Promise<Response> {
+  const markdownRedirectTarget = MARKDOWN_REDIRECTS[resolvedPath]
+
+  if (markdownRedirectTarget) {
+    return buildMarkdownMovedResponse(resolvedPath, markdownRedirectTarget)
+  }
+
   const mdxAbsPath = await findContentFile(resolvedPath)
 
   if (!mdxAbsPath) {
@@ -182,6 +192,31 @@ async function resolveCreCanonicalMarkdownPath(cleanPath: string): Promise<CreRe
   }
 
   return { kind: "none" }
+}
+
+function buildMarkdownMovedResponse(sourcePath: string, targetPath: string): Response {
+  const sourceTitle = titleFromPath(sourcePath)
+  const targetTitle = titleFromPath(targetPath)
+  const sourceUrl = `${SITE_BASE}/${sourcePath}`
+  const targetUrl = `/${targetPath}.md`
+
+  return new Response(
+    [
+      `# ${sourceTitle}`,
+      `Source: ${sourceUrl}`,
+      "",
+      LLMS_DIRECTIVE,
+      "",
+      "This page has moved.",
+      "",
+      `Use the current documentation: [${targetTitle}](${targetUrl}).`,
+      "",
+    ].join("\n"),
+    {
+      status: 200,
+      headers: markdownHeaders,
+    }
+  )
 }
 
 function buildCreSelectorMarkdown(
