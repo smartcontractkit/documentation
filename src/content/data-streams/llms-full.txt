@@ -5382,6 +5382,22 @@ Chainlink Tokenized Asset Data Streams adhere to the report schema outlined belo
 
 ### Schema Fields
 
+| Field                   | Type      | Description                                                                    |
+| ----------------------- | --------- | ------------------------------------------------------------------------------ |
+| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                                    |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                           |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                             |
+| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)                                   |
+| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                                           |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                        |
+| `lastUpdateTimestamp`   | `uint64`  | Timestamp of the last valid price update (nanoseconds)                         |
+| `price`                 | `int192`  | Last traded price from the real-world equity market                            |
+| `marketStatus`          | `uint32`  | Market status: 0 (Unknown), 1 (Closed), 2 (Open)                               |
+| `currentMultiplier`     | `int192`  | Currently applied multiplier accounting for past corporate actions             |
+| `newMultiplier`         | `int192`  | Multiplier to be applied at activationDateTime (0 if none scheduled)           |
+| `activationDateTime`    | `uint32`  | When the next corporate action takes effect, in seconds (0 if none scheduled)  |
+| `tokenizedPrice`        | `int192`  | Aggregated price across centralized exchanges where the tokenized asset trades |
+
 
 <Aside type="danger" title="Weekend Usage Disclaimer">
   **The `price` field does not update during weekends** because the underlying real-world equity market is closed.
@@ -5411,6 +5427,23 @@ import { Aside } from "@components"
 Chainlink Data Streams that use the RWA Advanced (v11) schema adhere to the structure outlined below.
 
 ## Schema Fields
+
+| Field                   | Type      | Description                                                                            |
+| ----------------------- | --------- | -------------------------------------------------------------------------------------- |
+| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                                            |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                                   |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                                     |
+| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)                                           |
+| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                                                   |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                                |
+| `mid`                   | `int192`  | DON consensus mid-price                                                                |
+| `lastSeenTimestampNs`   | `uint64`  | Timestamp of the last update for the mid price only (nanoseconds)                      |
+| `bid`                   | `int192`  | Median bid price                                                                       |
+| `bidVolume`             | `int192`  | Volume at bid price                                                                    |
+| `ask`                   | `int192`  | Median ask price                                                                       |
+| `askVolume`             | `int192`  | Volume at ask price                                                                    |
+| `lastTradedPrice`       | `int192`  | Last traded price                                                                      |
+| `marketStatus`          | `uint32`  | Market status. Values vary by stream type — see full schema documentation for details. |
 
 ### Market Status Values
 
@@ -5484,6 +5517,18 @@ DEX State Price streams adhere to the report schema outlined below.
 
 ## Schema Fields
 
+| Field                   | Type      | Description                                          |
+| ----------------------- | --------- | ---------------------------------------------------- |
+| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed          |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds) |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)   |
+| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)         |
+| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                 |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)              |
+| `price`                 | `int192`  | DON consensus median DEX state price                 |
+| `bid`                   | `int192`  | N/A — equals price                                   |
+| `ask`                   | `int192`  | N/A — equals price                                   |
+
 **Notes**:
 
 - Future DEX State Price streams may use different report schemas.
@@ -5499,6 +5544,18 @@ Source: https://docs.chain.link/data-streams/reference/report-schema-v3
 Cryptocurrency streams adhere to the report schema outlined below.
 
 ## Schema Fields
+
+| Field                   | Type      | Description                                          |
+| ----------------------- | --------- | ---------------------------------------------------- |
+| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed          |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds) |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)   |
+| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)         |
+| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                 |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)              |
+| `price`                 | `int192`  | DON consensus median price                           |
+| `bid`                   | `int192`  | Simulated buy impact price at X% liquidity depth     |
+| `ask`                   | `int192`  | Simulated sell impact price at X% liquidity depth    |
 
 **Note**: Future Cryptocurrency streams may use different report schemas.
 
@@ -5545,6 +5602,16 @@ Exchange Rate streams adhere to the report schema outlined below.
 
 ## Schema Fields
 
+| Field                   | Type      | Description                                          |
+| ----------------------- | --------- | ---------------------------------------------------- |
+| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed          |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds) |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)   |
+| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)         |
+| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                 |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)              |
+| `exchangeRate`          | `int192`  | DON's consensus median exchange rate                 |
+
 **Notes**:
 
 - Future Exchange Rate streams may use different report schemas.
@@ -5559,6 +5626,18 @@ Source: https://docs.chain.link/data-streams/reference/report-schema-v8
 RWA streams adhere to the report schema outlined below.
 
 ### Schema Fields
+
+| Field                   | Type      | Description                                            |
+| ----------------------- | --------- | ------------------------------------------------------ |
+| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed            |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)   |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)     |
+| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)           |
+| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                   |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                |
+| `lastUpdateTimestamp`   | `uint64`  | Timestamp of the last valid price update (nanoseconds) |
+| `midPrice`              | `int192`  | DON's consensus median price                           |
+| `marketStatus`          | `uint32`  | Market status: 0 (Unknown), 1 (Closed), 2 (Open)       |
 
 **Notes**:
 
@@ -5578,6 +5657,19 @@ Source: https://docs.chain.link/data-streams/reference/report-schema-v9
 Chainlink SmartData streams adhere to the report schema outlined below.
 
 ### Schema Fields
+
+| Field                   | Type      | Description                                                              |
+| ----------------------- | --------- | ------------------------------------------------------------------------ |
+| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                              |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                     |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                       |
+| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)                             |
+| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                                     |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                  |
+| `navPerShare`           | `int192`  | DON consensus NAV Per Share value as reported by the Fund Manager        |
+| `navDate`               | `uint64`  | Timestamp for the NAV Report publication date (nanoseconds)              |
+| `aum`                   | `int192`  | DON consensus total USD value of Assets Under Management                 |
+| `ripcord`               | `uint32`  | Data provider pause status: 0 (normal), 1 (paused — do not consume data) |
 
 **Notes:**
 
