@@ -240,6 +240,10 @@ node <<EOF
       return \`The following \${productName} are scheduled for deprecation\${dateText}. See [\${linkText}](\${linkUrl}) for shutdown dates and the latest status:\`;
     }
 
+    // The external changelog renderer currently allowlists category values and
+    // drops "deprecation". Use "release" until that renderer maps deprecations.
+    const DEPRECATION_CHANGELOG_CATEGORY = "release";
+
     // === data-streams networks
     const STREAMS_NETWORKS = [
       "0g", "apechain", "adi", "aptos", "arbitrum", "arc", "avalanche", "base", "berachain", "bitlayer", "blast",
@@ -348,7 +352,7 @@ node <<EOF
       changelog.data = changelog.data.filter(entry => {
         if (
           entry.topic !== topic ||
-          entry.category !== "deprecation" ||
+          (entry.category !== "deprecation" && entry.title !== emptyEntryTitle) ||
           !Array.isArray(entry.relatedTokens)
         ) {
           return true;
@@ -453,7 +457,7 @@ node <<EOF
           ),
           networksList,
           deprecatingDataFeedTokens,
-          "deprecation"
+          DEPRECATION_CHANGELOG_CATEGORY
         )
       );
     }
@@ -474,7 +478,7 @@ node <<EOF
           ),
           networksList,
           deprecatingDataStreamTokens,
-          "deprecation"
+          DEPRECATION_CHANGELOG_CATEGORY
         )
       );
     }
