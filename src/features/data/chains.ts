@@ -438,7 +438,7 @@ export const CHAINS: Chain[] = [
     supportedFeatures: ["feeds"],
     networks: [
       {
-        name: "MegaETH Mainnet (Private)",
+        name: "MegaETH Mainnet",
         explorerUrl: "https://megaeth.blockscout.com/address/%s",
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-megaeth-mainnet.json",
@@ -828,7 +828,7 @@ export const CHAINS: Chain[] = [
   },
 ]
 
-/** Every mainnet in `CHAINS`, sorted by display name for the deprecating-feeds aggregate (same rows as per-chain pages). */
+/** Every mainnet in `CHAINS`, sorted by display name for aggregate feed views. */
 const allMainnetNetworksFromChains = (chains: Chain[]): ChainNetwork[] => {
   const mainnets: ChainNetwork[] = []
   for (const chain of chains) {

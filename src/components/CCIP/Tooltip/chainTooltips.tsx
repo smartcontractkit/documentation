@@ -56,6 +56,26 @@ export const CHAIN_TOOLTIPS: Record<string, ChainTooltipConfig> = {
     hoverable: true,
     hideDelay: 300,
   },
+  "memento-mainnet": {
+    content: (
+      <>
+        Memento is a private/permissioned network. Please make sure to understand the implications before proceeding.{" "}
+        <a href="/ccip/service-limits/evm#private--permissioned-network-limitations">Learn More</a>.
+      </>
+    ),
+    hoverable: true,
+    hideDelay: 300,
+  },
+  "nexon-mainnet-henesys": {
+    content: (
+      <>
+        Henesys is a private/permissioned network. Please make sure to understand the implications before proceeding.{" "}
+        <a href="/ccip/service-limits/evm#private--permissioned-network-limitations">Learn More</a>.
+      </>
+    ),
+    hoverable: true,
+    hideDelay: 300,
+  },
 
   // Example: Add more chains as needed
   // "abstract-mainnet": {

@@ -1,0 +1,57 @@
+---
+section: cre
+date: Last Modified
+title: "Registry Commands"
+metadata:
+  description: "Inspect workflow registries available to your organization with the cre registry commands."
+  datePublished: "2026-04-16"
+  lastModified: "2026-04-16"
+---
+
+import { Aside } from "@components"
+
+The `cre registry` commands let you view and inspect the workflow registries available to your organization.
+
+## What is a workflow registry?
+
+A **workflow registry** is the system that tracks which workflows are registered to your CRE organization and makes them available to the DON (Decentralized Oracle Network) for execution. The standard registry is a smart contract on Ethereum Mainnet — when you run `cre workflow deploy`, the CLI submits a transaction to that contract recording your workflow's name, owner, and artifact URLs, and the DON reads from it to discover and execute your workflow.
+
+When you log in with `cre login`, the CLI fetches your organization's registry configuration from the CRE platform and caches it locally in `~/.cre/context.yaml`. `cre registry list` reads from that cache and shows which registries your organization has access to.
+
+{/* prettier-ignore */}
+<Aside type="note" title="Authentication required">
+  Running `cre registry` commands requires you to be logged in. Run `cre whoami` to verify your session, or `cre login` to authenticate. See [Logging in with the CLI](/cre/account/cli-login) for details.
+</Aside>
+
+{/* prettier-ignore */}
+<Aside type="note" title="Global flags">
+  All `cre` commands support [global flags](/cre/reference/cli#global-flags) like `--env`, `--target`, `--project-root`, and `--verbose`.
+</Aside>
+
+## `cre registry list`
+
+Displays the workflow registries configured for your organization, including each registry's label, ID, type, and on-chain address (where applicable). Registry data is sourced from `~/.cre/context.yaml`, which is fetched from the CRE platform when you run `cre login`.
+
+**Usage:**
+
+```bash
+cre registry list
+```
+
+**Example output:**
+
+```
+Registries available to your organization
+
+ethereum-mainnet (0x4Ac5...E7e5)
+  ID:   onchain:ethereum-mainnet
+  Type: on-chain
+  Addr: 0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5
+```
+
+If no registries are found for your environment, the command prints a warning and exits cleanly.
+
+## Learn more
+
+- [Deploying Workflows](/cre/guides/operations/deploying-workflows) — End-to-end deployment guide
+- [Authentication](/cre/reference/cli/authentication) — Managing your CLI login session and tenant context cache

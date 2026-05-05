@@ -1,0 +1,76 @@
+---
+section: ace
+title: "VolumeRatePolicy"
+date: Last Modified
+metadata:
+  description: "VolumeRatePolicy reference: enforces per-account cumulative volume caps within rolling time windows. Configuration, runtime behavior, and use cases."
+  datePublished: "2026-04-20"
+  lastModified: "2026-04-20"
+---
+
+import { Aside } from "@components"
+
+The VolumeRatePolicy enforces per-account volume limits within configurable time periods. It tracks cumulative transaction amounts for each account and rejects transactions that would push the account's total volume past the allowed maximum for the current period. When a new period begins, the counter resets automatically.
+
+## Configuration
+
+Both values are set when the policy is first deployed and can be updated afterward by the policy owner.
+
+### Maximum amount per period
+
+The maximum amount defines the cumulative volume an individual account is allowed to transact within a single time period. Each account is tracked independently — one account reaching its limit does not affect others.
+
+For example, setting the maximum to `10000` means each account can transact up to 10,000 units per period. If an account has already transacted 8,000 units in the current period, a new transaction of 3,000 units would be rejected because `8000 + 3000 > 10000`.
+
+### Time period duration
+
+The time period duration (in seconds) defines how long each tracking window lasts. The policy derives the current period from the block timestamp: `block.timestamp / timePeriodDuration`. When this value changes (a new period starts), each account's cumulative counter resets to zero.
+
+Common values:
+
+- `3600` — 1 hour
+- `86400` — 1 day
+- `604800` — 1 week
+
+<Aside type="caution" title="Time period must be greater than zero">
+  Setting the time period duration to `0` is not allowed and will cause the configuration to revert.
+</Aside>
+
+## Runtime behavior
+
+The policy expects exactly two parameters from the extractor:
+
+| Parameter | Type      | Description                                     |
+| --------- | --------- | ----------------------------------------------- |
+| `amount`  | `uint256` | The transaction amount.                         |
+| `account` | `address` | The account whose cumulative volume is tracked. |
+
+- **`run()`** — Derives the current period from `block.timestamp / timePeriodDuration`. If the account's cumulative volume for this period plus the new amount exceeds the maximum, reverts. Returns `Continue` otherwise.
+- **`postRun()`** — Updates the stored volume for the account. If this is a new period, resets the counter to the current amount. If the same period, adds the amount to the existing total.
+
+## API reference
+
+### Setter functions
+
+- **`setMaxAmount(uint256 maxAmount)`** — Updates the maximum volume per period. Reverts if the new value is the same as the current one.
+- **`setTimePeriodDuration(uint256 timePeriodDuration)`** — Updates the time period length in seconds. Must be greater than zero. Reverts if the new value is the same as the current one.
+
+<Aside type="caution" title="Changing the duration resets all tracking">
+  Updating the time period duration effectively resets all volume tracking for all accounts. Any cumulative volume
+  recorded under the previous duration is discarded, and every account starts with a clean counter.
+</Aside>
+
+### View functions
+
+- **`getMaxAmount()`** — Returns the current maximum volume per period.
+- **`getTimePeriodDuration()`** — Returns the current time period duration in seconds.
+
+## Use cases
+
+- **Rate limiting** — Cap transfer volume per account per hour or per day.
+- **Regulatory compliance** — Implement time-based transfer limits required by regulations.
+- **Resource protection** — Prevent single accounts from exhausting capacity within a time window.
+
+## Source
+
+[VolumeRatePolicy.sol](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/src/policies/VolumeRatePolicy.sol)

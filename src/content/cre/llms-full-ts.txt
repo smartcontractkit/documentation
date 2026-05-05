@@ -293,7 +293,7 @@ These quotas apply to each individual workflow.
 
 | Quota Key                                                                                                                               | Description                                                     | Value     |
 | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | --------- |
-| <a href="#perworkflow-executionconcurrencylimit" id="perworkflow-executionconcurrencylimit">`PerWorkflow.ExecutionConcurrencyLimit`</a> | Maximum number of concurrent executions for a specific workflow | 5         |
+| <a href="#perworkflow-executionconcurrencylimit" id="perworkflow-executionconcurrencylimit">`PerWorkflow.ExecutionConcurrencyLimit`</a> | Maximum number of concurrent executions for a specific workflow | 10        |
 | <a href="#perworkflow-executiontimeout" id="perworkflow-executiontimeout">`PerWorkflow.ExecutionTimeout`</a>                            | Maximum total execution time for a single workflow run          | 5 minutes |
 | <a href="#perworkflow-wasmmemorylimit" id="perworkflow-wasmmemorylimit">`PerWorkflow.WASMMemoryLimit`</a>                               | Maximum memory allocated to a workflow                          | 100 MB    |
 | <a href="#perworkflow-executionresponselimit" id="perworkflow-executionresponselimit">`PerWorkflow.ExecutionResponseLimit`</a>          | Maximum size of the data a workflow can return                  | 100 KB    |
@@ -302,22 +302,23 @@ These quotas apply to each individual workflow.
 
 | Quota Key                                                                                                                                  | Description                                                                                            | Value     |
 | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ | --------- |
-| <a href="#perworkflow-capabilityconcurrencylimit" id="perworkflow-capabilityconcurrencylimit">`PerWorkflow.CapabilityConcurrencyLimit`</a> | Maximum concurrent capability calls (HTTP, EVM read/write, secrets) that can execute within a workflow | 3         |
+| <a href="#perworkflow-capabilityconcurrencylimit" id="perworkflow-capabilityconcurrencylimit">`PerWorkflow.CapabilityConcurrencyLimit`</a> | Maximum concurrent capability calls (HTTP, EVM read/write, secrets) that can execute within a workflow | 30        |
 | <a href="#perworkflow-capabilitycalltimeout" id="perworkflow-capabilitycalltimeout">`PerWorkflow.CapabilityCallTimeout`</a>                | Maximum time a single capability call can take to complete                                             | 3 minutes |
 
 ### Secrets quotas
 
 | Quota Key                                                                                                                         | Description                                                                                                                      | Value |
 | --------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----- |
-| <a href="#perworkflow-wasmsecreetssizelimit" id="perworkflow-wasmsecreetssizelimit">`PerWorkflow.WASMSecretsSizeLimit`</a>        | Maximum total size of secrets accessible to a workflow                                                                           | 1 MB  |
+| <a href="#perworkflow-wasmsecretssizelimit" id="perworkflow-wasmsecretssizelimit">`PerWorkflow.WASMSecretsSizeLimit`</a>          | Maximum total size of secrets accessible to a workflow                                                                           | 1 MB  |
 | <a href="#perworkflow-secretsconcurrencylimit" id="perworkflow-secretsconcurrencylimit">`PerWorkflow.SecretsConcurrencyLimit`</a> | Maximum number of secrets that can be fetched concurrently. [Learn how to fetch multiple secrets](/cre/guides/workflow/secrets). | 5     |
+| <a href="#perworkflow-secrets-calllimit" id="perworkflow-secrets-calllimit">`PerWorkflow.Secrets.CallLimit`</a>                   | Maximum number of secrets fetch calls per workflow execution                                                                     | 5     |
 
 ### Consensus quotas
 
 | Quota Key                                                                                                                                              | Description                                                      | Value |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- | ----- |
 | <a href="#perworkflow-consensus-observationsizelimit" id="perworkflow-consensus-observationsizelimit">`PerWorkflow.Consensus.ObservationSizeLimit`</a> | Maximum size of data that can be passed to consensus aggregation | 25 KB |
-| <a href="#perworkflow-consensus-calllimit" id="perworkflow-consensus-calllimit">`PerWorkflow.Consensus.CallLimit`</a>                                  | Maximum number of consensus calls per workflow execution         | 2,000 |
+| <a href="#perworkflow-consensus-calllimit" id="perworkflow-consensus-calllimit">`PerWorkflow.Consensus.CallLimit`</a>                                  | Maximum number of consensus calls per workflow execution         | 20    |
 
 ### Logging quotas
 
@@ -343,7 +344,7 @@ These quotas apply to each individual workflow.
 
 | Quota Key                                                                                                                   | Description                                    | Value                                  |
 | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | -------------------------------------- |
-| <a href="#perworkflow-httptrigger-ratelimit" id="perworkflow-httptrigger-ratelimit">`PerWorkflow.HTTPTrigger.RateLimit`</a> | Maximum rate at which an HTTP trigger can fire | Rate: 1 per 30 seconds <br /> Burst: 3 |
+| <a href="#perworkflow-httptrigger-ratelimit" id="perworkflow-httptrigger-ratelimit">`PerWorkflow.HTTPTrigger.RateLimit`</a> | Maximum rate at which an HTTP trigger can fire | Rate: 1 per 60 seconds <br /> Burst: 1 |
 
 ### EVM log trigger
 
@@ -368,7 +369,7 @@ These quotas apply to each individual workflow.
 
 | Quota Key                                                                                                                                        | Description                                                      | Value |
 | ------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- | ----- |
-| <a href="#perworkflow-chainread-calllimit" id="perworkflow-chainread-calllimit">`PerWorkflow.ChainRead.CallLimit`</a>                            | Maximum number of EVM read calls per workflow execution          | 10    |
+| <a href="#perworkflow-chainread-calllimit" id="perworkflow-chainread-calllimit">`PerWorkflow.ChainRead.CallLimit`</a>                            | Maximum number of EVM read calls per workflow execution          | 15    |
 | <a href="#perworkflow-chainread-logqueryblocklimit" id="perworkflow-chainread-logqueryblocklimit">`PerWorkflow.ChainRead.LogQueryBlockLimit`</a> | Maximum number of blocks that can be queried for historical logs | 100   |
 | <a href="#perworkflow-chainread-payloadsizelimit" id="perworkflow-chainread-payloadsizelimit">`PerWorkflow.ChainRead.PayloadSizeLimit`</a>       | Maximum size of an EVM read request payload                      | 5 KB  |
 
@@ -448,9 +449,76 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-04-10
+Last Updated: 2026-04-30
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+## CLI v1.13.0 - April 30, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.13.0" target="_blank">CRE CLI version 1.13.0</a> is now available.**
+
+- **Global `--non-interactive` mode**: All commands now accept `--non-interactive`. In CI/CD, scripts, and other headless environments, the CLI fails with an actionable error instead of waiting for prompts. Commands that require confirmation still require the relevant flag, such as `--yes` or `--force`. For authentication in headless environments, use `CRE_API_KEY` instead of `cre login`. See [Global flags](/cre/reference/cli#global-flags) and [Authentication Commands](/cre/reference/cli/authentication#api-key-authentication).
+- **`cre workflow get`**: New command that shows metadata for the workflow configured in `workflow.yaml`. By default, it filters results to the workflow's configured deployment registry; use `--all-registries` to inspect matches across registries. See [`cre workflow get`](/cre/reference/cli/workflow#cre-workflow-get) for details.
+- **JSON output for workflow lists**: `cre workflow list` now supports `--output json` for machine-readable output. You can combine it with `--registry` and `--include-deleted` for scripted workflow inventory checks. See [`cre workflow list`](/cre/reference/cli/workflow#cre-workflow-list) for details.
+- **Updated TypeScript SDK in templates**: Newly initialized TypeScript workflows now use `@chainlink/cre-sdk` v1.6.0, which includes custom Rust plugin support and non-determinism build warnings. See [TS SDK v1.6.0](#ts-sdk-v160---april-20-2026) for details.
+- **Production-aligned simulation limits**: The embedded default limits used by `cre workflow simulate --limits default` now match the current production quotas. Use `cre workflow limits export` to inspect the exact values enforced locally.
+- **Bug fix**: Fixed secrets digest formatting by removing the `0x` prefix before packing allowlist request data.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.12.0...v1.13.0)
+
+## CLI v1.12.0 - April 23, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.12.0" target="_blank">CRE CLI version 1.12.0</a> is now available.**
+
+- **`cre workflow list`**: New command that lists all workflows deployed for your organization. Use `--include-deleted` to include deleted workflows. See [`cre workflow list`](/cre/reference/cli/workflow#cre-workflow-list) for details.
+- **Improved workflow output**: `cre workflow deploy`, `cre workflow activate`, `cre workflow pause`, and `cre workflow delete` now display a consistent details block on success, showing the registry, contract address, transaction hash, workflow name, and workflow ID.
+- **Bug fixes**: Fixed `--limits none` not fully disabling engine-level limit enforcement during simulation, and fixed an invalid owner-address bug that could occur during workflow operations.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.11.0...v1.12.0)
+
+## TS SDK v1.6.0 - April 20, 2026
+
+**TypeScript SDK version 1.6.0** adds custom Rust plugin support and non-determinism build warnings.
+
+- **Custom Rust plugin support**: You can now inject custom Rust logic into your TypeScript workflows using the new `--plugin` flag in `cre-compile`. Provide a pre-built `.plugin.wasm` file compiled from your own Rust crate and it will be linked into your workflow binary. The SDK ships example packages (`@chainlink/cre-rust-inject-alpha`, `@chainlink/cre-rust-inject-beta`) and a prebuilt plugin example to help you get started. Use `createExtensionAccessor` from `@chainlink/cre-sdk-javy-plugin/runtime/validate-extension` to access your Rust extensions from TypeScript with Zod-validated types. See [Custom Rust Plugins](/cre/guides/operations/custom-rust-plugins-ts) for a full walkthrough.
+- **Non-determinism build warnings**: The SDK now performs static analysis of your workflow at compile time and emits warnings when it detects potentially non-deterministic patterns such as `Date.now()`, `Math.random()`, `Promise.race()`, and similar constructs. These warnings appear during `cre workflow build` and `cre workflow simulate` to help you catch consensus issues before deployment.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-typescript/compare/v1.5.0...v1.6.0)
+
+## Go SDK v1.8.0 - April 17, 2026
+
+**Go SDK version 1.8.0** adds SDK helpers for deterministic map iteration and report verification support.
+
+- **`cre.OrderedEntries` and `cre.OrderedEntriesFunc`**: New helper functions in the `cre` package that return a sorted iterator over map entries. `cre.OrderedEntries` works with any map whose keys implement `cmp.Ordered` (strings, integers, etc.). `cre.OrderedEntriesFunc` accepts a custom comparator for maps with struct or other non-ordered keys. Use these in place of direct map iteration to guarantee consistent ordering across DON nodes. See [Map iteration](/cre/concepts/non-determinism-go#1-map-iteration) for details and examples.
+- **Report verification**: Added report verification support to the SDK.
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-sdk-go/compare/v1.7.0...v1.8.0)
+
+## CLI v1.11.0 - April 16, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.11.0" target="_blank">CRE CLI version 1.11.0</a> is now available.**
+
+- **`cre registry list`**: New command that displays the workflow registries configured for your organization, including each registry's type and address. Run `cre registry list` after logging in to inspect which registries are available in your environment. See [Registry Commands](/cre/reference/cli/registry) for details.
+- **Paused workflow deploy warning**: When you run `cre workflow deploy` to update a workflow that is currently paused, the CLI now shows a warning after the update completes: `Your workflow is paused and has been updated`. This makes it easier to catch cases where you've pushed an update but won't see it run until you activate the workflow again.
+- **HTTP trigger payload path fix**: When simulating a workflow with an HTTP trigger, file paths passed to `--http-payload` are now resolved relative to the directory where you ran the command, rather than the workflow directory. If you run `cre workflow simulate ./my-workflow --http-payload ./payload.json`, the CLI now finds `payload.json` in your working directory as expected.
+- **Duplicate workflow deploy check**: Before registering a workflow, the CLI now checks whether the same binary and config are already registered, preventing redundant onchain transactions.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.10.0...v1.11.0)
 
 ## CLI v1.10.0 - April 10, 2026
 
@@ -470,7 +538,7 @@ This page provides detailed release notes for CRE. It includes information on ne
 
 **<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.9.0" target="_blank">CRE CLI version 1.9.0</a> is now available.**
 
-- **Browser-based OAuth for vault secrets**: `cre secrets create`, `cre secrets update`, `cre secrets delete`, and `cre secrets list` now use a browser-based OAuth (PKCE) flow to authorize Vault DON access. When you run a secrets operation, the CLI starts a local callback server, opens your browser to complete authorization, exchanges the code for a short-lived vault JWT, and submits your encrypted secrets directly to the Vault DON gateway — all automatically. Your existing CLI login session (`~/.cre/cre.yaml`) is not affected; the vault authorization uses a separate short-lived token. API key authentication is not supported for this flow; interactive login (`cre login`) is required. See [Secrets Management Commands](/cre/reference/cli/secrets) for details.
+- **Vault secrets authorization improvements**: `cre secrets create`, `cre secrets update`, `cre secrets delete`, and `cre secrets list` now submit encrypted secrets directly to the Vault DON gateway using a short-lived vault token scoped to the operation. Your workflow owner address is used to authorize access via an on-chain allowlist. Your existing CLI login session (`~/.cre/cre.yaml`) is not affected. See [Secrets Management Commands](/cre/reference/cli/secrets) for details.
 - **`--skip-type-checks` flag**: The `cre workflow build`, `cre workflow simulate`, `cre workflow deploy`, and `cre workflow hash` commands now accept a `--skip-type-checks` flag. When set, the CLI skips the TypeScript type-checking step during compilation. This can significantly speed up iteration in development, but should not be used for production builds where type safety is important. See [Workflow Commands](/cre/reference/cli/workflow) for the updated flag reference.
 
 **How to update:**
@@ -4793,7 +4861,7 @@ If your workflow requires higher limits than the defaults, you can request a lim
 
 # Deploying Workflows
 Source: https://docs.chain.link/cre/guides/operations/deploying-workflows
-Last Updated: 2026-03-17
+Last Updated: 2026-04-30
 
 <Aside type="note" title="Early Access required">
   Workflow deployment is currently in Early Access. Run `cre account access` or visit <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">app.chain.link/cre/request-access</a> to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
@@ -4913,15 +4981,16 @@ Estimated Cost:
 Transaction confirmed
 View on explorer: https://etherscan.io/tx/0x58599f6...d916b
 
-[OK] Workflow deployed successfully
+✓ Workflow deployed successfully
 
 Details:
-   Contract address:    0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5
-   Transaction hash:    0x58599f6...d916b
-   Workflow Name:       my-workflow
-   Workflow ID:         <your-workflow-id>
-   Binary URL:          https://storage.cre.example.com/artifacts/<workflow-id>/binary.wasm
-   Config URL:          https://storage.cre.example.com/artifacts/<workflow-id>/config
+   Registry:         onchain:ethereum-mainnet
+   Contract address: 0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5
+   Transaction hash: 0x58599f6...d916b
+   Workflow Name:    my-workflow
+   Workflow ID:      <your-workflow-id>
+   Binary URL:       https://storage.cre.example.com/artifacts/<workflow-id>/binary.wasm
+   Config URL:       https://storage.cre.example.com/artifacts/<workflow-id>/config
 ```
 
 ## Verifying your deployment
@@ -4963,12 +5032,12 @@ jobs:
         run: curl -sSL https://github.com/smartcontractkit/cre-cli/releases/latest/download/install.sh | sh
 
       - name: Build workflow
-        run: cre workflow build ./my-workflow --output ./my-workflow/binary.wasm
+        run: cre workflow build ./my-workflow --output ./my-workflow/binary.wasm --non-interactive
         env:
           CRE_API_KEY: ${{ secrets.CRE_API_KEY }}
 
       - name: Display content hashes
-        run: cre workflow hash ./my-workflow --wasm ./my-workflow/binary.wasm --target production-settings
+        run: cre workflow hash ./my-workflow --wasm ./my-workflow/binary.wasm --target production-settings --non-interactive
         env:
           CRE_API_KEY: ${{ secrets.CRE_API_KEY }}
           CRE_ETH_PRIVATE_KEY: ${{ secrets.CRE_ETH_PRIVATE_KEY }}
@@ -4995,7 +5064,7 @@ jobs:
           path: ./my-workflow
 
       - name: Deploy workflow
-        run: cre workflow deploy ./my-workflow --wasm ./my-workflow/binary.wasm --target production-settings --yes
+        run: cre workflow deploy ./my-workflow --wasm ./my-workflow/binary.wasm --target production-settings --yes --non-interactive
         env:
           CRE_API_KEY: ${{ secrets.CRE_API_KEY }}
           CRE_ETH_PRIVATE_KEY: ${{ secrets.CRE_ETH_PRIVATE_KEY }}
@@ -5004,7 +5073,7 @@ jobs:
 
 
 <Aside type="note" title="API key authentication">
-  Use `CRE_API_KEY` for non-interactive authentication in CI/CD pipelines instead of `cre login`. Create an API key from the CRE platform under **Organization → APIs**. See [Authentication](/cre/reference/cli/authentication#api-key-authentication) for setup instructions.
+  Use `CRE_API_KEY` for non-interactive authentication in CI/CD pipelines instead of `cre login`, and pass `--non-interactive` so commands fail instead of prompting. Create an API key from the CRE platform under **Organization → APIs**. See [Authentication](/cre/reference/cli/authentication#api-key-authentication) for setup instructions.
 </Aside>
 
 
@@ -5099,14 +5168,17 @@ Estimated Cost:
   ▸ Yes
     No
 
-Transaction confirmed: 0xd5b94bd...87498b
+✓ Transaction confirmed: 0xd5b94bd...87498b
 View on explorer: https://sepolia.etherscan.io/tx/0xd5b94bd...87498b
 
-[OK] Workflow activated successfully
-   Contract address:    0xF3f93fc4dc177748E7557568b5354cB009e3818a
-   Transaction hash:    0xd5b94bd...87498b
-   Workflow Name:       my-workflow
-   Workflow ID:         <your-workflow-id>
+✓ Workflow activated successfully
+
+Details:
+   Registry:         onchain:ethereum-mainnet
+   Contract address: 0xF3f93fc4dc177748E7557568b5354cB009e3818a
+   Transaction hash: 0xd5b94bd...87498b
+   Workflow Name:    my-workflow
+   Workflow ID:      <your-workflow-id>
 ```
 
 ## Pausing a workflow
@@ -5160,15 +5232,16 @@ Estimated Cost:
   ▸ Yes
     No
 
-Transaction confirmed
+✓ Transaction confirmed
 View on explorer: https://sepolia.etherscan.io/tx/0x2e09a66...db66e
-[OK] Workflows paused successfully
+✓ Workflows paused successfully
 
 Details:
-   Contract address:    0xF3f93fc4dc177748E7557568b5354cB009e3818a
-   Transaction hash:    0x2e09a66...db66e
-   Workflow Name:       my-workflow
-   Workflow ID:         <your-workflow-id>
+   Registry:         onchain:ethereum-mainnet
+   Contract address: 0xF3f93fc4dc177748E7557568b5354cB009e3818a
+   Transaction hash: 0x2e09a66...db66e
+   Workflow Name:    my-workflow
+   Workflow ID:      <your-workflow-id>
 ```
 
 
@@ -5259,118 +5332,6 @@ For complete setup instructions, configuration requirements, and step-by-step gu
 
 ---
 
-# Verifying Workflows
-Source: https://docs.chain.link/cre/guides/operations/verifying-workflows
-Last Updated: 2026-03-19
-
-Workflow verification ensures the integrity and authenticity of your workflows across deployment, onchain execution, and third-party auditing. This guide explains how workflow IDs are computed, how to verify workflows in consumer contracts, and how to enable independent verification by third parties.
-
-## Workflow ID
-
-The workflow ID is a unique hash that serves as the primary identifier for your workflow throughout its lifecycle. It is computed locally during [`cre workflow deploy`](/cre/reference/cli/workflow#cre-workflow-deploy) from the following inputs:
-
-- **workflowOwner**: The deployer's address
-- **workflowName**: The name specified in your workflow
-- **Compiled workflow binary**: The WASM binary produced from your workflow code
-- **Config file contents**: The contents of your workflow's config file
-- **Secrets hash**: An empty string placeholder for secrets
-
-Because the workflow ID is derived from these inputs, it deterministically represents a specific version of your workflow code and configuration.
-
-<Aside type="caution" title="Workflow ID changes on updates">
-  The workflow ID changes whenever you update your workflow code or config file, even if the workflow name stays the
-  same. For example, if you change contract bindings, the compiled binary changes, which produces a new workflow ID.
-  Plan for this when designing consumer contracts that permission on workflow ID.
-</Aside>
-
-Use [`cre workflow hash`](/cre/reference/cli/workflow#cre-workflow-hash) to inspect the workflow ID before deploying. This lets you preview the ID without submitting an onchain transaction.
-
-For more details on deployment and updates, see [Deploying Workflows](/cre/guides/operations/deploying-workflows) and [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows).
-
-## Verifying workflows onchain
-
-When a workflow writes onchain, the consumer contract receives both the report data and metadata through the `onReport` callback. The metadata contains information you can use to verify the source of the report:
-
-- **`workflowId`** (`bytes32`): The unique workflow hash
-- **`workflowName`** (`bytes10`): The workflow name, hash-encoded
-- **`workflowOwner`** (`address`): The address that deployed the workflow
-
-See [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts) for the full `IReceiver` interface and metadata structure.
-
-### Workflow name encoding
-
-The `workflowName` in metadata is not stored as a plain string. It is a SHA256 hash of the workflow name, truncated to `bytes10`. See [how workflow names are encoded](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#how-workflow-names-are-encoded) for the full encoding process.
-
-### Security best practices
-
-Follow these practices to ensure only authorized workflows can interact with your consumer contract:
-
-- **Verify `msg.sender`**: Always check that `msg.sender` is the expected forwarder address. See the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory) for addresses by network.
-- **Permission on workflow ID**: Use `setExpectedWorkflowId` from `ReceiverTemplate` to restrict which workflow can call your contract.
-
-<Aside type="tip" title="Permissioning without workflow ID">
-  If you permission on `workflowId`, you must update it in your contract every time you update the workflow. An
-  alternative is to use `setExpectedAuthor` and `setExpectedWorkflowName` from `ReceiverTemplate` instead. These values
-  don't change when you update your workflow code, so your contract won't need updates after each workflow deployment.
-</Aside>
-
-## Third-party verification
-
-<Aside type="note" title="Go workflows only">
-  Reproducible builds are currently supported for Go workflows only. TypeScript reproducible builds are in development.
-</Aside>
-
-Third-party verification allows customers or auditors to independently confirm that a deployed workflow matches its source code. The deployer shares the workflow source, and the verifier uses the CRE CLI to compute the workflow hash and compare it against the onchain workflow ID.
-
-### Steps for the workflow developer
-
-1. **Add a `.env.public` file** to your workflow folder with `GOTOOLCHAIN` set to the Go toolchain version you use to build the workflow. Pinning that version helps reproducible builds across machines and environments. Add this file *before* running `cre workflow deploy`.
-
-   Example (replace with your own version—the tag below is not prescriptive):
-
-   ```
-   GOTOOLCHAIN=go1.23.0
-   ```
-
-   Use the same toolchain string you build with; `go version` reports it (for example `go1.23.0 linux/amd64` → use `go1.23.0`).
-
-2. **Share your workflow source** with the customer. Provide a zip archive or repository link that includes all workflow files, including `.env.public`. Exclude `.env` files that contain private keys or secrets.
-
-### Steps for the verifier
-
-1. [**Install the CRE CLI**](/cre/getting-started/cli-installation). No login or deploy access is required for hash verification.
-
-2. **Unzip or clone** the shared workflow repository.
-
-3. **Run `cre workflow hash`** to compute the workflow hash:
-
-   ```bash
-   cre workflow hash ./workflow-folder --public_key=0xYourDeployerAddress
-   ```
-
-   Replace `./workflow-folder` with the path to the workflow source and `0xYourDeployerAddress` with the deployer's public address.
-
-4. **Compare the output** with the workflow ID observed onchain. The `Workflow hash` value in the output corresponds to the onchain workflow ID:
-
-   ```
-   Binary hash:   0dcbb19de3c22edfe61605a970eb6d42199df91ac3e992cd3f2e33cb13efbb4c
-   Config hash:   3bdaebcc2f639d77cb248242c1d01c8651f540cdbf423d26fe3128516fd225b6
-   Workflow hash: 004fff5bb1ae05cc16e453f8ad564f5e8b0eae1945ec22f3d0adfc0339954d56
-   ```
-
-   If the workflow hash matches the onchain workflow ID, the deployed workflow matches the shared source code.
-
-<Aside type="tip">Run `cre workflow hash -h` for full usage details and additional flags.</Aside>
-
-## Learn more
-
-- [Deploying Workflows](/cre/guides/operations/deploying-workflows)
-- [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows)
-- [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)
-- [CRE CLI Workflow Reference](/cre/reference/cli/workflow)
-
----
-
 # Deleting Workflows
 Source: https://docs.chain.link/cre/guides/operations/deleting-workflows
 Last Updated: 2025-11-04
@@ -5449,10 +5410,10 @@ Estimated Cost:
   ▸ Yes
     No
 
-Transaction confirmed
+✓ Transaction confirmed
 View on explorer: https://sepolia.etherscan.io/tx/0xf059c32...fec7d
-[OK] Deleted workflow ID: 00f0379a2df46ad2c5af070f5871da89f589f8bff8af76ff6a44bb59bec88bf4
-Workflows deleted successfully.
+✓ Deleted workflow ID: 00f0379a2df46ad2c5af070f5871da89f589f8bff8af76ff6a44bb59bec88bf4
+✓ Workflows deleted successfully
 ```
 
 ### Skipping the confirmation prompt
@@ -6056,6 +6017,459 @@ build: typecheck
 - [`cre workflow custom-build` reference](/cre/reference/cli/workflow#cre-workflow-custom-build): Command flags and usage
 - [Simulating Workflows](/cre/guides/operations/simulating-workflows): Testing your workflow locally
 - [Deploying Workflows](/cre/guides/operations/deploying-workflows): Deploying to the Workflow Registry
+
+---
+
+# Custom Rust Plugins
+Source: https://docs.chain.link/cre/guides/operations/custom-rust-plugins-ts
+Last Updated: 2026-04-20
+
+TypeScript workflows run inside a [Javy](https://github.com/bytecodealliance/javy)-compiled <a href="https://webassembly.org/" target="_blank" rel="noopener noreferrer">WebAssembly</a> binary. By default, that binary includes the CRE SDK's built-in Rust plugin — pre-compiled to WASM and published with the SDK — which bridges your TypeScript to CRE node capabilities. You do not need [Rust](https://www.rust-lang.org/) installed to write and compile standard workflows.
+
+Custom Rust plugins let you extend that plugin layer with your own Rust logic, exposing new functionality as typed globals your TypeScript workflow can call directly.
+
+### How the two modes work
+
+The SDK always produces a single compiled plugin WASM that is passed to [Javy](https://github.com/bytecodealliance/javy) at build time. When you include custom extensions, they are merged with the SDK's own Rust plugin code before that final WASM is produced. The mechanism for that merge differs depending on which mode you use:
+
+- **`--plugin` (prebuilt)**: You provide a fully compiled `.plugin.wasm` that already contains all extensions merged together. No Rust toolchain required at workflow build time. Best for consuming a third-party Rust SDK (such as a ZK proof verifier) without managing a Rust compiler.
+- **`--cre-exports` (source)**: You provide one or more Rust crate directories. The SDK compiles each crate, merges them with its own plugin code, and produces the final combined plugin at build time. Requires [Rust](https://www.rust-lang.org/) installed locally. Best for writing your own Rust logic or combining multiple extensions.
+
+## When to use custom Rust plugins
+
+Use a custom Rust plugin when you need logic that is impractical or impossible to express in TypeScript running inside QuickJS:
+
+- **Cryptographic proof verification**: Verify ZK proofs, Risc-0 receipts, or other cryptographic attestations using Rust crates (e.g., `risc0-zkvm`) that have no JavaScript equivalent
+- **Third-party Rust SDKs**: Integrate a Rust SDK that provides functionality not natively available in TypeScript — for example, a custom offchain report verifier published by a data provider
+- **Performance-critical computation**: Rust running natively in WASM is significantly faster than interpreted JavaScript in QuickJS for compute-heavy operations like encoding, hashing, or numeric processing
+
+<Aside type="note" title="QuickJS limitations">
+  Not all Node.js APIs are available in QuickJS. For example, `node:crypto` is unsupported. If a library you need
+  doesn't work in simulation, a Rust plugin is the right escape hatch. See [TypeScript Runtime
+  Environment](/cre/concepts/typescript-wasm-runtime) for details.
+</Aside>
+
+## Prerequisites
+
+**Required versions:** TS SDK v1.6.0+
+
+Before using custom Rust plugins, you need:
+
+- **Bun** — the TypeScript SDK uses Bun for compilation. The Javy binary used by `cre-compile` is downloaded automatically when you run `bun install` via a `postinstall` hook — no manual setup required.
+- **Custom WASM builds enabled** for your workflow — Rust plugins are injected via `cre-compile` flags, which you control from a custom `Makefile`. If your workflow still uses automatic compilation, convert it first:
+
+  ```bash
+  cre workflow custom-build ./my-workflow
+  ```
+
+  See [Custom WASM Builds](/cre/guides/operations/custom-build) for full details.
+
+**Rust toolchain** — only if you compile your own extensions with `--cre-exports` (Mode 2) or follow the **Try it yourself** walkthrough below. You do **not** need Rust on your machine for **Mode 1 (`--plugin`)**: the prebuilt `.plugin.wasm` was already compiled upstream.
+
+If you are using Mode 2 or the walkthrough, install a stable Rust toolchain and add the `wasm32-wasip1` target:
+
+```bash
+rustup target add wasm32-wasip1
+```
+
+## Mode 1: Prebuilt plugin (`--plugin`)
+
+In prebuilt mode, you install an npm package that ships a compiled `.plugin.wasm`. Your workflow calls into it via a typed TypeScript accessor, and your `Makefile` passes the `.wasm` path to `cre-compile` with `--plugin`.
+
+This is the simpler integration path — no Rust toolchain required at workflow build time.
+
+### 1. Install the plugin package
+
+The plugin author publishes their package to npm — install it like any other dependency:
+
+```bash
+bun add @acme/my-cre-plugin
+```
+
+The package ships a prebuilt `.plugin.wasm` alongside TypeScript types for the extension's API.
+
+### 2. Import the accessor and call it from your workflow
+
+A well-formed plugin package exports a typed accessor built with `createExtensionAccessor`. Import it directly and call it from your trigger handler:
+
+```typescript
+import { myExtension } from "@acme/my-cre-plugin"
+import { CronCapability, handler, Runner, type Runtime } from "@chainlink/cre-sdk"
+import { z } from "zod"
+
+const configSchema = z.object({
+  schedule: z.string(),
+})
+
+type Config = z.infer<typeof configSchema>
+
+const onCronTrigger = (_runtime: Runtime<Config>) => {
+  const result = myExtension().compute()
+  return JSON.stringify({ result })
+}
+
+const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>({ configSchema })
+  await runner.run(initWorkflow)
+}
+```
+
+### 3. Update your Makefile to pass `--plugin`
+
+```makefile
+JAVY_PLUGIN := $(abspath ./node_modules/@chainlink/cre-sdk-javy-plugin)
+PLUGIN_PKG  := $(abspath ./node_modules/@acme/my-cre-plugin)
+
+.PHONY: build clean
+
+build:
+	mkdir -p wasm
+	CRE_SDK_JAVY_PLUGIN_HOME="$(JAVY_PLUGIN)" bun cre-compile \
+		--plugin $(PLUGIN_PKG)/dist/plugin.wasm \
+		./main.ts \
+		./wasm/workflow.wasm
+
+clean:
+	rm -rf wasm
+```
+
+`--plugin` tells `cre-compile` to link the prebuilt plugin WASM into the final binary instead of the default CRE SDK plugin.
+
+<Aside type="caution" title="Version compatibility">
+  A prebuilt `.plugin.wasm` must be compiled against a version of `@chainlink/cre-sdk-javy-plugin` that is **less than
+  or equal to** the version included in your SDK. Check the plugin package's documentation for its `cre-sdk-javy-plugin`
+  peer dependency version and verify it is compatible with your installed SDK version before using it.
+</Aside>
+
+## Mode 2: Source extensions (`--cre-exports`)
+
+In source mode, you write a Rust crate and pass its directory to `cre-compile` with `--cre-exports`. The compiler builds your crate and links it alongside the SDK plugin at compile time. You can pass multiple `--cre-exports` flags to include several extensions in one binary.
+
+This mode gives you full control over your Rust code and doesn't require distributing a prebuilt `.wasm`.
+
+### 1. Create a Rust crate
+
+Create a new directory for your extension with a `Cargo.toml` and `src/lib.rs`.
+
+**`Cargo.toml`:**
+
+```toml
+# Use underscores in the crate name, not hyphens — the SDK generates a host
+# crate that calls {name}::register(), so hyphens would produce invalid Rust.
+[package]
+name = "my_plugin"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["lib"]
+
+[dependencies]
+cre_wasm_exports = { path = "../node_modules/@chainlink/cre-sdk-javy-plugin/src/cre_wasm_exports" }
+javy-plugin-api = "6.0.0"
+```
+
+**`src/lib.rs`:**
+
+```rust
+use cre_wasm_exports::extend_wasm_exports;
+use javy_plugin_api::javy::quickjs::prelude::*;
+use javy_plugin_api::javy::quickjs::{Ctx, Object};
+
+pub fn register(ctx: &Ctx<'_>) {
+    let obj = Object::new(ctx.clone()).unwrap();
+    obj.set(
+        "greet",
+        Func::from(|| -> String { "Hello from Rust".to_string() }),
+    )
+    .unwrap();
+    extend_wasm_exports(ctx, "myPlugin", obj);
+}
+```
+
+`extend_wasm_exports` registers your object under the global name `"myPlugin"`. Whatever name you use here is what you reference in your TypeScript accessor.
+
+### 2. Create a TypeScript accessor
+
+```typescript
+import { createExtensionAccessor } from "@chainlink/cre-sdk-javy-plugin/runtime/validate-extension"
+import { z } from "zod"
+
+const myPluginSchema = z.object({
+  greet: z.function().args().returns(z.string()),
+})
+
+export type MyPlugin = z.infer<typeof myPluginSchema>
+
+declare global {
+  var myPlugin: MyPlugin
+}
+
+export const myPlugin = createExtensionAccessor("myPlugin", myPluginSchema)
+```
+
+### 3. Call it from your workflow
+
+```typescript
+import { myPlugin } from "./my-plugin-accessor"
+import { CronCapability, handler, Runner, type Runtime } from "@chainlink/cre-sdk"
+import { z } from "zod"
+
+const configSchema = z.object({ schedule: z.string() })
+type Config = z.infer<typeof configSchema>
+
+const onCronTrigger = (_runtime: Runtime<Config>) => {
+  return JSON.stringify({ result: myPlugin().greet() })
+}
+
+const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>({ configSchema })
+  await runner.run(initWorkflow)
+}
+```
+
+### 4. Update your Makefile to pass `--cre-exports`
+
+```makefile
+JAVY_PLUGIN := $(abspath ./node_modules/@chainlink/cre-sdk-javy-plugin)
+
+.PHONY: build clean
+
+build:
+	mkdir -p wasm
+	CRE_SDK_JAVY_PLUGIN_HOME="$(JAVY_PLUGIN)" bun cre-compile \
+		--cre-exports ./my-plugin \
+		./index.ts \
+		./wasm/workflow.wasm
+
+clean:
+	rm -rf wasm
+```
+
+To include multiple Rust extensions in one binary, chain additional `--cre-exports` flags:
+
+```makefile
+build:
+	mkdir -p wasm
+	CRE_SDK_JAVY_PLUGIN_HOME="$(JAVY_PLUGIN)" bun cre-compile \
+		--cre-exports ./my-plugin-a \
+		--cre-exports ./my-plugin-b \
+		./index.ts \
+		./wasm/workflow.wasm
+```
+
+## Try it yourself
+
+Walk through source extension mode end to end. This uses Mode 2 (`--cre-exports`) since it works with a local Rust crate you write yourself — no externally published plugin package required.
+
+**Prerequisites:** Rust with `wasm32-wasip1` (see [Prerequisites](#prerequisites) above). If you don't have a CRE project yet, create one with `cre init` and follow the [Getting Started guide](/cre/getting-started/overview). Once you're done, your working directory structure should look like this:
+
+```
+my-project/
+├── project.yaml
+├── secrets.yaml
+└── my-workflow/
+    ├── workflow.yaml
+    ├── main.ts           ← your workflow entry point
+    ├── main.test.ts
+    ├── package.json
+    ├── bun.lock
+    ├── tsconfig.json
+    └── node_modules/
+```
+
+**1. Convert your workflow to a custom build:**
+
+Run this from your project root:
+
+```bash
+cre workflow custom-build ./my-workflow
+```
+
+This adds a `Makefile` to `my-workflow/` and updates `workflow.yaml` to point at the compiled binary. See [Custom WASM Builds](/cre/guides/operations/custom-build) for details.
+
+**2. Create the Rust plugin crate:**
+
+From your project root, create the crate directory and its source file:
+
+```bash
+mkdir -p my-workflow/my-plugin/src
+```
+
+Create `my-workflow/my-plugin/Cargo.toml`:
+
+```toml
+# my-workflow/my-plugin/Cargo.toml
+# Note: use underscores in the crate name, not hyphens — the SDK uses this
+# as a Rust identifier when generating the host crate.
+[package]
+name = "my_plugin"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["lib"]
+
+[dependencies]
+# cre_wasm_exports ships inside the installed cre-sdk-javy-plugin package
+cre_wasm_exports = { path = "../node_modules/@chainlink/cre-sdk-javy-plugin/src/cre_wasm_exports" }
+javy-plugin-api = "6.0.0"
+```
+
+Create `my-workflow/my-plugin/src/lib.rs`:
+
+```rust
+// my-workflow/my-plugin/src/lib.rs
+use cre_wasm_exports::extend_wasm_exports;
+use javy_plugin_api::javy::quickjs::prelude::*;
+use javy_plugin_api::javy::quickjs::{Ctx, Object};
+
+pub fn register(ctx: &Ctx<'_>) {
+    let obj = Object::new(ctx.clone()).unwrap();
+    obj.set(
+        "greet",
+        Func::from(|| -> String { "Hello from Rust".to_string() }),
+    )
+    .unwrap();
+    // "myPlugin" is the global name your TypeScript accessor will reference
+    extend_wasm_exports(ctx, "myPlugin", obj);
+}
+```
+
+**3. Create a TypeScript accessor:**
+
+Create `my-workflow/my-plugin-accessor.ts`. This file gives you a type-safe handle to the Rust global:
+
+```typescript
+// my-workflow/my-plugin-accessor.ts
+import { createExtensionAccessor } from "@chainlink/cre-sdk-javy-plugin/runtime/validate-extension"
+import { z } from "zod"
+
+const myPluginSchema = z.object({
+  greet: z.function().args().returns(z.string()),
+})
+
+declare global {
+  var myPlugin: z.infer<typeof myPluginSchema>
+}
+
+// "myPlugin" must match the name passed to extend_wasm_exports in lib.rs
+export const myPlugin = createExtensionAccessor("myPlugin", myPluginSchema)
+```
+
+**4. Call the Rust function from your workflow:**
+
+Open `my-workflow/main.ts` and make the highlighted changes:
+
+Code snippet for my-workflow/main.ts:
+
+```typescript
+import { CronCapability, handler, Runner, type Runtime } from "@chainlink/cre-sdk"
+import { myPlugin } from "./my-plugin-accessor"
+
+export type Config = {
+  schedule: string
+}
+
+export const onCronTrigger = (runtime: Runtime<Config>): string => {
+  runtime.log("Hello world! Workflow triggered.")
+  const greeting = myPlugin().greet()
+  runtime.log(`Rust says: ${greeting}`)
+  return greeting
+}
+
+export const initWorkflow = (config: Config) => {
+  const cron = new CronCapability()
+  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+```
+
+**5. Update the Makefile to pass `--cre-exports`:**
+
+Open `my-workflow/Makefile` (created by `cre workflow custom-build`) and replace its contents with the following (highlighted line is the key addition):
+
+Code snippet for my-workflow/Makefile:
+
+```bash
+JAVY_PLUGIN := $(abspath ./node_modules/@chainlink/cre-sdk-javy-plugin)
+
+.PHONY: build clean
+
+build:
+	mkdir -p wasm
+	CRE_SDK_JAVY_PLUGIN_HOME="$(JAVY_PLUGIN)" bun cre-compile \
+		--cre-exports ./my-plugin \ # highlight-line
+		./main.ts \
+		./wasm/workflow.wasm
+
+clean:
+	rm -rf wasm
+```
+
+Your workflow directory should now look like this:
+
+```
+my-workflow/
+├── workflow.yaml
+├── main.ts
+├── main.test.ts
+├── package.json
+├── bun.lock
+├── tsconfig.json
+├── Makefile                  ← updated
+├── my-plugin-accessor.ts     ← new
+├── my-plugin/                ← new Rust crate
+│   ├── Cargo.toml
+│   └── src/
+│       └── lib.rs
+├── node_modules/
+└── wasm/                     ← workflow.wasm appears after simulate (or `make build`)
+    └── workflow.wasm
+```
+
+**6. Simulate:**
+
+From **my-project/** (the project root), run the simulator. It builds the workflow WASM first unless you point it at an existing binary, so you do not need to run `make build` manually before simulating:
+
+```bash
+cre workflow simulate ./my-workflow --target staging-settings
+```
+
+You should see output like the following, confirming your Rust function was called from TypeScript:
+
+```
+[USER LOG] Hello world! Workflow triggered.
+[USER LOG] Rust says: Hello from Rust
+
+✓ Workflow Simulation Result:
+"Hello from Rust"
+```
+
+<Aside type="note" title="Simulation target">
+  Make sure your CRE CLI is logged in (`cre whoami`) before simulating. See [Simulating
+  Workflows](/cre/guides/operations/simulating-workflows) for details.
+</Aside>
+
+## Learn more
+
+- [TypeScript Runtime Environment](/cre/concepts/typescript-wasm-runtime): Understand the Javy/QuickJS compilation pipeline and its constraints
+- [Custom WASM Builds](/cre/guides/operations/custom-build): How to take ownership of the `cre-compile` step with a custom `Makefile`
+- [Simulating Workflows](/cre/guides/operations/simulating-workflows): Test your workflow locally before deployment
 
 ---
 
@@ -7274,7 +7688,7 @@ Learn more about how to use CRE capabilities with built-in consensus:
 
 # TypeScript Runtime Environment
 Source: https://docs.chain.link/cre/concepts/typescript-wasm-runtime
-Last Updated: 2025-11-04
+Last Updated: 2026-04-20
 
 Your TypeScript workflows are compiled to <a href="https://webassembly.org/" target="_blank" rel="noopener noreferrer">WebAssembly (WASM)</a> to run in the CRE execution environment. Understanding this compilation process helps you write compatible code and avoid common pitfalls.
 
@@ -7316,6 +7730,12 @@ Not all Node.js built-in modules are available. For example, `node:crypto` is no
 Before using third-party NPM packages in your workflows, verify they don't rely on unsupported Node.js APIs. The [QuickJS Node.js compatibility documentation](https://sebastianwessel.github.io/quickjs/docs/module-resolution/node-compatibility.html) lists which Node.js modules are available.
 
 **The best way to verify compatibility** is to test with `cre workflow simulate`. Simulation runs your workflow in the same WASM environment as production, so any compatibility issues should surface during simulation.
+
+## Extending with Rust
+
+When a library you need doesn't work in QuickJS, or you need performance beyond what interpreted JavaScript in WASM can provide, you can inject a custom Rust crate into the plugin layer that bridges your TypeScript to the CRE runtime. The compiled Rust code runs natively within the same WASM binary as your workflow and is exposed as a typed global you call from TypeScript.
+
+See [Custom Rust Plugins](/cre/guides/operations/custom-rust-plugins-ts) for a full guide, including prerequisites, both prebuilt and source-extension modes, and step-by-step testing instructions.
 
 ## Why WASM?
 
@@ -7426,7 +7846,7 @@ See the [repository README](https://github.com/smartcontractkit/cre-gcp-predicti
 
 # CLI Reference
 Source: https://docs.chain.link/cre/reference/cli
-Last Updated: 2026-04-10
+Last Updated: 2026-04-30
 
 export const CRE_CLI_VERSION = VERSIONS["cre-cli"].LATEST
 
@@ -7446,9 +7866,16 @@ These flags can be used with any `cre` command.
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `-h, --help`         | Displays help information for any command                                                                                                                                                  |
 | `-e, --env`          | Specifies the path to your `.env` file (default: `".env"`)                                                                                                                                 |
+| `-E, --public-env`   | Specifies the path to your `.env.public` file, which contains shared, non-sensitive build configuration                                                                                    |
 | `-T, --target`       | Sets the target environment from your configuration files                                                                                                                                  |
 | `-R, --project-root` | Specifies the path to the project root directory. By default, the CLI automatically finds the project root by searching for `project.yaml` in the current directory and parent directories |
 | `-v, --verbose`      | Enables verbose logging to print `DEBUG` level logs                                                                                                                                        |
+| `--non-interactive`  | Fails instead of prompting; provide all required inputs with flags or environment variables. Use this for CI/CD, scripts, and other headless environments                                  |
+
+
+<Aside type="note" title="Non-interactive authentication">
+  `cre login` requires a browser and is not available in non-interactive mode. For CI/CD and other headless environments, set `CRE_API_KEY` instead. See [API key authentication](/cre/reference/cli/authentication#api-key-authentication).
+</Aside>
 
 ## Commands overview
 
@@ -7499,6 +7926,8 @@ Manage workflows throughout their entire lifecycle.
 - **`cre workflow activate`** — Activate a workflow on the Workflow Registry contract
 - **`cre workflow pause`** — Pause a workflow on the Workflow Registry contract
 - **`cre workflow delete`** — Delete all versions of a workflow from the Workflow Registry
+- **`cre workflow list`** — List workflows deployed for your organization; use `--output json` for scripts
+- **`cre workflow get`** — Show metadata for the workflow configured in `workflow.yaml`
 - **`cre workflow custom-build`** — Convert a workflow to use a custom self-compiled WASM build
 
 [View workflow commands →](/cre/reference/cli/workflow)
@@ -7515,6 +7944,16 @@ Manage secrets stored in the Vault DON for use in your workflows.
 - **`cre secrets list`** — List secret identifiers in a namespace
 
 [View secrets management commands →](/cre/reference/cli/secrets)
+
+***
+
+### Registry Commands
+
+Inspect the workflow registries available to your organization. A workflow registry is the system that tracks which workflows are registered to your organization and makes them available to the Chainlink DON for execution.
+
+- **`cre registry list`** — Display the registries configured for your organization, including type and on-chain address
+
+[View registry commands →](/cre/reference/cli/registry)
 
 ***
 
@@ -7550,6 +7989,7 @@ The typical workflow development process uses these commands in sequence:
 5. **`cre workflow hash`** — (Optional) Inspect content hashes before deploying
 6. **`cre workflow deploy`** — Deploy your workflow to the registry
 7. **`cre workflow activate`** / **`cre workflow pause`** — Control workflow execution
+8. **`cre workflow list`** / **`cre workflow get`** — Inspect deployed workflow metadata
 
 ## Learn more
 
@@ -7561,7 +8001,7 @@ The typical workflow development process uses these commands in sequence:
 
 # Authentication Commands
 Source: https://docs.chain.link/cre/reference/cli/authentication
-Last Updated: 2026-03-26
+Last Updated: 2026-04-30
 
 The CRE CLI supports two authentication methods:
 
@@ -7573,6 +8013,8 @@ The CRE CLI supports two authentication methods:
 ### `cre login`
 
 Starts the interactive authentication flow. This command opens your browser for user login, saves your credentials locally to `~/.cre/cre.yaml`, and **fetches your tenant context** from the CRE platform. That response is cached per CRE environment (for example `PRODUCTION`) in **`~/.cre/context.yaml`** — a registry manifest that includes items such as your vault gateway URL, workflow registries, and which secrets authentication flows each registry supports. See [Tenant context cache](#tenant-context-cache) below.
+
+`cre login` requires a browser and is not available in `--non-interactive` mode. For CI/CD pipelines and other headless environments, use `CRE_API_KEY` instead.
 
 **Usage:**
 
@@ -7648,7 +8090,7 @@ cre whoami
 
 When `CRE_API_KEY` is set, the CLI skips the browser-based login flow entirely. All commands that require authentication (deploying, managing workflows, etc.) will use the API key. The CLI still **ensures tenant context** is available (fetching or refreshing `~/.cre/context.yaml` as needed) so your session matches the platform configuration for that key.
 
-In a CI/CD pipeline, configure `CRE_API_KEY` as a secret environment variable in your platform and run CLI commands as usual.
+In a CI/CD pipeline, configure `CRE_API_KEY` as a secret environment variable in your platform and pass [`--non-interactive`](/cre/reference/cli#global-flags) to fail immediately if a command would otherwise prompt for input.
 
 ## Tenant context cache
 
@@ -7912,9 +8354,14 @@ When you run this command, the CLI will:
 
 # Workflow Commands
 Source: https://docs.chain.link/cre/reference/cli/workflow
-Last Updated: 2026-04-02
+Last Updated: 2026-04-30
 
 The `cre workflow` commands manage workflows throughout their entire lifecycle, from local testing to deployment and ongoing management.
+
+
+<Aside type="note" title="Global flags">
+  All `cre` commands support [global flags](/cre/reference/cli#global-flags), including `--env`, `--public-env`, `--target`, `--project-root`, `--verbose`, and `--non-interactive`.
+</Aside>
 
 ## `cre workflow build`
 
@@ -7986,7 +8433,7 @@ cre workflow simulate <workflow-name-or-path> [flags]
 | `-g, --engine-logs`       | Enable non-fatal engine logging                                                                                                                                                                                                                                                  |
 | `--non-interactive`       | Run without prompts; requires `--trigger-index` (see the line below) and inputs for the selected trigger type                                                                                                                                                                    |
 | `--trigger-index <int>`   | Selects which handler to run (0-based position). If your workflow has multiple handlers, `0` is the first, `1` is the second, etc. Required with `--non-interactive`                                                                                                             |
-| `--http-payload <string>` | HTTP trigger payload as JSON string or path to JSON file (with or without `@` prefix). For HTTP triggers only                                                                                                                                                                    |
+| `--http-payload <string>` | HTTP trigger payload as JSON string or path to a JSON file. File paths are resolved relative to the directory where you ran the command. For HTTP triggers only                                                                                                                  |
 | `--evm-tx-hash <string>`  | Transaction hash (`0x...`) containing the event that triggered your workflow. For EVM log triggers only                                                                                                                                                                          |
 | `--evm-event-index <int>` | Which log/event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For EVM log triggers only                                                                                                |
 | `--limits <string>`       | Production limits to enforce during simulation: `default` (embedded prod limits), a path to a limits JSON file (e.g. from `cre workflow limits export`), or `none` to disable. See [Testing Production Limits](/cre/guides/operations/understanding-limits) (default: `default`) |
@@ -8041,7 +8488,7 @@ cre workflow simulate <workflow-name-or-path> [flags]
   in with the CLI](/cre/account/cli-login) for further details.
 </Aside>
 
-Deploys a workflow to the Workflow Registry contract. This command compiles your workflow, uploads the artifacts to the CRE Storage Service, and registers the workflow onchain.
+Deploys a workflow to the Workflow Registry — the onchain contract where workflows are enrolled so the Chainlink DON knows they exist and should run them. This command compiles your workflow, uploads the artifacts to the CRE Storage Service, and submits a registration transaction to the registry. Use [`cre registry list`](/cre/reference/cli/registry) to see which registry your organization is configured to use.
 
 **Usage:**
 
@@ -8088,6 +8535,11 @@ cre workflow deploy <workflow-name-or-path> [flags]
   # Deploy with the pre-built binary
   cre workflow deploy ./my-workflow --wasm ./my-workflow/binary.wasm --target production-settings
   ```
+
+
+<Aside type="note" title="Deploying over a paused workflow">
+  If you deploy an update to a workflow that is currently paused, the CLI will complete the update and then print a warning: `Your workflow is paused and has been updated`. The workflow remains paused after the update — run `cre workflow activate` to resume it.
+</Aside>
 
 For more details, see [Deploying Workflows](/cre/guides/operations/deploying-workflows).
 
@@ -8205,6 +8657,122 @@ cre workflow delete ./my-workflow --target production-settings
 </Aside>
 
 For more details, see [Deleting Workflows](/cre/guides/operations/deleting-workflows).
+
+## `cre workflow list`
+
+<Aside type="note" title="Authentication required">
+  Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
+  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
+  in with the CLI](/cre/account/cli-login) for further details.
+</Aside>
+
+Lists workflows deployed for your organization across registries. Deleted workflows are hidden by default.
+
+**Usage:**
+
+```bash
+cre workflow list [flags]
+```
+
+**Flags:**
+
+| Flag                  | Description                                                                       |
+| --------------------- | --------------------------------------------------------------------------------- |
+| `--include-deleted`   | Include workflows in `DELETED` status                                             |
+| `--output <string>`   | Output format. Use `json` to print a JSON array to stdout for scripting use cases |
+| `--registry <string>` | Filter results by a specific registry ID from your user context                   |
+
+**Examples:**
+
+- List all workflows
+
+  ```bash
+  cre workflow list
+  ```
+
+- List all workflows including deleted ones
+
+  ```bash
+  cre workflow list --include-deleted
+  ```
+
+- Export workflow list as JSON
+
+  ```bash
+  cre workflow list --output json > workflows.json
+  ```
+
+**JSON output fields:**
+
+| Field             | Description                                                                  |
+| ----------------- | ---------------------------------------------------------------------------- |
+| `name`            | Workflow name                                                                |
+| `workflowId`      | Workflow ID                                                                  |
+| `ownerAddress`    | Workflow owner address                                                       |
+| `status`          | Current workflow status                                                      |
+| `registry`        | Registry ID, or the workflow source when no registry match is available      |
+| `contractAddress` | Workflow registry contract address, when available for the resolved registry |
+
+**Example JSON output:**
+
+```json
+[
+  {
+    "name": "my-workflow",
+    "workflowId": "00ab...1234",
+    "ownerAddress": "0x1234...abcd",
+    "status": "ACTIVE",
+    "registry": "onchain:ethereum-mainnet",
+    "contractAddress": "0x5678...ef01"
+  }
+]
+```
+
+***
+
+## `cre workflow get`
+
+<Aside type="note" title="Authentication required">
+  Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
+  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
+  in with the CLI](/cre/account/cli-login) for further details.
+</Aside>
+
+Shows metadata for the workflow configured in `workflow.yaml`. The command reads the workflow name for the selected `--target`, searches the CRE platform for matching workflow metadata, and filters results to the workflow's configured `deployment-registry` by default.
+
+**Usage:**
+
+```bash
+cre workflow get <workflow-folder-path> [flags]
+```
+
+**Arguments:**
+
+- `<workflow-folder-path>` — (Required) Path to the workflow folder (e.g., `./my-workflow`)
+
+**Flags:**
+
+| Flag               | Description                                                              |
+| ------------------ | ------------------------------------------------------------------------ |
+| `--all-registries` | Do not filter results by the workflow's configured `deployment-registry` |
+
+**Examples:**
+
+- Show metadata for the workflow configured for a target
+
+  ```bash
+  cre workflow get ./my-workflow --target staging-settings
+  ```
+
+- Search across all registries in your organization
+
+  ```bash
+  cre workflow get ./my-workflow --target staging-settings --all-registries
+  ```
+
+The command prints the same human-readable workflow metadata fields as [`cre workflow list`](#cre-workflow-list): workflow name, workflow ID, owner address, status, registry, and registry address when available.
+
+***
 
 ## `cre workflow custom-build`
 
@@ -8355,7 +8923,9 @@ The typical workflow lifecycle uses these commands in sequence:
 6. **`cre workflow deploy`** — Deploy your workflow to the registry
 7. **`cre workflow pause`** / **`cre workflow activate`** — Control workflow execution as needed
 8. **`cre workflow deploy`** (again) — Deploy updates (replaces the existing workflow)
-9. **`cre workflow delete`** — Remove the workflow when no longer needed
+9. **`cre workflow list`** — (Optional) View all deployed workflows for your organization
+10. **`cre workflow get`** — (Optional) Inspect metadata for the workflow configured in `workflow.yaml`
+11. **`cre workflow delete`** — Remove the workflow when no longer needed
 
 ## Learn more
 
@@ -8365,6 +8935,58 @@ The typical workflow lifecycle uses these commands in sequence:
 - [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows) — Managing workflow state
 - [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows) — Version management
 - [Deleting Workflows](/cre/guides/operations/deleting-workflows) — Cleanup and removal
+
+---
+
+# Registry Commands
+Source: https://docs.chain.link/cre/reference/cli/registry
+Last Updated: 2026-04-16
+
+The `cre registry` commands let you view and inspect the workflow registries available to your organization.
+
+## What is a workflow registry?
+
+A **workflow registry** is the system that tracks which workflows are registered to your CRE organization and makes them available to the DON (Decentralized Oracle Network) for execution. The standard registry is a smart contract on Ethereum Mainnet — when you run `cre workflow deploy`, the CLI submits a transaction to that contract recording your workflow's name, owner, and artifact URLs, and the DON reads from it to discover and execute your workflow.
+
+When you log in with `cre login`, the CLI fetches your organization's registry configuration from the CRE platform and caches it locally in `~/.cre/context.yaml`. `cre registry list` reads from that cache and shows which registries your organization has access to.
+
+
+<Aside type="note" title="Authentication required">
+  Running `cre registry` commands requires you to be logged in. Run `cre whoami` to verify your session, or `cre login` to authenticate. See [Logging in with the CLI](/cre/account/cli-login) for details.
+</Aside>
+
+
+<Aside type="note" title="Global flags">
+  All `cre` commands support [global flags](/cre/reference/cli#global-flags) like `--env`, `--target`, `--project-root`, and `--verbose`.
+</Aside>
+
+## `cre registry list`
+
+Displays the workflow registries configured for your organization, including each registry's label, ID, type, and on-chain address (where applicable). Registry data is sourced from `~/.cre/context.yaml`, which is fetched from the CRE platform when you run `cre login`.
+
+**Usage:**
+
+```bash
+cre registry list
+```
+
+**Example output:**
+
+```
+Registries available to your organization
+
+ethereum-mainnet (0x4Ac5...E7e5)
+  ID:   onchain:ethereum-mainnet
+  Type: on-chain
+  Addr: 0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5
+```
+
+If no registries are found for your environment, the command prints a warning and exits cleanly.
+
+## Learn more
+
+- [Deploying Workflows](/cre/guides/operations/deploying-workflows) — End-to-end deployment guide
+- [Authentication](/cre/reference/cli/authentication) — Managing your CLI login session and tenant context cache
 
 ---
 
@@ -8382,14 +9004,13 @@ The `cre secrets` commands manage secrets stored in the Vault DON (Decentralized
 
 ## Authorization flow
 
-Starting with CLI v1.9.0, secrets operations use a **browser-based OAuth (PKCE) flow** to authorize Vault DON access:
+Secrets operations use your **workflow owner address** to authorize Vault DON access:
 
-1. You run a `cre secrets` command (e.g., `cre secrets create my-secrets.yaml`).
-2. The CLI starts a local callback server and opens your browser to a Vault authorization URL.
-3. You authenticate in the browser. When complete, the browser redirects back to the local callback.
-4. The CLI exchanges the authorization code for a short-lived vault JWT and submits your encrypted secrets directly to the Vault DON gateway (CLI v1.8.2+).
+1. The CLI verifies that your workflow owner address is linked to your account on-chain.
+2. The CLI submits an allowlist request transaction on the workflow registry chain (signed by your private key, or via multi-sig with `--unsigned`).
+3. Once the allowlist entry is confirmed, the CLI encrypts your secrets with the Vault master public key and submits them directly to the Vault DON gateway (CLI v1.8.2+).
 
-Your existing CLI login session (`~/.cre/cre.yaml`) is **not** affected — the vault authorization uses a separate short-lived token. **API key authentication is not supported** for this flow; you must be logged in with `cre login`.
+This requires a configured `workflow-owner-address` in your project and a linked workflow owner (see `cre account link-key`).
 
 ## Org-owned secrets
 
@@ -9588,7 +10209,7 @@ The skill works with any agent-capable AI coding tool that implements the [Agent
 Run the following command to add the CRE skill to your code editor agent:
 
 ```shell
-npx skills add https://github.com/smartcontractkit/chainlink-agent-skills --skill cre-skills
+npx skills add https://github.com/smartcontractkit/chainlink-agent-skills --skill chainlink-cre-skill
 ```
 
 ### Prompt your agent
@@ -9596,10 +10217,10 @@ npx skills add https://github.com/smartcontractkit/chainlink-agent-skills --skil
 Once installed, your agent will automatically discover and activate the skill based on your task. For best results across tools, explicitly reference it in your prompt:
 
 ```
-Use the /cre-skills skill and [describe what you want to build]
+Use the /chainlink-cre-skill skill and [describe what you want to build]
 ```
 
-In Claude Code, you can invoke it directly as a slash command: `/cre-skills`.
+In Claude Code, you can invoke it directly as a slash command: `/chainlink-cre-skill`.
 
 ### What the skill covers
 
@@ -11026,6 +11647,143 @@ To learn more about implementing consumer contracts and the secure write process
 You've now mastered the complete CRE development workflow!
 
 - **[Before You Build](/cre/getting-started/before-you-build-ts)**: Don't skip this — critical tips before building your own workflows.
+
+---
+
+# Verifying Workflows
+Source: https://docs.chain.link/cre/guides/operations/verifying-workflows-ts
+Last Updated: 2026-04-09
+
+<Aside type="note" title="TypeScript">
+  This page covers workflow verification for TypeScript workflows. For Go workflows, see [Verifying Workflows
+  (Go)](/cre/guides/operations/verifying-workflows-go).
+</Aside>
+
+Workflow verification ensures the integrity and authenticity of your workflows across deployment, onchain execution, and third-party auditing. This guide explains how workflow IDs are computed, how to verify workflows in consumer contracts, and how to enable independent verification by third parties.
+
+## Workflow ID
+
+The workflow ID is a unique hash that serves as the primary identifier for your workflow throughout its lifecycle. It is computed locally during [`cre workflow deploy`](/cre/reference/cli/workflow#cre-workflow-deploy) from the following inputs:
+
+- **workflowOwner**: The deployer's address
+- **workflowName**: The name specified in your workflow
+- **Compiled workflow binary**: The WASM binary produced from your workflow code
+- **Config file contents**: The contents of your workflow's config file
+- **Secrets hash**: An empty string placeholder for secrets
+
+Because the workflow ID is derived from these inputs, it deterministically represents a specific version of your workflow code and configuration.
+
+<Aside type="caution" title="Workflow ID changes on updates">
+  The workflow ID changes whenever you update your workflow code or config file, even if the workflow name stays the
+  same. For example, if you change contract bindings, the compiled binary changes, which produces a new workflow ID.
+  Plan for this when designing consumer contracts that permission on workflow ID.
+</Aside>
+
+Use [`cre workflow hash`](/cre/reference/cli/workflow#cre-workflow-hash) to inspect the workflow ID before deploying. This lets you preview the ID without submitting an onchain transaction.
+
+For more details on deployment and updates, see [Deploying Workflows](/cre/guides/operations/deploying-workflows) and [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows).
+
+## Verifying workflows onchain
+
+When a workflow writes onchain, the consumer contract receives both the report data and metadata through the `onReport` callback. The metadata contains information you can use to verify the source of the report:
+
+- **`workflowId`** (`bytes32`): The unique workflow hash
+- **`workflowName`** (`bytes10`): The workflow name, hash-encoded
+- **`workflowOwner`** (`address`): The address that deployed the workflow
+
+See [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts) for the full `IReceiver` interface and metadata structure.
+
+### Workflow name encoding
+
+The `workflowName` in metadata is not stored as a plain string. It is a SHA256 hash of the workflow name, truncated to `bytes10`. See [how workflow names are encoded](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#how-workflow-names-are-encoded) for the full encoding process.
+
+### Security best practices
+
+Follow these practices to ensure only authorized workflows can interact with your consumer contract:
+
+- **Verify `msg.sender`**: Always check that `msg.sender` is the expected forwarder address. See the [Forwarder Directory](/cre/guides/workflow/using-evm-client/forwarder-directory) for addresses by network.
+- **Permission on workflow ID**: Use `setExpectedWorkflowId` from `ReceiverTemplate` to restrict which workflow can call your contract.
+
+<Aside type="tip" title="Permissioning without workflow ID">
+  If you permission on `workflowId`, you must update it in your contract every time you update the workflow. An
+  alternative is to use `setExpectedAuthor` and `setExpectedWorkflowName` from `ReceiverTemplate` instead. These values
+  don't change when you update your workflow code, so your contract won't need updates after each workflow deployment.
+</Aside>
+
+## Third-party verification
+
+Third-party verification allows customers or auditors to independently confirm that a deployed workflow matches its source code. The deployer shares the workflow source, and the verifier uses the CRE CLI to compute the workflow hash and compare it against the onchain workflow ID.
+
+TypeScript workflows use Docker to produce reproducible builds. The same source always produces the same WASM binary hash because the build runs inside a pinned Docker image with a locked dependency tree.
+
+### Prerequisites
+
+- [CRE CLI](/cre/getting-started/cli-installation) installed
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) running
+- `make` available in your PATH (included with Xcode Command Line Tools on macOS; install via your package manager on Linux)
+
+### Steps for the workflow developer
+
+1. **Use the [`verifiable-build-ts` template](https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/verifiable-build/verifiable-build-ts)** as the starting point for your workflow. This template includes the `Dockerfile`, `Makefile`, and `Dockerfile.lock` required to produce reproducible builds.
+
+2. **Generate the lockfile** by running `make lock` from inside the `workflow/` directory. Re-run this whenever you change dependencies in `package.json`:
+
+   ```bash
+   cd workflow
+   make lock
+   ```
+
+   This generates `bun.lock` inside a Docker container to ensure cross-platform consistency. Always commit the updated `bun.lock` so that verifiers can reproduce your build.
+
+3. **Share your workflow source** with the verifier. Provide a zip archive or repository link that includes all workflow files and the committed `bun.lock`. Exclude `.env` files that contain private keys or secrets.
+
+### Steps for the verifier
+
+1. [**Install the CRE CLI**](/cre/getting-started/cli-installation). No login or deploy access is required for hash verification.
+
+2. **Start Docker Desktop.** When `cre workflow hash` runs, it detects that the workflow uses a pre-built WASM path and invokes `make build`. The Makefile then uses Docker to reproduce the WASM binary.
+
+3. **Clone or unzip** the shared workflow repository.
+
+4. **Run `cre workflow hash`** from the project root directory to compute the workflow hash:
+
+   ```bash
+   cre workflow hash workflow --public_key <DEPLOYER_ADDRESS> --target production-settings
+   ```
+
+   Replace `<DEPLOYER_ADDRESS>` with the deployer's public address (for example, `0xb0f2D38245dD6d397ebBDB5A814b753D56c30715`).
+
+5. **Compare the output** with the workflow ID observed onchain. The `Workflow hash` value corresponds to the onchain workflow ID:
+
+   ```
+   Compiling workflow...
+   ✓ Workflow compiled
+     Binary hash:   03c77e16354e5555f9a74e787f9a6aa0d939e9b8e4ddff06542b7867499c58ea
+     Config hash:   3bdaebcc2f639d77cb248242c1d01c8651f540cdbf423d26fe3128516fd225b6
+     Workflow hash: 001de36f9d689b57f2e4f1eaeda1db5e79f7991402e3611e13a5c930599c2297
+   ```
+
+   If the workflow hash matches the onchain workflow ID, the deployed workflow matches the shared source code.
+
+<Aside type="tip">Run `cre workflow hash -h` for full usage details and additional flags.</Aside>
+
+### How reproducible builds work
+
+When `cre workflow hash` runs on this template, it detects `workflow-path: ./wasm/workflow.wasm` in `workflow.yaml` and delegates compilation to `make build` rather than compiling TypeScript directly:
+
+1. `make build` on the host starts a Docker build targeting `linux/amd64`.
+2. Inside the container, `bun install --frozen-lockfile` installs exact dependency versions from `bun.lock`.
+3. The workflow is compiled to a WASM binary (`workflow.wasm`).
+4. The binary is exported back to the host.
+
+Because the build runs inside a pinned Docker image with a locked dependency tree, the same source always produces the same binary hash.
+
+## Learn more
+
+- [Deploying Workflows](/cre/guides/operations/deploying-workflows)
+- [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows)
+- [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts)
+- [CRE CLI Workflow Reference](/cre/reference/cli/workflow)
 
 ---
 
@@ -15396,7 +16154,7 @@ You can have a working CRE workflow running locally in minutes:
 
 # Project Configuration
 Source: https://docs.chain.link/cre/reference/project-configuration-ts
-Last Updated: 2026-03-17
+Last Updated: 2026-04-16
 
 This page explains how to manage configuration within Chainlink Runtime Environment (CRE) projects. It covers the standard project structure, the roles and usage of the configuration files (`project.yaml` and `workflow.yaml`), and the concept of **targets** for handling environment-specific settings.
 

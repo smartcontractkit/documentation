@@ -1,0 +1,50 @@
+---
+section: ace
+title: "Beta Scope"
+date: Last Modified
+metadata:
+  description: "ACE Beta scope: testnet only, supported contract types, attestation-only credentials, self-deployed contract visibility, custom policies and extractors, signing model, and contract upgradeability."
+  datePublished: "2026-04-20"
+  lastModified: "2026-04-20"
+---
+
+import { Aside } from "@components"
+
+<Aside type="note" title="Private Beta">
+  ACE is currently available in **private beta**. To request access or schedule a demo, [contact
+  us](https://chain.link/contact).
+</Aside>
+
+ACE Beta is an early-access release for testing and integration on testnet networks. The limitations listed below are all areas of active development. Each will be addressed as ACE progresses toward general availability.
+
+## Testnet only
+
+ACE Beta is currently available on testnet networks only.
+
+## No custom policies, extractors, or mappers
+
+ACE Beta provides a library of [pre-built, audited policies](/ace/reference/policy-library) (allowlists, volume limits, role-based access control, pause controls, and more). The following customizations are **not available** through the platform during Beta:
+
+- **Custom policies** — Creating and deploying your own policy contracts.
+- **Custom extractors** — Writing extractors for function signatures beyond the pre-built ERC-20 and ERC-3643 set.
+- **Custom mappers** — Deploying mapper contracts that transform or combine extracted parameters before they reach a policy.
+
+Because custom extractors are not available, the platform supports **ERC-20 and ERC-3643** function signatures only. These are the only contract types that get the full managed experience — policy configuration, reporting, and monitoring — through the Platform UI and Coordinator API. If you are building a different type of contract (vault, DEX, lending protocol), making it ACE-compatible could require custom extractors. Support for additional contract types and custom extractors is on the roadmap.
+
+Users can deploy custom policies, extractors, or mappers onchain directly, but these fall under the [self-deployed contracts limitation](#self-deployed-contracts-are-not-visible-in-the-platform) below — they will not be visible or manageable through the platform.
+
+## Self-deployed contracts are not visible in the platform
+
+Contracts deployed outside the ACE Platform — for example, via Foundry scripts or direct factory calls — will not appear in the UI or API responses.
+
+The ACE Platform only tracks and manages contracts it deploys. Self-deployed PolicyEngines, policies, registries, and extractors function onchain but will not appear in the UI, API responses, or reporting dashboards.
+
+To use the full managed experience (UI dashboards, Reporting API queries, policy management), deploy contracts through the Platform UI or Coordinator API.
+
+## Credential checks are attestation-only
+
+The ACE Platform (UI and Coordinator API) supports attestation-based credential checks only — verifying whether a credential exists. Credential Data Validator contracts, which can inspect the contents of the `credentialData` field for more granular checks, are not configurable through the platform during Beta.
+
+For a full explanation of attestation-only vs. Credential Data Validator checks, see [Cross-Chain Identity — Credential data and privacy](/ace/concepts/cross-chain-identity#credential-data-and-privacy).
+
+For Beta, model compliance checks as attestations. For example, have the Credential Issuer issue a `not_ofac_sanctioned` credential that attests the user has passed the sanctions check, rather than storing data for onchain evaluation.
