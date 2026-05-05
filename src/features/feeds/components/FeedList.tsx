@@ -14,8 +14,8 @@ import SectionWrapper from "~/components/SectionWrapper/SectionWrapper.tsx"
 import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/TableOfContents/tocStore.ts"
 import { ChainSelector } from "~/components/ChainSelector/ChainSelector.tsx"
-import { chainHasVisibleFeeds, networkHasVisibleFeeds } from "../utils/feedVisibility.ts"
-import { updateUrlClean, clearFilters } from "./urlStateHelpers.ts"
+import { chainHasVisibleFeeds, isFeedVisible, networkHasVisibleFeeds } from "../utils/feedVisibility.ts"
+import { updateUrlClean } from "./urlStateHelpers.ts"
 
 export type DataFeedType =
   | "default"
@@ -75,6 +75,34 @@ const isStreamsRwaFeedTypeValue = (value: unknown): value is StreamsRwaFeedTypeV
   value === "all" || value === "datalink" || value === "equities" || value === "forex"
 const isTradingHoursFilterValue = (value: unknown): value is TradingHoursFilterValue =>
   value === "all" || value === "regular" || value === "extended" || value === "overnight"
+
+type StreamFeedMetadata = ChainMetadata & {
+  docs: ChainMetadata["docs"] & {
+    clicProductName?: string
+  }
+}
+
+const getStreamSchemaVersion = (feed: StreamFeedMetadata): string | undefined => {
+  if (feed.docs?.schema) return feed.docs.schema
+
+  const clicProductName = feed.docs?.clicProductName
+  if (!clicProductName) return undefined
+
+  const match = clicProductName.match(/-0(\d{2})$/)
+  if (!match) return undefined
+
+  if (match[1] === "04" || match[1] === "08") return "v8"
+  if (match[1] === "11") return "v11"
+
+  return undefined
+}
+
+const is24x5StreamFeed = (feed: StreamFeedMetadata): boolean => {
+  const schemaVersion = getStreamSchemaVersion(feed)
+  const feedType = feed.feedType || feed.docs?.feedType
+
+  return (feedType === "Equities" || feedType === "Forex") && schemaVersion === "v11"
+}
 
 const FilterDropdown = <T extends string>({
   label,
@@ -255,22 +283,22 @@ export const FeedList = ({
     if (typeof window !== "undefined") {
       const handleNetworkTypeUrlChange = () => {
         const networkTypeFromURL = getNetworkTypeFromURL()
-        if (networkTypeFromURL !== selectedNetworkType) {
-          setSelectedNetworkType(networkTypeFromURL)
-        }
+        setSelectedNetworkType((current) => (networkTypeFromURL === current ? current : networkTypeFromURL))
       }
 
       // Listen for popstate events (back/forward navigation)
       window.addEventListener("popstate", handleNetworkTypeUrlChange)
+      window.addEventListener("pageshow", handleNetworkTypeUrlChange)
 
       // Also check immediately in case URL was changed externally
       handleNetworkTypeUrlChange()
 
       return () => {
         window.removeEventListener("popstate", handleNetworkTypeUrlChange)
+        window.removeEventListener("pageshow", handleNetworkTypeUrlChange)
       }
     }
-  }, [selectedNetworkType])
+  }, [])
 
   // Track hydration state
   const [isHydrated, setIsHydrated] = useState(false)
@@ -732,7 +760,20 @@ export const FeedList = ({
       })
       .filter((network) => {
         // Ensure the network has at least one visible feed for the current dataFeedType
-        return networkHasVisibleFeeds(network, dataFeedType, ecosystem, { tokenizedEquityProvider })
+        const visibilityOptions = {
+          tokenizedEquityProvider,
+          streamCategoryFilter: isStreams ? forceStreamCategoryFilter : undefined,
+        }
+
+        if (isStreams && force24x5Only) {
+          return (
+            network.metadata?.some(
+              (feed) => isFeedVisible(feed, dataFeedType, ecosystem, visibilityOptions) && is24x5StreamFeed(feed)
+            ) ?? false
+          )
+        }
+
+        return networkHasVisibleFeeds(network, dataFeedType, ecosystem, visibilityOptions)
       })
 
     // Check available network types
@@ -754,6 +795,8 @@ export const FeedList = ({
     dataFeedType,
     ecosystem,
     tokenizedEquityProvider,
+    forceStreamCategoryFilter,
+    force24x5Only,
   ])
 
   // Auto-switch network type if current selection isn't available
@@ -796,6 +839,58 @@ export const FeedList = ({
     dataFeedType,
     ecosystem,
   ])
+
+  const renderNetworkTypeSwitcher = (
+    availableTypes = availableNetworkTypes,
+    ariaLabel = "Select stream network type"
+  ) => {
+    if (!isHydrated) return null
+    if (!availableTypes.mainnet && !availableTypes.testnet) return null
+
+    return (
+      <div className={feedList.streamNetworkSelector}>
+        <span className={feedList.streamNetworkSelectorLabel}>Environment</span>
+        <div className={feedList.streamNetworkToggleGroup} role="group" aria-label={ariaLabel}>
+          <button
+            type="button"
+            className={clsx(
+              feedList.streamNetworkToggle,
+              selectedNetworkType === "mainnet" && feedList.streamNetworkToggleActive,
+              !availableTypes.mainnet && feedList.streamNetworkToggleDisabled
+            )}
+            onClick={() => {
+              if (availableTypes.mainnet) {
+                handleNetworkTypeChange("mainnet")
+              }
+            }}
+            disabled={!availableTypes.mainnet}
+            aria-pressed={selectedNetworkType === "mainnet"}
+            title={!availableTypes.mainnet ? `${selectedChain.label} streams are not available on mainnet` : undefined}
+          >
+            Mainnet
+          </button>
+          <button
+            type="button"
+            className={clsx(
+              feedList.streamNetworkToggle,
+              selectedNetworkType === "testnet" && feedList.streamNetworkToggleActive,
+              !availableTypes.testnet && feedList.streamNetworkToggleDisabled
+            )}
+            onClick={() => {
+              if (availableTypes.testnet) {
+                handleNetworkTypeChange("testnet")
+              }
+            }}
+            disabled={!availableTypes.testnet}
+            aria-pressed={selectedNetworkType === "testnet"}
+            title={!availableTypes.testnet ? `${selectedChain.label} streams are not available on testnet` : undefined}
+          >
+            Testnet
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   const forcedCategoryLabel =
     forceStreamCategoryFilter === "datalink"
@@ -1050,9 +1145,25 @@ export const FeedList = ({
     // Regular streams view (non-deprecating)
     const mainnetFeeds: ChainNetwork[] = []
     const testnetFeeds: ChainNetwork[] = []
+    const streamHasVisibleFeeds = (network: ChainNetwork) => {
+      const visibilityOptions = {
+        tokenizedEquityProvider,
+        streamCategoryFilter: forceStreamCategoryFilter,
+      }
+
+      if (force24x5Only) {
+        return (
+          network.metadata?.some(
+            (feed) => isFeedVisible(feed, dataFeedType, ecosystem, visibilityOptions) && is24x5StreamFeed(feed)
+          ) ?? false
+        )
+      }
+
+      return networkHasVisibleFeeds(network, dataFeedType, ecosystem, visibilityOptions)
+    }
 
     currentChainMetadata.processedData?.networks.forEach((network) => {
-      if (network.name.includes("Arbitrum")) {
+      if (network.tags?.includes("streams") && streamHasVisibleFeeds(network)) {
         if (network.networkType === "mainnet") {
           mainnetFeeds.push(network)
         } else if (network.networkType === "testnet") {
@@ -1060,9 +1171,15 @@ export const FeedList = ({
         }
       }
     })
+    const streamAvailableNetworkTypes = {
+      mainnet: mainnetFeeds.length > 0,
+      testnet: testnetFeeds.length > 0,
+    }
 
     return (
       <>
+        {renderNetworkTypeSwitcher(streamAvailableNetworkTypes)}
+
         {!isDeprecating && (
           <>
             {allowNetworkTableExpansion ? (
@@ -1070,6 +1187,7 @@ export const FeedList = ({
                 <StreamsNetworkAddressesTable
                   allowExpansion={allowNetworkTableExpansion}
                   defaultExpanded={defaultNetworkTableExpanded}
+                  networkType={selectedNetworkType}
                 />
               </div>
             ) : (
@@ -1077,381 +1195,386 @@ export const FeedList = ({
                 <StreamsNetworkAddressesTable
                   allowExpansion={allowNetworkTableExpansion}
                   defaultExpanded={defaultNetworkTableExpanded}
+                  networkType={selectedNetworkType}
                 />
               </SectionWrapper>
             )}
           </>
         )}
 
-        <SectionWrapper
-          title={streamsMainnetSectionTitle}
-          depth={2}
-          idOverride={streamsMainnetSectionTitle.toLowerCase().replace(/\s+/g, "-")}
-        >
-          <div className={feedList.tableFilters}>
-            <form class={feedList.filterDropdown_search}>
-              <input
-                id="search"
-                class={feedList.filterDropdown_searchInput}
-                placeholder="Search"
-                onFocus={closeAllDropdowns}
-                onInput={(event) => {
-                  closeAllDropdowns()
-                  setSearchValue((event.target as HTMLInputElement).value)
-                  setCurrentPage("1")
-                }}
-              />
-            </form>
-            {dataFeedType === "streamsCrypto" && (
-              <div className={feedList.checkboxContainer}>
-                <label className={feedList.detailsLabel}>
-                  <input
-                    type="checkbox"
-                    style="width:15px;height:15px;display:inline;margin-right:8px;"
-                    checked={showOnlyDEXFeeds}
-                    onChange={() => {
-                      closeAllDropdowns()
-                      setShowOnlyDEXFeeds((old) => !old)
-                      if (showOnlyDatalinkFeeds) setShowOnlyDatalinkFeeds(false)
-                      setCurrentPage("1")
-                    }}
-                  />
-                  Show DEX State Price streams
-                </label>
-                <label className={feedList.detailsLabel}>
-                  <input
-                    type="checkbox"
-                    style="width:15px;height:15px;display:inline;margin-right:8px;"
-                    checked={showOnlyDatalinkFeeds}
-                    onChange={() => {
-                      closeAllDropdowns()
-                      setShowOnlyDatalinkFeeds((old) => !old)
-                      if (showOnlyDEXFeeds) setShowOnlyDEXFeeds(false)
-                      setCurrentPage("1")
-                    }}
-                  />
-                  Show Datalink streams
-                </label>
-              </div>
-            )}
-            {dataFeedType === "streamsRwa" && (
-              <>
-                {!forceStreamCategoryFilter && !show24x5Feeds && (
-                  <>
-                    <FilterDropdown
-                      isOpen={openDropdownId === "main-schema"}
-                      onToggle={(isOpen) => handleDropdownToggle("main-schema", isOpen)}
-                      onClose={closeAllDropdowns}
-                      label="Filter schema"
-                      options={schemaFilterOptions}
-                      value={rwaSchemaFilter}
-                      groupId="schema-main"
-                      onSelect={(next) => {
-                        setRwaSchemaFilter(next)
+        {selectedNetworkType === "mainnet" && (
+          <SectionWrapper
+            title={streamsMainnetSectionTitle}
+            depth={2}
+            idOverride={streamsMainnetSectionTitle.toLowerCase().replace(/\s+/g, "-")}
+          >
+            <div className={feedList.tableFilters}>
+              <form class={feedList.filterDropdown_search}>
+                <input
+                  id="search"
+                  class={feedList.filterDropdown_searchInput}
+                  placeholder="Search"
+                  onFocus={closeAllDropdowns}
+                  onInput={(event) => {
+                    closeAllDropdowns()
+                    setSearchValue((event.target as HTMLInputElement).value)
+                    setCurrentPage("1")
+                  }}
+                />
+              </form>
+              {dataFeedType === "streamsCrypto" && (
+                <div className={feedList.checkboxContainer}>
+                  <label className={feedList.detailsLabel}>
+                    <input
+                      type="checkbox"
+                      style="width:15px;height:15px;display:inline;margin-right:8px;"
+                      checked={showOnlyDEXFeeds}
+                      onChange={() => {
+                        closeAllDropdowns()
+                        setShowOnlyDEXFeeds((old) => !old)
+                        if (showOnlyDatalinkFeeds) setShowOnlyDatalinkFeeds(false)
                         setCurrentPage("1")
                       }}
                     />
-                    <FilterDropdown
-                      isOpen={openDropdownId === "main-feed-type"}
-                      onToggle={(isOpen) => handleDropdownToggle("main-feed-type", isOpen)}
-                      onClose={closeAllDropdowns}
-                      label="Filter category"
-                      options={feedTypeFilterOptions}
-                      value={streamCategoryFilter}
-                      groupId="feed-type-main"
-                      onSelect={(next) => {
-                        setStreamCategoryFilter(next)
+                    Show DEX State Price streams
+                  </label>
+                  <label className={feedList.detailsLabel}>
+                    <input
+                      type="checkbox"
+                      style="width:15px;height:15px;display:inline;margin-right:8px;"
+                      checked={showOnlyDatalinkFeeds}
+                      onChange={() => {
+                        closeAllDropdowns()
+                        setShowOnlyDatalinkFeeds((old) => !old)
+                        if (showOnlyDEXFeeds) setShowOnlyDEXFeeds(false)
                         setCurrentPage("1")
                       }}
                     />
-                  </>
-                )}
-                {!force24x5Only && !forceStreamCategoryFilter && (
-                  <div className={feedList.checkboxContainer}>
-                    <label className={feedList.detailsLabel}>
-                      <input
-                        type="checkbox"
-                        style="width:15px;height:15px;display:inline;margin-right:8px;"
-                        checked={show24x5Feeds}
-                        onChange={() => {
-                          closeAllDropdowns()
-                          const newValue = !show24x5Feeds
-                          setShow24x5Feeds(newValue)
-                          if (newValue) {
-                            // Reset trading hours filter when enabling 24/5
-                            setTradingHoursFilter("all")
-                          }
+                    Show Datalink streams
+                  </label>
+                </div>
+              )}
+              {dataFeedType === "streamsRwa" && (
+                <>
+                  {!forceStreamCategoryFilter && !show24x5Feeds && (
+                    <>
+                      <FilterDropdown
+                        isOpen={openDropdownId === "main-schema"}
+                        onToggle={(isOpen) => handleDropdownToggle("main-schema", isOpen)}
+                        onClose={closeAllDropdowns}
+                        label="Filter schema"
+                        options={schemaFilterOptions}
+                        value={rwaSchemaFilter}
+                        groupId="schema-main"
+                        onSelect={(next) => {
+                          setRwaSchemaFilter(next)
                           setCurrentPage("1")
                         }}
                       />
-                      Show only 24/5 Equity Streams
-                    </label>
-                  </div>
-                )}
-                {show24x5Feeds && (
-                  <FilterDropdown
-                    isOpen={openDropdownId === "main-trading-hours"}
-                    onToggle={(isOpen) => handleDropdownToggle("main-trading-hours", isOpen)}
-                    onClose={closeAllDropdowns}
-                    label="Time segment"
-                    options={tradingHoursFilterOptions}
-                    value={tradingHoursFilter}
-                    groupId="trading-hours-main"
-                    onSelect={(next) => {
-                      setTradingHoursFilter(next)
-                      setCurrentPage("1")
-                    }}
-                  />
-                )}
-                {(searchValue ||
-                  rwaSchemaFilter !== "all" ||
-                  (!forceStreamCategoryFilter && streamCategoryFilter !== "all") ||
-                  show24x5Feeds) && (
-                  <button
-                    type="button"
-                    className={clsx(button.secondary, feedList.clearFilterBtn)}
-                    onClick={() => {
-                      closeAllDropdowns()
-                      setSearchValue("")
-                      setRwaSchemaFilter("all")
-                      if (!forceStreamCategoryFilter) setStreamCategoryFilter("all")
-                      setShow24x5Feeds(false)
-                      setTradingHoursFilter("all")
-                      setCurrentPage("1")
-                      const inputElement = document.getElementById("search") as HTMLInputElement
-                      if (inputElement) {
-                        inputElement.value = ""
-                      }
-                    }}
-                    aria-label="Clear all filters"
-                  >
-                    Clear filter
-                  </button>
-                )}
-              </>
+                      <FilterDropdown
+                        isOpen={openDropdownId === "main-feed-type"}
+                        onToggle={(isOpen) => handleDropdownToggle("main-feed-type", isOpen)}
+                        onClose={closeAllDropdowns}
+                        label="Filter category"
+                        options={feedTypeFilterOptions}
+                        value={streamCategoryFilter}
+                        groupId="feed-type-main"
+                        onSelect={(next) => {
+                          setStreamCategoryFilter(next)
+                          setCurrentPage("1")
+                        }}
+                      />
+                    </>
+                  )}
+                  {!force24x5Only && !forceStreamCategoryFilter && (
+                    <div className={feedList.checkboxContainer}>
+                      <label className={feedList.detailsLabel}>
+                        <input
+                          type="checkbox"
+                          style="width:15px;height:15px;display:inline;margin-right:8px;"
+                          checked={show24x5Feeds}
+                          onChange={() => {
+                            closeAllDropdowns()
+                            const newValue = !show24x5Feeds
+                            setShow24x5Feeds(newValue)
+                            if (newValue) {
+                              // Reset trading hours filter when enabling 24/5
+                              setTradingHoursFilter("all")
+                            }
+                            setCurrentPage("1")
+                          }}
+                        />
+                        Show only 24/5 Equity Streams
+                      </label>
+                    </div>
+                  )}
+                  {show24x5Feeds && (
+                    <FilterDropdown
+                      isOpen={openDropdownId === "main-trading-hours"}
+                      onToggle={(isOpen) => handleDropdownToggle("main-trading-hours", isOpen)}
+                      onClose={closeAllDropdowns}
+                      label="Time segment"
+                      options={tradingHoursFilterOptions}
+                      value={tradingHoursFilter}
+                      groupId="trading-hours-main"
+                      onSelect={(next) => {
+                        setTradingHoursFilter(next)
+                        setCurrentPage("1")
+                      }}
+                    />
+                  )}
+                  {(searchValue ||
+                    rwaSchemaFilter !== "all" ||
+                    (!forceStreamCategoryFilter && streamCategoryFilter !== "all") ||
+                    show24x5Feeds) && (
+                    <button
+                      type="button"
+                      className={clsx(button.secondary, feedList.clearFilterBtn)}
+                      onClick={() => {
+                        closeAllDropdowns()
+                        setSearchValue("")
+                        setRwaSchemaFilter("all")
+                        if (!forceStreamCategoryFilter) setStreamCategoryFilter("all")
+                        setShow24x5Feeds(false)
+                        setTradingHoursFilter("all")
+                        setCurrentPage("1")
+                        const inputElement = document.getElementById("search") as HTMLInputElement
+                        if (inputElement) {
+                          inputElement.value = ""
+                        }
+                      }}
+                      aria-label="Clear all filters"
+                    >
+                      Clear filter
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+            {currentChainMetadata.loading || !currentChainMetadata.processedData ? (
+              <p style="font-style: italic;">Loading...</p>
+            ) : mainnetFeeds.length > 0 ? (
+              mainnetFeeds.map((network) => (
+                <MainnetTable
+                  selectedFeedCategories={
+                    Array.isArray(selectedFeedCategories)
+                      ? selectedFeedCategories
+                      : selectedFeedCategories
+                        ? [selectedFeedCategories]
+                        : []
+                  }
+                  network={network}
+                  showExtraDetails={showExtraDetails}
+                  showOnlySVR={showOnlySVR}
+                  showOnlyMVRFeeds={showOnlyMVRFeeds}
+                  showOnlyDEXFeeds={showOnlyDEXFeeds}
+                  showOnlyDatalinkFeeds={showOnlyDatalinkFeeds}
+                  rwaSchemaFilter={rwaSchemaFilter}
+                  streamCategoryFilter={streamCategoryFilter}
+                  show24x5Feeds={show24x5Feeds}
+                  tradingHoursFilter={tradingHoursFilter}
+                  dataFeedType={dataFeedType}
+                  ecosystem={ecosystem}
+                  lastAddr={lastAddr}
+                  firstAddr={firstAddr}
+                  addrPerPage={addrPerPage}
+                  currentPage={currentPageNum}
+                  paginate={paginate}
+                  searchValue={typeof searchValue === "string" ? searchValue : ""}
+                  tokenizedEquityProvider={tokenizedEquityProvider}
+                />
+              ))
+            ) : (
+              <p>No Mainnet feeds available.</p>
             )}
-          </div>
-          {currentChainMetadata.loading || !currentChainMetadata.processedData ? (
-            <p style="font-style: italic;">Loading...</p>
-          ) : mainnetFeeds.length > 0 ? (
-            mainnetFeeds.map((network) => (
-              <MainnetTable
-                selectedFeedCategories={
-                  Array.isArray(selectedFeedCategories)
-                    ? selectedFeedCategories
-                    : selectedFeedCategories
-                      ? [selectedFeedCategories]
-                      : []
-                }
-                network={network}
-                showExtraDetails={showExtraDetails}
-                showOnlySVR={showOnlySVR}
-                showOnlyMVRFeeds={showOnlyMVRFeeds}
-                showOnlyDEXFeeds={showOnlyDEXFeeds}
-                showOnlyDatalinkFeeds={showOnlyDatalinkFeeds}
-                rwaSchemaFilter={rwaSchemaFilter}
-                streamCategoryFilter={streamCategoryFilter}
-                show24x5Feeds={show24x5Feeds}
-                tradingHoursFilter={tradingHoursFilter}
-                dataFeedType={dataFeedType}
-                ecosystem={ecosystem}
-                lastAddr={lastAddr}
-                firstAddr={firstAddr}
-                addrPerPage={addrPerPage}
-                currentPage={currentPageNum}
-                paginate={paginate}
-                searchValue={typeof searchValue === "string" ? searchValue : ""}
-                tokenizedEquityProvider={tokenizedEquityProvider}
-              />
-            ))
-          ) : (
-            <p>No Mainnet feeds available.</p>
-          )}
-        </SectionWrapper>
+          </SectionWrapper>
+        )}
 
-        <SectionWrapper
-          title={streamsTestnetSectionTitle}
-          depth={2}
-          idOverride={streamsTestnetSectionTitle.toLowerCase().replace(/\s+/g, "-")}
-        >
-          <div className={feedList.tableFilters}>
-            <form class={feedList.filterDropdown_search}>
-              <input
-                id="testnetSearch"
-                class={feedList.filterDropdown_searchInput}
-                placeholder="Search"
-                onFocus={closeAllDropdowns}
-                onInput={(event) => {
-                  closeAllDropdowns()
-                  setTestnetSearchValue((event.target as HTMLInputElement).value)
-                  setTestnetCurrentPage("1")
-                }}
-              />
-            </form>
-            {dataFeedType === "streamsCrypto" && (
-              <div className={feedList.checkboxContainer}>
-                <label className={feedList.detailsLabel}>
-                  <input
-                    type="checkbox"
-                    style="width:15px;height:15px;display:inline;margin-right:8px;"
-                    checked={showOnlyDEXFeedsTestnet}
-                    onChange={() => {
-                      setShowOnlyDEXFeedsTestnet((old) => !old)
-                      if (showOnlyDatalinkFeedsTestnet) setShowOnlyDatalinkFeedsTestnet(false)
-                      setTestnetCurrentPage("1")
-                    }}
-                  />
-                  Show DEX State Price streams
-                </label>
-                <label className={feedList.detailsLabel}>
-                  <input
-                    type="checkbox"
-                    style="width:15px;height:15px;display:inline;margin-right:8px;"
-                    checked={showOnlyDatalinkFeedsTestnet}
-                    onChange={() => {
-                      setShowOnlyDatalinkFeedsTestnet((old) => !old)
-                      if (showOnlyDEXFeedsTestnet) setShowOnlyDEXFeedsTestnet(false)
-                      setTestnetCurrentPage("1")
-                    }}
-                  />
-                  Show Datalink streams
-                </label>
-              </div>
-            )}
-            {dataFeedType === "streamsRwa" && (
-              <>
-                {!forceStreamCategoryFilter && !show24x5FeedsTestnet && (
-                  <>
-                    <FilterDropdown
-                      isOpen={openDropdownId === "test-schema"}
-                      onToggle={(isOpen) => handleDropdownToggle("test-schema", isOpen)}
-                      onClose={closeAllDropdowns}
-                      label="Filter schema"
-                      options={schemaFilterOptions}
-                      value={testnetRwaSchemaFilter}
-                      groupId="schema-testnet"
-                      onSelect={(next) => {
-                        setTestnetRwaSchemaFilter(next)
+        {selectedNetworkType === "testnet" && (
+          <SectionWrapper
+            title={streamsTestnetSectionTitle}
+            depth={2}
+            idOverride={streamsTestnetSectionTitle.toLowerCase().replace(/\s+/g, "-")}
+          >
+            <div className={feedList.tableFilters}>
+              <form class={feedList.filterDropdown_search}>
+                <input
+                  id="testnetSearch"
+                  class={feedList.filterDropdown_searchInput}
+                  placeholder="Search"
+                  onFocus={closeAllDropdowns}
+                  onInput={(event) => {
+                    closeAllDropdowns()
+                    setTestnetSearchValue((event.target as HTMLInputElement).value)
+                    setTestnetCurrentPage("1")
+                  }}
+                />
+              </form>
+              {dataFeedType === "streamsCrypto" && (
+                <div className={feedList.checkboxContainer}>
+                  <label className={feedList.detailsLabel}>
+                    <input
+                      type="checkbox"
+                      style="width:15px;height:15px;display:inline;margin-right:8px;"
+                      checked={showOnlyDEXFeedsTestnet}
+                      onChange={() => {
+                        setShowOnlyDEXFeedsTestnet((old) => !old)
+                        if (showOnlyDatalinkFeedsTestnet) setShowOnlyDatalinkFeedsTestnet(false)
                         setTestnetCurrentPage("1")
                       }}
                     />
-                    <FilterDropdown
-                      isOpen={openDropdownId === "test-feed-type"}
-                      onToggle={(isOpen) => handleDropdownToggle("test-feed-type", isOpen)}
-                      onClose={closeAllDropdowns}
-                      label="Filter category"
-                      options={feedTypeFilterOptions}
-                      value={testnetStreamCategoryFilter}
-                      groupId="feed-type-testnet"
-                      onSelect={(next) => {
-                        setTestnetStreamCategoryFilter(next)
+                    Show DEX State Price streams
+                  </label>
+                  <label className={feedList.detailsLabel}>
+                    <input
+                      type="checkbox"
+                      style="width:15px;height:15px;display:inline;margin-right:8px;"
+                      checked={showOnlyDatalinkFeedsTestnet}
+                      onChange={() => {
+                        setShowOnlyDatalinkFeedsTestnet((old) => !old)
+                        if (showOnlyDEXFeedsTestnet) setShowOnlyDEXFeedsTestnet(false)
                         setTestnetCurrentPage("1")
                       }}
                     />
-                  </>
-                )}
-                {!force24x5Only && !forceStreamCategoryFilter && (
-                  <div className={feedList.checkboxContainer}>
-                    <label className={feedList.detailsLabel}>
-                      <input
-                        type="checkbox"
-                        style="width:15px;height:15px;display:inline;margin-right:8px;"
-                        checked={show24x5FeedsTestnet}
-                        onChange={() => {
-                          closeAllDropdowns()
-                          const newValue = !show24x5FeedsTestnet
-                          setShow24x5FeedsTestnet(newValue)
-                          if (newValue) {
-                            // Reset trading hours filter when enabling 24/5
-                            setTestnetTradingHoursFilter("all")
-                          }
+                    Show Datalink streams
+                  </label>
+                </div>
+              )}
+              {dataFeedType === "streamsRwa" && (
+                <>
+                  {!forceStreamCategoryFilter && !show24x5FeedsTestnet && (
+                    <>
+                      <FilterDropdown
+                        isOpen={openDropdownId === "test-schema"}
+                        onToggle={(isOpen) => handleDropdownToggle("test-schema", isOpen)}
+                        onClose={closeAllDropdowns}
+                        label="Filter schema"
+                        options={schemaFilterOptions}
+                        value={testnetRwaSchemaFilter}
+                        groupId="schema-testnet"
+                        onSelect={(next) => {
+                          setTestnetRwaSchemaFilter(next)
                           setTestnetCurrentPage("1")
                         }}
                       />
-                      Show only 24/5 Equity Streams
-                    </label>
-                  </div>
-                )}
-                {show24x5FeedsTestnet && (
-                  <FilterDropdown
-                    isOpen={openDropdownId === "test-trading-hours"}
-                    onToggle={(isOpen) => handleDropdownToggle("test-trading-hours", isOpen)}
-                    onClose={closeAllDropdowns}
-                    label="Time segment"
-                    options={tradingHoursFilterOptions}
-                    value={testnetTradingHoursFilter}
-                    groupId="trading-hours-testnet"
-                    onSelect={(next) => {
-                      setTestnetTradingHoursFilter(next)
-                      setTestnetCurrentPage("1")
-                    }}
-                  />
-                )}
-                {(testnetSearchValue ||
-                  testnetRwaSchemaFilter !== "all" ||
-                  (!forceStreamCategoryFilter && testnetStreamCategoryFilter !== "all") ||
-                  show24x5FeedsTestnet) && (
-                  <button
-                    type="button"
-                    className={clsx(button.secondary, feedList.clearFilterBtn)}
-                    onClick={() => {
-                      closeAllDropdowns()
-                      setTestnetSearchValue("")
-                      setTestnetRwaSchemaFilter("all")
-                      if (!forceStreamCategoryFilter) setTestnetStreamCategoryFilter("all")
-                      setShow24x5FeedsTestnet(false)
-                      setTestnetTradingHoursFilter("all")
-                      setTestnetCurrentPage("1")
-                      const inputElement = document.getElementById("testnetSearch") as HTMLInputElement
-                      if (inputElement) {
-                        inputElement.value = ""
-                      }
-                    }}
-                    aria-label="Clear all filters"
-                  >
-                    Clear filter
-                  </button>
-                )}
-              </>
+                      <FilterDropdown
+                        isOpen={openDropdownId === "test-feed-type"}
+                        onToggle={(isOpen) => handleDropdownToggle("test-feed-type", isOpen)}
+                        onClose={closeAllDropdowns}
+                        label="Filter category"
+                        options={feedTypeFilterOptions}
+                        value={testnetStreamCategoryFilter}
+                        groupId="feed-type-testnet"
+                        onSelect={(next) => {
+                          setTestnetStreamCategoryFilter(next)
+                          setTestnetCurrentPage("1")
+                        }}
+                      />
+                    </>
+                  )}
+                  {!force24x5Only && !forceStreamCategoryFilter && (
+                    <div className={feedList.checkboxContainer}>
+                      <label className={feedList.detailsLabel}>
+                        <input
+                          type="checkbox"
+                          style="width:15px;height:15px;display:inline;margin-right:8px;"
+                          checked={show24x5FeedsTestnet}
+                          onChange={() => {
+                            closeAllDropdowns()
+                            const newValue = !show24x5FeedsTestnet
+                            setShow24x5FeedsTestnet(newValue)
+                            if (newValue) {
+                              // Reset trading hours filter when enabling 24/5
+                              setTestnetTradingHoursFilter("all")
+                            }
+                            setTestnetCurrentPage("1")
+                          }}
+                        />
+                        Show only 24/5 Equity Streams
+                      </label>
+                    </div>
+                  )}
+                  {show24x5FeedsTestnet && (
+                    <FilterDropdown
+                      isOpen={openDropdownId === "test-trading-hours"}
+                      onToggle={(isOpen) => handleDropdownToggle("test-trading-hours", isOpen)}
+                      onClose={closeAllDropdowns}
+                      label="Time segment"
+                      options={tradingHoursFilterOptions}
+                      value={testnetTradingHoursFilter}
+                      groupId="trading-hours-testnet"
+                      onSelect={(next) => {
+                        setTestnetTradingHoursFilter(next)
+                        setTestnetCurrentPage("1")
+                      }}
+                    />
+                  )}
+                  {(testnetSearchValue ||
+                    testnetRwaSchemaFilter !== "all" ||
+                    (!forceStreamCategoryFilter && testnetStreamCategoryFilter !== "all") ||
+                    show24x5FeedsTestnet) && (
+                    <button
+                      type="button"
+                      className={clsx(button.secondary, feedList.clearFilterBtn)}
+                      onClick={() => {
+                        closeAllDropdowns()
+                        setTestnetSearchValue("")
+                        setTestnetRwaSchemaFilter("all")
+                        if (!forceStreamCategoryFilter) setTestnetStreamCategoryFilter("all")
+                        setShow24x5FeedsTestnet(false)
+                        setTestnetTradingHoursFilter("all")
+                        setTestnetCurrentPage("1")
+                        const inputElement = document.getElementById("testnetSearch") as HTMLInputElement
+                        if (inputElement) {
+                          inputElement.value = ""
+                        }
+                      }}
+                      aria-label="Clear all filters"
+                    >
+                      Clear filter
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+            {currentChainMetadata.loading || !currentChainMetadata.processedData ? (
+              <p style="font-style: italic;">Loading...</p>
+            ) : testnetFeeds.length > 0 ? (
+              testnetFeeds.map((network) => (
+                <TestnetTable
+                  key={network.name}
+                  network={network}
+                  showExtraDetails={showExtraDetails}
+                  dataFeedType={dataFeedType}
+                  ecosystem={ecosystem}
+                  selectedFeedCategories={
+                    Array.isArray(selectedFeedCategories)
+                      ? selectedFeedCategories
+                      : selectedFeedCategories
+                        ? [selectedFeedCategories]
+                        : []
+                  }
+                  showOnlyMVRFeeds={showOnlyMVRFeedsTestnet}
+                  showOnlyDEXFeeds={showOnlyDEXFeedsTestnet}
+                  showOnlyDatalinkFeeds={showOnlyDatalinkFeedsTestnet}
+                  rwaSchemaFilter={testnetRwaSchemaFilter}
+                  streamCategoryFilter={testnetStreamCategoryFilter}
+                  show24x5Feeds={show24x5FeedsTestnet}
+                  tradingHoursFilter={testnetTradingHoursFilter}
+                  firstAddr={testnetFirstAddr}
+                  lastAddr={testnetLastAddr}
+                  addrPerPage={testnetAddrPerPage}
+                  currentPage={testnetPageNum}
+                  paginate={testnetPaginate}
+                  searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
+                  tokenizedEquityProvider={tokenizedEquityProvider}
+                />
+              ))
+            ) : (
+              <p>No Testnet feeds available.</p>
             )}
-          </div>
-          {currentChainMetadata.loading || !currentChainMetadata.processedData ? (
-            <p style="font-style: italic;">Loading...</p>
-          ) : testnetFeeds.length > 0 ? (
-            testnetFeeds.map((network) => (
-              <TestnetTable
-                key={network.name}
-                network={network}
-                showExtraDetails={showExtraDetails}
-                dataFeedType={dataFeedType}
-                ecosystem={ecosystem}
-                selectedFeedCategories={
-                  Array.isArray(selectedFeedCategories)
-                    ? selectedFeedCategories
-                    : selectedFeedCategories
-                      ? [selectedFeedCategories]
-                      : []
-                }
-                showOnlyMVRFeeds={showOnlyMVRFeedsTestnet}
-                showOnlyDEXFeeds={showOnlyDEXFeedsTestnet}
-                showOnlyDatalinkFeeds={showOnlyDatalinkFeedsTestnet}
-                rwaSchemaFilter={testnetRwaSchemaFilter}
-                streamCategoryFilter={testnetStreamCategoryFilter}
-                show24x5Feeds={show24x5FeedsTestnet}
-                tradingHoursFilter={testnetTradingHoursFilter}
-                firstAddr={testnetFirstAddr}
-                lastAddr={testnetLastAddr}
-                addrPerPage={testnetAddrPerPage}
-                currentPage={testnetPageNum}
-                paginate={testnetPaginate}
-                searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
-                tokenizedEquityProvider={tokenizedEquityProvider}
-              />
-            ))
-          ) : (
-            <p>No Testnet feeds available.</p>
-          )}
-        </SectionWrapper>
+          </SectionWrapper>
+        )}
       </>
     )
   }

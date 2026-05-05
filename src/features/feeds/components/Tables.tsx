@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-import { useState } from "preact/hooks"
+import { useEffect, useState } from "preact/hooks"
 import { Fragment } from "preact"
 import feedList from "./FeedList.module.css"
 import { clsx } from "~/lib/clsx/clsx.ts"
@@ -17,6 +17,7 @@ import { ExpandableTableWrapper } from "./ExpandableTableWrapper.tsx"
 import { isFeedVisible } from "~/features/feeds/utils/feedVisibility.ts"
 
 const feedItems = monitoredFeeds.mainnet
+type StreamNetworkType = "mainnet" | "testnet"
 
 /**
  * Decodes a raw maxSubmissionValue (BigInt string scaled by 10^decimals) into a
@@ -831,14 +832,46 @@ export const StreamsNetworkAddressesTable = ({
   defaultExpanded = false,
   initialSearch = "",
   lockSearch = false,
+  networkType,
+  onNetworkTypeChange,
+  showNetworkTypeFilter = false,
 }: {
   allowExpansion?: boolean
   defaultExpanded?: boolean
   initialSearch?: string
   lockSearch?: boolean
+  networkType?: StreamNetworkType
+  onNetworkTypeChange?: (networkType: StreamNetworkType) => void
+  showNetworkTypeFilter?: boolean
 } = {}) => {
   // null = untouched; string = user has set a value
   const [searchState, setSearchState] = useState<string | null>(null)
+  const getNetworkTypeFromURL = (): StreamNetworkType => {
+    if (typeof window === "undefined") return "mainnet"
+    return new URLSearchParams(window.location.search).get("networkType") === "testnet" ? "testnet" : "mainnet"
+  }
+  const [internalNetworkType, setInternalNetworkType] = useState<StreamNetworkType>(getNetworkTypeFromURL)
+  const [isHydrated, setIsHydrated] = useState(false)
+  const selectedNetworkType = networkType ?? internalNetworkType
+
+  useEffect(() => {
+    const syncNetworkTypeFromURL = () => {
+      setInternalNetworkType((current) => {
+        const networkTypeFromURL = getNetworkTypeFromURL()
+        return networkTypeFromURL === current ? current : networkTypeFromURL
+      })
+    }
+
+    setIsHydrated(true)
+    syncNetworkTypeFromURL()
+    window.addEventListener("popstate", syncNetworkTypeFromURL)
+    window.addEventListener("pageshow", syncNetworkTypeFromURL)
+
+    return () => {
+      window.removeEventListener("popstate", syncNetworkTypeFromURL)
+      window.removeEventListener("pageshow", syncNetworkTypeFromURL)
+    }
+  }, [])
 
   const urlSearch =
     typeof window !== "undefined" ? (new URLSearchParams(window.location.search).get("streamsNetwork") ?? "") : ""
@@ -861,26 +894,71 @@ export const StreamsNetworkAddressesTable = ({
     window.history.replaceState({ path: newUrl }, "", newUrl)
   }
 
+  const updateNetworkType = (nextNetworkType: StreamNetworkType) => {
+    onNetworkTypeChange?.(nextNetworkType)
+    if (!networkType) {
+      setInternalNetworkType(nextNetworkType)
+    }
+    if (typeof window === "undefined") return
+    const params = new URLSearchParams(window.location.search)
+    if (nextNetworkType === "testnet") {
+      params.set("networkType", "testnet")
+    } else {
+      params.delete("networkType")
+    }
+    const queryString = params.toString()
+    const newUrl = window.location.pathname + (queryString ? "?" + queryString : "") + window.location.hash
+    window.history.replaceState({ path: newUrl }, "", newUrl)
+  }
+
   const normalizedSearch = searchValue.toLowerCase().replaceAll(" ", "")
 
   const match = (value?: string) => !!value && value.toLowerCase().replaceAll(" ", "").includes(normalizedSearch)
 
   const filteredNetworks = StreamsNetworksData.filter((network) => {
+    const selectedNetwork = network[selectedNetworkType]
+    if (!selectedNetwork) return false
     if (!normalizedSearch) return true
 
     const networkMatch = match(network.network)
+    const selectedLabel = selectedNetwork.label
+    const selectedAddr = network.isSolana ? selectedNetwork.verifierProgramId : selectedNetwork.verifierProxy
 
-    const mainnetLabel = network.mainnet?.label
-    const testnetLabel = network.testnet?.label
-
-    const mainnetAddr = network.isSolana ? network.mainnet?.verifierProgramId : network.mainnet?.verifierProxy
-    const testnetAddr = network.isSolana ? network.testnet?.verifierProgramId : network.testnet?.verifierProxy
-
-    return networkMatch || match(mainnetLabel) || match(testnetLabel) || match(mainnetAddr) || match(testnetAddr)
+    return networkMatch || match(selectedLabel) || match(selectedAddr)
   })
 
   const tableContent = (
     <>
+      {showNetworkTypeFilter && isHydrated && (
+        <div className={feedList.streamNetworkSelector} style={{ padding: "0.5rem 0.5rem 0" }}>
+          <span className={feedList.streamNetworkSelectorLabel}>Environment</span>
+          <div className={feedList.streamNetworkToggleGroup} role="group" aria-label="Select network environment">
+            <button
+              type="button"
+              className={clsx(
+                feedList.streamNetworkToggle,
+                selectedNetworkType === "mainnet" && feedList.streamNetworkToggleActive
+              )}
+              onClick={() => updateNetworkType("mainnet")}
+              aria-pressed={selectedNetworkType === "mainnet"}
+            >
+              Mainnet
+            </button>
+            <button
+              type="button"
+              className={clsx(
+                feedList.streamNetworkToggle,
+                selectedNetworkType === "testnet" && feedList.streamNetworkToggleActive
+              )}
+              onClick={() => updateNetworkType("testnet")}
+              aria-pressed={selectedNetworkType === "testnet"}
+            >
+              Testnet
+            </button>
+          </div>
+        </div>
+      )}
+
       {!lockSearch && (
         <div className={feedList.filterDropdown_search} style={{ padding: "0.5rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flex: 1 }}>
@@ -918,8 +996,10 @@ export const StreamsNetworkAddressesTable = ({
           ) : (
             filteredNetworks.map((network: NetworkData, index: number) => {
               const statusUrl = getNetworkStatusUrl(network)
+              const environmentDetails = network[selectedNetworkType]
 
               const showMainnet =
+                selectedNetworkType === "mainnet" &&
                 network.mainnet &&
                 (!normalizedSearch ||
                   match(network.network) ||
@@ -927,6 +1007,7 @@ export const StreamsNetworkAddressesTable = ({
                   match(network.isSolana ? network.mainnet.verifierProgramId : network.mainnet.verifierProxy))
 
               const showTestnet =
+                selectedNetworkType === "testnet" &&
                 network.testnet &&
                 (!normalizedSearch ||
                   match(network.network) ||
@@ -994,15 +1075,13 @@ export const StreamsNetworkAddressesTable = ({
                   {showTestnet && (
                     <tr
                       key={`${network.network}-testnet`}
-                      className={!showMainnet && index > 0 ? tableStyles.firstNetworkRow : tableStyles.testnetRow}
+                      className={index > 0 ? tableStyles.firstNetworkRow : tableStyles.testnetRow}
                     >
                       <td className={tableStyles.networkColumn}>
-                        {!showMainnet && (
-                          <div className={tableStyles.networkInfo}>
-                            <img src={network.logoUrl} alt={`${network.network} logo`} />
-                            <span>{network.network}</span>
-                          </div>
-                        )}
+                        <div className={tableStyles.networkInfo}>
+                          <img src={network.logoUrl} alt={`${network.network} logo`} />
+                          <span>{network.network}</span>
+                        </div>
                       </td>
                       <td>
                         {network.testnet?.label}
@@ -1046,7 +1125,7 @@ export const StreamsNetworkAddressesTable = ({
                       </td>
                     </tr>
                   )}
-                  {statusUrl && (
+                  {statusUrl && environmentDetails && (
                     <tr key={`${network.network}-status-explorer`} className={tableStyles.statusRow}>
                       <td colSpan={3} className={tableStyles.statusCell}>
                         <div style={{ display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
