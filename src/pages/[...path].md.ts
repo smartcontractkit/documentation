@@ -7,6 +7,11 @@ import { extractFrontmatter, getIsoStringOrUndefined, toCanonicalUrl, toContentR
 
 const SITE_BASE = "https://docs.chain.link"
 const CONTENT_ROOT = path.resolve("src/content")
+const LLMS_DIRECTIVE = "> For the complete documentation index, see [llms.txt](/llms.txt)."
+
+const MARKDOWN_REDIRECTS: Record<string, string> = {
+  "ccip/tutorials/cross-chain-tokens": "ccip/tutorials/evm/cross-chain-tokens",
+}
 
 const markdownHeaders = {
   ...textPlainHeaders,
@@ -45,6 +50,12 @@ async function buildMarkdownResponseFromPath(
   request: Request,
   sourceCanonicalPathOverride?: string
 ): Promise<Response> {
+  const markdownRedirectTarget = MARKDOWN_REDIRECTS[resolvedPath]
+
+  if (markdownRedirectTarget) {
+    return buildMarkdownMovedResponse(resolvedPath, markdownRedirectTarget)
+  }
+
   const mdxAbsPath = await findContentFile(resolvedPath)
 
   if (!mdxAbsPath) {
@@ -58,7 +69,7 @@ async function buildMarkdownResponseFromPath(
   const { body, fmTitle, fmLastModified } = extractFrontmatter(raw)
 
   const section = resolvedPath.split("/")[0]
-  const transformed = await transformPageToMarkdown(body, mdxAbsPath, {
+  const transformed = await transformPageBodyToMarkdown(body, mdxAbsPath, {
     siteBase: SITE_BASE,
     targetLanguage,
   })
@@ -75,6 +86,7 @@ async function buildMarkdownResponseFromPath(
     `Source: ${sourceUrl}`,
     ...(lastModified ? [`Last Updated: ${lastModified}`] : []),
     "",
+    LLMS_DIRECTIVE,
     "",
   ]
 
@@ -82,6 +94,100 @@ async function buildMarkdownResponseFromPath(
     status: 200,
     headers: markdownHeaders,
   })
+}
+
+async function transformPageBodyToMarkdown(
+  body: string,
+  mdxAbsPath: string,
+  options: {
+    siteBase: string
+    targetLanguage?: string
+  }
+): Promise<string> {
+  try {
+    return await transformPageToMarkdown(body, mdxAbsPath, options)
+  } catch {
+    const sanitizedBody = stripRuntimeMdxSyntax(body)
+
+    try {
+      return await transformPageToMarkdown(sanitizedBody, mdxAbsPath, options)
+    } catch {
+      return buildFallbackMarkdownBody(sanitizedBody)
+    }
+  }
+}
+
+function buildFallbackMarkdownBody(body: string): string {
+  return stripRuntimeMdxSyntax(body)
+    .replace(/<([A-Z][A-Za-z0-9]*)\b[^>]*\/>/g, "")
+    .replace(/<([A-Z][A-Za-z0-9]*)\b[^>]*>/g, "")
+    .replace(/<\/[A-Z][A-Za-z0-9]*>/g, "")
+    .trim()
+}
+
+function stripRuntimeMdxSyntax(body: string): string {
+  const lines = body.split("\n")
+  const output: string[] = []
+
+  let skippingExportBlock = false
+  let skippingImportBlock = false
+  let braceDepth = 0
+
+  for (const line of lines) {
+    const trimmed = line.trim()
+
+    if (skippingImportBlock) {
+      if (trimmed.includes(" from ") || trimmed.endsWith('"') || trimmed.endsWith("'")) {
+        skippingImportBlock = false
+      }
+
+      continue
+    }
+
+    if (skippingExportBlock) {
+      braceDepth += countChar(line, "{")
+      braceDepth -= countChar(line, "}")
+
+      if (braceDepth <= 0) {
+        skippingExportBlock = false
+        braceDepth = 0
+      }
+
+      continue
+    }
+
+    if (/^import\s+/.test(trimmed)) {
+      if (!trimmed.includes(" from ")) {
+        skippingImportBlock = true
+      }
+
+      continue
+    }
+
+    if (/^export\s+(async\s+)?function\s+/.test(trimmed)) {
+      skippingExportBlock = true
+      braceDepth = countChar(line, "{") - countChar(line, "}")
+
+      if (braceDepth <= 0) {
+        skippingExportBlock = false
+        braceDepth = 0
+      }
+
+      continue
+    }
+
+    if (/^export\s+(const|let|var)\s+/.test(trimmed)) {
+      continue
+    }
+
+    output.push(line)
+  }
+
+  return output.join("\n")
+}
+
+function countChar(value: string, char: string): number {
+  return value.split(char).length - 1
 }
 
 function normalizeMarkdownPath(pathParam: string | undefined): string | null {
@@ -182,6 +288,31 @@ async function resolveCreCanonicalMarkdownPath(cleanPath: string): Promise<CreRe
   return { kind: "none" }
 }
 
+function buildMarkdownMovedResponse(sourcePath: string, targetPath: string): Response {
+  const sourceTitle = titleFromPath(sourcePath)
+  const targetTitle = titleFromPath(targetPath)
+  const sourceUrl = `${SITE_BASE}/${sourcePath}`
+  const targetUrl = `/${targetPath}.md`
+
+  return new Response(
+    [
+      `# ${sourceTitle}`,
+      `Source: ${sourceUrl}`,
+      "",
+      LLMS_DIRECTIVE,
+      "",
+      "This page has moved.",
+      "",
+      `Use the current documentation: [${targetTitle}](${targetUrl}).`,
+      "",
+    ].join("\n"),
+    {
+      status: 200,
+      headers: markdownHeaders,
+    }
+  )
+}
+
 function buildCreSelectorMarkdown(
   canonicalPath: string,
   resolution: Extract<CreResolution, { kind: "selector" }>
@@ -194,6 +325,8 @@ function buildCreSelectorMarkdown(
   return [
     `# ${title}`,
     `Source: ${canonicalUrl}`,
+    "",
+    LLMS_DIRECTIVE,
     "",
     "This page has language-specific markdown variants:",
     "",
