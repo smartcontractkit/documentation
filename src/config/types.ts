@@ -85,6 +85,7 @@ export type SupportedTechnology =
   | "ADI_NETWORK"
   | "EDGE"
   | "ROBINHOOD_CHAIN"
+  | "CREDITCOIN"
 
 export type ChainType = "evm" | "solana" | "aptos" | "sui" | "canton" | "ton" | "tron" | "stellar" | "starknet"
 
@@ -271,6 +272,7 @@ export type SupportedChain =
   | "ROBINHOOD_TESTNET"
   | "TON_TESTNET"
   | "TON_MAINNET"
+  | "CREDITCOIN_MAINNET"
 
 export type ExplorerInfo = {
   baseUrl: string

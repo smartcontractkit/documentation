@@ -5,7 +5,7 @@ title: "Deploying Workflows"
 metadata:
   description: "Deploy your workflow: learn how to register your workflow and start running it across a Decentralized Oracle Network (DON)."
   datePublished: "2025-11-04"
-  lastModified: "2026-03-17"
+  lastModified: "2026-04-30"
 ---
 
 import { Aside } from "@components"
@@ -181,12 +181,12 @@ jobs:
         run: curl -sSL https://github.com/smartcontractkit/cre-cli/releases/latest/download/install.sh | sh
 
       - name: Build workflow
-        run: cre workflow build ./my-workflow --output ./my-workflow/binary.wasm
+        run: cre workflow build ./my-workflow --output ./my-workflow/binary.wasm --non-interactive
         env:
           CRE_API_KEY: ${{ secrets.CRE_API_KEY }}
 
       - name: Display content hashes
-        run: cre workflow hash ./my-workflow --wasm ./my-workflow/binary.wasm --target production-settings
+        run: cre workflow hash ./my-workflow --wasm ./my-workflow/binary.wasm --target production-settings --non-interactive
         env:
           CRE_API_KEY: ${{ secrets.CRE_API_KEY }}
           CRE_ETH_PRIVATE_KEY: ${{ secrets.CRE_ETH_PRIVATE_KEY }}
@@ -213,7 +213,7 @@ jobs:
           path: ./my-workflow
 
       - name: Deploy workflow
-        run: cre workflow deploy ./my-workflow --wasm ./my-workflow/binary.wasm --target production-settings --yes
+        run: cre workflow deploy ./my-workflow --wasm ./my-workflow/binary.wasm --target production-settings --yes --non-interactive
         env:
           CRE_API_KEY: ${{ secrets.CRE_API_KEY }}
           CRE_ETH_PRIVATE_KEY: ${{ secrets.CRE_ETH_PRIVATE_KEY }}
@@ -222,7 +222,7 @@ jobs:
 
 {/* prettier-ignore */}
 <Aside type="note" title="API key authentication">
-  Use `CRE_API_KEY` for non-interactive authentication in CI/CD pipelines instead of `cre login`. Create an API key from the CRE platform under **Organization → APIs**. See [Authentication](/cre/reference/cli/authentication#api-key-authentication) for setup instructions.
+  Use `CRE_API_KEY` for non-interactive authentication in CI/CD pipelines instead of `cre login`, and pass `--non-interactive` so commands fail instead of prompting. Create an API key from the CRE platform under **Organization → APIs**. See [Authentication](/cre/reference/cli/authentication#api-key-authentication) for setup instructions.
 </Aside>
 
 {/* prettier-ignore */}
