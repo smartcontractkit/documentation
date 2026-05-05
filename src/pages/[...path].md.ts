@@ -7,6 +7,7 @@ import { extractFrontmatter, getIsoStringOrUndefined, toCanonicalUrl, toContentR
 
 const SITE_BASE = "https://docs.chain.link"
 const CONTENT_ROOT = path.resolve("src/content")
+const LLMS_DIRECTIVE = "> For the complete documentation index, see [llms.txt](/llms.txt)."
 
 const markdownHeaders = {
   ...textPlainHeaders,
@@ -75,6 +76,7 @@ async function buildMarkdownResponseFromPath(
     `Source: ${sourceUrl}`,
     ...(lastModified ? [`Last Updated: ${lastModified}`] : []),
     "",
+    LLMS_DIRECTIVE,
     "",
   ]
 
@@ -194,6 +196,8 @@ function buildCreSelectorMarkdown(
   return [
     `# ${title}`,
     `Source: ${canonicalUrl}`,
+    "",
+    LLMS_DIRECTIVE,
     "",
     "This page has language-specific markdown variants:",
     "",
