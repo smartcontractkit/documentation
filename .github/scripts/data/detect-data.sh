@@ -179,9 +179,17 @@ node <<EOF
       ...resolvedDeprecatedItems.map(item => item.feedID),
       ...changedDeprecatedItems.map(change => change.previous && change.previous.feedID).filter(Boolean),
     ]);
+    const deprecatedFeedUrlsToRemove = new Set([
+      ...resolvedDeprecatedItems.map(item => item.url).filter(Boolean),
+      ...changedDeprecatedItems.map(change => change.previous && change.previous.url).filter(Boolean),
+    ]);
     const deprecatedStreamIdsToRemove = new Set([
       ...resolvedDeprecatedStreams.map(item => item.feedID),
       ...changedDeprecatedStreams.map(change => change.previous && change.previous.feedID).filter(Boolean),
+    ]);
+    const deprecatedStreamUrlsToRemove = new Set([
+      ...resolvedDeprecatedStreams.map(item => item.url).filter(Boolean),
+      ...changedDeprecatedStreams.map(change => change.previous && change.previous.url).filter(Boolean),
     ]);
 
     const CHANGELOG_PATH = path.resolve('${CHANGELOG_FILE}');
@@ -222,6 +230,14 @@ node <<EOF
         title,
         topic,
       };
+    }
+
+    function buildDeprecationDescription(productName, linkText, linkUrl, deprecatingItems) {
+      const shutdownDates = [
+        ...new Set(deprecatingItems.map(item => item.shutdownDate).filter(Boolean))
+      ];
+      const dateText = shutdownDates.length === 1 ? \` on \${shutdownDates[0]}\` : "";
+      return \`The following \${productName} are scheduled for deprecation\${dateText}. See [\${linkText}](\${linkUrl}) for shutdown dates and the latest status:\`;
     }
 
     // === data-streams networks
@@ -295,14 +311,10 @@ node <<EOF
           baseAsset: i.baseAsset,
           quoteAsset: i.quoteAsset || "",
           network: i.network,
-          shutdownDate: i.shutdownDate,
-          feedID: i.feedID,
           url: i.url,
           iconUrl: \`https://d2f70xi62kby8n.cloudfront.net/tokens/\${baseLower}.webp\`
         };
       }).sort((a, b) => {
-        const dateCompare = (a.shutdownDate || "").localeCompare(b.shutdownDate || "");
-        if (dateCompare !== 0) return dateCompare;
         return a.assetName.localeCompare(b.assetName);
       });
     }
@@ -318,29 +330,20 @@ node <<EOF
           baseAsset,
           quoteAsset: i.quoteAsset || "",
           network: i.network,
-          networkType: i.networkType,
-          shutdownDate: i.shutdownDate,
-          feedID: i.feedID,
-          streamID: i.streamID,
-          feedType: i.feedType,
           url: i.url,
-          ...(baseLower ? { iconUrl: \`https://d2f70xi62kby8n.cloudfront.net/tokens/\${baseLower}.webp\` } : {})
+          iconUrl: \`https://d2f70xi62kby8n.cloudfront.net/tokens/\${baseLower}.webp\`
         };
       }).filter(t => {
-        if (seen.has(t.feedID)) return false;
-        seen.add(t.feedID);
+        if (seen.has(t.url)) return false;
+        seen.add(t.url);
         return true;
       }).sort((a, b) => {
-        const dateCompare = (a.shutdownDate || "").localeCompare(b.shutdownDate || "");
-        if (dateCompare !== 0) return dateCompare;
-        const networkCompare = (a.networkType || "").localeCompare(b.networkType || "");
-        if (networkCompare !== 0) return networkCompare;
         return (a.assetName || "").localeCompare(b.assetName || "");
       });
     }
 
-    function removeResolvedDeprecationsFromChangelog(topic, emptyEntryTitle, feedIds) {
-      if (feedIds.size === 0) return;
+    function removeResolvedDeprecationsFromChangelog(topic, emptyEntryTitle, feedIds, urls) {
+      if (feedIds.size === 0 && urls.size === 0) return;
 
       changelog.data = changelog.data.filter(entry => {
         if (
@@ -354,7 +357,7 @@ node <<EOF
         const originalLength = entry.relatedTokens.length;
         entry.relatedTokens = entry.relatedTokens.filter(token => {
           if (!token || typeof token !== "object") return true;
-          return !feedIds.has(token.feedID);
+          return !feedIds.has(token.feedID) && !urls.has(token.url);
         });
 
         if (entry.relatedTokens.length === originalLength) return true;
@@ -385,8 +388,8 @@ node <<EOF
     const deprecatingDataFeedTokens = buildDeprecatingDataFeedTokens(deprecatingItems);
     const deprecatingDataStreamTokens = buildDeprecatingDataStreamTokens(deprecatingStreamItems);
 
-    removeResolvedDeprecationsFromChangelog("Data Feeds", "Feeds scheduled for deprecation", deprecatedFeedIdsToRemove);
-    removeResolvedDeprecationsFromChangelog("Data Streams", "Streams scheduled for deprecation", deprecatedStreamIdsToRemove);
+    removeResolvedDeprecationsFromChangelog("Data Feeds", "Feeds scheduled for deprecation", deprecatedFeedIdsToRemove, deprecatedFeedUrlsToRemove);
+    removeResolvedDeprecationsFromChangelog("Data Streams", "Streams scheduled for deprecation", deprecatedStreamIdsToRemove, deprecatedStreamUrlsToRemove);
 
     // === Create new changelog entries
     const newEntries = [];
@@ -442,7 +445,12 @@ node <<EOF
         createChangelogEntry(
           "Data Feeds",
           "Feeds scheduled for deprecation",
-          "The following Data Feeds are scheduled for deprecation. See [Feeds Scheduled For Deprecation](https://docs.chain.link/data-feeds/deprecating-feeds) for shutdown dates and the latest status:",
+          buildDeprecationDescription(
+            "Data Feeds",
+            "Feeds Scheduled For Deprecation",
+            "https://docs.chain.link/data-feeds/deprecating-feeds",
+            deprecatingItems
+          ),
           networksList,
           deprecatingDataFeedTokens,
           "deprecation"
@@ -458,7 +466,12 @@ node <<EOF
         createChangelogEntry(
           "Data Streams",
           "Streams scheduled for deprecation",
-          "The following Data Streams are scheduled for deprecation. See [Deprecating Data Streams](https://docs.chain.link/data-streams/deprecating-streams) for shutdown dates and the latest status:",
+          buildDeprecationDescription(
+            "Data Streams",
+            "Deprecating Data Streams",
+            "https://docs.chain.link/data-streams/deprecating-streams",
+            deprecatingStreamItems
+          ),
           networksList,
           deprecatingDataStreamTokens,
           "deprecation"
