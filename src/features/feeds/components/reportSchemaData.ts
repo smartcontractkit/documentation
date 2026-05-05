@@ -69,11 +69,11 @@ export const REPORT_SCHEMA_DEFINITIONS: Record<string, SchemaDefinition> = {
     fields: [
       ...COMMON_FIELDS,
       {
-        field: "lastSeenTimestampNs",
+        field: "lastUpdateTimestamp",
         type: "uint64",
-        description: "Timestamp of the last update (nanoseconds)",
+        description: "Timestamp of the last valid price update (nanoseconds)",
       },
-      { field: "price", type: "int192", description: "DON's consensus median price" },
+      { field: "midPrice", type: "int192", description: "DON's consensus median price" },
       {
         field: "marketStatus",
         type: "uint32",
@@ -88,7 +88,7 @@ export const REPORT_SCHEMA_DEFINITIONS: Record<string, SchemaDefinition> = {
     fields: [
       ...COMMON_FIELDS,
       {
-        field: "benchmark",
+        field: "navPerShare",
         type: "int192",
         description: "DON consensus NAV Per Share value as reported by the Fund Manager",
       },
@@ -108,9 +108,9 @@ export const REPORT_SCHEMA_DEFINITIONS: Record<string, SchemaDefinition> = {
     fields: [
       ...COMMON_FIELDS,
       {
-        field: "lastSeenTimestampNs",
+        field: "lastUpdateTimestamp",
         type: "uint64",
-        description: "Timestamp of the last update (nanoseconds)",
+        description: "Timestamp of the last valid price update (nanoseconds)",
       },
       { field: "price", type: "int192", description: "Last traded price from the real-world equity market" },
       {
