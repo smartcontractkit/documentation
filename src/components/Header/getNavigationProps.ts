@@ -1,3 +1,4 @@
+import aceLogo from "../../assets/product-logos/ace-logo.svg"
 import creLogo from "../../assets/product-logos/cre-logo.svg"
 import ccipLogo from "../../assets/product-logos/ccip-logo.svg"
 import vrfLogo from "../../assets/product-logos/vrf-logo.svg"
@@ -82,6 +83,12 @@ const desktopSubProductsNav = [
     label: "Data Streams",
     href: "/data-streams",
     icon: dataStreamsLogo.src,
+    col: 1,
+  },
+  {
+    label: "ACE",
+    href: "/ace",
+    icon: aceLogo.src,
     col: 1,
   },
   {
@@ -180,6 +187,12 @@ const getDocsSections = (pageSdkLangMap: Map<string, string>) => [
         href: "/data-streams",
         icon: dataStreamsLogo.src,
         subProducts: getSubProducts(sidebar.dataStreams, new Map()),
+      },
+      {
+        label: "ACE",
+        href: "/ace",
+        icon: aceLogo.src,
+        subProducts: getSubProducts(sidebar.ace, new Map()),
       },
       {
         label: "DataLink",

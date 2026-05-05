@@ -338,11 +338,11 @@ const DefaultTr = ({ network, metadata, showExtraDetails, batchedCategoryData, d
   // have its address hidden and show a contact email instead.
   const shouldHideAddress = metadata.docs?.productSubType === "calculatedPrice"
 
-  // Stablecoin price-bound note: only shown for stablecoin feeds with a meaningful cap
-  const isStablecoin = metadata.docs?.assetSubClass === "Stablecoin"
-  const stablecoinBound = isStablecoin
-    ? getMaxSubmissionValueBound(metadata.maxSubmissionValue, metadata.decimals)
-    : null
+  // Stablecoin price-bound note: only when the source marks the feed as explicitly capped
+  const stablecoinBound =
+    metadata.docs?.stablecoinCapped === true
+      ? getMaxSubmissionValueBound(metadata.maxSubmissionValue, metadata.decimals)
+      : null
 
   const label = isUSGovernmentMacroeconomicData ? "Category" : "Asset type"
   const value = isUSGovernmentMacroeconomicData
@@ -593,11 +593,11 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData 
   // (already includes deprecating status and Supabase risk tier)
   const finalTier = metadata.finalCategory || metadata.feedCategory
 
-  // Stablecoin price-bound note for Stablecoin Stability Assessment feeds
-  const isStablecoinAssessment = metadata.docs?.assetClass === "Stablecoin Stability Assessment"
-  const stablecoinBound = isStablecoinAssessment
-    ? getMaxSubmissionValueBound(metadata.maxSubmissionValue, metadata.decimals)
-    : null
+  // Stablecoin price-bound note: only when the source marks the feed as explicitly capped
+  const stablecoinBound =
+    metadata.docs?.stablecoinCapped === true
+      ? getMaxSubmissionValueBound(metadata.maxSubmissionValue, metadata.decimals)
+      : null
 
   return (
     <tr>
@@ -1086,10 +1086,6 @@ export const StreamsTHead = () => (
 )
 
 const streamsCategoryMap = {
-  custom: {
-    text: "Custom",
-    link: "/data-streams/developer-responsibilities/#custom-data-streams",
-  },
   new_token: {
     text: "New token",
     link: "/data-streams/developer-responsibilities#new-token-data-streams",
@@ -1119,6 +1115,16 @@ export const StreamsTr = ({ metadata, isMainnet }) => {
               className={tableStyles.feedVariantBadge}
             >
               DEX State Price
+            </a>
+          )}
+          {metadata.feedType === "Datalink" && (
+            <a
+              href="/data-streams/stream-ids"
+              target="_blank"
+              className={tableStyles.feedVariantBadge}
+              title="Datalink Stream"
+            >
+              Datalink
             </a>
           )}
           {isCalculatedStream && (
@@ -1291,6 +1297,7 @@ export const MainnetTable = ({
   showOnlySVR,
   showOnlyMVRFeeds,
   showOnlyDEXFeeds,
+  showOnlyDatalinkFeeds,
   rwaSchemaFilter,
   streamCategoryFilter,
   show24x5Feeds,
@@ -1311,6 +1318,7 @@ export const MainnetTable = ({
   showOnlySVR: boolean
   showOnlyMVRFeeds: boolean
   showOnlyDEXFeeds: boolean
+  showOnlyDatalinkFeeds?: boolean
   rwaSchemaFilter?: "all" | "v8" | "v11"
   streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
   show24x5Feeds?: boolean
@@ -1339,7 +1347,6 @@ export const MainnetTable = ({
   const isSmartData = dataFeedType === "smartdata"
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
   const isDefault = !isStreams && !isSmartData && !isUSGovernmentMacroeconomicData
-  const isDeprecating = ecosystem === "deprecating"
 
   // Enrich metadata with final category (combining RDD and Supabase data)
   // Priority: deprecating status from RDD > Supabase risk tier > RDD category fallback
@@ -1378,14 +1385,10 @@ export const MainnetTable = ({
         return false
       }
 
-      if (isDeprecating) {
-        // Only show feeds (not streams) with shutdown dates
-        return !!metadata.docs.shutdownDate && !(metadata.contractType === "verifier" && metadata.feedId)
-      }
-
       // Use shared visibility logic with filters
       return isFeedVisible(metadata, dataFeedType as any, ecosystem, {
         showOnlyDEXFeeds,
+        showOnlyDatalinkFeeds,
         streamCategoryFilter,
         rwaSchemaFilter,
         showOnlyMVRFeeds,
@@ -1556,6 +1559,7 @@ export const TestnetTable = ({
   network,
   showExtraDetails,
   dataFeedType,
+  ecosystem = "",
   selectedFeedCategories = [],
   firstAddr = 0,
   lastAddr = 1000,
@@ -1567,6 +1571,7 @@ export const TestnetTable = ({
   searchValue = "",
   showOnlyMVRFeeds,
   showOnlyDEXFeeds,
+  showOnlyDatalinkFeeds,
   rwaSchemaFilter,
   streamCategoryFilter,
   show24x5Feeds,
@@ -1576,6 +1581,7 @@ export const TestnetTable = ({
   network: ChainNetwork
   showExtraDetails: boolean
   dataFeedType: string
+  ecosystem?: string
   selectedFeedCategories?: string[]
   firstAddr?: number
   lastAddr?: number
@@ -1585,6 +1591,7 @@ export const TestnetTable = ({
   searchValue?: string
   showOnlyMVRFeeds?: boolean
   showOnlyDEXFeeds?: boolean
+  showOnlyDatalinkFeeds?: boolean
   rwaSchemaFilter?: "all" | "v8" | "v11"
   streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
   show24x5Feeds?: boolean
@@ -1640,8 +1647,9 @@ export const TestnetTable = ({
     .sort((a, b) => (a.name.toUpperCase() < b.name.toUpperCase() ? -1 : 1))
     .filter((metadata) => {
       // Use shared visibility logic with filters
-      return isFeedVisible(metadata, dataFeedType as any, undefined, {
+      return isFeedVisible(metadata, dataFeedType as any, ecosystem, {
         showOnlyDEXFeeds,
+        showOnlyDatalinkFeeds,
         streamCategoryFilter,
         rwaSchemaFilter,
         showOnlyMVRFeeds,

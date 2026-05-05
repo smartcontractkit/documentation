@@ -696,6 +696,21 @@ Some EVM networks have additional constraints beyond the standard limits above:
 | -------- | ------------------------------------------------- | ------------------------------------------------------------ |
 | HyperEVM | Data availability limitations during RPC downtime | [HyperEVM Service Limits](/ccip/service-limits/evm/hyperevm) |
 
+## Private / Permissioned Network Limitations
+
+Some CCIP integrations are with private / permissioned networks (see list below). CCIP's integration with these networks depends on a single centralized RPC provider rather than a distinct set of local nodes or RPCs utililized by node operators. As a result:
+
+- Transaction data sourced from these networks cannot be independently verified across multiple nodes in the same way as public chains.
+- A compromised RPC provider could manipulate transaction data, up to and including theft of bridged funds.
+- Anomalous or malicious activity on these networks may be harder to detect and alert on, as monitoring infrastructure relies on the same private RPC layer.
+
+Developers and integrators building CCIP integrations on private / permissioned networks should review these constraints carefully and implement additional safeguards appropriate to their application's use case. These include, but not limited to: more conservative token pool rate limits, monitoring of messages and token transfers, and emergency preparedness.
+
+Private / permissioned networks:
+
+- [Memento](/ccip/directory/mainnet/chain/memento-mainnet)
+- [Henesys](/ccip/directory/mainnet/chain/nexon-mainnet-henesys)
+
 ---
 
 # CCIP Service Limits (SVM)
@@ -893,9 +908,9 @@ Although Token Developers may request that their tokens be added to Transporter,
 
 ## Chainlink Node Operator Responsibilities
 
-High-quality Chainlink node operators participate in the decentralized oracle networks (DONs) that power CCIP and the Risk Management Network using a configuration specified in the Chainlink software. As participants in these deployments, Node Operators are responsible for the following components of Chainlink CCIP and the Risk Management Network:
+High-quality Chainlink node operators participate in the decentralized oracle networks (DONs) that power CCIP using a configuration specified in the Chainlink software. As participants in these deployments, Node Operators are responsible for the following components of Chainlink CCIP:
 
-- **Node operations:** Chainlink node operators must ensure the proper configuration, maintenance, and monitoring of their nodes participating in the Chainlink CCIP and Risk Management Network DONs.
+- **Node operations:** Chainlink node operators must ensure the proper configuration, maintenance, and monitoring of their nodes participating in the Chainlink CCIP.
 - **Transaction execution:** Chainlink node operators must ensure that transactions execute onchain in a timely manner and that they apply gas bumping when necessary.
 - **Blockchain client:** Chainlink node operators are responsible for selecting and properly employing blockchain clients, including latest fixes and upgrades, to connect to supported blockchain networks.
 - **Consensus participation:** Chainlink node operators must maintain continuous uptime and active participation in OCR consensus.
@@ -1334,6 +1349,10 @@ Organizations with specialized expertise in running Chainlink nodes. Each operat
 
 A **decentralized oracle network (DON)** consists of multiple independent Chainlink nodes. These nodes monitor and retrieve data from specified sources (e.g., a source chain), reach consensus off-chain, and post results to a blockchain (e.g., a destination chain) in a [trust-minimized manner](https://blog.chain.link/what-is-trust-minimization/). For more details on the DONs used in CCIP, refer to the CCIP Offchain architecture page.
 
+## Risk Management Network (RMN)
+
+*Based on user demand, CCIP’s architecture is evolving to provide enhanced support for configurable security, compliance, and monitoring capabilities. As part of that ongoing evolution, the Risk Management Network’s automated offchain role is no longer active in current CCIP deployments, but is expected to be offered as an optional validation layer in future releases. The [onchain RMN contract](https://docs.chain.link/ccip/concepts/architecture/onchain/evm/components#rmn-contract) remains part of CCIP’s architecture as an emergency safeguard over certain per-chain or network-wide functions when required. CCIP continues to provide robust risk management controls, including configurable rate limits, developer token attestations, and monitoring capabilities.*
+
 ---
 
 # CCIP Architecture - Key Concepts (TON)
@@ -1672,9 +1691,13 @@ The RMN Contract is deployed on every chain where CCIP is integrated. Its key fu
    - **Curse Detection**: Onchain components (such as the Router, OnRamp, OffRamp, and TokenPool) call the `isCursed()` function on the RMNRemote contract to detect global curses or curses targeting a remote chain.
 
 <Aside type="note">
-  Based on user demand, CCIP's architecture is evolving to provide enhanced support for modular security and
-  configurable compliance capabilities. As part of this transition, the Risk Management Network is being adapted to
-  align with this broader, more flexible architecture.
+  Based on user demand, CCIP’s architecture is evolving to provide enhanced support for configurable security,
+  compliance, and monitoring capabilities. As part of that ongoing evolution, the Risk Management Network’s automated
+  offchain role is no longer active in current CCIP deployments, but is expected to be offered as an optional validation
+  layer in future releases. The [onchain RMN contract](/ccip/concepts/architecture/onchain/evm/components#rmn-contract)
+  remains part of CCIP’s architecture as an emergency safeguard over certain per-chain or network-wide functions when
+  required. CCIP continues to provide robust risk management controls, including configurable rate limits, developer
+  token attestations, and monitoring capabilities.
 </Aside>
 
 ---
@@ -1753,7 +1776,7 @@ Last Updated: 2025-05-19
 
 On a Solana Virtual Machine (SVM)-based source blockchain, an onchain program or user wallet interacts with the CCIP Router program, which provides a standard interface for sending messages cross-chain. The Router internally calculates fees, locks or burns tokens via a Token Pool program, and then emits a CCIPMessageSent event. The Committing DON observes that event offchain and relays the messages to a destination blockchain.
 
-On an SVM-based destination blockchain, an onchain program called the OffRamp receives a commit from the Committing DON containing merkle roots of batched messages. The OffRamp verifies the OCR signatures, checks with the Risk Management Network (RMN) Remote program that the source chain is not cursed, and then stores the merkle root. Later, the Executing DON submits individual messages for execution, one per transaction (unlike EVM chains, which can execute in batches). The OffRamp verifies each message's merkle proof against the previously committed root, tracks the execution state, and processes the message. This includes making CPI calls to Token Pools to release or mint tokens and, if applicable, delivering message data to a receiver program that implements the CCIP Receive interface.
+On an SVM-based destination blockchain, an onchain program called the OffRamp receives a commit from the Committing DON containing merkle roots of batched messages. The OffRamp verifies the OCR signatures, checks with the RMN Contract Remote program that the source chain is not cursed, and then stores the merkle root. Later, the Executing DON submits individual messages for execution, one per transaction (unlike EVM chains, which can execute in batches). The OffRamp verifies each message's merkle proof against the previously committed root, tracks the execution state, and processes the message. This includes making CPI calls to Token Pools to release or mint tokens and, if applicable, delivering message data to a receiver program that implements the CCIP Receive interface.
 
 ## Key Components
 
@@ -1767,16 +1790,16 @@ On an SVM-based destination blockchain, an onchain program called the OffRamp re
 
 **Destination Chain**:
 
-| Component                     | Ownership                  | Role                                                                                                                                                                                                                                                                                             |
-| ----------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Sender                        | External (User/Program)    | The sender could be a wallet or onchain program. It initiates the cross-chain request by calling the Router program's `ccip_send` instruction.                                                                                                                                                   |
-| Router                        | CCIP                       | The Router program is the entry point for sending cross-chain messages from SVM-based blockchains (outbound only). It validates accounts, calculates fees via the Fee Quoter program, collects fees, manages outbound sequence numbers, and transfers tokens to Token Pools when sending tokens. |
-| OffRamp                       | CCIP                       | Receives and processes cross-chain messages on the destination blockchain. It commits message batches (via merkle roots), executes individual messages, verifies RMN curses, and initiates token releases/minting through Token Pools.                                                           |
-| Fee Quoter                    | CCIP                       | Computes gas and token fees for cross-chain messages and maintains updated price data for tokens and destination chain gas costs.                                                                                                                                                                |
-| Token Pools                   | External (Token Developer) | Specialized programs that handle cross-chain token transfers. Used by the Router for `lock_or_burn_tokens` operations on the source blockchain and by the OffRamp for `release_or_mint_tokens` operations on the destination blockchain.                                                         |
-| Token                         | External (Token Developer) | A token program                                                                                                                                                                                                                                                                                  |
-| Receiver                      | External (User/Program)    | A wallet or onchain program. If the receiver is a program implementing the `ccip_receive` function, it can handle data and/or tokens, but can only receive tokens to a PDA it has authority over. If it's a wallet, it can only receive tokens through its Associated Token Accounts (ATAs).     |
-| Risk Management Network (RMN) | CCIP                       | An onchain program that maintains a registry of "curses" (blocklisted chains). Router, OffRamp, and Token Pools all verify with this program that relevant chains are not cursed before processing messages.                                                                                     |
+| Component           | Ownership                  | Role                                                                                                                                                                                                                                                                                             |
+| ------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Sender              | External (User/Program)    | The sender could be a wallet or onchain program. It initiates the cross-chain request by calling the Router program's `ccip_send` instruction.                                                                                                                                                   |
+| Router              | CCIP                       | The Router program is the entry point for sending cross-chain messages from SVM-based blockchains (outbound only). It validates accounts, calculates fees via the Fee Quoter program, collects fees, manages outbound sequence numbers, and transfers tokens to Token Pools when sending tokens. |
+| OffRamp             | CCIP                       | Receives and processes cross-chain messages on the destination blockchain. It commits message batches (via merkle roots), executes individual messages, verifies RMN curses, and initiates token releases/minting through Token Pools.                                                           |
+| Fee Quoter          | CCIP                       | Computes gas and token fees for cross-chain messages and maintains updated price data for tokens and destination chain gas costs.                                                                                                                                                                |
+| Token Pools         | External (Token Developer) | Specialized programs that handle cross-chain token transfers. Used by the Router for `lock_or_burn_tokens` operations on the source blockchain and by the OffRamp for `release_or_mint_tokens` operations on the destination blockchain.                                                         |
+| Token               | External (Token Developer) | A token program                                                                                                                                                                                                                                                                                  |
+| Receiver            | External (User/Program)    | A wallet or onchain program. If the receiver is a program implementing the `ccip_receive` function, it can handle data and/or tokens, but can only receive tokens to a PDA it has authority over. If it's a wallet, it can only receive tokens through its Associated Token Accounts (ATAs).     |
+| RMN Contract Remote | CCIP                       | An onchain program that maintains a registry of "curses" (blocklisted chains). Router, OffRamp, and Token Pools all verify with this program that relevant chains are not cursed before processing messages.                                                                                     |
 
 ## Typical Lifecycle of a Message
 
@@ -2055,9 +2078,9 @@ The FeeQuoter is a central component in Chainlink CCIP that maintains token and 
 - Token pools follow standard models (Lock/Release and Burn/Mint), with audited code available in the [CCIP repository](https://github.com/smartcontractkit/chainlink-ccip/tree/solana-v1.6.0/chains/solana/contracts/programs).
 - For tokens requiring bespoke logic before burn/mint/lock/release, custom pools can be built on top of the base pools. More details are available in the CCT documentation.
 
-## Risk Management Network
+## Risk Management Network (RMN) Contract
 
-The Risk Management Network (RMN) adds an additional security layer to CCIP by maintaining an onchain "cursing" mechanism. The RMN program enables verification of cross-chain messages and can halt message transmission for specific blockchains or globally when security threats are detected.
+The RMN Contract adds an additional security layer to CCIP by maintaining an onchain "cursing" mechanism. The RMN program enables verification of cross-chain messages and can halt message transmission for specific blockchains or globally when security threats are detected.
 
 ### Cursing Mechanism
 
@@ -2066,9 +2089,13 @@ The Risk Management Network (RMN) adds an additional security layer to CCIP by m
 - The owner calls `uncurse` to lift the curse when the threat is resolved, restoring normal CCIP operations.
 
 <Aside type="note">
-  Based on user demand, CCIP's architecture is evolving to provide enhanced support for modular security and
-  configurable compliance capabilities. As part of this transition, the Risk Management Network is being adapted to
-  align with this broader, more flexible architecture.
+  Based on user demand, CCIP’s architecture is evolving to provide enhanced support for configurable security,
+  compliance, and monitoring capabilities. As part of that ongoing evolution, the Risk Management Network’s automated
+  offchain role is no longer active in current CCIP deployments, but is expected to be offered as an optional validation
+  layer in future releases. The [onchain RMN contract](/ccip/concepts/architecture/onchain/evm/components#rmn-contract)
+  remains part of CCIP’s architecture as an emergency safeguard over certain per-chain or network-wide functions when
+  required. CCIP continues to provide robust risk management controls, including configurable rate limits, developer
+  token attestations, and monitoring capabilities.
 </Aside>
 
 ---
@@ -2393,14 +2420,18 @@ The `ccip::receiver_registry` is a module where developers can register their cu
 - Audited code for `lock_release_token_pool` and `burn_mint_token_pool` modules is available in the CCIP repository.
 - For tokens requiring custom logic before burn/mint/lock/release, developers may build custom pools on top of these base modules. More details are available in the CCT documentation.
 
-## RMN (Risk Management Network) Remote
+## RMN Contract Remote
 
 The `ccip::rmn_remote` module is a critical security component deployed on every CCIP-enabled chain. Various CCIP modules (like `OnRamp`, `OffRamp`, `Token Pools`) query this component to verify the status of other chains in the network. It maintains an onchain list of "cursed" (i.e., blocklisted) chains. If a source or destination chain is cursed, CCIP transactions involving that chain are halted.
 
 <Aside type="note">
-  Based on user demand, CCIP's architecture is evolving to provide enhanced support for modular security and
-  configurable compliance capabilities. As part of this transition, the Risk Management Network is being adapted to
-  align with this broader, more flexible architecture.
+  Based on user demand, CCIP’s architecture is evolving to provide enhanced support for configurable security,
+  compliance, and monitoring capabilities. As part of that ongoing evolution, the Risk Management Network’s automated
+  offchain role is no longer active in current CCIP deployments, but is expected to be offered as an optional validation
+  layer in future releases. The [onchain RMN contract](/ccip/concepts/architecture/onchain/evm/components#rmn-contract)
+  remains part of CCIP’s architecture as an emergency safeguard over certain per-chain or network-wide functions when
+  required. CCIP continues to provide robust risk management controls, including configurable rate limits, developer
+  token attestations, and monitoring capabilities.
 </Aside>
 
 ---
@@ -2642,9 +2673,9 @@ The `Router` contract is the single user-facing entry point for both sending and
 - Accepts `Router_CCIPReceiveConfirm` from any caller (permissionless at the Router level; authorization is enforced by the `ReceiveExecutor`) and forwards `OffRamp_CCIPReceiveConfirm` to the `OffRamp`.
 - Detects a bounced `CCIPReceive` from the Receiver and forwards `OffRamp_CCIPReceiveBounced` to the `OffRamp`.
 
-**As the RMN Remote**, the `Router`:
+**As the RMN Contract**, the `Router`:
 
-- Stores the set of cursed subjects (`CursedSubjects`) in its own storage, acting as the RMN Remote for the TON chain family. There is no separate RMN Remote contract.
+- Stores the set of cursed subjects (`CursedSubjects`) in its own storage, acting as the RMN Contract for the TON chain family. There is no separate RMN Contract contract.
 - Accepts `Router_RMNRemoteCurse` and `Router_RMNRemoteUncurse` messages exclusively from the authorized RMN admin (`Ownable2Step`-gated).
 - On each curse or un-curse operation, emits a `Cursed` or `Uncursed` chain log and updates the `forwardUpdates` set, then propagates `OffRamp_UpdateCursedSubjects` to every registered `OffRamp` address (one message per unique OffRamp). The `forwardUpdates` set is rebuilt automatically whenever the `onRamps`/`offRamps` maps change.
 - Accepts permissionless `Router_RMNRemoteVerifyNotCursed` queries and synchronously replies with whether the given subject is cursed.
@@ -2827,11 +2858,13 @@ CCIP's offchain architecture includes the following:
 - **Interaction Components**: Managing communication between the CCIP DONs.
 
 <Aside type="note">
-  Based on user demand, CCIP's architecture is evolving to provide enhanced support for modular security and
-  configurable compliance capabilities. As part of this transition, the Risk Management Network is being adapted to
-  align with this broader, more flexible architecture. Please see the [onchain
-  architecture](/ccip/concepts/architecture/onchain/evm/components#rmn-contract) for more information on the current
-  functionality of the Risk Management Network.
+  Based on user demand, CCIP’s architecture is evolving to provide enhanced support for configurable security,
+  compliance, and monitoring capabilities. As part of that ongoing evolution, the Risk Management Network’s automated
+  offchain role is no longer active in current CCIP deployments, but is expected to be offered as an optional validation
+  layer in future releases. The [onchain RMN contract](/ccip/concepts/architecture/onchain/evm/components#rmn-contract)
+  remains part of CCIP’s architecture as an emergency safeguard over certain per-chain or network-wide functions when
+  required. CCIP continues to provide robust risk management controls, including configurable rate limits, developer
+  token attestations, and monitoring capabilities.
 </Aside>
 
 ## Components
@@ -3154,64 +3187,105 @@ On the destination blockchain, the CCIP OffRamp contract performs three key call
 
 ### Token Decimal Handling
 
-#### v1.5.0
+When you deploy the same token on multiple blockchains, you set decimals independently on each chain. Those settings determine how CCIP converts amounts during transfers. Use matching decimals on every chain when you can. If decimals differ between chains, read the examples and notes below and account for effects on token supply and on Token Pool Rate Limits; enforcement and scaling depend on your TokenPool contract version.
 
-Token pools on **v1.5.0** do not support tokens with different decimal places across blockchains. When transferring a token between blockchains with differing decimal places, the token loses precision resulting in different amounts of tokens between the source and destination blockchain.
-
-Consider a token developer who deployed their token across two blockchains with different decimal configurations:
-
-- Blockchain A: Token with 12 decimals
-- Blockchain B: Token with 6 decimals
-
-| Transfer Path  | Example                                                               | Explanation           | Impact                         |
-| -------------- | --------------------------------------------------------------------- | --------------------- | ------------------------------ |
-| A → B (12 → 6) | • Send 1.0 from A (= 10^12 base units)<br />• Receive on B: 1,000,000 | 10^12/10^6= 1,000,000 | Gain of 999,999 (1,000,000 -1) |
-| B → A (6 → 12) | • Send 1.0 from B (= 10^6 base units)<br />• Receive on A: 0.000001   | 10^6/10^12= 0.000001  | Loss of 0.999999 (1-0.000001)  |
-
-We highly recommend upgrading to v1.5.1 to leverage the native support for token decimal handling. If using v1.5.0, please make sure to configure a custom v1.5.0 token pool.
-
-#### V1.5.1 and Higher
-
-Starting **from v1.5.1**, token pools support tokens with different decimal places across blockchains. This feature can impact the total number of tokens in circulation because tokens locked/burned on the source chain might result in a smaller number of tokens minted/released on the destination chain due to decimal rounding.
+#### Precision Loss Examples
 
 <Aside type="caution" title="Impact on Token Supply">
-  When tokens move between blockchains with different decimal places, rounding can occur due to a loss of precision.
-  This rounding can affect small amounts of tokens during cross-chain transfers.
+  When you move tokens from a higher-decimal chain to a lower-decimal chain, amounts round to the destination's
+  precision and a small remainder is lost on each transfer. With lock/release pools that remainder can remain on the
+  source chain; with burn/mint pools it is typically not included in what is minted on the destination.
 </Aside>
 
-**Understanding Token Decimals**
+For example:
 
-When deploying their token, token developers can configure different decimal places for each blockchain. For example:
+- On Ethereum: you configure 18 decimals (0.123456789123456789)
+- On Polygon: you configure 9 decimals (0.123456789)
 
-- On Ethereum: The developer sets 18 decimals (0.123456789123456789)
-- On Polygon: The developer sets 9 decimals (0.123456789)
-
-When transferring tokens between these blockchains, CCIP handles decimal conversion automatically but must round numbers to match the destination's configured precision.
+When tokens move between chains with different decimals, CCIP converts values automatically and rounds to match the destination chain’s precision.
 
 **Impact Scenario**
 
-Consider a token developer who deployed their token across three blockchains with different decimal configurations:
+Consider a token deployed across three blockchains:
 
-- Blockchain A: High precision (18 decimals)
-- Blockchain B: Low precision (9 decimals)
-- Blockchain C: High precision (18 decimals)
+- Blockchain A: 18 decimals
+- Blockchain B: 9 decimals
+- Blockchain C: 18 decimals
 
-| Scenario                    | Transfer Path | Example                                                                       | Impact                                                                                                                                            |
-| --------------------------- | ------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **High to Low Precision ❌** | A → B         | • Send from A: 1.123456789123456789<br />• Receive on B: 1.123456789          | Lost: 0.000000000123456789<br />• Burn/mint: Tokens permanently burned on Blockchain A<br />• Lock/release: Tokens locked in pool on Blockchain A |
-| **Low to High Precision ✅** | B → A         | • Send from B: 1.123456789<br />• Receive on A: 1.123456789000000000          | • No precision loss                                                                                                                               |
-| **Equal Precision ✅**       | A → C         | • Send from A: 1.123456789123456789<br />• Receive on C: 1.123456789123456789 | • No precision loss                                                                                                                               |
+| Scenario         | Transfer Path | Example                                                           | Impact                                                                                                                                                                                                                                                        |
+| ---------------- | ------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **High → Low ❌** | A → B         | • Send: 1.123456789123456789<br />• Receive: 1.123456789          | Precision is lost when converting to the destination chain’s decimals. The difference (0.000000000123456789) is not represented on the destination chain.<br />• Burn/mint: not included in the minted amount<br />• Lock/release: remains in the source pool |
+| **Low → High ✅** | B → A         | • Send: 1.123456789<br />• Receive: 1.123456789000000000          | No precision loss                                                                                                                                                                                                                                             |
+| **Equal ✅**      | A → C         | • Send: 1.123456789123456789<br />• Receive: 1.123456789123456789 | No precision loss                                                                                                                                                                                                                                             |
 
-**Best Practices**
+#### Token Pool Version Considerations
 
-- Deploy tokens with the same number of decimals across all blockchains whenever possible
-- This prevents any loss of precision during cross-chain transfers
-- Different decimals should only be used when required by blockchain limitations (e.g., non-EVM chains with decimal constraints)
-- Verify decimal configurations on both source and destination blockchains before transfers
-- Consider implementing UI warnings for transfers that might be affected by rounding
-- When using high-to-low precision transfers, be aware that:
-  - In burn/mint pools: Lost precision results in permanently burned tokens
-  - In lock/release pools: Lost precision results in tokens accumulating in the source pool
+<Aside type="caution" title="Token amounts and TPRLs vary by TokenPool version">
+  Decimal differences affect both token amounts and how rate limits are interpreted depending on the version of the
+  TokenPool contract you are using.
+</Aside>
+
+##### v1.6.0+ (Recommended)
+
+TokenPool contracts in v1.6.0 and higher correctly handle mixed-decimal tokens and enforce Token Pool Rate Limits (TPRLs) across chains without additional configuration.
+
+[Use the latest TokenPool (v1.6.1)](https://www.npmjs.com/package/@chainlink/contracts-ccip/v/1.6.1)
+
+##### v1.5.1
+
+Token pools in **v1.5.1** introduce support for tokens with different decimal places across blockchains. However, **INBOUND Token Pool Rate Limits (TPRLs) are not properly enforced when decimals differ between chains** (OUTBOUND TPRLs are properly enforced). If you use mixed-decimal tokens in this version, you must manually account for how decimals affect TPRL configuration—and even then, enforcement may be significantly higher or lower than intended. This includes both capacity and refill rate.
+
+**Token Pool Rate Limits (TPRL)**
+
+When configuring TPRLs for mixed-decimal tokens, you must base calculations on the **remote token decimals** (the source chain). Using local decimals when they differ will incorrectly scale the configured limits.
+
+Definitions:
+
+- Remote decimals: token decimals on the destination chain (where tokens are being transferred from)
+- Local decimals: token decimals on the source chain (where tokens are being transferred to)
+
+**Inbound capacity rule**
+
+- If remote decimals ≠ local decimals\
+  → `capacity = whole_tokens × 10^remote_decimals`
+
+- If remote decimals = local decimals\
+  → `capacity = whole_tokens × 10^local_decimals`
+
+**Example (Solana → Ethereum)**
+
+- Solana: 9 decimals
+- Ethereum: 18 decimals
+- Desired inbound capacity: 50,000 tokens
+
+`50_000 × 10^9 = 50_000_000_000_000`
+
+If you instead use local decimals (`10^18`), you will misconfigure the limit. This can cause rate limits to be higher or lower than intended.
+
+<Aside type="caution" title="v1.5.1 limitation">
+  Even if you configure TPRLs using the correct model, enforcement may not match your configured values when token
+  decimals differ between chains. Upgrade to the latest TokenPool (v1.6.0+) to avoid misconfiguration and drift.
+  <a href="https://www.npmjs.com/package/@chainlink/contracts-ccip/v/1.6.1">View package</a>.
+</Aside>
+
+##### v1.5.0
+
+Token pools on **v1.5.0** do **not** support tokens with different decimal places across blockchains. If you deploy tokens with different decimals across chains in this version, transfers will produce inconsistent token amounts.
+
+| Transfer Path | Example                                          | Impact              |
+| ------------- | ------------------------------------------------ | ------------------- |
+| 12 → 6        | Send 1.0 (= 10¹² base units) → Receive 1,000,000 | Artificial increase |
+| 6 → 12        | Send 1.0 (= 10⁶ base units) → Receive 0.000001   | Significant loss    |
+
+Upgrade to **v1.6.0 or higher** for correct handling of mixed-decimal tokens.
+
+#### Best Practices
+
+- Use the same token decimals across chains unless you have a clear reason not to
+- If you choose different decimals, account for rounding in both directions
+- Test transfers between all chain pairs before production
+- Monitor lock/release pools for accumulation over time
+- Add UI warnings for transfers that may lose precision
 
 ## Standard Token Pools
 
@@ -3252,8 +3326,8 @@ Rebasing tokens are a unique type of token that adjusts its supply in response t
 #### Tokens with different decimals across blockchains
 
 <Aside type="note" title="Note">
-  This custom implementation is only needed for v1.5.0 pools. Starting from v1.5.1, token decimal handling is natively
-  supported by all token pools. See Token Decimal Handling under Common Requirements.
+  This custom implementation is only needed for v1.5.0 pools. Starting from v1.6.0+, token decimal handling is natively
+  supported by all token pools. See [Token Decimal Handling](#token-decimal-handling) for more information.
 </Aside>
 
 For **v1.5.0** pools:
@@ -5226,6 +5300,12 @@ CCIP rate limits are an **operator-level control** that apply to token pools use
 This documentation is intended for **CCIP operators, token issuers, and administrators** who have been granted permission to manage rate limits on their token pool contracts. Most CCIP users do **not** need to interact with rate limits as part of a standard integration.
 
 Rate limit changes are applied on-chain, take effect immediately, and directly affect user-facing transfer availability.
+
+<Aside type="note" title="Private/Permissioned Networks">
+  It is strongly recommended to configure Token Pool Rate Limits (TPRLs) for CCTs on all lanes. Note that private /
+  permissioned networks exhibit increased risks for Token Developers; please ensure you understand the implications
+  before proceeding. [Learn More](/ccip/service-limits/evm#private--permissioned-network-limitations).
+</Aside>
 
 ## What rate limits are
 
@@ -26068,6 +26148,10 @@ This section provides guidance on how to integrate with networks that require sp
 - [Hyperliquid Integration Guide](/ccip/tools-resources/network-specific/hyperliquid-integration-guide)
 - [HyperEVM Testnet RPC Guide](/ccip/tools-resources/network-specific/hyperevm-testnet-rpc)
 
+## Tempo
+
+- [Tempo Integration Guide](/ccip/tools-resources/network-specific/tempo-integration-guide)
+
 ---
 
 # Hyperliquid Integration Guide
@@ -26406,6 +26490,223 @@ This page describes known network-specific limitations that may result from the 
 
 **CCIP Mitigation**:
 Hyperliquid has provided a workaround to serve logs through a [dedicated resource](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/hyperevm/raw-hyperevm-block-data) in case their network is inaccessible from RPC providers. CCIP is utilizing Hyperliquid's data source to backfill missing logs. In addition, CCIP Node Operators have implemented additional defense, using an multi-RPC approach, allowing for detection of out-of-sync or offline RPCs and an automatic fallback. If all configured RPCs are unavailable for a period of 10+ minutes AND the Hyperliquid data source does not provide them, logs may not be recoverable.
+
+---
+
+# Tempo Integration Guide
+Source: https://docs.chain.link/ccip/tools-resources/network-specific/tempo-integration-guide
+
+CCIP is compatible with Tempo (Moderato Testnet and Mainnet), enabling cross-chain token transfers to and from Tempo using the standard BurnMint mechanism. This guide provides comprehensive information for CCIP users who want to enable a token on Tempo.
+
+<Aside type="note" title="Before You Start">
+  **Token Manager Expert Mode** access is required for this integration. Contact [CCIP
+  Support](https://chain.link/ccip-contact) to request access before proceeding.
+</Aside>
+
+## **How Tempo Works**
+
+Tempo is an app-chain that uses any natively issued stablecoin as a gas token through their feeAMM; Tempo does not have a chain native gas token. It introduces a custom token standard (TIP-20) designed for stablecoins and payment tokens, and has a significantly different gas cost structure compared to Ethereum mainnet.
+
+### Gas and Execution Model
+
+When integrating with CCIP, it is important to consider Tempo costs for storage and deployment operations:
+
+| Operation                            | Tempo       | Ethereum   | Notes                                                                                              |
+| :----------------------------------- | :---------- | :--------- | :------------------------------------------------------------------------------------------------- |
+| New storage slot (SSTORE 0→non-zero) | 250,000 gas | 20,000 gas | Expect higher execution costs; test on testnet first                                               |
+| Account creation                     | 250,000 gas | 0 gas      | Applies when the message receiver is a new account; ensure `destGasOverhead` values are sufficient |
+| Contract deployment (per byte)       | 1,000 gas   | 200 gas    | Deploying a token + pool via the factory may exceed limits                                         |
+| Transaction gas cap                  | 30M gas     | 30M gas    | —                                                                                                  |
+
+Key implications:
+
+- Always test token transfers and message sends on testnet before estimating production gas costs.
+- Deploying both a token and a token pool via Token Manager's factory contract can exceed gas limits. Adding a token in Token Manager therefore requires an **existing token** rather than a net-new deployment. Use Token Manager Expert Mode to deploy an ERC-20 or Tempo's official TIP-20 factory contract.
+- When sending messages across chains, ensure `destGasOverhead` values are set high enough to cover Tempo's account creation costs on inbound transfers.
+
+### Fee Tokens
+
+Tempo uses stablecoin-based native gas tokens. On CCIP, the supported fee tokens are listed in the [CCIP Directory](https://docs.chain.link/ccip/directory/testnet/chain/tempo-testnet-moderato) and include:
+
+- **LINK**
+- **PathUSD**
+
+For EVM gas on testnet, this guide uses **alphaUSD**.
+
+### TIP-20 Token Standard
+
+TIP-20 is Tempo's native token standard, optimized for stablecoins and payment tokens. More information is available in the [official Tempo docs](https://docs.tempo.xyz/protocol/tip20/overview). It differs from ERC-20 in the following key ways:
+
+| Feature         | ERC-20                 | TIP-20                                                                                        |
+| :-------------- | :--------------------- | :-------------------------------------------------------------------------------------------- |
+| `decimals()`    | Implementation-defined | Always returns `6` (hardcoded)                                                                |
+| Transfer policy | None                   | Enforces TIP-403 policy on sender and recipient; reverts with `PolicyForbids` if either fails |
+| Pause mechanism | None                   | All token-moving functions revert when `paused == true`                                       |
+| Mint/burn       | Not standard           | Role-based via `ISSUER_ROLE`                                                                  |
+| Rewards         | None                   | Built-in opt-in reward distribution                                                           |
+
+Additional TIP-20 transfer restrictions:
+
+- Tokens cannot be sent to another TIP-20 token contract address (reverts).
+- All transfers enforce `TIP403_REGISTRY.isAuthorized(transferPolicyId, from)` and `isAuthorized(transferPolicyId, to)` — both must pass.
+
+**ERC-20 alternative:** ERC-20 tokens can also be deployed to Tempo and are supported via Token Manager Expert Mode. Contact CCIP Support for access.
+
+## **Prerequisites**
+
+Before starting:
+
+- Access to [Tempo Moderato Testnet](https://explore.testnet.tempo.xyz)
+- A funded wallet with alphaUSD (see [Add Funds and Set EVM Gas](https://docs.tempo.xyz/guide/use-accounts/add-funds))
+- Token Manager Expert Mode access (request from [CCIP Support](https://chain.link/ccip-contact?v=General%20Technical%20Support))
+- All Tempo Moderato Testnet CCIP addresses from the [CCIP Directory](https://docs.chain.link/ccip/directory/testnet/chain/tempo-testnet-moderato)
+
+## **Integration Steps**
+
+### High-Level Sequence
+
+```
+1. Deploy TIP-20 token          (TIP20Factory precompile)
+2. Deploy BurnMintTokenPool     (Token Manager Expert Mode)
+3. Grant ISSUER_ROLE            (TIP-20 token contract)
+4. Register token in TAR        (self-serve via registerAccessControlDefaultAdmin())
+5. Accept Admin + Set Pool      (Token Manager Expert Mode)
+6. Wire pools across chains     (applyChainUpdates on Tempo + each remote chain)
+7. Test transfers               (Transporter testnet)
+```
+
+**Order matters:** Complete Steps 1–5 before wiring token pools. Wiring early can allow users to initiate transfers before the Tempo pool is active, resulting in transactions stuck in flight.
+
+### Step 1: Deploy a TIP-20 Token
+
+Deploy using the **TIP20Factory** precompile on Tempo Moderato Testnet.
+
+**Factory address:** [`0x20Fc000000000000000000000000000000000000`](https://explore.testnet.tempo.xyz/address/0x20Fc000000000000000000000000000000000000?tab=interact)
+
+Call `createToken(string name, string symbol, string currency, address quoteToken, address admin, bytes32 salt).` The following inputs have been provided as an example:
+
+| Parameter    | Example value                                                                                          |
+| :----------- | :----------------------------------------------------------------------------------------------------- |
+| `name`       | `My Test Token`                                                                                        |
+| `symbol`     | `MTT`                                                                                                  |
+| `currency`   | `USD`                                                                                                  |
+| `quoteToken` | `0x20C0000000000000000000000000000000000000 This is the address of PathUSD`                            |
+| `admin`      | Your admin wallet address                                                                              |
+| `salt`       | `0x0000000000000000000000000000000000000000000000000000000000001234 Used for deterministic deployment` |
+
+**References:**
+
+- [TIP-20 specification](https://docs.tempo.xyz/protocol/tip20/spec)
+- [Example TIP-20 token on testnet](https://explore.testnet.tempo.xyz/address/0x20C00000000000000000000000000000000000000090DC1fd50Deca30b?tab=token)
+
+### Step 2: Deploy the BurnMintTokenPool
+
+Using **Token Manager Expert Mode**:
+
+1. Select **Tempo Moderato Testnet** as the network.
+2. Go to **Deploy → Deploy token pool**.
+3. Set **CCIP Version** to `1.6.0` and **Token pool type** to `BurnMintTokenPool`.
+4. Enter your TIP-20 token address.
+5. Click **Connect** and execute the deployment transaction.
+
+### Step 3: Grant ISSUER_ROLE to the BurnMintTokenPool
+
+The BurnMintTokenPool must hold `ISSUER_ROLE` on your TIP-20 token in order to call `burn()` and `mint()` during cross-chain transfers.
+
+1. Navigate to your deployed TIP-20 token contract on the [Tempo explorer](https://explore.testnet.tempo.xyz), select **Interact**, and call `grantRole(bytes32 role, address account)`.
+2. For `role`, enter the `ISSUER_ROLE` ID: `0x114e74f6ea3bd819998f78687bfcb11b140da08e9b7d222fa9c1f1ba1f2aa122`
+3. For `account`, enter your `BurnMintTokenPool` address.
+4. Execute the transaction.
+
+**Verify:** Call `hasRole(address account, bytes32 role)` with your `BurnMintTokenPool` address and the `ISSUER_ROLE` ID. The expected return is `true`.
+
+### Step 4: Register Token in the CCIP TokenAdminRegistry (TAR)
+
+TIP-20 tokens support self-serve TAR registration via OpenZeppelin's `AccessControl`. Because your admin wallet holds `DEFAULT_ADMIN_ROLE` (granted at factory deployment), you can register directly without manual assistance from Chainlink Labs.
+
+In **Token Manager Expert Mode**, go to **Token Admin → Register token** and call `registerAccessControlDefaultAdmin()` with your TIP-20 token address.
+
+You can verify this capability directly on the token contract — see an [example on the Tempo explorer](https://explore.tempo.xyz/address/0x09AC52380E6Ede653E122773734fDc8b4B716422?tab=interact).
+
+This makes your admin wallet the proposed CCIP Token Admin. Proceed to Step 5 to accept and activate.
+
+### Step 5: Accept Admin and Set Pool
+
+**Accept Admin:**
+
+In Token Manager Expert Mode, go to **Token Admin → Accept admin**.
+
+1. Connect your admin wallet.
+2. Enter your Tempo token address.
+3. Click **Accept Admin** and pay gas.
+
+Your admin wallet is now the official CCIP Token Admin for your Tempo token.
+
+**Set Pool:**
+
+In Token Manager Expert Mode, go to **Token Admin → Set pool**.
+
+1. Enter your Tempo token address.
+2. Enter your Tempo `BurnMintTokenPool` address.
+3. Click **Set Pool** and pay gas.
+
+This activates the token and token pool for CCIP. The token is now ready to be wired to remote chains.
+
+### Step 6: Wire Token Pools Across Chains
+
+Now that the token pool is active on Tempo, connect it to your existing remote chains.
+
+### **On Tempo (add remote chains)**
+
+In Token Manager Expert Mode:
+
+1. Go to **Token Pool → Chain Update → Apply Chain Updates**
+2. Set the network to **Tempo Moderato Testnet**
+3. Enter your **Tempo BurnMintTokenPool address**
+4. Under **Add a new network**, configure each remote chain:
+   - **Network**: Select the remote chain (e.g., Avalanche Fuji)
+   - **Token Address**: Enter the token address on the remote chain
+   - **Token Pool Address**: Enter the remote chain’s BurnMintTokenPool address
+5. Click **Chain update** and pay gas
+
+Leave **Inbound/Outbound rate limiters** at their default values unless you have specific requirements.
+
+Ignore **Remove a network** during initial setup.
+
+### **On each remote chain (add Tempo)**
+
+Repeat the process on each connected chain:
+
+1. Switch the network to the remote chain
+2. Enter the existing token pool address on that chain
+3. Under **Add a new network**:
+   - **Network**: Select **Tempo Moderato Testnet**
+   - **Token Address**: Enter your Tempo token address
+   - **Token Pool Address**: Enter your Tempo BurnMintTokenPool address
+4. Click **Chain update** and pay gas
+
+Repeat for each additional remote chain by switching the network at the top. At the end of this step, all token pools should be mutually wired to each other.
+
+To maintain strong security and risk management it is *highly recommended* to enable [Token Pool Rate Limits](https://docs.chain.link/ccip/concepts/rate-limit-management/overview).
+
+### Step 7: Test Cross-Chain Transfers
+
+Use [**Transporter (testnet)**](https://test.transporter.io/) to test transfers across your connected chains.
+
+1. In the **Token** dropdown, paste your source chain's token address — the token symbol should be detected automatically.
+2. Select your source and destination networks.
+3. Set the token amount and approve the spending limit.
+4. Click **Send** and pay gas (e.g., using alphaUSD as the gas token on Tempo).
+
+Test transfers in both directions across all connected chains. Your Token Manager dashboard will auto-detect configured networks once wiring is complete.
+
+## **Contact Us**
+
+To request Token Manager Expert Mode access, or if you have questions about your integration or need help validating your configuration, contact the Chainlink CCIP team:
+
+- **CCIP Support:** [chain.link/ccip-contact](https://chain.link/ccip-contact?v=General%20Technical%20Support)
+
+Once testing is complete, please share your CCIP transaction hashes with the team so the CCIP Directory and Transporter can be updated with your token's information.
 
 ---
 

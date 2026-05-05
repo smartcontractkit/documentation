@@ -1,0 +1,63 @@
+---
+section: ace
+title: "RoleBasedAccessControlPolicy"
+date: Last Modified
+metadata:
+  description: "RoleBasedAccessControlPolicy reference: role-based permissions that map roles to function selectors, built on OpenZeppelin AccessControl. Configuration, runtime behavior, and use cases."
+  datePublished: "2026-04-20"
+  lastModified: "2026-04-20"
+---
+
+The RoleBasedAccessControlPolicy provides fine-grained, role-based access control for protected functions. It maps named roles to specific function selectors (operations) and checks whether the transaction sender holds a role that is permitted to perform the requested operation. If the sender lacks the required role, the transaction is rejected.
+
+This policy is built on [OpenZeppelin's AccessControlUpgradeable](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/master/contracts/access/AccessControlUpgradeable.sol), which handles role storage and administration.
+
+## Configuration
+
+Both mappings described below are empty at deployment and must be populated afterward. The policy owner automatically receives the `DEFAULT_ADMIN_ROLE` at initialization, which grants the ability to manage other roles.
+
+### Operation allowances
+
+An operation allowance links a role to a function selector. A function selector is a 4-byte identifier (e.g., `0xa9059cbb` for `transfer(address,uint256)`) that uniquely identifies a smart contract function.
+
+To permit a role to call a specific function, grant an operation allowance for that function's selector. You can grant multiple roles permission for the same function, and a single role can be allowed across multiple functions.
+
+### Role assignments
+
+A role assignment links an address to a role. Once an address holds a role, it can call any function that role has an operation allowance for.
+
+Roles are identified by `bytes32` values. You define your own role identifiers — for example, `keccak256("MINTER_ROLE")` for a minting role or `keccak256("COMPLIANCE_OFFICER")` for a compliance role.
+
+## Runtime behavior
+
+This policy checks `msg.sender` against role assignments for the current function selector. It does not use extracted parameters.
+
+- **`run()`** — Reverts if the sender does not hold any role with an operation allowance for the current function selector. Returns `Continue` otherwise.
+- **`postRun()`** — No state changes.
+
+## API reference
+
+### Setter functions
+
+**Operation allowances:**
+
+- **`grantOperationAllowanceToRole(bytes4 operation, bytes32 role)`** — Grants a role permission to call the specified function. Reverts if the role already has an allowance for this operation.
+- **`removeOperationAllowanceFromRole(bytes4 operation, bytes32 role)`** — Revokes a role's permission for the specified function. Reverts if the role does not have an allowance for this operation.
+
+**Role assignments:**
+
+- **`grantRole(bytes32 role, address account)`** — Assigns a role to an address.
+- **`revokeRole(bytes32 role, address account)`** — Revokes a role from an address.
+
+### View functions
+
+- **`hasAllowedRole(bytes4 operation, address account)`** — Returns `true` if the account holds any role that is permitted to perform the operation.
+
+## Use cases
+
+- **Granular function permissions** — Assign different roles (admin, minter, compliance officer) and control which functions each role can call.
+- **Team management** — Grant or revoke privileges across multiple operations and roles without redeploying contracts.
+
+## Source
+
+[RoleBasedAccessControlPolicy.sol](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/src/policies/RoleBasedAccessControlPolicy.sol)

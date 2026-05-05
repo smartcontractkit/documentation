@@ -751,6 +751,11 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
             url: "ccip/service-limits/evm/hyperevm",
             chainTypes: ["evm"],
           },
+          {
+            title: "Tempo Integration Guide",
+            url: "ccip/tools-resources/network-specific/tempo-integration-guide",
+            chainTypes: ["evm"],
+          },
         ],
       },
       {

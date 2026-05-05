@@ -1,0 +1,46 @@
+---
+section: ace
+title: "PausePolicy"
+date: Last Modified
+metadata:
+  description: "PausePolicy reference: a global pause/unpause toggle that rejects all transactions when activated. Configuration, runtime behavior, and use cases."
+  datePublished: "2026-04-20"
+  lastModified: "2026-04-20"
+---
+
+The PausePolicy provides a global pause/unpause mechanism for protected functions. When paused, the policy rejects every transaction regardless of any other conditions. When unpaused, it returns `Continue` and lets subsequent policies decide.
+
+## Configuration
+
+### Paused state
+
+A single boolean toggle that controls whether the policy is active. When set to `true`, all transactions through this policy are rejected. When set to `false`, transactions pass through normally.
+
+The initial state is set when the policy is first deployed. You can deploy the contract in a paused state by passing `true` during initialization — this is useful when you want to finalize other configuration (such as allowlists or volume limits on other policies in the chain) before going live.
+
+## Runtime behavior
+
+This policy does not use extracted parameters. It checks only its internal pause flag.
+
+- **`run()`** — Reverts if paused. Returns `Continue` if unpaused.
+- **`postRun()`** — No state changes.
+
+## API reference
+
+### Setter functions
+
+- **`setPausedState(bool paused)`** — Sets the pause state. Pass `true` to pause (reject all transactions) or `false` to unpause (resume normal flow). Reverts if the new state is the same as the current one.
+
+### View functions
+
+- **`s_paused()`** — Returns `true` if the policy is currently paused.
+
+## Use cases
+
+- **Emergency stop** — Immediately halt all protected functions during a security incident or contract vulnerability.
+- **Maintenance mode** — Temporarily pause interactions during upgrades or migrations.
+- **Gradual rollout** — Deploy the contract paused and activate it when everything is ready.
+
+## Source
+
+[PausePolicy.sol](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/src/policies/PausePolicy.sol)
