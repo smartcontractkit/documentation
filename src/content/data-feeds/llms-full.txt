@@ -6745,10 +6745,13 @@ Extended and overnight session price data is sourced from a more limited number 
 
 If providers experience downtime, technical failures, or connectivity disruption, the feed may flatline or report stale values. Such issues may lead to mispricing, failed liquidations, and potential bad debt accumulation.
 
+**Overnight and extended sessions** carry additional nuance: liquidity is thinner and fewer venues contribute data. In those conditions the feed may continue to update while surfacing **atypical numeric values**—including, in edge cases, **a reported price of zero** or other answers that are not economically meaningful as a reference price for the token. That behavior is distinct from staleness (fresh timestamps can accompany unsafe numbers). **Treat unexpected zeros, abrupt discontinuities, or values outside plausible bands as invalid for automated risk decisions** unless you independently confirm them against issuer methodology, recent observations, or supplementary market data.
+
 #### Mitigation
 
 - Implement staleness detection by monitoring the feed's last update timestamp
 - Define protocol behavior for when data stops updating (pause operations, use bounded trading ranges, or implement fallback logic)
+- Add **value-level validation**: enforce minimum and maximum bounds, compare against recent ticks for continuity, and specify explicit fallback behavior for **zero**, out-of-range answers, or sudden jumps during overnight windows
 - Consider restricting high-risk operations (large liquidations, new positions) during extended and overnight sessions
 
 ### Structural illiquidity during extended hours
