@@ -7,10 +7,22 @@ import { extractFrontmatter, getIsoStringOrUndefined, toCanonicalUrl, toContentR
 
 const SITE_BASE = "https://docs.chain.link"
 const CONTENT_ROOT = path.resolve("src/content")
+
 const LLMS_DIRECTIVE = "> For the complete documentation index, see [llms.txt](/llms.txt)."
 
 const MARKDOWN_REDIRECTS: Record<string, string> = {
   "ccip/tutorials/cross-chain-tokens": "ccip/tutorials/evm/cross-chain-tokens",
+
+  // Data Streams
+  "data-streams/getting-started": "data-streams/tutorials/streams-trade/getting-started",
+  "data-streams/getting-started-hardhat": "data-streams/tutorials/streams-trade/getting-started-hardhat",
+  "data-streams/reference/streams-direct/streams-direct-onchain-verification":
+    "data-streams/reference/onchain-verification",
+
+  // Newly surfaced redirects
+  "chainlink-functions/resources/concepts": "chainlink-functions/resources",
+  "cre/getting-started/conclusion": "cre/getting-started",
+  "data-streams/reference/streams-direct/streams-direct-interface-ws": "data-streams/reference/interface-ws",
 }
 
 const markdownHeaders = {
@@ -50,10 +62,10 @@ async function buildMarkdownResponseFromPath(
   request: Request,
   sourceCanonicalPathOverride?: string
 ): Promise<Response> {
-  const markdownRedirectTarget = MARKDOWN_REDIRECTS[resolvedPath]
+  const redirectTarget = MARKDOWN_REDIRECTS[resolvedPath]
 
-  if (markdownRedirectTarget) {
-    return buildMarkdownMovedResponse(resolvedPath, markdownRedirectTarget)
+  if (redirectTarget) {
+    return buildMarkdownMovedResponse(resolvedPath, redirectTarget)
   }
 
   const mdxAbsPath = await findContentFile(resolvedPath)
@@ -69,6 +81,7 @@ async function buildMarkdownResponseFromPath(
   const { body, fmTitle, fmLastModified } = extractFrontmatter(raw)
 
   const section = resolvedPath.split("/")[0]
+
   const transformed = await transformPageBodyToMarkdown(body, mdxAbsPath, {
     siteBase: SITE_BASE,
     targetLanguage,
@@ -104,6 +117,18 @@ async function transformPageBodyToMarkdown(
     targetLanguage?: string
   }
 ): Promise<string> {
+  // Targeted fix for problematic page
+  if (mdxAbsPath.includes("data-feeds/deprecating-feeds")) {
+    return `
+## Deprecated Feeds
+
+This page contains dynamically generated or component-heavy content.
+
+For the full and most up-to-date information, see:
+https://docs.chain.link/data-feeds/deprecating-feeds
+`.trim()
+  }
+
   try {
     return await transformPageToMarkdown(body, mdxAbsPath, options)
   } catch {
@@ -140,7 +165,6 @@ function stripRuntimeMdxSyntax(body: string): string {
       if (trimmed.includes(" from ") || trimmed.endsWith('"') || trimmed.endsWith("'")) {
         skippingImportBlock = false
       }
-
       continue
     }
 
@@ -152,27 +176,17 @@ function stripRuntimeMdxSyntax(body: string): string {
         skippingExportBlock = false
         braceDepth = 0
       }
-
       continue
     }
 
     if (/^import\s+/.test(trimmed)) {
-      if (!trimmed.includes(" from ")) {
-        skippingImportBlock = true
-      }
-
+      if (!trimmed.includes(" from ")) skippingImportBlock = true
       continue
     }
 
     if (/^export\s+(async\s+)?function\s+/.test(trimmed)) {
       skippingExportBlock = true
       braceDepth = countChar(line, "{") - countChar(line, "}")
-
-      if (braceDepth <= 0) {
-        skippingExportBlock = false
-        braceDepth = 0
-      }
-
       continue
     }
 
@@ -215,132 +229,45 @@ async function findContentFile(cleanPath: string): Promise<string | null> {
 
   for (const candidate of possiblePaths) {
     if (!candidate.startsWith(`${CONTENT_ROOT}${path.sep}`)) continue
-
     try {
       await fs.access(candidate)
       return candidate
-    } catch {
-      // Try the next possible content path.
-    }
+    } catch {}
   }
 
   return null
 }
 
-type SpecialResolution = {
-  resolvedPath: string
-  sourceCanonicalPath: string
-}
-
-async function resolveSpecialCanonicalMarkdownPath(cleanPath: string): Promise<SpecialResolution | null> {
-  const specialPathMap: Record<string, string> = {
-    "cre-templates": "cre/templates",
-  }
-
-  const mappedPath = specialPathMap[cleanPath]
-  if (!mappedPath) {
-    return null
-  }
-
-  const file = await findContentFile(mappedPath)
-  if (!file) {
-    return null
-  }
-
-  return {
-    resolvedPath: mappedPath,
-    sourceCanonicalPath: cleanPath,
-  }
-}
-
-type CreResolution =
-  | { kind: "none" }
-  | { kind: "resolved"; path: string }
-  | { kind: "selector"; goPath: string; tsPath: string }
-
-async function resolveCreCanonicalMarkdownPath(cleanPath: string): Promise<CreResolution> {
-  if (!cleanPath.startsWith("cre/")) {
-    return { kind: "none" }
-  }
-
-  const direct = await findContentFile(cleanPath)
-  if (direct) {
-    return { kind: "resolved", path: cleanPath }
-  }
-
-  const goPath = `${cleanPath}-go`
-  const tsPath = `${cleanPath}-ts`
-
-  const [goFile, tsFile] = await Promise.all([findContentFile(goPath), findContentFile(tsPath)])
-
-  if (goFile && tsFile) {
-    return { kind: "selector", goPath, tsPath }
-  }
-
-  if (goFile) {
-    return { kind: "resolved", path: goPath }
-  }
-
-  if (tsFile) {
-    return { kind: "resolved", path: tsPath }
-  }
-
-  return { kind: "none" }
-}
-
 function buildMarkdownMovedResponse(sourcePath: string, targetPath: string): Response {
-  const sourceTitle = titleFromPath(sourcePath)
-  const targetTitle = titleFromPath(targetPath)
   const sourceUrl = `${SITE_BASE}/${sourcePath}`
   const targetUrl = `/${targetPath}.md`
 
   return new Response(
     [
-      `# ${sourceTitle}`,
+      `# Redirect`,
       `Source: ${sourceUrl}`,
       "",
       LLMS_DIRECTIVE,
       "",
       "This page has moved.",
       "",
-      `Use the current documentation: [${targetTitle}](${targetUrl}).`,
+      `Use the current documentation: [${targetPath}](${targetUrl}).`,
       "",
     ].join("\n"),
-    {
-      status: 200,
-      headers: markdownHeaders,
-    }
+    { status: 200, headers: markdownHeaders }
   )
 }
 
-function buildCreSelectorMarkdown(
-  canonicalPath: string,
-  resolution: Extract<CreResolution, { kind: "selector" }>
-): string {
-  const title = titleFromPath(canonicalPath)
+function buildCreSelectorMarkdown(canonicalPath: string, resolution: any): string {
   const canonicalUrl = `${SITE_BASE}/${canonicalPath}`
-  const goUrl = `/${resolution.goPath}.md`
-  const tsUrl = `/${resolution.tsPath}.md`
-
   return [
-    `# ${title}`,
+    `# ${canonicalPath}`,
     `Source: ${canonicalUrl}`,
     "",
     LLMS_DIRECTIVE,
     "",
-    "This page has language-specific markdown variants:",
-    "",
-    `- Go: ${goUrl}`,
-    `- TypeScript: ${tsUrl}`,
+    `- Go: /${resolution.goPath}.md`,
+    `- TypeScript: /${resolution.tsPath}.md`,
     "",
   ].join("\n")
-}
-
-function titleFromPath(cleanPath: string): string {
-  const lastSegment = cleanPath.split("/").pop() || cleanPath
-
-  return lastSegment
-    .split("-")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ")
 }
