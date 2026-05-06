@@ -10,6 +10,7 @@ export type LlmsSectionConfig = {
 export const SUPPORTED_LLM_SECTIONS = [
   "ace",
   "cre",
+  "crec",
   "vrf",
   "ccip",
   "data-feeds",
@@ -37,6 +38,10 @@ export const LLM_SECTIONS_CONFIG: Record<SupportedSection, LlmsSectionConfig> = 
     root: "src/content/cre",
     includeGlobs: ["**/*.mdx"],
     languages: ["go", "ts"], // CRE has language-specific files
+  },
+  crec: {
+    root: "src/content/crec",
+    includeGlobs: ["**/*.mdx"],
   },
   vrf: {
     root: "src/content/vrf",

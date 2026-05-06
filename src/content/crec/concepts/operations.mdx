@@ -1,0 +1,71 @@
+---
+section: crec
+title: "Operations and Transactions"
+date: Last Modified
+metadata:
+  description: "An Operation in Chainlink CRE Connect is a signed, gas-less batch of EVM transactions executed atomically by a Smart Account. This page describes the Operation/Transaction model and the end-to-end submission lifecycle."
+  datePublished: "2026-05-01"
+  lastModified: "2026-05-01"
+---
+
+import { Aside, ClickToZoom } from "@components"
+
+An **Operation** is the unit of write in CRE Connect. It packages one or more EVM transactions into a single, atomic, EIP-712-signed batch that a Smart Account executes on behalf of an application — without the application managing gas, nonces, or relayers. If any transaction in the batch reverts, the entire Operation reverts.
+
+For the underlying signing mechanism and the on-chain execution model, see [EIP-712 Signing](/crec/concepts/eip712-signing) and [Smart Accounts](/crec/concepts/smart-accounts).
+
+## Model
+
+An Operation is a small, ordered structure:
+
+| Field               | Meaning                                                                                                                                                                                      |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Wallet operation ID | A monotonically-increasing nonce-like value chosen by the application. Used to detect duplicates and to order operations.                                                                    |
+| Account             | The Smart Account address (the wallet) that will execute the Operation.                                                                                                                      |
+| Deadline            | A Unix timestamp after which the Operation must not be executed. Operations whose deadline has passed are not broadcast.                                                                     |
+| Transactions        | An ordered list of `(to, value, data)` triples — exactly the same shape as the standard EVM transaction call, except the sender is the Smart Account, not the EOA that signed the Operation. |
+
+## End-to-end flow
+
+<ClickToZoom src="/images/crec/concepts/operations.png" />
+
+## Signing
+
+Operations are signed with EIP-712 typed data. The CRE Connect EIP-712 domain identifies the Smart Account contract and the chain on which it lives — not just by chain ID, but as a CRE Connect-native authorization domain (see [EIP-712 Signing](/crec/concepts/eip712-signing) for details).
+
+The signing key can be any of the supported key-management options at launch — local ECDSA keys, AWS KMS, HashiCorp Vault, Fireblocks, Privy, or a custom signer. CRE Connect itself never holds private keys.
+
+## Lifecycle
+
+A submitted Operation is observable through the channel's event stream. Its status enum has six values:
+
+<ClickToZoom src="/images/crec/concepts/operations-lifecycle.png" />
+
+| <div style="width: 120px;">Status</div> | Meaning                                                                                                                                                                  |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `accepted`                              | CRE Connect accepted the signed Operation; the workflow has not yet picked it up.                                                                                        |
+| `sending`                               | The workflow is preparing the on-chain write.                                                                                                                            |
+| `sent`                                  | The transaction has been broadcast to the chain.                                                                                                                         |
+| `broadcasting`                          | Awaiting inclusion in a block.                                                                                                                                           |
+| `confirmed`                             | The Smart Account emitted `OperationExecuted` and CRE Connect attested to it via an `operation.status` event. The on-chain transaction hash is available in the payload. |
+| `failed`                                | An unrecoverable error prevented execution. The payload includes the failure reason.                                                                                     |
+
+Status transitions are themselves verifiable events — applications consume them through the same channel stream they use for on-chain data.
+
+## Atomicity
+
+All transactions in a single Operation execute atomically: the Smart Account either executes every transaction successfully, or it reverts the entire batch. This is the guarantee that makes Operations a useful primitive for **multi-step on-chain flows** — for example, "approve token + call protocol contract + emit auxiliary log" — that would otherwise require careful retry handling on partial failure.
+
+If an application needs _all-or-some_ semantics (for example, several independent token transfers that should succeed independently), it should submit them as **separate Operations** — one Operation per transaction.
+
+<Aside type="note" title="How deadlines work">
+  An Operation's `Deadline` is a Unix-second timestamp (or `0` for "no expiration") after which the DON drops the
+  operation instead of broadcasting it. When that happens the application sees a `failed` status and can decide whether
+  to construct a new Operation and retry. Pick a deadline that matches the application's freshness requirements.
+</Aside>
+
+## Related
+
+- [EIP-712 Signing](/crec/concepts/eip712-signing) — what gets signed and why.
+- [Smart Accounts](/crec/concepts/smart-accounts) — the on-chain executor.
+- [Account Abstraction & Gas Sponsorship](/crec/concepts/account-abstraction) — the gas-less execution model.

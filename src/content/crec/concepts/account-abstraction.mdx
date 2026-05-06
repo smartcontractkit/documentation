@@ -1,0 +1,74 @@
+---
+section: crec
+title: "Account Abstraction and Gas Sponsorship"
+date: Last Modified
+metadata:
+  description: "How Chainlink CRE Connect delivers gas-less, account-abstracted on-chain execution. The Chainlink DON signs and broadcasts every Operation on a Smart Account's behalf, so applications never manage gas, nonces, or relayers."
+  datePublished: "2026-05-01"
+  lastModified: "2026-05-01"
+---
+
+import { Aside, ClickToZoom } from "@components"
+
+CRE Connect Operations are **gas-less** from the application's point of view. The application signs an Operation with a key that holds no on-chain balance, hands it off to CRE Connect, and the on-chain transaction lands without the application paying gas. This page explains the mechanics behind that experience and where it differs from ERC-4337 account abstraction.
+
+## What "gas-less" means here
+
+When an application submits an Operation:
+
+- The signing key (local ECDSA, KMS, Vault, Fireblocks, Privy, or custom) only signs an EIP-712 hash. It is never asked to broadcast a transaction.
+- The Operation is sent to CRE Connect over HTTPS — no gas, no nonce, no chain RPC.
+- A CRE workflow on the Chainlink DON picks up the Operation, signs the underlying transaction with the DON's keys, and broadcasts it on-chain.
+- The DON's writer EOA is the on-chain `tx.origin` and pays the gas. The application's signing key never appears in `tx.origin`.
+
+From the application's perspective, executing an Operation is a single call that returns immediately with a tracking identifier, and a `confirmed` event flows back through the channel stream when the chain transaction is included.
+
+## End-to-end flow
+
+<ClickToZoom src="/images/crec/concepts/account-abstraction-flow.png" />
+
+Gas is paid by the DON's writer, not by the application's signer. The signer's only role is producing the EIP-712 signature.
+
+## Why this is "account abstraction"
+
+Account abstraction is the property that the _authorizer_ of an Operation does not have to be the _payer_ of gas. CRE Connect's model achieves this by:
+
+1. **Authorization is decoupled from gas via EIP-712.** The Smart Account verifies that the EIP-712 signature was produced by an address in its allow-list. That address holds no ETH and is never `tx.origin`.
+2. **Execution is delegated to the DON.** The DON signs and broadcasts the on-chain transaction itself, paying gas from its own writer EOA. The Smart Account treats the DON-attested call as sufficient permission to execute the Operation atomically.
+
+This is functionally equivalent to ERC-4337's "user signs, paymaster pays" model, but the implementation is Chainlink-native and does not depend on EntryPoint, UserOperation, or bundlers.
+
+## How this differs from ERC-4337
+
+| Concept             | ERC-4337                                   | CRE Connect                                              |
+| ------------------- | ------------------------------------------ | -------------------------------------------------------- |
+| Account model       | UserOperation queue → EntryPoint → Account | EIP-712 Operation → Chainlink DON → Smart Account        |
+| Authorization       | Account-defined `validateUserOp`           | Account-defined EIP-712 signer allow-list (ECDSA or RSA) |
+| Gas sponsorship     | Paymaster contract or self-funded          | Chainlink DON pays gas from its own writer EOA           |
+| Bundler             | Off-chain bundler builds UserOp batches    | The DON itself signs and broadcasts each operation       |
+| Network requirement | Any EVM chain with deployed EntryPoint     | Any EVM chain supported by CRE Connect                   |
+| Signing format      | Account-defined                            | EIP-712 with a CRE Connect-native domain                 |
+
+The two models solve the same problem with different infrastructure. CRE Connect's model is a fit when applications also want verifiable inbound events from the same DON that executes their outbound operations — which is the typical CRE Connect integration pattern.
+
+## What gas sponsorship covers
+
+| Sponsored                                                                 | Not sponsored                                                                                                             |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Gas for the on-chain transaction the DON broadcasts.                      | Funding the `value` field of any `Transaction` in the Operation — the Smart Account itself must hold enough native token. |
+| Gas for the Smart Account's `OperationExecuted` log.                      | Tokens transferred or approved by the Operation's transactions.                                                           |
+| Gas for the on-chain status read that triggers `operation.status` events. | Off-chain compute (the application's own infrastructure).                                                                 |
+
+Practically: if an Operation needs to send 1 ETH to a counterparty, the Smart Account needs to hold 1 ETH. Gas for that send is sponsored by the DON.
+
+<Aside type="tip" title="Funding model">
+  The signing key is gas-less, but the Smart Account itself may need to hold native token if Operations transfer
+  `value`. A common pattern is to keep a small native-token float on each Smart Account and top it up through a separate
+  Operation when it dips below a threshold.
+</Aside>
+
+## Related
+
+- [Operations & Transactions](/crec/concepts/operations) — the unit of write that this gas-less model executes.
+- [Smart Accounts](/crec/concepts/smart-accounts) — the on-chain identity that pays no gas.
+- [EIP-712 Signing](/crec/concepts/eip712-signing) — the authorization step that precedes execution.

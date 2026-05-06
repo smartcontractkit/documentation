@@ -1,5 +1,6 @@
 import aceLogo from "../../assets/product-logos/ace-logo.svg"
 import creLogo from "../../assets/product-logos/cre-logo.svg"
+import crecLogo from "../../assets/product-logos/crec-logo.svg"
 import ccipLogo from "../../assets/product-logos/ccip-logo.svg"
 import vrfLogo from "../../assets/product-logos/vrf-logo.svg"
 import functionsLogo from "../../assets/product-logos/functions-logo.svg"
@@ -71,6 +72,12 @@ const desktopSubProductsNav = [
     label: "CRE",
     href: "/cre",
     icon: creLogo.src,
+    col: 1,
+  },
+  {
+    label: "CRE Connect",
+    href: "/crec",
+    icon: crecLogo.src,
     col: 1,
   },
   {
@@ -175,6 +182,12 @@ const getDocsSections = (pageSdkLangMap: Map<string, string>) => [
         href: "/cre",
         icon: creLogo.src,
         subProducts: getSubProducts(sidebar.cre, pageSdkLangMap),
+      },
+      {
+        label: "CRE Connect",
+        href: "/crec",
+        icon: crecLogo.src,
+        subProducts: getSubProducts(sidebar.crec, new Map()),
       },
       {
         label: "Data Feeds",
