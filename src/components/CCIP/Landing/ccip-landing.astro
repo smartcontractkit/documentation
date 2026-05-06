@@ -15,7 +15,6 @@ import { getTokenIconUrl } from "~/features/utils"
 import LazyNetworkGrid from "./LazyNetworkGrid"
 import LazyTokenGrid from "../TokenGrid/LazyTokenGrid"
 import LazyVerifierGrid from "../VerifierGrid/LazyVerifierGrid"
-import StructuredData from "~/components/StructuredData.astro"
 import { generateDirectoryStructuredData } from "~/utils/ccipStructuredData"
 import { DOCS_BASE_URL } from "~/utils/structuredData"
 import AddButton from "~/components/CCIP/AddButton/AddButton.astro"
@@ -26,16 +25,16 @@ export type Props = {
 const { environment } = Astro.props as Props
 
 // ----------------------
-// Featured ranking (hardcoded)
+// Featured ranking (exact canonical names)
 // ----------------------
 
 const FEATURED_NETWORK_RANK: Record<string, number> = {
   Ethereum: 1,
   Plasma: 2,
   Solana: 3,
-  Binance: 4,
+  "BNB Chain": 4,
   Base: 5,
-  Arbitrum: 6,
+  "Arbitrum One": 6,
   Avalanche: 7,
   Monad: 8,
 }
@@ -54,34 +53,28 @@ const FEATURED_TOKEN_RANK: Record<string, number> = {
 // ----------------------
 
 const entry = await getEntry("ccip", "index")
-if (!entry) {
-  throw new Error('No "ccip/index" doc found!')
-}
+if (!entry) throw new Error('No "ccip/index" doc found!')
 
 const { headings } = await render(entry)
 
 // ----------------------
-// Networks
+// Networks (exact match)
 // ----------------------
 
 const networksRaw = getAllNetworks({ filter: environment })
-
-// 🔍 Validation: ensure all featured networks exist
-const missingFeaturedNetworks = Object.keys(FEATURED_NETWORK_RANK).filter(
-  (name) => !networksRaw.some((n) => n.name === name)
-)
-
-if (missingFeaturedNetworks.length) {
-  console.warn("Missing featured networks:", missingFeaturedNetworks)
-}
 
 const networks = networksRaw.map((n) => ({
   ...n,
   featuredRank: FEATURED_NETWORK_RANK[n.name],
 }))
 
+const featuredNetworkCount = networks.filter((n) => n.featuredRank !== undefined).length
+if (featuredNetworkCount !== 8) {
+  console.warn(`Expected 8 featured networks, got ${featuredNetworkCount}`)
+}
+
 // ----------------------
-// Tokens
+// Tokens (exact match)
 // ----------------------
 
 const supportedTokens = getAllSupportedTokens({
@@ -90,13 +83,6 @@ const supportedTokens = getAllSupportedTokens({
 })
 
 const tokens = Object.keys(supportedTokens).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }))
-
-// 🔍 Validation: ensure all featured tokens exist
-const missingFeaturedTokens = Object.keys(FEATURED_TOKEN_RANK).filter((token) => !tokens.includes(token))
-
-if (missingFeaturedTokens.length) {
-  console.warn("Missing featured tokens:", missingFeaturedTokens)
-}
 
 const allTokens = tokens.map((token) => {
   const logo = getTokenIconUrl(token) || ""
@@ -108,8 +94,13 @@ const allTokens = tokens.map((token) => {
   }
 })
 
+const featuredTokenCount = allTokens.filter((t) => t.featuredRank !== undefined).length
+if (featuredTokenCount !== 8) {
+  console.warn(`Expected 8 featured tokens, got ${featuredTokenCount}`)
+}
+
 // ----------------------
-// Split logic
+// Split + order
 // ----------------------
 
 function splitFeatured(items) {
@@ -129,16 +120,6 @@ function splitFeatured(items) {
 const { featured: featuredNetworks, rest: restNetworks } = splitFeatured(networks)
 const { featured: featuredTokens, rest: restTokens } = splitFeatured(allTokens)
 
-// 🔍 Validation: ensure exactly 8 featured items
-if (featuredNetworks.length !== 8) {
-  console.warn(`Expected 8 featured networks, got ${featuredNetworks.length}`)
-}
-
-if (featuredTokens.length !== 8) {
-  console.warn(`Expected 8 featured tokens, got ${featuredTokens.length}`)
-}
-
-// 🔑 Recombine for grid
 const orderedNetworks = [...featuredNetworks, ...restNetworks]
 const orderedTokens = [...featuredTokens, ...restTokens]
 
@@ -167,9 +148,7 @@ const directoryStructuredData = generateDirectoryStructuredData(environment, net
   pageTitleOverride={`CCIP Directory - ${environment === Environment.Mainnet ? "Mainnet" : "Testnet"}`}
   metadataOverride={{
     ...(entry.data.metadata || {}),
-    description: `Explore CCIP Directory for ${
-      environment === Environment.Mainnet ? "Mainnet" : "Testnet"
-    }: configuration data for supported blockchains and tokens.`,
+    description: `Explore CCIP Directory for ${environment === Environment.Mainnet ? "Mainnet" : "Testnet"}.`,
     image: "/files/ccip-directory.jpg",
   }}
   suppressDefaultStructuredData={true}
