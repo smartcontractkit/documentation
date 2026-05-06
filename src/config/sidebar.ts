@@ -707,6 +707,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Chainlink CRE Connect",
       contents: [
         { title: "Overview", url: "crec" },
+        { title: "Supported Networks", url: "crec/supported-networks" },
         { title: "Release Notes", url: "crec/release-notes" },
       ],
     },
