@@ -1,0 +1,290 @@
+---
+section: cre
+date: Last Modified
+title: "Deploying to the Private Registry"
+metadata:
+  description: "Deploy and manage CRE workflows using the Chainlink-hosted private registry — no linked wallet, no gas, and no Ethereum Mainnet RPC required for registry operations."
+  datePublished: "2026-05-06"
+  lastModified: "2026-05-06"
+---
+
+import { Aside } from "@components"
+
+{/* prettier-ignore */}
+<Aside type="note" title="Early Access required">
+  Workflow deployment is currently in Early Access. Run `cre account access` or visit <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">app.chain.link/cre/request-access</a> to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
+</Aside>
+
+The **private registry** is a Chainlink-hosted, offchain workflow registry available as of CRE CLI v1.14.0. Deploying to it works identically to the public onchain registry, with one key difference: all lifecycle operations (deploy, activate, pause, delete, update) are authorized by your CRE login session — not a linked wallet key. There are no Ethereum Mainnet transactions and no gas fees for registry management.
+
+{/* prettier-ignore */}
+<Aside type="note" title="Private is not confidential">
+  The private registry is a private, centralized control plane for workflow management. **It does not make workflow execution confidential.** See [Private workflow](/cre/key-terms#private-workflow) in Key Terms for the distinction.
+</Aside>
+
+## Prerequisites
+
+Before deploying to the private registry, ensure you have:
+
+- **CRE CLI v1.14.0 or later**: Run `cre version` to check. See the [Installation Guide](/cre/getting-started/cli-installation/macos-linux) to install or update.
+- **Early Access approval**: Run `cre account access` to check your status. See [Requesting Deploy Access](/cre/account/deploy-access).
+- **[Logged in](/cre/account/cli-login)**: Run `cre login` and complete the browser authentication flow. API keys also work: set `CRE_API_KEY` in your environment.
+- **Private registry enabled for your organization**: Run `cre registry list` and confirm a registry with `Type: off-chain` appears in the output (see [Step 1](#step-1-confirm-the-private-registry-is-available) below). Organizations are limited to **3 private registry workflows** by default. See [Service Quotas](/cre/service-quotas#registry-quotas).
+- **A workflow project**: An existing project created with `cre init`. See [Part 1: Project Setup](/cre/getting-started/part-1-project-setup-ts) for the TypeScript guide or [Go guide](/cre/getting-started/part-1-project-setup-go).
+
+Unlike the public onchain registry, you do **not** need:
+
+- A linked wallet key (`cre account link-key`)
+- `CRE_ETH_PRIVATE_KEY` in your `.env` file
+- An Ethereum Mainnet RPC URL in `project.yaml`
+- ETH for gas
+
+## Step 1: Confirm the private registry is available
+
+Run `cre registry list` to see the registries available to your organization:
+
+```bash
+cre registry list
+```
+
+**Example output:**
+
+```
+Registries available to your organization
+
+ethereum-mainnet (0x4Ac5...E7e5)
+  ID:   onchain:ethereum-mainnet
+  Type: on-chain
+  Addr: 0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5
+
+Private (Chainlink-hosted)
+  ID:   private
+  Type: off-chain
+```
+
+You need to see a registry with `Type: off-chain` before proceeding. If no private registry appears, your organization has not been provisioned access yet. Contact your Chainlink account team.
+
+## Step 2: Add `deployment-registry` to your `workflow.yaml`
+
+Open your workflow's `workflow.yaml` and add `deployment-registry: "private"` under the `user-workflow` section for the target you want to deploy to:
+
+**TypeScript:**
+
+```yaml
+# workflow.yaml
+staging-settings:
+  user-workflow:
+    workflow-name: "my-workflow-staging"
+    deployment-registry: "private"
+  workflow-artifacts:
+    workflow-path: "./main.ts"
+    config-path: "./config.staging.json"
+    secrets-path: ""
+```
+
+**Go:**
+
+```yaml
+# workflow.yaml
+staging-settings:
+  user-workflow:
+    workflow-name: "my-workflow-staging"
+    deployment-registry: "private"
+  workflow-artifacts:
+    workflow-path: "."
+    config-path: "./config.staging.json"
+    secrets-path: ""
+```
+
+The `deployment-registry` field is optional. When omitted, the CLI uses the default public onchain Workflow Registry. Setting it to `"private"` routes all lifecycle operations for that target through the Chainlink-hosted private registry.
+
+{/* prettier-ignore */}
+<Aside type="note" title="Per-target setting">
+  `deployment-registry` is set per target. You can have one target deploy to `private` and another deploy to `onchain:ethereum-mainnet` in the same `workflow.yaml`. Lifecycle commands (`activate`, `pause`, `delete`, `update`) automatically use the registry configured for the target you pass with `--target`.
+</Aside>
+
+## Step 3: Deploy the workflow
+
+From your project root, run the deploy command with your target:
+
+```bash
+cre workflow deploy my-workflow --target staging-settings
+```
+
+The CLI compiles your workflow, uploads the artifacts to the CRE Storage Service, and registers the workflow with the private registry using your CRE login session. There is no transaction prompt.
+
+**Example output:**
+
+```
+Deploying Workflow :     my-workflow
+Target :                 staging-settings
+Owner Address :          <your-organization-owner>
+
+Compiling workflow...
+Workflow compiled successfully
+
+Uploading files...
+✔ Loaded binary from: ./binary.wasm.br.b64
+✔ Uploaded binary to: https://storage.cre.example.com/artifacts/<workflow-id>/binary.wasm
+✔ Loaded config from: ./config.staging.json
+✔ Uploaded config to: https://storage.cre.example.com/artifacts/<workflow-id>/config
+
+Registering workflow in private registry (workflowID: <your-workflow-id>)...
+✓ Workflow registered in private registry
+
+Details:
+   Registry:         private
+   Workflow Name:    my-workflow
+   Workflow ID:      <your-workflow-id>
+   Status:           Active
+   Binary URL:       https://storage.cre.example.com/artifacts/<workflow-id>/binary.wasm
+   Config URL:       https://storage.cre.example.com/artifacts/<workflow-id>/config
+   Owner:            <your-organization-owner>
+```
+
+The workflow is registered and active immediately. Notice there is no transaction hash, no gas cost, and the `Owner` is your CRE organization rather than a wallet address.
+
+## Step 4: Verify the deployment
+
+Run `cre workflow list` to confirm the workflow appears and is registered to the private registry:
+
+```bash
+cre workflow list
+```
+
+Workflows deployed to the private registry are tagged with the registry ID `private` in the list output. You can also filter to only show private registry workflows:
+
+```bash
+cre workflow list --registry private
+```
+
+You can also view the workflow in the [CRE platform](https://app.chain.link/cre/discover) under **Workflows**.
+
+## Managing a private registry workflow
+
+All standard lifecycle commands work the same way for private registry workflows. The CLI routes the operation through the Chainlink-hosted registry automatically based on the `deployment-registry` value in your `workflow.yaml`.
+
+### Activate
+
+```bash
+cre workflow activate my-workflow --target staging-settings
+```
+
+**Example output:**
+
+```
+Fetching workflow to activate... Name=my-workflow
+
+Processing activation for workflow ID <your-workflow-id>...
+✓ Workflow activated successfully
+
+Details:
+   Registry:         private
+   Workflow Name:    my-workflow
+   Workflow ID:      <your-workflow-id>
+   Status:           Active
+   Owner:            <your-organization-owner>
+```
+
+### Pause
+
+```bash
+cre workflow pause my-workflow --target staging-settings
+```
+
+**Example output:**
+
+```
+Fetching workflow to pause... Name=my-workflow
+
+Processing pause for workflow ID <your-workflow-id>...
+✓ Workflow paused successfully
+
+Details:
+   Registry:         private
+   Workflow Name:    my-workflow
+   Workflow ID:      <your-workflow-id>
+   Status:           Paused
+   Owner:            <your-organization-owner>
+```
+
+### Update
+
+Redeploy with the same workflow name to update a private registry workflow. The CLI replaces the existing registration:
+
+```bash
+cre workflow deploy my-workflow --target staging-settings
+```
+
+The CLI prompts you to confirm before overwriting the existing workflow. Pass `--yes` to skip the prompt.
+
+### Delete
+
+```bash
+cre workflow delete my-workflow --target staging-settings
+```
+
+The CLI fetches the workflow, displays its details, and prompts you to type the workflow name to confirm. This action is permanent.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Deletion is permanent">
+  Deleting a workflow from the private registry permanently removes it and cannot be undone. The workflow will no longer respond to triggers.
+</Aside>
+
+## Secrets with the private registry
+
+Secrets for private registry workflows are authorized through a browser-based OAuth (PKCE) flow rather than your linked wallet key. Use the `--secrets-auth=browser` flag on any `cre secrets` command:
+
+```bash
+# Create secrets for a private registry workflow
+cre secrets create secrets.yaml --target staging-settings --secrets-auth=browser
+
+# Update secrets
+cre secrets update secrets.yaml --target staging-settings --secrets-auth=browser
+
+# List secrets
+cre secrets list --target staging-settings --secrets-auth=browser
+```
+
+When you pass `--secrets-auth=browser`, the CLI opens a browser window to authorize the operation against the Vault DON using your CRE login session. No wallet, no `workflow-owner-address`, and no gas are required.
+
+See [Using Secrets with Deployed Workflows](/cre/guides/workflow/secrets/using-secrets-deployed) for the full secrets guide.
+
+## CI/CD with the private registry
+
+Because the private registry does not require `CRE_ETH_PRIVATE_KEY` or an Ethereum Mainnet RPC, CI/CD pipelines are simpler. You only need `CRE_API_KEY`:
+
+```yaml
+# .github/workflows/deploy-private.yml
+name: Deploy to Private Registry
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install CRE CLI
+        run: curl -sSL https://github.com/smartcontractkit/cre-cli/releases/latest/download/install.sh | sh
+
+      - name: Deploy workflow
+        run: cre workflow deploy ./my-workflow --target staging-settings --yes --non-interactive
+        env:
+          CRE_API_KEY: ${{ secrets.CRE_API_KEY }}
+```
+
+{/* prettier-ignore */}
+<Aside type="note" title="API key authentication">
+  Use `CRE_API_KEY` for non-interactive CI/CD authentication. Create an API key from the CRE platform under **Organization → APIs**. See [Authentication](/cre/reference/cli/authentication#api-key-authentication) for setup instructions.
+</Aside>
+
+## Next steps
+
+- [Deploying Workflows](/cre/guides/operations/deploying-workflows) — Overview of both registry options and the full deployment process
+- [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows) — Control workflow execution state
+- [Using Secrets with Deployed Workflows](/cre/guides/workflow/secrets/using-secrets-deployed) — Manage secrets for deployed workflows
+- [Registry Commands Reference](/cre/reference/cli/registry) — `cre registry list` and related commands

@@ -131,20 +131,12 @@ Variable values are resolved from environment variables at runtime. This works a
 
 `workflow.yaml` captures details **unique to one workflow instance**, like its name.
 
-<Aside type="caution" title="Private registry is the default">
-  Starting with CRE CLI v2.0.0, generated workflow targets include `deployment-registry: "private"` by default. Existing
-  `workflow.yaml` files created before this field existed may fail with an error such as `"deployment-registry" is
-  required in target "staging-settings"` during redeploy or workflow-management commands. Existing deployed workflows
-  continue running. See [Deploying Workflows](/cre/guides/operations/deploying-workflows#migrate-an-existing-workflow)
-  for the migration path.
-</Aside>
-
 ```yaml
 # workflow.yaml
 staging-settings:
   user-workflow:
     workflow-name: "my-por-workflow-staging"
-    deployment-registry: "private" # Private, centralized, offchain registry management.
+    # deployment-registry: "private" # Optional (new in v1.14.0). Omit to use the default onchain registry.
   workflow-artifacts:
     workflow-path: "." # Points to the workflow directory
     config-path: "./config.staging.json"
@@ -154,7 +146,7 @@ production-settings:
   user-workflow:
     workflow-owner-address: "<address>" # Optional: For multi-sig wallets
     workflow-name: "my-por-workflow-production"
-    deployment-registry: "onchain:ethereum-mainnet" # Public, onchain Workflow Registry on Ethereum Mainnet.
+    # deployment-registry: "onchain:ethereum-mainnet" # Explicit onchain registry (also the default when omitted).
   workflow-artifacts:
     workflow-path: "." # Points to the workflow directory
     config-path: "./config.production.json"
@@ -163,19 +155,20 @@ production-settings:
 
 #### Configuration fields
 
-| <div style="width: 220px;">Field</div> | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| -------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `user-workflow.workflow-name`          | Yes      | The name of your workflow. This name is used to identify the workflow when deploying, activating, or managing it via CLI commands. Best practice: include environment suffix (e.g., `-staging`, `-production`).                                                                                                                                                                                                                                                                         |
-| `user-workflow.workflow-owner-address` | No       | Multi-sig wallet address (if applicable). Overrides the value from `project.yaml` for this specific workflow. See the `project.yaml` configuration table above for details.                                                                                                                                                                                                                                                                                                             |
-| `user-workflow.deployment-registry`    | Yes      | Selects which registry receives this target's deployment. Set to `"private"` for private, centralized, offchain registry management through your CRE login session. Set to `"onchain:ethereum-mainnet"` for the public onchain Workflow Registry contract on Ethereum Mainnet, which requires a [linked web3 key](/cre/organization/linking-keys) and a funded wallet for registry transaction gas. Run [`cre registry list`](/cre/reference/cli/registry) to see registries available. |
-| `workflow-artifacts.workflow-path`     | Yes      | Path to your workflow entry point. For Go: `"."` (current directory). For TypeScript: `"./main.ts"` (or your entry file name).                                                                                                                                                                                                                                                                                                                                                          |
-| `workflow-artifacts.config-path`       | Yes      | Path to your workflow configuration JSON file (e.g., `"./config.staging.json"` or `"./config.production.json"`).                                                                                                                                                                                                                                                                                                                                                                        |
-| `workflow-artifacts.secrets-path`      | No       | Path to your secrets YAML file (e.g., `"../secrets.yaml"`). Use `""` (empty string) if not using secrets. See [Secrets Management](/cre/guides/workflow/secrets) for details.                                                                                                                                                                                                                                                                                                           |
+| <div style="width: 220px;">Field</div> | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| -------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `user-workflow.workflow-name`          | Yes      | The name of your workflow. This name is used to identify the workflow when deploying, activating, or managing it via CLI commands. Best practice: include environment suffix (e.g., `-staging`, `-production`).                                                                                                                                                                                                                                                                                                                                     |
+| `user-workflow.workflow-owner-address` | No       | Multi-sig wallet address (if applicable). Overrides the value from `project.yaml` for this specific workflow. See the `project.yaml` configuration table above for details.                                                                                                                                                                                                                                                                                                                                                                         |
+| `user-workflow.deployment-registry`    | No       | New in v1.14.0. Selects which registry receives this target's deployment. When omitted, the CLI defaults to the public onchain Workflow Registry (same behavior as before v1.14.0). Set to `"private"` for Chainlink-hosted private registry management via your CRE login session (no linked key or gas required for registry operations). Set to `"onchain:ethereum-mainnet"` to explicitly target the public onchain Workflow Registry. Run [`cre registry list`](/cre/reference/cli/registry) to see registries available to your organization. |
+| `workflow-artifacts.workflow-path`     | Yes      | Path to your workflow entry point. For Go: `"."` (current directory). For TypeScript: `"./main.ts"` (or your entry file name).                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `workflow-artifacts.config-path`       | Yes      | Path to your workflow configuration JSON file (e.g., `"./config.staging.json"` or `"./config.production.json"`).                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `workflow-artifacts.secrets-path`      | No       | Path to your secrets YAML file (e.g., `"../secrets.yaml"`). Use `""` (empty string) if not using secrets. See [Secrets Management](/cre/guides/workflow/secrets) for details.                                                                                                                                                                                                                                                                                                                                                                       |
 
 <Aside type="note" title="When is workflow.yaml required?">
   To deploy or manage a workflow with the CLI, the workflow directory must have a `workflow.yaml` file that defines
-  `workflow-name`, `deployment-registry`, and `workflow-artifacts` for each target. You can optionally override
-  project-level settings (like `workflow-owner-address`) for specific workflows.
+  `workflow-name` and `workflow-artifacts` for each target. `deployment-registry` is optional — omit it to use the
+  default onchain registry, or set it to `"private"` to use the Chainlink-hosted private registry. You can optionally
+  override project-level settings (like `workflow-owner-address`) for specific workflows.
 </Aside>
 
 ### 3.3. Secrets configuration (`secrets.yaml`)

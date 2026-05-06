@@ -280,6 +280,23 @@ This page documents the service quotas for Chainlink Runtime Environment (CRE) w
   The quotas documented on this page are subject to change. Check back regularly for updates.
 </Aside>
 
+## Per-organization quotas
+
+These quotas apply at the organization level.
+
+### Registry quotas
+
+| Registry                                                                    | Quota                                | Value |
+| --------------------------------------------------------------------------- | ------------------------------------ | ----- |
+| Private registry (`deployment-registry: "private"`)                         | Maximum workflows per organization   | 3     |
+| Public onchain registry (`deployment-registry: "onchain:ethereum-mainnet"`) | Maximum linked keys per organization | 1     |
+| Public onchain registry (`deployment-registry: "onchain:ethereum-mainnet"`) | Maximum workflows per linked key     | 3     |
+
+
+<Aside type="note" title="Subject to change">
+  Registry quotas are being actively tuned ahead of general availability. Values may increase. Run `cre registry list` to confirm your organization's access.
+</Aside>
+
 ## Per-owner quotas
 
 These quotas apply to each workflow owner (user account) within an organization.
@@ -4909,37 +4926,6 @@ Last Updated: 2026-04-30
   **While you wait:** Continue building and simulating workflows using [`cre workflow simulate`](/cre/guides/operations/simulating-workflows).
 </Aside>
 
-
-<Aside type="caution" title="Breaking change: private registry is the default">
-  Starting with CRE CLI v2.0.0, newly generated workflow targets include `deployment-registry: "private"` under
-  `user-workflow`, so new deployments use the Chainlink-hosted private registry by default. You only need to edit this
-  field when you want a different registry, such as the public onchain Workflow Registry.
-
-  Existing `workflow.yaml` files created before this field existed may fail after the CLI upgrade with an error like:
-
-  ```text
-  Error: "deployment-registry" is required in target "staging-settings" as of CRE CLI v2.0.0.
-
-  Add the field to your workflow.yaml under each target's user-workflow section:
-
-    staging-settings:
-      user-workflow:
-        deployment-registry: "private"
-
-  Run "cre registry list" to see your available registries.
-  ```
-
-  Existing deployed workflows continue running. If you hit this error while redeploying or updating, add the field to each affected target:
-
-  ```yaml
-  user-workflow:
-    workflow-name: "my-workflow-production"
-    deployment-registry: "private"
-  ```
-
-  See [Migrate an existing workflow](#migrate-an-existing-workflow) below for the full migration path.
-</Aside>
-
 When you deploy a workflow, you take your locally tested code and register it with a **workflow registry** so it can activate and respond to triggers across a [Decentralized Oracle Network (DON)](/cre/key-terms#decentralized-oracle-network-don). CRE supports two registry models today:
 
 - **Public workflow**: Workflow management goes through the onchain Workflow Registry contract on Ethereum Mainnet. Use `deployment-registry: "onchain:ethereum-mainnet"`.
@@ -4958,7 +4944,7 @@ Before you can deploy a workflow, you must have:
 
 - **Early Access approval**: Workflow deployment is currently in Early Access. Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
 - **[Authenticated](/cre/reference/cli/authentication)**: Logged in via `cre login` or using an [API key](/cre/reference/cli/authentication#api-key-authentication) (`CRE_API_KEY`). To verify, run `cre whoami`.
-- **A `deployment-registry` value in `workflow.yaml`**: Updated CLI-generated targets include `deployment-registry: "private"` by default. For older workflow files, make sure the target has a registry ID from `cre registry list`.
+- **(Optional) `deployment-registry` in `workflow.yaml`**: New in CRE CLI v1.14.0. When omitted, the CLI defaults to the public onchain Workflow Registry (existing behavior). Set this field to `"private"` to use the Chainlink-hosted private registry, or to `"onchain:ethereum-mainnet"` to explicitly target the onchain registry. Run `cre registry list` to see which registries are available to your organization.
 - **(Onchain registry only) [Linked your key](/cre/reference/cli/account#cre-account-link-key)**: Required only when the target's `deployment-registry` is set to `onchain:ethereum-mainnet`. Link your EOA or multi-sig wallet to your account by running `cre account link-key`. Workflows deployed to the `private` registry do not need a linked key.
 - **(Onchain registry only) A funded wallet**: The deploying account must hold ETH on Ethereum Mainnet to pay gas for the registration transaction. Not required for the `private` registry.
 
@@ -4977,12 +4963,12 @@ Registries available to your organization
 
 ethereum-mainnet (0x4Ac5...E7e5)
   ID:   onchain:ethereum-mainnet
-  Type: onchain
+  Type: on-chain
   Addr: 0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5
 
 Private (Chainlink-hosted)
   ID:   private
-  Type: offchain
+  Type: off-chain
 ```
 
 Use the `ID` value as the value of `deployment-registry` in your `workflow.yaml`.
@@ -5017,100 +5003,9 @@ Use this flow when `deployment-registry: "private"`:
 2. Run `cre workflow deploy` (or `activate`, `pause`, `delete`, `update`). The CLI authorizes the operation against the Chainlink-hosted registry using your CRE login session. No `.env` private key, no wallet linking, and no Ethereum Mainnet RPC are required for these commands.
 3. Workflows show as `private` in the CRE platform UI. The `Owner` is your CRE organization rather than a wallet address.
 
+For a complete step-by-step walkthrough, see [Deploying to the Private Registry](/cre/guides/operations/deploying-to-private-registry).
+
 If a target needs to deploy to the onchain registry but you have no `CRE_ETH_PRIVATE_KEY` configured, the CLI errors out before submitting anything (e.g., `failed to load settings: failed to parse private key. Please check CRE_ETH_PRIVATE_KEY in your .env file or system environment`).
-
-## Migrate an existing workflow
-
-CRE CLI v2.0.0 defaults new workflow targets to the private registry. Existing deployed workflows continue to run, but older `workflow.yaml` files may not have `deployment-registry` yet. If a redeploy, recompile, or workflow-management command reports the missing field, update the affected target before rerunning the command.
-
-### Who is affected
-
-You need to migrate if your workflow target has a `user-workflow` section without `deployment-registry`:
-
-```yaml
-staging-settings:
-  user-workflow:
-    workflow-name: "my-workflow-staging"
-  workflow-artifacts:
-    workflow-path: "./main.ts"
-    config-path: "./config.staging.json"
-```
-
-After upgrading, the CLI reports the missing field and points to the target that needs the update:
-
-```text
-Error: "deployment-registry" is required in target "staging-settings" as of CRE CLI v2.0.0.
-
-Add the field to your workflow.yaml under each target's user-workflow section:
-
-  staging-settings:
-    user-workflow:
-      deployment-registry: "private"
-
-Run "cre registry list" to see your available registries.
-```
-
-Use `private` for Chainlink-hosted private registry management. If your existing workflow was already managed through the public onchain registry, use `onchain:ethereum-mainnet` instead so the workflow stays on the same registry.
-
-### Step 1: List available registries
-
-Log in, then list the registries available to your organization:
-
-```bash
-cre login
-cre registry list
-```
-
-Use the `ID` value from the output in `workflow.yaml`.
-
-### Step 2: Choose public or private workflow management
-
-Choose the registry that matches how you want to manage the workflow:
-
-- Choose `onchain:ethereum-mainnet` to keep an existing public/onchain workflow on the same public registry. This keeps the linked-key and gas-based management path.
-- Choose `private` for private, centralized, offchain workflow management. This removes linked-key, Ethereum Mainnet RPC, and gas requirements for workflow registry operations.
-
-The private registry only changes workflow management. It does not make execution confidential, and it does not replace any gas or funding requirements that apply to onchain actions performed by the workflow itself.
-
-### Step 3: Update affected targets
-
-Add `deployment-registry` under `user-workflow` for each target that is missing it.
-
-**Keep an existing workflow on the public onchain registry:**
-
-```yaml
-staging-settings:
-  user-workflow:
-    workflow-name: "my-workflow-staging"
-    deployment-registry: "onchain:ethereum-mainnet"
-  workflow-artifacts:
-    workflow-path: "./main.ts"
-    config-path: "./config.staging.json"
-```
-
-**Use the private registry for workflow management:**
-
-```yaml
-staging-settings:
-  user-workflow:
-    workflow-name: "my-workflow-staging"
-    deployment-registry: "private"
-  workflow-artifacts:
-    workflow-path: "./main.ts"
-    config-path: "./config.staging.json"
-```
-
-Repeat this for `production-settings` and any other target that needs migration.
-
-### Step 4: Re-run the command
-
-After the YAML is updated, rerun the command that failed:
-
-```bash
-cre workflow deploy my-workflow --target staging-settings
-```
-
-If you chose `onchain:ethereum-mainnet`, keep your linked wallet key, `CRE_ETH_PRIVATE_KEY`, Ethereum Mainnet RPC, and funded wallet configuration. If you chose `private`, workflow deployment and lifecycle management use your CRE login session instead.
 
 ## The deployment process
 
@@ -5129,7 +5024,7 @@ The `cre workflow deploy` command handles the entire end-to-end process for you:
 
 ### Step 1: Ensure your configuration is correct
 
-Before deploying, ensure your `workflow.yaml` file is correctly configured. The `workflow-name` and `deployment-registry` fields are required under the `user-workflow` section for your target environment.
+Before deploying, ensure your `workflow.yaml` file is correctly configured. The `workflow-name` field is required under the `user-workflow` section for your target environment. The `deployment-registry` field is optional — when omitted, the CLI defaults to the public onchain Workflow Registry.
 
 If you are deploying to the onchain registry from a multi-sig wallet, specify your multi-sig address in the `workflow-owner-address` field. If you are deploying to the onchain registry from a standard EOA, you can leave this field unchanged—the owner will be automatically derived from the `CRE_ETH_PRIVATE_KEY` in your `.env` file. Private registry deployments use your CRE login session for workflow management and do not require `workflow-owner-address`.
 
@@ -5358,9 +5253,294 @@ For complete setup instructions, configuration requirements, and step-by-step gu
 
 ## Next steps
 
+- [Deploying to the Private Registry](/cre/guides/operations/deploying-to-private-registry): Step-by-step guide for using the Chainlink-hosted private registry
 - [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows): Learn how to control workflow execution
 - [Monitoring Workflows](/cre/guides/operations/monitoring-workflows): Track your workflow's execution and performance
 - [Updating Deployed Workflows](/cre/guides/operations/updating-deployed-workflows): Deploy new versions of your workflow
+
+---
+
+# Deploying to the Private Registry
+Source: https://docs.chain.link/cre/guides/operations/deploying-to-private-registry
+Last Updated: 2026-05-06
+
+<Aside type="note" title="Early Access required">
+  Workflow deployment is currently in Early Access. Run `cre account access` or visit <a href="https://app.chain.link/cre/request-access" target="_blank" rel="noopener noreferrer">app.chain.link/cre/request-access</a> to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access) for details.
+</Aside>
+
+The **private registry** is a Chainlink-hosted, offchain workflow registry available as of CRE CLI v1.14.0. Deploying to it works identically to the public onchain registry, with one key difference: all lifecycle operations (deploy, activate, pause, delete, update) are authorized by your CRE login session — not a linked wallet key. There are no Ethereum Mainnet transactions and no gas fees for registry management.
+
+
+<Aside type="note" title="Private is not confidential">
+  The private registry is a private, centralized control plane for workflow management. **It does not make workflow execution confidential.** See [Private workflow](/cre/key-terms#private-workflow) in Key Terms for the distinction.
+</Aside>
+
+## Prerequisites
+
+Before deploying to the private registry, ensure you have:
+
+- **CRE CLI v1.14.0 or later**: Run `cre version` to check. See the [Installation Guide](/cre/getting-started/cli-installation/macos-linux) to install or update.
+- **Early Access approval**: Run `cre account access` to check your status. See [Requesting Deploy Access](/cre/account/deploy-access).
+- **[Logged in](/cre/account/cli-login)**: Run `cre login` and complete the browser authentication flow. API keys also work: set `CRE_API_KEY` in your environment.
+- **Private registry enabled for your organization**: Run `cre registry list` and confirm a registry with `Type: off-chain` appears in the output (see [Step 1](#step-1-confirm-the-private-registry-is-available) below). Organizations are limited to **3 private registry workflows** by default. See [Service Quotas](/cre/service-quotas#registry-quotas).
+- **A workflow project**: An existing project created with `cre init`. See [Part 1: Project Setup](/cre/getting-started/part-1-project-setup-ts) for the TypeScript guide or [Go guide](/cre/getting-started/part-1-project-setup-go).
+
+Unlike the public onchain registry, you do **not** need:
+
+- A linked wallet key (`cre account link-key`)
+- `CRE_ETH_PRIVATE_KEY` in your `.env` file
+- An Ethereum Mainnet RPC URL in `project.yaml`
+- ETH for gas
+
+## Step 1: Confirm the private registry is available
+
+Run `cre registry list` to see the registries available to your organization:
+
+```bash
+cre registry list
+```
+
+**Example output:**
+
+```
+Registries available to your organization
+
+ethereum-mainnet (0x4Ac5...E7e5)
+  ID:   onchain:ethereum-mainnet
+  Type: on-chain
+  Addr: 0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5
+
+Private (Chainlink-hosted)
+  ID:   private
+  Type: off-chain
+```
+
+You need to see a registry with `Type: off-chain` before proceeding. If no private registry appears, your organization has not been provisioned access yet. Contact your Chainlink account team.
+
+## Step 2: Add `deployment-registry` to your `workflow.yaml`
+
+Open your workflow's `workflow.yaml` and add `deployment-registry: "private"` under the `user-workflow` section for the target you want to deploy to:
+
+**TypeScript:**
+
+```yaml
+# workflow.yaml
+staging-settings:
+  user-workflow:
+    workflow-name: "my-workflow-staging"
+    deployment-registry: "private"
+  workflow-artifacts:
+    workflow-path: "./main.ts"
+    config-path: "./config.staging.json"
+    secrets-path: ""
+```
+
+**Go:**
+
+```yaml
+# workflow.yaml
+staging-settings:
+  user-workflow:
+    workflow-name: "my-workflow-staging"
+    deployment-registry: "private"
+  workflow-artifacts:
+    workflow-path: "."
+    config-path: "./config.staging.json"
+    secrets-path: ""
+```
+
+The `deployment-registry` field is optional. When omitted, the CLI uses the default public onchain Workflow Registry. Setting it to `"private"` routes all lifecycle operations for that target through the Chainlink-hosted private registry.
+
+
+<Aside type="note" title="Per-target setting">
+  `deployment-registry` is set per target. You can have one target deploy to `private` and another deploy to `onchain:ethereum-mainnet` in the same `workflow.yaml`. Lifecycle commands (`activate`, `pause`, `delete`, `update`) automatically use the registry configured for the target you pass with `--target`.
+</Aside>
+
+## Step 3: Deploy the workflow
+
+From your project root, run the deploy command with your target:
+
+```bash
+cre workflow deploy my-workflow --target staging-settings
+```
+
+The CLI compiles your workflow, uploads the artifacts to the CRE Storage Service, and registers the workflow with the private registry using your CRE login session. There is no transaction prompt.
+
+**Example output:**
+
+```
+Deploying Workflow :     my-workflow
+Target :                 staging-settings
+Owner Address :          <your-organization-owner>
+
+Compiling workflow...
+Workflow compiled successfully
+
+Uploading files...
+✔ Loaded binary from: ./binary.wasm.br.b64
+✔ Uploaded binary to: https://storage.cre.example.com/artifacts/<workflow-id>/binary.wasm
+✔ Loaded config from: ./config.staging.json
+✔ Uploaded config to: https://storage.cre.example.com/artifacts/<workflow-id>/config
+
+Registering workflow in private registry (workflowID: <your-workflow-id>)...
+✓ Workflow registered in private registry
+
+Details:
+   Registry:         private
+   Workflow Name:    my-workflow
+   Workflow ID:      <your-workflow-id>
+   Status:           Active
+   Binary URL:       https://storage.cre.example.com/artifacts/<workflow-id>/binary.wasm
+   Config URL:       https://storage.cre.example.com/artifacts/<workflow-id>/config
+   Owner:            <your-organization-owner>
+```
+
+The workflow is registered and active immediately. Notice there is no transaction hash, no gas cost, and the `Owner` is your CRE organization rather than a wallet address.
+
+## Step 4: Verify the deployment
+
+Run `cre workflow list` to confirm the workflow appears and is registered to the private registry:
+
+```bash
+cre workflow list
+```
+
+Workflows deployed to the private registry are tagged with the registry ID `private` in the list output. You can also filter to only show private registry workflows:
+
+```bash
+cre workflow list --registry private
+```
+
+You can also view the workflow in the [CRE platform](https://app.chain.link/cre/discover) under **Workflows**.
+
+## Managing a private registry workflow
+
+All standard lifecycle commands work the same way for private registry workflows. The CLI routes the operation through the Chainlink-hosted registry automatically based on the `deployment-registry` value in your `workflow.yaml`.
+
+### Activate
+
+```bash
+cre workflow activate my-workflow --target staging-settings
+```
+
+**Example output:**
+
+```
+Fetching workflow to activate... Name=my-workflow
+
+Processing activation for workflow ID <your-workflow-id>...
+✓ Workflow activated successfully
+
+Details:
+   Registry:         private
+   Workflow Name:    my-workflow
+   Workflow ID:      <your-workflow-id>
+   Status:           Active
+   Owner:            <your-organization-owner>
+```
+
+### Pause
+
+```bash
+cre workflow pause my-workflow --target staging-settings
+```
+
+**Example output:**
+
+```
+Fetching workflow to pause... Name=my-workflow
+
+Processing pause for workflow ID <your-workflow-id>...
+✓ Workflow paused successfully
+
+Details:
+   Registry:         private
+   Workflow Name:    my-workflow
+   Workflow ID:      <your-workflow-id>
+   Status:           Paused
+   Owner:            <your-organization-owner>
+```
+
+### Update
+
+Redeploy with the same workflow name to update a private registry workflow. The CLI replaces the existing registration:
+
+```bash
+cre workflow deploy my-workflow --target staging-settings
+```
+
+The CLI prompts you to confirm before overwriting the existing workflow. Pass `--yes` to skip the prompt.
+
+### Delete
+
+```bash
+cre workflow delete my-workflow --target staging-settings
+```
+
+The CLI fetches the workflow, displays its details, and prompts you to type the workflow name to confirm. This action is permanent.
+
+
+<Aside type="caution" title="Deletion is permanent">
+  Deleting a workflow from the private registry permanently removes it and cannot be undone. The workflow will no longer respond to triggers.
+</Aside>
+
+## Secrets with the private registry
+
+Secrets for private registry workflows are authorized through a browser-based OAuth (PKCE) flow rather than your linked wallet key. Use the `--secrets-auth=browser` flag on any `cre secrets` command:
+
+```bash
+# Create secrets for a private registry workflow
+cre secrets create secrets.yaml --target staging-settings --secrets-auth=browser
+
+# Update secrets
+cre secrets update secrets.yaml --target staging-settings --secrets-auth=browser
+
+# List secrets
+cre secrets list --target staging-settings --secrets-auth=browser
+```
+
+When you pass `--secrets-auth=browser`, the CLI opens a browser window to authorize the operation against the Vault DON using your CRE login session. No wallet, no `workflow-owner-address`, and no gas are required.
+
+See [Using Secrets with Deployed Workflows](/cre/guides/workflow/secrets/using-secrets-deployed) for the full secrets guide.
+
+## CI/CD with the private registry
+
+Because the private registry does not require `CRE_ETH_PRIVATE_KEY` or an Ethereum Mainnet RPC, CI/CD pipelines are simpler. You only need `CRE_API_KEY`:
+
+```yaml
+# .github/workflows/deploy-private.yml
+name: Deploy to Private Registry
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install CRE CLI
+        run: curl -sSL https://github.com/smartcontractkit/cre-cli/releases/latest/download/install.sh | sh
+
+      - name: Deploy workflow
+        run: cre workflow deploy ./my-workflow --target staging-settings --yes --non-interactive
+        env:
+          CRE_API_KEY: ${{ secrets.CRE_API_KEY }}
+```
+
+
+<Aside type="note" title="API key authentication">
+  Use `CRE_API_KEY` for non-interactive CI/CD authentication. Create an API key from the CRE platform under **Organization → APIs**. See [Authentication](/cre/reference/cli/authentication#api-key-authentication) for setup instructions.
+</Aside>
+
+## Next steps
+
+- [Deploying Workflows](/cre/guides/operations/deploying-workflows) — Overview of both registry options and the full deployment process
+- [Activating & Pausing Workflows](/cre/guides/operations/activating-pausing-workflows) — Control workflow execution state
+- [Using Secrets with Deployed Workflows](/cre/guides/workflow/secrets/using-secrets-deployed) — Manage secrets for deployed workflows
+- [Registry Commands Reference](/cre/reference/cli/registry) — `cre registry list` and related commands
 
 ---
 
@@ -5383,7 +5563,7 @@ Before activating or pausing workflows, ensure you have:
 - **Workflow authorization**: You must be authorized to manage the workflow. Public onchain registry workflows use the linked workflow owner address. Private registry workflows use your CRE organization login session.
 - **Local workflow folder**: You must run these commands from your project directory. The CLI reads the workflow name and configuration from your `workflow.yaml` file to identify which workflow to activate or pause.
 - **[Logged in](/cre/reference/cli/authentication#cre-login)**: Authenticated with the platform by running `cre login`. To check your authentication status, run `cre whoami`.
-- **A `deployment-registry` value**: Updated CLI-generated targets use `private` by default. For older workflow files, make sure the target has `deployment-registry: "private"` or `deployment-registry: "onchain:ethereum-mainnet"`.
+- **(Optional) `deployment-registry` in `workflow.yaml`**: When omitted, the CLI uses the default onchain registry. Set to `"private"` to manage the workflow via the Chainlink-hosted private registry. See [Choosing your registry](/cre/guides/operations/deploying-workflows#choosing-your-registry).
 - **(Onchain registry only) A funded wallet**: The account you are using must be funded with ETH on Ethereum Mainnet to pay gas for the registry transaction.
 
 ## Activating a workflow
@@ -5554,7 +5734,7 @@ Before updating a deployed workflow, ensure you have:
 - **Workflow authorization**: You must be authorized to manage the workflow. Public onchain registry workflows use the linked workflow owner address. Private registry workflows use your CRE organization login session.
 - **Local workflow folder**: You must run this command from your project directory. The CLI reads the workflow name and configuration from your `workflow.yaml` file to identify which workflow to update.
 - **[Logged in](/cre/reference/cli/authentication#cre-login)**: Authenticated with the platform by running `cre login`. To check if you are logged in, run `cre whoami`.
-- **A `deployment-registry` value**: Updated CLI-generated targets use `private` by default. For older workflow files, make sure the target has `deployment-registry: "private"` or `deployment-registry: "onchain:ethereum-mainnet"`.
+- **(Optional) `deployment-registry` in `workflow.yaml`**: When omitted, the CLI uses the default onchain registry. Set to `"private"` to manage the workflow via the Chainlink-hosted private registry. See [Choosing your registry](/cre/guides/operations/deploying-workflows#choosing-your-registry).
 - **(Onchain registry only) A funded wallet**: The account must be funded with ETH on Ethereum Mainnet to pay gas for the registry transaction.
 
 ## Updating a workflow
@@ -5618,7 +5798,7 @@ Before deleting a workflow, ensure you have:
 - **Workflow authorization**: You must be authorized to manage the workflow. Public onchain registry workflows use the linked workflow owner address. Private registry workflows use your CRE organization login session.
 - **Local workflow folder**: You must run this command from your project directory. The CLI reads the workflow name and configuration from your `workflow.yaml` file to identify which workflow to delete.
 - **[Logged in](/cre/reference/cli/authentication#cre-login)**: Authenticated with the platform by running `cre login`. To check if you are logged in, run `cre whoami`.
-- **A `deployment-registry` value**: Updated CLI-generated targets use `private` by default. For older workflow files, make sure the target has `deployment-registry: "private"` or `deployment-registry: "onchain:ethereum-mainnet"`.
+- **(Optional) `deployment-registry` in `workflow.yaml`**: When omitted, the CLI uses the default onchain registry. Set to `"private"` to manage the workflow via the Chainlink-hosted private registry. See [Choosing your registry](/cre/guides/operations/deploying-workflows#choosing-your-registry).
 - **(Onchain registry only) A funded wallet**: The account must be funded with ETH on Ethereum Mainnet to pay gas for the registry transaction.
 
 ## Deleting a workflow
@@ -9258,15 +9438,15 @@ Registries available to your organization
 
 ethereum-mainnet (0x4Ac5...E7e5)
   ID:   onchain:ethereum-mainnet
-  Type: onchain
+  Type: on-chain
   Addr: 0x4Ac54353FA4Fa961AfcC5ec4B118596d3305E7e5
 
 Private (Chainlink-hosted)
   ID:   private
-  Type: offchain
+  Type: off-chain
 ```
 
-The `ID` value is what you put in the required `user-workflow.deployment-registry` field of your `workflow.yaml` to target that registry on `cre workflow deploy`. See [Project Configuration](/cre/reference/project-configuration#3-2-workflow-configuration-workflow-yaml) and [Deploying Workflows](/cre/guides/operations/deploying-workflows#choosing-your-registry).
+The `ID` value is what you put in the optional `user-workflow.deployment-registry` field of your `workflow.yaml` to target that registry on `cre workflow deploy`. See [Project Configuration](/cre/reference/project-configuration#3-2-workflow-configuration-workflow-yaml) and [Deploying Workflows](/cre/guides/operations/deploying-workflows#choosing-your-registry).
 
 If no registries are found for your environment, the command prints a warning and exits cleanly.
 
@@ -10453,8 +10633,8 @@ Here are resources to help you go from simulation to production.
   Deploying requires Early Access approval. Run `cre account access` or visit <a href="https://app.chain.link/cre/request-access" target="_blank">app.chain.link/cre/request-access</a> to submit a request. See [Requesting Deploy Access](/cre/account/deploy-access). While you wait, continue building and simulating workflows.
 </Aside>
 
-1. **[Deploy Your Workflow](/cre/guides/operations/deploying-workflows)** — Push your workflow live. Set `deployment-registry` in `workflow.yaml` to choose private registry management or the public onchain Workflow Registry.
-2. **(Optional) [Link a Wallet Key](/cre/organization/linking-keys)** — Only needed if you set `deployment-registry: "onchain:ethereum-mainnet"`.
+1. **[Link a Wallet Key](/cre/organization/linking-keys)** — Required for the default onchain Workflow Registry. Not needed when using `deployment-registry: "private"`.
+2. **[Deploy Your Workflow](/cre/guides/operations/deploying-workflows)** — Push your workflow live. Optionally set `deployment-registry: "private"` in `workflow.yaml` to use the Chainlink-hosted private registry (no linked key or gas required for registry operations).
 3. **[Monitor Your Workflow](/cre/guides/operations/monitoring-workflows)** — Watch it execute and debug issues
 
 ### Explore different triggers
@@ -10655,6 +10835,7 @@ The CRE CLI provides an `init` command to scaffold a new project. It's an intera
    - **Language**: Select `Typescript` and press Enter.
    - **Pick a workflow template**: Use the arrow keys to select `Helloworld: Typescript Hello World example` and press Enter. We are starting from scratch to learn all the configuration steps.
    - **Workflow name**: my-calculator-workflow
+   - **Deployment registry**: Select your preferred registry. Private (off-chain) registries appear first — choose `private` for quick testing without a wallet or gas, or `onchain:ethereum-mainnet` for the public Workflow Registry. If no registries appear, this step is skipped.
 
 The CLI will then create a new `onchain-calculator` directory and initialize your first workflow within it.
 
@@ -16188,14 +16369,15 @@ cre init [flags]
 
 **Flags:**
 
-| Flag                  | Description                                                                                                                               |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `--non-interactive`   | Fail instead of prompting; supply all inputs via flags (for **CI/CD** and non-TTY environments).                                          |
-| `-p, --project-name`  | Name for the new project (required for a new project when using `--non-interactive`).                                                     |
-| `-t, --template`      | Template name to use (for example `hello-world-ts`). Run `cre templates list` to see IDs and required networks.                           |
-| `-w, --workflow-name` | Name for the new workflow.                                                                                                                |
-| `--refresh`           | Bypass the template cache and fetch fresh data from GitHub.                                                                               |
-| `--rpc-url`           | RPC endpoint for a chain, repeatable. Format: `chain-name=url`. Often **required** with `--non-interactive` when the template needs RPCs. |
+| Flag                    | Description                                                                                                                                                                                                                                      |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--non-interactive`     | Fail instead of prompting; supply all inputs via flags (for **CI/CD** and non-TTY environments).                                                                                                                                                 |
+| `-p, --project-name`    | Name for the new project (required for a new project when using `--non-interactive`).                                                                                                                                                            |
+| `-t, --template`        | Template name to use (for example `hello-world-ts`). Run `cre templates list` to see IDs and required networks.                                                                                                                                  |
+| `-w, --workflow-name`   | Name for the new workflow.                                                                                                                                                                                                                       |
+| `--deployment-registry` | Registry ID to write into the generated `workflow.yaml` (e.g. `private` or `onchain:ethereum-mainnet`). Run `cre registry list` to see available IDs. In `--non-interactive` mode, omitting this flag prints a warning and defaults to on-chain. |
+| `--refresh`             | Bypass the template cache and fetch fresh data from GitHub.                                                                                                                                                                                      |
+| `--rpc-url`             | RPC endpoint for a chain, repeatable. Format: `chain-name=url`. Often **required** with `--non-interactive` when the template needs RPCs.                                                                                                        |
 
 Inherited [global flags](/cre/reference/cli#global-flags) include **`-R, --project-root`**, which `cre init` uses as the directory where the project is created when you pass it explicitly.
 
@@ -16207,6 +16389,7 @@ Running `cre init` without flags starts an interactive setup that guides you thr
 2. **Language** (Go or TypeScript)
 3. **Workflow template** (fetched dynamically from configured template sources)
 4. **Workflow name**
+5. **Deployment registry** — select which registry the generated `workflow.yaml` targets. Private (off-chain) registries appear first with the cursor defaulted to them. If your organization has no registries configured, this step is skipped and the field is omitted from `workflow.yaml`.
 
 
 <Aside type="note" title="Template sources">
@@ -16230,12 +16413,13 @@ cre init \
   --project-name my-cre-project \
   --workflow-name my-workflow \
   --template hello-world-ts \
+  --deployment-registry private \
   --rpc-url sepolia=https://sepolia.infura.io/v3/YOUR_KEY
 ```
 
 
 <Aside type="note" title="Interactive vs. non-interactive">
-  For most users, `cre init` without flags is easiest. With **`--non-interactive`**, the CLI does not prompt; if RPC URLs are required and there is no TTY, you get a clear error—pass the needed **`--rpc-url`** flags up front.
+  For most users, `cre init` without flags is easiest. With **`--non-interactive`**, the CLI does not prompt; if RPC URLs are required and there is no TTY, you get a clear error — pass the needed flags up front. If `--deployment-registry` is omitted in `--non-interactive` mode, the CLI prints a warning and defaults to the onchain registry.
 </Aside>
 
 For a detailed walkthrough, see [Part 1 of the Getting Started guide](/cre/getting-started/part-1-project-setup).
@@ -16580,20 +16764,12 @@ Variable values are resolved from environment variables at runtime. This works a
 
 `workflow.yaml` captures details **unique to one workflow instance**, like its name and entry point file.
 
-<Aside type="caution" title="Private registry is the default">
-  Starting with CRE CLI v2.0.0, generated workflow targets include `deployment-registry: "private"` by default. Existing
-  `workflow.yaml` files created before this field existed may fail with an error such as `"deployment-registry" is
-    required in target "staging-settings"` during redeploy or workflow-management commands. Existing deployed workflows
-  continue running. See [Deploying Workflows](/cre/guides/operations/deploying-workflows#migrate-an-existing-workflow)
-  for the migration path.
-</Aside>
-
 ```yaml
 # workflow.yaml
 staging-settings:
   user-workflow:
     workflow-name: "my-por-workflow-staging"
-    deployment-registry: "private" # Private, centralized, offchain registry management.
+    # deployment-registry: "private" # Optional (new in v1.14.0). Omit to use the default onchain registry.
   workflow-artifacts:
     workflow-path: "./main.ts" # Points to the TypeScript entry file
     config-path: "./config.staging.json"
@@ -16603,7 +16779,7 @@ production-settings:
   user-workflow:
     workflow-owner-address: "<address>" # Optional: For multi-sig wallets
     workflow-name: "my-por-workflow-production"
-    deployment-registry: "onchain:ethereum-mainnet" # Public, onchain Workflow Registry on Ethereum Mainnet.
+    # deployment-registry: "onchain:ethereum-mainnet" # Explicit onchain registry (also the default when omitted).
   workflow-artifacts:
     workflow-path: "./main.ts" # Points to the TypeScript entry file
     config-path: "./config.production.json"
@@ -16612,19 +16788,20 @@ production-settings:
 
 #### Configuration fields
 
-| Field                                  | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| -------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `user-workflow.workflow-name`          | Yes      | The name of your workflow. This name is used to identify the workflow when deploying, activating, or managing it via CLI commands. Best practice: include environment suffix (e.g., `-staging`, `-production`).                                                                                                                                                                                                                                                                         |
-| `user-workflow.workflow-owner-address` | No       | Multi-sig wallet address (if applicable). Overrides the value from `project.yaml` for this specific workflow. See the `project.yaml` configuration table above for details.                                                                                                                                                                                                                                                                                                             |
-| `user-workflow.deployment-registry`    | Yes      | Selects which registry receives this target's deployment. Set to `"private"` for private, centralized, offchain registry management through your CRE login session. Set to `"onchain:ethereum-mainnet"` for the public onchain Workflow Registry contract on Ethereum Mainnet, which requires a [linked web3 key](/cre/organization/linking-keys) and a funded wallet for registry transaction gas. Run [`cre registry list`](/cre/reference/cli/registry) to see registries available. |
-| `workflow-artifacts.workflow-path`     | Yes      | Path to your workflow entry point. For TypeScript: `"./main.ts"` (or your entry file name). For Go: `"."` (current directory).                                                                                                                                                                                                                                                                                                                                                          |
-| `workflow-artifacts.config-path`       | Yes      | Path to your workflow configuration JSON file (e.g., `"./config.staging.json"` or `"./config.production.json"`).                                                                                                                                                                                                                                                                                                                                                                        |
-| `workflow-artifacts.secrets-path`      | No       | Path to your secrets YAML file (e.g., `"../secrets.yaml"`). Use `""` (empty string) if not using secrets. See [Secrets Management](/cre/guides/workflow/secrets) for details.                                                                                                                                                                                                                                                                                                           |
+| Field                                  | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| -------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `user-workflow.workflow-name`          | Yes      | The name of your workflow. This name is used to identify the workflow when deploying, activating, or managing it via CLI commands. Best practice: include environment suffix (e.g., `-staging`, `-production`).                                                                                                                                                                                                                                                                                                                                     |
+| `user-workflow.workflow-owner-address` | No       | Multi-sig wallet address (if applicable). Overrides the value from `project.yaml` for this specific workflow. See the `project.yaml` configuration table above for details.                                                                                                                                                                                                                                                                                                                                                                         |
+| `user-workflow.deployment-registry`    | No       | New in v1.14.0. Selects which registry receives this target's deployment. When omitted, the CLI defaults to the public onchain Workflow Registry (same behavior as before v1.14.0). Set to `"private"` for Chainlink-hosted private registry management via your CRE login session (no linked key or gas required for registry operations). Set to `"onchain:ethereum-mainnet"` to explicitly target the public onchain Workflow Registry. Run [`cre registry list`](/cre/reference/cli/registry) to see registries available to your organization. |
+| `workflow-artifacts.workflow-path`     | Yes      | Path to your workflow entry point. For TypeScript: `"./main.ts"` (or your entry file name). For Go: `"."` (current directory).                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `workflow-artifacts.config-path`       | Yes      | Path to your workflow configuration JSON file (e.g., `"./config.staging.json"` or `"./config.production.json"`).                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `workflow-artifacts.secrets-path`      | No       | Path to your secrets YAML file (e.g., `"../secrets.yaml"`). Use `""` (empty string) if not using secrets. See [Secrets Management](/cre/guides/workflow/secrets) for details.                                                                                                                                                                                                                                                                                                                                                                       |
 
 <Aside type="note" title="When is workflow.yaml required?">
   To deploy or manage a workflow with the CLI, the workflow directory must have a `workflow.yaml` file that defines
-  `workflow-name`, `deployment-registry`, and `workflow-artifacts` for each target. You can optionally override
-  project-level settings (like `workflow-owner-address`) for specific workflows.
+  `workflow-name` and `workflow-artifacts` for each target. `deployment-registry` is optional — omit it to use the
+  default onchain registry, or set it to `"private"` to use the Chainlink-hosted private registry. You can optionally
+  override project-level settings (like `workflow-owner-address`) for specific workflows.
 </Aside>
 
 <Aside type="note" title="TypeScript workflow-path">
