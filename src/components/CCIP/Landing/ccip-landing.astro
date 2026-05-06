@@ -25,37 +25,137 @@ export type Props = {
 }
 const { environment } = Astro.props as Props
 
+// ----------------------
+// Featured ranking (hardcoded)
+// ----------------------
+
+const FEATURED_NETWORK_RANK: Record<string, number> = {
+  Ethereum: 1,
+  Plasma: 2,
+  Solana: 3,
+  Binance: 4,
+  Base: 5,
+  Arbitrum: 6,
+  Avalanche: 7,
+  Monad: 8,
+}
+
+const FEATURED_TOKEN_RANK: Record<string, number> = {
+  LINK: 1,
+  USDC: 2,
+  USDT: 3,
+  WETH: 4,
+  syrupUSDC: 5,
+  syrupUSDT: 6,
+  GHO: 7,
+  cbBTC: 8,
+}
+
+// ----------------------
+
 const entry = await getEntry("ccip", "index")
 if (!entry) {
-  throw new Error('No "ccip/index" doc found! Please make sure it exists in src/content/ccip/index.mdx or .md.')
+  throw new Error('No "ccip/index" doc found!')
 }
 
 const { headings } = await render(entry)
 
-const networks = getAllNetworks({ filter: environment })
+// ----------------------
+// Networks
+// ----------------------
+
+const networksRaw = getAllNetworks({ filter: environment })
+
+// 🔍 Validation: ensure all featured networks exist
+const missingFeaturedNetworks = Object.keys(FEATURED_NETWORK_RANK).filter(
+  (name) => !networksRaw.some((n) => n.name === name)
+)
+
+if (missingFeaturedNetworks.length) {
+  console.warn("Missing featured networks:", missingFeaturedNetworks)
+}
+
+const networks = networksRaw.map((n) => ({
+  ...n,
+  featuredRank: FEATURED_NETWORK_RANK[n.name],
+}))
+
+// ----------------------
+// Tokens
+// ----------------------
+
 const supportedTokens = getAllSupportedTokens({
   environment,
   version: Version.V1_2_0,
 })
+
 const tokens = Object.keys(supportedTokens).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }))
+
+// 🔍 Validation: ensure all featured tokens exist
+const missingFeaturedTokens = Object.keys(FEATURED_TOKEN_RANK).filter((token) => !tokens.includes(token))
+
+if (missingFeaturedTokens.length) {
+  console.warn("Missing featured tokens:", missingFeaturedTokens)
+}
+
 const allTokens = tokens.map((token) => {
   const logo = getTokenIconUrl(token) || ""
   return {
     id: token,
     logo,
     totalNetworks: getChainsOfToken({ token, filter: environment }).length,
+    featuredRank: FEATURED_TOKEN_RANK[token],
   }
 })
+
+// ----------------------
+// Split logic
+// ----------------------
+
+function splitFeatured(items) {
+  const featured = items.filter((i) => i.featuredRank !== undefined).sort((a, b) => a.featuredRank - b.featuredRank)
+
+  const rest = items
+    .filter((i) => i.featuredRank === undefined)
+    .sort((a, b) => {
+      const aKey = a.name || a.id
+      const bKey = b.name || b.id
+      return aKey.localeCompare(bKey, undefined, { sensitivity: "base" })
+    })
+
+  return { featured, rest }
+}
+
+const { featured: featuredNetworks, rest: restNetworks } = splitFeatured(networks)
+const { featured: featuredTokens, rest: restTokens } = splitFeatured(allTokens)
+
+// 🔍 Validation: ensure exactly 8 featured items
+if (featuredNetworks.length !== 8) {
+  console.warn(`Expected 8 featured networks, got ${featuredNetworks.length}`)
+}
+
+if (featuredTokens.length !== 8) {
+  console.warn(`Expected 8 featured tokens, got ${featuredTokens.length}`)
+}
+
+// 🔑 Recombine for grid
+const orderedNetworks = [...featuredNetworks, ...restNetworks]
+const orderedTokens = [...featuredTokens, ...restTokens]
+
+// ----------------------
+// Other data
+// ----------------------
+
 const allVerifiers = getAllUniqueVerifiers({
   environment,
   version: Version.V1_2_0,
 })
+
 const searchLanes = getSearchLanes({ environment })
 
-// Generate directory-level structured data (DataCatalog/Dataset)
-// Use production base for canonical JSON-LD URLs (avoid local IPv6/port)
 const currentPath = new URL(Astro.request.url).pathname
 const canonicalForJsonLd = `${DOCS_BASE_URL}${currentPath}`
+
 const directoryStructuredData = generateDirectoryStructuredData(environment, networks, tokens, canonicalForJsonLd)
 ---
 
@@ -67,33 +167,38 @@ const directoryStructuredData = generateDirectoryStructuredData(environment, net
   pageTitleOverride={`CCIP Directory - ${environment === Environment.Mainnet ? "Mainnet" : "Testnet"}`}
   metadataOverride={{
     ...(entry.data.metadata || {}),
-    description: `Explore CCIP Directory for ${environment === Environment.Mainnet ? "Mainnet" : "Testnet"}: configuration data for supported blockchains and tokens, cross-chain lanes, contract addresses, rate limits, and operational status on ${environment === Environment.Mainnet ? "Mainnet" : "Testnet"}.`,
+    description: `Explore CCIP Directory for ${
+      environment === Environment.Mainnet ? "Mainnet" : "Testnet"
+    }: configuration data for supported blockchains and tokens.`,
     image: "/files/ccip-directory.jpg",
   }}
   suppressDefaultStructuredData={true}
 >
   <Hero
-    chains={networks}
-    tokens={allTokens}
+    chains={featuredNetworks}
+    tokens={featuredTokens}
     environment={environment}
     client:visible
     lanes={searchLanes}
     verifiers={allVerifiers}
   />
+
   <section class="layout">
     <div>
       <div class="ccip-heading">
         <h2>Networks {environment} <span>({networks.length})</span></h2>
       </div>
-      <LazyNetworkGrid networks={networks} environment={environment} client:visible />
+      <LazyNetworkGrid networks={orderedNetworks} environment={environment} client:visible />
     </div>
+
     <div>
       <div class="ccip-heading">
         <h2>Tokens <span>({allTokens.length})</span></h2>
         <AddButton href="/ccip/tutorials/evm/token-manager#verifying-your-token" text="Add my token" />
       </div>
-      <LazyTokenGrid tokens={allTokens} environment={environment} client:visible />
+      <LazyTokenGrid tokens={orderedTokens} environment={environment} client:visible />
     </div>
+
     <div>
       <div class="ccip-heading">
         <h2>Verifiers <span>({allVerifiers.length})</span></h2>
@@ -102,52 +207,3 @@ const directoryStructuredData = generateDirectoryStructuredData(environment, net
     </div>
   </section>
 </CcipDirectoryLayout>
-
-<style>
-  .layout {
-    --gutter: var(--space-10x);
-    --doc-padding: var(--space-6x);
-    margin: var(--space-8x) auto;
-    display: flex;
-    flex-direction: column;
-    gap: var(--gutter);
-    padding: var(--doc-padding);
-  }
-
-  .ccip-heading {
-    display: flex;
-    padding-bottom: var(--space-4x);
-    border-bottom: 1px solid var(--gray-200);
-    margin-bottom: var(--space-6x);
-    justify-content: space-between;
-  }
-
-  .layout h2 {
-    color: var(--gray-900);
-    font-size: 22px;
-    line-height: var(--space-10x);
-    margin-bottom: 0px;
-  }
-
-  .layout h2 span {
-    color: var(--gray-400);
-    font-weight: 600;
-    letter-spacing: 0.5px;
-  }
-
-  @media (min-width: 50em) {
-    .layout {
-      max-width: min(calc(1440px - 2 * var(--space-16x)), calc(100% - 2 * var(--space-16x)));
-      padding: 0;
-    }
-  }
-
-  @media (min-width: 992px) {
-    .layout {
-      --doc-padding: var(--space-10x);
-      padding-top: var(--doc-padding);
-      padding-bottom: var(--doc-padding);
-      gap: var(--space-10x);
-    }
-  }
-</style>
