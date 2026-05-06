@@ -57,6 +57,63 @@ export const GET: APIRoute = async ({ params, request }) => {
   return buildMarkdownResponseFromPath(resolvedPath, request)
 }
 
+type SpecialResolution = {
+  resolvedPath: string
+  sourceCanonicalPath: string
+}
+
+async function resolveSpecialCanonicalMarkdownPath(cleanPath: string): Promise<SpecialResolution | null> {
+  const specialPathMap: Record<string, string> = {
+    "cre-templates": "cre/templates",
+  }
+
+  const mappedPath = specialPathMap[cleanPath]
+  if (!mappedPath) return null
+
+  const file = await findContentFile(mappedPath)
+  if (!file) return null
+
+  return {
+    resolvedPath: mappedPath,
+    sourceCanonicalPath: cleanPath,
+  }
+}
+
+type CreResolution =
+  | { kind: "none" }
+  | { kind: "resolved"; path: string }
+  | { kind: "selector"; goPath: string; tsPath: string }
+
+async function resolveCreCanonicalMarkdownPath(cleanPath: string): Promise<CreResolution> {
+  if (!cleanPath.startsWith("cre/")) {
+    return { kind: "none" }
+  }
+
+  const direct = await findContentFile(cleanPath)
+  if (direct) {
+    return { kind: "resolved", path: cleanPath }
+  }
+
+  const goPath = `${cleanPath}-go`
+  const tsPath = `${cleanPath}-ts`
+
+  const [goFile, tsFile] = await Promise.all([findContentFile(goPath), findContentFile(tsPath)])
+
+  if (goFile && tsFile) {
+    return { kind: "selector", goPath, tsPath }
+  }
+
+  if (goFile) {
+    return { kind: "resolved", path: goPath }
+  }
+
+  if (tsFile) {
+    return { kind: "resolved", path: tsPath }
+  }
+
+  return { kind: "none" }
+}
+
 async function buildMarkdownResponseFromPath(
   resolvedPath: string,
   request: Request,
