@@ -240,6 +240,12 @@ node <<EOF
       return \`The following \${productName} are scheduled for deprecation\${dateText}. See [\${linkText}](\${linkUrl}) for shutdown dates and the latest status:\`;
     }
 
+    // DevHub changelog is Webflow CMS: structured rows with relatedTokens/networks
+    // match the "Integration" template (e.g. "Added support to Data Streams"). "Release"
+    // entries are typically prose-only there, so use integration until deprecations have
+    // a dedicated CMS category synced from JSON.
+    const DEPRECATION_CHANGELOG_CATEGORY = "integration";
+
     // === data-streams networks
     const STREAMS_NETWORKS = [
       "0g", "apechain", "adi", "aptos", "arbitrum", "arc", "avalanche", "base", "berachain", "bitlayer", "blast",
@@ -348,7 +354,7 @@ node <<EOF
       changelog.data = changelog.data.filter(entry => {
         if (
           entry.topic !== topic ||
-          entry.category !== "deprecation" ||
+          (entry.category !== "deprecation" && entry.title !== emptyEntryTitle) ||
           !Array.isArray(entry.relatedTokens)
         ) {
           return true;
@@ -453,7 +459,7 @@ node <<EOF
           ),
           networksList,
           deprecatingDataFeedTokens,
-          "deprecation"
+          DEPRECATION_CHANGELOG_CATEGORY
         )
       );
     }
@@ -474,7 +480,7 @@ node <<EOF
           ),
           networksList,
           deprecatingDataStreamTokens,
-          "deprecation"
+          DEPRECATION_CHANGELOG_CATEGORY
         )
       );
     }

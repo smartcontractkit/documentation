@@ -11,6 +11,7 @@ metadata:
 import DataStreams from "@features/data-streams/common/DataStreams.astro"
 import ReportSchemaTabs from "@features/data-streams/common/ReportSchemaTabs.astro"
 import Aside from "@components/Aside.astro"
+import SchemaFieldsTable from "@features/data-streams/common/SchemaFieldsTable.astro"
 
 <DataStreams section="dsNotes" />
 
@@ -20,21 +21,7 @@ Chainlink Tokenized Asset Data Streams adhere to the report schema outlined belo
 
 ### Schema Fields
 
-| Field                   | Type      | Description                                                                                            |
-| ----------------------- | --------- | ------------------------------------------------------------------------------------------------------ |
-| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                                                            |
-| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds)                                                   |
-| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds)                                                     |
-| `nativeFee`             | `uint192` | Cost to verify report onchain (native token)                                                           |
-| `linkFee`               | `uint192` | Cost to verify report onchain (LINK)                                                                   |
-| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                                                |
-| `lastUpdateTimestamp`   | `uint64`  | Timestamp of the last valid price update (nanoseconds)                                                 |
-| `price`                 | `int192`  | Last traded price from the real-world equity market                                                    |
-| `marketStatus`          | `uint32`  | Status of the real-world equity market. <br/> Possible values: `0` (Unknown), `1` (Closed), `2` (Open) |
-| `currentMultiplier`     | `int192`  | Currently applied multiplier accounting for past corporate actions                                     |
-| `newMultiplier`         | `int192`  | Multiplier to be applied at the activationDateTime <br/> (set to `0` if none is scheduled)             |
-| `activationDateTime`    | `uint32`  | When the next corporate action takes effect <br/> (set to `0` if none is scheduled) (seconds)          |
-| `tokenizedPrice`        | `int192`  | The aggregated price across the centralized exchanges where the tokenized asset trades                 |
+<SchemaFieldsTable schema="v10" />
 
 {/* prettier-ignore */}
 <Aside type="danger" title="Weekend Usage Disclaimer">
