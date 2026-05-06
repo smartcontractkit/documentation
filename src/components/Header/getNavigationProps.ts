@@ -75,12 +75,6 @@ const desktopSubProductsNav = [
     col: 1,
   },
   {
-    label: "CRE Connect",
-    href: "/crec",
-    icon: crecLogo.src,
-    col: 1,
-  },
-  {
     label: "Data Feeds",
     href: "/data-feeds",
     icon: dataFeedsLogo.src,
@@ -96,6 +90,12 @@ const desktopSubProductsNav = [
     label: "ACE",
     href: "/ace",
     icon: aceLogo.src,
+    col: 1,
+  },
+  {
+    label: "CRE Connect",
+    href: "/crec",
+    icon: crecLogo.src,
     col: 1,
   },
   {
@@ -184,12 +184,6 @@ const getDocsSections = (pageSdkLangMap: Map<string, string>) => [
         subProducts: getSubProducts(sidebar.cre, pageSdkLangMap),
       },
       {
-        label: "CRE Connect",
-        href: "/crec",
-        icon: crecLogo.src,
-        subProducts: getSubProducts(sidebar.crec, new Map()),
-      },
-      {
         label: "Data Feeds",
         href: "/data-feeds",
         icon: dataFeedsLogo.src,
@@ -206,6 +200,12 @@ const getDocsSections = (pageSdkLangMap: Map<string, string>) => [
         href: "/ace",
         icon: aceLogo.src,
         subProducts: getSubProducts(sidebar.ace, new Map()),
+      },
+      {
+        label: "CRE Connect",
+        href: "/crec",
+        icon: crecLogo.src,
+        subProducts: getSubProducts(sidebar.crec, new Map()),
       },
       {
         label: "DataLink",

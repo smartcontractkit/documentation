@@ -39,13 +39,6 @@ export const evmProducts = [
     shape: creShape,
   },
   {
-    title: "CRE Connect",
-    description: "Verifiable on-chain events and gas-less, account-abstracted operations.",
-    docsLandingLink: "/crec",
-    image: crecLogo,
-    shape: crecShape,
-  },
-  {
     title: "CCIP",
     description: "Global standard for building secure cross-chain applications.",
     docsLandingLink: "/ccip",
@@ -123,6 +116,13 @@ export const evmProducts = [
     docsLandingLink: "/ace",
     image: aceLogo,
     shape: aceShape,
+  },
+  {
+    title: "CRE Connect",
+    description: "Verifiable on-chain events and gas-less, account-abstracted operations.",
+    docsLandingLink: "/crec",
+    image: crecLogo,
+    shape: crecShape,
   },
   {
     title: "Functions",
