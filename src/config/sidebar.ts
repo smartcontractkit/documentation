@@ -449,10 +449,16 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Deploying Workflows",
           url: "cre/guides/operations/deploying-workflows",
-        },
-        {
-          title: "Deploying to the Private Registry",
-          url: "cre/guides/operations/deploying-to-private-registry",
+          children: [
+            {
+              title: "Deploying to the Private Registry",
+              url: "cre/guides/operations/deploying-to-private-registry",
+            },
+            {
+              title: "Deploying to the Onchain Registry",
+              url: "cre/guides/operations/deploying-to-onchain-registry",
+            },
+          ],
         },
         {
           title: "Activating & Pausing Workflows",
