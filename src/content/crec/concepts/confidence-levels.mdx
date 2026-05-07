@@ -1,0 +1,48 @@
+---
+section: crec
+title: "Confidence Levels"
+date: Last Modified
+metadata:
+  description: "Confidence levels (latest, safe, finalized) determine the finality threshold at which a Chainlink CRE Connect watcher reports an on-chain event. Defaults are set per supported network."
+  datePublished: "2026-05-01"
+  lastModified: "2026-05-01"
+---
+
+import { Aside } from "@components"
+
+A **confidence level** specifies how deep into a chain's consensus an event must be before CRE Connect emits it as a verifiable event. The trade-off is the same on every chain: lower confidence means lower latency but a higher chance of being reorganized away; higher confidence means longer waits but stronger guarantees.
+
+## The three levels
+
+| <div style="width: 120px;">Level</div> | Semantics                                                                                                                                                                         | When to use                                                                                                   |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `latest`                               | The event is included in the most recent block from the chain's perspective. Reorganizations can still drop it.                                                                   | Read-only dashboards, tail-following loggers, low-stakes notifications.                                       |
+| `safe`                                 | The event is included in a "safe" block under the chain's pre-finality definition (post-Merge `safe` for Ethereum, finalized-by-fast-track on rollups). Reorgs are very unlikely. | Operational alerting, non-financial side effects.                                                             |
+| `finalized`                            | The event is in a block the chain treats as economically final. It cannot be reorganized away under honest-majority assumptions.                                                  | Anything that triggers irreversible business action — fund flows, regulatory reporting, downstream API calls. |
+
+The exact mapping of `safe` and `finalized` depends on the chain. CRE Connect uses the chain's own definition (e.g. Ethereum's `safe` and `finalized` block tags, the equivalent rollup-specific tags) — consult the chain's documentation for precise semantics and the latency each level implies on that chain.
+
+## How confidence interacts with verification
+
+Confidence and [verification](/crec/concepts/event-verification) are independent properties:
+
+| Property         | Provides                                              | Sensitive to    |
+| ---------------- | ----------------------------------------------------- | --------------- |
+| **Verification** | Cryptographic authenticity ("the DON observed this")  | Tampering       |
+| **Confidence**   | Chain-level finality ("the chain has agreed on this") | Reorganizations |
+
+A `latest`-confidence event can pass verification and still be invalidated by a chain reorganization. Similarly, a `finalized`-confidence event that fails verification is suspect regardless of chain finality. Critical workflows should require **both**: verification passes _and_ confidence ≥ `finalized`.
+
+<Aside type="caution" title="Reorganization safety">
+  For irreversible business actions, prefer `finalized`. The added latency is almost always cheaper than the cost of
+  acting on a reorganized event and having to compensate afterward.
+</Aside>
+
+## Per-network defaults
+
+Each network supported by CRE Connect carries a default confidence level chosen by the platform. Watchers created on that network inherit the default unless the underlying extension or service specifies a different one. Applications can read the active confidence level back from each watcher and event so they always know the finality at which a given event was observed.
+
+## Related
+
+- [Watchers](/crec/concepts/watchers) — the resource that emits events at a chosen confidence level.
+- [Verifiable Events](/crec/concepts/verifiable-events) — the cryptographic property that is _independent_ of confidence.
