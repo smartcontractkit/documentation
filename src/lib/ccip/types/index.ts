@@ -8,6 +8,11 @@ export type { ChainType, ChainFamily }
 
 export const prerender = false
 
+// Naming convention for chain identifiers
+// - 'directory': chains.json keys (e.g., "mainnet", "bsc-mainnet")
+// - 'selector': selectors.yml names (e.g., "ethereum-mainnet", "binance_smart_chain-mainnet")
+export type NamingConvention = "directory" | "selector"
+
 // Search types
 export type SearchType = "selector" | "chainId" | "internalId" | "displayName"
 
@@ -112,14 +117,31 @@ export type TokenMetadata = {
   validTokenCount: number
 }
 
+export type TokenPool = {
+  address: string
+  rawType: string
+  type: string
+  version: string
+  hook: string | null
+  capabilities: {
+    supportsV2Features: boolean
+  }
+  finality: {
+    finalityDepth: number | null
+    finalitySafe: boolean | null
+  }
+  ccv: {
+    thresholdAmount: string | null
+  }
+}
+
 export type TokenChainData = {
   chainId: number | string
   chainName: string
   decimals: number
   destinations: string[]
   name: string
-  poolAddress: string
-  poolType: string
+  pool: TokenPool
   symbol: string
   tokenAddress: string
 }
@@ -148,6 +170,52 @@ export type TokenApiResponse = {
 export interface TokenFilterType {
   token_id?: string
   chain_id?: string
+}
+
+// Token Detail API Types (for /tokens/{tokenCanonicalSymbol} endpoint)
+
+/**
+ * Extended token chain data with enriched pool configuration.
+ */
+export interface TokenDetailChainData extends Omit<TokenChainData, "pool"> {
+  /** Pool information including capabilities, finality and CCV threshold. */
+  pool: TokenPool | null
+}
+
+/**
+ * Token detail response data structure
+ */
+export type TokenDetailDataResponse = {
+  [chainKey: string]: TokenDetailChainData
+}
+
+/**
+ * Metadata for token detail API responses
+ */
+export interface TokenDetailMetadata {
+  environment: Environment
+  timestamp: string
+  requestId: string
+  tokenSymbol: string
+  chainCount: number
+}
+
+/**
+ * Token detail API response format
+ */
+export interface TokenDetailApiResponse {
+  metadata: TokenDetailMetadata
+  data: TokenDetailDataResponse
+}
+
+/**
+ * Token detail service response (internal)
+ */
+export interface TokenDetailServiceResponse {
+  data: TokenDetailDataResponse
+  metadata: {
+    chainCount: number
+  }
 }
 
 // Lane Data API Types
@@ -225,6 +293,352 @@ export interface LaneFilterType {
   sourceInternalId?: string
   destinationInternalId?: string
   version?: string
+}
+
+// Lane Detail API Types (for /lanes/by-{type}/{source}/{destination} endpoints)
+
+/**
+ * Input key type for lane path parameters
+ */
+export type LaneInputKeyType = "chainId" | "selector" | "internalId"
+
+/**
+ * Metadata for single lane detail API responses
+ */
+export interface LaneDetailMetadata {
+  environment: Environment
+  timestamp: string
+  requestId: string
+  sourceChain: string
+  destinationChain: string
+}
+
+// Rate Limits API Types
+
+/**
+ * Rate limiter configuration for a single direction (in or out)
+ */
+export interface RateLimiterConfig {
+  capacity: string
+  isEnabled: boolean
+  rate: string
+}
+
+/**
+ * Rate limiter directions (in and/or out)
+ * - { in: {...}, out: {...} } = rate limits configured and available
+ * - { in: null, out: null } = downstream API error (v1 or v2 pool)
+ */
+export interface RateLimiterDirections {
+  in?: RateLimiterConfig | null
+  out?: RateLimiterConfig | null
+}
+
+/**
+ * Rate limiter entry can be directions data or null (not configured)
+ * - null = rate limits not configured for this type (standard/custom)
+ * - { in: null, out: null } = downstream API error
+ * - { in: {...}, out: {...} } = rate limits available
+ */
+export type RateLimiterEntry = RateLimiterDirections | null
+
+/**
+ * Transfer fees for a token on a lane in basis points
+ */
+export interface TokenFees {
+  standardTransferFeeBps: number
+  customTransferFeeBps: number
+}
+
+export interface LaneVerifierInfo {
+  inboundCCVs: string[] | null
+  outboundCCVs: string[] | null
+  thresholdInboundCCVs: string[] | null
+  thresholdOutboundCCVs: string[] | null
+  thresholdAmount: string | null
+}
+
+/**
+ * Raw rate limits from mock data (fees may not be present)
+ */
+export interface RawTokenRateLimits {
+  standard: RateLimiterEntry
+  custom: RateLimiterEntry
+  fees?: TokenFees
+  laneVerifierInfo?: LaneVerifierInfo | null
+}
+
+/**
+ * Rate limits for a single token on a lane with both standard and custom limits
+ * Each entry contains directional (in/out) rate limit configurations
+ */
+export interface TokenRateLimits {
+  standard: RateLimiterEntry
+  custom: RateLimiterEntry
+}
+
+/**
+ * Combined rate limits and fees for a token on a lane
+ * Used in API responses that return both rate limits and transfer fees
+ */
+export interface TokenLaneData {
+  rateLimits: TokenRateLimits
+  fees: TokenFees | null
+  verifiers: {
+    belowThreshold: string[] | null
+    aboveThreshold: string[] | null
+  } | null
+}
+
+/**
+ * Lane details with rate limits included in supportedTokens
+ * Used for single lane detail endpoints that merge rate limits
+ */
+export interface LaneDetailWithRateLimits {
+  sourceChain: ChainInfo
+  destinationChain: ChainInfo
+  onRamp: {
+    address: string
+    version: string
+    enforceOutOfOrder?: boolean
+  }
+  offRamp: {
+    address: string
+    version: string
+  }
+  supportedTokens: Record<string, TokenLaneData>
+}
+
+/**
+ * Single lane detail API response format (with rate limits)
+ */
+export interface LaneDetailApiResponse {
+  metadata: LaneDetailMetadata
+  data: LaneDetailWithRateLimits
+}
+
+/**
+ * Lane detail service response (internal)
+ */
+export interface LaneDetailServiceResponse {
+  data: LaneDetailWithRateLimits | null
+}
+
+// Supported Tokens API Types (for /lanes/by-{type}/{source}/{destination}/supported-tokens endpoints)
+
+/**
+ * Metadata for supported tokens API responses
+ */
+export interface SupportedTokensMetadata {
+  environment: Environment
+  timestamp: string
+  requestId: string
+  sourceChain: string
+  destinationChain: string
+  tokenCount: number
+}
+
+/**
+ * Supported tokens API response format
+ */
+export interface SupportedTokensApiResponse {
+  metadata: SupportedTokensMetadata
+  data: Record<string, TokenLaneData>
+}
+
+/**
+ * Supported tokens service response (internal)
+ */
+export interface SupportedTokensServiceResponse {
+  data: Record<string, TokenLaneData> | null
+  tokenCount: number
+}
+
+/**
+ * Type guard to check if a RateLimiterEntry is unavailable (null)
+ */
+export function isRateLimiterUnavailable(entry: RateLimiterEntry): entry is null {
+  return entry === null
+}
+
+/**
+ * Metadata for rate limits API responses
+ */
+export interface RateLimitsMetadata {
+  environment: Environment
+  timestamp: string
+  requestId: string
+  sourceChain: string
+  destinationChain: string
+  tokenCount: number
+}
+
+/**
+ * Filter parameters for rate limits queries (query-based - deprecated)
+ */
+export interface RateLimitsFilterType {
+  sourceInternalId: string
+  destinationInternalId: string
+  tokens?: string
+  direction?: "in" | "out"
+  rateType?: "standard" | "custom"
+}
+
+/**
+ * Filter parameters for lane rate limits queries (path-based)
+ * Source and destination come from URL path parameters
+ */
+export interface LaneRateLimitsFilterType {
+  tokens?: string
+  direction?: "in" | "out"
+  rateType?: "standard" | "custom"
+}
+
+/**
+ * Direction type for rate limits
+ */
+export type RateLimitsDirection = "in" | "out"
+
+/**
+ * Rate type for rate limits (standard or custom)
+ */
+export type RateLimitsType = "standard" | "custom"
+
+/**
+ * Source chain rate limits data with minBlockConfirmation and remote destinations
+ * Uses RawTokenRateLimits since fees may not be present in mock data
+ */
+export interface SourceChainRateLimitsData {
+  minBlockConfirmation: number | null
+  remote: Record<string, RawTokenRateLimits>
+}
+
+/**
+ * Rate limits data structure in the mock JSON files
+ * Token -> SourceChain -> { minBlockConfirmation?, remote: { DestChain -> { standard, custom } } }
+ */
+export type RateLimitsData = Record<string, Record<string, SourceChainRateLimitsData>>
+
+/**
+ * Rate limits API response format
+ */
+export interface RateLimitsApiResponse {
+  metadata: RateLimitsMetadata
+  data: Record<string, TokenLaneData>
+}
+
+/**
+ * Rate limits service response (internal)
+ */
+export interface RateLimitsServiceResponse {
+  data: Record<string, TokenLaneData>
+  metadata: {
+    tokenCount: number
+  }
+}
+
+// Token Directory API Types (for /tokens/{symbol}/chains/{chain} endpoint)
+
+/**
+ * Verifiers configuration for a lane with pre-computed sets for different transfer amounts
+ * Only present for v2.0+ pools (check pool.capabilities.supportsV2Features)
+ * For v1.x pools, the entire verifiers field is null
+ *
+ * Values for belowThreshold/aboveThreshold:
+ * - []: No verifiers configured for this lane
+ * - [addr1, addr2, ...]: Verifiers configured
+ * - null: Downstream API error fetching verifiers
+ *
+ * Usage:
+ * - belowThreshold: Verifiers used when transfer amount is below the threshold
+ * - aboveThreshold: Verifiers used when transfer amount is at or above the threshold
+ *   (includes all belowThreshold verifiers plus additional threshold verifiers)
+ */
+export interface LaneVerifiers {
+  belowThreshold: string[] | null
+  aboveThreshold: string[] | null
+}
+
+/**
+ * Lane data in token directory response
+ *
+ * Use pool.capabilities.supportsV2Features to interpret verifiers:
+ * - pool.capabilities.supportsV2Features=false + verifiers=null → v1.x pool, feature not supported
+ * - pool.capabilities.supportsV2Features=true + verifiers={belowThreshold: null, aboveThreshold: null} → downstream API error
+ * - pool.capabilities.supportsV2Features=true + verifiers={belowThreshold: [], aboveThreshold: []} → not configured
+ * - pool.capabilities.supportsV2Features=true + verifiers={belowThreshold: [...], aboveThreshold: [...]} → configured
+ */
+export interface TokenDirectoryLane {
+  internalId: string
+  chainId: number | string
+  selector: string
+  rateLimits: TokenRateLimits
+  fees: TokenFees | null
+  verifiers: LaneVerifiers | null
+}
+
+/**
+ * Token info in directory response
+ */
+export interface TokenDirectoryTokenInfo {
+  address: string
+  decimals: number
+}
+
+/**
+ * Pool info in directory response
+ */
+export type TokenDirectoryPoolInfo = TokenPool
+
+/**
+ * Token directory data for a specific chain
+ */
+export interface TokenDirectoryData {
+  internalId: string
+  chainId: number | string
+  selector: string
+  token: TokenDirectoryTokenInfo
+  pool: TokenDirectoryPoolInfo
+}
+
+/**
+ * Metadata for token directory API responses
+ */
+export interface TokenDirectoryMetadata {
+  environment: Environment
+  timestamp: string
+  requestId: string
+  symbol: string
+  sourceChain: string
+}
+
+/**
+ * Token directory API response format
+ */
+export interface TokenDirectoryApiResponse {
+  metadata: TokenDirectoryMetadata
+  data: TokenDirectoryData
+}
+
+/**
+ * Token directory service response (internal)
+ */
+export interface TokenDirectoryServiceResponse {
+  data: TokenDirectoryData | null
+}
+
+/**
+ * CCV config data structure in mock JSON files
+ * Token -> SourceChain (directory key) -> { thresholdAmount, outboundCCVs, inboundCCVs }
+ *
+ * Values for base/threshold arrays:
+ * - []: No verifiers configured
+ * - [addr1, ...]: Verifiers configured
+ * - null: Downstream API error fetching verifiers
+ */
+export interface CCVLaneConfig {
+  base: string[] | null
+  threshold: string[] | null
 }
 
 // Faucet API Types

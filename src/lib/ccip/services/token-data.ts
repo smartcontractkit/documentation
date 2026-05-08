@@ -6,14 +6,24 @@ import {
   TokenChainData,
   TokenDataResponse,
   TokenServiceResponse,
+  TokenDetailChainData,
+  TokenDetailDataResponse,
+  TokenDetailServiceResponse,
 } from "~/lib/ccip/types/index.ts"
 import { Version } from "@config/data/ccip/types.ts"
 import { SupportedChain } from "@config/index.ts"
 import { getAllSupportedTokens, getAllTokenLanes, getTokenData } from "@config/data/ccip/data.ts"
 import { resolveChainOrThrow, generateChainKey } from "~/lib/ccip/utils.ts"
+import { getEffectivePoolVersion, isV2Pool, shouldEnableCCVFeatures } from "~/lib/ccip/utils/pool-version.ts"
 import { logger } from "@lib/logging/index.js"
 import { getChainId, getChainTypeAndFamily, getTitle } from "../../../features/utils/index.ts"
 import { getSelectorEntry } from "@config/data/ccip/selectors.ts"
+
+import {
+  fetchPoolDataForTokenAllChains,
+  fetchAllPoolData,
+  type AllPoolData,
+} from "~/lib/ccip/graphql/services/enrichment-data-service.ts"
 
 export const prerender = false
 
@@ -49,7 +59,8 @@ export class TokenDataService {
   private async processTokenData(
     environment: Environment,
     tokenCanonicalId: string,
-    outputKey: OutputKeyType
+    outputKey: OutputKeyType,
+    prefetchedPoolData?: AllPoolData
   ): Promise<{ [chainKey: string]: TokenChainData } | null> {
     logger.debug({
       message: "Processing token data",
@@ -90,6 +101,11 @@ export class TokenDataService {
         return null
       }
 
+      // Use pre-fetched pool data if available, otherwise fetch for this token
+      const tokenPoolData = prefetchedPoolData
+        ? prefetchedPoolData[tokenCanonicalId] || {}
+        : await fetchPoolDataForTokenAllChains(environment, tokenCanonicalId)
+
       // Create the new structure with chains as keys
       const result: { [chainKey: string]: TokenChainData } = {}
 
@@ -99,11 +115,12 @@ export class TokenDataService {
 
       Object.entries(tokenData).forEach(([chainId, chainData]) => {
         try {
-          // Only process chains where poolAddress exists
-          if (!chainData.poolAddress) {
+          // Only process chains where pool data exists in GraphQL
+          const poolInfo = tokenPoolData[chainId]
+          if (!poolInfo?.address) {
             this.skippedTokensCount++
             logger.warn({
-              message: "Chain missing poolAddress - skipping only this chain",
+              message: "Chain missing pool data from GraphQL - skipping only this chain",
               requestId: this.requestId,
               tokenCanonicalId,
               chainId,
@@ -176,8 +193,23 @@ export class TokenDataService {
               decimals: chainData.decimals,
               destinations,
               name: chainData.name || "",
-              poolAddress: chainData.poolAddress,
-              poolType: chainData.poolType,
+              pool: {
+                address: poolInfo.address,
+                rawType: poolInfo.rawType,
+                type: poolInfo.type,
+                version: poolInfo.version,
+                hook: poolInfo.hook,
+                capabilities: {
+                  supportsV2Features: isV2Pool(poolInfo.version || ""),
+                },
+                finality: {
+                  finalityDepth: poolInfo.finalityDepth,
+                  finalitySafe: poolInfo.finalitySafe,
+                },
+                ccv: {
+                  thresholdAmount: poolInfo.thresholdAmount,
+                },
+              },
               symbol: chainData.symbol,
               tokenAddress: chainData.tokenAddress,
             },
@@ -301,9 +333,12 @@ export class TokenDataService {
     let processedTokensCount = 0
     let validTokensCount = 0
 
+    // Pre-fetch all pool data in one batch query
+    const allPoolData = await fetchAllPoolData(environment)
+
     // Process each token
     for (const tokenCanonicalId of tokenCanonicalIds) {
-      const tokenDetails = await this.processTokenData(environment, tokenCanonicalId, outputKey)
+      const tokenDetails = await this.processTokenData(environment, tokenCanonicalId, outputKey, allPoolData)
       if (tokenDetails) {
         tokens[tokenCanonicalId] = tokenDetails
         validTokensCount++
@@ -360,5 +395,170 @@ export class TokenDataService {
       errors: this.errors,
       metadata,
     }
+  }
+
+  /**
+   * Retrieves detailed token information for a specific token, including enriched pool data.
+   *
+   * @param environment - Network environment (mainnet/testnet)
+   * @param tokenCanonicalSymbol - Canonical symbol for the token
+   * @param outputKey - Format to use for displaying chain information
+   * @returns Token details with pool finality/CCV information for each chain
+   */
+  public async getTokenWithFinality(
+    environment: Environment,
+    tokenCanonicalSymbol: string,
+    outputKey: OutputKeyType = "chainId"
+  ): Promise<TokenDetailServiceResponse | null> {
+    logger.info({
+      message: "Getting token with finality data",
+      requestId: this.requestId,
+      environment,
+      tokenCanonicalSymbol,
+      outputKey,
+    })
+
+    // Get base token data using existing method
+    const tokenData = await this.processTokenData(environment, tokenCanonicalSymbol, outputKey)
+
+    if (!tokenData) {
+      logger.warn({
+        message: "Token not found",
+        requestId: this.requestId,
+        tokenCanonicalSymbol,
+      })
+      return null
+    }
+
+    // Get raw token data with directory keys for reverse lookup
+    const rawTokenData = this.getRawTokenData(environment, tokenCanonicalSymbol)
+
+    // Merge token data with effective pool version and capability information
+    const result: TokenDetailDataResponse = {}
+
+    for (const [chainKey, chainData] of Object.entries(tokenData)) {
+      // Get directory key for version and config lookups
+      const directoryKey = rawTokenData ? this.findDirectoryKeyByChainId(rawTokenData, chainData.chainId) : null
+
+      // Check if this pool supports CCV features (v2.0+ only)
+      const actualPoolVersion = chainData.pool?.version || ""
+      const isCCVEnabled = directoryKey
+        ? await shouldEnableCCVFeatures(environment, tokenCanonicalSymbol, directoryKey, actualPoolVersion)
+        : false
+
+      const detailChainData: TokenDetailChainData = {
+        ...chainData,
+        pool: chainData.pool
+          ? {
+              address: chainData.pool.address,
+              rawType: chainData.pool.rawType,
+              type: chainData.pool.type,
+              version: directoryKey
+                ? await getEffectivePoolVersion(
+                    environment,
+                    tokenCanonicalSymbol,
+                    directoryKey,
+                    chainData.pool.version || ""
+                  )
+                : chainData.pool.version || "",
+              hook: chainData.pool.hook ?? null,
+              capabilities: {
+                supportsV2Features: isCCVEnabled,
+              },
+              finality: {
+                finalityDepth: chainData.pool.finality.finalityDepth ?? null,
+                finalitySafe: chainData.pool.finality.finalitySafe ?? null,
+              },
+              ccv: {
+                thresholdAmount: chainData.pool.ccv.thresholdAmount ?? null,
+              },
+            }
+          : null,
+      }
+
+      result[chainKey] = detailChainData
+    }
+
+    logger.info({
+      message: "Token with finality data retrieved",
+      requestId: this.requestId,
+      tokenCanonicalSymbol,
+      chainCount: Object.keys(result).length,
+    })
+
+    return {
+      data: result,
+      metadata: {
+        chainCount: Object.keys(result).length,
+      },
+    }
+  }
+
+  /**
+   * Gets raw token data with directory keys (chains.json keys) as keys
+   * Used for looking up data that uses directory keys (like CCV config)
+   * Only includes EVM chains to avoid chain ID collisions with non-EVM chains
+   */
+  private getRawTokenData(
+    environment: Environment,
+    tokenCanonicalSymbol: string
+  ): Record<string, { chainId: number | string }> | null {
+    try {
+      const tokenData = getTokenData({
+        environment,
+        version: Version.V1_2_0,
+        tokenId: tokenCanonicalSymbol,
+      })
+
+      if (!tokenData || Object.keys(tokenData).length === 0) {
+        return null
+      }
+
+      // Build a mapping of directory key -> chainId for reverse lookup
+      // Only include EVM chains to avoid chain ID collisions (e.g., Aptos also has chainId=1)
+      const result: Record<string, { chainId: number | string }> = {}
+
+      for (const [directoryKey] of Object.entries(tokenData)) {
+        try {
+          const supportedChain = resolveChainOrThrow(directoryKey)
+          const { chainType } = getChainTypeAndFamily(supportedChain)
+
+          // Only include EVM chains for reverse lookup
+          if (chainType !== "evm") {
+            continue
+          }
+
+          const numericChainId = getChainId(supportedChain)
+          if (numericChainId) {
+            result[directoryKey] = { chainId: numericChainId }
+          }
+        } catch {
+          // Skip chains that can't be resolved
+        }
+      }
+
+      return result
+    } catch {
+      return null
+    }
+  }
+
+  /**
+   * Finds the directory key for a given numeric chainId
+   */
+  private findDirectoryKeyByChainId(
+    rawTokenData: Record<string, { chainId: number | string }>,
+    targetChainId: number | string
+  ): string | null {
+    const targetNumeric = typeof targetChainId === "string" ? parseInt(targetChainId, 10) : targetChainId
+
+    for (const [directoryKey, data] of Object.entries(rawTokenData)) {
+      const dataNumeric = typeof data.chainId === "string" ? parseInt(data.chainId, 10) : data.chainId
+      if (dataNumeric === targetNumeric) {
+        return directoryKey
+      }
+    }
+
+    return null
   }
 }

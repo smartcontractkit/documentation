@@ -2,8 +2,8 @@
   "openapi": "3.0.0",
   "info": {
     "title": "CCIP Docs config API",
-    "description": "API for retrieving CCIP chain, token, and lane information.\n\nTo get started quickly, you can download our [Postman Collection](/api/ccip/v1/postman-collection.json) which includes all endpoints and example requests.",
-    "version": "1.6.0",
+    "description": "API for retrieving CCIP chain, token, lane, and rate limits information.\n\nTo get started quickly, you can download our [Postman Collection](/api/ccip/v1/postman-collection.json) which includes all endpoints and example requests.",
+    "version": "1.16.0",
     "contact": {
       "name": "File issues",
       "url": "https://github.com/smartcontractkit/documentation/issues/new/choose"
@@ -34,7 +34,7 @@
     },
     {
       "name": "lanes",
-      "description": "Cross-chain lane information endpoints"
+      "description": "Cross-chain lane information endpoints with rate limits"
     }
   ],
   "paths": {
@@ -120,6 +120,16 @@
               "enum": ["evm", "solana", "aptos", "sui", "tron", "canton", "ton", "stellar", "starknet"]
             },
             "description": "Filter results by chain family. Only effective when using the search parameter."
+          },
+          {
+            "name": "internalIdFormat",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["directory", "selector"],
+              "default": "selector"
+            },
+            "description": "Format for internal IDs in the response. 'selector' uses canonical selector names (e.g., 'ethereum-mainnet'), 'directory' uses chains.json keys (e.g., 'mainnet'). Only applies when outputKey=internalId."
           }
         ],
         "responses": {
@@ -344,6 +354,16 @@
               "default": "chainId"
             },
             "description": "Key to use for organizing the response data"
+          },
+          {
+            "name": "internalIdFormat",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["directory", "selector"],
+              "default": "selector"
+            },
+            "description": "Format for internal IDs in the response. 'selector' uses canonical selector names (e.g., 'ethereum-mainnet'), 'directory' uses chains.json keys (e.g., 'mainnet'). Only applies when outputKey=internalId."
           }
         ],
         "responses": {
@@ -421,6 +441,860 @@
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tokens/{tokenCanonicalSymbol}": {
+      "get": {
+        "tags": ["tokens"],
+        "summary": "Retrieve detailed token information with custom finality data",
+        "description": "Returns detailed information about a specific CCIP token, including chain-specific configurations and custom finality settings (minBlockConfirmation and hasCustomFinality).",
+        "operationId": "getTokenDetail",
+        "parameters": [
+          {
+            "name": "tokenCanonicalSymbol",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The canonical symbol for the token (e.g., LINK, USDC, BETS)",
+            "example": "BETS"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["mainnet", "testnet"]
+            },
+            "description": "The network environment to query"
+          },
+          {
+            "name": "outputKey",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["chainId", "selector", "internalId"],
+              "default": "chainId"
+            },
+            "description": "Key to use for organizing the response data by chain"
+          },
+          {
+            "name": "internalIdFormat",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["directory", "selector"],
+              "default": "selector"
+            },
+            "description": "Format for internal IDs in the response. 'selector' uses canonical selector names (e.g., 'ethereum-mainnet'), 'directory' uses chains.json keys (e.g., 'mainnet'). Only applies when outputKey=internalId."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with token detail data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenDetailApiResponse"
+                },
+                "examples": {
+                  "v2Pool": {
+                    "summary": "v2.0 pool (BETS) with CCV features enabled",
+                    "description": "For v2.0+ pools (pool.capabilities.supportsV2Features=true), finality and CCV threshold are embedded directly in pool.finality and pool.ccv.",
+                    "value": {
+                      "metadata": {
+                        "environment": "mainnet",
+                        "timestamp": "2025-12-10T12:00:00Z",
+                        "requestId": "123e4567-e89b-12d3-a456-426614174000",
+                        "tokenSymbol": "BETS",
+                        "chainCount": 3
+                      },
+                      "data": {
+                        "1": {
+                          "chainId": 1,
+                          "chainName": "Ethereum",
+                          "decimals": 18,
+                          "destinations": ["56", "137"],
+                          "name": "BetSwirl Token",
+                          "poolAddress": "0x1B7492C3bD23A4aDB448710e4275FF14A5288932",
+                          "poolType": "lockRelease",
+                          "symbol": "BETS",
+                          "tokenAddress": "0x514910771AF9Ca656af840dff83E8264EcF986CA",
+                          "pool": {
+                            "address": "0x1B7492C3bD23A4aDB448710e4275FF14A5288932",
+                            "rawType": "LockReleaseTokenPool",
+                            "type": "lockRelease",
+                            "version": "2.0.0",
+                            "hook": null,
+                            "capabilities": {
+                              "supportsV2Features": true
+                            },
+                            "finality": {
+                              "finalityDepth": 0,
+                              "finalitySafe": true
+                            },
+                            "ccv": {
+                              "thresholdAmount": "10000000000000000000000"
+                            }
+                          }
+                        },
+                        "137": {
+                          "chainId": 137,
+                          "chainName": "Polygon",
+                          "decimals": 18,
+                          "destinations": ["1"],
+                          "name": "BetSwirl Token",
+                          "poolAddress": "0x5678...9ABC",
+                          "poolType": "burnMint",
+                          "symbol": "BETS",
+                          "tokenAddress": "0xDEF0...1234",
+                          "pool": {
+                            "address": "0x5678...9ABC",
+                            "rawType": "BurnMintTokenPool",
+                            "type": "burnMint",
+                            "version": "2.0.0",
+                            "hook": null,
+                            "capabilities": {
+                              "supportsV2Features": true
+                            },
+                            "finality": {
+                              "finalityDepth": 5,
+                              "finalitySafe": true
+                            },
+                            "ccv": {
+                              "thresholdAmount": "5000000000000000000000"
+                            }
+                          }
+                        },
+                        "56": {
+                          "chainId": 56,
+                          "chainName": "BNB Smart Chain",
+                          "decimals": 18,
+                          "destinations": ["1"],
+                          "name": "BetSwirl Token",
+                          "poolAddress": "0xABCD...1234",
+                          "poolType": "burnMint",
+                          "symbol": "BETS",
+                          "tokenAddress": "0x9876...FEDC",
+                          "pool": {
+                            "address": "0xABCD...1234",
+                            "rawType": "BurnMintTokenPool",
+                            "type": "burnMint",
+                            "version": "2.0.0",
+                            "hook": null,
+                            "capabilities": {
+                              "supportsV2Features": true
+                            },
+                            "finality": {
+                              "finalityDepth": null,
+                              "finalitySafe": null
+                            },
+                            "ccv": {
+                              "thresholdAmount": null
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "v1Pool": {
+                    "summary": "v1.x pool (GHO) with CCV features not supported",
+                    "description": "For v1.x pools (pool.capabilities.supportsV2Features=false), finality and CCV values can be null in pool.finality and pool.ccv.",
+                    "value": {
+                      "metadata": {
+                        "environment": "mainnet",
+                        "timestamp": "2025-12-10T12:00:00Z",
+                        "requestId": "456e7890-e89b-12d3-a456-426614174000",
+                        "tokenSymbol": "GHO",
+                        "chainCount": 1
+                      },
+                      "data": {
+                        "1": {
+                          "chainId": 1,
+                          "chainName": "Ethereum",
+                          "decimals": 18,
+                          "destinations": ["42161"],
+                          "name": "Gho Token",
+                          "poolAddress": "0xGHO1...5678",
+                          "poolType": "lockRelease",
+                          "symbol": "GHO",
+                          "tokenAddress": "0x40D1...2C2f",
+                          "pool": {
+                            "address": "0xGHO1...5678",
+                            "rawType": "LockReleaseTokenPool",
+                            "type": "lockRelease",
+                            "version": "1.6.0",
+                            "hook": null,
+                            "capabilities": {
+                              "supportsV2Features": false
+                            },
+                            "finality": {
+                              "finalityDepth": null,
+                              "finalitySafe": null
+                            },
+                            "ccv": {
+                              "thresholdAmount": null
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Token not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "NOT_FOUND",
+                  "message": "Token 'INVALID' not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tokens/{tokenCanonicalSymbol}/chains/{chain}": {
+      "get": {
+        "tags": ["tokens"],
+        "summary": "Retrieve token directory data for a specific chain",
+        "description": "Returns token configuration for a specific chain, scoped to token and pool data only. Lane-level rate limits, fees, and verifiers are available from lane endpoints.",
+        "operationId": "getTokenDirectory",
+        "parameters": [
+          {
+            "name": "tokenCanonicalSymbol",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The canonical symbol for the token (e.g., LINK, USDC, LBTC)",
+            "example": "LBTC"
+          },
+          {
+            "name": "chain",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The source chain identifier in internalId form (directory or selector naming), e.g. mainnet or ethereum-testnet-sepolia. Numeric chainId values are not accepted in this path parameter.",
+            "example": "mainnet"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["mainnet", "testnet"]
+            },
+            "description": "The network environment to query"
+          },
+          {
+            "name": "internalIdFormat",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["directory", "selector"],
+              "default": "selector"
+            },
+            "description": "Format for internalId values in the response. 'selector' uses canonical selector names (e.g., 'ethereum-mainnet'), 'directory' uses chains.json keys (e.g., 'mainnet')."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with token directory data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenDirectoryApiResponse"
+                },
+                "examples": {
+                  "v2Pool": {
+                    "summary": "v2.0 pool (LBTC) with CCV features enabled",
+                    "description": "For v2.0+ pools (pool.capabilities.supportsV2Features=true), pool.finality and pool.ccv expose finality and threshold data.",
+                    "value": {
+                      "metadata": {
+                        "environment": "mainnet",
+                        "timestamp": "2025-12-10T12:00:00Z",
+                        "requestId": "123e4567-e89b-12d3-a456-426614174000",
+                        "symbol": "LBTC",
+                        "sourceChain": "ethereum-mainnet"
+                      },
+                      "data": {
+                        "internalId": "ethereum-mainnet",
+                        "chainId": 1,
+                        "selector": "5009297550715157269",
+                        "token": {
+                          "address": "0x8236a87084f8B84306f72007F36F2618A5634494",
+                          "decimals": 8
+                        },
+                        "pool": {
+                          "address": "0x88E18636EfFC3b3cd520FC72B710eb99C0017BC7",
+                          "rawType": "BurnMintTokenPool",
+                          "type": "burnMint",
+                          "version": "2.0.0",
+                          "hook": null,
+                          "capabilities": {
+                            "supportsV2Features": true
+                          },
+                          "finality": {
+                            "finalityDepth": 5,
+                            "finalitySafe": true
+                          },
+                          "ccv": {
+                            "thresholdAmount": "100000000000"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "v1Pool": {
+                    "summary": "v1.x pool (GHO) with CCV features not supported",
+                    "description": "For v1.x pools (pool.capabilities.supportsV2Features=false), pool.finality/ccv values can be null.",
+                    "value": {
+                      "metadata": {
+                        "environment": "mainnet",
+                        "timestamp": "2025-12-10T12:00:00Z",
+                        "requestId": "456e7890-e89b-12d3-a456-426614174000",
+                        "symbol": "GHO",
+                        "sourceChain": "ethereum-mainnet"
+                      },
+                      "data": {
+                        "internalId": "ethereum-mainnet",
+                        "chainId": 1,
+                        "selector": "5009297550715157269",
+                        "token": {
+                          "address": "0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f",
+                          "decimals": 18
+                        },
+                        "pool": {
+                          "address": "0xGhoPool123...",
+                          "rawType": "LockReleaseTokenPool",
+                          "type": "lockRelease",
+                          "version": "1.6.0",
+                          "hook": null,
+                          "capabilities": {
+                            "supportsV2Features": false
+                          },
+                          "finality": {
+                            "finalityDepth": null,
+                            "finalitySafe": null
+                          },
+                          "ccv": {
+                            "thresholdAmount": null
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Token or chain not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "NOT_FOUND",
+                  "message": "Token 'INVALID' not found on chain 'mainnet'"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lanes/by-chain-id/{source}/{destination}": {
+      "get": {
+        "tags": ["lanes"],
+        "summary": "Retrieve lane detail by chain IDs",
+        "description": "Returns lane detail for a specific source/destination chain pair, including per-token rate limits, fees, and verifiers.",
+        "operationId": "getLaneDetailByChainId",
+        "parameters": [
+          {
+            "name": "source",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Source chain ID (numeric string for EVM chains, chain key for others)",
+            "example": "1"
+          },
+          {
+            "name": "destination",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Destination chain ID",
+            "example": "8453"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "enum": ["mainnet", "testnet"] },
+            "description": "Network environment"
+          },
+          {
+            "name": "internalIdFormat",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["directory", "selector"], "default": "selector" },
+            "description": "Format for internalId fields in the response."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with lane detail",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/LaneDetailApiResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "Lane not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lanes/by-chain-id/{source}/{destination}/supported-tokens": {
+      "get": {
+        "tags": ["lanes"],
+        "summary": "Retrieve supported tokens for a lane by chain IDs",
+        "description": "Returns token-level lane configuration for the given source/destination pair, including rate limits, fees, and verifiers.",
+        "operationId": "getSupportedTokensByChainId",
+        "parameters": [
+          {
+            "name": "source",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Source chain ID",
+            "example": "1"
+          },
+          {
+            "name": "destination",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Destination chain ID",
+            "example": "8453"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "enum": ["mainnet", "testnet"] },
+            "description": "Network environment"
+          },
+          {
+            "name": "internalIdFormat",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["directory", "selector"], "default": "selector" },
+            "description": "Format for internalId fields in metadata."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with supported token lane data",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SupportedTokensApiResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "Lane not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lanes/by-selector/{source}/{destination}": {
+      "get": {
+        "tags": ["lanes"],
+        "summary": "Retrieve lane detail by selectors",
+        "description": "Returns lane detail for a specific source/destination selector pair, including per-token rate limits, fees, and verifiers.",
+        "operationId": "getLaneDetailBySelector",
+        "parameters": [
+          {
+            "name": "source",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Source chain selector",
+            "example": "5009297550715157269"
+          },
+          {
+            "name": "destination",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Destination chain selector",
+            "example": "15971525489660198786"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "enum": ["mainnet", "testnet"] },
+            "description": "Network environment"
+          },
+          {
+            "name": "internalIdFormat",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["directory", "selector"], "default": "selector" },
+            "description": "Format for internalId fields in the response."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with lane detail",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/LaneDetailApiResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "Lane not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lanes/by-selector/{source}/{destination}/supported-tokens": {
+      "get": {
+        "tags": ["lanes"],
+        "summary": "Retrieve supported tokens for a lane by selectors",
+        "description": "Returns token-level lane configuration for the given selector pair, including rate limits, fees, and verifiers.",
+        "operationId": "getSupportedTokensBySelector",
+        "parameters": [
+          {
+            "name": "source",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Source chain selector",
+            "example": "5009297550715157269"
+          },
+          {
+            "name": "destination",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Destination chain selector",
+            "example": "15971525489660198786"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "enum": ["mainnet", "testnet"] },
+            "description": "Network environment"
+          },
+          {
+            "name": "internalIdFormat",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["directory", "selector"], "default": "selector" },
+            "description": "Format for internalId fields in metadata."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with supported token lane data",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SupportedTokensApiResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "Lane not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lanes/by-internal-id/{source}/{destination}": {
+      "get": {
+        "tags": ["lanes"],
+        "summary": "Retrieve lane detail by internal IDs",
+        "description": "Returns lane detail for a specific source/destination internalId pair, including per-token rate limits, fees, and verifiers.",
+        "operationId": "getLaneDetailByInternalId",
+        "parameters": [
+          {
+            "name": "source",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Source chain internal ID (directory or selector naming)",
+            "example": "ethereum-mainnet"
+          },
+          {
+            "name": "destination",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Destination chain internal ID",
+            "example": "ethereum-mainnet-base-1"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "enum": ["mainnet", "testnet"] },
+            "description": "Network environment"
+          },
+          {
+            "name": "internalIdFormat",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["directory", "selector"], "default": "selector" },
+            "description": "Format for internalId fields in the response."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with lane detail",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/LaneDetailApiResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "Lane not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lanes/by-internal-id/{source}/{destination}/supported-tokens": {
+      "get": {
+        "tags": ["lanes"],
+        "summary": "Retrieve supported tokens for a lane by internal IDs",
+        "description": "Returns token-level lane configuration for the given internalId pair, including rate limits, fees, and verifiers.",
+        "operationId": "getSupportedTokensByInternalId",
+        "parameters": [
+          {
+            "name": "source",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Source chain internal ID",
+            "example": "ethereum-mainnet"
+          },
+          {
+            "name": "destination",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Destination chain internal ID",
+            "example": "ethereum-mainnet-base-1"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "enum": ["mainnet", "testnet"] },
+            "description": "Network environment"
+          },
+          {
+            "name": "internalIdFormat",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["directory", "selector"], "default": "selector" },
+            "description": "Format for internalId fields in metadata."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with supported token lane data",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SupportedTokensApiResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "Lane not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
               }
             }
           }
@@ -516,6 +1390,16 @@
               "default": "chainId"
             },
             "description": "Key format to use for organizing the lane keys in the response"
+          },
+          {
+            "name": "internalIdFormat",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["directory", "selector"],
+              "default": "selector"
+            },
+            "description": "Format for internal IDs in the response. 'selector' uses canonical selector names (e.g., 'ethereum-mainnet'), 'directory' uses chains.json keys (e.g., 'mainnet'). Only applies when outputKey=internalId."
           }
         ],
         "responses": {
@@ -1115,7 +1999,7 @@
           },
           "poolType": {
             "type": "string",
-            "enum": ["lockRelease", "burnMint", "usdc", "feeTokenOnly"],
+            "enum": ["lockRelease", "burnMint", "usdc"],
             "description": "Type of pool for this token"
           },
           "poolAddress": {
@@ -1148,7 +2032,7 @@
           },
           "poolType": {
             "type": "string",
-            "enum": ["lockRelease", "burnMint", "usdc", "feeTokenOnly"],
+            "enum": ["lockRelease", "burnMint", "usdc"],
             "description": "Type of pool for this token"
           },
           "poolAddress": {
@@ -1169,6 +2053,70 @@
               "type": "string"
             },
             "description": "Destination chains this token can be sent to"
+          }
+        }
+      },
+      "TokenDetailChainData": {
+        "type": "object",
+        "description": "Extended token chain data with enriched pool configuration.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/TokenChainData"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "pool": {
+                "nullable": true,
+                "allOf": [{ "$ref": "#/components/schemas/TokenDirectoryPoolInfo" }],
+                "description": "Pool information including capabilities, finality and CCV threshold."
+              }
+            }
+          }
+        ]
+      },
+      "TokenDetailMetadata": {
+        "type": "object",
+        "required": ["environment", "timestamp", "requestId", "tokenSymbol", "chainCount"],
+        "properties": {
+          "environment": {
+            "type": "string",
+            "enum": ["mainnet", "testnet"],
+            "description": "Network environment"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp of the response"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for this request"
+          },
+          "tokenSymbol": {
+            "type": "string",
+            "description": "Canonical symbol of the requested token"
+          },
+          "chainCount": {
+            "type": "integer",
+            "description": "Number of chains this token is available on"
+          }
+        }
+      },
+      "TokenDetailApiResponse": {
+        "type": "object",
+        "required": ["metadata", "data"],
+        "properties": {
+          "metadata": {
+            "$ref": "#/components/schemas/TokenDetailMetadata"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TokenDetailChainData"
+            },
+            "description": "Token data indexed by chain ID/selector, including enriched pool configuration."
           }
         }
       },
@@ -1244,6 +2192,440 @@
               "$ref": "#/components/schemas/TokenConfigError"
             },
             "description": "List of tokens that were ignored due to configuration issues"
+          }
+        }
+      },
+      "TokenDirectoryMetadata": {
+        "type": "object",
+        "required": ["environment", "timestamp", "requestId", "symbol", "sourceChain"],
+        "properties": {
+          "environment": {
+            "type": "string",
+            "enum": ["mainnet", "testnet"],
+            "description": "Network environment"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp of the response"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for this request"
+          },
+          "symbol": {
+            "type": "string",
+            "description": "Canonical symbol of the requested token"
+          },
+          "sourceChain": {
+            "type": "string",
+            "description": "Source chain identifier"
+          }
+        }
+      },
+      "LaneDetailMetadata": {
+        "type": "object",
+        "required": ["environment", "timestamp", "requestId", "sourceChain", "destinationChain"],
+        "properties": {
+          "environment": {
+            "type": "string",
+            "enum": ["mainnet", "testnet"],
+            "description": "Network environment"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp of the response"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for this request"
+          },
+          "sourceChain": {
+            "type": "string",
+            "description": "Source chain identifier from path"
+          },
+          "destinationChain": {
+            "type": "string",
+            "description": "Destination chain identifier from path"
+          }
+        }
+      },
+      "LaneVerifiers": {
+        "type": "object",
+        "description": "Pre-computed verifier sets for different transfer amounts. Only present for v2.0+ pools (pool.capabilities.supportsV2Features=true). For v1.x pools, the entire verifiers field is null. Values: empty array [] = no verifiers configured, [addr1, ...] = verifiers configured, null = downstream API error.",
+        "required": ["belowThreshold", "aboveThreshold"],
+        "properties": {
+          "belowThreshold": {
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Verifier addresses used when transfer amount is below the threshold. Empty array [] if no verifiers configured, null if downstream API error."
+          },
+          "aboveThreshold": {
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Verifier addresses used when transfer amount is at or above the threshold (includes all belowThreshold verifiers plus additional threshold verifiers). Empty array [] if no verifiers configured, null if downstream API error."
+          }
+        }
+      },
+      "TokenLaneData": {
+        "type": "object",
+        "required": ["rateLimits", "fees", "verifiers"],
+        "properties": {
+          "rateLimits": {
+            "$ref": "#/components/schemas/TokenRateLimits"
+          },
+          "fees": {
+            "nullable": true,
+            "allOf": [{ "$ref": "#/components/schemas/LaneFees" }]
+          },
+          "verifiers": {
+            "nullable": true,
+            "allOf": [{ "$ref": "#/components/schemas/LaneVerifiers" }]
+          }
+        }
+      },
+      "RateLimiterConfig": {
+        "type": "object",
+        "description": "Rate limit configuration for a single direction (in or out)",
+        "required": ["capacity", "rate", "isEnabled"],
+        "properties": {
+          "capacity": {
+            "type": "string",
+            "description": "Maximum capacity of the rate limiter bucket (in token's smallest unit)"
+          },
+          "rate": {
+            "type": "string",
+            "description": "Rate at which the bucket refills (tokens per second in smallest unit)"
+          },
+          "isEnabled": {
+            "type": "boolean",
+            "description": "Whether rate limiting is enabled"
+          }
+        }
+      },
+      "DirectionalRateLimits": {
+        "type": "object",
+        "description": "Rate limits for both directions (in and out) on a lane",
+        "properties": {
+          "in": {
+            "nullable": true,
+            "allOf": [{ "$ref": "#/components/schemas/RateLimiterConfig" }],
+            "description": "Inbound rate limit configuration"
+          },
+          "out": {
+            "nullable": true,
+            "allOf": [{ "$ref": "#/components/schemas/RateLimiterConfig" }],
+            "description": "Outbound rate limit configuration"
+          }
+        }
+      },
+      "TokenRateLimits": {
+        "type": "object",
+        "description": "Rate limits for both standard and custom transfers, each with in/out directions",
+        "required": ["standard", "custom"],
+        "properties": {
+          "standard": {
+            "nullable": true,
+            "allOf": [{ "$ref": "#/components/schemas/DirectionalRateLimits" }],
+            "description": "Standard transfer rate limit configuration"
+          },
+          "custom": {
+            "nullable": true,
+            "allOf": [{ "$ref": "#/components/schemas/DirectionalRateLimits" }],
+            "description": "Custom (custom block confirmation) transfer rate limit configuration"
+          }
+        }
+      },
+      "LaneFees": {
+        "type": "object",
+        "description": "Transfer fees for a lane in basis points (1 bps = 0.01%)",
+        "required": ["standardTransferFeeBps", "customTransferFeeBps"],
+        "properties": {
+          "standardTransferFeeBps": {
+            "type": "integer",
+            "description": "Standard transfer fee in basis points"
+          },
+          "customTransferFeeBps": {
+            "type": "integer",
+            "description": "custom (custom block confirmation) transfer fee in basis points"
+          }
+        }
+      },
+      "TokenDirectoryLane": {
+        "type": "object",
+        "description": "Lane configuration for outbound or inbound transfers. Use pool.capabilities.supportsV2Features to interpret verifiers: false + null = v1.x pool (not supported), true + {null, null} = downstream error, true + {[], []} = not configured, true + {[...], [...]} = configured.",
+        "required": ["internalId", "chainId", "selector", "rateLimits", "fees", "verifiers"],
+        "properties": {
+          "internalId": {
+            "type": "string",
+            "description": "Internal identifier of the remote chain (destination for outbound, source for inbound)"
+          },
+          "chainId": {
+            "oneOf": [{ "type": "integer" }, { "type": "string" }],
+            "description": "Chain ID of the remote chain"
+          },
+          "selector": {
+            "type": "string",
+            "description": "CCIP chain selector of the remote chain"
+          },
+          "rateLimits": {
+            "$ref": "#/components/schemas/TokenRateLimits",
+            "description": "Rate limits for both standard and custom transfers, with in/out directions"
+          },
+          "fees": {
+            "nullable": true,
+            "allOf": [{ "$ref": "#/components/schemas/LaneFees" }],
+            "description": "Transfer fees in basis points, or null if not configured"
+          },
+          "verifiers": {
+            "nullable": true,
+            "allOf": [{ "$ref": "#/components/schemas/LaneVerifiers" }],
+            "description": "Verifier configuration. For v1.x pools (pool.capabilities.supportsV2Features=false): null. For v2.x pools: object with arrays or null values."
+          }
+        }
+      },
+      "LaneDetailWithRateLimits": {
+        "type": "object",
+        "required": ["sourceChain", "destinationChain", "onRamp", "offRamp", "supportedTokens"],
+        "properties": {
+          "sourceChain": {
+            "$ref": "#/components/schemas/ChainInfo"
+          },
+          "destinationChain": {
+            "$ref": "#/components/schemas/ChainInfo"
+          },
+          "onRamp": {
+            "type": "object",
+            "required": ["address", "version"],
+            "properties": {
+              "address": {
+                "type": "string",
+                "description": "OnRamp contract address"
+              },
+              "version": {
+                "type": "string",
+                "description": "Normalized semantic version of the OnRamp contract"
+              },
+              "enforceOutOfOrder": {
+                "type": "boolean",
+                "description": "Whether the OnRamp enforces out-of-order execution"
+              }
+            }
+          },
+          "offRamp": {
+            "type": "object",
+            "required": ["address", "version"],
+            "properties": {
+              "address": {
+                "type": "string",
+                "description": "OffRamp contract address"
+              },
+              "version": {
+                "type": "string",
+                "description": "Normalized semantic version of the OffRamp contract"
+              }
+            }
+          },
+          "supportedTokens": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TokenLaneData"
+            },
+            "description": "Supported tokens keyed by canonical symbol"
+          }
+        }
+      },
+      "LaneDetailApiResponse": {
+        "type": "object",
+        "required": ["metadata", "data"],
+        "properties": {
+          "metadata": {
+            "$ref": "#/components/schemas/LaneDetailMetadata"
+          },
+          "data": {
+            "$ref": "#/components/schemas/LaneDetailWithRateLimits"
+          }
+        }
+      },
+      "SupportedTokensMetadata": {
+        "type": "object",
+        "required": ["environment", "timestamp", "requestId", "sourceChain", "destinationChain", "tokenCount"],
+        "properties": {
+          "environment": {
+            "type": "string",
+            "enum": ["mainnet", "testnet"],
+            "description": "Network environment"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp of the response"
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for this request"
+          },
+          "sourceChain": {
+            "type": "string",
+            "description": "Source chain identifier from path"
+          },
+          "destinationChain": {
+            "type": "string",
+            "description": "Destination chain identifier from path"
+          },
+          "tokenCount": {
+            "type": "integer",
+            "description": "Number of tokens in data"
+          }
+        }
+      },
+      "SupportedTokensApiResponse": {
+        "type": "object",
+        "required": ["metadata", "data"],
+        "properties": {
+          "metadata": {
+            "$ref": "#/components/schemas/SupportedTokensMetadata"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TokenLaneData"
+            }
+          }
+        }
+      },
+      "PoolCapabilities": {
+        "type": "object",
+        "required": ["supportsV2Features"],
+        "properties": {
+          "supportsV2Features": {
+            "type": "boolean",
+            "description": "Whether this pool supports v2 features."
+          }
+        }
+      },
+      "PoolFinality": {
+        "type": "object",
+        "required": ["finalityDepth", "finalitySafe"],
+        "properties": {
+          "finalityDepth": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Minimum block confirmations for finalized transfer execution. Null when unavailable."
+          },
+          "finalitySafe": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "Whether FCR safe finality is supported. Null when unavailable."
+          }
+        }
+      },
+      "PoolCcv": {
+        "type": "object",
+        "required": ["thresholdAmount"],
+        "properties": {
+          "thresholdAmount": {
+            "type": "string",
+            "nullable": true,
+            "description": "Amount threshold (smallest token unit) above which threshold verifiers are required. '0' means not configured."
+          }
+        }
+      },
+      "TokenDirectoryTokenInfo": {
+        "type": "object",
+        "required": ["address", "decimals"],
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "Token contract address"
+          },
+          "decimals": {
+            "type": "integer",
+            "description": "Token decimals"
+          }
+        }
+      },
+      "TokenDirectoryPoolInfo": {
+        "type": "object",
+        "required": ["address", "rawType", "type", "version", "hook", "capabilities", "finality", "ccv"],
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "Pool contract address"
+          },
+          "rawType": {
+            "type": "string",
+            "description": "Raw pool type from configuration (e.g., 'LockReleaseTokenPool', 'BurnMintTokenPool', 'USDCTokenPool')"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["lockRelease", "burnMint", "usdc"],
+            "description": "Normalized pool type"
+          },
+          "version": {
+            "type": "string",
+            "description": "Pool contract version"
+          },
+          "hook": {
+            "type": "string",
+            "nullable": true,
+            "description": "Address of the advanced pool hook contract, or null if not configured"
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/PoolCapabilities"
+          },
+          "finality": {
+            "$ref": "#/components/schemas/PoolFinality"
+          },
+          "ccv": {
+            "$ref": "#/components/schemas/PoolCcv"
+          }
+        }
+      },
+      "TokenDirectoryData": {
+        "type": "object",
+        "description": "Token directory data for a specific chain",
+        "required": ["internalId", "chainId", "selector", "token", "pool"],
+        "properties": {
+          "internalId": {
+            "type": "string",
+            "description": "Internal chain identifier"
+          },
+          "chainId": {
+            "oneOf": [{ "type": "integer" }, { "type": "string" }],
+            "description": "Chain ID"
+          },
+          "selector": {
+            "type": "string",
+            "description": "CCIP chain selector"
+          },
+          "token": {
+            "$ref": "#/components/schemas/TokenDirectoryTokenInfo"
+          },
+          "pool": {
+            "$ref": "#/components/schemas/TokenDirectoryPoolInfo"
+          }
+        }
+      },
+      "TokenDirectoryApiResponse": {
+        "type": "object",
+        "required": ["metadata", "data"],
+        "properties": {
+          "metadata": {
+            "$ref": "#/components/schemas/TokenDirectoryMetadata"
+          },
+          "data": {
+            "$ref": "#/components/schemas/TokenDirectoryData"
           }
         }
       }
