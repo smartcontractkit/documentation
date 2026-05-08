@@ -85,6 +85,8 @@ interface DataItem {
   productSubType?: string
   deliveryChannelCode?: string
   feedType?: string
+  /** RDD docs.feedCategory (e.g. "deprecating", "new") */
+  feedCategory?: string
   network: string
   networkType?: "mainnet" | "testnet"
   assetName?: string
@@ -262,6 +264,39 @@ function isDeprecatingDataStream(item: DataItem): item is DataItem & { shutdownD
   return !!item.shutdownDate && item.deliveryChannelCode === "DS" && !!item.streamID
 }
 
+/** RDD marks shutdown / deprecating streams; those must not become "Added support" changelog rows when unhidden. */
+function shouldExcludeFromNewlyFoundIntegrations(item: DataItem): boolean {
+  if ((item.feedCategory || "").toLowerCase() === "deprecating") {
+    return true
+  }
+  if (item.shutdownDate && item.deliveryChannelCode === "DS") {
+    return true
+  }
+  if (isDeprecatingDataFeed(item)) {
+    return true
+  }
+  return false
+}
+
+/** Changelog list labels: same base asset on mainnet vs testnet needs visible distinction. */
+function withStreamDeprecationDisplayName(item: DataItem, assetName: string): string {
+  if (item.networkType === "testnet") {
+    return `${assetName} (${item.network} testnet)`
+  }
+  if (item.networkType === "mainnet") {
+    return `${assetName} (${item.network} mainnet)`
+  }
+  return assetName
+}
+
+function toDeprecatingStreamOutputItem(item: DataItem & { shutdownDate: string }) {
+  const base = toOutputItem(item, buildDeprecatingStreamUrl)
+  return {
+    ...base,
+    assetName: withStreamDeprecationDisplayName(item, base.assetName || ""),
+  }
+}
+
 /**
  * Main function to detect new data feeds across all configured networks
  * This function:
@@ -312,7 +347,7 @@ async function detectNewData(): Promise<void> {
     // 3) Identify newly added items (not in baseline)
     const newlyFound: DataItem[] = []
     for (const item of allItems) {
-      if (!item.hidden && !knownIds.has(item.feedID)) {
+      if (!item.hidden && !knownIds.has(item.feedID) && !shouldExcludeFromNewlyFoundIntegrations(item)) {
         newlyFound.push(item)
       }
     }
@@ -428,17 +463,17 @@ async function detectNewData(): Promise<void> {
         previous,
         current: toOutputItem(current, buildDeprecatingFeedUrl),
       })),
-      newlyDeprecatedStreams: newlyDeprecatedStreams.map((item) => toOutputItem(item, buildDeprecatingStreamUrl)),
+      newlyDeprecatedStreams: newlyDeprecatedStreams.map((item) => toDeprecatingStreamOutputItem(item)),
       resolvedDeprecatedStreams,
       changedDeprecatedStreams: changedDeprecatedStreams.map(({ previous, current }) => ({
         previous,
-        current: toOutputItem(current, buildDeprecatingStreamUrl),
+        current: toDeprecatingStreamOutputItem(current),
       })),
       currentDeprecatedItems: deprecationBaselineInitialized
         ? currentDeprecatedItems.map((item) => toOutputItem(item, buildDeprecatingFeedUrl))
         : undefined,
       currentDeprecatedStreams: streamDeprecationBaselineInitialized
-        ? currentDeprecatedStreams.map((item) => toOutputItem(item, buildDeprecatingStreamUrl))
+        ? currentDeprecatedStreams.map((item) => toDeprecatingStreamOutputItem(item))
         : undefined,
     }
 
@@ -568,6 +603,7 @@ function convertToDataItem(obj: any, network: string): DataItem | null {
     productType,
     productSubType,
     deliveryChannelCode: deliveryChannel,
+    feedCategory: typeof obj.docs?.feedCategory === "string" ? obj.docs.feedCategory : undefined,
     network,
     assetName: topLevelAssetName,
     baseAsset: baseAsset || (isRefMacro ? topLevelAssetName : undefined),
@@ -605,6 +641,7 @@ function convertToStreamDataItem(obj: any, network: string, networkType: "mainne
     productSubType: obj.docs?.productSubType || "",
     deliveryChannelCode: obj.docs?.deliveryChannelCode || "DS",
     feedType: obj.docs?.feedType || obj.feedType || "",
+    feedCategory: typeof obj.docs?.feedCategory === "string" ? obj.docs.feedCategory : undefined,
     network,
     networkType,
     assetName,
