@@ -4,6 +4,12 @@ date: Last Modified
 title: "Onchain Architecture - Overview (EVM)"
 metadata:
   description: "Get an overview of Chainlink CCIP's EVM onchain architecture. Learn key components, roles, and the typical lifecycle of a cross-chain message."
+  image: "/images/ccip/concepts/architecture/onchain-evm-architecture.jpg"
+  excerpt: "ccip evm overview ethereum smart contracts message lifecycle router contract onramp offramp fee quoter nonce manager token admin registry ccip components cross-chain execution"
+  datePublished: "2025-05-19T11:22:47Z"
+  lastModified: "2025-05-19T11:22:47Z"
+  difficulty: "intermediate"
+  estimatedTime: "18 minutes"
 ---
 
 import { Aside, ClickToZoom } from "@components"
@@ -24,7 +30,7 @@ The interface for senders is the Router contract, which interacts with other int
 The following diagram illustrates the key onchain components:
 
 <ClickToZoom
-  src="/images/ccip/concepts/architecture/onchain-evm-architecture.jpg"
+  src="/images/ccip/concepts/architecture/onchain-evm-architecture-registry.jpg"
   alt="CCIP Onchain EVM Architecture"
 />
 
@@ -39,14 +45,13 @@ The following diagram illustrates the key onchain components:
 | Token Admin Registry     | CCIP                       | A contract that contains the mapping of tokens to their token pools.                                                                                                                                                                                     |
 | Token Pool               | External (Token Developer) | A contract that implements token handling mechanisms, such as Lock/Burn/Release, typically set up by the token Developer. There is one token pool per token on a given chain.                                                                            |
 | Token Contract           | External (Token Developer) | An ERC20 token contract owned by the token Developer                                                                                                                                                                                                     |
-| RMN Contract (RMNRemote) | CCIP                       | Verifies Risk Management Network (RMN) signatures and handles cursing.                                                                                                                                                                                   |
+| RMN Contract (RMNRemote) | CCIP                       | Handles cursing.                                                                                                                                                                                                                                         |
 
 ## Typical Lifecycle of a Message
 
 ### Source Blockchain
 
 1. **Preparation**
-
    - The Sender prepares a CCIP Message for a destination blockchain of choice. A CCIP Message includes the following information:
      - Receiver (EOA or smart contract)
      - Data payload
@@ -60,7 +65,6 @@ The following diagram illustrates the key onchain components:
 1. **Sending**
 
    The Router receives the fee tokens and transfers them to the OnRamp:
-
    - The Router receives the tokens and transfers them to their corresponding Token Pools, which are retrieved from the Token Admin Registry. If the sender has not approved the tokens to the Router, the operation will fail.
    - The Router forwards the CCIP Message to the OnRamp for processing, which:
      - Validates the message by checking parameters, such as the number of tokens, gas limit, and data length.
@@ -70,24 +74,18 @@ The following diagram illustrates the key onchain components:
    - The OnRamp emits a `CCIPMessageSent` event containing the sequenced message. The Committing DON detects this event and processes the Message.
 
 1. **Initial Offchain Processing**
-
    - The CCIP Commit DON monitors for the `CCIPMessageSent` event to process the Message offchain. More details about the offchain processing are available here.
 
 ### Destination Blockchain
 
 1. **Commit Phase**
-
-   - The final OCR report from the Committing DON is recorded onchain in the OffRamp contract via the `commit` function. This OCR report may include a mix of blessed and non-blessed roots and price updates from multiple source chains.
-   - If the OCR report includes **blessed** merkle roots from RMN-enabled source chains, the OffRamp verifies the RMN node signatures onchain via the `RMNRemote` contract.
-   - The OffRamp also validates that all **unblessed** merkle roots originate from the source chains where RMN is disabled.
+   - The final OCR report from the Committing DON is recorded onchain in the OffRamp contract via the `commit` function. This OCR report may include a mix of merkle roots and price updates from multiple source chains.
    - The OffRamp emits a `CommitReportAccepted` event, confirming that a valid commit has been accepted.
 
 1. **Secondary Offchain Processing**
-
    - The CCIP Executing DON monitors for the `CommitReportAccepted` event to identify commit reports with pending executions. All messages associated with these commit reports are collected and a merkle proof is computed for every message ready for execution. The execution plugin considers each message's gas limits and calldata size during the batching process. Note that the message batch executed by the Executing DON may be a subset of a Committing DON batch. The computed merkle proof is then included in the Execute Plugin Report. More details regarding the offchain architecture are available here.
 
 1. **Execution Phase**
-
    - When the execution plugin submits the report, the OffRamp verifies the merkle proofs against the stored merkle roots.
    - The OffRamp performs validations, including ensuring that the source chain is not cursed.
    - If the CCIP Message includes tokens, the OffRamp retrieves the relevant token pool from the Token Admin Registry and calls the Token Pool's `releaseOrMint` function. This function validates token pool rate limits, releases or mints the tokens, and transfers them to the specified receiver.

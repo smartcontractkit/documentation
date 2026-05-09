@@ -1,0 +1,156 @@
+---
+section: dataStreams
+date: Last Modified
+title: "Data Streams Authentication"
+metadata:
+  title: "Data Streams Authentication Guide | Chainlink Documentation"
+  description: "Learn how to authenticate with Chainlink Data Streams APIs using HMAC signatures for both REST API and WebSocket connections with examples in multiple languages."
+  keywords: ["Authentication", "HMAC", "API Key", "API Secret", "Signature", "Security", "Data Streams"]
+whatsnext:
+  {
+    "Learn about the REST API Interface": "/data-streams/reference/data-streams-api/interface-api",
+    "Learn about the WebSocket Interface": "/data-streams/reference/data-streams-api/interface-ws",
+    "Explore the Go SDK": "/data-streams/reference/data-streams-api/go-sdk",
+    "Explore the Rust SDK": "/data-streams/reference/data-streams-api/rust-sdk",
+  }
+isIndex: true
+---
+
+import { Aside, CopyText } from "@components"
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+import { Tabs } from "@components/Tabs"
+
+<DataStreams section="dsNotes" />
+
+This page explains how to authenticate with the Chainlink Data Streams API, covering both REST API and WebSocket connections. It includes detailed information about the required authentication headers, how to generate an HMAC signature, and examples in multiple programming languages.
+
+<Aside type="note" title="Data Streams SDKs">
+  The Data Streams SDKs handle authentication automatically. If you're using the [Go
+  SDK](/data-streams/reference/data-streams-api/go-sdk), [Rust SDK](/data-streams/reference/data-streams-api/rust-sdk),
+  or [TypeScript SDK](/data-streams/reference/data-streams-api/ts-sdk), you don't need to implement the authentication
+  logic manually.
+</Aside>
+
+## Authentication Requirements
+
+All requests to the Data Streams API (both REST and WebSocket) require three authentication headers:
+
+| Header                             | Description                                  |
+| ---------------------------------- | -------------------------------------------- |
+| `Authorization`                    | Your API key (UUID format)                   |
+| `X-Authorization-Timestamp`        | Current timestamp with millisecond precision |
+| `X-Authorization-Signature-SHA256` | HMAC signature generated using SHA-256       |
+
+These headers authenticate your request and ensure data integrity.
+
+### Authorization Header
+
+The `Authorization` header contains your API key, which is provided to you when you sign up for Chainlink Data Streams access. It follows this format:
+
+```
+Authorization: YOUR_API_KEY
+```
+
+Your API key is a UUID string that identifies your account. Keep it secure and do not share it publicly.
+
+### X-Authorization-Timestamp Header
+
+The `X-Authorization-Timestamp` header contains the current timestamp in milliseconds since the Unix epoch (January 1, 1970, 00:00:00 UTC). It follows this format:
+
+```
+X-Authorization-Timestamp: 1716211845123
+```
+
+The timestamp must be within 5 seconds of the server time to prevent replay attacks. This means your system clock must be synchronized with a reliable time source.
+
+### X-Authorization-Signature-SHA256 Header
+
+The `X-Authorization-Signature-SHA256` header contains the HMAC-SHA256 signature of your request. It's created using your API secret (provided along with your API key) and follows this format:
+
+```
+X-Authorization-Signature-SHA256: YOUR_HMAC_SIGNATURE
+```
+
+## Generating the HMAC Signature
+
+To generate the HMAC signature correctly:
+
+1. **Create the string to sign:**
+   - For REST API: Combine the HTTP method, endpoint path with query parameters, body hash, API key, and timestamp
+   - For WebSocket: Same format as REST API requests, using `GET` as the method
+
+1. **Generate the signature:**
+   - Use HMAC-SHA256 algorithm with your API secret as the key
+   - Sign the string created in step 1
+   - Hex encode the resulting binary hash
+
+### String to Sign Format
+
+The string to sign follows this format (for both REST API and WebSocket connections):
+
+```
+METHOD FULL_PATH BODY_HASH API_KEY TIMESTAMP
+```
+
+Where:
+
+- `METHOD`: The HTTP method in uppercase (e.g., `GET`, `POST`) (use `GET` for WebSocket connections)
+- `FULL_PATH`: The endpoint path including query parameters (e.g., `/api/v1/reports/latest?feedID=0x123...`)
+- `BODY_HASH`: SHA-256 hash of the request body, hex encoded (use empty string hash for GET requests or WebSocket connections)
+- `API_KEY`: Your API key (same as in the `Authorization` header)
+- `TIMESTAMP`: The timestamp in milliseconds since the Unix epoch (same as in the `X-Authorization-Timestamp` header)
+
+Note that the elements are joined with a single space character, not newlines.
+
+#### Body Hash Calculation
+
+Even for GET requests and WebSocket connections, you need to include a body hash in the string to sign:
+
+1. Calculate the SHA-256 hash of the request body (for GET requests or WebSocket connections, use an empty string)
+1. Hex encode the resulting hash
+1. Include this hex-encoded hash in the string to sign
+
+## Authentication Examples
+
+Below are complete examples for authenticating with the Data Streams API in various languages. Each example shows how to properly generate the required headers and make a request.
+
+- [JavaScript examples](/data-streams/reference/data-streams-api/authentication/javascript-examples)
+- [TypeScript examples](/data-streams/reference/data-streams-api/authentication/typescript-examples)
+- [Go examples](/data-streams/reference/data-streams-api/authentication/go-examples)
+- [Rust examples](/data-streams/reference/data-streams-api/authentication/rust-examples)
+
+## Common Authentication Errors
+
+When working with the Data Streams API, the most common authentication issues include:
+
+- **Signature Mismatch**: The HMAC signature generated by your client doesn't match what the server expects, often due to incorrect string-to-sign format or hash encoding
+- **Timestamp Issues**: Your system time isn't synchronized with the server (must be within 5 seconds)
+- **Missing or Malformed Headers**: Required authentication headers are missing or have incorrect format
+- **Insufficient Permissions**: Your API key doesn't have access to the requested feed ID
+
+For complete information on all possible error responses:
+
+- [REST API Error Response Codes](/data-streams/reference/data-streams-api/interface-api#error-response-codes)
+- [WebSocket Error Response Codes](/data-streams/reference/data-streams-api/interface-ws#error-response-codes)
+
+## Troubleshooting Authentication
+
+If you're experiencing authentication issues, follow these steps:
+
+1. **Check your API credentials**:
+   - Verify you're using the correct API key and secret
+   - Ensure there are no extra spaces or special characters
+
+1. **Verify timestamp synchronization**:
+   - Check if your system clock is accurate
+   - Consider using Network Time Protocol (NTP) to synchronize your clock
+
+1. **Inspect your signature calculation**:
+   - Verify the string to sign follows the exact format shown above
+   - Check that you're using HMAC-SHA256 (not just SHA-256)
+   - Ensure you're hex encoding the binary hash output (not Base64)
+
+1. **Debug output**:
+   - Print out the exact string being signed (without the API secret)
+   - Compare timestamps between your system and a reliable time source
+   - Check if all required headers are correctly formatted

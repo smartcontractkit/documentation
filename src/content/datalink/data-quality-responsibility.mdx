@@ -1,0 +1,56 @@
+---
+section: dataLink
+date: Last Modified
+title: Data Quality, Responsibility & Trust Model
+metadata:
+  title: "DataLink Quality, Responsibility & Trust Model"
+  description: "Understand the data quality responsibility model for DataLink and its implications."
+whatsnext:
+  {
+    "View the Provider Catalog": "/datalink/provider-catalog",
+    "Learn about DataLink architecture (pull-based delivery)": "/datalink/pull-delivery/architecture",
+    "Learn how to integrate DataLink (pull-based delivery)": "/datalink/pull-delivery/overview",
+    "Learn how to integrate DataLink (push-based delivery)": "/datalink/push-delivery/overview",
+  }
+---
+
+import { Aside } from "@components"
+
+DataLink provides infrastructure for data providers to make their data available onchain. The majority of DataLink feeds use a single-source model where each feed provides data from one specific provider. This page explains the single-source model, the role of the Data Provider, and the resulting implications for integrating protocols.
+
+<Aside type="note" title="Scope of This Page">
+  This page specifically addresses **single-source DataLink feeds**. If you're integrating with a DataLink feed that
+  aggregates data from multiple providers, the data quality and responsibility model may differ from what's described
+  here.
+</Aside>
+
+## Single-Source Data vs. Aggregated Data
+
+A key distinction of DataLink compared to Chainlink Data Feeds or Data Streams is its single-source nature. While Data Feeds and Data Streams commonly aggregate data from multiple sources to create a robust market-wide price, DataLink feeds provide access to bespoke and proprietary data from one specific provider.
+
+This single-source model enables access to specialized and unique datasets but introduces different trust assumptions and risk considerations.
+
+## Key Differences Summarized
+
+While DataLink leverages the same underlying [Chainlink Data Streams](/data-streams/) infrastructure for secure data _transport_ and report signing, the responsibility model differs for single-source feeds:
+
+| Aspect               | Chainlink Data Feeds / Streams (Aggregated)                                                                                          | Single-Source DataLink feeds                                                                                                                                                                        |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Data Quality**     | Chainlink contributes to quality via multi-source aggregation and monitoring.                                                        | **The Data Provider is solely responsible for ensuring data quality.**                                                                                                                              |
+| **Data Sources**     | Multiple vetted data sources aggregated by Chainlink DONs.                                                                           | A **single proprietary source** managed by the Data Provider. This means no inherent Data Provider redundancy; if the Data Provider experiences an outage, data flow for that specific feed ceases. |
+| **Chainlink's Role** | Data aggregation, quality monitoring, outlier detection, secure transport, report signing, infrastructure reliability, and delivery. | Secure transport, report signing, and infrastructure reliability. **No validation of source data quality**.                                                                                         |
+| **Trust Assumption** | Chainlink's data aggregation methodology and infrastructure security.                                                                | The **specific Data Provider's methodology and reliability**, plus Chainlink's infrastructure security.                                                                                             |
+| **Support**          | Chainlink Labs provides support for feed issues.                                                                                     | **Data Provider handles all data-related support.**                                                                                                                                                 |
+
+## Protocol Responsibilities & Risk Management
+
+Given the provider-centric responsibility model and single-source nature of most DataLink feeds, protocols integrating these feeds must take extra precautions:
+
+1. **Perform Due Diligence**: Thoroughly vet the specific Data Provider. Understand their data sourcing, calculation methodologies, historical performance, SLAs, and support processes before integration. Assess if their data quality meets your application's specific use case in terms of risk tolerance.
+1. **Implement Fallback Mechanisms**: Design robust contingency plans and fallback logic within your application to handle potential inaccuracies, delays, or outages from the single-source DataLink feed. Do not rely solely on one DataLink feed for critical functions without backups.
+1. **Monitor Data Quality**: Actively monitor the performance and quality of the integrated DataLink feeds. Compare against other sources if possible.
+1. **Understand Risks**: Acknowledge that using single-source data carries inherent risks compared to aggregated data. Ensure your users are aware of these risks if applicable.
+
+End users interact with protocols utilizing DataLink at their own risk regarding the quality and reliability of the underlying data provided by the third-party Data Provider. DataLink is offered "as is" and "as available" without conditions or warranties of any kind. Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs from DataLink due to issues in your code, an issue related to any of the issues described in the table set forth above, or downstream issues with API dependencies.
+
+By using DataLink, you gain access to valuable specialized data, but you must actively manage the associated risks and understand the trust assumptions involved.

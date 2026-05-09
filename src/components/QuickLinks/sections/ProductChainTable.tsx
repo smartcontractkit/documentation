@@ -162,8 +162,10 @@ const ProductChainTable = () => (
                       handleLinkClick("LINK Token Contracts", chainNames[chainId] || chainId, e.currentTarget.href)
                     }
                   >
-                    <img src={LINKTokenIcon.src} alt="LINK Token Contracts" className={styles.linkTokenIcon} />
-                    <img src={LinkIcon.src} alt="More info" className={styles.linkIcon} />
+                    <div className={styles.supportedContainer}>
+                      <img src={LINKTokenIcon.src} alt="LINK Token Contracts" className={styles.linkTokenIcon} />
+                      <img src={LinkIcon.src} alt="More info" className={styles.linkIcon} />
+                    </div>
                   </a>
                 )}
               </td>

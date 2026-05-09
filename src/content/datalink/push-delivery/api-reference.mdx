@@ -1,0 +1,117 @@
+---
+section: dataLink
+date: Last Modified
+title: "Push-Based Feeds API Reference"
+metadata:
+  title: "DataLink Push-Based Feeds API Reference"
+  description: "Smart contract interfaces and functions for integrating DataLink push-based feeds on EVM-compatible blockchains."
+---
+
+import { Aside, Icon } from "@components"
+
+When you use DataLink feeds, retrieve the feeds through the `AggregatorV3Interface` and the proxy address.
+
+## AggregatorV3Interface
+
+Import this interface to your contract and use it to run functions in the proxy contract. Create the interface object by pointing to the proxy address. For example, you could create the interface object in the constructor of your contract:
+
+{/* prettier-ignore */}
+```solidity
+constructor() {
+  dataLinkFeed = AggregatorV3Interface(<PROXY_CONTRACT_ADDRESS>);
+}
+```
+
+To see examples for how to use this interface, read the [Using DataLink Feeds](/datalink/push-delivery/tutorials/using-datalink-feeds) guide.
+
+You can see the code for the [`AggregatorV3Interface` contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol) on GitHub.
+
+### Functions in AggregatorV3Interface
+
+| Name                                | Description                                                          |
+| ----------------------------------- | -------------------------------------------------------------------- |
+| [decimals](#decimals)               | The number of decimals in the response.                              |
+| [description](#description)         | The description of the aggregator that the proxy points to.          |
+| [getRoundData](#getrounddata)       | Get data from a specific round.                                      |
+| [latestRoundData](#latestrounddata) | Get data from the latest round.                                      |
+| [version](#version)                 | The version representing the type of aggregator the proxy points to. |
+
+#### decimals
+
+Get the number of decimals present in the response value.
+
+{/* prettier-ignore */}
+```solidity
+function decimals() external view returns (uint8);
+```
+
+- `RETURN`: The number of decimals.
+
+#### description
+
+Get the description of the underlying aggregator that the proxy points to.
+
+{/* prettier-ignore */}
+```solidity
+function description() external view returns (string memory);
+```
+
+- `RETURN`: The description of the underlying aggregator.
+
+#### getRoundData
+
+Get data about a specific round, using the `roundId`.
+
+{/* prettier-ignore */}
+```solidity
+function getRoundData(
+  uint80 _roundId
+) external view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound);
+```
+
+**Parameters:**
+
+- `_roundId`: The round ID
+
+**Return values:**
+
+- `roundId`: The round ID
+- `answer`: The answer for this round
+- `startedAt`: Timestamp of when the round started
+- `updatedAt`: Timestamp of when the round was updated
+- `answeredInRound`: <Icon type="deprecated" /> Deprecated - Previously used when answers could take multiple rounds to be computed
+
+#### latestRoundData
+
+Get the data from the latest round.
+
+{/* prettier-ignore */}
+```solidity
+function latestRoundData() external view
+    returns (
+        uint80 roundId,
+        int256 answer,
+        uint256 startedAt,
+        uint256 updatedAt,
+        uint80 answeredInRound
+    )
+```
+
+**Return values:**
+
+- `roundId`: The round ID.
+- `answer`: The data that this specific feed provides. Depending on the feed you selected, this answer provides asset prices, reserves, and other types of data.
+- `startedAt`: Timestamp of when the round started.
+- `updatedAt`: Timestamp of when the round was updated.
+- `answeredInRound`: <Icon type="deprecated" /> Deprecated - Previously used when answers could take multiple rounds to be computed
+
+#### version
+
+The version representing the type of aggregator the proxy points to.
+
+{/* prettier-ignore */}
+```solidity
+function version() external view returns (uint256)
+```
+
+- `RETURN`: The version number.

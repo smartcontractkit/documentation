@@ -33,6 +33,7 @@ interface TableProps {
     }
     key: string
     directory: SupportedChain
+    chainType?: ChainType
   }[]
   explorer: ExplorerInfo
 }
@@ -108,6 +109,7 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
                   "OffRamp address"
                 )}
               </th>
+              <th>Version</th>
             </tr>
           </thead>
           <tbody>
@@ -117,9 +119,9 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
               .map((network, index) => (
                 <tr key={index}>
                   <td>
-                    <div
+                    <button
+                      type="button"
                       className="ccip-table__network-name"
-                      role="button"
                       onClick={() => {
                         const laneData = getLane({
                           sourceChain: sourceNetwork.key as SupportedChain,
@@ -143,10 +145,11 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
                           />
                         ))
                       }}
+                      aria-label={`View lane details for ${network.name}`}
                     >
-                      <img src={network.logo} alt={network.name} className="ccip-table__logo" />
+                      <img src={network.logo} alt={`${network.name} blockchain logo`} className="ccip-table__logo" />
                       {network.name}
-                    </div>
+                    </button>
                   </td>
                   <td
                     style={{ textAlign: "right" }}
@@ -155,11 +158,15 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
                     <Address
                       address={inOutbound === LaneFilter.Outbound ? network.onRamp?.address : network.offRamp?.address}
                       endLength={4}
-                      contractUrl={getExplorerAddressUrl(explorer)(
+                      contractUrl={getExplorerAddressUrl(
+                        explorer,
+                        inOutbound === LaneFilter.Outbound ? sourceNetwork.chainType : network.chainType
+                      )(
                         (inOutbound === LaneFilter.Outbound ? network.onRamp?.address : network.offRamp?.address) || ""
                       )}
                     />
                   </td>
+                  <td>{inOutbound === LaneFilter.Outbound ? network.onRamp?.version : network.offRamp?.version}</td>
                 </tr>
               ))}
           </tbody>

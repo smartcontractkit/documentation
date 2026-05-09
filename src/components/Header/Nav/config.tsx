@@ -1,3 +1,5 @@
+import type { ChainType } from "~/config/types.js"
+
 type LinksConfig = {
   docs?: boolean
   githubUrl?: string
@@ -7,6 +9,9 @@ type LinksConfig = {
 export type Page = {
   label: string
   href: string
+  sdkLang?: string
+  chainTypes?: ChainType[]
+  highlightAsCurrent?: string[]
   children?: Page[]
 }
 

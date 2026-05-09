@@ -12,6 +12,12 @@ import styles from "./productNavigation.module.css"
 import { getNavigationProps } from "../../Header/getNavigationProps.ts"
 import defaultLogo from "../../../assets/product-logos/default-logo.svg"
 
+declare global {
+  interface Window {
+    __PAGE_SDK_LANG_MAP__?: Record<string, string>
+  }
+}
+
 type Props = {
   path: string
 }
@@ -21,6 +27,17 @@ const Close = extendRadixComponent(Dialog.Close)
 const Portal = extendRadixComponent(Dialog.Portal)
 const Root = extendRadixComponent(Dialog.Root)
 
+// Call getNavigationProps once at module level
+// Get SDK lang data from window (injected by Header.astro)
+const getPageSdkLangMap = (): Map<string, string> => {
+  if (typeof window !== "undefined" && window.__PAGE_SDK_LANG_MAP__) {
+    return new Map(Object.entries(window.__PAGE_SDK_LANG_MAP__))
+  }
+  return new Map()
+}
+
+const navigationPropsStatic = getNavigationProps(getPageSdkLangMap())
+
 export function ProductNavigation({ path }: Props) {
   const [open, setOpen] = React.useState(false)
   const [subProducts, setSubProducts] = React.useState<SubProducts | undefined>(undefined)
@@ -28,7 +45,8 @@ export function ProductNavigation({ path }: Props) {
   const [productsSlidePosition, setProductsSlidePosition] = React.useState<"main" | "submenu">("main")
   const closeButtonRef = React.useRef(null)
 
-  const { productsNav, subProductsNav } = getNavigationProps()
+  // Use the static navigation props
+  const { productsNav, subProductsNav } = navigationPropsStatic
 
   const subProductTrigger = subProductsNav?.find(({ href }) => isMatchedPath(path, href))
 
@@ -47,11 +65,7 @@ export function ProductNavigation({ path }: Props) {
         const items = subProduct.subProducts.map((subProductItem) => ({
           label: subProductItem.label,
           href: "#",
-          pages: subProductItem.items.map((page) => ({
-            label: page.label,
-            href: page.href,
-            children: page.children || [],
-          })),
+          pages: subProductItem.items,
         }))
 
         const safeSubProducts: SubProducts = {
@@ -125,8 +139,9 @@ export function ProductNavigation({ path }: Props) {
           <Close
             ref={closeButtonRef}
             className={clsx(styles.closeButton, { [styles.hidden]: productsSlidePosition === "submenu" })}
+            aria-label="Close navigation"
           >
-            <img src="/assets/icons/close-small.svg" />
+            <img src="/assets/icons/close-small.svg" alt="" />
           </Close>
           <BottomBar />
         </Dialog.Content>

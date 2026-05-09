@@ -25,6 +25,27 @@ npm install && npm run dev
 
 - All docs are markdown and stored in `/src/content`.
 - Navigation is JSON in `/src/config/sidebar.ts`
+- SEO metadata implementation: See [SEO Metadata Guide](SEO_METADATA_GUIDE.md) for technical writers
+
+### Version Overrides for Solidity Samples
+
+To use different package versions for specific sample files (e.g., for tutorials requiring specific versions), edit `version-overrides.json`:
+
+```json
+{
+  "overrides": [
+    {
+      "file": "samples/CCIP/example.sol",
+      "reason": "Tutorial requires specific version",
+      "versions": {
+        "@chainlink/contracts": "1.5.0"
+      }
+    }
+  ]
+}
+```
+
+See TypeScript types in `src/scripts/helper/pin-solver-dist.ts` for structure.
 
 ## Deploy Preview
 

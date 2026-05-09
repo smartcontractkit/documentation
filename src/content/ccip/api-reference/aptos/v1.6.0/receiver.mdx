@@ -1,0 +1,141 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.6.0 Aptos Receiver API Reference"
+metadata:
+  description: "API documentation for implementing CCIP receivers on the Aptos blockchain."
+---
+
+import { Aside, ClickToZoom } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## Receiver
+
+Below is a complete API reference for the `ccip_receive` function that must be implemented by any Aptos Move module wishing to receive CCIP messages.
+
+### `ccip_receive`
+
+This function is the required entry point for a module to be a valid CCIP receiver. It is not a standard `entry` function called directly by users. Instead, it is triggered as a secure callback by the CCIP `Receiver Dispatcher` through the `dispatchable_fungible_asset` standard.
+
+```rust
+// As implemented in the ccip_message_receiver example
+public fun ccip_receive<T: key>(
+    _metadata: Object<T>
+): Option<u128> acquires YourModuleState
+```
+
+#### Parameters
+
+| Name                     | Type                     | Description                                                                                                                                                                            |
+| ------------------------ | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <nobr>`_metadata`</nobr> | <nobr>`Object<T>`</nobr> | A generic object provided by the `dispatchable_fungible_asset` callback mechanism. It is not directly used, but is a required part of the function signature for the callback to work. |
+
+#### Returns
+
+| Name                     | Type                        | Description                                                                               |
+| ------------------------ | --------------------------- | ----------------------------------------------------------------------------------------- |
+| <nobr>`(unnamed)`</nobr> | <nobr>`Option<u128>`</nobr> | The function must return `option::none()` to conform to the dispatchable asset interface. |
+
+#### Execution Flow (The Secure Callback Pattern)
+
+1.  The CCIP **OffRamp** calls the **Receiver Dispatcher**.
+2.  The **Receiver Dispatcher** securely stores the incoming `Any2AptosMessage` payload in the **Receiver Registry**.
+3.  The **Receiver Dispatcher** then triggers a `derived_supply` call on a dummy fungible asset that was registered for your receiver module.
+4.  This `derived_supply` call invokes your module's `ccip_receive` function as the registered callback.
+5.  Your `ccip_receive` implementation **must** then immediately call `receiver_registry::get_receiver_input` to securely fetch the message payload that was stored for it.
+
+#### Implementation Requirements
+
+1.  **Module Registration**: Your module must be registered as a valid receiver by calling `receiver_registry::register_receiver`. This is typically done once during your module's initialization and requires defining a unique, empty `ProofType` struct.
+
+2.  **Account Type**:
+    - If your module will handle tokens, it **must** be deployed to a **Resource Account**.
+    - If your module is data-only, it can be deployed to a regular user account or a code object account.
+
+3.  **Security Validations**: Your `ccip_receive` function is responsible for application-level security checks, such as verifying the `source_chain_selector` and `sender` from the fetched message against an allowlist.
+
+---
+
+## Example
+
+Below is a minimal implementation of a `ccip_receive` function, based on the `ccip_message_receiver` module as given in the [Aptos Starter Kit](https://github.com/smartcontractkit/aptos-starter-kit):
+
+```rust
+// In your custom receiver module
+// 1. Define a unique, empty proof struct
+struct CCIPReceiverProof has drop {}
+
+// 2. Implement the ccip_receive function with the correct signature
+public fun ccip_receive<T: key>(
+    _metadata: Object<T>
+): Option<u128> acquires CCIPReceiverState {
+    // 3. Load state and create a signer for the module's resource account
+    let state = borrow_global_mut<CCIPReceiverState>(@receiver);
+    let state_signer = account::create_signer_with_capability(&state.signer_cap);
+
+    // 4. Fetch the message payload from the registry using your proof type
+    let message = receiver_registry::get_receiver_input(
+        @receiver, CCIPReceiverProof {}
+    );
+
+    // 5. Process the message...
+    let data = client::get_data(&message);
+    if (data.length() != 0) {
+        // Your logic here
+    }
+
+    option::none()
+}
+```
+
+---
+
+## Token Handling
+
+When your receiver module is the destination for a token transfer, the CCIP Off-Ramp automatically deposits the assets into your module account's primary fungible store before your `ccip_receive` function is called.
+
+### Using Received Tokens
+
+To access and manage these tokens (e.g., to forward them to another user), your module must use the `SignerCapability` stored in its resource. This capability allows the module to generate a `signer` for itself and authorize outgoing transfers.
+
+```rust
+// Example logic inside ccip_receive to forward tokens
+// Assumes `CCIPReceiverState` resource holds the `signer_cap`
+
+public fun forward_tokens(
+    state_signer: &signer, // The signer generated from the SignerCapability
+    token_address: address,
+    amount: u64,
+    final_recipient: address
+) {
+    let fa_metadata = object::address_to_object<Metadata>(token_address);
+
+    // Get the store for the receiver module itself
+    let receiver_store = primary_fungible_store::ensure_primary_store_exists(
+        signer::address_of(state_signer),
+        fa_metadata
+    );
+
+    // Get the store for the final recipient
+    let final_recipient_store = primary_fungible_store::ensure_primary_store_exists(
+        final_recipient,
+        fa_metadata
+    );
+
+    // Authorize the transfer using the module's own signer
+    fungible_asset::transfer(
+        state_signer,
+        receiver_store,
+        final_recipient_store,
+        amount
+    );
+}
+```
+
+<Aside type="caution" title="Security Critical">
+  The security of your CCIP Receiver depends on correctly implementing the patterns described. Always: 1. Use the
+  `receiver_registry::get_receiver_input` pattern to fetch messages. 2. Deploy to a **Resource Account** if your module
+  will ever handle tokens. 3. Implement your own **source chain** and **sender** validation logic inside `ccip_receive`.
+</Aside>
+
+<CcipCommon callout="educationalDisclaimer" />

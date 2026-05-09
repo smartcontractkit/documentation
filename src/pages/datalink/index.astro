@@ -1,0 +1,16 @@
+---
+import DocsLayout from "~/layouts/DocsLayout.astro"
+import { getEntry, render } from "astro:content"
+
+const entry = await getEntry("datalink", "index")
+if (!entry) {
+  throw new Error("No entry found for DataLink index!")
+}
+
+// use the global `render()` function
+const { Content, headings } = await render(entry)
+---
+
+<DocsLayout frontmatter={entry.data} {headings}>
+  <Content />
+</DocsLayout>

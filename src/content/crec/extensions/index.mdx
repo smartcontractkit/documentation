@@ -1,0 +1,46 @@
+---
+section: crec
+title: "Extensions Overview"
+isIndex: true
+date: Last Modified
+metadata:
+  description: "Chainlink CRE Connect extensions package strongly-typed operation builders, decoded event types, and one-call watcher provisioning for specific services like DTA."
+  datePublished: "2026-05-01"
+  lastModified: "2026-05-01"
+---
+
+CRE Connect **extensions** are first-party modules that wrap CRE Connect with service-specific helpers. Each extension provides three things:
+
+1. **An operation builder** that packs calldata for the service's smart contracts so applications don't have to manage the ABI themselves.
+2. **A typed event decoder** so service-specific events arrive as strongly-typed values rather than untyped maps.
+3. **One-call watcher provisioning.** CRE Connect ships pre-packaged watchers for the service so a single call provisions every watcher the service needs.
+
+Extensions are independent modules; applications consume only the ones they need.
+
+## Available extensions
+
+| Extension                                                                           | Use when                                                            |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| **DTA** ([Digital Transfer Agent](https://docs.chain.link/dta-technical-standard/)) | Tokenised funds: subscriptions, redemptions, distributor lifecycle. |
+
+The DTA extension uses **contract versioning** — each deployed contract ABI is exposed as a separate sub-module (`/v1`, `/v2`, …). This versioning matches the on-chain contract ABI version and is independent of the extension's own semantic version. The CRE Connect documentation focuses on the **v2** ABI.
+
+## Why extensions matter
+
+- **No ABI bookkeeping.** Calldata packing happens inside the extension; bumping a contract version is a single dependency upgrade.
+- **Typed events.** Each on-chain event is decoded into a strongly-typed value with named fields, instead of opaque strings or maps.
+- **One-call watcher provisioning.** Naming the extension's service is enough for CRE Connect to set up every watcher the service requires.
+- **Backwards-compatible upgrades.** When an event schema or operation signature changes, the extension version bumps and applications get a compile-time signal rather than silent runtime drift.
+
+## Anatomy of an extension
+
+Every CRE Connect extension exposes the same shape:
+
+- An **operations** surface — one builder per on-chain action the service supports.
+- An **events** surface — one typed value per on-chain event the service emits, plus a single `Decode` helper that dispatches a verifiable event to the matching typed value.
+- A **watcher bundle** — the service descriptor (name plus the set of events it covers) consumed by CRE Connect to provision the service's watchers in one call.
+
+## What's next
+
+- [DTA Overview](/crec/extensions/dta) — the first available CRE Connect extension.
+- [Concepts → Extensions](/crec/concepts/extensions) — design philosophy and how extensions compose with the core product.

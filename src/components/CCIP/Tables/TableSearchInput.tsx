@@ -18,8 +18,25 @@ function TableSearchInput({ search, setSearch }: TableSearchInputProps) {
   })
 
   return (
-    <div className="tableSearchInput" onClick={() => setIsExpanded(true)} ref={searchRef}>
-      <img src="/assets/icons/search.svg" alt="" />
+    <div
+      className="tableSearchInput"
+      onClick={() => !isExpanded && setIsExpanded(true)}
+      ref={searchRef}
+      role={!isExpanded ? "button" : undefined}
+      aria-label={!isExpanded ? "Open search" : undefined}
+      tabIndex={!isExpanded ? 0 : -1}
+      onKeyDown={
+        !isExpanded
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault()
+                setIsExpanded(true)
+              }
+            }
+          : undefined
+      }
+    >
+      <img src="/assets/icons/search.svg" alt="Search icon" />
       {isExpanded ? (
         <input
           type="search"
@@ -27,6 +44,7 @@ function TableSearchInput({ search, setSearch }: TableSearchInputProps) {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           autoFocus
+          aria-label="Search table"
         />
       ) : null}
     </div>

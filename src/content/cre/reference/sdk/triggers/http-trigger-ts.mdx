@@ -1,0 +1,210 @@
+---
+section: cre
+title: "SDK Reference: HTTP Trigger"
+date: Last Modified
+sdkLang: "ts"
+pageId: "reference-sdk-http-trigger"
+metadata:
+  description: "Reference for TypeScript HTTP Trigger: Config interface, Payload fields, and authorization setup for request-based workflows."
+  datePublished: "2025-11-04"
+  lastModified: "2026-01-20"
+---
+
+import { Aside } from "@components"
+
+The HTTP Trigger fires when an HTTP request is made to the workflow's designated endpoint. This allows you to start workflows from external systems.
+
+## Creating the trigger
+
+```typescript
+import { HTTPCapability } from "@chainlink/cre-sdk"
+
+const http = new HTTPCapability()
+
+// Basic trigger (no authorization)
+const trigger = http.trigger({})
+
+// Or with authorized keys for signature validation
+const trigger = http.trigger({
+  authorizedKeys: [
+    {
+      type: "KEY_TYPE_ECDSA_EVM",
+      publicKey: "0x...",
+    },
+  ],
+})
+```
+
+## Configuration
+
+The `trigger()` method accepts a configuration object with the following field:
+
+| <div style="width: 120px;">Field</div> | <div style="width: 160px;">Type</div> | Description                                                                                       |
+| -------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `authorizedKeys`                       | `AuthorizedKey[]`                     | **Required for deployment.** A list of EVM addresses authorized to trigger the workflow via HTTP. |
+
+### `AuthorizedKey`
+
+Defines an EVM address authorized to trigger the workflow.
+
+| <div style="width: 100px;">Field</div> | <div style="width: 100px;">Type</div> | Description                                                                                                |
+| -------------------------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `type`                                 | `string`                              | The type of the key. Must be `"KEY_TYPE_ECDSA_EVM"` (currently the only supported authentication method).  |
+| `publicKey`                            | `string`                              | An EVM address (e.g., `"0xb08E004bd2b5aFf1F5F950d141f449B1c05800eb"`) authorized to trigger this workflow. |
+
+**Example:**
+
+```typescript
+const config = {
+  authorizedKeys: [
+    {
+      type: "KEY_TYPE_ECDSA_EVM",
+      publicKey: "0xb08E004bd2b5aFf1F5F950d141f449B1c05800eb",
+    },
+  ],
+}
+```
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Authorization required for deployment">
+  When you deploy your workflow, you **must** include `authorizedKeys` in your HTTP trigger configuration. An empty configuration object `{}` is only valid for local simulation with `cre workflow simulate`—deployed workflows will reject HTTP triggers without authorization keys.
+</Aside>
+
+## Payload
+
+The payload passed to your callback function contains the HTTP request data.
+
+| <div style="width: 100px;">Field</div> | <div style="width: 100px;">Type</div> | Description                                                                    |
+| -------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------ |
+| `input`                                | `Uint8Array`                          | The JSON input from the HTTP request body as raw bytes.                        |
+| `key`                                  | `AuthorizedKey` (optional)            | The EVM address that signed the request (matches one of the `authorizedKeys`). |
+
+**Working with the `input` field:**
+
+The `input` field is a `Uint8Array` containing the raw bytes of the HTTP request body. The SDK provides a `decodeJson` helper to parse it:
+
+```typescript
+import { decodeJson } from "@chainlink/cre-sdk"
+
+// Parse as JSON (recommended)
+const inputData = decodeJson(payload.input)
+
+// Or convert to string manually
+const inputString = payload.input.toString()
+
+// Or parse manually
+const inputJson = JSON.parse(payload.input.toString())
+```
+
+<Aside type="note" title="Using decodeJson">
+  The `decodeJson` helper uses `TextDecoder` for proper UTF-8 decoding and is the recommended way to parse JSON from
+  HTTP payloads.
+</Aside>
+
+## Callback Function
+
+Your callback function for HTTP triggers must conform to this signature:
+
+```typescript
+import { type Runtime, type HTTPPayload } from "@chainlink/cre-sdk"
+
+const onHttpTrigger = (runtime: Runtime<Config>, payload: HTTPPayload): YourReturnType => {
+  // Your workflow logic here
+  return result
+}
+```
+
+**Parameters:**
+
+- `runtime`: The runtime object used to invoke capabilities and access configuration
+- `payload`: The HTTP payload containing the request input and signing key
+
+**Example:**
+
+```typescript
+import { decodeJson, type Runtime, type HTTPPayload } from "@chainlink/cre-sdk"
+
+type Config = {
+  apiUrl: string
+}
+
+const onHttpTrigger = (runtime: Runtime<Config>, payload: HTTPPayload): string => {
+  // Check if there's input data
+  if (!payload.input || payload.input.length === 0) {
+    runtime.log("HTTP trigger payload is empty")
+    return "No input provided"
+  }
+
+  // Parse the input as JSON
+  try {
+    const inputData = decodeJson(payload.input)
+    runtime.log(`Received HTTP trigger: ${JSON.stringify(inputData)}`)
+
+    // Access parsed data
+    runtime.log(`Processing request with key: ${inputData.key}`)
+  } catch (error) {
+    runtime.log("Failed to parse input as JSON")
+    return "Invalid JSON input"
+  }
+
+  return "Success"
+}
+```
+
+## Complete Example
+
+```typescript
+import { HTTPCapability, handler, decodeJson, Runner, type Runtime, type HTTPPayload } from "@chainlink/cre-sdk"
+
+type Config = {
+  publicKey: string
+}
+
+const onHttpTrigger = (runtime: Runtime<Config>, payload: HTTPPayload): string => {
+  if (!payload.input || payload.input.length === 0) {
+    return "Empty request"
+  }
+
+  const inputData = decodeJson(payload.input)
+  runtime.log(`Processing HTTP request: ${JSON.stringify(inputData)}`)
+
+  return "Request processed successfully"
+}
+
+const initWorkflow = (config: Config) => {
+  const http = new HTTPCapability()
+
+  return [
+    handler(
+      http.trigger({
+        authorizedKeys: [
+          {
+            type: "KEY_TYPE_ECDSA_EVM",
+            publicKey: config.publicKey,
+          },
+        ],
+      }),
+      onHttpTrigger
+    ),
+  ]
+}
+
+export async function main() {
+  const runner = await Runner.newRunner<Config>()
+  await runner.run(initWorkflow)
+}
+```
+
+## Testing HTTP Triggers
+
+When simulating workflows with HTTP triggers, the CLI will prompt you to provide JSON input:
+
+```bash
+$ cre workflow simulate my-workflow --target local-simulation
+
+# Select the HTTP trigger when prompted
+# Then enter your JSON input:
+{"key": "value", "number": 123}
+```
+
+The input you provide will be converted to bytes and passed to your callback function as `payload.input`.

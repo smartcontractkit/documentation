@@ -1,0 +1,576 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "Using MVR Feeds with Viem (TS)"
+whatsnext:
+  {
+    "Learn more about the MVR Feeds": "/data-feeds/mvr-feeds",
+    "Find contract addresses and data structure for MVR Feeds": "/data-feeds/smartdata/addresses",
+    "MVR Feeds API Reference": "/data-feeds/mvr-feeds/api-reference",
+  }
+---
+
+import { Aside } from "@components"
+import { Tabs } from "@components/Tabs"
+
+This guide explains how to use [Multiple-Variable Response (MVR) feeds](/data-feeds/mvr-feeds) in your TypeScript applications using the [viem](https://viem.sh/) library.
+
+MVR feeds store multiple data points in a single byte array onchain. To consume this data in your TypeScript application:
+
+1. **Obtain the proxy address and data structure**:
+   - Find the `BundleAggregatorProxy` address for the specific MVR feed you want to read on the [SmartData Addresses](/data-feeds/smartdata/addresses?page=1#networks) page
+   - Expand the "MVR Bundle Info" section to see the exact data structure, field types, and decimals
+   - Note these details as you'll need to match this structure exactly in your TypeScript interfaces
+1. **Set up viem**: Create a client and contract instance to interact with the feed.
+1. **Check data staleness**: Compare the feed's latest timestamp against current time to verify it hasn't exceeded your maximum acceptable staleness threshold.
+1. **Fetch and decode the data**: Retrieve the feed's latest bundle and decode the bytes array.
+1. **Apply decimals**: Scale numeric values to their true decimal representation for accurate calculations and display.
+1. **Use in your application**: Process or display the decoded values.
+
+<Aside type="caution" title="Disclaimer">
+  This guide represents an example of using a Chainlink product or service and is provided to help you understand how to
+  interact with Chainlink's systems and services so that you can integrate them into your own. This template is provided
+  "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key checks or
+  error handling to make the usage of the product more clear. Do not use the code in this example in a production
+  environment without completing your own audits and application of best practices. Neither Chainlink Labs, the
+  Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due to
+  errors in code.
+</Aside>
+
+## Prerequisites
+
+- [Node.js](https://nodejs.org/en/download/) environment (Node.js >=16.x recommended)
+- [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) or [yarn](https://yarnpkg.com/getting-started) installed
+- [viem](https://viem.sh/) library installed:
+
+  ```shell
+  npm install viem
+  ```
+
+  or
+
+  ```shell
+  yarn add viem
+  ```
+
+- For TypeScript projects that use Node.js environment variables (`process.env`):
+
+  ```shell
+  npm install --save-dev @types/node
+  ```
+
+  or
+
+  ```shell
+  yarn add --dev @types/node
+  ```
+
+- An RPC URL for the network where the MVR feed is deployed. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/) or [Infura](https://infura.io/).
+
+- Set up environment variables:
+
+  ```shell
+  npm install dotenv
+  ```
+
+  or
+
+  ```shell
+  yarn add dotenv
+  ```
+
+## Step-by-Step Implementation
+
+### 1. Define the BundleAggregatorProxy ABI
+
+First, define the ABI for the `BundleAggregatorProxy` contract:
+
+```typescript
+import { createPublicClient, http, parseAbiItem, type PublicClient } from "viem"
+import { mainnet } from "viem/chains" // Import your target chain
+
+// Define the ABI for the BundleAggregatorProxy
+const bundleAggregatorProxyABI = [
+  parseAbiItem("function latestBundle() external view returns (bytes)"),
+  parseAbiItem("function bundleDecimals() external view returns (uint8[])"),
+  parseAbiItem("function latestBundleTimestamp() external view returns (uint256)"),
+] as const
+```
+
+### 2. Set Up the Client and Contract
+
+<Aside type="note" title="Viem Supported Chains">
+  For a complete list of supported chains in Viem, refer to the [Viem Chains
+  Reference](https://github.com/wevm/viem/blob/main/src/chains/index.ts) on GitHub.
+</Aside>
+
+Connect to a blockchain provider and create the contract instance:
+
+```typescript
+// Load environment variables (in Node.js)
+import "dotenv/config"
+
+// Get RPC URL from environment variables
+const rpcUrl = process.env.RPC_URL
+if (!rpcUrl) {
+  throw new Error("RPC_URL not found in environment variables")
+}
+
+// Connect to a client securely
+const client = createPublicClient({
+  chain: mainnet, // Replace with your target chain
+  transport: http(rpcUrl),
+})
+
+// MVR Feed proxy address - replace with the actual address for your feed
+const proxyAddress = (process.env.MVR_FEED_ADDRESS as `0x${string}`) || ("0x..." as `0x${string}`)
+```
+
+Create a `.env` file in your project root (and add it to `.gitignore`):
+
+```
+# .env
+RPC_URL=<your-rpc-url>
+MVR_FEED_ADDRESS=<your-feed-address>
+```
+
+### 3. Define Type-Safe Data Structures
+
+<Aside type="note" title="MVR Feed-Specific Data Structure">
+  Find the exact data structure for your specific MVR feed on the [SmartData
+  Addresses](/data-feeds/smartdata/addresses?page=1#networks) page. Click on the feed entry and expand the "MVR Bundle
+  Info" section to see all fields, their types, and decimals.
+</Aside>
+
+Define a TypeScript interface that corresponds to your feed's data structure:
+
+```typescript
+import { createPublicClient, http, parseAbiItem, formatUnits, decodeAbiParameters, type PublicClient } from "viem"
+import { mainnet } from "viem/chains"
+import "dotenv/config"
+
+// Interface for formatted data with appropriate types
+interface FormattedResult {
+  [key: string]:
+    | {
+        raw?: bigint
+        formatted: string
+        decimals?: number
+      }
+    | boolean
+}
+```
+
+### 4. Create Functions to Check Staleness
+
+Before using the data, check its timestamp to ensure it's not stale:
+
+```typescript
+async function checkDataStaleness(
+  client: PublicClient,
+  proxyAddress: `0x${string}`,
+  stalenessThreshold: number = 86400 // 24 hours in seconds by default
+): Promise<boolean> {
+  // Get the latest timestamp
+  const lastUpdateTime = (await client.readContract({
+    address: proxyAddress,
+    abi: bundleAggregatorProxyABI,
+    functionName: "latestBundleTimestamp",
+  })) as bigint
+
+  const timestamp = Number(lastUpdateTime)
+  const now = Math.floor(Date.now() / 1000)
+
+  if (now - timestamp > stalenessThreshold) {
+    throw new Error(`Data is stale. Last update was ${now - timestamp} seconds ago.`)
+  }
+
+  return true
+}
+```
+
+**Important**: Don't use arbitrary values for staleness thresholds. The appropriate threshold should be determined by:
+
+1. Find the feed's **heartbeat interval** on the [SmartData Addresses](/data-feeds/smartdata/addresses?page=1#networks) page (click "Show more details")
+1. Set a threshold that aligns with this interval, usually the heartbeat plus a small buffer
+1. Consider your specific use case requirements
+
+### 5. Fetch and Decode the Bundle Data
+
+<Aside type="note" title="MVR Feed-Specific Data Structure">
+  Find the exact data structure for your specific MVR feed on the [SmartData
+  Addresses](/data-feeds/smartdata/addresses?page=1#networks) page. Click on the feed entry and expand the "MVR Bundle
+  Info" section to see all fields, their types, and decimals.
+</Aside>
+
+```typescript
+// Define types array for decoding
+// This MUST match the feed's exact structure
+const dataTypes = ["uint256", "uint256", "uint256", "uint256", "bool"] as const
+
+// TypeScript type for the decoded tuple
+type DecodedData = [bigint, bigint, bigint, bigint, boolean]
+
+const fieldNames = [
+  "netAssetValue",
+  "assetsUnderManagement",
+  "outstandingShares",
+  "netIncomeExpenses",
+  "openToNewInvestors",
+] as const
+
+async function getRawData(
+  client: PublicClient,
+  proxyAddress: `0x${string}`
+): Promise<Record<string, bigint | boolean>> {
+  // Check data staleness first
+  await checkDataStaleness(client, proxyAddress)
+
+  try {
+    // Get raw bundle data
+    const bundleBytes = (await client.readContract({
+      address: proxyAddress,
+      abi: bundleAggregatorProxyABI,
+      functionName: "latestBundle",
+    })) as `0x${string}`
+
+    // Define parameter structure for decoding
+    // This describes the data types we expect to decode from the bytes
+    const parameterStructure = dataTypes.map((type) => ({ type }))
+
+    // Decode the bytes into an array of values
+    const decodedValues = decodeAbiParameters(parameterStructure, bundleBytes)
+
+    // Map array values to named fields for easier access
+    const result: Record<string, bigint | boolean> = {}
+    fieldNames.forEach((name, index) => {
+      if (index < decodedValues.length) {
+        result[name] = decodedValues[index]
+      }
+    })
+
+    return result
+  } catch (error) {
+    console.error("Error fetching or decoding data:", error)
+    throw error
+  }
+}
+```
+
+### 6. Apply Decimal Scaling Factors
+
+<Aside type="note" title="Handling Decimals in TypeScript">
+  Viem uses bigint for all numeric values to safely handle the large numbers common in blockchain applications. When
+  formatting these values for display or calculations, we need to apply the appropriate decimal scaling.
+</Aside>
+
+```typescript
+import { formatUnits } from "viem"
+
+async function getFormattedData(client: PublicClient, proxyAddress: `0x${string}`): Promise<FormattedResult> {
+  // Get raw data first
+  const rawData = await getRawData(client, proxyAddress)
+
+  // Get decimals for each field
+  const decimalsArray = (await client.readContract({
+    address: proxyAddress,
+    abi: bundleAggregatorProxyABI,
+    functionName: "bundleDecimals",
+  })) as readonly number[]
+
+  // Format the data with appropriate decimal scaling
+  const result: FormattedResult = {}
+
+  fieldNames.forEach((name, index) => {
+    const value = rawData[name]
+
+    if (typeof value === "boolean") {
+      result[name] = value
+    } else if (typeof value === "bigint") {
+      const decimalPlaces = index < decimalsArray.length ? decimalsArray[index] : 0
+      result[name] = {
+        raw: value,
+        decimals: decimalPlaces,
+        formatted: formatUnits(value, decimalPlaces),
+      }
+    }
+  })
+
+  return result
+}
+```
+
+## Complete Example
+
+Here's a complete example that ties everything together into a reusable class:
+
+```typescript
+import { createPublicClient, http, parseAbiItem, formatUnits, decodeAbiParameters, type PublicClient } from "viem"
+import { mainnet } from "viem/chains"
+import "dotenv/config"
+
+// A more generic return type for numeric fields
+interface FormattedNumericValue {
+  raw: bigint
+  formatted: string
+  decimals: number
+}
+
+// A more specific return type for formatted data
+interface FormattedResult {
+  [key: string]: FormattedNumericValue | boolean
+}
+
+class MVRFeedClient {
+  private readonly client: PublicClient
+  private readonly proxyAddress: `0x${string}`
+  private readonly stalenessThreshold: number
+  private readonly dataTypes: readonly string[]
+  private readonly fieldNames: readonly string[]
+  private readonly abi = [
+    parseAbiItem("function latestBundle() external view returns (bytes)"),
+    parseAbiItem("function bundleDecimals() external view returns (uint8[])"),
+    parseAbiItem("function latestBundleTimestamp() external view returns (uint256)"),
+  ] as const
+
+  /**
+   * Creates a new MVR Feed client
+   * @param proxyAddress - The address of the BundleAggregatorProxy contract
+   * @param client - A viem PublicClient
+   * @param config - Configuration options
+   */
+  constructor(
+    proxyAddress: `0x${string}`,
+    client: PublicClient,
+    config: {
+      stalenessThreshold?: number
+      dataTypes?: readonly string[]
+      fieldNames?: readonly string[]
+    } = {}
+  ) {
+    this.client = client
+    this.proxyAddress = proxyAddress
+    this.stalenessThreshold = config.stalenessThreshold ?? 86400 // 24 hours default
+
+    // Configure data structure
+    this.dataTypes = config.dataTypes ?? [
+      "uint256", // netAssetValue
+      "uint256", // assetsUnderManagement
+      "uint256", // outstandingShares
+      "uint256", // netIncomeExpenses
+      "bool", // openToNewInvestors
+    ]
+
+    this.fieldNames = config.fieldNames ?? [
+      "netAssetValue",
+      "assetsUnderManagement",
+      "outstandingShares",
+      "netIncomeExpenses",
+      "openToNewInvestors",
+    ]
+  }
+
+  /**
+   * Checks if the data hasn't exceeded the staleness threshold based on the timestamp
+   * @returns Promise<boolean> True if data is not stale
+   * @throws Error If data is stale
+   */
+  async checkDataStaleness(): Promise<boolean> {
+    const timestamp = Number(
+      await this.client.readContract({
+        address: this.proxyAddress,
+        abi: this.abi,
+        functionName: "latestBundleTimestamp",
+      })
+    )
+
+    const now = Math.floor(Date.now() / 1000)
+
+    if (now - timestamp > this.stalenessThreshold) {
+      throw new Error(`Data is stale. Last update: ${new Date(timestamp * 1000).toISOString()}`)
+    }
+
+    return true
+  }
+
+  /**
+   * Gets the raw decoded data from the feed
+   * @returns Promise<Record<string, bigint | boolean>> The decoded data
+   */
+  async getRawData(): Promise<Record<string, bigint | boolean>> {
+    await this.checkDataStaleness()
+
+    try {
+      const bundleBytes = (await this.client.readContract({
+        address: this.proxyAddress,
+        abi: this.abi,
+        functionName: "latestBundle",
+      })) as `0x${string}`
+
+      // Define parameter structure for decoding
+      const parameterStructure = this.dataTypes.map((type) => ({ type }))
+
+      // Decode the bytes into an array of values
+      const decodedValues = decodeAbiParameters(parameterStructure, bundleBytes) as (bigint | boolean)[]
+
+      // Map array values to named fields for easier access
+      const result: Record<string, bigint | boolean> = {}
+      this.fieldNames.forEach((name, index) => {
+        if (index < decodedValues.length) {
+          result[name] = decodedValues[index]
+        }
+      })
+
+      return result
+    } catch (error) {
+      console.error("Error fetching or decoding data:", error)
+      throw error
+    }
+  }
+
+  /**
+   * Gets formatted data with decimal adjustments for accurate numerical representation
+   * @returns Promise<FormattedResult> The data with correct decimal scaling applied
+   */
+  async getFormattedData(): Promise<FormattedResult> {
+    const rawData = await this.getRawData()
+    const decimalsArray = (await this.client.readContract({
+      address: this.proxyAddress,
+      abi: this.abi,
+      functionName: "bundleDecimals",
+    })) as readonly number[]
+
+    const result: FormattedResult = {}
+
+    this.fieldNames.forEach((name, index) => {
+      const value = rawData[name]
+
+      if (typeof value === "boolean") {
+        result[name] = value
+      } else if (typeof value === "bigint") {
+        const decimalPlaces = index < decimalsArray.length ? decimalsArray[index] : 0
+        result[name] = {
+          raw: value,
+          decimals: decimalPlaces,
+          formatted: formatUnits(value, decimalPlaces),
+        }
+      }
+    })
+
+    return result
+  }
+}
+
+// Example usage
+async function main() {
+  // Get configuration from environment variables for security
+  const rpcUrl = process.env.RPC_URL
+  if (!rpcUrl) {
+    throw new Error("RPC_URL environment variable not set")
+  }
+
+  const feedAddress = process.env.MVR_FEED_ADDRESS as `0x${string}`
+  if (!feedAddress) {
+    throw new Error("MVR_FEED_ADDRESS environment variable not set")
+  }
+
+  // Create client
+  const client = createPublicClient({
+    chain: mainnet, // Replace with your target chain, do not forget to update the import
+    transport: http(rpcUrl),
+  })
+
+  // Create MVR feed client
+  const mvrClient = new MVRFeedClient(feedAddress, client, {
+    // IMPORTANT: Update these to match your specific feed's structure
+    dataTypes: ["uint256", "uint256", "uint256", "uint256", "bool"],
+    fieldNames: [
+      "netAssetValue",
+      "assetsUnderManagement",
+      "outstandingShares",
+      "netIncomeExpenses",
+      "openToNewInvestors",
+    ],
+  })
+
+  try {
+    const data = await mvrClient.getFormattedData()
+    console.log("MVR Feed Data:")
+
+    // Display the data
+    for (const [key, value] of Object.entries(data)) {
+      if (typeof value === "boolean") {
+        console.log(`${key}: ${value}`)
+      } else {
+        console.log(`${key}: ${value.formatted} (raw: ${value.raw.toString()})`)
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching MVR data:", error)
+  }
+}
+
+main()
+```
+
+### Customizing and Running the Example
+
+To run the complete example above:
+
+1. Find the MVR feed you want to read on the [SmartData Addresses](/data-feeds/smartdata/addresses) page
+   - Copy the `BundleAggregatorProxy` address for the next step
+   - Expand the "MVR Bundle Info" section to see all fields, their types, and decimals
+
+1. Create a `.env` file in your project directory:
+
+   ```
+   RPC_URL=<your-rpc-url>
+   MVR_FEED_ADDRESS=<your-feed-address>
+   ```
+
+1. Update the code to match your specific MVR feed:
+
+   ```typescript
+   // IMPORTANT: Update these to match your specific feed's structure
+   const mvrClient = new MVRFeedClient(feedAddress, client, {
+     dataTypes: ["uint256", "uint256", "uint256", "uint256", "bool"],
+     fieldNames: [
+       "netAssetValue",
+       "assetsUnderManagement",
+       "outstandingShares",
+       "netIncomeExpenses",
+       "openToNewInvestors",
+     ],
+   })
+   ```
+
+1. Install the required dependencies:
+
+   ```shell
+   npm install viem dotenv
+   ```
+
+1. Run the application:
+
+   ```shell
+   ts-node your-script-filename.ts
+   ```
+
+   or
+
+   ```shell
+   npx tsx your-script-filename.ts
+   ```
+
+The output should display the formatted data from the MVR feed with both formatted values and raw values.
+
+## Key Points
+
+- **ABI Definition**: Use viem's `parseAbiItem` for type-safe ABI definitions.
+- **Data Structure**: The data types must exactly match the feed's format.
+- **Staleness Check**: Always verify data staleness using the timestamp.
+- **TypeScript Types**: Leverage TypeScript to create type-safe interfaces for your data.
+- **Decimal Scaling**: Use viem's `formatUnits` to convert bigint values to properly formatted strings.
+- **Error Handling**: Implement proper error handling for network issues and stale data.
+
+Remember that different MVR feeds may have different data structures. Always check the [SmartData Addresses](/data-feeds/smartdata/addresses) page for the exact format and decimals for the specific MVR feed you are using.

@@ -3,14 +3,18 @@ section: ccip
 date: Last Modified
 title: "Send Arbitrary Data and Receive Transfer Confirmation: A -> B -> A"
 metadata:
-  description: "Learn to track Chainlink CCIP messages. Tutorial covers sending data (A->B) and receiving acknowledgment (B->A) between EVM chains using message tracking."
+  description: "Track CCIP messages end‑to‑end (A→B→A). Send data from one EVM chain, receive acknowledgment back, and update onchain status in the sender."
+  image: "/images/ccip/basic-architecture.png"
+  excerpt: "acknowledgment, message tracking, CCIP, bidirectional, Solidity, Remix"
+  datePublished: "2024-03-25"
+  lastModified: "2025-05-19"
+  estimatedTime: "40 minutes"
+  difficulty: "intermediate"
 whatsnext:
-  {
-    "See example cross-chain dApps and tools": "/ccip/examples",
-    "CCIP Directory": "/ccip/directory",
-    "Learn about CCIP Architecture and Billing": "/ccip/concepts/architecture",
-    "Learn CCIP best practices": "/ccip/concepts/best-practices/evm",
-  }
+  "See example cross-chain dApps and tools": "/ccip/examples"
+  "CCIP Directory": "/ccip/directory"
+  "Learn about CCIP Architecture and Billing": "/ccip/concepts/architecture"
+  "Learn CCIP best practices": "/ccip/concepts/best-practices/evm"
 ---
 
 import { CodeSample, ClickToZoom, CopyText, Aside } from "@components"
@@ -49,11 +53,9 @@ Deploy the `MessageTracker.sol` contract on _Avalanche Fuji_ and enable it to se
 1. Compile the contract.
 
 1. Deploy the contract on _Avalanche Fuji_:
-
    1. Open MetaMask and select the _Avalanche Fuji_ network.
    1. On the **Deploy & Run Transactions** tab in Remix, select _Injected Provider - MetaMask_ in the **Environment** list. Remix will use the MetaMask wallet to communicate with _Avalanche Fuji_.
    1. Under the **Deploy** section, fill in the router address and the LINK token contract address for your specific blockchain. You can find both of these addresses on the [CCIP Directory](/ccip/directory). The LINK token contract address is also listed on the [LINK Token Contracts](/resources/link-token-contracts) page. For _Avalanche Fuji_:
-
       - The router address is <CopyText text="0xF694E193200268f9a4868e4Aa017A0118C9a8177" code/>
       - The LINK token address is <CopyText text="0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846" code/>
 
@@ -67,7 +69,6 @@ Deploy the `MessageTracker.sol` contract on _Avalanche Fuji_ and enable it to se
       from [faucets.chain.link](https://faucets.chain.link) or use a supported testnet other than Sepolia.
 
 1. Allow the _Ethereum Sepolia_ chain selector for both destination and source chains.
-
    1. On the **Deploy & Run Transactions** tab in Remix, expand the _message tracker_ contract in the **Deployed Contracts** section.
    1. Call the `allowlistDestinationChain` function with <CopyText text="16015286601757825753" code/> as the destination chain selector for _Ethereum Sepolia_ and <CopyText text="true" code /> as allowed.
    1. Call the `allowlistSourceChain` function with <CopyText text="16015286601757825753" code/> as the source chain selector for _Ethereum Sepolia_ and <CopyText text="true" code /> as allowed.
@@ -86,12 +87,10 @@ Deploy the `Acknowledger.sol` contract on _Ethereum Sepolia_ and enable it to se
 1.  Compile the contract.
 
 1.  Deploy the contract on _Ethereum Sepolia_:
-
     1. Open MetaMask and select the _Ethereum Sepolia_ network.
 
     1. On the **Deploy & Run Transactions** tab in Remix, make sure the **Environment** is still set to _Injected Provider - MetaMask_.
     1. Under the **Deploy** section, fill in the router address and the LINK token contract address for your specific blockchain. You can find both of these addresses on the [CCIP Directory](/ccip/directory). The LINK token contract address is also listed on the [LINK Token Contracts](/resources/link-token-contracts) page. For _Ethereum Sepolia_:
-
        - The Router address is <CopyText text="0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59" code/>.
        - The LINK token address is <CopyText text="0x779877A7B0D9E8603169DdbD7836e478b4624789" code/>.
 
@@ -105,7 +104,6 @@ Deploy the `Acknowledger.sol` contract on _Ethereum Sepolia_ and enable it to se
        from [faucets.chain.link](https://faucets.chain.link) or use a supported testnet other than Sepolia.
 
 1.  Allow the _Avalanche Fuji_ chain selector for both destination and source chains. You must also enable your acknowledger contract to receive CCIP messages from the message tracker you deployed on _Avalanche Fuji_.
-
     1. On the **Deploy & Run Transactions** tab in Remix, expand the _acknowledger_ contract in the **Deployed Contracts** section. Expand the `allowlistDestinationChain`, `allowlistSender`, and `allowlistSourceChain` functions and fill in the following arguments:
 
        | Function                  | Description                                                                                                                         | Value (_Avalanche Fuji_)                                                   |
@@ -118,7 +116,6 @@ Deploy the `Acknowledger.sol` contract on _Ethereum Sepolia_ and enable it to se
     1. For each function you expanded and filled in the arguments for, click the **transact** button to call the function. MetaMask prompts you to confirm the transaction. Wait for each transaction to succeed before calling the following function.
 
 1.  Finally, enable your _message tracker_ contract to receive CCIP messages from the _acknowledger_ contract you deployed on _Ethereum Sepolia_.
-
     1. On the **Deploy & Run Transactions** tab in Remix, expand the _message tracker_ contract in the **Deployed Contracts** section. Expand the `allowlistSender` function and fill in your _acknowledger_ contract address and <CopyText text="true" code/> as allowed.
 
     1. Open MetaMask and select the _Avalanche Fuji_ network.
@@ -133,7 +130,6 @@ At this point, you have one _message tracker_ (sender) contract on _Avalanche Fu
 #### Initial message
 
 1. Send a `Hello World!` string from your _message tracker_ contract on _Avalanche Fuji_ to your _acknowledger_ contract deployed on _Ethereum Sepolia_. You will track the status of this message during this tutorial.
-
    1. Open MetaMask and select the _Avalanche Fuji_ network.
    1. On the **Deploy & Run Transactions** tab in Remix, expand the _message tracker_ contract in the **Deployed Contracts** section.
    1. Expand the **sendMessagePayLINK** function and fill in the following arguments:
@@ -316,7 +312,6 @@ The _message tracker_ contract acts as the sender, initiating cross-chain commun
 - **Message sending**: Constructs and sends messages to the _acknowledger_ contract on another blockchain, using [`sendMessagePayLINK`](/ccip/tutorials/evm/send-arbitrary-data#sending-data-and-pay-in-link) function. On top of its [five primary operations](/ccip/tutorials/evm/send-arbitrary-data#sending-data-and-pay-in-link), the [`sendMessagePayLINK`](/ccip/tutorials/evm/send-arbitrary-data#sending-data-and-pay-in-link) function also updates the message status upon sending.
 
 - **Status tracking**:
-
   - Upon sending a message, the _message tracker_ updates its internal state to mark the message as `Sent` (status `1`). This status is pivotal for tracking the message lifecycle and awaiting acknowledgment.
 
     ```solidity
@@ -345,7 +340,6 @@ The _acknowledger_ contract receives the message, sends back an acknowledgment m
 Both contracts use allowlists to process only messages from and to allowed sources.
 
 - **Allowlisting chains and senders**:
-
   - The `sendMessagePayLINK` function is protected by the `onlyAllowlistedDestinationChain` modifier, ensuring the contract owner has allowlisted a destination chain.
   - The `ccipReceive` function is protected by the `onlyAllowlisted` modifier, ensuring the contract owner has allowlisted a source chain and a sender.
 

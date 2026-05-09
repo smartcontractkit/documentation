@@ -26,6 +26,8 @@
   --fullwidth-max-width: calc(100% - 1rem);
 }
 
+/* Fonts provided via centralized design system/CDN; no local @font-face overrides here. */
+
 /* Base layout styles */
 body {
   display: flex;
@@ -54,10 +56,25 @@ body {
   color: var(--color-text-link-clicked);
 }
 
-a > code {
-  color: inherit !important;
-  background: transparent;
+/*
+ * Inline code inside links must use link colors. MDX often nests `code` under `a`
+ * with a span between them, so `a > code` misses; `:not(pre) > code` would otherwise
+ * paint code as gray (`--theme-code-inline-text`). Keep the same pill background as
+ * other inline code.
+ */
+a code:not(pre code):not([class*="language-"]) {
+  color: var(--color-text-link) !important;
+  background-color: var(--theme-code-inline-bg) !important;
+  border-radius: var(--border-radius, 0.2rem);
   text-underline-offset: var(--padding-block);
+}
+
+a:hover code:not(pre code):not([class*="language-"]) {
+  color: var(--color-text-link-hover) !important;
+}
+
+a:focus-visible code:not(pre code):not([class*="language-"]) {
+  color: var(--color-text-link-clicked) !important;
 }
 
 a:focus {
@@ -85,6 +102,13 @@ strong {
   padding: var(--padding-block) var(--padding-inline);
   border-radius: var(--border-radius);
   word-break: break-word;
+}
+
+/* Inline code in headings should inherit heading font size and weight */
+:is(h1, h2, h3, h4, h5, h6) :not(pre) > code,
+:is(h1, h2, h3, h4, h5, h6) code {
+  font-size: inherit !important;
+  font-weight: 600 !important;
 }
 
 pre {
@@ -127,7 +151,7 @@ th {
 td,
 th {
   padding: 6px;
-  text-align: left;
+  text-align: left !important;
 }
 
 blockquote {

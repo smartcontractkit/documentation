@@ -50,7 +50,6 @@ import { CodeSample } from "@components"
   ```
 
 - The three remaining functions are:
-
   - `checkUpkeep` for checking offchain if `performUpkeep` should be executed. `performUpkeep` should only be executed if the current block number is higher than the block number of the last execution.
 
   - `performUpkeep`: Executed by Chainlink Automation when `checkUpkeep` returns `true`. This function sends the request (encoded in `bytes`) to the router by calling the `FunctionsClient` `sendRequest` function. **Note**: We use _try and catch_ to gracefully handle reverts of `i_router.sendRequest` by emitting an event. We also update the `lastBlockNumber`, even when `i_router.sendRequest` is unsuccessful.

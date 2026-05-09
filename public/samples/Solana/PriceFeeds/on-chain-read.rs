@@ -4,7 +4,7 @@
  * DO NOT USE THIS CODE IN PRODUCTION.
  */
 
-use chainlink_solana as chainlink;
+use chainlink_solana::v2::read_feed_v2;
 
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
@@ -56,26 +56,29 @@ pub fn process_instruction(
 
     // This is the account of the price feed data to read from
     let feed_account = next_account_info(accounts_iter)?;
-    // This is the chainlink solana program ID
-    let chainlink_program = next_account_info(accounts_iter)?;
 
-    let round = chainlink::latest_round_data(
-        chainlink_program.clone(),
-        feed_account.clone(),
-    )?;
+    // Read the feed data directly from the account (v2 SDK)
+    let result = read_feed_v2(
+        feed_account.try_borrow_data()?,
+        feed_account.owner.to_bytes(),
+    )
+    .map_err(|_| solana_program::program_error::ProgramError::InvalidAccountData)?;
 
-    let description = chainlink::description(
-        chainlink_program.clone(),
-        feed_account.clone(),
-    )?;
+    // Get the latest round data
+    let round = result
+        .latest_round_data()
+        .ok_or(solana_program::program_error::ProgramError::InvalidAccountData)?;
 
-    let decimals = chainlink::decimals(
-        chainlink_program.clone(),
-        feed_account.clone(),
-    )?;
+    let description = result.description();
+    let decimals = result.decimals();
+
+    // Convert description bytes to string
+    let description_str = std::str::from_utf8(&description)
+        .unwrap_or("Unknown")
+        .trim_end_matches('\0');
 
     let decimal_print = Decimal::new(round.answer, u32::from(decimals));
-    msg!("{} price is {}", description, decimal_print);
+    msg!("{} price is {}", description_str, decimal_print);
 
     Ok(())
 }

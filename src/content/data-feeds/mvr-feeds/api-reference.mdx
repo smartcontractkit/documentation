@@ -1,0 +1,186 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "MVR Feeds API Reference"
+metadata:
+  description: "API reference for using Chainlink MVR Feeds in smart contracts."
+---
+
+import { Aside, Icon } from "@components"
+
+When you use MVR Feeds, you typically retrieve the data through the `IBundleAggregatorProxy` interface and the proxy contract address. This interface combines functions from both `IBundleBaseAggregator` and `ICommonAggregator`. If the aggregator behind the proxy changes, your consumer contract remains compatible as long as you interact through the proxy interface.
+
+To see detailed examples of how to integrate these functions, refer to the [Using MVR Feeds on EVM Chains (Solidity)](/data-feeds/mvr-feeds/guides/evm-solidity) guide.
+
+## IBundleAggregatorProxy
+
+`IBundleAggregatorProxy` extends both `IBundleBaseAggregator` and `ICommonAggregator`. In addition, it provides functions to manage or view the underlying aggregator reference.
+
+A minimal example showing how to set the proxy address and call these functions in your consumer contract:
+
+```solidity
+import { IBundleAggregatorProxy } from "./interfaces/IBundleAggregatorProxy.sol";
+
+contract MyMVRConsumer {
+    IBundleAggregatorProxy public proxy;
+
+    constructor(address _proxyAddress) {
+    proxy = IBundleAggregatorProxy(_proxyAddress);
+    }
+
+    function readLatestData() external view returns (bytes memory, uint256) {
+    // Retrieve the latest bundle as raw bytes
+    bytes memory bundle = proxy.latestBundle();
+    // Get the timestamp of the latest update
+    uint256 timestamp = proxy.latestBundleTimestamp();
+    return (bundle, timestamp);
+    }
+}
+```
+
+### Functions in IBundleAggregatorProxy
+
+| Name                                            | Description                                                                                                      |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| [proposedAggregator](#proposedaggregator)       | Returns the address of the aggregator that is proposed to replace the current aggregator, but not yet confirmed. |
+| [confirmAggregator](#confirmaggregator)         | Confirms a new aggregator address. Typically, only the owner or an authorized entity can call this.              |
+| [aggregator](#aggregator)                       | Returns the address of the currently confirmed aggregator behind the proxy.                                      |
+| [latestBundle](#latestbundle)                   | Returns the most recent data bundle as a bytes array.                                                            |
+| [bundleDecimals](#bundledecimals)               | Returns an array of decimals that match each numeric field in the bundle. Non-numeric fields typically have 0.   |
+| [latestBundleTimestamp](#latestbundletimestamp) | Returns the timestamp of the most recent data bundle.                                                            |
+| [description](#description)                     | A short description of the underlying aggregator or feed.                                                        |
+| [version](#version)                             | Returns a version number for the aggregator.                                                                     |
+
+#### proposedAggregator
+
+```solidity
+function proposedAggregator() external view returns (address);
+```
+
+Returns the address of the aggregator that is proposed to replace the current aggregator. This aggregator is not active until it is confirmed.
+
+#### confirmAggregator
+
+```solidity
+function confirmAggregator(address aggregatorAddress) external;
+```
+
+Confirms a new aggregator contract address. Only authorized addresses can typically call this function.
+
+- Parameters:
+  - aggregatorAddress: The address of the new aggregator to confirm.
+
+#### aggregator
+
+```solidity
+function aggregator() external view returns (address);
+```
+
+Returns the address of the currently confirmed aggregator behind the proxy.
+
+#### latestBundle
+
+```solidity
+function latestBundle() external view returns (bytes memory bundle);
+```
+
+Returns the most recent data bundle as a bytes array. You can decode this bundle according to the known structure for your specific MVR feed.
+
+#### bundleDecimals
+
+```solidity
+function bundleDecimals() external view returns (uint8[] memory);
+```
+
+Returns an array of decimals for the numeric fields of the data bundle. Fields of other types, such as bool, typically have a corresponding decimal value of 0.
+
+#### latestBundleTimestamp
+
+```solidity
+function latestBundleTimestamp() external view returns (uint256);
+```
+
+Returns the timestamp (block time) of the most recent update to the data bundle.
+
+#### description
+
+```solidity
+function description() external view returns (string memory);
+```
+
+Returns a short description of the underlying aggregator or feed.
+
+#### version
+
+```solidity
+function version() external view returns (uint256);
+```
+
+Returns the version number of the aggregator behind the proxy.
+
+---
+
+## IBundleBaseAggregator
+
+`IBundleBaseAggregator` defines the core functions for reading multiple-variable data from an onchain aggregator. These functions are inherited by `IBundleAggregatorProxy`.
+
+### Functions in IBundleBaseAggregator
+
+| Name                  | Description                                                        |
+| --------------------- | ------------------------------------------------------------------ |
+| latestBundle          | Returns the most recent data bundle as a bytes array.              |
+| bundleDecimals        | Returns the array of decimals corresponding to each numeric field. |
+| latestBundleTimestamp | Returns the timestamp of the most recent data bundle.              |
+
+#### latestBundle
+
+```solidity
+function latestBundle() external view returns (bytes memory bundle);
+```
+
+Returns the latest encoded bundle data as a bytes array.
+
+#### bundleDecimals
+
+```solidity
+function bundleDecimals() external view returns (uint8[] memory);
+```
+
+Returns an array of decimals where each entry corresponds to a numeric field in the bundle. Non-numeric fields might have a value of 0.
+
+#### latestBundleTimestamp
+
+```solidity
+function latestBundleTimestamp() external view returns (uint256);
+```
+
+Returns the block timestamp of the most recent data bundle.
+
+---
+
+## ICommonAggregator
+
+`ICommonAggregator` provides common metadata functions for aggregator contracts, such as a human-readable description and a version number.
+
+### Functions in ICommonAggregator
+
+| Name        | Description                                              |
+| ----------- | -------------------------------------------------------- |
+| description | A string describing the underlying aggregator.           |
+| version     | Returns a numeric version identifier for the aggregator. |
+
+#### description
+
+```solidity
+function description() external view returns (string memory);
+```
+
+Returns a description string for the feed or aggregator.
+
+#### version
+
+```solidity
+function version() external view returns (uint256);
+```
+
+Returns a numeric value representing the aggregator version.

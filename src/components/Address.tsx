@@ -44,8 +44,9 @@ const AddressComponent = ({
         style={{ height: "16px", width: "16px", minWidth: "12px" }}
         data-clipboard-text={address}
         onClick={handleClick}
+        aria-label="Copy address to clipboard"
       >
-        <img src="/assets/icons/copyIcon.svg" alt="Copy to clipboard" />
+        <img src="/assets/icons/copyIcon.svg" alt="" />
       </button>
 
       <style jsx>{`

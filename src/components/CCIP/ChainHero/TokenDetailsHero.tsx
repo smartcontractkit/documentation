@@ -3,13 +3,14 @@ import { getExplorerAddressUrl, fallbackTokenIconUrl } from "~/features/utils/in
 import { PoolType } from "~/config/data/ccip/types.ts"
 import { tokenPoolDisplay } from "~/config/data/ccip/utils.ts"
 import "./ChainHero.css"
-import { ExplorerInfo } from "~/config/types.ts"
+import { ExplorerInfo, ChainType } from "~/config/types.ts"
 
 interface TokenDetailsHeroProps {
   network: {
     name: string
     logo: string
     explorer: ExplorerInfo
+    chainType?: ChainType
   }
   token: {
     id: string
@@ -59,7 +60,7 @@ function TokenDetailsHero({ network, token }: TokenDetailsHeroProps) {
             <div className="ccip-chain-hero__details__value" data-clipboard-type="token">
               <Address
                 endLength={4}
-                contractUrl={getExplorerAddressUrl(network?.explorer)(token.address)}
+                contractUrl={getExplorerAddressUrl(network?.explorer, network?.chainType)(token.address)}
                 address={token.address}
               />
             </div>
@@ -73,7 +74,7 @@ function TokenDetailsHero({ network, token }: TokenDetailsHeroProps) {
             <div className="ccip-chain-hero__details__value" data-clipboard-type="token-pool">
               <Address
                 endLength={4}
-                contractUrl={getExplorerAddressUrl(network?.explorer)(token.poolAddress)}
+                contractUrl={getExplorerAddressUrl(network?.explorer, network?.chainType)(token.poolAddress)}
                 address={token.poolAddress}
               />
             </div>

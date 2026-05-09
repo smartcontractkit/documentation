@@ -1,0 +1,108 @@
+---
+section: dataStreams
+date: "Last Modified"
+title: "Handling Stock Splits"
+metadata:
+  title: "Handling Stock Splits for Tokenized Assets | Chainlink Data Streams"
+  description: "Learn how to handle stock splits and reverse splits for tokenized assets using Chainlink Data Streams v10 schema."
+whatsnext:
+  {
+    "Find the schema of data to expect from Data Streams reports: Tokenized Asset (v10)": "/data-streams/reference/report-schema-v10",
+  }
+---
+
+import { Aside } from "@components"
+
+Corporate actions, such as stock splits and reverse splits, require precise handling for tokenized assets to ensure price continuity and avoid disruptions. These events alter per‑share pricing while leaving the underlying economic exposure unchanged. They can produce abrupt per‑share price moves and must be handled carefully to avoid incorrect onchain price computations and unexpected liquidations.
+
+In the [v10 report schema](/data-streams/reference/report-schema-v10), continuity is preserved by staging a multiplier change with a scheduled `activationDateTime` so the Theoretical Price (`price` \* `currentMultiplier`) remains continuous. Split ratios are typically known in advance, but activation may occur while markets are closed, so some external price sources may not reflect the split until trading resumes.
+
+<Aside type="note" title="Note">
+  This guidance is designed for multiplier handling in the [v10 report
+  schema](/data-streams/reference/report-schema-v10) and what integrators should expect around activation windows and
+  protocol behavior. Similar principles may apply to future schemas that host tokenized stocks, but applicability and
+  exact behavior will depend on each schema's design and are not guaranteed.
+</Aside>
+
+## Guiding principle
+
+Follow these principles when handling multiplier changes during corporate actions:
+
+1. The protocol considers the Theoretical Price as `price` \* `currentMultiplier`.
+1. Ahead of the event, `newMultiplier` and `activationDateTime` are staged.
+1. At `activationDateTime` (Unix), `currentMultiplier` becomes `newMultiplier`.
+   - The underlying `price` from traditional markets should start reflecting the split the next time trading opens, so at the next `price` update, the Theoretical Price should remain continuous.
+
+## Example (10:1 split, AAPL)
+
+The following hypothetical scenario demonstrates how a 10:1 AAPL stock split is handled through the staged multiplier system, showing the progression from announcement through protocol reopening with proper price continuity maintained throughout.
+
+The following timeline outlines the key events and actions taken at each stage:
+
+- **T-2**: [Split announcement and multiplier staging](#announcement-t-2)
+- **T-1**: [Protocol preparation and monitoring setup](#protocol-engagement-t-1)
+- **T0**: [Multiplier activation (split effective date)](#activation-t0)
+- **T+1**: [Market reopening with adjusted prices](#market-reopening-t1)
+- **T+2**: [Protocol resumption after verification](#protocol-reopening-t2)
+
+### Announcement (T-2)
+
+A 10:1 AAPL stock split is announced. [The report](/data-streams/reference/report-schema-v10) updates to stage the split:
+
+- `newMultiplier` is set to 10x the value of `currentMultiplier`.
+- `activationDateTime` is set to the Unix timestamp of the split.
+- `currentMultiplier` is unaffected until activation.
+
+### Protocol engagement (T-1)
+
+At this stage, users are advised to monitor for changes in `activationDateTime` and inspect the upcoming change to prepare appropriate action, such as preparing the protocol for a pause around the `activationDateTime` in order to ensure appropriate handling of the stock split.
+
+### Activation (T0)
+
+When the provider applies the split, [the report](/data-streams/reference/report-schema-v10) updates:
+
+- `newMultiplier` remains the current value.
+- `activationDateTime` is set to `0`.
+- `currentMultiplier` is updated to the same value as `newMultiplier`.
+
+<Aside type="danger" title="Important">
+  If activation occurs while the underlying market is closed, prices may still show the pre‑event last trade. Do not
+  compute the Theoretical Price during this pre-adjustment window. Monitor `marketStatus` and keep the protocol paused
+  until the first post‑event trade prints and the Theoretical Price is continuous.
+</Aside>
+
+If activation occurs while the underlying market is closed, prices may still show the pre‑event last trade. Do not compute the Theoretical Price during this pre-adjustment window. Monitor `marketStatus` and keep the protocol paused until the first post‑event trade prints and the Theoretical Price is continuous.
+
+### Market reopening (T1)
+
+The stock split has taken effect. Generally, this occurs after the market closes or over the weekend, meaning `price` may not yet reflect the new economic value per share. Upon the market reopening, `price` should start reflecting the split-adjusted value.
+
+### Protocol reopening (T2)
+
+Users should pause markets before `activationDateTime` and keep them paused until:
+
+- The market has reopened (monitor `marketStatus`)
+- `price` has updated in line with the split ratio (e.g., 10:1)
+- You have confirmed that the Theoretical Price matches expectations
+
+After all the above checks have been confirmed, users can unpause their protocol and continue and resume normal operation.
+
+## Activation-time convention
+
+Each tokenized asset issuer sets its own activation time. For example, the xStocks default `activationDateTime` is 00:00 UTC on the effective date. Once `activationDateTime` is reached, `currentMultiplier` becomes `newMultiplier`.
+
+Because underlying venues may be closed at activation, some external price sources may not reflect the split immediately. If `activationDateTime` occurs while the underlying market is closed, the report’s `currentMultiplier` will become `newMultiplier`; however, `price` can remain at the pre-event level until the market reopens. During this post-activation, pre-adjustment interval (after the multiplier has changed but before the underlying `price` updates), the Theoretical Price can be incorrect. Use `marketStatus` to pause until `price` reflects the event.
+
+## Integrator risk & handling
+
+Computing `price` \* `currentMultiplier` when the price has not adjusted (e.g., market closed) can produce large errors. It is critical to ensure that the Theoretical Price is again reflective of actual market conditions before allowing live trading.
+
+Treat any multiplier change (splits, dividends, etc) and `activationDateTime` as a maintenance window; pause/guard the protocol, then verify post-activation conditions before resuming.
+
+<Aside type="caution" title="Integrator Responsibility">
+  It is the integrator's responsibility to perform proper handling and risk management. Failure to follow these best
+  practices may result in significant financial losses. Ensure that all multiplier changes, activation windows, and
+  post-activation conditions are verified before resuming operations.
+</Aside>
+
+For broader guidance around market hours and event handling, refer to the [Market Hours](/data-streams/market-hours) guidance.

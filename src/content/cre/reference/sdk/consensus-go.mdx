@@ -1,0 +1,134 @@
+---
+section: cre
+title: "SDK Reference: Consensus & Aggregation"
+date: Last Modified
+sdkLang: "go"
+pageId: "reference-sdk-consensus"
+metadata:
+  description: "Reference for Go consensus methods: explore median, mode, and custom aggregation algorithms for multi-node workflow execution."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+Aggregation is the process of taking many results from individual nodes and reducing them to a single, reliable value. This aggregated value is what the DON reaches consensus on. When you run code on individual nodes using [`cre.RunInNodeMode`](/cre/reference/sdk/core/#creruninnodemode), you must provide an aggregation strategy to tell the DON how to produce this single, trustworthy outcome. This is achieved using a `ConsensusAggregation`.
+
+## `ConsensusAggregation[T]`
+
+This is a generic interface passed as the final argument to `cre.RunInNodeMode`. It defines the aggregation strategy and an optional default value to be used if the node-level execution fails.
+
+There are two primary ways to specify an aggregation method:
+
+1. [**Using Built-in Functions**](/cre/reference/sdk/consensus-go/#1-built-in-aggregation-functions): For simple types, you can use functions like [`ConsensusMedianAggregation`](/cre/reference/sdk/consensus-go#consensusmedianaggregationt).
+1. [**Using Struct Tags**](/cre/reference/sdk/consensus-go/#2-aggregation-via-struct-tags): For complex types (structs), you can use [`ConsensusAggregationFromTags`](/cre/reference/sdk/consensus-go#2-aggregation-via-struct-tags).
+
+## 1. Built-in aggregation functions
+
+These functions are used for simple, single-value aggregations.
+
+### `ConsensusMedianAggregation[T]`
+
+Computes the median of numeric results from all nodes.
+
+**Supported Types (`T`):**
+Any standard Go numeric type (`int`, `int32`, `float64`, etc.), `*big.Int`, `decimal.Decimal`, and `time.Time`.
+
+**Usage:**
+
+```go
+pricePromise := cre.RunInNodeMode(config, runtime, fetchPrice,
+    cre.ConsensusMedianAggregation[float64](),
+)
+```
+
+### `ConsensusIdenticalAggregation[T]`
+
+Ensures that a sufficient majority of nodes (a Byzantine Quorum) return the exact same value.
+
+**Supported Types (`T`):**
+Any primitive Go type (`string`, `bool`, standard numeric types), `*big.Int`, `decimal.Decimal`, or structs composed entirely of these types.
+
+**Usage:**
+
+```go
+hashPromise := cre.RunInNodeMode(config, runtime, fetchBlockHash,
+    cre.ConsensusIdenticalAggregation[string](),
+)
+```
+
+### `ConsensusCommonPrefixAggregation[T]`
+
+Computes the longest common prefix from a slice of values from all nodes. This is useful for finding the longest shared sequence at the beginning of a list.
+
+**Supported Types (`T`):**
+Any slice or array of a type supported by `ConsensusIdenticalAggregation` (e.g., `[]string`, `[]int`).
+
+**Usage:**
+
+```go
+// Assume fetchBlockHeaders returns a slice of block hashes for a chain fork
+aggregation, err := cre.ConsensusCommonPrefixAggregation[string]()()
+if err != nil {
+    return "", err
+}
+blockHeadersPromise := cre.RunInNodeMode(config, runtime, fetchBlockHeaders, aggregation)
+```
+
+### `ConsensusCommonSuffixAggregation[T]`
+
+Computes the longest common suffix from a slice of values from all nodes. This is useful for finding the longest shared sequence at the end of a list.
+
+**Supported Types (`T`):**
+Any slice or array of a type supported by `ConsensusIdenticalAggregation` (e.g., `[]string`, `[]int`).
+
+**Usage:**
+
+```go
+// Assume fetchRecentTransactions returns a slice of recent transaction IDs
+aggregation, err := cre.ConsensusCommonSuffixAggregation[string]()()
+if err != nil {
+    return "", err
+}
+recentTxsPromise := cre.RunInNodeMode(config, runtime, fetchRecentTransactions, aggregation)
+```
+
+## 2. Aggregation via struct tags
+
+For structs, the recommended approach is to use `ConsensusAggregationFromTags`. This function inspects the `consensus_aggregation` struct tags on your return type to determine how to aggregate each field.
+
+**Usage:**
+
+```go
+type ReserveInfo struct {
+	LastUpdated  time.Time       `json:"lastUpdated" consensus_aggregation:"median"`
+	TotalReserve decimal.Decimal `json:"totalReserve" consensus_aggregation:"median"`
+}
+
+func onTrigger(config *Config, runtime cre.Runtime, ...) (string, error) {
+    // ...
+    reserveInfoPromise := cre.RunInNodeMode(config, runtime, fetchReserveData,
+        // The SDK inspects the ReserveInfo struct to determine the aggregation strategy.
+        cre.ConsensusAggregationFromTags[*ReserveInfo](),
+    )
+    // ...
+}
+```
+
+<Aside type="note" title="Practical Example">
+  For a detailed, step-by-step guide on how to use `ConsensusAggregationFromTags` to fetch and parse a structured API
+  response, see the [**API Interactions**](/cre/guides/workflow/using-http-client) guide.
+</Aside>
+
+### Supported struct tags
+
+You can apply the `consensus_aggregation` tag to the fields of your struct.
+
+| <div style="width: 120px;">Tag Value</div> | Description                                                                                                          | <div style="width: 180px;">Compatible Field Types</div> |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `median`                                   | Computes the median of the field's value across all nodes.                                                           | Numeric types (`int`, `*big.Int`, etc.)                 |
+| `identical`                                | Ensures the field's value is identical across all nodes.                                                             | Primitives (`string`, `bool`), structs                  |
+| `nested`                                   | Instructs the aggregator to recursively inspect the fields of a nested struct for more `consensus_aggregation` tags. | Structs                                                 |
+| `ignore`                                   | This field will be ignored during consensus and its value will be indeterminate.                                     | Any                                                     |
+| `common_prefix`                            | Finds the longest common prefix for a slice of values from all nodes.                                                | Slices (`[]string`, `[]int`, etc.)                      |
+| `common_suffix`                            | Finds the longest common suffix for a slice of values from all nodes.                                                | Slices                                                  |

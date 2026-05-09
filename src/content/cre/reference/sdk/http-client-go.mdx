@@ -1,0 +1,399 @@
+---
+section: cre
+title: "SDK Reference: HTTP Client"
+date: Last Modified
+sdkLang: "go"
+pageId: "reference-sdk-http-client"
+metadata:
+  description: "Reference for Go HTTP Client: complete API for GET/POST requests, headers, authentication, and consensus aggregation methods."
+  datePublished: "2025-11-04"
+  lastModified: "2026-01-26"
+---
+
+import { Aside } from "@components"
+
+The HTTP Client lets you make requests to external APIs from your workflow. Each node in the DON executes the request independently, and the SDK uses consensus to provide a single, reliable result.
+
+**Common use cases:**
+
+- Fetching data from REST APIs ([GET requests](/cre/guides/workflow/using-http-client/get-request))
+- Sending data to webhooks ([POST requests](/cre/guides/workflow/using-http-client/post-request))
+- Submitting reports to offchain systems ([Report submission](/cre/guides/workflow/using-http-client/submitting-reports-http))
+
+## Quick reference
+
+| Method                                                 | Use When                                  | Guide                                                                                                                   |
+| ------------------------------------------------------ | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| [`http.SendRequest`](#httpsendrequest)                 | Making HTTP calls (recommended)           | [GET](/cre/guides/workflow/using-http-client/get-request) / [POST](/cre/guides/workflow/using-http-client/post-request) |
+| [`client.SendRequest`](#clientsendrequest)             | Complex scenarios requiring fine control  | [GET](/cre/guides/workflow/using-http-client/get-request#2-the-creruninnodemode-pattern-low-level)                      |
+| [`sendRequester.SendReport`](#sendrequestersendreport) | Submitting reports via HTTP (recommended) | [Report submission](/cre/guides/workflow/using-http-client/submitting-reports-http)                                     |
+| [`client.SendReport`](#clientsendreport)               | Complex report submission scenarios       | [Report submission](/cre/guides/workflow/using-http-client/submitting-reports-http#advanced-low-level-pattern)          |
+
+## Core types
+
+### `http.Request`
+
+Defines the parameters for an outgoing HTTP request.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Redirects are not supported">
+  HTTP requests to URLs that return redirects (3xx status codes) will fail. Ensure the URL you provide is the final destination and does not redirect to another URL.
+</Aside>
+
+| <div style="width: 120px;">Field</div> | <div style="width: 200px;">Type</div> | Description                                                                                              |
+| -------------------------------------- | ------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `Url`                                  | `string`                              | The URL of the API endpoint.                                                                             |
+| `Method`                               | `string`                              | The HTTP method (e.g., `"GET"`, `"POST"`).                                                               |
+| `Headers`                              | `map[string]string`                   | Optional HTTP headers.                                                                                   |
+| `Body`                                 | `[]byte`                              | Optional raw request body.                                                                               |
+| `Timeout`                              | `*durationpb.Duration`                | Optional request timeout. See [Request Timeout](#request-timeout) below for usage, defaults, and limits. |
+| `CacheSettings`                        | `*CacheSettings`                      | Optional caching behavior for the request.                                                               |
+
+### Request Timeout
+
+The `Timeout` field specifies how long to wait for an HTTP request to complete before cancelling it.
+
+**Format:**
+
+- Use `*durationpb.Duration` from the [`google.golang.org/protobuf/types/known/durationpb` package](https://pkg.go.dev/google.golang.org/protobuf/types/known/durationpb)
+- Create using `durationpb.New()` with a `time.Duration` value
+- Or manually construct with `&durationpb.Duration{Seconds: int64}`
+
+**Default and Limits:**
+
+- **Default**: If not specified, a default timeout of **5 seconds** is applied.
+- **Maximum**: Default maximum is **10 seconds**. Requests exceeding this limit will error.
+
+**Pattern 1: Using `durationpb.New()`:**
+
+```go
+import (
+    "time"
+    "google.golang.org/protobuf/types/known/durationpb"
+)
+
+resp, err := sendRequester.SendRequest(&http.Request{
+    Url:     config.ApiUrl,
+    Method:  "GET",
+    Timeout: durationpb.New(8 * time.Second), // 8 second timeout
+}).Await()
+```
+
+**Pattern 2: Parsing from config:**
+
+```go
+import (
+    "time"
+    "fmt"
+    "google.golang.org/protobuf/types/known/durationpb"
+)
+
+type Config struct {
+    ApiUrl    string `yaml:"apiUrl"`
+    TimeoutMs string `yaml:"timeout"` // e.g., "5s", "10s"
+}
+
+func fetchData(config *Config, logger *slog.Logger, sendRequester *http.SendRequester) (string, error) {
+    // Parse duration string from config
+    t, err := time.ParseDuration(config.TimeoutMs)
+    if err != nil {
+        return "", fmt.Errorf("failed to parse duration (%s): %w", config.TimeoutMs, err)
+    }
+
+    logger.Info("parsed timeout", "seconds", t.Seconds(), "raw", config.TimeoutMs)
+
+    // Create Duration from parsed time
+    timeout := &durationpb.Duration{
+        Seconds: int64(t.Seconds()),
+    }
+
+    resp, err := sendRequester.SendRequest(&http.Request{
+        Url:     config.ApiUrl,
+        Method:  "GET",
+        Timeout: timeout,
+    }).Await()
+
+    if err != nil {
+        logger.Info("http request failed", "error", err)
+        return "", err
+    }
+
+    return string(resp.Body), nil
+}
+```
+
+**Example configuration:**
+
+```yaml
+# config.yaml
+apiUrl: "https://api.example.com/data"
+timeout: "8s" # Go's time.ParseDuration format (max: 10s)
+```
+
+### `http.Response`
+
+The result of the HTTP call from a single node. If the request fails, the error is returned by the `.Await()` call on the `Promise`.
+
+| Field        | Type                | Description                |
+| ------------ | ------------------- | -------------------------- |
+| `StatusCode` | `uint32`            | The HTTP status code.      |
+| `Headers`    | `map[string]string` | The HTTP response headers. |
+| `Body`       | `[]byte`            | The raw response body.     |
+
+### `http.CacheSettings`
+
+Defines caching behavior for the request. This is particularly useful for preventing duplicate execution of non-idempotent requests (POST, PUT, PATCH, DELETE).
+
+| <div style="width: 100px;">Field</div> | <div style="width: 170px;">Type</div> | Description                                                                                                                                                                                         |
+| -------------------------------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Store`                                | `bool`                                | If `true`, store the response in the cache for potential reuse by other nodes.                                                                                                                      |
+| `MaxAge`                               | `*durationpb.Duration`                | Maximum age of a cached response that this workflow will accept. If zero or nil, the request will not attempt to read from cache (but may still store if `Store` is true). Max value is 10 minutes. |
+
+#### Understanding `CacheSettings` behavior
+
+When you make HTTP requests in CRE, **all nodes in the DON execute the request by default**. For read-only operations (like GET), this is fine—consensus ensures a reliable result. However, for **non-idempotent operations** (POST, PUT, PATCH, DELETE), multiple executions can cause problems:
+
+- Creating duplicate resources (e.g., multiple user accounts)
+- Triggering duplicate actions (e.g., sending multiple emails)
+- Unintended side effects (e.g., incrementing counters multiple times)
+
+**`CacheSettings` provides a solution** by enabling a shared cache across all nodes in the DON:
+
+1. **Node 1** makes the HTTP request and stores the response in the shared cache
+1. **Nodes 2, 3, etc.** check the cache first and reuse the cached response if it exists
+
+**Important considerations:**
+
+- **Best effort mechanism**: The caching works reliably in most scenarios, but is not guaranteed to prevent all duplicates. For example, gateway availability (network issues or deployments) can affect routing to different gateway instances.
+- **Request matching**: Caching only works when all nodes construct **identical requests** (same URL, headers, and body). Ensure your workflow generates deterministic request payloads.
+
+- **Understanding `MaxAge`**: This controls how stale your workflow will accept a cached response to be:
+  - The cache system stores responses for up to 10 minutes by default (system-wide TTL)
+  - `MaxAge` lets your workflow specify: "I'll only use cached data if it's fresher than X duration"
+  - Set `MaxAge` using `durationpb.New()`, for example: `durationpb.New(60 * time.Second)` for 60 seconds
+  - Setting `MaxAge` to `nil` or zero forces a fresh fetch every time (but still stores if `Store` is true)
+  - For POST/PUT/PATCH/DELETE operations: Set this slightly longer than your workflow's expected execution time
+  - For GET operations where you want to reuse data: Set this to your desired cache duration
+
+For practical examples, see the [POST request guide](/cre/guides/workflow/using-http-client/post-request#1-understanding-single-execution-with-cachesettings).
+
+## Making HTTP requests
+
+### `http.SendRequest`
+
+The recommended, high-level helper for making HTTP requests. Automatically handles the `cre.RunInNodeMode` pattern.
+
+**Signature:**
+
+```go
+func SendRequest[C, T any](
+	config C,
+	runtime cre.Runtime,
+	client *Client,
+	fn func(config C, logger *slog.Logger, sendRequester *SendRequester) (T, error),
+	ca cre.ConsensusAggregation[T],
+) cre.Promise[T]
+```
+
+**Parameters:**
+
+- `config`: Your workflow's configuration struct, passed to `fn`
+- `runtime`: The top-level `cre.Runtime` from your trigger callback
+- `client`: An initialized `*http.Client`
+- `fn`: Your request logic function that receives `config`, `logger`, and `sendRequester`
+- `ca`: The [consensus aggregation method](/cre/reference/sdk/consensus)
+
+**Example:**
+
+```go
+func fetchData(config *Config, logger *slog.Logger, sendRequester *http.SendRequester) (*Data, error) {
+    resp, err := sendRequester.SendRequest(&http.Request{
+        Url: config.ApiUrl,
+        Method: "GET",
+    }).Await()
+    if err != nil {
+        return nil, err
+    }
+    // Parse and return...
+}
+
+// In your trigger callback
+result, err := http.SendRequest(config, runtime, client,
+    fetchData,
+    cre.ConsensusAggregationFromTags[*Data](),
+).Await()
+```
+
+**Guides:**
+
+- [GET Requests](/cre/guides/workflow/using-http-client/get-request#1-the-httpsendrequest-pattern-recommended)
+- [POST Requests](/cre/guides/workflow/using-http-client/post-request#1-the-httpsendrequest-pattern-recommended)
+
+### `client.SendRequest`
+
+The lower-level method for complex scenarios. Must be manually wrapped in `cre.RunInNodeMode`.
+
+**Signature:**
+
+```go
+func (c *Client) SendRequest(runtime cre.NodeRuntime, input *http.Request) cre.Promise[*http.Response]
+```
+
+**Parameters:**
+
+- `runtime`: A `cre.NodeRuntime` provided by `cre.RunInNodeMode`
+- `input`: An `*http.Request` struct
+
+**Returns:**
+
+- `cre.Promise[*http.Response]`
+
+**Guide:**
+
+- [Using `cre.RunInNodeMode`](/cre/guides/workflow/using-http-client/get-request#2-the-creruninnodemode-pattern-low-level)
+
+## Submitting reports via HTTP
+
+These methods send cryptographically signed reports (generated via `runtime.GenerateReport()`) to an HTTP endpoint. For a comprehensive guide including transformation function patterns and best practices, see [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http).
+
+### `sendRequester.SendReport`
+
+The recommended, high-level method for submitting reports via HTTP.
+
+**Signature:**
+
+```go
+func (c *SendRequester) SendReport(
+    report cre.Report,
+    fn func(*sdk.ReportResponse) (*http.Request, error)
+) cre.Promise[*http.Response]
+```
+
+**Parameters:**
+
+- `report`: The `cre.Report` object generated by `runtime.GenerateReport()`
+- `fn`: A transformation function that formats the report for your API. Receives `*sdk.ReportResponse` and returns `*http.Request`.
+
+**Returns:**
+
+- `cre.Promise[*http.Response]`
+
+**Example:**
+
+```go
+func formatReport(r *sdk.ReportResponse) (*http.Request, error) {
+    return &http.Request{
+        Url:    "https://api.example.com/reports",
+        Method: "POST",
+        Body:   r.RawReport,
+        CacheSettings: &http.CacheSettings{
+            Store:  true,
+            MaxAge: durationpb.New(5 * time.Minute),
+        },
+    }, nil
+}
+
+resp, err := sendRequester.SendReport(report, formatReport).Await()
+```
+
+**Guide:**
+
+- [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http)
+
+### `client.SendReport`
+
+The lower-level version for complex scenarios. Must be manually wrapped in `cre.RunInNodeMode`.
+
+**Signature:**
+
+```go
+func (c *Client) SendReport(
+    runtime cre.NodeRuntime,
+    report cre.Report,
+    fn func(*sdk.ReportResponse) (*http.Request, error)
+) cre.Promise[*http.Response]
+```
+
+**Parameters:**
+
+- `runtime`: A `cre.NodeRuntime` provided by `cre.RunInNodeMode`
+- `report`: The `cre.Report` object generated by `runtime.GenerateReport()`
+- `fn`: A transformation function that formats the report for your API
+
+**Returns:**
+
+- `cre.Promise[*http.Response]`
+
+{/* prettier-ignore */}
+<Aside type="note" title="Important: Always use CacheSettings">
+  Always include `CacheSettings` in your transformation function. Due to signature variance between nodes, cache hits will be limited, but it still prevents worst-case scenarios.
+  
+  **Required**: Implement deduplication on your receiving API using the report hash (`keccak256(RawReport)`). See the [guide](/cre/guides/workflow/using-http-client/submitting-reports-http#understanding-cachesettings-for-reports) for details.
+</Aside>
+
+**Guide:**
+
+- [Advanced: Low-level pattern](/cre/guides/workflow/using-http-client/submitting-reports-http#advanced-low-level-pattern)
+
+## Report types
+
+These types are specific to report submission via HTTP.
+
+### `sdk.ReportResponse`
+
+The internal structure of a report generated by `runtime.GenerateReport()`. This type is passed to your transformation function when using `SendReport`. It contains the encoded report data plus cryptographic signatures from the DON.
+
+{/* prettier-ignore */}
+<Aside type="note" title="When do I use this?">
+  You don't create this type directly. It's generated internally when you call `runtime.GenerateReport()` and is provided to your transformation function in `SendReport`.
+</Aside>
+
+| <div style="width: 120px;">Field</div> | <div style="width: 220px;">Type</div> | Description                                                                                                                              |
+| -------------------------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `RawReport`                            | `[]byte`                              | The complete report in binary format, including metadata and your ABI-encoded payload. This is the primary data you'll send to your API. |
+| `ReportContext`                        | `[]byte`                              | Additional context data about the report (workflow execution details). Some APIs may require this to be included alongside the report.   |
+| `Sigs`                                 | `[]*sdk.AttributedSignature`          | Array of cryptographic signatures from DON nodes. Each signature proves that a node validated and agreed on the report content.          |
+| `ConfigDigest`                         | `[]byte`                              | Configuration digest identifying the DON configuration that generated this report.                                                       |
+| `SeqNr`                                | `uint64`                              | Sequence number of this report within the workflow execution.                                                                            |
+
+**Example - Accessing report fields:**
+
+```go
+func myTransformFunction(r *sdk.ReportResponse) (*http.Request, error) {
+    logger.Info("Report details",
+        "seqNr", r.SeqNr,
+        "numSignatures", len(r.Sigs),
+        "reportSize", len(r.RawReport),
+    )
+
+    // Most APIs want the raw report in the body
+    return &http.Request{
+        Url:    "https://api.example.com/reports",
+        Method: "POST",
+        Body:   r.RawReport,
+    }, nil
+}
+```
+
+### `sdk.AttributedSignature`
+
+Represents a single signature from a DON node on a report.
+
+| Field       | Type     | Description                                                    |
+| ----------- | -------- | -------------------------------------------------------------- |
+| `Signature` | `[]byte` | The cryptographic signature bytes.                             |
+| `SignerId`  | `uint32` | The unique identifier of the node that created this signature. |
+
+**Example - Accessing signatures:**
+
+```go
+func formatReport(r *sdk.ReportResponse) (*http.Request, error) {
+    // Access signatures
+    for i, sig := range r.Sigs {
+        logger.Info("Signature", "index", i, "signerId", sig.SignerId, "length", len(sig.Signature))
+    }
+    // Format for your API...
+}
+```
+
+For complete examples of including signatures in different formats (body, headers, JSON), see the [Submitting Reports via HTTP guide](/cre/guides/workflow/using-http-client/submitting-reports-http#formatting-patterns).

@@ -1,0 +1,307 @@
+---
+section: cre
+title: "Onchain Read"
+sdkLang: "go"
+pageId: "guides-workflow-evm-onchain-read"
+date: Last Modified
+metadata:
+  description: "Read data from smart contracts in Go: learn to call view functions and fetch verified blockchain state in your workflows."
+  datePublished: "2025-11-04"
+  lastModified: "2025-12-10"
+---
+
+import { Aside } from "@components"
+
+This guide explains how to read data from a smart contract from within your CRE workflow. The process uses [generated bindings](/cre/guides/workflow/using-evm-client/generating-bindings) and the SDK's [`evm.Client`](/cre/reference/sdk/evm-client) to create a simple, type-safe developer experience.
+
+## The read pattern
+
+Reading from a contract follows a simple pattern:
+
+1. **Prerequisite - Generate bindings**: You must first [generate Go bindings](/cre/guides/workflow/using-evm-client/generating-bindings) for your smart contracts using the CRE CLI. This creates type-safe Go methods that correspond to your contract's `view` and `pure` functions.
+1. **Instantiate the binding**: In your workflow logic, create an instance of your generated binding.
+1. **Call a read method**: Call the desired function on the binding instance, specifying a block number. This is an asynchronous call that immediately returns a [`Promise`](/cre/reference/sdk/core/#promise).
+1. **Await the result**: Call `.Await()` on the returned promise to pause execution and wait for the consensus-verified result from the DON.
+
+## Step-by-step example
+
+Let's assume you have followed the [generating bindings guide](/cre/guides/workflow/using-evm-client/generating-bindings) and have created a binding for the Storage contract with a `get() view returns (uint256)` function.
+
+### 1. The generated binding
+
+After running `cre generate-bindings evm`, your binding will contain methods that wrap the onchain functions. For the `Storage` contract's `get` function, the generated method takes the `sdk.Runtime` and a block number as arguments:
+
+```go
+// In contracts/evm/src/generated/storage/storage.go
+
+func (c Storage) Get(runtime cre.Runtime, blockNumber *big.Int) cre.Promise[*evm.CallContractReply] {
+    // This method handles ABI encoding, calling the evm.Client,
+    // and returns a promise for the response.
+}
+```
+
+### 2. The workflow logic
+
+In your main workflow file (`main.go`), you can now use this binding to read from your contract.
+
+```go
+// In your workflow's main.go
+
+import (
+    "contracts/evm/src/generated/storage" // Import your generated binding
+    "fmt"
+    "math/big"
+
+    "github.com/ethereum/go-ethereum/common"
+    "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/evm"
+    "github.com/smartcontractkit/cre-sdk-go/cre"
+)
+
+func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*MyResult, error) {
+    logger := runtime.Logger()
+    // 1. Create the EVM client with chain selector
+    evmClient := &evm.Client{
+        ChainSelector: config.ChainSelector, // e.g., 16015286601757825753 for Sepolia
+    }
+
+    // 2. Instantiate the contract binding
+    contractAddress := common.HexToAddress(config.ContractAddress)
+    storageContract, err := storage.NewStorage(evmClient, contractAddress, nil)
+    if err != nil {
+        return nil, fmt.Errorf("failed to create contract instance: %w", err)
+    }
+
+    // 3. Call the read method - it returns the decoded value directly
+    // See the "Block number options" section below for details on block number parameters
+    storedValue, err := storageContract.Get(runtime, big.NewInt(-3)).Await() // -3 = finalized block
+    if err != nil {
+        logger.Error("Failed to read storage value", "err", err)
+        return nil, err
+    }
+
+    logger.Info("Successfully read storage value", "value", storedValue.String())
+    return &MyResult{StoredValue: storedValue}, nil
+}
+```
+
+## Understanding return types
+
+Generated bindings are designed to be **self-documenting**. The method signature tells you exactly what type you'll receive, so you don't need to guess or look up the ABI—the Go type system provides this information directly.
+
+### Reading method signatures
+
+When you call a read method on a generated binding, its signature shows you the return type. For example, from the `IERC20` binding:
+
+```go
+// This method returns a *big.Int
+func (c IERC20) TotalSupply(
+    runtime cre.Runtime,
+    blockNumber *big.Int,
+) cre.Promise[*big.Int]  // ← The return type is right here
+
+// This method returns a bool
+func (c IERC20) Approve(
+    runtime cre.Runtime,
+    args ApproveInput,
+    blockNumber *big.Int,
+) cre.Promise[bool]  // ← Returns bool
+```
+
+### Solidity-to-Go type mappings
+
+The binding generator follows standard Ethereum conventions:
+
+| Solidity Type            | Go Type                                                                                   |
+| ------------------------ | ----------------------------------------------------------------------------------------- |
+| `uint8`, `uint256`, etc. | `*big.Int`                                                                                |
+| `int8`, `int256`, etc.   | `*big.Int`                                                                                |
+| `address`                | `common.Address`                                                                          |
+| `bool`                   | `bool`                                                                                    |
+| `string`                 | `string`                                                                                  |
+| `bytes`, `bytes32`, etc. | `[]byte`                                                                                  |
+| `struct`                 | Custom Go struct ([generated](/cre/guides/workflow/using-evm-client/generating-bindings)) |
+
+### Using your IDE
+
+Modern IDEs will show you the method signature when you hover over a function call or use autocomplete. This makes it easy to see exactly what type you're working with:
+
+```go
+// When you type this and hover over TotalSupply, your IDE shows:
+value, err := token.TotalSupply(runtime, big.NewInt(-3)).Await()
+//                     ↑ IDE tooltip: "func TotalSupply(...) cre.Promise[*big.Int]"
+// So you know `value` is a *big.Int and can use it directly
+```
+
+### Practical usage
+
+Because the type is explicit, you can immediately use the value with confidence:
+
+```go
+totalSupply, err := token.TotalSupply(runtime, big.NewInt(-3)).Await()
+if err != nil {
+    return nil, err
+}
+
+// You know it's *big.Int, so you can use it in calculations:
+doubled := new(big.Int).Mul(totalSupply, big.NewInt(2))
+logger.Info("Supply doubled", "result", doubled.String())
+```
+
+## Block number options
+
+When calling contract read methods, you must specify a block number. There are two ways to do this:
+
+### Using magic numbers
+
+- **Finalized block**: Use `big.NewInt(-3)` to read from the latest finalized block (recommended for production)
+- **Latest block**: Use `big.NewInt(-2)` to read from the latest block
+
+For explicit block numbers, see [Custom block depths](#custom-block-depths) below.
+
+### Custom block depths
+
+For use cases requiring fixed confirmation thresholds (e.g., regulatory compliance) or historical state verification, you can specify an exact block number.
+
+**Example 1 - Read from a specific historical block**:
+
+```go
+// Read from block 12345678
+specificBlock := big.NewInt(12345678)
+value, err := storageContract.Get(runtime, specificBlock).Await()
+if err != nil {
+    return nil, fmt.Errorf("failed to read from specific block: %w", err)
+}
+```
+
+**Example 2 - Read from 500 blocks ago from latest block**:
+
+```go
+import (
+    pb "github.com/smartcontractkit/chainlink-protos/cre/go/values/pb"
+)
+
+// Helper to convert protobuf BigInt to standard library big.Int
+func pbBigIntToBigInt(pb *pb.BigInt) *big.Int {
+    if pb == nil {
+        return nil
+    }
+    result := new(big.Int).SetBytes(pb.AbsVal)
+    if pb.Sign < 0 {
+        result.Neg(result)
+    }
+    return result
+}
+
+// Get the latest block number
+latestHeader, err := evmClient.HeaderByNumber(runtime, &evm.HeaderByNumberRequest{}).Await()
+if err != nil {
+    return nil, fmt.Errorf("failed to get latest block: %w", err)
+}
+
+// Convert protobuf BigInt to standard library big.Int
+latestBlockNum := pbBigIntToBigInt(latestHeader.Header.BlockNumber)
+customDepth := big.NewInt(500)
+customBlock := new(big.Int).Sub(latestBlockNum, customDepth)
+
+// Use the custom block number with the contract binding
+value, err := storageContract.Get(runtime, customBlock).Await()
+if err != nil {
+    return nil, fmt.Errorf("failed to read from custom block: %w", err)
+}
+```
+
+**Understanding the conversion:**
+
+The `pbBigIntToBigInt` helper converts the SDK's protobuf `*pb.BigInt` type (which stores the value as `AbsVal []byte` and `Sign int64`) to Go's standard library `*big.Int`. This allows you to perform arithmetic operations like subtracting 500 blocks.
+
+<Aside type="note" title="SDK enhancement planned">
+  The SDK team is working on a built-in helper to simplify this conversion. Until then, use the `pbBigIntToBigInt`
+  helper shown above.
+</Aside>
+
+See [Finality and Confidence Levels](/cre/concepts/finality-go) for more details on when to use custom block depths.
+
+## Complete example
+
+This example shows a full, runnable workflow that triggers on a cron schedule and reads a value from the Storage contract.
+
+```go
+package main
+
+import (
+    "contracts/evm/src/generated/storage" // Generated Storage binding
+	"fmt"
+	"log/slog"
+	"math/big"
+
+    "github.com/ethereum/go-ethereum/common"
+    "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/evm"
+    "github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
+	"github.com/smartcontractkit/cre-sdk-go/cre"
+	"github.com/smartcontractkit/cre-sdk-go/cre/wasm"
+)
+
+type Config struct {
+    ContractAddress string `json:"contractAddress"`
+    ChainSelector   uint64 `json:"chainSelector"`
+}
+
+type MyResult struct {
+    StoredValue *big.Int
+}
+
+func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*MyResult, error) {
+    logger := runtime.Logger()
+    // Create EVM client
+    evmClient := &evm.Client{
+        ChainSelector: config.ChainSelector,
+    }
+
+    // Create contract instance
+    contractAddress := common.HexToAddress(config.ContractAddress)
+    storageContract, err := storage.NewStorage(evmClient, contractAddress, nil)
+    if err != nil {
+        return nil, fmt.Errorf("failed to create contract instance: %w", err)
+    }
+
+    // Call contract method - it returns the decoded type directly
+    storedValue, err := storageContract.Get(runtime, big.NewInt(-3)).Await()
+    if err != nil {
+        return nil, fmt.Errorf("failed to read storage value: %w", err)
+    }
+
+    logger.Info("Successfully read storage value", "value", storedValue.String())
+    return &MyResult{StoredValue: storedValue}, nil
+}
+
+func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+	return cre.Workflow[*Config]{
+		cre.Handler(
+			cron.Trigger(&cron.Config{Schedule: "*/10 * * * * *"}),
+			onCronTrigger,
+		),
+	}, nil
+}
+
+func main() {
+    wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
+}
+```
+
+## Configuration
+
+Your workflow configuration file (`config.json`) should include both the contract address and chain selector:
+
+```json
+{
+  "contractAddress": "0xYourContractAddressHere",
+  "chainSelector": 16015286601757825753
+}
+```
+
+<Aside type="note" title="Chain Selector">
+  The chain selector is a unique identifier used by Chainlink to specify a blockchain. For Sepolia testnet, use
+  `16015286601757825753`. This must match the network where your contract is deployed.
+</Aside>
+
+You pass this file to the simulator using the `--config` flag: `cre workflow simulate --config config.json main.go`

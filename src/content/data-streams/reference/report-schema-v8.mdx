@@ -1,0 +1,31 @@
+---
+section: dataStreams
+date: Last Modified
+title: "Report Schema: RWA Standard (v8)"
+metadata:
+  title: "RWA Standard (v8) | Chainlink Data Streams"
+  description: "Learn about Chainlink Data Streams RWA Standard (v8) schema, including fields, encoding, and examples for integrating RWA data in your applications."
+  keywords: ["Report Schema", "RWA", "Real World Assets", "v8 Schema", "Data Format", "Report Structure"]
+---
+
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+import ReportSchemaTabs from "@features/data-streams/common/ReportSchemaTabs.astro"
+import SchemaFieldsTable from "@features/data-streams/common/SchemaFieldsTable.astro"
+
+<DataStreams section="dsNotes" />
+
+<ReportSchemaTabs />
+
+RWA streams adhere to the report schema outlined below.
+
+### Schema Fields
+
+<SchemaFieldsTable schema="v8" />
+
+**Notes**:
+
+- `marketStatus`:
+  - The `marketStatus` field is the authoritative signal for determining whether a market is open. Do not use `observationsTimestamp` (or any other timestamp field) to infer whether a stream is active or to select among multiple streams — timestamps reflect when an observation was last recorded, not whether the market is currently open.
+  - Users are responsible for handling market status changes in their applications.
+  - For further guidance, refer to the [Handling Market Events](/data-streams/rwa-streams/handling-market-events) documentation.
+- Future RWA streams may use different report schemas.

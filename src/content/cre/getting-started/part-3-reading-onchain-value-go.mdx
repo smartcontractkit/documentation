@@ -1,0 +1,216 @@
+---
+section: cre
+title: "Part 3: Reading an Onchain Value"
+date: Last Modified
+sdkLang: "go"
+pageId: "getting-started-part-3"
+metadata:
+  description: "Getting started Part 3 (Go): read smart contract data with type-safe bindings and combine onchain values in your workflow."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+import { CodeHighlightBlock } from "@components"
+import part3Code from "./snippets/part-3-main.go?raw"
+
+In the previous part, you successfully fetched data from an offchain API. Now, you will complete the "Onchain Calculator" by reading a value from a smart contract and combining it with your offchain result.
+
+This part of the guide introduces the core pattern for all onchain interactions: **contract bindings**.
+
+## What you'll do
+
+- Configure your project with a Sepolia RPC URL.
+- Create a new Go package for a contract binding.
+- Use a binding to read a value from a deployed smart contract.
+- Integrate the onchain value into your main workflow logic.
+
+## Step 1: The smart contract
+
+For this guide, we will interact with a simple `Storage` contract that has already been deployed to the Sepolia testnet. All it does is store a single `uint256` value.
+
+Here is the Solidity source code for the contract:
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
+
+contract Storage {
+  uint256 public value;
+
+  constructor(uint256 initialValue) {
+    value = initialValue;
+  }
+
+  function get() public view returns (uint256) {
+    return value;
+  }
+}
+```
+
+A version of this contract has been deployed to Sepolia at `0xa17CF997C28FF154eDBae1422e6a50BeF23927F4` with an `initialValue` of `22`.
+
+## Step 2: Configure your environment
+
+To interact with a contract on Sepolia, your workflow needs EVM chain details.
+
+1.  **Contract address and chain name**: Add the deployed contract's address and chain name to your `config.staging.json` file. We use an `evms` array to hold the configuration, which makes it easy to add more contracts (or chains) later.
+
+        ```json
+        {
+          "schedule": "0 */1 * * * *",
+          "apiUrl": "https://api.mathjs.org/v4/?expr=randomInt(1,101)",
+          "evms": [
+            {
+              "storageAddress": "0xa17CF997C28FF154eDBae1422e6a50BeF23927F4",
+              "chainName": "ethereum-testnet-sepolia"
+            }
+          ]
+        }
+        ```
+         {/* prettier-ignore */}
+         <Aside type="note" title="About Chain Identifiers">
+           A **chain selector** is a unique identifier used by Chainlink to specify a blockchain.
+
+           Chain selectors can be referenced in multiple formats:
+           - **String name** (used in config files and `project.yaml`): `"ethereum-testnet-sepolia"`
+           - **Numeric ID** (used in Go code with the SDK's `ChainSelectorFromName()` helper): `16015286601757825753`
+           - **Go constant** (used directly in code): `evm.EthereumTestnetSepolia`
+           <br />
+           For a complete reference showing all supported chains in all three formats, see the [Chain Selectors reference](/cre/reference/sdk/evm-client#chain-selectors).
+         </Aside>
+
+1.  **RPC URL**: For your workflow to interact with the blockchain, it needs an RPC endpoint. The `cre init` command has already configured a public Sepolia RPC URL in your `project.yaml` file for convenience. Let's take a look at what was generated:
+
+    Open your `project.yaml` file at the root of your project. Your `staging-settings` target should look like this:
+
+    ```yaml
+    # in onchain-calculator/project.yaml
+    staging-settings:
+      rpcs:
+        - chain-name: ethereum-testnet-sepolia
+          url: https://ethereum-sepolia-rpc.publicnode.com
+    ```
+
+    This public RPC endpoint is sufficient for testing and following this guide. However, for production use or higher reliability, you should consider using a dedicated RPC provider like [Alchemy](https://www.alchemy.com/) or [Infura](https://infura.io/).
+
+    <Aside type="caution" title="Protect Your RPC URL">
+      When you use a dedicated RPC provider, your RPC URLs will contain API keys. To avoid exposing them, you should add
+      your `project.yaml` file to your project's `.gitignore` file.
+    </Aside>
+
+## Step 3: Create the contract binding
+
+This is the core of onchain interaction. While you _could_ call the generic [`evm.Client`](/cre/reference/sdk/evm-client) directly from your main workflow logic, this is not recommended. Doing so would require you to manually handle ABI encoding and decoding for every contract call, leading to code that is hard to read and prone to errors.
+
+The recommended pattern is to create a **binding**: a separate Go package that acts as a type-safe client for your specific smart contract. The binding encapsulates all the low-level encoding/decoding logic, allowing your main workflow to remain clean and focused.
+
+In this step, you will create a binding for the `Storage` contract.
+
+1. **Add the contract ABI**: Create a new file called `Storage.abi` in the existing `abi` directory and add the contract's ABI JSON. From your project root (`onchain-calculator/`), run the following command:
+
+   ```bash
+   touch contracts/evm/src/abi/Storage.abi
+   ```
+
+   Open `contracts/evm/src/abi/Storage.abi` and paste the following ABI:
+
+   ```json
+   [
+     {
+       "inputs": [{ "internalType": "uint256", "name": "initialValue", "type": "uint256" }],
+       "stateMutability": "nonpayable",
+       "type": "constructor"
+     },
+     {
+       "inputs": [],
+       "name": "get",
+       "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+       "stateMutability": "view",
+       "type": "function"
+     },
+     {
+       "inputs": [],
+       "name": "value",
+       "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+       "stateMutability": "view",
+       "type": "function"
+     }
+   ]
+   ```
+
+1. **Generate the Go binding**: Run the CRE binding generator from your project root (`onchain-calculator/`):
+
+   ```bash
+   cre generate-bindings evm
+   ```
+
+   This command will automatically generate type-safe Go bindings for all ABI files in your `contracts/evm/src/abi/` directory. It also automatically adds the required `evm` capability dependency to your `go.mod` file. The generated bindings will be placed in `contracts/evm/src/generated/`.
+
+1. **Verify the generated files**: After running the command, you should see two new files in `contracts/evm/src/generated/storage/`:
+   - `Storage.go` — The main binding that provides a type-safe interface for interacting with your contract
+   - `Storage_mock.go` — A mock implementation for testing workflows without deploying contracts
+
+   <Aside type="note" title="Automatic Binding Generation">
+     The CRE bindings generator reads all `.abi` files in your ABI directory and creates corresponding Go packages. Each
+     contract gets its own Go file with methods that match the contract's functions, automatically handling ABI encoding
+     and decoding.
+   </Aside>
+
+## Step 4: Update your workflow logic
+
+Now you can use your new binding in your `main.go` file to read the onchain value and complete the calculation.
+
+Replace the entire content of `onchain-calculator/my-calculator-workflow/main.go` with the version below.
+
+**Note:** Lines highlighted in green indicate new or modified code compared to Part 2.
+
+<CodeHighlightBlock lang="go" code={part3Code} title="onchain-calculator/my-calculator-workflow/main.go" />
+
+## Step 5: Sync your dependencies
+
+Now that your `main.go` file has been updated to import the new `storage` binding package, run `go mod tidy` to automatically update your project's `go.mod` and `go.sum` files.
+
+```bash
+go mod tidy
+```
+
+## Step 6: Run the simulation and review the output
+
+Run the simulation from your project root directory (the `onchain-calculator/` folder). Because there is only one trigger defined, the simulator runs it automatically.
+
+```bash
+cre workflow simulate my-calculator-workflow --target staging-settings
+```
+
+The simulation logs will show the end-to-end execution of your workflow.
+
+```bash
+Workflow compiled
+2025-11-03T22:37:05Z [SIMULATION] Simulator Initialized
+
+2025-11-03T22:37:05Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+2025-11-03T22:37:05Z [USER LOG] msg="Successfully fetched offchain value" result=53
+2025-11-03T22:37:05Z [USER LOG] msg="Successfully read onchain value" result=22
+2025-11-03T22:37:05Z [USER LOG] msg="Final calculated result" result=75
+
+Workflow Simulation Result:
+ {
+  "FinalResult": 75
+}
+
+2025-11-03T22:37:05Z [SIMULATION] Execution finished signal received
+2025-11-03T22:37:05Z [SIMULATION] Skipping WorkflowEngineV2
+```
+
+- **`[USER LOG]`**: You can now see all three of your `logger.Info()` calls, showing the offchain value (`result=53`), the onchain value (`result=22`), and the final combined result (`result=75`).
+- **`[SIMULATION]`**: These are system-level messages from the simulator showing its internal state.
+- **`Workflow Simulation Result`**: This is the final, JSON-formatted return value of your workflow. The `FinalResult` field contains the sum of the offchain and onchain values (53 + 22 = 75).
+
+You have successfully built a complete CRE workflow that combines offchain and onchain data.
+
+## Next Steps
+
+You have successfully read a value from a smart contract and combined it with offchain data. The final step is to write this new result back to the blockchain.
+
+- **[Part 4: Writing Onchain](/cre/getting-started/part-4-writing-onchain)**: Learn how to execute an onchain write transaction from your workflow to complete the project.

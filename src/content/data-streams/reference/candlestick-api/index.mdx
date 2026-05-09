@@ -1,0 +1,362 @@
+---
+section: dataStreams
+date: July 30, 2025
+title: "Data Streams Candlestick API"
+metadata:
+  title: "Data Streams Candlestick API Reference | Chainlink Documentation"
+  description: "Reference for the Chainlink Data Streams Candlestick API. Learn how to authenticate, list available symbols, query historical candlestick (OHLC) data, and stream live price updates over HTTP."
+  keywords: ["Candlestick API", "OHLC", "HTTP Rest API", "API Client"]
+---
+
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+import { CopyText } from "@components"
+
+<DataStreams section="dsNotes" />
+
+The Candlestick API provides open-high-low-close (OHLC) aggregated trading data.
+
+OHLC data is provided in two formats: [the standard OHLCV format](#get-candlestick-data-row-format), widely used by retail crypto exchanges, ideal for human readability and compatibility; [and the columnar format](#get-candlestick-data-column-format), preferred by HFT systems, optimized for efficient, large-scale data processing.
+
+The API provides both historical candlestick data through the [history endpoints](#get-candlestick-data-column-format) (updated every minute) and live price updates through the [streaming endpoint](#get-streaming-price-updates) (updated every second).
+
+## Domains
+
+| <div style="width: 180px;">Description</div> | Testnet URL                                                             | Mainnet URL                                                     |
+| :------------------------------------------- | :---------------------------------------------------------------------- | :-------------------------------------------------------------- |
+| Candlestick API endpoint                     | <CopyText text="https://priceapi.testnet-dataengine.chain.link" code /> | <CopyText text="https://priceapi.dataengine.chain.link" code /> |
+
+## API Endpoints
+
+### Authorize and get token
+
+##### Endpoint
+
+**`/api/v1/authorize`**
+
+| Type      | Description                                       | Parameter(s)                                                                    |
+| :-------- | :------------------------------------------------ | :------------------------------------------------------------------------------ |
+| HTTP POST | Authorizes a user and returns a JWT access token. | <ul><li>`login`: The user ID.</li><li>`password`: The user's API key.</li></ul> |
+
+##### Sample request
+
+```bash
+curl -X POST \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "login={YOUR_USER_ID}&password={YOUR_API_KEY}" \
+  https://priceapi.testnet-dataengine.chain.link/api/v1/authorize
+```
+
+##### Response
+
+- **Status**: `200`
+
+  ```json
+  {
+    "d": {
+      "access_token": "[ACCESS_TOKEN]",
+      "expiration": 1747203979
+    },
+    "s": "ok"
+  }
+  ```
+
+  | Field          | Type     | Description                               |
+  | :------------- | :------- | :---------------------------------------- |
+  | `s`            | `string` | The status of the request.                |
+  | `d`            | `object` | The data returned by the API call.        |
+  | `access_token` | `string` | The JWT token for subsequent requests.    |
+  | `expiration`   | `number` | The expiry timestamp (unix) of the token. |
+
+##### Error Responses
+
+| Status Code | Error Message                                                                   | Description                               |
+| :---------- | :------------------------------------------------------------------------------ | :---------------------------------------- |
+| `400`       | `Parse error - Login: missing required field, Password: missing required field` | A required field was missing.             |
+| `401`       | `Unauthorized - Invalid credentials`                                            | The user password (API key) is incorrect. |
+| `404`       | `Not found - user not found for id {USER_ID}`                                   | The user login was not found.             |
+| `500`       | `Error - Failed to generate token`                                              | The server failed to create a token.      |
+
+### Get list of supported symbols
+
+##### Endpoint
+
+**`/api/v1/symbol_info`**
+
+| Type     | Description                                              | Parameter(s)                                                                                                                        |
+| :------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------- |
+| HTTP GET | Gets a list of all supported symbols on the environment. | <ul><li>`group` (optional): Filter symbols by group. See [`/groups`](#get-list-of-supported-groups) for available groups.</li></ul> |
+
+##### Sample request
+
+```bash
+curl -X GET \
+  -H "Authorization: Bearer {YOUR_ACCESS_TOKEN}" \
+  https://priceapi.testnet-dataengine.chain.link/api/v1/symbol_info
+```
+
+##### Response
+
+- **Status**: `200`
+
+  ```json
+  {
+    "s": "ok",
+    "symbol": ["ETHUSD", "BTCUSD"],
+    "currency": ["USD", "USD"],
+    "base-currency": ["ETH", "BTC"]
+  }
+  ```
+
+  | Field           | Type     | Description                      |
+  | :-------------- | :------- | :------------------------------- |
+  | `s`             | `string` | The status of the request.       |
+  | `symbol`        | `array`  | Array of supported symbols.      |
+  | `currency`      | `array`  | Array of symbol currencies.      |
+  | `base-currency` | `array`  | Array of symbol base currencies. |
+
+##### Error Responses
+
+| Status Code | Error Message                                                                                                                                             | Description                                      |
+| :---------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------- |
+| `401`       | `Unauthorized - Authorization header is required \|\| Invalid authorization header format \|\| token signature is invalid: signature is invalid \|\| ...` | The authorization header was missing or invalid. |
+| `500`       | `Error - Something went wrong`                                                                                                                            | An unexpected server error occurred.             |
+
+### Get list of supported groups
+
+##### Endpoint
+
+**`/api/v1/groups`**
+
+| Type     | Description                                                                                                                                   | Parameter(s) |
+| :------- | :-------------------------------------------------------------------------------------------------------------------------------------------- | :----------- |
+| HTTP GET | Gets a list of all supported symbol types on the environment. Any group name returned can be used as a filter in the `/symbol_info` endpoint. | None         |
+
+##### Sample request
+
+```bash
+curl -X GET \
+  -H "Authorization: Bearer {YOUR_ACCESS_TOKEN}" \
+  https://priceapi.testnet-dataengine.chain.link/api/v1/groups
+```
+
+##### Response
+
+- **Status**: `200`
+
+  ```json
+  {
+    "s": "ok",
+    "d": {
+      "groups": [{ "id": "crypto" }, { "id": "equities" }, { "id": "forex" }, { "id": "equity" }]
+    }
+  }
+  ```
+
+  | Field    | Type     | Description                        |
+  | :------- | :------- | :--------------------------------- |
+  | `s`      | `string` | The status of the request.         |
+  | `d`      | `object` | The data returned by the API call. |
+  | `groups` | `array`  | Array of supported groups.         |
+
+##### Error Responses
+
+| Status Code | Error Message                                                                                                                                             | Description                                      |
+| :---------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------- |
+| `401`       | `Unauthorized - Authorization header is required \|\| Invalid authorization header format \|\| token signature is invalid: signature is invalid \|\| ...` | The authorization header was missing or invalid. |
+| `500`       | `Error - Something went wrong`                                                                                                                            | An unexpected server error occurred.             |
+
+### Get candlestick data (column format)
+
+##### Endpoint
+
+**`/api/v1/history`**
+
+| Type     | Description                             | Parameter(s)                                                                                                                                                                                                                                                                                                            |
+| :------- | :-------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| HTTP GET | Gets candlestick data in column format. | <ul><li>`symbol`: The symbol to query.</li><li>`resolution`: Resolution of the data. E.g., "1m". Must match [supported resolutions](#supported-resolutions).</li><li>`from`: Unix timestamp of the leftmost required bar (inclusive).</li><li>`to`: Unix timestamp of the rightmost required bar (inclusive).</li></ul> |
+
+#### Supported resolutions
+
+The resolution you provide must be within the supported boundaries for the given time window size:
+
+| Time window size          | Supported resolutions            |
+| :------------------------ | :------------------------------- |
+| 1 min - 24 hours          | 1 minute - 24 hours (1m - 24h)   |
+| 1 - 5 days                | 5 minutes - 5 days (5m - 5d)     |
+| 5 - 30 days               | 30 minutes - 30 days (30m - 30d) |
+| 30 - 90 days              | 1 hour - 90 days (1h - 90d)      |
+| 90 - 180 days             | 2 hours - 180 days (2h - 6M)     |
+| 180 - 365 days            | 24 hours - 365 days (24h - 1y)   |
+| 365 - 1825 days (1-5 yrs) | 1 week - 5 years (1w - 5y)       |
+| Over 1825 days (> 5 yrs)  | Over 1 month                     |
+
+Resolutions can be provided in the following units:
+
+| Name    | Unit | Example |
+| :------ | :--- | :------ |
+| minutes | m    | 5m      |
+| hours   | h    | 3h      |
+| days    | d    | 1d      |
+| weeks   | w    | 2w      |
+| months  | M    | 6M      |
+| years   | y    | 2y      |
+
+##### Sample request
+
+```bash
+curl -X GET \
+  -H "Authorization: Bearer {YOUR_ACCESS_TOKEN}" \
+  "https://priceapi.testnet-dataengine.chain.link/api/v1/history?symbol=ETHUSD&resolution=1m&from=1746072068&to=1746158468"
+```
+
+##### Response
+
+- **Status**: `200`
+
+  ```json
+  {
+    "s": "ok",
+    "t": [1746158460, 1746158400, 1746158340],
+    "c": [1.84685e21, 1.848515087189567e21, 1.8490380305e21, 1.8481266e21],
+    "o": [1.8483674e21, 1.848602513e21, 1.8481267e21],
+    "h": [1.8498753129131415e21, 1.848875387e21, 1.8490380305e21],
+    "l": [1.8468008021426886e21, 1.848243519e21, 1.8475677870725296e21],
+    "v": []
+  }
+  ```
+
+  | Field | Type     | Description                                                            |
+  | :---- | :------- | :--------------------------------------------------------------------- |
+  | `s`   | `string` | The status of the request.                                             |
+  | `t`   | `array`  | Array of unix timestamps (the time of each candle).                    |
+  | `c`   | `array`  | Array of numbers (the close (last) value of each candle).              |
+  | `o`   | `array`  | Array of numbers (the open (first) value of each candle).              |
+  | `h`   | `array`  | Array of numbers (the high (max) value of each candle).                |
+  | `l`   | `array`  | Array of numbers (the low (min) value of each candle).                 |
+  | `v`   | `array`  | Array of numbers (the volume of each candle. Not currently supported). |
+
+  > **Note**: If candles cannot be found for the given symbol/time period, a response with empty arrays will be provided. E.g., `{ "s": "ok", "t": [], "c": [], "o": [], "h": [], "l": [], "v": [] }`
+
+##### Error Responses
+
+| Status Code | Error Message                                                                                                                                             | Description                                      |
+| :---------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------- |
+| `400`       | `Parse error xxx: missing required field`                                                                                                                 | A required parameter was missing.                |
+| `401`       | `Unauthorized - Authorization header is required \|\| Invalid authorization header format \|\| token signature is invalid: signature is invalid \|\| ...` | The authorization header was missing or invalid. |
+| `404`       | `Not found- Could not find feedID for symbol`                                                                                                             | The provided symbol is not supported.            |
+| `500`       | `Something went wrong. Please try again later.`                                                                                                           | An unexpected server error occurred.             |
+
+### Get candlestick data (row format)
+
+##### Endpoint
+
+**`/api/v1/history/rows`**
+
+| Type     | Description                          | Parameter(s)                                                                                                                                                                                                                                                                                                            |
+| :------- | :----------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| HTTP GET | Gets candlestick data in row format. | <ul><li>`symbol`: The symbol to query.</li><li>`resolution`: Resolution of the data. E.g., "1m". Must match [supported resolutions](#supported-resolutions).</li><li>`from`: Unix timestamp of the leftmost required bar (inclusive).</li><li>`to`: Unix timestamp of the rightmost required bar (inclusive).</li></ul> |
+
+##### Sample request
+
+```bash
+curl -X GET \
+  -H "Authorization: Bearer {YOUR_ACCESS_TOKEN}" \
+  "https://priceapi.testnet-dataengine.chain.link/api/v1/history/rows?symbol=ETHUSD&resolution=1m&from=1746072068&to=1746158468"
+```
+
+##### Response
+
+- **Status**: `200`
+
+  ```json
+  {
+    "s": "ok",
+    "candles": [
+      [1746158460, 1.8483674e21, 1.8498753129131415e21, 1.8468008021426886e21, 1.84685e21, 0],
+      [1746158400, 1.848602513e21, 1.848875387e21, 1.848243519e21, 1.848515087189567e21, 0],
+      [1746158340, 1.8481267e21, 1.8490380305e21, 1.8475677870725296e21, 1.8490380305e21, 0]
+    ]
+  }
+  ```
+
+  | <div style="width: 80px;">Field</div> | <div style="width: 80px;">Type</div> | Description                                                                                         |
+  | :------------------------------------ | :----------------------------------- | :-------------------------------------------------------------------------------------------------- |
+  | `s`                                   | `string`                             | The status of the request.                                                                          |
+  | `candles`                             | `array`                              | Array of arrays of numbers. Each array candle contains: `[ time, open, high, low, close, volume ]`. |
+
+  > **Note**: If candles cannot be found for the given symbol/time period, a response with an empty `candles` array is provided. E.g., `{ "s": "ok", "candles": [] }`
+
+##### Error Responses
+
+| Status Code | Error Message                                                                                                                                             | Description                                      |
+| :---------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------- |
+| `400`       | `Parse error xxx: missing required field`                                                                                                                 | A required parameter was missing.                |
+| `401`       | `Unauthorized - Authorization header is required \|\| Invalid authorization header format \|\| token signature is invalid: signature is invalid \|\| ...` | The authorization header was missing or invalid. |
+| `404`       | `Not found- Could not find feedID for symbol`                                                                                                             | The provided symbol is not supported.            |
+| `500`       | `Something went wrong. Please try again later.`                                                                                                           | An unexpected server error occurred.             |
+
+### Get streaming price updates
+
+##### Endpoint
+
+**`/api/v1/streaming`**
+
+| Type     | Description                                               | Parameter(s)                                                                                     |
+| :------- | :-------------------------------------------------------- | :----------------------------------------------------------------------------------------------- |
+| HTTP GET | Gets streaming price updates using HTTP chunked encoding. | <ul><li>`symbol` or `feedId`: A comma-separated list of symbols or feed IDs to stream.</li></ul> |
+
+##### Sample request
+
+```bash
+curl -X GET \
+  -H "Authorization: Bearer {YOUR_ACCESS_TOKEN}" \
+  -H "Connection: keep-alive" \
+  "https://priceapi.testnet-dataengine.chain.link/api/v1/streaming?symbol=ETHUSD,BTCUSD"
+```
+
+##### Response
+
+- **Status**: `200` (Streaming)
+
+  A stream of JSON objects.
+
+  **Trade Response:**
+
+  ```json
+  {
+    "f": "t",
+    "i": "ETHUSD",
+    "fid": "[FEED_ID]",
+    "p": 2.68312e21,
+    "t": 1748525526,
+    "s": 1
+  }
+  ```
+
+  | Field | Type      | Description                                                    |
+  | :---- | :-------- | :------------------------------------------------------------- |
+  | `f`   | `string`  | Message type. Will always be “t” to indicate a trade response. |
+  | `i`   | `string`  | Identifier. The symbol for this response.                      |
+  | `fid` | `string`  | The hex-encoded feed ID for this response.                     |
+  | `p`   | `float64` | The latest price update for the symbol/feedId.                 |
+  | `t`   | `float64` | The time of the price as a unix timestamp.                     |
+  | `s`   | `float64` | Size of the trade. This will always be 1.                      |
+
+  **Heartbeat (sent every 5 seconds):**
+
+  ```json
+  { "heartbeat": 1748525528 }
+  ```
+
+  | Field       | Type      | Description                                            |
+  | :---------- | :-------- | :----------------------------------------------------- |
+  | `heartbeat` | `float64` | The time of the heartbeat message as a unix timestamp. |
+
+##### Error Responses
+
+| Status Code | Error Message                                                                                                                                             | Description                                      |
+| :---------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------- |
+| `400`       | `Parse error xxx: One of symbol or feedId must be provided`                                                                                               | A required parameter was missing.                |
+| `401`       | `Unauthorized - Authorization header is required \|\| Invalid authorization header format \|\| token signature is invalid: signature is invalid \|\| ...` | The authorization header was missing or invalid. |
+| `404`       | `Not found- Could not find feedID for symbol`                                                                                                             | The provided symbol is not supported.            |
+| `500`       | `Something went wrong. Please try again later.`                                                                                                           | An unexpected server error occurred.             |

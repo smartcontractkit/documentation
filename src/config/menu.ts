@@ -9,6 +9,21 @@ type MenuItems = Record<LanguageKey, MenuItem[]>
 export const MENU: MenuItems = {
   en: [
     {
+      text: "ACE",
+      link: "/ace",
+      section: "ace",
+    },
+    {
+      text: "CRE",
+      link: "/cre",
+      section: "cre",
+    },
+    {
+      text: "CRE Connect",
+      link: "/crec",
+      section: "crec",
+    },
+    {
       text: "Data Feeds",
       link: "/data-feeds",
       section: "dataFeeds",

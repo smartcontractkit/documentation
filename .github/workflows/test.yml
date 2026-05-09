@@ -6,6 +6,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  FOUNDRY_PROFILE: ci
+  NODE_VERSION: '22'
+
 # Set default permissions as restrictive as possible
 permissions:
   actions: write    # Required for upload-artifact
@@ -13,28 +17,59 @@ permissions:
   checks: write     # Required for test results
 
 jobs:
+  # Detect which file groups changed so downstream jobs can skip themselves
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      solidity: ${{ steps.filter.outputs.solidity }}
+      typescript: ${{ steps.filter.outputs.typescript }}
+      content: ${{ steps.filter.outputs.content }}
+      any_non_solidity: ${{ steps.filter.outputs.any_non_solidity }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        id: filter
+        with:
+          filters: |
+            solidity:
+              - 'public/samples/**/*.sol'
+              - 'foundry.toml'
+            typescript:
+              - '**/*.ts'
+              - '**/*.tsx'
+              - '**/*.astro'
+              - 'tsconfig*.json'
+            content:
+              - 'src/content/**'
+              - 'src/components/**'
+              - 'src/pages/**'
+              - 'src/layouts/**'
+              - 'astro.config.*'
+            any_non_solidity:
+              - '**'
+              - '!public/samples/**/*.sol'
+              - '!foundry.toml'
+
   # Setup job to install and cache dependencies
   setup:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      # Only cache node_modules, let setup-node handle npm cache
       - name: Cache node_modules
         uses: actions/cache@v4
         id: cache-node-modules
         continue-on-error: true
         with:
-          path: |
-            node_modules
+          path: node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install Dependencies
@@ -45,29 +80,35 @@ jobs:
 
   # Job 1: Check Solidity Compilation and Solhint
   solidity:
-    needs: setup
+    needs: [setup, changes]
+    if: needs.changes.outputs.solidity == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v4
-      
+        uses: actions/checkout@v6
+
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      # Restore node_modules from setup job
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@8789b3e21e6c11b2697f5eb56eddae542f746c10 # v1.5
+        with:
+          version: stable
+          cache: false
+
+      - name: Show Forge version
+        run: forge --version
+
       - name: Restore node_modules
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         continue-on-error: true
         with:
-          path: |
-            node_modules
+          path: node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-modules-
 
       - name: Ensure Dependencies
         run: |
@@ -76,56 +117,37 @@ jobs:
             npm ci --prefer-offline --no-audit
           fi
 
-      # Cache Solidity compilation artifacts
-      - name: Restore compilation caches
-        id: cache-solidity
-        uses: actions/cache@v4
-        continue-on-error: true
-        with:
-          path: |
-            .test/artifacts
-            .test/cache
-            ~/.cache/hardhat
-            typechain-types
-          key: ${{ runner.os }}-solidity-${{ hashFiles('public/samples/**/*.sol', 'hardhat.config.cts') }}
-          restore-keys: |
-            ${{ runner.os }}-solidity-
+      - name: Check Solidity Formatting
+        run: npm run sol:fmt:check
 
       - name: Check Solidity Compilation
-        run: |
-          echo "Running Solidity compilation with cache..."
-          npm run sol:compile
+        run: npm run sol:compile
 
-      - name: Check Solidity Solhint
-        run: |
-          echo "Running Solhint..."
-          npm run lint-solc
-
+      - name: Check Solidity Linting
+        run: npm run lint-solc
+          
   # Job 2: Check ESLint
   eslint:
-    needs: setup
+    needs: [setup, changes]
+    if: needs.changes.outputs.any_non_solidity == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      # Restore node_modules from setup job
       - name: Restore node_modules
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         continue-on-error: true
         with:
-          path: |
-            node_modules
+          path: node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-modules-
 
       - name: Ensure Dependencies
         run: |
@@ -146,29 +168,28 @@ jobs:
 
   # Job 3: Check Internal Links
   linkcheck-internal:
-    needs: setup
+    needs: [setup, changes]
+    if: needs.changes.outputs.content == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      # Restore node_modules from setup job
       - name: Restore node_modules
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         continue-on-error: true
         with:
-          path: |
-            node_modules
+          path: node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-modules-
 
       - name: Ensure Dependencies
         run: |
@@ -176,35 +197,45 @@ jobs:
             echo "node_modules not found, installing dependencies..."
             npm ci --prefer-offline --no-audit
           fi
+
+      - name: Build Site
+        run: npm run build
+        env:
+          NODE_OPTIONS: '--max-old-space-size=8192'
       
       - name: Check Internal Links
-        run: npm run linkcheck-internal
+        uses: lycheeverse/lychee-action@8646ba30535128ac92d33dfc9133794bfdd9b411 # v2.8.0
+        with:
+          args: >-
+            --root-dir $GITHUB_WORKSPACE/.vercel/output/static
+            --config lychee.toml
+            '.vercel/output/static/**/*.html'
+          fail: true
+          format: markdown
+          jobSummary: true
 
   # Job 4: Check Types
   typecheck:
-    needs: [setup]
+    needs: [setup, changes]
+    if: needs.changes.outputs.typescript == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      # Restore node_modules from setup job
       - name: Restore node_modules
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         continue-on-error: true
         with:
-          path: |
-            node_modules
+          path: node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-modules-
 
       - name: Ensure Dependencies
         run: |
@@ -225,34 +256,27 @@ jobs:
 
   # Job 5: Run Jest Tests
   jest:
-    needs: [setup]
+    needs: [setup, changes]
+    if: needs.changes.outputs.typescript == 'true'
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20.x]
-      fail-fast: false
     
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: '**/package-lock.json'
 
-      # Restore node_modules from setup job
       - name: Restore node_modules
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         continue-on-error: true
         with:
-          path: |
-            node_modules
+          path: node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-modules-
 
       - name: Ensure Dependencies
         run: |
@@ -266,8 +290,51 @@ jobs:
       
       - name: Upload Test Coverage
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: coverage-report-node-${{ matrix.node-version }}
+          name: coverage-report-node-${{ env.NODE_VERSION }}
           path: coverage/
           retention-days: 30
+
+  # Job 6: Validate LLM files are present and well-formed
+  validate-llms:
+    needs: [setup, changes]
+    if: needs.changes.outputs.content == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      - name: Restore node_modules
+        uses: actions/cache/restore@v4
+        continue-on-error: true
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Ensure Dependencies
+        run: |
+          if [ ! -d "node_modules" ]; then
+            echo "node_modules not found, installing dependencies..."
+            npm ci --prefer-offline --no-audit
+          fi
+
+      - name: Regenerate LLM files
+        run: npm run generate:llms
+
+      - name: Check LLM files are up-to-date
+        run: |
+          if ! git diff --exit-code 'src/content/**/llms-full*.txt'; then
+            echo "LLM files are out of date. Run 'npm run generate:llms' and commit the result."
+            exit 1
+          fi
+
+      - name: Validate LLM files
+        run: npm run check:llms

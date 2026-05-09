@@ -1,0 +1,55 @@
+---
+section: dta-technical-standard
+title: Architecture
+metadata:
+  title: "DTA Technical Standard: Architecture"
+  description: "Learn about the architecture of the Chainlink Digital Transfer Agent (DTA) technical standard, including its core components and interaction patterns."
+---
+
+import { ClickToZoom } from "@components"
+import Dta from "@features/dta/common/Dta.astro"
+
+<Dta section="dtaNotes" />
+
+The Digital Transfer Agent (DTA) technical standard is designed around a core principle: **separation of concerns**. This ensures a system that is secure, decentralized, and flexible. The architecture clearly distinguishes between the public-facing Request Management contract, where users interact, and the private, secure Request Settlement contract, where fund operations occur.
+
+This design allows the public, multi-tenant DTA Request Management to coexist with private, single-tenant DTA Request Settlement contracts controlled by each Transfer Agent, delivering open discovery with segregated, secure settlement.
+
+<ClickToZoom
+  src="/images/DTA/archi.png"
+  caption="The DTA technical standard separates the public, multi-tenant DTA Request Management from private, single-tenant DTA Request Settlement owned by each Transfer Agent."
+/>
+
+## Core components
+
+### Digital Transfer Agency contracts
+
+#### DTA Request Management
+
+DTA Request Management serves as the central hub for discovery and requests.
+
+**Key Responsibilities:**
+
+- **Request Intake:** Acts as the entry point for all subscription and redemption requests from distributors.
+- **Initial Validation & Calculation:** When a Transfer Agent initiates processing, DTA Request Management validates requests against operational rules (such as rate limits and time zones) and calculates final share or payment amounts using the NAVLink feed.
+- **Request Routing:** After processing, it forwards finalized request details to the appropriate DTA Request Settlement contract, which is deployed and owned by the fund’s Transfer Agent.
+
+#### DTA Request Settlement
+
+The DTA Request Settlement is owned and deployed by the Transfer Agent. This contract manages the asset movement and the core settlement logic.
+
+**Key Responsibilities:**
+
+- **Token Control Authority:** Holds rights to mint, burn, and transfer the fund’s tokenized shares, enforced via role-based permissions.
+- **Asset Custody:** Holds the authority to manage investment product tokens, securely storing newly created tokens during offchain settlements.
+- **Settlement Engine:** Receives finalized instructions from DTA Request Management and executes settlements, including transferring payment tokens, managing tokens, and releasing tokens from escrow.
+- **Access Control:** Maintains a list of approved DTA Request Management contract addresses allowed to send requests, preventing unauthorized interactions.
+
+## Interaction patterns
+
+Communication between the (DTA Request Management) and (DTA Request Settlement) is designed for flexibility, supporting both local and cross-chain operations.
+
+- **Local Interaction (Same Network):** If DTA Request Settlement is on the same blockchain as DTA Request Management, DTA Request Management makes a direct call to deliver settlement instructions.
+- **Remote Interaction (Cross-Network):** If DTA Request Settlement is on a different blockchain, DTA Request Management uses Chainlink CCIP to send settlement instructions, which DTA Request Settlement receives and processes.
+
+This dual-interaction pattern allows the Transfer Agents and Fund Administrators to set up onchain transfer agency services using the DTA Technical Standard.

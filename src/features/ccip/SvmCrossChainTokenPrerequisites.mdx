@@ -1,0 +1,102 @@
+import { Aside } from "@components"
+
+## Prerequisites
+
+This tutorial requires setting up two different repositories in separate terminal windows. Follow the setup instructions for both environments before proceeding.
+
+### Development Environment Requirements
+
+**System Requirements:**
+
+- **Anchor and Solana CLI Tools**: Install following the [installation guide](https://www.anchor-lang.com/docs/installation). Requires Rust to be installed.
+- **Node.js v20 or higher**: Use the [nvm package](https://www.npmjs.com/package/nvm) to install and manage versions. Verify with `node -v`
+- **Yarn**: For dependency management
+- **Git**: For cloning repositories
+
+### Terminal 1: Solana Starter Kit Setup
+
+**Clone and setup the Solana Starter Kit:**
+
+```bash
+git clone https://github.com/smartcontractkit/solana-starter-kit.git && cd solana-starter-kit
+```
+
+**Install dependencies:**
+
+```bash
+yarn install
+```
+
+**Configure your Solana environment:**
+
+```bash
+# Set Solana CLI to use devnet
+solana config set --url https://api.devnet.solana.com
+
+# Set your keypair (create one if needed)
+solana config set --keypair ~/.config/solana/id.json
+
+# If you do not have a keypair, create one:
+solana-keygen new --outfile ~/.config/solana/id.json
+```
+
+**Fund your Solana wallet:**
+
+```bash
+# Get your wallet address
+solana address
+
+# Request SOL from the devnet faucet
+solana airdrop 2
+```
+
+**Verify your setup:**
+
+```bash
+# Check your SOL balance
+solana balance
+
+# Verify you are on devnet
+solana config get
+```
+
+### Terminal 2: Smart Contract Examples Setup
+
+**Clone the repository and navigate to the Hardhat project:**
+
+```bash
+git clone https://github.com/smartcontractkit/smart-contract-examples.git
+cd smart-contract-examples/ccip/cct/hardhat
+```
+
+**Install and compile dependencies:**
+
+```bash
+npm install
+npm run compile
+```
+
+**Set up encrypted environment variables:**
+
+```bash
+# Set encryption password
+npx env-enc set-pw
+
+# Configure environment variables
+npx env-enc set
+```
+
+**Required environment variables for Ethereum Sepolia:**
+
+- `ETHEREUM_SEPOLIA_RPC_URL`: RPC endpoint from [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/)
+- `PRIVATE_KEY`: Your testnet wallet private key ([MetaMask export guide](https://support.metamask.io/managing-my-wallet/secret-recovery-phrase-and-private-keys/how-to-export-an-accounts-private-key/))
+- `ETHERSCAN_API_KEY`: API key from [Etherscan](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics)
+
+**Fund your wallet:**
+
+- Acquire LINK and ETH on Ethereum Sepolia using [Chainlink faucets](https://faucets.chain.link/)
+
+<Aside type="note" title="Two-Terminal Workflow">
+  Keep both terminal windows open throughout the tutorial. You will switch between the Solana Starter Kit (Terminal 1)
+  and Hardhat project (Terminal 2) as you progress through the phases.
+</Aside>

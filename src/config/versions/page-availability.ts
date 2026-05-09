@@ -17,6 +17,9 @@ export const PAGE_AVAILABILITY: Record<string, Record<string, PageAvailability>>
     "ownable-2-step": {
       notAvailableIn: ["v1.5.0"],
     },
+    "fee-quoter": {
+      notAvailableIn: ["v1.5.0"],
+    },
   },
   "chainlink-local": {
     "mock-evm2evm-offramp": {

@@ -4,7 +4,7 @@ import { laneStore, type RateLimiterConfig, updateRateLimits } from "~/stores/la
 import { useStore } from "@nanostores/react"
 import styles from "./ChainUpdateBuilder.module.css"
 import { ErrorBoundary } from "~/components/ErrorBoundary.tsx"
-import { Callout } from "../TutorialSetup/Callout.tsx"
+import { Callout } from "@components/Callout/Callout.tsx"
 
 interface ChainUpdateBuilderProps {
   chain: "source" | "destination"

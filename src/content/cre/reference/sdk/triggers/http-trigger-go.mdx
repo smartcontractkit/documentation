@@ -1,0 +1,79 @@
+---
+section: cre
+title: "SDK Reference: HTTP Trigger"
+date: Last Modified
+sdkLang: "go"
+pageId: "reference-sdk-http-trigger"
+metadata:
+  description: "Reference for Go HTTP Trigger: Config structure, Payload fields, and authorization setup for request-based workflows."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+The HTTP Trigger fires when an HTTP request is made to the workflow's designated endpoint. This allows you to start workflows from external systems.
+
+### `http.Trigger`
+
+Creates the HTTP trigger instance.
+
+```go
+import "github.com/smartcontractkit/cre-sdk-go/capabilities/networking/http"
+
+httpTrigger := http.Trigger(&http.Config{
+    AuthorizedKeys: []*http.AuthorizedKey{
+        {
+            Type: http.KeyType_KEY_TYPE_ECDSA_EVM,
+            PublicKey: "0x...",
+        },
+    },
+})
+```
+
+### `http.Config`
+
+The configuration struct for the HTTP trigger.
+
+| <div style="width: 120px;">Field</div> | <div style="width: 150px;">Type</div> | Description                                                                                                |
+| -------------------------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `AuthorizedKeys`                       | `[]*AuthorizedKey`                    | **Required for deployed workflows.** A slice of EVM addresses authorized to trigger the workflow via HTTP. |
+
+### `http.AuthorizedKey`
+
+Defines an EVM address authorized to trigger the workflow.
+
+| <div style="width: 100px;">Field</div> | <div style="width: 100px;">Type</div> | Description                                                                                                          |
+| -------------------------------------- | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `Type`                                 | `KeyType`                             | The type of the key. Must be `http.KeyType_KEY_TYPE_ECDSA_EVM` (currently the only supported authentication method). |
+| `PublicKey`                            | `string`                              | An EVM address (e.g., `"0xb08E004bd2b5aFf1F5F950d141f449B1c05800eb"`) authorized to trigger this workflow.           |
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Authorization required for deployment">
+  When you deploy your workflow, you **must** include `AuthorizedKeys` in your HTTP trigger configuration. An empty configuration `&http.Config{}` is only valid for local simulation with `cre workflow simulate`—deployed workflows will reject HTTP triggers without authorization keys.
+</Aside>
+
+### `http.Payload`
+
+The payload passed to the callback function.
+
+| Field   | Type             | Description                                                                    |
+| ------- | ---------------- | ------------------------------------------------------------------------------ |
+| `Input` | `[]byte`         | The JSON input from the HTTP request body as raw bytes.                        |
+| `Key`   | `*AuthorizedKey` | The EVM address that signed the request (matches one of the `AuthorizedKeys`). |
+
+### Callback Function
+
+Your callback function for HTTP triggers must conform to this signature:
+
+```go
+import "github.com/smartcontractkit/cre-sdk-go/capabilities/networking/http"
+
+func onHttpTrigger(config *Config, runtime cre.Runtime, payload *http.Payload) (*YourReturnType, error)
+```
+
+**Parameters:**
+
+- `config`: Your workflow's static configuration struct.
+- `runtime`: The runtime object used to invoke capabilities.
+- `payload`: The HTTP payload containing the request input and signing key.

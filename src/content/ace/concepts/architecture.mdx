@@ -1,0 +1,122 @@
+---
+section: ace
+title: "ACE Architecture"
+date: Last Modified
+metadata:
+  description: "Understand the Chainlink ACE system architecture: onchain contracts, the ACE Platform, and how the Policy Manager, Identity Manager, Reporting Manager, and Chainlink infrastructure work together to power automated compliance."
+  datePublished: "2026-04-20"
+  lastModified: "2026-04-20"
+---
+
+import { Aside, ClickToZoom } from "@components"
+
+ACE has two layers: **onchain smart contracts** that enforce compliance rules on the blockchain, and the **[ACE Platform](/ace/concepts/key-terms#ace-platform)** (UI and APIs) that lets you manage them. Under the hood, Chainlink infrastructure connects the two — routing your platform actions to the blockchain and indexing onchain events back into the Reporting API. This page gives a bird's-eye view of how all the pieces fit together.
+
+## System overview
+
+The following diagram shows the complete ACE architecture, from the ACE Platform down to the onchain contracts.
+
+<ClickToZoom
+  src="/images/ace/architecture-system-overview.png"
+  caption="ACE system architecture: the ACE Platform manages resources via CRE Connect (write path) and queries indexed onchain events via the Reporting API (read path)."
+/>
+
+The **ACE Platform** is everything you interact with: the **Platform UI**, the **Coordinator API** (to manage ACE resources), and the **Reporting API** (to query what happened onchain). The UI calls the Coordinator API under the hood, so both paths converge.
+
+When you manage ACE (create policies, register identities, etc.), the Coordinator API routes your request through **CRE Connect**, which executes the blockchain transaction via your organization's **CRE Connect Wallet**. The CRE Connect Wallet owns all your ACE contracts and verifies that only authorized operators can act on them.
+
+In the other direction, when policies run onchain, the contracts emit events. **Chainlink's indexing infrastructure** continuously monitors these events, indexes the data, and makes it available through the **Reporting API** — giving you a queryable view of all policy run activity, transaction history, and onchain state.
+
+The sections below explain each layer in detail.
+
+## ACE managers
+
+ACE Beta provides three managers that abstract away the complexity of managing onchain contracts:
+
+### Policy Manager
+
+The Policy Manager lets you create, configure, and deploy onchain compliance rules for your smart contracts. You can browse available policy types (allowlist, volume limits, role-based access control, etc.), create policy instances with per-network configuration, and attach them to specific function selectors on your protected contracts.
+
+The Policy Manager operates on the **Policy Management** onchain contracts: it deploys and configures PolicyEngine instances, policy contracts, and extractors on your behalf. See the [Coordinator API](/ace/reference/api/coordinator) to get started.
+
+### Identity Manager
+
+The Identity Manager lets you manage cross-chain identities and credentials. You can create identity and credential registries, register wallet addresses to CCIDs, define credential types, and issue credentials to users.
+
+The Identity Manager operates on the **Cross-Chain Identity** onchain contracts: it writes to IdentityRegistry and CredentialRegistry instances on your behalf. See the [Coordinator API](/ace/reference/api/coordinator) to get started.
+
+### Reporting Manager
+
+The Reporting Manager gives you read-only access to onchain state and transaction history. You can query policy engines and their configurations, look up identities and credentials, and view policy run transactions with filtering by network, target contract, and time range.
+
+The Reporting Manager exposes data through the **Reporting API**. Under the hood, Chainlink's indexing infrastructure monitors onchain events (such as `PolicyRunComplete`) emitted by your PolicyEngines and indexes the data so it can be queried through the API. See the [Reporting API overview](/ace/reference/api/reporting) for details.
+
+<Aside type="note" title="UI and API">
+  Everything you can do in the Policy Manager and Identity Manager UIs is also available through the Coordinator API.
+  The Reporting Manager is currently API-only.
+</Aside>
+
+## Onchain contracts
+
+The onchain layer consists of two sets of smart contracts that enforce compliance rules and manage identities directly on the blockchain.
+
+### Policy Management contracts
+
+Policy Management separates compliance logic from your application code. The core components are:
+
+- **PolicyProtected** — An abstract contract your application inherits from, hooking protected functions into the policy system.
+- **PolicyEngine** — The central orchestrator that holds the registry of all policies and executes them in order.
+- **Policies** — Self-contained contracts that each enforce a single rule. ACE ships with a [library of pre-built policies](/ace/reference/policy-library).
+- **Extractors** — Helper contracts that parse transaction calldata into structured parameters for policies.
+
+For a detailed explanation of how these components interact, see [Policy Management](/ace/concepts/policy-management).
+
+#### How policy execution works
+
+When an end user calls a protected function, the `runPolicy` modifier hands control to the PolicyEngine. This check is transparent to the end user — they simply call the contract function as normal. The engine runs each attached policy in order. Each policy returns **Reject** (transaction reverts), **Allow** (transaction approved, remaining policies skipped), or **Continue** (defer to the next policy). If all policies return Continue, the engine applies a configurable default result.
+
+Because ordering determines which policies actually execute, restrictive policies (like a credential check) should come before permissive ones (like an admin bypass). For details on policy outcomes and ordering strategies, see [Policy Ordering & Composition](/ace/concepts/policy-ordering).
+
+### Cross-Chain Identity contracts
+
+Cross-Chain Identity provides a unified identity and credential system that works across all EVM chains. The core components are:
+
+- **IdentityRegistry** — Maps wallet addresses to Cross-Chain Identifiers (CCIDs), linking multiple addresses across chains to a single identity.
+- **CredentialRegistry** — Stores credentials (KYC, AML, accredited investor, custom types) linked to CCIDs, each with a type identifier, expiration, and optional data.
+- **CredentialRegistryIdentityValidatorPolicy** — A pre-built policy that resolves a caller's address to a CCID and validates their credentials at transaction time.
+
+The registries themselves are protected by a PolicyEngine, ensuring that only authorized [Credential Issuers](/ace/concepts/key-terms#credential-issuer) can register identities and issue credentials. For a detailed explanation of identities, credentials, and credential sources, see [Cross-Chain Identity](/ace/concepts/cross-chain-identity).
+
+#### Privacy model
+
+No personally identifiable information (PII) is stored onchain. The Cross-Chain Identity system is designed so that:
+
+- Real-world identity verification happens **offchain** with the Credential Issuer.
+- Only the verification **result** (a credential linked to a CCID) is recorded onchain.
+- Credential data stored onchain is typically a hash or minimal reference, not the underlying PII.
+
+The primary privacy consideration is that CCID-to-address mappings are publicly readable onchain, which means anyone can see which addresses belong to the same identity. For applications where this is a concern, multiple CCIDs can be issued per user while maintaining the correlation in a secure offchain system.
+
+## Chainlink infrastructure
+
+ACE relies on Chainlink's infrastructure for both writing to and reading from the blockchain.
+
+### How ACE executes actions (write path)
+
+Every ACE management action — whether triggered from the UI or the Coordinator API — is executed via **CRE Connect**:
+
+1. You trigger an action from the UI or API.
+1. The **Coordinator API** receives the request and sends it to **CRE Connect**.
+1. CRE Connect prepares and signs the blockchain transaction, then routes it through your organization's **CRE Connect Wallet** onchain.
+1. The CRE Connect Wallet verifies authorization and executes the operation on the target contract.
+
+### How ACE observes onchain activity (read path)
+
+When a policy runs onchain, the PolicyEngine emits a `PolicyRunComplete` event. Chainlink's indexing infrastructure continuously monitors these events across all managed PolicyEngines and indexes the data. The **Reporting API** then serves this indexed data, giving you a queryable view of all policy run activity.
+
+<ClickToZoom
+  src="/images/ace/architecture-onchain-activity.png"
+  caption="Read path: onchain events are monitored and indexed by Chainlink's infrastructure, then served through the Reporting API."
+/>
+
+This means you can query transaction history and policy run results through the Reporting Manager without running your own blockchain indexer — Chainlink handles the event monitoring and indexing automatically.

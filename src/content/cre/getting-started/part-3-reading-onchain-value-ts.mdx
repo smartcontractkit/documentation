@@ -1,0 +1,212 @@
+---
+section: cre
+title: "Part 3: Reading an Onchain Value"
+date: Last Modified
+sdkLang: "ts"
+pageId: "getting-started-part-3"
+metadata:
+  description: "Getting started Part 3 (TypeScript): read smart contract data with Viem and combine onchain values in your workflow."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+import { CodeHighlightBlock } from "@components"
+import part3Code from "./snippets/part-3-main.ts?raw"
+
+In the previous part, you successfully fetched data from an offchain API. Now, you will complete the "Onchain Calculator" by reading a value from a smart contract and combining it with your offchain result.
+
+This part of the guide introduces EVM interactions using the TypeScript SDK's [`EVMClient`](/cre/reference/sdk/evm-client) and <a href="https://viem.sh/" target="_blank" rel="noopener noreferrer">Viem</a> for type-safe contract interactions.
+
+## What you'll do
+
+- Configure your project with a Sepolia RPC URL.
+- Use the EVM client with Viem to read a value from a deployed smart contract.
+- Integrate the onchain value into your main workflow logic.
+
+## Step 1: The smart contract
+
+For this guide, we will interact with a simple `Storage` contract that has already been deployed to the Sepolia testnet. All it does is store a single `uint256` value.
+
+Here is the Solidity source code for the contract:
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
+
+contract Storage {
+  uint256 public value;
+
+  constructor(uint256 initialValue) {
+    value = initialValue;
+  }
+
+  function get() public view returns (uint256) {
+    return value;
+  }
+}
+```
+
+A version of this contract has been deployed to Sepolia at `0xa17CF997C28FF154eDBae1422e6a50BeF23927F4` with an `initialValue` of `22`.
+
+## Step 2: Configure your environment
+
+To interact with a contract on Sepolia, your workflow needs EVM chain details.
+
+1.  **Contract address and chain name**: Add the deployed contract's address and chain name to your `config.staging.json` file. We use an `evms` array to hold the configuration, which makes it easy to add more contracts (or chains) later.
+
+        ```json
+        {
+          "schedule": "*/30 * * * * *",
+          "apiUrl": "https://api.mathjs.org/v4/?expr=randomInt(1,101)",
+          "evms": [
+            {
+              "storageAddress": "0xa17CF997C28FF154eDBae1422e6a50BeF23927F4",
+              "chainName": "ethereum-testnet-sepolia"
+            }
+          ]
+        }
+        ```
+         {/* prettier-ignore */}
+         <Aside type="note" title="About Chain Identifiers">
+           A **chain selector** is a unique identifier used by Chainlink to specify a blockchain.
+
+           Chain selectors can be referenced in multiple formats:
+           - **String name** (used in config files and `project.yaml`): `"ethereum-testnet-sepolia"`
+           - **Numeric ID** (used internally by the SDK, returned by `getNetwork()`): `16015286601757825753n`
+
+           You only use the string name in your configuration files. The SDK's `getNetwork()` helper converts the string name to the numeric BigInt ID automatically.
+           <br />
+           For a complete reference showing all supported chains, see the [Chain Selectors reference](/cre/reference/sdk/evm-client#chain-selectors).
+         </Aside>
+
+2.  **RPC URL**: For your workflow to interact with the blockchain, it needs an RPC endpoint. The `cre init` command has already configured a public Sepolia RPC URL in your `project.yaml` file for convenience. Let's take a look at what was generated:
+
+    Open your `project.yaml` file at the root of your project. Your `staging-settings` target should look like this:
+
+    ```yaml
+    # in onchain-calculator/project.yaml
+    staging-settings:
+      rpcs:
+        - chain-name: ethereum-testnet-sepolia
+          url: https://ethereum-sepolia-rpc.publicnode.com
+    ```
+
+    This public RPC endpoint is sufficient for testing and following this guide. However, for production use or higher reliability, you should consider using a dedicated RPC provider like [Infura](https://infura.io/), [Alchemy](https://www.alchemy.com/), or [QuickNode](https://www.quicknode.com/).
+
+    <Aside type="caution" title="Protect Your RPC URL">
+      When you use a dedicated RPC provider, your RPC URLs will contain API keys. To avoid exposing them, you should add
+      your `project.yaml` file to your project's `.gitignore` file.
+    </Aside>
+
+## Step 3: Create the contract ABI file
+
+To interact with the `Storage` contract in a type-safe and maintainable way, you'll create an ABI file that defines the contract's interface.
+
+The TypeScript SDK uses <a href="https://viem.sh/" target="_blank" rel="noopener noreferrer">Viem</a> for EVM interactions, which provides excellent TypeScript type inference when you define ABIs as TypeScript modules.
+
+1. **Create the ABI directory**: From your project root (`onchain-calculator/`), create the `contracts/abi` directory:
+
+   ```bash
+   mkdir -p contracts/abi
+   ```
+
+1. **Add the Storage contract ABI**: Create a new file called `Storage.ts` in the `contracts/abi` directory:
+
+   ```bash
+   touch contracts/abi/Storage.ts
+   ```
+
+   Open `contracts/abi/Storage.ts` and paste the following ABI definition:
+
+   ```typescript
+   export const Storage = [
+     {
+       inputs: [],
+       name: "get",
+       outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+       stateMutability: "view",
+       type: "function",
+     },
+   ] as const
+   ```
+
+   The `as const` assertion is important—it tells TypeScript to infer the most specific type possible, which enables Viem's type-safe contract interactions.
+
+1. **Create an index file**: To make imports cleaner, create an `index.ts` file that exports all your ABIs:
+
+   ```bash
+   touch contracts/abi/index.ts
+   ```
+
+   Open `contracts/abi/index.ts` and add:
+
+   ```typescript
+   export { Storage } from "./Storage"
+   ```
+
+   This allows you to import ABIs using: `import { Storage } from "../contracts/abi"`.
+
+## Step 4: Update your workflow logic
+
+Now that you have the ABI defined, you can import and use it in your workflow. Replace the entire content of `onchain-calculator/my-calculator-workflow/main.ts` with the version below.
+
+**Note:** Lines highlighted in green indicate new or modified code compared to Part 2.
+
+<CodeHighlightBlock lang="typescript" code={part3Code} title="onchain-calculator/my-calculator-workflow/main.ts" />
+
+{/* prettier-ignore */}
+<Aside type="tip" title="Optional: Add runtime validation">
+  If you added Zod validation in Part 1, you can continue using it here. The `Config` type now includes the `evms` array, so update your Zod schema accordingly and pass `configSchema` to `Runner.newRunner<Config>({ configSchema })`. See [Part 1: Optional Runtime Validation](/cre/getting-started/part-1-project-setup#optional-runtime-validation) for details.
+</Aside>
+
+**Key TypeScript SDK features:**
+
+- **`getNetwork()`**: Converts a human-readable chain name to a numeric chain selector
+- **`EVMClient`**: The EVM capability client for interacting with blockchains
+- **`encodeFunctionData()`**: From Viem, encodes a function call with type-safe parameters
+- **`callContract()`**: EVMClient method for calling view/pure functions on a contract
+- **`bytesToHex()`**: Converts `Uint8Array` response data to hex string for Viem
+- **`decodeFunctionResult()`**: From Viem, decodes the contract call response with type inference
+- **`LAST_FINALIZED_BLOCK_NUMBER`**: Constant for reading from the most recent finalized block
+- **Native `bigint`**: TypeScript's built-in big integer type (no external library needed)
+
+## Step 5: Run the simulation and review the output
+
+Run the simulation from your project root directory (the `onchain-calculator/` folder). Because there is only one trigger defined, the simulator runs it automatically.
+
+```bash
+cre workflow simulate my-calculator-workflow --target staging-settings
+```
+
+The simulation logs will show the end-to-end execution of your workflow.
+
+```bash
+Workflow compiled
+2025-11-03T19:06:56Z [SIMULATION] Simulator Initialized
+
+2025-11-03T19:06:56Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+2025-11-03T19:06:56Z [USER LOG] Successfully fetched offchain value: 55
+2025-11-03T19:06:56Z [USER LOG] Successfully read onchain value: 22
+2025-11-03T19:06:56Z [USER LOG] Final calculated result: 77
+
+Workflow Simulation Result:
+ {
+  "finalResult": 77
+}
+
+2025-11-03T19:06:56Z [SIMULATION] Execution finished signal received
+2025-11-03T19:06:56Z [SIMULATION] Skipping WorkflowEngineV2
+```
+
+- **`[USER LOG]`**: You can now see all three of your `runtime.log()` calls, showing the offchain value (`55`), the onchain value (`22`), and the final combined result (`77`).
+- **`[SIMULATION]`**: These are system-level messages from the simulator showing its internal state.
+- **`Workflow Simulation Result`**: This is the final, JSON-formatted return value of your workflow. The `finalResult` field contains the sum of the offchain and onchain values (55 + 22 = 77).
+
+You have successfully built a complete CRE workflow that combines offchain and onchain data.
+
+## Next Steps
+
+You have successfully read a value from a smart contract and combined it with offchain data. The final step is to write this new result back to the blockchain.
+
+- **[Part 4: Writing Onchain](/cre/getting-started/part-4-writing-onchain)**: Learn how to execute an onchain write transaction from your workflow to complete the project.

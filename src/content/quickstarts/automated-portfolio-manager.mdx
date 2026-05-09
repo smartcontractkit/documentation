@@ -1,13 +1,26 @@
 ---
 title: "Automated Portfolio Manager"
 description: "Build a portfolio that automatically rebalances itself based on real-time data from on-chain and off-chain sources."
+excerpt: "automated portfolio rebalancing real-time data feeds automation functions smart contract investment management defi"
 githubSourceCodeUrl: "https://github.com/smartcontractkit/quickstarts-automated-portfolio-manager"
 image: "QuickStarts-AutomatedPortfolioManager.webp"
 products: ["Feeds", "Automation", "Functions"]
 time: "45 minutes"
+datePublished: "2024-09-18"
+lastModified: "2026-01-16"
+difficulty: "intermediate"
 ---
 
 import { Accordion, Aside, CodeSample, ClickToZoom } from "@components"
+
+<Aside type="caution" title="Deprecated Quickstart">
+  **This quickstart is deprecated and no longer maintained.** The GVZ index API used in this tutorial is no longer
+  available, which means this example will not work as written. We've kept this content available for educational
+  reference only. **For new projects**, we strongly recommend using the [Chainlink Runtime Environment (CRE)](/cre),
+  which makes building applications like automated portfolio managers significantly easier. CRE provides a unified
+  environment for combining offchain data, onchain operations, and computation—all with built-in orchestration and
+  blockchain-level security. Learn more: [Getting Started with CRE](/cre/getting-started/overview)
+</Aside>
 
 ## Overview
 
@@ -157,7 +170,6 @@ forge script script/DeployOffChainDataFetcher.s.sol --rpc-url $RPC_URL_SEPOLIA -
 <Accordion title="Create a Time-based upkeep" number={3}>
 
 1. Register an upkeep to call the `sendRequestCBOR` function on your `OffchainDataFetcher` contract daily:
-
    - Go to the [Chainlink Automation App](https://automation.chain.link/).
    - Create a time-based upkeep that targets the `sendRequestCBOR` function.
    - To run the upkeep daily at 3 AM UTC, use the following CRON expression: `0 3 * * *`.
@@ -167,7 +179,6 @@ forge script script/DeployOffChainDataFetcher.s.sol --rpc-url $RPC_URL_SEPOLIA -
    **Note**: You can find your deployed `OffchainDataFetcher` contract address in `output/deployedOffchainDataFetcher.json`.
 
 1. Configure your contract so only the upkeep contract (and your admin account, which deployed the contract) can call the `sendRequestCBOR` function. This security measure is important to prevent anyone from calling several times `sendRequestCBOR` and draining your Functions subscription balance.
-
    - Go to [Etherscan](https://sepolia.etherscan.io).
    - Enter your `OffchainDataFetcher` contract address in the search bar. **Note**: This address is available in `output/deployedOffchainDataFetcher.json`.
    - Select the `Contract` section, then click on the `Write Contract` tab.
@@ -195,7 +206,6 @@ forge script script/DeployAutomatedPortfolioManager.s.sol --rpc-url $RPC_URL_SEP
 1. Create a new Custom logic upkeep with a starting balance of 5 testnet LINK. **Note**: You can find your deployed `AutomatedPortfolioManager` contract address in `output/deployedPortfolioManager.json`.
 
 1. Configure your contract so only the upkeep contract (and your admin account, which deployed the contract) can call the `performUpkeep` function. This security measure is important to prevent anyone from calling several times `performUpkeep` and draining your Automation balance.
-
    - Go to [Etherscan](https://sepolia.etherscan.io).
    - Enter your `AutomatedPortfolioManager` contract address in the search bar. **Note**: This address is available in `output/deployedPortfolioManager.json`.
    - Select the `Contract` section, then click on the `Write Contract` tab.

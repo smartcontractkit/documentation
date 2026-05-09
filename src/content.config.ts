@@ -3,6 +3,9 @@ import { glob } from "astro/loaders"
 import { sectionValues } from "./config/sidebarSections.js"
 
 enum Products {
+  ACE = "ace",
+  CRE = "cre",
+  CREC = "crec",
   CCIP = "ccip",
   AUTOMATION = "automation",
   FUNCTIONS = "functions",
@@ -10,9 +13,14 @@ enum Products {
   FEEDS = "feeds",
   GENERAL = "general",
   CHAINLINK_LOCAL = "chainlink-local",
+  DTA_TECHNICAL_STANDARD = "dta-technical-standard",
+  DATALINK = "datalink",
 }
 
 export const productsInfo: Record<Products, { name: string; slug: string }> = {
+  ace: { name: "ACE", slug: "ace" },
+  cre: { name: "CRE", slug: "cre" },
+  crec: { name: "CRE Connect", slug: "crec" },
   ccip: { name: "CCIP", slug: "ccip" },
   automation: { name: "Automation", slug: "chainlink-automation" },
   functions: { name: "Functions", slug: "chainlink-functions" },
@@ -20,6 +28,8 @@ export const productsInfo: Record<Products, { name: string; slug: string }> = {
   feeds: { name: "Data Feeds", slug: "data-feeds" },
   general: { name: "General", slug: "/" },
   "chainlink-local": { name: "Chainlink Local", slug: "chainlink-local" },
+  "dta-technical-standard": { name: "DTA", slug: "dta-technical-standard" },
+  datalink: { name: "DataLink", slug: "datalink" },
 }
 
 const productEnum = z.preprocess((val) => (val as string).toLowerCase(), z.nativeEnum(Products))
@@ -27,7 +37,7 @@ const productEnum = z.preprocess((val) => (val as string).toLowerCase(), z.nativ
 const sectionEnum = z.enum(sectionValues)
 export type Sections = z.infer<typeof sectionEnum>
 
-/** metadata object */
+/** metadata object with enhanced fields for JSON-LD structured data */
 const metadata = z
   .object({
     title: z.string().optional(),
@@ -36,6 +46,12 @@ const metadata = z
     linkToWallet: z.boolean().optional(),
     canonical: z.string().optional(),
     excerpt: z.string().optional(),
+    // Enhanced fields for structured data (all optional for backward compatibility)
+    estimatedTime: z.string().optional(), // e.g., "30 minutes", "1 hour"
+    difficulty: z.enum(["beginner", "intermediate", "advanced"]).optional(),
+    datePublished: z.string().optional(), // ISO date string
+    lastModified: z.string().optional(), // ISO date string
+    version: z.string().optional(), // For API references
   })
   .optional()
 
@@ -51,6 +67,8 @@ const baseFrontmatter = z
     metadata,
     datafeedtype: z.string().optional(),
     fileExtension: z.string().optional(),
+    sdkLang: z.enum(["go", "ts"]).optional(),
+    pageId: z.string().optional(),
   })
   .strict()
 
@@ -65,12 +83,47 @@ const quickstartsFrontmatter = z
     products: z.array(productEnum),
     time: z.string(),
     requires: z.string().optional(),
+    // Enhanced fields for structured data (optional for backward compatibility)
+    datePublished: z.string().optional(), // ISO date string
+    lastModified: z.string().optional(), // ISO date string
+    difficulty: z.enum(["beginner", "intermediate", "advanced"]).optional(),
+  })
+  .strict()
+
+/** Schema for CRE Templates */
+const creTemplatesFrontmatter = z
+  .object({
+    title: z.string(),
+    description: z.string(),
+    excerpt: z.string().optional(),
+    author: z.string(),
+    githubUrl: z.string(),
+    githubRepoLinks: z.array(
+      z.object({
+        label: z.string(), // e.g., "Go", "TypeScript"
+        url: z.string(),
+      })
+    ), // Links to GitHub folders for each language variant
+    image: z.string(),
+    featured: z.boolean().optional(), // Whether this template is featured on the hub page
+    tags: z.array(z.string()).optional(), // Tags from cre-templates registry (e.g., "data-feeds", "cross-chain")
+    cliTemplateIds: z
+      .array(
+        z.object({
+          label: z.string(), // e.g., "TypeScript", "Go"
+          id: z.string(), // CLI ID used in `cre init --template=<id>`
+        })
+      )
+      .optional(),
+    datePublished: z.string().optional(), // ISO date string
+    lastModified: z.string().optional(), // ISO date string
   })
   .strict()
 
 /** Re-export for convenience */
 export type BaseFrontmatter = z.infer<typeof baseFrontmatter>
 export type QuickstartsFrontmatter = z.infer<typeof quickstartsFrontmatter>
+export type CRETemplatesFrontmatter = z.infer<typeof creTemplatesFrontmatter>
 export type Metadata = z.infer<typeof metadata>
 
 /** --------------------------
@@ -149,6 +202,46 @@ const chainlinkLocalCollection = defineCollection({
   schema: baseFrontmatter,
 })
 
+const dtaTechnicalStandardCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/dta-technical-standard",
+    pattern: "**/*.md?(x)",
+  }),
+  schema: baseFrontmatter,
+})
+
+const datalinkCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/datalink",
+    pattern: "**/*.md?(x)",
+  }),
+  schema: baseFrontmatter,
+})
+
+const aceCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/ace",
+    pattern: "**/*.md?(x)",
+  }),
+  schema: baseFrontmatter,
+})
+
+const creCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/cre",
+    pattern: "**/*.md?(x)",
+  }),
+  schema: baseFrontmatter,
+})
+
+const crecCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/crec",
+    pattern: "**/*.md?(x)",
+  }),
+  schema: baseFrontmatter,
+})
+
 /** Quickstarts collection uses a different schema */
 const quickstartsCollection = defineCollection({
   loader: glob({
@@ -158,9 +251,26 @@ const quickstartsCollection = defineCollection({
   schema: quickstartsFrontmatter,
 })
 
+/** CRE Templates collection */
+const creTemplatesCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/cre-templates",
+    pattern: "**/*.md?(x)",
+  }),
+  schema: creTemplatesFrontmatter,
+})
+
 const architectureOverviewCollection = defineCollection({
   loader: glob({
     base: "./src/content/architecture-overview",
+    pattern: "**/*.md?(x)",
+  }),
+  schema: baseFrontmatter,
+})
+
+const oraclePlatformCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/oracle-platform",
     pattern: "**/*.md?(x)",
   }),
   schema: baseFrontmatter,
@@ -187,19 +297,26 @@ const anyApiCollection = defineCollection({
  * -------------------------- */
 
 export const collections = {
+  ace: aceCollection,
   ccip: ccipCollection,
   "data-feeds": dataFeedsCollection,
   "chainlink-automation": chainlinkAutomationCollection,
   "chainlink-functions": chainlinkFunctionsCollection,
   "chainlink-nodes": chainlinkNodesCollection,
   "data-streams": dataStreamsCollection,
+  "dta-technical-standard": dtaTechnicalStandardCollection,
+  datalink: datalinkCollection,
+  cre: creCollection,
+  crec: crecCollection,
   resources: resourcesCollection,
   vrf: vrfCollection,
   "chainlink-local": chainlinkLocalCollection,
   quickstarts: quickstartsCollection,
+  "cre-templates": creTemplatesCollection,
   "architecture-overview": architectureOverviewCollection,
   "getting-started": gettingStartedCollection,
   "any-api": anyApiCollection,
+  "oracle-platform": oraclePlatformCollection,
 }
 
 export type Collection = keyof typeof collections

@@ -3,15 +3,19 @@ section: ccip
 date: Last Modified
 title: "Send Arbitrary Data"
 metadata:
-  description: "Learn to send arbitrary data between EVM chains using Chainlink CCIP. Tutorial covers deploying sender/receiver, sending text, and paying fees in LINK or native gas."
+  description: "Send arbitrary data between EVM chains using CCIP. Deploy sender/receiver, send text payloads, pay fees in LINK or native gas, and verify delivery."
+  image: "/images/ccip/basic-architecture.png"
+  excerpt: "arbitrary data, messaging, CCIP, Solidity, Remix, LINK, native gas"
+  datePublished: "2024-03-25"
+  lastModified: "2025-05-19"
+  estimatedTime: "20 minutes"
+  difficulty: "beginner"
 whatsnext:
-  {
-    "Send Arbitrary Data and Receive Transfer Confirmation: A -> B -> A": "/ccip/tutorials/evm/send-arbitrary-data-receipt-acknowledgment",
-    "See example cross-chain dApps and tools": "/ccip/examples",
-    "CCIP Directory": "/ccip/directory",
-    "Learn about CCIP Architecture and Billing": "/ccip/concepts/architecture",
-    "Learn CCIP best practices": "/ccip/concepts/best-practices/evm",
-  }
+  "Send Arbitrary Data and Receive Transfer Confirmation: A -> B -> A": "/ccip/tutorials/evm/send-arbitrary-data-receipt-acknowledgment"
+  "See example cross-chain dApps and tools": "/ccip/examples"
+  "CCIP Directory": "/ccip/directory"
+  "Learn about CCIP Architecture and Billing": "/ccip/concepts/architecture"
+  "Learn CCIP best practices": "/ccip/concepts/best-practices/evm"
 ---
 
 import { CodeSample, ClickToZoom, CopyText, Aside } from "@components"
@@ -45,7 +49,6 @@ To use this contract:
 
 1. Compile your contract.
 1. Deploy your sender contract on _Avalanche Fuji_ and enable sending messages to _Ethereum Sepolia_:
-
    1. Open MetaMask and select the network _Avalanche Fuji_.
    1. In Remix IDE, click on _Deploy & Run Transactions_ and select _Injected Provider - MetaMask_ from the environment list. Remix will then interact with your MetaMask wallet to communicate with _Avalanche Fuji_.
    1. Fill in the router address and the link address for your network. You can find the router address on the [CCIP Directory](/ccip/directory) and the LINK token address on the [LINK Token contracts page](/resources/link-token-contracts?parent=ccip). For _Avalanche Fuji_:
@@ -58,7 +61,6 @@ To use this contract:
       1. Call the `allowlistDestinationChain` with <CopyText text="16015286601757825753" code/> as the destination chain selector, and <CopyText text="true" code/> as allowed. Each chain selector is found on the [CCIP Directory](/ccip/directory).
 
 1. Deploy your receiver contract on _Ethereum Sepolia_ and enable receiving messages from your sender contract:
-
    1. Open MetaMask and select the network _Ethereum Sepolia_.
    1. In Remix IDE, under _Deploy & Run Transactions_, make sure the environment is still _Injected Provider - MetaMask_.
    1. Fill in the router address and the LINK address for your network. You can find the router address on the [CCIP Directory](/ccip/directory) and the LINK contract address on the [LINK token contracts page](/resources/link-token-contracts). For _Ethereum Sepolia_:
@@ -85,7 +87,6 @@ You will use CCIP to send a text. The CCIP fees for using CCIP will be paid in L
     from [faucets.chain.link](https://faucets.chain.link) or use a supported testnet other than Sepolia.
 
 1.  Send "Hello World!" from _Avalanche Fuji_:
-
     1.  Open MetaMask and select the network _Avalanche Fuji_.
     1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Avalanche Fuji_.
     1.  Fill in the arguments of the _**sendMessagePayLINK**_ function:
@@ -115,7 +116,6 @@ You will use CCIP to send a text. The CCIP fees for using CCIP will be paid in L
           />
 
 1.  Check the receiver contract on the destination chain:
-
     1.  Open MetaMask and select the network _Ethereum Sepolia_.
     1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Ethereum Sepolia_.
     1.  Call the `getLastReceivedMessageDetails`.
@@ -138,7 +138,6 @@ You will use CCIP to send a text. The CCIP fees for using CCIP will be paid in n
 1.  Open MetaMask and connect to _Avalanche Fuji_. Fund your contract with AVAX. You can transfer <CopyText text="1" code/> _AVAX_ to your contract. In this example, AVAX is used to pay the CCIP fees.
 
 1.  Send "Hello World!" from _Avalanche Fuji_:
-
     1.  Open MetaMask and select the network _Avalanche Fuji_.
     1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Avalanche Fuji_.
     1.  Fill in the arguments of the _**sendMessagePayNative**_ function:
@@ -175,7 +174,6 @@ You will use CCIP to send a text. The CCIP fees for using CCIP will be paid in n
           />
 
 1.  Check the receiver contract on the destination chain:
-
     1.  Open MetaMask and select the network _Ethereum Sepolia_.
     1.  In Remix IDE, under _Deploy & Run Transactions_, open the list of transactions of your smart contract deployed on _Ethereum Sepolia_.
     1.  Call the `getLastReceivedMessageDetails`.
@@ -203,22 +201,20 @@ When deploying the contract, we define the router address and LINK contract addr
 Defining the router address is useful for the following:
 
 - Sender part:
-
-  - Calls the router's `getFee` [function](/ccip/api-reference/evm/v1.6.0/i-router-client#getfee) to estimate the CCIP fees.
-  - Calls the router's `ccipSend` [function](/ccip/api-reference/evm/v1.6.0/i-router-client#ccipsend) to send CCIP messages.
+  - Calls the router's `getFee` [function](/ccip/api-reference/evm/v1.6.1/i-router-client#getfee) to estimate the CCIP fees.
+  - Calls the router's `ccipSend` [function](/ccip/api-reference/evm/v1.6.1/i-router-client#ccipsend) to send CCIP messages.
 
 - Receiver part:
-  - The contract inherits from [CCIPReceiver](/ccip/api-reference/evm/v1.6.0/ccip-receiver), which serves as a base contract for receiver contracts. This contract requires that child contracts implement the `_ccipReceive` [function](/ccip/api-reference/evm/v1.6.0/ccip-receiver#_ccipreceive). `_ccipReceive` is called by the `ccipReceive` [function](/ccip/api-reference/evm/v1.6.0/ccip-receiver#ccipreceive), which ensures that only the router can deliver CCIP messages to the receiver contract.
+  - The contract inherits from [CCIPReceiver](/ccip/api-reference/evm/v1.6.1/ccip-receiver), which serves as a base contract for receiver contracts. This contract requires that child contracts implement the `_ccipReceive` [function](/ccip/api-reference/evm/v1.6.1/ccip-receiver#_ccipreceive). `_ccipReceive` is called by the `ccipReceive` [function](/ccip/api-reference/evm/v1.6.1/ccip-receiver#ccipreceive), which ensures that only the router can deliver CCIP messages to the receiver contract.
 
 ### Sending data and pay in LINK
 
 The `sendMessagePayLINK` function undertakes five primary operations:
 
-1. Call the `_buildCCIPMessage` private function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/evm/v1.6.0/client#any2evmmessage):
-
+1. Call the `_buildCCIPMessage` private function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/evm/v1.6.1/client#any2evmmessage):
    - The `_receiver` address is encoded in bytes to accommodate non-EVM destination blockchains with distinct address formats. The encoding is achieved through [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `data` is encoded from a `string` to `bytes` using [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
-   - The `tokenAmounts` is an empty `EVMTokenAmount` [struct](/ccip/api-reference/evm/v1.6.0/client#evmtokenamount) array as no tokens are transferred.
+   - The `tokenAmounts` is an empty `EVMTokenAmount` [struct](/ccip/api-reference/evm/v1.6.1/client#evmtokenamount) array as no tokens are transferred.
    - The `extraArgs` specifies the `gasLimit` for relaying the message to the recipient contract on the destination blockchain. In this example, the `gasLimit` is set to `200000`.
    - The `_feeTokenAddress` designates the token address used for CCIP fees. Here, `address(linkToken)` signifies payment in LINK.
 
@@ -226,10 +222,10 @@ The `sendMessagePayLINK` function undertakes five primary operations:
 
      <CcipCommon callout="senderContractCallout" />
 
-1. Computes the fees by invoking the router's `getFee` [function](/ccip/api-reference/evm/v1.6.0/i-router-client#getfee).
+1. Computes the fees by invoking the router's `getFee` [function](/ccip/api-reference/evm/v1.6.1/i-router-client#getfee).
 1. Ensures your contract balance in LINK is enough to cover the fees.
 1. Grants the router contract permission to deduct the fees from the contract's LINK balance.
-1. Dispatches the CCIP message to the destination chain by executing the router's `ccipSend` [function](/ccip/api-reference/evm/v1.6.0/i-router-client#ccipsend).
+1. Dispatches the CCIP message to the destination chain by executing the router's `ccipSend` [function](/ccip/api-reference/evm/v1.6.1/i-router-client#ccipsend).
 
 **Note**: As a security measure, the `sendMessagePayLINK` function is protected by the `onlyAllowlistedDestinationChain`, ensuring the contract owner has allowlisted a destination chain.
 
@@ -237,11 +233,10 @@ The `sendMessagePayLINK` function undertakes five primary operations:
 
 The `sendMessagePayNative` function undertakes four primary operations:
 
-1. Call the `_buildCCIPMessage` private function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/evm/v1.6.0/client#any2evmmessage):
-
+1. Call the `_buildCCIPMessage` private function to construct a CCIP-compatible message using the `EVM2AnyMessage` [struct](/ccip/api-reference/evm/v1.6.1/client#any2evmmessage):
    - The `_receiver` address is encoded in bytes to accommodate non-EVM destination blockchains with distinct address formats. The encoding is achieved through [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
    - The `data` is encoded from a `string` to `bytes` using [abi.encode](https://docs.soliditylang.org/en/develop/abi-spec.html).
-   - The `tokenAmounts` is an empty `EVMTokenAmount` [struct](/ccip/api-reference/evm/v1.6.0/client#evmtokenamount) array as no tokens are transferred.
+   - The `tokenAmounts` is an empty `EVMTokenAmount` [struct](/ccip/api-reference/evm/v1.6.1/client#evmtokenamount) array as no tokens are transferred.
    - The `extraArgs` specifies the `gasLimit` for relaying the message to the recipient contract on the destination blockchain. In this example, the `gasLimit` is set to `200000`.
    - The `_feeTokenAddress` designates the token address used for CCIP fees. Here, `address(0)` signifies payment in native gas tokens (ETH).
 
@@ -249,15 +244,15 @@ The `sendMessagePayNative` function undertakes four primary operations:
 
      <CcipCommon callout="senderContractCallout" />
 
-1. Computes the fees by invoking the router's `getFee` [function](/ccip/api-reference/evm/v1.6.0/i-router-client#getfee).
+1. Computes the fees by invoking the router's `getFee` [function](/ccip/api-reference/evm/v1.6.1/i-router-client#getfee).
 1. Ensures your contract balance in native gas is enough to cover the fees.
-1. Dispatches the CCIP message to the destination chain by executing the router's `ccipSend` [function](/ccip/api-reference/evm/v1.6.0/i-router-client#ccipsend). **Note**: `msg.value` is set because you pay in native gas.
+1. Dispatches the CCIP message to the destination chain by executing the router's `ccipSend` [function](/ccip/api-reference/evm/v1.6.1/i-router-client#ccipsend). **Note**: `msg.value` is set because you pay in native gas.
 
 **Note**: As a security measure, the `sendMessagePayNative` function is protected by the `onlyAllowlistedDestinationChain`, ensuring the contract owner has allowlisted a destination chain.
 
 ### Receiving data
 
-On the destination blockchain, the router invokes the `ccipReceive` [function](/ccip/api-reference/evm/v1.6.0/ccip-receiver#ccipreceive) which expects an `Any2EVMMessage` [struct](/ccip/api-reference/evm/v1.6.0/client#any2evmmessage) that contains:
+On the destination blockchain, the router invokes the `ccipReceive` [function](/ccip/api-reference/evm/v1.6.1/ccip-receiver#ccipreceive) which expects an `Any2EVMMessage` [struct](/ccip/api-reference/evm/v1.6.1/client#any2evmmessage) that contains:
 
 - The CCIP `messageId`.
 - The `sourceChainSelector`.
@@ -266,7 +261,7 @@ On the destination blockchain, the router invokes the `ccipReceive` [function](/
 
 This example applies three important security measures:
 
-- `_ccipReceive` is called by the `ccipReceive` [function](/ccip/api-reference/evm/v1.6.0/ccip-receiver#ccipreceive), which ensures that only the router can deliver CCIP messages to the receiver contract. See the `onlyRouter` [modifier](/ccip/api-reference/evm/v1.6.0/ccip-receiver#onlyrouter) for more information.
+- `_ccipReceive` is called by the `ccipReceive` [function](/ccip/api-reference/evm/v1.6.1/ccip-receiver#ccipreceive), which ensures that only the router can deliver CCIP messages to the receiver contract. See the `onlyRouter` [modifier](/ccip/api-reference/evm/v1.6.1/ccip-receiver#onlyrouter) for more information.
 - The modifier `onlyAllowlisted` ensures that only a call from an allowlisted source chain and sender is accepted.
 
 <CcipCommon callout="educationalDisclaimer" />

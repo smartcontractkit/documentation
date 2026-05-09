@@ -10,7 +10,7 @@
 import fs from "fs"
 import path from "path"
 import { execFileSync } from "child_process"
-import { pino } from "pino"
+import pino from "pino"
 import { TokensConfig, LanesConfig, Environment, Version } from "../../config/data/ccip/types.js"
 import { loadReferenceData } from "../../config/data/ccip/data.js"
 

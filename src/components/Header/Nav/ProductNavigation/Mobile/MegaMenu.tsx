@@ -10,7 +10,7 @@ function MegaMenu() {
         {megaMenuSections.map((section) => (
           <div className={styles.resourcesMenuContentRow} key={section.title}>
             <h2 className="label">{section.title}</h2>
-            {section.items.map((item, index) => (
+            {section.items?.map((item, index) => (
               <MegaMenuItem
                 key={index}
                 image={item.image?.src}
@@ -62,7 +62,7 @@ function MegaMenuItem({
   image?: string
   title?: string
   description?: string
-  links: { label: string; href: string | undefined }[]
+  links: { label: string; href?: string }[]
 }) {
   const [open, setOpen] = useState(false)
   return (

@@ -1,0 +1,56 @@
+---
+section: cre
+title: "The EVM Read & Write Capabilities"
+date: Last Modified
+metadata:
+  description: "CRE EVM Read & Write capabilities: read blockchain data and write verified results to EVM chains with built-in consensus."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+The **EVM Read & Write** capabilities provide a secure and reliable service for your workflow to interact with smart contracts on any EVM-compatible blockchain.
+
+- **EVM Read:** Allows your workflow to call `view` and `pure` functions on a smart contract to read its state.
+- **EVM Write:** Allows your workflow to call state-changing functions on a smart contract to write data to the blockchain.
+
+## How it works
+
+When you use the SDK's [`evm.Client`](/cre/reference/sdk/evm-client) to interact with a contract, you are invoking these underlying capabilities. This provides a simpler and more reliable developer experience compared to crafting raw RPC calls.
+
+The SDKs simplify contract interactions with type-safe ABI handling (Go uses generated bindings, TypeScript uses viem), while the underlying CRE infrastructure manages consensus and transaction submission.
+
+### Key features
+
+- **Type-safe interactions**: SDKs provide type safety for contract calls (Go bindings offer compile-time safety, TypeScript uses viem for runtime type checking)
+- **Decentralized execution**: Read and write operations are executed across multiple nodes in a DON with cryptographic verification
+- **Decentralized consensus**: Multiple DON nodes independently verify read results and validate write operations before onchain submission
+- **Chain selector support**: Target specific blockchains using Chainlink's chain selector system
+- **Block number flexibility**: Read from finalized, latest, or a specific block number
+- **Error handling**: Comprehensive error reporting for failed calls and transactions
+
+<Aside type="note" title="EVM in simulation vs. deployed workflows">
+**In local simulation**, the simulator makes real RPC calls to your configured endpoint.
+
+**In deployed workflows**, the EVM capability DON executes contract calls across multiple nodes with decentralized consensus.
+
+</Aside>
+
+### Understanding EVM Write operations
+
+For **EVM Write** operations, your workflow doesn't write directly to your contract. Instead, the data follows a secure multi-step flow:
+
+1. **Your workflow** generates a cryptographically signed report with your ABI-encoded data
+1. **The EVM Write capability** submits this report to a Chainlink-managed `KeystoneForwarder` contract
+1. **The forwarder** validates the report's cryptographic signatures
+1. **The forwarder** calls your consumer contract's `onReport(bytes metadata, bytes report)` function to deliver the data
+
+This architecture ensures decentralized consensus, cryptographic verification, and accountability. Your consumer contract must implement the `IReceiver` interface to receive data from the forwarder.
+
+Learn more in the [Onchain Write guide](/cre/guides/workflow/using-evm-client/onchain-write/overview-ts).
+
+## Learn more
+
+- **[EVM Chain Interactions Guide](/cre/guides/workflow/using-evm-client/overview)**: Learn how to read from and write to smart contracts
+- **[EVM Client SDK Reference](/cre/reference/sdk/evm-client)**: Detailed API reference for the `evm.Client`

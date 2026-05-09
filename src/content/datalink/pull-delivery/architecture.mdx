@@ -1,0 +1,46 @@
+---
+section: dataLink
+date: Last Modified
+title: DataLink Architecture (Pull Delivery)
+metadata:
+  title: "DataLink Architecture (Pull Delivery)"
+  description: "Overview of the DataLink architecture (Pull Delivery)."
+whatsnext:
+  {
+    "Learn about DataLink": "/datalink",
+    "View available DataLink feeds": "/datalink/provider-catalog",
+    "Understand data quality and responsibility": "/datalink/data-quality-responsibility",
+    "Learn how to access DataLink data (Pull Delivery)": "/datalink/pull-delivery/tutorials",
+  }
+---
+
+import { ClickToZoom } from "@components"
+
+DataLink (Pull Delivery) provides infrastructure for Data Providers to make their specialized data available onchain for consumption by blockchain applications through offchain retrieval with onchain verification capabilities.
+
+The process involves these core steps and components, mirroring the [Data Streams](/data-streams/architecture) architecture but adapted for DataLink feeds:
+
+<ClickToZoom
+  src="/images/datalink/datalink-pull-conceptual-diagram.png"
+  alt="DataLink High-Level Architecture (Pull Delivery)"
+  caption="DataLink (Pull Delivery): Data comes from a provider via the Decentralized Oracle Network (DON) and is made available through the Aggregation Layer for offchain retrieval and onchain verification."
+/>
+
+1. **Data Provider Connection:**
+   - Chainlink Labs curates and onboards premium Data Providers.
+   - The provider makes their proprietary data available via a secure API endpoint.
+
+1. **Data Fetching & Consensus (Data DON):**
+   - Multiple nodes within a Chainlink Decentralized Oracle Network (DON) independently fetch data from the provider's API.
+   - Nodes reach consensus on the data received from the provider.
+   - The DON generates a cryptographically signed oracle report containing the provider's data.
+
+1. **Report Availability (Chainlink Aggregation Layer):**
+   - The signed report from the DON is sent to the Chainlink Aggregation Layer.
+   - This layer stores the reports and makes them available via low-latency REST and WebSocket APIs, leveraging an [active-active multi-site deployment](/data-streams/architecture#active-active-multi-site-deployment) for high availability.
+
+1. **Application Integration:**
+   - **dApp Integration:** Developers fetch the signed reports offchain using the standard Streams Direct [REST API](/data-streams/reference/streams-direct/streams-direct-interface-api), [WebSocket](/data-streams/reference/streams-direct/streams-direct-interface-ws), or [SDKs](/data-streams/reference/streams-direct/streams-direct-go-sdk).
+   - **Onchain Verification:** Developers can use the [Chainlink Verifier Contracts](/datalink/pull-delivery/verifier-proxy-addresses) (the same Verifier Contracts used by Data Streams) to [verify the report's integrity onchain](/datalink/pull-delivery/tutorials/onchain-verification-evm), ensuring it hasn't been tampered with since being signed by the DON.
+
+DataLink utilizes the robust transport (Aggregation Layer) and verification (Verifier Contract) components of the Streams Direct infrastructure, but focuses the DON's role on securely fetching and signing data from a _single provider_.

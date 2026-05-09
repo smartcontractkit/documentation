@@ -102,7 +102,6 @@ There are two balances that you must monitor:
 Two important steps are done here:
 
 1. Configure your contract so only the upkeep contract can call the `sendRequestCBOR` function. This security measure is important to prevent anyone from calling several times `sendRequestCBOR` and draining your Functions subscription balance. Follow these steps:
-
    1. On RemixIDE, under the _Deploy & Transactions_ tab, locate your deployed Functions consumer contract.
    1. Open the list of functions.
    1. Fill in the `setAutomationCronContract` function with the upkeep contract address you copied from the previous step.
@@ -110,7 +109,6 @@ Two important steps are done here:
    1. Confirm the transaction and wait for it to be confirmed.
 
 1. Configure the request details by calling the `updateRequest` function. This step stores the encoded request (source code, reference to encrypted secrets if any, arguments), gas limit, subscription ID, and job ID in the contract storage (see [Examine the code](#examine-the-code)). To do so, follow these steps:
-
    1. On a terminal, change directories to the [_10-automate-functions_](https://github.com/smartcontractkit/smart-contract-examples/tree/main/functions-examples/examples/10-automate-functions) directory.
    1. Open [updateRequest.js](https://github.com/smartcontractkit/smart-contract-examples/blob/main/functions-examples/examples/10-automate-functions/updateRequest.js) and replace the consumer contract address and the subscription ID with your own values:
 
@@ -146,7 +144,6 @@ Two important steps are done here:
       ```
 
       The output of the example gives you the following information:
-
       - Your request is first run on a sandbox environment to ensure it is correctly configured.
       - The encrypted secrets were uploaded to the secrets endpoint `https://01.functions-gateway.testnet.chain.link/user`.
       - The Functions consumer contract's request details are updated.
@@ -223,7 +220,6 @@ const subscriptionId = 3 // REPLACE this with your subscription ID
 The primary function that the script executes is `updateRequestSepolia`. This function consists of five main parts:
 
 1. Definition of necessary identifiers:
-
    - `routerAddress`: Chainlink Functions router address on the Sepolia testnet.
    - `donId`: Identifier of the DON that will fulfill your requests on the Sepolia testnet.
    - `gatewayUrls`: The secrets endpoint URL to which you will upload the encrypted secrets.
@@ -237,12 +233,10 @@ The primary function that the script executes is `updateRequestSepolia`. This fu
    - Initialization of ethers `signer` and `provider` objects. The signer is used to make transactions on the blockchain, and the provider reads data from the blockchain.
 
 1. Simulating your request in a local sandbox environment:
-
    - Use `simulateScript` from the Chainlink Functions NPM package.
    - Read the `response` of the simulation. If successful, use the Functions NPM package `decodeResult` function and `ReturnType` enum to decode the response to the expected returned type (`ReturnType.uint256` in this example).
 
 1. Encrypt the secrets, upload the encrypted secrets to the DON, and then encode the reference to the DON-hosted encrypted secrets. This is done in three steps:
-
    - Initialize a `SecretsManager` instance from the Functions NPM package, then call the `encryptSecrets` function.
    - Call the `uploadEncryptedSecretsToDON` function of the `SecretsManager` instance. This function returns an object containing a `success` boolean as long as `version`, the secret version on the DON storage.
    - Call the `buildDONHostedEncryptedSecretsReference` function of the `SecretsManager` instance and use the slot ID and version to encode the DON-hosted encrypted secrets reference.
@@ -250,7 +244,6 @@ The primary function that the script executes is `updateRequestSepolia`. This fu
 1. Encode the request data offchain using the `buildRequestCBOR` function from the Functions NPM package.
 
 1. Update the Functions consumer contract:
-
    - Initialize your functions consumer contract using the contract address, abi, and ethers signer.
    - Call the `updateRequest` function of your consumer contract.
 
@@ -267,11 +260,9 @@ const consumerAddress = "0x5abE77Ba2aE8918bfD96e2e382d5f213f10D39fA" // REPLACE 
 The primary function that the script executes is `readLatest`. This function can be broken down into two main parts:
 
 1. Read the latest response:
-
    - Initialize your functions consumer contract using the contract address, ABI, and ethers provider.
    - Call the `s_lastRequestId`, `s_lastResponse`, and `s_lastError` functions of your consumer contract.
 
 1. Decode the latest response:
-
    - If there was an error, read the latest error and parse it into a `string`.
    - If there was no error, use the Functions NPM package's `decodeResult` function and the `ReturnType` enum to decode the response to the expected return type (`ReturnType.uint256` in this example).

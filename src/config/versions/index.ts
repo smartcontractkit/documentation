@@ -1,5 +1,3 @@
-import type { Collection } from "~/content.config.ts"
-
 // Base type for version configuration
 export interface VersionConfig {
   LATEST: string
@@ -14,6 +12,8 @@ export interface VersionConfig {
 export interface VMVersionConfig {
   evm: VersionConfig
   svm: VersionConfig
+  aptos: VersionConfig
+  ton: VersionConfig
 }
 
 // Registry of all product versions
@@ -22,9 +22,12 @@ export const VERSIONS = {
   ccip: {
     // Split versions by VM type
     evm: {
-      LATEST: "v1.6.0",
-      ALL: ["v1.6.0", "v1.5.1", "v1.5.0"] as const,
+      LATEST: "v1.6.1",
+      ALL: [/* "v1.6.3", "v1.6.2", */ "v1.6.1", "v1.6.0", "v1.5.1", "v1.5.0"] as const,
       RELEASE_DATES: {
+        // "v1.6.3": "2025-11-05T00:00:00Z", // 5 November 2025
+        // "v1.6.2": "2025-10-06T00:00:00Z", // 6 October 2025
+        "v1.6.1": "2025-09-08T00:00:00Z", // 8 September 2025
         "v1.6.0": "2025-05-19T00:00:00Z", // 19 May 2025
         "v1.5.0": "2023-10-04T00:00:00Z", // 4 October 2023
         "v1.5.1": "2023-12-04T00:00:00Z", // 4 December 2023
@@ -35,6 +38,20 @@ export const VERSIONS = {
       ALL: ["v1.6.0"] as const,
       RELEASE_DATES: {
         "v1.6.0": "2025-05-19T00:00:00Z", // 19 May 2025
+      },
+    },
+    aptos: {
+      LATEST: "v1.6.0",
+      ALL: ["v1.6.0"] as const,
+      RELEASE_DATES: {
+        "v1.6.0": "2025-06-30T00:00:00Z", // 30 June 2025
+      },
+    },
+    ton: {
+      LATEST: "v1.6.0",
+      ALL: ["v1.6.0"] as const,
+      RELEASE_DATES: {
+        "v1.6.0": "2026-04-07T00:00:00Z", // 7 April 2026
       },
     },
     // Default for backward compatibility
@@ -58,6 +75,20 @@ export const VERSIONS = {
       "v0.2.3": "2024-11-30T00:00:00Z", // 30 November 2024
     },
   },
+  // CRE CLI Versions — update LATEST here for each new release
+  "cre-cli": {
+    LATEST: "v1.14.0",
+    ALL: ["v1.14.0", "v1.13.0", "v1.12.0", "v1.11.0", "v1.10.0", "v1.9.0", "v1.8.0"] as const,
+    RELEASE_DATES: {
+      "v1.14.0": "2026-05-08T00:00:00Z",
+      "v1.13.0": "2026-04-30T00:00:00Z",
+      "v1.12.0": "2026-04-23T00:00:00Z",
+      "v1.11.0": "2026-04-16T00:00:00Z",
+      "v1.10.0": "2026-04-10T00:00:00Z",
+      "v1.9.0": "2026-04-02T00:00:00Z",
+      "v1.8.0": "2026-03-26T00:00:00Z",
+    },
+  },
   // Add new products here following the same pattern
   // example: {
   //   LATEST: "v1.0.0",
@@ -71,8 +102,5 @@ export const VERSIONS = {
 
 // Type helpers
 export type ProductVersions = {
-  [K in Collection]?: VersionConfig | VMVersionConfig
+  [key: string]: VersionConfig | VMVersionConfig
 }
-
-// Re-export for convenience
-export type { Collection }

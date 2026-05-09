@@ -1,0 +1,69 @@
+import { Aside, CopyText } from "@components"
+import { Tabs } from "@components/Tabs"
+
+<Aside type="note" title="Integrate Chainlink CCIP v1.6.2 into your project">
+  <Tabs sharedStore="ccip-v1-6-2-package" client:visible>
+    <Fragment slot="tab.1">npm</Fragment>
+    <Fragment slot="tab.2">yarn</Fragment>
+    <Fragment slot="tab.3">foundry</Fragment>
+
+    <Fragment slot="panel.1">
+      If you use [NPM](https://www.npmjs.com/), install the [@chainlink/contracts-ccip NPM package](https://www.npmjs.com/package/@chainlink/contracts-ccip):
+      ```shell
+      npm install @chainlink/contracts-ccip@1.6.2
+      ```
+    </Fragment>
+
+    <Fragment slot="panel.2">
+      If you use [Yarn](https://yarnpkg.com/), install the [@chainlink/contracts-ccip NPM package](https://www.npmjs.com/package/@chainlink/contracts-ccip):
+      ```shell
+      yarn add @chainlink/contracts-ccip@1.6.2
+      ```
+    </Fragment>
+
+    <Fragment slot="panel.3">
+      In your [Foundry](https://book.getfoundry.sh/) project, for easier integration, if you want to avoid installing the dependencies that are only used by the `chainlink-ccip` package, you can use either [NPM](https://www.npmjs.com/) or [Yarn](https://yarnpkg.com/) to install the `chainlink-ccip` package:
+
+      - Using `npm`:
+
+        ```shell
+        npm install @chainlink/contracts-ccip@1.6.2
+        ```
+      - Using `yarn`:
+
+        ```shell
+        yarn add @chainlink/contracts-ccip@1.6.2
+        ```
+
+      Then, add the following remappings to your `remappings.txt` or `foundry.toml` file:
+
+      ```
+      "@chainlink/contracts-ccip/contracts/=node_modules/@chainlink/contracts-ccip/contracts/",
+      "@chainlink/contracts/=node_modules/@chainlink/contracts/",
+      "@openzeppelin/contracts@4.8.3/=node_modules/@openzeppelin/contracts-4.8.3/",
+      "@openzeppelin/contracts@5.0.2/=node_modules/@openzeppelin/contracts-5.0.2/"
+      ```
+
+      Alternatively, if you prefer to use only [`forge install`](https://getfoundry.sh/forge/reference/install/), install the `chainlink-ccip` package along with its dependencies:
+
+      ```shell
+      forge install \
+        smartcontractkit/chainlink-ccip@0e3e0fc5c0f70f0d50dca66b139142ddf3009294 \
+        smartcontractkit/chainlink-evm@86aa5a1d34b20eda8d18fe6eb0e4882948e545ba  \
+        openzeppelin/openzeppelin-contracts@0a25c1940ca220686588c4af3ec526f725fe2582 \
+        openzeppelin/openzeppelin-contracts@dbb6104ce834628e473d2173bbc9d47f81a9eec3
+      ```
+
+      Then set the remappings as follows:
+
+      ```
+      "@chainlink/contracts-ccip/contracts/=lib/chainlink-ccip/chains/evm/contracts/",
+      "@chainlink/contracts/=lib/chainlink-evm/contracts/",
+      "@openzeppelin/contracts@4.8.3/=lib/openzeppelin-contracts/contracts/",
+      "@openzeppelin/contracts@5.0.2/=lib/openzeppelin-contracts/contracts/"
+      ```
+
+    </Fragment>
+
+  </Tabs>
+</Aside>

@@ -1,0 +1,674 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.5.1 FeeQuoter API Reference"
+metadata:
+  description: "API documentation for the FeeQuoter contract in Chainlink CCIP v1.5.1, which manages gas and token prices for cross-chain fee calculations."
+  linkToWallet: false
+  image: "/files/72d4bd6-link-blog.png"
+  lastModified: "2024-08-15T15:38:00Z"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage151" />
+
+## FeeQuoter
+
+The FeeQuoter contract stores gas and token prices in USD, manages chain-specific fee calculations, and provides fee estimation for cross-chain messages.
+
+[Git Source](https://github.com/smartcontractkit/ccip/blob/0df0625eea603ba8572d5382d72979a7f2b12bfb/contracts/src/v0.8/ccip/FeeQuoter.sol)
+
+## Errors
+
+### TokenNotSupported
+
+```solidity
+error TokenNotSupported(address token);
+```
+
+<Aside>Thrown when attempting to get the price or fee for an unsupported token.</Aside>
+
+**Parameters**
+
+| Name    | Type      | Description                   |
+| ------- | --------- | ----------------------------- |
+| `token` | `address` | The unsupported token address |
+
+### FeeTokenNotSupported
+
+```solidity
+error FeeTokenNotSupported(address token);
+```
+
+<Aside>Thrown when attempting to use an unsupported token for fee payment.</Aside>
+
+**Parameters**
+
+| Name    | Type      | Description                       |
+| ------- | --------- | --------------------------------- |
+| `token` | `address` | The unsupported fee token address |
+
+### StaleGasPrice
+
+```solidity
+error StaleGasPrice(uint64 destChainSelector, uint256 threshold, uint256 timePassed);
+```
+
+<Aside>Thrown when the gas price for a destination chain is stale.</Aside>
+
+**Parameters**
+
+| Name                | Type      | Description                                  |
+| ------------------- | --------- | -------------------------------------------- |
+| `destChainSelector` | `uint64`  | The destination chain selector               |
+| `threshold`         | `uint256` | The staleness threshold in seconds           |
+| `timePassed`        | `uint256` | The time passed since last update in seconds |
+
+### StaleKeystoneUpdate
+
+```solidity
+error StaleKeystoneUpdate(address token, uint256 feedTimestamp, uint256 storedTimeStamp);
+```
+
+<Aside>Thrown when a Keystone feed update is older than the currently stored timestamp.</Aside>
+
+**Parameters**
+
+| Name              | Type      | Description                        |
+| ----------------- | --------- | ---------------------------------- |
+| `token`           | `address` | The token address                  |
+| `feedTimestamp`   | `uint256` | The timestamp from the feed update |
+| `storedTimeStamp` | `uint256` | The currently stored timestamp     |
+
+### DataFeedValueOutOfUint224Range
+
+```solidity
+error DataFeedValueOutOfUint224Range();
+```
+
+<Aside>Thrown when a data feed value cannot fit in a uint224.</Aside>
+
+### InvalidDestBytesOverhead
+
+```solidity
+error InvalidDestBytesOverhead(address token, uint32 destBytesOverhead);
+```
+
+<Aside>Thrown when the destination bytes overhead configuration is invalid for a token.</Aside>
+
+**Parameters**
+
+| Name                | Type      | Description                            |
+| ------------------- | --------- | -------------------------------------- |
+| `token`             | `address` | The token address                      |
+| `destBytesOverhead` | `uint32`  | The invalid destination bytes overhead |
+
+### MessageGasLimitTooHigh
+
+```solidity
+error MessageGasLimitTooHigh();
+```
+
+<Aside>Thrown when the message gas limit exceeds the maximum allowed for the destination chain.</Aside>
+
+### DestinationChainNotEnabled
+
+```solidity
+error DestinationChainNotEnabled(uint64 destChainSelector);
+```
+
+<Aside>Thrown when attempting to send a message to a disabled destination chain.</Aside>
+
+**Parameters**
+
+| Name                | Type     | Description                             |
+| ------------------- | -------- | --------------------------------------- |
+| `destChainSelector` | `uint64` | The disabled destination chain selector |
+
+### ExtraArgOutOfOrderExecutionMustBeTrue
+
+```solidity
+error ExtraArgOutOfOrderExecutionMustBeTrue();
+```
+
+<Aside>Thrown when a destination chain enforces out-of-order execution but the extra args specify otherwise.</Aside>
+
+### InvalidExtraArgsTag
+
+```solidity
+error InvalidExtraArgsTag();
+```
+
+<Aside>Thrown when the extra args tag is invalid or unsupported.</Aside>
+
+### SourceTokenDataTooLarge
+
+```solidity
+error SourceTokenDataTooLarge(address token);
+```
+
+<Aside>Thrown when the source token data size exceeds the maximum allowed.</Aside>
+
+**Parameters**
+
+| Name    | Type      | Description                          |
+| ------- | --------- | ------------------------------------ |
+| `token` | `address` | The token with oversized source data |
+
+### InvalidDestChainConfig
+
+```solidity
+error InvalidDestChainConfig(uint64 destChainSelector);
+```
+
+<Aside>Thrown when the destination chain configuration is invalid.</Aside>
+
+**Parameters**
+
+| Name                | Type     | Description                                        |
+| ------------------- | -------- | -------------------------------------------------- |
+| `destChainSelector` | `uint64` | The destination chain selector with invalid config |
+
+### MessageFeeTooHigh
+
+```solidity
+error MessageFeeTooHigh(uint256 msgFeeJuels, uint256 maxFeeJuelsPerMsg);
+```
+
+<Aside>
+  Thrown when the calculated message fee exceeds the maximum allowed fee (see
+  [`StaticConfig.maxFeeJuelsPerMsg`](#staticconfig)).
+</Aside>
+
+**Parameters**
+
+| Name                | Type      | Description                              |
+| ------------------- | --------- | ---------------------------------------- |
+| `msgFeeJuels`       | `uint256` | Calculated message fee in Juels          |
+| `maxFeeJuelsPerMsg` | `uint256` | Maximum allowed fee in Juels per message |
+
+### InvalidStaticConfig
+
+```solidity
+error InvalidStaticConfig();
+```
+
+<Aside>Thrown when the static configuration provided during construction is invalid.</Aside>
+
+### MessageTooLarge
+
+```solidity
+error MessageTooLarge(uint256 maxSize, uint256 actualSize);
+```
+
+<Aside>Thrown when the message data payload exceeds the maximum allowed size.</Aside>
+
+**Parameters**
+
+| Name         | Type      | Description                            |
+| ------------ | --------- | -------------------------------------- |
+| `maxSize`    | `uint256` | Maximum allowed message size           |
+| `actualSize` | `uint256` | Actual message size that was too large |
+
+### UnsupportedNumberOfTokens
+
+```solidity
+error UnsupportedNumberOfTokens();
+```
+
+<Aside>Thrown when the number of tokens in a message exceeds the maximum allowed for the destination chain.</Aside>
+
+## Events
+
+### FeeTokenAdded
+
+```solidity
+event FeeTokenAdded(address indexed feeToken);
+```
+
+<Aside>Emitted when a new fee token is added to the allowed list.</Aside>
+
+**Parameters**
+
+| Name       | Type      | Description                  |
+| ---------- | --------- | ---------------------------- |
+| `feeToken` | `address` | The fee token that was added |
+
+### FeeTokenRemoved
+
+```solidity
+event FeeTokenRemoved(address indexed feeToken);
+```
+
+<Aside>Emitted when a fee token is removed from the allowed list.</Aside>
+
+**Parameters**
+
+| Name       | Type      | Description                    |
+| ---------- | --------- | ------------------------------ |
+| `feeToken` | `address` | The fee token that was removed |
+
+### UsdPerUnitGasUpdated
+
+```solidity
+event UsdPerUnitGasUpdated(uint64 indexed destChain, uint256 value, uint256 timestamp);
+```
+
+<Aside>Emitted when the gas price for a destination chain is updated.</Aside>
+
+**Parameters**
+
+| Name        | Type      | Description                            |
+| ----------- | --------- | -------------------------------------- |
+| `destChain` | `uint64`  | The destination chain selector         |
+| `value`     | `uint256` | The new gas price in USD (18 decimals) |
+| `timestamp` | `uint256` | The timestamp of the update            |
+
+### UsdPerTokenUpdated
+
+```solidity
+event UsdPerTokenUpdated(address indexed token, uint256 value, uint256 timestamp);
+```
+
+<Aside>Emitted when the price of a token is updated.</Aside>
+
+**Parameters**
+
+| Name        | Type      | Description                              |
+| ----------- | --------- | ---------------------------------------- |
+| `token`     | `address` | The token address                        |
+| `value`     | `uint256` | The new token price in USD (18 decimals) |
+| `timestamp` | `uint256` | The timestamp of the update              |
+
+### PriceFeedPerTokenUpdated
+
+```solidity
+event PriceFeedPerTokenUpdated(address indexed token, TokenPriceFeedConfig priceFeedConfig);
+```
+
+<Aside>Emitted when a token's price feed configuration is updated.</Aside>
+
+**Parameters**
+
+| Name              | Type                                            | Description                      |
+| ----------------- | ----------------------------------------------- | -------------------------------- |
+| `token`           | `address`                                       | The token address                |
+| `priceFeedConfig` | [`TokenPriceFeedConfig`](#tokenpricefeedconfig) | The new price feed configuration |
+
+### TokenTransferFeeConfigUpdated
+
+```solidity
+event TokenTransferFeeConfigUpdated(
+  uint64 indexed destChainSelector,
+  address indexed token,
+  TokenTransferFeeConfig tokenTransferFeeConfig
+);
+```
+
+<Aside>Emitted when token transfer fee configuration is updated for a token on a destination chain.</Aside>
+
+**Parameters**
+
+| Name                     | Type                                                | Description                              |
+| ------------------------ | --------------------------------------------------- | ---------------------------------------- |
+| `destChainSelector`      | `uint64`                                            | The destination chain selector           |
+| `token`                  | `address`                                           | The token address                        |
+| `tokenTransferFeeConfig` | [`TokenTransferFeeConfig`](#tokentransferfeeconfig) | The new token transfer fee configuration |
+
+### TokenTransferFeeConfigDeleted
+
+```solidity
+event TokenTransferFeeConfigDeleted(uint64 indexed destChainSelector, address indexed token);
+```
+
+<Aside>Emitted when token transfer fee configuration is deleted for a token on a destination chain.</Aside>
+
+**Parameters**
+
+| Name                | Type      | Description                    |
+| ------------------- | --------- | ------------------------------ |
+| `destChainSelector` | `uint64`  | The destination chain selector |
+| `token`             | `address` | The token address              |
+
+### PremiumMultiplierWeiPerEthUpdated
+
+```solidity
+event PremiumMultiplierWeiPerEthUpdated(address indexed token, uint64 premiumMultiplierWeiPerEth);
+```
+
+<Aside>Emitted when the premium multiplier is updated for a token.</Aside>
+
+**Parameters**
+
+| Name                         | Type      | Description                              |
+| ---------------------------- | --------- | ---------------------------------------- |
+| `token`                      | `address` | The token address                        |
+| `premiumMultiplierWeiPerEth` | `uint64`  | The new premium multiplier (wei per ETH) |
+
+### DestChainConfigUpdated
+
+```solidity
+event DestChainConfigUpdated(uint64 indexed destChainSelector, DestChainConfig destChainConfig);
+```
+
+<Aside>Emitted when the configuration for an existing destination chain is updated.</Aside>
+
+**Parameters**
+
+| Name                | Type                                  | Description                             |
+| ------------------- | ------------------------------------- | --------------------------------------- |
+| `destChainSelector` | `uint64`                              | The destination chain selector          |
+| `destChainConfig`   | [`DestChainConfig`](#destchainconfig) | The new destination chain configuration |
+
+### DestChainAdded
+
+```solidity
+event DestChainAdded(uint64 indexed destChainSelector, DestChainConfig destChainConfig);
+```
+
+<Aside>Emitted when a new destination chain is added with its configuration.</Aside>
+
+**Parameters**
+
+| Name                | Type                                  | Description                         |
+| ------------------- | ------------------------------------- | ----------------------------------- |
+| `destChainSelector` | `uint64`                              | The destination chain selector      |
+| `destChainConfig`   | [`DestChainConfig`](#destchainconfig) | The destination chain configuration |
+
+## Structs
+
+### TokenPriceFeedConfig
+
+Token price data feed configuration.
+
+```solidity
+struct TokenPriceFeedConfig {
+  address dataFeedAddress;
+  uint8 tokenDecimals;
+}
+```
+
+**Properties**
+
+| Name              | Type      | Description                                                 |
+| ----------------- | --------- | ----------------------------------------------------------- |
+| `dataFeedAddress` | `address` | AggregatorV3Interface contract address (0 if feed is unset) |
+| `tokenDecimals`   | `uint8`   | Decimals of the token that the feed represents              |
+
+### TokenPriceFeedUpdate
+
+Token price data feed update.
+
+```solidity
+struct TokenPriceFeedUpdate {
+  address sourceToken;
+  TokenPriceFeedConfig feedConfig;
+}
+```
+
+**Properties**
+
+| Name          | Type                                            | Description                     |
+| ------------- | ----------------------------------------------- | ------------------------------- |
+| `sourceToken` | `address`                                       | Source token to update feed for |
+| `feedConfig`  | [`TokenPriceFeedConfig`](#tokenpricefeedconfig) | Feed config update data         |
+
+### StaticConfig
+
+Struct that contains the static configuration.
+
+```solidity
+struct StaticConfig {
+  uint96 maxFeeJuelsPerMsg;
+  address linkToken;
+  uint32 tokenPriceStalenessThreshold;
+}
+```
+
+<Aside>RMN depends on this struct. If changing, please notify the RMN maintainers.</Aside>
+
+**Properties**
+
+| Name                           | Type      | Description                                                         |
+| ------------------------------ | --------- | ------------------------------------------------------------------- |
+| `maxFeeJuelsPerMsg`            | `uint96`  | Maximum fee that can be charged for a message                       |
+| `linkToken`                    | `address` | LINK token address                                                  |
+| `tokenPriceStalenessThreshold` | `uint32`  | Time (seconds) a token price can be stale before considered invalid |
+
+### ReceivedCCIPFeedReport
+
+The struct representing the received CCIP feed report from Keystone IReceiver.onReport().
+
+```solidity
+struct ReceivedCCIPFeedReport {
+  address token;
+  uint224 price;
+  uint32 timestamp;
+}
+```
+
+**Properties**
+
+| Name        | Type      | Description                                |
+| ----------- | --------- | ------------------------------------------ |
+| `token`     | `address` | Token address                              |
+| `price`     | `uint224` | Price of the token in USD with 18 decimals |
+| `timestamp` | `uint32`  | Timestamp of the price update              |
+
+### DestChainConfig
+
+Struct to hold the fee & validation configs for a destination chain.
+
+```solidity
+struct DestChainConfig {
+  bool isEnabled;
+  uint16 maxNumberOfTokensPerMsg;
+  uint32 maxDataBytes;
+  uint32 maxPerMsgGasLimit;
+  uint32 destGasOverhead;
+  uint16 destGasPerPayloadByte;
+  uint32 destDataAvailabilityOverheadGas;
+  uint16 destGasPerDataAvailabilityByte;
+  uint16 destDataAvailabilityMultiplierBps;
+  uint16 defaultTokenFeeUSDCents;
+  uint32 defaultTokenDestGasOverhead;
+  uint32 defaultTxGasLimit;
+  uint64 gasMultiplierWeiPerEth;
+  uint32 networkFeeUSDCents;
+  uint32 gasPriceStalenessThreshold;
+  bool enforceOutOfOrder;
+  bytes4 chainFamilySelector;
+}
+```
+
+**Properties**
+
+| Name                                | Type     | Description                                                                      |
+| ----------------------------------- | -------- | -------------------------------------------------------------------------------- |
+| `isEnabled`                         | `bool`   | Whether this destination chain is enabled                                        |
+| `maxNumberOfTokensPerMsg`           | `uint16` | Maximum number of distinct ERC20 tokens transferred per message                  |
+| `maxDataBytes`                      | `uint32` | Maximum payload data size in bytes                                               |
+| `maxPerMsgGasLimit`                 | `uint32` | Maximum gas limit for messages targeting EVMs                                    |
+| `destGasOverhead`                   | `uint32` | Gas charged on top of gasLimit to cover destination chain costs                  |
+| `destGasPerPayloadByte`             | `uint16` | Destination chain gas charged for passing each byte of data payload to receiver  |
+| `destDataAvailabilityOverheadGas`   | `uint32` | Extra data availability gas charged on top of the message, e.g. for OCR          |
+| `destGasPerDataAvailabilityByte`    | `uint16` | Amount of gas to charge per byte of message data that needs availability         |
+| `destDataAvailabilityMultiplierBps` | `uint16` | Multiplier for data availability gas, multiples of bps, or 0.0001                |
+| `defaultTokenFeeUSDCents`           | `uint16` | Default token fee charged per token transfer (overridable per token)             |
+| `defaultTokenDestGasOverhead`       | `uint32` | Default gas charged to execute token transfer on destination chain (overridable) |
+| `defaultTxGasLimit`                 | `uint32` | Default gas limit for a transaction                                              |
+| `gasMultiplierWeiPerEth`            | `uint64` | Multiplier for gas costs, 1e18 based (e.g., 11e17 = 10% extra cost)              |
+| `networkFeeUSDCents`                | `uint32` | Flat network fee to charge for messages, multiples of 0.01 USD                   |
+| `gasPriceStalenessThreshold`        | `uint32` | Time (seconds) a gas price can be stale before invalid (0 means disabled)        |
+| `enforceOutOfOrder`                 | `bool`   | Whether to enforce the allowOutOfOrderExecution extraArg value to be true        |
+| `chainFamilySelector`               | `bytes4` | Selector identifying the destination chain's family (determines validations)     |
+
+### DestChainConfigArgs
+
+Struct to hold the configs and its destination chain selector.
+
+```solidity
+struct DestChainConfigArgs {
+  uint64 destChainSelector;
+  DestChainConfig destChainConfig;
+}
+```
+
+<Aside>
+  Same as DestChainConfig but with the destChainSelector so that an array of these can be passed in the constructor and
+  the applyDestChainConfigUpdates function.
+</Aside>
+
+**Properties**
+
+| Name                | Type                                  | Description                             |
+| ------------------- | ------------------------------------- | --------------------------------------- |
+| `destChainSelector` | `uint64`                              | Destination chain selector              |
+| `destChainConfig`   | [`DestChainConfig`](#destchainconfig) | Config to update for the chain selector |
+
+### TokenTransferFeeConfig
+
+Struct to hold the transfer fee configuration for token transfers.
+
+```solidity
+struct TokenTransferFeeConfig {
+  uint32 minFeeUSDCents;
+  uint32 maxFeeUSDCents;
+  uint16 deciBps;
+  uint32 destGasOverhead;
+  uint32 destBytesOverhead;
+  bool isEnabled;
+}
+```
+
+**Properties**
+
+| Name                | Type     | Description                                                                                                             |
+| ------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `minFeeUSDCents`    | `uint32` | Minimum fee to charge per token transfer, multiples of 0.01 USD                                                         |
+| `maxFeeUSDCents`    | `uint32` | Maximum fee to charge per token transfer, multiples of 0.01 USD                                                         |
+| `deciBps`           | `uint16` | Basis points charged on token transfers, multiples of 0.1bps, or 1e-5                                                   |
+| `destGasOverhead`   | `uint32` | Gas charged to execute the token transfer on the destination chain                                                      |
+| `destBytesOverhead` | `uint32` | Extra data availability bytes from source pool sent to destination pool. Must be >= Pool.CCIP_LOCK_OR_BURN_V1_RET_BYTES |
+| `isEnabled`         | `bool`   | Whether this token has custom transfer fees                                                                             |
+
+### TokenTransferFeeConfigSingleTokenArgs
+
+Struct to hold the token transfer fee configurations for a token.
+
+```solidity
+struct TokenTransferFeeConfigSingleTokenArgs {
+  address token;
+  TokenTransferFeeConfig tokenTransferFeeConfig;
+}
+```
+
+<Aside>
+  Same as TokenTransferFeeConfig but with the token address included so that an array of these can be passed in the
+  TokenTransferFeeConfigArgs struct to set the mapping.
+</Aside>
+
+**Properties**
+
+| Name                     | Type                                                | Description                          |
+| ------------------------ | --------------------------------------------------- | ------------------------------------ |
+| `token`                  | `address`                                           | Token address                        |
+| `tokenTransferFeeConfig` | [`TokenTransferFeeConfig`](#tokentransferfeeconfig) | Transfer fee configuration for token |
+
+### TokenTransferFeeConfigArgs
+
+Struct to hold the token transfer fee configurations for a destination chain and a set of tokens.
+
+```solidity
+struct TokenTransferFeeConfigArgs {
+  uint64 destChainSelector;
+  TokenTransferFeeConfigSingleTokenArgs[] tokenTransferFeeConfigs;
+}
+```
+
+<Aside>
+  Same as TokenTransferFeeConfigSingleTokenArgs but with the destChainSelector and an array of
+  TokenTransferFeeConfigSingleTokenArgs included so that an array of these can be passed in the constructor and the
+  applyTokenTransferFeeConfigUpdates function.
+</Aside>
+
+**Properties**
+
+| Name                      | Type                                                                                | Description                                |
+| ------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------ |
+| `destChainSelector`       | `uint64`                                                                            | Destination chain selector                 |
+| `tokenTransferFeeConfigs` | [`TokenTransferFeeConfigSingleTokenArgs[]`](#tokentransferfeeconfigsingletokenargs) | Array of token transfer fee configurations |
+
+### TokenTransferFeeConfigRemoveArgs
+
+Struct to hold a pair of destination chain selector and token address.
+
+```solidity
+struct TokenTransferFeeConfigRemoveArgs {
+  uint64 destChainSelector;
+  address token;
+}
+```
+
+<Aside>
+  Used to pass an array of these in the applyTokenTransferFeeConfigUpdates function to remove the token transfer fee
+  configuration for a token.
+</Aside>
+
+**Properties**
+
+| Name                | Type      | Description                |
+| ------------------- | --------- | -------------------------- |
+| `destChainSelector` | `uint64`  | Destination chain selector |
+| `token`             | `address` | Token address              |
+
+### PremiumMultiplierWeiPerEthArgs
+
+Struct to hold the fee token configuration for a token.
+
+```solidity
+struct PremiumMultiplierWeiPerEthArgs {
+  address token;
+  uint64 premiumMultiplierWeiPerEth;
+}
+```
+
+<Aside>
+  Same as the s_premiumMultiplierWeiPerEth but with the token address included so that an array of these can be passed
+  in the constructor and applyPremiumMultiplierWeiPerEthUpdates to set the mapping.
+</Aside>
+
+**Properties**
+
+| Name                         | Type      | Description                                        |
+| ---------------------------- | --------- | -------------------------------------------------- |
+| `token`                      | `address` | Token address                                      |
+| `premiumMultiplierWeiPerEth` | `uint64`  | Multiplier for destination chain specific premiums |
+
+## State Variables
+
+### FEE_BASE_DECIMALS
+
+```solidity
+uint256 public constant FEE_BASE_DECIMALS = 36;
+```
+
+<Aside>The base decimals for cost calculations.</Aside>
+
+### KEYSTONE_PRICE_DECIMALS
+
+```solidity
+uint256 public constant KEYSTONE_PRICE_DECIMALS = 18;
+```
+
+<Aside>The decimals that Keystone reports prices in.</Aside>
+
+### typeAndVersion
+
+```solidity
+string public constant override typeAndVersion = "FeeQuoter 1.6.0-dev";
+```
+
+<Aside>The version identifier for the FeeQuoter contract.</Aside>

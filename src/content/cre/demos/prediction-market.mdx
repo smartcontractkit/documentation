@@ -1,0 +1,102 @@
+---
+section: cre
+title: "AI-Powered Prediction Market"
+date: Last Modified
+metadata:
+  description: "Explore a complete end-to-end prediction market demo integrating CRE with Gemini AI and Firebase for automated, AI-powered settlements."
+  datePublished: "2025-11-21"
+  lastModified: "2025-11-21"
+---
+
+import { Aside } from "@components"
+
+This demo showcases a complete, end-to-end prediction market application that integrates CRE with external services. Unlike [templates](/cre/templates) that are meant to be copied and customized, this demo is designed to be explored and studied to understand what's possible with CRE.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Educational Example Disclaimer">
+  This page includes educational examples to use a Chainlink system, product, or service and is provided to
+  demonstrate how to interact with Chainlink's systems, products, and services to integrate them into your own. This
+  template is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, it has not been audited, and it may be
+  missing key checks or error handling to make the usage of the system, product or service more clear. Do not use the
+  code in this example in a production environment without completing your own audits and application of best practices.
+  Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs
+  that are generated due to errors in code.
+</Aside>
+
+## GitHub Repository
+
+The [repository](https://github.com/smartcontractkit/cre-gcp-prediction-market-demo) contains complete setup instructions, including quick start guides and full end-to-end deployment steps.
+
+## What this demo does
+
+This demo showcases a fully automated prediction market where:
+
+1. **Users create markets** by asking binary (Yes/No) questions onchain
+1. **Users stake ERC-20 tokens** (USDC) to make predictions
+1. **After the market closes**, anyone can request settlement
+1. **CRE automatically triggers** when it detects the settlement request event
+1. **Gemini AI determines the outcome** using Google search grounding for factual verification
+1. **CRE submits a cryptographically signed settlement** report back onchain
+1. **Settlement data is stored in Firestore** for audit trails and frontend display
+1. **Winners claim their proportional share** of the total pool
+
+## Key integrations
+
+This demo demonstrates several important CRE integration patterns:
+
+### Event-driven workflows
+
+The CRE workflow listens for `SettlementRequested` events onchain using CRE's [EVM log trigger capability](/cre/guides/workflow/using-triggers/evm-log-trigger). When a settlement is requested, the workflow automatically triggers and begins the settlement process.
+
+### External AI service integration
+
+The workflow sends the market question to Google's Gemini AI with search grounding enabled. Gemini searches the web to determine the factual outcome and returns a result with a confidence score.
+
+### Data persistence
+
+Settlement results, including the AI's response and confidence level, are stored in [Firebase Firestore](https://firebase.google.com/docs/firestore). This creates a trail and enables the frontend to display settlement history.
+
+### Cryptographic signing
+
+The workflow generates cryptographically signed settlement reports that the smart contract can verify. This ensures only authorized, consensus-approved data reaches the contract.
+
+### Full-stack architecture
+
+The demo includes:
+
+- **Smart contracts** (Solidity + Foundry): `SimpleMarket.sol` for managing prediction markets
+- **CRE workflow** (TypeScript): Event-driven settlement logic with AI integration
+- **Database** (Firebase/Firestore): Audit trail and data persistence
+- **Frontend** (Next.js): User interface for viewing settlement history
+
+## What you'll learn
+
+Exploring this demo will teach you:
+
+1. **Event-driven workflow patterns**: How to use CRE's log trigger to react to onchain events in real-time
+1. **External service integration**: Best practices for integrating AI services like Gemini with your workflows
+1. **Error handling and validation**: How to validate external API responses before using them onchain
+1. **Data persistence patterns**: Techniques for storing workflow results in external databases
+1. **Full-stack dApp architecture**: How CRE fits into a complete application with smart contracts, workflows, and frontends
+1. **Cryptographic signing**: How CRE generates and submits cryptographically signed reports
+
+## Getting started
+
+The repository includes two quick start options:
+
+### Option 1: Test CRE Workflow Only (Fastest)
+
+Test the workflow using a pre-deployed contract and transaction. This lets you see the workflow in action without deploying anything yourself.
+
+### Option 2: Full End-to-End Test
+
+Deploy your own contracts, create markets, request settlements, and run the workflow end-to-end. This gives you complete hands-on experience with all components.
+
+See the [repository README](https://github.com/smartcontractkit/cre-gcp-prediction-market-demo) for detailed prerequisites and setup instructions.
+
+## Next steps
+
+- **[Explore the repository](https://github.com/smartcontractkit/cre-gcp-prediction-market-demo)** - Clone the demo and follow the setup instructions
+- **[Learn about log triggers](/cre/guides/workflow/using-triggers/evm-log-trigger)** - Understand how to build event-driven workflows
+- **[Explore HTTP capabilities](/cre/guides/workflow/using-http-client)** - Learn more about integrating external APIs
+- **[Browse templates](/cre/templates)** - Check out workflow templates you can copy and customize

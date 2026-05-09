@@ -2,15 +2,34 @@
 import NotificationBanner from "~/features/notifications/components/NotificationBanner.astro"
 import { getNavigationProps } from "./getNavigationProps.ts"
 import { NavBar } from "./NavBar"
+import { getCollection } from "astro:content"
 
-const { productsNav, subProductsNav } = getNavigationProps()
+const allPages = await getCollection("cre")
+const pageSdkLangMap = new Map<string, string>()
+allPages.forEach((page) => {
+  if (page.data.sdkLang) {
+    pageSdkLangMap.set(`cre/${page.id.replace(/\.mdx?$/, "")}`, page.data.sdkLang)
+  }
+})
+
+const { productsNav, subProductsNav } = getNavigationProps(pageSdkLangMap)
 
 const path = Astro.url.pathname
 const algoliaVars = {
   algoliaAppId: import.meta.env.PUBLIC_ALGOLIA_SEARCH_APP_ID || "",
   algoliaPublicApiKey: import.meta.env.PUBLIC_ALGOLIA_SEARCH_PUBLIC_API_KEY || "",
 }
+
+// Serialize pageSdkLangMap to JSON for client-side access
+// This is needed by the mobile navigation to filter language-specific pages
+const pageSdkLangData = Object.fromEntries(pageSdkLangMap)
 ---
+
+<!-- Expose SDK lang data to client-side for mobile navigation -->
+<script is:inline define:vars={{ pageSdkLangData }}>
+  // Make CRE SDK language metadata available globally for navigation filtering
+  window.__PAGE_SDK_LANG_MAP__ = pageSdkLangData
+</script>
 
 <!-- Google Tag Manager (noscript) -->
 <noscript></noscript><iframe

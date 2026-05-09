@@ -1,0 +1,33 @@
+# Main project configuration - compiles all samples except CCIP
+# CCIP samples use their own foundry.toml in public/samples/CCIP/
+[profile.default]
+auto_detect_solc = true
+evm_version = 'paris'
+
+src = "public/samples"
+out = ".test/artifacts"
+cache_path = ".test/cache"
+libs = ["lib", "node_modules"]
+
+optimizer = true
+optimizer_runs = 1_000_000
+
+bytecode_hash = "none"
+ffi = false
+gas_price = 1
+block_timestamp = 1234567890
+block_number = 12345
+
+[profile.ci]
+verbosity = 2
+
+[fmt]
+tab_width = 2
+multiline_func_header = "params_first"
+sort_imports = true
+single_line_statement_blocks = "preserve"
+number_underscore = "thousands"
+wrap_comments = true
+
+[lint]
+lint_on_build = false

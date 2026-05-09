@@ -1,11 +1,15 @@
 ---
 title: "Data Feed Circuit Breaker Using Chainlink Automation"
 description: "Build your own Data Feed Circuit Breaker Using Chainlink Automation."
+excerpt: "data feed circuit breaker chainlink automation smart contract pause dapp adverse events market volatility protection"
 githubSourceCodeUrl: "https://github.com/smartcontractkit/quickstarts-circuitbreaker"
 image: "QuickStarts-Circuit-Breaker.webp"
 products: ["automation", "feeds"]
 time: "90 minutes"
 requires: "Wallet with gas token & ERC-677 LINK"
+datePublished: "2023-09-29"
+lastModified: "2025-03-11"
+difficulty: "intermediate"
 ---
 
 import { Accordion, Address, Aside, ClickToZoom, CodeSample, CopyText } from "@components"
@@ -116,7 +120,6 @@ To set up this example, clone the source and install the required packages.
    | `_MAXBALANCE`        | <CopyText text="2000000000000" code/>                                                                     |
    | `_FEEDADDRESS`       | <Address contractUrl="https://testnet.snowtrace.io/address/0x31CF013A08c6Ac228C94551d535d5BAfE19c602a" /> |
    | `_EMERGENCYPOSSIBLE` | <CopyText text="true" code/>                                                                              |
-
    - The `maxBalance` in sats. For example, <CopyText text="2000000000000" code/> for a max balance of $20,000.
    - The proxy contract address of the price feed. For example, the address for the BTC/USD price feed on Fuji is <Address contractUrl="https://testnet.snowtrace.io/address/0x31CF013A08c6Ac228C94551d535d5BAfE19c602a" />. Find other price feed addresses [here](/data-feeds/price-feeds/addresses).
    - The `isEmergencyPossible` flag: set this to `true` if you want the circuit breaking condition to be checked. You can turn off this check by setting this value to `false`.
@@ -162,14 +165,12 @@ Registering an upkeep on Chainlink Automation creates a smart contract that will
 There may be a warning that says "Unable to verify if this is an Automation compatible contract." The `CircuitBreaker.sol` contract does implement the `AutomationCompatibleInterface` so you can disregard this warning. Click **Next**.
 
 1. For **Upkeep details**, add the following:
-
    - A name for your upkeep
    - A starting balance of 2 testnet LINK
    - The admin address and gas limit are prefilled for you.
    - Although the **Check data** field is marked optional, it is **required** for this tutorial. You'll fill this in during the next step.
 
 1. For your upkeep's **Check data** field, you need to ABI encode the address of your deployed `ExampleImplementation.sol` contract.
-
    1. Navigate to the [HashEx Online ABI Encoder](https://abi.hashex.org/).
    1. Click **Add argument** and select **Address** as the argument type from the dropdown menu. 1. Enter the address of your deployed `ExampleImplementation.sol` contract.
 

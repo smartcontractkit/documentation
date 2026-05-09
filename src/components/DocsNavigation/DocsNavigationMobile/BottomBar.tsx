@@ -3,7 +3,7 @@ import { clsx } from "~/lib/clsx/clsx.ts"
 
 const ResourcesButton = () => (
   <a rel="noreferrer noopener" target="_blank" href="https://github.com/smartcontractkit/documentation">
-    <img height={20} width={20} src="/assets/icons/github-blue.svg" />
+    <img height={20} width={20} src="/assets/icons/github-blue.svg" alt="GitHub repository" />
     GitHub
   </a>
 )

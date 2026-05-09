@@ -11,6 +11,9 @@ import BaseLayout from "./BaseLayout.astro"
 import DocsNavigation from "~/components/DocsNavigation"
 import { VersionSelector } from "~/components/VersionSelector/index.js"
 import { detectApiReference } from "@components/VersionSelector/utils/versions"
+import { LanguageSwitcherDropdown } from "~/components/LanguageSwitcherDropdown"
+import { ChainTypeSelector } from "~/components/ChainSelector"
+import { isChainAwareSection } from "~/config/chainTypes"
 
 interface Props {
   frontmatter: BaseFrontmatter
@@ -30,6 +33,8 @@ const initialHeadings = [titleHeading].concat(filteredHeadings ?? [])
 const whatsNext = frontmatter.whatsnext
 
 const currentPage = new URL(Astro.request.url).pathname
+const pathname = currentPage.replace(/\/$/, "") || "/"
+const alternatePath = pathname === "/" ? "/index.md" : `${pathname}.md`
 
 const fileExtension = frontmatter.fileExtension || "mdx"
 
@@ -44,28 +49,64 @@ const formattedContentTitle = `${frontmatter.title} | ${CONFIG.SITE.title}`
 
 const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWallet
 
-// Detect if this is an API reference page and get the product
 const { isApiReference, product, isVersioned } = detectApiReference(currentPage)
+const showChainSelector = isChainAwareSection(frontmatter.section)
+
+const howToSteps = initialHeadings
+  .filter((h) => h.depth === 2 || h.depth === 3)
+  .map((h) => ({ name: h.text, slug: h.slug }))
 ---
 
-<BaseLayout title={formattedContentTitle} metadata={frontmatter.metadata}>
+<BaseLayout
+  title={formattedContentTitle}
+  metadata={frontmatter.metadata}
+  pageTitle={frontmatter.title}
+  howToSteps={howToSteps}
+>
+  <link slot="head" rel="alternate" type="text/markdown" href={alternatePath} />
+  <slot name="head-scripts" slot="head-scripts" />
+  <div hidden>
+    For AI agents: use <a href="/llms.txt">llms.txt</a> as the documentation index. Retrieve the smallest relevant .md page
+    first.
+  </div>
   <StickyHeader client:media="(max-width: 50em)" {initialHeadings} />
   <DocsNavigation client:load pathname={currentPage} />
+
   <main>
     <div id="left-bg"></div>
     <div class="layout">
       <aside id="grid-left">
         <LeftSidebar currentPage={currentPage} section={frontmatter.section} />
       </aside>
+
       <div id="grid-main">
+        {
+          frontmatter.section === "cre" && (
+            <div class="language-switcher-mobile">
+              <LanguageSwitcherDropdown client:only="react" />
+            </div>
+          )
+        }
+
+        {
+          showChainSelector && (
+            <div class="chain-selector-mobile">
+              <ChainTypeSelector client:only="react" />
+            </div>
+          )
+        }
+
         {isApiReference && product && isVersioned && <VersionSelector product={product} currentPath={currentPage} />}
+
         <PageContent {titleHeading}>
           <slot />
         </PageContent>
+
         {whatsNext && <WhatsNext content={whatsNext} />}
       </div>
+
       <aside id="grid-right">
-        <RightSidebar {githubEditUrl} headings={initialHeadings} />
+        <RightSidebar {githubEditUrl} headings={initialHeadings} frontmatter={frontmatter} />
       </aside>
     </div>
   </main>
@@ -152,6 +193,41 @@ const { isApiReference, product, isVersioned } = detectApiReference(currentPage)
         width: 315px;
         padding-right: var(--space-16x);
       }
+    }
+
+    .language-switcher-mobile {
+      display: block;
+      margin-bottom: var(--space-6x);
+    }
+
+    @media (min-width: 50em) {
+      .language-switcher-mobile {
+        display: none;
+      }
+    }
+
+    .chain-selector-mobile {
+      display: block;
+      margin-bottom: var(--space-6x);
+    }
+
+    @media (min-width: 50em) {
+      .chain-selector-mobile {
+        display: none;
+      }
+    }
+
+    /* Agent directive (hidden but crawlable) */
+    .agent-docs-directive {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      white-space: nowrap;
+      border: 0;
+      clip: rect(0, 0, 0, 0);
     }
   </style>
 

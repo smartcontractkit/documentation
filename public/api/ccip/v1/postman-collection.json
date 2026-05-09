@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "CCIP Chains API",
-    "description": "Collection for testing the Cross-Chain Interoperability Protocol (CCIP) Chains API. Includes examples for EVM, Solana, and Aptos chains.",
+    "name": "CCIP API",
+    "description": "Collection for testing the Cross-Chain Interoperability Protocol (CCIP) API. Includes examples for chains, tokens, and lanes across EVM, Solana, and Aptos networks.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -321,6 +321,386 @@
             },
             "description": "Retrieve chain information for multiple chains using comma-separated selectors"
           }
+        },
+        {
+          "name": "Get Chain with Fee Tokens (Default - String Array)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/chains?environment=mainnet&chainId=1&enrichFeeTokens=false",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "chains"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "mainnet"
+                },
+                {
+                  "key": "chainId",
+                  "value": "1",
+                  "description": "Chain ID for Ethereum"
+                },
+                {
+                  "key": "enrichFeeTokens",
+                  "value": "false",
+                  "description": "Return fee tokens as string array (default behavior)"
+                }
+              ]
+            },
+            "description": "Retrieve chain information with fee tokens returned as a simple string array (backward compatible format)"
+          }
+        },
+        {
+          "name": "Get Chain with Enriched Fee Tokens",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/chains?environment=mainnet&chainId=1&enrichFeeTokens=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "chains"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "mainnet"
+                },
+                {
+                  "key": "chainId",
+                  "value": "1",
+                  "description": "Chain ID for Ethereum"
+                },
+                {
+                  "key": "enrichFeeTokens",
+                  "value": "true",
+                  "description": "Return detailed fee token information including addresses, names, and decimals"
+                }
+              ]
+            },
+            "description": "Retrieve chain information with enriched fee token details including contract addresses, token names, and decimal places"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Lanes",
+      "item": [
+        {
+          "name": "Get All Lanes (Mainnet)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/lanes?environment=mainnet",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "lanes"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "mainnet",
+                  "description": "Network environment (mainnet/testnet)"
+                }
+              ]
+            },
+            "description": "Retrieve all available CCIP lanes for mainnet environment"
+          }
+        },
+        {
+          "name": "Get All Lanes (Testnet)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/lanes?environment=testnet",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "lanes"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "testnet",
+                  "description": "Network environment (mainnet/testnet)"
+                }
+              ]
+            },
+            "description": "Retrieve all available CCIP lanes for testnet environment"
+          }
+        },
+        {
+          "name": "Get Lanes by Source Chain ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/lanes?environment=mainnet&sourceChainId=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "lanes"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "mainnet"
+                },
+                {
+                  "key": "sourceChainId",
+                  "value": "1",
+                  "description": "Source chain ID (e.g., 1 for Ethereum)"
+                }
+              ]
+            },
+            "description": "Retrieve lanes where the source chain matches the specified chain ID"
+          }
+        },
+        {
+          "name": "Get Lanes by Destination Chain ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/lanes?environment=mainnet&destinationChainId=56",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "lanes"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "mainnet"
+                },
+                {
+                  "key": "destinationChainId",
+                  "value": "56",
+                  "description": "Destination chain ID (e.g., 56 for BSC)"
+                }
+              ]
+            },
+            "description": "Retrieve lanes where the destination chain matches the specified chain ID"
+          }
+        },
+        {
+          "name": "Get Lanes by Source and Destination Chain IDs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/lanes?environment=mainnet&sourceChainId=1&destinationChainId=56",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "lanes"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "mainnet"
+                },
+                {
+                  "key": "sourceChainId",
+                  "value": "1",
+                  "description": "Source chain ID (Ethereum)"
+                },
+                {
+                  "key": "destinationChainId",
+                  "value": "56",
+                  "description": "Destination chain ID (BSC)"
+                }
+              ]
+            },
+            "description": "Retrieve specific lane between Ethereum and BSC"
+          }
+        },
+        {
+          "name": "Get Lanes by Source Selector",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/lanes?environment=mainnet&sourceSelector=5009297550715157269",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "lanes"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "mainnet"
+                },
+                {
+                  "key": "sourceSelector",
+                  "value": "5009297550715157269",
+                  "description": "CCIP source chain selector"
+                }
+              ]
+            },
+            "description": "Retrieve lanes by source chain CCIP selector"
+          }
+        },
+        {
+          "name": "Get Lanes by Destination Selector",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/lanes?environment=mainnet&destinationSelector=13264668187771770619",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "lanes"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "mainnet"
+                },
+                {
+                  "key": "destinationSelector",
+                  "value": "13264668187771770619",
+                  "description": "CCIP destination chain selector"
+                }
+              ]
+            },
+            "description": "Retrieve lanes by destination chain CCIP selector"
+          }
+        },
+        {
+          "name": "Get Lanes by Source Internal ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/lanes?environment=mainnet&sourceInternalId=ethereum-mainnet",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "lanes"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "mainnet"
+                },
+                {
+                  "key": "sourceInternalId",
+                  "value": "ethereum-mainnet",
+                  "description": "Source chain internal identifier"
+                }
+              ]
+            },
+            "description": "Retrieve lanes by source chain internal ID"
+          }
+        },
+        {
+          "name": "Get Lanes by Destination Internal ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/lanes?environment=mainnet&destinationInternalId=bsc-mainnet",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "lanes"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "mainnet"
+                },
+                {
+                  "key": "destinationInternalId",
+                  "value": "bsc-mainnet",
+                  "description": "Destination chain internal identifier"
+                }
+              ]
+            },
+            "description": "Retrieve lanes by destination chain internal ID"
+          }
+        },
+        {
+          "name": "Get Multiple Source Chains",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/lanes?environment=mainnet&sourceChainId=1,56",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "lanes"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "mainnet"
+                },
+                {
+                  "key": "sourceChainId",
+                  "value": "1,56",
+                  "description": "Multiple source chain IDs (Ethereum and BSC)"
+                }
+              ]
+            },
+            "description": "Retrieve lanes from multiple source chains using comma-separated chain IDs"
+          }
+        },
+        {
+          "name": "Get Solana Lanes (Testnet)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/lanes?environment=testnet&sourceChainId=solana-devnet",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "lanes"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "testnet"
+                },
+                {
+                  "key": "sourceChainId",
+                  "value": "solana-devnet",
+                  "description": "Solana Devnet chain ID"
+                }
+              ]
+            },
+            "description": "Retrieve lanes originating from Solana Devnet"
+          }
+        },
+        {
+          "name": "Get Lanes with Selector Output Key",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/lanes?environment=mainnet&outputKey=selector",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "lanes"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "mainnet"
+                },
+                {
+                  "key": "outputKey",
+                  "value": "selector",
+                  "description": "Organize response by selector (format: sourceSelector_to_destinationSelector)"
+                }
+              ]
+            },
+            "description": "Retrieve lanes with response organized by CCIP selectors"
+          }
+        },
+        {
+          "name": "Get Lanes by Version",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/lanes?environment=mainnet&version=1.6.0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "lanes"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "mainnet"
+                },
+                {
+                  "key": "version",
+                  "value": "1.6.0",
+                  "description": "Filter by lane version (both onRamp and offRamp must match)"
+                }
+              ]
+            },
+            "description": "Retrieve lanes filtered by specific version. Only returns lanes where both onRamp and offRamp versions match the specified value."
+          }
+        },
+        {
+          "name": "Get Lanes with Internal ID Output Key",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/lanes?environment=mainnet&outputKey=internalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "lanes"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "mainnet"
+                },
+                {
+                  "key": "outputKey",
+                  "value": "internalId",
+                  "description": "Organize response by internal ID (format: sourceInternalId_to_destinationInternalId)"
+                }
+              ]
+            },
+            "description": "Retrieve lanes with response organized by internal IDs"
+          }
         }
       ]
     },
@@ -435,6 +815,71 @@
               ]
             },
             "description": "Test error handling for invalid output key"
+          }
+        },
+        {
+          "name": "Lanes - Invalid Environment",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/lanes?environment=invalid",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "lanes"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "invalid",
+                  "description": "Invalid environment value"
+                }
+              ]
+            },
+            "description": "Test lanes error handling for invalid environment"
+          }
+        },
+        {
+          "name": "Lanes - Invalid Filter Value",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/lanes?environment=mainnet&sourceChainId=",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "lanes"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "mainnet"
+                },
+                {
+                  "key": "sourceChainId",
+                  "value": "",
+                  "description": "Empty filter value should cause validation error"
+                }
+              ]
+            },
+            "description": "Test lanes error handling for empty filter values"
+          }
+        },
+        {
+          "name": "Lanes - Invalid Output Key",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/ccip/v1/lanes?environment=mainnet&outputKey=invalid",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ccip", "v1", "lanes"],
+              "query": [
+                {
+                  "key": "environment",
+                  "value": "mainnet"
+                },
+                {
+                  "key": "outputKey",
+                  "value": "invalid",
+                  "description": "Invalid output key value"
+                }
+              ]
+            },
+            "description": "Test lanes error handling for invalid output key"
           }
         }
       ]

@@ -10,6 +10,16 @@ import automationShape from "../../../assets/product-logos/automation-shape.svg"
 import dataFeedShape from "../../../assets/product-logos/data-feeds-shape.svg"
 import dataStreamsLogo from "../../../assets/product-logos/data-streams-logo.svg"
 import dataStreamsShape from "../../../assets/product-logos/data-streams-shape.svg"
+import dtaLogo from "../../../assets/product-logos/dta-logo.svg"
+import dtaShape from "../../../assets/product-logos/dta-shape.svg"
+import datalinkLogo from "../../../assets/product-logos/datalink-logo.svg"
+import datalinkShape from "../../../assets/product-logos/datalink-shape.svg"
+import creLogo from "../../../assets/product-logos/cre-logo.svg"
+import creShape from "../../../assets/product-logos/cre-shape.svg"
+import crecLogo from "../../../assets/product-logos/crec-logo.svg"
+import crecShape from "../../../assets/product-logos/crec-shape.svg"
+import aceLogo from "../../../assets/product-logos/ace-logo.svg"
+import aceShape from "../../../assets/product-logos/ace-shape.svg"
 import { ProductCardProps } from "../components/ProductCard.tsx"
 
 const baseChains = [
@@ -21,6 +31,13 @@ const baseChains = [
 ]
 
 export const evmProducts = [
+  {
+    title: "CRE",
+    description: "All-in-one orchestration layer for your institutional-grade smart contracts.",
+    docsLandingLink: "/cre",
+    image: creLogo,
+    shape: creShape,
+  },
   {
     title: "CCIP",
     description: "Global standard for building secure cross-chain applications.",
@@ -94,6 +111,20 @@ export const evmProducts = [
     ],
   },
   {
+    title: "ACE",
+    description: "Programmable, cross-chain compliance for EVM smart contracts.",
+    docsLandingLink: "/ace",
+    image: aceLogo,
+    shape: aceShape,
+  },
+  {
+    title: "CRE Connect",
+    description: "Verifiable on-chain events and gas-less, account-abstracted operations.",
+    docsLandingLink: "/crec",
+    image: crecLogo,
+    shape: crecShape,
+  },
+  {
     title: "Functions",
     description: "Serverless platform that fetches data from any API & runs custom compute.",
     docsLandingLink: "/chainlink-functions",
@@ -134,5 +165,21 @@ export const evmProducts = [
     shape: vrfShape,
     chains: [...baseChains, { id: "arbitrum", title: "Arbitrum" }, { id: "base", title: "BASE" }],
     video: "https://www.youtube.com/watch?v=JqZWariqh5s&list=PLVP9aGDn-X0QHDyBRvbITizWrRoecR0D8&index=2",
+  },
+  {
+    title: "DataLink",
+    description: "Institutional-grade data publishing solution for specialized market data onchain.",
+    docsLandingLink: "/datalink",
+    // learnMoreLink: "https://dev.chain.link/products/datalink",
+    image: datalinkLogo,
+    shape: datalinkShape,
+  },
+  {
+    title: "DTA",
+    description: "Technical standard for subscriptions, redemptions, and settlements.",
+    docsLandingLink: "/dta-technical-standard",
+    // learnMoreLink: "https://dev.chain.link/products/dta",
+    image: dtaLogo,
+    shape: dtaShape,
   },
 ] as ProductCardProps[]

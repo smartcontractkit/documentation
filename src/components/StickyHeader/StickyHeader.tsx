@@ -18,8 +18,7 @@ const StickyHeader: FunctionalComponent<{
 
   return (
     <div
-      className={styles.container}
-      aria-hidden={hidden}
+      className={clsx(styles.container, hidden && styles.hidden)}
       style={
         expanded && !hidden
           ? undefined
@@ -33,7 +32,7 @@ const StickyHeader: FunctionalComponent<{
         <TableOfContents initialHeadings={initialHeadings} onUpdateActiveTitle={(title) => setActiveTitle(title)} />
       </div>
       <div className={styles.heading}>
-        <button ref={expandButtonRef} className={buttonClassName}>
+        <button ref={expandButtonRef} className={buttonClassName} disabled={hidden}>
           On this page
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
             <path d="M8.70711 12.9498C8.31658 13.3403 7.68342 13.3403 7.29289 12.9498C6.90237 12.5592 6.90237 11.9261 7.29289 11.5355L11.5355 7.2929C11.9261 6.90238 12.5592 6.90238 12.9497 7.2929C13.3403 7.68342 13.3403 8.31659 12.9497 8.70711L8.70711 12.9498Z" />

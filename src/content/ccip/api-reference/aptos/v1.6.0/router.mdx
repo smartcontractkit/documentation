@@ -1,0 +1,79 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.6.0 Aptos Router API Reference"
+metadata:
+  description: "API documentation for the CCIP router module on the Aptos blockchain."
+---
+
+import { Aside, ClickToZoom } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+## Router
+
+Below is a complete API reference for the primary user-facing functions in the Aptos CCIP `router` module. Unlike SVM-based chains, Aptos does not require a complex list of accounts to be passed in a `Context`. Instead, all necessary information is passed directly as arguments to the entry functions.
+
+### `ccip_send`
+
+This entry function is located in the `ccip_router::router` module and serves as the primary entry point for sending a cross-chain message. After performing initial checks, such as validating the destination chain and its supported OnRamp version, it forwards the call to the underlying `ccip_send` function in the appropriate `ccip_onramp::onramp` module to process the request.
+
+```rust
+// As defined in ccip_router::router
+public entry fun ccip_send(
+    caller: &signer,
+    dest_chain_selector: u64,
+    receiver: vector<u8>,
+    data: vector<u8>,
+    token_addresses: vector<address>,
+    token_amounts: vector<u64>,
+    token_store_addresses: vector<address>,
+    fee_token: address,
+    fee_token_store: address,
+    extra_args: vector<u8>
+)
+```
+
+#### Parameters
+
+| Name                                 | Type                           | Description                                                                                                                                                                                                                |
+| ------------------------------------ | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <nobr>`caller`</nobr>                | <nobr>`&signer`</nobr>         | The account signing the transaction and initiating the CCIP message. This account pays for the transaction fees and provides the tokens.                                                                                   |
+| <nobr>`dest_chain_selector`</nobr>   | <nobr>`u64`</nobr>             | The unique CCIP blockchain identifier of the destination blockchain.                                                                                                                                                       |
+| <nobr>`receiver`</nobr>              | <nobr>`vector<u8>`</nobr>      | The destination address in its native byte format. For details, see the [Building Aptos to EVM Messages guide](/ccip/tutorials/aptos/source/build-messages#receiver).                                                      |
+| <nobr>`data`</nobr>                  | <nobr>`vector<u8>`</nobr>      | The arbitrary data payload to be processed by the receiver on the destination chain.                                                                                                                                       |
+| <nobr>`token_addresses`</nobr>       | <nobr>`vector<address>`</nobr> | A vector of Aptos token type addresses to transfer. This should be an empty vector if no tokens are being sent.                                                                                                            |
+| <nobr>`token_amounts`</nobr>         | <nobr>`vector<u64>`</nobr>     | A vector of amounts for each corresponding token in `token_addresses`, specified in the token's smallest denomination.                                                                                                     |
+| <nobr>`token_store_addresses`</nobr> | <nobr>`vector<address>`</nobr> | A vector of Fungible Asset store addresses from which tokens are withdrawn. Use `0x0` to default to the primary store of the `caller`'s account for each corresponding token.                                              |
+| <nobr>`fee_token`</nobr>             | <nobr>`address`</nobr>         | The type address of the token used to pay CCIP fees. Use `0xa` if paying with native APT.                                                                                                                                  |
+| <nobr>`fee_token_store`</nobr>       | <nobr>`address`</nobr>         | The Fungible Asset store address for the fee token. Use `0x0` to default to the primary store.                                                                                                                             |
+| <nobr>`extra_args`</nobr>            | <nobr>`vector<u8>`</nobr>      | A serialized byte vector containing additional arguments for the destination chain, such as gas limits. See the [Aptos Messages API Reference](/ccip/api-reference/aptos/v1.6.0/messages#extra-args) for encoding details. |
+
+### `get_fee`
+
+This `#[view]` function is located in the `ccip_router::router` module. It allows you to preview the fee for a CCIP message before sending it. After validating the destination chain, it forwards the call to the corresponding `get_fee` function in the `ccip_onramp::onramp` module to get an accurate quote. This is essential for determining the fee amount to provide in your `ccip_send` call.
+
+```rust
+// As defined in ccip_router::router
+#[view]
+public fun get_fee(
+    dest_chain_selector: u64,
+    receiver: vector<u8>,
+    data: vector<u8>,
+    token_addresses: vector<address>,
+    token_amounts: vector<u64>,
+    token_store_addresses: vector<address>,
+    fee_token: address,
+    fee_token_store: address,
+    extra_args: vector<u8>
+): u64
+```
+
+#### Parameters
+
+The parameters for `get_fee` are identical to those of `ccip_send`, excluding the `caller` signer. You should pass the exact same arguments that you intend to use for your `ccip_send` call to get an accurate fee quote.
+
+#### Returns
+
+| Name                       | Type                | Description                                                                   |
+| -------------------------- | ------------------- | ----------------------------------------------------------------------------- |
+| <nobr>`fee_amount` </nobr> | <nobr>`u64` </nobr> | The calculated fee in the smallest denomination of the specified `fee_token`. |

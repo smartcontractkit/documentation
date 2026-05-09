@@ -1,0 +1,63 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "Multiple-Variable Response (MVR) Feeds"
+isIndex: true
+whatsnext:
+  {
+    "Learn how to read answers from MVR Feeds on EVM Chains (Solidity)": "/data-feeds/mvr-feeds/guides/evm-solidity",
+    "Find contract addresses and data structure for MVR Feeds": "/data-feeds/smartdata/addresses",
+    "MVR Feeds API Reference": "/data-feeds/mvr-feeds/api-reference",
+  }
+---
+
+import { Aside, ClickToZoom, CodeSample } from "@components"
+
+**Multiple-Variable Response (MVR) feeds** bundle multiple data points into a single onchain update, offering more versatility compared to feeds that store only one numeric value.
+
+Traditional Chainlink Data Feeds typically provide a single numeric value such as a price. By contrast, MVR feeds can return multiple values of different types in a single update, including both numeric and non-numeric data.
+
+## Key Benefits
+
+1. **Multiple Data Points**: Package related data together in one feed. For example, an investment fund feed might include:
+
+   | Field                   | Type      |
+   | ----------------------- | --------- |
+   | `netAssetValue`         | `uint256` |
+   | `assetsUnderManagement` | `uint256` |
+   | `outstandingShares`     | `uint256` |
+   | `netIncomeExpenses`     | `uint256` |
+   | `openToNewInvestors`    | `bool`    |
+
+1. **Extensibility**: The feed structure can be extended or updated without deploying a new contract.
+
+1. **Efficiency**: Multiple data points update in a single transaction.
+
+1. **Flexible Types**: Support for various data types beyond just numbers.
+
+## Reading MVR Feed Data
+
+MVR feeds use the `BundleAggregatorProxy` contract as their interface, which provides three key functions:
+
+- [`latestBundle()`](/data-feeds/mvr-feeds/api-reference#latestbundle): Returns the complete data bundle as a bytes array
+- [`bundleDecimals()`](/data-feeds/mvr-feeds/api-reference#bundledecimals): Returns the decimal places for each numeric field
+- [`latestBundleTimestamp()`](/data-feeds/mvr-feeds/api-reference#latestbundletimestamp): Returns when the data was last updated
+
+To use these feeds in your smart contracts, you'll need to:
+
+1. Obtain the `BundleAggregatorProxy` address for your desired feed from the [SmartData addresses](/data-feeds/smartdata/addresses) page (use the _Show Multiple-Variable Response (MVR) feeds_ checkbox to filter the list)
+1. Retrieve the data using `latestBundle()`
+1. Decode the bytes array into the appropriate structure
+
+**Note**: MVR feeds only store the most recent data onchain. If you need historical data, you must capture it within your own contract or through an offchain indexer.
+
+Check our [implementation guides](/data-feeds/mvr-feeds/guides) for detailed instructions on integrating MVR feeds using Solidity, ethers.js, or Viem.
+
+## Resources
+
+- [SmartData Addresses](/data-feeds/smartdata/addresses?page=1#networks): Find `BundleAggregatorProxy` addresses and data structures for available MVR feeds.
+- [MVR Feeds API Reference](/data-feeds/mvr-feeds/api-reference): Complete interface definitions and function signatures.
+- Implementation Guides:
+  - [Solidity Guide](/data-feeds/mvr-feeds/guides/evm-solidity): For smart contract developers using Solidity
+  - [ethers.js Guide](/data-feeds/mvr-feeds/guides/ethersjs): For frontend or Node.js developers using ethers.js v5
+  - [Viem Guide](/data-feeds/mvr-feeds/guides/viem): For TypeScript developers using the Viem library

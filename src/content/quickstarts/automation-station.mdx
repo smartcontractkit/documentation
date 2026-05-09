@@ -1,11 +1,15 @@
 ---
 title: "Automation Station"
 description: "Use FlashLiquidity's Automation Station to manage your upkeeps."
+excerpt: "chainlink automation upkeep management flashliquidity station hardhat deployment funding batch migration"
 githubSourceCodeUrl: "https://github.com/flashliquidity/flashliquidity-automation"
 image: "QuickStarts-FlashLiquidity-Automation-Station.png"
 products: ["automation"]
 time: "180 minutes"
 requires: "Wallet with gas token & ERC-677 LINK"
+datePublished: "2024-08-30"
+lastModified: "2025-06-17"
+difficulty: "intermediate"
 ---
 
 import { Accordion, Aside, CodeSample, ClickToZoom } from "@components"
@@ -83,12 +87,10 @@ within a deployment script and then running the deployment script.
 1. Edit the deployment script, filling in the required parameters for the `AutomationStation` constructor. Make sure to format each value as a string.
 
    At a minimum, you need to fill in these two parameters:
-
    - `linkToken`: The address of the ERC-677 compatible LINK token. For this example, you can use the address for Sepolia (`0x779877A7B0D9E8603169DdbD7836e478b4624789`) or see [all the LINK token addresses for other networks](/resources/link-token-contracts). Note: If you're using bridged LINK for certain networks, the LINK may not be ERC-677 compatible. Use the [Chainlink Pegswap service](https://pegswap.chain.link/) to convert Chainlink tokens to be ERC-677 compatible before funding the station.
    - `registrar`: The address of the Chainlink Automation registrar for the [selected network](/chainlink-automation/overview/supported-networks). For Sepolia, the registrar address is `0xb0E49c5D0d05cbc241d68c05BC5BA1d1B7B72976`.
 
    The following parameters have default values in the script. Check that the settings related to refueling upkeeps and minimum balances make sense for your usage, and update them if necessary:
-
    - `registerUpkeepSelector`: The Chainlink Automation Registrar 4-byte [function selector](/resources/glossary#function-selector) of `registerUpkeep`, which stays the same across different networks. Leave this at its default value: `0x3f678e11`.
    - `refuelAmount`: The amount of LINK tokens that the AutomationStation adds to an underfunded upkeep's balance. (Default value: `1000000000000000000` or 1 LINK)
    - `stationUpkeepMinBalance`: The minimum balance of LINK tokens for the main station upkeep. If the balance falls below this threshold, the main station upkeep is considered underfunded. (Default value: `1000000000000000000` or 1 LINK)
@@ -119,7 +121,6 @@ After deploying the `AutomationStation` contract, you need to fund the station c
 
 1. Send LINK to the contract address for your deployed `AutomationStation`. To test this example, you can fund your `AutomationStation` contract initially with 10 LINK. [Get testnet LINK](https://faucets.chain.link) if needed, and see [how to fund your contract in MetaMask](/resources/fund-your-contract#send-funds-to-your-contract).
 1. When you run the `initialize` task, it registers your deployed `AutomationStation` contract as an upkeep on Chainlink Automation. You can pass in the following optional parameters:
-
    - `registry`: The address of the Chainlink Automation Registry for the [selected network](/chainlink-automation/overview/supported-networks). If you set this parameter now, the station's Automation forwarder will be automatically set during initialization. Otherwise, you must set the forwarder before registering other upkeeps. The registry address for Sepolia is `0x86EFBD0b6736Bed994962f9797049422A3A8E8Ad`.
    - `amount`: The amount of LINK tokens to fund the main station upkeep. (Default value: `10000000000000000000` or 10 LINK tokens)
    - `gasLimit`: The maximum gas limit that the station upkeep will use for transactions. (Default value: `750000`)
@@ -155,7 +156,6 @@ To register a new upkeep, run the `registerUpkeep` Hardhat task.
 1. You can pass the following arguments to set the [registration parameters](/chainlink-automation/guides/register-upkeep-in-contract#register-the-upkeep) for your new upkeep:
 
    **Basic configurations**
-
    - `name`: The name of the upkeep displayed in the Chainlink Automation App
    - `contract`: The address of your Automation-compatible contract. If you don't have a deployed Automation-compatible contract on Sepolia, you can use this verified contract: `0x00b68EBB9a12C5bc21ef8E937a3D6E4E963d028D`. (View the source code [here](https://sepolia.etherscan.io/address/0x00b68ebb9a12c5bc21ef8e937a3d6e4e963d028d#code).)
    - `gasLimit`: The maximum gas limit that the station upkeep will use for transactions
@@ -164,7 +164,6 @@ To register a new upkeep, run the `registerUpkeep` Hardhat task.
      - The allowance of LINK tokens to the Chainlink Automation Registrar must also be greater than or equal to the `amount`.
 
    **Advanced configurations**
-
    - `checkData`: Used to specify static data to pass to your `checkUpkeep` or `checkLog` functions in order to [execute different code paths](/chainlink-automation/reference/automation-interfaces#checkdata). (Default value: `0x`)
    - `triggerType`: Used to indicate whether an upkeep is a [log trigger upkeep](/chainlink-automation/guides/log-trigger). `0` is Conditional upkeep, `1` is Log trigger upkeep. (Default value: `0`)
    - `triggerConfig`: The [configuration for your log trigger upkeep](/chainlink-automation/guides/register-upkeep-in-contract#log-trigger-upkeeps). Leave this at `0x` for conditional upkeeps. (Default value: `0x`)

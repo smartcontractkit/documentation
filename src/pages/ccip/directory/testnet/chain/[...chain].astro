@@ -1,23 +1,62 @@
 ---
 import Chain from "~/components/CCIP/Chain/Chain.astro"
-import { Environment, getAllNetworks } from "~/config/data/ccip"
+import DecommissionedChain from "~/components/CCIP/Chain/DecommissionedChain.astro"
+import {
+  Environment,
+  getAllNetworks,
+  Network,
+  getAllDecommissionedNetworks,
+  DecommissionedNetwork,
+} from "~/config/data/ccip"
 
 export async function getStaticPaths() {
-  const networks = getAllNetworks({ filter: Environment.Testnet })
-  const pages = networks.map(({ chain }) => ({ chain }))
+  // Get both active and decommissioned networks
+  const activeNetworks = getAllNetworks({ filter: Environment.Testnet })
+  const decommissionedNetworks = getAllDecommissionedNetworks({ filter: Environment.Testnet })
 
-  return pages.map(({ chain }) => {
-    return {
-      params: { chain },
-      props: {
-        network: networks.find((network) => network.chain === chain),
-        environment: Environment.Testnet,
-      },
+  // Combine all chain names
+  const allChains = [
+    ...activeNetworks.map(({ chain }) => ({ chain, isDecommissioned: false })),
+    ...decommissionedNetworks.map(({ chain }) => ({ chain, isDecommissioned: true })),
+  ]
+
+  return allChains.map(({ chain, isDecommissioned }) => {
+    if (isDecommissioned) {
+      const decomNetwork = decommissionedNetworks.find((network) => network.chain === chain) as DecommissionedNetwork
+      return {
+        params: { chain },
+        props: {
+          decomNetwork,
+          environment: Environment.Testnet,
+          isDecommissioned: true,
+        },
+      }
+    } else {
+      const activeNetwork = activeNetworks.find((network) => network.chain === chain) as Network
+      return {
+        params: { chain },
+        props: {
+          activeNetwork,
+          environment: Environment.Testnet,
+          isDecommissioned: false,
+        },
+      }
     }
   })
 }
 
-const { network, environment } = Astro.props
+const { decomNetwork, activeNetwork, environment, isDecommissioned } = Astro.props as {
+  decomNetwork?: DecommissionedNetwork
+  activeNetwork?: Network
+  environment: Environment
+  isDecommissioned: boolean
+}
 ---
 
-<Chain network={network} environment={environment} />
+{
+  isDecommissioned ? (
+    <DecommissionedChain network={decomNetwork!} environment={environment} />
+  ) : (
+    <Chain network={activeNetwork!} environment={environment} />
+  )
+}

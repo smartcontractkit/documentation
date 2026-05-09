@@ -3,7 +3,13 @@ section: ccip
 date: Last Modified
 title: "Enable your tokens in CCIP (Lock & Mint): Register from an EOA using Hardhat"
 metadata:
-  description: "Enable tokens for Chainlink CCIP using Hardhat and the Lock & Mint mechanism. Learn to deploy tokens, set up Lock/Burn pools, register admin roles (EOA), and test cross-chain transfers."
+  description: "Enable ERC-20 tokens in CCIP (Lock & Mint) with Hardhat. Configure lock/release + burn/mint pools, register admin, and test cross‑chain token movement."
+  image: "/images/ccip/CCIP_enabled_tokens_flowchart.jpg"
+  excerpt: "Lock & Mint, Hardhat, ERC-20, ERC20, pools, admin, cross‑chain tokens, CCIP"
+  datePublished: "2024-10-29"
+  lastModified: "2025-10-22"
+  estimatedTime: "40 minutes"
+  difficulty: "intermediate"
 ---
 
 import { Aside, PageTabs } from "@components"
@@ -30,11 +36,12 @@ This tutorial will guide you through the process of enabling your own tokens in 
 
 ## Before You Begin
 
-1.  Make sure you have Node.js v18 or above installed. If not, **install Node.js v18**:  
-    [Download Node.js 18](https://nodejs.org/en/download/) if you don't have it installed. Optionally, you can use the [nvm package](https://www.npmjs.com/package/nvm) to switch between Node.js versions:
+1.  Make sure you have Node.js v22.10.0 or above installed. If not, **install Node.js v22.10.0**:
+
+    [Download Node.js v22.10.0](https://nodejs.org/en/download/) if you don't have it installed. Optionally, you can use the [nvm package](https://www.npmjs.com/package/nvm) to switch between Node.js versions:
 
     ```bash
-    nvm use 18
+    nvm use 22
     ```
 
     Verify that the correct version of Node.js is installed:
@@ -47,8 +54,14 @@ This tutorial will guide you through the process of enabling your own tokens in 
 
     ```bash
     $ node -v
-    v18.7.0
+    v22.15.0
     ```
+
+    <Aside type="caution" title="Why Node.js v22?">
+      Since the [migration](https://hardhat.org/migrate-from-hardhat2) to Hardhat 3.x, Node.js v22.10.0 or above is
+      [required for compatibility](https://hardhat.org/migrate-from-hardhat2#before-starting-the-migration). Using an
+      older version may lead to unexpected issues during development.
+    </Aside>
 
 1.  **Clone the repository and navigate to the project directory:**
 
@@ -71,29 +84,32 @@ This tutorial will guide you through the process of enabling your own tokens in 
 
 1.  **Encrypt your environment variables for higher security:**  
     The project uses [@chainlink/env-enc](https://www.npmjs.com/package/@chainlink/env-enc) to encrypt your environment variables at rest. Follow the steps below to configure your environment securely:
-
     1. Set an encryption password for your environment variables:
 
        ```bash
        npx env-enc set-pw
        ```
 
-    1. Set up a `.env.enc` file with the necessary variables for Avalanche Fuji and Arbitrum Sepolia. Use the following command to add the variables:
+    1. Set up a `.env.enc` file with the necessary variables for Avalanche Fuji and Ethereum Sepolia. Use the following command to add the variables:
 
        ```bash
        npx env-enc set
        ```
 
        Variables to configure:
-
        - `AVALANCHE_FUJI_RPC_URL`: A URL for the _Avalanche Fuji_ testnet. You can get a personal endpoint from services like [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/).
-       - `ARBITRUM_SEPOLIA_RPC_URL`: A URL for the _Arbitrum Sepolia_ testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/).
+       - `ETHEREUM_SEPOLIA_RPC_URL`: A URL for the _Ethereum Sepolia_ testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/).
        - `PRIVATE_KEY`: The private key for your testnet wallet. If you use MetaMask, you can follow this [guide](https://support.metamask.io/managing-my-wallet/secret-recovery-phrase-and-private-keys/how-to-export-an-accounts-private-key/) to export your private key. **Note:** This key is required for signing transactions like token transfers.
        - `ETHERSCAN_API_KEY`: An API key from Etherscan to verify your contracts. You can obtain one from [Etherscan](https://docs.etherscan.io/getting-started/viewing-api-usage-statistics).
-       - `ARBISCAN_API_KEY`: An API key from Arbiscan to verify your contracts on Arbitrum. See [this guide](https://docs.arbiscan.io/getting-started/viewing-api-usage-statistics) to get one from Arbiscan.
 
 1.  **Fund your EOA with LINK and native gas tokens**:  
-    Make sure your EOA has enough LINK and native gas tokens on Avalanche Fuji and Arbitrum Sepolia to cover transaction fees. You can use the [Chainlink faucets](https://faucets.chain.link/) to get testnet tokens.
+    Make sure your EOA has enough LINK and native gas tokens on Avalanche Fuji and Ethereum Sepolia to cover transaction fees. You can use the [Chainlink faucets](https://faucets.chain.link/) to get testnet tokens.
+
+<Aside type="note" title="Using Different Networks">
+  This tutorial uses Avalanche Fuji and Ethereum Sepolia by default. To test with other CCIP-supported networks, see
+  [Add CCIP Networks for Cross-Chain Token
+  Tutorials](/ccip/tutorials/evm/cross-chain-tokens/configure-additional-networks-hardhat).
+</Aside>
 
 ## Tutorial
 
@@ -105,73 +121,88 @@ This tutorial will guide you through the process of enabling your own tokens in 
 
 ### Deploy Tokens
 
-In this step, you will use the `deployToken.ts` task to deploy tokens on two testnets, Avalanche Fuji and Arbitrum Sepolia. Below is an explanation of the parameters used during deployment:
+In this step, you will use the `deployToken` task to deploy tokens on two testnets, Avalanche Fuji and Ethereum Sepolia. Below is an explanation of the parameters used during deployment:
 
-| Parameter        | Description                                                                                                                            | Default | Required |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
-| `name`           | The name of the token. This is the full name by which the token will be identified.                                                    | N/A     | Yes      |
-| `symbol`         | The symbol of the token. This is the shorthand (usually 3-5 letters) representing the token.                                           | N/A     | Yes      |
-| `decimals`       | The number of decimals the token will use. For instance, `18` decimals means 1 token is represented as `1e18` smallest units.          | `18`    | No       |
-| `maxsupply`      | The maximum supply of tokens. Use `0` for unlimited supply.                                                                            | `0`     | No       |
-| `verifycontract` | Whether to verify the contract on Etherscan or a similar blockchain explorer.                                                          | `false` | No       |
-| `network`        | The blockchain on which the token will be deployed. Examples include `avalancheFuji`, `arbitrumSepolia`, `baseSepolia`, and `sepolia`. | N/A     | Yes      |
+| Parameter        | Description                                                                                                                                    | Default | Required |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
+| `name`           | The name of the token. This is the full name by which the token will be identified.                                                            | N/A     | Yes      |
+| `symbol`         | The symbol of the token. This is the shorthand (usually 3-5 letters) representing the token.                                                   | N/A     | Yes      |
+| `decimals`       | The number of decimals the token will use. For instance, `18` decimals means 1 token is represented as `1e18` smallest units.                  | `18`    | No       |
+| `maxsupply`      | The maximum supply of tokens. Use `0` for unlimited supply.                                                                                    | `0`     | No       |
+| `verifycontract` | Flag to verify the contract on Etherscan or a similar blockchain explorer. Pass this flag to enable verification, omit to skip.                | `false` | No       |
+| `network`        | The blockchain on which the token will be deployed. Examples include `avalancheFuji`, `ethereumSepolia`, `baseSepolia`, and `arbitrumSepolia`. | N/A     | Yes      |
 
 Deploy tokens, use the following commands, substituting the token name and symbol as needed:
 
 1. **Deploy the token on Avalanche Fuji:**
 
    ```bash
-   npx hardhat deployToken --name "BnM aem" --symbol BnMaem --decimals 18 --maxsupply 0 --premint 100000000000000000000 --verifycontract true --network avalancheFuji
+   npx hardhat deployToken --name "BnM sak" --symbol BnMsak --decimals 18 --maxsupply 0 --premint 100000000000000000000 --verifycontract --network avalancheFuji
    ```
 
    Example output:
 
    ```bash
-   2025-05-15T02:37:00.663Z info: Deploying BurnMintERC20 contract to avalancheFuji
-   2025-05-15T02:37:00.664Z info: Waiting 2 blocks for transaction 0x11ea95f8f13f87b99b90e81b35da9268805816f0c945a0d987fe0c4c32a3042d to be confirmed...
-   2025-05-15T02:37:01.330Z info: Token deployed to: 0x6cdB459EaCB30947Db2a4374a78d37A8FCe11054
-   2025-05-15T02:37:01.881Z info: Granting mint and burn roles to 0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA
-   2025-05-15T02:37:09.923Z info: Verifying contract...
-   The contract 0x6cdB459EaCB30947Db2a4374a78d37A8FCe11054 has already been verified on the block explorer. If you're trying to verify a partially verified contract, please use the --force flag.
-   https://testnet.snowtrace.io/address/0x6cdB459EaCB30947Db2a4374a78d37A8FCe11054#code
+   ✅ Tasks loaded from /tasks/index.ts
+   2025-10-22T09:49:50.588Z info: 🚀 Deploying BurnMintERC20 to avalancheFuji...
+   2025-10-22T09:49:50.589Z info:    name: BnM sak, symbol: BnMsak
+   2025-10-22T09:49:55.714Z info: ⏳ Deployment tx: 0x4b764e27bc0e47f8fcec6b59e22a0e56aede0a08a03f7f40737b53fddc4e90d1
+   2025-10-22T09:49:55.715Z info:    Waiting for 2 confirmation(s)...
+   2025-10-22T09:50:00.519Z info: ✅ Token deployed at: 0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5
+   2025-10-22T09:50:01.179Z info: Granting mint and burn roles to 0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA...
+   2025-10-22T09:50:02.422Z info:    Waiting for 2 confirmation(s)...
+   2025-10-22T09:50:11.467Z info: ✅ Mint/Burn roles granted.
+   2025-10-22T09:50:11.468Z info: Verifying contract...
 
-   2025-05-15T02:37:11.266Z info: Token contract deployed and verified
+   The contract at 0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5 has already been verified on SnowTrace.
+
+   If you need to verify a partially verified contract, please use the --force flag.
+
+   Explorer: https://testnet.snowtrace.io/address/0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5#code
+   2025-10-22T09:50:14.859Z info: ✅ Token contract verified successfully
    ```
 
-1. **Deploy the token on Arbitrum Sepolia:**
+1. **Deploy the token on Ethereum Sepolia:**
 
    ```bash
-   npx hardhat deployToken --name "BnM aem" --symbol BnMaem --decimals 18 --maxsupply 0 --premint 100000000000000000000 --verifycontract true --network arbitrumSepolia
+   npx hardhat deployToken --name "BnM sak" --symbol BnMsak --decimals 18 --maxsupply 0 --premint 100000000000000000000 --verifycontract --network ethereumSepolia
    ```
 
    Example output:
 
    ```bash
-   2025-05-15T02:38:38.539Z info: Deploying BurnMintERC20 contract to arbitrumSepolia
-   2025-05-15T02:38:38.540Z info: Waiting 2 blocks for transaction 0x993d5c5371fcc611a2cc4f246ebd3e58591bc49f549ff25a9880dd13e3c7848f to be confirmed...
-   2025-05-15T02:38:38.851Z info: Token deployed to: 0x528f08cF0b8541CdFeE5E897c861348AE601315e
-   2025-05-15T02:38:39.014Z info: Granting mint and burn roles to 0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA
-   2025-05-15T02:38:42.435Z info: Verifying contract...
-   The contract 0x528f08cF0b8541CdFeE5E897c861348AE601315e has already been verified on the block explorer. If you're trying to verify a partially verified contract, please use the --force flag.
-   https://sepolia.arbiscan.io/address/0x528f08cF0b8541CdFeE5E897c861348AE601315e#code
+   ✅ Tasks loaded from /tasks/index.ts
+   2025-10-22T09:51:04.733Z info: 🚀 Deploying BurnMintERC20 to ethereumSepolia...
+   2025-10-22T09:51:04.734Z info:    name: BnM sak, symbol: BnMsak
+   2025-10-22T09:51:17.638Z info: ⏳ Deployment tx: 0x187bac7cfc7ea95c41374baedbf98b6bc1bff121f5f1a49d17457458417eee66
+   2025-10-22T09:51:17.638Z info:    Waiting for 3 confirmation(s)...
+   2025-10-22T09:52:21.497Z info: ✅ Token deployed at: 0xb613B55897F07eAF430bF9a509498e55487305Ea
+   2025-10-22T09:52:23.669Z info: Granting mint and burn roles to 0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA...
+   2025-10-22T09:52:26.363Z info:    Waiting for 3 confirmation(s)...
+   2025-10-22T09:53:03.003Z info: ✅ Mint/Burn roles granted.
+   2025-10-22T09:53:03.003Z info: Verifying contract...
 
-   2025-05-15T02:38:43.668Z info: Token contract deployed and verified
+   The contract at 0xb613B55897F07eAF430bF9a509498e55487305Ea has already been verified on Etherscan.
+
+   If you need to verify a partially verified contract, please use the --force flag.
+
+   Explorer: https://sepolia.etherscan.io/address/0xb613B55897F07eAF430bF9a509498e55487305Ea#code
+   2025-10-22T09:53:07.664Z info: ✅ Token contract verified successfully
    ```
 
 ### Deploy Token Pools
 
 <CcipCommon callout="gasLimitPool" />
 
-In this step, you will use the `deployTokenPool` task to deploy token pools for the tokens on both testnets, Avalanche Fuji and Arbitrum Sepolia. Below is an explanation of the parameters used during deployment:
+In this step, you will use the `deployTokenPool` task to deploy token pools for the tokens on both testnets, Avalanche Fuji and Ethereum Sepolia. Below is an explanation of the parameters used during deployment:
 
-| Parameter            | Description                                                                                                                                 | Default      | Required |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | -------- |
-| `tokenaddress`       | The address of the token for which the pool is being created.                                                                               | N/A          | Yes      |
-| `pooltype`           | The type of pool to deploy. For this tutorial, we use `"lockRelease"` on Fuji and `"burnMint"` on Arbitrum Sepolia.                         | `"burnMint"` | No       |
-| `localtokendecimals` | The number of decimals for the token on this chain.                                                                                         | `18`         | No       |
-| `acceptliquidity`    | Whether the pool should accept liquidity. Only applicable for `lockRelease` pools.                                                          | `false`      | No       |
-| `network`            | The blockchain on which the token pool will be deployed. Examples include `avalancheFuji`, `arbitrumSepolia`, `baseSepolia`, and `sepolia`. | N/A          | Yes      |
-| `verifycontract`     | Whether to verify the contract on Etherscan or a similar blockchain explorer.                                                               | `false`      | No       |
+| Parameter            | Description                                                                                                                                         | Default      | Required |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | -------- |
+| `tokenaddress`       | The address of the token for which the pool is being created.                                                                                       | N/A          | Yes      |
+| `pooltype`           | The type of pool to deploy. For this tutorial, we use `"lockRelease"` on Avalanche Fuji and `"burnMint"` on Ethereum Sepolia.                       | `"burnMint"` | No       |
+| `localtokendecimals` | The number of decimals for the token on this chain.                                                                                                 | `18`         | No       |
+| `verifycontract`     | Flag to verify the contract on Etherscan or a similar blockchain explorer. Pass this flag to enable verification, omit to skip.                     | `false`      | No       |
+| `network`            | The blockchain on which the token pool will be deployed. Examples include `avalancheFuji`, `ethereumSepolia`, `baseSepolia`, and `arbitrumSepolia`. | N/A          | Yes      |
 
 <Aside type="note" title="Token Decimal Handling">
   If you need to handle tokens with different decimals across blockchains, refer to the [Token Decimal
@@ -184,143 +215,181 @@ Deploy token pools using the following commands, replacing the token address wit
 
    ```bash
    npx hardhat deployTokenPool \
-     --tokenaddress 0x6cdB459EaCB30947Db2a4374a78d37A8FCe11054 \
+     --tokenaddress 0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5 \
      --pooltype lockRelease \
      --localtokendecimals 18 \
-     --acceptliquidity false \
-     --verifycontract true \
+     --verifycontract \
      --network avalancheFuji
    ```
 
    Example output:
 
    ```bash
-   2025-05-15T02:41:28.385Z info: Waiting 2 blocks for transaction 0x8d5a04279c14dbabf0b7ee4f1821b9c789ce87c53c75f436cd046cd019e200ed to be confirmed...
-   2025-05-15T02:41:29.449Z info: Token pool deployed to: 0xdA99b1551F0E69aC11FD4C36731F079Ca3131a8F
-   2025-05-15T02:41:29.449Z info: Verifying contract...
-   Successfully submitted source code for contract
-   @chainlink/contracts-ccip/contracts/pools/LockReleaseTokenPool.sol:LockReleaseTokenPool at 0xdA99b1551F0E69aC11FD4C36731F079Ca3131a8F
-   for verification on the block explorer. Waiting for verification result...
+   ✅ Tasks loaded from /tasks/index.ts
+   2025-10-22T13:08:45.487Z info: 🚀 Deploying lockRelease pool on avalancheFuji
+   2025-10-22T13:08:45.488Z info:    Token: 0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5
+   2025-10-22T13:08:45.488Z info:    Decimals: 18
+   2025-10-22T13:08:45.488Z info:    Allowlist: None
+   2025-10-22T13:08:51.221Z info: ⏳ Deployment tx: 0xb027c026b72626c7d83e8fb2902c982685376a62d1c90655fee6855df3cdf23a
+   2025-10-22T13:08:51.221Z info:    Waiting for 2 confirmation(s)...
+   2025-10-22T13:09:00.473Z info: ✅ Token pool deployed at: 0x10db2Fd0A5E3e9F68c72ae99CC266f383c1814a2
+   2025-10-22T13:09:00.474Z info: Verifying contract...
 
-   Successfully verified contract LockReleaseTokenPool on the block explorer.
-   https://testnet.snowtrace.io/address/0xdA99b1551F0E69aC11FD4C36731F079Ca3131a8F#code
+   📤 Submitted source code for verification on SnowTrace:
 
-   2025-05-15T02:42:12.868Z info: Token pool contract deployed and verified
+     @chainlink/contracts-ccip/contracts/pools/LockReleaseTokenPool.sol:LockReleaseTokenPool
+     Address: 0x10db2Fd0A5E3e9F68c72ae99CC266f383c1814a2
+
+   ⏳ Waiting for verification result...
+
+
+   ✅ Contract verified successfully on SnowTrace!
+
+     @chainlink/contracts-ccip/contracts/pools/LockReleaseTokenPool.sol:LockReleaseTokenPool
+     Explorer: https://testnet.snowtrace.io/address/0x10db2Fd0A5E3e9F68c72ae99CC266f383c1814a2#code
+   2025-10-22T13:09:15.173Z info: ✅ Token pool contract verified successfully
    ```
 
-2. **Deploy the burn and mint token pool on Arbitrum Sepolia:**
+2. **Deploy the burn and mint token pool on Ethereum Sepolia:**
 
    ```bash
    npx hardhat deployTokenPool \
-     --tokenaddress 0x528f08cF0b8541CdFeE5E897c861348AE601315e \
+     --tokenaddress 0xb613B55897F07eAF430bF9a509498e55487305Ea \
      --pooltype burnMint \
      --localtokendecimals 18 \
-     --verifycontract true \
-     --network arbitrumSepolia
+     --verifycontract \
+     --network ethereumSepolia
    ```
 
    Example output:
 
    ```bash
-   2025-05-15T02:44:04.693Z info: Waiting 2 blocks for transaction 0xdcb0485b605e4cf3a95fab8aa5355c891bc6715d5dd37211e4f4145e89277d6b to be confirmed...
-   2025-05-15T02:44:05.018Z info: Token pool deployed to: 0x85EDf5dE3417c240f8E008D6B1377403eF17BE10
-   2025-05-15T02:44:05.019Z info: Granting mint and burn roles to 0x85EDf5dE3417c240f8E008D6B1377403eF17BE10 on token 0x528f08cF0b8541CdFeE5E897c861348AE601315e
-   2025-05-15T02:44:08.667Z info: Verifying contract...
-   The contract 0x85EDf5dE3417c240f8E008D6B1377403eF17BE10 has already been verified on the block explorer. If you're trying to verify a partially verified contract, please use the --force flag.
-   https://sepolia.arbiscan.io/address/0x85EDf5dE3417c240f8E008D6B1377403eF17BE10#code
+   ✅ Tasks loaded from /tasks/index.ts
+   2025-10-22T13:10:30.678Z info: 🚀 Deploying burnMint pool on ethereumSepolia
+   2025-10-22T13:10:30.678Z info:    Token: 0xb613B55897F07eAF430bF9a509498e55487305Ea
+   2025-10-22T13:10:30.678Z info:    Decimals: 18
+   2025-10-22T13:10:30.678Z info:    Allowlist: None
+   2025-10-22T13:10:39.505Z info: ⏳ Deployment tx: 0xb1eed241f64f0a5427559b791f576b834885311b916b48c5ee86f711541d54b0
+   2025-10-22T13:10:39.506Z info:    Waiting for 3 confirmation(s)...
+   2025-10-22T13:11:16.425Z info: ✅ Token pool deployed at: 0x5e8b0e5EAC57d73E7b93d85b8eA3fcaDa282868A
+   2025-10-22T13:11:16.425Z info: Granting mint and burn roles to 0x5e8b0e5EAC57d73E7b93d85b8eA3fcaDa282868A on token 0xb613B55897F07eAF430bF9a509498e55487305Ea
+   2025-10-22T13:11:19.296Z info:    Waiting for 3 confirmation(s)...
+   2025-10-22T13:11:51.815Z info: ✅ Mint/Burn roles granted
+   2025-10-22T13:11:51.815Z info: Verifying contract...
 
-   2025-05-15T02:44:09.814Z info: Token pool contract deployed and verified
+   The contract at 0x5e8b0e5EAC57d73E7b93d85b8eA3fcaDa282868A has already been verified on Etherscan.
+
+   If you need to verify a partially verified contract, please use the --force flag.
+
+   Explorer: https://sepolia.etherscan.io/address/0x5e8b0e5EAC57d73E7b93d85b8eA3fcaDa282868A#code
+   2025-10-22T13:11:55.646Z info: ✅ Token pool contract verified successfully
    ```
 
 ### Claim Admin
 
-In this step, you will use the `claimAdmin.ts` task to register your EOA as the administrator for the deployed tokens on both testnets, Avalanche Fuji and Arbitrum Sepolia. This process involves calling the `RegistryModuleOwnerCustom` contract, which will fetch the CCIP admin of the token and set it up as the admin in the registry.
+In this step, you will use the `claimAdmin` task to register your EOA as the administrator for the deployed tokens on both testnets, Avalanche Fuji and Ethereum Sepolia. This process involves calling the `RegistryModuleOwnerCustom` contract, which will fetch the CCIP admin of the token and set it up as the admin in the registry.
 
 Below is an explanation of the parameters used during the admin claim process:
 
-| Parameter      | Description                                                                                                                                          | Default | Required |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
-| `tokenaddress` | The address of the token for which the admin role is being claimed.                                                                                  | N/A     | Yes      |
-| `network`      | The blockchain on which the claim admin process will be executed. Examples include `avalancheFuji`, `arbitrumSepolia`, `baseSepolia`, and `sepolia`. | N/A     | Yes      |
+| Parameter      | Description                                                                                                                                                  | Default | Required |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- | -------- |
+| `tokenaddress` | The address of the token for which the admin role is being claimed.                                                                                          | N/A     | Yes      |
+| `network`      | The blockchain on which the claim admin process will be executed. Examples include `avalancheFuji`, `ethereumSepolia`, `baseSepolia`, and `arbitrumSepolia`. | N/A     | Yes      |
 
 Claim the admin role by using the following commands, replacing the token address with the one you deployed in the previous steps:
 
 1. **Claim the admin role on Avalanche Fuji:**
 
    ```bash
-   npx hardhat claimAdmin --tokenaddress 0x6cdB459EaCB30947Db2a4374a78d37A8FCe11054 --network avalancheFuji
+   npx hardhat claimAdmin --tokenaddress 0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5 --network avalancheFuji
    ```
 
    Example output:
 
    ```bash
-   2025-05-15T07:43:26.364Z info: Current token admin: 0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA
-   2025-05-15T07:43:26.365Z info: Claiming admin of 0x6cdB459EaCB30947Db2a4374a78d37A8FCe11054 via getCCIPAdmin() for CCIP admin 0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA
-   2025-05-15T07:43:35.471Z info: Claimed admin of 0x6cdB459EaCB30947Db2a4374a78d37A8FCe11054 tx: 0x2cc45f61521f4cce83dab2c8c452ad87cc4867195f6ad2da810b6ab85f45ac8d
+   ✅ Tasks loaded from /tasks/index.ts
+   2025-10-22T13:17:16.402Z info: 🎯 Claiming admin for 0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5 using getCCIPAdmin mode
+   2025-10-22T13:17:20.129Z info: ✅ Current wallet 0x8c244f0b2164e6a3bed74ab429b0ebd661bb14ca is CCIP admin
+   2025-10-22T13:17:22.182Z info: 📤 TX sent: 0xf64560bd40a848ecf26b3d63699cfcbd56154c36851eaa3e5aab4e4d338197a7. Waiting for 2 confirmations...
+   2025-10-22T13:17:31.204Z info: ✅ Admin claimed for 0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5 on avalancheFuji (2 confirmations)
    ```
 
-1. **Claim the admin role on Arbitrum Sepolia:**
+1. **Claim the admin role on Ethereum Sepolia:**
 
    ```bash
-   npx hardhat claimAdmin --tokenaddress 0x528f08cF0b8541CdFeE5E897c861348AE601315e --network arbitrumSepolia
+   npx hardhat claimAdmin --tokenaddress 0xb613B55897F07eAF430bF9a509498e55487305Ea --network ethereumSepolia
    ```
 
    Example output:
 
    ```bash
-   2025-05-15T07:46:04.941Z info: Current token admin: 0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA
-   2025-05-15T07:46:04.942Z info: Claiming admin of 0x528f08cF0b8541CdFeE5E897c861348AE601315e via getCCIPAdmin() for CCIP admin 0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA
-   2025-05-15T07:46:08.656Z info: Claimed admin of 0x528f08cF0b8541CdFeE5E897c861348AE601315e tx: 0x6b0a1ba03885609d51d4d53159feb5d0a65993a3276fc1b875153d7c2e1208e0
+   ✅ Tasks loaded from /tasks/index.ts
+   2025-10-22T13:18:41.832Z info: 🎯 Claiming admin for 0xb613B55897F07eAF430bF9a509498e55487305Ea using getCCIPAdmin mode
+   2025-10-22T13:18:48.580Z info: ✅ Current wallet 0x8c244f0b2164e6a3bed74ab429b0ebd661bb14ca is CCIP admin
+   2025-10-22T13:18:51.544Z info: 📤 TX sent: 0xc27012ea91ec4c3f6898c5bd4ad7f7ff390c0030fa87a6692869c6acd96b5417. Waiting for 3 confirmations...
+   2025-10-22T13:19:27.189Z info: ✅ Admin claimed for 0xb613B55897F07eAF430bF9a509498e55487305Ea on ethereumSepolia (3 confirmations)
    ```
 
 ### Accept Admin Role
 
-In this step, you will use the `acceptAdminRole.ts` task to accept the admin role for the deployed tokens on both testnets, Avalanche Fuji and Arbitrum Sepolia. Once you have claimed the role, accepting the role finalizes your control over the token administration.
+In this step, you will use the `acceptAdminRole` task to accept the admin role for the deployed tokens on both testnets, Avalanche Fuji and Ethereum Sepolia. Once you have claimed the role, accepting the role finalizes your control over the token administration.
 
 Below is an explanation of the parameters used during the admin role acceptance process:
 
-| Parameter      | Description                                                                                                                                           | Default | Required |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
-| `tokenaddress` | The address of the token for which the admin role is being accepted.                                                                                  | N/A     | Yes      |
-| `network`      | The blockchain on which the accept admin process will be executed. Examples include `avalancheFuji`, `arbitrumSepolia`, `baseSepolia`, and `sepolia`. | N/A     | Yes      |
+| Parameter      | Description                                                                                                                                                   | Default | Required |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
+| `tokenaddress` | The address of the token for which the admin role is being accepted.                                                                                          | N/A     | Yes      |
+| `network`      | The blockchain on which the accept admin process will be executed. Examples include `avalancheFuji`, `ethereumSepolia`, `baseSepolia`, and `arbitrumSepolia`. | N/A     | Yes      |
 
 Accept the admin role by using the following commands, replacing the token address with the one deployed in the previous steps:
 
 1. **Accept the admin role on Avalanche Fuji:**
 
    ```bash
-   npx hardhat acceptAdminRole --tokenaddress 0x6cdB459EaCB30947Db2a4374a78d37A8FCe11054 --network avalancheFuji
+   npx hardhat acceptAdminRole --tokenaddress 0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5 --network avalancheFuji
    ```
 
    Example output:
 
    ```bash
-   2025-05-15T07:48:10.397Z info: Accepted admin role for token 0x6cdB459EaCB30947Db2a4374a78d37A8FCe11054 tx: 0x65e6ca78912e892aa12dfd89a2f81cd16bea190ed27c2387eeb25b8825ddc871
+   ✅ Tasks loaded from /tasks/index.ts
+   2025-10-22T13:21:31.047Z info: 🔄 Accepting admin role for 0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5 on avalancheFuji...
+   2025-10-22T13:21:34.256Z info: Checking pending admin for 0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5...
+   2025-10-22T13:21:34.530Z info: ✅ Current wallet 0x8c244f0b2164e6a3bed74ab429b0ebd661bb14ca is the pending admin
+   2025-10-22T13:21:34.530Z info: Accepting admin role...
+   2025-10-22T13:21:36.591Z info: 📤 TX sent: 0xb4bd7a1fb2803c6e4459e44c014cb450bd7e0149b2d9fc8018eb1a57561600c2. Waiting for 2 confirmations...
+   2025-10-22T13:21:41.413Z info: ✅ Admin role accepted for 0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5 on avalancheFuji (2 confirmations)
    ```
 
-1. **Accept the admin role on Arbitrum Sepolia:**
+1. **Accept the admin role on Ethereum Sepolia:**
 
    ```bash
-   npx hardhat acceptAdminRole --tokenaddress 0x528f08cF0b8541CdFeE5E897c861348AE601315e --network arbitrumSepolia
+   npx hardhat acceptAdminRole --tokenaddress 0xb613B55897F07eAF430bF9a509498e55487305Ea --network ethereumSepolia
    ```
 
    Example output:
 
    ```bash
-   2025-05-15T07:49:32.507Z info: Accepted admin role for token 0x528f08cF0b8541CdFeE5E897c861348AE601315e tx: 0x37115cd24457bd40102bff9e9e6e7725c380dfbf1dd9cbcfa7dc767757cc64c2
+   ✅ Tasks loaded from /tasks/index.ts
+   2025-10-22T13:22:24.437Z info: 🔄 Accepting admin role for 0xb613B55897F07eAF430bF9a509498e55487305Ea on ethereumSepolia...
+   2025-10-22T13:22:29.165Z info: Checking pending admin for 0xb613B55897F07eAF430bF9a509498e55487305Ea...
+   2025-10-22T13:22:29.467Z info: ✅ Current wallet 0x8c244f0b2164e6a3bed74ab429b0ebd661bb14ca is the pending admin
+   2025-10-22T13:22:29.467Z info: Accepting admin role...
+   2025-10-22T13:22:31.790Z info: 📤 TX sent: 0x57094dfdb13ab712fb1afb099c6c65734a7726939863626ec6a59d0c24326e89. Waiting for 3 confirmations...
+   2025-10-22T13:23:26.623Z info: ✅ Admin role accepted for 0xb613B55897F07eAF430bF9a509498e55487305Ea on ethereumSepolia (3 confirmations)
    ```
 
 ### Set Pool
 
-In this step, you will use the `setPool.ts` task to link each token with its respective token pool on both testnets.
+In this step, you will use the `setPool` task to link each token with its respective token pool on both testnets.
 
 Below is an explanation of the parameters used during the pool setting process:
 
-| Parameter      | Description                                                                                                                                   | Default | Required |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
-| `tokenaddress` | The address of the token to be linked to a pool.                                                                                              | N/A     | Yes      |
-| `pooladdress`  | The address of the pool associated with the token.                                                                                            | N/A     | Yes      |
-| `network`      | The blockchain on which the pool setting will be executed. Examples include `avalancheFuji`, `arbitrumSepolia`, `baseSepolia`, and `sepolia`. | N/A     | Yes      |
+| Parameter      | Description                                                                                                                                           | Default | Required |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
+| `tokenaddress` | The address of the token to be linked to a pool.                                                                                                      | N/A     | Yes      |
+| `pooladdress`  | The address of the pool associated with the token.                                                                                                    | N/A     | Yes      |
+| `network`      | The blockchain on which the pool setting will be executed. Examples include `avalancheFuji`, `ethereumSepolia`, `baseSepolia`, and `arbitrumSepolia`. | N/A     | Yes      |
 
 Link each token with its respective token pool by using the following commands, replacing the token and pool addresses with the ones you deployed in the previous steps:
 
@@ -328,48 +397,64 @@ Link each token with its respective token pool by using the following commands, 
 
    ```bash
    npx hardhat setPool \
-     --tokenaddress 0x6cdB459EaCB30947Db2a4374a78d37A8FCe11054 --pooladdress 0xdA99b1551F0E69aC11FD4C36731F079Ca3131a8F \
+     --tokenaddress 0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5 --pooladdress 0x10db2Fd0A5E3e9F68c72ae99CC266f383c1814a2 \
      --network avalancheFuji
    ```
 
    Example output:
 
    ```bash
-   2025-05-15T07:51:53.865Z info: Setting pool for token 0x6cdB459EaCB30947Db2a4374a78d37A8FCe11054 to 0xdA99b1551F0E69aC11FD4C36731F079Ca3131a8F by 0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA
-   2025-05-15T07:52:02.833Z info: Pool set for token 0x6cdB459EaCB30947Db2a4374a78d37A8FCe11054 to 0xdA99b1551F0E69aC11FD4C36731F079Ca3131a8F
+   ✅ Tasks loaded from /tasks/index.ts
+   2025-10-22T13:26:57.003Z info: 🔗 Setting pool for token 0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5 on avalancheFuji...
+   2025-10-22T13:27:00.453Z info: 🔹 Using signer: 0x8c244f0b2164e6a3bed74ab429b0ebd661bb14ca
+   2025-10-22T13:27:00.453Z info: Using TokenAdminRegistry: 0xA92053a4a3922084d992fD2835bdBa4caC6877e6
+   2025-10-22T13:27:00.909Z info: Checking token configuration for 0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5...
+   2025-10-22T13:27:01.184Z info: Token 0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5 current admin: 0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA
+   2025-10-22T13:27:01.185Z info: ✅ Current wallet 0x8c244f0b2164e6a3bed74ab429b0ebd661bb14ca is the token administrator
+   2025-10-22T13:27:01.185Z info: Setting pool 0x10db2Fd0A5E3e9F68c72ae99CC266f383c1814a2 for token 0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5...
+   2025-10-22T13:27:03.433Z info: 📤 TX sent: 0xddbf3e5a7d0799ccf11fff3ad816553c75be8cc0d2986d0a49d26c271af040e9. Waiting for 2 confirmations...
+   2025-10-22T13:27:12.509Z info: ✅ Pool successfully set for token 0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5 → 0x10db2Fd0A5E3e9F68c72ae99CC266f383c1814a2 on avalancheFuji (2 confirmations)
    ```
 
-1. **Set the pool for Arbitrum Sepolia:**
+1. **Set the pool for Ethereum Sepolia:**
 
    ```bash
    npx hardhat setPool \
-     --tokenaddress 0x528f08cF0b8541CdFeE5E897c861348AE601315e --pooladdress 0x85EDf5dE3417c240f8E008D6B1377403eF17BE10 \
-     --network arbitrumSepolia
+     --tokenaddress 0xb613B55897F07eAF430bF9a509498e55487305Ea --pooladdress 0x5e8b0e5EAC57d73E7b93d85b8eA3fcaDa282868A \
+     --network ethereumSepolia
    ```
 
    Example output:
 
    ```bash
-   2025-05-15T07:53:01.750Z info: Setting pool for token 0x528f08cF0b8541CdFeE5E897c861348AE601315e to 0x85EDf5dE3417c240f8E008D6B1377403eF17BE10 by 0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA
-   2025-05-15T07:53:06.764Z info: Pool set for token 0x528f08cF0b8541CdFeE5E897c861348AE601315e to 0x85EDf5dE3417c240f8E008D6B1377403eF17BE10
+   ✅ Tasks loaded from /tasks/index.ts
+   2025-10-22T13:27:52.517Z info: 🔗 Setting pool for token 0xb613B55897F07eAF430bF9a509498e55487305Ea on ethereumSepolia...
+   2025-10-22T13:27:59.751Z info: 🔹 Using signer: 0x8c244f0b2164e6a3bed74ab429b0ebd661bb14ca
+   2025-10-22T13:27:59.751Z info: Using TokenAdminRegistry: 0x95F29FEE11c5C55d26cCcf1DB6772DE953B37B82
+   2025-10-22T13:28:00.123Z info: Checking token configuration for 0xb613B55897F07eAF430bF9a509498e55487305Ea...
+   2025-10-22T13:28:00.533Z info: Token 0xb613B55897F07eAF430bF9a509498e55487305Ea current admin: 0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA
+   2025-10-22T13:28:00.533Z info: ✅ Current wallet 0x8c244f0b2164e6a3bed74ab429b0ebd661bb14ca is the token administrator
+   2025-10-22T13:28:00.533Z info: Setting pool 0x5e8b0e5EAC57d73E7b93d85b8eA3fcaDa282868A for token 0xb613B55897F07eAF430bF9a509498e55487305Ea...
+   2025-10-22T13:28:03.981Z info: 📤 TX sent: 0xdf9eaf86d6250590e2dffcd69f2e0e6a6bcdf41a1e0ab549437e74f0b4f2e02e. Waiting for 3 confirmations...
+   2025-10-22T13:28:40.100Z info: ✅ Pool successfully set for token 0xb613B55897F07eAF430bF9a509498e55487305Ea → 0x5e8b0e5EAC57d73E7b93d85b8eA3fcaDa282868A on ethereumSepolia (3 confirmations)
    ```
 
 ### Configure Token Pools
 
-In this step, you will use the `applyChainUpdates` task to initialize the token pool configuration on each blockchain to enable cross-chain transfers between Avalanche Fuji and Arbitrum Sepolia. Below is an explanation of the parameters used:
+In this step, you will use the `applyChainUpdates` task to initialize the token pool configuration on each blockchain to enable cross-chain transfers between Avalanche Fuji and Ethereum Sepolia. Below is an explanation of the parameters used:
 
-| Parameter                   | Description                                                                                              | Default | Required |
-| --------------------------- | -------------------------------------------------------------------------------------------------------- | ------- | -------- |
-| `pooladdress`               | The address of the pool to be configured.                                                                | N/A     | Yes      |
-| `remotechain`               | The remote blockchain network (e.g., `arbitrumSepolia` for Fuji pool, `avalancheFuji` for Sepolia pool). | N/A     | Yes      |
-| `remotepooladdresses`       | Comma-separated list of remote pool addresses.                                                           | N/A     | Yes      |
-| `remotetokenaddress`        | The address of the token on the remote chain.                                                            | N/A     | Yes      |
-| `outboundratelimitenabled`  | Enables or disables the outbound rate limiter.                                                           | `false` | No       |
-| `outboundratelimitcapacity` | Maximum capacity for the outbound rate limiter (in wei).                                                 | `0`     | No       |
-| `outboundratelimitrate`     | Refill rate for the outbound rate limiter bucket (tokens per second, in wei).                            | `0`     | No       |
-| `inboundratelimitenabled`   | Enables or disables the inbound rate limiter.                                                            | `false` | No       |
-| `inboundratelimitcapacity`  | Maximum capacity for the inbound rate limiter (in wei).                                                  | `0`     | No       |
-| `inboundratelimitrate`      | Refill rate for the inbound rate limiter bucket (tokens per second, in wei).                             | `0`     | No       |
+| Parameter                   | Description                                                                                               | Default | Required |
+| --------------------------- | --------------------------------------------------------------------------------------------------------- | ------- | -------- |
+| `pooladdress`               | The address of the pool to be configured.                                                                 | N/A     | Yes      |
+| `remotechain`               | The remote blockchain network (e.g., `ethereumSepolia` for Fuji pool, `avalancheFuji` for Sepolia pool).  | N/A     | Yes      |
+| `remotepooladdresses`       | Comma-separated list of remote pool addresses.                                                            | N/A     | Yes      |
+| `remotetokenaddress`        | The address of the token on the remote chain.                                                             | N/A     | Yes      |
+| `outboundratelimitenabled`  | Flag to enable outbound rate limits for cross-chain transfers. Pass this flag to enable, omit to disable. | `false` | No       |
+| `outboundratelimitcapacity` | Maximum capacity for the outbound rate limiter (in wei).                                                  | `0`     | No       |
+| `outboundratelimitrate`     | Refill rate for the outbound rate limiter bucket (tokens per second, in wei).                             | `0`     | No       |
+| `inboundratelimitenabled`   | Flag to enable inbound rate limits for cross-chain transfers. Pass this flag to enable, omit to disable.  | `false` | No       |
+| `inboundratelimitcapacity`  | Maximum capacity for the inbound rate limiter (in wei).                                                   | `0`     | No       |
+| `inboundratelimitrate`      | Refill rate for the inbound rate limiter bucket (tokens per second, in wei).                              | `0`     | No       |
 
 Configure the pools using the following commands, replacing the pool, token, and remote pool addresses with those you deployed in the previous steps:
 
@@ -377,133 +462,197 @@ Configure the pools using the following commands, replacing the pool, token, and
 
    ```bash
    npx hardhat applyChainUpdates \
-     --pooladdress 0xdA99b1551F0E69aC11FD4C36731F079Ca3131a8F \
-     --remotechain arbitrumSepolia \
-     --remotepooladdresses 0x85EDf5dE3417c240f8E008D6B1377403eF17BE10 \
-     --remotetokenaddress 0x528f08cF0b8541CdFeE5E897c861348AE601315e \
+     --pooladdress 0x10db2Fd0A5E3e9F68c72ae99CC266f383c1814a2 \
+     --remotechain ethereumSepolia \
+     --remotepooladdresses 0x5e8b0e5EAC57d73E7b93d85b8eA3fcaDa282868A \
+     --remotetokenaddress 0xb613B55897F07eAF430bF9a509498e55487305Ea \
      --network avalancheFuji
    ```
 
    Example output:
 
    ```bash
-   2025-05-15T07:56:37.082Z info: Applying chain update to pool at address: 0xdA99b1551F0E69aC11FD4C36731F079Ca3131a8F
-   2025-05-15T07:56:37.082Z info: Remote chain: arbitrumSepolia (3478487238524512106)
-   2025-05-15T07:56:37.082Z info: Remote pool addresses: 0x85EDf5dE3417c240f8E008D6B1377403eF17BE10
-   2025-05-15T07:56:37.082Z info: Remote token address: 0x528f08cF0b8541CdFeE5E897c861348AE601315e
-   2025-05-15T07:56:43.745Z info: Chain update applied successfully
+   ✅ Tasks loaded from /tasks/index.ts
+   2025-10-22T13:32:32.607Z info: === Starting Chain Update Configuration ===
+   2025-10-22T13:32:32.607Z info: 🔹 Local network: avalancheFuji
+   2025-10-22T13:32:32.608Z info: 🔹 Pool address: 0x10db2Fd0A5E3e9F68c72ae99CC266f383c1814a2
+   2025-10-22T13:32:32.608Z info: 🔹 Remote chain: ethereumSepolia
+   2025-10-22T13:32:32.608Z info: 🔹 Remote chain family: evm
+   2025-10-22T13:32:32.608Z info: 🔹 Remote chain selector: 16015286601757825753
+   2025-10-22T13:32:34.967Z info: ✅ All addresses validated successfully
+   2025-10-22T13:32:35.511Z info: ✅ Using signer: 0x8c244f0b2164e6a3bed74ab429b0ebd661bb14ca
+   2025-10-22T13:32:35.920Z info: ✅ Connected to TokenPool contract
+   2025-10-22T13:32:35.921Z info:   Remote pool 1: 0x5e8b0e5EAC57d73E7b93d85b8eA3fcaDa282868A → 0x0000000000000000000000005e8b0e5eac57d73e7b93d85b8ea3fcada282868a
+   2025-10-22T13:32:35.922Z info: === Rate Limiter Configuration ===
+   2025-10-22T13:32:35.922Z info: Outbound enabled: false
+   2025-10-22T13:32:35.922Z info: Inbound enabled: false
+   2025-10-22T13:32:35.922Z info: === Executing applyChainUpdates() ===
+   2025-10-22T13:32:38.130Z info: 📤 TX sent: 0x74cbcaf2bbd5fa86f7a72a58f2f289496f3cba10d1d99d3638e7dae1e30d8ded
+   2025-10-22T13:32:38.130Z info: Waiting for 2 confirmations...
+   2025-10-22T13:32:47.218Z info: ✅ Chain update applied successfully on avalancheFuji (2 confirmations)!
    ```
 
-2. **Configure the pool on Arbitrum Sepolia:**
+2. **Configure the pool on Ethereum Sepolia:**
 
    ```bash
    npx hardhat applyChainUpdates \
-     --pooladdress 0x85EDf5dE3417c240f8E008D6B1377403eF17BE10 \
+     --pooladdress 0x5e8b0e5EAC57d73E7b93d85b8eA3fcaDa282868A \
      --remotechain avalancheFuji \
-     --remotepooladdresses 0xdA99b1551F0E69aC11FD4C36731F079Ca3131a8F \
-     --remotetokenaddress 0x6cdB459EaCB30947Db2a4374a78d37A8FCe11054 \
-     --network arbitrumSepolia
+     --remotepooladdresses 0x10db2Fd0A5E3e9F68c72ae99CC266f383c1814a2 \
+     --remotetokenaddress 0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5 \
+     --network ethereumSepolia
    ```
 
    Example output:
 
    ```bash
-   2025-05-15T07:57:31.979Z info: Applying chain update to pool at address: 0x85EDf5dE3417c240f8E008D6B1377403eF17BE10
-   2025-05-15T07:57:31.980Z info: Remote chain: avalancheFuji (14767482510784806043)
-   2025-05-15T07:57:31.980Z info: Remote pool addresses: 0xdA99b1551F0E69aC11FD4C36731F079Ca3131a8F
-   2025-05-15T07:57:31.980Z info: Remote token address: 0x6cdB459EaCB30947Db2a4374a78d37A8FCe11054
-   2025-05-15T07:57:36.087Z info: Chain update applied successfully
+   ✅ Tasks loaded from /tasks/index.ts
+   2025-10-22T13:33:45.900Z info: === Starting Chain Update Configuration ===
+   2025-10-22T13:33:45.901Z info: 🔹 Local network: ethereumSepolia
+   2025-10-22T13:33:45.901Z info: 🔹 Pool address: 0x5e8b0e5EAC57d73E7b93d85b8eA3fcaDa282868A
+   2025-10-22T13:33:45.901Z info: 🔹 Remote chain: avalancheFuji
+   2025-10-22T13:33:45.901Z info: 🔹 Remote chain family: evm
+   2025-10-22T13:33:45.901Z info: 🔹 Remote chain selector: 14767482510784806043
+   2025-10-22T13:33:48.062Z info: ✅ All addresses validated successfully
+   2025-10-22T13:33:48.655Z info: ✅ Using signer: 0x8c244f0b2164e6a3bed74ab429b0ebd661bb14ca
+   2025-10-22T13:33:48.977Z info: ✅ Connected to TokenPool contract
+   2025-10-22T13:33:48.980Z info:   Remote pool 1: 0x10db2Fd0A5E3e9F68c72ae99CC266f383c1814a2 → 0x00000000000000000000000010db2fd0a5e3e9f68c72ae99cc266f383c1814a2
+   2025-10-22T13:33:48.980Z info: === Rate Limiter Configuration ===
+   2025-10-22T13:33:48.980Z info: Outbound enabled: false
+   2025-10-22T13:33:48.980Z info: Inbound enabled: false
+   2025-10-22T13:33:48.981Z info: === Executing applyChainUpdates() ===
+   2025-10-22T13:33:51.061Z info: 📤 TX sent: 0x16b5122c3687a81b71e0ac479dfae846dc5eb8091d85dc51c137f8aa0e6d0bec
+   2025-10-22T13:33:51.061Z info: Waiting for 3 confirmations...
+   2025-10-22T13:34:27.345Z info: ✅ Chain update applied successfully on ethereumSepolia (3 confirmations)!
    ```
 
 ### Mint Tokens
 
-In this step, you will use the `mintTokens.ts` task to mint tokens on Avalanche Fuji for your Externally Owned Account (EOA). Since you assigned mint and burn privileges to your EOA when deploying the tokens in the first step, you can now mint tokens for testing purposes. This is to ensure that you have enough tokens in your EOA to perform cross-chain transfers in the next step.
+In this step, you will use the `mintTokens` task to mint tokens on Avalanche Fuji for your Externally Owned Account (EOA). Since you assigned mint and burn privileges to your EOA when deploying the tokens in the first step, you can now mint tokens for testing purposes. This is to ensure that you have enough tokens in your EOA to perform cross-chain transfers in the next step.
 
 You will interact with the `BurnMintERC20` token contract, specifically calling the `mint()` function to mint tokens to your EOA.
 
 Below is an explanation of the parameters used during the minting process:
 
-| Parameter         | Description                                                                                                                                      | Default | Required |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------- | -------- |
-| `tokenaddress`    | The address of the token for which tokens are being minted.                                                                                      | N/A     | Yes      |
-| `amount`          | The amount of tokens to mint (in wei).                                                                                                           | N/A     | Yes      |
-| `receiveraddress` | The address of the receiver of the minted tokens. If not provided, defaults to your EOA.                                                         | N/A     | No       |
-| `network`         | The blockchain on which the minting process will be executed. Examples include `avalancheFuji`, `arbitrumSepolia`, `baseSepolia`, and `sepolia`. | N/A     | Yes      |
+| Parameter         | Description                                                                                                                                              | Default | Required |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
+| `tokenaddress`    | The address of the token for which tokens are being minted.                                                                                              | N/A     | Yes      |
+| `amount`          | The amount of tokens to mint (in wei).                                                                                                                   | N/A     | Yes      |
+| `receiveraddress` | The address of the receiver of the minted tokens. If not provided, defaults to your EOA.                                                                 | N/A     | No       |
+| `network`         | The blockchain on which the minting process will be executed. Examples include `avalancheFuji`, `ethereumSepolia`, `baseSepolia`, and `arbitrumSepolia`. | N/A     | Yes      |
 
 Mint tokens to your EOA using the following command, replacing the token address with the one you deployed in the previous steps:
 
 1. **Mint tokens on Avalanche Fuji:**
 
    ```bash
-   npx hardhat mintTokens --tokenaddress 0x6cdB459EaCB30947Db2a4374a78d37A8FCe11054 --amount 1000000000000000000000 --network avalancheFuji
+   npx hardhat mintTokens --tokenaddress 0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5 --amount 1000000000000000000000 --network avalancheFuji
    ```
 
    Example output:
 
    ```bash
-   2025-05-15T07:59:50.241Z info: Minting 1000000000000000000000 of BnMaem tokens to 0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA
-   2025-05-15T07:59:59.473Z info: Minted 1000000000000000000000 of BnMaem tokens to 0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA - transaction hash: 0xac6ff86fe7a8a948701c2473586f73b0311ada7452bfd82ff5938dccc4f2d9cc
-   2025-05-15T07:59:59.808Z info: Current balance of 0x8C244f0B2164E6A3BED74ab429B0ebd661Bb14CA is 1100000000000000000000 BnMaem
+   ✅ Tasks loaded from /tasks/index.ts
+   2025-10-22T13:37:15.433Z info: 🪙 Minting 1000000000000000000000 BnMsak to 0x8c244f0b2164e6a3bed74ab429b0ebd661bb14ca...
+   2025-10-22T13:37:17.440Z info: ⏳ Mint tx: 0x4e4519f97c773a351132a068f55a0ced2c25bcf7a9587c83b338403b17cdb5bc
+   2025-10-22T13:37:17.441Z info:    Waiting for 2 confirmation(s)...
+   2025-10-22T13:37:31.076Z info: ✅ Minted 1000000000000000000000 BnMsak to 0x8c244f0b2164e6a3bed74ab429b0ebd661bb14ca
+   2025-10-22T13:37:31.076Z info:    Current balance of 0x8c244f0b2164e6a3bed74ab429b0ebd661bb14ca: 1100000000000000000000 BnMsak
    ```
 
 ### Transfer Tokens
 
-In this step, you will use the `transferTokens` task to transfer tokens from Avalanche Fuji to Arbitrum Sepolia using CCIP. You have two options for paying CCIP fees: using LINK tokens or native gas tokens.
+In this step, you will use the `transferTokens` task to transfer tokens from Avalanche Fuji to Ethereum Sepolia using CCIP. You have two options for paying CCIP fees: using LINK tokens or native gas tokens.
 
 You will interact with the `IRouterClient` contract, specifically calling the `ccipSend()` function to initiate the token transfer.
 
 Below is an explanation of the parameters used during the token transfer process:
 
-| Parameter          | Description                                                                                                                                      | Default | Required |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------- | -------- |
-| `tokenaddress`     | The address of the token being transferred.                                                                                                      | N/A     | Yes      |
-| `amount`           | The amount of tokens to transfer.                                                                                                                | N/A     | Yes      |
-| `destinationchain` | The blockchain to which the tokens will be transferred. Examples include `avalancheFuji`, `arbitrumSepolia`, `baseSepolia`, and `sepolia`.       | N/A     | Yes      |
-| `receiveraddress`  | The address of the receiver on the destination blockchain.                                                                                       | N/A     | Yes      |
-| `fee`              | The type of fee used for the transfer, either `LINK` or `native`.                                                                                | `LINK`  | No       |
-| `network`          | The blockchain on which the token transfer will be initiated. Examples include `avalancheFuji`, `arbitrumSepolia`, `baseSepolia`, and `sepolia`. | N/A     | Yes      |
+| Parameter          | Description                                                                                                                                              | Default | Required |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------- |
+| `tokenaddress`     | The address of the token being transferred.                                                                                                              | N/A     | Yes      |
+| `amount`           | The amount of tokens to transfer.                                                                                                                        | N/A     | Yes      |
+| `destinationchain` | The blockchain to which the tokens will be transferred. Examples include `avalancheFuji`, `ethereumSepolia`, `baseSepolia`, and `arbitrumSepolia`.       | N/A     | Yes      |
+| `receiveraddress`  | The address of the receiver on the destination blockchain.                                                                                               | N/A     | Yes      |
+| `fee`              | The type of fee used for the transfer, either `LINK` or `native`.                                                                                        | `LINK`  | No       |
+| `network`          | The blockchain on which the token transfer will be initiated. Examples include `avalancheFuji`, `ethereumSepolia`, `baseSepolia`, and `arbitrumSepolia`. | N/A     | Yes      |
 
 #### Pay fees in LINK
 
-Call the CCIP Router to transfer tokens from Avalanche Fuji to Arbitrum Sepolia, paying the CCIP fees in LINK tokens. Replace the token address, amount, receiver address, and blockchain with the appropriate values:
+Call the CCIP Router to transfer tokens from Avalanche Fuji to Ethereum Sepolia, paying the CCIP fees in LINK tokens. Replace the token address, amount, receiver address, and blockchain with the appropriate values:
 
 ```bash
-npx hardhat transferTokens --tokenaddress 0x6cdB459EaCB30947Db2a4374a78d37A8FCe11054 --amount 100000000000000000000 --destinationchain arbitrumSepolia --receiveraddress 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf --network avalancheFuji
+npx hardhat transferTokens --tokenaddress 0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5 --amount 100000000000000000000 --destinationchain ethereumSepolia --receiveraddress 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf --network avalancheFuji
 ```
 
 Example output:
 
 ```bash
-2025-05-15T08:03:22.279Z info: Estimated fees: 22167517387804854
-2025-05-15T08:03:22.280Z info: Approving 100000000000000000000 0x6cdB459EaCB30947Db2a4374a78d37A8FCe11054 to 0xF694E193200268f9a4868e4Aa017A0118C9a8177
-2025-05-15T08:03:27.907Z info: Approving 22167517387804854 LINK to 0xF694E193200268f9a4868e4Aa017A0118C9a8177
-2025-05-15T08:03:36.529Z info: Transferring 100000000000000000000 of 0x6cdB459EaCB30947Db2a4374a78d37A8FCe11054 to 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf on chain arbitrumSepolia with 22167517387804854 of LINK as fees
-2025-05-15T08:03:40.665Z info: Transaction hash: 0xedad6bd09fbb9d99282f3875e6abebfff739aaf01d7490ba471b9f372ff70c5e
-2025-05-15T08:03:40.681Z warn: Unable to parse the event logs corresponding to the transaction 0xedad6bd09fbb9d99282f3875e6abebfff739aaf01d7490ba471b9f372ff70c5e
-2025-05-15T08:03:40.681Z info: Check status of message on https://ccip.chain.link/tx/0xedad6bd09fbb9d99282f3875e6abebfff739aaf01d7490ba471b9f372ff70c5e
+✅ Tasks loaded from /tasks/index.ts
+2025-10-22T13:43:39.126Z info: 🚀 Transferring 100000000000000000000 tokens via CCIP from avalancheFuji to ethereumSepolia...
+2025-10-22T13:43:39.127Z info:    Token: 0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5
+2025-10-22T13:43:39.127Z info:    Receiver: 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf
+2025-10-22T13:43:39.127Z info:    Fee token: LINK
+2025-10-22T13:43:40.097Z info: 💰 Estimated fees: 12762338383426833
+2025-10-22T13:43:40.351Z info: Approving 100000000000000000000 tokens for router 0xF694E193200268f9a4868e4Aa017A0118C9a8177
+2025-10-22T13:43:42.411Z info:    Waiting for 2 confirmation(s)...
+2025-10-22T13:43:56.306Z info: Approving 12762338383426833 LINK to router
+2025-10-22T13:43:57.544Z info:    Waiting for 2 confirmation(s)...
+2025-10-22T13:44:02.292Z info: 💰 Estimated CCIP fees: 12762338383426833
+2025-10-22T13:44:02.292Z info: Simulating CCIP message...
+2025-10-22T13:44:02.549Z info: Sending CCIP message...
+2025-10-22T13:44:03.813Z info: ⏳ CCIP message tx: 0x3518d5469eed57cece65221c69d071be9aa883035e7869a24d2f75061f789926
+2025-10-22T13:44:03.813Z info:    Waiting for 2 confirmation(s)...
+2025-10-22T13:44:08.811Z info: ✅ CCIP message sent successfully
+2025-10-22T13:44:08.812Z info:    Transaction: 0x3518d5469eed57cece65221c69d071be9aa883035e7869a24d2f75061f789926
+2025-10-22T13:44:08.812Z info:    Check status: https://ccip.chain.link/tx/0x3518d5469eed57cece65221c69d071be9aa883035e7869a24d2f75061f789926
+2025-10-22T13:44:08.812Z info: 📋 Transfer Summary:
+2025-10-22T13:44:08.813Z info:    Token: 0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5
+2025-10-22T13:44:08.813Z info:    Amount: 100000000000000000000
+2025-10-22T13:44:08.813Z info:    From: avalancheFuji
+2025-10-22T13:44:08.813Z info:    To: ethereumSepolia
+2025-10-22T13:44:08.813Z info:    Receiver: 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf
+2025-10-22T13:44:08.813Z info:    Fee paid in: LINK
 ```
 
 #### Pay fees in native gas tokens
 
-Call the CCIP Router to transfer tokens from Avalanche Fuji to Arbitrum Sepolia, paying the CCIP fees in native gas tokens. Replace the token address, amount, receiver address, and blockchain with the appropriate values:
+Call the CCIP Router to transfer tokens from Avalanche Fuji to Ethereum Sepolia, paying the CCIP fees in native gas tokens. Replace the token address, amount, receiver address, and blockchain with the appropriate values:
 
 ```bash
-npx hardhat transferTokens --tokenaddress 0x6cdB459EaCB30947Db2a4374a78d37A8FCe11054 --amount 100000000000000000000 --destinationchain arbitrumSepolia --receiveraddress 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf --fee native --network avalancheFuji
+npx hardhat transferTokens --tokenaddress 0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5 --amount 100000000000000000000 --destinationchain ethereumSepolia --receiveraddress 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf --fee native --network avalancheFuji
 ```
 
 Example output:
 
 ```bash
-2025-05-15T08:05:15.654Z info: Estimated fees: 15603670276848872
-2025-05-15T08:05:15.659Z info: Approving 100000000000000000000 0x6cdB459EaCB30947Db2a4374a78d37A8FCe11054 to 0xF694E193200268f9a4868e4Aa017A0118C9a8177
-2025-05-15T08:05:25.788Z info: Transferring 100000000000000000000 of 0x6cdB459EaCB30947Db2a4374a78d37A8FCe11054 to 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf on chain arbitrumSepolia with 15603670276848872 of native token as fees
-2025-05-15T08:05:30.584Z info: Transaction hash: 0x892be0e1c6617d0e7bfb08dd93f88833d699470869f8b05520e9624ce8c125d8
-2025-05-15T08:05:30.602Z warn: Unable to parse the event logs corresponding to the transaction 0x892be0e1c6617d0e7bfb08dd93f88833d699470869f8b05520e9624ce8c125d8
-2025-05-15T08:05:30.602Z info: Check status of message on https://ccip.chain.link/tx/0x892be0e1c6617d0e7bfb08dd93f88833d699470869f8b05520e9624ce8c125d8
+✅ Tasks loaded from /tasks/index.ts
+2025-10-22T13:47:59.281Z info: 🚀 Transferring 100000000000000000000 tokens via CCIP from avalancheFuji to ethereumSepolia...
+2025-10-22T13:47:59.283Z info:    Token: 0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5
+2025-10-22T13:47:59.283Z info:    Receiver: 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf
+2025-10-22T13:47:59.284Z info:    Fee token: native
+2025-10-22T13:48:00.223Z info: 💰 Estimated fees: 12717027432412391
+2025-10-22T13:48:00.489Z info: Approving 100000000000000000000 tokens for router 0xF694E193200268f9a4868e4Aa017A0118C9a8177
+2025-10-22T13:48:02.490Z info:    Waiting for 2 confirmation(s)...
+2025-10-22T13:48:15.961Z info: 💰 Estimated CCIP fees: 12717027432412391
+2025-10-22T13:48:15.962Z info: Simulating CCIP message...
+2025-10-22T13:48:16.222Z info: Sending CCIP message...
+2025-10-22T13:48:17.524Z info: ⏳ CCIP message tx: 0x870904c7d9e758934ab468fd0889f078a7800fdf074242ccbbbac2d9cc0a257e
+2025-10-22T13:48:17.524Z info:    Waiting for 2 confirmation(s)...
+2025-10-22T13:48:22.556Z info: ✅ CCIP message sent successfully
+2025-10-22T13:48:22.556Z info:    Transaction: 0x870904c7d9e758934ab468fd0889f078a7800fdf074242ccbbbac2d9cc0a257e
+2025-10-22T13:48:22.556Z info:    Check status: https://ccip.chain.link/tx/0x870904c7d9e758934ab468fd0889f078a7800fdf074242ccbbbac2d9cc0a257e
+2025-10-22T13:48:22.556Z info: 📋 Transfer Summary:
+2025-10-22T13:48:22.556Z info:    Token: 0xa3B8d1648A9f9515b2F2EefC7222c62AEAAC9ce5
+2025-10-22T13:48:22.556Z info:    Amount: 100000000000000000000
+2025-10-22T13:48:22.556Z info:    From: avalancheFuji
+2025-10-22T13:48:22.556Z info:    To: ethereumSepolia
+2025-10-22T13:48:22.557Z info:    Receiver: 0x27d7A69C878F9c8f51f4e53703abCE9bAcd2D9bf
+2025-10-22T13:48:22.557Z info:    Fee paid in: native
 ```
 
-Your tokens have been locked on the token pool on Avalanche Fuji, the corresponding tokens have been minted on Arbitrum Sepolia and sent to your receiver address.
+Your tokens have been locked on the token pool on Avalanche Fuji, the corresponding tokens have been minted on Ethereum Sepolia and sent to your receiver address.
 
-Note: Since your Lock & Release token pool on Avalanche Fuji has locked some tokens, you can transfer tokens from Arbitrum Sepolia to Avalanche Fuji using CCIP as an exercise. Your tokens will be burned on Arbitrum Sepolia, and the corresponding tokens will be released on Avalanche Fuji. Make sure not to transfer more tokens than the amount of tokens locked in the token pool on Avalanche Fuji.
+Note: Since your Lock & Release token pool on Avalanche Fuji has locked some tokens, you can transfer tokens from Ethereum Sepolia to Avalanche Fuji using CCIP as an exercise. Your tokens will be burned on Ethereum Sepolia, and the corresponding tokens will be released on Avalanche Fuji. Make sure not to transfer more tokens than the amount of tokens locked in the token pool on Avalanche Fuji.
 
 <CcipCommon callout="educationalDisclaimer" />

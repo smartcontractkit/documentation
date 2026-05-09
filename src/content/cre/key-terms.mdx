@@ -1,0 +1,105 @@
+---
+section: cre
+title: "Key Terms and Concepts"
+date: Last Modified
+metadata:
+  description: "Learn essential CRE concepts: workflows, handlers, triggers, callbacks, Runtime, capabilities, DONs, and consensus."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+This page defines the fundamental terms and concepts for the Chainlink Runtime Environment (CRE).
+
+## High-level concepts
+
+### Chainlink Runtime Environment (CRE)
+
+The all-in-one orchestration layer unlocking institutional-grade smart contracts—data-connected, compliance-ready, privacy-preserving, and interoperable across blockchains and existing systems
+
+### Decentralized Oracle Network (DON)
+
+A decentralized, peer-to-peer network of independent nodes that work together to execute a specific task. In CRE, there are two primary types of DONs: **Workflow DONs** that orchestrates the workflow, and specialized **Capability DONs** that execute specific tasks like blockchain interactions.
+
+## Workflow architecture
+
+### Workflow
+
+A workflow uses the CRE SDK (Go or TypeScript) and comprises one or more [handlers](/cre/key-terms#handler), which define the logic that executes when events ([triggers](/cre/key-terms#trigger)) occur. CRE compiles the workflow to a WASM binary and runs it on a Workflow DON.
+
+### Handler
+
+The basic building block of a workflow, created using the `cre.Handler` function. It connects a single **Trigger** event to a single **Callback** function.
+
+### Trigger
+
+An event source that initiates the execution of a handler's callback function. Examples include Cron trigger, HTTP trigger, and EVM Log trigger. Learn more in the [Trigger capability page](/cre/capabilities/triggers).
+
+### Callback
+
+A function that contains your core logic. It is executed by the Workflow DON every time its corresponding trigger fires.
+
+## The developer's toolkit: The CRE SDK
+
+### `Runtime` & `NodeRuntime`
+
+Short-lived objects passed to your callback function during a specific execution. The key difference between `Runtime` and `NodeRuntime` is who is responsible for creating a single, trusted result from the work of many nodes.
+
+- **`Runtime`**: Think of it as the "Easy Mode". It is used for operations that are guaranteed to be Byzantine Fault Tolerant (BFT). You ask the network to execute something, and CRE handles the underlying complexity to ensure you get back one final, secure, and trustworthy result.
+
+- **`NodeRuntime`**: Think of this as the "Manual Mode". It is used when a BFT guarantee cannot be provided automatically (e.g. calling a standard API). You tell each node to perform a task on its own. Each node returns its own individual answer, and you are responsible for telling the SDK how to combine them into a single, trusted result by providing an aggregation algorithm. This is always used inside a `cre.RunInNodeMode` block.
+
+Learn more about [Consensus and Aggregation](/cre/reference/sdk/consensus).
+
+### SDK Clients: `EVMClient` & `HTTPClient`
+
+The primary SDK clients you use inside a callback to interact with capabilities. For example, you use an EVM client to read from a smart contract and an HTTP client to make offchain API requests.
+
+**Language-specific implementations:**
+
+- **Go SDK**: `evm.Client` and `http.Client`
+- **TypeScript SDK**: `EVMClient` and `HTTPClient` classes
+
+### `Bindings` (Go SDK only)
+
+A Go package generated from a smart contract's ABI using the `cre generate-bindings` CLI command. Bindings create a type-safe Go interface for a specific smart contract, abstracting away the low-level complexity of ABI encoding and decoding.
+
+Using generated bindings is the recommended best practice for Go workflows, as they provide helper methods for:
+
+- Reading from `view`/`pure` functions.
+- Encoding data structures for onchain writes.
+- Creating triggers for and decoding event logs.
+
+This makes your workflow code cleaner, safer, and easier to maintain. Learn more in the [Generating Contract Bindings](/cre/guides/workflow/using-evm-client/generating-bindings) guide.
+
+**Note for TypeScript**: The TypeScript SDK uses [Viem](https://viem.sh/) for type-safe contract interactions with manual ABI definitions instead of generated bindings.
+
+### Async Patterns
+
+Asynchronous operations in the SDK (like contract reads or HTTP requests) return a placeholder for a future result:
+
+- **Go SDK**: Operations return a `Promise`, and you must call `.Await()` to pause execution and wait for the result.
+- **TypeScript SDK**: Operations return an object with a `.result()` method that you call to wait for the result.
+
+### `Secrets`
+
+Securely managed credentials (e.g., API keys) made available to your workflow at runtime. Secrets can be fetched within a callback using the runtime's secret retrieval method:
+
+- **Go SDK**: `runtime.GetSecret()`
+- **TypeScript SDK**: `runtime.getSecret()`
+
+## Underlying architectural concepts
+
+### Capability
+
+A conceptual, decentralized "microservice" that is backed by its own DON. Capabilities are the fundamental building blocks of the CRE platform (e.g., HTTP Fetch, EVM Read). You do not interact with them directly; instead, you use the SDK's developer-facing clients (like `evm.Client`) to invoke them.
+
+### Consensus
+
+The mechanism by which a DON comes to a single, reliable, and tamper-proof result, even if individual nodes observe slightly different data. Consensus is what makes the outputs of capabilities secure and trustworthy.
+
+## Where to go next?
+
+- **[Getting Started](/cre/getting-started/overview)**: Start building your first workflow.
+- **[About CRE](/cre)**: Learn more about the vision and high-level architecture of CRE.

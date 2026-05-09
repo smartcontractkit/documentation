@@ -16,10 +16,8 @@ metadata:
 import VrfCommon from "@features/vrf/v2/common/VrfCommon.astro"
 import { Aside, ClickToZoom } from "@components"
 
-<Aside type="tip" title="VRF V2.5 Direct Funding Method">
-  Refer to the [VRF V2.5 Direct Funding Method Introduction page](/vrf/v2-5/overview/direct-funding) to learn how the
-  direct funding method works in VRF V2.5. To compare V2.5 and V2, refer to the [migration
-  guide](/vrf/v2-5/migration-from-v2).
+<Aside type="caution" title="Migrate to VRF V2.5">
+  VRF V2.5 replaces both VRF V1 and VRF V2 on November 29, 2024. [Migrate to VRF V2.5](/vrf/v2-5/migration-from-v1).
 </Aside>
 
 <VrfCommon callout="directFunding" />
@@ -56,7 +54,6 @@ Set up your consuming contract:
 1. Your contract must implement the `fulfillRandomWords` function, which is the _callback VRF function_. Here, you add logic to handle the random values after they are returned to your contract.
 
 1. Submit your VRF request by calling the `requestRandomness` function in the [VRFV2WrapperConsumerBase](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/vrf/VRFV2WrapperConsumerBase.sol) contract. Include the following parameters in your request:
-
    - `requestConfirmations`: The number of block confirmations the VRF service will wait to respond. The minimum and maximum confirmations for your network can be found [here](/vrf/v2/direct-funding/supported-networks/#configurations).
    - `callbackGasLimit`: The maximum amount of gas to pay for completing the callback VRF function.
    - `numWords`: The number of random numbers to request. You can find the maximum number of random values per request for your network in the [Supported networks](/vrf/v2/direct-funding/supported-networks/#configurations) page.

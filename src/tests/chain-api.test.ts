@@ -3,13 +3,14 @@ import {
   validateEnvironment,
   validateFilters,
   validateOutputKey,
+  validateEnrichFeeTokens,
   createMetadata,
   CCIPError,
   handleApiError,
-} from "../pages/api/ccip/utils.js"
-import type { Environment } from "../config/data/ccip/types.js"
-import { ChainDataService } from "../pages/api/services/chain-data.js"
-import { mockReferenceData } from "../__mocks__/chainMock.js"
+} from "~/lib/ccip/utils.ts"
+import type { Environment } from "../config/data/ccip/types.ts"
+import { ChainDataService } from "~/lib/ccip/services/chain-data.ts"
+import { mockReferenceData } from "../__mocks__/chainMock.ts"
 
 // Mock the Environment enum
 jest.mock("../config/data/ccip/types", () => ({
@@ -35,6 +36,45 @@ jest.mock("../features/utils", () => ({
   getTitle: jest.fn(() => "Ethereum"),
   directoryToSupportedChain: jest.fn(() => "ETHEREUM_MAINNET"),
   getChainTypeAndFamily: jest.fn(() => ({ chainType: "evm", chainFamily: "evm" })),
+}))
+
+// Mock the logger
+jest.mock("../lib/logging", () => ({
+  logger: {
+    info: jest.fn(),
+    debug: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  },
+}))
+
+// Mock selectors
+jest.mock("../config/data/ccip/selectors", () => ({
+  getSelectorEntry: jest.fn(() => ({
+    selector: "5009297550715157269",
+    name: "ethereum-mainnet",
+  })),
+}))
+
+// Mock the token data
+jest.mock("../config/data/ccip/data", () => ({
+  getTokenData: jest.fn((params: { tokenId: string; environment: string; version: string }) => {
+    const { tokenId } = params
+    return {
+      "ethereum-mainnet": {
+        symbol: tokenId,
+        name: tokenId === "LINK" ? "Chainlink" : tokenId === "WETH" ? "Wrapped Ether" : "GHO",
+        tokenAddress:
+          tokenId === "LINK"
+            ? "0x514910771AF9Ca656af840dff83E8264EcF986CA"
+            : tokenId === "WETH"
+              ? "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+              : "0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f",
+        decimals: 18,
+        poolAddress: "0x1234567890123456789012345678901234567890",
+      },
+    }
+  }),
 }))
 
 // Define environment values that match the Environment type
@@ -81,6 +121,31 @@ describe("CCIP Chain API Utils", () => {
 
     it("should throw error for invalid output key", () => {
       expect(() => validateOutputKey("invalid")).toThrow(CCIPError)
+    })
+  })
+
+  describe("validateEnrichFeeTokens", () => {
+    it("should accept true", () => {
+      expect(validateEnrichFeeTokens("true")).toBe(true)
+      expect(validateEnrichFeeTokens("TRUE")).toBe(true)
+      expect(validateEnrichFeeTokens("True")).toBe(true)
+    })
+
+    it("should accept false", () => {
+      expect(validateEnrichFeeTokens("false")).toBe(false)
+      expect(validateEnrichFeeTokens("FALSE")).toBe(false)
+      expect(validateEnrichFeeTokens("False")).toBe(false)
+    })
+
+    it("should default to false when undefined", () => {
+      expect(validateEnrichFeeTokens(undefined)).toBe(false)
+    })
+
+    it("should throw error for invalid values", () => {
+      expect(() => validateEnrichFeeTokens("yes")).toThrow(CCIPError)
+      expect(() => validateEnrichFeeTokens("no")).toThrow(CCIPError)
+      expect(() => validateEnrichFeeTokens("1")).toThrow(CCIPError)
+      expect(() => validateEnrichFeeTokens("0")).toThrow(CCIPError)
     })
   })
 
@@ -150,6 +215,93 @@ describe("ChainDataService", () => {
       const result = await service.getFilteredChains(ENV.Mainnet, { internalId: "ethereum-mainnet" })
       expect(result.data.evm.length).toBe(1)
       expect(result.data.evm[0].internalId).toBe("ethereum-mainnet")
+    })
+
+    describe("with enrichFeeTokens parameter", () => {
+      it("should return fee tokens as string array when enrichFeeTokens is false (default)", async () => {
+        const result = await service.getFilteredChains(ENV.Mainnet, {}, false)
+        expect(result.data.evm.length).toBe(1)
+        const chain = result.data.evm[0]
+        expect(Array.isArray(chain.feeTokens)).toBe(true)
+        expect(chain.feeTokens).toEqual(["GHO", "LINK", "WETH"])
+        // Verify they are strings
+        chain.feeTokens.forEach((token) => {
+          expect(typeof token).toBe("string")
+        })
+      })
+
+      it("should return fee tokens as string array when enrichFeeTokens is not provided", async () => {
+        const result = await service.getFilteredChains(ENV.Mainnet, {})
+        expect(result.data.evm.length).toBe(1)
+        const chain = result.data.evm[0]
+        expect(Array.isArray(chain.feeTokens)).toBe(true)
+        expect(chain.feeTokens).toEqual(["GHO", "LINK", "WETH"])
+        // Verify they are strings
+        chain.feeTokens.forEach((token) => {
+          expect(typeof token).toBe("string")
+        })
+      })
+
+      it("should return enriched fee tokens when enrichFeeTokens is true", async () => {
+        const result = await service.getFilteredChains(ENV.Mainnet, {}, true)
+        expect(result.data.evm.length).toBe(1)
+        const chain = result.data.evm[0]
+        expect(Array.isArray(chain.feeTokens)).toBe(true)
+        expect(chain.feeTokens.length).toBeGreaterThan(0)
+
+        // Verify they are enriched objects
+        chain.feeTokens.forEach((token) => {
+          expect(typeof token).toBe("object")
+          expect(token).toHaveProperty("symbol")
+          expect(token).toHaveProperty("name")
+          expect(token).toHaveProperty("address")
+          expect(token).toHaveProperty("decimals")
+          // Ensure no logo property
+          expect(token).not.toHaveProperty("logo")
+        })
+      })
+
+      it("should have correct structure for enriched LINK token", async () => {
+        const result = await service.getFilteredChains(ENV.Mainnet, {}, true)
+        const chain = result.data.evm[0]
+        const linkToken = chain.feeTokens.find((t) => typeof t === "object" && t.symbol === "LINK")
+
+        expect(linkToken).toBeDefined()
+        expect(linkToken).toEqual({
+          symbol: "LINK",
+          name: "Chainlink",
+          address: "0x514910771AF9Ca656af840dff83E8264EcF986CA",
+          decimals: 18,
+        })
+      })
+
+      it("should have correct structure for enriched WETH token", async () => {
+        const result = await service.getFilteredChains(ENV.Mainnet, {}, true)
+        const chain = result.data.evm[0]
+        const wethToken = chain.feeTokens.find((t) => typeof t === "object" && t.symbol === "WETH")
+
+        expect(wethToken).toBeDefined()
+        expect(wethToken).toEqual({
+          symbol: "WETH",
+          name: "Wrapped Ether",
+          address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+          decimals: 18,
+        })
+      })
+
+      it("should maintain backward compatibility with existing filters when enriching", async () => {
+        const result = await service.getFilteredChains(ENV.Mainnet, { chainId: "1" }, true)
+        expect(result.data.evm.length).toBe(1)
+        const chain = result.data.evm[0]
+        expect(chain.chainId).toBe(1)
+        expect(Array.isArray(chain.feeTokens)).toBe(true)
+        expect(chain.feeTokens.length).toBeGreaterThan(0)
+        // Verify enriched
+        chain.feeTokens.forEach((token) => {
+          expect(typeof token).toBe("object")
+          expect(token).toHaveProperty("address")
+        })
+      })
     })
   })
 })

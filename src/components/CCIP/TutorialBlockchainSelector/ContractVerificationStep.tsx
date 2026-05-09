@@ -1,5 +1,5 @@
 import { TutorialStep } from "../TutorialSetup/TutorialStep.tsx"
-import { Callout } from "../TutorialSetup/Callout.tsx"
+import { Callout } from "@components/Callout/Callout.tsx"
 import type { Network } from "~/config/data/ccip/types.ts"
 import styles from "./ContractVerificationStep.module.css"
 import { getExplorerAddressUrl } from "~/features/utils/index.ts"

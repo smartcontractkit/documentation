@@ -1,7 +1,14 @@
-import { useState, useEffect } from "preact/hooks"
+/** @jsxImportSource react */
+import { useState, useEffect } from "react"
 import "./toast.css"
 
-export const Toast = ({ message, duration = 4000, onClose }) => {
+interface ToastProps {
+  message: string
+  duration?: number
+  onClose: () => void
+}
+
+export const Toast = ({ message, duration = 4000, onClose }: ToastProps) => {
   const [isVisible, setIsVisible] = useState(false)
   const [isAnimatingOut, setIsAnimatingOut] = useState(false)
 

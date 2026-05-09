@@ -1,0 +1,129 @@
+---
+section: cre
+title: "Part 2: Fetching Offchain Data"
+date: Last Modified
+sdkLang: "go"
+pageId: "getting-started-part-2"
+metadata:
+  description: "Getting started Part 2 (Go): fetch offchain data from APIs using HTTP client with consensus for secure, verified results."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside, CodeHighlightBlock } from "@components"
+import part2Code from "./snippets/part-2-main.go?raw"
+
+In Part 1, you successfully built and ran a minimal workflow. Now, it's time to connect it to the outside world. In this section, you will modify your workflow to fetch data from a public API using the CRE SDK's [`http.Client`](/cre/reference/sdk/http-client).
+
+## What you'll do
+
+- Add a new URL to your workflow's config file.
+- Learn about the `http.SendRequest` helper for offchain operations.
+- Write a new function to fetch data from the public [`api.mathjs.org`](https://api.mathjs.org/) API.
+- Integrate the offchain data into your main workflow logic.
+
+## Step 1: Update your configuration
+
+First, you need to add the API endpoint to your workflow's configuration. This allows you to easily change the URL without modifying your Go code.
+
+Open the `config.staging.json` file in your `my-calculator-workflow` directory and add the `apiUrl` key. Your file should now look like this:
+
+```json
+{
+  "schedule": "0 */1 * * * *",
+  "apiUrl": "https://api.mathjs.org/v4/?expr=randomInt(1,101)"
+}
+```
+
+This URL calls the public mathjs.org API and uses its `randomInt(min, max)` function to return a random integer between 1 and 100. Note that the upper bound is exclusive, so we use `101` to get values up to 100. The API returns the number as a raw string in the response body.
+
+## Step 2: Understand the `http.SendRequest` pattern
+
+Many offchain data sources are **non-deterministic**, meaning different nodes calling the same API might get slightly different answers due to timing, load balancing, or other factors. The `api.mathjs.org` API with the `randomInt` function is a perfect example—each call will return a different random number.
+
+The CRE SDK solves this with `http.SendRequest`, a helper function that transforms these potentially varied results into a single, highly reliable result. It works like a "map-reduce" for the DON:
+
+1. **Map**: You provide a function (e.g., `fetchMathResult`) that will be executed by every node in the DON independently. Each node "maps" the offchain world by fetching its own version of the data.
+1. **Reduce**: You provide a consensus algorithm (e.g., [`ConsensusMedianAggregation`](/cre/reference/sdk/consensus#consensusmedianaggregationt)) that takes all the individual results and "reduces" them into a single, trusted outcome.
+
+This pattern is fundamental to securely and reliably bringing offchain data into your workflow.
+
+<Aside type="note" title="Learn More">
+  The `http.SendRequest` helper is a convenient wrapper around the lower-level `cre.RunInNodeMode` function. To learn
+  more about the distinction between the DON-level `Runtime` and the node-level `NodeRuntime`, see the [Runtime and
+  NodeRuntime](/cre/reference/sdk/core/#runtime-and-noderuntime) section in the SDK Reference.
+</Aside>
+
+## Step 3: Add the HTTP fetch logic
+
+Now, let's modify your `main.go` file. You will add a new function, `fetchMathResult`, that contains the logic for calling the API. You'll also update the `onCronTrigger` function to call the `http.SendRequest` helper.
+
+Replace the entire content of `onchain-calculator/my-calculator-workflow/main.go` with the following code.
+
+<CodeHighlightBlock lang="go" code={part2Code} title="onchain-calculator/my-calculator-workflow/main.go" />
+
+<Aside type="note" title="Consensus & Aggregation">
+    Because the `api.mathjs.org/v4/?expr=randomInt(1,101)` endpoint is non-deterministic, each node in the DON will receive a different random number. To create a single, reliable result from these varied responses, we use [`ConsensusMedianAggregation`](/cre/reference/sdk/consensus#consensusmedianaggregationt).
+
+    This algorithm collects the numerical results from all nodes, sorts them, and selects the median value. This approach is robust against outliers and provides a trustworthy, aggregated number for your workflow to use, even when the underlying data source is not consistent across calls.
+
+    **In local simulation**: The simulator uses a single-node model for faster testing. The "consensus" step still occurs, but involves one node wrapping its result in a standardized report structure. When deployed, true multi-node Byzantine Fault Tolerant (BFT) consensus is performed across all capability operations.
+
+    To learn more about how consensus works in CRE, see [Consensus Computing](/cre/concepts/consensus-computing) and the [Consensus & Aggregation reference](/cre/reference/sdk/consensus).
+
+</Aside>
+
+## Step 4: Sync your dependencies
+
+1. **Sync Dependencies**: Your new code imports a new package. Run the following `go get` command to add the required dependency at its specific version:
+
+   ```bash
+   go get github.com/smartcontractkit/cre-sdk-go/capabilities/networking/http@v1.0.0-beta.0
+   ```
+
+1. **Clean up and organize your module files**:
+
+   After fetching the new dependencies, run `go mod tidy` to clean up the `go.mod` and `go.sum` files.
+
+   ```bash
+   go mod tidy
+   ```
+
+## Step 5: Run the simulation and review the output
+
+Run the `simulate` command from your project root directory (the `onchain-calculator/` folder). Because there is only one trigger, the simulator runs it automatically.
+
+```bash
+cre workflow simulate my-calculator-workflow --target staging-settings
+```
+
+The output shows the new user logs from your workflow, followed by the final `Workflow Simulation Result`.
+
+```bash
+Workflow compiled
+2025-11-03T22:35:51Z [SIMULATION] Simulator Initialized
+
+2025-11-03T22:35:51Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+2025-11-03T22:35:51Z [USER LOG] msg="Hello, Calculator! Workflow triggered."
+2025-11-03T22:35:52Z [USER LOG] msg="Successfully fetched and aggregated math result" result=50
+
+Workflow Simulation Result:
+ {
+  "Result": 50
+}
+
+2025-11-03T22:35:52Z [SIMULATION] Execution finished signal received
+2025-11-03T22:35:52Z [SIMULATION] Skipping WorkflowEngineV2
+```
+
+- **`[USER LOG]`**: You can now see both of your `logger.Info()` calls in the output. The second log shows the fetched and aggregated value (`result=50`), confirming that the API call and consensus worked correctly.
+- **`[SIMULATION]`**: These are system-level messages from the simulator showing its internal state.
+- **`Workflow Simulation Result`**: This is the final return value of your workflow. The `Result` field now contains the aggregated value from the API as a number.
+
+Your workflow can now fetch and process data from an external source.
+
+## Next Steps
+
+Next, you'll learn how to interact with a smart contract to read data from the blockchain and combine it with this offchain result.
+
+- **[Part 3: Reading an Onchain Value](/cre/getting-started/part-3-reading-onchain-value)**

@@ -1,3 +1,4 @@
+import { memo } from "react"
 import "./NetworkCard.css"
 
 interface NetworkCardProps {
@@ -7,10 +8,10 @@ interface NetworkCardProps {
   logo: string
 }
 
-function NetworkCard({ name, totalLanes, totalTokens, logo }: NetworkCardProps) {
+const NetworkCard = memo(function NetworkCard({ name, totalLanes, totalTokens, logo }: NetworkCardProps) {
   return (
     <div className="network-card__container">
-      <img src={logo} alt="" />
+      <img src={logo} alt="" loading="lazy" />
       <div>
         <h3>{name}</h3>
         <p>
@@ -19,6 +20,6 @@ function NetworkCard({ name, totalLanes, totalTokens, logo }: NetworkCardProps) 
       </div>
     </div>
   )
-}
+})
 
 export default NetworkCard

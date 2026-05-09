@@ -3,67 +3,91 @@ section: ccip
 date: Last Modified
 title: "Cross-Chain Token Standard - Tokens (SVM)"
 metadata:
-  description: "Learn CCIP integration requirements for SPL tokens on SVM chains. Covers compatibility (SPL Token, Token-2022), registration (mint authority), and transfer functions."
+  description: "Essential guide for integrating SPL tokens with CCIP on SVM chains like Solana. Covers token compatibility requirements, decimal considerations, registration using mint authority, pool type selection (BurnMint vs LockRelease), and Token-2022 support."
+  excerpt: "CCIP, SPL tokens, SVM, Solana, Token-2022, mint authority, token administrator, registration, self-registration, BurnMint, LockRelease, pool selection, token pools, cross-chain transfers, compatibility, associated token accounts, decimals, token programs"
+  datePublished: "2025-05-19"
+  lastModified: "2025-05-19"
 ---
 
 import { Aside } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
 
-<CcipCommon callout="calloutCCTSVM" />
+This document provides essential guidance for integrating tokens with Chainlink CCIP on SVM-based blockchains, such as Solana, using the Cross-Chain Token (CCT) standard. It covers token compatibility requirements, decimal planning considerations, registration processes, and strategic guidance for selecting the right token pool type for your use case.
 
-This document provides comprehensive guidance for integrating tokens with Chainlink CCIP on SVM-based blockchains, such as Solana, using the Cross-Chain Token (CCT) standard. It outlines the compatibility requirements, registration processes, and transfer functions essential for ensuring that tokens operate seamlessly with CCIP.
+<Aside type="note" title="New to CCIP Cross-Chain Tokens?">
+  If you're new to CCIP's Cross-Chain Token system, start with the [Architecture
+  Overview](/ccip/concepts/cross-chain-token/svm/architecture) to understand how all components work together before
+  diving into token-specific requirements.
+</Aside>
 
 ## Compatibility
 
 Before implementing CCIP support for your token, it's crucial to understand the compatibility requirements. These requirements ensure proper functionality of your token within the CCIP ecosystem.
 
-### Basic Compatibility Requirements
+### Mandatory Compatibility Requirements
 
-1. **Supported Token Programs**: Only tokens managed by either the standard SPL Token program or the Token-2022 (Token Extensions) program are compatible with CCIP.
-1. **Interface Requirements**: For all tokens, especially those using Token-2022 extensions, ensure:
-   - **Associated Token Accounts (ATA)**: The token program must support creation and use of ATAs
-   - **Decimals**: The token must provide decimal precision via `mint.decimals`
-   - **Program Identification**: The token program must be correctly referenced through `mint.to_account_info().owner`
+All tokens must meet these requirements for CCIP compatibility:
 
-### Token Pool Compatibility
+1. **Supported Token Programs**: Must use either the standard SPL Token program or Token-2022 (Token Extensions) program
+1. **Interface Requirements**: Must support standard token interfaces:
+   - **Associated Token Accounts (ATA)**: Required for all CCIP operations
+   - **Decimals**: Must provide decimal precision via `mint.decimals`
+   - **Program Identification**: Must be correctly referenced through `mint.to_account_info().owner`
 
-When using standard CCIP Token Pool Program templates, your token must be compatible with one of the following token pool types:
+### Decimal Planning
 
-#### BurnMint Token Pool
+When deploying your token across multiple blockchains, **decimal configuration is a critical strategic decision** that affects cross-chain transfer behavior and token supply management:
 
-For token pools that burn tokens during outbound transfers (via OnRamp) and mint tokens during inbound transfers (via OffRamp):
+**Key Decision:** Deploy your token with the **same number of decimals across all blockchains** whenever possible. This eliminates precision loss during cross-chain transfers.
 
-- The token's mint authority must be delegateable
-- The token program must support the `mint_to` instruction
-- The token program must support the `burn` instruction
+**Impact on Token Pools:**
 
-#### LockRelease Token Pool
+- **Different decimals**: Can result in precision loss and permanently locked/burned tokens
+- **Same decimals**: Enable perfect 1:1 cross-chain transfers
 
-For token pools that lock tokens during outbound transfers and release them during inbound transfers:
+For comprehensive guidance on decimal compatibility impacts, strategic recommendations, and technical implementation requirements, see [Decimal Compatibility Considerations](/ccip/concepts/cross-chain-token/svm/token-pools#decimal-compatibility-considerations).
 
-- The token program must support the `transfer_checked` instruction
+### Token Requirements by Pool Type
+
+Your token's requirements depend on which token pool type you'll deploy, determined by your chosen [token handling mechanism](/ccip/concepts/cross-chain-token/svm/token-pools#token-handling-mechanisms). Refer to the token handling mechanisms table to understand which pool type you need for your SVM chain deployment.
+
+#### BurnMint Pool
+
+**Token Requirements:**
+
+- Must support `mint_to` and `burn` instructions
+- **Mint authority** must be transferable (directly to pool signer PDA or via SPL Token Multisig). See [BurnMint Pool mint authority configuration](/ccip/concepts/cross-chain-token/svm/token-pools#mint-authority-management) for detailed multisig requirements
+
+#### LockRelease Pool
+
+**Token Requirements:**
+
+- Must support `transfer_checked` instruction
+- **No mint authority requirements** (pool operates through transfers only)
+
+For detailed pool implementation, deployment approaches, and configuration requirements, see [Token Pools documentation](/ccip/concepts/cross-chain-token/svm/token-pools).
 
 ### Custom Token Pool Implementation
 
 Token developers can alternatively implement their own custom Token Pool Programs to support additional Token-2022 extensions not supported by the standard token pools. Custom implementations must adhere to CCIP's interface specifications while allowing developers to control which instructions are called when handling tokens.
 
-## Registration Functions
+For technical requirements and implementation guidance for custom pools, see [Custom Token Pools](/ccip/concepts/cross-chain-token/svm/token-pools#custom-token-pools).
 
-To enable a CCT in CCIP, ensure you can assign or confirm the token administrator. On SVM-based blockchains (e.g., Solana), this typically means having control over the `mint_authority` of the token's Mint account. The CCIP Router program uses this authority to verify that you can set a "token administrator" in its onchain registry.
+## Registration
 
-### Self-Registration
+To enable your token for CCIP cross-chain transfers, you must register it and establish a token administrator role. This process ensures secure assignment of administrative control over your token's CCIP integration.
 
-To self-register your CCT under CCIP, you use the `owner_propose_administrator` instruction provided by the CCIP Router. It works as follows:
+### Registration Requirements
 
-- **Mint Authority**: Only the signer holding the private key for the token's `mint_authority` can initiate the request.
-- **Pending Administrator**: This instruction creates (or updates) a Token Admin Registry account and sets a pending administrator.
-- **Accept Role**: The newly proposed administrator then calls `accept_admin_role_token_admin_registry` to complete the process.
+- **Self-Registration**: If you control the token's `mint_authority`, you can complete registration automatically
+- **Manual Registration**: If `mint_authority` is not accessible (e.g., set to `None` to cap supply), manual registration is available
 
-Once the registration is complete, the CCIP Router recognizes your token and lets its administrator configure a token pool (burnMint or lockRelease).
+### Registration Process
 
-### Edge Cases
+The registration follows a secure two-step process:
 
-If the token's `mint_authority` is no longer accessible—for example, if it was intentionally set to `None` to cap the total supply—and therefore token ownership cannot be verified using onchain data, a manual registration process can be performed on your behalf. This approach ensures that tokens remain eligible for CCIP integration even if their original `mint_authority` is permanently unavailable, while avoiding fragmentation and helping token developers remain in control of their CCTs.
+1. **Propose Administrator**: Designate who will administer your token's CCIP integration
+1. **Accept Role**: The proposed administrator must explicitly accept the role to complete registration
 
 <Aside>
 
@@ -71,121 +95,20 @@ If `mint_authority` is no longer accessible, use this [contact form](https://cha
 
 </Aside>
 
-## Mint Authority for BurnMint
+For comprehensive guidance including detailed instructions, sequence diagrams, and administrator role management, see [Registration & Administration](/ccip/concepts/cross-chain-token/svm/registration-administration).
 
-BurnMint token pools must hold the mint authority, which is required to mint tokens. On SVM-based blockchains, only a _single public key_ can serve as the mint authority. There are two approaches for managing mint authority, with the multisig approach being strongly recommended for production environments.
+## Next Steps
 
-### Advanced Setup: Multisig as Mint Authority (Recommended for Production)
+Once your token meets the compatibility requirements, you need to complete two key steps to enable cross-chain transfers:
 
-For production environments and complex use cases, implementing a multisig solution as the mint authority provides greater flexibility and security.
+### Register Your Token
 
-#### Configuration details
+Complete the token registration process to establish administrative control over your token's CCIP integration.
 
-- Implement a 1-of-N multisig where any authorized signer can initiate minting operations
-- Include the token pool's Program Derived Address (PDA) as one of the authorized signers
-- Ensure other signers remain under the exclusive control of the token owner
+For detailed instructions, sequence diagrams, and administrator role management, see [Registration & Administration](/ccip/concepts/cross-chain-token/svm/registration-administration).
 
-#### Key benefits
+### Deploy and Configure Token Pool
 
-- Enables multiple minters to interact with the token via a shared mint authority
-- Provides centralized control for the token owner
-- Maintains extensibility for future integrations
+After registration, deploy and configure a token pool to enable cross-chain transfer operations.
 
-#### Implementation Process for Multisig Setup
-
-1. Initialize the token with a temporary mint authority
-1. Deploy the BurnMint token pool program
-1. Configure the Token Pool Signer PDA within the Token Pool Program
-1. Register the token in the Token Admin Registry
-   - Set your desired account as the proposed administrator
-   - Verify the token's `mint_authority` matches the transaction signer
-1. Establish the multisig
-   - Create a 1-of-N multisig configuration
-   - Include the Token Pool signer PDA as one of the authorized signers
-1. Configure the administrator in the on-chain router registry
-1. Set the multisig account as the token's `mint_authority`
-
-<Aside>
-
-If your token already uses a multisig mint authority and includes the Token Pool PDA as one of the signers, you can still complete onboarding by adding a proxy message to the Token Pool Program that validates the signer logic during registration.
-
-</Aside>
-
-### Default Setup: Token Pool as Direct Mint Authority
-
-This configuration assigns the token pool's Program Derived Address (PDA) directly as the token's mint authority.
-
-#### Best suited for
-
-- Development environments
-- Simple production deployments where the token exclusively integrates with CCIP
-- Scenarios with a single trusted actor interacting with the token
-
-#### Implementation
-
-- The `mint_authority` of the token is directly set to the token pool signer PDA
-- Simplifies deployment and initial configuration
-
-#### Limitations
-
-- Only the token pool can mint tokens
-- Changes to mint authority may be constrained by the token pool program's capabilities
-
-## Token Handling Mechanisms
-
-To facilitate cross-chain token transfers, you need to choose the appropriate [token handling mechanism](/ccip/concepts/cross-chain-token/overview#token-handling-mechanisms) and deploy the correct combination of token pools for the source and destination blockchains. The table below summarizes the different token handling mechanisms and the [recommended token pools](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-release/1.6.0/chains/solana/contracts/programs) to deploy for each scenario, ensuring a seamless token transfer process.
-
-| Token Handling Mechanism | Source Blockchain Token Pool Type | Destination Blockchain Token Pool Type | How it Works                                                                                                                                                                                                                                                                                                                      |
-| ------------------------ | --------------------------------- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Burn & Mint              | BurnMint                          | BurnMint                               | - Standard burn and mint mechanism for CCT transfers.                                                                                                                                                                                                                                                                             |
-| Lock & Mint              | LockRelease                       | BurnMint                               | - The source blockchain is the issuing blockchain. <br />- The LockRelease token pool must be deployed on the issuing blockchain.                                                                                                                                                                                                 |
-| Burn & Unlock            | BurnMint                          | LockRelease                            | - The destination blockchain is the issuing blockchain. <br />- The BurnMint token pool burns tokens on the source blockchain, and the LockRelease token pool unlocks tokens on the issuing blockchain.                                                                                                                           |
-| Lock & Unlock            | LockRelease                       | LockRelease                            | - Tokens are locked on the source blockchain and unlocked on the destination blockchain. <br />- Can result in fragmented liquidity and requires careful management of liquidity across multiple blockchains to avoid stuck token transfers due to insufficient liquidity locked in the token pool on the destination blockchain. |
-
-Below are the core requirements for SPL tokens to integrate with CCIP transfer operations. Depending on the token handling mechanism, you may use a BurnMint token pool on both blockchains or combine a LockRelease token pool on one chain with a BurnMint token pool on the other.
-
-### Burn and Mint Requirements
-
-In this token handling mechanism, the same token pool type (BurnMint) is used on both source and destination blockchains, so these requirements are similar for both blockchains.
-
-1. **Set the Token Pool as Mint Authority**
-
-   - The token pool program must hold the mint authority to enable minting tokens.
-   - For further details on mint authority configurations, refer to the [Mint Authority for BurnMint](#mint-authority-for-burnmint) section.
-
-1. **Burning Tokens**
-
-   - Solana's SPL Token Program has no separate "burn" permission. Instead, the token pool program must own the token account that holds the tokens to be burned.
-   - Users typically transfer their tokens to the token pool's associated token account (ATA), which the pool program controls. Once the tokens reside in that ATA, the pool program can execute burn as needed.
-   - Because the pool program does not automatically create this ATA, the token administrator must ensure it is initialized beforehand. This one-time setup guarantees that tokens can be safely sent to the token pool ATA.
-
-1. **Minting Tokens**
-   - Once the pool program is the mint authority, it can invoke `mint_to` via a CPI (cross-program invocation) into the SPL Token Program.
-   - This allows the program to call the token program to mint the corresponding tokens.
-
-### Lock and Mint Requirements
-
-Locking tokens is ideal for tokens that no longer have an accessible `mint_authority`. If the `mint_authority` has been disabled, you can still enable cross-chain functionality by locking tokens on the source blockchain and minting them on the destination blockchain.
-
-#### Lock and Mint
-
-1. **Source Blockchain: LockRelease token pool**
-
-   - The token pool program has an Associated Token Account (ATA) where users send their tokens.
-   - Tokens received in this ATA are locked in escrow, meaning no `mint_authority` is required.
-   - The token administrator must create the token pool's ATA in advance to receive locked tokens.
-
-1. **Destination Blockchain: BurnMint token pool**
-   - The BurnMint token pool holds the `mint_authority` on the destination blockchain.
-   - For further details on mint authority configurations, refer to the [Mint Authority for BurnMint](#mint-authority-for-burnmint) section.
-
-#### Burn and Unlock
-
-1. **Source blockchain: BurnMint token pool**
-
-   - Users send tokens to the token pool's ATA on the source blockchain.
-   - The token pool program then calls the SPL `burn` instruction on that account.
-
-1. **Destination blockchain: LockRelease token pool**
-   - On the destination blockchain, the token pool program holds locked tokens in an ATA.
-   - The token pool program transfers tokens from its ATA to the receiver's ATA.
+For comprehensive implementation guidance including deployment approaches (self-serve, self-deployed, custom), detailed architecture requirements, and step-by-step configuration instructions, see [Token Pools documentation](/ccip/concepts/cross-chain-token/svm/token-pools).

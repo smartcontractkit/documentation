@@ -2,10 +2,60 @@
 .tutorialProgress {
   position: sticky;
   top: 0;
-  height: fit-content;
+  /* Multi-device height with fallbacks */
+  max-height: 100vh; /* Fallback for older browsers */
+  max-height: 100dvh; /* Dynamic viewport - adjusts to mobile browsers */
+  max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)); /* Safe area support */
+  overflow-y: auto;
   padding: var(--doc-padding) 0;
   min-width: calc(315px - var(--space-16x));
   isolation: isolate;
+  /* Ensure smooth scrolling */
+  scroll-behavior: smooth;
+  /* Responsive scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+/* Webkit scrollbar styling for cross-browser compatibility */
+.tutorialProgress::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tutorialProgress::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tutorialProgress::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.tutorialProgress::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  .tutorialProgress {
+    /* On mobile, use full available height minus header/footer space */
+    max-height: calc(100dvh - 120px);
+    /* Slightly larger padding for touch interfaces */
+    padding: var(--space-4x) 0;
+  }
+
+  /* Hide scrollbar on mobile for cleaner look */
+  .tutorialProgress::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .tutorialProgress {
+    max-height: calc(100dvh - 80px);
+  }
 }
 
 /* Override any parent title tooltips */

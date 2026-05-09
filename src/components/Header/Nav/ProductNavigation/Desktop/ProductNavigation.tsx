@@ -50,6 +50,8 @@ export const ProductNavigation = ({ setNavMenuOpen, showMegaMenu, isMegamenuOpen
               onMouseEnter={showMegaMenu}
               role="button"
               aria-expanded={isMegamenuOpen}
+              aria-controls="mega-menu"
+              aria-label="Resources menu"
               tabIndex={0}
               onKeyDown={handleKeyDown}
             >
@@ -82,7 +84,7 @@ export const ProductNavigation = ({ setNavMenuOpen, showMegaMenu, isMegamenuOpen
             </NavigationMenu.Link>
           </Item>
         </List>
-        {isMegamenuOpen && <MegaMenu cancel={exitMegamenu} />}
+        {isMegamenuOpen && <MegaMenu id="mega-menu" cancel={exitMegamenu} />}
       </Root>
     </>
   )

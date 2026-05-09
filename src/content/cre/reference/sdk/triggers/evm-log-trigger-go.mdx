@@ -1,0 +1,100 @@
+---
+section: cre
+title: "SDK Reference: EVM Log Trigger"
+date: Last Modified
+sdkLang: "go"
+pageId: "reference-sdk-evm-log-trigger"
+metadata:
+  description: "Reference for Go EVM Log Trigger: Config structure, Payload fields, and topic filtering for event-driven workflows."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+The EVM Log Trigger fires when a specific log (event) is emitted by an onchain smart contract.
+
+<Aside type="note" title="Recommended Usage">
+  While this section documents the low-level trigger configuration, the recommended best practice is to use the
+  **type-safe helper functions** created by the `cre generate-bindings` command.
+  <br />
+  For a complete guide on how to use these helpers for creating and filtering log triggers, see the [EVM Log Trigger
+  Guide](/cre/guides/workflow/using-triggers/evm-log-trigger).
+</Aside>
+
+### `evm.LogTrigger`
+
+Creates the EVM log trigger instance.
+
+```go
+import (
+    "github.com/ethereum/go-ethereum/common"
+    "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/evm"
+)
+
+// The first argument is the Chain Selector for the network to monitor.
+// 16015286601757825753 is the selector for Sepolia testnet.
+logTrigger := evm.LogTrigger(16015286601757825753, &evm.FilterLogTriggerRequest{
+    Addresses: [][]byte{
+        common.HexToAddress("0x123...abc").Bytes(),
+    },
+    // This example filters for a Transfer event signature
+    Topics: []*evm.TopicValues{
+        {
+            Values: [][]byte{
+                // Keccak256 hash of "Transfer(address,address,uint256)"
+                common.HexToHash("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef").Bytes(),
+            },
+        },
+    },
+    Confidence: evm.ConfidenceLevel_CONFIDENCE_LEVEL_FINALIZED,
+})
+```
+
+### `evm.FilterLogTriggerRequest`
+
+The configuration struct for the EVM log trigger.
+
+| <div style="width: 100px;">Field</div> | <div style="width: 160px;">Type</div> | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| -------------------------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Addresses`                            | `[][]byte`                            | A list of contract addresses to monitor, as 20-byte arrays.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `Topics`                               | `[]*evm.TopicValues`                  | A fixed 4-element array to filter event topics. The first element contains event signatures, and the next three elements contain indexed argument values. An empty array element acts as a wildcard.                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `Confidence`                           | `ConfidenceLevel`                     | The block confirmation level to monitor. Can be: <ul><li>**`evm.ConfidenceLevel_CONFIDENCE_LEVEL_SAFE` (default):** A block that is considered unlikely to be reorged but is not yet irreversible.</li><li>**`evm.ConfidenceLevel_CONFIDENCE_LEVEL_LATEST`:** The most recent block. This is the fastest but least secure, as the block could be orphaned. Best for non-critical, time-sensitive actions.</li><li>**`evm.ConfidenceLevel_CONFIDENCE_LEVEL_FINALIZED`:** A block that is considered irreversible. This is the safest option, as the event is guaranteed to be on the canonical chain, but it requires waiting longer for finality.</li></ul> |
+
+<Aside type="note" title="Finality details">
+  For details on how each confidence level maps to specific chains and estimated wait times, see [Finality and
+  Confidence Levels](/cre/concepts/finality).
+</Aside>
+
+### `evm.Log`
+
+The generic payload passed to the callback function for any EVM log.
+
+**Fields:**
+
+| Field         | Type         | Description                                     |
+| ------------- | ------------ | ----------------------------------------------- |
+| `Address`     | `[]byte`     | Address of the contract that emitted the log.   |
+| `Topics`      | `[][]byte`   | Indexed log fields (including event signature). |
+| `Data`        | `[]byte`     | ABI-encoded non-indexed log data.               |
+| `TxHash`      | `[]byte`     | Hash of the transaction.                        |
+| `BlockHash`   | `[]byte`     | Hash of the block.                              |
+| `BlockNumber` | `*pb.BigInt` | The block number containing the log.            |
+| `TxIndex`     | `uint32`     | Index of the transaction within the block.      |
+| `Index`       | `uint32`     | Index of the log within the block.              |
+| `EventSig`    | `[]byte`     | Keccak256 hash of the event signature.          |
+| `Removed`     | `bool`       | True if the log was removed during a reorg.     |
+
+### Callback Function
+
+Your callback function for EVM log triggers must conform to this signature:
+
+```go
+func onEvmTrigger(config *Config, runtime cre.Runtime, log *evm.Log) (*YourReturnType, error)
+```
+
+**Parameters:**
+
+- `config`: Your workflow's static configuration struct.
+- `runtime`: The runtime object.
+- `log`: The generic `evm.Log` payload. You will need to manually decode the `Topics` and `Data` fields based on the event ABI.

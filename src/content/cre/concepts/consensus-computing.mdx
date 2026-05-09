@@ -1,0 +1,110 @@
+---
+section: cre
+title: "Consensus Computing in CRE"
+date: Last Modified
+metadata:
+  description: "Learn about consensus computing in CRE: understand how Byzantine Fault Tolerance keeps your workflows secure and tamper-resistant."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+**Consensus computing** is the foundational computing paradigm that makes CRE secure and reliable. It ensures that every operation your workflow performs—whether fetching data from an API or reading from a blockchain—is verified by multiple independent nodes before producing a final result.
+
+## What is consensus computing?
+
+Consensus computing is when a decentralized network of nodes must form consensus as part of executing code and storing information. Unlike traditional computing where you trust a single server or service, consensus computing provides unique guarantees:
+
+- **Tamper-resistance**: No single node can manipulate results
+- **High availability**: The network continues operating even if individual nodes fail
+- **Trust minimization**: You don't need to trust any single entity
+- **Verifiability**: All results are cryptographically verified
+
+Blockchains pioneered consensus computing for maintaining asset ledgers and executing smart contracts. CRE extends this paradigm to **any offchain operation**—API calls, computations, and more.
+
+## How CRE uses consensus
+
+In CRE, **every execution capability automatically includes decentralized consensus**. Here's how it works:
+
+1. **Independent execution**: When your workflow invokes a capability (like `http.Client` or `evm.Client`), each node in the dedicated capability DON performs the operation independently
+1. **Result collection**: Each node produces its own result based on what it observed
+1. **Consensus protocol**: The DON applies a Byzantine Fault Tolerant (BFT) consensus protocol to validate and aggregate the individual results
+1. **Verified output**: A single, consensus-verified result is returned to your workflow
+
+This process happens automatically for every capability call. You don't need to write any special code—consensus is built into the CRE runtime environment.
+
+## Why this matters for your workflows
+
+### Protection against node failures and manipulation
+
+CRE's consensus model protects against individual node failures and malicious behavior. When multiple independent nodes execute the same operation:
+
+- **Node-level resilience**: If some nodes fail or go offline, the network continues operating
+- **Byzantine Fault Tolerance**: Even if some nodes are compromised and return incorrect results, the honest majority ensures the correct outcome
+- **Execution consistency**: All nodes must execute your workflow logic identically, preventing manipulation by individual operators
+
+### Validated and verified results
+
+Every result your workflow receives has been cryptographically verified and validated across multiple nodes. This provides strong guarantees that:
+
+- The operation was executed correctly
+- The result matches what independent observers agreed upon
+- No single node operator can manipulate your workflow's execution or outputs
+
+### Unified security model
+
+With CRE, your **entire institutional-grade smart contract**—not just the onchain parts—benefits from consensus computing. This means:
+
+- **API responses** are validated across multiple nodes before your workflow uses them
+- **Blockchain reads** are verified by multiple nodes
+- **Blockchain writes** are validated by multiple nodes before being submitted onchain
+- **Computation results** within your workflow are executed consistently across all nodes
+
+Your workflow inherits the same security and reliability guarantees as blockchain transactions, but for any offchain operation.
+
+## Consensus in practice
+
+### HTTP capability
+
+When your workflow makes an API request using `http.Client`, the HTTP capability DON executes your request across multiple nodes. Their responses are validated through a consensus protocol before returning a result to your workflow.
+
+This ensures:
+
+- Execution consistency across all nodes
+- Protection against individual node compromise or failure
+- Detection of inconsistent API responses (e.g., due to load balancing or timing)
+
+See the [HTTP Capability](/cre/capabilities/http) page for details.
+
+### EVM Read & Write capability
+
+When your workflow reads from or writes to a blockchain using `evm.Client`, the EVM capability DON performs the operation across multiple nodes:
+
+- **For reads**: Multiple nodes independently query the blockchain, and consensus validates their responses match
+- **For writes**: Multiple nodes agree on the transaction data before submitting it onchain
+
+This ensures:
+
+- Execution consistency across all nodes
+- Protection against individual node compromise or failure
+- Validated blockchain data before use in your workflow
+
+See the [EVM Read & Write Capability](/cre/capabilities/evm-read-write) page for details.
+
+## Consensus in simulation vs. deployed workflows
+
+<Aside type="note" title="Understanding consensus during development">
+**In local simulation** (`cre workflow simulate`), consensus uses a single-node model to test your workflow's logic quickly. The "consensus" step still occurs, but involves a single node wrapping its result in a standardized report structure. This allows you to build and test against the final SDK interfaces without the overhead of multi-node consensus.
+
+**In deployed workflows**, true multi-node Byzantine Fault Tolerant (BFT) consensus is performed across all capability DON operations, providing full decentralized security guarantees.
+
+</Aside>
+
+## Learn more
+
+Learn more about how to use CRE capabilities with built-in consensus:
+
+- **[Capabilities Overview](/cre/capabilities)**: Explore all available capabilities
+- **[API Interactions](/cre/guides/workflow/using-http-client)**: Learn how to use the HTTP capability with built-in consensus
+- **[EVM Chain Interactions](/cre/guides/workflow/using-evm-client/overview)**: Learn how to use the EVM capability with built-in consensus

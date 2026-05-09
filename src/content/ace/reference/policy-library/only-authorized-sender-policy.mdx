@@ -1,0 +1,54 @@
+---
+section: ace
+title: "OnlyAuthorizedSenderPolicy"
+date: Last Modified
+metadata:
+  description: "OnlyAuthorizedSenderPolicy reference: rejects transactions from unauthorized senders. Configuration, runtime behavior, and use cases."
+  datePublished: "2026-04-20"
+  lastModified: "2026-04-20"
+---
+
+import { Aside } from "@components"
+
+The OnlyAuthorizedSenderPolicy restricts who can call a protected function based on the transaction sender. Unlike the AllowPolicy and RejectPolicy (which check addresses extracted from the transaction parameters), this policy checks `msg.sender` directly and rejects if the sender is not on the authorized list.
+
+## Configuration
+
+### Authorized sender list
+
+The authorized sender list defines which addresses can call the protected function. The list starts empty at deployment and must be populated afterward — until you add at least one address, every transaction will be rejected.
+
+Each address is added or removed individually.
+
+<Aside type="note" title="Sender vs. extracted addresses">
+  This policy ignores the addresses extracted by the extractor. It checks only the `msg.sender` of the transaction. If
+  you need to validate addresses from the transaction parameters (such as a transfer recipient), use the
+  [AllowPolicy](/ace/reference/policy-library/allow-policy) or
+  [RejectPolicy](/ace/reference/policy-library/reject-policy) instead.
+</Aside>
+
+## Runtime behavior
+
+This policy does not use extracted parameters. It checks `msg.sender` directly.
+
+- **`run()`** — Reverts if the sender is not on the authorized list. Returns `Continue` otherwise.
+- **`postRun()`** — No state changes.
+
+## API reference
+
+### Setter functions
+
+- **`authorizeSender(address account)`** — Adds an address to the authorized list. Reverts if the address is already authorized.
+- **`unauthorizeSender(address account)`** — Removes an address from the authorized list. Reverts if the address is not authorized.
+
+### View functions
+
+- **`senderAuthorized(address account)`** — Returns `true` if the address is authorized.
+
+## Use cases
+
+- **Restricted operations** — Limit who can call specific contract functions regardless of the function arguments.
+
+## Source
+
+[OnlyAuthorizedSenderPolicy.sol](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/policy-management/src/policies/OnlyAuthorizedSenderPolicy.sol)

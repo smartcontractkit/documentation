@@ -1,0 +1,42 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP Service Limits (TON)"
+metadata:
+  description: "Explore Chainlink CCIP service limits for the TON blockchain, including message size, gas limits, and execution parameters for EVM-TON lanes."
+  excerpt: "Chainlink CCIP, TON service limits, TON constraints, Message size limits, Cross-chain execution, TON parameters, EVM to TON, TON to EVM"
+  datePublished: "2026-04-13"
+  lastModified: "2026-04-13"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<Aside type="note" title="Contact for Exception Requests">
+  If you consistently need more gas for your use case, please reach out to your Chainlink Labs point of contact or
+  contact us via this [contact form](https://chain.link/ccip-contact).
+</Aside>
+
+## EVM to TON
+
+These limits apply to messages sent from an EVM-compatible chain to the TON blockchain.
+
+| Item                        | Description                                                                                                                | Limit                 |
+| :-------------------------- | :------------------------------------------------------------------------------------------------------------------------- | :-------------------- |
+| Maximum message data length | The data payload sent within the CCIP message.                                                                             | 30,000 bytes          |
+| Message execution gas limit | The user-specified `gasLimit` (in nanoTON) in `extraArgs` for the execution of the `ccipReceive` function on TON.          | 4,200,000,000 nanoTON |
+| Smart Execution time window | The maximum duration that CCIP will attempt to automatically execute a message on TON before manual execution is required. | 8 hours               |
+| Out of Order execution      | The `allowOutOfOrderExecution` parameter in the `extraArgs` of a CCIP message from an EVM chain.                           | Must be `true`        |
+
+## TON to EVM
+
+These limits apply to messages sent from the TON blockchain to an EVM-compatible chain.
+
+| Item                        | Description                                                                                                                | Limit          |
+| :-------------------------- | :------------------------------------------------------------------------------------------------------------------------- | :------------- |
+| Maximum message data length | The data payload sent within the CCIP message.                                                                             | 30,000 bytes   |
+| Message execution gas limit | The user-specified `gasLimit` in `extraArgs` for the execution of the `ccipReceive` function on the destination EVM chain. | 3,000,000 gas  |
+| Smart Execution time window | The maximum duration for the execution of a CCIP message on the destination EVM chain before manual execution is required. | 8 hours        |
+| Out of Order execution      | The `allowOutOfOrderExecution` parameter in the `extraArgs` of a CCIP message from TON.                                    | Must be `true` |
+
+<CcipCommon callout="educationalDisclaimer" />

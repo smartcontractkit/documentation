@@ -1,0 +1,187 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.6.0 Internal Library API Reference"
+metadata:
+  version: "1.6.0"
+  description: "CCIP v1.6.0 Internal Library API Reference"
+  linkToWallet: false
+  image: "/files/930cbb7-link-symbol.svg"
+  datePublished: "2025-10-15T15:38:00Z"
+  lastModified: "2025-11-05T15:38:00Z"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage160" />
+
+## Internal
+
+A library for CCIP internal definitions common to multiple contracts. Provides core data structures and utilities for cross-chain message processing.
+
+[Git Source](https://github.com/smartcontractkit/chainlink-ccip/tree/contracts-ccip-v1.6.0/chains/evm/contracts/libraries/Internal.sol)
+
+## Enums
+
+### MessageExecutionState
+
+Enum listing the possible message execution states within the offRamp contract.
+
+```solidity
+enum MessageExecutionState {
+  UNTOUCHED,
+  IN_PROGRESS,
+  SUCCESS,
+  FAILURE
+}
+```
+
+<Aside>
+
+States represent the message execution lifecycle:
+
+- **UNTOUCHED**: Never executed
+- **IN_PROGRESS**: Currently being executed, used as replay protection
+- **SUCCESS**: Successfully executed (end state)
+- **FAILURE**: Unsuccessfully executed, manual execution is now enabled
+
+</Aside>
+
+## Structs
+
+### RampMessageHeader
+
+Structure representing a family-agnostic header for OnRamp and OffRamp messages.
+
+```solidity
+struct RampMessageHeader {
+  bytes32 messageId;
+  uint64 sourceChainSelector;
+  uint64 destChainSelector;
+  uint64 sequenceNumber;
+  uint64 nonce;
+}
+```
+
+<Aside>
+
+The messageId is not expected to match hash(message), since it may originate from another ramp family. All identifiers are specific to CCIP.
+
+</Aside>
+
+**Properties**
+
+| Name                  | Type      | Description                                                     |
+| --------------------- | --------- | --------------------------------------------------------------- |
+| `messageId`           | `bytes32` | Unique identifier generated with source chain's encoding scheme |
+| `sourceChainSelector` | `uint64`  | CCIP chain selector of the source chain (not chainId)           |
+| `destChainSelector`   | `uint64`  | CCIP chain selector of the destination chain (not chainId)      |
+| `sequenceNumber`      | `uint64`  | Sequence number, not unique across lanes                        |
+| `nonce`               | `uint64`  | Nonce for this lane and sender, not unique across senders/lanes |
+
+### EVM2AnyTokenTransfer
+
+Structure representing token transfers from EVM chains to any destination chain.
+
+```solidity
+struct EVM2AnyTokenTransfer {
+  address sourcePoolAddress;
+  bytes destTokenAddress;
+  bytes extraData;
+  uint256 amount;
+  bytes destExecData;
+}
+```
+
+<Aside>
+
+Contains trusted and untrusted data for EVM-sourced token transfers:
+
+- `sourcePoolAddress` is TRUSTED (obtained through the onRamp)
+- `destTokenAddress` is UNTRUSTED (pool owner can return any value)
+- `extraData` is capped at [`CCIP_LOCK_OR_BURN_V1_RET_BYTES`](/ccip/api-reference/evm/v1.6.0/pool#ccip_lock_or_burn_v1_ret_bytes) unless [`TokenTransferFeeConfig`](/ccip/api-reference/evm/v1.6.0/fee-quoter#tokentransferfeeconfig)`.destBytesOverhead` is set
+
+</Aside>
+
+**Properties**
+
+| Name                | Type      | Description                                                 |
+| ------------------- | --------- | ----------------------------------------------------------- |
+| `sourcePoolAddress` | `address` | Source pool EVM address (trusted)                           |
+| `destTokenAddress`  | `bytes`   | EVM address of the destination token (untrusted)            |
+| `extraData`         | `bytes`   | Optional pool data transferred to destination chain         |
+| `amount`            | `uint256` | Amount of tokens to transfer                                |
+| `destExecData`      | `bytes`   | Destination chain execution data (e.g., gas for EVM chains) |
+
+### EVM2AnyRampMessage
+
+Structure representing a family-agnostic message emitted from the OnRamp.
+
+```solidity
+struct EVM2AnyRampMessage {
+  RampMessageHeader header;
+  address sender;
+  bytes data;
+  bytes receiver;
+  bytes extraArgs;
+  address feeToken;
+  uint256 feeTokenAmount;
+  uint256 feeValueJuels;
+  EVM2AnyTokenTransfer[] tokenAmounts;
+}
+```
+
+<Aside>
+
+Emitted in the [`CCIPMessageSent`](/ccip/api-reference/evm/v1.6.0/events#onramp) event. The messageId equals hash(EVM2AnyRampMessage) using the source EVM chain's encoding format. Note: hash(Any2EVMRampMessage) != hash(EVM2AnyRampMessage) due to encoding and parameter differences.
+
+</Aside>
+
+**Properties**
+
+| Name             | Type                                              | Description                                              |
+| ---------------- | ------------------------------------------------- | -------------------------------------------------------- |
+| `header`         | [`RampMessageHeader`](#rampmessageheader)         | Message header with identifiers and routing information  |
+| `sender`         | `address`                                         | Sender address on the source chain                       |
+| `data`           | `bytes`                                           | Arbitrary data payload supplied by the message sender    |
+| `receiver`       | `bytes`                                           | Receiver address on the destination chain                |
+| `extraArgs`      | `bytes`                                           | Destination-chain specific args (e.g., gasLimit for EVM) |
+| `feeToken`       | `address`                                         | Token used to pay fees                                   |
+| `feeTokenAmount` | `uint256`                                         | Amount of fee token paid                                 |
+| `feeValueJuels`  | `uint256`                                         | Fee amount denominated in Juels                          |
+| `tokenAmounts`   | [`EVM2AnyTokenTransfer[]`](#evm2anytokentransfer) | Array of tokens and amounts to transfer                  |
+
+## State Variables
+
+### CHAIN_FAMILY_SELECTOR_EVM
+
+```solidity
+bytes4 public constant CHAIN_FAMILY_SELECTOR_EVM = 0x2812d52c;
+```
+
+<Aside>Chain family selector for EVM chains: bytes4(keccak256("CCIP ChainFamilySelector EVM")).</Aside>
+
+### CHAIN_FAMILY_SELECTOR_SVM
+
+```solidity
+bytes4 public constant CHAIN_FAMILY_SELECTOR_SVM = 0x1e10bdc4;
+```
+
+<Aside>Chain family selector for SVM chains: bytes4(keccak256("CCIP ChainFamilySelector SVM")).</Aside>
+
+### CHAIN_FAMILY_SELECTOR_APTOS
+
+```solidity
+bytes4 public constant CHAIN_FAMILY_SELECTOR_APTOS = 0xac77ffec;
+```
+
+<Aside>Chain family selector for Aptos chains: bytes4(keccak256("CCIP ChainFamilySelector APTOS")).</Aside>
+
+### CHAIN_FAMILY_SELECTOR_SUI
+
+```solidity
+bytes4 public constant CHAIN_FAMILY_SELECTOR_SUI = 0xc4e05953;
+```
+
+<Aside>Chain family selector for SUI chains: bytes4(keccak256("CCIP ChainFamilySelector SUI")).</Aside>

@@ -1,0 +1,172 @@
+---
+section: dataStreams
+date: Last Modified
+title: "Overview"
+---
+
+import DataStreams from "@features/data-streams/common/DataStreams.astro"
+import ReportSchemaTabs from "@features/data-streams/common/ReportSchemaTabs.astro"
+
+<DataStreams section="dsNotes" />
+
+<ReportSchemaTabs />
+
+## Stream Categories and Report Schemas
+
+Each stream category uses one or more report schemas to deliver data. Several categories of Data Streams offer more than one schema to accommodate specialized use cases.
+
+<table>
+  <thead>
+    <tr>
+      <th>Stream Category</th>
+      <th>Report Schema</th>
+      <th>Use Case / Purpose</th>
+      <th>Key Fields</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td rowspan="2">
+        <a href="/data-streams/crypto-streams">Cryptocurrency</a>
+      </td>
+      <td>
+        <a href="/data-streams/reference/report-schema-v3">Crypto Advanced (v3)</a>
+      </td>
+      <td>Standard crypto prices</td>
+      <td>
+        <code>price</code>, <code>bid</code>, <code>ask</code>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <a href="/data-streams/reference/report-schema-v3-dex">Crypto Advanced (v3) - DEX State Price</a>
+      </td>
+      <td>DEX state crypto prices</td>
+      <td>
+        <code>price</code>, <code>bid</code>, <code>ask</code> (identical fields;{" "}
+        <a href="/data-streams/concepts/dex-state-price-streams#how-to-use-dex-state-price-streams">details</a>)
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <a href="/data-streams/exchange-rate-streams">Exchange Rate</a>
+      </td>
+      <td>
+        <a href="/data-streams/reference/report-schema-v7">Redemption Rates (v7)</a>
+      </td>
+      <td>Redemption rates of staked assets</td>
+      <td>
+        <code>exchangeRate</code>
+      </td>
+    </tr>
+    <tr>
+      <td rowspan="2">
+        <a href="/data-streams/rwa-streams">RWA</a>
+      </td>
+      <td>
+        <a href="/data-streams/reference/report-schema-v8">RWA Standard (v8)</a>
+      </td>
+      <td>Real-world asset prices (single price point)</td>
+      <td>
+        <code>midPrice</code>, <code>marketStatus</code>, <code>lastUpdateTimestamp</code>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <a href="/data-streams/reference/report-schema-v11">RWA Advanced (v11)</a>
+      </td>
+      <td>Real-world asset prices (multiple price points and enhanced market data)</td>
+      <td>
+        <code>mid</code>, <code>bid</code>, <code>ask</code>, <code>bidVolume</code>, <code>askVolume</code>,{" "}
+        <code>lastTradedPrice</code>, <code>marketStatus</code>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <a href="/data-streams/smartdata-streams">SmartData</a>
+      </td>
+      <td>
+        <a href="/data-streams/reference/report-schema-v9">SmartData (v9)</a>
+      </td>
+      <td>Net Asset Value (NAV), Proof of Reserve (POR)</td>
+      <td>
+        <code>aum</code>, <code>navPerShare</code>, <code>navDate</code>, <code>ripcord</code>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <a href="/data-streams/tokenized-asset-streams">Tokenized Asset</a>
+      </td>
+      <td>
+        <a href="/data-streams/reference/report-schema-v10">Tokenized Asset (v10)</a>
+      </td>
+      <td>Tokenized equities</td>
+      <td>
+        <code>price</code>, <code>tokenizedPrice</code>, <code>marketStatus</code>, <code>currentMultiplier</code>,{" "}
+        <code>newMultiplier</code>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+## Cryptocurrency
+
+Cryptocurrency streams deliver high-frequency market data for digital assets.
+
+- [**Crypto Advanced (v3)**](#crypto-advanced-v3) aggregate order-book liquidity across top venues to provide a consensus mid price alongside simulated bid and ask levels.
+- [**Crypto Advanced (v3) - DEX State Price**](#crypto-advanced-v3---dex-state-price) derive pricing from onchain liquidity pools to reflect decentralized market conditions.
+
+### Crypto Advanced (v3)
+
+[Chainlink Cryptocurrency Reports](/data-streams/reference/report-schema-v3) provide market data for digital assets, supporting high-frequency, onchain use cases. Each report includes a consensus mid price (`price`), as well as simulated bid (`bid`) and ask (`ask`) prices that estimate the impact of buying or selling at a specified liquidity depth. These values help protocols and applications understand current market conditions and potential slippage for larger trades.
+
+For a deeper explanation of how liquidity-weighted bid and ask prices work, see [Liquidity-Weighted Bid-Ask Prices (LWBA)](/data-streams/concepts/liquidity-weighted-prices).
+
+### Crypto Advanced (v3) - DEX State Price
+
+[Chainlink DEX State Price Reports](/data-streams/reference/report-schema-v3-dex) are designed for assets that derive most or all of their liquidity from decentralized exchanges (DEXs). Unlike standard crypto price streams, these reports use onchain market data to reflect the unique conditions of AMM pools and DEX-dominant tokens. In this report, the `price`, `bid`, and `ask` fields are all equal, representing the execution price a trader would receive based on the current state of onchain liquidity pools, rather than order-book mechanics. This approach enables accurate, real-time pricing, even for long-tail or newly launched tokens in low-volume environments.
+
+[The DEX State Price methodology](/data-streams/concepts/dex-state-price-streams#high-level-outline-of-the-dex-state-price-methodology) aggregates data from multiple DEX pools, applies volume and TVL-based weighting, and uses filters to reduce manipulation and smooth volatility. Users should be aware of the specific risks inherent to DeFi, such as smart contract vulnerabilities, bridge dependencies, and external price manipulation. It is important to review [risk mitigation guidance](/data-streams/concepts/dex-state-price-streams#risk-mitigation) and adjust protocol parameters accordingly when integrating DEX State Price Reports.
+
+For more details on the methodology and risk considerations, see [DEX State Price Streams](/data-streams/concepts/dex-state-price-streams).
+
+## Exchange Rate
+
+[Chainlink Exchange Rate streams](/data-streams/exchange-rate-streams) use the [Redemption Rates (v7)](/data-streams/reference/report-schema-v7) report schema to provide tamper-proof access to the redemption rates of staked assets. Exchange rates typically read directly from onchain smart contracts and generally have a single calculating agent: the issuing protocol. This schema reports one main value: the exchange rate (`exchangeRate`).
+
+While the Data Streams architecture is designed to deliver updates at least once per second, the exchange rate itself is often updated only once per day by the data source, in line with standard market practices. Data Streams ensures that any Exchange Rate update, whenever it occurs, is captured and made available immediately and at low latency, allowing seamless integration into onchain applications alongside other real-time data streams.
+
+## Real-World Assets (RWA)
+
+[Chainlink RWA streams](/data-streams/rwa-streams) deliver real-world asset pricing through two report schemas:
+
+- **[RWA Standard (v8)](/data-streams/reference/report-schema-v8)** — standard RWA format with consolidated mid price, market status, and freshness indicators. Used by the majority of RWA streams.
+- **[RWA Advanced (v11)](/data-streams/reference/report-schema-v11)** — adds bid/ask prices, volume depth, last traded price, nanosecond-precision timestamps, and expanded market status values. Supports extended trading sessions where applicable.
+
+### RWA Standard (v8)
+
+The [RWA Standard (v8)](/data-streams/reference/report-schema-v8) report schema provides real-world asset pricing with essential fields: consensus median price (`midPrice`), market status (`marketStatus`), and staleness measure (`lastUpdateTimestamp`).
+
+RWA assets trade on traditional exchanges during [market hours](/data-streams/market-hours). These market hours vary by asset class and can be subject to unexpected halts, pauses and other behaviors affecting traditional markets. For this reason, this schema includes a market hours flag and a staleness measure to equip users to handle these events correctly. It is critical that users implement correct safeguards on their end to pause markets, add more conservative risk caps, or do whatever else is appropriate for their application.
+
+### RWA Advanced (v11)
+
+The [RWA Advanced (v11)](/data-streams/reference/report-schema-v11) report schema offers enhanced market data capabilities with additional fields: liquidity-weighted mid (`mid`), consensus bid and ask prices (`bid`, `ask`), resting book depth (`bidVolume`, `askVolume`), most recent execution (`lastTradedPrice`), nanosecond precision freshness (`lastSeenTimestampNs`), and expanded market status (`marketStatus`) that distinguishes between pre-market, regular hours, post-market, overnight, and weekend periods.
+
+These advanced fields enable protocols to implement more sophisticated risk management and settlement logic. Where applicable, streams using this schema can provide coverage across extended trading sessions including pre-market, post-market, and overnight hours — though extended hours availability varies by stream. See individual [RWA stream details](/data-streams/rwa-streams?schema=v11) for specific coverage and the [RWA Advanced (v11) reference](/data-streams/reference/report-schema-v11) for complete field specifications.
+
+## SmartData
+
+[Chainlink SmartData streams](/data-streams/smartdata-streams) use the [SmartData (v9)](/data-streams/reference/report-schema-v9) report schema to provide real-time, tamper-proof access to data such as Net Asset Value (`navPerShare`) of tokenized assets, funds, or portfolios, as well as Proof of Reserve data. Each report includes NAV per share (`navPerShare`), NAV date (`navDate`), assets under management (`aum`), and ripcord status (`ripcord`). The ripcord is set to true (`1`) by the asset issuer when the consumer should ignore the value being sent (for cases such as maintenance, upstream data source outages, etc). The feed data will remain stale until the ripcord returns false (`0`).
+
+NAV is a fundamental financial metric that represents the value of an investment vehicle such as a mutual fund or ETF and is calculated as the total assets minus the total liabilities.
+
+Data Streams ensures that any SmartData update, whenever it occurs, is captured and made available immediately and at low latency, allowing for seamless integration with onchain applications alongside other real-time data streams. Although the values may not change frequently, Data Streams provides the most recent data as soon as it is published by the source.
+
+## Tokenized Asset
+
+[Chainlink Tokenized Asset streams](/data-streams/tokenized-asset-streams) use the [Tokenized Asset (v10)](/data-streams/reference/report-schema-v10) report schema to provide financial market data for tokenized equities. These streams combine data from US equity streams with data from tokenization services to enable users to handle corporate actions affecting the underlying equities. Each report includes the staleness measure (`lastUpdateTimestamp`), consensus mid price (`price`), market status (`marketStatus`), current multiplier (`currentMultiplier`, the number of underlying shares each tokenized asset is redeemable for), new multiplier (`newMultiplier`, the future number of shares after a scheduled corporate action), activation date/time of the corporate action (`activationDateTime`) and the tokenized price if available on primary or secondary markets (`tokenizedPrice`).
+
+The underlying US equities trade on traditional exchanges during [market hours](/data-streams/market-hours). These market hours depend per asset class and can be subject to unexpected halts, pauses and other behaviors affecting traditional markets. For this reason, this class of Data Streams contains a market hours flag and a staleness measure to equip our users to handle these events correctly. It is critical that users implement correct safeguards on their end to pause markets, add more conservative risk caps, or implement other measures appropriate for their application.
+
+[Tokenized Asset (v10)](/data-streams/reference/report-schema-v10) is designed specifically for tokenized equities and contains data from the Chainlink US equities streams, combined with data provided by the tokenizer to properly handle corporate actions. With this enhanced data users are able to handle expected and unexpected market events such as pauses, halts and market off hours. The tokenization provider layers in data around the `currentMultiplier`, the `newMultiplier` and the `activationDateTime` of the new multiplier to handle corporate actions.

@@ -1,0 +1,194 @@
+---
+section: cre
+date: Last Modified
+title: "Project Setup Commands"
+sdkLang: "go"
+pageId: "cli-project-setup"
+metadata:
+  description: "Initialize Go projects with CLI: complete reference for cre init and generate-bindings commands to start building workflows."
+  datePublished: "2025-11-04"
+  lastModified: "2026-03-26"
+---
+
+import { Aside } from "@components"
+
+The project setup commands include `cre init` to initialize new CRE projects or add workflows, and `cre generate-bindings` to generate contract bindings for type-safe contract interactions.
+
+<Aside type="note" title="Global flags">
+  All `cre` commands support [global flags](/cre/reference/cli#global-flags) like `--env`, `--target`, `--project-root`,
+  and `--verbose`.
+</Aside>
+
+## `cre init`
+
+<Aside type="note" title="Authentication required">
+  Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
+  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
+  in with the CLI](/cre/account/cli-login) for further details.
+</Aside>
+
+Initializes a new CRE project or adds a workflow to an existing project. The behavior depends on your current directory:
+
+- **In a directory without a project**: Creates a new project with the first workflow
+- **In an existing project directory**: Adds a new workflow to the existing project
+
+**Usage:**
+
+```bash
+cre init [flags]
+```
+
+**Flags:**
+
+| Flag                  | Description                                                                                                                               |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `--non-interactive`   | Fail instead of prompting; supply all inputs via flags (for **CI/CD** and non-TTY environments).                                          |
+| `-p, --project-name`  | Name for the new project (required for a new project when using `--non-interactive`).                                                     |
+| `-t, --template`      | Template name to use (for example `hello-world-go`). Run `cre templates list` to see IDs and required networks.                           |
+| `-w, --workflow-name` | Name for the new workflow.                                                                                                                |
+| `--refresh`           | Bypass the template cache and fetch fresh data from GitHub.                                                                               |
+| `--rpc-url`           | RPC endpoint for a chain, repeatable. Format: `chain-name=url`. Often **required** with `--non-interactive` when the template needs RPCs. |
+
+Inherited [global flags](/cre/reference/cli#global-flags) include **`-R, --project-root`**, which `cre init` uses as the directory where the project is created when you pass it explicitly.
+
+**Interactive mode (recommended):**
+
+Running `cre init` without flags starts an interactive setup that guides you through the process:
+
+1. **Project name** (only if creating a new project)
+1. **Language** (Go or TypeScript)
+1. **Workflow template** (fetched dynamically from configured template sources)
+1. **Workflow name**
+
+{/* prettier-ignore */}
+<Aside type="note" title="Template sources">
+  Templates are fetched at runtime from GitHub. The Chainlink official repository is included by default. To browse available templates or add custom sources, see [Template Sources](/cre/reference/cli/templates).
+</Aside>
+
+**Example:**
+
+```bash
+# Interactive setup
+cre init
+```
+
+**Non-interactive mode (scripting / CI):**
+
+Pass **`--non-interactive`** plus the flags your template needs. Use **`cre templates list`** (or **`cre templates list --json`**) to see **required networks** and choose **`--rpc-url`** values.
+
+```bash
+cre init \
+  --non-interactive \
+  --project-name my-cre-project \
+  --workflow-name my-workflow \
+  --template hello-world-go \
+  --rpc-url sepolia=https://sepolia.infura.io/v3/YOUR_KEY
+```
+
+{/* prettier-ignore */}
+<Aside type="note" title="Interactive vs. non-interactive">
+  For most users, `cre init` without flags is easiest. With **`--non-interactive`**, the CLI does not prompt; if RPC URLs are required and there is no TTY, you get a clear error—pass the needed **`--rpc-url`** flags up front.
+</Aside>
+
+For a detailed walkthrough, see [Part 1 of the Getting Started guide](/cre/getting-started/part-1-project-setup).
+
+## `cre generate-bindings`
+
+<Aside type="note" title="Authentication required">
+  Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
+  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
+  in with the CLI](/cre/account/cli-login) for further details.
+</Aside>
+
+Generates Go bindings from contract ABI files. This enables type-safe contract interactions in your Go workflows.
+
+**Usage:**
+
+```bash
+cre generate-bindings <chain-family> [flags]
+```
+
+**Arguments:**
+
+- `<chain-family>` — (Required) Chain family. Currently supports: `evm`
+
+**Flags:**
+
+| <div style={{ width: "180px" }}>Flag</div> | Description                                                                        |
+| ------------------------------------------ | ---------------------------------------------------------------------------------- |
+| `-a, --abi`                                | Path to ABI directory (default: `"contracts/{chain-family}/src/abi/"`)             |
+| `-l, --language`                           | Target language (default: `"go"`)                                                  |
+| `-k, --pkg`                                | Base package name; each contract gets its own subdirectory (default: `"bindings"`) |
+| `-p, --project-root`                       | Path to project root directory (default: current directory)                        |
+
+**Supported input file formats:**
+
+The command accepts two ABI file formats in the same directory:
+
+| Format        | Extension | Description                                                                             |
+| ------------- | --------- | --------------------------------------------------------------------------------------- |
+| Raw ABI       | `*.abi`   | A JSON array of ABI entries, as output by `solc` or extracted from a compiled artifact  |
+| JSON artifact | `*.json`  | A compiled artifact file (Hardhat, Foundry, or any tool) with a top-level `"abi"` field |
+
+Both formats can coexist in the same `--abi` directory. The CLI detects the format automatically based on file extension and content.
+
+**How it works:**
+
+- Supports EVM chain family and Go language
+- Each contract gets its own package subdirectory to avoid naming conflicts
+- For example, `IERC20.abi` generates bindings in `generated/ierc20/` package
+- Generated bindings are placed in `contracts/{chain-family}/src/generated/`
+- For each contract, two files are generated:
+  - `<ContractName>.go` — Main binding for contract interaction
+  - `<ContractName>_mock.go` — Mock implementation for testing workflows without deployed contracts
+
+**Examples:**
+
+- Generate bindings for all ABI files in the default directory
+
+  ```bash
+  cre generate-bindings evm
+  ```
+
+- Generate bindings from Hardhat/Foundry artifact files (`.json`)
+
+  ```bash
+  # Place your compiled artifact files in contracts/evm/src/abi/
+  # The CLI reads the "abi" field from each .json file automatically
+  cre generate-bindings evm
+  ```
+
+- Generate bindings with custom ABI directory
+
+  ```bash
+  cre generate-bindings evm --abi ./custom-abis
+  ```
+
+- Generate bindings with custom package name
+
+  ```bash
+  cre generate-bindings evm --pkg mycontracts
+  ```
+
+{/* prettier-ignore */}
+<Aside type="note" title="When to run this command">
+  Run `cre generate-bindings` whenever you add new contract ABI files to your project or update existing ones. This ensures your Go code has up-to-date type-safe bindings.
+</Aside>
+
+For a detailed guide, see [Generating Contract Bindings](/cre/guides/workflow/using-evm-client/generating-bindings).
+
+## Project initialization workflow
+
+The typical project setup flow for Go workflows:
+
+1. **`cre init`** — Create a new project or add a workflow (interactive or with flags)
+1. **Add contract ABIs** — Place ABI files in `contracts/evm/src/abi/`
+1. **`cre generate-bindings evm`** — Generate Go bindings from ABIs
+1. **Sync dependencies** — Run `go mod tidy` to update your `go.mod`
+1. **Start development** — Write your workflow code
+
+## Learn more
+
+- [Part 1: Project Setup](/cre/getting-started/part-1-project-setup) — Step-by-step tutorial for initializing projects
+- [Generating Contract Bindings](/cre/guides/workflow/using-evm-client/generating-bindings) — Detailed guide for Go bindings
+- [Project Configuration](/cre/reference/project-configuration) — Understanding `project.yaml` and `workflow.yaml`

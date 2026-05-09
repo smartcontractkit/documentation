@@ -58,12 +58,14 @@
  * - headerDescription = "This guide is available in multiple versions. Choose the one that matches your needs."
  */
 
+export type Page = {
+  name: string
+  url: string
+  icon?: string
+}
+
 export interface Props {
-  pages: Array<{
-    name: string
-    url: string
-    icon?: string
-  }>
+  pages: Array<Page | Page[]>
   showHeader?: boolean
   headerTitle?: string
   headerDescription?: string
@@ -81,7 +83,17 @@ const normalizeUrl = (url: string) => url.trim().replace(/\/$/, "")
 const isActive = (pageUrl: string) => normalizeUrl(currentPath) === normalizeUrl(pageUrl)
 
 // Add current page info for mobile dropdown
-const currentPage = pages.find((page) => isActive(page.url)) || pages[0]
+const currentPageGroup = pages.find((pageOrGroup) => {
+  if (Array.isArray(pageOrGroup)) {
+    return pageOrGroup.some((page) => isActive(page.url))
+  }
+  return isActive(pageOrGroup.url)
+})
+
+// Check if any page is actually active
+const hasActivePage = currentPageGroup !== undefined
+
+const displayPage = hasActivePage ? (Array.isArray(currentPageGroup) ? currentPageGroup[0] : currentPageGroup) : null
 ---
 
 <div class="tabs-section">
@@ -96,14 +108,36 @@ const currentPage = pages.find((page) => isActive(page.url)) || pages[0]
 
   <div class="dropdown-container">
     <button class="dropdown-trigger" aria-haspopup="true" aria-expanded="false">
-      {
-        currentPage.icon && (
-          <span class="icon-wrapper">
-            <img src={currentPage.icon} alt="" aria-hidden="true" />
-          </span>
-        )
-      }
-      <span class="current-text">{currentPage.name}</span>
+      <div class="trigger-content">
+        {
+          !hasActivePage ? (
+            <span class="placeholder-text">Select...</span>
+          ) : Array.isArray(currentPageGroup) ? (
+            <div class="grouped-trigger">
+              {currentPageGroup.map((page, index) => (
+                <div class="grouped-trigger-item">
+                  {index > 0 && <span class="separator">/</span>}
+                  {page.icon && (
+                    <span class="icon-wrapper">
+                      <img src={page.icon} alt="" aria-hidden="true" />
+                    </span>
+                  )}
+                  <span class="dropdown-text-grouped">{page.name}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <>
+              {displayPage && displayPage.icon && (
+                <span class="icon-wrapper">
+                  <img src={displayPage.icon} alt="" aria-hidden="true" />
+                </span>
+              )}
+              <span class="current-text">{displayPage?.name}</span>
+            </>
+          )
+        }
+      </div>
       <svg class="chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path
           d="M2.5 4.5L6 8L9.5 4.5"
@@ -116,39 +150,84 @@ const currentPage = pages.find((page) => isActive(page.url)) || pages[0]
 
     <div class="dropdown-content" role="menu">
       {
-        pages.map((page) => (
-          <a
-            href={page.url}
-            class:list={["dropdown-item", { active: isActive(page.url) }]}
-            role="menuitem"
-            aria-current={isActive(page.url) ? "page" : undefined}
-          >
-            {page.icon && (
-              <span class="icon-wrapper">
-                <img src={page.icon} alt="" aria-hidden="true" />
-              </span>
-            )}
-            <span class="dropdown-text">{page.name}</span>
-            {isActive(page.url) && (
-              <svg
-                class="check"
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+        pages.map((pageOrGroup) => {
+          if (Array.isArray(pageOrGroup)) {
+            const isGroupActive = pageOrGroup.some((p) => isActive(p.url))
+            return (
+              <a
+                href={pageOrGroup[0].url}
+                class:list={["dropdown-item", { active: isGroupActive }]}
+                role="menuitem"
+                aria-current={isGroupActive ? "page" : undefined}
               >
-                <path
-                  d="M13.5 4.5L6 12L2.5 8.5"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            )}
-          </a>
-        ))
+                <div class="grouped-item">
+                  {pageOrGroup.map((page, index) => (
+                    <>
+                      {index > 0 && <span class="separator">/</span>}
+                      <span class="icon-wrapper">
+                        <img src={page.icon} alt="" aria-hidden="true" />
+                      </span>
+                      <span class="dropdown-text-grouped">{page.name}</span>
+                    </>
+                  ))}
+                </div>
+                {isGroupActive && (
+                  <svg
+                    class="check"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M13.5 4.5L6 12L2.5 8.5"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                )}
+              </a>
+            )
+          } else {
+            const page = pageOrGroup
+            return (
+              <a
+                href={page.url}
+                class:list={["dropdown-item", { active: isActive(page.url) }]}
+                role="menuitem"
+                aria-current={isActive(page.url) ? "page" : undefined}
+              >
+                {page.icon && (
+                  <span class="icon-wrapper">
+                    <img src={page.icon} alt="" aria-hidden="true" />
+                  </span>
+                )}
+                <span class="dropdown-text">{page.name}</span>
+                {isActive(page.url) && (
+                  <svg
+                    class="check"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M13.5 4.5L6 12L2.5 8.5"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                )}
+              </a>
+            )
+          }
+        })
       }
     </div>
   </div>
@@ -214,6 +293,24 @@ const currentPage = pages.find((page) => isActive(page.url)) || pages[0]
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .placeholder-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--gray-500);
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  .trigger-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    overflow: hidden;
   }
 
   .chevron {
@@ -289,6 +386,36 @@ const currentPage = pages.find((page) => isActive(page.url)) || pages[0]
 
   .dropdown-text {
     flex: 1;
+    font-size: 0.9375rem;
+  }
+
+  .grouped-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+  }
+
+  .grouped-trigger {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .grouped-trigger-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .separator {
+    color: var(--gray-400);
+    margin: 0 0.25rem;
+  }
+
+  .dropdown-text-grouped {
     font-size: 0.9375rem;
   }
 

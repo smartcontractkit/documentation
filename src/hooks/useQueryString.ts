@@ -15,12 +15,13 @@ export const setQueryStringValue = (searchParamKey: string, value: SearchParamVa
   }
   // Preserve the hash fragment if it exists
   const hashFragment = window.location.hash
+  const queryString = currentSearchParams.toString()
   const newurl =
     window.location.protocol +
     "//" +
     window.location.host +
     window.location.pathname +
-    `?${currentSearchParams.toString()}` +
+    (queryString ? `?${queryString}` : "") +
     hashFragment
 
   window.history.replaceState({ path: newurl }, "", newurl)

@@ -5,7 +5,7 @@ import { NetworkCheck } from "../TutorialSetup/NetworkCheck.tsx"
 import { StepCheckbox } from "../TutorialProgress/StepCheckbox.tsx"
 import { SolidityParam } from "../TutorialSetup/SolidityParam.tsx"
 import { StoredContractAddress } from "./StoredContractAddress.tsx"
-import { Callout } from "../TutorialSetup/Callout.tsx"
+import { Callout } from "@components/Callout/Callout.tsx"
 import { TutorialCard } from "../TutorialSetup/TutorialCard.tsx"
 import styles from "./GrantPrivilegesStep.module.css"
 

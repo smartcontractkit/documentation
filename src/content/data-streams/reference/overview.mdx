@@ -4,40 +4,74 @@ date: Last Modified
 title: "Data Streams Reference"
 isIndex: true
 metadata:
-  title: "Data Streams Reference | API, SDK, and Integration Guide"
+  title: "Data Streams Reference"
   description: "Access comprehensive reference documentation for Chainlink Data Streams including API interfaces, SDK libraries, authentication guides, and report schemas."
   keywords: ["Data Streams", "API Reference", "SDK", "WebSocket", "REST API", "Integration Guide"]
 ---
 
-import DataStreams from "@features/data-streams/common/DataStreams.astro"
+Chainlink Data Streams offers two distinct solutions for accessing low-latency market data. Choose the solution that best fits your use case.
 
-<DataStreams section="dsNotes" />
+### Which solution should I use?
 
-### API Interfaces
+| Feature                 | [Data Streams API](#data-streams-api)                                                                                                                                                                                                                                                                                           | [Candlestick API](#candlestick-api)                                                                                                                         |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Primary Use Case**    | Low-latency data for smart contracts                                                                                                                                                                                                                                                                                            | OHLC data for analytics, charting, and dashboards                                                                                                           |
+| **Data Format**         | Signed, verifiable data reports                                                                                                                                                                                                                                                                                                 | Aggregated OHLC (candlestick) data                                                                                                                          |
+| **Interfaces**          | SDKs ([Go](/data-streams/reference/data-streams-api/go-sdk), [Rust](/data-streams/reference/data-streams-api/rust-sdk), [TypeScript](/data-streams/reference/data-streams-api/ts-sdk)), [REST API](/data-streams/reference/data-streams-api/interface-api) & [WebSocket](/data-streams/reference/data-streams-api/interface-ws) | [REST API](/data-streams/reference/candlestick-api) (including a [streaming endpoint](/data-streams/reference/candlestick-api#get-streaming-price-updates)) |
+| **Authentication**      | [HMAC Signature](/data-streams/reference/data-streams-api/authentication) (automatic with SDKs)                                                                                                                                                                                                                                 | [JWT](/data-streams/reference/candlestick-api#authorize-and-get-token) (token-based)                                                                        |
+| **Cryptographic Proof** | ✅ Yes (See [Verification methods](#verification))                                                                                                                                                                                                                                                                              | ❌ No                                                                                                                                                       |
 
-- [REST API](/data-streams/reference/interface-api) - HTTP-based interface for simple integrations
-- [WebSocket](/data-streams/reference/interface-ws) - Real-time data streaming via WebSocket connection
+---
 
-### SDK Integration
+## Data Streams API
 
-- [Go SDK](/data-streams/reference/go-sdk) - Native Go language integration
-- [Rust SDK](/data-streams/reference/rust-sdk) - Native Rust language integration
+The [Data Streams API](/data-streams/reference/data-streams-api) provides cryptographically signed, verifiable data reports that can be used for onchain consumption by smart contracts. This comprehensive solution offers multiple integration paths to support applications that require low-latency, tamper-proof data.
+
+### Integration Methods
+
+#### SDKs (Recommended)
+
+- [Go SDK](/data-streams/reference/data-streams-api/go-sdk) - Native Go language integration
+- [Rust SDK](/data-streams/reference/data-streams-api/rust-sdk) - Native Rust language integration
+- [TypeScript SDK](/data-streams/reference/data-streams-api/ts-sdk) - Native TypeScript language integration
+
+#### Direct API Access
+
+- [REST API](/data-streams/reference/data-streams-api/interface-api) - HTTP-based interface for simple integrations
+- [WebSocket](/data-streams/reference/data-streams-api/interface-ws) - Real-time data streaming via WebSocket connection
+
+#### Authentication
+
+- [Authentication Guides](/data-streams/reference/data-streams-api/authentication) - HMAC signature implementation examples (not required when using SDKs)
+
+#### Verification
+
+##### EVM chains
+
+- [Onchain report data verification](/data-streams/reference/data-streams-api/onchain-verification) - Verify the authenticity of received data on EVM chains
+
+##### Solana
+
+- [Verify reports using the onchain integration method](/data-streams/tutorials/solana-onchain-report-verification) - Verify reports directly within your Solana program
+- [Verify reports using the offchain integration method](/data-streams/tutorials/solana-offchain-report-verification) - Verify reports client-side using the Rust SDK
+
+**[View the Data Streams API Reference →](/data-streams/reference/data-streams-api)**
+
+---
+
+## Candlestick API
+
+The [Candlestick API](/data-streams/reference/candlestick-api) provides historical and real-time OHLC (Open-High-Low-Close) data designed for offchain applications. This API has been optimized for analytics, charting, and dashboard applications.
+
+### Integration Methods
+
+#### Direct API Access
+
+- [REST API](/data-streams/reference/candlestick-api) - Access historical OHLC data via HTTP
+  - [Streaming Endpoint](/data-streams/reference/candlestick-api#get-streaming-price-updates) - Get real-time price updates
 
 ### Authentication
 
-- [Authentication](/data-streams/reference/authentication) - Learn how to authenticate with the Data Streams API (not required if using the SDKs)
-  - [JavaScript examples](/data-streams/reference/authentication/javascript-examples)
-  - [TypeScript examples](/data-streams/reference/authentication/typescript-examples)
-  - [Go examples](/data-streams/reference/authentication/go-examples)
-  - [Rust examples](/data-streams/reference/authentication/rust-examples)
+- [Authentication Endpoint](/data-streams/reference/candlestick-api#authorize-and-get-token) - JWT token-based authentication
 
-### Verification
-
-#### EVM chains
-
-- [Onchain report data verification](/data-streams/reference/onchain-verification) - Verify the authenticity of received data on EVM chains
-
-#### Solana
-
-- [Verify reports using the onchain integration method](/data-streams/tutorials/solana-onchain-report-verification)
-- [Verify reports using the offchain integration method](/data-streams/tutorials/solana-offchain-report-verification)
+**[View the Candlestick API Reference →](/data-streams/reference/candlestick-api)**

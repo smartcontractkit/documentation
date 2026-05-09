@@ -1,0 +1,53 @@
+---
+section: ccip
+date: Last Modified
+title: "Onchain Architecture - Upgradability (Aptos)"
+metadata:
+  description: "Learn about CCIP's upgradability strategy on Aptos, covering onchain configuration, module code upgrades, the timelocked review process and the cross-chain MCMS-based governance process."
+  image: "/images/ccip/concepts/architecture/ccip-aptos-source-chain.jpg"
+  excerpt: "ccip aptos upgradability module upgrades manychainmultisig timelock governance configuration changes module code upgrades upgrade authority backward compatibility secure evolution expedited approval"
+  datePublished: "2025-09-03"
+  lastModified: "2025-09-03"
+  difficulty: "advanced"
+  estimatedTime: "10 minutes"
+---
+
+Chainlink's Cross-Chain Interoperability Protocol (CCIP) is designed to evolve in response to new feature requests, security considerations, and the need to support additional blockchains over time. This requires a secure upgrade process that preserves CCIP's robust security while allowing for iterative improvements.
+
+## What Can Be Upgraded
+
+On the Aptos blockchain, upgradability primarily happens in two ways:
+
+1. **Onchain Configuration**
+
+   Many CCIP modules (like `onramp`, `offramp`, `fee_quoter`) expose public entry functions that allow authorized accounts to adjust operational parameters. These functions modify onchain data stored in resources without requiring a new deployment.
+
+   Examples include:
+   - Enabling support for a new destination chain.
+   - Updating fee parameters.
+
+1. **Module Code Upgrades**
+
+   In the CCIP deployment on Aptos, the core modules (`router`, `onramp`, `offramp`, `fee_quoter`, etc.) are grouped into packages and published under a single, unified Object.
+
+   Aptos allows for module code to be upgraded in-place. This means a code upgrade for the CCIP protocol involves publishing the new, updated module bytecode to the existing Object address.
+
+   Because the Object address remains unchanged:
+   - External modules and off-chain clients that interact with CCIP do not need to update their stored addresses.
+   - They seamlessly begin interacting with the new code after the upgrade is published.
+
+   This approach ensures that bug fixes and new features can be rolled out atomically and consistently while maintaining a stable on-chain address for the protocol.
+
+## Implementation Process
+
+All critical onchain configuration changes to CCIP on Aptos are governed by a secure, cross-chain process using the **ManyChainMultiSig (MCMS)** system, which functions similarly across all CCIP-supported chains.
+
+The onchain mechanism for this on Aptos is the `mcms_entrypoint` function found within the core CCIP modules. This function is designed to be called by the `mcms_registry`, allowing the multi-chain governance process to execute proposals.
+
+Any proposal must follow one of two paths:
+
+1. **Time-locked Review**: The proposal is submitted onchain and enters a mandatory review period. During this window, node operators securing CCIP can inspect the proposed change and veto it if necessary. If no veto occurs, the proposal becomes executable after the delay expires.
+
+1. **Expedited Approval**: For time-sensitive situations, a proposal can be passed via an expedited path if it receives explicit approval from a quorum of independent signers.
+
+Once a proposal is approved through either path, it can be executed, and the `mcms_entrypoint` on the target Aptos module is called with the specified changes. This entire process is publicly verifiable, ensuring transparency for all onchain upgrades.

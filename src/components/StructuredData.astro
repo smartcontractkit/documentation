@@ -1,0 +1,21 @@
+---
+/**
+ * StructuredData Component
+ * Renders JSON-LD structured data for SEO
+ * 100% Schema.org compliant implementation
+ */
+interface Props {
+  data: object | object[]
+}
+
+const { data } = Astro.props
+
+// Ensure data is always an array for consistent handling
+const structuredDataArray = Array.isArray(data) ? data : [data]
+---
+
+{
+  structuredDataArray.map((schemaData, index) => (
+    <script type="application/ld+json" set:html={JSON.stringify(schemaData, null, 0)} />
+  ))
+}

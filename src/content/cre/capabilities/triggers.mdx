@@ -1,0 +1,35 @@
+---
+section: cre
+title: "The Trigger Capability"
+date: Last Modified
+metadata:
+  description: "CRE trigger capabilities: use Cron schedules, HTTP requests, or blockchain events to execute your logic automatically."
+  datePublished: "2025-11-04"
+  lastModified: "2025-11-04"
+---
+
+import { Aside } from "@components"
+
+**Triggers** are a special type of capability that initiate the execution of your workflow. They are event-driven services that constantly watch for a specific condition to be met. When the condition occurs, the trigger fires and instructs CRE to run the callback function you have registered for that event. Learn more about the [trigger-and-callback model](/cre/#the-trigger-and-callback-model).
+
+## Trigger types
+
+CRE provides several types of triggers to start your workflows:
+
+- **Time-based:** The `Cron` trigger fires at a specific time or on a recurring schedule (e.g., "every 5 minutes").
+- **Request-based:** The `HTTP` trigger fires when an external system makes an HTTP request to your workflow's endpoint. HTTP triggers require authorization keys when deployed to ensure only authorized addresses can trigger your workflow.
+- **Onchain Events:** The `EVM Log` trigger fires when a specific event is emitted by a smart contract on a supported blockchain.
+
+<Aside type="note" title="Triggers in simulation vs. deployed workflows">
+**In simulation** (`cre workflow simulate`), triggers are manually selected and executed immediately to test your workflow logic without waiting for real events. This allows rapid iteration during development.
+
+**In deployed workflows**, the Workflow DON continuously monitors for trigger events and automatically executes your callback when conditions are met. Time-based triggers run on schedule, HTTP triggers respond to incoming requests, and EVM log triggers fire when smart contract events occur.
+
+See the [Simulating Workflows guide](/cre/guides/operations/simulating-workflows) for details on testing triggers locally.
+
+</Aside>
+
+## Learn more
+
+- **[Using Triggers Guides](/cre/guides/workflow/using-triggers/overview)**: Learn how to use the SDK to register handlers for the different trigger types.
+- **[Triggers SDK Reference](/cre/reference/sdk/triggers/overview)**: See the detailed API reference for trigger configurations and payloads.

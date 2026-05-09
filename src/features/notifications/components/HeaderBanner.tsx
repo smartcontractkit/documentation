@@ -63,6 +63,7 @@ export const HeaderBanner: React.FC<{ bannerContent?: BannerContent }> = ({ bann
           localStorage.setItem("headerBannerDismissed", bannerContent.description)
           setIsDismissed(true)
         }}
+        aria-label="Dismiss banner"
       >
         <CloseIcon />
       </button>

@@ -1,0 +1,775 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v1.5.0 Internal Library API Reference"
+metadata:
+  description: "API documentation for the Internal library in Chainlink CCIP v1.5.0, providing core data structures for cross-chain message processing."
+  canonical: "/ccip/api-reference/evm/v1.5.1/internal"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="importCCIPPackage150" />
+
+## Internal
+
+A library for CCIP internal definitions common to multiple contracts. Provides core data structures and utilities for cross-chain message processing.
+
+[Git Source](https://github.com/smartcontractkit/ccip/tree/release/contracts-ccip-1.5.0/contracts/src/v0.8/ccip/libraries/Internal.sol)
+
+## Errors
+
+### InvalidEVMAddress
+
+```solidity
+error InvalidEVMAddress(bytes encodedAddress);
+```
+
+<Aside>Thrown when an encoded address is invalid (wrong length or outside valid EVM address range).</Aside>
+
+**Parameters**
+
+| Name             | Type    | Description                 |
+| ---------------- | ------- | --------------------------- |
+| `encodedAddress` | `bytes` | The invalid encoded address |
+
+## Enums
+
+### MessageExecutionState
+
+Enum listing the possible message execution states within the offRamp contract.
+
+```solidity
+enum MessageExecutionState {
+  UNTOUCHED,
+  IN_PROGRESS,
+  SUCCESS,
+  FAILURE
+}
+```
+
+<Aside>
+
+States represent the message execution lifecycle:
+
+- **UNTOUCHED**: Never executed
+- **IN_PROGRESS**: Currently being executed, used as replay protection
+- **SUCCESS**: Successfully executed (end state)
+- **FAILURE**: Unsuccessfully executed, manual execution is now enabled
+
+RMN depends on this enum. If changing, please notify the RMN maintainers.
+
+</Aside>
+
+### OCRPluginType
+
+CCIP OCR plugin type, used to separate execution & commit transmissions and configs.
+
+```solidity
+enum OCRPluginType {
+  Commit,
+  Execution
+}
+```
+
+<Aside>
+
+Distinguishes between:
+
+- **Commit**: Commitment phase OCR plugin
+- **Execution**: Execution phase OCR plugin
+
+</Aside>
+
+## Structs
+
+### PriceUpdates
+
+A collection of token price and gas price updates.
+
+```solidity
+struct PriceUpdates {
+  TokenPriceUpdate[] tokenPriceUpdates;
+  GasPriceUpdate[] gasPriceUpdates;
+}
+```
+
+<Aside>RMN depends on this struct. If changing, please notify the RMN maintainers.</Aside>
+
+**Properties**
+
+| Name                | Type                                      | Description                  |
+| ------------------- | ----------------------------------------- | ---------------------------- |
+| `tokenPriceUpdates` | [`TokenPriceUpdate[]`](#tokenpriceupdate) | Array of token price updates |
+| `gasPriceUpdates`   | [`GasPriceUpdate[]`](#gaspriceupdate)     | Array of gas price updates   |
+
+### TokenPriceUpdate
+
+Token price in USD.
+
+```solidity
+struct TokenPriceUpdate {
+  address sourceToken;
+  uint224 usdPerToken;
+}
+```
+
+<Aside>RMN depends on this struct. If changing, please notify the RMN maintainers.</Aside>
+
+**Properties**
+
+| Name          | Type      | Description                                          |
+| ------------- | --------- | ---------------------------------------------------- |
+| `sourceToken` | `address` | Source token address                                 |
+| `usdPerToken` | `uint224` | 1e18 USD per 1e18 of the smallest token denomination |
+
+### GasPriceUpdate
+
+Gas price for a given chain in USD, its value may contain tightly packed fields.
+
+```solidity
+struct GasPriceUpdate {
+  uint64 destChainSelector;
+  uint224 usdPerUnitGas;
+}
+```
+
+<Aside>RMN depends on this struct. If changing, please notify the RMN maintainers.</Aside>
+
+**Properties**
+
+| Name                | Type      | Description                                                    |
+| ------------------- | --------- | -------------------------------------------------------------- |
+| `destChainSelector` | `uint64`  | Destination chain selector                                     |
+| `usdPerUnitGas`     | `uint224` | 1e18 USD per smallest unit (e.g. wei) of destination chain gas |
+
+### TimestampedPackedUint224
+
+A timestamped uint224 value that can contain several tightly packed fields.
+
+```solidity
+struct TimestampedPackedUint224 {
+  uint224 value;
+  uint32 timestamp;
+}
+```
+
+**Properties**
+
+| Name        | Type      | Description                                 |
+| ----------- | --------- | ------------------------------------------- |
+| `value`     | `uint224` | Value in uint224, can contain packed fields |
+| `timestamp` | `uint32`  | Timestamp of the most recent price update   |
+
+### PoolUpdate
+
+Structure for token pool updates.
+
+```solidity
+struct PoolUpdate {
+  address token;
+  address pool;
+}
+```
+
+**Properties**
+
+| Name    | Type      | Description              |
+| ------- | --------- | ------------------------ |
+| `token` | `address` | The IERC20 token address |
+| `pool`  | `address` | The token pool address   |
+
+### SourceTokenData
+
+Structure containing token-specific data from the source chain.
+
+```solidity
+struct SourceTokenData {
+  bytes sourcePoolAddress;
+  bytes destTokenAddress;
+  bytes extraData;
+  uint32 destGasAmount;
+}
+```
+
+<Aside>
+
+Contains trusted and untrusted data:
+
+- `sourcePoolAddress` is TRUSTED (obtained through the onRamp)
+- `destTokenAddress` is UNTRUSTED (pool owner can return any value)
+- `extraData` is capped at [`CCIP_LOCK_OR_BURN_V1_RET_BYTES`](/ccip/api-reference/evm/v1.5.0/pool#ccip_lock_or_burn_v1_ret_bytes) unless `TokenTransferFeeConfig.destBytesOverhead` is set
+
+</Aside>
+
+**Properties**
+
+| Name                | Type     | Description                                                        |
+| ------------------- | -------- | ------------------------------------------------------------------ |
+| `sourcePoolAddress` | `bytes`  | Source pool address, abi encoded (trusted)                         |
+| `destTokenAddress`  | `bytes`  | Destination token address, abi encoded for EVM chains (untrusted)  |
+| `extraData`         | `bytes`  | Optional pool data transferred to destination chain                |
+| `destGasAmount`     | `uint32` | Gas available for releaseOrMint and balanceOf calls on the offRamp |
+
+### ExecutionReportSingleChain
+
+Report submitted by the execution DON at the execution phase (including chain selector data).
+
+```solidity
+struct ExecutionReportSingleChain {
+  uint64 sourceChainSelector;
+  Any2EVMRampMessage[] messages;
+  bytes[][] offchainTokenData;
+  bytes32[] proofs;
+  uint256 proofFlagBits;
+}
+```
+
+<Aside>RMN depends on this struct. If changing, please notify the RMN maintainers.</Aside>
+
+**Properties**
+
+| Name                  | Type                                          | Description                                         |
+| --------------------- | --------------------------------------------- | --------------------------------------------------- |
+| `sourceChainSelector` | `uint64`                                      | Source chain selector for which report is submitted |
+| `messages`            | [`Any2EVMRampMessage[]`](#any2evmrampmessage) | Array of messages to execute                        |
+| `offchainTokenData`   | `bytes[][]`                                   | Bytes array for each message, per transferred token |
+| `proofs`              | `bytes32[]`                                   | Merkle proofs                                       |
+| `proofFlagBits`       | `uint256`                                     | Bitmap of proof flags                               |
+
+### ExecutionReport
+
+Report submitted by the execution DON at the execution phase.
+
+```solidity
+struct ExecutionReport {
+  EVM2EVMMessage[] messages;
+  bytes[][] offchainTokenData;
+  bytes32[] proofs;
+  uint256 proofFlagBits;
+}
+```
+
+<Aside>RMN depends on this struct. If changing, please notify the RMN maintainers.</Aside>
+
+**Properties**
+
+| Name                | Type                                  | Description                                         |
+| ------------------- | ------------------------------------- | --------------------------------------------------- |
+| `messages`          | [`EVM2EVMMessage[]`](#evm2evmmessage) | Array of messages to execute                        |
+| `offchainTokenData` | `bytes[][]`                           | Bytes array for each message, per transferred token |
+| `proofs`            | `bytes32[]`                           | Merkle proofs                                       |
+| `proofFlagBits`     | `uint256`                             | Bitmap of proof flags                               |
+
+### EVM2EVMMessage
+
+The cross chain message that gets committed to EVM chains.
+
+```solidity
+struct EVM2EVMMessage {
+  uint64 sourceChainSelector;
+  address sender;
+  address receiver;
+  uint64 sequenceNumber;
+  uint256 gasLimit;
+  bool strict;
+  uint64 nonce;
+  address feeToken;
+  uint256 feeTokenAmount;
+  bytes data;
+  Client.EVMTokenAmount[] tokenAmounts;
+  bytes[] sourceTokenData;
+  bytes32 messageId;
+}
+```
+
+<Aside>
+
+RMN depends on this struct. If changing, please notify the RMN maintainers.
+
+The struct has 13 fields including 3 variable arrays. Each variable array takes 1 more slot to store its length. When abi encoded, excluding array contents, EVM2EVMMessage takes up 16 slots of 32 bytes each. For structs containing arrays, 1 more slot is added to the front, reaching a total of 17.
+
+</Aside>
+
+**Properties**
+
+| Name                  | Type                      | Description                                               |
+| --------------------- | ------------------------- | --------------------------------------------------------- |
+| `sourceChainSelector` | `uint64`                  | Chain selector of the source chain (not chainId)          |
+| `sender`              | `address`                 | Sender address on the source chain                        |
+| `receiver`            | `address`                 | Receiver address on the destination chain                 |
+| `sequenceNumber`      | `uint64`                  | Sequence number, not unique across lanes                  |
+| `gasLimit`            | `uint256`                 | User supplied maximum gas for destination chain execution |
+| `strict`              | `bool`                    | DEPRECATED                                                |
+| `nonce`               | `uint64`                  | Nonce for this lane and sender, not unique across lanes   |
+| `feeToken`            | `address`                 | Fee token address                                         |
+| `feeTokenAmount`      | `uint256`                 | Fee token amount                                          |
+| `data`                | `bytes`                   | Arbitrary data payload supplied by the message sender     |
+| `tokenAmounts`        | `Client.EVMTokenAmount[]` | Array of tokens and amounts to transfer                   |
+| `sourceTokenData`     | `bytes[]`                 | Array of token data, one per token                        |
+| `messageId`           | `bytes32`                 | Hash of the message data                                  |
+
+### RampMessageHeader
+
+Family-agnostic header for OnRamp & OffRamp messages.
+
+```solidity
+struct RampMessageHeader {
+  bytes32 messageId;
+  uint64 sourceChainSelector;
+  uint64 destChainSelector;
+  uint64 sequenceNumber;
+  uint64 nonce;
+}
+```
+
+<Aside>
+
+The messageId is not expected to match hash(message), since it may originate from another ramp family. All identifiers are CCIP-specific, not chain-native identifiers.
+
+</Aside>
+
+**Properties**
+
+| Name                  | Type      | Description                                                     |
+| --------------------- | --------- | --------------------------------------------------------------- |
+| `messageId`           | `bytes32` | Unique identifier generated with source chain's encoding scheme |
+| `sourceChainSelector` | `uint64`  | CCIP chain selector of the source chain (not chainId)           |
+| `destChainSelector`   | `uint64`  | CCIP chain selector of the destination chain (not chainId)      |
+| `sequenceNumber`      | `uint64`  | Sequence number, not unique across lanes                        |
+| `nonce`               | `uint64`  | Nonce for this lane and sender, not unique across senders/lanes |
+
+### EVM2AnyTokenTransfer
+
+Structure representing token transfers from EVM chains to any destination chain.
+
+```solidity
+struct EVM2AnyTokenTransfer {
+  address sourcePoolAddress;
+  bytes destTokenAddress;
+  bytes extraData;
+  uint256 amount;
+  bytes destExecData;
+}
+```
+
+<Aside>
+
+Contains trusted and untrusted data for EVM-sourced token transfers:
+
+- `sourcePoolAddress` is TRUSTED (obtained through the onRamp)
+- `destTokenAddress` is UNTRUSTED (pool owner can return any value)
+- `extraData` is capped at `CCIP_LOCK_OR_BURN_V1_RET_BYTES` unless `TokenTransferFeeConfig.destBytesOverhead` is set
+
+</Aside>
+
+**Properties**
+
+| Name                | Type      | Description                                                        |
+| ------------------- | --------- | ------------------------------------------------------------------ |
+| `sourcePoolAddress` | `address` | Source pool EVM address (trusted)                                  |
+| `destTokenAddress`  | `bytes`   | EVM address of the destination token (untrusted)                   |
+| `extraData`         | `bytes`   | Optional pool data transferred to destination chain                |
+| `amount`            | `uint256` | Amount of tokens to transfer                                       |
+| `destExecData`      | `bytes`   | Destination chain execution data (e.g., gas amount for EVM chains) |
+
+### Any2EVMTokenTransfer
+
+Structure representing token transfers from any source chain to EVM chains.
+
+```solidity
+struct Any2EVMTokenTransfer {
+  bytes sourcePoolAddress;
+  address destTokenAddress;
+  uint32 destGasAmount;
+  bytes extraData;
+  uint256 amount;
+}
+```
+
+<Aside>
+
+The source pool address is TRUSTED as it was obtained through the onRamp and can be relied upon by the destination pool to validate the source pool.
+
+</Aside>
+
+**Properties**
+
+| Name                | Type      | Description                                                       |
+| ------------------- | --------- | ----------------------------------------------------------------- |
+| `sourcePoolAddress` | `bytes`   | Source pool EVM address encoded to bytes (trusted)                |
+| `destTokenAddress`  | `address` | Address of destination token                                      |
+| `destGasAmount`     | `uint32`  | Gas available for releaseOrMint and transfer calls on the offRamp |
+| `extraData`         | `bytes`   | Optional pool data transferred to destination chain               |
+| `amount`            | `uint256` | Amount of tokens to transfer                                      |
+
+### Any2EVMRampMessage
+
+Family-agnostic message routed to an OffRamp.
+
+```solidity
+struct Any2EVMRampMessage {
+  RampMessageHeader header;
+  bytes sender;
+  bytes data;
+  address receiver;
+  uint256 gasLimit;
+  Any2EVMTokenTransfer[] tokenAmounts;
+}
+```
+
+<Aside>
+
+Note: hash(Any2EVMRampMessage) != hash(EVM2AnyRampMessage) and hash(Any2EVMRampMessage) != messageId due to encoding & parameter differences.
+
+The struct has 10 fields including 3 variable unnested arrays (data, receiver and tokenAmounts). When abi encoded, excluding array contents, it takes up 13 slots of 32 bytes each. For structs containing arrays, 1 more slot is added to the front, reaching a total of 14.
+
+</Aside>
+
+**Properties**
+
+| Name           | Type                                              | Description                                               |
+| -------------- | ------------------------------------------------- | --------------------------------------------------------- |
+| `header`       | [`RampMessageHeader`](#rampmessageheader)         | Message header with identifiers and routing information   |
+| `sender`       | `bytes`                                           | Sender address on the source chain                        |
+| `data`         | `bytes`                                           | Arbitrary data payload supplied by the message sender     |
+| `receiver`     | `address`                                         | Receiver address on the destination chain                 |
+| `gasLimit`     | `uint256`                                         | User supplied maximum gas for destination chain execution |
+| `tokenAmounts` | [`Any2EVMTokenTransfer[]`](#any2evmtokentransfer) | Array of tokens and amounts to transfer                   |
+
+### EVM2AnyRampMessage
+
+Family-agnostic message emitted from the OnRamp.
+
+```solidity
+struct EVM2AnyRampMessage {
+  RampMessageHeader header;
+  address sender;
+  bytes data;
+  bytes receiver;
+  bytes extraArgs;
+  address feeToken;
+  uint256 feeTokenAmount;
+  uint256 feeValueJuels;
+  EVM2AnyTokenTransfer[] tokenAmounts;
+}
+```
+
+<Aside>
+
+Emitted in the CCIPMessageSent event. The messageId equals hash(EVM2AnyRampMessage) using the source EVM chain's encoding format. Note: hash(Any2EVMRampMessage) != hash(EVM2AnyRampMessage) due to encoding and parameter differences.
+
+</Aside>
+
+**Properties**
+
+| Name             | Type                                              | Description                                              |
+| ---------------- | ------------------------------------------------- | -------------------------------------------------------- |
+| `header`         | [`RampMessageHeader`](#rampmessageheader)         | Message header with identifiers and routing information  |
+| `sender`         | `address`                                         | Sender address on the source chain                       |
+| `data`           | `bytes`                                           | Arbitrary data payload supplied by the message sender    |
+| `receiver`       | `bytes`                                           | Receiver address on the destination chain                |
+| `extraArgs`      | `bytes`                                           | Destination-chain specific args (e.g., gasLimit for EVM) |
+| `feeToken`       | `address`                                         | Token used to pay fees                                   |
+| `feeTokenAmount` | `uint256`                                         | Amount of fee token paid                                 |
+| `feeValueJuels`  | `uint256`                                         | Fee amount denominated in Juels                          |
+| `tokenAmounts`   | [`EVM2AnyTokenTransfer[]`](#evm2anytokentransfer) | Array of tokens and amounts to transfer                  |
+
+### MerkleRoot
+
+Struct to hold a merkle root and an interval for a source chain.
+
+```solidity
+struct MerkleRoot {
+  uint64 sourceChainSelector;
+  bytes onRampAddress;
+  uint64 minSeqNr;
+  uint64 maxSeqNr;
+  bytes32 merkleRoot;
+}
+```
+
+<Aside>
+
+RMN depends on this struct. If changing, please notify the RMN maintainers.
+
+This struct uses inefficient packing intentionally chosen to maintain order of specificity. Not a storage struct so impact is minimal.
+
+</Aside>
+
+**Properties**
+
+| Name                  | Type      | Description                                                    |
+| --------------------- | --------- | -------------------------------------------------------------- |
+| `sourceChainSelector` | `uint64`  | Remote source chain selector that the Merkle Root is scoped to |
+| `onRampAddress`       | `bytes`   | Generic onramp address (for EVM, use abi.encode)               |
+| `minSeqNr`            | `uint64`  | Minimum sequence number, inclusive                             |
+| `maxSeqNr`            | `uint64`  | Maximum sequence number, inclusive                             |
+| `merkleRoot`          | `bytes32` | Merkle root covering the interval & source chain messages      |
+
+## State Variables
+
+### GAS_FOR_CALL_EXACT_CHECK
+
+```solidity
+uint16 internal constant GAS_FOR_CALL_EXACT_CHECK = 5_000;
+```
+
+<Aside>
+  The minimum amount of gas to perform the call with exact gas. Included in the offramp so it can be redeployed to
+  adjust should a hardfork change the gas costs of relevant opcodes in callWithExactGas.
+</Aside>
+
+### MAX_RET_BYTES
+
+```solidity
+uint16 internal constant MAX_RET_BYTES = 4 + 4 * 32;
+```
+
+<Aside>
+  Maximum return data limited to a selector plus 4 words. This avoids malicious contracts from returning large amounts
+  of data and causing repeated out-of-gas scenarios.
+</Aside>
+
+### MAX_BALANCE_OF_RET_BYTES
+
+```solidity
+uint256 internal constant MAX_BALANCE_OF_RET_BYTES = 32;
+```
+
+<Aside>The expected number of bytes returned by the balanceOf function.</Aside>
+
+### GAS_PRICE_BITS
+
+```solidity
+uint8 public constant GAS_PRICE_BITS = 112;
+```
+
+<Aside>
+  Gas price is stored in 112-bit unsigned int. uint224 can pack 2 prices. When packing L1 and L2 gas prices, L1 gas
+  price is left-shifted to the higher-order bits.
+</Aside>
+
+### MESSAGE_FIXED_BYTES
+
+```solidity
+uint256 public constant MESSAGE_FIXED_BYTES = 32 * 17;
+```
+
+<Aside>
+  EVM2EVMMessage struct has 13 fields, including 3 variable arrays. Each variable array takes 1 more slot to store its
+  length. When abi encoded, excluding array contents, EVM2EVMMessage takes up a fixed number of 16 slots, 32 bytes each.
+  For structs that contain arrays, 1 more slot is added to the front, reaching a total of 17.
+</Aside>
+
+### MESSAGE_FIXED_BYTES_PER_TOKEN
+
+```solidity
+uint256 public constant MESSAGE_FIXED_BYTES_PER_TOKEN = 32 * ((1 + 3 * 3) + 2);
+```
+
+<Aside>
+  Each token transfer adds 1 EVMTokenAmount and 3 bytes at 3 slots each and one slot for the destGasAmount. When abi
+  encoded, each EVMTokenAmount takes 2 slots, each bytes takes 1 slot for length, one slot of data and one slot for the
+  offset. This results in effectively 3*3 slots per SourceTokenData.
+</Aside>
+
+### ANY_2_EVM_MESSAGE_FIXED_BYTES
+
+```solidity
+uint256 public constant ANY_2_EVM_MESSAGE_FIXED_BYTES = 32 * 14;
+```
+
+<Aside>
+  Any2EVMRampMessage struct has 10 fields, including 3 variable unnested arrays (data, receiver and tokenAmounts). Each
+  variable array takes 1 more slot to store its length. When abi encoded, excluding array contents, Any2EVMMessage takes
+  up a fixed number of 13 slots, 32 bytes each. For structs that contain arrays, 1 more slot is added to the front,
+  reaching a total of 14. The fixed bytes does not cover struct data (this is represented by
+  ANY_2_EVM_MESSAGE_FIXED_BYTES_PER_TOKEN).
+</Aside>
+
+### ANY_2_EVM_MESSAGE_FIXED_BYTES_PER_TOKEN
+
+```solidity
+uint256 public constant ANY_2_EVM_MESSAGE_FIXED_BYTES_PER_TOKEN = 32 * 10;
+```
+
+<Aside>
+  Each token transfer adds 1 RampTokenAmount. RampTokenAmount has 4 fields, including 3 bytes. Each bytes takes 1 more
+  slot to store its length, and one slot to store the offset. When abi encoded, each token transfer takes up 10 slots,
+  excluding bytes contents.
+</Aside>
+
+### EVM_2_EVM_MESSAGE_HASH
+
+```solidity
+bytes32 internal constant EVM_2_EVM_MESSAGE_HASH = keccak256("EVM2EVMMessageHashV2");
+```
+
+<Aside>Hash identifier for EVM to EVM messages version 2.</Aside>
+
+### ANY_2_EVM_MESSAGE_HASH
+
+```solidity
+bytes32 internal constant ANY_2_EVM_MESSAGE_HASH = keccak256("Any2EVMMessageHashV1");
+```
+
+<Aside>Hash identifier for Any to EVM messages version 1.</Aside>
+
+### EVM_2_ANY_MESSAGE_HASH
+
+```solidity
+bytes32 internal constant EVM_2_ANY_MESSAGE_HASH = keccak256("EVM2AnyMessageHashV1");
+```
+
+<Aside>Hash identifier for EVM to Any messages version 1.</Aside>
+
+### CHAIN_FAMILY_SELECTOR_EVM
+
+```solidity
+bytes4 public constant CHAIN_FAMILY_SELECTOR_EVM = 0x2812d52c;
+```
+
+<Aside>Chain family selector for EVM chains: bytes4(keccak256("CCIP ChainFamilySelector EVM")).</Aside>
+
+### PRECOMPILE_SPACE
+
+```solidity
+uint256 public constant PRECOMPILE_SPACE = 1024;
+```
+
+<Aside>
+  The first 1024 addresses are disallowed to avoid calling into a range known for hosting precompiles. Calling into
+  precompiles probably won't cause issues, but this is a conservative safety measure. While there is no official range
+  of precompiles, EIP-7587 proposes to reserve the range 0x100 to 0x1ff. This range is more conservative. The zero
+  address is also disallowed as a common practice.
+</Aside>
+
+## Functions
+
+### \_hash (EVM2EVMMessage)
+
+```solidity
+function _hash(
+  EVM2EVMMessage memory original,
+  bytes32 metadataHash
+) internal pure returns (bytes32);
+```
+
+<Aside>
+
+Used to hash messages for single-lane ramps.
+
+OnRamp hash(EVM2EVMMessage) = OffRamp hash(EVM2EVMMessage)
+
+The EVM2EVMMessage's messageId is expected to be the output of this hash function.
+
+This hashing scheme is also used by RMN. If changing it, please notify the RMN maintainers.
+
+</Aside>
+
+**Parameters**
+
+| Name           | Type                                | Description                                                     |
+| -------------- | ----------------------------------- | --------------------------------------------------------------- |
+| `original`     | [`EVM2EVMMessage`](#evm2evmmessage) | Message to hash                                                 |
+| `metadataHash` | `bytes32`                           | Immutable metadata hash representing a lane with a fixed OnRamp |
+
+**Returns**
+
+| Name            | Type      | Description                   |
+| --------------- | --------- | ----------------------------- |
+| `hashedMessage` | `bytes32` | Hashed message as a keccak256 |
+
+### \_hash (Any2EVMRampMessage)
+
+```solidity
+function _hash(
+  Any2EVMRampMessage memory original,
+  bytes memory onRamp
+) internal pure returns (bytes32);
+```
+
+<Aside>
+
+Used to hash messages for multi-lane family-agnostic OffRamps.
+
+OnRamp hash(EVM2AnyMessage) != Any2EVMRampMessage.messageId
+
+OnRamp hash(EVM2AnyMessage) != OffRamp hash(Any2EVMRampMessage)
+
+This hashing scheme is also used by RMN. If changing it, please notify the RMN maintainers.
+
+</Aside>
+
+**Parameters**
+
+| Name       | Type                                        | Description                                                        |
+| ---------- | ------------------------------------------- | ------------------------------------------------------------------ |
+| `original` | [`Any2EVMRampMessage`](#any2evmrampmessage) | OffRamp message to hash                                            |
+| `onRamp`   | `bytes`                                     | OnRamp to hash the message with - used to compute the metadataHash |
+
+**Returns**
+
+| Name            | Type      | Description                   |
+| --------------- | --------- | ----------------------------- |
+| `hashedMessage` | `bytes32` | Hashed message as a keccak256 |
+
+### \_hash (EVM2AnyRampMessage)
+
+```solidity
+function _hash(
+  EVM2AnyRampMessage memory original,
+  bytes32 metadataHash
+) internal pure returns (bytes32);
+```
+
+<Aside>
+
+Used to hash messages for multi-lane family-agnostic OnRamps.
+
+This hashing scheme is also used by RMN. If changing it, please notify the RMN maintainers.
+
+</Aside>
+
+**Parameters**
+
+| Name           | Type                                        | Description                               |
+| -------------- | ------------------------------------------- | ----------------------------------------- |
+| `original`     | [`EVM2AnyRampMessage`](#evm2anyrampmessage) | OnRamp message to hash                    |
+| `metadataHash` | `bytes32`                                   | Hash preimage to ensure global uniqueness |
+
+**Returns**
+
+| Name            | Type      | Description                   |
+| --------------- | --------- | ----------------------------- |
+| `hashedMessage` | `bytes32` | Hashed message as a keccak256 |
+
+### \_validateEVMAddress
+
+```solidity
+function _validateEVMAddress(
+  bytes memory encodedAddress
+) internal pure returns (address);
+```
+
+<Aside>
+
+Validates parsing of abi encoded addresses by ensuring the address is within the EVM address space. If it isn't, it will revert with an InvalidEVMAddress error, which can be caught and handled more gracefully than a revert from abi.decode.
+
+Disallows the first 1024 addresses (PRECOMPILE_SPACE) and the zero address.
+
+</Aside>
+
+**Parameters**
+
+| Name             | Type    | Description                         |
+| ---------------- | ------- | ----------------------------------- |
+| `encodedAddress` | `bytes` | The abi-encoded address to validate |
+
+**Returns**
+
+| Name      | Type      | Description                    |
+| --------- | --------- | ------------------------------ |
+| `address` | `address` | The validated address if valid |
