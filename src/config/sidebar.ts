@@ -2328,6 +2328,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
+          title: "Chainlink Developer Agent Skills",
+          url: "resources/chainlink-developer-agent-skills",
+        },
+        {
           title: "Starter Kits and Frameworks",
           url: "resources/create-a-chainlinked-project",
         },
