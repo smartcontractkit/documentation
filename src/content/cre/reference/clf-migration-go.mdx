@@ -1,0 +1,317 @@
+---
+section: cre
+date: Last Modified
+title: "Migrate from Chainlink Functions to Chainlink CRE"
+pageId: "clf-migration"
+sdkLang: "go"
+metadata:
+  description: "Migrate from Chainlink Functions (CLF) to Chainlink CRE. Concept mapping, chain support, triggers, task authoring, secrets, onchain writes, deployment, and monitoring."
+  datePublished: "2026-05-11"
+  lastModified: "2026-05-11"
+---
+
+import { Aside } from "@components"
+
+<Aside type="note" title="SDK Language: Go">
+  You're viewing the **Go** version of this guide. If you prefer TypeScript, use the language selector in the left
+  sidebar to switch to the TypeScript version.
+</Aside>
+
+This guide is for developers with production Chainlink Functions (CLF) subscriptions migrating their requests to the Chainlink Runtime Environment (CRE) before mainnet shutdown on **August 12, 2026**.
+
+The 80% CLF use case is "fetch off-chain data over HTTP and return it to a consumer contract." That maps cleanly to a CRE workflow: a trigger (Cron, HTTP, or EVM Log) → an HTTP fetch → a signed report written on-chain to an `IReceiver` consumer.
+
+## Overview
+
+In CLF, you trigger an execution by calling `sendRequest()` on your Functions consumer contract, which calls `_sendRequest()` on the Functions Router with an inline JavaScript source string. The DON runs the JS, reaches consensus on the return value, and posts it back to your consumer's `fulfillRequest()` callback.
+
+In CRE, the unit of execution is a **workflow** - a Go (or TypeScript) project compiled to WebAssembly and registered with the network. Workflows are started by **triggers** (cron schedule, HTTP request, or on-chain log event), can perform multiple steps (HTTP fetches, on-chain reads, on-chain writes, calls to other capabilities) wrapped in your own business logic, and write data on-chain through a signed-report flow that any contract implementing `IReceiver` can consume.
+
+Functionally, CRE is a superset of CLF: anything CLF does today, CRE does, and most multi-step patterns that previously required CLF + Automation + an off-chain relayer collapse into a single workflow.
+
+## Chain support
+
+CRE supports every chain CLF runs on today **except Soneium** (mainnet and Minato testnet) and **Celo Alfajores** testnet. CRE also runs on a long list of networks that CLF never supported. Canonical list: [Supported Networks](/cre/supported-networks-go).
+
+Mainnet and the corresponding testnet share a row when they share parity status; rows are split where they diverge.
+
+| Chain                             | CLF | CRE |
+| :-------------------------------- | :-- | :-- |
+| Ethereum / Sepolia                | ✅  | ✅  |
+| Arbitrum One / Arbitrum Sepolia   | ✅  | ✅  |
+| Base / Base Sepolia               | ✅  | ✅  |
+| Polygon / Polygon Amoy            | ✅  | ✅  |
+| OP Mainnet / OP Sepolia           | ✅  | ✅  |
+| Avalanche / Avalanche Fuji        | ✅  | ✅  |
+| ZKSync Era / ZKSync Era Sepolia   | ✅  | ✅  |
+| Celo (mainnet)                    | ✅  | ✅  |
+| Celo Alfajores (testnet)          | ✅  | ❌  |
+| Soneium / Soneium Minato          | ✅  | ❌  |
+| BNB Chain / BNB Chain Testnet     | ❌  | ✅  |
+| Gnosis Chain / Gnosis Chiado      | ❌  | ✅  |
+| Hyperliquid / Hyperliquid Testnet | ❌  | ✅  |
+| Ink / Ink Sepolia                 | ❌  | ✅  |
+| Jovay / Jovay Testnet             | ❌  | ✅  |
+| Linea / Linea Sepolia             | ❌  | ✅  |
+| Mantle / Mantle Sepolia           | ❌  | ✅  |
+| MegaETH / MegaETH Testnet 2       | ❌  | ✅  |
+| Pharos / Pharos Atlantic Testnet  | ❌  | ✅  |
+| Plasma / Plasma Testnet           | ❌  | ✅  |
+| Scroll / Scroll Sepolia           | ❌  | ✅  |
+| Sonic / Sonic Testnet             | ❌  | ✅  |
+| World Chain / World Chain Sepolia | ❌  | ✅  |
+| XLayer / XLayer Testnet           | ❌  | ✅  |
+| Apechain Curtis (testnet)         | ❌  | ✅  |
+| Arc Testnet                       | ❌  | ✅  |
+| Cronos Testnet                    | ❌  | ✅  |
+| TAC Testnet                       | ❌  | ✅  |
+| Unichain Sepolia (testnet)        | ❌  | ✅  |
+
+## Terminology
+
+| Chainlink Functions                                 | Chainlink CRE                                                              |
+| :-------------------------------------------------- | :------------------------------------------------------------------------- |
+| `FunctionsClient` consumer contract                 | `IReceiver` consumer contract (use `ReceiverTemplate`)                     |
+| `_sendRequest()` from a consumer                    | Workflow trigger: Cron, HTTP, or EVM Log                                   |
+| Inline JavaScript source (Deno sandbox)             | Go (or TypeScript) workflow compiled to WASM (not compatible with node.js) |
+| `Functions.makeHttpRequest()`                       | `http.SendRequest()`                                                       |
+| `fulfillRequest(requestId, response, err)` callback | `_onReport(metadata, payload)` on the receiver                             |
+| DON-hosted / remote-hosted secrets                  | Vault DON + `secrets.yaml` + `runtime.GetSecret()`                         |
+| `@chainlink/functions-toolkit`, Hardhat Starter Kit | `cre-sdk-go`, `cre-cli`, `cre-templates`                                   |
+| Functions Playground UI                             | CRE CLI `cre workflow simulate`                                            |
+| Automation Time-based Upkeep → `sendRequest()`      | Built-in Cron trigger - no Automation upkeep needed                        |
+| `donId` + router address per chain                  | Chain selector + forwarder address per chain                               |
+
+## Configuration
+
+A CRE project is a code repo, not a stringified JS source. The CLI (`cre`) scaffolds a project with the following files:
+
+- **`main.go`** - workflow code: trigger registration, handler logic, capability calls.
+- **`config.<target>.json`** - non-secret runtime config (API URLs, contract addresses, chain selectors).
+- **`secrets.yaml`** - secret declarations; values supplied via `.env`/env vars locally and via the Vault DON in production.
+- **`workflow.yaml`** - workflow metadata: name, owner, secrets path, target network.
+- **`project.yaml`** - project-level CRE settings.
+
+There is no equivalent in CLF, where the entire program is a string passed to `_sendRequest()`.
+
+## Triggers
+
+CLF has exactly one entry path: a Solidity transaction calling `sendRequest()`. Anything else (scheduled execution, off-chain trigger, reaction to an event) requires gluing CLF together with Automation, an off-chain cron, or a custom indexer. CRE makes the trigger first-class.
+
+### Time-based
+
+Replaces "Automation Time-based Upkeep calling `sendRequest()`." Use a cron trigger directly.
+
+```go
+cronTrigger := cron.Trigger(&cron.Config{Schedule: "0 */5 * * * *"}) // every 5 min
+cre.Handler(cronTrigger, onCronTrigger)
+```
+
+Standard 5- or 6-field cron expressions; minimum interval is 30 seconds. Prefix with `TZ=<timezone>` for timezone-aware scheduling.
+
+### HTTP triggers
+
+Replaces "user transaction → `sendRequest()`" or off-chain webhook → Solidity transaction → `sendRequest()`. The workflow exposes an HTTPS endpoint on the CRE gateway; callers POST a JSON payload signed with an authorized EVM key.
+
+```go
+httpTrigger := http.Trigger(&http.Config{
+    AuthorizedKeys: []*http.AuthorizedKey{
+        {Type: http.KeyType_EVM, Key: "0xYourAuthorizedSigner"},
+    },
+})
+cre.Handler(httpTrigger, onHTTPTrigger)
+```
+
+`AuthorizedKeys` is required for deployed workflows; an empty config is only valid in simulation.
+
+### Onchain events
+
+Replaces "off-chain listener observes an event → Solidity transaction → calls `sendRequest()`." Native EVM Log trigger watches a contract address, signature event, and optional topic filters and fires the handler with the decoded event.
+
+```go
+logTrigger := evmClient.LogTrigger(&evm.LogTriggerConfig{
+    Addresses: [][]byte{ /* contract address bytes */ },
+    Topics:    [][]byte{ /* event signature hash bytes */ },
+})
+cre.Handler(logTrigger, onLog)
+```
+
+### Per-block triggers
+
+CRE does not offer a "fire on every block" trigger; for high-frequency on-chain reactions, use the EVM Log trigger with a `LATEST` confidence level. For periodic state polling, use a cron trigger and call `evmClient.CallContract()` from the handler.
+
+## Task authoring and output
+
+### Language and runtime
+
+CLF runs an inline JavaScript string (NodeJS) in a per-request sandbox. Each request is independent; there is no project, no dependencies, no compile step.
+
+CRE workflows are full Go (or TypeScript) projects compiled to WebAssembly. You manage dependencies with Go modules and run `cre workflow simulate` for a local execution that mirrors production. The handler is single-threaded; SDK capability calls return an object that you resolve with `.Await()` (Go) or `.result()` (TypeScript).
+
+### HTTP / API calls
+
+Direct replacement for `Functions.makeHttpRequest()`. Supports GET and POST; consensus aggregation is automatic.
+
+```go
+apiKey, err := runtime.GetSecret(&cre.SecretRequest{Id: "API_KEY"}).Await()
+if err != nil {
+    return err
+}
+
+res, err := http.SendRequest(runtime, &http.Request{
+    Url:    "https://api.example.com/price",
+    Method: "GET",
+    Headers: map[string]string{
+        "Authorization": "Bearer " + apiKey.Value,
+    },
+}).Await()
+```
+
+Caveats: 3xx redirects are not followed - point at the resolved URL directly. For non-idempotent POSTs, set `CacheSettings` so the request is only executed once across the DON. Use `runtime.Now()` (not `time.Now()`) for any timestamps included in a request payload.
+
+### Onchain reads
+
+CLF has no built-in on-chain read; users typically pre-fetch state in Solidity before calling `_sendRequest()`, or read it inside the JS via an RPC HTTP call.
+
+In CRE, users can read on-chain state directly inside the handler that comes with built-in chain connectivity:
+
+```go
+evmClient := evm.NewClient(CHAIN_SELECTOR)
+result, err := evmClient.CallContract(runtime, &evm.CallContractRequest{
+    To:          CONTRACT_ADDRESS,
+    Data:        callData,
+    BlockNumber: evm.LastFinalizedBlockNumber,
+}).Await()
+```
+
+You can also still use HTTP requests to interact with your own RPCs.
+
+### Onchain writes
+
+This is the biggest structural change. In CLF, the DON posts the response to your consumer's `fulfillRequest(bytes32 requestId, bytes response, bytes err)` callback. In CRE, the workflow generates a cryptographically signed report and submits it to a consumer contract that implements `IReceiver` - typically by extending `ReceiverTemplate`. The handler is `_onReport(bytes metadata, bytes payload)`.
+
+Two steps: ABI-encode the payload and call `runtime.GenerateReport()`; then submit the signed report with `evmClient.WriteReport()`.
+
+```go
+package main
+
+import (
+    "github.com/smartcontractkit/cre-sdk-go/cre"
+    "github.com/smartcontractkit/cre-sdk-go/capabilities/networking/http"
+    "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/evm"
+    "github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
+)
+
+func onCronTrigger(runtime cre.Runtime, _ *cron.Payload) (any, error) {
+    apiKey, err := runtime.GetSecret(&cre.SecretRequest{Id: "API_KEY"}).Await()
+    if err != nil {
+        return nil, err
+    }
+
+    res, err := http.SendRequest(runtime, &http.Request{
+        Url: "https://api.example.com/price",
+        Headers: map[string]string{
+            "Authorization": "Bearer " + apiKey.Value,
+        },
+    }).Await()
+    if err != nil {
+        return nil, err
+    }
+
+    price := parsePrice(res.Body) // ABI-encoded uint256
+    payload := encodePayload(price)
+
+    report, err := runtime.GenerateReport(&cre.ReportRequest{
+        EncodedPayload: payload,
+    }).Await()
+    if err != nil {
+        return nil, err
+    }
+
+    evmClient := evm.NewClient(CHAIN_SELECTOR)
+    _, err = evmClient.WriteReport(runtime, &evm.WriteReportRequest{
+        Receiver: RECEIVER_ADDRESS,
+        Report:   report,
+        GasConfig: &evm.GasConfig{GasLimit: 200000},
+    }).Await()
+    return nil, err
+}
+
+func InitWorkflow() (cre.Workflow, error) {
+    trigger := cron.Trigger(&cron.Config{Schedule: "*/5 * * * *"})
+    return cre.Workflow{
+        cre.Handler(trigger, onCronTrigger),
+    }, nil
+}
+```
+
+Receiver contract:
+
+```solidity
+import {ReceiverTemplate} from "@chainlink/cre-contracts/ReceiverTemplate.sol";
+
+contract PriceReceiver is ReceiverTemplate {
+  uint256 public price;
+
+  constructor(address forwarder) ReceiverTemplate(forwarder) {}
+
+  function _onReport(bytes calldata /* metadata */, bytes calldata payload) internal override {
+    price = abi.decode(payload, (uint256));
+  }
+}
+```
+
+Forwarder addresses are network-specific. Use `MockKeystoneForwarder` for local simulation and the production `KeystoneForwarder` per chain when deploying. See CRE documentation to learn how to permission your `IReceiver`.
+
+### Secrets
+
+CLF supports DON-hosted (uploaded once via the Functions toolkit) and user-hosted (gist URL passed at request time) secrets. CRE consolidates this through the Vault DON.
+
+- **Locally:** declare the name in `secrets.yaml`, supply the value via a `.env` file or env var.
+- **Deployed:** upload to Vault DON via `cre secrets create`.
+- **In code:** `runtime.GetSecret(&cre.SecretRequest{Id: "API_KEY"}).Await()` works the same in both environments.
+
+Important: **DON-hosted CLF secrets cannot be exported.** When migrating, you must re-supply API keys and tokens through the CRE Vault. Fetch secrets sequentially, not in parallel.
+
+## Monitoring
+
+The CRE dashboard provides per-workflow execution history, handler logs (via `runtime.Logger()`), per-step timings, consensus outcomes, and on-chain submission status, replacing the per-request views in the Functions Subscription Manager. Failed executions and reverted on-chain writes surface directly in the workflow detail view.
+
+## Deployment and lifecycle
+
+| Action            | Chainlink Functions                                             | Chainlink CRE                                                                  |
+| :---------------- | :-------------------------------------------------------------- | :----------------------------------------------------------------------------- |
+| Author code       | Inline JS string in your consumer contract                      | Go/TypeScript project; `cre workflow init` to scaffold                         |
+| Local test        | Functions Playground / `simulateScript`                         | `cre workflow simulate`                                                        |
+| Deploy            | Deploy `FunctionsClient` consumer; create and fund subscription | Deploy `IReceiver` consumer; `cre workflow deploy`; activate workflow          |
+| Update logic      | Re-deploy consumer (source baked into requests) or update gist  | `cre workflow update` (workflow code only; receiver unchanged)                 |
+| Pause             | Cancel subscription / set consumer flag                         | `cre workflow pause`                                                           |
+| Delete            | Remove consumer; withdraw remaining LINK from the subscription  | `cre workflow delete`                                                          |
+| Manage secrets    | DON-hosted upload via toolkit, expires after threshold          | `cre secrets create / update / delete` against Vault DON                       |
+| Monitor and Debug | No alerts; DON logs UI with onchain transaction data only       | Built-in email alerts on workflow failures; UI showing executions and DON logs |
+
+## Get started
+
+1. Install the CRE CLI: see [Getting Started](/cre/getting-started/cli-installation).
+1. Authenticate with the email associated with your Chainlink account.
+1. `cre workflow init` to scaffold a Go project; replace the trigger and handler with the equivalents from the Triggers + Task authoring sections above.
+1. Deploy a `ReceiverTemplate`-based consumer contract on your target chain using the correct forwarder address.
+1. `cre workflow simulate` to test locally, then `cre workflow deploy`. Migrate one workflow at a time and decommission the corresponding CLF consumer once the CRE workflow is producing reports on-chain.
+
+For end-to-end runnable examples covering different use cases, see the [`smartcontractkit/cre-templates`](https://github.com/smartcontractkit/cre-templates) repo.
+
+### Reference template for CLF migration
+
+The closest one-to-one mapping for the typical CLF use case ("fetch off-chain data over HTTP and return it to a consumer contract") is the **Custom Data Feed** starter template, available in both Go and TypeScript:
+
+- [`starter-templates/custom-data-feed/cre-custom-data-feed-go`](https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/custom-data-feed/cre-custom-data-feed-go)
+- [`starter-templates/custom-data-feed/cre-custom-data-feed-ts`](https://github.com/smartcontractkit/cre-templates/tree/main/starter-templates/custom-data-feed/cre-custom-data-feed-ts)
+
+It demonstrates each piece of the migration end-to-end:
+
+- A **cron trigger** scheduling the workflow (replaces an Automation Time-based Upkeep calling `sendRequest()`) and a **log trigger** variant (replaces an off-chain listener reacting to an on-chain event).
+- An **HTTP fetch** against an external API with credentials pulled from the Vault DON via `runtime.GetSecret()` (replaces `Functions.makeHttpRequest()` + DON-hosted secrets).
+- ABI-encoding the result, calling `runtime.GenerateReport()` to produce a signed report, and submitting it with `evmClient.WriteReport()` to a `ReceiverTemplate`-based consumer contract (replaces the `fulfillRequest()` callback flow).
+- A complete project layout — `main.go`, `config.json`, `secrets.yaml`, `workflow.yaml`, `project.yaml`, contracts, and bindings — that can be cloned and adapted to your existing CLF source.
+
+If your CLF script also reads on-chain state via an RPC HTTP call, the [`building-blocks/read-data-feeds`](https://github.com/smartcontractkit/cre-templates/tree/main/building-blocks/read-data-feeds) example shows the native `evmClient.CallContract()` replacement covered in the [Onchain reads](#onchain-reads) section above.
