@@ -5,7 +5,7 @@ date: Last Modified
 metadata:
   description: "Build smart contracts that receive CRE data: learn to implement the IReceiver interface and safely handle verified workflow reports."
   datePublished: "2025-11-04"
-  lastModified: "2026-02-03"
+  lastModified: "2026-05-08"
 ---
 
 import { Aside, ClickToZoom, CodeSample } from "@components"
@@ -41,8 +41,32 @@ The `KeystoneForwarder` needs a standardized function to call. This is defined b
 
 <CodeSample src="samples/CRE/IReceiver.sol" />
 
-- `metadata`: Contains information about the workflow (ID, name, owner). This is encoded by the Forwarder using `abi.encodePacked` with the following structure: `bytes32 workflowId`, `bytes10 workflowName`, `address workflowOwner`.
+- `metadata`: Workflow identity fields for the receiver. See [Metadata length and layout](#metadata-length-and-layout) below.
 - `report`: The raw, ABI-encoded data payload from your workflow.
+
+#### Metadata length and layout
+
+The logical packing matches `abi.encodePacked(bytes32 workflowId, bytes10 workflowName, address workflowOwner)`, which is 62 bytes (`32 + 10 + 20`).
+
+Production `KeystoneForwarder` does not pass exactly those 62 bytes as the `metadata` argument. It forwards the calldata slice [`rawReport[FORWARDER_METADATA_LENGTH:METADATA_LENGTH]`](https://github.com/smartcontractkit/chainlink-evm/blob/b6427ea1f4847d640abdf24dbd6c6f01d7799d59/contracts/cre/src/v1/KeystoneForwarder.sol#L305) from [`report`](https://github.com/smartcontractkit/chainlink-evm/blob/b6427ea1f4847d640abdf24dbd6c6f01d7799d59/contracts/cre/src/v1/KeystoneForwarder.sol#L262), which is 64 bytes wide (`METADATA_LENGTH - FORWARDER_METADATA_LENGTH`). That slice is word-aligned to a 32-byte boundary: you get the same 62-byte packed workflow identity as above, plus two trailing bytes. Workflow configuration does not change this length; it is fixed by the forwarder’s report layout.
+
+Those trailing bytes are the `reportId` field (`bytes2`) at calldata indices 62 and 63. Field offsets for the full signed `rawReport` (including `report_id` at offset 139 in that buffer) are documented in [`KeystoneForwarder._getMetadata`](https://github.com/smartcontractkit/chainlink-evm/blob/b6427ea1f4847d640abdf24dbd6c6f01d7799d59/contracts/cre/src/v1/KeystoneForwarder.sol#L315). If `reportId` is zero, those bytes read as `0x0000` in a hex dump; they still occupy the `reportId` field rather than arbitrary alignment filler you can drop when sizing `metadata`. In production delivery, `metadata.length` is 64. A `require(metadata.length == 62)` (or similar) in your own code will revert; the sample `ReceiverTemplate` does not enforce length 62 on `metadata`.
+
+Extract `reportId` from `metadata` like this:
+
+```solidity
+// metadata.length == 64 on production KeystoneForwarder delivery
+bytes2 reportId = bytes2(metadata[62:64]);
+```
+
+The first 62 bytes remain decodable with the same layout as `ReceiverTemplate._decodeMetadata` (workflow ID, ten-byte workflow name, owner address). The template ignores the final two bytes for identity checks; read them only if your logic needs `reportId`.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Length checks">
+  If you validate `metadata` with a strict length requirement, allow `64` bytes, or accept both 62 and 64 if you must support alternate tooling. Requiring exactly `62` bytes breaks verified delivery from `KeystoneForwarder` whenever the forwarder supplies the 64-byte slice.
+</Aside>
+
+Link to the Chainlink `KeystoneForwarder` contract: [KeystoneForwarder.sol](https://github.com/smartcontractkit/chainlink-evm/blob/b6427ea1f4847d640abdf24dbd6c6f01d7799d59/contracts/cre/src/v1/KeystoneForwarder.sol)
 
 ### 2.2 Support ERC165 Interface Detection
 
@@ -533,24 +557,24 @@ CRE reports carry DON signatures that any compatible `KeystoneForwarder` will ac
 
 **The risk**: While publishing a single signed report to multiple chains simultaneously enables patterns like [Proof of Reserve (PoR)](/data-feeds/smartdata#proof-of-reserve-feeds) or feed-style publish-once-post-many, it also means **anyone holding a valid report can replay it on any chain that recognizes the DON's signing keys**.
 
-The forwarder validates cryptographic signatures but those signatures do not commit to a specific chain—without additional protection in your consumer contract, a replayed report can land on an unintended chain.
+The forwarder validates cryptographic signatures but those signatures do not commit to a specific chain; without additional protection in your consumer contract, a replayed report can land on an unintended chain.
 
 <ClickToZoom
   src="/images/cre/crosschain-replay-attack-vector-diagram.png"
   alt="Cross-chain replay attack vector diagram"
 />
 
-**The mitigation**: Embed the target chain selector in the report payload. The consumer contract decodes this value and rejects reports not intended for the current chain. Chain selectors are `uint64` identifiers used throughout the CRE platform to identify blockchain networks — see [Chain Selectors](/cre/reference/sdk/evm-client-ts#chain-selectors) for the full list of constants and the `ChainSelectorFromName` helper.
+**The mitigation**: Embed the target chain selector in the report payload. The consumer contract decodes this value and rejects reports not intended for the current chain. Chain selectors are `uint64` identifiers used throughout the CRE platform to identify blockchain networks; see [Chain Selectors](/cre/reference/sdk/evm-client-ts#chain-selectors) for the full list of constants and the `ChainSelectorFromName` helper.
 
 **Workflow (embed chain selector in the report payload):**
 
 ```go
 // Define your report struct with a ChainSelector field.
-// ChainSelector is a uint64 — the same type used when instantiating evm.Client.
+// ChainSelector is a uint64, the same type used when instantiating evm.Client.
 type PaymentReport struct {
   Recipient     common.Address
   Amount        *big.Int
-  ChainSelector uint64 // Target chain — used by the consumer to reject cross-chain replays
+  ChainSelector uint64 // Target chain; used by the consumer to reject cross-chain replays
 }
 
 paymentReport := PaymentReport{
@@ -613,8 +637,8 @@ contract ChainRestrictedConsumer is ReceiverTemplate {
 <Aside type="caution" title="Attack scenario: double payment">
   1. A cron workflow attempts to pay a wallet $100 USDC. The consumer contract **reverts** (insufficient funds).
   1. CRE returns a reverted transaction hash. The workflow records the failure and plans to correct the balance on the next run.
-  1. Funds are replenished — by the owner, another workflow, or a user deposit.
-  1. An attacker (or a bot) replays the original signed report. The consumer now has funds and the payment **executes again** — the recipient is paid twice.
+  1. Funds are replenished by the owner, another workflow, or a user deposit.
+  1. An attacker (or a bot) replays the original signed report. The consumer now has funds and the payment executes again; the recipient is paid twice.
 </Aside>
 
 **The mitigation**: Embed the scheduled execution timestamp in the report payload. The consumer contract stores the last accepted timestamp and rejects any report with a timestamp equal to or earlier than the stored value. Once a later execution has been accepted, earlier failed reports can never land.
@@ -627,7 +651,7 @@ contract ChainRestrictedConsumer is ReceiverTemplate {
 **Workflow (embed scheduled execution timestamp in the report payload):**
 
 ```go
-// Use the trigger's scheduled slot time — deterministic across all DON nodes.
+// Use the trigger's scheduled slot time; deterministic across all DON nodes.
 // Refer to the cron trigger reference for the exact field name on cron.Payload.
 scheduledAt := trigger.ScheduledAt.Unix()
 
@@ -635,7 +659,7 @@ scheduledAt := trigger.ScheduledAt.Unix()
 type PaymentReport struct {
   Recipient   common.Address
   Amount      *big.Int
-  ScheduledAt *big.Int // Monotonic execution timestamp — used to reject stale replays
+  ScheduledAt *big.Int // Monotonic execution timestamp; used to reject stale replays
 }
 
 paymentReport := PaymentReport{

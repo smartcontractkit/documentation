@@ -702,6 +702,43 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
+  [SIDEBAR_SECTIONS.CREC]: [
+    {
+      section: "Chainlink CRE Connect",
+      contents: [
+        { title: "Overview", url: "crec" },
+        { title: "Supported Networks", url: "crec/supported-networks" },
+        { title: "Release Notes", url: "crec/release-notes" },
+      ],
+    },
+    {
+      section: "Getting Started",
+      contents: [{ title: "Get Access", url: "crec/getting-started" }],
+    },
+    {
+      section: "Concepts",
+      contents: [
+        { title: "Architecture", url: "crec/concepts/architecture" },
+        { title: "Channels", url: "crec/concepts/channels" },
+        { title: "Watchers", url: "crec/concepts/watchers" },
+        { title: "Verifiable Events", url: "crec/concepts/verifiable-events" },
+        { title: "Event Verification", url: "crec/concepts/event-verification" },
+        { title: "Operations & Transactions", url: "crec/concepts/operations" },
+        { title: "EIP-712 Signing", url: "crec/concepts/eip712-signing" },
+        { title: "Smart Accounts", url: "crec/concepts/smart-accounts" },
+        { title: "Account Abstraction & Gas Sponsorship", url: "crec/concepts/account-abstraction" },
+        { title: "Confidence Levels", url: "crec/concepts/confidence-levels" },
+        { title: "Extensions", url: "crec/concepts/extensions" },
+      ],
+    },
+    {
+      section: "Extensions",
+      contents: [
+        { title: "Overview", url: "crec/extensions" },
+        { title: "DTA (Digital Transfer Agent)", url: "crec/extensions/dta" },
+      ],
+    },
+  ],
   [SIDEBAR_SECTIONS.DATA_FEEDS]: [
     {
       section: "Chainlink Data Feeds",

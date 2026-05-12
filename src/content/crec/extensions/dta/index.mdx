@@ -1,0 +1,68 @@
+---
+section: crec
+title: "DTA v2 Overview"
+isIndex: true
+date: Last Modified
+metadata:
+  description: "The DTA v2 extension wraps Chainlink CRE Connect for the Digital Transfer Agent product line — typed Subscription / Redemption / Distributor operations and decoded events."
+  datePublished: "2026-05-01"
+  lastModified: "2026-05-01"
+---
+
+import { Aside } from "@components"
+
+<Aside type="note" title="New to DTA?">
+This page assumes you already understand the **Digital Transfer Agent (DTA) technical standard** — the
+roles (Transfer Agent, Fund Administrator, Fund Distributor, Fund Issuer), the contracts (Request
+Management vs Request Settlement), the request lifecycle, and the settlement models. Read the
+[**DTA technical standard**](https://docs.chain.link/dta-technical-standard/) first if you haven't.
+
+This page focuses on **how CRE Connect makes the DTA standard easier to adopt** — typed operation
+builders, decoded events, and one-call watcher provisioning — not on what DTA is.
+
+</Aside>
+
+The DTA v2 extension packages everything needed to drive the [DTA contracts](https://docs.chain.link/dta-technical-standard/concepts/architecture) from CRE Connect:
+
+- **Typed operation builders** for every public function on both DTA contracts (Request Management and Request Settlement).
+- **Decoded events** — one strongly-typed value per emitted event, plus a single decode helper.
+- **One-call watcher provisioning** — naming the `dta.v2` service is enough for CRE Connect to set up every watcher the integration needs.
+
+## When to use the DTA v2 extension
+
+Use the extension whenever your application calls the [DTA Request Management or DTA Request Settlement contracts](https://docs.chain.link/dta-technical-standard/concepts/architecture). The extension covers every public function on both contracts, so any flow described in the [DTA standard](https://docs.chain.link/dta-technical-standard/) — onboarding, allowlisting, [subscriptions / redemptions](https://docs.chain.link/dta-technical-standard/concepts/request-lifecycle), [settlement](https://docs.chain.link/dta-technical-standard/concepts/payment-modes) — is a single typed call away.
+
+If you are emitting verifiable events from a **different** smart-contract suite (i.e. not DTA), build a custom watcher against your own ABI through the core CRE Connect product instead.
+
+## What the extension covers
+
+The extension's typed operations group naturally into four families:
+
+| Group                             | Covers                                                                                                                                     |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Subscriptions & redemptions**   | The full request lifecycle: subscriptions (with optional ERC-20 approval), redemptions, distributor processing, and request completion.    |
+| **Fund & distributor management** | Onboarding fund admins, registering and enabling fund tokens, registering distributors, and authorising / revoking distributors per token. |
+| **Cross-DTA settlement**          | Allowing or disallowing peer DTAs, plus settlement-contract ownership transfer and renouncement.                                           |
+| **Operational**                   | Configuring CCIP gas limits and withdrawing tokens held by Request Management or Request Settlement.                                       |
+
+Every operation is dispatched through the same CRE Connect submission path and emits verifiable events the application can consume back through the standard event stream.
+
+## Watcher provisioning
+
+CRE Connect ships a service descriptor for DTA v2 that lists the events the contracts emit. Provisioning a watcher requires only:
+
+- The chain to watch.
+- The address of the DTA contract to observe.
+- The names of the events the application cares about (e.g. `SubscriptionRequested`, `RedemptionRequested`, `DistributorRequestProcessing`, `DistributorRequestProcessed`).
+
+CRE Connect owns the ABIs — you only need to know the event names you want to receive.
+
+## Decoded events
+
+Each on-chain DTA event is decoded into a strongly-typed value with named fields that match the on-chain event signature. Application code receives a verifiable event from the channel stream, decodes it once, and switches on the concrete event type — no string parsing or ABI handling required.
+
+## Related
+
+- [Extensions Overview](/crec/extensions) — what an extension is and the catalog of available ones.
+- [Concepts → Extensions](/crec/concepts/extensions) — how extensions compose with the core product.
+- [DTA technical standard](https://docs.chain.link/dta-technical-standard/) — the underlying standard.
