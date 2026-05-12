@@ -453,10 +453,18 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "Deploying to the Private Registry",
               url: "cre/guides/operations/deploying-to-private-registry",
+              highlightAsCurrent: [
+                "cre/guides/operations/deploying-to-private-registry-ts",
+                "cre/guides/operations/deploying-to-private-registry-go",
+              ],
             },
             {
               title: "Deploying to the Onchain Registry",
               url: "cre/guides/operations/deploying-to-onchain-registry",
+              highlightAsCurrent: [
+                "cre/guides/operations/deploying-to-onchain-registry-ts",
+                "cre/guides/operations/deploying-to-onchain-registry-go",
+              ],
             },
           ],
         },
