@@ -1800,6 +1800,16 @@ Details:
 
 All workflow executions use JSON-RPC 2.0 format:
 
+
+<Aside type="note" title="Gateway URL depends on your registry">
+  The gateway URL differs based on how your workflow is deployed:
+
+  - **Public (onchain) registry**: `https://01.gateway.zone-a.cre.chain.link`
+  - **Private registry** (`deployment-registry: "private"`): `https://01.enterprise-gateway.zone-a.cre.chain.link/`
+
+  Use the URL that matches the registry your workflow is deployed to. Run `cre registry list` or check your `workflow.yaml` if you're unsure.
+</Aside>
+
 ```http
 POST https://01.gateway.zone-a.cre.chain.link
 Content-Type: application/json
@@ -1962,7 +1972,7 @@ If you're testing deployed workflows during development, use the [Local Testing 
 
 ## Example request (conceptual)
 
-Here's what a complete curl request looks like:
+Here's what a complete curl request looks like (using the public registry gateway — substitute `https://01.enterprise-gateway.zone-a.cre.chain.link/` if your workflow is deployed to the private registry):
 
 ```bash
 curl -X POST https://01.gateway.zone-a.cre.chain.link \
@@ -2152,6 +2162,17 @@ GATEWAY_URL=https://01.gateway.zone-a.cre.chain.link
 ```
 
 Replace `0xYourPrivateKeyHere` with your EVM private key.
+
+
+<Aside type="note" title="Private registry gateway URL">
+  If your workflow is deployed to the **private registry** (`deployment-registry: "private"`), set `GATEWAY_URL` to:
+
+  ```
+  GATEWAY_URL=https://01.enterprise-gateway.zone-a.cre.chain.link/
+  ```
+
+  Use `https://01.gateway.zone-a.cre.chain.link` for workflows deployed to the public onchain registry.
+</Aside>
 
 <Aside type="caution" title="Keep your .env file secure">
   Never commit `.env` files to version control. Add `.env` to your `.gitignore` file. The package repository already
@@ -5284,6 +5305,19 @@ jobs:
 <Aside type="note" title="API key authentication">
   Use `CRE_API_KEY` for non-interactive CI/CD authentication. Create an API key from the CRE platform under **Organization → APIs**. See [Authentication](/cre/reference/cli/authentication#api-key-authentication) for setup instructions.
 </Aside>
+
+## HTTP triggers with the private registry
+
+If your private registry workflow uses an HTTP trigger, note that the gateway endpoint is different from the public registry:
+
+| Registry          | HTTP trigger gateway URL                               |
+| ----------------- | ------------------------------------------------------ |
+| Public (on-chain) | `https://01.gateway.zone-a.cre.chain.link`             |
+| **Private**       | `https://01.enterprise-gateway.zone-a.cre.chain.link/` |
+
+Update your `GATEWAY_URL` (or equivalent configuration) wherever you send trigger requests (in local testing, CI scripts, or backend integrations) to use the enterprise gateway URL when targeting private registry workflows.
+
+See [Triggering Deployed Workflows](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows) for the full HTTP trigger request format and authentication details.
 
 ## Next steps
 
@@ -16349,12 +16383,12 @@ This section provides everything you need to work with HTTP triggers:
 
 ## Quick comparison: Simulation vs Production
 
-| Aspect             | Simulation                      | Production                                               |
-| ------------------ | ------------------------------- | -------------------------------------------------------- |
-| **Authorization**  | Optional (can use empty config) | Required (`authorizedKeys` must be configured)           |
-| **Trigger method** | CLI with `--input` flag         | HTTP POST to gateway endpoint with JWT                   |
-| **Endpoint**       | Local simulator                 | CRE gateway (`https://01.gateway.zone-a.cre.chain.link`) |
-| **Use case**       | Development, testing, debugging | Live integrations, webhooks, production APIs             |
+| Aspect             | Simulation                      | Production                                                                                                                                           |
+| ------------------ | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Authorization**  | Optional (can use empty config) | Required (`authorizedKeys` must be configured)                                                                                                       |
+| **Trigger method** | CLI with `--input` flag         | HTTP POST to gateway endpoint with JWT                                                                                                               |
+| **Endpoint**       | Local simulator                 | CRE gateway — public registry: `https://01.gateway.zone-a.cre.chain.link` / private registry: `https://01.enterprise-gateway.zone-a.cre.chain.link/` |
+| **Use case**       | Development, testing, debugging | Live integrations, webhooks, production APIs                                                                                                         |
 
 ## Key concepts
 

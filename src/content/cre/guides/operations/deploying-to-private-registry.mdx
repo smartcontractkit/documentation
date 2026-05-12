@@ -259,6 +259,19 @@ jobs:
   Use `CRE_API_KEY` for non-interactive CI/CD authentication. Create an API key from the CRE platform under **Organization → APIs**. See [Authentication](/cre/reference/cli/authentication#api-key-authentication) for setup instructions.
 </Aside>
 
+## HTTP triggers with the private registry
+
+If your private registry workflow uses an HTTP trigger, note that the gateway endpoint is different from the public registry:
+
+| Registry          | HTTP trigger gateway URL                               |
+| ----------------- | ------------------------------------------------------ |
+| Public (on-chain) | `https://01.gateway.zone-a.cre.chain.link`             |
+| **Private**       | `https://01.enterprise-gateway.zone-a.cre.chain.link/` |
+
+Update your `GATEWAY_URL` (or equivalent configuration) wherever you send trigger requests (in local testing, CI scripts, or backend integrations) to use the enterprise gateway URL when targeting private registry workflows.
+
+See [Triggering Deployed Workflows](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows) for the full HTTP trigger request format and authentication details.
+
 ## Next steps
 
 - [Deploying Workflows](/cre/guides/operations/deploying-workflows) — Registry overview and comparison
