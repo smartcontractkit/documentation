@@ -88,22 +88,23 @@ function TokenChainsTable({ networks, token, lanes, environment }: TableProps) {
                         }}
                         aria-label={`View ${network.name} token details`}
                       >
-                        <span className="ccip-table__logoContainer">
+                        <span className="token-logo-with-badge">
                           <img
                             src={network.logo}
                             alt={`${network.name} blockchain logo`}
-                            className="ccip-table__logo"
+                            className="token-logo-with-badge__main"
                             onError={({ currentTarget }) => {
-                              currentTarget.onerror = null // prevents looping
+                              currentTarget.onerror = null
                               currentTarget.src = fallbackTokenIconUrl
                             }}
                           />
+
                           <img
                             src={network.tokenLogo}
                             alt={network.tokenId}
-                            className="ccip-table__smallLogo"
+                            className="token-logo-with-badge__badge"
                             onError={({ currentTarget }) => {
-                              currentTarget.onerror = null // prevents looping
+                              currentTarget.onerror = null
                               currentTarget.src = fallbackTokenIconUrl
                             }}
                           />
