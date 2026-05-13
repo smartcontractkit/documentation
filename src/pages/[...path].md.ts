@@ -147,9 +147,7 @@ ${exampleMarkdown}
   // STREAMS INJECTION
   // -----------------------
   if (body.includes("<StreamList")) {
-    const streams = collectStreamEntries(STREAM_CATEGORY_MAP.crypto, chainCache, {
-      publicType: "crypto",
-    })
+    const streams = collectStreamEntries(STREAM_CATEGORY_MAP.crypto, chainCache, { publicType: "crypto" } as any)
 
     const exampleMarkdown = buildStreamExample(streams)
 
