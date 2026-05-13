@@ -29,7 +29,10 @@ export const GET: APIRoute = async ({ params }) => {
   const seen = new Set<string>()
 
   for (const chain of Object.values(chainCache)) {
-    for (const network of chain.networks ?? []) {
+    // ✅ FIX: rename to avoid shadowing
+    const chainNetworks = (chain as { networks?: any[] }).networks ?? []
+
+    for (const network of chainNetworks) {
       const queryString = network.queryString
       if (!queryString) continue
 
@@ -39,7 +42,7 @@ export const GET: APIRoute = async ({ params }) => {
       networks.push({
         queryString,
         networkName: network.name,
-        chain: network.chain || "",
+        chain: typeof network.chain === "string" ? network.chain : "",
         networkType: network.networkType || "mainnet",
       })
     }

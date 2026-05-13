@@ -5,7 +5,7 @@ import { buildFeedAddressMarkdown, VALID_FEED_TYPES } from "~/features/feeds/uti
 import { STREAM_CATEGORY_MAP } from "~/features/feeds/utils/streamMetadata.ts"
 import type { DataFeedType } from "~/features/feeds/components/FeedList.tsx"
 
-// Reverse map: internal → public (streamsCrypto → crypto)
+// Reverse map: internal → public
 const INTERNAL_TO_PUBLIC: Record<string, string> = Object.fromEntries(
   Object.entries(STREAM_CATEGORY_MAP).map(([pub, internal]) => [internal, pub])
 )
@@ -18,10 +18,10 @@ export async function getStaticPaths() {
 
   for (const type of VALID_FEED_TYPES) {
     for (const chain of Object.values(chainCache)) {
-      for (const network of chain.networks ?? []) {
-        const queryString = network.queryString
+      const chainNetworks = (chain as { networks?: any[] }).networks ?? []
 
-        // Guardrails
+      for (const network of chainNetworks) {
+        const queryString = network.queryString
         if (!queryString) continue
 
         const key = `${type}:${queryString}`
@@ -43,31 +43,22 @@ export async function getStaticPaths() {
 
 export const GET: APIRoute = async ({ params }) => {
   const type = params.type as DataFeedType
-  const network = params.network
+  const network = params.network ?? null // ✅ FIX
 
   if (!VALID_FEED_TYPES.includes(type)) {
     return new Response(`Invalid type "${type}"`, { status: 400 })
   }
 
-  const publicType = INTERNAL_TO_PUBLIC[type]
+  const publicType = INTERNAL_TO_PUBLIC[type] ?? type // ✅ SAFE
 
   const chainCache = await getServerSideChainMetadata(CHAINS)
 
-  const markdown = buildFeedAddressMarkdown(
-    type,
-    network, // ✅ scoped per-network
-    chainCache,
-    "https://docs.chain.link",
-    {
-      publicType,
-    }
-  )
+  const markdown = buildFeedAddressMarkdown(type, network, chainCache, "https://docs.chain.link", { publicType })
 
   return new Response(markdown, {
     status: 200,
     headers: {
       "Content-Type": "text/plain; charset=utf-8",
-      // CDN-friendly caching
       "Cache-Control": "public, max-age=0, s-maxage=86400, stale-while-revalidate=604800",
     },
   })

@@ -1,17 +1,15 @@
 import type { APIRoute } from "astro"
 import fs from "node:fs/promises"
 import path from "node:path"
+
+import { getServerSideChainMetadata } from "~/features/data/api/backend.ts"
+import { CHAINS } from "~/features/data/chains.ts"
+import { buildFeedAddressMarkdown, collectStreamEntries } from "~/features/feeds/utils/feedOutput.ts"
+import { STREAM_CATEGORY_MAP } from "~/features/feeds/utils/streamMetadata.ts"
+
 import { textPlainHeaders } from "@lib/api/cacheHeaders.js"
 import { transformPageToMarkdown } from "@lib/markdown/transformMarkdown.js"
 import { extractFrontmatter, getIsoStringOrUndefined, toCanonicalUrl, toContentRelative } from "@lib/markdown/utils.js"
-
-// Feeds
-import { getServerSideChainMetadata } from "~/features/data/api/backend"
-import { CHAINS } from "~/features/data/chains"
-import { buildFeedAddressMarkdown } from "~/features/feeds/utils/feedOutput"
-
-// Streams (reuse same builder + data source)
-import { STREAM_CATEGORY_MAP } from "~/features/feeds/utils/streamMetadata"
 
 const SITE_BASE = "https://docs.chain.link"
 const CONTENT_ROOT = path.resolve("src/content")
@@ -188,7 +186,7 @@ ${exampleMarkdown}
 // -----------------------
 // STREAM EXAMPLE BUILDER
 // -----------------------
-function buildStreamExample(streams: any[]): string {
+function buildStreamExample(streams: Array<{ name: string; feedId: string; schema: string }>): string {
   const sample = streams.slice(0, 10)
 
   const lines = ["| Stream | Feed ID | Schema |", "|--------|---------|--------|"]
