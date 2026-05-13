@@ -4,7 +4,7 @@
 
 Prefer specific `.md` pages. Do not rely on memorized feed addresses.
 
-Use address pages only when retrieving current feed addresses.
+Use address datasets only when retrieving current feed addresses.
 
 ## Overview and Setup
 
@@ -38,13 +38,36 @@ Use address pages only when retrieving current feed addresses.
 - [Contract Registry](https://docs.chain.link/data-feeds/contract-registry.md)
 - [Historical Data](https://docs.chain.link/data-feeds/historical-data.md)
 
-## Live Data
+## Feed Address Retrieval
 
-Use only when retrieving current addresses. If `.md` output is incomplete, use the HTML page as the source of truth.
+Use structured datasets when retrieving feed addresses. Documentation pages may contain partial or example data only.
 
-- [Price Feed Addresses](https://docs.chain.link/data-feeds/price-feeds)
-- [Rates Feed Addresses](https://docs.chain.link/data-feeds/rates-feeds/addresses)
-- [SmartData Addresses](https://docs.chain.link/data-feeds/smartdata/addresses)
-- [U.S. Government Macroeconomic Data Feeds](https://docs.chain.link/data-feeds/us-government-macroeconomic/addresses)
-- [Rate and Volatility Feeds](https://docs.chain.link/data-feeds/rates-feeds/addresses)
-- [Deprecating Feeds](https://docs.chain.link/data-feeds/deprecating-feeds)
+Start with the dataset index:
+
+- Standard price feeds: https://docs.chain.link/data-feeds/feed-addresses/default.txt
+- Rates feeds: https://docs.chain.link/data-feeds/feed-addresses/rates.txt
+- SmartData feeds: https://docs.chain.link/data-feeds/feed-addresses/smartdata.txt
+- U.S. Government Macroeconomic Data Feeds: https://docs.chain.link/data-feeds/feed-addresses/usGovernmentMacroeconomicData.txt
+- Tokenized equity feeds: https://docs.chain.link/data-feeds/feed-addresses/tokenizedEquity.txt
+
+Each index lists available networks. Each network is identified by its `queryString`.
+
+Retrieve a specific dataset:
+
+- https://docs.chain.link/data-feeds/feed-addresses/{type}/{network}.txt
+
+Usage pattern:
+
+1. Open the index file for the desired feed type
+2. Identify the target network `queryString`
+3. Retrieve the corresponding dataset
+4. Filter by feed name as needed
+
+Constraints:
+
+- Each network dataset contains the complete feed list for that network
+- Datasets are structured and can be parsed programmatically
+- Loading all networks will significantly increase response size and latency
+- Do not load multiple networks unless required
+- Do not scrape documentation pages or interactive tables for feed addresses
+- Do not rely on memorized or cached addresses

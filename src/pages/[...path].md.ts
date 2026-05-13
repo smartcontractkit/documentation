@@ -5,25 +5,18 @@ import { textPlainHeaders } from "@lib/api/cacheHeaders.js"
 import { transformPageToMarkdown } from "@lib/markdown/transformMarkdown.js"
 import { extractFrontmatter, getIsoStringOrUndefined, toCanonicalUrl, toContentRelative } from "@lib/markdown/utils.js"
 
+// Feeds
+import { getServerSideChainMetadata } from "~/features/data/api/backend"
+import { CHAINS } from "~/features/data/chains"
+import { buildFeedAddressMarkdown } from "~/features/feeds/utils/feedOutput"
+
+// Streams (reuse same builder + data source)
+import { STREAM_CATEGORY_MAP } from "~/features/feeds/utils/streamMetadata"
+
 const SITE_BASE = "https://docs.chain.link"
 const CONTENT_ROOT = path.resolve("src/content")
 
 const LLMS_DIRECTIVE = "> For the complete documentation index, see [llms.txt](/llms.txt)."
-
-const MARKDOWN_REDIRECTS: Record<string, string> = {
-  "ccip/tutorials/cross-chain-tokens": "ccip/tutorials/evm/cross-chain-tokens",
-
-  // Data Streams
-  "data-streams/getting-started": "data-streams/tutorials/streams-trade/getting-started",
-  "data-streams/getting-started-hardhat": "data-streams/tutorials/streams-trade/getting-started-hardhat",
-  "data-streams/reference/streams-direct/streams-direct-onchain-verification":
-    "data-streams/reference/onchain-verification",
-
-  // Newly surfaced redirects
-  "chainlink-functions/resources/concepts": "chainlink-functions/resources",
-  "cre/getting-started/conclusion": "cre/getting-started",
-  "data-streams/reference/streams-direct/streams-direct-interface-ws": "data-streams/reference/interface-ws",
-}
 
 const markdownHeaders = {
   ...textPlainHeaders,
@@ -39,93 +32,7 @@ export const GET: APIRoute = async ({ params, request }) => {
     return new Response("Page not found.", { status: 404 })
   }
 
-  const specialResolution = await resolveSpecialCanonicalMarkdownPath(cleanPath)
-  if (specialResolution) {
-    return buildMarkdownResponseFromPath(specialResolution.resolvedPath, request, specialResolution.sourceCanonicalPath)
-  }
-
-  const creResolution = await resolveCreCanonicalMarkdownPath(cleanPath)
-
-  if (creResolution.kind === "selector") {
-    return new Response(buildCreSelectorMarkdown(cleanPath, creResolution), {
-      status: 200,
-      headers: markdownHeaders,
-    })
-  }
-
-  const resolvedPath = creResolution.kind === "resolved" ? creResolution.path : cleanPath
-  return buildMarkdownResponseFromPath(resolvedPath, request)
-}
-
-type SpecialResolution = {
-  resolvedPath: string
-  sourceCanonicalPath: string
-}
-
-async function resolveSpecialCanonicalMarkdownPath(cleanPath: string): Promise<SpecialResolution | null> {
-  const specialPathMap: Record<string, string> = {
-    "cre-templates": "cre/templates",
-  }
-
-  const mappedPath = specialPathMap[cleanPath]
-  if (!mappedPath) return null
-
-  const file = await findContentFile(mappedPath)
-  if (!file) return null
-
-  return {
-    resolvedPath: mappedPath,
-    sourceCanonicalPath: cleanPath,
-  }
-}
-
-type CreResolution =
-  | { kind: "none" }
-  | { kind: "resolved"; path: string }
-  | { kind: "selector"; goPath: string; tsPath: string }
-
-async function resolveCreCanonicalMarkdownPath(cleanPath: string): Promise<CreResolution> {
-  if (!cleanPath.startsWith("cre/")) {
-    return { kind: "none" }
-  }
-
-  const direct = await findContentFile(cleanPath)
-  if (direct) {
-    return { kind: "resolved", path: cleanPath }
-  }
-
-  const goPath = `${cleanPath}-go`
-  const tsPath = `${cleanPath}-ts`
-
-  const [goFile, tsFile] = await Promise.all([findContentFile(goPath), findContentFile(tsPath)])
-
-  if (goFile && tsFile) {
-    return { kind: "selector", goPath, tsPath }
-  }
-
-  if (goFile) {
-    return { kind: "resolved", path: goPath }
-  }
-
-  if (tsFile) {
-    return { kind: "resolved", path: tsPath }
-  }
-
-  return { kind: "none" }
-}
-
-async function buildMarkdownResponseFromPath(
-  resolvedPath: string,
-  request: Request,
-  sourceCanonicalPathOverride?: string
-): Promise<Response> {
-  const redirectTarget = MARKDOWN_REDIRECTS[resolvedPath]
-
-  if (redirectTarget) {
-    return buildMarkdownMovedResponse(resolvedPath, redirectTarget)
-  }
-
-  const mdxAbsPath = await findContentFile(resolvedPath)
+  const mdxAbsPath = await findContentFile(cleanPath)
 
   if (!mdxAbsPath) {
     return new Response("Page not found.", { status: 404 })
@@ -137,19 +44,19 @@ async function buildMarkdownResponseFromPath(
   const raw = await fs.readFile(mdxAbsPath, "utf-8")
   const { body, fmTitle, fmLastModified } = extractFrontmatter(raw)
 
-  const section = resolvedPath.split("/")[0]
-
-  const transformed = await transformPageBodyToMarkdown(body, mdxAbsPath, {
+  const transformed = await transformPageBodyToMarkdown(body, mdxAbsPath, cleanPath, {
     siteBase: SITE_BASE,
     targetLanguage,
   })
 
   const relFromContent = toContentRelative(mdxAbsPath)
-  const derivedSourceUrl = toCanonicalUrl(section, relFromContent, SITE_BASE)
-  const sourceUrl = sourceCanonicalPathOverride ? `${SITE_BASE}/${sourceCanonicalPathOverride}` : derivedSourceUrl
+  const sourceUrl = toCanonicalUrl(cleanPath.split("/")[0], relFromContent, SITE_BASE)
 
   const title = fmTitle || path.basename(mdxAbsPath, path.extname(mdxAbsPath))
   const lastModified = getIsoStringOrUndefined(fmLastModified)
+
+  const isFeedsPage = cleanPath.includes("data-feeds/price-feeds/addresses")
+  const isStreamsPage = cleanPath.includes("data-streams")
 
   const headerLines = [
     `# ${title}`,
@@ -158,6 +65,33 @@ async function buildMarkdownResponseFromPath(
     "",
     LLMS_DIRECTIVE,
     "",
+    ...(isFeedsPage
+      ? [
+          "## Full datasets",
+          "",
+          "Use the network index to retrieve feed addresses:",
+          "",
+          "/data-feeds/feed-addresses/default.txt",
+          "",
+          "Each network has its own dataset.",
+          "Do not load multiple networks unless required.",
+          "",
+        ]
+      : []),
+    ...(isStreamsPage
+      ? [
+          "## Full datasets",
+          "",
+          "Use structured datasets for stream IDs and network metadata:",
+          "",
+          "/data-streams/stream-ids/crypto.txt",
+          "/data-streams/networks.txt",
+          "",
+          "Stream IDs are universal.",
+          "Networks provide verifier proxy addresses.",
+          "",
+        ]
+      : []),
   ]
 
   return new Response([...headerLines, transformed.trim()].join("\n"), {
@@ -169,21 +103,75 @@ async function buildMarkdownResponseFromPath(
 async function transformPageBodyToMarkdown(
   body: string,
   mdxAbsPath: string,
+  routePath: string,
   options: {
     siteBase: string
     targetLanguage?: string
   }
 ): Promise<string> {
-  // Targeted fix for problematic page
-  if (mdxAbsPath.includes("data-feeds/deprecating-feeds")) {
-    return `
-## Deprecated Feeds
+  const chainCache = await getServerSideChainMetadata(CHAINS)
 
-This page contains dynamically generated or component-heavy content.
+  // -----------------------
+  // FEEDS INJECTION
+  // -----------------------
+  if (body.includes("<FeedPage")) {
+    const exampleMarkdown = buildFeedAddressMarkdown(
+      "default",
+      "ethereum-mainnet",
+      chainCache,
+      "https://docs.chain.link",
+      { networkType: "mainnet" }
+    )
 
-For the full and most up-to-date information, see:
-https://docs.chain.link/data-feeds/deprecating-feeds
-`.trim()
+    const replacement = `
+## Full datasets
+
+Use the network index to retrieve feed addresses:
+
+/data-feeds/feed-addresses/default.txt
+
+Each network has its own dataset.
+Do not load multiple networks unless required.
+
+---
+
+## Example (Ethereum Mainnet)
+
+${exampleMarkdown}
+`
+
+    body = body.replace(/<FeedPage[\s\S]*?\/>/g, replacement)
+  }
+
+  // -----------------------
+  // STREAMS INJECTION
+  // -----------------------
+  if (body.includes("<StreamList")) {
+    const streams = collectStreamEntries(STREAM_CATEGORY_MAP.crypto, chainCache, {
+      publicType: "crypto",
+    })
+
+    const exampleMarkdown = buildStreamExample(streams)
+
+    const replacement = `
+## Full datasets
+
+Use structured datasets:
+
+- /data-streams/stream-ids/crypto.txt
+- /data-streams/networks.txt
+
+Stream IDs are universal.
+Networks provide verifier proxy addresses.
+
+---
+
+## Example (Crypto Streams)
+
+${exampleMarkdown}
+`
+
+    body = body.replace(/<StreamList[\s\S]*?\/>/g, replacement)
   }
 
   try {
@@ -199,6 +187,24 @@ https://docs.chain.link/data-feeds/deprecating-feeds
   }
 }
 
+// -----------------------
+// STREAM EXAMPLE BUILDER
+// -----------------------
+function buildStreamExample(streams: any[]): string {
+  const sample = streams.slice(0, 10)
+
+  const lines = ["| Stream | Feed ID | Schema |", "|--------|---------|--------|"]
+
+  for (const s of sample) {
+    lines.push(`| ${s.name} | \`${s.feedId}\` | ${s.schema} |`)
+  }
+
+  return lines.join("\n")
+}
+
+// -----------------------
+// UTILITIES
+// -----------------------
 function buildFallbackMarkdownBody(body: string): string {
   return stripRuntimeMdxSyntax(body)
     .replace(/<([A-Z][A-Za-z0-9]*)\b[^>]*\/>/g, "")
@@ -247,9 +253,7 @@ function stripRuntimeMdxSyntax(body: string): string {
       continue
     }
 
-    if (/^export\s+(const|let|var)\s+/.test(trimmed)) {
-      continue
-    }
+    if (/^export\s+(const|let|var)\s+/.test(trimmed)) continue
 
     output.push(line)
   }
@@ -293,38 +297,4 @@ async function findContentFile(cleanPath: string): Promise<string | null> {
   }
 
   return null
-}
-
-function buildMarkdownMovedResponse(sourcePath: string, targetPath: string): Response {
-  const sourceUrl = `${SITE_BASE}/${sourcePath}`
-  const targetUrl = `/${targetPath}.md`
-
-  return new Response(
-    [
-      `# Redirect`,
-      `Source: ${sourceUrl}`,
-      "",
-      LLMS_DIRECTIVE,
-      "",
-      "This page has moved.",
-      "",
-      `Use the current documentation: [${targetPath}](${targetUrl}).`,
-      "",
-    ].join("\n"),
-    { status: 200, headers: markdownHeaders }
-  )
-}
-
-function buildCreSelectorMarkdown(canonicalPath: string, resolution: any): string {
-  const canonicalUrl = `${SITE_BASE}/${canonicalPath}`
-  return [
-    `# ${canonicalPath}`,
-    `Source: ${canonicalUrl}`,
-    "",
-    LLMS_DIRECTIVE,
-    "",
-    `- Go: /${resolution.goPath}.md`,
-    `- TypeScript: /${resolution.tsPath}.md`,
-    "",
-  ].join("\n")
 }

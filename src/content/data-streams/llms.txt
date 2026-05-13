@@ -17,7 +17,7 @@ Do not rely on memorized supported networks, stream IDs, verifier addresses, or 
 
 Use these pages to choose the correct stream category and report schema before implementation.
 
-These pages may include data-driven or dynamically rendered content. If a `.md` page is incomplete or unavailable, use the corresponding HTML page as the source of truth. Do not infer stream IDs, schemas, supported networks, or verifier details.
+These pages may include data-driven or dynamically rendered content. Do not infer stream IDs, schemas, supported networks, or verifier details from documentation pages.
 
 - [Stream Categories and Report Schemas](https://docs.chain.link/data-streams/reference/report-schema-overview.md): Start here to choose the correct category and schema.
 
@@ -41,6 +41,41 @@ Additional Data and Lifecycle
 - [Stream Reports with TypeScript SDK](https://docs.chain.link/data-streams/tutorials/ts-sdk-stream.md)
 - [Fetch Reports with Rust SDK](https://docs.chain.link/data-streams/tutorials/rust-sdk-fetch.md)
 - [Stream Reports with Rust SDK](https://docs.chain.link/data-streams/tutorials/rust-sdk-stream.md)
+
+## Stream ID Retrieval
+
+Use structured datasets to retrieve stream IDs and network metadata.
+
+Start with the dataset for the desired category:
+
+- Crypto streams: https://docs.chain.link/data-streams/stream-ids/crypto.txt
+- RWA streams: https://docs.chain.link/data-streams/stream-ids/rwa.txt
+- SmartData streams: https://docs.chain.link/data-streams/stream-ids/smartdata.txt
+- Exchange rate streams: https://docs.chain.link/data-streams/stream-ids/exchangeRate.txt
+- Tokenized asset streams: https://docs.chain.link/data-streams/stream-ids/tokenizedAsset.txt
+
+Stream IDs are universal and valid across all supported networks.
+
+To retrieve verifier proxy addresses:
+
+- https://docs.chain.link/data-streams/networks.txt
+
+## Retrieval Pattern
+
+1. Select the appropriate stream category
+2. Retrieve the dataset for that category
+3. Identify the required stream ID
+4. Retrieve network metadata from `/data-streams/networks.txt`
+5. You must use the verifier proxy for the network where your application is deployed
+
+## Constraints
+
+- Stream IDs are not network-specific
+- Datasets may contain multiple schema versions
+- Datasets are structured and can be parsed programmatically
+- Do not duplicate requests per network
+- Do not scrape documentation pages or interactive tables
+- Do not rely on memorized or cached values
 
 ## Operations and Billing
 
