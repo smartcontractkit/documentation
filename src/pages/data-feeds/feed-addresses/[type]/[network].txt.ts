@@ -5,6 +5,7 @@ import { buildFeedAddressMarkdown, VALID_FEED_TYPES } from "~/features/feeds/uti
 import { STREAM_CATEGORY_MAP } from "~/features/feeds/utils/streamMetadata.ts"
 import type { DataFeedType } from "~/features/feeds/components/FeedList.tsx"
 
+export const runtime = "nodejs"
 export const prerender = false
 
 const INTERNAL_TO_PUBLIC: Record<string, string> = Object.fromEntries(
