@@ -51,46 +51,26 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
     }
   }, [search])
 
-  const openLane = (network: (typeof lanes)[number]) => {
-    const laneData = getLane({
-      sourceChain: sourceNetwork.key as SupportedChain,
-      destinationChain: network.key as SupportedChain,
-      environment,
-      version: Version.V1_2_0,
-    })
-
-    drawerContentStore.set(() => (
-      <LaneDrawer
-        environment={environment}
-        lane={laneData}
-        sourceNetwork={sourceNetwork}
-        destinationNetwork={{
-          name: network?.name || "",
-          logo: network?.logo || "",
-          key: network.key,
-        }}
-        inOutbound={inOutbound}
-        explorer={explorer}
-      />
-    ))
-  }
-
   return (
     <>
       <div className="ccip-table__filters ccip-table__filters--chain">
         <Tabs
           tabs={[
-            { name: "Outbound lanes", key: LaneFilter.Outbound },
-            { name: "Inbound lanes", key: LaneFilter.Inbound },
+            {
+              name: "Outbound lanes",
+              key: LaneFilter.Outbound,
+            },
+            {
+              name: "Inbound lanes",
+              key: LaneFilter.Inbound,
+            },
           ]}
           onChange={(key) => setInOutbound(key as LaneFilter)}
         />
-
         <div className="ccip-table__filters__actions">
           <div className="ccip-table__filters__search-container">
             <TableSearchInput search={search} setSearch={setSearch} />
           </div>
-
           <a
             className="button secondary ccip-table__filters__external-button"
             href="https://ccip.chain.link/status"
@@ -107,7 +87,6 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
           </a>
         </div>
       </div>
-
       <div className="ccip-table__wrapper">
         <table className="ccip-table">
           <thead>
@@ -133,28 +112,45 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
               <th>Version</th>
             </tr>
           </thead>
-
           <tbody>
             {lanes
               ?.filter((network) => network.name.toLowerCase().includes(search.toLowerCase()))
               .slice(0, seeMore ? lanes.length : BEFORE_SEE_MORE)
               .map((network, index) => (
-                <tr
-                  key={index}
-                  onClick={() => openLane(network)}
-                  className="cursor-pointer hover:bg-muted/50"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") openLane(network)
-                  }}
-                >
+                <tr key={index}>
                   <td>
-                    <div className="ccip-table__network-name">
+                    <button
+                      type="button"
+                      className="ccip-table__network-name"
+                      onClick={() => {
+                        const laneData = getLane({
+                          sourceChain: sourceNetwork.key as SupportedChain,
+                          destinationChain: network.key as SupportedChain,
+                          environment,
+                          version: Version.V1_2_0,
+                        })
+
+                        drawerContentStore.set(() => (
+                          <LaneDrawer
+                            environment={environment}
+                            lane={laneData}
+                            sourceNetwork={sourceNetwork}
+                            destinationNetwork={{
+                              name: network?.name || "",
+                              logo: network?.logo || "",
+                              key: network.key,
+                            }}
+                            inOutbound={inOutbound}
+                            explorer={explorer}
+                          />
+                        ))
+                      }}
+                      aria-label={`View lane details for ${network.name}`}
+                    >
                       <img src={network.logo} alt={`${network.name} blockchain logo`} className="ccip-table__logo" />
                       {network.name}
-                    </div>
+                    </button>
                   </td>
-
                   <td
                     style={{ textAlign: "right" }}
                     data-clipboard-type={inOutbound === LaneFilter.Outbound ? "onramp" : "offramp"}
@@ -170,16 +166,13 @@ function ChainTable({ lanes, explorer, sourceNetwork, environment }: TableProps)
                       )}
                     />
                   </td>
-
                   <td>{inOutbound === LaneFilter.Outbound ? network.onRamp?.version : network.offRamp?.version}</td>
                 </tr>
               ))}
           </tbody>
         </table>
       </div>
-
       {!seeMore && <SeeMore onClick={() => setSeeMore(!seeMore)} />}
-
       <div className="ccip-table__notFound">
         {lanes.filter((network) => network.name.toLowerCase().includes(search.toLowerCase())).length === 0 && (
           <>No lanes found</>
