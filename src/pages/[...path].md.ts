@@ -105,15 +105,47 @@ async function transformPageBodyToMarkdown(
 | ETH / USD | \`0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419\` | 0.5% | 1h |
 `
 
+    // -----------------------
+    // FEED TYPE DETECTION
+    // -----------------------
+    let feedType = "default"
+
+    if (routePath.includes("price-feeds")) {
+      feedType = "default"
+    } else if (routePath.includes("smartdata")) {
+      feedType = "smartdata"
+    } else if (routePath.includes("rates")) {
+      feedType = "rates"
+    } else if (routePath.includes("tokenized-equity")) {
+      feedType = "tokenizedEquity"
+    } else if (routePath.includes("us-government")) {
+      feedType = "usGovernmentMacroeconomicData"
+    }
+
+    const labelMap: Record<string, string> = {
+      default: "Price feeds",
+      smartdata: "SmartData feeds",
+      rates: "Rates feeds",
+      tokenizedEquity: "Tokenized equity feeds",
+      usGovernmentMacroeconomicData: "U.S. Government Macroeconomic Data feeds",
+    }
+
+    const feedLabel = labelMap[feedType] || feedType
+
     const replacement = `
-## Full datasets
+## Feed Contract Addresses
 
-Use the network index to retrieve feed addresses:
+The interactive address table on this page is loaded dynamically and is not included in this markdown export.
 
-/data-feeds/feed-addresses/default.txt
+For complete and up-to-date feed addresses, use structured datasets:
 
-Each network has its own dataset.
-Do not load multiple networks unless required.
+- ${feedLabel}${feedType === "default" ? " (default dataset)" : ""}:
+/data-feeds/feed-addresses/${feedType}.txt
+
+- Per-network datasets:
+/data-feeds/feed-addresses/${feedType}/{network}.txt
+
+Each dataset contains the full set of feeds for the selected network. Filter by feed name as needed.
 
 ---
 
@@ -129,7 +161,17 @@ ${hasExample ? exampleMarkdown : fallbackExample}
   // STREAMS INJECTION
   // -----------------------
   if (body.includes("<StreamList")) {
-    const streams = collectStreamEntries(STREAM_CATEGORY_MAP.crypto, chainCache, { publicType: "crypto" } as any)
+    let rawType = "crypto"
+
+    if (routePath.includes("crypto")) rawType = "crypto"
+    else if (routePath.includes("rwa")) rawType = "rwa"
+    else if (routePath.includes("exchange-rate")) rawType = "exchangeRate"
+    else if (routePath.includes("smartdata")) rawType = "smartdata"
+    else if (routePath.includes("tokenized-asset")) rawType = "tokenizedAsset"
+
+    const internalType = STREAM_CATEGORY_MAP[rawType]
+
+    const streams = collectStreamEntries(internalType, chainCache, { publicType: rawType } as any)
 
     const exampleMarkdown = streams.length > 0 ? buildStreamExample(streams) : ""
 
@@ -139,20 +181,34 @@ ${hasExample ? exampleMarkdown : fallbackExample}
 | BTC/USD | \`0x00039d9f...\` | v3 |
 `
 
+    const streamLabelMap: Record<string, string> = {
+      crypto: "Crypto streams",
+      rwa: "RWA streams",
+      exchangeRate: "Exchange rate streams",
+      smartdata: "SmartData streams",
+      tokenizedAsset: "Tokenized asset streams",
+    }
+
+    const streamLabel = streamLabelMap[rawType] || rawType
+
     const replacement = `
-## Full datasets
+## Stream IDs
 
-Use structured datasets:
+The interactive stream table on this page is loaded dynamically and is not included in this markdown export.
 
-- /data-streams/stream-ids/crypto.txt
-- /data-streams/networks.txt
+For complete and up-to-date stream IDs, use structured datasets:
 
-Stream IDs are universal.
-Networks provide verifier proxy addresses.
+- ${streamLabel}:
+/data-streams/stream-ids/${rawType}.txt
+
+- Supported networks:
+/data-streams/networks.txt
+
+Stream IDs are universal. Use the verifier proxy for your target network when consuming them.
 
 ---
 
-## Example (Crypto Streams)
+## Example (${streamLabel})
 
 ${exampleMarkdown || fallbackExample}
 `
